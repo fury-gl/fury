@@ -5,8 +5,8 @@ import numpy as np
 import os
 
 from dipy.data import read_viz_icons
-from dipy.viz.interactor import CustomInteractorStyle
-from dipy.viz.utils import set_input
+from fury.interactor import CustomInteractorStyle
+from fury.utils import set_input
 
 from dipy.utils.optpkg import optional_package
 

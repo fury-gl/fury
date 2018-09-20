@@ -1,5 +1,5 @@
 import numpy as np
-from dipy.viz import regtools
+from fury import regtools
 import numpy.testing as npt
 from dipy.align.metrics import SSDMetric
 from dipy.align.imwarp import SymmetricDiffeomorphicRegistration

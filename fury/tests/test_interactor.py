@@ -3,8 +3,8 @@ import numpy as np
 from os.path import join as pjoin
 from collections import defaultdict
 
-from dipy.viz import actor, window, interactor
-from dipy.viz import utils as vtk_utils
+from fury import actor, window, interactor
+from fury import utils as vtk_utils
 from dipy.data import DATA_DIR
 import numpy.testing as npt
 from dipy.testing.decorators import xvfb_it

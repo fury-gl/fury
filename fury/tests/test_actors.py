@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from dipy.viz import actor, window
+from fury import actor, window
 
 import numpy.testing as npt
 from nibabel.tmpdirs import TemporaryDirectory
@@ -215,7 +215,7 @@ def test_contour_from_roi():
     from dipy.tracking.local import ThresholdTissueClassifier
     from dipy.tracking import utils
     from dipy.tracking.local import LocalTracking
-    from dipy.viz.colormap import line_colors
+    from fury.colormap import line_colors
 
     hardi_img, gtab, labels_img = read_stanford_labels()
     data = hardi_img.get_data()

@@ -7,12 +7,12 @@ from os.path import join as pjoin
 import numpy.testing as npt
 
 from dipy.data import read_viz_icons, fetch_viz_icons, get_sphere
-from dipy.viz import ui
-from dipy.viz import window, actor
+from fury import ui
+from fury import window, actor
 from dipy.data import DATA_DIR
 from nibabel.tmpdirs import InTemporaryDirectory
 
-from dipy.viz.ui import UI
+from fury.ui import UI
 
 from dipy.testing.decorators import xvfb_it
 from dipy.testing import assert_arrays_equal

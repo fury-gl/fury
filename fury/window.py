@@ -35,7 +35,7 @@ from dipy.utils.optpkg import optional_package
 from dipy import __version__ as dipy_version
 from dipy.utils.six import string_types
 
-from dipy.viz.interactor import CustomInteractorStyle
+from fury.interactor import CustomInteractorStyle
 
 # Allow import, but disable doctests if we don't have vtk
 vtk, have_vtk, setup_module = optional_package('vtk')
@@ -220,7 +220,7 @@ def renderer(background=None):
 
     Examples
     --------
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> import numpy as np
     >>> r = window.Renderer()
     >>> lines=[np.random.rand(10,3)]
@@ -229,8 +229,8 @@ def renderer(background=None):
     >>> #window.show(r)
     """
 
-    deprecation_msg = ("Method 'dipy.viz.window.renderer' is deprecated, instead"
-                       " use class 'dipy.viz.window.Renderer'.")
+    deprecation_msg = ("Method 'fury.window.renderer' is deprecated, instead"
+                       " use class 'fury.window.Renderer'.")
     warn(DeprecationWarning(deprecation_msg))
 
     ren = Renderer()
@@ -375,7 +375,7 @@ class ShowManager(object):
 
         Examples
         --------
-        >>> from dipy.viz import actor, window
+        >>> from fury import actor, window
         >>> renderer = window.Renderer()
         >>> renderer.add(actor.axes())
         >>> showm = window.ShowManager(renderer)
@@ -647,7 +647,7 @@ def show(ren, title='DIPY', size=(300, 300),
     Examples
     ----------
     >>> import numpy as np
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> r = window.Renderer()
     >>> lines=[np.random.rand(10,3),np.random.rand(20,3)]
     >>> colors=np.array([[0.2,0.2,0.2],[0.8,0.8,0.8]])
@@ -659,8 +659,8 @@ def show(ren, title='DIPY', size=(300, 300),
 
     See also
     ---------
-    dipy.viz.window.record
-    dipy.viz.window.snapshot
+    fury.window.record
+    fury.window.snapshot
     """
 
     show_manager = ShowManager(ren, title, size,
@@ -711,7 +711,7 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     Examples
     ---------
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> ren = window.Renderer()
     >>> a = actor.axes()
     >>> ren.add(a)

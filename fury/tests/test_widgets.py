@@ -2,7 +2,7 @@ import os
 import numpy as np
 from os.path import join as pjoin
 
-from dipy.viz import actor, window, widget
+from fury import actor, window, widget
 from dipy.data import DATA_DIR
 from dipy.data import fetch_viz_icons, read_viz_icons
 import numpy.testing as npt

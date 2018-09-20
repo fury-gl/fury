@@ -3,11 +3,11 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 from nibabel.affines import apply_affine
 
-from dipy.viz.colormap import colormap_lookup_table, create_colormap
-from dipy.viz.utils import lines_to_vtk_polydata
-from dipy.viz.utils import set_input
-from dipy.viz.utils import numpy_to_vtk_points, numpy_to_vtk_colors
-import dipy.viz.utils as ut_vtk
+from fury.colormap import colormap_lookup_table, create_colormap
+from fury.utils import lines_to_vtk_polydata
+from fury.utils import set_input
+from fury.utils import numpy_to_vtk_points, numpy_to_vtk_colors
+import fury.utils as ut_vtk
 
 # Conditional import machinery for vtk
 from dipy.utils.optpkg import optional_package
@@ -378,12 +378,12 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
         Number of splines subdivision to smooth streamtubes. Default is None.
     lookup_colormap : vtkLookupTable
         Add a default lookup table to the colormap. Default is None which calls
-        :func:`dipy.viz.actor.colormap_lookup_table`.
+        :func:`fury.actor.colormap_lookup_table`.
 
     Examples
     --------
     >>> import numpy as np
-    >>> from dipy.viz import actor, window
+    >>> from fury import actor, window
     >>> ren = window.Renderer()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
@@ -408,7 +408,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 
     See Also
     --------
-    :func:`dipy.viz.actor.line`
+    :func:`fury.actor.line`
     """
     # Poly data with lines and colors
     poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
@@ -530,7 +530,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
         Size of points when lod is in effect. Default is 3.
     lookup_colormap : bool, optional
         Add a default lookup table to the colormap. Default is None which calls
-        :func:`dipy.viz.actor.colormap_lookup_table`.
+        :func:`fury.actor.colormap_lookup_table`.
 
     Returns
     ----------
@@ -539,7 +539,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
     Examples
     ----------
-    >>> from dipy.viz import actor, window
+    >>> from fury import actor, window
     >>> ren = window.Renderer()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
@@ -606,7 +606,7 @@ def scalar_bar(lookup_table=None, title=" "):
 
     See Also
     --------
-    :func:`dipy.viz.actor.colormap_lookup_table`
+    :func:`fury.actor.colormap_lookup_table`
 
     """
     lookup_table_copy = vtk.vtkLookupTable()
@@ -1133,7 +1133,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
     See Also
     --------
-    dipy.viz.actor.odf_slicer
+    fury.actor.odf_slicer
 
     """
     peaks_dirs = np.asarray(peaks_dirs)
@@ -1224,7 +1224,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
 
     See Also
     ---------
-    dipy.viz.actor.point
+    fury.actor.point
 
     """
 
@@ -1288,7 +1288,7 @@ def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
 
     Examples
     --------
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> ren = window.Renderer()
     >>> pts = np.random.rand(5, 3)
     >>> point_actor = actor.point(pts, window.colors.coral)
@@ -1323,7 +1323,7 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
 
     Examples
     --------
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> ren = window.Renderer()
     >>> centers = np.random.rand(5, 3)
     >>> sphere_actor = actor.sphere(centers, window.colors.coral)
@@ -1419,7 +1419,7 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
 
     Examples
     --------
-    >>> from dipy.viz import window, actor
+    >>> from fury import window, actor
     >>> ren = window.Renderer()
     >>> l = actor.label(text='Hello')
     >>> ren.add(l)

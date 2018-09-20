@@ -8,7 +8,7 @@ visualize the forementioned objects e.g. sphere, line ...
 
 Examples
 ---------
->>> from dipy.viz import fvtk
+>>> from fury import fvtk
 >>> r=fvtk.ren()
 >>> a=fvtk.axes()
 >>> fvtk.add(r,a)
@@ -40,7 +40,7 @@ if have_matplotlib:
 else:
     from dipy.data import get_cmap
 
-from dipy.viz.colormap import create_colormap
+from fury.colormap import create_colormap
 
 # a track buffer used only with picking tracks
 track_buffer = []
@@ -67,9 +67,9 @@ if have_vtk:
     # Create a cell picker.
     picker = vtk.vtkCellPicker()
 
-    from dipy.viz.window import (ren, renderer, add, clear, rm, rm_all,
+    from fury.window import (ren, renderer, add, clear, rm, rm_all,
                                  show, record, snapshot)
-    from dipy.viz.actor import line, streamtube, slicer, axes, dots, point
+    from fury.actor import line, streamtube, slicer, axes, dots, point
 
     try:
         if major_version < 7:
@@ -81,15 +81,15 @@ if have_vtk:
         have_vtk_texture_mapper2D = False
 
 else:
-    ren, have_ren, _ = optional_package('dipy.viz.window.ren',
+    ren, have_ren, _ = optional_package('fury.window.ren',
                                         'Python VTK is not installed')
 
 
 
-deprecation_msg = ("Module 'dipy.viz.fvtk' is deprecated as of version"
+deprecation_msg = ("Module 'fury.fvtk' is deprecated as of version"
                    " 0.14 of dipy and will be removed in a future version."
-                   " Please, instead use module 'dipy.viz.window' or "
-                   " 'dipy.viz.actor'.")
+                   " Please, instead use module 'fury.window' or "
+                   " 'fury.actor'.")
 warn(DeprecationWarning(deprecation_msg))
 
 
@@ -166,7 +166,7 @@ def volume(vol, voxsz=(1.0, 1.0, 1.0), affine=None, center_origin=1,
     --------
     First example random points.
 
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> import numpy as np
     >>> vol=100*np.random.rand(100,100,100)
     >>> vol=vol.astype('uint8')
@@ -179,7 +179,7 @@ def volume(vol, voxsz=(1.0, 1.0, 1.0), affine=None, center_origin=1,
 
     Second example with a more complicated function
 
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> import numpy as np
     >>> x, y, z = np.ogrid[-10:10:20j, -10:10:20j, -10:10:20j]
     >>> s = np.sin(x*y*z)/(x*y*z)
@@ -445,7 +445,7 @@ def contour(vol, voxsz=(1.0, 1.0, 1.0), affine=None, levels=[50],
     Examples
     --------
     >>> import numpy as np
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> A=np.zeros((10,10,10))
     >>> A[3:-3,3:-3,3:-3]=1
     >>> r=fvtk.ren()
@@ -544,7 +544,7 @@ def sphere_funcs(sphere_values, sphere, image=None, colormap='jet',
 
     Examples
     --------
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> r = fvtk.ren()
     >>> odfs = np.ones((5, 5, 724))
     >>> odfs[..., 0] = 2.
@@ -665,7 +665,7 @@ def peaks(peaks_dirs, peaks_values=None, scale=2.2, colors=(1, 0, 0)):
 
     See Also
     --------
-    dipy.viz.fvtk.sphere_funcs
+    fury.fvtk.sphere_funcs
 
     """
     peaks_dirs = np.asarray(peaks_dirs)
@@ -732,7 +732,7 @@ def tensor(evals, evecs, scalar_colors=None,
 
     Examples
     --------
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> r = fvtk.ren()
     >>> evals = np.array([1.4, .35, .35]) * 10 ** (-3)
     >>> evecs = np.eye(3)
@@ -853,7 +853,7 @@ def label(ren, text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
         Label.
     Examples
     --------
-    >>> from dipy.viz import fvtk
+    >>> from fury import fvtk
     >>> r=fvtk.ren()
     >>> l=fvtk.label(r)
     >>> fvtk.add(r,l)

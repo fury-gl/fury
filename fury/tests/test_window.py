@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from dipy.viz import actor, window
+from fury import actor, window
 import numpy.testing as npt
 from dipy.testing.decorators import xvfb_it
 

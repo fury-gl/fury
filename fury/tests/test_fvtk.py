@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from distutils.version import LooseVersion
 
-from dipy.viz import fvtk
+from fury import fvtk
 from dipy import data
 
 import numpy.testing as npt

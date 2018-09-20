@@ -3,7 +3,7 @@ from __future__ import division, print_function, absolute_import
 
 import numpy as np
 from scipy.ndimage import map_coordinates
-from dipy.viz.colormap import line_colors
+from fury.colormap import line_colors
 
 # Conditional import machinery for vtk
 from dipy.utils.optpkg import optional_package
@@ -29,7 +29,7 @@ def set_input(vtk_object, inp):
     Notes
     -------
     This can be used in the following way::
-        from dipy.viz.utils import set_input
+        from fury.utils import set_input
         poly_mapper = set_input(vtk.vtkPolyDataMapper(), poly_data)
     """
     if isinstance(inp, vtk.vtkPolyData) \
@@ -79,7 +79,7 @@ def numpy_to_vtk_colors(colors):
     Examples
     --------
     >>> import numpy as np
-    >>> from dipy.viz.utils import numpy_to_vtk_colors
+    >>> from fury.utils import numpy_to_vtk_colors
     >>> rgb_array = np.random.rand(100, 3)
     >>> vtk_colors = numpy_to_vtk_colors(255 * rgb_array)
     """

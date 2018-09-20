@@ -88,7 +88,7 @@ def boys2rgb(v):
     Examples
     ----------
 
-    >>> from dipy.viz import colormap
+    >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.boys2rgb(v)
     """
@@ -222,7 +222,7 @@ def orient2rgb(v):
     Examples
     --------
 
-    >>> from dipy.viz import colormap
+    >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.orient2rgb(v)
 

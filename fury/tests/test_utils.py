@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.testing as npt
-from dipy.viz.utils import map_coordinates_3d_4d
+from fury.utils import map_coordinates_3d_4d
 
 
 def trilinear_interp_numpy(input_array, indices):
