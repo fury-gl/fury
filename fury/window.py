@@ -243,7 +243,7 @@ class ShowManager(object):
     interactor.
     """
 
-    def __init__(self, ren=None, title='DIPY', size=(300, 300),
+    def __init__(self, ren=None, title='FURY', size=(300, 300),
                  png_magnify=1, reset_camera=True, order_transparent=False,
                  interactor_style='custom'):
 
@@ -324,7 +324,7 @@ class ShowManager(object):
         self.window = vtk.vtkRenderWindow()
         self.window.AddRenderer(ren)
 
-        if self.title == 'DIPY':
+        if self.title == 'FURY':
             self.window.SetWindowName(title + ' ' + fury_version)
         else:
             self.window.SetWindowName(title)
@@ -534,7 +534,7 @@ class ShowManager(object):
         self.iren.TerminateApp()
 
 
-def show(ren, title='DIPY', size=(300, 300),
+def show(ren, title='FURY', size=(300, 300),
          png_magnify=1, reset_camera=True, order_transparent=False):
     """ Show window with current renderer
 
@@ -543,7 +543,7 @@ def show(ren, title='DIPY', size=(300, 300),
     ren : Renderer() or vtkRenderer()
         The scene that holds all the actors.
     title : string
-        A string for the window title bar. Default is DIPY and current version.
+        A string for the window title bar. Default is FURY and current version.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     png_magnify : int
@@ -615,7 +615,7 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
         Camera's view up direction. If None then default camera's view up
         vector is used.
     out_path : str, optional
-        Output path for the frames. If None a default dipy.png is created.
+        Output path for the frames. If None a default fury.png is created.
     path_numbering : bool
         When recording it changes out_path to out_path + str(frame number)
     n_frames : int, optional
@@ -697,7 +697,7 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
                 filename = out_path + str(i).zfill(6) + '.png'
         else:
             if out_path is None:
-                filename = 'dipy.png'
+                filename = 'fury.png'
             else:
                 filename = out_path
         writer.SetFileName(filename)

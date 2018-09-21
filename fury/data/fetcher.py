@@ -17,10 +17,10 @@ else:
     from urllib.request import urlopen
 
 # Set a user-writeable file-system location to put files:
-if 'DIPY_HOME' in os.environ:
-    dipy_home = os.environ['DIPY_HOME']
+if 'FURY_HOME' in os.environ:
+    fury_home = os.environ['FURY_HOME']
 else:
-    dipy_home = pjoin(os.path.expanduser('~'), '.dipy')
+    fury_home = pjoin(os.path.expanduser('~'), '.fury')
 
 # The URL to the University of Washington Researchworks repository:
 UW_RW_URL = \
@@ -101,7 +101,7 @@ def check_md5(filename, stored_md5=None):
    checksum of "%s". Instead, the md5 checksum was: "%s". This could mean that
    something is wrong with the file or that the upstream file has been updated.
    You can try downloading the file again or updating to the newest version of
-   dipy.""" % (filename, stored_md5,
+   Fury.""" % (filename, stored_md5,
                 computed_md5)
             raise FetcherError(msg)
 
@@ -173,7 +173,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
         The name of the fetcher function.
     folder : str
         The full path to the folder in which the files would be placed locally.
-        Typically, this is something like 'pjoin(dipy_home, 'foo')'
+        Typically, this is something like 'pjoin(fury_home, 'foo')'
     baseurl : str
         The URL from which this fetcher reads files
     remote_fnames : list of strings
@@ -234,13 +234,13 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
 
 
 fetch_viz_icons = _make_fetcher("fetch_viz_icons",
-                                pjoin(dipy_home, "icons"),
+                                pjoin(fury_home, "icons"),
                                 UW_RW_URL + "1773/38478/",
                                 ['icomoon.tar.gz'],
                                 ['icomoon.tar.gz'],
                                 ['94a07cba06b4136b6687396426f1e380'],
                                 data_size="12KB",
-                                doc="Download icons for dipy.viz",
+                                doc="Download icons for fury",
                                 unzip=True)
 
 
@@ -251,7 +251,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     style : str
         Current icon style. Default is icomoon.
     fname : str
-        Filename of icon. This should be found in folder HOME/.dipy/style/.
+        Filename of icon. This should be found in folder HOME/.fury/style/.
         Default is infinity.png.
     Returns
     --------
@@ -259,5 +259,5 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Complete path of icon.
     """
 
-    folder = pjoin(dipy_home, 'icons', style)
+    folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)

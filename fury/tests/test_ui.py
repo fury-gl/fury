@@ -14,7 +14,6 @@ from fury import window, actor
 from fury.data import DATA_DIR
 from fury.decorators import xvfb_it
 from fury.testing import assert_arrays_equal
-from fury.tmpdirs import InTemporaryDirectory
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -251,7 +250,7 @@ def test_ui_button_panel(recording=False):
     event_counter.monitor(panel.background)
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="DIPY Button")
+    show_manager = window.ShowManager(size=current_size, title="FURY Button")
 
     show_manager.ren.add(panel)
 
@@ -286,7 +285,7 @@ def test_ui_textbox(recording=False):
     event_counter.monitor(textbox_test)
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="DIPY TextBox")
+    show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
 
     show_manager.ren.add(textbox_test)
 
@@ -435,7 +434,7 @@ def test_ui_line_slider_2d(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
-                                      title="DIPY Line Slider")
+                                      title="FURY Line Slider")
 
     show_manager.ren.add(line_slider_2d_test)
 
@@ -462,7 +461,7 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY Line Double Slider")
+                                          title="FURY Line Double Slider")
         show_manager.ren.add(line_double_slider_2d_test)
         show_manager.start()
 
@@ -475,7 +474,7 @@ def test_ui_line_double_slider_2d(interactive=False):
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY Line Double Slider")
+                                          title="FURY Line Double Slider")
         show_manager.ren.add(line_double_slider_2d_test)
         show_manager.start()
 
@@ -497,7 +496,7 @@ def test_ui_ring_slider_2d(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
-                                      title="DIPY Ring Slider")
+                                      title="FURY Ring Slider")
 
     show_manager.ren.add(ring_slider_2d_test)
 
@@ -526,7 +525,7 @@ def test_ui_range_slider(interactive=False):
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY Line Double Slider")
+                                          title="FURY Line Double Slider")
         show_manager.ren.add(range_slider_test)
         show_manager.start()
 
@@ -581,7 +580,7 @@ def test_ui_checkbox(interactive=False):
 
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
-                                      title="DIPY Checkbox")
+                                      title="FURY Checkbox")
     show_manager.ren.add(checkbox_test)
 
     # Recorded events:
@@ -655,7 +654,7 @@ def test_ui_radio_button(interactive=False):
 
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
-                                      title="DIPY Checkbox")
+                                      title="FURY Checkbox")
     show_manager.ren.add(radio_button_test)
 
     # Recorded events:
@@ -707,7 +706,7 @@ def test_ui_listbox_2d(interactive=False):
         listbox.center = (300, 300)
 
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY ListBox")
+                                          title="FURY ListBox")
         show_manager.ren.add(listbox)
         show_manager.start()
 
@@ -743,7 +742,7 @@ def test_ui_listbox_2d(interactive=False):
     event_counter.monitor(listbox)
 
     show_manager = window.ShowManager(size=(600, 600),
-                                      title="DIPY ListBox")
+                                      title="FURY ListBox")
     show_manager.ren.add(listbox)
     show_manager.play_events_from_file(recording_filename)
     expected = EventCounter.load(expected_events_counts_filename)
@@ -779,7 +778,7 @@ def test_ui_image_container_2d(interactive=False):
     npt.assert_equal(image_test.size, (200, 200))
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="DIPY Button")
+    show_manager = window.ShowManager(size=current_size, title="FURY Button")
     show_manager.ren.add(image_test)
     if interactive:
         show_manager.start()
@@ -873,7 +872,7 @@ def test_ui_file_menu_2d(interactive=False):
 
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
-                                      title="DIPY FileMenu")
+                                      title="FURY FileMenu")
     show_manager.ren.add(filemenu)
 
     # Recorded events:
@@ -907,7 +906,7 @@ def test_ui_file_menu_2d(interactive=False):
     if interactive:
         filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY FileMenu")
+                                          title="FURY FileMenu")
         show_manager.ren.add(filemenu)
         show_manager.start()
 

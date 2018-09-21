@@ -223,7 +223,7 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
     return button
 
 
-def text(iren, ren, callback, message="DIPY",
+def text(iren, ren, callback, message="FURY",
          left_down_pos=(0.8, 0.5), right_top_pos=(0.9, 0.5),
          color=(1., .5, .0), opacity=1., border=False):
     """ 2D text that can be clicked and process events

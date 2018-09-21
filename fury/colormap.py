@@ -68,8 +68,8 @@ def boys2rgb(v):
     Visit http://www.cs.brown.edu/~cad/rp2coloring for further details.
     Cagatay Demiralp, 9/7/2008.
 
-    Code was initially in matlab and was rewritten in Python for dipy by
-    the Dipy Team. Thank you Cagatay for putting this online.
+    Code was initially in matlab and was rewritten in Python for fury by
+    the FURY Team. Thank you Cagatay for putting this online.
 
     Parameters
     ------------
@@ -266,7 +266,7 @@ def get_cmap(name):
     """Makes a callable, similar to maptlotlib.pyplot.get_cmap."""
     if name.lower() == "accent":
         warn("The `Accent` colormap is deprecated as of version" +
-             " 0.12 of Dipy and will be removed in a future " +
+             " 0.2 of Fury and will be removed in a future " +
              "version. Please use another colormap",
              DeprecationWarning)
 
@@ -286,7 +286,7 @@ def get_cmap(name):
         for i, color in enumerate(('red', 'green', 'blue')):
             x, y0, y1 = zip(*desc[color])
             # Matplotlib allows more complex colormaps, but for users who do
-            # not have Matplotlib dipy makes a few simple colormaps available.
+            # not have Matplotlib fury makes a few simple colormaps available.
             # These colormaps are simple because y0 == y1, and therefor we
             # ignore y1 here.
             rgba[:, i] = np.interp(v, x, y0)
@@ -316,7 +316,7 @@ def create_colormap(v, name='plasma', auto=True):
 
     Notes
     -----
-    Dipy supports a few colormaps for those who do not use Matplotlib, for
+    FURY supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
     """
     if not have_matplotlib:
