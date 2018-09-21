@@ -22,6 +22,9 @@ if sys.version_info < (2, 7):
                """.format(2, 7)
     sys.exit(error)
 
+if sys.version_info < (3, 4):
+    from io import open
+
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), encoding='utf-8') as readme_file:
