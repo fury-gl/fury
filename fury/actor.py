@@ -3,13 +3,10 @@ from __future__ import division, print_function, absolute_import
 import numpy as np
 import vtk
 from vtk.util import numpy_support
-from nibabel.affines import apply_affine
 
 from fury.colormap import colormap_lookup_table, create_colormap
-from fury.utils import lines_to_vtk_polydata
-from fury.utils import set_input
-from fury.utils import numpy_to_vtk_points, numpy_to_vtk_colors
-import fury.utils as ut_vtk
+from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
+                        numpy_to_vtk_points, numpy_to_vtk_colors, ut_vtk)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
