@@ -11,7 +11,7 @@ if sys.version_info < (2, 7):
     error = """fury does not support Python {0}.{2}.
                Python 2.7 and above is required.
                Check your Python version like so:
-               
+
                python3 --version
 
                This may be due to an out-of-date pip. 
@@ -54,6 +54,9 @@ setup(
             # When adding files here, remember to update MANIFEST.in as well,
             # or else they will not be included in the distribution on PyPI!
             # 'path/to/data_file',
+            "fury/data/files/*.json",
+            "fury/data/files/*.log.gz",
+            "fury/data/files/*.pkl"
             ]
         },
     install_requires=requirements,
