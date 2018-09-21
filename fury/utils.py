@@ -1,6 +1,7 @@
 
 from __future__ import division, print_function, absolute_import
 
+import sys
 import numpy as np
 import vtk
 from vtk.util import numpy_support
@@ -525,3 +526,12 @@ def apply_affine(aff, pts):
     trans = aff[:-1, -1]
     res = np.dot(pts, rzs.T) + trans[None, :]
     return res.reshape(shape)
+
+
+def asbytes(s):
+    if sys.version_info[0] >= 3:
+        if isinstance(s, bytes):
+            return s
+        return s.encode('latin1')
+    else:
+        return str(s)
