@@ -2,20 +2,12 @@ from __future__ import division
 from _warnings import warn
 
 import numpy as np
+import vtk
 import os
 
 from dipy.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.utils import set_input
-
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk.
-vtk, have_vtk, setup_module = optional_package('vtk')
-
-if have_vtk:
-    version = vtk.vtkVersion.GetVTKVersion()
-    VTK_MAJOR_VERSION = vtk.vtkVersion.GetVTKMajorVersion()
 
 TWO_PI = 2 * np.pi
 
@@ -1334,12 +1326,6 @@ class TextBlock2D(UI):
             If None, there no background color.
             Otherwise, background color in RGB.
         """
-        if VTK_MAJOR_VERSION < 7:
-            if self._background is None:
-                return None
-
-            return self._background.GetProperty().GetColor()
-
         if self.actor.GetTextProperty().GetBackgroundOpacity() == 0:
             return None
 
@@ -1358,22 +1344,11 @@ class TextBlock2D(UI):
 
         if color is None:
             # Remove background.
-            if VTK_MAJOR_VERSION < 7:
-                self._background = None
-            else:
-                self.actor.GetTextProperty().SetBackgroundOpacity(0.)
+            self.actor.GetTextProperty().SetBackgroundOpacity(0.)
 
         else:
-            if VTK_MAJOR_VERSION < 7:
-                self._background = vtk.vtkActor2D()
-                self._background.GetProperty().SetColor(*color)
-                self._background.GetProperty().SetOpacity(1)
-                self._background.SetMapper(self.actor.GetMapper())
-                self._background.SetPosition(*self.actor.GetPosition())
-
-            else:
-                self.actor.GetTextProperty().SetBackgroundColor(*color)
-                self.actor.GetTextProperty().SetBackgroundOpacity(1.)
+            self.actor.GetTextProperty().SetBackgroundColor(*color)
+            self.actor.GetTextProperty().SetBackgroundOpacity(1.)
 
     @property
     def position(self):

@@ -1,6 +1,8 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy as np
+import vtk
+from vtk.util import numpy_support
 from nibabel.affines import apply_affine
 
 from fury.colormap import colormap_lookup_table, create_colormap
@@ -8,19 +10,6 @@ from fury.utils import lines_to_vtk_polydata
 from fury.utils import set_input
 from fury.utils import numpy_to_vtk_points, numpy_to_vtk_colors
 import fury.utils as ut_vtk
-
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-colors, have_vtk_colors, _ = optional_package('vtk.util.colors')
-numpy_support, have_ns, _ = optional_package('vtk.util.numpy_support')
-
-if have_vtk:
-
-    version = vtk.vtkVersion.GetVTKSourceVersion().split(' ')[-1]
-    major_version = vtk.vtkVersion.GetVTKMajorVersion()
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -77,18 +66,12 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     vol = vol.astype('uint8')
 
     im = vtk.vtkImageData()
-    if major_version <= 5:
-        im.SetScalarTypeToUnsignedChar()
     I, J, K = vol.shape[:3]
     im.SetDimensions(I, J, K)
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-    if major_version <= 5:
-        im.AllocateScalars()
-        im.SetNumberOfScalarComponents(nb_components)
-    else:
-        im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+    im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
     # what I do below is the same as what is commented here but much faster
@@ -142,17 +125,13 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.picker = vtk.vtkCellPicker()
 
         def input_connection(self, output):
-            if vtk.VTK_MAJOR_VERSION <= 5:
-                self.SetInput(output.GetOutput())
-            else:
-                self.GetMapper().SetInputConnection(output.GetOutputPort())
+            self.GetMapper().SetInputConnection(output.GetOutputPort())
             self.output = output
             self.shape = (ex2 + 1, ey2 + 1, ez2 + 1)
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
-            if vtk.VTK_MAJOR_VERSION > 5:
-                self.Update()
+            self.Update()
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
@@ -165,10 +144,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
 
         def opacity(self, value):
-            if vtk.VTK_MAJOR_VERSION <= 5:
-                self.SetOpacity(value)
-            else:
-                self.GetProperty().SetOpacity(value)
+            self.GetProperty().SetOpacity(value)
 
         def tolerance(self, value):
             self.picker.SetTolerance(value)
@@ -183,7 +159,6 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 im_actor.SetInterpolate(False)
             else:
                 im_actor.SetInterpolate(True)
-            if major_version >= 6:
                 im_actor.GetMapper().BorderOn()
             return im_actor
 
@@ -210,8 +185,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     else:
         image_actor.SetInterpolate(True)
 
-    if major_version >= 6:
-        image_actor.GetMapper().BorderOn()
+    image_actor.GetMapper().BorderOn()
 
     return image_actor
 
@@ -252,18 +226,12 @@ def contour_from_roi(data, affine=None,
     vol = vol.astype('uint8')
 
     im = vtk.vtkImageData()
-    if major_version <= 5:
-        im.SetScalarTypeToUnsignedChar()
     di, dj, dk = vol.shape[:3]
     im.SetDimensions(di, dj, dk)
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-    if major_version <= 5:
-        im.AllocateScalars()
-        im.SetNumberOfScalarComponents(nb_components)
-    else:
-        im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+    im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
     vol = np.swapaxes(vol, 0, 2)
@@ -308,10 +276,7 @@ def contour_from_roi(data, affine=None,
     image_resliced.Update()
 
     skin_extractor = vtk.vtkContourFilter()
-    if major_version <= 5:
-        skin_extractor.SetInput(image_resliced.GetOutput())
-    else:
-        skin_extractor.SetInputData(image_resliced.GetOutput())
+    skin_extractor.SetInputData(image_resliced.GetOutput())
 
     skin_extractor.SetValue(0, 1)
 
@@ -447,11 +412,6 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray("Colors")
-
-    # Enable only for OpenGL1 rendering backend
-    if vtk.VTK_MAJOR_VERSION <= 6:
-        poly_mapper.GlobalImmediateModeRenderingOn()
-
     poly_mapper.Update()
 
     # Color Scale with a lookup table
@@ -471,13 +431,6 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
         actor = vtk.vtkActor()
 
     actor.SetMapper(poly_mapper)
-
-    # Use different defaults for OpenGL1 rendering backend
-    if vtk.VTK_MAJOR_VERSION <= 6:
-        actor.GetProperty().SetAmbient(0.1)
-        actor.GetProperty().SetDiffuse(0.15)
-        actor.GetProperty().SetSpecular(0.05)
-        actor.GetProperty().SetSpecularPower(6)
 
     actor.GetProperty().SetInterpolationToPhong()
     actor.GetProperty().BackfaceCullingOn()
@@ -629,11 +582,7 @@ def _arrow(pos=(0, 0, 0), color=(1, 0, 0), scale=(1, 1, 1), opacity=1):
     # arrow.SetTipLength(length)
 
     arrowm = vtk.vtkPolyDataMapper()
-
-    if major_version <= 5:
-        arrowm.SetInput(arrow.GetOutput())
-    else:
-        arrowm.SetInputConnection(arrow.GetOutputPort())
+    arrowm.SetInputConnection(arrow.GetOutputPort())
 
     arrowa = vtk.vtkActor()
     arrowa.SetMapper(arrowm)
@@ -881,10 +830,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()
-    if major_version <= 5:
-        mapper.SetInput(polydata)
-    else:
-        mapper.SetInputData(polydata)
+    mapper.SetInputData(polydata)
 
     return mapper
 
@@ -1083,10 +1029,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None, sca
     polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()
-    if major_version <= 5:
-        mapper.SetInput(polydata)
-    else:
-        mapper.SetInputData(polydata)
+    mapper.SetInputData(polydata)
 
     return mapper
 
@@ -1256,10 +1199,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
 
     aPolyVertexGrid.SetPoints(polyVertexPoints)
     aPolyVertexMapper = vtk.vtkDataSetMapper()
-    if major_version <= 5:
-        aPolyVertexMapper.SetInput(aPolyVertexGrid)
-    else:
-        aPolyVertexMapper.SetInputData(aPolyVertexGrid)
+    aPolyVertexMapper.SetInputData(aPolyVertexGrid)
     aPolyVertexActor = vtk.vtkActor()
     aPolyVertexActor.SetMapper(aPolyVertexMapper)
 
@@ -1369,22 +1309,13 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     if faces is None:
         glyph.SetSourceConnection(src.GetOutputPort())
     else:
-        if major_version <= 5:
-            glyph.SetSource(polydata_sphere)
-        else:
-            glyph.SetSourceData(polydata_sphere)
+        glyph.SetSourceData(polydata_sphere)
 
-    if major_version <= 5:
-        glyph.SetInput(polydata_centers)
-    else:
-        glyph.SetInputData(polydata_centers)
+    glyph.SetInputData(polydata_centers)
     glyph.Update()
 
     mapper = vtk.vtkPolyDataMapper()
-    if major_version <= 5:
-        mapper.SetInput(glyph.GetOutput())
-    else:
-        mapper.SetInputData(glyph.GetOutput())
+    mapper.SetInputData(glyph.GetOutput())
     mapper.SetScalarModeToUsePointFieldData()
 
     mapper.SelectColorArray('colors')
@@ -1430,10 +1361,7 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     atext.SetText(text)
 
     textm = vtk.vtkPolyDataMapper()
-    if major_version <= 5:
-        textm.SetInput(atext.GetOutput())
-    else:
-        textm.SetInputConnection(atext.GetOutputPort())
+    textm.SetInputConnection(atext.GetOutputPort())
 
     texta = vtk.vtkFollower()
     texta.SetMapper(textm)

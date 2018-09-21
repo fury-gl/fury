@@ -1,15 +1,10 @@
-# Widgets are different than actors in that they can interact with events
-# To do so they need as input a vtkRenderWindowInteractor also known as iren.
+"""Widgets are different than actors in that they can interact with events.
+
+To do so they need as input a vtkRenderWindowInteractor also known as iren.
+"""
 
 import numpy as np
-
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-colors, have_vtk_colors, _ = optional_package('vtk.util.colors')
-numpy_support, have_ns, _ = optional_package('vtk.util.numpy_support')
+import vtk
 
 
 def slider(iren, ren, callback, min_value=0, max_value=255, value=125,

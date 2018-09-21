@@ -1,17 +1,5 @@
 import numpy as np
-
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-
-if have_vtk:
-    vtkInteractorStyleUser = vtk.vtkInteractorStyleUser
-    # version = vtk.vtkVersion.GetVTKSourceVersion().split(' ')[-1]
-    # major_version = vtk.vtkVersion.GetVTKMajorVersion()
-else:
-    vtkInteractorStyleUser = object
+import vtk
 
 
 class Event(object):
@@ -47,7 +35,7 @@ class Event(object):
         self._abort_flag = False
 
 
-class CustomInteractorStyle(vtkInteractorStyleUser):
+class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     """ Manipulate the camera and interact with objects in the scene.
 
     This interactor style allows the user to interactively manipulate (pan,

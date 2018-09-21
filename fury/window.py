@@ -7,6 +7,8 @@ from warnings import warn
 import numpy as np
 from scipy import ndimage
 from copy import copy
+import vtk
+from vtk.util import numpy_support
 
 from nibabel.tmpdirs import InTemporaryDirectory
 from nibabel.py3k import asbytes
@@ -29,29 +31,13 @@ except ImportError:
     except ImportError:
         has_tkinter = False
 
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
 from dipy import __version__ as dipy_version
 from dipy.utils.six import string_types
 
 from fury.interactor import CustomInteractorStyle
 
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-colors, have_vtk_colors, _ = optional_package('vtk.util.colors')
-numpy_support, have_ns, _ = optional_package('vtk.util.numpy_support')
 
-if have_vtk:
-    version = vtk.vtkVersion.GetVTKSourceVersion().split(' ')[-1]
-    major_version = vtk.vtkVersion.GetVTKMajorVersion()
-    from vtk.util.numpy_support import vtk_to_numpy
-    vtkRenderer = vtk.vtkRenderer
-else:
-    vtkRenderer = object
-
-
-class Renderer(vtkRenderer):
+class Renderer(vtk.vtkRenderer):
     """ Your scene class
 
     This is an important object that is responsible for preparing objects
@@ -239,8 +225,8 @@ def renderer(background=None):
 
     return ren
 
-if have_vtk:
-    ren = renderer
+# Todo: Deprecated
+ren = renderer
 
 
 def add(ren, a):
@@ -735,10 +721,7 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
         ren.ResetCamera()
 
     renderLarge = vtk.vtkRenderLargeImage()
-    if major_version <= 5:
-        renderLarge.SetInput(ren)
-    else:
-        renderLarge.SetInput(ren)
+    renderLarge.SetInput(ren)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
 

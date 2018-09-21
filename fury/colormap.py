@@ -1,22 +1,23 @@
+from warnings import warn
+
 import numpy as np
+import vtk
 
 # Conditional import machinery for vtk
 from dipy.utils.optpkg import optional_package
 
 # Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')
 
 if have_matplotlib:
     get_cmap = cm.get_cmap
 else:
     from dipy.data import get_cmap
-from warnings import warn
 
 
 def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
                           saturation_range=(1, 1), value_range=(0.8, 0.8)):
-    """ Lookup table for the colormap
+    """Lookup table for the colormap.
 
     Parameters
     ----------

@@ -2,16 +2,10 @@
 from __future__ import division, print_function, absolute_import
 
 import numpy as np
+import vtk
+from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
-
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# import vtk
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-ns, have_numpy_support, _ = optional_package('vtk.util.numpy_support')
 
 
 def set_input(vtk_object, inp):
@@ -34,9 +28,6 @@ def set_input(vtk_object, inp):
     """
     if isinstance(inp, vtk.vtkPolyData) \
        or isinstance(inp, vtk.vtkImageData):
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            vtk_object.SetInput(inp)
-        else:
             vtk_object.SetInputData(inp)
     elif isinstance(inp, vtk.vtkAlgorithmOutput):
         vtk_object.SetInputConnection(inp)
@@ -57,7 +48,8 @@ def numpy_to_vtk_points(points):
     vtk_points : vtkPoints()
     """
     vtk_points = vtk.vtkPoints()
-    vtk_points.SetData(ns.numpy_to_vtk(np.asarray(points), deep=True))
+    vtk_points.SetData(numpy_support.numpy_to_vtk(np.asarray(points),
+                                                  deep=True))
     return vtk_points
 
 
@@ -83,8 +75,8 @@ def numpy_to_vtk_colors(colors):
     >>> rgb_array = np.random.rand(100, 3)
     >>> vtk_colors = numpy_to_vtk_colors(255 * rgb_array)
     """
-    vtk_colors = ns.numpy_to_vtk(np.asarray(colors), deep=True,
-                                 array_type=vtk.VTK_UNSIGNED_CHAR)
+    vtk_colors = numpy_support.numpy_to_vtk(np.asarray(colors), deep=True,
+                                            array_type=vtk.VTK_UNSIGNED_CHAR)
     return vtk_colors
 
 
@@ -182,7 +174,7 @@ def lines_to_vtk_polydata(lines, colors=None):
 
     # Set Lines to vtk array format
     vtk_lines = vtk.vtkCellArray()
-    vtk_lines.GetData().DeepCopy(ns.numpy_to_vtk(lines_array))
+    vtk_lines.GetData().DeepCopy(numpy_support.numpy_to_vtk(lines_array))
     vtk_lines.SetNumberOfCells(nb_lines)
 
     is_colormap = False
@@ -199,7 +191,7 @@ def lines_to_vtk_polydata(lines, colors=None):
         else:
             if len(cols_arr) == nb_points:
                 if cols_arr.ndim == 1:  # values for every point
-                    vtk_colors = ns.numpy_to_vtk(cols_arr, deep=True)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                     is_colormap = True
                 elif cols_arr.ndim == 2:  # map color to each point
                     vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
@@ -210,7 +202,7 @@ def lines_to_vtk_polydata(lines, colors=None):
                     for (i, value) in enumerate(colors):
                         cols_arrx += lines[i].shape[0]*[value]
                     cols_arrx = np.array(cols_arrx)
-                    vtk_colors = ns.numpy_to_vtk(cols_arrx, deep=True)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arrx, deep=True)
                     is_colormap = True
                 else:  # the same colors for all points
                     vtk_colors = numpy_to_vtk_colors(
@@ -222,7 +214,7 @@ def lines_to_vtk_polydata(lines, colors=None):
             else:  # colormap
                 #  get colors for each vertex
                 cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
-                vtk_colors = ns.numpy_to_vtk(cols_arr, deep=True)
+                vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                 is_colormap = True
 
     vtk_colors.SetName("Colors")
@@ -247,8 +239,8 @@ def get_polydata_lines(line_polydata):
     lines : list
         List of N curves represented as 2D ndarrays
     """
-    lines_vertices = ns.vtk_to_numpy(line_polydata.GetPoints().GetData())
-    lines_idx = ns.vtk_to_numpy(line_polydata.GetLines().GetData())
+    lines_vertices = numpy_support.vtk_to_numpy(line_polydata.GetPoints().GetData())
+    lines_idx = numpy_support.vtk_to_numpy(line_polydata.GetLines().GetData())
 
     lines = []
     current_idx = 0
@@ -275,7 +267,7 @@ def get_polydata_triangles(polydata):
     output : array (N, 3)
         triangles
     """
-    vtk_polys = ns.vtk_to_numpy(polydata.GetPolys().GetData())
+    vtk_polys = numpy_support.vtk_to_numpy(polydata.GetPolys().GetData())
     assert((vtk_polys[::4] == 3).all())  # test if its really triangles
     return np.vstack([vtk_polys[1::4], vtk_polys[2::4], vtk_polys[3::4]]).T
 
@@ -292,7 +284,7 @@ def get_polydata_vertices(polydata):
     output : array (N, 3)
         points, represented as 2D ndarrays
     """
-    return ns.vtk_to_numpy(polydata.GetPoints().GetData())
+    return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
 
 
 def get_polydata_normals(polydata):
@@ -312,7 +304,7 @@ def get_polydata_normals(polydata):
     if vtk_normals is None:
         return None
     else:
-        return ns.vtk_to_numpy(vtk_normals)
+        return numpy_support.vtk_to_numpy(vtk_normals)
 
 
 def get_polydata_colors(polydata):
@@ -331,7 +323,7 @@ def get_polydata_colors(polydata):
     if vtk_colors is None:
         return None
     else:
-        return ns.vtk_to_numpy(vtk_colors)
+        return numpy_support.vtk_to_numpy(vtk_colors)
 
 
 def set_polydata_triangles(polydata, triangles):
@@ -345,7 +337,8 @@ def set_polydata_triangles(polydata, triangles):
     """
     vtk_triangles = np.hstack(np.c_[np.ones(len(triangles)).astype(np.int) * 3,
                                     triangles])
-    vtk_triangles = ns.numpy_to_vtkIdTypeArray(vtk_triangles, deep=True)
+    vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
+                                                          deep=True)
     vtk_cells = vtk.vtkCellArray()
     vtk_cells.SetCells(len(triangles), vtk_triangles)
     polydata.SetPolys(vtk_cells)
@@ -361,7 +354,7 @@ def set_polydata_vertices(polydata, vertices):
     vertices : vertices, represented as 2D ndarrays (Nx3)
     """
     vtk_points = vtk.vtkPoints()
-    vtk_points.SetData(ns.numpy_to_vtk(vertices, deep=True))
+    vtk_points.SetData(numpy_support.numpy_to_vtk(vertices, deep=True))
     polydata.SetPoints(vtk_points)
     return polydata
 
@@ -374,7 +367,7 @@ def set_polydata_normals(polydata, normals):
     polydata : vtkPolyData
     normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
     """
-    vtk_normals = ns.numpy_to_vtk(normals, deep=True)
+    vtk_normals = numpy_support.numpy_to_vtk(normals, deep=True)
     polydata.GetPointData().SetNormals(vtk_normals)
     return polydata
 
@@ -388,8 +381,8 @@ def set_polydata_colors(polydata, colors):
     colors : colors, represented as 2D ndarrays (Nx3)
         colors are uint8 [0,255] RGB for each points
     """
-    vtk_colors = ns.numpy_to_vtk(colors, deep=True,
-                                 array_type=vtk.VTK_UNSIGNED_CHAR)
+    vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
+                                            array_type=vtk.VTK_UNSIGNED_CHAR)
     vtk_colors.SetNumberOfComponents(3)
     vtk_colors.SetName("RGB")
     polydata.GetPointData().SetScalars(vtk_colors)
@@ -450,12 +443,6 @@ def get_actor_from_polymapper(poly_mapper):
     actor.SetMapper(poly_mapper)
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetInterpolationToPhong()
-
-    # Use different defaults for OpenGL1 rendering backend
-    if vtk.VTK_MAJOR_VERSION <= 6:
-        actor.GetProperty().SetAmbient(0.1)
-        actor.GetProperty().SetDiffuse(0.15)
-        actor.GetProperty().SetSpecular(0.05)
 
     return actor
 
