@@ -1,18 +1,12 @@
 from warnings import warn
+import json
 
 import numpy as np
 import vtk
 
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
+# Allow import, but disable doctests if we don't have matplotlib
+from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')
-
-if have_matplotlib:
-    get_cmap = cm.get_cmap
-else:
-    from dipy.data import get_cmap
 
 
 def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
@@ -210,25 +204,22 @@ def boys2rgb(v):
 
 
 def orient2rgb(v):
-    """ standard orientation 2 rgb colormap
+    """Standard orientation 2 rgb colormap.
 
     v : array, shape (N, 3) of vectors not necessarily normalized
 
     Returns
     -------
-
     c : array, shape (N, 3) matrix of rgb colors corresponding to the vectors
            given in V.
 
     Examples
     --------
-
     >>> from fury import colormap
     >>> v = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     >>> c = colormap.orient2rgb(v)
 
     """
-
     if v.ndim == 1:
         orient = v
         orient = np.abs(orient / np.linalg.norm(orient))
@@ -266,6 +257,40 @@ def line_colors(streamlines, cmap='rgb_standard'):
 
 
 lowercase_cm_name = {'blues': 'Blues', 'accent': 'Accent'}
+dipy_cmaps = None
+
+
+def get_cmap(name):
+    """Makes a callable, similar to maptlotlib.pyplot.get_cmap."""
+    if name.lower() == "accent":
+        warn("The `Accent` colormap is deprecated as of version" +
+             " 0.12 of Dipy and will be removed in a future " +
+             "version. Please use another colormap",
+             DeprecationWarning)
+
+    global dipy_cmaps
+    if dipy_cmaps is None:
+        filename = pjoin(DATA_DIR, "dipy_colormaps.json")
+        with open(filename) as f:
+            dipy_cmaps = json.load(f)
+
+    desc = dipy_cmaps.get(name)
+    if desc is None:
+        return None
+
+    def simple_cmap(v):
+        """Emulates matplotlib colormap callable"""
+        rgba = np.ones((len(v), 4))
+        for i, color in enumerate(('red', 'green', 'blue')):
+            x, y0, y1 = zip(*desc[color])
+            # Matplotlib allows more complex colormaps, but for users who do
+            # not have Matplotlib dipy makes a few simple colormaps available.
+            # These colormaps are simple because y0 == y1, and therefor we
+            # ignore y1 here.
+            rgba[:, i] = np.interp(v, x, y0)
+        return rgba
+
+    return simple_cmap
 
 
 def create_colormap(v, name='plasma', auto=True):
@@ -292,8 +317,12 @@ def create_colormap(v, name='plasma', auto=True):
     Dipy supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
     """
+    if not have_matplotlib:
+        msg = "You do not have Matplotlib installed. Some colormaps"
+        msg += " might not work for you. Consider downloading Matplotlib."
+        warn(msg)
 
-    if name == 'jet':
+    if name.lower() == 'jet':
         msg = 'Jet is a popular colormap but can often be misleading'
         msg += 'Use instead plasma, viridis, hot or inferno.'
         warn(msg, DeprecationWarning)
@@ -310,7 +339,8 @@ def create_colormap(v, name='plasma', auto=True):
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
 
-    colormap = get_cmap(newname)
+    get_colormap = cm.get_cmap if have_matplotlib else get_cmap
+    colormap = get_colormap(newname)
     if colormap is None:
         e_s = "Colormap {} is not yet implemented ".format(name)
         raise ValueError(e_s)
