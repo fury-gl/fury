@@ -1,3 +1,4 @@
 # List required packages in this file, one per line.
 numpy>=1.7.1
-vtk>=8.0.0
+vtk>=8.1.0
+scipy>=0.9
