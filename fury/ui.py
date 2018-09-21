@@ -3292,9 +3292,11 @@ class ListBox2D(UI):
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
 
+        denom = len(self.values) - self.nb_slots
+        if not denom:
+            denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
-                                 self.scroll_bar.height) \
-            / (len(self.values) - self.nb_slots)
+                                 self.scroll_bar.height) / denom
 
         self.scroll_bar_active_color = (0.8, 0, 0)
         self.scroll_bar_inactive_color = (1, 0, 0)
