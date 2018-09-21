@@ -775,7 +775,7 @@ def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
     h, w, _ = vtk_image.GetDimensions()
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
-    arr = vtk_to_numpy(vtk_array).reshape(h, w, components)
+    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
 
     if fname is None:
         return arr
