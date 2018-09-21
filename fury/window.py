@@ -9,7 +9,7 @@ from scipy import ndimage
 import vtk
 from vtk.util import numpy_support
 
-from nibabel.tmpdirs import InTemporaryDirectory
+from fury.tmpdirs import InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle

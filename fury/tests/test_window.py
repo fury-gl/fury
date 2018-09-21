@@ -2,7 +2,7 @@ import os
 import numpy as np
 from fury import actor, window
 import numpy.testing as npt
-from dipy.testing.decorators import xvfb_it
+from fury.decorators import xvfb_it
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'

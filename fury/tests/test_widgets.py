@@ -5,7 +5,7 @@ from os.path import join as pjoin
 from fury import actor, window, widget
 from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
 import numpy.testing as npt
-from dipy.testing.decorators import xvfb_it
+from fury.decorators import xvfb_it
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'

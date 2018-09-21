@@ -3921,7 +3921,8 @@ class FileMenu2D(UI):
         listboxitem: :class:`ListBoxItem2D`
         """
         if (listboxitem.element, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory, listboxitem.element)
+            new_directory_path = os.path.join(self.current_directory,
+                                              listboxitem.element)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()

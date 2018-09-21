@@ -7,15 +7,21 @@ import vtk
 from os.path import join as pjoin
 import numpy.testing as npt
 
-from dipy.data import read_viz_icons, fetch_viz_icons, get_sphere
+from fury.data import read_viz_icons, fetch_viz_icons
 from fury import ui
 from fury.ui import UI
 from fury import window, actor
 from fury.data import DATA_DIR
-from nibabel.tmpdirs import InTemporaryDirectory
+from fury.decorators import xvfb_it
+from fury.testing import assert_arrays_equal
+from fury.tmpdirs import InTemporaryDirectory
 
-from dipy.testing.decorators import xvfb_it
-from dipy.testing import assert_arrays_equal
+# Allow import, but disable doctests if we don't have dipy
+from fury.optpkg import optional_package
+dipy, have_dipy, _ = optional_package('dipy')
+
+if have_dipy:
+    from dipy.data import get_sphere
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
@@ -779,7 +785,7 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_timer():
     """ Testing add a timer and exit window and app from inside timer.

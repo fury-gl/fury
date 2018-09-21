@@ -4,14 +4,20 @@ import numpy as np
 from fury import actor, window
 
 import numpy.testing as npt
-from nibabel.tmpdirs import TemporaryDirectory
-from dipy.tracking.streamline import center_streamlines, transform_streamlines
-from dipy.align.tests.test_streamlinear import fornix_streamlines
-from dipy.reconst.dti import color_fa, fractional_anisotropy
-from dipy.testing.decorators import xvfb_it
-from dipy.data import get_sphere
+from fury.tmpdirs import TemporaryDirectory
+from fury.decorators import xvfb_it
 from tempfile import mkstemp
 
+# Allow import, but disable doctests if we don't have dipy
+from fury.optpkg import optional_package
+dipy, have_dipy, _ = optional_package('dipy')
+
+if have_dipy:
+    from dipy.tracking.streamline import (center_streamlines,
+                                          transform_streamlines)
+    from dipy.align.tests.test_streamlinear import fornix_streamlines
+    from dipy.reconst.dti import color_fa, fractional_anisotropy
+    from dipy.data import get_sphere
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
@@ -294,7 +300,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(report.colors_found, [True, True])
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_bundle_maps():
     renderer = window.renderer()
@@ -368,7 +374,7 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_odf_slicer(interactive=False):
 
@@ -550,7 +556,7 @@ def test_peak_slicer(interactive=False):
     npt.assert_equal(report.actors_classnames, ex)
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_tensor_slicer(interactive=False):
 
