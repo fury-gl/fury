@@ -13,24 +13,6 @@ from vtk.util import numpy_support
 from nibabel.tmpdirs import InTemporaryDirectory
 from nibabel.py3k import asbytes
 
-try:
-    import Tkinter as tkinter
-    has_tkinter = True
-except ImportError:
-    try:
-        import tkinter
-        has_tkinter = True
-    except ImportError:
-        has_tkinter = False
-
-try:
-    import tkFileDialog as filedialog
-except ImportError:
-    try:
-        from tkinter import filedialog
-    except ImportError:
-        has_tkinter = False
-
 from dipy import __version__ as dipy_version
 from dipy.utils.six import string_types
 
@@ -251,53 +233,6 @@ def rm_all(ren):
     """ Remove all actors from the renderer
     """
     ren.rm_all()
-
-
-def open_file_dialog(file_types=[("All files", "*")]):
-    """ Simple Tk file dialog for opening files
-
-    Parameters
-    ----------
-    file_types : tuples of tuples
-        Accepted file types.
-
-    Returns
-    -------
-    file_paths : sequence of str
-        Returns the full paths of all selected files
-    """
-
-    root = tkinter.Tk()
-    root.withdraw()
-    file_paths = filedialog.askopenfilenames(filetypes=file_types)
-    return file_paths
-
-
-def save_file_dialog(initial_file='dipy.png', default_ext='.png',
-                     file_types=(("PNG file", "*.png"), ("All Files", "*.*"))):
-    """ Simple Tk file dialog for saving a file
-
-    Parameters
-    ----------
-    initial_file : str
-        For example ``dipy.png``.
-    default_ext : str
-        Default extension to appear in the save dialog.
-    file_types : tuples of tuples
-        Accepted file types.
-
-    Returns
-    -------
-    filepath : str
-        Complete filename of saved file
-    """
-
-    root = tkinter.Tk()
-    root.withdraw()
-    file_path = filedialog.asksaveasfilename(initialfile=initial_file,
-                                             defaultextension=default_ext,
-                                             filetypes=file_types)
-    return file_path
 
 
 class ShowManager(object):
