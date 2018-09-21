@@ -6,7 +6,6 @@ from warnings import warn
 
 import numpy as np
 from scipy import ndimage
-from copy import copy
 import vtk
 from vtk.util import numpy_support
 
@@ -20,6 +19,7 @@ try:
     basestring
 except NameError:
     basestring = str
+
 
 class Renderer(vtk.vtkRenderer):
     """ Your scene class
@@ -208,6 +208,7 @@ def renderer(background=None):
         ren.SetBackground(background)
 
     return ren
+
 
 # Todo: Deprecated
 ren = renderer

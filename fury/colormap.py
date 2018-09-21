@@ -1,9 +1,11 @@
 from warnings import warn
 import json
+from os.path import join as pjoin
 
 import numpy as np
 import vtk
 
+from fury.data import DATA_DIR
 # Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')

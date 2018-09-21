@@ -5,7 +5,7 @@ import numpy as np
 import vtk
 import os
 
-from dipy.data import read_viz_icons
+from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.utils import set_input
 

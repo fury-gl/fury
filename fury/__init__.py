@@ -1,4 +1,5 @@
-# Init file for visualization package
+"""Init file for visualization package."""
+
 from __future__ import division, print_function, absolute_import
 from fury._version import get_versions
 

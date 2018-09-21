@@ -26,7 +26,7 @@
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-# needs_sphinx = '1.0'
+needs_sphinx = '1.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -44,6 +44,8 @@ extensions = [
     'numpydoc',
     'sphinx_copybutton',
 ]
+
+autosummary_generate = True
 
 # Configuration options for plot_directive. See:
 # https://github.com/matplotlib/matplotlib/blob/f3ed922d935751e08494e5fb5311d3050a3b637b/lib/matplotlib/sphinxext/plot_directive.py#L81
@@ -68,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'FURY'
-copyright = '2010, FURY'
+copyright = '2010-2018, FURY'
 author = 'FURY'
 
 # The version info for the project you're documenting, acts as replacement for

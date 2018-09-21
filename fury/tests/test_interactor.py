@@ -1,28 +1,21 @@
 import os
-import numpy as np
 from os.path import join as pjoin
 from collections import defaultdict
 
+import numpy as np
+import vtk
+
 from fury import actor, window, interactor
 from fury import utils as vtk_utils
-from dipy.data import DATA_DIR
+from fury.data import DATA_DIR
 import numpy.testing as npt
 from dipy.testing.decorators import xvfb_it
 
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-if use_xvfb == 'skip':
-    skip_it = True
-else:
-    skip_it = False
+skip_it = use_xvfb == 'skip'
 
 
-@npt.dec.skipif(not have_vtk or not actor.have_vtk_colors or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))

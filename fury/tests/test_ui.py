@@ -2,32 +2,23 @@ import os
 import sys
 import pickle
 import numpy as np
+import vtk
 
 from os.path import join as pjoin
 import numpy.testing as npt
 
 from dipy.data import read_viz_icons, fetch_viz_icons, get_sphere
 from fury import ui
-from fury import window, actor
-from dipy.data import DATA_DIR
-from nibabel.tmpdirs import InTemporaryDirectory
-
 from fury.ui import UI
+from fury import window, actor
+from fury.data import DATA_DIR
+from nibabel.tmpdirs import InTemporaryDirectory
 
 from dipy.testing.decorators import xvfb_it
 from dipy.testing import assert_arrays_equal
 
-# Conditional import machinery for vtk
-from dipy.utils.optpkg import optional_package
-
-# Allow import, but disable doctests if we don't have vtk
-vtk, have_vtk, setup_module = optional_package('vtk')
-
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
-
-if have_vtk:
-    print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))
 
 
 class EventCounter(object):
@@ -50,8 +41,8 @@ class EventCounter(object):
 
     def monitor(self, ui_component):
         for event in self.events_counts:
-            for actor in ui_component.actors:
-                ui_component.add_callback(actor, event, self.count)
+            for obj_actor in ui_component.actors:
+                ui_component.add_callback(obj_actor, event, self.count)
 
     def save(self, filename):
         with open(filename, 'wb') as f:
@@ -81,7 +72,7 @@ class EventCounter(object):
                              err_msg=msg.format(event))
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_broken_ui_component():
     class SimplestUI(UI):
@@ -110,7 +101,7 @@ def test_broken_ui_component():
     npt.assert_raises(NotImplementedError, getattr, simple_ui, 'center')
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
@@ -120,7 +111,7 @@ def test_wrong_interactor_style():
     npt.assert_raises(TypeError, panel.add_to_renderer, dummy_renderer)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_rectangle_2d():
     window_size = (700, 700)
@@ -154,7 +145,7 @@ def test_ui_rectangle_2d():
     assert report.objects == 0
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_disk_2d():
     window_size = (700, 700)
@@ -188,7 +179,7 @@ def test_ui_disk_2d():
     assert report.objects == 0
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_button_panel(recording=False):
     filename = "test_ui_button_panel"
@@ -269,7 +260,7 @@ def test_ui_button_panel(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
@@ -304,7 +295,7 @@ def test_ui_textbox(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_text_block_2d():
     text_block = ui.TextBlock2D()
@@ -324,7 +315,7 @@ def test_text_block_2d():
     _check_property(text_block, "color", [(0., 0.5, 1.)])
     _check_property(text_block, "background_color", [(0., 0.5, 1.), None])
     _check_property(text_block, "vertical_justification",
-                        ["top", "middle", "bottom"])
+                    ["top", "middle", "bottom"])
     _check_property(text_block, "font_family", ["Arial", "Courier"])
 
     with npt.assert_raises(ValueError):
@@ -337,7 +328,7 @@ def test_text_block_2d():
         text_block.vertical_justification = "left"
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_text_block_2d_justification():
     window_size = (700, 700)
@@ -419,12 +410,9 @@ def test_text_block_2d_justification():
     # show_manager.start()
 
     arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
-    if vtk.vtkVersion.GetVTKVersion() == "6.0.0":
-        expected = np.load(pjoin(DATA_DIR, "test_ui_text_block.npz"))
-        npt.assert_array_almost_equal(arr, expected["arr_0"])
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_line_slider_2d(recording=False):
     filename = "test_ui_line_slider_2d"
@@ -456,7 +444,7 @@ def test_ui_line_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_test = ui.LineDoubleSlider2D(
@@ -486,7 +474,7 @@ def test_ui_line_double_slider_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_ring_slider_2d(recording=False):
     filename = "test_ui_ring_slider_2d"
@@ -525,7 +513,7 @@ def test_ui_ring_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_range_slider(interactive=False):
     range_slider_test = ui.RangeSlider(shape="square")
@@ -537,7 +525,7 @@ def test_ui_range_slider(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_option(interactive=False):
     option_test = ui.Option(label="option 1", position=(10, 10))
@@ -550,7 +538,7 @@ def test_ui_option(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_checkbox(interactive=False):
     filename = "test_ui_checkbox"
@@ -625,7 +613,7 @@ def test_ui_checkbox(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_radio_button(interactive=False):
     filename = "test_ui_radio_button"
@@ -694,7 +682,7 @@ def test_ui_radio_button(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_listbox_2d(interactive=False):
 
@@ -771,7 +759,7 @@ def test_ui_listbox_2d(interactive=False):
     assert_arrays_equal(selected_values, expected)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_image_container_2d(interactive=False):
     fetch_viz_icons()
@@ -791,7 +779,7 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_timer():
     """ Testing add a timer and exit window and app from inside timer.
@@ -845,7 +833,7 @@ def test_timer():
     npt.assert_(np.sum(arr) > 0)
 
 
-@npt.dec.skipif(not have_vtk or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"

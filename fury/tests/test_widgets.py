@@ -3,19 +3,15 @@ import numpy as np
 from os.path import join as pjoin
 
 from fury import actor, window, widget
-from dipy.data import DATA_DIR
-from dipy.data import fetch_viz_icons, read_viz_icons
+from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
 import numpy.testing as npt
 from dipy.testing.decorators import xvfb_it
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-if use_xvfb == 'skip':
-    skip_it = True
-else:
-    skip_it = False
+skip_it = use_xvfb == 'skip'
 
 
-@npt.dec.skipif(not actor.have_vtk or not actor.have_vtk_colors or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_button_and_slider_widgets():
     recording = False
@@ -126,7 +122,7 @@ def test_button_and_slider_widgets():
     npt.assert_equal(report.actors, 1)
 
 
-@npt.dec.skipif(not actor.have_vtk or not actor.have_vtk_colors or skip_it)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_text_widget():
 

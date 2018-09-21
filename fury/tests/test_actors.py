@@ -14,26 +14,10 @@ from tempfile import mkstemp
 
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-if use_xvfb == 'skip':
-    skip_it = True
-else:
-    skip_it = False
-
-run_test = (actor.have_vtk and
-            actor.have_vtk_colors and
-            not skip_it)
-
-if actor.have_vtk:
-    if actor.major_version == 5 and use_xvfb:
-        skip_slicer = True
-    else:
-        skip_slicer = False
-else:
-    skip_slicer = False
+skip_it = use_xvfb == 'skip'
 
 
-@npt.dec.skipif(skip_slicer)
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_slicer():
     renderer = window.renderer()
@@ -164,7 +148,7 @@ def test_slicer():
                            np.array(slicer.shape))
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_contour_from_roi():
 
@@ -265,7 +249,7 @@ def test_contour_from_roi():
     # window.show(r2)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_streamtube_and_line_actors():
     renderer = window.renderer()
@@ -310,7 +294,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(report.colors_found, [True, True])
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_bundle_maps():
     renderer = window.renderer()
@@ -384,7 +368,7 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_odf_slicer(interactive=False):
 
@@ -510,7 +494,7 @@ def test_odf_slicer(interactive=False):
     os.remove(fname)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_peak_slicer(interactive=False):
 
@@ -566,7 +550,7 @@ def test_peak_slicer(interactive=False):
     npt.assert_equal(report.actors_classnames, ex)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_tensor_slicer(interactive=False):
 
@@ -622,8 +606,9 @@ def test_tensor_slicer(interactive=False):
     mask = np.ones(mevals.shape[:3])
     mask[:2, :3, :3] = 0
     cfa = color_fa(fractional_anisotropy(mevals), mevecs)
-    tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine, mask=mask,
-                                       scalar_colors=cfa, sphere=sphere,  scale=.3)
+    tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
+                                       mask=mask, scalar_colors=cfa,
+                                       sphere=sphere,  scale=.3)
     renderer.clear()
     renderer.add(tensor_actor)
     renderer.reset_camera()
@@ -671,7 +656,7 @@ def test_tensor_slicer(interactive=False):
                                            sphere=sphere, scale=.3)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_dots(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
@@ -711,7 +696,7 @@ def test_dots(interactive=False):
     npt.assert_equal(report.objects, 1)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
@@ -735,7 +720,7 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_labels(interactive=False):
 
@@ -752,7 +737,7 @@ def test_labels(interactive=False):
     npt.assert_equal(renderer.GetActors().GetNumberOfItems(), 1)
 
 
-@npt.dec.skipif(not run_test)
+@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_spheres(interactive=False):
 
