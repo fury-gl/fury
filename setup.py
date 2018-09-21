@@ -39,7 +39,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description="Free Unified Rendering in Python",
     long_description=readme,
-    author="FURY",
+    author="Eleftherios Garyfallidis",
     author_email='garyfallidis@gmail.com',
     url='https://github.com/fury-gl/fury',
     packages=find_packages(exclude=['docs', 'tests']),
