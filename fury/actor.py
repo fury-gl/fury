@@ -6,7 +6,8 @@ from vtk.util import numpy_support
 
 from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
-                        numpy_to_vtk_points, numpy_to_vtk_colors, ut_vtk)
+                        numpy_to_vtk_points, numpy_to_vtk_colors,
+                        set_polydata_vertices, set_polydata_triangles)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -916,13 +917,14 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
     tensor_actor = TensorSlicerActor()
     tensor_actor.display_extent(0, szx - 1, 0, szy - 1,
-                             int(np.floor(szz/2)), int(np.floor(szz/2)))
+                                int(np.floor(szz/2)), int(np.floor(szz/2)))
 
     return tensor_actor
 
 
-def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
-                          norm=True, opacity=1., scalar_colors=None):
+def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
+                          scale=2.2, norm=True, opacity=1.,
+                          scalar_colors=None):
     """ Helper function for slicing tensor fields
 
     Parameters
@@ -1293,8 +1295,8 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
 
     else:
 
-        ut_vtk.set_polydata_vertices(polydata_sphere, vertices)
-        ut_vtk.set_polydata_triangles(polydata_sphere, faces)
+        set_polydata_vertices(polydata_sphere, vertices)
+        set_polydata_triangles(polydata_sphere, faces)
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(radii_fa)
