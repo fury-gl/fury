@@ -192,7 +192,8 @@ def lines_to_vtk_polydata(lines, colors=None):
         else:
             if len(cols_arr) == nb_points:
                 if cols_arr.ndim == 1:  # values for every point
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
+                                                            deep=True)
                     is_colormap = True
                 elif cols_arr.ndim == 2:  # map color to each point
                     vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
@@ -203,7 +204,8 @@ def lines_to_vtk_polydata(lines, colors=None):
                     for (i, value) in enumerate(colors):
                         cols_arrx += lines[i].shape[0]*[value]
                     cols_arrx = np.array(cols_arrx)
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arrx, deep=True)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
+                                                            deep=True)
                     is_colormap = True
                 else:  # the same colors for all points
                     vtk_colors = numpy_to_vtk_colors(
