@@ -4,7 +4,7 @@ import numpy as np
 from fury import actor, window
 
 import numpy.testing as npt
-from fury.tmpdirs import TemporaryDirectory
+from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
 from tempfile import mkstemp
 
@@ -61,7 +61,7 @@ def test_slicer():
     renderer.add(slicer)
 
     # save pixels in png file not a numpy array
-    with TemporaryDirectory() as tmpdir:
+    with InTemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'slice.png')
         # window.show(renderer)
         window.snapshot(renderer, fname, offscreen=True)
@@ -401,7 +401,7 @@ def test_odf_slicer(interactive=False):
 
     odf_actor = actor.odf_slicer(odfs, affine,
                                  mask=mask, sphere=sphere, scale=.25,
-                                 colormap='jet')
+                                 colormap='plasma')
     fa = 0. * np.zeros(odfs.shape[:3])
     fa[:, 0, :] = 1.
     fa[:, -1, :] = 1.
@@ -441,7 +441,7 @@ def test_odf_slicer(interactive=False):
     fa_actor.display(None, None, 5)
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
-                                 colormap='jet',
+                                 colormap='plasma',
                                  norm=False, global_cm=True)
     renderer.clear()
     renderer.add(fa_actor)
@@ -458,7 +458,7 @@ def test_odf_slicer(interactive=False):
     mask = np.ones(odfs.shape[:3])
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
-                                 colormap='jet',
+                                 colormap='plasma',
                                  norm=False, global_cm=True)
 
     renderer.clear()
