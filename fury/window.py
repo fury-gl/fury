@@ -11,13 +11,15 @@ import vtk
 from vtk.util import numpy_support
 
 from nibabel.tmpdirs import InTemporaryDirectory
-from nibabel.py3k import asbytes
 
-from dipy import __version__ as dipy_version
-from dipy.utils.six import string_types
-
+from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle
+from fury.utils import asbytes
 
+try:
+    basestring
+except NameError:
+    basestring = str
 
 class Renderer(vtk.vtkRenderer):
     """ Your scene class
@@ -322,7 +324,7 @@ class ShowManager(object):
         self.window.AddRenderer(ren)
 
         if self.title == 'DIPY':
-            self.window.SetWindowName(title + ' ' + dipy_version)
+            self.window.SetWindowName(title + ' ' + fury_version)
         else:
             self.window.SetWindowName(title)
         self.window.SetSize(size[0], size[1])
@@ -830,7 +832,7 @@ def analyze_snapshot(im, bg_color=(0, 0, 0), colors=None,
         information about what was found in the current snapshot array ``im``.
 
     """
-    if isinstance(im, string_types):
+    if isinstance(im, basestring):
         reader = vtk.vtkPNGReader()
         reader.SetFileName(im)
         reader.Update()
