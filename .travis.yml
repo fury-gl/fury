@@ -1,3 +1,4 @@
+sudo: true
 language: python
 
 env:
@@ -14,8 +15,11 @@ cache:
     - $HOME/.ccache  # https://github.com/travis-ci/travis-ci/issues/5853
 
 before_install:
+  - sudo add-apt-repository ppa:oibaf/graphics-drivers
+  - sudo apt-get update;
   - sudo apt-get install -y xvfb;
   - pip install xvfbwrapper
+  - glxinfo | grep 'version'
 
 install:
   # Install this package and the packages listed in requirements.txt.
