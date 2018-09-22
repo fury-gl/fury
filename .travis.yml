@@ -20,7 +20,7 @@ before_install:
   - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
   - sudo apt-get install -y xvfb;
   - pip install xvfbwrapper
-  - glxinfo | grep 'version'
+  - xvfb-run glxinfo | grep 'version'
 
 install:
   # Install this package and the packages listed in requirements.txt.
