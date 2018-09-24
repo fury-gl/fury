@@ -6,10 +6,6 @@ os:
   - linux
   - osx
 
-python:
-  - 2.7
-  - 3.5
-  - 3.6
 env:
   global:
     - TEST_WITH_XVFB=true
@@ -19,6 +15,11 @@ env:
     - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
     - EXTRA_PIP_FLAGS="--timeout=60 --find-links=$EXTRA_WHEELS"
 
+  matrix:
+    - PY_VERSION="2.7"
+    - PY_VERSION="3.5"
+    - PY_VERSION="3.6"
+    
 # before_install:
 #   - sudo add-apt-repository -y ppa:oibaf/graphics-drivers
 #   - sudo apt-get update -qq -y

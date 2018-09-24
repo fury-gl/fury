@@ -2,7 +2,7 @@
 set -ev
 
 # Anaconda
-export PATH=${DEPS_DIR}/miniconda/bin:$PATH
+export PATH=${ENV_DIR}/miniconda/bin:$PATH
 hash -r
 source activate testenv
 conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/tests.txt
