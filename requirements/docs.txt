@@ -1,0 +1,9 @@
+# These are dependencies of various sphinx extensions for documentation.
+sphinx
+ipython
+matplotlib
+numpydoc
+sphinx-copybutton
+sphinx-gallery
+pillow
+sphinx_rtd_theme
