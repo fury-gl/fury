@@ -9,6 +9,8 @@ os:
 env:
   global:
     - TEST_WITH_XVFB=true
+    - LIBGL_ALWAYS_INDIRECT=y
+    - MESA_GL_VERSION_OVERRIDE=3.2
     - ENV_TYPE="conda"
     - ENV_DIR="${HOME}/envs"
     - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
