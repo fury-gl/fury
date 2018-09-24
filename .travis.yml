@@ -1,6 +1,6 @@
 sudo: true
 
-language: python
+language: generic
 
 os:
   - linux
@@ -19,7 +19,7 @@ env:
     - PY_VERSION="2.7"
     - PY_VERSION="3.5"
     - PY_VERSION="3.6"
-    
+
 # before_install:
 #   - sudo add-apt-repository -y ppa:oibaf/graphics-drivers
 #   - sudo apt-get update -qq -y

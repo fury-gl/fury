@@ -24,8 +24,9 @@ hash -r
 conda config --set always_yes yes --set changeps1 no
 conda update --yes -q conda
 conda install conda-build anaconda-client
-conda create -n testenv --yes python=$PY_VERSION pip mesa-utils
+conda create -n testenv --yes python=$PY_VERSION pip
 source activate testenv
+conda install --yes -c conda-forge mesalib
 conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/default.txt
 conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/test.txt
 if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
