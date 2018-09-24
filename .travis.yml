@@ -1,35 +1,54 @@
 sudo: true
+
 language: python
 
-env:
-    global:
-      - TEST_WITH_XVFB=true
+os:
+  - linux
+  - osx
+
 python:
   - 2.7
-  - 3.4
   - 3.5
   - 3.6
+env:
+  global:
+    - TEST_WITH_XVFB=true
+    - ENV_TYPE="conda"
+    - ENV_DIR="${HOME}/envs"
+    - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
+    - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
+    - EXTRA_PIP_FLAGS="--timeout=60 --find-links=$EXTRA_WHEELS"
+
+# before_install:
+#   - sudo add-apt-repository -y ppa:oibaf/graphics-drivers
+#   - sudo apt-get update -qq -y
+#   - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
+#   - sudo apt-get install -y xvfb;
+#   - pip install xvfbwrapper
+
+# matrix:
+#   include:
+#     - python: 3.6
+#       env: ENV_TYPE="pip"
+#     - python: 3.6
+#       env: OPTIONAL_DEPS=1 COVERAGE=1
+#     - python: 3.6
+#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1
+#     - python: 3.6
+#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+#   allow_failures:
+#     - python: 3.6
+#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+
+install: bash ci/travis/install.sh
+script: bash ci/travis/script.sh
+
+# after_success:
+#     - if [ "${COVERAGE}" == "1" ]; then coveralls; codecov; fi
+#     - bash ci/travis/deploy_docs.sh
+
+
 cache:
   directories:
     - $HOME/.cache/pip
     - $HOME/.ccache  # https://github.com/travis-ci/travis-ci/issues/5853
-
-before_install:
-  - sudo add-apt-repository -y ppa:oibaf/graphics-drivers
-  - sudo apt-get update -qq -y
-  - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
-  - sudo apt-get install -y xvfb;
-  - pip install xvfbwrapper
-
-install:
-  # Install this package and the packages listed in requirements.txt.
-  - pip install .
-  # Install extra requirements for running tests and building docs.
-  - pip install -r requirements-dev.txt
-
-script:
-  - coverage run -m pytest -svv fury  # Run the tests and check for test coverage.
-  - coverage report -m  # Generate test coverage report.
-  - codecov  # Upload the report to codecov.
-  - flake8 --max-line-length=115  # Enforce code style (but relax line length limit a bit).
-  - make -C docs html  # Build the documentation.
