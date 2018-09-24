@@ -15,6 +15,10 @@ cd ${ENV_DIR}
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
 else
+    sudo add-apt-repository -y ppa:oibaf/graphics-drivers
+    sudo apt-get update -qq -y
+    sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
+    sudo apt-get install -y xvfb;
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 fi
 
