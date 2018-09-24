@@ -2,6 +2,8 @@ sudo: true
 
 language: generic
 
+dist: xenial
+
 os:
   - linux
   - osx
@@ -15,7 +17,6 @@ addons:
         - xserver-xorg-video-dummy
         - xpra
         - xorg-dev
-        - opencl-headers
         - libgl1-mesa-dev
         - libxcursor-dev
         - libpulse-dev
@@ -30,6 +31,7 @@ env:
   global:
     - TEST_WITH_XVFB=true
     - LIBGL_ALWAYS_INDIRECT=y
+    - DISPLAY=:99
     - ENV_TYPE="conda"
     - ENV_DIR="${HOME}/envs"
     - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
@@ -46,7 +48,6 @@ env:
 #   - sudo apt-get update -qq -y
 #   - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
 #   - sudo apt-get install -y xvfb;
-
 
 # matrix:
 #   include:
