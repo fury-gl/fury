@@ -10,17 +10,15 @@ os:
 addons:
   apt:
     sources:
-      - xenial
       - sourceline: 'ppa:ubuntu-x-swat/updates'
-      - sourceline: 'ppa:xorg-edgers/ppa'
+      # - sourceline: 'ppa:xorg-edgers/ppa'
+      - sourceline: 'ppa:oibaf/graphics-drivers'
     update: true
     packages:
       - libglew-dev
       - freeglut3-dev
       - libxi-dev
       - libxmu-dev
-      - xserver-xorg-video-dummy
-      - xpra
       - xorg-dev
       - libgl1-mesa-dev
       - libgl1-mesa-glx
@@ -37,11 +35,10 @@ addons:
       - libudev-dev
       - mesa-utils
       - mesa-common-dev
+      - libllvm7
       - xvfb
   homebrew:
     update: true
-    packages:
-      - xvfb
 env:
   global:
     - TEST_WITH_XVFB=true

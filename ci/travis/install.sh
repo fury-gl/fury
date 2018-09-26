@@ -5,20 +5,10 @@ set -ev
 mkdir ${ENV_DIR}
 cd ${ENV_DIR}
 
-
-#   # Install this package and the packages listed in requirements.txt.
-#   - pip install .
-#   # Install extra requirements for running tests and building docs.
-#   - pip install -r requirements-dev.txt
-
 # Install Anaconda : Use the miniconda installer for faster download / install of conda itself
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
 else
-    sudo add-apt-repository -y ppa:oibaf/graphics-drivers
-    sudo apt-get update -qq -y
-    sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
-    sudo apt-get install -y xvfb;
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 fi
 

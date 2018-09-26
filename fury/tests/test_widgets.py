@@ -183,12 +183,8 @@ def test_text_widget():
         show_manager.render()
         show_manager.start()
 
-    arr = window.snapshot(renderer, size=(900, 900))
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
-
-    # If you want to see the segmented objects after the analysis is finished
-    # you can use imshow(report.labels, origin='lower')
+    report = window.analyze_renderer(renderer)
+    npt.assert_equal(report.actors, 3)
 
 
 if __name__ == '__main__':
