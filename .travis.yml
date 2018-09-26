@@ -9,24 +9,39 @@ os:
   - osx
 addons:
   apt:
-     packages:
-        - libglew-dev
-        - freeglut3-dev
-        - libxi-dev
-        - libxmu-dev
-        - xserver-xorg-video-dummy
-        - xpra
-        - xorg-dev
-        - libgl1-mesa-dev
-        - libxcursor-dev
-        - libpulse-dev
-        - libxinerama-dev
-        - libxrandr-dev
-        - libxv-dev
-        - libasound2-dev
-        - libudev-dev
-        - mesa-utils
-        - libgl1-mesa-glx
+    sources:
+      - xenial
+      - sourceline: 'ppa:ubuntu-x-swat/updates'
+      - sourceline: 'ppa:xorg-edgers/ppa'
+    update: true
+    packages:
+      - libglew-dev
+      - freeglut3-dev
+      - libxi-dev
+      - libxmu-dev
+      - xserver-xorg-video-dummy
+      - xpra
+      - xorg-dev
+      - libgl1-mesa-dev
+      - libgl1-mesa-glx
+      - libglapi-mesa
+      - libgl1-mesa-dri
+      - libgbm1
+      - libxatracker-dev
+      - libxcursor-dev
+      - libpulse-dev
+      - libxinerama-dev
+      - libxrandr-dev
+      - libxv-dev
+      - libasound2-dev
+      - libudev-dev
+      - mesa-utils
+      - mesa-common-dev
+      - xvfb
+  homebrew:
+    update: true
+    packages:
+      - xvfb
 env:
   global:
     - TEST_WITH_XVFB=true
@@ -46,7 +61,7 @@ env:
 # before_install:
 #   - sudo add-apt-repository -y ppa:oibaf/graphics-drivers
 #   - sudo apt-get update -qq -y
-#   - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils
+#   - sudo apt-get -yq --force-yes install libgl1-mesa-dev libgl1-mesa-glx mesa-common-dev libglapi-mesa libgbm1 libgl1-mesa-dri libxatracker-dev mesa-utils xserver-xorg-video-dummy 
 #   - sudo apt-get install -y xvfb;
 
 # matrix:
