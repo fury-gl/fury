@@ -605,7 +605,7 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
     Parameters
     -----------
     ren : vtkRenderer() object
-        as returned from function ren()
+        as returned from function renderer()
     cam_pos : None or sequence (3,), optional
         Camera's position. If None then default camera's position is used.
     cam_focal : None or sequence (3,), optional
@@ -870,9 +870,9 @@ def analyze_snapshot(im, bg_color=(0, 0, 0), colors=None,
         background = np.dot(bg_color, weights)
 
         if strel is None:
-            strel = np.array([[0, 1, 0],
+            strel = np.array([[1, 1, 1],
                               [1, 1, 1],
-                              [0, 1, 0]])
+                              [1, 1, 1]])
 
         labels, objects = ndimage.label(gray != background, strel)
         report.labels = labels

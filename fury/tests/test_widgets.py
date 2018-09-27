@@ -115,7 +115,7 @@ def test_button_and_slider_widgets():
         # import pylab as plt
         # plt.imshow(report.labels, origin='lower')
         # plt.show()
-        npt.assert_equal(report.actors, 4)
+        npt.assert_equal(report.actors, 1)
 
     report = window.analyze_renderer(renderer)
     npt.assert_equal(report.actors, 1)
