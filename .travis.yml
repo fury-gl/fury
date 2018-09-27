@@ -53,20 +53,18 @@ env:
     - PY_VERSION="2.7"
     - PY_VERSION="3.5"
     - PY_VERSION="3.6"
+    - PY_VERSION="3.6" OPTIONAL_DEPS=1
+    # - PY_VERSION="3.6" ENV_TYPE="pip"
+    # - PY_VERSION="3.6" ENV_TYPE="pip" OPTIONAL_DEPS=1
 
-# matrix:
-#   include:
-#     - python: 3.6
-#       env: ENV_TYPE="pip"
-#     - python: 3.6
-#       env: OPTIONAL_DEPS=1 COVERAGE=1
-#     - python: 3.6
-#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1
-#     - python: 3.6
-#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
-#   allow_failures:
-#     - python: 3.6
-#       env: ENV_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+matrix:
+  allow_failures:
+    - os: osx
+  include:
+    - os: linux
+      env: PY_VERSION="3.6" OPTIONAL_DEPS=1 COVERAGE=1 
+    # - os: linux
+    #   env: PY_VERSION="3.6" ENV_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
 
 install: bash ci/travis/install.sh
 script: bash ci/travis/script.sh

@@ -7,6 +7,7 @@ cd ${ENV_DIR}
 
 # Install Anaconda : Use the miniconda installer for faster download / install of conda itself
 if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
+    # Does not exist by default so create this folder manually to avoid a Xvfb crash.
     mkdir /tmp/.X11-unix
     sudo chmod 1777 /tmp/.X11-unix
     sudo chown root /tmp/.X11-unix/
