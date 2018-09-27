@@ -55,7 +55,7 @@ def xvfb_it(my_test):
     def test_with_xvfb(*args, **kwargs):
         if use_xvfb:
             from xvfbwrapper import Xvfb
-            display = Xvfb(width=1920, height=1080, nolisten='tcp')
+            display = Xvfb(width=1920, height=1080)
             display.start()
         my_test(*args, **kwargs)
         if use_xvfb:

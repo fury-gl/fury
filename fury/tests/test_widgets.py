@@ -42,15 +42,15 @@ def test_button_and_slider_widgets():
         show_manager.render()
 
     def button_callback(obj, event):
-        print('Camera pressed')
+        # print('Camera pressed')
         states['camera_button_count'] += 1
 
     def button_plus_callback(obj, event):
-        print('+ pressed')
+        # print('+ pressed')
         states['plus_button_count'] += 1
 
     def button_minus_callback(obj, event):
-        print('- pressed')
+        # print('- pressed')
         states['minus_button_count'] += 1
 
     fetch_viz_icons()
@@ -111,12 +111,11 @@ def test_button_and_slider_widgets():
         # button.place(renderer)
         # slider.place(renderer)
 
-        arr = window.snapshot(renderer, size=(800, 800))
-        report = window.analyze_snapshot(arr)
+        report = window.analyze_renderer(renderer)
         # import pylab as plt
         # plt.imshow(report.labels, origin='lower')
         # plt.show()
-        npt.assert_equal(report.objects, 4)
+        npt.assert_equal(report.actors, 4)
 
     report = window.analyze_renderer(renderer)
     npt.assert_equal(report.actors, 1)
