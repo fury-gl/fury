@@ -929,7 +929,7 @@ def test_ui_preloader(interactive=False):
                       (100-2*preloader_test.width) * np.sin(np.deg2rad(60)),
                       0])
 
-    show_manager = window.ShowManager(size=(600, 600), title="DIPY Preloader")
+    show_manager = window.ShowManager(size=(600, 600), title="FURY Preloader")
     show_manager.initialize()
     show_manager.iren.CreateRepeatingTimer(10)
 
@@ -967,7 +967,7 @@ def test_ui_preloader(interactive=False):
     if interactive:
         preloader_test = ui.Preloader(outer_radius=100, center=(300, 300))
         show_manager = window.ShowManager(size=(600, 600),
-                                          title="DIPY Preloader")
+                                          title="FURY Preloader")
         show_manager.initialize()
         show_manager.iren.CreateRepeatingTimer(10)
         preloader_test.add_callback(show_manager.iren, 'TimerEvent',
