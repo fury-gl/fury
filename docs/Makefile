@@ -14,6 +14,16 @@ help:
 
 .PHONY: help Makefile
 
+clean:
+	rm -rf "$(SOURCEDIR)/api"
+	rm -rf "$(SOURCEDIR)/auto_examples"
+	rm -rf "$(SOURCEDIR)/auto_tutorials"
+	rm -rf "$(SOURCEDIR)/reference"
+	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) clean
+
+upload:
+	python upload_to_gh-pages.py
+
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile

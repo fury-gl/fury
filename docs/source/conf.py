@@ -17,16 +17,20 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
-
+import os
+import sys
+# Add current path
+sys.path.insert(0, os.path.abspath('.'))
+# Add doc in path for finding tutorial and examples
+sys.path.insert(0, os.path.abspath('../..'))
+# Add custom extensions
+sys.path.insert(0, os.path.abspath('./ext'))
 
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '1.0'
+needs_sphinx = '1.6'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -43,9 +47,9 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'numpydoc',
     'sphinx_copybutton',
+    'sphinx_gallery.gen_gallery',
+    'ext.build_modref_templates'
 ]
-
-autosummary_generate = True
 
 # Configuration options for plot_directive. See:
 # https://github.com/matplotlib/matplotlib/blob/f3ed922d935751e08494e5fb5311d3050a3b637b/lib/matplotlib/sphinxext/plot_directive.py#L81
@@ -53,7 +57,7 @@ plot_html_show_source_link = False
 plot_html_show_formats = False
 
 # Generate the API documentation when building
-autosummary_generate = True
+autosummary_generate = False
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
@@ -109,7 +113,7 @@ todo_include_todos = False
 #
 html_theme = 'sphinx_rtd_theme'
 import sphinx_rtd_theme
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), ]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -180,6 +184,28 @@ man_pages = [
 ]
 
 
+# -- Options for sphinx gallery -------------------------------------------
+# import glob
+# import shutil
+# from sphinx_gallery.gen_rst import figure_rst
+import scrap
+from scrap import test_parser, ImageFileScraper
+
+te = scrap.PNGScraper()
+sc = ImageFileScraper()
+
+sphinx_gallery_conf = {
+     'doc_module': ('fury',),
+     # path to your examples scripts
+     'examples_dirs': ['../examples', '../tutorials'],
+     # path where to save gallery generated examples
+     'gallery_dirs': ['auto_examples', 'auto_tutorials'],
+     'image_scrapers': (sc),  # PNGScraper()),
+     'backreferences_dir': 'api',
+     'reference_url': {'fury': None, },
+     'filename_pattern': '/'
+}
+
 # -- Options for Texinfo output -------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
@@ -190,9 +216,6 @@ texinfo_documents = [
      author, 'fury', 'Free Unified Rendering in Python',
      'Miscellaneous'),
 ]
-
-
-
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
