@@ -30,3 +30,11 @@ conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/test.txt
 if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/optional.txt
 fi
+if [[ "${BUILD_DOCS}" == "1" ]]; then
+    conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/docs.txt
+    # To remove when sphinx-gallery version > 0.2.0
+    git clone --quiet https://github.com/sphinx-gallery/sphinx-gallery.git sphinx-gallery
+    cd sphinx-gallery
+    pip install -e .
+    cd ${ENV_DIR}
+fi

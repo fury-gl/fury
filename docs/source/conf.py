@@ -183,15 +183,9 @@ man_pages = [
      [author], 1)
 ]
 
-
 # -- Options for sphinx gallery -------------------------------------------
-# import glob
-# import shutil
-# from sphinx_gallery.gen_rst import figure_rst
-import scrap
-from scrap import test_parser, ImageFileScraper
+from scrap import ImageFileScraper
 
-te = scrap.PNGScraper()
 sc = ImageFileScraper()
 
 sphinx_gallery_conf = {
@@ -200,7 +194,7 @@ sphinx_gallery_conf = {
      'examples_dirs': ['../examples', '../tutorials'],
      # path where to save gallery generated examples
      'gallery_dirs': ['auto_examples', 'auto_tutorials'],
-     'image_scrapers': (sc),  # PNGScraper()),
+     'image_scrapers': (sc),
      'backreferences_dir': 'api',
      'reference_url': {'fury': None, },
      'filename_pattern': '/'

@@ -17,6 +17,8 @@ else
     pytest -svv fury
 fi
 
+if [[ "${BUILD_DOCS}" == "1" ]]; then
+  make -C docs html  # Build the documentation.
+fi
 
 #   - flake8 --max-line-length=115  # Enforce code style (but relax line length limit a bit).
-#   - make -C docs html  # Build the documentation.
