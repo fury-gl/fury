@@ -238,8 +238,8 @@ def test_contour_from_roi():
     seedroi_actor = actor.contour_from_roi(seed_mask, affine, [0, 1, 1], 0.5)
 
     # Create the 3d display.
-    r = window.ren()
-    r2 = window.ren()
+    r = window.Renderer()
+    r2 = window.Renderer()
     r.add(streamlines_actor)
     arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
     report3 = window.analyze_snapshot(arr3, find_objects=True)

@@ -1,8 +1,12 @@
+"""Custom Interactor Style."""
+
 import numpy as np
 import vtk
 
 
 class Event(object):
+    """Event class."""
+
     def __init__(self):
         self.position = None
         self.name = None
@@ -11,10 +15,11 @@ class Event(object):
 
     @property
     def abort_flag(self):
+        """Abort."""
         return self._abort_flag
 
     def update(self, event_name, interactor):
-        """ Updates current event information. """
+        """Update current event information."""
         self.name = event_name
         self.position = np.asarray(interactor.GetEventPosition())
         self.key = interactor.GetKeySym()
@@ -24,11 +29,11 @@ class Event(object):
         self._abort_flag = False  # Reset abort flag
 
     def abort(self):
-        """ Aborts the event i.e. do not propagate it any further. """
+        """Abort the event i.e. do not propagate it any further."""
         self._abort_flag = True
 
     def reset(self):
-        """ Done with the current event. Reset the attributes. """
+        """Done with the current event. Reset the attributes."""
         self.position = None
         self.name = None
         self.key = None
@@ -36,7 +41,7 @@ class Event(object):
 
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
-    """ Manipulate the camera and interact with objects in the scene.
+    """Manipulate the camera and interact with objects in the scene.
 
     This interactor style allows the user to interactively manipulate (pan,
     rotate and zoom) the camera. It also allows the user to interact (click,
@@ -47,13 +52,17 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     user is interacting with.
 
     In summary, while interacting with the scene, the mouse events are as
-    follows:
-    - Left mouse button: rotates the camera
-    - Right mouse button: dollys the camera
-    - Mouse wheel: dollys the camera
-    - Middle mouse button: pans the camera
+    follows::
+
+        - Left mouse button: rotates the camera
+        - Right mouse button: dollys the camera
+        - Mouse wheel: dollys the camera
+        - Middle mouse button: pans the camera
+
     """
+
     def __init__(self):
+        """Init."""
         # Default interactor is responsible for moving the camera.
         self.default_interactor = vtk.vtkInteractorStyleTrackballCamera()
         # The picker allows us to know which object/actor is under the mouse.
@@ -78,7 +87,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.active_props.remove(prop)
 
     def get_prop_at_event_position(self):
-        """ Returns the prop that lays at the event position. """
+        """Return the prop that lays at the event position."""
         # TODO: return a list of items (i.e. each level of the assembly path).
         event_pos = self.GetInteractor().GetEventPosition()
         self.picker.Pick(event_pos[0], event_pos[1], 0,
@@ -149,6 +158,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.default_interactor.OnMiddleButtonUp()
 
     def on_mouse_move(self, obj, evt):
+        """On mouse move."""
         # Only propagate events to active or selected props.
         self.propagate_event(evt, *(self.active_props |
                                     self.selected_props["left_button"] |
@@ -157,6 +167,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.default_interactor.OnMouseMove()
 
     def on_mouse_wheel_forward(self, obj, evt):
+        """On mouse wheel forward."""
         # First, propagate mouse wheel event to underneath prop.
         prop = self.get_prop_at_event_position()
         if prop is not None:
@@ -173,6 +184,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.event.reset()
 
     def on_mouse_wheel_backward(self, obj, evt):
+        """On mouse wheel backward."""
         # First, propagate mouse wheel event to underneath prop.
         prop = self.get_prop_at_event_position()
         if prop is not None:
@@ -198,6 +210,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.propagate_event(evt, *self.active_props)
 
     def SetInteractor(self, interactor):
+        """Define new interactor."""
         # Internally, `InteractorStyle` objects need a handle to a
         # `vtkWindowInteractor` object and this is done via `SetInteractor`.
         # However, this has the side effect of adding directly all their
@@ -205,7 +218,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.default_interactor.SetInteractor(interactor)
 
         # Remove all observers *most likely* (cannot guarantee that the
-        # interactor didn't already have these observers) added by
+        # interactor did not already have these observers) added by
         # `vtkInteractorStyleTrackballCamera`, i.e. our `default_interactor`.
         #
         # Note: Be sure that no observer has been manually added to the
@@ -232,8 +245,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # cannot be used. Also the method `SetInteractor` is not overridden in
         # `vtkInteractorStyleUser` so we have to call directly the one from
         # `vtkInteractorStyle`. In addition to setting the interactor, the
-        # following line adds the necessary hooks to listen to this instance's
-        # observers.
+        # following line adds the necessary hooks to listen to this 
+        # observers instances.
         vtk.vtkInteractorStyle.SetInteractor(self, interactor)
 
         # Keyboard events.
@@ -267,11 +280,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                self.on_mouse_wheel_backward)
 
     def force_render(self):
-        """ Causes the renderer to refresh. """
+        """Causes the renderer to refresh."""
         self.GetInteractor().GetRenderWindow().Render()
 
     def add_callback(self, prop, event_type, callback, priority=0, args=[]):
-        """ Adds a callback associated to a specific event for a VTK prop.
+        """Add a callback associated to a specific event for a VTK prop.
 
         Parameters
         ----------
@@ -279,8 +292,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         event_type : event code
         callback : function
         priority : int
-        """
 
+        """
         def _callback(obj, event_name):
             # Update event information.
             self.event.update(event_name, self.GetInteractor())

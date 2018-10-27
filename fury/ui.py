@@ -261,9 +261,11 @@ class UI(object):
 class Button2D(UI):
     """ A 2D overlay button and is of type vtkTexturedActor2D.
 
-    Currently supports:
-    - Multiple icons.
-    - Switching between icons.
+    Currently supports::
+
+        - Multiple icons.
+        - Switching between icons.
+
     """
 
     def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
@@ -3257,6 +3259,7 @@ class ListBox2D(UI):
                  multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
         """
+
         Parameters
         ----------
         values: list of objects
@@ -3618,6 +3621,7 @@ class ListBoxItem2D(UI):
 
     def __init__(self, list_box, size):
         """
+
         Parameters
         ----------
         list_box: :class:`ListBox`
@@ -3718,6 +3722,7 @@ class ListBoxItem2D(UI):
 class FileMenu2D(UI):
     """ A menu to select files in the current folder.
     Can go to new folder, previous folder and select multiple files.
+
     Attributes
     ----------
     extensions: ['extension1', 'extension2', ....]
@@ -3725,12 +3730,14 @@ class FileMenu2D(UI):
         List of extensions to be shown as files.
     listbox : :class: 'ListBox2D'
         Container for the menu.
+
     """
 
     def __init__(self, directory_path, extensions=["*"], position=(0, 0),
                  size=(100, 300), multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
         """
+
         Parameters
         ----------
         extensions: list(string)
@@ -3813,6 +3820,7 @@ class FileMenu2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
+
         Parameters
         ----------
         coords: (float, float)
@@ -3822,6 +3830,7 @@ class FileMenu2D(UI):
 
     def _add_to_renderer(self, ren):
         """ Add all subcomponents or VTK props that compose this UI component.
+
         Parameters
         ----------
         ren : renderer
@@ -3833,6 +3842,7 @@ class FileMenu2D(UI):
 
     def get_all_file_names(self):
         """ Gets file and directory names.
+
         Returns
         -------
         all_file_names: list((string, {"directory", "file"}))
@@ -3852,6 +3862,7 @@ class FileMenu2D(UI):
 
     def get_directory_names(self):
         """ Finds names of all directories in the current_directory
+
         Returns
         -------
         directory_names: list(string)
@@ -3868,6 +3879,7 @@ class FileMenu2D(UI):
 
     def get_file_names(self):
         """ Finds names of all files in the current_directory
+
         Returns
         -------
         file_names: list(string)
@@ -3902,6 +3914,7 @@ class FileMenu2D(UI):
 
     def scroll_callback(self, i_ren, obj, filemenu_item):
         """ A callback to handle scroll and change the slot text colors.
+
         Parameters
         ----------
         i_ren: :class:`CustomInteractorStyle`
@@ -3915,6 +3928,7 @@ class FileMenu2D(UI):
 
     def directory_click_callback(self, i_ren, obj, listboxitem):
         """ A callback to move into a directory if it has been clicked.
+
         Parameters
         ----------
         i_ren: :class:`CustomInteractorStyle`

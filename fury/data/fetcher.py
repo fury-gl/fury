@@ -32,7 +32,8 @@ class FetcherError(Exception):
 
 
 def update_progressbar(progress, total_length):
-    """Show progressbar
+    """Show progressbar.
+
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
     # Try to set the bar_length according to the console size
@@ -65,9 +66,7 @@ def copyfileobj_withprogress(fsrc, fdst, total_length, length=16 * 1024):
 
 
 def _already_there_msg(folder):
-    """
-    Prints a message indicating that a certain data-set is already in place
-    """
+    """Print a message indicating that a certain data-set is already in place."""
     msg = 'Dataset is already in place. If you want to fetch it again '
     msg += 'please first remove the folder %s ' % folder
     print(msg)
@@ -83,16 +82,18 @@ def _get_file_md5(filename):
 
 
 def check_md5(filename, stored_md5=None):
-    """
-    Computes the md5 of filename and check if it matches with the supplied
-    string md5
-    Input
-    -----
+    """Compute the md5 of filename.
+
+    check if it matches with the supplied string md5
+
+    Parameters
+    ----------
     filename : string
         Path to a file.
     md5 : string
         Known md5 of filename to check against. If None (default), checking is
         skipped
+
     """
     if stored_md5 is not None:
         computed_md5 = _get_file_md5(filename)
@@ -102,7 +103,7 @@ def check_md5(filename, stored_md5=None):
    something is wrong with the file or that the upstream file has been updated.
    You can try downloading the file again or updating to the newest version of
    Fury.""" % (filename, stored_md5,
-                computed_md5)
+               computed_md5)
             raise FetcherError(msg)
 
 
@@ -121,7 +122,8 @@ def _get_file_data(fname, url):
 
 
 def fetch_data(files, folder, data_size=None):
-    """Downloads files to folder and checks their md5 checksums
+    """Downloads files to folder and checks their md5 checksums.
+
     Parameters
     ----------
     files : dictionary
@@ -134,11 +136,13 @@ def fetch_data(files, folder, data_size=None):
     data_size : str, optional
         A string describing the size of the data (e.g. "91 MB") to be logged to
         the screen. Default does not produce any information about data size.
+
     Raises
     ------
     FetcherError
         Raises if the md5 checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
+
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
@@ -166,7 +170,8 @@ def fetch_data(files, folder, data_size=None):
 def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
                   md5_list=None, doc="", data_size=None, msg=None,
                   unzip=False):
-    """ Create a new fetcher
+    """Create a new fetcher.
+
     Parameters
     ----------
     name : str
@@ -194,11 +199,13 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     unzip : bool, optional
         Whether to unzip the file(s) after downloading them. Supports zip, gz,
         and tar.gz files.
-    returns
+
+    Returns
     -------
     fetcher : function
         A function that, when called, fetches data according to the designated
         inputs
+
     """
     def fetcher():
         files = {}
@@ -245,7 +252,8 @@ fetch_viz_icons = _make_fetcher("fetch_viz_icons",
 
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
-    """ Read specific icon from specific style
+    """Read specific icon from specific style.
+
     Parameters
     ----------
     style : str
@@ -253,11 +261,12 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     fname : str
         Filename of icon. This should be found in folder HOME/.fury/style/.
         Default is infinity.png.
+
     Returns
     --------
     path : str
         Complete path of icon.
-    """
 
+    """
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)

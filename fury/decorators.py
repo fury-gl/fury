@@ -10,9 +10,9 @@ SKIP_RE = re.compile("(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 def doctest_skip_parser(func):
     """Decorator replaces custom skip test markup in doctests.
     Say a function has a docstring::
-        >>> something # skip if not HAVE_AMODULE
-        >>> something + else
-        >>> something # skip if HAVE_BMODULE
+    >>> something # skip if not HAVE_AMODULE
+    >>> something + else
+    >>> something # skip if HAVE_BMODULE
     This decorator will evaluate the expresssion after ``skip if``.  If this
     evaluates to True, then the comment is replaced by ``# doctest: +SKIP``.
     If False, then the comment is just removed. The expression is evaluated in
@@ -20,9 +20,9 @@ def doctest_skip_parser(func):
     For example, if the module global ``HAVE_AMODULE`` is False, and module
     global ``HAVE_BMODULE`` is False, the returned function will have
     docstring::
-        >>> something # doctest: +SKIP
-        >>> something + else
-        >>> something
+    >>> something # doctest: +SKIP
+    >>> something + else
+    >>> something
     """
     lines = func.__doc__.split('\n')
     new_lines = []

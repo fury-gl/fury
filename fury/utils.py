@@ -464,15 +464,17 @@ def get_actor_from_polydata(polydata):
     poly_mapper = get_polymapper_from_polydata(polydata)
     return get_actor_from_polymapper(poly_mapper)
 
+
 def apply_affine(aff, pts):
-    """Apply affine matrix `aff` to points `pts`
+    """Apply affine matrix `aff` to points `pts`.
+
     Returns result of application of `aff` to the *right* of `pts`.  The
     coordinate dimension of `pts` should be the last.
     For the 3D case, `aff` will be shape (4,4) and `pts` will have final axis
     length 3 - maybe it will just be N by 3. The return value is the
     transformed points, in this case::
-        res = np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]
-        transformed_pts = res.T
+    res = np.dot(aff[:3,:3], pts.T) + aff[:3,3:4]
+    transformed_pts = res.T
     This routine is more general than 3D, in that `aff` can have any shape
     (N,N), and `pts` can have any shape, as long as the last dimension is for
     the coordinates, and is therefore length N-1.
@@ -518,6 +520,7 @@ def apply_affine(aff, pts):
     <BLANKLINE>
            [[20, 23, 36],
             [24, 29, 44]]]...)
+
     """
     aff = np.asarray(aff)
     pts = np.asarray(pts)
