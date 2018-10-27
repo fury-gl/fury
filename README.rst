@@ -15,7 +15,7 @@ FURY
 Free Unified Rendering in Python
 
 * Free software: 3-clause BSD license
-* Documentation: (COMING SOON!) https://fury-gl.github.io/fury.
+* Documentation: https://fury.gl
 
 Features
 --------
