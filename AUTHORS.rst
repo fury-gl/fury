@@ -17,7 +17,7 @@ Contributors
 
 * Ariel Rokem, University of Washington, WA, USA
 * Matthew Brett, Birmingham University, Birmingham, UK
-* Yaroslav Halchenko <debian@onerussian.com>
-* Kesshi jordan <Kesshi.Jordan@ucsf.edu>
+* Yaroslav Halchenko
+* Kesshi jordan
 
 See:  `CONTRIBUTING.rst <contributing_link.html>`_

@@ -2,6 +2,15 @@
 Release History
 ===============
 
+v0.1.1 (2018-10-29)
+----------------------------
+
+This is a maintenance release
+
+* Fix error on python 2.7
+* Travis integration
+* Documentation integration
+
 v0.1.0 (2018-09-21)
 ----------------------------
 
