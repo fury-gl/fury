@@ -46,7 +46,7 @@ FURY is distributed under the BSD 3 License
 Credits
 --------
 
-The following people have been involved in the development of OSQP:
+The following people have been involved in the development of FURY:
 
 * Eleftherios Garyfallidis, Indiana University, IN, USA
 * Marc-Alexandre Côté, Microsoft Research, Montreal, QC, CA
