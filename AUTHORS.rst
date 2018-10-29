@@ -10,11 +10,11 @@ Core Development Team
 * David Reagan, Indiana University, IN, USA
 * Ranveer Aggarwal, Microsoft, Hyderabad, Telangana, India
 * Serge Koudoro, Indiana University, IN, USA
+* Karandeep Singh Juneja, India
 
 Contributors
 ------------
 
-* Karandeep Singh Juneja, India
 * Ariel Rokem, University of Washington, WA, USA
 * Matthew Brett, Birmingham University, Birmingham, UK
 * Yaroslav Halchenko <debian@onerussian.com>
