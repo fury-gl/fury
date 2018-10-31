@@ -2,6 +2,14 @@
 Release History
 ===============
 
+v0.1.2 (2018-10-31)
+----------------------------
+
+This is a maintenance release
+
+* Update setup.py
+* Remove dependence on requirements.txt
+
 v0.1.1 (2018-10-29)
 ----------------------------
 
