@@ -30,11 +30,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
-with open(path.join(here, 'requirements', 'default.txt')) as requirements_file:
-    # Parse requirements.txt, ignoring any commented-out lines.
-    requirements = [line for line in requirements_file.read().splitlines()
-                    if not line.startswith('#')]
-
 
 setup(
     name='fury',
@@ -62,7 +57,9 @@ setup(
             "fury/data/files/*.pkl"
             ]
         },
-    install_requires=requirements,
+    install_requires=['numpy>=1.7.1',
+                      'scipy>=0.9',
+                      'vtk>=8.1.0'],
     license="BSD (3-clause)",
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
