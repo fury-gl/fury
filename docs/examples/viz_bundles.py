@@ -12,6 +12,8 @@ from fury import window, actor
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
 from dipy.tracking.streamline import transform_streamlines
 
+interactive = False  # set to True to show the interactive display window
+
 fetch_bundles_2_subjects()
 dix = read_bundles_2_subjects(subj_id='subj_1', metrics=['fa'],
                               bundles=['cg.left', 'cst.right'])
@@ -54,8 +56,10 @@ renderer.set_camera(position=(-176.42, 118.52, 128.20),
 
 renderer.add(stream_actor)
 
-# Uncomment the line below to show to display the window
-# window.show(renderer, size=(600, 600), reset_camera=False)
+
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle1.png', size=(600, 600))
 
 ###############################################################################
@@ -83,7 +87,9 @@ bar = actor.scalar_bar()
 renderer.add(stream_actor2)
 renderer.add(bar)
 
-# window.show(renderer, size=(600, 600), reset_camera=False)
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle2.png', size=(600, 600))
 
 ##############################################################################
@@ -107,7 +113,9 @@ bar2 = actor.scalar_bar(lut_cmap)
 renderer.add(stream_actor3)
 renderer.add(bar2)
 
-# window.show(renderer, size=(600, 600), reset_camera=False)
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle3.png', size=(600, 600))
 
 ###############################################################################
@@ -122,7 +130,9 @@ stream_actor4 = actor.line(bundle_native, (1., 0.5, 0), linewidth=0.1)
 
 renderer.add(stream_actor4)
 
-# window.show(renderer, size=(600, 600), reset_camera=False)
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle4.png', size=(600, 600))
 
 ###############################################################################
@@ -154,7 +164,9 @@ bar3 = actor.scalar_bar(lut_cmap)
 
 renderer.add(bar3)
 
-# window.show(renderer, size=(600, 600), reset_camera=False)
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle5.png', size=(600, 600))
 
 ###############################################################################
@@ -173,8 +185,89 @@ stream_actor6 = actor.line(bundle_native, colors, linewidth=0.2)
 
 renderer.add(stream_actor6)
 
-# window.show(renderer, size=(600, 600), reset_camera=False)
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 window.record(renderer, out_path='bundle6.png', size=(600, 600))
+
+###############################################################################
+# Add depth cues to streamline rendering
+# ============================================================
+#
+# By default, lines are drawn with the same width on the screen, regardless of
+# their distance from the camera. To increase realism, we can enable
+# ``depth_cue`` to make the lines shrink with distance from the camera. We
+# will return to the default color scheme from the first example. Note that
+# ``depth_cue`` works best for ``linewidth`` <= 1.
+
+renderer.clear()
+
+stream_actor7 = actor.line(bundle_native, linewidth=0.5, depth_cue=True)
+
+renderer.add(stream_actor7)
+
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
+window.record(renderer, out_path='bundle7.png', size=(600, 600))
+
+###############################################################################
+# Render streamlines as fake tubes
+# ============================================================
+#
+# We can simulate the look of streamtubes by adding shading to streamlines with
+# ``fake_tube``. Note that ``fake_tube`` requires ``linewidth`` > 1.
+
+renderer.clear()
+
+stream_actor8 = actor.line(bundle_native, linewidth=3, fake_tube=True)
+
+renderer.add(stream_actor8)
+
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
+window.record(renderer, out_path='bundle8.png', size=(600, 600))
+
+###############################################################################
+# Comebine depth cues with fake tubes
+# ============================================================
+#
+# It is possible to fully simulate streamtubes by enabling both ``depth_cue``
+# and ``fake_tube``. However, it can be challenging to choose a ``linewidth``
+# that demonstrates both techniques well.
+
+renderer.clear()
+
+stream_actor9 = actor.line(bundle_native, linewidth=3,
+                           depth_cue=True, fake_tube=True)
+
+renderer.add(stream_actor9)
+
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
+window.record(renderer, out_path='bundle9.png', size=(600, 600))
+
+###############################################################################
+# Render streamlines as tubes
+# ============================================================
+#
+# For yet more realism, we can use ``streamtube``. Note that this actor
+# generates much more geometry than ``line``, so it is more computationally
+# expensive. For large datasets, it may be better to approximate tubes using
+# the methods described above.
+
+renderer.clear()
+
+stream_actor10 = actor.streamtube(bundle_native, linewidth=0.5)
+
+renderer.add(stream_actor10)
+
+if interactive:
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
+window.record(renderer, out_path='bundle10.png', size=(600, 600))
 
 ###############################################################################
 # In summary, we showed that there are many useful ways for visualizing maps
