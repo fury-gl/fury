@@ -4,6 +4,7 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
+import fury.shaders
 from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
@@ -522,10 +523,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper.Update()
 
     if depth_cue:
-        geom_shader_file = open("fury/shaders/line.geom", "r")
-        geom_shader_code = geom_shader_file.read()
-
-        poly_mapper.SetGeometryShaderCode(geom_shader_code)
+        poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
 
         @vtk.calldata_type(vtk.VTK_OBJECT)
         def vtkShaderCallback(caller, event, calldata=None):

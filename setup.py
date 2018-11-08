@@ -14,7 +14,7 @@ if sys.version_info < (2, 7):
 
                python3 --version
 
-               This may be due to an out-of-date pip. 
+               This may be due to an out-of-date pip.
                Make sure you have pip >= 9.0.1.
                Upgrade pip like so:
 
@@ -55,6 +55,7 @@ setup(
             "fury/data/files/*.json",
             "fury/data/files/*.log.gz",
             "fury/data/files/*.pkl"
+            "fury/shaders/*.geom"
             ]
         },
     install_requires=['numpy>=1.7.1',
