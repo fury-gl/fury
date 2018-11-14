@@ -230,7 +230,7 @@ if interactive:
 window.record(renderer, out_path='bundle8.png', size=(600, 600))
 
 ###############################################################################
-# Comebine depth cues with fake tubes
+# Combine depth cues with fake tubes
 # ============================================================
 #
 # It is possible to fully simulate streamtubes by enabling both ``depth_cue``
