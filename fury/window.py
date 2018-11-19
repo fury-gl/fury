@@ -83,6 +83,39 @@ class Renderer(vtk.vtkRenderer):
         """
         self.ResetCamera()
 
+    def reset_camera_tight(self, margin_factor=1.02):
+        """ Resets camera so the content fit tightly within the window.
+
+        Parameters
+        ----------
+        margin_factor : float (optional)
+            Margin added around the content. Default: 1.02.
+
+        Notes
+        -----
+        This reset function works best with
+        ``:func:dipy.interactor.InteractorStyleImageAndTrackballActor``.
+        """
+        self.ComputeAspect()
+        cam = self.GetActiveCamera()
+        aspect = self.GetAspect()
+
+        X1, X2, Y1, Y2, Z1, Z2 = self.ComputeVisiblePropBounds()
+        width, height = X2-X1, Y2-Y1
+        center = np.array((X1 + width/2., Y1 + height/2., 0))
+
+        angle = np.pi*cam.GetViewAngle()/180.
+        dist = max(width/aspect[0], height) / np.sin(angle/2.) / 2.
+        position = center + np.array((0, 0, dist*margin_factor))
+
+        cam.SetViewUp(0, 1, 0)
+        cam.SetPosition(*position)
+        cam.SetFocalPoint(*center)
+        self.ResetCameraClippingRange(X1, X2, Y1, Y2, Z1, Z2)
+
+        parallelScale = max(width/aspect[0], height) / 2.
+        cam.SetParallelScale(parallelScale*margin_factor)
+
     def reset_clipping_range(self):
         self.ResetCameraClippingRange()
 
