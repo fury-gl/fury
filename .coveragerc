@@ -1,0 +1,8 @@
+[run]
+branch = True
+source = dipy
+include = */fury/*
+omit =
+    */setup.py
+[report]
+show_missing = True
