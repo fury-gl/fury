@@ -2,6 +2,7 @@
 ignore:
   - "setup.py"
   - "*/setup.py"
+  - "_version.py"
   - "*/data/fetcher.py"
   - "*/tests/*"
 
