@@ -66,4 +66,4 @@ You've worked out a way to fix it – even better! Submit a Pull Request!
 
 You want to tell us about it – best of all!
 
-Start at the `contributing guide <CONTRIBUTING.rst>`_!
+Start with the `contributing guide <CONTRIBUTING.rst>`_!
