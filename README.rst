@@ -62,7 +62,7 @@ Whatever your experience level, all new contributors are welcomed!
 
 You've discovered a bug or something else you want to change - excellent! Create an `issue <https://github.com/fury-gl/fury/issues/new>`_!
 
-You've worked out a way to fix it – even better! submit a Pull Request!
+You've worked out a way to fix it – even better! Submit a Pull Request!
 
 You want to tell us about it – best of all!
 
