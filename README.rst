@@ -23,45 +23,57 @@ FURY is package for scientific visualization with Python.
 - **Free software:** 3-clause BSD license
 
 
-# Installation
+Installation
+-------------
 
-### **from binaries:**
+**from binaries:**
+~~~~~~~~~~~~~~~~~~
 
     pip install fury
 
-### **from source:**
+**from source:**
+~~~~~~~~~~~~~~~~
 
 **Step 1.** Get latest source by cloning this repo:
 
+    ```
     git clone https://github.com/fury-gl/fury.git
+    ```
 
 **Step 2.** Install requirements:
 
+    ```
     pip install -r requirements/default.txt
+    ```
 
 **Step 3.** Install fury via 
 
+    ```
     pip install .
+    ```
 
 or
 
+    ```
     pip install -e .
+    ```
 
 **Step 4:** Enjoy!
 
 For more information, see also [installation page on fury.gl](https://fury.gl/stable/installation.html)
 
 
-# Contribute
+Contribute
+----------
 
 We love contributions!
 
 Whatever your experience level, every new contributors are welcomed!
 
-You've discovered a bug or something else you want to change - excellent! Create an [issue](https://github.com/fury-gl/fury/issues/new)!
+You've discovered a bug or something else you want to change - excellent! Create an `issue<https://github.com/fury-gl/fury/issues/new>`_!
 
 You've worked out a way to fix it – even better! submit a Pull Request!
 
 You want to tell us about it – best of all!
 
-Start at the [contributing guide](CONTRIBUTING.rst)!
+Start at the `contributing guide<CONTRIBUTING.rst>`_!
