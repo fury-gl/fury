@@ -33,7 +33,7 @@ from binaries
 from source
 ~~~~~~~~~~~
 
-**Step 1.** Get latest source by cloning this repo::
+**Step 1.** Get the latest source by cloning this repo::
 
     git clone https://github.com/fury-gl/fury.git
 
