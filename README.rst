@@ -58,7 +58,7 @@ Contribute
 
 We love contributions!
 
-Whatever your experience level, every new contributors are welcomed!
+Whatever your experience level, all new contributors are welcomed!
 
 You've discovered a bug or something else you want to change - excellent! Create an `issue <https://github.com/fury-gl/fury/issues/new>`_!
 
