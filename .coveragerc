@@ -1,6 +1,6 @@
 [run]
 branch = True
-source = dipy
+source = fury
 include = */fury/*
 omit =
     */setup.py

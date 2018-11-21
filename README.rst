@@ -29,34 +29,33 @@ Installation
 **from binaries:**
 ~~~~~~~~~~~~~~~~~~
 
-    pip install fury
+```
+pip install fury
+```
 
 **from source:**
 ~~~~~~~~~~~~~~~~
 
 **Step 1.** Get latest source by cloning this repo:
-
-    ```
-    git clone https://github.com/fury-gl/fury.git
-    ```
+```
+git clone https://github.com/fury-gl/fury.git
+```
 
 **Step 2.** Install requirements:
-
-    ```
-    pip install -r requirements/default.txt
-    ```
+```
+pip install -r requirements/default.txt
+```
 
 **Step 3.** Install fury via 
-
-    ```
-    pip install .
-    ```
+```
+pip install .
+```
 
 or
 
-    ```
-    pip install -e .
-    ```
+```
+pip install -e .
+```
 
 **Step 4:** Enjoy!
 
@@ -76,4 +75,4 @@ You've worked out a way to fix it – even better! submit a Pull Request!
 
 You want to tell us about it – best of all!
 
-Start at the `contributing guide<CONTRIBUTING.rst>`_!
+Start at the `contributing guide <CONTRIBUTING.rst>`_!
