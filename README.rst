@@ -8,7 +8,6 @@
         :target: https://codecov.io/gh/fury-gl/fury
 
 
-=======================================
 FURY - Free Unified Rendering in Python
 =======================================
 
@@ -23,15 +22,18 @@ FURY is a package for scientific visualization with Python.
 - **Free software:** 3-clause BSD license
 
 Installation
-------------
+============
 
-from binaries
-~~~~~~~~~~~~~
+
+1. from binaries
+~~~~~~~~~~~~~~~~
+
+.. code-block::
 
     pip install fury
 
-from source
-~~~~~~~~~~~
+2. from source
+~~~~~~~~~~~~~~
 
 **Step 1.** Get the latest source by cloning this repo::
 
@@ -54,7 +56,8 @@ or::
 For more information, see also `installation page on fury.gl <https://fury.gl/stable/installation.html>`_
 
 Contribute
-----------
+==========
+
 
 We love contributions!
 
