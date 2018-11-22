@@ -12,7 +12,7 @@ FURY - Free Unified Rendering in Python
 =======================================
 
 
-FURY is a package for scientific visualization with Python.
+FURY is a software library for scientific visualization in Python
 
 - **Website and Documentation:** https://fury.gl
 - **Mailing list:** https://mail.python.org/mailman3/lists/fury.python.org
@@ -61,12 +61,8 @@ Contribute
 
 We love contributions!
 
-Whatever your experience level, all new contributors are welcomed!
-
 You've discovered a bug or something else you want to change - excellent! Create an `issue <https://github.com/fury-gl/fury/issues/new>`_!
 
 You've worked out a way to fix it – even better! Submit a Pull Request!
-
-You want to tell us about it – best of all!
 
 Start with the `contributing guide <CONTRIBUTING.rst>`_!
