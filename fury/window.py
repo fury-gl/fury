@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from scipy import ndimage
 import vtk
-from vtk.util import numpy_support
+from vtk.util import numpy_support, colors
 
 from fury.tmpdirs import InTemporaryDirectory
 
