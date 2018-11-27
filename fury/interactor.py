@@ -280,7 +280,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                self.on_mouse_wheel_backward)
 
     def force_render(self):
-        """Causes the renderer to refresh."""
+        """Causes the scene to refresh."""
         self.GetInteractor().GetRenderWindow().Render()
 
     def add_callback(self, prop, event_type, callback, priority=0, args=[]):

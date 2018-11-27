@@ -13,10 +13,10 @@ TWO_PI = 2 * np.pi
 
 
 class UI(object):
-    """ An umbrella class for all UI elements.
+    """An umbrella class for all UI elements.
 
-    While adding UI elements to the renderer, we go over all the sub-elements
-    that come with it and add those to the renderer automatically.
+    While adding UI elements to the scene, we go over all the sub-elements
+    that come with it and add those to the scene automatically.
 
     Attributes
     ----------
@@ -47,15 +47,17 @@ class UI(object):
         Callback function for when dragging using the right mouse button.
     on_key_press: function
         Callback function for when a keyboard key is pressed.
-    """
 
+    """
     def __init__(self, position=(0, 0)):
-        """
+        """Init scene.
+
         Parameters
         ----------
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
+
         """
         self._position = np.array([0, 0])
         self._callbacks = []
@@ -77,46 +79,48 @@ class UI(object):
         self.on_key_press = lambda i_ren, obj, element: None
 
     def _setup(self):
-        """ Setup this UI component.
+        """Set up this UI component.
 
         This is where you should create all your needed actors and sub UI
         components.
+
         """
         msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
 
     def _get_actors(self):
-        """ Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         msg = "Subclasses of UI must implement `_get_actors(self)`."
         raise NotImplementedError(msg)
 
     @property
     def actors(self):
-        """ Actors composing this UI component. """
+        """Actors composing this UI component."""
         return self._get_actors()
 
-    def _add_to_renderer(self, ren):
-        """ Add all subcomponents or VTK props that compose this UI component.
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
+
         """
-        msg = "Subclasses of UI must implement `_add_to_renderer(self, ren)`."
+        msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
         raise NotImplementedError(msg)
 
-    def add_to_renderer(self, ren):
-        """ Allows UI objects to add their own props to the renderer.
+    def add_to_scene(self, scene):
+        """Allow UI objects to add their own props to the scene.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
+
         """
-        self._add_to_renderer(ren)
+        self._add_to_scene(scene)
 
         # Get a hold on the current interactor style.
-        iren = ren.GetRenderWindow().GetInteractor().GetInteractorStyle()
+        iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
 
         for callback in self._callbacks:
             if not isinstance(iren, CustomInteractorStyle):
@@ -127,7 +131,7 @@ class UI(object):
             iren.add_callback(*callback, args=[self])
 
     def add_callback(self, prop, event_type, callback, priority=0):
-        """ Adds a callback to a specific event for this UI component.
+        """Add a callback to a specific event for this UI component.
 
         Parameters
         ----------
@@ -139,9 +143,10 @@ class UI(object):
             The callback function.
         priority : int
             Higher number is higher priority.
+
         """
         # Actually since we need an interactor style we will add the callback
-        # only when this UI component is added to the renderer.
+        # only when this UI component is added to the scene.
         self._callbacks.append((prop, event_type, callback, priority))
 
     @property
@@ -155,12 +160,13 @@ class UI(object):
         self._position = coords
 
     def _set_position(self, coords):
-        """ Position the lower-left corner of this UI component.
+        """Position the lower-left corner of this UI component.
 
         Parameters
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         msg = "Subclasses of UI must implement `_set_position(self, coords)`."
         raise NotImplementedError(msg)
@@ -179,12 +185,13 @@ class UI(object):
 
     @center.setter
     def center(self, coords):
-        """ Position the center of this UI component.
+        """Position the center of this UI component.
 
         Parameters
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         if not hasattr(self, "size"):
             msg = "Subclasses of UI must implement the `size` property."
@@ -259,7 +266,7 @@ class UI(object):
 
 
 class Button2D(UI):
-    """ A 2D overlay button and is of type vtkTexturedActor2D.
+    """A 2D overlay button and is of type vtkTexturedActor2D.
 
     Currently supports::
 
@@ -269,7 +276,8 @@ class Button2D(UI):
     """
 
     def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
-        """
+        """Init class instance.
+
         Parameters
         ----------
         icon_fnames : List(string, string)
@@ -297,7 +305,7 @@ class Button2D(UI):
         return abs(size[:2])
 
     def _build_icons(self, icon_fnames):
-        """ Converts file names to vtkImageDataGeometryFilters.
+        """Convert file names to vtkImageDataGeometryFilters.
 
         A pre-processing step to prevent re-read of file names during every
         state change.
@@ -327,9 +335,10 @@ class Button2D(UI):
         return icons
 
     def _setup(self):
-        """ Setup this UI component.
+        """Set up this UI component.
 
         Creating the button actor used internally.
+
         """
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
@@ -377,26 +386,27 @@ class Button2D(UI):
         self.handle_events(self.actor)
 
     def _get_actors(self):
-        """ Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
-        """ Add all subcomponents or VTK props that compose this UI component.
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
+
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def resize(self, size):
-        """ Resize the button.
+        """Resize the button.
 
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
+
         """
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
@@ -548,14 +558,14 @@ class Rectangle2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def _get_size(self):
         # Get 2D coordinates of two opposed corners of the rectangle.
@@ -699,14 +709,14 @@ class Disk2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def _get_size(self):
         diameter = 2 * self.outer_radius
@@ -836,15 +846,15 @@ class Panel2D(UI):
 
         return actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         for element in self._elements:
-            element.add_to_renderer(ren)
+            element.add_to_scene(scene)
 
     def _get_size(self):
         return self.background.size
@@ -1070,17 +1080,17 @@ class TextBlock2D(UI):
 
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         if self._background is not None:
-            ren.add(self._background)
+            scene.add(self._background)
 
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     @property
     def message(self):
@@ -1471,14 +1481,14 @@ class TextBox2D(UI):
         """
         return self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.text.add_to_renderer(ren)
+        self.text.add_to_scene(scene)
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -1835,16 +1845,16 @@ class LineSlider2D(UI):
         """
         return self.track.actors + self.handle.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handle.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handle.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
@@ -2128,18 +2138,18 @@ class LineDoubleSlider2D(UI):
                 self.handles[1].actors + self.text[0].actors +
                 self.text[1].actors)
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handles[0].add_to_renderer(ren)
-        self.handles[1].add_to_renderer(ren)
-        self.text[0].add_to_renderer(ren)
-        self.text[1].add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handles[0].add_to_scene(scene)
+        self.handles[1].add_to_scene(scene)
+        self.text[0].add_to_scene(scene)
+        self.text[1].add_to_scene(scene)
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
@@ -2485,16 +2495,16 @@ class RingSlider2D(UI):
         """
         return self.track.actors + self.handle.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handle.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handle.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         return self.track.size + self.handle.size
@@ -2748,15 +2758,15 @@ class RangeSlider(UI):
         """
         return self.range_slider.actors + self.value_slider.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.range_slider.add_to_renderer(ren)
-        self.value_slider.add_to_renderer(ren)
+        self.range_slider.add_to_scene(scene)
+        self.value_slider.add_to_scene(scene)
 
     def _get_size(self):
         return self.range_slider.size + self.value_slider.size
@@ -2915,14 +2925,14 @@ class ImageContainer2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def resize(self, size):
         """ Resize the image.
@@ -3030,15 +3040,15 @@ class Option(UI):
         """
         return self.button.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.button.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.button.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         width = self.button.size[0] + self.button_label_gap + self.text.size[0]
@@ -3142,15 +3152,15 @@ class Checkbox(UI):
             actors = actors + option.actors
         return actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         for option in self.options:
-            option.add_to_renderer(ren)
+            option.add_to_scene(scene)
 
     def _get_size(self):
         option_width, option_height = self.options[0].get_size()
@@ -3387,14 +3397,14 @@ class ListBox2D(UI):
         """
         return self.panel.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.panel.add_to_renderer(ren)
+        self.panel.add_to_scene(scene)
 
     def _get_size(self):
         return self.panel.size
@@ -3656,15 +3666,15 @@ class ListBoxItem2D(UI):
         """
         return self.background.actors + self.textblock.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.background.add_to_renderer(ren)
-        self.textblock.add_to_renderer(ren)
+        self.background.add_to_scene(scene)
+        self.textblock.add_to_scene(scene)
 
     def _get_size(self):
         return self.background.size
@@ -3828,14 +3838,14 @@ class FileMenu2D(UI):
         """
         self.listbox.position = coords
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.listbox.add_to_renderer(ren)
+        self.listbox.add_to_scene(scene)
 
     def _get_size(self):
         return self.listbox.size

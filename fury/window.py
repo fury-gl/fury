@@ -660,7 +660,7 @@ def show(scene, title='FURY', size=(300, 300),
 def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
            out_path=None, path_numbering=False, n_frames=1, az_ang=10,
            magnification=1, size=(300, 300), reset_camera=True, verbose=False):
-    """This will record a video of your scene.
+    """Record a video of your scene.
 
     Records a video as a series of ``.png`` files of your scene by rotating the
     azimuth angle az_angle in every frame.

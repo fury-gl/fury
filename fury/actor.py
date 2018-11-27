@@ -12,7 +12,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
-    """ Cuts 3D scalar or rgb volumes into 2D images
+    """Cut 3D scalar or rgb volumes into 2D images.
 
     Parameters
     ----------
@@ -190,7 +190,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
 def contour_from_roi(data, affine=None,
                      color=np.array([1, 0, 0]), opacity=1):
-    """Generates surface actor from a binary ROI.
+    """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
 
@@ -213,7 +213,6 @@ def contour_from_roi(data, affine=None,
         coordinates as calculated by the affine parameter.
 
     """
-
     if data.ndim != 3:
         raise ValueError('Only 3D arrays are currently supported.')
     else:
@@ -299,7 +298,7 @@ def contour_from_roi(data, affine=None,
 def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
-    """ Uses streamtubes to visualize polylines
+    """Use streamtubes to visualize polylines
 
     Parameters
     ----------
@@ -347,12 +346,12 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     --------
     >>> import numpy as np
     >>> from fury import actor, window
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
     >>> c = actor.streamtube(lines, colors)
-    >>> ren.add(c)
-    >>> #window.show(ren)
+    >>> scene.add(c)
+    >>> #window.show(scene)
 
     Notes
     -----
@@ -372,6 +371,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     See Also
     --------
     :func:`fury.actor.line`
+
     """
     # Poly data with lines and colors
     poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
@@ -491,12 +491,12 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     Examples
     ----------
     >>> from fury import actor, window
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
     >>> c = actor.line(lines, colors)
-    >>> ren.add(c)
-    >>> #window.show(ren)
+    >>> scene.add(c)
+    >>> #window.show(scene)
     """
     # Poly data with lines and colors
     poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
@@ -834,15 +834,17 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
 
 
 def _makeNd(array, ndim):
-    """Pads as many 1s at the beginning of array's shape as are need to give
-    array ndim dimensions."""
+    """
+    Pads as many 1s at the beginning of array's shape as are need to give
+    array ndim dimensions.
+    """
     new_shape = (1,) * (ndim - array.ndim) + array.shape
     return array.reshape(new_shape)
 
 
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                   norm=True, opacity=1., scalar_colors=None):
-    """ Slice many tensors as ellipsoids in native or world coordinates
+    """Slice many tensors as ellipsoids in native or world coordinates.
 
     Parameters
     ----------
@@ -870,8 +872,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     ---------
     actor : vtkActor
         Ellipsoid
-    """
 
+    """
     if not evals.shape == evecs.shape[:-1]:
         raise RuntimeError(
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
@@ -925,7 +927,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
                           scale=2.2, norm=True, opacity=1.,
                           scalar_colors=None):
-    """ Helper function for slicing tensor fields
+    """Helper function for slicing tensor fields
 
     Parameters
     ----------
@@ -953,6 +955,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     ---------
     mapper : vtkPolyDataMapper
         Ellipsoid mapper
+
     """
     if mask is None:
         mask = np.ones(evals.shape[:3])
@@ -1036,7 +1039,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                 colors=(1, 0, 0), opacity=1., linewidth=1,
                 lod=False, lod_points=10 ** 4, lod_points_size=3):
-    """ Visualize peak directions as given from ``peaks_from_model``
+    """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
     ----------
@@ -1150,7 +1153,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
-    """ Create one or more 3d points
+    """Create one or more 3d points.
 
     Parameters
     ----------
@@ -1169,7 +1172,6 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     fury.actor.point
 
     """
-
     if points.ndim == 2:
         points_no = points.shape[0]
     else:
@@ -1209,7 +1211,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
 
 
 def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
-    """ Visualize points as sphere glyphs
+    """Visualize points as sphere glyphs
 
     Parameters
     ----------
@@ -1228,20 +1230,20 @@ def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> pts = np.random.rand(5, 3)
     >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> ren.add(point_actor)
-    >>> # window.show(ren)
-    """
+    >>> scene.add(point_actor)
+    >>> # window.show(scene)
 
+    """
     return sphere(centers=points, colors=colors, radii=point_radius,
                   theta=theta, phi=phi, vertices=None, faces=None)
 
 
 def sphere(centers, colors, radii=1., theta=16, phi=16,
            vertices=None, faces=None):
-    """ Visualize one or many spheres with different colors and radii
+    """Visualize one or many spheres with different colors and radii
 
     Parameters
     ----------
@@ -1263,11 +1265,12 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> sphere_actor = actor.sphere(centers, window.colors.coral)
-    >>> ren.add(sphere_actor)
-    >>> # window.show(ren)
+    >>> scene.add(sphere_actor)
+    >>> # window.show(scene)
+
     """
 
     if np.array(colors).ndim == 1:
@@ -1327,7 +1330,7 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
 
 def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
           color=(1, 1, 1)):
-    """ Create a label actor.
+    """Create a label actor.
 
     This actor will always face the camera
 
@@ -1350,12 +1353,12 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> l = actor.label(text='Hello')
-    >>> ren.add(l)
-    >>> #window.show(ren)
-    """
+    >>> scene.add(l)
+    >>> #window.show(scene)
 
+    """
     atext = vtk.vtkVectorText()
     atext.SetText(text)
 
