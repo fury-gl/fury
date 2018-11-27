@@ -38,7 +38,7 @@ scene.background((0.5, 0.5, 0.5))
 ###############################################################################
 # Render slices from T1 with a specific value range
 # =================================================
-# 
+#
 # The T1 has usually a higher range of values than what can be visualized in an
 # image. We can set the range that we would like to see.
 
@@ -90,8 +90,9 @@ window.record(scene, out_path='slices.png', size=(600, 600),
 # Render slices from FA with your colormap
 # ========================================
 
-# It is also possible to set the colormap of your preference. Here we are loading
-# an FA image and showing it in a non-standard way using an HSV colormap.
+# It is also possible to set the colormap of your preference. Here we are
+# loading an FA image and showing it in a non-standard way using an HSV
+# colormap.
 
 fname_fa = os.path.join(os.path.expanduser('~'), '.dipy',
                         'exp_bundles_and_maps', 'bundles_2_subjects',
@@ -126,12 +127,13 @@ scene.zoom(1.4)
 window.record(scene, out_path='slices_lut.png', size=(600, 600),
               reset_camera=False)
 
-################################################################################
+###############################################################################
 # Now we would like to add the ability to click on a voxel and show its value
 # on a panel in the window. The panel is a UI element which requires access to
-# different areas of the visualization pipeline and therefore we don't recommend
-# using it with ``window.show``. The more appropriate way is to use the
-# ``ShowManager`` object, which allows accessing the pipeline in different areas.
+# different areas of the visualization pipeline and therefore we don't
+# recommend using it with ``window.show``. The more appropriate way is to use
+# the ``ShowManager`` object, which allows accessing the pipeline in different
+# areas.
 
 show_m = window.ShowManager(scene, size=(1200, 900))
 show_m.initialize()
@@ -159,9 +161,9 @@ panel_picking.add_element(result_value, (0.45, 0.25))
 
 show_m.scene.add(panel_picking)
 
-###############################################################################
-# Add a left-click callback to the slicer. Also disable interpolation so you can
-# see what you are picking.
+##############################################################################
+# Add a left-click callback to the slicer. Also disable interpolation so you
+# can see what you are picking.
 
 
 def left_click_callback(obj, ev):

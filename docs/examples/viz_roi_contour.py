@@ -86,5 +86,5 @@ if interactive:
 scene.zoom(1.5)
 scene.reset_clipping_range()
 
-window.record(scene, out_path='contour_from_roi_tutorial.png', size=(1200, 900),
-              reset_camera=False)
+window.record(scene, out_path='contour_from_roi_tutorial.png',
+              size=(1200, 900), reset_camera=False)

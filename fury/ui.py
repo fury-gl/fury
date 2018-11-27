@@ -3194,9 +3194,9 @@ class Checkbox(UI):
         for option_no, option in enumerate(self.options):
             option.position = (coords[0], button_y)
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-            button_y = button_y + self.font_size * \
-                (self.labels[option_no].count('\n') + 1) * (line_spacing + 0.1)\
-                + self.padding
+            button_y = (button_y + self.font_size
+                        * (self.labels[option_no].count('\n') + 1)
+                        * (line_spacing + 0.1) + self.padding)
 
     @property
     def font_size(self):
@@ -3607,7 +3607,9 @@ class ListBox2D(UI):
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
-            for i in range(self.last_selection_idx, selection_idx + step, step):
+            for i in range(self.last_selection_idx,
+                           selection_idx + step,
+                           step):
                 self.selected.append(self.values[i])
 
         elif self.multiselection and multiselect:

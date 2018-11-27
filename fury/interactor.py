@@ -245,7 +245,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # cannot be used. Also the method `SetInteractor` is not overridden in
         # `vtkInteractorStyleUser` so we have to call directly the one from
         # `vtkInteractorStyle`. In addition to setting the interactor, the
-        # following line adds the necessary hooks to listen to this 
+        # following line adds the necessary hooks to listen to this
         # observers instances.
         vtk.vtkInteractorStyle.SetInteractor(self, interactor)
 

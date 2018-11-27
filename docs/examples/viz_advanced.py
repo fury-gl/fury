@@ -238,8 +238,8 @@ show_m.scene.add(panel)
 # start the interaction using ``show_m.start()``.
 #
 #
-# However, if you change the window size, the panel will not update its 
-# position properly. The solution to this issue is to update the position of 
+# However, if you change the window size, the panel will not update its
+# position properly. The solution to this issue is to update the position of
 # the panel using its ``re_align`` method every time the window size changes.
 
 
