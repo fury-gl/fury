@@ -19,7 +19,7 @@ from fury import ui, window
 ###############################################################################
 # Shapes
 # ======
-# 
+#
 # Let's start by drawing some simple shapes. First, a rectangle.
 
 rect = ui.Rectangle2D(size=(200, 200), position=(400, 300), color=(1, 0, 1))
@@ -39,8 +39,8 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300),
 # Image
 # =====
 #
-# Now let's display an image. First we need to fetch some icons that are included
-# in DIPY.
+# Now let's display an image. First we need to fetch some icons that are
+# included in DIPY.
 
 fetch_viz_icons()
 
@@ -103,6 +103,7 @@ def change_icon_callback(i_ren, obj, button):
     button.next_icon()
     i_ren.force_render()
 
+
 button_example.on_left_mouse_button_clicked = change_text_callback
 second_button_example.on_left_mouse_button_pressed = change_icon_callback
 
@@ -128,6 +129,7 @@ def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
         cube_actor.GetProperty().SetColor(color)
     return cube_actor
 
+
 cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 
 ###############################################################################
@@ -142,6 +144,7 @@ line_slider = ui.LineSlider2D(center=(500, 250), initial_value=0,
 ###############################################################################
 # We can use a callback to rotate the cube with the ring slider.
 
+
 def rotate_cube(slider):
     angle = slider.value
     previous_angle = slider.previous_value
@@ -152,6 +155,7 @@ ring_slider.on_change = rotate_cube
 
 ###############################################################################
 # Similarly, we can translate the cube with the line slider.
+
 
 def translate_cube(slider):
     value = slider.value
@@ -177,8 +181,8 @@ range_slider = ui.RangeSlider(
 # Select menu
 # ============
 #
-# We just added many examples. If we showed them all at once, they would fill the
-# screen. Let's make a simple menu to choose which example is shown.
+# We just added many examples. If we showed them all at once, they would fill
+# the screen. Let's make a simple menu to choose which example is shown.
 #
 # We'll first make a list of the examples.
 
@@ -186,8 +190,8 @@ examples = [[rect], [disk, ring], [img], [panel],
             [ring_slider, line_slider], [range_slider]]
 
 ###############################################################################
-# Now we'll make a function to hide all the examples. Then we'll call it so that
-# none are shown initially.
+# Now we'll make a function to hide all the examples. Then we'll call it so
+# that none are shown initially.
 
 
 def hide_all_examples():
@@ -199,8 +203,8 @@ def hide_all_examples():
 hide_all_examples()
 
 ###############################################################################
-# To make the menu, we'll first need to create a list of labels which correspond
-# with the examples.
+# To make the menu, we'll first need to create a list of labels which
+# correspond with the examples.
 
 values = ['Rectangle', 'Disks', 'Image', "Button Panel",
           "Line and Ring Slider", "Range Slider"]
@@ -215,6 +219,7 @@ listbox = ui.ListBox2D(values=values, position=(10, 300), size=(300, 200),
 # Then we will use a callback to show the correct example when a label is
 # clicked.
 
+
 def display_element():
     hide_all_examples()
     example = examples[values.index(listbox.selected[0])]
@@ -222,6 +227,7 @@ def display_element():
         element.set_visibility(True)
     if values.index(listbox.selected[0]) == 4:
         cube.SetVisibility(True)
+
 
 listbox.on_change = display_element
 

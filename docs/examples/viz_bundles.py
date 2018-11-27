@@ -10,7 +10,7 @@ which provides metrics and bundles.
 import numpy as np
 from fury import window, actor
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
-from dipy.tracking.streamline import transform_streamlines
+from dipy.tracking.streamline import transform_streamlines, length
 
 fetch_bundles_2_subjects()
 dix = read_bundles_2_subjects(subj_id='subj_1', metrics=['fa'],
@@ -133,8 +133,6 @@ window.record(scene, out_path='bundle4.png', size=(600, 600))
 # length.
 
 scene.clear()
-
-from dipy.tracking.streamline import length
 
 lengths = length(bundle_native)
 
