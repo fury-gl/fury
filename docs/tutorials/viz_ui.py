@@ -235,19 +235,19 @@ listbox.on_change = display_element
 current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
 
-show_manager.ren.add(listbox)
+show_manager.scene.add(listbox)
 for example in examples:
     for element in example:
-        show_manager.ren.add(element)
-show_manager.ren.add(cube)
-show_manager.ren.reset_camera()
-show_manager.ren.set_camera(position=(0, 0, 200))
-show_manager.ren.reset_clipping_range()
-show_manager.ren.azimuth(30)
+        show_manager.scene.add(element)
+show_manager.scene.add(cube)
+show_manager.scene.reset_camera()
+show_manager.scene.set_camera(position=(0, 0, 200))
+show_manager.scene.reset_clipping_range()
+show_manager.scene.azimuth(30)
 
 interactive = False
 
 if interactive:
     show_manager.start()
 
-window.record(show_manager.ren, size=current_size, out_path="viz_ui.png")
+window.record(show_manager.scene, size=current_size, out_path="viz_ui.png")
