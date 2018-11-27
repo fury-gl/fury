@@ -151,6 +151,7 @@ def rotate_cube(slider):
     rotation_angle = angle - previous_angle
     cube.RotateX(rotation_angle)
 
+
 ring_slider.on_change = rotate_cube
 
 ###############################################################################
@@ -160,6 +161,7 @@ ring_slider.on_change = rotate_cube
 def translate_cube(slider):
     value = slider.value
     cube.SetPosition(value, 0, 0)
+
 
 line_slider.on_change = translate_cube
 
@@ -199,6 +201,7 @@ def hide_all_examples():
         for element in example:
             element.set_visibility(False)
     cube.SetVisibility(False)
+
 
 hide_all_examples()
 
