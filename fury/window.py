@@ -250,7 +250,7 @@ def renderer(background=None):
     if background is not None:
         scene.SetBackground(background)
 
-    return ren
+    return scene
 
 
 def ren(background=None):

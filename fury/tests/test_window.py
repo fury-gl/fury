@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 from fury import actor, window
 import numpy.testing as npt
@@ -71,6 +72,31 @@ def test_scene():
     window.rm(ren2, axes)
     report = window.analyze_scene(ren2)
     npt.assert_equal(report.actors, 0)
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_deprecated():
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", DeprecationWarning)
+        scene = window.Renderer()
+        npt.assert_equal(scene.size(), (0, 0))
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", DeprecationWarning)
+        scene = window.renderer()
+        npt.assert_equal(scene.size(), (0, 0))
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", DeprecationWarning)
+        scene = window.ren()
+        npt.assert_equal(scene.size(), (0, 0))
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
 
 
 @npt.dec.skipif(skip_it)
@@ -224,4 +250,5 @@ def test_order_transparent():
 
 
 if __name__ == '__main__':
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_deprecated()
