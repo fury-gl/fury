@@ -201,7 +201,7 @@ def test_active_camera():
     npt.assert_almost_equal(position[2], 0.5 * new_position[2])
 
     cam = scene.camera()
-    npt. assert_equal(new_position, cam.getPosition())
+    npt. assert_equal(new_position, cam.GetPosition())
     npt. assert_equal(focal_point, cam.GetFocalPoint())
     npt. assert_equal(view_up, cam.GetViewUp())
 
