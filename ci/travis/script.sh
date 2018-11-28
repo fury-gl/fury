@@ -17,10 +17,10 @@ else
     pytest -svv fury
 fi
 
-if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx"]]; then
+if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
   # export DISPLAY=${DISPLAY}
   # Build the documentation.
-  xvfb-run -n ${DISPLAY} --server-args='-screen 0, 1920x1080x24' \
+  xvfb-run -n ${DISPLAY} --server-args="-screen 0, 1920x1080x24" \
     make -C docs html  
 fi
 
