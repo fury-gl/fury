@@ -18,10 +18,7 @@ else
 fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
-  # export DISPLAY=${DISPLAY}
   # Build the documentation.
   xvfb-run --server-args="-screen 0, 1920x1080x24" \
     make -C docs html  
 fi
-
-#   - flake8 --max-line-length=115  # Enforce code style (but relax line length limit a bit).
