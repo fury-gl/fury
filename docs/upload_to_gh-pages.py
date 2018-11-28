@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """Script to commit the doc build outputs into the github-pages repo.
+
 Use:
-  upload_to_gh-pages.py 
+  upload_to_gh-pages.py
 """
 
 ###############################################################################
@@ -46,7 +47,9 @@ def sh(cmd):
 
 def sh2(cmd):
     """Execute command in a subshell, return stdout.
-    Stderr is unbuffered from the subshell.x"""
+
+    Stderr is unbuffered from the subshell.x
+    """
     p = Popen(cmd, stdout=PIPE, shell=True)
     out = p.communicate()[0]
     retcode = p.returncode
@@ -58,8 +61,10 @@ def sh2(cmd):
 
 
 def sh3(cmd):
-    """Execute command in a subshell, return stdout, stderr
-    If anything appears in stderr, print it out to sys.stderr"""
+    """Execute command in a subshell, return stdout, stderr.
+
+    If anything appears in stderr, print it out to sys.stderr
+    """
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     out, err = p.communicate()
     retcode = p.returncode

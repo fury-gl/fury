@@ -9,7 +9,13 @@ then
     echo "-- pushing docs --"
 
     (
+    # Setup environment
+    export PATH=${ENV_DIR}/miniconda/bin:$PATH
+    hash -r
+    source activate testenv
     cd ${TRAVIS_BUILD_DIR}
+
+    # Setup git user
     git config --global user.email "travis@travis-ci.com"
     git config --global user.name "Travis Bot"
 
