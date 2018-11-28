@@ -132,6 +132,7 @@ def test_deprecated():
         npt.assert_equal(len(w), 6)
         assert issubclass(w[-1].category, DeprecationWarning)
 
+
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_active_camera():
