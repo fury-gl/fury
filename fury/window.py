@@ -270,6 +270,8 @@ def add(scene, a):
           `ren` will be removed in Fury 0.3.0, it is replaced by
           `Scene().add`
     """
+    warn("Class 'fury.window.add' is deprecated, instead"
+         " use class 'fury.window.Scene.add'.", DeprecationWarning)
     scene.add(a)
 
 
@@ -280,6 +282,8 @@ def rm(scene, a):
           `ren` will be removed in Fury 0.3.0, it is replaced by
           `Scene().rm`
     """
+    warn("Class 'fury.window.rm' is deprecated, instead"
+         " use class 'fury.window.Scene.rm'.", DeprecationWarning)
     scene.rm(a)
 
 
@@ -290,6 +294,8 @@ def clear(scene):
           `ren` will be removed in Fury 0.3.0, it is replaced by
           `Scene().clear`
     """
+    warn("Class 'fury.window.clear' is deprecated, instead"
+         " use class 'fury.window.Scene.clear'.", DeprecationWarning)
     scene.clear()
 
 
@@ -300,6 +306,8 @@ def rm_all(scene):
           `ren` will be removed in Fury 0.3.0, it is replaced by
           `Scene().rm_all`
     """
+    warn("Class 'fury.window.rm_all' is deprecated, instead"
+         " use class 'fury.window.Scene.rm_all'.", DeprecationWarning)
     scene.rm_all()
 
 
