@@ -26,7 +26,7 @@ then
     cd doc_build
 
     git rm -r dev
-    cp -r ../build/html dev
+    cp -r ../docs/build/html dev
     git add dev
 
     git commit -m "Deployed to GitHub Pages"
