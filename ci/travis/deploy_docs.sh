@@ -20,7 +20,7 @@ then
     git config --global user.name "Travis Bot"
 
     # build docs a second time
-    (cd docs && make -C . html)
+    (cd docs && xvfb-run --server-args="-screen 0, 1920x1080x24" make -C . html)
 
     git clone --quiet --branch=gh-pages https://${GH_REF} doc_build
     cd doc_build
