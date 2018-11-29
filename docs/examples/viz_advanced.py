@@ -17,9 +17,9 @@ from fury import actor, window, ui
 ###############################################################################
 # In ``window`` we have all the objects that connect what needs to be rendered
 # to the display or the disk e.g., for saving screenshots. So, there you will
-# find key objects and functions like the ``Renderer`` class which holds and
+# find key objects and functions like the ``Scene`` class which holds and
 # provides access to all the actors and the ``show`` function which displays
-# what is in the renderer on a window. Also, this module provides access to
+# what is in the scene on a window. Also, this module provides access to
 # functions for opening/saving dialogs and printing screenshots
 # (see ``snapshot``).
 #
@@ -75,10 +75,10 @@ if not world_coords:
     streamlines = transform_streamlines(streamlines, np.linalg.inv(affine))
 
 ###############################################################################
-# Now we create, a ``Renderer`` object and add the streamlines using the
+# Now we create, a ``Scene`` object and add the streamlines using the
 # ``line`` function and an image plane using the ``slice`` function.
 
-ren = window.Renderer()
+scene = window.Scene()
 stream_actor = actor.line(streamlines)
 
 if not world_coords:
@@ -114,12 +114,12 @@ image_actor_y.display_extent(0,
                              shape[2] - 1)
 
 ###############################################################################
-# Connect the actors with the Renderer.
+# Connect the actors with the Scene.
 
-ren.add(stream_actor)
-ren.add(image_actor_z)
-ren.add(image_actor_x)
-ren.add(image_actor_y)
+scene.add(stream_actor)
+scene.add(image_actor_z)
+scene.add(image_actor_x)
+scene.add(image_actor_y)
 
 ###############################################################################
 # Now we would like to change the position of each ``image_actor`` using a
@@ -128,7 +128,7 @@ ren.add(image_actor_y)
 # ``show``. The more appropriate way is to use them with the ``ShowManager``
 # object which allows accessing the pipeline in different areas. Here is how:
 
-show_m = window.ShowManager(ren, size=(1200, 900))
+show_m = window.ShowManager(scene, size=(1200, 900))
 show_m.initialize()
 
 ###############################################################################
@@ -231,20 +231,20 @@ panel.add_element(line_slider_z, (0.38, 0.35))
 panel.add_element(opacity_slider_label, (0.1, 0.15))
 panel.add_element(opacity_slider, (0.38, 0.15))
 
-show_m.ren.add(panel)
+show_m.scene.add(panel)
 
 ###############################################################################
 # Then, we can render all the widgets and everything else in the screen and
 # start the interaction using ``show_m.start()``.
 #
 #
-# However, if you change the window size, the panel will not update its 
-# position properly. The solution to this issue is to update the position of 
+# However, if you change the window size, the panel will not update its
+# position properly. The solution to this issue is to update the position of
 # the panel using its ``re_align`` method every time the window size changes.
 
 
 global size
-size = ren.GetSize()
+size = scene.GetSize()
 
 
 def win_callback(obj, event):
@@ -264,8 +264,8 @@ show_m.initialize()
 
 interactive = False
 
-ren.zoom(1.5)
-ren.reset_clipping_range()
+scene.zoom(1.5)
+scene.reset_clipping_range()
 
 if interactive:
 
@@ -275,7 +275,7 @@ if interactive:
 
 else:
 
-    window.record(ren, out_path='bundles_and_3_slices.png', size=(1200, 900),
+    window.record(scene, out_path='bundles_and_3_slices.png', size=(1200, 900),
                   reset_camera=False)
 
 del show_m

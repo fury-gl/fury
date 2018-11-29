@@ -7,23 +7,23 @@ import numpy as np
 import vtk
 
 
-def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
+def slider(iren, scene, callback, min_value=0, max_value=255, value=125,
            label="Slider",
            right_normalized_pos=(0.9, 0.5),
            size=(50, 0),
            label_format="%0.0lf",
            color=(0.5, 0.5, 0.5),
            selected_color=(0.9, 0.2, 0.1)):
-    """ A 2D slider widget
+    """Create a 2D slider widget.
 
     Parameters
     ----------
     iren : vtkRenderWindowInteractor
         Used to process events and handle them to the slider. Can also be given
         by the attribute ``ShowManager.iren``.
-    ren :  vtkRenderer or Renderer
+    scene :  Scene() or vtkRenderer()
         Used to update the slider's position when the window changes. Can also
-        be given by the ``ShowManager.ren`` attribute.
+        be given by the ``ShowManager.scene`` attribute.
     callback : function
         Function that has at least ``obj`` and ``event`` as parameters. It will
         be called when the slider's bar has changed.
@@ -49,8 +49,8 @@ def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
         This object inherits from vtkSliderWidget and has additional method
         called ``place`` which allows to update the position of the slider
         when for example the window is resized.
-    """
 
+    """
     slider_rep = vtk.vtkSliderRepresentation2D()
     slider_rep.SetMinimumValue(min_value)
     slider_rep.SetMaximumValue(max_value)
@@ -60,12 +60,12 @@ def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
     slider_rep.GetPoint2Coordinate().SetCoordinateSystemToNormalizedDisplay()
     slider_rep.GetPoint2Coordinate().SetValue(*right_normalized_pos)
 
-    coord2 = slider_rep.GetPoint2Coordinate().GetComputedDisplayValue(ren)
+    coord2 = slider_rep.GetPoint2Coordinate().GetComputedDisplayValue(scene)
     slider_rep.GetPoint1Coordinate().SetCoordinateSystemToDisplay()
     slider_rep.GetPoint1Coordinate().SetValue(coord2[0] - size[0],
                                               coord2[1] - size[1])
 
-    initial_window_size = ren.GetSize()
+    initial_window_size = scene.GetSize()
     length = 0.04
     width = 0.04
     cap_length = 0.01
@@ -91,19 +91,19 @@ def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
 
     class SliderWidget(vtk.vtkSliderWidget):
 
-        def place(self, ren):
+        def place(self, scene):
 
             slider_rep = self.GetRepresentation()
             coord2_norm = slider_rep.GetPoint2Coordinate()
             coord2_norm.SetCoordinateSystemToNormalizedDisplay()
             coord2_norm.SetValue(*right_normalized_pos)
 
-            coord2 = coord2_norm.GetComputedDisplayValue(ren)
+            coord2 = coord2_norm.GetComputedDisplayValue(scene)
             slider_rep.GetPoint1Coordinate().SetCoordinateSystemToDisplay()
             slider_rep.GetPoint1Coordinate().SetValue(coord2[0] - size[0],
                                                       coord2[1] - size[1])
 
-            window_size = ren.GetSize()
+            window_size = scene.GetSize()
             length = initial_window_size[0] * 0.04 / window_size[0]
             width = initial_window_size[1] * 0.04 / window_size[1]
 
@@ -126,7 +126,7 @@ def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
 
     # Place widget after window resizing.
     def _place_widget(obj, event):
-        slider.place(ren)
+        slider.place(scene)
 
     iren.GetRenderWindow().AddObserver(
         vtk.vtkCommand.StartEvent, _place_widget)
@@ -136,32 +136,32 @@ def slider(iren, ren, callback, min_value=0, max_value=255, value=125,
     return slider
 
 
-def button_display_coordinates(renderer, normalized_display_position, size):
+def button_display_coordinates(scene, normalized_display_position, size):
     upperRight = vtk.vtkCoordinate()
     upperRight.SetCoordinateSystemToNormalizedDisplay()
     upperRight.SetValue(normalized_display_position[0],
                         normalized_display_position[1])
     bds = [0.0] * 6
-    bds[0] = upperRight.GetComputedDisplayValue(renderer)[0] - size[0]
+    bds[0] = upperRight.GetComputedDisplayValue(scene)[0] - size[0]
     bds[1] = bds[0] + size[0]
-    bds[2] = upperRight.GetComputedDisplayValue(renderer)[1] - size[1]
+    bds[2] = upperRight.GetComputedDisplayValue(scene)[1] - size[1]
     bds[3] = bds[2] + size[1]
 
     return bds
 
 
-def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
+def button(iren, scene, callback, fname, right_normalized_pos=(.98, .9),
            size=(50, 50)):
-    """ A textured two state button widget
+    """Create a textured two state button widget.
 
     Parameters
     ----------
     iren : vtkRenderWindowInteractor
         Used to process events and handle them to the button. Can also be given
         by the attribute ``ShowManager.iren``.
-    ren :  vtkRenderer or Renderer
+    scene :  Scene() or vtkRenderer()
         Used to update the slider's position when the window changes. Can also
-        be given by the ``ShowManager.ren`` attribute.
+        be given by the ``ShowManager.scene`` attribute.
     callback : function
         Function that has at least ``obj`` and ``event`` as parameters. It will
         be called when the button is pressed.
@@ -177,7 +177,7 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
     button : ButtonWidget
         This object inherits from vtkButtonWidget and has an additional  method
         called ``place`` which allows to update the position of the slider
-        if necessary. For example when the renderer size changes.
+        if necessary. For example when the scene size changes.
 
     Notes
     ------
@@ -185,8 +185,8 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
     the developers to create a HUD-like collections of buttons and sliders on
     the right side of the window that always stays in place when the dimensions
     of the window change.
-    """
 
+    """
     image1 = vtk.vtkPNGReader()
     image1.SetFileName(fname)
     image1.Update()
@@ -198,9 +198,9 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
 
     class ButtonWidget(vtk.vtkButtonWidget):
 
-        def place(self, renderer):
+        def place(self, scene):
 
-            bds = button_display_coordinates(renderer, right_normalized_pos,
+            bds = button_display_coordinates(scene, right_normalized_pos,
                                              size)
             self.GetRepresentation().SetPlaceFactor(1)
             self.GetRepresentation().PlaceWidget(bds)
@@ -213,7 +213,7 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
 
     # Place widget after window resizing.
     def _place_widget(obj, event):
-        button.place(ren)
+        button.place(scene)
 
     iren.GetRenderWindow().AddObserver(
         vtk.vtkCommand.StartEvent, _place_widget)
@@ -223,19 +223,19 @@ def button(iren, ren, callback, fname, right_normalized_pos=(.98, .9),
     return button
 
 
-def text(iren, ren, callback, message="FURY",
+def text(iren, scene, callback, message="FURY",
          left_down_pos=(0.8, 0.5), right_top_pos=(0.9, 0.5),
          color=(1., .5, .0), opacity=1., border=False):
-    """ 2D text that can be clicked and process events
+    """2D text that can be clicked and process events.
 
     Parameters
     ----------
     iren : vtkRenderWindowInteractor
         Used to process events and handle them to the button. Can also be given
         by the attribute ``ShowManager.iren``.
-    ren :  vtkRenderer or Renderer
+    scene :  Scene() or vtkRenderer()
         Used to update the slider's position when the window changes. Can also
-        be given by the ``ShowManager.ren`` attribute.
+        be given by the ``ShowManager.scene`` attribute.
     callback : function
         Function that has at least ``obj`` and ``event`` as parameters. It will
         be called when the button is pressed.
@@ -281,7 +281,7 @@ def text(iren, ren, callback, message="FURY",
 
     class TextWidget(vtk.vtkTextWidget):
 
-        def place(self, renderer):
+        def place(self, scene):
             text_rep = self.GetRepresentation()
 
             position = text_rep.GetPositionCoordinate()
@@ -312,7 +312,7 @@ def text(iren, ren, callback, message="FURY",
 
     # Place widget after window resizing.
     def _place_widget(obj, event):
-        text_widget.place(ren)
+        text_widget.place(scene)
 
     iren.GetRenderWindow().AddObserver(
         vtk.vtkCommand.StartEvent, _place_widget)

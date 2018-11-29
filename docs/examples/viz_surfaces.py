@@ -91,12 +91,12 @@ print(ut_vtk.get_polydata_colors(cube_polydata))
 # get vtkActor
 cube_actor = ut_vtk.get_actor_from_polydata(cube_polydata)
 
-# renderer and scene
-renderer = window.Renderer()
-renderer.add(cube_actor)
-renderer.set_camera(position=(10, 5, 7), focal_point=(0.5, 0.5, 0.5))
-renderer.zoom(3)
+# Create a scene
+scene = window.Scene()
+scene.add(cube_actor)
+scene.set_camera(position=(10, 5, 7), focal_point=(0.5, 0.5, 0.5))
+scene.zoom(3)
 
 # display
-# window.show(renderer, size=(600, 600), reset_camera=False)
-window.record(renderer, out_path='cube.png', size=(600, 600))
+# window.show(scene, size=(600, 600), reset_camera=False)
+window.record(scene, out_path='cube.png', size=(600, 600))
