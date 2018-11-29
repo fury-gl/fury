@@ -84,8 +84,13 @@ if __name__ == '__main__':
     # Load source package
     cd(pkg_path)
     mod = __import__(pkg_name)
-    if pjoin(pkg_path, pkg_name) != os.path.dirname(mod.__file__):
-        raise RuntimeError("You should work with with the source and not the"
+
+    if pjoin(pkg_path, pkg_name).lower() != \
+       os.path.dirname(mod.__file__).lower():
+
+        print(pjoin(pkg_path, pkg_name))
+        print(mod.__file__)
+        raise RuntimeError("You should work with the source and not the "
                            "installed package")
 
     # find the version number
@@ -93,11 +98,18 @@ if __name__ == '__main__':
 
     intro_msg = """
 ##############################################
-#  Documentation version {} \n
-#  using tag '{}' \n
+#  Documentation version {}
+#
+#  using tag '{}'
 ##############################################""".format(mod.__version__, tag)
 
     print(intro_msg)
+
+    if not os.path.exists(html_dir):
+        raise RuntimeError("Documentation build folder not found! You should "
+                           "generate the documentation first via this "
+                           "command: 'make -C docs html')"
+                           )
 
     if not os.path.exists(pages_dir):
         # clone the gh-pages repo if we haven't already.
