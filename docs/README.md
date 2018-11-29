@@ -19,6 +19,15 @@ $ pip install -U -r requirements/docs.txt
 
 ### Generate all the Documentation
 
+#### Under Linux and OSX
+
 ```bash
 $ make -C . clean && make -C . html
+```
+
+#### Under Windows
+
+```bash
+$ ./make.bat clean
+$ ./make.bat html
 ```
