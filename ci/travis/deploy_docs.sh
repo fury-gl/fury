@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ev
 # if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_BRANCH == "master" &&
 #       $BUILD_DOCS == 1 && $DEPLOY_DOCS == 1 ]]
 if [[ $BUILD_DOCS == 1 && $DEPLOY_DOCS == 1 ]]
@@ -30,7 +31,8 @@ then
     git add dev
 
     git commit -m "Deployed to GitHub Pages"
-    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1
+    git push --force "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1
+    echo "-- Deployed done --"
     )
 else
     echo "-- will only push docs from master --"
