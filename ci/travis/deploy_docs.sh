@@ -31,7 +31,8 @@ then
     git add dev
 
     git commit -m "Deployed to GitHub Pages"
-    git push --force "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1
+    git push --force "https://${GH_TOKEN}@${GH_REF}" gh-pages
+    #> /dev/null 2>&1
     echo "-- Deployed done --"
     )
 else
