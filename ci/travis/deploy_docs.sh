@@ -1,8 +1,6 @@
 #!/bin/bash
-set -ev
-# if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_BRANCH == "master" &&
-#       $BUILD_DOCS == 1 && $DEPLOY_DOCS == 1 ]]
-if [[ $BUILD_DOCS == 1 && $DEPLOY_DOCS == 1 ]]
+if [[ $TRAVIS_PULL_REQUEST == false && $TRAVIS_BRANCH == "master" &&
+      $BUILD_DOCS == 1 && $DEPLOY_DOCS == 1 ]]
 then
     # See https://help.github.com/articles/creating-an-access-token-for-command-line-use/ for how to generate a token
     # See http://docs.travis-ci.com/user/encryption-keys/ for how to generate 
@@ -31,9 +29,8 @@ then
     git add dev
 
     git commit -m "Deployed to GitHub Pages"
-    git push --force "https://${GH_TOKEN}@${GH_REF}" gh-pages
-    #> /dev/null 2>&1
-    echo "-- Deployed done --"
+    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1
+    echo "-- Deployment done --"
     )
 else
     echo "-- will only push docs from master --"
