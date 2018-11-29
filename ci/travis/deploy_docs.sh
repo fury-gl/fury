@@ -30,7 +30,7 @@ then
     git add dev
 
     git commit -m "Deployed to GitHub Pages"
-    git push --force --quiet "https://${TRAVIS_SECURE_TOKEN_NAME}@${GH_REF}" gh-pages > /dev/null 2>&1
+    git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" gh-pages > /dev/null 2>&1
     )
 else
     echo "-- will only push docs from master --"
