@@ -775,5 +775,53 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_spheres(interactive=False):
+
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+
+    scene = window.Scene()
+    actors = []
+    texts = []
+    sphere_actor1 = actor.sphere(centers=xyzr[0, :3], colors=colors[0],
+                                 radii=xyzr[0, 3])
+    actors.append(sphere_actor1)
+    text_actor1 = actor.text_3d('sphere 1', justification='center')
+    texts.append(text_actor1)
+
+    sphere_actor2 = actor.sphere(centers=xyzr[1, :3], colors=colors[1],
+                                 radii=xyzr[1, 3])
+    actors.append(sphere_actor2)
+    text_actor2 = actor.text_3d('sphere 2', justification='center')
+    texts.append(text_actor2)
+
+    sphere_actor3 = actor.sphere(centers=xyzr[2, :3], colors=colors[2],
+                                 radii=xyzr[2, 3])
+    actors.append(sphere_actor3)
+    text_actor3 = actor.text_3d('sphere 3', justification='center')
+    texts.append(text_actor3)
+
+    from fury.actor import grid
+
+    container_actor = grid(actors=actors, captions=texts)
+
+    scene.add(container_actor)
+
+    from fury import interactor
+
+    if interactive:
+        # window.show(scene, order_transparent=True)
+        show_m = window.ShowManager(scene, interactor_style=interactor.InteractorStyleBundlesGrid(actor))
+        show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_spheres()
