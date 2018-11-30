@@ -8,8 +8,9 @@ from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
-
-
+from scipy.spatial import Delaunay
+import math
+import random
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
     """ Cuts 3D scalar or rgb volumes into 2D images
@@ -187,6 +188,85 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     return image_actor
 
+
+def surface(vertices, faces=None, smooth=None):
+    temp1 = np.amax(vertices, axis=0)
+    temp2 = np.amin(vertices, axis=0)
+    size = list()
+    for i in range(len(temp1)):
+        if abs(temp1[i]) > abs(temp2[i]):
+            size.append(abs(temp1[i]))
+        else:
+            size.append(abs(temp2[i]))
+
+    colors = vtk.vtkUnsignedCharArray()
+    colors.SetNumberOfComponents(3)
+    points = vtk.vtkPoints()
+    triangles = vtk.vtkCellArray()
+    if faces is None:
+        xy = list()
+        for coordinate in vertices:
+            xy.append([coordinate[0], coordinate[1]])
+        tri = Delaunay(xy)
+        faces = tri.simplices
+
+    count = 0
+    for face in faces:
+        p_1 = vertices[face[0]]
+        p_2 = vertices[face[1]]
+        p_3 = vertices[face[2]]
+
+        points.InsertNextPoint(p_1[0], p_1[1], p_1[2])
+        points.InsertNextPoint(p_2[0], p_2[1], p_2[2])
+        points.InsertNextPoint(p_3[0], p_3[1], p_3[2])
+
+        triangle = vtk.vtkTriangle()
+        triangle.GetPointIds().SetId(0, count)
+        triangle.GetPointIds().SetId(1, count + 1)
+        triangle.GetPointIds().SetId(2, count + 2)
+
+        triangles.InsertNextCell(triangle)
+        count += 3
+
+        r = [int(abs(p_1[0]) / float(size[0]) * 255), int(abs(p_1[1]) / float(size[1]) * 255),
+             int(abs(p_1[2]) / float(size[2]) * 255)]
+        colors.InsertNextTypedTuple(r)
+        colors.InsertNextTypedTuple(r)
+        colors.InsertNextTypedTuple(r)
+
+    trianglePolyData = vtk.vtkPolyData()
+
+    # Add the geometry and topology to the polydata
+    trianglePolyData.SetPoints(points)
+    trianglePolyData.GetPointData().SetScalars(colors)
+    trianglePolyData.SetPolys(triangles)
+
+    # Clean the polydata so that the edges are shared !
+    cleanPolyData = vtk.vtkCleanPolyData()
+    cleanPolyData.SetInputData(trianglePolyData)
+
+    mapper = vtk.vtkPolyDataMapper()
+    surface_actor = vtk.vtkActor()
+
+    if smooth is None:
+        mapper.SetInputData(trianglePolyData)
+        surface_actor.SetMapper(mapper)
+
+    elif smooth == "loop":
+        smooth_loop = vtk.vtkLoopSubdivisionFilter()
+        smooth_loop.SetNumberOfSubdivisions(3)
+        smooth_loop.SetInputConnection(cleanPolyData.GetOutputPort())
+        mapper.SetInputConnection(smooth_loop.GetOutputPort())
+        surface_actor.SetMapper(mapper)
+
+    elif smooth == "butterfly":
+        smooth_butterfly = vtk.vtkButterflySubdivisionFilter()
+        smooth_butterfly.SetNumberOfSubdivisions(3)
+        smooth_butterfly.SetInputConnection(cleanPolyData.GetOutputPort())
+        mapper.SetInputConnection(smooth_butterfly.GetOutputPort())
+        surface_actor.SetMapper(mapper)
+
+    return surface_actor
 
 def contour_from_roi(data, affine=None,
                      color=np.array([1, 0, 0]), opacity=1):
