@@ -1584,11 +1584,11 @@ class Container(object):
         self.layout.apply(self._items)
         self._need_update = False
 
-    def add_to_renderer(self, ren):
+    def add_to_scene(self, ren):
         """ Adds the items of this container to a given renderer. """
         for item in self.items:
             if isinstance(item, Container):
-                item.add_to_renderer(ren)
+                item.add_to_scene(ren)
             else:
                 ren.add(item)
 

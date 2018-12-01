@@ -48,7 +48,9 @@ def main():
         texts.append(text)
 
     grid = actor.grid(actors, texts, cell_padding=(50, 100), cell_shape="rect")
-    ren.add(grid)
+
+
+    #ren.add(grid)
 
     ren.reset_camera_tight()
     show_m = window.ShowManager(ren, interactor_style=interactor.InteractorStyleBundlesGrid(actor))
