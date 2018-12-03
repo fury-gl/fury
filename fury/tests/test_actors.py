@@ -1,7 +1,10 @@
 import os
 import numpy as np
 
-from fury import actor, window, shaders
+from fury import shaders
+from fury import actor, window, interactor
+from fury.actor import grid
+import itertools
 
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
@@ -777,56 +780,119 @@ def test_spheres(interactive=False):
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
-def test_spheres(interactive=False):
+def test_grid(interactive=False):
 
-    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
-    colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
+
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            (1., 0, 0), 1.)
+
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
+
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            (1., 0.5, 0), 1.)
+
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
+
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            (1., 0.5, 0.5), 1.)
 
     scene = window.Scene()
     actors = []
     texts = []
-    sphere_actor1 = actor.sphere(centers=xyzr[:, :3], colors=colors,
-                                 radii=xyzr[:, 3])
-    actors.append(sphere_actor1)
-    text_actor1 = actor.text_3d('sphere 1', justification='center')
+
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
     texts.append(text_actor1)
 
-    sphere_actor2 = actor.sphere(centers=xyzr[:, :3] + np.array([500, 0, 0]), colors=colors,
-                                 radii=xyzr[:, 3])
-    actors.append(sphere_actor2)
-    text_actor2 = actor.text_3d('sphere 2', justification='center')
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
     texts.append(text_actor2)
 
-    sphere_actor3 = actor.sphere(centers=xyzr[:, :3] + np.array([1000, 0, 0]), colors=colors,
-                                 radii=xyzr[:, 3])
-    actors.append(sphere_actor3)
-    text_actor3 = actor.text_3d('sphere 3', justification='center')
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
     texts.append(text_actor3)
 
-    from fury.actor import grid
+    from fury.utils import shallow_copy
 
-    container = grid(actors=actors, captions=texts)
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 7', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 8', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 9', justification='center')
+    texts.append(text_actor3)
+
+    # show the grid without the captions
+    container = grid(actors=actors, captions=None,
+                     caption_offset=(0, -40, 0),
+                     cell_padding=(10, 10), dim=(3, 3))
 
     scene.add(container)
 
-    from fury import interactor
+    scene.projection('orthogonal')
 
-    if interactive:
-        # window.show(scene, order_transparent=True)
-        """
-        show_m = window.ShowManager(
-                scene,
-                interactor_style=interactor.InteractorStyleBundlesGrid(actor))
-        """
-        show_m = window.ShowManager(scene, interactor_style=interactor.InteractorStyleBundlesGrid(actor))
-        show_m.start()
+    counter = itertools.count()
 
-    #arr = window.snapshot(scene)
-    #report = window.analyze_snapshot(arr,
-    #                                colors=colors)
-    #npt.assert_equal(report.objects, 3)
+    istyle = interactor.InteractorStyleGrid(actor)
+    show_m = window.ShowManager(scene,
+                                interactor_style=istyle)
+
+    show_m.initialize()
+
+    def timer_callback(obj, event):
+        cnt = next(counter)
+        show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 10:
+            show_m.exit()
+
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 9)
+
+    scene.rm_all()
+
+    # show the grid with the captions
+    container = grid(actors=actors, captions=texts,
+                     caption_offset=(0, -50, 0),
+                     cell_padding=(10, 10), dim=(3, 3))
+
+    scene.add(container)
+
+    counter = itertools.count()
+    show_m = window.ShowManager(scene,
+                                interactor_style=istyle)
+    show_m.initialize()
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 9, True)
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_spheres(True)
+    npt.run_module_suite()
