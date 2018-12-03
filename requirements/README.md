@@ -42,9 +42,3 @@ $ pip install -U -r requirements/default.txt
 $ pip install -U -r requirements/optional.txt
 $ pip install -U -r requirements/docs.txt
 ```
-
-or 
-
-```bash
-conda install --yes --file=requirements/default.txt --file=requirements/optional.txt --file=requirements/docs.txt
-```

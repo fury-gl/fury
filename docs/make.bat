@@ -26,11 +26,29 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
+if "%1" == "help" (
+	:help
+	%SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+	goto end
+)
+
+if "%1" == "clean" (
+	:clean
+	del /q /s %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials
+	rmdir %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials
+	%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% clean
+	exit /B
+)
+
+if "%1" == "upload" (
+	:upload
+	python upload_to_gh-pages.py
+	exit /B
+)
+
+
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 goto end
-
-:help
-%SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 
 :end
 popd
