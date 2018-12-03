@@ -392,7 +392,7 @@ class InteractorStyleImageAndTrackballActor(vtk.vtkInteractorStyleUser):
         interactor.AddObserver("MouseWheelBackwardEvent", self.on_mouse_wheel_backward)
 
 
-class InteractorStyleBundlesGrid(InteractorStyleImageAndTrackballActor):
+class InteractorStyleGrid(InteractorStyleImageAndTrackballActor):
 
     ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
     CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
