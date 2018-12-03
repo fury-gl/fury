@@ -542,7 +542,6 @@ def asbytes(s):
         return str(s)
 
 
-
 def vtk_matrix_to_numpy(matrix):
     """ Converts VTK matrix to numpy array.
     """
@@ -616,7 +615,7 @@ def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
 
     """
     cell_shape = np.r_[np.max(shapes, axis=0), 0]
-    cell_aspect_ratio = cell_shape[0]/cell_shape[1]
+    cell_aspect_ratio = cell_shape[0] / cell_shape[1]
 
     count = len(shapes)
     if dim is None:
@@ -628,207 +627,14 @@ def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
         n_rows, n_cols = dim
 
         if n_cols * n_rows < count:
-            raise ValueError("Size is too small, it cannot contain at least {} elements.".format(count))
+            msg = "Size is too small, it cannot contain at least {} elements."
+            raise ValueError(msg.format(count))
 
     # Use indexing="xy" so the cells are in row-major (C-order). Also,
     # the Y coordinates are negative so the cells are order from top to bottom.
-    X, Y, Z = np.meshgrid(np.arange(n_cols), -np.arange(n_rows), [0], indexing="xy")
+    X, Y, Z = np.meshgrid(np.arange(n_cols), -np.arange(n_rows),
+                          [0], indexing="xy")
     return cell_shape * np.array([X.flatten(), Y.flatten(), Z.flatten()]).T
-
-
-def auto_orient(actor, direction, bbox_type="OBB", data_up=None, ref_up=(0, 1, 0), show_bounds=False):
-    """ Orients an actor so its largest bounding box side is orthogonal to a
-    given direction.
-
-    This function returns a shallow copy of `actor` that have been automatically
-    oriented so that its largest bounding box (either OBB or AABB) side faces
-    the camera.
-
-    Parameters
-    ----------
-    actor : `vtkProp3D` object
-        Actor to orient.
-    direction : 3-tuple
-        Direction in which the largest bounding box side of the actor must be
-        orthogonal to.
-    bbox_type : str (optional)
-        Type of bounding to use. Choices are "OBB" for Oriented Bounding Box or
-        "AABB" for Axis-Aligned Bounding Box. Default: "OBB".
-    data_up : tuple (optional)
-        If provided, align this up vector with `ref_up` vector using rotation
-        around `direction` axis.
-    ref_up : tuple (optional)
-        Use to align `data_up` vector. Default: (0, 1, 0).
-    show_bounds : bool
-        Whether to display or not the actor bounds used by this function.
-        Default: False.
-
-    Returns
-    -------
-    `vtkProp3D` object
-        Shallow copy of `actor` that have been oriented accordingly to the
-        given options.
-    """
-    new_actor = vtk.vtkActor()
-    new_actor.ShallowCopy(actor)
-
-    if bbox_type == "AABB":
-        x1, x2, y1, y2, z1, z2 = new_actor.GetBounds()
-        width, height, depth = x2-x1, y2-y1, z2-z1
-        canonical_axes = (width, 0, 0), (0, height, 0), (0, 0, depth)
-        idx = np.argsort([width, height, depth])
-        coord_min = np.array(canonical_axes[idx[0]])
-        coord_mid = np.array(canonical_axes[idx[1]])
-        coord_max = np.array(canonical_axes[idx[2]])
-        corner = np.array((x1, y1, z1))
-    elif bbox_type == "OBB":
-        corner = np.zeros(3)
-        coord_max = np.zeros(3)
-        coord_mid = np.zeros(3)
-        coord_min = np.zeros(3)
-        sizes = np.zeros(3)
-
-        points = new_actor.GetMapper().GetInput().GetPoints()
-        vtk.vtkOBBTree.ComputeOBB(points, corner, coord_max, coord_mid, coord_min, sizes)
-    else:
-        raise ValueError("Unknown `bbox_type`: {0}".format(bbox_type))
-
-    if show_bounds:
-        from dipy.viz.actor import line
-        assembly = vtk.vtkAssembly()
-        assembly.AddPart(new_actor)
-        #assembly.AddPart(line([np.array([new_actor.GetCenter(), np.array(new_actor.GetCenter())+(0,0,20)])], colors=(1, 1, 0)))
-        assembly.AddPart(line([np.array([corner, corner+coord_max])], colors=(1, 0, 0)))
-        assembly.AddPart(line([np.array([corner, corner+coord_mid])], colors=(0, 1, 0)))
-        assembly.AddPart(line([np.array([corner, corner+coord_min])], colors=(0, 0, 1)))
-
-        # from dipy.viz.actor import axes
-        # local_axes = axes(scale=20)
-        # local_axes.SetPosition(new_actor.GetCenter())
-        # assembly.AddPart(local_axes)
-        new_actor = assembly
-
-    normal = np.cross(coord_mid, coord_max)
-
-    direction = normalized_vector(direction)
-    normal = normalized_vector(normal)
-    R = vec2vec_rotmat(normal, direction)
-    M = np.eye(4)
-    M[:3, :3] = R
-
-    transform = vtk.vtkTransform()
-    transform.PostMultiply()
-    transform.SetMatrix(numpy_to_vtk_matrix(M))
-
-    # TODO: I think we also need the right/depth vector in addition to the up vector for the data.
-    if data_up is not None:
-        # Find the rotation around `direction` axis to align top of the brain with the camera up.
-        data_up = normalized_vector(data_up)
-        ref_up = normalized_vector(ref_up)
-        up = np.dot(R, np.array(data_up))
-        up[2] = 0  # Orthogonal projection onto the XY-plane.
-        up = normalized_vector(up)
-
-        # Angle between oriented `data_up` and `ref_up`.
-        angle = np.arccos(np.dot(up, np.array(ref_up)))
-        angle = angle/np.pi*180.
-
-        # Check if the rotation should be clockwise or anticlockwise.
-        if up[0] < 0:
-            angle = -angle
-
-        transform.RotateWXYZ(angle, -direction)
-
-    # Apply orientation change to the new actor.
-    new_actor.AddOrientation(transform.GetOrientation())
-
-    return new_actor
-
-
-def auto_camera(actor, zoom=10, relative='max'):
-    """ Automatically calculate the position of the camera given an actor
-
-    """
-
-    bounds = actor.GetBounds()
-
-    x_min, x_max, y_min, y_max, z_min, z_max = bounds
-
-    bounds = np.array(bounds).reshape(3, 2)
-    center_bb = bounds.mean(axis=1)
-    widths_bb = np.abs(bounds[:, 0] - bounds[:, 1])
-
-    corners = np.array([[x_min, y_min, z_min],
-                        [x_min, y_min, z_max],
-                        [x_min, y_max, z_min],
-                        [x_min, y_max, z_max],
-                        [x_max, y_min, z_min],
-                        [x_max, y_min, z_max],
-                        [x_max, y_max, z_min],
-                        [x_max, y_max, z_max]])
-
-    x_plane_min = np.array([[x_min, y_min, z_min],
-                            [x_min, y_min, z_max],
-                            [x_min, y_max, z_min],
-                            [x_min, y_max, z_max]])
-
-    x_plane_max = np.array([[x_max, y_min, z_min],
-                            [x_max, y_min, z_max],
-                            [x_max, y_max, z_min],
-                            [x_max, y_max, z_max]])
-
-    y_plane_min = np.array([[x_min, y_min, z_min],
-                            [x_min, y_min, z_max],
-                            [x_max, y_min, z_min],
-                            [x_max, y_min, z_max]])
-
-    y_plane_max = np.array([[x_min, y_max, z_min],
-                            [x_min, y_max, z_max],
-                            [x_max, y_max, z_min],
-                            [x_max, y_max, z_max]])
-
-    z_plane_min = np.array([[x_min, y_min, z_min],
-                            [x_min, y_max, z_min],
-                            [x_max, y_min, z_min],
-                            [x_max, y_max, z_min]])
-
-    z_plane_max = np.array([[x_min, y_min, z_max],
-                            [x_min, y_max, z_max],
-                            [x_max, y_min, z_max],
-                            [x_max, y_max, z_max]])
-
-    if select_plane is None:
-        which_plane = np.argmin(widths_bb)
-    else:
-        which_plane = select_plane
-
-    if which_plane == 0:
-        if relative == 'max':
-            plane = x_plane_max
-        else:
-            plane = x_plane_min
-        view_up = np.array([0, 1, 0])
-
-    if which_plane == 1:
-        if relative == 'max':
-            plane = y_plane_max
-        else:
-            plane = y_plane_min
-        view_up = np.array([0, 0, 1])
-
-    if which_plane == 2:
-        if relative == 'max':
-            plane = z_plane_max
-        else:
-            plane = z_plane_min
-        view_up = np.array([0, 1, 0])
-
-    initial_position = np.mean(plane, axis=0)
-
-    position = center_bb + zoom * (initial_position - center_bb)
-
-    return position, center_bb, view_up, corners, plane
-
 
 
 def shallow_copy(vtk_object):
