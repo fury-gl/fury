@@ -7,7 +7,10 @@ Write-Host "Pip command: " + $env:PIPI
 
 if($env:PYTHON -match "conda")
 {
-  conda update -yq conda
+  Invoke-Expression "conda config --set always_yes yes --set changeps1 no"
+  Invoke-Expression "conda update -yq conda"
+  Invoke-Expression "conda install conda-build anaconda-client"
+  Invoke-Expression "conda config --add channels conda-forge"
   Invoke-Expression "conda install -yq  pip"
   Invoke-Expression "conda install -yq --file requirements/default.txt"
   Invoke-Expression "conda install -yq --file requirements/test.txt"
