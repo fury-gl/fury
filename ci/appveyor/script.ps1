@@ -1,12 +1,10 @@
-  - pip install nose coverage coveralls codecov
-  - mkdir for_testing
-  - cd for_testing
-  - echo backend:Agg > matplotlibrc
-  - if exist ../.coveragerc (cp ../.coveragerc .) else (echo no .coveragerc)
-  - ps: |
-        if ($env:COVERAGE)
-        {
-          $env:COVER_ARGS = "--with-coverage --cover-package dipy"
-        }
-  - cmd: echo %COVER_ARGS%
-  - nosetests --with-doctest --verbose %COVER_ARGS% dipy
+# Powershell Install script
+
+  
+# Print and Install FURY
+Write-Host "Install FURY"
+Invoke-Expression "$env:PIPI install ."
+
+# Run tests
+Write-Host "Run FURY tests"
+Invoke-Expression "pytest -svv fury"
