@@ -40,12 +40,12 @@ install:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-desktop.ps1'))
   # Setup some environment variable 
   - ps: $env:Path = "$env:PYTHON;$env:PYTHON\\Scripts;$env:Path"
+
+  - ps: $env:PYTHON_ARCH = python -c "import struct; print(struct.calcsize('P') * 8)"
+  - ps: $env:PYTHON_VERSION = python -c "import platform;print(platform.python_version())"
+
   # Check that we have the expected version and architecture for Python
-  - ps: Invoke-Expression "python --version"
-
-  - ps: $env:PYTHON_ARCH = (Invoke-Expression "python -c 'import struct; print(struct.calcsize("P") * 8)'") | Out-String
-  - ps: $env:PYTHON_VERSION = (Invoke-Expression "python -c 'import platform;print(platform.python_version())'") | Out-String
-
+  - "python --version"
   - ps: Write-Host "Python version = " + $env:PYTHON_VERSION
   - ps: Write-Host "Python architecture = " + $env:PYTHON_ARCH
   
