@@ -1,7 +1,7 @@
 # Powershell Install script
 
 # Setup some environment variable 
-$env:Path += ";$env:PYTHON; $env:PYTHON\\Scripts"
+$env:Path += ";$env:PYTHON;$env:PYTHON\\Scripts"
 $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
 
 # Print and check this environment variable
