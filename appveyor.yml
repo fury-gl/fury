@@ -38,6 +38,17 @@ install:
         throw "There are newer queued builds for this pull request, failing early." }
   # Headless trick
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-desktop.ps1'))
+  # Setup some environment variable 
+  - ps: $env:Path = "$env:PYTHON;$env:PYTHON\\Scripts;$env:Path"
+  # Check that we have the expected version and architecture for Python
+  - ps: Invoke-Expression "python --version"
+
+  - ps: $env:PYTHON_ARCH = (Invoke-Expression "python -c 'import struct; print(struct.calcsize("P") * 8)'") | Out-String
+  - ps: $env:PYTHON_VERSION = (Invoke-Expression "python -c 'import platform;print(platform.python_version())'") | Out-String
+
+  - ps: Write-Host "Python version = " + $env:PYTHON_VERSION
+  - ps: Write-Host "Python architecture = " + $env:PYTHON_ARCH
+  
   - "%CMD_IN_ENV% powershell ./ci/appveyor/install.ps1"
 
 build: false # Not a C# project, build stuff at the test step instead.
