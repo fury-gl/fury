@@ -863,10 +863,10 @@ def test_grid(interactive=False):
         cnt = next(counter)
         show_m.scene.zoom(1)
         show_m.render()
-        if cnt == 10:
+        if cnt == 100:
             show_m.exit()
 
-    show_m.add_timer_callback(True, 200, timer_callback)
+    # show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
     arr = window.snapshot(scene)
@@ -875,18 +875,18 @@ def test_grid(interactive=False):
 
     scene.rm_all()
 
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
     # show the grid with the captions
     container = grid(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
-                     cell_padding=(10, 10), dim=(3, 3))
+                     cell_padding=(10, 10), dim=(3, 3),
+                     rotate_on_click=True, iren=show_m.iren)
 
     scene.add(container)
 
-    counter = itertools.count()
-    show_m = window.ShowManager(scene,
-                                interactor_style=istyle)
-    show_m.initialize()
-    show_m.add_timer_callback(True, 200, timer_callback)
+    # show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
     arr = window.snapshot(scene)
@@ -895,4 +895,5 @@ def test_grid(interactive=False):
 
 
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_grid()
