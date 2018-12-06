@@ -57,6 +57,16 @@ coverage.xml
 # Sphinx documentation
 docs/build/
 docs/source/generated/
+docs/source/api
+docs/source/auto_examples
+docs/source/auto_tutorials
+docs/source/reference
+docs/examples/*.png
+docs/examples/*.vtk
+docs/examples/*.gif
+docs/tutorials/*.png
+docs/tutorials/*.vtk
+docs/tutorials/*.gif
 
 # pytest
 .pytest_cache/
@@ -77,7 +87,7 @@ target/
 .idea/*
 
 #vscode
-.vscode
+.vscode/
 
 #Ipython Notebook
 .ipynb_checkpoints

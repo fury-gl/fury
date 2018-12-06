@@ -17,14 +17,17 @@ $ pip install -U -r requirements/optional.txt
 $ pip install -U -r requirements/docs.txt
 ```
 
-or 
-
-```bash
-conda install --yes --file=requirements/default.txt --file=requirements/optional.txt --file=requirements/docs.txt
-```
-
 ### Generate all the Documentation
+
+#### Under Linux and OSX
 
 ```bash
 $ make -C . clean && make -C . html
+```
+
+#### Under Windows
+
+```bash
+$ ./make.bat clean
+$ ./make.bat html
 ```

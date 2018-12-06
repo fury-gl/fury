@@ -1,0 +1,9 @@
+[run]
+branch = True
+source = fury
+include = */fury/*
+omit =
+    */setup.py
+    */_version.py
+[report]
+show_missing = True

@@ -17,7 +17,7 @@ def test_button_and_slider_widgets():
     recording = False
     filename = "test_button_and_slider_widgets.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
-    renderer = window.Renderer()
+    scene = window.Scene()
 
     # create some minimalistic streamlines
     lines = [np.array([[-1, 0, 0.], [1, 0, 0.]]),
@@ -31,11 +31,11 @@ def test_button_and_slider_widgets():
               'slider_moved_count': 0,
               }
 
-    renderer.add(stream_actor)
+    scene.add(stream_actor)
 
     # the show manager allows to break the rendering process
     # in steps so that the widgets can be added properly
-    show_manager = window.ShowManager(renderer, size=(800, 800))
+    show_manager = window.ShowManager(scene, size=(800, 800))
 
     if recording:
         show_manager.initialize()
@@ -57,19 +57,19 @@ def test_button_and_slider_widgets():
     button_png = read_viz_icons(fname='camera.png')
 
     button = widget.button(show_manager.iren,
-                           show_manager.ren,
+                           show_manager.scene,
                            button_callback,
                            button_png, (.98, 1.), (80, 50))
 
     button_png_plus = read_viz_icons(fname='plus.png')
     button_plus = widget.button(show_manager.iren,
-                                show_manager.ren,
+                                show_manager.scene,
                                 button_plus_callback,
                                 button_png_plus, (.98, .9), (120, 50))
 
     button_png_minus = read_viz_icons(fname='minus.png')
     button_minus = widget.button(show_manager.iren,
-                                 show_manager.ren,
+                                 show_manager.scene,
                                  button_minus_callback,
                                  button_png_minus, (.98, .9), (50, 50))
 
@@ -78,7 +78,7 @@ def test_button_and_slider_widgets():
         stream_actor.SetPosition((rep.GetValue(), 0, 0))
         states['slider_moved_count'] += 1
 
-    slider = widget.slider(show_manager.iren, show_manager.ren,
+    slider = widget.slider(show_manager.iren, show_manager.scene,
                            callback=print_status,
                            min_value=-1,
                            max_value=1,
@@ -92,7 +92,7 @@ def test_button_and_slider_widgets():
     # is being resized.
 
     global size
-    size = renderer.GetSize()
+    size = scene.GetSize()
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -108,16 +108,16 @@ def test_button_and_slider_widgets():
         button.Off()
         slider.Off()
         # Uncomment below to test the slider and button with analyze
-        # button.place(renderer)
-        # slider.place(renderer)
+        # button.place(scene)
+        # slider.place(scene)
 
-        report = window.analyze_renderer(renderer)
+        report = window.analyze_scene(scene)
         # import pylab as plt
         # plt.imshow(report.labels, origin='lower')
         # plt.show()
         npt.assert_equal(report.actors, 1)
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
 
 
@@ -127,12 +127,12 @@ def test_text_widget():
 
     interactive = False
 
-    renderer = window.Renderer()
+    scene = window.Scene()
     axes = actor.axes()
-    window.add(renderer, axes)
-    renderer.ResetCamera()
+    window.add(scene, axes)
+    scene.ResetCamera()
 
-    show_manager = window.ShowManager(renderer, size=(900, 900))
+    show_manager = window.ShowManager(scene, size=(900, 900))
 
     if interactive:
         show_manager.initialize()
@@ -145,7 +145,7 @@ def test_text_widget():
         print('Button Pressed')
 
     button = widget.button(show_manager.iren,
-                           show_manager.ren,
+                           show_manager.scene,
                            button_callback,
                            button_png, (.8, 1.2), (100, 100))
 
@@ -165,7 +165,7 @@ def test_text_widget():
         show_manager.render()
 
     text = widget.text(show_manager.iren,
-                       show_manager.ren,
+                       show_manager.scene,
                        text_callback,
                        message="Diffusion Imaging in Python",
                        left_down_pos=(0., 0.),
@@ -182,7 +182,7 @@ def test_text_widget():
         show_manager.render()
         show_manager.start()
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 3)
 
 

@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from scipy import ndimage
 import vtk
-from vtk.util import numpy_support
+from vtk.util import numpy_support, colors
 
 from fury.tmpdirs import InTemporaryDirectory
 
@@ -21,8 +21,8 @@ except NameError:
     basestring = str
 
 
-class Renderer(vtk.vtkRenderer):
-    """ Your scene class
+class Scene(vtk.vtkRenderer):
+    """Your scene class.
 
     This is an important object that is responsible for preparing objects
     e.g. actors and volumes for rendering. This is a more pythonic version
@@ -32,40 +32,35 @@ class Renderer(vtk.vtkRenderer):
     """
 
     def background(self, color):
-        """ Set a background color
-        """
+        """Set a background color."""
         self.SetBackground(color)
 
     def add(self, *actors):
-        """ Add an actor to the renderer
-        """
+        """Add an actor to the scene."""
         for actor in actors:
             if isinstance(actor, vtk.vtkVolume):
                 self.AddVolume(actor)
             elif isinstance(actor, vtk.vtkActor2D):
                 self.AddActor2D(actor)
-            elif hasattr(actor, 'add_to_renderer'):
-                actor.add_to_renderer(self)
+            elif hasattr(actor, 'add_to_scene'):
+                actor.add_to_scene(self)
             else:
                 self.AddActor(actor)
 
     def rm(self, actor):
-        """ Remove a specific actor
-        """
+        """Remove a specific actor."""
         self.RemoveActor(actor)
 
     def clear(self):
-        """ Remove all actors from the renderer
-        """
+        """Remove all actors from the scene."""
         self.RemoveAllViewProps()
 
     def rm_all(self):
-        """ Remove all actors from the renderer
-        """
+        """Remove all actors from the scene."""
         self.RemoveAllViewProps()
 
     def projection(self, proj_type='perspective'):
-        """ Deside between parallel or perspective projection
+        """Deside between parallel or perspective projection.
 
         Parameters
         ----------
@@ -79,21 +74,24 @@ class Renderer(vtk.vtkRenderer):
             self.GetActiveCamera().ParallelProjectionOff()
 
     def reset_camera(self):
-        """ Reset the camera to an automatic position given by the engine.
-        """
+        """Reset the camera to an automatic position given by the engine."""
         self.ResetCamera()
 
     def reset_clipping_range(self):
+        """Reset the camera to an automatic position given by the engine."""
         self.ResetCameraClippingRange()
 
     def camera(self):
+        """Return the camera object."""
         return self.GetActiveCamera()
 
     def get_camera(self):
+        """Return Camera information: Position, Focal Point, View Up."""
         cam = self.GetActiveCamera()
         return cam.GetPosition(), cam.GetFocalPoint(), cam.GetViewUp()
 
     def camera_info(self):
+        """Return Camera information."""
         cam = self.camera()
         print('# Active Camera')
         print('   Position (%.2f, %.2f, %.2f)' % cam.GetPosition())
@@ -101,6 +99,7 @@ class Renderer(vtk.vtkRenderer):
         print('   View Up (%.2f, %.2f, %.2f)' % cam.GetViewUp())
 
     def set_camera(self, position=None, focal_point=None, view_up=None):
+        """Set up camera position / Focal Point / View Up."""
         if position is not None:
             self.GetActiveCamera().SetPosition(*position)
         if focal_point is not None:
@@ -110,36 +109,47 @@ class Renderer(vtk.vtkRenderer):
         self.ResetCameraClippingRange()
 
     def size(self):
-        """ Renderer size"""
+        """Scene size."""
         return self.GetSize()
 
     def zoom(self, value):
-        """ In perspective mode, decrease the view angle by the specified
+        """Rescale scene's camera.
+
+        In perspective mode, decrease the view angle by the specified
         factor. In parallel mode, decrease the parallel scale by the specified
         factor. A value greater than 1 is a zoom-in, a value less than 1 is a
         zoom-out.
+
         """
         self.GetActiveCamera().Zoom(value)
 
     def azimuth(self, angle):
-        """ Rotate the camera about the view up vector centered at the focal
+        """Rotate scene's camera.
+
+        Rotate the camera about the view up vector centered at the focal
         point. Note that the view up vector is whatever was set via SetViewUp,
         and is not necessarily perpendicular to the direction of projection.
         The result is a horizontal rotation of the camera.
+
         """
         self.GetActiveCamera().Azimuth(angle)
 
     def yaw(self, angle):
-        """ Rotate the focal point about the view up vector, using the camera's
+        """Yaw scene's camera.
+
+        Rotate the focal point about the view up vector, using the camera's
         position as the center of rotation. Note that the view up vector is
         whatever was set via SetViewUp, and is not necessarily perpendicular
         to the direction of projection. The result is a horizontal rotation of
         the scene.
+
         """
         self.GetActiveCamera().Yaw(angle)
 
     def elevation(self, angle):
-        """ Rotate the camera about the cross product of the negative of the
+        """Elevate scene's camera.
+
+        Rotate the camera about the cross product of the negative of the
         direction of projection and the view up vector, using the focal point
         as the center of rotation. The result is a vertical rotation of the
         scene.
@@ -147,7 +157,9 @@ class Renderer(vtk.vtkRenderer):
         self.GetActiveCamera().Elevation(angle)
 
     def pitch(self, angle):
-        """ Rotate the focal point about the cross product of the view up
+        """Pitch scene's camera.
+
+        Rotate the focal point about the cross product of the view up
         vector and the direction of projection, using the camera's position as
         the center of rotation. The result is a vertical rotation of the
         camera.
@@ -155,13 +167,17 @@ class Renderer(vtk.vtkRenderer):
         self.GetActiveCamera().Pitch(angle)
 
     def roll(self, angle):
-        """ Rotate the camera about the direction of projection. This will
+        """Roll scene's camera.
+
+        Rotate the camera about the direction of projection. This will
         spin the camera about its axis.
         """
         self.GetActiveCamera().Roll(angle)
 
     def dolly(self, value):
-        """ Divide the camera's distance from the focal point by the given
+        """Dolly In/Out scene's camera.
+
+        Divide the camera's distance from the focal point by the given
         dolly value. Use a value greater than one to dolly-in toward the focal
         point, and use a value less than one to dolly-out away from the focal
         point.
@@ -169,89 +185,143 @@ class Renderer(vtk.vtkRenderer):
         self.GetActiveCamera().Dolly(value)
 
     def camera_direction(self):
-        """ Get the vector in the direction from the camera position to the
+        """Get camera direction.
+
+        Get the vector in the direction from the camera position to the
         focal point. This is usually the opposite of the ViewPlaneNormal, the
         vector perpendicular to the screen, unless the view is oblique.
         """
         return self.GetActiveCamera().GetDirectionOfProjection()
 
 
+class Renderer(Scene):
+    """Your scene class.
+
+    This is an important object that is responsible for preparing objects
+    e.g. actors and volumes for rendering. This is a more pythonic version
+    of ``vtkRenderer`` proving simple methods for adding and removing actors
+    but also it provides access to all the functionality
+    available in ``vtkRenderer`` if necessary.
+
+    .. deprecated:: 0.2.0
+          `Renderer()` will be removed in Fury 0.3.0, it is replaced by the
+          class `Scene()`
+    """
+
+    def __init__(self, parent=None):
+        """Init old class with a warning."""
+        warn("Class 'fury.window.Renderer' is deprecated, instead"
+             " use class 'fury.window.Scene'.", DeprecationWarning)
+
+
 def renderer(background=None):
-    """ Create a renderer.
+    """Create a Scene.
+
+    .. deprecated:: 0.2.0
+          `renderer` will be removed in Fury 0.3.0, it is replaced by the
+          class `Scene()`
 
     Parameters
     ----------
     background : tuple
-        Initial background color of renderer
+        Initial background color of scene
 
     Returns
     -------
-    v : Renderer
+    v : Scene instance
+        scene object
 
     Examples
     --------
     >>> from fury import window, actor
     >>> import numpy as np
-    >>> r = window.Renderer()
+    >>> r = window.renderer()
     >>> lines=[np.random.rand(10,3)]
     >>> c=actor.line(lines, window.colors.red)
     >>> r.add(c)
     >>> #window.show(r)
-    """
 
+    """
     deprecation_msg = ("Method 'fury.window.renderer' is deprecated, instead"
-                       " use class 'fury.window.Renderer'.")
+                       " use class 'fury.window.Scene'.")
     warn(DeprecationWarning(deprecation_msg))
 
-    ren = Renderer()
+    scene = Scene()
     if background is not None:
-        ren.SetBackground(background)
+        scene.SetBackground(background)
 
-    return ren
-
-
-# Todo: Deprecated
-ren = renderer
+    return scene
 
 
-def add(ren, a):
-    """ Add a specific actor
+def ren(background=None):
+    """Create a Scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `Scene()`
     """
-    ren.add(a)
+    return renderer(background=background)
 
 
-def rm(ren, a):
-    """ Remove a specific actor
+def add(scene, a):
+    """Add a specific actor to the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `Scene().add`
     """
-    ren.rm(a)
+    warn("Class 'fury.window.add' is deprecated, instead"
+         " use class 'fury.window.Scene.add'.", DeprecationWarning)
+    scene.add(a)
 
 
-def clear(ren):
-    """ Remove all actors from the renderer
+def rm(scene, a):
+    """Remove a specific actor from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `Scene().rm`
     """
-    ren.clear()
+    warn("Class 'fury.window.rm' is deprecated, instead"
+         " use class 'fury.window.Scene.rm'.", DeprecationWarning)
+    scene.rm(a)
 
 
-def rm_all(ren):
-    """ Remove all actors from the renderer
+def clear(scene):
+    """Remove all actors from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `Scene().clear`
     """
-    ren.rm_all()
+    warn("Class 'fury.window.clear' is deprecated, instead"
+         " use class 'fury.window.Scene.clear'.", DeprecationWarning)
+    scene.clear()
+
+
+def rm_all(scene):
+    """Remove all actors from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `Scene().rm_all`
+    """
+    warn("Class 'fury.window.rm_all' is deprecated, instead"
+         " use class 'fury.window.Scene.rm_all'.", DeprecationWarning)
+    scene.rm_all()
 
 
 class ShowManager(object):
-    """ This class is the interface between the renderer, the window and the
-    interactor.
-    """
+    """Class interface between the scene, the window and the interactor."""
 
-    def __init__(self, ren=None, title='FURY', size=(300, 300),
+    def __init__(self, scene=None, title='FURY', size=(300, 300),
                  png_magnify=1, reset_camera=True, order_transparent=False,
                  interactor_style='custom'):
-
-        """ Manages the visualization pipeline
+        """Manage the visualization pipeline.
 
         Parameters
         ----------
-        ren : Renderer() or vtkRenderer()
+        scene : Scene() or vtkRenderer()
             The scene that holds all the actors.
         title : string
             A string for the window title bar.
@@ -267,7 +337,7 @@ class ShowManager(object):
             True is useful when you want to order transparent
             actors according to their relative position to the camera. The
             default option which is False will order the actors according to
-            the order of their addition to the Renderer().
+            the order of their addition to the Scene().
         interactor_style : str or vtkInteractorStyle
             If str then if 'trackball' then vtkInteractorStyleTrackballCamera()
             is used, if 'image' then vtkInteractorStyleImage() is used (no
@@ -276,7 +346,7 @@ class ShowManager(object):
 
         Attributes
         ----------
-        ren : vtkRenderer()
+        scene : Scene() or vtkRenderer()
         iren : vtkRenderWindowInteractor()
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
@@ -300,16 +370,17 @@ class ShowManager(object):
         Examples
         --------
         >>> from fury import actor, window
-        >>> renderer = window.Renderer()
-        >>> renderer.add(actor.axes())
-        >>> showm = window.ShowManager(renderer)
+        >>> scene = window.Scene()
+        >>> scene.add(actor.axes())
+        >>> showm = window.ShowManager(scene)
         >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
+
         """
-        if ren is None:
-            ren = Renderer()
-        self.ren = ren
+        if scene is None:
+            scene = Scene()
+        self.scene = scene
         self.title = title
         self.size = size
         self.png_magnify = png_magnify
@@ -319,10 +390,10 @@ class ShowManager(object):
         self.timers = []
 
         if self.reset_camera:
-            self.ren.ResetCamera()
+            self.scene.ResetCamera()
 
         self.window = vtk.vtkRenderWindow()
-        self.window.AddRenderer(ren)
+        self.window.AddRenderer(scene)
 
         if self.title == 'FURY':
             self.window.SetWindowName(title + ' ' + fury_version)
@@ -342,14 +413,14 @@ class ShowManager(object):
 
             # Choose to use depth peeling (if supported)
             # (default is 0 (false)):
-            self.ren.UseDepthPeelingOn()
+            self.scene.UseDepthPeelingOn()
 
             # Set depth peeling parameters
             # Set the maximum number of rendering passes (default is 4)
-            ren.SetMaximumNumberOfPeels(4)
+            scene.SetMaximumNumberOfPeels(4)
 
             # Set the occlusion ratio (initial value is 0.0, exact image):
-            ren.SetOcclusionRatio(0.0)
+            scene.SetOcclusionRatio(0.0)
 
         if self.interactor_style == 'image':
             self.style = vtk.vtkInteractorStyleImage()
@@ -361,29 +432,26 @@ class ShowManager(object):
             self.style = interactor_style
 
         self.iren = vtk.vtkRenderWindowInteractor()
-        self.style.SetCurrentRenderer(self.ren)
+        self.style.SetCurrentRenderer(self.scene)
         # Hack: below, we explicitly call the Python version of SetInteractor.
         self.style.SetInteractor(self.iren)
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
     def initialize(self):
-        """ Initialize interaction
-        """
+        """Initialize interaction."""
         self.iren.Initialize()
 
     def render(self):
-        """ Renders only once
-        """
+        """Render only once."""
         self.window.Render()
 
     def start(self):
-        """ Starts interaction
-        """
+        """Start interaction."""
         try:
             self.iren.Start()
         except AttributeError:
-            self.__init__(self.ren, self.title, size=self.size,
+            self.__init__(self.scene, self.title, size=self.size,
                           png_magnify=self.png_magnify,
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
@@ -392,13 +460,13 @@ class ShowManager(object):
             self.render()
             self.iren.Start()
 
-        self.window.RemoveRenderer(self.ren)
-        self.ren.SetRenderWindow(None)
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
 
     def record_events(self):
-        """ Records events during the interaction.
+        """Record events during the interaction.
 
         The recording is represented as a list of VTK events that happened
         during the interaction. The recorded events are then returned.
@@ -412,6 +480,7 @@ class ShowManager(object):
         -----
         Since VTK only allows recording events to a file, we use a
         temporary file from which we then read the events.
+
         """
         with InTemporaryDirectory():
             filename = "recorded_events.log"
@@ -441,7 +510,7 @@ class ShowManager(object):
         return events
 
     def record_events_to_file(self, filename="record.log"):
-        """ Records events during the interaction.
+        """Record events during the interaction.
 
         The recording is represented as a list of VTK events
         that happened during the interaction. The recording is
@@ -451,6 +520,7 @@ class ShowManager(object):
         ----------
         filename : str
             Name of the file that will contain the recording (.log|.log.gz).
+
         """
         events = self.record_events()
 
@@ -463,7 +533,7 @@ class ShowManager(object):
                 f.write(events)
 
     def play_events(self, events):
-        """ Plays recorded events of a past interaction.
+        """Play recorded events of a past interaction.
 
         The VTK events that happened during the recorded interaction will be
         played back.
@@ -472,6 +542,7 @@ class ShowManager(object):
         ----------
         events : str
             Recorded events (one per line).
+
         """
         recorder = vtk.vtkInteractorEventRecorder()
         recorder.SetInteractor(self.iren)
@@ -484,7 +555,7 @@ class ShowManager(object):
         recorder.Play()
 
     def play_events_from_file(self, filename):
-        """ Plays recorded events of a past interaction.
+        """Play recorded events of a past interaction.
 
         The VTK events that happened during the recorded interaction will be
         played back from `filename`.
@@ -493,6 +564,7 @@ class ShowManager(object):
         ----------
         filename : str
             Name of the file containing the recorded events (.log|.log.gz).
+
         """
         # Uncompress file if needed.
         if filename.endswith(".gz"):
@@ -505,8 +577,7 @@ class ShowManager(object):
         self.play_events(events)
 
     def add_window_callback(self, win_callback):
-        """ Add window callbacks
-        """
+        """Add window callbacks."""
         self.window.AddObserver(vtk.vtkCommand.ModifiedEvent, win_callback)
         self.window.Render()
 
@@ -528,19 +599,18 @@ class ShowManager(object):
             self.destroy_timer(timer_id)
 
     def exit(self):
-        """ Close window and terminate interactor
-        """
+        """Close window and terminate interactor."""
         self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
 
 
-def show(ren, title='FURY', size=(300, 300),
+def show(scene, title='FURY', size=(300, 300),
          png_magnify=1, reset_camera=True, order_transparent=False):
-    """ Show window with current renderer
+    """Show window with current scene.
 
     Parameters
     ------------
-    ren : Renderer() or vtkRenderer()
+    scene : Scene() or vtkRenderer()
         The scene that holds all the actors.
     title : string
         A string for the window title bar. Default is FURY and current version.
@@ -557,7 +627,7 @@ def show(ren, title='FURY', size=(300, 300),
         True is useful when you want to order transparent
         actors according to their relative position to the camera. The default
         option which is False will order the actors according to the order of
-        their addition to the Renderer().
+        their addition to the Scene().
 
     Notes
     -----
@@ -572,7 +642,7 @@ def show(ren, title='FURY', size=(300, 300),
     ----------
     >>> import numpy as np
     >>> from fury import window, actor
-    >>> r = window.Renderer()
+    >>> r = window.Scene()
     >>> lines=[np.random.rand(10,3),np.random.rand(20,3)]
     >>> colors=np.array([[0.2,0.2,0.2],[0.8,0.8,0.8]])
     >>> c=actor.line(lines,colors)
@@ -585,27 +655,28 @@ def show(ren, title='FURY', size=(300, 300),
     ---------
     fury.window.record
     fury.window.snapshot
+
     """
 
-    show_manager = ShowManager(ren, title, size,
+    show_manager = ShowManager(scene, title, size,
                                png_magnify, reset_camera, order_transparent)
     show_manager.initialize()
     show_manager.render()
     show_manager.start()
 
 
-def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
+def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
            out_path=None, path_numbering=False, n_frames=1, az_ang=10,
            magnification=1, size=(300, 300), reset_camera=True, verbose=False):
-    """ This will record a video of your scene
+    """Record a video of your scene.
 
     Records a video as a series of ``.png`` files of your scene by rotating the
     azimuth angle az_angle in every frame.
 
     Parameters
     -----------
-    ren : vtkRenderer() object
-        as returned from function renderer()
+    scene : Scene() or vtkRenderer() object
+        Scene instance
     cam_pos : None or sequence (3,), optional
         Camera's position. If None then default camera's position is used.
     cam_focal : None or sequence (3,), optional
@@ -627,39 +698,38 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     reset_camera : bool
-        If True Call ``ren.reset_camera()``. Otherwise you need to set the
+        If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
     verbose : bool
         print information about the camera. Default is False.
 
-
     Examples
     ---------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> a = actor.axes()
-    >>> ren.add(a)
+    >>> scene.add(a)
     >>> # uncomment below to record
-    >>> # window.record(ren)
+    >>> # window.record(scene)
     >>> #check for new images in current directory
-    """
 
-    if ren is None:
-        ren = vtk.vtkRenderer()
+    """
+    if scene is None:
+        scene = vtk.vtkRenderer()
 
     renWin = vtk.vtkRenderWindow()
-    renWin.AddRenderer(ren)
+    renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
     iren = vtk.vtkRenderWindowInteractor()
     iren.SetRenderWindow(renWin)
 
-    # ren.GetActiveCamera().Azimuth(180)
+    # scene.GetActiveCamera().Azimuth(180)
 
     if reset_camera:
-        ren.ResetCamera()
+        scene.ResetCamera()
 
     renderLarge = vtk.vtkRenderLargeImage()
-    renderLarge.SetInput(ren)
+    renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
 
@@ -668,24 +738,24 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     if cam_pos is not None:
         cx, cy, cz = cam_pos
-        ren.GetActiveCamera().SetPosition(cx, cy, cz)
+        scene.GetActiveCamera().SetPosition(cx, cy, cz)
     if cam_focal is not None:
         fx, fy, fz = cam_focal
-        ren.GetActiveCamera().SetFocalPoint(fx, fy, fz)
+        scene.GetActiveCamera().SetFocalPoint(fx, fy, fz)
     if cam_view is not None:
         ux, uy, uz = cam_view
-        ren.GetActiveCamera().SetViewUp(ux, uy, uz)
+        scene.GetActiveCamera().SetViewUp(ux, uy, uz)
 
-    cam = ren.GetActiveCamera()
+    cam = scene.GetActiveCamera()
     if verbose:
         print('Camera Position (%.2f, %.2f, %.2f)' % cam.GetPosition())
         print('Camera Focal Point (%.2f, %.2f, %.2f)' % cam.GetFocalPoint())
         print('Camera View Up (%.2f, %.2f, %.2f)' % cam.GetViewUp())
 
     for i in range(n_frames):
-        ren.GetActiveCamera().Azimuth(ang)
+        scene.GetActiveCamera().Azimuth(ang)
         renderLarge = vtk.vtkRenderLargeImage()
-        renderLarge.SetInput(ren)
+        renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
         writer.SetInputConnection(renderLarge.GetOutputPort())
@@ -706,14 +776,14 @@ def record(ren=None, cam_pos=None, cam_focal=None, cam_view=None,
         ang = +az_ang
 
 
-def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
+def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False):
-    """ Saves a snapshot of the renderer in a file or in memory
+    """Save a snapshot of the scene in a file or in memory.
 
     Parameters
     -----------
-    ren : vtkRenderer
-        as returned from function renderer()
+    scene : Scene() or vtkRenderer
+        Scene instance
     fname : str or None
         Save PNG file. If None return only an array without saving PNG.
     size : (int, int)
@@ -728,8 +798,8 @@ def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
     arr : ndarray
         Color array of size (width, height, 3) where the last dimension
         holds the RGB values.
-    """
 
+    """
     width, height = size
 
     if offscreen:
@@ -741,7 +811,7 @@ def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
     render_window = vtk.vtkRenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
-    render_window.AddRenderer(ren)
+    render_window.AddRenderer(scene)
     render_window.SetSize(width, height)
 
     if order_transparent:
@@ -756,14 +826,14 @@ def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
 
         # Choose to use depth peeling (if supported)
         # (default is 0 (false)):
-        ren.UseDepthPeelingOn()
+        scene.UseDepthPeelingOn()
 
         # Set depth peeling parameters
         # Set the maximum number of rendering passes (default is 4)
-        ren.SetMaximumNumberOfPeels(4)
+        scene.SetMaximumNumberOfPeels(4)
 
         # Set the occlusion ratio (initial value is 0.0, exact image):
-        ren.SetOcclusionRatio(0.0)
+        scene.SetOcclusionRatio(0.0)
 
     render_window.Render()
 
@@ -787,15 +857,15 @@ def snapshot(ren, fname=None, size=(300, 300), offscreen=True,
     return arr
 
 
-def analyze_renderer(ren):
+def analyze_scene(scene):
 
-    class ReportRenderer(object):
+    class ReportScene(object):
         bg_color = None
 
-    report = ReportRenderer()
+    report = ReportScene()
 
-    report.bg_color = ren.GetBackground()
-    report.collection = ren.GetActors()
+    report.bg_color = scene.GetBackground()
+    report.collection = scene.GetActors()
     report.actors = report.collection.GetNumberOfItems()
 
     report.collection.InitTraversal()
@@ -807,10 +877,20 @@ def analyze_renderer(ren):
     return report
 
 
+def analyze_renderer(scene):
+    """Report number of actors on the scene.
+
+    .. deprecated:: 0.2.0
+        `analyze_renderer` will be removed in Fury 0.3.0, it is replaced by
+        `analyze_scene()`
+    """
+    return analyze_scene(scene)
+
+
 def analyze_snapshot(im, bg_color=(0, 0, 0), colors=None,
                      find_objects=True,
                      strel=None):
-    """ Analyze snapshot from memory or file
+    """Analyze snapshot from memory or file.
 
     Parameters
     ----------

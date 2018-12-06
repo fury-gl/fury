@@ -2,6 +2,14 @@
 Release History
 ===============
 
+v0.1.4 (2018-11-26)
+------------------------------
+
+This is a maintenance release
+
+* Add vtk.utils.color on window package
+* Update Readme, codecov, travis...
+
 v0.1.2 and v0.1.3 (2018-10-31)
 ------------------------------
 

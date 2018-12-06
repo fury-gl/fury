@@ -33,8 +33,8 @@ fi
 if [[ "${BUILD_DOCS}" == "1" ]]; then
     pip install -r  ${TRAVIS_BUILD_DIR}/requirements/docs.txt
     # To remove when sphinx-gallery version > 0.2.0
-    git clone --quiet https://github.com/sphinx-gallery/sphinx-gallery.git sphinx-gallery
-    cd sphinx-gallery
-    pip install -e .
-    cd ${ENV_DIR}
+    # git clone --quiet https://github.com/sphinx-gallery/sphinx-gallery.git sphinx-gallery
+    # cd sphinx-gallery
+    # pip install -e .
+    # cd ${ENV_DIR}
 fi
