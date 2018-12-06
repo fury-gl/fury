@@ -1,6 +1,5 @@
 # Powershell Install script
 
-Write-Host "Pip command: " + $env:PIPI
 $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
 # Print and check this environment variable
 Write-Host "Pip command: " + $env:PIPI
