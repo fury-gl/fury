@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from fury import actor, window
+from fury import actor, window, shaders
 
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
@@ -298,6 +298,14 @@ def test_streamtube_and_line_actors():
 
     npt.assert_equal(report.objects, 4)
     npt.assert_equal(report.colors_found, [True, True])
+
+    c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
+
+    mapper_code = c3.GetMapper().GetGeometryShaderCode()
+    file_code = shaders.load("line.geom")
+    npt.assert_equal(mapper_code, file_code)
+
+    npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
 
 @npt.dec.skipif(skip_it or not have_dipy)

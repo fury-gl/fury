@@ -4,6 +4,7 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
+import fury.shaders
 from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
@@ -439,7 +440,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 
 def line(lines, colors=None, opacity=1, linewidth=1,
          spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
-         lookup_colormap=None):
+         lookup_colormap=None, depth_cue=False, fake_tube=False):
     """ Create an actor for one or more lines.
 
     Parameters
@@ -482,6 +483,11 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     lookup_colormap : bool, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
+    depth_cue : boolean
+        Add a size depth cue so that lines shrink with distance to the camera.
+        Works best with linewidth <= 1.
+    fake_tube: boolean
+        Add shading to lines to approximate the look of tubes.
 
     Returns
     ----------
@@ -516,6 +522,18 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper.SelectColorArray("Colors")
     poly_mapper.Update()
 
+    if depth_cue:
+        poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
+
+        @vtk.calldata_type(vtk.VTK_OBJECT)
+        def vtkShaderCallback(caller, event, calldata=None):
+            program = calldata
+            if program is not None:
+                program.SetUniformf("linewidth", linewidth)
+
+        poly_mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent,
+                                vtkShaderCallback)
+
     # Color Scale with a lookup table
     if is_colormap:
 
@@ -534,10 +552,12 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     else:
         actor = vtk.vtkActor()
 
-    # actor = vtk.vtkActor()
     actor.SetMapper(poly_mapper)
     actor.GetProperty().SetLineWidth(linewidth)
     actor.GetProperty().SetOpacity(opacity)
+
+    if fake_tube:
+        actor.GetProperty().SetRenderLinesAsTubes(True)
 
     return actor
 

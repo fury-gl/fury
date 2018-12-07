@@ -16,3 +16,4 @@ include fury/_version.py
 include fury/data/files/*.json
 include fury/data/files/*.log.gz
 include fury/data/files/*.pkl
+include fury/shaders/*.geom
