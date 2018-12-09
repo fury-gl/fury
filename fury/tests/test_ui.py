@@ -909,43 +909,145 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_grid_ui(interactive=False):
+
+    import itertools
+
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
+
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            (1., 0, 0), 1.)
+
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
+
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            (1., 0.5, 0), 1.)
+
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
+
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            (1., 0.5, 0.5), 1.)
+
+    scene = window.Scene()
+    actors = []
+    texts = []
+
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
+    texts.append(text_actor3)
+
+    from fury.utils import shallow_copy
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 7', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 8', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 9', justification='center')
+    texts.append(text_actor3)
+
+    from fury.ui import GridUI
+
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
+
+    def timer_callback(obj, event):
+        cnt = next(counter)
+        show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 100:
+            show_m.exit()
+
+    # show the grid with the captions
+    grid_ui = GridUI(actors=actors, captions=texts,
+                     caption_offset=(0, -50, 0),
+                     cell_padding=(10, 10), dim=(3, 3))
+
+    scene.add(grid_ui)
+
+    # show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    1/0
+
+#    arr = window.snapshot(scene)
+#    report = window.analyze_snapshot(arr)
+#    npt.assert_equal(report.objects > 9, True)
+
+
 if __name__ == "__main__":
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-        test_ui_button_panel(recording=True)
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-        test_ui_textbox(recording=True)
+    test_grid_ui()
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-        test_ui_line_slider_2d(recording=True)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
-        test_ui_line_double_slider_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-        test_ui_ring_slider_2d(recording=True)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
-        test_ui_range_slider(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
-        test_ui_option(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
-        test_ui_checkbox(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
-        test_ui_radio_button(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
-        test_ui_listbox_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
-        test_ui_image_container_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
-        test_timer()
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
-        test_ui_file_menu_2d(interactive=False)
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
+#        test_ui_button_panel(recording=True)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
+#        test_ui_textbox(recording=True)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
+#        test_ui_line_slider_2d(recording=True)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
+#        test_ui_line_double_slider_2d(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
+#        test_ui_ring_slider_2d(recording=True)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
+#        test_ui_range_slider(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
+#        test_ui_option(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
+#        test_ui_checkbox(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
+#        test_ui_radio_button(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
+#        test_ui_listbox_2d(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
+#        test_ui_image_container_2d(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
+#        test_timer()
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
+#        test_ui_file_menu_2d(interactive=False)
+#
+#    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
+#        test_grid_ui(interactive=False)

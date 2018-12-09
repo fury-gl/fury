@@ -1654,8 +1654,7 @@ class Container(object):
 
 
 def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
-         cell_shape="rect", aspect_ratio=16/9., dim=None,
-         rotate_on_click=False, iren=None):
+         cell_shape="rect", aspect_ratio=16/9., dim=None):
     """ Creates a grid of actors that lies in the xy-plane.
 
         Parameters
@@ -1685,9 +1684,6 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
         dim : tuple of int (optional)
             Dimension (nb_rows, nb_cols) of the grid. If provided,
             `aspect_ratio` will be ignored.
-        rotate_on_click : bool
-            Allow grid actors to rotate when left mouse button is pressed.
-            Default False.
 
         Returns
         -------
@@ -1729,29 +1725,29 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
             prop3D.SetScale(newTransform.GetScale())
             prop3D.SetOrientation(newTransform.GetOrientation())
 
-    def callback(obj, event):
-
-        print(event)
-        clockwise_rotation = np.array([10, 0, 1, 0])
-        rotate(obj, clockwise_rotation)
-
-    def callback2(obj, event):
-
-        print(event)
-        clockwise_rotation = np.array([1, 0, 1, 0])
-        rotate(obj, clockwise_rotation)
-
-        event_pos = iren.GetEventPosition()
-        print(event_pos)
+#    def callback(obj, event):
+#
+#        print(event)
+#        clockwise_rotation = np.array([10, 0, 1, 0])
+#        rotate(obj, clockwise_rotation)
+#
+#    def callback2(obj, event):
+#
+#        print(event)
+#        clockwise_rotation = np.array([1, 0, 1, 0])
+#        rotate(obj, clockwise_rotation)
+#
+#        event_pos = iren.GetEventPosition()
+#        print(event_pos)
 
 
     if captions is not None:
         actors_with_caption = []
         for actor, caption in zip(actors, captions):
 
-            if rotate_on_click:
-                actor.AddObserver("LeftButtonPressEvent", callback)
-                actor.AddObserver("MouseMoveEvent", callback2)
+#            if rotate_on_click:
+#                actor.AddObserver("LeftButtonPressEvent", callback)
+#                actor.AddObserver("MouseMoveEvent", callback2)
 
             actor_center = np.array(actor.GetCenter())
 

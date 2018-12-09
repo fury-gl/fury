@@ -3963,3 +3963,83 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class GridUI(UI):
+    """ Add actors in a grid and interact with them individually.
+    """
+
+    def __init__(self,
+                 actors, captions=None, caption_offset=(0, -100, 0),
+                 cell_padding=0,
+                 cell_shape="rect", aspect_ratio=16/9., dim=None):
+
+        # self.resize(size)
+
+        from fury.actor import grid
+
+        self.container = grid(actors, captions=captions,
+                              caption_offset=caption_offset,
+                              cell_padding=cell_padding,
+                              cell_shape=cell_shape,
+                              aspect_ratio=aspect_ratio, dim=dim)
+        self._actors = []
+
+        for item in self.container._items:
+            self._actors.append(item._items[0])
+
+        super(GridUI, self).__init__(position=(0, 0, 0))
+
+    def _get_size(self):
+        return
+
+    def _setup(self):
+        """Set up this UI component.
+
+        Creating the button actor used internally.
+        """
+
+        # Add default events listener to the VTK actor.
+        for actor in self._actors:
+            self.handle_events(actor)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self._actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.container.add_to_scene(scene)
+#        for i, act in enumerate(self._actors):
+#            act.SetPosition(200*i, 0, 0)
+#            scene.add(act)
+
+    def resize(self, size):
+        """Resize the button.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Button size (width, height) in pixels.
+
+        """
+        # Update actor.
+        pass
+
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        coords = (0, 0, 0)
+        # self.actor.SetPosition(*coords)
+        # self.container.SetPosition(*coords)
