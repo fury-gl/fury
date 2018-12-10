@@ -3973,7 +3973,8 @@ class GridUI(UI):
     def __init__(self,
                  actors, captions=None, caption_offset=(0, -100, 0),
                  cell_padding=0,
-                 cell_shape="rect", aspect_ratio=16/9., dim=None):
+                 cell_shape="rect", aspect_ratio=16/9., dim=None,
+                 rotation_speed=1):
 
         # self.resize(size)
 
@@ -3986,6 +3987,7 @@ class GridUI(UI):
                               aspect_ratio=aspect_ratio, dim=dim)
         self._actors = []
         self._actors_dict = {}
+        self.rotation_speed = rotation_speed
 
         for item in self.container._items:
             self._actors.append(item._items[0])
@@ -3998,10 +4000,10 @@ class GridUI(UI):
 
     def left_click_callback(self, istyle, obj, what):
 
-        clockwise_rotation = np.array([10, 0, 1, 0])
+        clockwise_rotation = np.array([self.rotation_speed, 0, 1, 0])
         rotate(obj, clockwise_rotation)
 
-        iren = istyle.GetInteractor()
+        # iren = istyle.GetInteractor()
         # event_pos = iren.GetEventPosition()
         istyle.force_render()
         istyle.event.abort()
@@ -4010,7 +4012,6 @@ class GridUI(UI):
         # print(func)
 
     def mouse_move_callback(self, istyle, obj, what):
-
 
         if self._actors_dict[obj]['x'] == - np.inf:
 
@@ -4024,10 +4025,11 @@ class GridUI(UI):
             event_pos = iren.GetEventPosition()
 
             if event_pos[0] >= self._actors_dict[obj]['x']:
-                clockwise_rotation = np.array([10, 0, 1, 0])
+                clockwise_rotation = np.array([self.rotation_speed, 0, 1, 0])
                 rotate(obj, clockwise_rotation)
             else:
-                anti_clockwise_rotation = np.array([-10, 0, 1, 0])
+                anti_clockwise_rotation = np.array(
+                    [-self.rotation_speed, 0, 1, 0])
                 rotate(obj, anti_clockwise_rotation)
 
             self._actors_dict[obj]['x'] = event_pos[0]

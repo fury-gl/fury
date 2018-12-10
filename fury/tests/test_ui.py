@@ -915,23 +915,27 @@ def test_grid_ui(interactive=False):
 
     import itertools
 
+    from fury.colormap import distinguishable_colormap
+
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
 
+
+    colors = distinguishable_colormap(nb_colors=3)
     contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
-                                            (1., 0, 0), 1.)
+                                            colors[0], 1.)
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
     contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
-                                            (1., 0.5, 0), 1.)
+                                            colors[1], 1.)
 
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
     contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
-                                            (1., 0.5, 0.5), 1.)
+                                            colors[2], 1.)
 
     scene = window.Scene()
     actors = []
@@ -991,7 +995,7 @@ def test_grid_ui(interactive=False):
     # show the grid with the captions
     grid_ui = GridUI(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
-                     cell_padding=(20, 20), dim=(3, 3))
+                     cell_padding=(60, 60), dim=(3, 3))
 
     scene.add(grid_ui)
 
