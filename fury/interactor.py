@@ -63,6 +63,10 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
     def __init__(self):
         """Init."""
+
+        self.trackball_interactor_style = vtk.vtkInteractorStyleTrackballActor()
+        self.image_interactor_style = vtk.vtkInteractorStyleImage()
+
         # Default interactor is responsible for moving the camera.
         self.default_interactor = vtk.vtkInteractorStyleTrackballCamera()
         # The picker allows us to know which object/actor is under the mouse.
@@ -108,6 +112,34 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
             if self.event.abort_flag:
                 return
+
+    def _process_event(self, obj, evt):
+        if evt == "LeftButtonPressEvent":
+            self.on_left_button_down(obj, evt)
+        elif evt == "LeftButtonReleaseEvent":
+            self.on_left_button_up(obj, evt)
+        elif evt == "RightButtonPressEvent":
+            self.on_right_button_down(obj, evt)
+        elif evt == "RightButtonReleaseEvent":
+            self.on_right_button_up(obj, evt)
+        elif evt == "MiddleButtonPressEvent":
+            self.on_middle_button_down(obj, evt)
+        elif evt == "MiddleButtonReleaseEvent":
+            self.on_middle_button_up(obj, evt)
+        elif evt == "MouseMoveEvent":
+            self.on_mouse_move(obj, evt)
+        elif evt == "CharEvent":
+            self.on_char(obj, evt)
+        elif evt == "KeyPressEvent":
+            self.on_key_press(obj, evt)
+        elif evt == "KeyReleaseEvent":
+            self.on_key_release(obj, evt)
+        elif evt == "MouseWheelForwardEvent":
+            self.on_mouse_wheel_forward(obj, evt)
+        elif evt == "MouseWheelBackwardEvent":
+            self.on_mouse_wheel_backward(obj, evt)
+
+        self.event.reset()  # Event fully processed.
 
     def on_left_button_down(self, obj, evt):
         self.left_button_down = True
@@ -164,6 +196,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                     self.selected_props["left_button"] |
                                     self.selected_props["right_button"] |
                                     self.selected_props["middle_button"]))
+
         self.default_interactor.OnMouseMove()
 
     def on_mouse_wheel_forward(self, obj, evt):
@@ -181,8 +214,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.default_interactor.OnMouseWheelForward()
 
-        self.event.reset()
-
     def on_mouse_wheel_backward(self, obj, evt):
         """On mouse wheel backward."""
         # First, propagate mouse wheel event to underneath prop.
@@ -197,8 +228,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # Finally, to the default interactor.
         if not self.event.abort_flag:
             self.default_interactor.OnMouseWheelBackward()
-
-        self.event.reset()
 
     def on_char(self, obj, evt):
         self.propagate_event(evt, *self.active_props)
@@ -215,6 +244,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # `vtkWindowInteractor` object and this is done via `SetInteractor`.
         # However, this has the side effect of adding directly all their
         # observers to the `interactor`!
+        self.trackball_interactor_style.SetInteractor(interactor)
+        self.image_interactor_style.SetInteractor(interactor)
         self.default_interactor.SetInteractor(interactor)
 
         # Remove all observers *most likely* (cannot guarantee that the
@@ -250,34 +281,32 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         vtk.vtkInteractorStyle.SetInteractor(self, interactor)
 
         # Keyboard events.
-        self.AddObserver("CharEvent", self.on_char)
-        self.AddObserver("KeyPressEvent", self.on_key_press)
-        self.AddObserver("KeyReleaseEvent", self.on_key_release)
+        self.AddObserver("CharEvent", self._process_event)
+        self.AddObserver("KeyPressEvent", self._process_event)
+        self.AddObserver("KeyReleaseEvent", self._process_event)
 
         # Mouse events.
-        self.AddObserver("MouseMoveEvent", self.on_mouse_move)
-        self.AddObserver("LeftButtonPressEvent", self.on_left_button_down)
-        self.AddObserver("LeftButtonReleaseEvent", self.on_left_button_up)
-        self.AddObserver("RightButtonPressEvent", self.on_right_button_down)
-        self.AddObserver("RightButtonReleaseEvent", self.on_right_button_up)
-        self.AddObserver("MiddleButtonPressEvent", self.on_middle_button_down)
-        self.AddObserver("MiddleButtonReleaseEvent", self.on_middle_button_up)
+        self.AddObserver("MouseMoveEvent", self._process_event)
+        self.AddObserver("LeftButtonPressEvent", self._process_event)
+        self.AddObserver("LeftButtonReleaseEvent", self._process_event)
+        self.AddObserver("RightButtonPressEvent", self._process_event)
+        self.AddObserver("RightButtonReleaseEvent", self._process_event)
+        self.AddObserver("MiddleButtonPressEvent", self._process_event)
+        self.AddObserver("MiddleButtonReleaseEvent", self._process_event)
 
         # Windows and special events.
         # TODO: we ever find them useful we could support them.
-        # self.AddObserver("TimerEvent", self.on_timer)
-        # self.AddObserver("EnterEvent", self.on_enter)
-        # self.AddObserver("LeaveEvent", self.on_leave)
-        # self.AddObserver("ExposeEvent", self.on_expose)
-        # self.AddObserver("ConfigureEvent", self.on_configure)
+        # self.AddObserver("TimerEvent", self._process_event)
+        # self.AddObserver("EnterEvent", self._process_event)
+        # self.AddObserver("LeaveEvent", self._process_event)
+        # self.AddObserver("ExposeEvent", self._process_event)
+        # self.AddObserver("ConfigureEvent", self._process_event)
 
         # These observers need to be added directly to the interactor because
         # `vtkInteractorStyleUser` does not support wheel events prior 7.1. See
         # https://github.com/Kitware/VTK/commit/373258ed21f0915c425eddb996ce6ac13404be28
-        interactor.AddObserver("MouseWheelForwardEvent",
-                               self.on_mouse_wheel_forward)
-        interactor.AddObserver("MouseWheelBackwardEvent",
-                               self.on_mouse_wheel_backward)
+        interactor.AddObserver("MouseWheelForwardEvent", self._process_event)
+        interactor.AddObserver("MouseWheelBackwardEvent", self._process_event)
 
     def force_render(self):
         """Causes the scene to refresh."""

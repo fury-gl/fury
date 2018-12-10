@@ -3993,6 +3993,8 @@ class GridUI(UI):
             self._actors.append(item._items[0])
             self._actors_dict[item._items[0]] = {'x':-np.inf}
 
+        self.trackball_interactor_style = vtk.vtkInteractorStyleTrackballActor()
+
         super(GridUI, self).__init__(position=(0, 0, 0))
 
     def _get_size(self):
@@ -4000,44 +4002,53 @@ class GridUI(UI):
 
     def left_click_callback(self, istyle, obj, what):
 
-        clockwise_rotation = np.array([self.rotation_speed, 0, 1, 0])
-        rotate(obj, clockwise_rotation)
+        # clockwise_rotation = np.array([10, 0, 1, 0])
+        # rotate(obj, clockwise_rotation)
 
         # iren = istyle.GetInteractor()
-        # event_pos = iren.GetEventPosition()
-        istyle.force_render()
+        # # event_pos = iren.GetEventPosition()
+        # istyle.force_render()
+        # istyle.event.abort()
+        # # print(event_pos)
+        # # print(obj)
+        # # print(func)
+        istyle.trackball_interactor_style.OnLeftButtonDown()
         istyle.event.abort()
-        # print(event_pos)
-        # print(obj)
-        # print(func)
+
+    def left_release_callback(self, istyle, obj, what):
+        istyle.event.abort()
+        istyle.trackball_interactor_style.OnLeftButtonUp()
 
     def mouse_move_callback(self, istyle, obj, what):
+        istyle.trackball_interactor_style.OnMouseMove()
 
-        if self._actors_dict[obj]['x'] == - np.inf:
 
-            iren = istyle.GetInteractor()
-            event_pos = iren.GetEventPosition()
-            self._actors_dict[obj]['x'] = event_pos[0]
+        # if self._actors_dict[obj]['x'] == - np.inf:
 
-        else:
+        #     iren = istyle.GetInteractor()
+        #     event_pos = iren.GetEventPosition()
+        #     self._actors_dict[obj]['x'] = event_pos[0]
 
-            iren = istyle.GetInteractor()
-            event_pos = iren.GetEventPosition()
+        # else:
 
-            if event_pos[0] >= self._actors_dict[obj]['x']:
-                clockwise_rotation = np.array([self.rotation_speed, 0, 1, 0])
-                rotate(obj, clockwise_rotation)
-            else:
-                anti_clockwise_rotation = np.array(
-                    [-self.rotation_speed, 0, 1, 0])
-                rotate(obj, anti_clockwise_rotation)
+        #     iren = istyle.GetInteractor()
+        #     event_pos = iren.GetEventPosition()
 
-            self._actors_dict[obj]['x'] = event_pos[0]
+        #     if event_pos[0] >= self._actors_dict[obj]['x']:
+        #         clockwise_rotation = np.array([10, 0, 1, 0])
+        #         rotate(obj, clockwise_rotation)
+        #     else:
+        #         anti_clockwise_rotation = np.array([-10, 0, 1, 0])
+        #         rotate(obj, anti_clockwise_rotation)
 
-            # print(event_pos)
-            istyle.force_render()
-            istyle.event.abort()
+        #     self._actors_dict[obj]['x'] = event_pos[0]
 
+        #     # print(event_pos)
+        #     istyle.force_render()
+        #     istyle.event.abort()
+
+        istyle.force_render()
+        istyle.event.abort()
 
     def _setup(self):
         """Set up this UI component and the events of its actor
@@ -4049,8 +4060,11 @@ class GridUI(UI):
 
             self.add_callback(actor, "LeftButtonPressEvent",
                               self.left_click_callback)
+            self.add_callback(actor, "LeftButtonReleaseEvent",
+                              self.left_release_callback)
             self.add_callback(actor, "MouseMoveEvent",
                               self.mouse_move_callback)
+
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
