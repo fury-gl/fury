@@ -8,6 +8,7 @@ import os
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.utils import set_input
+from fury.utils import rotate
 
 TWO_PI = 2 * np.pi
 
@@ -3984,24 +3985,70 @@ class GridUI(UI):
                               cell_shape=cell_shape,
                               aspect_ratio=aspect_ratio, dim=dim)
         self._actors = []
+        self._actors_dict = {}
 
         for item in self.container._items:
             self._actors.append(item._items[0])
+            self._actors_dict[item._items[0]] = {'x':-np.inf}
 
         super(GridUI, self).__init__(position=(0, 0, 0))
 
     def _get_size(self):
         return
 
-    def _setup(self):
-        """Set up this UI component.
+    def left_click_callback(self, istyle, obj, what):
 
-        Creating the button actor used internally.
+        clockwise_rotation = np.array([10, 0, 1, 0])
+        rotate(obj, clockwise_rotation)
+
+        iren = istyle.GetInteractor()
+        # event_pos = iren.GetEventPosition()
+        istyle.force_render()
+        istyle.event.abort()
+        # print(event_pos)
+        # print(obj)
+        # print(func)
+
+    def mouse_move_callback(self, istyle, obj, what):
+
+
+        if self._actors_dict[obj]['x'] == - np.inf:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            self._actors_dict[obj]['x'] = event_pos[0]
+
+        else:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+
+            if event_pos[0] >= self._actors_dict[obj]['x']:
+                clockwise_rotation = np.array([10, 0, 1, 0])
+                rotate(obj, clockwise_rotation)
+            else:
+                anti_clockwise_rotation = np.array([-10, 0, 1, 0])
+                rotate(obj, anti_clockwise_rotation)
+
+            self._actors_dict[obj]['x'] = event_pos[0]
+
+            # print(event_pos)
+            istyle.force_render()
+            istyle.event.abort()
+
+
+    def _setup(self):
+        """Set up this UI component and the events of its actor
         """
 
         # Add default events listener to the VTK actor.
         for actor in self._actors:
-            self.handle_events(actor)
+            # self.handle_events(actor)
+
+            self.add_callback(actor, "LeftButtonPressEvent",
+                              self.left_click_callback)
+            self.add_callback(actor, "MouseMoveEvent",
+                              self.mouse_move_callback)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -4016,9 +4063,6 @@ class GridUI(UI):
 
         """
         self.container.add_to_scene(scene)
-#        for i, act in enumerate(self._actors):
-#            act.SetPosition(200*i, 0, 0)
-#            scene.add(act)
 
     def resize(self, size):
         """Resize the button.

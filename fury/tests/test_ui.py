@@ -991,14 +991,13 @@ def test_grid_ui(interactive=False):
     # show the grid with the captions
     grid_ui = GridUI(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
-                     cell_padding=(10, 10), dim=(3, 3))
+                     cell_padding=(20, 20), dim=(3, 3))
 
     scene.add(grid_ui)
 
     # show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
-    1/0
 
 #    arr = window.snapshot(scene)
 #    report = window.analyze_snapshot(arr)

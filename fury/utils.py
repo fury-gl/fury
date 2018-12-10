@@ -9,6 +9,7 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 from dipy.core.geometry import vec2vec_rotmat, normalized_vector
 
+
 def set_input(vtk_object, inp):
     """ Generic input function which takes into account VTK 5 or 6
 
@@ -642,3 +643,33 @@ def shallow_copy(vtk_object):
     copy = vtk_object.NewInstance()
     copy.ShallowCopy(vtk_object)
     return copy
+
+
+def rotate(prop3D, rotation):
+        center = np.array(prop3D.GetCenter())
+
+        oldMatrix = prop3D.GetMatrix()
+        orig = np.array(prop3D.GetOrigin())
+
+        newTransform = vtk.vtkTransform()
+        newTransform.PostMultiply()
+        if prop3D.GetUserMatrix() is not None:
+            newTransform.SetMatrix(prop3D.GetUserMatrix())
+        else:
+            newTransform.SetMatrix(oldMatrix)
+
+        newTransform.Translate(*(-center))
+        newTransform.RotateWXYZ(*rotation)
+        newTransform.Translate(*center)
+
+        # now try to get the composit of translate, rotate, and scale
+        newTransform.Translate(*(-orig))
+        newTransform.PreMultiply()
+        newTransform.Translate(*orig)
+
+        if prop3D.GetUserMatrix() is not None:
+            newTransform.GetMatrix(prop3D.GetUserMatrix())
+        else:
+            prop3D.SetPosition(newTransform.GetPosition())
+            prop3D.SetScale(newTransform.GetScale())
+            prop3D.SetOrientation(newTransform.GetOrientation())

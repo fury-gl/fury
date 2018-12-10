@@ -881,7 +881,8 @@ def test_grid(interactive=False):
     # show the grid with the captions
     container = grid(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
-                     cell_padding=(10, 10), dim=(3, 3))
+                     cell_padding=(10, 10),
+                     dim=(3, 3))
 
     scene.add(container)
 
