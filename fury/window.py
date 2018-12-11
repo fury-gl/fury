@@ -85,10 +85,6 @@ class Scene(vtk.vtkRenderer):
         margin_factor : float (optional)
             Margin added around the content. Default: 1.02.
 
-        Notes
-        -----
-        This reset function works best with
-        ``:func:dipy.interactor.InteractorStyleImageAndTrackballActor``.
         """
         self.ComputeAspect()
         cam = self.GetActiveCamera()

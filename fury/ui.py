@@ -60,6 +60,7 @@ class UI(object):
             UI component.
 
         """
+        self._scene = object()
         self._position = np.array([0, 0])
         self._callbacks = []
 
@@ -129,7 +130,11 @@ class UI(object):
                        " order to use callbacks.")
                 raise TypeError(msg)
 
-            iren.add_callback(*callback, args=[self])
+            if callback[0] == self._scene:
+
+                iren.add_callback(iren, callback[1], callback[2], args=[self])
+            else:
+                iren.add_callback(*callback, args=[self])
 
     def add_callback(self, prop, event_type, callback, priority=0):
         """Add a callback to a specific event for this UI component.
@@ -3993,62 +3998,50 @@ class GridUI(UI):
             self._actors.append(item._items[0])
             self._actors_dict[item._items[0]] = {'x':-np.inf}
 
-        self.trackball_interactor_style = vtk.vtkInteractorStyleTrackballActor()
-
         super(GridUI, self).__init__(position=(0, 0, 0))
 
     def _get_size(self):
         return
 
     def left_click_callback(self, istyle, obj, what):
-
-        # clockwise_rotation = np.array([10, 0, 1, 0])
-        # rotate(obj, clockwise_rotation)
-
-        # iren = istyle.GetInteractor()
-        # # event_pos = iren.GetEventPosition()
-        # istyle.force_render()
-        # istyle.event.abort()
-        # # print(event_pos)
-        # # print(obj)
-        # # print(func)
-        istyle.trackball_interactor_style.OnLeftButtonDown()
+        istyle.trackball_actor.OnLeftButtonDown()
         istyle.event.abort()
 
     def left_release_callback(self, istyle, obj, what):
         istyle.event.abort()
-        istyle.trackball_interactor_style.OnLeftButtonUp()
+        istyle.trackball_actor.OnLeftButtonUp()
 
     def mouse_move_callback(self, istyle, obj, what):
-        istyle.trackball_interactor_style.OnMouseMove()
-
-
-        # if self._actors_dict[obj]['x'] == - np.inf:
-
-        #     iren = istyle.GetInteractor()
-        #     event_pos = iren.GetEventPosition()
-        #     self._actors_dict[obj]['x'] = event_pos[0]
-
-        # else:
-
-        #     iren = istyle.GetInteractor()
-        #     event_pos = iren.GetEventPosition()
-
-        #     if event_pos[0] >= self._actors_dict[obj]['x']:
-        #         clockwise_rotation = np.array([10, 0, 1, 0])
-        #         rotate(obj, clockwise_rotation)
-        #     else:
-        #         anti_clockwise_rotation = np.array([-10, 0, 1, 0])
-        #         rotate(obj, anti_clockwise_rotation)
-
-        #     self._actors_dict[obj]['x'] = event_pos[0]
-
-        #     # print(event_pos)
-        #     istyle.force_render()
-        #     istyle.event.abort()
-
+        istyle.trackball_actor.OnMouseMove()
         istyle.force_render()
         istyle.event.abort()
+
+    ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
+    CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
+    ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
+    CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
+
+    def key_press_callback2(self, istyle, obj, what):
+        has_changed = False
+        if istyle.event.key == "Left":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Right":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Up":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_X)
+        elif istyle.event.key == "Down":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_X)
+
+        if has_changed:
+            istyle.force_render()
 
     def _setup(self):
         """Set up this UI component and the events of its actor
@@ -4064,6 +4057,10 @@ class GridUI(UI):
                               self.left_release_callback)
             self.add_callback(actor, "MouseMoveEvent",
                               self.mouse_move_callback)
+
+        self.add_callback(self._scene, "CharEvent",
+                            self.key_press_callback2)
+        # self.on_key_press = self.key_press_callback2
 
 
     def _get_actors(self):

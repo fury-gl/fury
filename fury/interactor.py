@@ -63,12 +63,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
     def __init__(self):
         """Init."""
+        # Interactor responsible for moving the camera.
+        self.trackball_camera = vtk.vtkInteractorStyleTrackballCamera()
+        # Interactor responsible for moving/rotating a selected actor.
+        self.trackball_actor = vtk.vtkInteractorStyleTrackballActor()
+        # Interactor responsible for panning/zooming the camera.
+        self.image = vtk.vtkInteractorStyleImage()
 
-        self.trackball_interactor_style = vtk.vtkInteractorStyleTrackballActor()
-        self.image_interactor_style = vtk.vtkInteractorStyleImage()
-
-        # Default interactor is responsible for moving the camera.
-        self.default_interactor = vtk.vtkInteractorStyleTrackballCamera()
         # The picker allows us to know which object/actor is under the mouse.
         self.picker = vtk.vtkPropPicker()
         self.chosen_element = None
@@ -149,13 +150,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
-            self.default_interactor.OnLeftButtonDown()
+            self.trackball_camera.OnLeftButtonDown()
 
     def on_left_button_up(self, obj, evt):
         self.left_button_down = False
         self.propagate_event(evt, *self.selected_props["left_button"])
         self.selected_props["left_button"].clear()
-        self.default_interactor.OnLeftButtonUp()
+        self.trackball_camera.OnLeftButtonUp()
 
     def on_right_button_down(self, obj, evt):
         self.right_button_down = True
@@ -165,13 +166,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
-            self.default_interactor.OnRightButtonDown()
+            self.trackball_camera.OnRightButtonDown()
 
     def on_right_button_up(self, obj, evt):
         self.right_button_down = False
         self.propagate_event(evt, *self.selected_props["right_button"])
         self.selected_props["right_button"].clear()
-        self.default_interactor.OnRightButtonUp()
+        self.trackball_camera.OnRightButtonUp()
 
     def on_middle_button_down(self, obj, evt):
         self.middle_button_down = True
@@ -181,13 +182,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.propagate_event(evt, prop)
 
         if not self.event.abort_flag:
-            self.default_interactor.OnMiddleButtonDown()
+            self.trackball_camera.OnMiddleButtonDown()
 
     def on_middle_button_up(self, obj, evt):
         self.middle_button_down = False
         self.propagate_event(evt, *self.selected_props["middle_button"])
         self.selected_props["middle_button"].clear()
-        self.default_interactor.OnMiddleButtonUp()
+        self.trackball_camera.OnMiddleButtonUp()
 
     def on_mouse_move(self, obj, evt):
         """On mouse move."""
@@ -197,7 +198,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                     self.selected_props["right_button"] |
                                     self.selected_props["middle_button"]))
 
-        self.default_interactor.OnMouseMove()
+        self.trackball_camera.OnMouseMove()
 
     def on_mouse_wheel_forward(self, obj, evt):
         """On mouse wheel forward."""
@@ -212,7 +213,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         # Finally, to the default interactor.
         if not self.event.abort_flag:
-            self.default_interactor.OnMouseWheelForward()
+            self.trackball_camera.OnMouseWheelForward()
 
     def on_mouse_wheel_backward(self, obj, evt):
         """On mouse wheel backward."""
@@ -227,7 +228,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         # Finally, to the default interactor.
         if not self.event.abort_flag:
-            self.default_interactor.OnMouseWheelBackward()
+            self.trackball_camera.OnMouseWheelBackward()
 
     def on_char(self, obj, evt):
         self.propagate_event(evt, *self.active_props)
@@ -244,13 +245,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # `vtkWindowInteractor` object and this is done via `SetInteractor`.
         # However, this has the side effect of adding directly all their
         # observers to the `interactor`!
-        self.trackball_interactor_style.SetInteractor(interactor)
-        self.image_interactor_style.SetInteractor(interactor)
-        self.default_interactor.SetInteractor(interactor)
+        self.trackball_actor.SetInteractor(interactor)
+        self.image.SetInteractor(interactor)
+        self.trackball_camera.SetInteractor(interactor)
 
         # Remove all observers *most likely* (cannot guarantee that the
         # interactor did not already have these observers) added by
-        # `vtkInteractorStyleTrackballCamera`, i.e. our `default_interactor`.
+        # `vtkInteractorStyleTrackballCamera`, i.e. our `trackball_camera`.
         #
         # Note: Be sure that no observer has been manually added to the
         # `interactor` before setting the InteractorStyle.
@@ -329,160 +330,3 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             callback(self, prop, *args)
 
         prop.AddObserver(event_type, _callback, priority)
-
-
-class InteractorStyleImageAndTrackballActor(vtk.vtkInteractorStyleUser):
-    """ Interactive manipulation of the camera specialized for images that can
-    also manipulates objects in the scene independent of each other.
-
-    This interactor style allows the user to interactively manipulate (pan and
-    zoom) the camera. It also allows the user to interact (rotate, pan, etc.)
-    with objects in the scene independent of each other. It is specially
-    designed to work with a grid of actors.
-
-    Several events are overloaded from its superclass `vtkInteractorStyle`,
-    hence the mouse bindings are different. (The bindings keep the camera's
-    view plane normal perpendicular to the x-y plane.)
-
-    In summary the mouse events for this interaction style are as follows:
-    - Left mouse button: rotates the selected object around its center point
-    - Ctrl + left mouse button: spins the selected object around its view plane normal
-    - Shift + left mouse button: pans the selected object
-    - Middle mouse button: pans the camera
-    - Right mouse button: dollys the camera
-    - Mouse wheel: dollys the camera
-
-    """
-    def __init__(self):
-        self.trackball_interactor_style = vtk.vtkInteractorStyleTrackballActor()
-        self.image_interactor_style = vtk.vtkInteractorStyleImage()
-
-    def on_left_button_pressed(self, obj, evt):
-        self.trackball_interactor_style.OnLeftButtonDown()
-
-    def on_left_button_released(self, obj, evt):
-        self.trackball_interactor_style.OnLeftButtonUp()
-
-    def on_right_button_pressed(self, obj, evt):
-        self.image_interactor_style.OnRightButtonDown()
-
-    def on_right_button_released(self, obj, evt):
-        self.image_interactor_style.OnRightButtonUp()
-
-    def on_middle_button_pressed(self, obj, evt):
-        self.image_interactor_style.OnMiddleButtonDown()
-
-    def on_middle_button_released(self, obj, evt):
-        self.image_interactor_style.OnMiddleButtonUp()
-
-    def on_mouse_moved(self, obj, evt):
-        self.trackball_interactor_style.OnMouseMove()
-        self.image_interactor_style.OnMouseMove()
-
-    def on_mouse_wheel_forward(self, obj, evt):
-        self.image_interactor_style.OnMouseWheelForward()
-
-    def on_mouse_wheel_backward(self, obj, evt):
-        self.image_interactor_style.OnMouseWheelBackward()
-
-    def SetInteractor(self, interactor):
-        # Internally these `InteractorStyle` objects need an handle to a
-        # `vtkWindowInteractor` object and this is done via `SetInteractor`.
-        # However, this has a the side effect of adding directly their
-        # observers to `interactor`!
-        self.trackball_interactor_style.SetInteractor(interactor)
-        self.image_interactor_style.SetInteractor(interactor)
-
-        # Remove all observers previously set. Those were *most likely* set by
-        # `vtkInteractorStyleTrackballActor` and `vtkInteractorStyleImage`.
-        #
-        # Note: Be sure that no observer has been manually added to the
-        #       `interactor` before setting the InteractorStyle.
-        interactor.RemoveAllObservers()
-
-        # This class is a `vtkClass` (instead of `object`), so `super()` cannot be used.
-        # Also the method `SetInteractor` is not overridden by `vtkInteractorStyleUser`
-        # so we have to call directly the one from `vtkInteractorStyle`.
-        # In addition to setting the interactor, the following line
-        # adds the necessary hooks to listen to this instance's observers.
-        vtk.vtkInteractorStyle.SetInteractor(self, interactor)
-
-        self.AddObserver("LeftButtonPressEvent", self.on_left_button_pressed)
-        self.AddObserver("LeftButtonReleaseEvent", self.on_left_button_released)
-        self.AddObserver("RightButtonPressEvent", self.on_right_button_pressed)
-        self.AddObserver("RightButtonReleaseEvent", self.on_right_button_released)
-        self.AddObserver("MiddleButtonPressEvent", self.on_middle_button_pressed)
-        self.AddObserver("MiddleButtonReleaseEvent", self.on_middle_button_released)
-        self.AddObserver("MouseMoveEvent", self.on_mouse_moved)
-
-        # These observers need to be added directly to the interactor because
-        # `vtkInteractorStyleUser` does not forward these events.
-        interactor.AddObserver("MouseWheelForwardEvent", self.on_mouse_wheel_forward)
-        interactor.AddObserver("MouseWheelBackwardEvent", self.on_mouse_wheel_backward)
-
-
-class InteractorStyleGrid(InteractorStyleImageAndTrackballActor):
-
-    ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
-    CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
-    ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
-    CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
-
-    def __init__(self, bundles_actors):
-        InteractorStyleImageAndTrackballActor.__init__(self)
-        self.bundles_actors = bundles_actors
-
-    def on_key_pressed(self, obj, evt):
-        has_changed = False
-        if obj.GetKeySym() == "Left":
-            has_changed = True
-            for a in self.bundles_actors:
-                self.rotate(a, self.ANTICLOCKWISE_ROTATION_Y)
-        elif obj.GetKeySym() == "Right":
-            has_changed = True
-            for a in self.bundles_actors:
-                self.rotate(a, self.CLOCKWISE_ROTATION_Y)
-        elif obj.GetKeySym() == "Up":
-            has_changed = True
-            for a in self.bundles_actors:
-                self.rotate(a, self.ANTICLOCKWISE_ROTATION_X)
-        elif obj.GetKeySym() == "Down":
-            has_changed = True
-            for a in self.bundles_actors:
-                self.rotate(a, self.CLOCKWISE_ROTATION_X)
-
-        if has_changed:
-            obj.GetInteractor().Render()
-
-    def SetInteractor(self, interactor):
-        InteractorStyleImageAndTrackballActor.SetInteractor(self, interactor)
-        self.AddObserver("KeyPressEvent", self.on_key_pressed)
-
-    def rotate(self, prop3D, rotation):
-        center = np.array(prop3D.GetCenter())
-
-        oldMatrix = prop3D.GetMatrix()
-        orig = np.array(prop3D.GetOrigin())
-
-        newTransform = vtk.vtkTransform()
-        newTransform.PostMultiply()
-        if prop3D.GetUserMatrix() is not None:
-            newTransform.SetMatrix(prop3D.GetUserMatrix())
-        else:
-            newTransform.SetMatrix(oldMatrix)
-
-        newTransform.Translate(*(-center))
-        newTransform.RotateWXYZ(*rotation)
-        newTransform.Translate(*center)
-
-        # now try to get the composit of translate, rotate, and scale
-        newTransform.Translate(*(-orig))
-        newTransform.PreMultiply()
-        newTransform.Translate(*orig)
-
-        if prop3D.GetUserMatrix() is not None:
-            newTransform.GetMatrix(prop3D.GetUserMatrix())
-        else:
-            prop3D.SetPosition(newTransform.GetPosition())
-            prop3D.SetScale(newTransform.GetScale())
-            prop3D.SetOrientation(newTransform.GetOrientation())
