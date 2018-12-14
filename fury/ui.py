@@ -3980,7 +3980,9 @@ class GridUI(UI):
                  actors, captions=None, caption_offset=(0, -100, 0),
                  cell_padding=0,
                  cell_shape="rect", aspect_ratio=16/9., dim=None,
-                 rotation_speed=1):
+                 rotation_speed=1, rotation_axis=(0, 1, 0)):
+
+        # TODO: add rotation axis None by default
 
         self.container = grid(actors, captions=captions,
                               caption_offset=caption_offset,
@@ -3990,6 +3992,7 @@ class GridUI(UI):
         self._actors = []
         self._actors_dict = {}
         self.rotation_speed = rotation_speed
+        self.rotation_axis = rotation_axis
 
         for item in self.container._items:
             self._actors.append(item._items[0])
@@ -4012,6 +4015,46 @@ class GridUI(UI):
         istyle.trackball_actor.OnMouseMove()
         istyle.force_render()
         istyle.event.abort()
+
+    def left_click_callback2(self, istyle, obj, what):
+
+        rx, ry, rz = self.rotation_axis
+        clockwise_rotation = np.array([self.rotation_speed,
+                                       rx, ry, rz])
+        rotate(obj, clockwise_rotation)
+
+        istyle.force_render()
+        istyle.event.abort()
+
+    def mouse_move_callback2(self, istyle, obj, what):
+
+        if self._actors_dict[obj]['x'] == - np.inf:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            self._actors_dict[obj]['x'] = event_pos[0]
+
+        else:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            rx, ry, rz = self.rotation_axis
+
+            if event_pos[0] >= self._actors_dict[obj]['x']:
+                clockwise_rotation = np.array([self.rotation_speed,
+                                               rx, ry, rz])
+                rotate(obj, clockwise_rotation)
+            else:
+                anti_clockwise_rotation = np.array(
+                    [-self.rotation_speed, rx, ry, rz])
+                rotate(obj, anti_clockwise_rotation)
+
+            self._actors_dict[obj]['x'] = event_pos[0]
+
+            # print(event_pos)
+            istyle.force_render()
+            istyle.event.abort()
+
 
     ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
     CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
@@ -4049,12 +4092,21 @@ class GridUI(UI):
         for actor in self._actors:
             # self.handle_events(actor)
 
-            self.add_callback(actor, "LeftButtonPressEvent",
-                              self.left_click_callback)
-            self.add_callback(actor, "LeftButtonReleaseEvent",
-                              self.left_release_callback)
-            self.add_callback(actor, "MouseMoveEvent",
-                              self.mouse_move_callback)
+            if self.rotation_axis is None:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback)
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback)
+            else:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback2)
+                # TODO: possibly add this too
+                #self.add_callback(actor, "LeftButtonReleaseEvent",
+                #                  self.left_release_callback)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback2)
 
             # TODO: this is currently not running
             self.add_callback(actor, "KeyPressEvent", #"CharEvent",
