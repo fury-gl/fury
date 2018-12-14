@@ -1697,40 +1697,23 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
     grid = Container(layout=grid_layout)
 
 
-#    def callback(obj, event):
-#
-#        print(event)
-#        clockwise_rotation = np.array([10, 0, 1, 0])
-#        rotate(obj, clockwise_rotation)
-#
-#    def callback2(obj, event):
-#
-#        print(event)
-#        clockwise_rotation = np.array([1, 0, 1, 0])
-#        rotate(obj, clockwise_rotation)
-#
-#        event_pos = iren.GetEventPosition()
-#        print(event_pos)
-
-
     if captions is not None:
         actors_with_caption = []
         for actor, caption in zip(actors, captions):
 
-#            if rotate_on_click:
-#                actor.AddObserver("LeftButtonPressEvent", callback)
-#                actor.AddObserver("MouseMoveEvent", callback2)
-
             actor_center = np.array(actor.GetCenter())
 
-            # Offset accordingly the caption w.r.t. the center of the associated actor.
+            # Offset accordingly the caption w.r.t.
+            # the center of the associated actor.
             caption = shallow_copy(caption)
             caption.SetPosition(actor_center + caption_offset)
 
             actor_with_caption = Container()
             actor_with_caption.add(actor, caption)
 
-            # We change the anchor of the container so the actor will be centered in the grid cell.
+            # We change the anchor of the container so
+            # the actor will be centered in the
+            # grid cell.
             actor_with_caption.anchor = actor_center - actor_with_caption.GetCenter()
             actors_with_caption.append(actor_with_caption)
 

@@ -9,12 +9,15 @@ import numpy.testing as npt
 
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import ui
-from fury.ui import UI
+from fury.ui import UI, GridUI
 from fury import window, actor
 from fury.data import DATA_DIR
 from fury.decorators import xvfb_it
 from fury.testing import assert_arrays_equal
+from fury.utils import shallow_copy
 
+import itertools
+from fury.colormap import distinguishable_colormap
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
@@ -913,9 +916,7 @@ def test_ui_file_menu_2d(interactive=False):
 @xvfb_it
 def test_grid_ui(interactive=False):
 
-    import itertools
 
-    from fury.colormap import distinguishable_colormap
 
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
@@ -953,8 +954,6 @@ def test_grid_ui(interactive=False):
     text_actor3 = actor.text_3d('cube 3', justification='center')
     texts.append(text_actor3)
 
-    from fury.utils import shallow_copy
-
     actors.append(shallow_copy(contour_actor1))
     text_actor1 = actor.text_3d('cube 4', justification='center')
     texts.append(text_actor1)
@@ -979,8 +978,6 @@ def test_grid_ui(interactive=False):
     text_actor3 = actor.text_3d('cube 9', justification='center')
     texts.append(text_actor3)
 
-    from fury.ui import GridUI
-
     counter = itertools.count()
     show_m = window.ShowManager(scene)
     show_m.initialize()
@@ -998,6 +995,8 @@ def test_grid_ui(interactive=False):
                      cell_padding=(60, 60), dim=(3, 3))
 
     scene.add(grid_ui)
+
+
 
     # show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()

@@ -7,8 +7,9 @@ import os
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
-from fury.utils import set_input
-from fury.utils import rotate
+from fury.utils import set_input, rotate
+from fury.actor import grid
+
 
 TWO_PI = 2 * np.pi
 
@@ -3981,10 +3982,6 @@ class GridUI(UI):
                  cell_shape="rect", aspect_ratio=16/9., dim=None,
                  rotation_speed=1):
 
-        # self.resize(size)
-
-        from fury.actor import grid
-
         self.container = grid(actors, captions=captions,
                               caption_offset=caption_offset,
                               cell_padding=cell_padding,
@@ -4021,7 +4018,8 @@ class GridUI(UI):
     ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
     CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
 
-    def key_press_callback2(self, istyle, obj, what):
+    def key_press_callback(self, istyle, obj, what):
+        print('inside key_press event')
         has_changed = False
         if istyle.event.key == "Left":
             has_changed = True
@@ -4058,8 +4056,9 @@ class GridUI(UI):
             self.add_callback(actor, "MouseMoveEvent",
                               self.mouse_move_callback)
 
-        self.add_callback(self._scene, "CharEvent",
-                            self.key_press_callback2)
+            # TODO: this is currently not running
+            self.add_callback(actor, "KeyPressEvent", #"CharEvent",
+                              self.key_press_callback)
         # self.on_key_press = self.key_press_callback2
 
 
