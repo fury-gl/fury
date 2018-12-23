@@ -11,6 +11,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
 from scipy.spatial import Delaunay
 import math
 import random
+
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
     """ Cuts 3D scalar or rgb volumes into 2D images

@@ -153,6 +153,36 @@ def test_slicer():
     npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
                            np.array(slicer.shape))
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_surface():
+    import random
+    from scipy.spatial import Delaunay
+    import numpy as np
+    import math
+    size = 11
+    vertices = list()
+    for i in range(-size,size):
+        for j in range(-size,size):
+            fact1 = - math.sin(i) * math.cos(j)
+            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
+            z = -abs(fact1 * fact2)
+            vertices.append([i, j, z])
+
+    random.shuffle(vertices)
+    vertices = np.array(vertices)
+    xy = list()
+    for coordinate in vertices:
+        xy.append([coordinate[0], coordinate[1]])
+    tri = Delaunay(xy)
+    faces = tri.simplices
+    renderer = window.renderer(background=(1, 1, 1))
+    surface_actor = surface(vertices, smooth="butterfly")
+    axes_actor = actor.axes(scale=(12, 12, 12))
+    renderer.add(axes_actor)
+    renderer.add(surface_actor)
+    window.show(renderer, size=(600, 600), reset_camera=False)
+
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
