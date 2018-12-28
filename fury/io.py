@@ -36,7 +36,7 @@ def load_polydata(file_name):
         except Exception:  # than try load a MNI obj format
             reader = vtk.vtkMNIObjectReader()
     else:
-        raise "polydata " + file_extension + " is not suported"
+        raise IOError("polydata " + file_extension + " is not suported")
 
     reader.SetFileName(file_name)
     reader.Update()
@@ -75,7 +75,10 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None,
         if mni_tag:
             writer = vtk.vtkMNIObjectWriter()
         else:
-            writer = vtk.vtkObjWriter()
+            # vtkObjWriter not available on python
+            # vtk.vtkOBJWriter()
+            raise IOError("OBJ Writer not available. MNI obj is the only"
+                          " available writer so set mni_tag option to True")
     else:
         raise IOError("Unknown extension ({})".format(file_extension))
 
