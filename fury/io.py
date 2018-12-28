@@ -40,11 +40,11 @@ def load_polydata(file_name):
 
     reader.SetFileName(file_name)
     reader.Update()
-    # print(file_name + " Mesh " + file_extension + " Loaded")
     return reader.GetOutput()
 
 
-def save_polydata(polydata, file_name, binary=False, color_array_name=None):
+def save_polydata(polydata, file_name, binary=False, color_array_name=None,
+                  mni_tag=False):
     """Save a vtk polydata to a supported format file.
 
     Save formats can be VTK, FIB, PLY, STL and XML.
@@ -53,6 +53,9 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     ----------
     polydata : vtkPolyData
     file_name : string
+    binary : bool
+    color_array_name: ndarray
+    mni_tag : bool
 
     """
     # get file extension (type)
@@ -69,8 +72,12 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     elif file_extension == "xml":
         writer = vtk.vtkXMLPolyDataWriter()
     elif file_extension == "obj":
-        raise Exception("mni obj or Wavefront obj ?")
-    #    writer = set_input(vtk.vtkMNIObjectWriter(), polydata)
+        if mni_tag:
+            writer = vtk.vtkMNIObjectWriter()
+        else:
+            writer = vtk.vtkObjWriter()
+    else:
+        raise IOError("Unknown extension ({})".format(file_extension))
 
     writer.SetFileName(file_name)
     writer = set_input(writer, polydata)

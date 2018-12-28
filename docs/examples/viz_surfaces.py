@@ -17,8 +17,8 @@ import numpy as np
 ###############################################################################
 # Import useful functions
 
-from fury.io import save_polydata, load_polydata
 from fury import window, utils
+from fury.io import save_polydata, load_polydata
 from fury.utils import vtk
 
 ###############################################################################
