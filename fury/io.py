@@ -3,7 +3,7 @@ import vtk
 from fury.utils import set_input
 
 
-def load_polydata(file_name):
+def load_polydata(file_name, is_mni_obj=False):
     """Load a vtk polydata to a supported format file.
 
     Supported file formats are OBJ, VTK, FIB, PLY, STL and XML
@@ -11,6 +11,7 @@ def load_polydata(file_name):
     Parameters
     ----------
     file_name : string
+    is_mni_obj : bool
 
     Returns
     -------
@@ -30,6 +31,8 @@ def load_polydata(file_name):
         reader = vtk.vtkSTLReader()
     elif file_extension == "xml":
         reader = vtk.vtkXMLPolyDataReader()
+    elif file_extension == "obj" and is_mni_obj:
+        reader = vtk.vtkMNIObjectReader()
     elif file_extension == "obj":
         try:  # try to read as a normal obj
             reader = vtk.vtkOBJReader()
@@ -44,7 +47,7 @@ def load_polydata(file_name):
 
 
 def save_polydata(polydata, file_name, binary=False, color_array_name=None,
-                  mni_tag=False):
+                  is_mni_obj=False):
     """Save a vtk polydata to a supported format file.
 
     Save formats can be VTK, FIB, PLY, STL and XML.
@@ -55,7 +58,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None,
     file_name : string
     binary : bool
     color_array_name: ndarray
-    mni_tag : bool
+    is_mni_obj : bool
 
     """
     # get file extension (type)
@@ -72,7 +75,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None,
     elif file_extension == "xml":
         writer = vtk.vtkXMLPolyDataWriter()
     elif file_extension == "obj":
-        if mni_tag:
+        if is_mni_obj:
             writer = vtk.vtkMNIObjectWriter()
         else:
             # vtkObjWriter not available on python
@@ -84,7 +87,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None,
 
     writer.SetFileName(file_name)
     writer = set_input(writer, polydata)
-    if color_array_name is not None:
+    if color_array_name is not None and file_extension == "ply":
         writer.SetArrayName(color_array_name)
 
     if binary:
