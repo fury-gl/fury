@@ -11,6 +11,7 @@ addons:
     - sourceline: ppa:oibaf/graphics-drivers
     update: true
     packages:
+    - libbz2-dev
     - libglew-dev
     - freeglut3-dev
     - libxi-dev
