@@ -939,7 +939,7 @@ def analyze_snapshot(im, bg_color=(0, 0, 0), colors=None,
         flags = [False] * len(colors)
         for (i, col) in enumerate(colors):
             # find if the current color exist in the array
-            flags[i] = np.any(np.all(im == col, axis=-1))
+            flags[i] = np.any(np.any(np.all(im[..., :3] == col[:3], axis=-1)))
 
         report.colors_found = flags
 
