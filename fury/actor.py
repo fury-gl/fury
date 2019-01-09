@@ -922,7 +922,6 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                                                 sphere=sphere,
                                                 scale=scale,
                                                 norm=norm,
-                                                opacity=opacity,
                                                 scalar_colors=scalar_colors)
             self.SetMapper(self.mapper)
 
@@ -941,12 +940,13 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     tensor_actor.display_extent(0, szx - 1, 0, szy - 1,
                                 int(np.floor(szz/2)), int(np.floor(szz/2)))
 
+    tensor_actor.GetProperty().SetOpacity(opacity)
+
     return tensor_actor
 
 
 def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
-                          scale=2.2, norm=True, opacity=1.,
-                          scalar_colors=None):
+                          scale=2.2, norm=True, scalar_colors=None):
     """Helper function for slicing tensor fields
 
     Parameters
@@ -965,8 +965,6 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         Distance between spheres.
     norm : bool
         Normalize `sphere_values`.
-    opacity : float
-        Takes values from 0 (fully transparent) to 1 (opaque)
     scalar_colors : (3,) or (X, 3) or (X, Y, 3) or (X, Y, Z, 3) ndarray
         RGB colors used to show the tensors
         Default None, color the ellipsoids using ``color_fa``
