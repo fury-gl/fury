@@ -1147,11 +1147,13 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                                       peaks_dirs[tuple(center)][i] * pv + xyz))
                     list_dirs.append(symm)
 
-            self.mapper = line(list_dirs, colors=colors,
-                               opacity=opacity, linewidth=linewidth,
-                               lod=lod, lod_points=lod_points,
-                               lod_points_size=lod_points_size).GetMapper()
-            self.SetMapper(self.mapper)
+            self.line = line(list_dirs, colors=colors,
+                             opacity=opacity, linewidth=linewidth,
+                             lod=lod, lod_points=lod_points,
+                             lod_points_size=lod_points_size)
+
+            self.SetProperty(self.line.GetProperty())
+            self.SetMapper(self.line.GetMapper())
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
