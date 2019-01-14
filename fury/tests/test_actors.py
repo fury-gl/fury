@@ -585,13 +585,16 @@ def test_tensor_slicer(interactive=False):
     scene = window.Scene()
 
     tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                       sphere=sphere,  scale=.3)
+                                       sphere=sphere,  scale=.3, opacity=0.4)
     I, J, K = mevals.shape[:3]
     scene.add(tensor_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
     tensor_actor.display_extent(0, 1, 0, J, 0, K)
+    if interactive:
+        window.show(scene, reset_camera=False)
+
     tensor_actor.GetProperty().SetOpacity(1.0)
     if interactive:
         window.show(scene, reset_camera=False)
