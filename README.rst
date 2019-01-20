@@ -66,3 +66,8 @@ You've discovered a bug or something else you want to change - excellent! Create
 You've worked out a way to fix it – even better! Submit a Pull Request!
 
 Start with the `contributing guide <CONTRIBUTING.rst>`_!
+
+
+.. image:: https://api.codacy.com/project/badge/Grade/922600af9f94445ead5a12423b813576
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/app/fury-gl/fury?utm_source=github.com&utm_medium=referral&utm_content=fury-gl/fury&utm_campaign=Badge_Grade_Dashboard
