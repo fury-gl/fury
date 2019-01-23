@@ -94,6 +94,104 @@ def get_tags(project="fury-gl/fury"):
     return get_paged_request(url)
 
 
+def fetch_basic_stats(project="fury-gl/fury"):
+    """Fetch the basic stats.
+
+    Returns
+    -------
+    basic_stats : dict
+        A dictionary containing basic statistics. For example:
+        {   'subscribers': 41,
+            'forks': 142,
+            'forks_url': 'https://github.com/fury-gl/fury/network'
+            'watchers': 94,
+            'open_issues': 154,
+            'stars': 94,
+            'stars_url': 'https://github.com/fury-gl/fury/stargazers'
+        }
+
+    """
+    desired_keys = ["stargazers_count", "stargazers_url", "watchers_count",
+                    "watchers_url", "forks_count", "forks_url", "open_issues",
+                    "issues_url", "subscribers_count", "subscribers_url"]
+    url = "https://api.github.com/repos/{}".format(project)
+    f = urlopen(url)
+    r_json = json.load(f)
+    basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
+    return basic_stats
+
+
+def fetch_contributor_stats(project="fury-gl/fury"):
+    """Fetch stats of contributors.
+
+    Returns
+    -------
+    contributor_stats : dict
+        A dictionary containing contributor statistics. For example:
+        {'total_contributors': 50,
+         'total_commits': 6031,
+         'contributors': [ {
+                        "user_name": "Garyfallidis"
+                        "avatar_url": "https://avatars.githubusercontent.com/u/134276?v=3",
+                        "html_url": "https://github.com/Garyfallidis",
+                        "total_commits": 1389,
+                        "total_additions": 116712,
+                        "total_deletions": 70340,
+                        "weekly_commits": [
+                                    {
+                                    "w": "1367712000",
+                                    "a": 6898,
+                                    "d": 77,
+                                    "c": 10
+                                    },
+                                ]
+                        },
+                    ]
+        }
+
+    """
+    url = "https://api.github.com/repos/{}/stats/contributors".format(project)
+    f = urlopen(url)
+    r_json = json.load(f)
+
+    contributor_stats = {}
+    contributor_stats["total_contributors"] = len(r_json)
+    contributor_stats["contributors"] = []
+
+    cumulative_commits = 0
+    desired_keys = ["login", "avatar_url", "html_url"]
+    for contributor in r_json:
+        contributor_dict = dict((k, contributor["author"][k])
+                                for k in desired_keys
+                                if k in contributor["author"])
+
+        # import ipdb;ipdb.set_trace()
+        # check if "author" is null
+        if not contributor_dict["login"]:
+            continue
+
+        # Replace key name
+        contributor_dict["username"] = contributor_dict.pop("login")
+        contributor_dict["nb_commits"] = contributor["total"]
+
+        # Update total commits
+        cumulative_commits += contributor_dict["nb_commits"]
+
+        total_additions = 0
+        total_deletions = 0
+        for week in contributor["weeks"]:
+            total_additions += week['a']
+            total_deletions += week['d']
+
+        contributor_dict["total_additions"] = total_additions
+        contributor_dict["total_deletions"] = total_deletions
+        # contributor_dict["weekly_commits"] = contributor["weeks"]
+        contributor_stats["contributors"].insert(0, contributor_dict)
+
+    contributor_stats["total_commits"] = cumulative_commits
+    return contributor_stats
+
+
 def _parse_datetime(s):
     """Parse dates in the format returned by the Github API."""
     if s:
@@ -344,6 +442,8 @@ if __name__ == "__main__":
     # github_stats()
     # import ipdb;ipdb.set_trace()
     # generate_release_information()
-    get_all_versions()
-    get_all_versions('minor')
-    get_all_versions('micro')
+    # get_all_versions()
+    # get_all_versions('minor')
+    # get_all_versions('micro')
+    # print(fetch_basic_stats())
+    print(fetch_contributor_stats())
