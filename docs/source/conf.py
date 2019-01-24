@@ -51,7 +51,7 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'ext.build_modref_templates',
     'ext.github_tools',
-
+    'ext.rstjinja'
 ]
 
 # Configuration options for plot_directive. See:
@@ -143,7 +143,11 @@ html_sidebars = {
 }
 
 import github_tools as ght
-html_context = {'versions_list': ['dev', 'latest'] + ght.get_all_versions(ignore='micro'),
+all_versions = ght.get_all_versions(ignore='micro')
+html_context = {'all_versions': all_versions,
+                'versions_list': ['dev', 'latest'] + all_versions,
+                'basic_stats': ght.fetch_basic_stats(),
+                'contributors': ght.fetch_contributor_stats(),
                 }
 
 # -- Options for HTMLHelp output ------------------------------------------

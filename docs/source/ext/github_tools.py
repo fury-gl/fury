@@ -288,7 +288,8 @@ def get_all_versions(ignore='', project="fury-gl/fury"):
     return l_version
 
 
-def version_compare(current_version, version_number, op='eq'):
+def version_compare(current_version, version_number, op='eq',
+                    all_versions=None):
     """Compare doc version. This is afilter for sphinx template."""
     p = re.compile(r'(\d+)\.(\d+)')
     d_operator = {'<': operator.lt,
@@ -315,20 +316,20 @@ def version_compare(current_version, version_number, op='eq'):
     # major and minor extraction
     current = p.search(current_version)
     ref = p.search(version_number)
-    # print(current, ref)
 
-    # import ipdb; ipdb.set_trace()
+    # Check if it is the latest release
+    all_versions = all_versions or get_all_versions()
     if current_version.lower() == 'latest':
-        last_version = sorted(get_all_versions())[0]
+        last_version = sorted(all_versions)[0]
         last_version = p.search(last_version)
         if LooseVersion(last_version.group()) == LooseVersion(ref.group()) and \
            'post' not in version_number:
             return True
         return False
 
-    # res = d_operator[op](LooseVersion(current.group()),
-    #                      LooseVersion(ref.group()))
-    # print(current_version, version_number, op, res)
+    if 'post' in version_number:
+        return False
+
     return d_operator[op](LooseVersion(current.group()),
                           LooseVersion(ref.group()))
 
