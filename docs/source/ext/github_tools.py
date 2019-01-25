@@ -131,22 +131,22 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         {'total_contributors': 50,
          'total_commits': 6031,
          'contributors': [ {
-                        "user_name": "Garyfallidis"
-                        "avatar_url": "https://avatars.githubusercontent.com/u/134276?v=3",
-                        "html_url": "https://github.com/Garyfallidis",
-                        "total_commits": 1389,
-                        "total_additions": 116712,
-                        "total_deletions": 70340,
-                        "weekly_commits": [
-                                    {
-                                    "w": "1367712000",
-                                    "a": 6898,
-                                    "d": 77,
-                                    "c": 10
-                                    },
-                                ]
+            "user_name": "Garyfallidis"
+            "avatar_url":"https://avatars.githubusercontent.com/u/134276?v=3",
+            "html_url": "https://github.com/Garyfallidis",
+            "total_commits": 1389,
+            "total_additions": 116712,
+            "total_deletions": 70340,
+            "weekly_commits": [
+                        {
+                        "w": "1367712000",
+                        "a": 6898,
+                        "d": 77,
+                        "c": 10
                         },
                     ]
+            },
+            ]
         }
 
     """
@@ -322,7 +322,8 @@ def version_compare(current_version, version_number, op='eq',
     if current_version.lower() == 'latest':
         last_version = sorted(all_versions)[0]
         last_version = p.search(last_version)
-        if LooseVersion(last_version.group()) == LooseVersion(ref.group()) and \
+        if LooseVersion(last_version.group()) ==  \
+           LooseVersion(ref.group()) and \
            'post' not in version_number:
             return True
         return False
@@ -335,7 +336,7 @@ def version_compare(current_version, version_number, op='eq',
 
 
 def generate_release_information():
-    """Generate release information"""
+    """Generate release information."""
     pass
 
 
@@ -356,7 +357,7 @@ def github_stats():
 
     if tag:
         cmd = ['git', 'log', '-1', '--format=%ai', tag]
-        tagday, tz = check_output(cmd).strip().rsplit(' ', 1)
+        tagday, _ = check_output(cmd).strip().rsplit(' ', 1)
         since = datetime.strptime(tagday, "%Y-%m-%d %H:%M:%S")
     else:
         since = datetime.now() - timedelta(days=days)
@@ -397,18 +398,18 @@ def github_stats():
 
         if len(unique_authors) == 0:
             print("No commits during this period.")
-        else: 
-            print("The following %i authors contributed %i commits." % \
+        else:
+            print("The following %i authors contributed %i commits." %
                   (len(unique_authors), ncommits))
             print()
             print('\n'.join(unique_authors))
             print()
 
             print()
-            print("We closed a total of %d issues, %d pull requests and %d regular issues;\n"
-                  "this is the full list (generated with the script \n"
-                  ":file:`tools/github_stats.py`):" % (n_total, n_pulls,
-                                                       n_issues))
+            print("We closed a total of %d issues, %d pull requests and %d"
+                  " regular issues;\nthis is the full list (generated with"
+                  " the script \n:file:`tools/github_stats.py`):" %
+                  (n_total, n_pulls, n_issues))
             print()
             print('Pull Requests (%d):\n' % n_pulls)
             report(pulls, show_urls)
@@ -421,7 +422,8 @@ def github_stats():
 # Sphinx connection
 # ----------------------------------------------------------------------------
 def add_jinja_filters(app):
-    app.builder.templates.environment.filters['version_compare'] = version_compare
+    app.builder.templates.environment.filters['version_compare'] = \
+        version_compare
 
 
 def setup(app):
