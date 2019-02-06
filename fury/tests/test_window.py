@@ -2,10 +2,11 @@ import os
 import platform
 import warnings
 import numpy as np
-from fury import actor, window
+from fury import actor, window, io
 import numpy.testing as npt
-from fury.testing import captured_output
+from fury.testing import captured_output, assert_less_equal
 from fury.decorators import xvfb_it
+from fury.tmpdirs import InTemporaryDirectory
 
 skip_osx = platform.system().lower() == "darwin"
 skip_win = platform.system().lower() == "windows"
@@ -322,6 +323,67 @@ def test_stereo():
                       mono[150, 150], [0, 0, 0])
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
+def test_record():
+    scene = window.Scene()
+    scene.add(actor.axes())
+
+    def test_content(filename='fury.png', colors_found=(True, True)):
+        npt.assert_equal(os.path.isfile(filename), True)
+        arr = io.load_image(filename)
+        report = window.analyze_snapshot(arr, colors=[(0, 255, 0),
+                                                      (255, 0, 0)])
+        npt.assert_equal(report.objects, 1)
+        npt.assert_equal(report.colors_found, colors_found)
+        return arr
+
+    # Basic test
+    with InTemporaryDirectory():
+        window.record(scene)
+        test_content('fury.png')
+
+    # test out_path and path_numbering, n_frame
+    with InTemporaryDirectory():
+        filename = "tmp_snapshot.png"
+        window.record(scene, out_path=filename)
+        test_content(filename)
+        window.record(scene, out_path=filename, path_numbering=True)
+        test_content(filename + "000000.png")
+        window.record(scene, out_path=filename, path_numbering=True,
+                      n_frames=3)
+        test_content(filename + "000000.png")
+        test_content(filename + "000001.png", (False, False))
+        test_content(filename + "000002.png", (False, False))
+        npt.assert_equal(os.path.isfile(filename + "000003.png"), False)
+
+    # test verbose
+    with captured_output() as (out, _):
+        window.record(scene, verbose=True)
+
+    npt.assert_equal(out.getvalue().strip(),
+                     "Camera Position (1.70, 0.45, 3.90)\n"
+                     "Camera Focal Point (0.45, 0.45, 0.46)\n"
+                     "Camera View Up (0.00, 1.00, 0.00)")
+    # test camera option
+    with InTemporaryDirectory():
+        window.record(scene, cam_pos=(0, -5, 0), cam_focal=(0, 1, 0),
+                      cam_view=(0, 0, 1))
+        test_content(colors_found=(True, False))
+
+    # test size and clipping
+    with InTemporaryDirectory():
+        window.record(scene, out_path='fury_1.png', size=(5000, 5000))
+        npt.assert_equal(os.path.isfile('fury_1.png'), True)
+        arr = io.load_image('fury_1.png')
+
+        npt.assert_equal(arr.shape, (5000, 5000, 3))
+        window.record(scene, out_path='fury_2.png', size=(5000, 5000),
+                      screen_clip=True)
+        npt.assert_equal(os.path.isfile('fury_2.png'), True)
+        arr = io.load_image('fury_2.png')
+
+        assert_less_equal(arr.shape[0], 5000)
+        assert_less_equal(arr.shape[1], 5000)
 
 if __name__ == '__main__':
+    # test_record()
     npt.run_module_suite()
