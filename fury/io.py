@@ -44,7 +44,8 @@ def load_image(file_name, as_vtktype=False):
 
     h, w, _ = reader.GetOutput().GetDimensions()
     vtk_array = reader.GetOutput().GetPointData().GetScalars()
-    # print(vtk_array.GetDataSize(), vtk_array.GetNumberOfComponents(), vtk_array.GetDataType)
+    # print(vtk_array.GetDataSize(), vtk_array.GetNumberOfComponents(),
+    #       vtk_array.GetDataType)
     components = vtk_array.GetNumberOfComponents()
     image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
     return image
@@ -52,7 +53,7 @@ def load_image(file_name, as_vtktype=False):
 
 def save_image(arr, file_name, compression_quality=100,
                compression_type='deflation'):
-    """Save an 2d or 3d image 
+    """Save an 2d or 3d image.
 
     Parameters
     ----------
@@ -66,7 +67,6 @@ def save_image(arr, file_name, compression_quality=100,
     compression_type: str
         compression type for tiff file
         select between: None, jpeg, lzw, deflation (default)
-
 
     """
     if arr.ndim > 3:
