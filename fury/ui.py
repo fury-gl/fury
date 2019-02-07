@@ -4103,8 +4103,8 @@ class GridUI(UI):
                 self.add_callback(actor, "LeftButtonPressEvent",
                                   self.left_click_callback2)
                 # TODO: possibly add this too
-                #self.add_callback(actor, "LeftButtonReleaseEvent",
-                #                  self.left_release_callback)
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback)
                 self.add_callback(actor, "MouseMoveEvent",
                                   self.mouse_move_callback2)
 

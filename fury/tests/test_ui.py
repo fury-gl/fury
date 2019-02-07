@@ -916,8 +916,6 @@ def test_ui_file_menu_2d(interactive=False):
 @xvfb_it
 def test_grid_ui(interactive=False):
 
-
-
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
 
@@ -978,6 +976,7 @@ def test_grid_ui(interactive=False):
     text_actor3 = actor.text_3d('cube 9', justification='center')
     texts.append(text_actor3)
 
+
     counter = itertools.count()
     show_m = window.ShowManager(scene)
     show_m.initialize()
@@ -986,25 +985,75 @@ def test_grid_ui(interactive=False):
         cnt = next(counter)
         show_m.scene.zoom(1)
         show_m.render()
-        if cnt == 100:
+        if cnt == 10:
             show_m.exit()
 
     # show the grid with the captions
     grid_ui = GridUI(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
-                     cell_padding=(60, 60), dim=(3, 3))
+                     cell_padding=(60, 60), dim=(3, 3),
+                     rotation_axis=None)
 
     scene.add(grid_ui)
 
-
-
-    # show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 9, True)
 
-#    arr = window.snapshot(scene)
-#    report = window.analyze_snapshot(arr)
-#    npt.assert_equal(report.objects > 9, True)
+
+    grid_ui2 = GridUI(actors=actors, captions=texts,
+                      caption_offset=(0, -50, 0),
+                      cell_padding=(60, 60), dim=(3, 3),
+                      rotation_axis=(1, 0, 0))
+
+    filename = "test_grid_ui"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+
+
+    current_size = (600, 600)
+    scene = window.Scene()
+    show_manager = window.ShowManager(scene,
+                                      size=current_size,
+                                      title="FURY GridUI")
+
+    show_manager.initialize()
+
+    grid_ui2 = GridUI(actors=actors, captions=texts,
+                      caption_offset=(0, -50, 0),
+                      cell_padding=(60, 60), dim=(3, 3),
+                      rotation_axis=(1, 0, 0))
+
+    scene.add(grid_ui2)
+
+    event_counter = EventCounter()
+    event_counter.monitor(grid_ui2)
+
+
+    #show_manager.start()
+    recording = True
+
+    #1/0
+    if recording:
+        # Record the following events
+        # 1. Left Click on the handle and hold it
+        # 2. Move to the left the handle and make 1.5 tour
+        # 3. Release the handle
+        # 4. Left Click on the handle and hold it
+        # 5. Move to the right the handle and make 1 tour
+        # 6. Release the handle
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
 
 
 if __name__ == "__main__":
