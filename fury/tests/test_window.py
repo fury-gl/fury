@@ -368,7 +368,7 @@ def test_record():
                      "Camera Focal Point (119.89, 0.00, 0.00)\n"
                      "Camera View Up (0.00, 1.00, 0.00)")
     # test camera option
-    with InTemporaryDirectory() as idir:
+    with InTemporaryDirectory():
         window.record(scene, cam_pos=(310, 0, 530), cam_focal=(120, 0, 0),
                       cam_view=(0, 0, 1))
         test_content()
