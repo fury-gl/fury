@@ -122,5 +122,5 @@ def test_save_load_image():
 if __name__ == "__main__":
     # test_save_and_load_polydata()
     # test_save_and_load_options()
-    test_save_load_image()
-    # npt.run_module_suite()
+    # test_save_load_image()
+    npt.run_module_suite()
