@@ -324,22 +324,26 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 def test_record():
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
+    colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3])
     scene = window.Scene()
-    scene.add(actor.axes())
+    scene.add(sphere_actor)
 
     def test_content(filename='fury.png', colors_found=(True, True)):
         npt.assert_equal(os.path.isfile(filename), True)
         arr = io.load_image(filename)
         report = window.analyze_snapshot(arr, colors=[(0, 255, 0),
                                                       (255, 0, 0)])
-        npt.assert_equal(report.objects, 1)
+        npt.assert_equal(report.objects, 3)
         npt.assert_equal(report.colors_found, colors_found)
         return arr
 
     # Basic test
     with InTemporaryDirectory():
         window.record(scene)
-        test_content('fury.png')
+        test_content()
 
     # test out_path and path_numbering, n_frame
     with InTemporaryDirectory():
@@ -351,8 +355,8 @@ def test_record():
         window.record(scene, out_path=filename, path_numbering=True,
                       n_frames=3)
         test_content(filename + "000000.png")
-        test_content(filename + "000001.png", (False, False))
-        test_content(filename + "000002.png", (False, False))
+        test_content(filename + "000001.png")
+        test_content(filename + "000002.png")
         npt.assert_equal(os.path.isfile(filename + "000003.png"), False)
 
     # test verbose
@@ -360,14 +364,14 @@ def test_record():
         window.record(scene, verbose=True)
 
     npt.assert_equal(out.getvalue().strip(),
-                     "Camera Position (1.70, 0.45, 3.90)\n"
-                     "Camera Focal Point (0.45, 0.45, 0.46)\n"
+                     "Camera Position (315.14, 0.00, 536.43)\n"
+                     "Camera Focal Point (119.89, 0.00, 0.00)\n"
                      "Camera View Up (0.00, 1.00, 0.00)")
     # test camera option
-    with InTemporaryDirectory():
-        window.record(scene, cam_pos=(0, -5, 0), cam_focal=(0, 1, 0),
+    with InTemporaryDirectory() as idir:
+        window.record(scene, cam_pos=(310, 0, 530), cam_focal=(120, 0, 0),
                       cam_view=(0, 0, 1))
-        test_content(colors_found=(True, False))
+        test_content()
 
     # test size and clipping
     with InTemporaryDirectory():
@@ -376,6 +380,7 @@ def test_record():
         arr = io.load_image('fury_1.png')
 
         npt.assert_equal(arr.shape, (5000, 5000, 3))
+
         window.record(scene, out_path='fury_2.png', size=(5000, 5000),
                       screen_clip=True)
         npt.assert_equal(os.path.isfile('fury_2.png'), True)
@@ -386,5 +391,5 @@ def test_record():
 
 
 if __name__ == '__main__':
-    # test_record()
-    npt.run_module_suite()
+    test_record()
+    # npt.run_module_suite()
