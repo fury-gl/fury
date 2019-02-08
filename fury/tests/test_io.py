@@ -87,7 +87,6 @@ def test_save_load_image():
             data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
 
-            print("SAVING ", fname_path)
             save_image(data, fname_path)
 
             npt.assert_equal(os.path.isfile(fname_path), True)
@@ -106,10 +105,22 @@ def test_save_load_image():
     npt.assert_raises(IOError, save_image, np.random.randint(0, 255,
                                                              size=(50, 3)),
                       "test.vtk")
+    npt.assert_raises(IOError, save_image,
+                      np.random.randint(0, 255, size=(50, 3, 1, 1)),
+                      "test.png")
 
+    compression_type = [None, "lzw"]
+    for ct in compression_type:
+        with InTemporaryDirectory() as odir:
+            data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
+            fname_path = pjoin(odir, "{0}.tif".format(fname))
+
+            save_image(data, fname_path, compression_type=ct)
+            npt.assert_equal(os.path.isfile(fname_path), True)
+            assert_greater(os.stat(fname_path).st_size, 0)
 
 if __name__ == "__main__":
     # test_save_and_load_polydata()
     # test_save_and_load_options()
-    # test_save_load_image()
-    npt.run_module_suite()
+    test_save_load_image()
+    # npt.run_module_suite()

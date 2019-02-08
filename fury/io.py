@@ -67,7 +67,7 @@ def save_image(arr, file_name, compression_quality=100,
         0 = Low quality, 100 = High quality
     compression_type: str
         compression type for tiff file
-        select between: None, jpeg, lzw, deflation (default)
+        select between: None, lzw, deflation (default)
 
     """
     if arr.ndim > 3:
@@ -109,16 +109,10 @@ def save_image(arr, file_name, compression_quality=100,
         writer.SetQuality(compression_quality)
     if extension.lower() in [".tif", ".tiff"]:
         if not compression_type:
-            print('None')
             writer.SetCompressionToNoCompression()
-        elif compression_type.lower() == 'jpeg':
-            print('jpeg')
-            writer.SetCompressionToJPEG()
         elif compression_type.lower() == 'lzw':
-            print('lzw')
             writer.SetCompressionToLZW()
         elif compression_type.lower() == 'deflation':
-            print('deflation')
             writer.SetCompressionToDeflate()
 
     writer.Write()
