@@ -119,6 +119,7 @@ def test_save_load_image():
             npt.assert_equal(os.path.isfile(fname_path), True)
             assert_greater(os.stat(fname_path).st_size, 0)
 
+
 if __name__ == "__main__":
     # test_save_and_load_polydata()
     # test_save_and_load_options()
