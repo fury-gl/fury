@@ -11,13 +11,14 @@ def load_image(file_name, as_vtktype=False):
     Parameters
     ----------
     file_name: string
-        should be *.png, *.bmp, *.jpeg, *.jpg
-    as_vtktype: bool
+        should be png, bmp, jpeg or jpg files
+    as_vtktype: bool, optional
         if True, return vtk output otherwise a ndarray. default(False)
 
     Returns
     -------
     image: ndarray or vtk output
+        desired image array
 
     """
     d_reader = {".png": vtk.vtkPNGReader,
@@ -60,7 +61,7 @@ def save_image(arr, file_name, compression_quality=100,
     arr: ndarray
         array to save
     file_name: string
-        should be *.png, *.bmp, *.jpeg, *.jpg
+        should be png, bmp, jpeg or jpg files
     compression_quality: int
         compression_quality for jpeg data.
         0 = Low quality, 100 = High quality
