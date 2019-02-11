@@ -189,60 +189,59 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     return image_actor
 
+def surface(vertices, faces = None, colors = None, smooth = None, subdivision = 3):
 
-def surface(vertices, faces=None, smooth=None):
-    temp1 = np.amax(vertices, axis=0)
-    temp2 = np.amin(vertices, axis=0)
-    size = list()
-    for i in range(len(temp1)):
-        if abs(temp1[i]) > abs(temp2[i]):
-            size.append(abs(temp1[i]))
-        else:
-            size.append(abs(temp2[i]))
+    """Generates a surface actor from an array of vertices
+        The color and smoothness of the surface can be customized.
 
-    colors = vtk.vtkUnsignedCharArray()
-    colors.SetNumberOfComponents(3)
+        Parameters
+        ----------
+        vertices : array, shape (X, Y, Z)
+            The point cloud defining the surface.
+        faces : array
+            An array of precomputed triangulation for the point cloud. It is an optional parameter, it is computed
+            locally if None
+        colors : (N, 3) array
+            Specifies the colors associated with each vertex in the vertices array. Optional parameter, if not passed,
+            all vertices are colored white
+        smooth : string - "loop" or "butterfly"
+            Defines the type of subdivision to be used for smoothing the surface
+        subdivision : integer, default = 3
+            Defines the number of subdivisions to do for each triangulation of the point cloud. The higher the value,
+            smoother the surface but at the cost of higher computation
+
+        Returns
+        -------
+        surface_actor : vtkActor
+            A vtkActor visualizing the final surface computed from the point cloud is returned.
+
+        """
     points = vtk.vtkPoints()
-    triangles = vtk.vtkCellArray()
-    if faces is None:
-        xy = list()
-        for coordinate in vertices:
-            xy.append([coordinate[0], coordinate[1]])
-        tri = Delaunay(xy)
-        faces = tri.simplices
-
-    count = 0
-    for face in faces:
-        p_1 = vertices[face[0]]
-        p_2 = vertices[face[1]]
-        p_3 = vertices[face[2]]
-
-        points.InsertNextPoint(p_1[0], p_1[1], p_1[2])
-        points.InsertNextPoint(p_2[0], p_2[1], p_2[2])
-        points.InsertNextPoint(p_3[0], p_3[1], p_3[2])
-
-        triangle = vtk.vtkTriangle()
-        triangle.GetPointIds().SetId(0, count)
-        triangle.GetPointIds().SetId(1, count + 1)
-        triangle.GetPointIds().SetId(2, count + 2)
-
-        triangles.InsertNextCell(triangle)
-        count += 3
-
-        r = [int(abs(p_1[0]) / float(size[0]) * 255), int(abs(p_1[1]) / float(size[1]) * 255),
-             int(abs(p_1[2]) / float(size[2]) * 255)]
-        colors.InsertNextTypedTuple(r)
-        colors.InsertNextTypedTuple(r)
-        colors.InsertNextTypedTuple(r)
-
+    points.SetData(numpy_support.numpy_to_vtk(vertices))
     trianglePolyData = vtk.vtkPolyData()
-
-    # Add the geometry and topology to the polydata
     trianglePolyData.SetPoints(points)
-    trianglePolyData.GetPointData().SetScalars(colors)
-    trianglePolyData.SetPolys(triangles)
 
-    # Clean the polydata so that the edges are shared !
+    if colors is not None:
+        trianglePolyData.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
+
+    if faces is None:
+        tri = Delaunay(vertices[:,[0,1]])
+        faces = np.array(tri.simplices, dtype='i8')
+
+    if faces.shape[1] == 3:
+        triangles = np.empty((faces.shape[0], 4), dtype=np.int64)
+        triangles[:, -3:] = faces
+        triangles[:, 0] = 3
+    else:
+        triangles = faces
+
+    if not triangles.flags['C_CONTIGUOUS'] or triangles.dtype != 'int64':
+        triangles = np.ascontiguousarray(triangles, 'int64')
+
+    cells = vtk.vtkCellArray()
+    cells.SetCells(triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep = True))
+    trianglePolyData.SetPolys(cells)
+
     cleanPolyData = vtk.vtkCleanPolyData()
     cleanPolyData.SetInputData(trianglePolyData)
 
@@ -255,19 +254,20 @@ def surface(vertices, faces=None, smooth=None):
 
     elif smooth == "loop":
         smooth_loop = vtk.vtkLoopSubdivisionFilter()
-        smooth_loop.SetNumberOfSubdivisions(3)
+        smooth_loop.SetNumberOfSubdivisions(subdivision)
         smooth_loop.SetInputConnection(cleanPolyData.GetOutputPort())
         mapper.SetInputConnection(smooth_loop.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
     elif smooth == "butterfly":
         smooth_butterfly = vtk.vtkButterflySubdivisionFilter()
-        smooth_butterfly.SetNumberOfSubdivisions(3)
+        smooth_butterfly.SetNumberOfSubdivisions(subdivision)
         smooth_butterfly.SetInputConnection(cleanPolyData.GetOutputPort())
         mapper.SetInputConnection(smooth_butterfly.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
     return surface_actor
+
 
 def contour_from_roi(data, affine=None,
                      color=np.array([1, 0, 0]), opacity=1):
