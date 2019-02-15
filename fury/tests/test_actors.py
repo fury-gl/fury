@@ -153,6 +153,7 @@ def test_slicer():
     npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
                            np.array(slicer.shape))
 
+
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_surface():
@@ -162,8 +163,8 @@ def test_surface():
     import math
     size = 11
     vertices = list()
-    for i in range(-size,size):
-        for j in range(-size,size):
+    for i in range(-size, size):
+        for j in range(-size, size):
             fact1 = - math.sin(i) * math.cos(j)
             fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
             z = -abs(fact1 * fact2)
@@ -171,17 +172,20 @@ def test_surface():
 
     random.shuffle(vertices)
     vertices = np.array(vertices)
-    xy = list()
-    for coordinate in vertices:
-        xy.append([coordinate[0], coordinate[1]])
-    tri = Delaunay(xy)
-    faces = tri.simplices
+    # xy = list()
+    # for coordinate in vertices:
+    #     xy.append([coordinate[0], coordinate[1]])
+    # tri = Delaunay(xy)
+    # faces = tri.simplices
     renderer = window.renderer(background=(1, 1, 1))
     surface_actor = surface(vertices, smooth="butterfly")
     axes_actor = actor.axes(scale=(12, 12, 12))
     renderer.add(axes_actor)
     renderer.add(surface_actor)
-    window.show(renderer, size=(600, 600), reset_camera=False)
+    # window.show(renderer, size=(600, 600), reset_camera=False)
+    arr = window.snapshot(renderer, 'test_surface.png', offscreen=True)
+    report = window.analyze_snapshot(arr, find_objects=True)
+    npt.assert_equal(report.objects, 1)
 
 
 @npt.dec.skipif(skip_it)

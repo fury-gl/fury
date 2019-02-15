@@ -189,7 +189,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     return image_actor
 
-def surface(vertices, faces = None, colors = None, smooth = None, subdivision = 3):
+
+def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     """Generates a surface actor from an array of vertices
         The color and smoothness of the surface can be customized.
@@ -215,17 +216,17 @@ def surface(vertices, faces = None, colors = None, smooth = None, subdivision = 
         surface_actor : vtkActor
             A vtkActor visualizing the final surface computed from the point cloud is returned.
 
-        """
+    """
     points = vtk.vtkPoints()
     points.SetData(numpy_support.numpy_to_vtk(vertices))
-    trianglePolyData = vtk.vtkPolyData()
-    trianglePolyData.SetPoints(points)
+    triangle_poly_data = vtk.vtkPolyData()
+    triangle_poly_data.SetPoints(points)
 
     if colors is not None:
-        trianglePolyData.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
+        triangle_poly_data.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
 
     if faces is None:
-        tri = Delaunay(vertices[:,[0,1]])
+        tri = Delaunay(vertices[:, [0, 1]])
         faces = np.array(tri.simplices, dtype='i8')
 
     if faces.shape[1] == 3:
@@ -239,30 +240,30 @@ def surface(vertices, faces = None, colors = None, smooth = None, subdivision = 
         triangles = np.ascontiguousarray(triangles, 'int64')
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep = True))
-    trianglePolyData.SetPolys(cells)
+    cells.SetCells(triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    triangle_poly_data.SetPolys(cells)
 
-    cleanPolyData = vtk.vtkCleanPolyData()
-    cleanPolyData.SetInputData(trianglePolyData)
+    clean_poly_data = vtk.vtkCleanPolyData()
+    clean_poly_data.SetInputData(triangle_poly_data)
 
     mapper = vtk.vtkPolyDataMapper()
     surface_actor = vtk.vtkActor()
 
     if smooth is None:
-        mapper.SetInputData(trianglePolyData)
+        mapper.SetInputData(triangle_poly_data)
         surface_actor.SetMapper(mapper)
 
     elif smooth == "loop":
         smooth_loop = vtk.vtkLoopSubdivisionFilter()
         smooth_loop.SetNumberOfSubdivisions(subdivision)
-        smooth_loop.SetInputConnection(cleanPolyData.GetOutputPort())
+        smooth_loop.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_loop.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
     elif smooth == "butterfly":
         smooth_butterfly = vtk.vtkButterflySubdivisionFilter()
         smooth_butterfly.SetNumberOfSubdivisions(subdivision)
-        smooth_butterfly.SetInputConnection(cleanPolyData.GetOutputPort())
+        smooth_butterfly.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_butterfly.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
