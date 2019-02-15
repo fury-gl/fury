@@ -116,6 +116,42 @@ select {
   padding: 0;
   border: 0;
 }
+/*
+Github
+*/
+
+.github_visualization_contributor_name {
+	display: block;
+	text-align: center;
+	padding-top: 1em;
+	font-size: 1.2em;
+	font-weight: 600;
+	color: #515151;
+}
+
+.github_visualization_contributor_commits {
+	display: block;
+	text-align: center;
+}
+
+.github_visualization_contributor_additions {
+	color: #409340;
+	width: 48%;
+	padding: 1%;
+	text-align: right;
+	display: block;
+	float: left;
+}
+
+.github_visualization_contributor_deletions {
+	color: #d45a5a;
+	width: 48%;
+	padding: 1%;
+	text-align: left;
+	float: left;
+	display: block;
+}
+
 @media screen {
   html,
   body {
