@@ -1561,7 +1561,7 @@ class Container(object):
         """
         Parameters
         ----------
-        layout : ``dipy.viz.layout.Layout`` object
+        layout : ``fury.layout.Layout`` object
             Items of this container will be arranged according to `layout`.
         """
         self.layout = layout
@@ -1712,7 +1712,7 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
 
         Returns
         -------
-        ``dipy.viz.actor.Container`` object
+        ``fury.actor.Container`` object
             Object that represents the grid containing all the actors and
             captions, if any.
     """
