@@ -1028,7 +1028,7 @@ def test_grid_ui(interactive=False):
 
     if interactive:
         show_manager.start()
-    recording = True
+    recording = False
 
     if recording:
         # Record the following events
