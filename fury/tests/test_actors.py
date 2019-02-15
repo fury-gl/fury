@@ -2,8 +2,9 @@ import os
 import numpy as np
 
 from fury import shaders
-from fury import actor, window, interactor
+from fury import actor, window
 from fury.actor import grid
+from fury.utils import shallow_copy
 import itertools
 
 import numpy.testing as npt
@@ -14,8 +15,6 @@ from tempfile import mkstemp
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
-
-from fury.utils import shallow_copy
 
 if have_dipy:
     from dipy.tracking.streamline import (center_streamlines,

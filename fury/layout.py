@@ -73,19 +73,23 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
         """
         if self.cell_shape == "rect":
-            bounding_box_sizes = np.asarray(list(map(get_bounding_box_sizes, actors)))
+            bounding_box_sizes = np.asarray(
+                    list(map(get_bounding_box_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "square":
-            bounding_box_sizes = np.asarray(list(map(get_bounding_box_sizes, actors)))
+            bounding_box_sizes = np.asarray(
+                    list(map(get_bounding_box_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),)*2] * len(actors)
         elif self.cell_shape == "diagonal":
-            # Size of every cell corresponds to the diagonal of the largest bounding box.
+            # Size of every cell corresponds to the diagonal
+            # of the largest bounding box.
             longest_diagonal = np.max([a.GetLength() for a in actors])
             shapes = [(longest_diagonal, longest_diagonal)] * len(actors)
         else:
-            raise ValueError("Unknown cell shape: '{0}'".format(self.cell_shape))
+            raise ValueError("Unknown cell shape: '{0}'"
+                             .format(self.cell_shape))
 
         return shapes
 
@@ -108,5 +112,7 @@ class GridLayout(Layout):
 
         # Add padding, if any, around every cell.
         shapes = [np.array(self.cell_padding)/2. + s for s in shapes]
-        positions = get_grid_cells_position(shapes, self.aspect_ratio, self.dim)
+        positions = get_grid_cells_position(shapes,
+                                            self.aspect_ratio,
+                                            self.dim)
         return positions

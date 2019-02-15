@@ -3996,7 +3996,7 @@ class GridUI(UI):
 
         for item in self.container._items:
             self._actors.append(item._items[0])
-            self._actors_dict[item._items[0]] = {'x':-np.inf, 'y':-np.inf}
+            self._actors_dict[item._items[0]] = {'x': -np.inf, 'y': -np.inf}
 
         super(GridUI, self).__init__(position=(0, 0, 0))
 
@@ -4009,7 +4009,7 @@ class GridUI(UI):
         istyle.event.abort()
 
     def left_release_callback(self, istyle, obj, what):
-     
+
         istyle.trackball_actor.OnLeftButtonUp()
         istyle.force_render()
         istyle.event.abort()
@@ -4029,12 +4029,10 @@ class GridUI(UI):
         istyle.force_render()
         istyle.event.abort()
 
-
     def left_release_callback2(self, istyle, obj, what):
 
         istyle.force_render()
         istyle.event.abort()
-
 
     def mouse_move_callback2(self, istyle, obj, what):
 
@@ -4061,10 +4059,9 @@ class GridUI(UI):
 
             self._actors_dict[obj]['y'] = event_pos[1]
 
-            #print(event_pos)
+            # print(event_pos)
             istyle.force_render()
             istyle.event.abort()
-
 
     ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
     CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
@@ -4121,10 +4118,9 @@ class GridUI(UI):
                                   self.mouse_move_callback2)
 
             # TODO: this is currently not running
-            self.add_callback(actor, "KeyPressEvent", #"CharEvent",
+            self.add_callback(actor, "KeyPressEvent",
                               self.key_press_callback)
         # self.on_key_press = self.key_press_callback2
-
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -4160,6 +4156,7 @@ class GridUI(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        coords = (0, 0, 0)
+        # coords = (0, 0, 0)
+        pass
         # self.actor.SetPosition(*coords)
         # self.container.SetPosition(*coords)
