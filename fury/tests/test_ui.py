@@ -1055,19 +1055,19 @@ if __name__ == "__main__":
    
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-        test_ui_button_panel(recording=True)
+        test_ui_button_panel(recording=False)
     
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-        test_ui_textbox(recording=True)
+        test_ui_textbox(recording=False)
     
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-        test_ui_line_slider_2d(recording=True)
+        test_ui_line_slider_2d(recording=False)
     
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
         test_ui_line_double_slider_2d(interactive=False)
     
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-        test_ui_ring_slider_2d(recording=True)
+        test_ui_ring_slider_2d(recording=False)
     
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
         test_ui_range_slider(interactive=False)
