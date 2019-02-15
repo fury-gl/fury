@@ -1052,50 +1052,46 @@ def test_grid_ui(interactive=False):
 
 if __name__ == "__main__":
 
+   
 
-    test_grid_ui(interactive=False)
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
+        test_ui_button_panel(recording=True)
     
-    # test_ui_file_menu_2d(interactive=True)
-    # test_ui_range_slider(interactive=True)
-
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-#        test_ui_button_panel(recording=True)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-#        test_ui_textbox(recording=True)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-#        test_ui_line_slider_2d(recording=True)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
-#        test_ui_line_double_slider_2d(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-#        test_ui_ring_slider_2d(recording=True)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
-#        test_ui_range_slider(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
-#        test_ui_option(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
-#        test_ui_checkbox(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
-#        test_ui_radio_button(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
-#        test_ui_listbox_2d(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
-#        test_ui_image_container_2d(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
-#        test_timer()
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
-#        test_ui_file_menu_2d(interactive=False)
-#
-#    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
-#        test_grid_ui(interactive=False)
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
+        test_ui_textbox(recording=True)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
+        test_ui_line_slider_2d(recording=True)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
+        test_ui_line_double_slider_2d(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
+        test_ui_ring_slider_2d(recording=True)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
+        test_ui_range_slider(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
+        test_ui_option(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
+        test_ui_checkbox(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
+        test_ui_radio_button(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
+        test_ui_listbox_2d(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
+        test_ui_image_container_2d(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
+        test_timer()
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
+        test_ui_file_menu_2d(interactive=False)
+    
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
+        test_grid_ui(interactive=False)
