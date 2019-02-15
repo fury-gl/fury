@@ -1402,6 +1402,27 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             font_size=12, font_family='Arial', justification='left',
             vertical_justification="bottom",
             bold=False, italic=False, shadow=False):
+    """ Generate 2D text that lives in the 3D world
+
+    Parameters
+    ----------
+    text : str
+    position : tuple
+    color : tuple
+    font_size : int
+    font_family : str
+    justification : str
+        Left, center or right (default left)
+    vertical_justification : str
+        Bottom, middle or top (default bottom)
+    bold : bool
+    italic : bool
+    shadow : bool
+
+    Returns
+    -------
+    textActor3D
+    """
 
     class TextActor3D(vtk.vtkTextActor3D):
         def message(self, text):
@@ -1421,7 +1442,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def font_family(self, family='Arial'):
             self.GetTextProperty().SetFontFamilyToArial()
-            #self._update_user_matrix()
+            # self._update_user_matrix()
 
         def justification(self, justification):
             tprop = self.GetTextProperty()
@@ -1432,7 +1453,8 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             elif justification == 'right':
                 tprop.SetJustificationToRight()
             else:
-                raise ValueError("Unknown justification: '{}'".format(justification))
+                raise ValueError("Unknown justification: '{}'"
+                                 .format(justification))
 
             self._update_user_matrix()
 
@@ -1445,7 +1467,8 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             elif justification == 'bottom':
                 tprop.SetVerticalJustificationToBottom()
             else:
-                raise ValueError("Unknown vertical justification: '{}'".format(justification))
+                raise ValueError("Unknown vertical justification: '{}'"
+                                 .format(justification))
 
             self._update_user_matrix()
 
@@ -1476,8 +1499,8 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             return self.GetPosition()
 
         def _update_user_matrix(self):
-            """
-            Text justification of vtkTextActor3D doesn't seem to be working, so we do it manually.
+            """ Text justification of vtkTextActor3D doesn't seem to be
+            working, so we do it manually. Yeah!
             """
             user_matrix = np.eye(4)
 
@@ -1488,14 +1511,16 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             if tprop.GetJustification() == vtk.VTK_TEXT_LEFT:
                 user_matrix[:3, -1] += (-text_bounds[0], 0, 0)
             elif tprop.GetJustification() == vtk.VTK_TEXT_CENTERED:
-                user_matrix[:3, -1] += (-(text_bounds[0]+(text_bounds[1]-text_bounds[0])/2.), 0, 0)
+                tm = -(text_bounds[0] + (text_bounds[1] - text_bounds[0]) / 2.)
+                user_matrix[:3, -1] += (tm, 0, 0)
             elif tprop.GetJustification() == vtk.VTK_TEXT_RIGHT:
                 user_matrix[:3, -1] += (-text_bounds[1], 0, 0)
 
             if tprop.GetVerticalJustification() == vtk.VTK_TEXT_BOTTOM:
                 user_matrix[:3, -1] += (0, -text_bounds[2], 0)
             elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_CENTERED:
-                user_matrix[:3, -1] += (0, -(text_bounds[2]+(text_bounds[3]-text_bounds[2])/2), 0)
+                tm = -(text_bounds[2] + (text_bounds[3] - text_bounds[2]) / 2.)
+                user_matrix[:3, -1] += (0, tm, 0)
             elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_TOP:
                 user_matrix[:3, -1] += (0, -text_bounds[3], 0)
 
@@ -1696,7 +1721,6 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
                                     aspect_ratio=aspect_ratio, dim=dim)
     grid = Container(layout=grid_layout)
 
-
     if captions is not None:
         actors_with_caption = []
         for actor, caption in zip(actors, captions):
@@ -1714,7 +1738,8 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
             # We change the anchor of the container so
             # the actor will be centered in the
             # grid cell.
-            actor_with_caption.anchor = actor_center - actor_with_caption.GetCenter()
+            actor_with_caption.anchor = actor_center - \
+                actor_with_caption.GetCenter()
             actors_with_caption.append(actor_with_caption)
 
         actors = actors_with_caption
