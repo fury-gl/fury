@@ -322,9 +322,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         event_type : event code
         callback : function
         priority : int
+        """
 
-        """        
-        
         def _callback(obj, event_name):
             # Update event information.
             interactor_ = self.GetInteractor()
