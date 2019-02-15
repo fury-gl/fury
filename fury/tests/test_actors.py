@@ -15,6 +15,8 @@ from tempfile import mkstemp
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
 
+from fury.utils import shallow_copy
+
 if have_dipy:
     from dipy.tracking.streamline import (center_streamlines,
                                           transform_streamlines)
@@ -778,122 +780,103 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-# @npt.dec.skipif(skip_it)
-# @xvfb_it
-# def test_grid(interactive=False):
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_grid(interactive=False):
 
-#     vol1 = np.zeros((100, 100, 100))
-#     vol1[25:75, 25:75, 25:75] = 100
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            (1., 0, 0), 1.)
 
-#     contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
-#                                             (1., 0, 0), 1.)
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
 
-#     vol2 = np.zeros((100, 100, 100))
-#     vol2[25:75, 25:75, 25:75] = 100
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            (1., 0.5, 0), 1.)
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
 
-#     contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
-#                                             (1., 0.5, 0), 1.)
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            (1., 0.5, 0.5), 1.)
 
-#     vol3 = np.zeros((100, 100, 100))
-#     vol3[25:75, 25:75, 25:75] = 100
+    scene = window.Scene()
+    actors = []
+    texts = []
 
-#     contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
-#                                             (1., 0.5, 0.5), 1.)
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
+    texts.append(text_actor1)
 
-#     scene = window.Scene()
-#     actors = []
-#     texts = []
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
+    texts.append(text_actor2)
 
-#     actors.append(contour_actor1)
-#     text_actor1 = actor.text_3d('cube 1', justification='center')
-#     texts.append(text_actor1)
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
+    texts.append(text_actor3)
 
-#     actors.append(contour_actor2)
-#     text_actor2 = actor.text_3d('cube 2', justification='center')
-#     texts.append(text_actor2)
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
 
-#     actors.append(contour_actor3)
-#     text_actor3 = actor.text_3d('cube 3', justification='center')
-#     texts.append(text_actor3)
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
 
-#     from fury.utils import shallow_copy
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
 
-#     actors.append(shallow_copy(contour_actor1))
-#     text_actor1 = actor.text_3d('cube 4', justification='center')
-#     texts.append(text_actor1)
+    # show the grid without the captions
+    container = grid(actors=actors, captions=None,
+                     caption_offset=(0, -40, 0),
+                     cell_padding=(10, 10), dim=(2, 3))
 
-#     actors.append(shallow_copy(contour_actor2))
-#     text_actor2 = actor.text_3d('cube 5', justification='center')
-#     texts.append(text_actor2)
+    scene.add(container)
 
-#     actors.append(shallow_copy(contour_actor3))
-#     text_actor3 = actor.text_3d('cube 6', justification='center')
-#     texts.append(text_actor3)
+    scene.projection('orthogonal')
 
-#     actors.append(shallow_copy(contour_actor1))
-#     text_actor1 = actor.text_3d('cube 7', justification='center')
-#     texts.append(text_actor1)
+    counter = itertools.count()
 
-#     actors.append(shallow_copy(contour_actor2))
-#     text_actor2 = actor.text_3d('cube 8', justification='center')
-#     texts.append(text_actor2)
+    show_m = window.ShowManager(scene)
 
-#     actors.append(shallow_copy(contour_actor3))
-#     text_actor3 = actor.text_3d('cube 9', justification='center')
-#     texts.append(text_actor3)
+    show_m.initialize()
 
-#     # show the grid without the captions
-#     container = grid(actors=actors, captions=None,
-#                      caption_offset=(0, -40, 0),
-#                      cell_padding=(10, 10), dim=(3, 3))
+    def timer_callback(obj, event):
+        cnt = next(counter)
+        # show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 4:
+            show_m.exit()
 
-#     scene.add(container)
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
 
-#     scene.projection('orthogonal')
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 6)
 
-#     counter = itertools.count()
+    scene.rm_all()
 
-#     istyle = interactor.InteractorStyleGrid(actor)
-#     show_m = window.ShowManager(scene,
-#                                 interactor_style=istyle)
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
+    # show the grid with the captions
+    container = grid(actors=actors, captions=texts,
+                     caption_offset=(0, -50, 0),
+                     cell_padding=(10, 10),
+                     dim=(3, 3))
 
-#     show_m.initialize()
+    scene.add(container)
 
-#     def timer_callback(obj, event):
-#         cnt = next(counter)
-#         show_m.scene.zoom(1)
-#         show_m.render()
-#         if cnt == 100:
-#             show_m.exit()
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
 
-#     # show_m.add_timer_callback(True, 200, timer_callback)
-#     show_m.start()
-
-#     arr = window.snapshot(scene)
-#     report = window.analyze_snapshot(arr)
-#     npt.assert_equal(report.objects, 9)
-
-#     scene.rm_all()
-
-#     counter = itertools.count()
-#     show_m = window.ShowManager(scene)
-#     show_m.initialize()
-#     # show the grid with the captions
-#     container = grid(actors=actors, captions=texts,
-#                      caption_offset=(0, -50, 0),
-#                      cell_padding=(10, 10),
-#                      dim=(3, 3))
-
-#     scene.add(container)
-
-#     # show_m.add_timer_callback(True, 200, timer_callback)
-#     show_m.start()
-
-#     arr = window.snapshot(scene)
-#     report = window.analyze_snapshot(arr)
-#     npt.assert_equal(report.objects > 9, True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 6, True)
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_grid()
+    npt.run_module_suite()

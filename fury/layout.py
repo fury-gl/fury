@@ -56,7 +56,7 @@ class GridLayout(Layout):
         if type(cell_padding) is int:
             self.cell_padding = (cell_padding, cell_padding)
         else:
-            self.cell_padding) = cell_padding
+            self.cell_padding = cell_padding
 
     def get_cells_shape(self, actors):
         """ Gets the 2D shape (on the xy-plane) of some actors according to
