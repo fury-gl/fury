@@ -40,9 +40,6 @@ class Event(object):
         self._abort_flag = False
 
 
-global COUNTER
-COUNTER=0
-
 class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     """Manipulate the camera and interact with objects in the scene.
 
@@ -326,10 +323,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         callback : function
         priority : int
 
-        """
-        global COUNTER
-        COUNTER += 1
-        print('ADD_CALLBACK', COUNTER)
+        """        
         
         def _callback(obj, event_name):
             # Update event information.
