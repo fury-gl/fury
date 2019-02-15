@@ -1686,27 +1686,27 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
         ----------
         actors : list of `vtkProp3D` objects
             Actors to be layout in a grid manner.
-        captions : list of `vtkProp3D` objects (optional)
+        captions : list of `vtkProp3D` objects
             Objects serving as captions (can be any `vtkProp3D` object, not
             necessarily text). There should be one caption per actor. By
             default, there are no captions.
-        caption_offset : 3-tuple of float (optional)
+        caption_offset : tuple of float (optional)
             Tells where to position the caption w.r.t. the center of its
             associated actor. Default: (0, -100, 0).
-        cell_padding : 2-tuple of float or float (optional)
+        cell_padding : tuple of 2 floats or float
             Each grid cell will be padded according to (pad_x, pad_y) i.e.
             horizontally and vertically. Padding is evenly distributed on each
             side of the cell. If a single float is provided then both pad_x and
             pad_y will have the same value.
-        cell_shape : {'rect', 'square', 'diagonal'} (optional)
+        cell_shape : str
             Specifies the desired shape of every grid cell.
             'rect' ensures the cells are the tightest.
             'square' ensures the cells are as wide as high.
             'diagonal' ensures the content of the cells can be rotated without
                        colliding with content of the neighboring cells.
-        aspect_ratio : float (optional)
+        aspect_ratio : float
             Aspect ratio of the grid (width/height). Default: 16:9.
-        dim : tuple of int (optional)
+        dim : tuple of int
             Dimension (nb_rows, nb_cols) of the grid. If provided,
             `aspect_ratio` will be ignored.
 
