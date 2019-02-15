@@ -939,39 +939,39 @@ def test_grid_ui(interactive=False):
     scene = window.Scene()
     actors = []
     texts = []
-
+    
     actors.append(contour_actor1)
     text_actor1 = actor.text_3d('cube 1', justification='center')
     texts.append(text_actor1)
-
+    
     actors.append(contour_actor2)
     text_actor2 = actor.text_3d('cube 2', justification='center')
     texts.append(text_actor2)
-
+    
     actors.append(contour_actor3)
     text_actor3 = actor.text_3d('cube 3', justification='center')
     texts.append(text_actor3)
-
+    
     actors.append(shallow_copy(contour_actor1))
     text_actor1 = actor.text_3d('cube 4', justification='center')
     texts.append(text_actor1)
-
+    
     actors.append(shallow_copy(contour_actor2))
     text_actor2 = actor.text_3d('cube 5', justification='center')
     texts.append(text_actor2)
-
+    
     actors.append(shallow_copy(contour_actor3))
     text_actor3 = actor.text_3d('cube 6', justification='center')
     texts.append(text_actor3)
-
+    
     actors.append(shallow_copy(contour_actor1))
     text_actor1 = actor.text_3d('cube 7', justification='center')
     texts.append(text_actor1)
-
+    
     actors.append(shallow_copy(contour_actor2))
     text_actor2 = actor.text_3d('cube 8', justification='center')
     texts.append(text_actor2)
-
+    
     actors.append(shallow_copy(contour_actor3))
     text_actor3 = actor.text_3d('cube 9', justification='center')
     texts.append(text_actor3)
@@ -992,59 +992,54 @@ def test_grid_ui(interactive=False):
     grid_ui = GridUI(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
                      cell_padding=(60, 60), dim=(3, 3),
-                     rotation_axis=None)
+                     rotation_axis=(1, 0, 0))
 
     scene.add(grid_ui)
 
     show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
+
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects > 9, True)
 
+    # this needs to happen automatically when start() ends.
+    for act in actors:
+        act.RemoveAllObservers()
 
-    grid_ui2 = GridUI(actors=actors, captions=texts,
-                      caption_offset=(0, -50, 0),
-                      cell_padding=(60, 60), dim=(3, 3),
-                      rotation_axis=(1, 0, 0))
 
     filename = "test_grid_ui"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
 
 
-    current_size = (600, 600)
+    current_size = (900, 600)
     scene = window.Scene()
     show_manager = window.ShowManager(scene,
                                       size=current_size,
                                       title="FURY GridUI")
-
     show_manager.initialize()
 
+   
     grid_ui2 = GridUI(actors=actors, captions=texts,
-                      caption_offset=(0, -50, 0),
-                      cell_padding=(60, 60), dim=(3, 3),
-                      rotation_axis=(1, 0, 0))
+                     caption_offset=(0, -50, 0),
+                     cell_padding=(60, 60), dim=(3, 3),
+                     rotation_axis=None)
 
+    
     scene.add(grid_ui2)
-
+    
     event_counter = EventCounter()
     event_counter.monitor(grid_ui2)
+    
+    if interactive:
+        show_manager.start()
+    recording = False
 
-
-    #show_manager.start()
-    recording = True
-
-    #1/0
     if recording:
         # Record the following events
-        # 1. Left Click on the handle and hold it
-        # 2. Move to the left the handle and make 1.5 tour
-        # 3. Release the handle
-        # 4. Left Click on the handle and hold it
-        # 5. Move to the right the handle and make 1 tour
-        # 6. Release the handle
+        # 1. Left click on top left box (will rotate the box)
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
         event_counter.save(expected_events_counts_filename)
@@ -1053,13 +1048,15 @@ def test_grid_ui(interactive=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
-
-
+    
 
 if __name__ == "__main__":
 
 
-    test_grid_ui()
+    test_grid_ui(interactive=False)
+    
+    # test_ui_file_menu_2d(interactive=True)
+    # test_ui_range_slider(interactive=True)
 
 #    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
 #        test_ui_button_panel(recording=True)

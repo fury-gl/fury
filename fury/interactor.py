@@ -40,6 +40,9 @@ class Event(object):
         self._abort_flag = False
 
 
+global COUNTER
+COUNTER=0
+
 class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     """Manipulate the camera and interact with objects in the scene.
 
@@ -198,7 +201,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                     self.selected_props["right_button"] |
                                     self.selected_props["middle_button"]))
 
-        self.trackball_camera.OnMouseMove()
+        # self.trackball_camera.OnMouseMove()
 
     def on_mouse_wheel_forward(self, obj, evt):
         """On mouse wheel forward."""
@@ -324,9 +327,18 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         priority : int
 
         """
+        global COUNTER
+        COUNTER += 1
+        print('ADD_CALLBACK', COUNTER)
+        
         def _callback(obj, event_name):
             # Update event information.
-            self.event.update(event_name, self.GetInteractor())
-            callback(self, prop, *args)
+            interactor_ = self.GetInteractor()
+            if interactor_ is not None:
+                self.event.update(event_name, interactor_)
+                callback(self, prop, *args)
+            else:
+                print('interactor is none')
+                print('event name is', event_name)
 
         prop.AddObserver(event_type, _callback, priority)
