@@ -28,7 +28,8 @@ class GridLayout(Layout):
     The `GridLayout` class lays the actors in a 2D structured grid aligned
     with the xy-plane.
     """
-    def __init__(self, cell_padding=0, cell_shape="rect", aspect_ratio=16/9., dim=None):
+    def __init__(self, cell_padding=0, cell_shape="rect",
+                 aspect_ratio=16/9., dim=None):
         """
         Parameters
         ----------
@@ -52,7 +53,10 @@ class GridLayout(Layout):
         self.cell_shape = cell_shape
         self.aspect_ratio = aspect_ratio
         self.dim = dim
-        self.cell_padding = (cell_padding, cell_padding) if type(cell_padding) is int else cell_padding
+        if type(cell_padding) is int:
+            self.cell_padding = (cell_padding, cell_padding)
+        else:
+            self.cell_padding) = cell_padding
 
     def get_cells_shape(self, actors):
         """ Gets the 2D shape (on the xy-plane) of some actors according to
