@@ -158,8 +158,7 @@ def test_slicer():
 @xvfb_it
 def test_surface():
     import random
-    from scipy.spatial import Delaunay
-    import numpy as np
+    # from scipy.spatial import Delaunay
     import math
     size = 11
     vertices = list()
@@ -167,8 +166,8 @@ def test_surface():
         for j in range(-size, size):
             fact1 = - math.sin(i) * math.cos(j)
             fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
-            z = -abs(fact1 * fact2)
-            vertices.append([i, j, z])
+            z_coord = -abs(fact1 * fact2)
+            vertices.append([i, j, z_coord])
 
     random.shuffle(vertices)
     vertices = np.array(vertices)

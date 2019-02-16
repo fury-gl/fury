@@ -9,8 +9,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
 from scipy.spatial import Delaunay
-import math
-import random
+
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
