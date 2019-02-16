@@ -160,6 +160,7 @@ def test_surface():
     import random
     # from scipy.spatial import Delaunay
     import math
+    from fury.actor import surface
     size = 11
     vertices = list()
     for i in range(-size, size):
