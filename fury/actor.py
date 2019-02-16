@@ -199,16 +199,16 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         vertices : array, shape (X, Y, Z)
             The point cloud defining the surface.
         faces : array
-            An array of precomputed triangulation for the point cloud. It is an optional parameter, it is computed
-            locally if None
+            An array of precomputed triangulation for the point cloud.
+            It is an optional parameter, it is computed locally if None
         colors : (N, 3) array
-            Specifies the colors associated with each vertex in the vertices array. Optional parameter, if not passed,
-            all vertices are colored white
+            Specifies the colors associated with each vertex in the vertices array.
+            Optional parameter, if not passed, all vertices are colored white
         smooth : string - "loop" or "butterfly"
             Defines the type of subdivision to be used for smoothing the surface
         subdivision : integer, default = 3
-            Defines the number of subdivisions to do for each triangulation of the point cloud. The higher the value,
-            smoother the surface but at the cost of higher computation
+            Defines the number of subdivisions to do for each triangulation of the point cloud.
+            The higher the value, smoother the surface but at the cost of higher computation
 
         Returns
         -------
@@ -222,7 +222,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
-        triangle_poly_data.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
+        triangle_poly_data.GetPointData().\
+            SetScalars(numpy_support.numpy_to_vtk(colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
@@ -239,7 +240,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         triangles = np.ascontiguousarray(triangles, 'int64')
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    cells.SetCells(triangles.shape[0],
+                   numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
     triangle_poly_data.SetPolys(cells)
 
     clean_poly_data = vtk.vtkCleanPolyData()
