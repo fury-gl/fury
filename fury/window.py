@@ -316,7 +316,7 @@ class ShowManager(object):
 
     def __init__(self, scene=None, title='FURY', size=(300, 300),
                  png_magnify=1, reset_camera=True, order_transparent=False,
-                 interactor_style='custom'):
+                 interactor_style='custom', stereo_mode='off'):
         """Manage the visualization pipeline.
 
         Parameters
@@ -387,12 +387,37 @@ class ShowManager(object):
         self.reset_camera = reset_camera
         self.order_transparent = order_transparent
         self.interactor_style = interactor_style
+        self.stereo_mode = stereo_mode
         self.timers = []
 
         if self.reset_camera:
             self.scene.ResetCamera()
 
         self.window = vtk.vtkRenderWindow()
+
+        if stereo_mode != 'off':
+            self.window.GetStereoCapableWindow()
+            self.window.StereoRenderOn()
+
+            # default to horizontal since it is easy to see if it is working
+            # otherwise enable the selected mode
+            if stereo_mode == 'opengl':
+                self.window.SetStereoTypeToCrystalEyes()
+            elif stereo_mode == 'anaglyph':
+                self.window.SetStereoTypeToAnaglyph()
+            elif stereo_mode == 'interlaced':
+                self.window.SetStereoTypeToInterlaced()
+            elif stereo_mode == 'checkerboard':
+                self.window.SetStereoTypeToCheckerboard()
+            elif stereo_mode == 'left':
+                self.window.SetStereoTypeToLeft()
+            elif stereo_mode == 'right':
+                self.window.SetStereoTypeToRight()
+            elif stereo_mode == 'horizontal':
+                self.window.SetStereoTypeToSplitViewportHorizontal()
+            else:
+                self.window.SetStereoTypeToSplitViewportHorizontal()
+
         self.window.AddRenderer(scene)
 
         if self.title == 'FURY':
