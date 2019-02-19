@@ -4,7 +4,9 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
+                        shallow_copy,
                         rotate)
+from fury import actor, window, utils
 
 
 def trilinear_interp_numpy(input_array, indices):
@@ -94,26 +96,52 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
-def test_rotate():
+def test_rotate(interactive=False):
 
     A = np.zeros((50, 50, 50))
 
     A[20:30, 20:30, 10:40] = 100
 
-    from fury.actor import contour_from_roi
-
-    act = contour_from_roi(A)
-
-    from fury import window, actor
+    act = actor.contour_from_roi(A)
 
     scene = window.Scene()
 
+    scene.add(act)
+
+    if interactive:
+        window.show(scene)
+    else:
+        arr = window.snapshot(scene, offscreen=True)
+        red = arr[..., 0].sum()
+        red_sum = np.sum(red)
+
+    act2 = utils.shallow_copy(act)
+
+    rot = (90, 1, 0, 0)
+
+    rotate(act2, rot)
+
+    act3 = utils.shallow_copy(act)
+
+    scene.add(act2)
+
+    rot = (90, 0, 1, 0)
+
+    rotate(act3, rot)
+
+    scene.add(act3)
+
     scene.add(actor.axes())
 
-    window.show(scene)
+    if interactive:
+        window.show(scene)
+    else:
+
+        arr = window.snapshot(scene, offscreen=True)
+        red_sum_new = arr[..., 0].sum()
+        npt.assert_equal(red_sum_new > red_sum, True)
 
 
 if __name__ == '__main__':
 
-    # npt.run_module_suite()
-    test_rotate()
+    npt.run_module_suite()

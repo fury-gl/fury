@@ -645,31 +645,41 @@ def shallow_copy(vtk_object):
     return copy
 
 
-def rotate(prop3D, rotation):
-        center = np.array(prop3D.GetCenter())
+def rotate(actor, rotation=(90, 1, 0, 0)):
+    """ Rotate actor around axis by angle
 
-        oldMatrix = prop3D.GetMatrix()
-        orig = np.array(prop3D.GetOrigin())
+    Parameters
+    ----------
+    actor : vtkActor or other prop
+    rotation : tuple
+        Rotate with angle w around axis x, y, z. Needs to be provided
+        in the form (w, x, y, z).
+    """
+    prop3D = actor
+    center = np.array(prop3D.GetCenter())
 
-        newTransform = vtk.vtkTransform()
-        newTransform.PostMultiply()
-        if prop3D.GetUserMatrix() is not None:
-            newTransform.SetMatrix(prop3D.GetUserMatrix())
-        else:
-            newTransform.SetMatrix(oldMatrix)
+    oldMatrix = prop3D.GetMatrix()
+    orig = np.array(prop3D.GetOrigin())
 
-        newTransform.Translate(*(-center))
-        newTransform.RotateWXYZ(*rotation)
-        newTransform.Translate(*center)
+    newTransform = vtk.vtkTransform()
+    newTransform.PostMultiply()
+    if prop3D.GetUserMatrix() is not None:
+        newTransform.SetMatrix(prop3D.GetUserMatrix())
+    else:
+        newTransform.SetMatrix(oldMatrix)
 
-        # now try to get the composit of translate, rotate, and scale
-        newTransform.Translate(*(-orig))
-        newTransform.PreMultiply()
-        newTransform.Translate(*orig)
+    newTransform.Translate(*(-center))
+    newTransform.RotateWXYZ(*rotation)
+    newTransform.Translate(*center)
 
-        if prop3D.GetUserMatrix() is not None:
-            newTransform.GetMatrix(prop3D.GetUserMatrix())
-        else:
-            prop3D.SetPosition(newTransform.GetPosition())
-            prop3D.SetScale(newTransform.GetScale())
-            prop3D.SetOrientation(newTransform.GetOrientation())
+    # now try to get the composit of translate, rotate, and scale
+    newTransform.Translate(*(-orig))
+    newTransform.PreMultiply()
+    newTransform.Translate(*orig)
+
+    if prop3D.GetUserMatrix() is not None:
+        newTransform.GetMatrix(prop3D.GetUserMatrix())
+    else:
+        prop3D.SetPosition(newTransform.GetPosition())
+        prop3D.SetScale(newTransform.GetScale())
+        prop3D.SetOrientation(newTransform.GetOrientation())
