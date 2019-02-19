@@ -43,7 +43,7 @@ class GridLayout(Layout):
             'rect' ensures the cells are the tightest.
             'square' ensures the cells are as wide as high.
             'diagonal' ensures the content of the cells can be rotated without
-                       colliding with content of the neighboring cells.
+            colliding with content of the neighboring cells.
         aspect_ratio : float (optional)
             Aspect ratio of the grid (width/height). Default: 16:9.
         dim : tuple of int (optional)
