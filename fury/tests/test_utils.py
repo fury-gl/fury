@@ -87,7 +87,11 @@ def test_vtk_matrix_to_numpy():
 
 def test_get_grid_cell_position():
 
-    pass
+    shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
+    CS = get_grid_cells_position(shapes=shapes)
+
+    npt.assert_equal(CS.shape, (42, 3))
+    npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
 if __name__ == '__main__':
