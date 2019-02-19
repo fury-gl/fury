@@ -1,6 +1,10 @@
 import numpy as np
 import numpy.testing as npt
-from fury.utils import map_coordinates_3d_4d
+from fury.utils import (map_coordinates_3d_4d,
+                        vtk_matrix_to_numpy,
+                        numpy_to_vtk_matrix,
+                        get_grid_cells_position,
+                        rotate)
 
 
 def trilinear_interp_numpy(input_array, indices):
@@ -65,6 +69,25 @@ def test_trilinear_interp():
     values = trilinear_interp_numpy(B, indices)
     values_4d = map_coordinates_3d_4d(B, indices)
     npt.assert_almost_equal(values, values_4d)
+
+
+def test_vtk_matrix_to_numpy():
+
+    A = np.array([[2., 0, 0, 0],
+                  [0,  2, 0, 0],
+                  [0, 0, 2, 0],
+                  [0, 0, 0, 1]])
+
+    vtkA = numpy_to_vtk_matrix(A)
+
+    Anew = vtk_matrix_to_numpy(vtkA)
+
+    npt.assert_array_almost_equal(A, Anew)
+
+
+def test_get_grid_cell_position():
+
+    pass
 
 
 if __name__ == '__main__':
