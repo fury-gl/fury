@@ -198,7 +198,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                                     self.selected_props["right_button"] |
                                     self.selected_props["middle_button"]))
 
-        # self.trackball_camera.OnMouseMove()
+        self.trackball_camera.OnMouseMove()
 
     def on_mouse_wheel_forward(self, obj, evt):
         """On mouse wheel forward."""
