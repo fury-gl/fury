@@ -94,6 +94,26 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
+def test_rotate():
+
+    A = np.zeros((50, 50, 50))
+
+    A[20:30, 20:30, 10:40] = 100
+
+    from fury.actor import contour_from_roi
+
+    act = contour_from_roi(A)
+
+    from fury import window, actor
+
+    scene = window.Scene()
+
+    scene.add(actor.axes())
+
+    window.show(scene)
+
+
 if __name__ == '__main__':
 
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_rotate()
