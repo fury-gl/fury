@@ -202,18 +202,24 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
             An array of precomputed triangulation for the point cloud.
             It is an optional parameter, it is computed locally if None
         colors : (N, 3) array
-            Specifies the colors associated with each vertex in the vertices array.
-            Optional parameter, if not passed, all vertices are colored white
+            Specifies the colors associated with each vertex in the
+            vertices array.
+            Optional parameter, if not passed, all vertices
+            are colored white
         smooth : string - "loop" or "butterfly"
-            Defines the type of subdivision to be used for smoothing the surface
+            Defines the type of subdivision to be used
+            for smoothing the surface
         subdivision : integer, default = 3
-            Defines the number of subdivisions to do for each triangulation of the point cloud.
-            The higher the value, smoother the surface but at the cost of higher computation
+            Defines the number of subdivisions to do for
+            each triangulation of the point cloud.
+            The higher the value, smoother the surface
+            but at the cost of higher computation
 
         Returns
         -------
         surface_actor : vtkActor
-            A vtkActor visualizing the final surface computed from the point cloud is returned.
+            A vtkActor visualizing the final surface
+            computed from the point cloud is returned.
 
     """
     points = vtk.vtkPoints()
@@ -1074,7 +1080,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         all_xyz.append(scale * xyz + center)
         all_faces.append(faces + k * xyz.shape[0])
 
-        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))], [0, 1], [0, 255]).astype('ubyte')
+        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))],
+                                 [0, 1], [0, 255]).astype('ubyte')
 
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
