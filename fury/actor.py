@@ -1080,8 +1080,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         all_xyz.append(scale * xyz + center)
         all_faces.append(faces + k * xyz.shape[0])
 
-        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))],
-                                 [0, 1], [0, 255]).astype('ubyte')
+        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))], [0, 1],
+                                 [0, 255]).astype('ubyte')
 
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
