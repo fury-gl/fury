@@ -397,6 +397,7 @@ class ShowManager(object):
 
         if stereo_mode != 'off':
             self.window.GetStereoCapableWindow()
+            self.window.StereoCapableWindowOn()
             self.window.StereoRenderOn()
 
             # default to horizontal since it is easy to see if it is working
