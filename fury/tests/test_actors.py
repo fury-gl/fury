@@ -2,12 +2,13 @@ import os
 import numpy as np
 
 from fury import actor, window
-
+from fury.actor import surface
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
 from tempfile import mkstemp
-
+import random
+import math
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
@@ -157,9 +158,7 @@ def test_slicer():
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_surface():
-    import random
-    # from scipy.spatial import Delaunay
-    import math
+
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -169,23 +168,112 @@ def test_surface():
             z_coord = -abs(fact1 * fact2)
             vertices.append([i, j, z_coord])
 
+    c_arr = np.random.rand(len(vertices), 3)
     random.shuffle(vertices)
     vertices = np.array(vertices)
-    # xy = list()
-    # for coordinate in vertices:
-    #     xy.append([coordinate[0], coordinate[1]])
-    # tri = Delaunay(xy)
-    # faces = tri.simplices
-    renderer = window.renderer(background=(1, 1, 1))
-    from fury.actor import surface
-    surface_actor = surface(vertices, smooth="butterfly")
+    tri = Delaunay(vertices[:, [0, 1]])
+    faces = tri.simplices
+    renderer_1 = window.renderer(background=(1, 1, 1))
+    renderer_2 = window.renderer(background=(1, 1, 1))
+    renderer_3 = window.renderer(background=(1, 1, 1))
+    renderer_4 = window.renderer(background=(1, 1, 1))
+    renderer_5 = window.renderer(background=(1, 1, 1))
+    renderer_6 = window.renderer(background=(1, 1, 1))
+    renderer_7 = window.renderer(background=(1, 1, 1))
+    renderer_8 = window.renderer(background=(1, 1, 1))
+    renderer_9 = window.renderer(background=(1, 1, 1))
+    renderer_10 = window.renderer(background=(1, 1, 1))
+    renderer_11 = window.renderer(background=(1, 1, 1))
+    renderer_12 = window.renderer(background=(1, 1, 1))
+
+    surface_actor_1 = surface(vertices)
+    surface_actor_2 = surface(vertices, faces=faces)
+    surface_actor_3 = surface(vertices, colors=c_arr)
+    surface_actor_4 = surface(vertices, faces=faces, colors=c_arr)
+    surface_actor_5 = surface(vertices, smooth="butterfly")
+    surface_actor_6 = surface(vertices, faces=faces, smooth="butterfly")
+    surface_actor_7 = surface(vertices, colors=c_arr, smooth="butterfly")
+    surface_actor_8 = surface(vertices, faces=faces, colors=c_arr, smooth="butterfly")
+    surface_actor_9 = surface(vertices, smooth="loop")
+    surface_actor_10 = surface(vertices, faces=faces, smooth="loop")
+    surface_actor_11 = surface(vertices, colors=c_arr, smooth="loop")
+    surface_actor_12 = surface(vertices, faces=faces, colors=c_arr, smooth="butterfly")
+
     axes_actor = actor.axes(scale=(12, 12, 12))
-    renderer.add(axes_actor)
-    renderer.add(surface_actor)
-    # window.show(renderer, size=(600, 600), reset_camera=False)
-    arr = window.snapshot(renderer, 'test_surface.png', offscreen=True)
-    report = window.analyze_snapshot(arr, find_objects=True)
-    npt.assert_equal(report.objects, 1)
+    renderer_1.add(axes_actor)
+    renderer_2.add(axes_actor)
+    renderer_3.add(axes_actor)
+    renderer_4.add(axes_actor)
+    renderer_5.add(axes_actor)
+    renderer_6.add(axes_actor)
+    renderer_7.add(axes_actor)
+    renderer_8.add(axes_actor)
+    renderer_9.add(axes_actor)
+    renderer_10.add(axes_actor)
+    renderer_11.add(axes_actor)
+    renderer_12.add(axes_actor)
+
+    renderer_1.add(surface_actor_1)
+    renderer_2.add(surface_actor_2)
+    renderer_3.add(surface_actor_3)
+    renderer_4.add(surface_actor_4)
+    renderer_5.add(surface_actor_5)
+    renderer_6.add(surface_actor_6)
+    renderer_7.add(surface_actor_7)
+    renderer_8.add(surface_actor_8)
+    renderer_9.add(surface_actor_9)
+    renderer_10.add(surface_actor_10)
+    renderer_11.add(surface_actor_11)
+    renderer_12.add(surface_actor_12)
+
+    arr_1 = window.snapshot(renderer_1, 'test_surface_1.png', offscreen=True)
+    arr_2 = window.snapshot(renderer_2, 'test_surface_2.png', offscreen=True)
+    arr_3 = window.snapshot(renderer_3, 'test_surface_3.png', offscreen=True)
+    arr_4 = window.snapshot(renderer_4, 'test_surface_4.png', offscreen=True)
+    arr_5 = window.snapshot(renderer_5, 'test_surface_5.png', offscreen=True)
+    arr_6 = window.snapshot(renderer_6, 'test_surface_6.png', offscreen=True)
+    arr_7 = window.snapshot(renderer_7, 'test_surface_7.png', offscreen=True)
+    arr_8 = window.snapshot(renderer_8, 'test_surface_8.png', offscreen=True)
+    arr_9 = window.snapshot(renderer_9, 'test_surface_9.png', offscreen=True)
+    arr_10 = window.snapshot(renderer_10, 'test_surface_10.png', offscreen=True)
+    arr_11 = window.snapshot(renderer_11, 'test_surface_11.png', offscreen=True)
+    arr_12 = window.snapshot(renderer_12, 'test_surface_12.png', offscreen=True)
+
+    report_1 = window.analyze_snapshot(arr_1, find_objects=True)
+    npt.assert_equal(report_1.objects, 1)
+
+    report_2 = window.analyze_snapshot(arr_2, find_objects=True)
+    npt.assert_equal(report_2.objects, 1)
+
+    report_3 = window.analyze_snapshot(arr_3, find_objects=True)
+    npt.assert_equal(report_3.objects, 1)
+
+    report_4 = window.analyze_snapshot(arr_4, find_objects=True)
+    npt.assert_equal(report_4.objects, 1)
+
+    report_5 = window.analyze_snapshot(arr_5, find_objects=True)
+    npt.assert_equal(report_5.objects, 1)
+
+    report_6 = window.analyze_snapshot(arr_6, find_objects=True)
+    npt.assert_equal(report_6.objects, 1)
+
+    report_7 = window.analyze_snapshot(arr_7, find_objects=True)
+    npt.assert_equal(report_7.objects, 1)
+
+    report_8 = window.analyze_snapshot(arr_8, find_objects=True)
+    npt.assert_equal(report_8.objects, 1)
+
+    report_9 = window.analyze_snapshot(arr_9, find_objects=True)
+    npt.assert_equal(report_9.objects, 1)
+
+    report_10 = window.analyze_snapshot(arr_10, find_objects=True)
+    npt.assert_equal(report_10.objects, 1)
+
+    report_11 = window.analyze_snapshot(arr_11, find_objects=True)
+    npt.assert_equal(report_11.objects, 1)
+
+    report_12 = window.analyze_snapshot(arr_12, find_objects=True)
+    npt.assert_equal(report_12.objects, 1)
 
 
 @npt.dec.skipif(skip_it)
