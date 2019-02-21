@@ -1388,6 +1388,8 @@ class TextBlock2D(UI):
         if self._background is not None:
             self._background.SetPosition(*self.actor.GetPosition())
 
+    def _get_size(self):
+        return
 
 class TextBox2D(UI):
     """ An editable 2D text box that behaves as a UI component.

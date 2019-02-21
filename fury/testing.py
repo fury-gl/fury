@@ -37,9 +37,7 @@ def captured_output():
 
 def assert_operator(value1, value2, msg="", op=operator.eq):
     """Check Boolean statement."""
-    try:
-        assert op(value1, value2)
-    except AssertionError:
+    if not op(value1, value2):
         raise AssertionError(msg.format(str(value2), str(value1)))
 
 

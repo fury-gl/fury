@@ -5,29 +5,29 @@ from fury.utils import get_grid_cells_position
 
 
 class Layout(object):
-    """ Provides functionalities for laying out actors in a 3D scene.
-    """
+    """Provide functionalities for laying out actors in a 3D scene."""
 
     def apply(self, actors):
-        """ Positions the actors according to a certain layout.
-        """
+        """Position the actors according to a certain layout."""
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
             anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
             a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
 
-    def compute_positions(self, actors):
-        """ Computes the 3D coordinates of some actors. """
+    def compute_positions(self, _actors):
+        """Compute the 3D coordinates of some actors."""
         return []
 
 
 class GridLayout(Layout):
-    """ Provides functionalities for laying out actors in a 2D grid fashion.
+    """Provide functionalities for laying out actors in a 2D grid fashion.
 
     The `GridLayout` class lays the actors in a 2D structured grid aligned
     with the xy-plane.
+
     """
+
     def __init__(self, cell_padding=0, cell_shape="rect",
                  aspect_ratio=16/9., dim=None):
         """
@@ -53,13 +53,13 @@ class GridLayout(Layout):
         self.cell_shape = cell_shape
         self.aspect_ratio = aspect_ratio
         self.dim = dim
-        if type(cell_padding) is int:
+        if isinstance(cell_padding, int):
             self.cell_padding = (cell_padding, cell_padding)
         else:
             self.cell_padding = cell_padding
 
     def get_cells_shape(self, actors):
-        """ Gets the 2D shape (on the xy-plane) of some actors according to
+        """Get the 2D shape (on the xy-plane) of some actors according to
         `self.cell_shape`.
 
         Parameters
@@ -71,6 +71,7 @@ class GridLayout(Layout):
         -------
         list of 2-tuple
             The 2D shape (on the xy-plane) of every actors.
+
         """
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
