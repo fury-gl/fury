@@ -160,7 +160,6 @@ def test_surface():
     import random
     # from scipy.spatial import Delaunay
     import math
-    from fury.actor import surface
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -178,6 +177,7 @@ def test_surface():
     # tri = Delaunay(xy)
     # faces = tri.simplices
     renderer = window.renderer(background=(1, 1, 1))
+    from fury.actor import surface
     surface_actor = surface(vertices, smooth="butterfly")
     axes_actor = actor.axes(scale=(12, 12, 12))
     renderer.add(axes_actor)
