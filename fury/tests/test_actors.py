@@ -226,7 +226,7 @@ def test_surface():
     renderer_11.add(surface_actor_11)
     renderer_12.add(surface_actor_12)
 
-        arr_1 = window.snapshot(renderer_1, 'test_surface_1.png', offscreen=True)
+    arr_1 = window.snapshot(renderer_1, 'test_surface_1.png', offscreen=True)
     arr_2 = window.snapshot(renderer_2, 'test_surface_2.png', offscreen=True)
     arr_3 = window.snapshot(renderer_3, 'test_surface_3.png', offscreen=True)
     arr_4 = window.snapshot(renderer_4, 'test_surface_4.png', offscreen=True)
