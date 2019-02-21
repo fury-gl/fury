@@ -13,8 +13,6 @@ use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
 
 
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def trilinear_interp_numpy(input_array, indices):
     """ Evaluate the input_array data at the given indices
     """
@@ -60,8 +58,6 @@ def trilinear_interp_numpy(input_array, indices):
     return output
 
 
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def test_trilinear_interp():
 
     A = np.zeros((5, 5, 5))
@@ -81,8 +77,6 @@ def test_trilinear_interp():
     npt.assert_almost_equal(values, values_4d)
 
 
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def test_vtk_matrix_to_numpy():
 
     A = np.array([[2., 0, 0, 0],
@@ -97,8 +91,6 @@ def test_vtk_matrix_to_numpy():
     npt.assert_array_almost_equal(A, Anew)
 
 
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def test_get_grid_cell_position():
 
     shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
