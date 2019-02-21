@@ -43,7 +43,7 @@ class EventCounter(object):
         # Events to count
         self.events_counts = {name: 0 for name in events_names}
 
-    def count(self, i_ren, obj, element):
+    def count(self, i_ren, _obj, _element):
         """ Simple callback that counts events occurences. """
         self.events_counts[i_ren.event.name] += 1
 
@@ -177,14 +177,14 @@ def test_ui_disk_2d():
     colors = [disk.color]
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
-    assert report.objects == 1
-    assert report.colors_found
+    npt.assert_equal(report.objects, 1)
+    npt.assert_equal(report.colors_found, True)
 
     # Test visibility off.
     disk.set_visibility(False)
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr)
-    assert report.objects == 0
+    npt.assert_equal(report.objects, 0)
 
 
 @npt.dec.skipif(skip_it)
@@ -208,7 +208,7 @@ def test_ui_button_panel(recording=False):
     button_test = ui.Button2D(icon_fnames=icon_files)
     button_test.center = (20, 20)
 
-    def make_invisible(i_ren, obj, button):
+    def make_invisible(i_ren, _obj, button):
         # i_ren: CustomInteractorStyle
         # obj: vtkActor picked
         # button: Button2D
@@ -216,7 +216,7 @@ def test_ui_button_panel(recording=False):
         i_ren.force_render()
         i_ren.event.abort()
 
-    def modify_button_callback(i_ren, obj, button):
+    def modify_button_callback(i_ren, _obj, button):
         # i_ren: CustomInteractorStyle
         # obj: vtkActor picked
         # button: Button2D
@@ -417,7 +417,7 @@ def test_text_block_2d_justification():
     # Uncomment this to start the visualisation
     # show_manager.start()
 
-    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
+    window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
 @npt.dec.skipif(skip_it)
@@ -608,7 +608,7 @@ def test_ui_checkbox(interactive=False):
                 ['option 2\nOption 2', 'option 3', 'option 1', 'option 4'],
                 ['option 2\nOption 2', 'option 3', 'option 4'],
                 ['option 3', 'option 4'], ['option 3'], []]
-    assert len(selected_options) == len(expected)
+    npt.assert_equal(len(selected_options), len(expected))
     assert_arrays_equal(selected_options, expected)
     del show_manager
 
@@ -677,7 +677,7 @@ def test_ui_radio_button(interactive=False):
     expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
                 ['option 2\nOption 2'], ['option 1'], ['option 3'],
                 ['option 4'], ['option 4']]
-    assert len(selected_option) == len(expected)
+    npt.assert_equal(len(selected_option), len(expected))
     assert_arrays_equal(selected_option, expected)
     del show_manager
 
@@ -763,7 +763,7 @@ def test_ui_listbox_2d(interactive=False):
 
     # Check if the right values were selected.
     expected = [[1], [2], [2], [42], [1], [42]]
-    assert len(selected_values) == len(expected)
+    npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
 
@@ -892,7 +892,7 @@ def test_ui_file_menu_2d(interactive=False):
                 ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
                  "test4.txt", "test5.txt", "test6.txt"],
                 ["../"], ["testfile.txt"]]
-    assert len(selected_files) == len(expected)
+    npt.assert_equal(len(selected_files), len(expected))
     assert_arrays_equal(selected_files, expected)
 
     # Remove temporary directory and files
@@ -979,7 +979,7 @@ def test_grid_ui(interactive=False):
     show_m = window.ShowManager(scene)
     show_m.initialize()
 
-    def timer_callback(obj, event):
+    def timer_callback(obj, _event):
         cnt = next(counter)
         show_m.scene.zoom(1)
         show_m.render()

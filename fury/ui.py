@@ -171,6 +171,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self._set_position(coords)
         self._position = coords
 
+    @abc.abstractmethod
     def _set_position(self, _coords):
         """Position the lower-left corner of this UI component.
 
@@ -980,7 +981,7 @@ class Panel2D(UI):
         self._drag_offset = click_pos - panel2d_object.position
         i_ren.event.abort()  # Stop propagating the event.
 
-    def left_button_dragged(self, i_ren, obj, _panel2d_object):
+    def left_button_dragged(self, i_ren, _obj, _panel2d_object):
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
@@ -1701,7 +1702,7 @@ class TextBox2D(UI):
             self.caret_pos = 0
         self.render_text()
 
-    def left_button_press(self, i_ren, obj, _textbox_object):
+    def left_button_press(self, i_ren, _obj, _textbox_object):
         """ Left button press handler for textbox
 
         Parameters
@@ -1715,7 +1716,7 @@ class TextBox2D(UI):
         self.edit_mode()
         i_ren.force_render()
 
-    def key_press(self, i_ren, obj, _textbox_object):
+    def key_press(self, i_ren, _obj, _textbox_object):
         """ Key press handler for textbox
 
         Parameters
@@ -1964,7 +1965,7 @@ class LineSlider2D(UI):
 
         self.on_change(self)
 
-    def track_click_callback(self, i_ren, vtkactor, _slider):
+    def track_click_callback(self, i_ren, _vtkactor, _slider):
         """ Update disk position and grab the focus.
 
         Parameters
@@ -2618,7 +2619,7 @@ class RingSlider2D(UI):
 
         self.angle = angle
 
-    def track_click_callback(self, i_ren, obj, _slider):
+    def track_click_callback(self, i_ren, _obj, _slider):
         """ Update disk position and grab the focus.
 
         Parameters
@@ -2633,7 +2634,7 @@ class RingSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_move_callback(self, i_ren, obj, _slider):
+    def handle_move_callback(self, i_ren, _obj, _slider):
         """ Move the slider's handle.
 
         Parameters
@@ -2649,7 +2650,7 @@ class RingSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_release_callback(self, i_ren, obj, _slider):
+    def handle_release_callback(self, i_ren, _obj, _slider):
         """ Change color when handle is released.
 
         Parameters
@@ -3085,7 +3086,7 @@ class Option(UI):
         offset = (self.button.size[0] + self.button_label_gap, 0)
         self.text.position = coords + offset
 
-    def toggle(self, i_ren, obj, _element):
+    def toggle(self, i_ren, _obj, _element):
         if self.checked:
             self.deselect()
         else:
@@ -3436,7 +3437,7 @@ class ListBox2D(UI):
         """
         self.panel.position = coords
 
-    def up_button_callback(self, i_ren, obj, _list_box):
+    def up_button_callback(self, i_ren, _obj, _list_box):
         """ Pressing up button scrolls up in the combo box.
 
         Parameters
@@ -3461,7 +3462,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def down_button_callback(self, i_ren, obj, _list_box):
+    def down_button_callback(self, i_ren, _obj, _list_box):
         """ Pressing down button scrolls down in the combo box.
 
         Parameters
@@ -3487,7 +3488,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def scroll_click_callback(self, i_ren, obj, _rect_obj):
+    def scroll_click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
 
         Parameters
@@ -3503,7 +3504,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()
 
-    def scroll_release_callback(self, i_ren, obj, _rect_obj):
+    def scroll_release_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is released.
 
         Parameters
@@ -3511,13 +3512,13 @@ class ListBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        _rect_obj: :class:`Rectangle2D`
+        rect_obj: :class:`Rectangle2D`
 
         """
         self.scroll_bar.color = self.scroll_bar_inactive_color
         i_ren.force_render()
 
-    def scroll_drag_callback(self, i_ren, obj, rect_obj):
+    def scroll_drag_callback(self, i_ren, _obj, _rect_obj):
         """ Dragging scroll bar in the combo box.
 
         Parameters
@@ -3732,7 +3733,7 @@ class ListBoxItem2D(UI):
         self._element = element
         self.textblock.message = "" if self._element is None else str(element)
 
-    def left_button_clicked(self, i_ren, obj, _list_box_item):
+    def left_button_clicked(self, i_ren, _obj, _list_box_item):
         """ A callback to handle left click for this UI element.
 
         Parameters
@@ -3942,7 +3943,7 @@ class FileMenu2D(UI):
             elif self.directory_contents[list_idx][1] == "file":
                 slot.textblock.color = (0, 0, 0.7)
 
-    def scroll_callback(self, i_ren, obj, _filemenu_item):
+    def scroll_callback(self, i_ren, _obj, _filemenu_item):
         """ A callback to handle scroll and change the slot text colors.
 
         Parameters
@@ -4015,20 +4016,20 @@ class GridUI(UI):
         return
 
     @staticmethod
-    def left_click_callback(istyle, obj, _what):
+    def left_click_callback(istyle, _obj, _what):
         istyle.trackball_actor.OnLeftButtonDown()
         istyle.force_render()
         istyle.event.abort()
 
     @staticmethod
-    def left_release_callback(istyle, obj, _what):
+    def left_release_callback(istyle, _obj, _what):
 
         istyle.trackball_actor.OnLeftButtonUp()
         istyle.force_render()
         istyle.event.abort()
 
     @staticmethod
-    def mouse_move_callback(istyle, obj, _what):
+    def mouse_move_callback(istyle, _obj, _what):
         istyle.trackball_actor.OnMouseMove()
         istyle.force_render()
         istyle.event.abort()
