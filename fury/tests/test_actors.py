@@ -1,7 +1,7 @@
 import os
 import numpy as np
 
-from fury import actor, window, shaders
+from fury import actor, window
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
