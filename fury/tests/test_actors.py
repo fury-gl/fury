@@ -1,6 +1,5 @@
 import os
 import numpy as np
-
 from fury import actor, window
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
