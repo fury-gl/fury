@@ -819,7 +819,7 @@ def test_timer():
 
     showm.initialize()
 
-    def timer_callback(obj, event):
+    def timer_callback(_obj, _event):
         global cnt, sphere_actor, showm, tb
 
         cnt += 1
@@ -979,7 +979,7 @@ def test_grid_ui(interactive=False):
     show_m = window.ShowManager(scene)
     show_m.initialize()
 
-    def timer_callback(obj, _event):
+    def timer_callback(_obj, _event):
         cnt = next(counter)
         show_m.scene.zoom(1)
         show_m.render()

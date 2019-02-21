@@ -92,12 +92,12 @@ panel.add_element(second_button_example, (0.66, 0.33))
 # We can add a callback to each button to perform some action.
 
 
-def change_text_callback(i_ren, obj, _button):
+def change_text_callback(i_ren, _obj, _button):
     text.message = 'Clicked!'
     i_ren.force_render()
 
 
-def change_icon_callback(i_ren, obj, _button):
+def change_icon_callback(i_ren, _obj, _button):
     button.next_icon()
     i_ren.force_render()
 

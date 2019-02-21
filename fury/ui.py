@@ -1375,19 +1375,7 @@ class TextBlock2D(UI):
             self.actor.GetTextProperty().SetBackgroundColor(*color)
             self.actor.GetTextProperty().SetBackgroundOpacity(1.)
 
-    @property
-    def position(self):
-        """ Gets text actor position.
-
-        Returns
-        -------
-        (float, float)
-            The current actor position. (x, y) in pixels.
-        """
-        return self.actor.GetPosition()
-
-    @position.setter
-    def position(self, position):
+    def _set_position(self, position):
         """ Set text actor position.
 
         Parameters
@@ -4046,7 +4034,7 @@ class GridUI(UI):
         istyle.event.abort()
 
     @staticmethod
-    def left_release_callback2(istyle, obj, what):
+    def left_release_callback2(istyle, _obj, _what):
 
         istyle.force_render()
         istyle.event.abort()
