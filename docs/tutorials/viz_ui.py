@@ -10,8 +10,6 @@ several DIPY UI elements, then use a list box to toggle which element is shown.
 First, a bunch of imports.
 """
 
-import os
-
 from fury.data import read_viz_icons, fetch_viz_icons
 
 from fury import ui, window
@@ -94,12 +92,12 @@ panel.add_element(second_button_example, (0.66, 0.33))
 # We can add a callback to each button to perform some action.
 
 
-def change_text_callback(i_ren, obj, button):
+def change_text_callback(i_ren, obj, _button):
     text.message = 'Clicked!'
     i_ren.force_render()
 
 
-def change_icon_callback(i_ren, obj, button):
+def change_icon_callback(i_ren, obj, _button):
     button.next_icon()
     i_ren.force_render()
 
