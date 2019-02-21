@@ -93,6 +93,15 @@ def test_broken_ui_component():
         def _set_position(self, coords):
             self.actor.SetPosition(*coords)
 
+        def _get_size(self):
+            return
+
+        def _get_actors(self):
+            return self.actor
+
+        def _add_to_scene(self, _scene):
+            return
+
     # Can be instantiated.
     SimplestUI()
 
@@ -178,7 +187,8 @@ def test_ui_disk_2d():
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 1)
-    npt.assert_equal(report.colors_found, True)
+    # Should be False because of the offscreen
+    npt.assert_equal(report.colors_found, [False])
 
     # Test visibility off.
     disk.set_visibility(False)
@@ -1086,3 +1096,6 @@ if __name__ == "__main__":
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
         test_grid_ui(interactive=False)
+
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_disk_2d":
+        test_ui_disk_2d()

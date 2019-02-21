@@ -188,6 +188,7 @@ class UI(object, metaclass=abc.ABCMeta):
     def size(self):
         return np.asarray(self._get_size(), dtype=int)
 
+    @abc.abstractmethod
     def _get_size(self):
         msg = "Subclasses of UI must implement property `size`."
         raise NotImplementedError(msg)
@@ -1968,7 +1969,7 @@ class LineSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_move_callback(self, i_ren, vtkactor, slider):
+    def handle_move_callback(self, i_ren, _vtkactor, _slider):
         """ Actual handle movement.
 
         Parameters
@@ -1984,7 +1985,7 @@ class LineSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_release_callback(self, i_ren, vtkactor, slider):
+    def handle_release_callback(self, i_ren, _vtkactor, _slider):
         """ Change color when handle is released.
 
         Parameters
