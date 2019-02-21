@@ -7,7 +7,9 @@ import os
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
-from fury.utils import set_input
+from fury.utils import set_input, rotate
+from fury.actor import grid
+
 
 TWO_PI = 2 * np.pi
 
@@ -59,6 +61,7 @@ class UI(object):
             UI component.
 
         """
+        self._scene = object()
         self._position = np.array([0, 0])
         self._callbacks = []
 
@@ -128,7 +131,11 @@ class UI(object):
                        " order to use callbacks.")
                 raise TypeError(msg)
 
-            iren.add_callback(*callback, args=[self])
+            if callback[0] == self._scene:
+
+                iren.add_callback(iren, callback[1], callback[2], args=[self])
+            else:
+                iren.add_callback(*callback, args=[self])
 
     def add_callback(self, prop, event_type, callback, priority=0):
         """Add a callback to a specific event for this UI component.
@@ -3963,3 +3970,193 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class GridUI(UI):
+    """ Add actors in a grid and interact with them individually.
+    """
+
+    def __init__(self,
+                 actors, captions=None, caption_offset=(0, -100, 0),
+                 cell_padding=0,
+                 cell_shape="rect", aspect_ratio=16/9., dim=None,
+                 rotation_speed=1, rotation_axis=(0, 1, 0)):
+
+        # TODO: add rotation axis None by default
+
+        self.container = grid(actors, captions=captions,
+                              caption_offset=caption_offset,
+                              cell_padding=cell_padding,
+                              cell_shape=cell_shape,
+                              aspect_ratio=aspect_ratio, dim=dim)
+        self._actors = []
+        self._actors_dict = {}
+        self.rotation_speed = rotation_speed
+        self.rotation_axis = rotation_axis
+
+        for item in self.container._items:
+            self._actors.append(item._items[0])
+            self._actors_dict[item._items[0]] = {'x': -np.inf, 'y': -np.inf}
+
+        super(GridUI, self).__init__(position=(0, 0, 0))
+
+    def _get_size(self):
+        return
+
+    def left_click_callback(self, istyle, obj, what):
+        istyle.trackball_actor.OnLeftButtonDown()
+        istyle.force_render()
+        istyle.event.abort()
+
+    def left_release_callback(self, istyle, obj, what):
+
+        istyle.trackball_actor.OnLeftButtonUp()
+        istyle.force_render()
+        istyle.event.abort()
+
+    def mouse_move_callback(self, istyle, obj, what):
+        istyle.trackball_actor.OnMouseMove()
+        istyle.force_render()
+        istyle.event.abort()
+
+    def left_click_callback2(self, istyle, obj, what):
+
+        rx, ry, rz = self.rotation_axis
+        clockwise_rotation = np.array([self.rotation_speed,
+                                       rx, ry, rz])
+        rotate(obj, clockwise_rotation)
+
+        istyle.force_render()
+        istyle.event.abort()
+
+    def left_release_callback2(self, istyle, obj, what):
+
+        istyle.force_render()
+        istyle.event.abort()
+
+    def mouse_move_callback2(self, istyle, obj, what):
+
+        if self._actors_dict[obj]['y'] == - np.inf:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            self._actors_dict[obj]['y'] = event_pos[1]
+
+        else:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            rx, ry, rz = self.rotation_axis
+
+            if event_pos[1] >= self._actors_dict[obj]['y']:
+                clockwise_rotation = np.array([-self.rotation_speed,
+                                               rx, ry, rz])
+                rotate(obj, clockwise_rotation)
+            else:
+                anti_clockwise_rotation = np.array(
+                    [self.rotation_speed, rx, ry, rz])
+                rotate(obj, anti_clockwise_rotation)
+
+            self._actors_dict[obj]['y'] = event_pos[1]
+
+            # print(event_pos)
+            istyle.force_render()
+            istyle.event.abort()
+
+    ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
+    CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
+    ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
+    CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
+
+    def key_press_callback(self, istyle, obj, what):
+        print('inside key_press event')
+        has_changed = False
+        if istyle.event.key == "Left":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Right":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Up":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_X)
+        elif istyle.event.key == "Down":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_X)
+
+        if has_changed:
+            istyle.force_render()
+
+    def _setup(self):
+        """Set up this UI component and the events of its actor
+        """
+        print(self.actors)
+        print(len(self.actors))
+
+        # Add default events listener to the VTK actor.
+        for actor in self._actors:
+            # self.handle_events(actor)
+
+            if self.rotation_axis is None:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback)
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback)
+            else:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback2)
+                # TODO: possibly add this too
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback2)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback2)
+
+            # TODO: this is currently not running
+            self.add_callback(actor, "KeyPressEvent",
+                              self.key_press_callback)
+        # self.on_key_press = self.key_press_callback2
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self._actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.container.add_to_scene(scene)
+
+    def resize(self, size):
+        """Resize the button.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Button size (width, height) in pixels.
+
+        """
+        # Update actor.
+        pass
+
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        # coords = (0, 0, 0)
+        pass
+        # self.actor.SetPosition(*coords)
+        # self.container.SetPosition(*coords)

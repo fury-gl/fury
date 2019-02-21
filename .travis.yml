@@ -30,13 +30,13 @@ addons:
     - libasound2-dev
     - libudev-dev
     - mesa-utils
-    - mesa-common-dev
-    - libllvm7
     - xvfb
+    - mesa-common-dev
   homebrew:
     update: true
 env:
   global:
+  - MESA_GL_VERSION_OVERRIDE=3.3
   - TEST_WITH_XVFB=true
   - LIBGL_ALWAYS_INDIRECT=y
   - DISPLAY=:99

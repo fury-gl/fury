@@ -1,6 +1,16 @@
+import os
 import numpy as np
 import numpy.testing as npt
-from fury.utils import map_coordinates_3d_4d
+from fury.utils import (map_coordinates_3d_4d,
+                        vtk_matrix_to_numpy,
+                        numpy_to_vtk_matrix,
+                        get_grid_cells_position,
+                        shallow_copy,
+                        rotate)
+from fury import actor, window, utils
+from fury.decorators import xvfb_it
+use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
+skip_it = use_xvfb == 'skip'
 
 
 def trilinear_interp_numpy(input_array, indices):
@@ -65,6 +75,77 @@ def test_trilinear_interp():
     values = trilinear_interp_numpy(B, indices)
     values_4d = map_coordinates_3d_4d(B, indices)
     npt.assert_almost_equal(values, values_4d)
+
+
+def test_vtk_matrix_to_numpy():
+
+    A = np.array([[2., 0, 0, 0],
+                  [0,  2, 0, 0],
+                  [0, 0, 2, 0],
+                  [0, 0, 0, 1]])
+
+    vtkA = numpy_to_vtk_matrix(A)
+
+    Anew = vtk_matrix_to_numpy(vtkA)
+
+    npt.assert_array_almost_equal(A, Anew)
+
+
+def test_get_grid_cell_position():
+
+    shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
+    CS = get_grid_cells_position(shapes=shapes)
+
+    npt.assert_equal(CS.shape, (42, 3))
+    npt.assert_almost_equal(CS[-1], [480., -250., 0])
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_rotate(interactive=False):
+
+    A = np.zeros((50, 50, 50))
+
+    A[20:30, 20:30, 10:40] = 100
+
+    act = actor.contour_from_roi(A)
+
+    scene = window.Scene()
+
+    scene.add(act)
+
+    if interactive:
+        window.show(scene)
+    else:
+        arr = window.snapshot(scene, offscreen=True)
+        red = arr[..., 0].sum()
+        red_sum = np.sum(red)
+
+    act2 = utils.shallow_copy(act)
+
+    rot = (90, 1, 0, 0)
+
+    rotate(act2, rot)
+
+    act3 = utils.shallow_copy(act)
+
+    scene.add(act2)
+
+    rot = (90, 0, 1, 0)
+
+    rotate(act3, rot)
+
+    scene.add(act3)
+
+    scene.add(actor.axes())
+
+    if interactive:
+        window.show(scene)
+    else:
+
+        arr = window.snapshot(scene, offscreen=True)
+        red_sum_new = arr[..., 0].sum()
+        npt.assert_equal(red_sum_new > red_sum, True)
 
 
 if __name__ == '__main__':
