@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import numpy.testing as npt
 from fury.utils import (map_coordinates_3d_4d,
@@ -7,8 +8,13 @@ from fury.utils import (map_coordinates_3d_4d,
                         shallow_copy,
                         rotate)
 from fury import actor, window, utils
+from fury.decorators import xvfb_it
+use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
+skip_it = use_xvfb == 'skip'
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def trilinear_interp_numpy(input_array, indices):
     """ Evaluate the input_array data at the given indices
     """
@@ -54,6 +60,8 @@ def trilinear_interp_numpy(input_array, indices):
     return output
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_trilinear_interp():
 
     A = np.zeros((5, 5, 5))
@@ -73,6 +81,8 @@ def test_trilinear_interp():
     npt.assert_almost_equal(values, values_4d)
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_vtk_matrix_to_numpy():
 
     A = np.array([[2., 0, 0, 0],
@@ -87,6 +97,8 @@ def test_vtk_matrix_to_numpy():
     npt.assert_array_almost_equal(A, Anew)
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_get_grid_cell_position():
 
     shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
@@ -96,6 +108,8 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_rotate(interactive=False):
 
     A = np.zeros((50, 50, 50))
