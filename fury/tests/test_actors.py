@@ -2,7 +2,6 @@ import os
 import numpy as np
 
 from fury import actor, window, shaders
-from fury.actor import surface
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
@@ -186,18 +185,18 @@ def test_surface():
     renderer_11 = window.renderer(background=(1, 1, 1))
     renderer_12 = window.renderer(background=(1, 1, 1))
 
-    surface_actor_1 = surface(vertices)
-    surface_actor_2 = surface(vertices, faces=faces)
-    surface_actor_3 = surface(vertices, colors=c_arr)
-    surface_actor_4 = surface(vertices, faces=faces, colors=c_arr)
-    surface_actor_5 = surface(vertices, smooth="butterfly")
-    surface_actor_6 = surface(vertices, faces=faces, smooth="butterfly")
-    surface_actor_7 = surface(vertices, colors=c_arr, smooth="butterfly")
-    surface_actor_8 = surface(vertices, faces=faces, colors=c_arr, smooth="butterfly")
-    surface_actor_9 = surface(vertices, smooth="loop")
-    surface_actor_10 = surface(vertices, faces=faces, smooth="loop")
-    surface_actor_11 = surface(vertices, colors=c_arr, smooth="loop")
-    surface_actor_12 = surface(vertices, faces=faces, colors=c_arr, smooth="butterfly")
+    surface_actor_1 = actor.surface(vertices)
+    surface_actor_2 = actor.surface(vertices, faces=faces)
+    surface_actor_3 = actor.surface(vertices, colors=c_arr)
+    surface_actor_4 = actor.surface(vertices, faces=faces, colors=c_arr)
+    surface_actor_5 = actor.surface(vertices, smooth="butterfly")
+    surface_actor_6 = actor.surface(vertices, faces=faces, smooth="butterfly")
+    surface_actor_7 = actor.surface(vertices, colors=c_arr, smooth="butterfly")
+    surface_actor_8 = actor.surface(vertices, faces=faces, colors=c_arr, smooth="butterfly")
+    surface_actor_9 = actor.surface(vertices, smooth="loop")
+    surface_actor_10 = actor.surface(vertices, faces=faces, smooth="loop")
+    surface_actor_11 = actor.surface(vertices, colors=c_arr, smooth="loop")
+    surface_actor_12 = actor.surface(vertices, faces=faces, colors=c_arr, smooth="loop")
 
     axes_actor = actor.axes(scale=(12, 12, 12))
     renderer_1.add(axes_actor)
