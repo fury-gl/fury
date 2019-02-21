@@ -124,6 +124,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     class ImageActor(vtk.vtkImageActor):
         def __init__(self):
             self.picker = vtk.vtkCellPicker()
+            self.output = None
+            self.shape = None
 
         def input_connection(self, output):
             self.GetMapper().SetInputConnection(output.GetOutputPort())
@@ -528,7 +530,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
         poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
 
         @vtk.calldata_type(vtk.VTK_OBJECT)
-        def vtkShaderCallback(caller, event, calldata=None):
+        def vtkShaderCallback(caller, _event, calldata=None):
             program = calldata
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
@@ -696,6 +698,8 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     szx, szy, szz = odfs.shape[:3]
 
     class OdfSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             tmp_mask = np.zeros(odfs.shape[:3], dtype=np.bool)
@@ -709,7 +713,6 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
                                              scale=scale,
                                              norm=norm,
                                              radial_scale=radial_scale,
-                                             opacity=opacity,
                                              colormap=colormap,
                                              global_cm=global_cm)
             self.SetMapper(self.mapper)
@@ -728,13 +731,14 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     odf_actor = OdfSlicerActor()
     odf_actor.display_extent(0, szx - 1, 0, szy - 1,
                              int(np.floor(szz/2)), int(np.floor(szz/2)))
+    odf_actor.GetProperty().SetOpacity(opacity)
 
     return odf_actor
 
 
 def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
-                       norm=True, radial_scale=True, opacity=1.,
-                       colormap='plasma', global_cm=False):
+                       norm=True, radial_scale=True, colormap='plasma',
+                       global_cm=False):
     """ Helper function for slicing spherical fields
 
     Parameters
@@ -753,8 +757,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         Normalize `sphere_values`.
     radial_scale : bool
         Scale sphere points according to odf values.
-    opacity : float
-        Takes values from 0 (fully transparent) to 1 (opaque)
     colormap : None or str
         If None then white color is used. Otherwise the name of colormap is
         given. Matplotlib colormaps are supported (e.g., 'inferno').
@@ -911,6 +913,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     szx, szy, szz = evals.shape[:3]
 
     class TensorSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             tmp_mask = np.zeros(evals.shape[:3], dtype=np.bool)
@@ -1116,6 +1120,8 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         mask = np.ones(grid_shape).astype(np.bool)
 
     class PeakSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.line = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
 
@@ -1233,7 +1239,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
-def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
+def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     """Visualize points as sphere glyphs
 
     Parameters
@@ -1440,7 +1446,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             text_actor.SetScale((1./24.*size,)*3)
             self._update_user_matrix()
 
-        def font_family(self, family='Arial'):
+        def font_family(self, _family='Arial'):
             self.GetTextProperty().SetFontFamilyToArial()
             # self._update_user_matrix()
 
@@ -1495,7 +1501,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
         def set_position(self, position):
             self.SetPosition(position)
 
-        def get_position(self, position):
+        def get_position(self):
             return self.GetPosition()
 
         def _update_user_matrix(self):

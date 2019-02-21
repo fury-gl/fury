@@ -11,6 +11,9 @@ class Event(object):
         self.position = None
         self.name = None
         self.key = None
+        self.alt_key = None
+        self.shift_key = None
+        self.ctrl_key = None
         self._abort_flag = None
 
     @property
@@ -142,7 +145,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         self.event.reset()  # Event fully processed.
 
-    def on_left_button_down(self, obj, evt):
+    def on_left_button_down(self, _obj, evt):
         self.left_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
@@ -152,13 +155,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.trackball_camera.OnLeftButtonDown()
 
-    def on_left_button_up(self, obj, evt):
+    def on_left_button_up(self, _obj, evt):
         self.left_button_down = False
         self.propagate_event(evt, *self.selected_props["left_button"])
         self.selected_props["left_button"].clear()
         self.trackball_camera.OnLeftButtonUp()
 
-    def on_right_button_down(self, obj, evt):
+    def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
@@ -168,13 +171,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.trackball_camera.OnRightButtonDown()
 
-    def on_right_button_up(self, obj, evt):
+    def on_right_button_up(self, _obj, evt):
         self.right_button_down = False
         self.propagate_event(evt, *self.selected_props["right_button"])
         self.selected_props["right_button"].clear()
         self.trackball_camera.OnRightButtonUp()
 
-    def on_middle_button_down(self, obj, evt):
+    def on_middle_button_down(self, _obj, evt):
         self.middle_button_down = True
         prop = self.get_prop_at_event_position()
         if prop is not None:
@@ -184,13 +187,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.trackball_camera.OnMiddleButtonDown()
 
-    def on_middle_button_up(self, obj, evt):
+    def on_middle_button_up(self, _obj, evt):
         self.middle_button_down = False
         self.propagate_event(evt, *self.selected_props["middle_button"])
         self.selected_props["middle_button"].clear()
         self.trackball_camera.OnMiddleButtonUp()
 
-    def on_mouse_move(self, obj, evt):
+    def on_mouse_move(self, _obj, evt):
         """On mouse move."""
         # Only propagate events to active or selected props.
         self.propagate_event(evt, *(self.active_props |
@@ -200,7 +203,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         self.trackball_camera.OnMouseMove()
 
-    def on_mouse_wheel_forward(self, obj, evt):
+    def on_mouse_wheel_forward(self, _obj, evt):
         """On mouse wheel forward."""
         # First, propagate mouse wheel event to underneath prop.
         prop = self.get_prop_at_event_position()
@@ -215,7 +218,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.trackball_camera.OnMouseWheelForward()
 
-    def on_mouse_wheel_backward(self, obj, evt):
+    def on_mouse_wheel_backward(self, _obj, evt):
         """On mouse wheel backward."""
         # First, propagate mouse wheel event to underneath prop.
         prop = self.get_prop_at_event_position()
@@ -230,13 +233,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if not self.event.abort_flag:
             self.trackball_camera.OnMouseWheelBackward()
 
-    def on_char(self, obj, evt):
+    def on_char(self, _obj, evt):
         self.propagate_event(evt, *self.active_props)
 
-    def on_key_press(self, obj, evt):
+    def on_key_press(self, _obj, evt):
         self.propagate_event(evt, *self.active_props)
 
-    def on_key_release(self, obj, evt):
+    def on_key_release(self, _obj, evt):
         self.propagate_event(evt, *self.active_props)
 
     def SetInteractor(self, interactor):
@@ -324,7 +327,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         priority : int
         """
 
-        def _callback(obj, event_name):
+        def _callback(_obj, event_name):
             # Update event information.
             interactor_ = self.GetInteractor()
             if interactor_ is not None:
