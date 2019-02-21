@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from scipy import ndimage
 import vtk
-from vtk.util import numpy_support, colors
+from vtk.util import numpy_support
 
 from fury.tmpdirs import InTemporaryDirectory
 
@@ -237,7 +237,7 @@ class Renderer(Scene):
           class `Scene()`
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, _parent=None):
         """Init old class with a warning."""
         warn("Class 'fury.window.Renderer' is deprecated, instead"
              " use class 'fury.window.Scene'.", DeprecationWarning)
@@ -517,7 +517,7 @@ class ShowManager(object):
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
 
-            def _stop_recording_and_close(obj, evt):
+            def _stop_recording_and_close(_obj, _evt):
                 if recorder:
                     recorder.Stop()
                 self.iren.TerminateApp()
@@ -890,6 +890,9 @@ def analyze_scene(scene):
 
     class ReportScene(object):
         bg_color = None
+        collection = None
+        actors = None
+        actors_classnames = None
 
     report = ReportScene()
 
@@ -899,7 +902,7 @@ def analyze_scene(scene):
 
     report.collection.InitTraversal()
     report.actors_classnames = []
-    for i in range(report.actors):
+    for _ in range(report.actors):
         class_name = report.collection.GetNextActor().GetClassName()
         report.actors_classnames.append(class_name)
 

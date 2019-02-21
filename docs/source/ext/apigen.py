@@ -82,12 +82,14 @@ class ApiDocWriter(object):
             module_skip_patterns = ['\\.setup$', '\\._']
         if object_skip_patterns is None:
             object_skip_patterns = []
-        self.package_name = package_name
+        self._package_name = package_name
         self.rst_extension = rst_extension
         self.package_skip_patterns = package_skip_patterns
         self.module_skip_patterns = module_skip_patterns
         self.object_skip_patterns = object_skip_patterns
         self.other_defines = other_defines
+        self.root_path = ''
+        self.written_modules = None
 
     def get_package_name(self):
         return self._package_name
@@ -113,7 +115,8 @@ class ApiDocWriter(object):
     package_name = property(get_package_name, set_package_name, None,
                             'get/set package_name')
 
-    def _import(self, name):
+    @staticmethod
+    def _import(name):
         ''' Import namespace package '''
         mod = __import__(name)
         components = name.split('.')
@@ -121,7 +124,8 @@ class ApiDocWriter(object):
             mod = getattr(mod, comp)
         return mod
 
-    def _get_object_name(self, line):
+    @staticmethod
+    def _get_object_name(line):
         ''' Get second token in line
         >>> docwriter = ApiDocWriter('sphinx')
         >>> docwriter._get_object_name("  def func():  ")

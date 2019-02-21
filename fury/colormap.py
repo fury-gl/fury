@@ -45,7 +45,7 @@ def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
 
 
 def cc(na, nd):
-    return (na * np.cos(nd * np.pi / 180.0))
+    return na * np.cos(nd * np.pi / 180.0)
 
 
 def ss(na, nd):
@@ -284,7 +284,7 @@ def get_cmap(name):
         """Emulates matplotlib colormap callable"""
         rgba = np.ones((len(v), 4))
         for i, color in enumerate(('red', 'green', 'blue')):
-            x, y0, y1 = zip(*desc[color])
+            x, y0, _ = zip(*desc[color])
             # Matplotlib allows more complex colormaps, but for users who do
             # not have Matplotlib fury makes a few simple colormaps available.
             # These colormaps are simple because y0 == y1, and therefor we

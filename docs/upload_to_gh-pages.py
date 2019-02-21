@@ -123,7 +123,7 @@ if __name__ == '__main__':
     except BaseException:
         print("\nLooks like gh-pages branch does not exist!")
         print("Do you want to create a new one? (y/n)")
-        while(1):
+        while 1:
             choice = str(input()).lower()
             if choice == 'y':
                 sh("git checkout -b gh-pages")

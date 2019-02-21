@@ -530,7 +530,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
         poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
 
         @vtk.calldata_type(vtk.VTK_OBJECT)
-        def vtkShaderCallback(caller, _event, calldata=None):
+        def vtkShaderCallback(_caller, _event, calldata=None):
             program = calldata
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
