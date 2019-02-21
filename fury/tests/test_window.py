@@ -291,5 +291,52 @@ def test_order_transparent():
     npt.assert_equal(arr[150, 150][0] > arr[150, 150][1], True)
 
 
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_stereo():
+
+    scene = window.Scene()
+
+    lines = [np.array([[-1, 0, 0.], [1, 0, 0.]]),
+             np.array([[-1, 1, 0.], [1, 1, 0.]])]
+    colors = np.array([[1., 0., 0.], [0., 1., 0.]])
+    stream_actor = actor.streamtube(lines, colors, linewidth=0.3, opacity=0.5)
+
+    scene.add(stream_actor)
+
+    # green in front
+    scene.elevation(90)
+    scene.camera().OrthogonalizeViewUp()
+    scene.reset_clipping_range()
+
+    scene.reset_camera()
+
+    not_xvfb = os.environ.get("TEST_WITH_XVFB", False)
+
+    if not_xvfb:
+        mono = window.snapshot(scene, fname='stereo_off.png', offscreen=True,
+                               size=(300, 300), order_transparent=True,
+                               stereo='off')
+    else:
+        mono = window.snapshot(scene, fname='stereo_off.png', offscreen=False,
+                               size=(300, 300), order_transparent=True,
+                               stereo='off')
+
+    if not_xvfb:
+        stereo = window.snapshot(scene, fname='stereo_horizontal.png',
+                                 offscreen=True, size=(300, 300),
+                                 order_transparent=True, stereo='horizontal')
+    else:
+        stereo = window.snapshot(scene, fname='stereo_horizontal.png',
+                                 offscreen=False, size=(300, 300),
+                                 order_transparent=True, stereo='horizontal')
+
+    # mono render should have values in the center
+    # horizontal split stereo render should be empty in the center
+    npt.assert_raises(AssertionError, npt.assert_array_equal,
+                      mono[150, 150], [0, 0, 0])
+    npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
+
+
 if __name__ == '__main__':
     npt.run_module_suite()
