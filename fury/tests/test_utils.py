@@ -37,11 +37,10 @@ def test_map_coordinates_3d_4d():
 
 
 def test_polydata_lines():
-    line1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
-    line2 = line1 + np.array([0.5, 0., 0.])
-
-    lines = [line1, line2]
     colors = np.array([[1, 0, 0], [0, 0, 1.]])
+    line_1 = np.array([[0, 0, 0], [2, 2, 2], [3, 3, 3.]])
+    line_2 = line_1 + np.array([0.5, 0., 0.])
+    lines = [line_1, line_2]
 
     pd_lines, is_cmap = utils.lines_to_vtk_polydata(lines, colors)
     res_lines = utils.get_polydata_lines(pd_lines)
@@ -57,15 +56,6 @@ def test_polydata_lines():
 @xvfb_it
 def test_polydata_polygon(interactive=False):
     # Create a cube
-    my_polydata = vtk.vtkPolyData()
-    my_vertices = np.array([[0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0],
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 1.0],
-                            [1.0, 0.0, 0.0],
-                            [1.0, 0.0, 1.0],
-                            [1.0, 1.0, 0.0],
-                            [1.0, 1.0, 1.0]])
     my_triangles = np.array([[0, 6, 4],
                              [0, 2, 6],
                              [0, 3, 2],
@@ -78,7 +68,16 @@ def test_polydata_polygon(interactive=False):
                              [0, 5, 1],
                              [1, 5, 7],
                              [1, 7, 3]], dtype='i8')
+    my_vertices = np.array([[0.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0],
+                            [0.0, 1.0, 0.0],
+                            [0.0, 1.0, 1.0],
+                            [1.0, 0.0, 0.0],
+                            [1.0, 0.0, 1.0],
+                            [1.0, 1.0, 0.0],
+                            [1.0, 1.0, 1.0]])
     colors = my_vertices * 255
+    my_polydata = vtk.vtkPolyData()
 
     utils.set_polydata_vertices(my_polydata, my_vertices)
     utils.set_polydata_triangles(my_polydata, my_triangles)
@@ -125,7 +124,6 @@ def test_asbytes():
 
 def trilinear_interp_numpy(input_array, indices):
     """Evaluate the input_array data at the given indices."""
-
     if input_array.ndim <= 2 or input_array.ndim >= 5:
         raise ValueError("Input array can only be 3d or 4d")
 
@@ -210,6 +208,7 @@ def test_get_grid_cell_position():
     npt.assert_raises(ValueError, get_grid_cells_position, shapes=shapes,
                       dim=(1, 1))
 
+    CS = get_grid_cells_position(shapes=shapes)
     npt.assert_equal(CS.shape, (42, 3))
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
