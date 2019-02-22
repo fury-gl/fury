@@ -31,6 +31,7 @@ class GridLayout(Layout):
     def __init__(self, cell_padding=0, cell_shape="rect",
                  aspect_ratio=16/9., dim=None):
         """
+
         Parameters
         ----------
         cell_padding : 2-tuple of float or float (optional)
@@ -49,6 +50,7 @@ class GridLayout(Layout):
         dim : tuple of int (optional)
             Dimension (nb_rows, nb_cols) of the grid. If provided,
             `aspect_ratio` will be ignored.
+
         """
         self.cell_shape = cell_shape
         self.aspect_ratio = aspect_ratio
@@ -95,7 +97,7 @@ class GridLayout(Layout):
         return shapes
 
     def compute_positions(self, actors):
-        """ Computes the 3D coordinates of some actors.
+        """Compute the 3D coordinates of some actors.
 
         The coordinates will lie on the xy-plane and form a 2D grid.
 
@@ -108,6 +110,7 @@ class GridLayout(Layout):
         -------
         list of 3-tuple
             The computed 3D coordinates of every actors.
+
         """
         shapes = self.get_cells_shape(actors)
 

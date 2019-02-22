@@ -5,6 +5,7 @@ import numpy as np
 import vtk
 import os
 import abc
+from six import with_metaclass
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
@@ -15,7 +16,7 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
-class UI(object):
+class UI(with_metaclass(abc.ABCMeta, object)):
     """An umbrella class for all UI elements.
 
     While adding UI elements to the scene, we go over all the sub-elements
@@ -52,7 +53,6 @@ class UI(object):
         Callback function for when a keyboard key is pressed.
 
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, position=(0, 0)):
         """Init scene.
@@ -218,8 +218,7 @@ class UI(object):
         self.position = new_lower_left_corner
 
     def set_visibility(self, visibility):
-        """Set visibility of this UI component.
-        """
+        """Set visibility of this UI component."""
         for actor in self.actors:
             actor.SetVisibility(visibility)
 
@@ -1507,6 +1506,9 @@ class TextBox2D(UI):
             Absolute pixel coordinates (x, y).
         """
         self.text.position = coords
+
+    def _get_size(self):
+        return self.text.size
 
     def set_message(self, message):
         """ Set custom text to textbox.
