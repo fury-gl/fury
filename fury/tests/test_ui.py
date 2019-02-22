@@ -2,14 +2,12 @@ import os
 import sys
 import pickle
 import numpy as np
-import vtk
 
 from os.path import join as pjoin
 import numpy.testing as npt
 
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import ui
-from fury.ui import UI, GridUI
 from fury import window, actor
 from fury.data import DATA_DIR
 from fury.decorators import xvfb_it
@@ -959,10 +957,10 @@ def test_grid_ui(interactive=False):
             show_m.exit()
 
     # show the grid with the captions
-    grid_ui = GridUI(actors=actors, captions=texts,
-                     caption_offset=(0, -50, 0),
-                     cell_padding=(60, 60), dim=(3, 3),
-                     rotation_axis=(1, 0, 0))
+    grid_ui = ui.GridUI(actors=actors, captions=texts,
+                        caption_offset=(0, -50, 0),
+                        cell_padding=(60, 60), dim=(3, 3),
+                        rotation_axis=(1, 0, 0))
 
     scene.add(grid_ui)
 
@@ -988,10 +986,10 @@ def test_grid_ui(interactive=False):
                                       title="FURY GridUI")
     show_manager.initialize()
 
-    grid_ui2 = GridUI(actors=actors, captions=texts,
-                      caption_offset=(0, -50, 0),
-                      cell_padding=(60, 60), dim=(3, 3),
-                      rotation_axis=None)
+    grid_ui2 = ui.GridUI(actors=actors, captions=texts,
+                         caption_offset=(0, -50, 0),
+                         cell_padding=(60, 60), dim=(3, 3),
+                         rotation_axis=None)
 
     scene.add(grid_ui2)
 
