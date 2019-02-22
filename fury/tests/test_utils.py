@@ -96,7 +96,7 @@ def test_polydata_polygon(interactive=False):
     utils.set_polydata_colors(my_polydata, colors)
     npt.assert_equal(utils.get_polydata_colors(my_polydata), colors)
 
-    utils.update_polydata_normals(my_polydata) 
+    utils.update_polydata_normals(my_polydata)
     normals = utils.get_polydata_normals(my_polydata)
     npt.assert_equal(len(normals), len(my_vertices))
 

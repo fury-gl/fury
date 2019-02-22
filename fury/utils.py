@@ -7,7 +7,6 @@ import vtk
 from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
-from dipy.core.geometry import vec2vec_rotmat
 
 
 def set_input(vtk_object, inp):
