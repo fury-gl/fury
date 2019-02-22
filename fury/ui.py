@@ -1391,7 +1391,7 @@ class TextBlock2D(UI):
     def _get_size(self):
         if self._background is not None:
             return self._background.size
-        return
+        return self.font_size * 1.2, self.font_size * 1.2
 
 
 class TextBox2D(UI):
@@ -2694,7 +2694,7 @@ class RangeSlider(UI):
         outer_radius : int
             Outer radius of the handles.
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         range_slider_center : (float, float)
             Center of the LineDoubleSlider2D object.
         value_slider_center : (float, float)

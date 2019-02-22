@@ -250,8 +250,6 @@ def test_ui_textbox(recording=False):
 
     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
     another_textbox_test.set_message("Enter Text")
-    npt.assert_raises(NotImplementedError, setattr,
-                      another_textbox_test, "center", (10, 100))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
