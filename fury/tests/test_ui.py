@@ -82,44 +82,6 @@ class EventCounter(object):
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
-def test_broken_ui_component():
-    class SimplestUI(UI):
-        def __init__(self):
-            super(SimplestUI, self).__init__()
-
-        def _setup(self):
-            self.actor = vtk.vtkActor2D()
-
-        def _set_position(self, coords):
-            self.actor.SetPosition(*coords)
-
-        def _get_size(self):
-            return
-
-        def _get_actors(self):
-            return self.actor
-
-        def _add_to_scene(self, _scene):
-            return
-
-    # Can be instantiated.
-    SimplestUI()
-
-    # Instantiating UI subclasses that don't override all abstract methods.
-    for attr in ["_setup", "_set_position"]:
-        bkp = getattr(SimplestUI, attr)
-        delattr(SimplestUI, attr)
-        npt.assert_raises(NotImplementedError, SimplestUI)
-        setattr(SimplestUI, attr, bkp)
-
-    simple_ui = SimplestUI()
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'actors')
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'size')
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'center')
-
-
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()

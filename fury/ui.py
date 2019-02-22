@@ -15,7 +15,7 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
-class UI(object, metaclass=abc.ABCMeta):
+class UI(object):
     """An umbrella class for all UI elements.
 
     While adding UI elements to the scene, we go over all the sub-elements
@@ -52,6 +52,7 @@ class UI(object, metaclass=abc.ABCMeta):
         Callback function for when a keyboard key is pressed.
 
     """
+    __metaclass__ = abc.ABCMeta
 
     def __init__(self, position=(0, 0)):
         """Init scene.
@@ -1389,7 +1390,10 @@ class TextBlock2D(UI):
             self._background.SetPosition(*self.actor.GetPosition())
 
     def _get_size(self):
+        if self._background is not None:
+            return self._background.size
         return
+
 
 class TextBox2D(UI):
     """ An editable 2D text box that behaves as a UI component.
