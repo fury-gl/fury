@@ -65,7 +65,7 @@ def test_custom_interactor_style_events(recording=False):
     # Define some counter callback.
     states = defaultdict(lambda: 0)
 
-    def counter(iren, obj):
+    def counter(iren, _obj):
         states[iren.event.name] += 1
 
     # Assign the counter callback to every possible event.

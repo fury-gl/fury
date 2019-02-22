@@ -2,10 +2,10 @@
 
 ## Index
 
-- ``source``: Contains main *.rst files
-- ``tutorials``: python script describe how to use the api
-- ``examples``: Fury app showcases 
-- ``build``: Contains the generated documentation
+-   ``source``: Contains main *.rst files
+-   ``tutorials``: python script describe how to use the api
+-   ``examples``: Fury app showcases 
+-   ``build``: Contains the generated documentation
 
 ## Doc generation steps:
 

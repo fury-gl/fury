@@ -42,7 +42,7 @@ tb = ui.TextBlock2D(bold=True)
 counter = itertools.count()
 
 
-def timer_callback(obj, event):
+def timer_callback(_obj, _event):
     cnt = next(counter)
     tb.message = "Let's count up to 100 and exit :" + str(cnt)
     showm.scene.azimuth(0.05 * cnt)

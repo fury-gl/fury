@@ -166,7 +166,7 @@ show_m.scene.add(panel_picking)
 # can see what you are picking.
 
 
-def left_click_callback(obj, ev):
+def left_click_callback(obj, _ev):
     """Get the value of the clicked voxel and show it in the panel."""
     event_pos = show_m.iren.GetEventPosition()
 
@@ -205,7 +205,7 @@ show_m_mosaic = window.ShowManager(scene, size=(1200, 900))
 show_m_mosaic.initialize()
 
 
-def left_click_callback_mosaic(obj, ev):
+def left_click_callback_mosaic(obj, _ev):
     """Get the value of the clicked voxel and show it in the panel."""
     event_pos = show_m_mosaic.iren.GetEventPosition()
 

@@ -1,6 +1,5 @@
 """Testing file unittest."""
 
-import logging
 import numpy as np
 
 import fury.testing as ft
@@ -11,12 +10,10 @@ def test_captured_output():
     def foo():
         print('hello world!')
 
-    with ft.captured_output() as (out, err):
+    with ft.captured_output() as (out, _):
         foo()
-        # logging.error("Wrong error")
 
     npt.assert_equal(out.getvalue().strip(), "hello world!")
-    # npt.assert_equal(err.getvalue().strip(), "ERROR:root:Wrong error")
 
 
 def test_assert():

@@ -247,7 +247,7 @@ global size
 size = scene.GetSize()
 
 
-def win_callback(obj, event):
+def win_callback(obj, _event):
     global size
     if size != obj.GetSize():
         size_old = size

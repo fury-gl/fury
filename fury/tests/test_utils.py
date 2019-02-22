@@ -5,7 +5,6 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        shallow_copy,
                         rotate)
 from fury import actor, window, utils
 from fury.decorators import xvfb_it
@@ -80,7 +79,7 @@ def test_trilinear_interp():
 def test_vtk_matrix_to_numpy():
 
     A = np.array([[2., 0, 0, 0],
-                  [0,  2, 0, 0],
+                  [0, 2, 0, 0],
                   [0, 0, 2, 0],
                   [0, 0, 0, 1]])
 

@@ -317,7 +317,7 @@ def test_streamtube_and_line_actors():
 def test_bundle_maps():
     scene = window.Scene()
     bundle = fornix_streamlines()
-    bundle, shift = center_streamlines(bundle)
+    bundle, _ = center_streamlines(bundle)
 
     mat = np.array([[1, 0, 0, 100],
                     [0, 1, 0, 100],
@@ -422,7 +422,7 @@ def test_odf_slicer(interactive=False):
     fa[5, 5, 5] = 1
 
     k = 5
-    I, J, K = odfs.shape[:3]
+    I, J, _ = odfs.shape[:3]
 
     fa_actor = actor.slicer(fa, affine)
     fa_actor.display_extent(0, I, 0, J, k, k)
@@ -589,8 +589,8 @@ def test_tensor_slicer(interactive=False):
     scene = window.Scene()
 
     tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                       sphere=sphere,  scale=.3, opacity=0.4)
-    I, J, K = mevals.shape[:3]
+                                       sphere=sphere, scale=.3, opacity=0.4)
+    _, J, K = mevals.shape[:3]
     scene.add(tensor_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
@@ -629,7 +629,7 @@ def test_tensor_slicer(interactive=False):
     cfa = color_fa(fractional_anisotropy(mevals), mevecs)
     tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
                                        mask=mask, scalar_colors=cfa,
-                                       sphere=sphere,  scale=.3)
+                                       sphere=sphere, scale=.3)
     scene.clear()
     scene.add(tensor_actor)
     scene.reset_camera()
@@ -723,7 +723,7 @@ def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    points_actor = actor.point(points,  colors)
+    points_actor = actor.point(points, colors)
 
     scene = window.Scene()
     scene.add(points_actor)
@@ -781,7 +781,7 @@ def test_spheres(interactive=False):
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
-def test_grid(interactive=False):
+def test_grid(_interactive=False):
 
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
@@ -842,7 +842,7 @@ def test_grid(interactive=False):
 
     show_m.initialize()
 
-    def timer_callback(obj, event):
+    def timer_callback(_obj, _event):
         cnt = next(counter)
         # show_m.scene.zoom(1)
         show_m.render()
