@@ -226,10 +226,13 @@ def orient2rgb(v):
         orient = v
         orient = np.abs(orient / np.linalg.norm(orient))
 
-    if v.ndim == 2:
+    elif v.ndim == 2:
         orientn = np.sqrt(v[:, 0] ** 2 + v[:, 1] ** 2 + v[:, 2] ** 2)
         orientn.shape = orientn.shape + (1,)
         orient = np.abs(v / orientn)
+    else:
+        raise IOError("Wrong vector dimension, It should be an array"
+                      " with a shape (N, 3)")
 
     return orient
 
@@ -408,17 +411,17 @@ def _xyz2lab(xyz):
     idx = var_X > 0.008856
     var_X[idx] = var_X[idx] ** (1/3)
     idx = np.logical_not(idx)
-    var_X[idx] = (7.787 * var_X[idx]) + (16 / 116)
+    var_X[idx] = (7.787 * var_X[idx]) + (16. / 116.)
 
     idx = var_Y > 0.008856
     var_Y[idx] = var_Y[idx] ** (1/3)
     idx = np.logical_not(idx)
-    var_Y[idx] = (7.787 * var_Y[idx]) + (16 / 116)
+    var_Y[idx] = (7.787 * var_Y[idx]) + (16. / 116.)
 
     idx = var_Z > 0.008856
     var_Z[idx] = var_Z[idx] ** (1/3)
     idx = np.logical_not(idx)
-    var_Z[idx] = (7.787 * var_Z[idx]) + (16 / 116)
+    var_Z[idx] = (7.787 * var_Z[idx]) + (16. / 116.)
 
     L = (116 * var_Y) - 16
     A = 500 * (var_X - var_Y)
@@ -445,7 +448,7 @@ def _lab2xyz(lab):
     if var_Z**3 > 0.008856:
         var_Z = var_Z**3
     else:
-        var_Z = (var_Z - 16/116.) / 7.787
+        var_Z = (var_Z - 16. / 116.) / 7.787
 
     ref_X = 095.047
     ref_Y = 100.000

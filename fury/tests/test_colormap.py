@@ -25,6 +25,7 @@ def test_orient2rgb():
     v2 = np.array([1, 0, 0, 0, 1, 0])
     npt.assert_equal(colormap.orient2rgb(v), v)
     npt.assert_almost_equal(colormap.orient2rgb(v2), e2)
+    npt.assert_raises(IOError, colormap.orient2rgb, np.array(1))
 
 
 def test_get_cmap():
