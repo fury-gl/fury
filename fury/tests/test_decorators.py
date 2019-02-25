@@ -4,6 +4,8 @@ import numpy.testing as npt
 from fury.testing import assert_true
 from fury.decorators import doctest_skip_parser
 
+global HAVE_AMODULE, HAVE_BMODULE
+
 
 def test_skipper():
     def f():
@@ -33,7 +35,7 @@ def test_skipper():
     f.__doc__ = docstring
     f2 = doctest_skip_parser(f)
     assert_true(f is f2)
-    npt.assert_equal(f2.__doc__, 
+    npt.assert_equal(f2.__doc__,
                      """ Header
         >>> something
         >>> something + else
