@@ -43,3 +43,67 @@ def test_get_cmap():
 
     cmap = colormap.get_cmap('Accent')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected2)
+
+
+def test_line_colors():
+    s1 = np.array([np.arange(10)]*3).T  # 10x3
+    s2 = np.array([np.arange(5)]*4)  # 5x4
+    streamlines = [s1, s2]
+
+    s_color = colormap.line_colors(streamlines, cmap='boys_standard')
+    npt.assert_equal(s_color.shape, (2, 3))
+
+
+def test_create_colormap():
+    value = np.arange(25)
+    npt.assert_raises(ValueError, colormap.create_colormap,
+                      value.reshape((5, 5)))
+    npt.assert_raises(ValueError, colormap.create_colormap,
+                      value, name='fake')
+    npt.assert_warns(DeprecationWarning, colormap.create_colormap, value,
+                     name='jet', auto=False)
+
+
+def test_lab_delta():
+    color = np.c_[100, 127, 128]
+    delta = np.c_[0, 0, 0]
+
+    res = colormap._lab_delta(color, color)
+    res_2 = colormap._lab_delta(color, delta)
+    npt.assert_equal(res, 0)
+    npt.assert_equal(np.round(res_2), [206])
+
+
+def test_rgb_lab_delta():
+    color = np.c_[255, 65, 0]
+    delta = np.c_[0, 65, 0]
+
+    res = colormap._rgb_lab_delta(color, color)
+    npt.assert_equal(res, 0)
+    res = colormap._rgb_lab_delta(color, delta)
+    npt.assert_equal(np.round(res), [114])
+
+
+def test_lab2xyz():
+    lab_color = np.c_[100, 128, 128]
+    expected = np.c_[188.32, 100, 5.08]
+
+    res = colormap._lab2xyz(lab_color)
+    npt.assert_array_almost_equal(res, expected, decimal=2)
+
+
+def test_xyz2rgb():
+    xyz_color = np.c_[43.14, 25.07, 2.56]
+    expected = np.c_[255, 65, 0]
+
+    res = np.round(colormap._xyz2rgb(xyz_color))
+    npt.assert_array_almost_equal(res, expected)
+
+
+def test_lab2rgb():
+    lab_color = np.c_[0, 128, 128]
+    expected = np.c_[133, 0, 0]
+
+    res = np.round(colormap._lab2rgb(lab_color))
+    res[res < 0] = 0
+    npt.assert_array_almost_equal(res, expected)

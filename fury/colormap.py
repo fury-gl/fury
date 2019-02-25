@@ -206,7 +206,7 @@ def boys2rgb(v):
 
 
 def orient2rgb(v):
-    """Standard orientation 2 rgb colormap.
+    """Get Standard orientation 2 rgb colormap.
 
     v : array, shape (N, 3) of vectors not necessarily normalized
 
@@ -235,7 +235,7 @@ def orient2rgb(v):
 
 
 def line_colors(streamlines, cmap='rgb_standard'):
-    """ Create colors for streamlines to be used in actor.line
+    """Create colors for streamlines to be used in actor.line.
 
     Parameters
     ----------
@@ -245,8 +245,8 @@ def line_colors(streamlines, cmap='rgb_standard'):
     Returns
     -------
     colors : ndarray
-    """
 
+    """
     if cmap == 'rgb_standard':
         col_list = [orient2rgb(streamline[-1] - streamline[0])
                     for streamline in streamlines]
@@ -263,7 +263,7 @@ dipy_cmaps = None
 
 
 def get_cmap(name):
-    """Makes a callable, similar to maptlotlib.pyplot.get_cmap."""
+    """Make a callable, similar to maptlotlib.pyplot.get_cmap."""
     if name.lower() == "accent":
         warn("The `Accent` colormap is deprecated as of version" +
              " 0.2 of Fury and will be removed in a future " +
@@ -281,7 +281,7 @@ def get_cmap(name):
         return None
 
     def simple_cmap(v):
-        """Emulates matplotlib colormap callable"""
+        """Emulate matplotlib colormap callable."""
         rgba = np.ones((len(v), 4))
         for i, color in enumerate(('red', 'green', 'blue')):
             x, y0, _ = zip(*desc[color])
@@ -353,9 +353,9 @@ def create_colormap(v, name='plasma', auto=True):
 
 
 def _lab_delta(x, y):
-    dL = y.l - x.l
-    dA = y.a - x.a
-    dB = y.b - x.b
+    dL = y[:, 0] - x[:, 0]  # L
+    dA = y[:, 1] - x[:, 1]  # A
+    dB = y[:, 2] - x[:, 2]  # B
     return np.sqrt(dL**2 + dA**2 + dB**2)
 
 
@@ -393,7 +393,6 @@ def _rgb2xyz(rgb):
     X = var_R * 0.4124 + var_G * 0.3576 + var_B * 0.1805
     Y = var_R * 0.2126 + var_G * 0.7152 + var_B * 0.0722
     Z = var_R * 0.0193 + var_G * 0.1192 + var_B * 0.9505
-    # xyz = XYZColor(X,Y,Z)
 
     return np.c_[X, Y, Z]
 
@@ -424,25 +423,24 @@ def _xyz2lab(xyz):
     L = (116 * var_Y) - 16
     A = 500 * (var_X - var_Y)
     B = 200 * (var_Y - var_Z)
-    # lab = LabColor(L,A,B)
 
     return np.c_[L, A, B]
 
 
 def _lab2xyz(lab):
-    var_Y = (lab.l + 16) / 116
-    var_X = lab.a / 500 + var_Y
-    var_Z = var_Y - lab.b / 200
+    var_Y = (lab[:, 0] + 16) / 116.0
+    var_X = lab[:, 1] / 500.0 + var_Y
+    var_Z = var_Y - lab[:, 2] / 200.0
 
     if var_Y**3 > 0.008856:
         var_Y = var_Y**3
     else:
-        var_Y = (var_Y - 16/116.) / 7.787
+        var_Y = (var_Y - 16. / 116.) / 7.787
 
     if var_X**3 > 0.008856:
         var_X = var_X**3
     else:
-        var_X = (var_X - 16/116.) / 7.787
+        var_X = (var_X - 16. / 116.) / 7.787
 
     if var_Z**3 > 0.008856:
         var_Z = var_Z**3
@@ -455,15 +453,14 @@ def _lab2xyz(lab):
     X = ref_X * var_X
     Y = ref_Y * var_Y
     Z = ref_Z * var_Z
-    xyz = XYZColor(X, Y, Z)
 
-    return xyz
+    return np.c_[X, Y, Z]
 
 
 def _xyz2rgb(xyz):
-    var_X = xyz.x / 100  # X from 0 to  95.047
-    var_Y = xyz.y / 100  # Y from 0 to 100.000
-    var_Z = xyz.z / 100  # Z from 0 to 108.883
+    var_X = xyz[:, 0] / 100  # X from 0 to  95.047
+    var_Y = xyz[:, 1] / 100  # Y from 0 to 100.000
+    var_Z = xyz[:, 2] / 100  # Z from 0 to 108.883
 
     var_R = var_X * 03.2406 + var_Y * -1.5372 + var_Z * -0.4986
     var_G = var_X * -0.9689 + var_Y * 01.8758 + var_Z * 00.0415
@@ -487,9 +484,8 @@ def _xyz2rgb(xyz):
     R = var_R * 255
     G = var_G * 255
     B = var_B * 255
-    rgb = RGBColor(R, G, B)
 
-    return rgb
+    return np.c_[R, G, B]
 
 
 def _rgb2lab(rgb):
@@ -502,29 +498,8 @@ def _lab2rgb(lab):
     return _xyz2rgb(tmp)
 
 
-class LabColor:
-    def __init__(self, l, a, b):
-        self.l = l
-        self.a = a
-        self.b = b
-
-
-class RGBColor:
-    def __init__(self, r, g, b):
-        self.r = r
-        self.g = g
-        self.b = b
-
-
-class XYZColor:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-
-
 def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
-    """ Generates colors that are maximally perceptually distinct.
+    """Generate colors that are maximally perceptually distinct.
 
     This function generates a set of colors which are distinguishable
     by reference to the "Lab" color space, which more closely matches
@@ -574,7 +549,6 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
     original implementation (v1.2), 14 Dec 2010 (Updated 07 Feb 2011).
 
     """
-
     NB_DIVISIONS = 30  # This constant come from the original code.
 
     # Generate a sizable number of RGB triples. This represents our space of
