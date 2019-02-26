@@ -383,10 +383,7 @@ def contour_from_roi(data, affine=None,
     vol = np.swapaxes(vol, 0, 2)
     vol = np.ascontiguousarray(vol)
 
-    if nb_components == 1:
-        vol = vol.ravel()
-    else:
-        vol = np.reshape(vol, [np.prod(vol.shape[:3]), vol.shape[3]])
+    vol = vol.ravel()
 
     uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
     im.GetPointData().SetScalars(uchar_array)

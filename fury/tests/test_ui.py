@@ -119,8 +119,7 @@ def test_callback():
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
-    dummy_show_manager = window.ShowManager(dummy_scene,
-                                            interactor_style='trackball')
+    _ = window.ShowManager(dummy_scene, interactor_style='trackball')
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
@@ -147,7 +146,7 @@ def test_ui_rectangle_2d():
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 1)
-    npt.assert_(report.colors_found)
+    npt.assert_equal(report.colors_found, [False])
 
     # Test visibility off.
     rect.set_visibility(False)
@@ -995,13 +994,14 @@ def test_grid_ui(interactive=False):
 
     if interactive:
         show_manager.start()
+
     recording = False
 
     if recording:
         # Record the following events
         # 1. Left click on top left box (will rotate the box)
         show_manager.record_events_to_file(recording_filename)
-        print(list(event_counter.events_counts.items()))
+        # print(list(event_counter.events_counts.items()))
         event_counter.save(expected_events_counts_filename)
 
     else:

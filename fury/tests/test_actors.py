@@ -24,11 +24,11 @@ if have_dipy:
     from dipy.data import get_sphere
 
 
-def test_slicer():
+def test_slicer(verbose=False):
     scene = window.Scene()
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.eye(4)
-    slicer = actor.slicer(data, affine)
+    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
     slicer.display(None, None, 25)
     scene.add(slicer)
 
@@ -38,15 +38,13 @@ def test_slicer():
 
     # copy pixels in numpy array directly
     arr = window.snapshot(scene, 'test_slicer.png', offscreen=True)
-    import scipy
-    print(scipy.__version__)
-    print(scipy.__file__)
 
-    print(arr.sum())
-    print(np.sum(arr == 0))
-    print(np.sum(arr > 0))
-    print(arr.shape)
-    print(arr.dtype)
+    if verbose:
+        print(arr.sum())
+        print(np.sum(arr == 0))
+        print(np.sum(arr > 0))
+        print(arr.shape)
+        print(arr.dtype)
 
     report = window.analyze_snapshot(arr, find_objects=True)
 
@@ -66,6 +64,9 @@ def test_slicer():
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
 
+    # Test Errors
+    data_4d = (255 * np.random.rand(50, 50, 50, 50))
+    npt.assert_raises(ValueError, actor.slicer, data_4d)
     npt.assert_raises(ValueError, actor.slicer, np.ones(10))
 
     scene.clear()
@@ -126,6 +127,8 @@ def test_slicer():
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(data.shape, slicer.shape)
+    slicer2 = slicer.copy()
+    npt.assert_equal(slicer2.shape, slicer.shape)
 
     scene.clear()
 
@@ -205,6 +208,9 @@ def test_contour_from_roi():
     scene.reset_camera()
     scene.reset_clipping_range()
     # window.show(scene)
+
+    # Test Errors
+    npt.assert_raises(ValueError, actor.contour_from_roi, np.ones(50))
 
     # Test binarization
     scene2 = window.Scene()
