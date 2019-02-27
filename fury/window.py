@@ -406,7 +406,7 @@ class ShowManager(object):
 
         self.window = vtk.vtkRenderWindow()
 
-        if self.stereo != 'off':
+        if self.stereo.lower() != 'off':
             enable_stereo(self.window, self.stereo)
 
         self.window.AddRenderer(scene)
@@ -767,7 +767,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if reset_camera:
         scene.ResetCamera()
 
-    if stereo != 'off':
+    if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
     renderLarge = vtk.vtkRenderLargeImage()
@@ -864,7 +864,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     render_window = vtk.vtkRenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
-    if stereo != 'off':
+    if stereo.lower() != 'off':
         enable_stereo(render_window, stereo)
     render_window.AddRenderer(scene)
     render_window.SetSize(width, height)
@@ -1036,6 +1036,8 @@ def enable_stereo(renwin, stereo_type):
     renwin.GetStereoCapableWindow()
     renwin.StereoCapableWindowOn()
     renwin.StereoRenderOn()
+
+    stereo_type = stereo_type.lower()
 
     # default to horizontal since it is easy to see if it is working
     # otherwise enable the selected type
