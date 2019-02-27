@@ -53,6 +53,7 @@ def get_info(verbose=False):
 
     return info
 
+
 # Ignore this specific warning below from vtk < 8.2.
 # FutureWarning: Conversion of the second argument of issubdtype from
 # `complex` to `np.complexfloating` is deprecated. In future, it will be
