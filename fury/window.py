@@ -344,15 +344,15 @@ class ShowManager(object):
             rotation) or if 'custom' then CustomInteractorStyle is used.
             Otherwise you can input your own interactor style.
         stereo: string
-            Set the stereo type. Default is 'off'. Other types include:
-                'opengl': OpenGL frame-sequential stereo. Referred to as
-                          'CrystalEyes' by VTK.
-                'anaglyph': For use with red/blue glasses. See VTK docs to use
-                            different colors.
-                'interlaced': Line interlaced.
-                'checkerboard': Checkerboard interlaced.
-                'left': Left eye only.
-                'right': Right eye only.
+            Set the stereo type. Default is 'off'. Other types include: \n
+                'opengl': OpenGL frame-sequential stereo. Referred to as \
+                          'CrystalEyes' by VTK. \n
+                'anaglyph': For use with red/blue glasses. See VTK docs to \
+                use different colors. \n
+                'interlaced': Line interlaced. \n
+                'checkerboard': Checkerboard interlaced. \n
+                'left': Left eye only. \n
+                'right': Right eye only. \n
                 'horizontal': Side-by-side.
 
         Attributes
@@ -645,15 +645,15 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
         option which is False will order the actors according to the order of
         their addition to the Scene().
     stereo: string
-        Set the stereo type. Default is 'off'. Other types include:
-            'opengl': OpenGL frame-sequential stereo. Referred to as
-                        'CrystalEyes' by VTK.
-            'anaglyph': For use with red/blue glasses. See VTK docs to use
-                        different colors.
-            'interlaced': Line interlaced.
-            'checkerboard': Checkerboard interlaced.
-            'left': Left eye only.
-            'right': Right eye only.
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
             'horizontal': Side-by-side.
 
     Notes
@@ -729,15 +729,15 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
     stereo: string
-        Set the stereo type. Default is 'off'. Other types include:
-            'opengl': OpenGL frame-sequential stereo. Referred to as
-                      'CrystalEyes' by VTK.
-            'anaglyph': For use with red/blue glasses. See VTK docs to use
-                        different colors.
-            'interlaced': Line interlaced.
-            'checkerboard': Checkerboard interlaced.
-            'left': Left eye only.
-            'right': Right eye only.
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
             'horizontal': Side-by-side.
     verbose : bool
         print information about the camera. Default is False.
@@ -835,15 +835,15 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     order_transparent : bool
         Default False. Use depth peeling to sort transparent objects.
     stereo: string
-        Set the stereo type. Default is 'off'. Other types include:
-            'opengl': OpenGL frame-sequential stereo. Referred to as
-                        'CrystalEyes' by VTK.
-            'anaglyph': For use with red/blue glasses. See VTK docs to use
-                        different colors.
-            'interlaced': Line interlaced.
-            'checkerboard': Checkerboard interlaced.
-            'left': Left eye only.
-            'right': Right eye only.
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
             'horizontal': Side-by-side.
 
     Returns
@@ -1023,15 +1023,15 @@ def enable_stereo(renwin, stereo_type):
     ----------
     renwin: vtkRenderWindow
     stereo_type: string
-        'opengl': OpenGL frame-sequential stereo. Referred to as
-                  'CrystalEyes' by VTK.
-        'anaglyph': For use with red/blue glasses. See VTK docs to use
-                    different colors.
-        'interlaced': Line interlaced.
-        'checkerboard': Checkerboard interlaced.
-        'left': Left eye only.
-        'right': Right eye only.
-        'horizontal': Side-by-side. Default type.
+        'opengl': OpenGL frame-sequential stereo. Referred to as \
+                  'CrystalEyes' by VTK. \n
+        'anaglyph': For use with red/blue glasses. See VTK docs to \
+                    use different colors. \n
+        'interlaced': Line interlaced. \n
+        'checkerboard': Checkerboard interlaced. \n
+        'left': Left eye only. \n
+        'right': Right eye only. \n
+        'horizontal': Side-by-side.
     """
     renwin.GetStereoCapableWindow()
     renwin.StereoCapableWindowOn()
