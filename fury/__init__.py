@@ -38,9 +38,9 @@ def get_info(verbose=False):
                 sys_version=sys.version,
                 sys_executable=sys.executable,
                 sys_platform=sys.platform,
-                np_version=numpy.__version__,
+                numpy_version=numpy.__version__,
                 scipy_version=scipy.__version__,
-                vtk_version=vtk.vtkVersion.GetVTKSourceVersion())
+                vtk_version=vtk.vtkVersion.GetVTKVersion())
 
     d_mpl = dict(matplotlib_version=mpl.__version__) if have_mpl else {}
     d_dipy = dict(dipy_version=dipy.__version__) if have_dipy else {}
