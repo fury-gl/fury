@@ -1,9 +1,21 @@
 """Function for testing optpkg module."""
 
 import numpy.testing as npt
+from fury import get_info
 from fury.testing import assert_true, assert_false
 from fury.optpkg import is_tripwire, TripWire, TripWireError, optional_package
 from types import ModuleType
+
+
+def test_get_info():
+    expected_keys = ['fury_version', 'pkg_path', 'commit_hash', 'sys_version',
+                     'sys_executable', 'sys_platform', 'np_version',
+                     'scipy_version', 'vtk_version']
+    info = get_info()
+    current_keys = info.keys()
+    for ek in expected_keys:
+        assert_true(ek in current_keys)
+        assert_true(info[ek] not in [None, ''])
 
 
 def test_is_tripwire():
