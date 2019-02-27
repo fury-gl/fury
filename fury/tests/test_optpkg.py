@@ -9,7 +9,7 @@ from types import ModuleType
 
 def test_get_info():
     expected_keys = ['fury_version', 'pkg_path', 'commit_hash', 'sys_version',
-                     'sys_executable', 'sys_platform', 'np_version',
+                     'sys_executable', 'sys_platform', 'numpy_version',
                      'scipy_version', 'vtk_version']
     info = get_info()
     current_keys = info.keys()
