@@ -15,6 +15,7 @@ from distutils.version import LooseVersion
 import json
 import re
 import sys
+import os
 # import argparse
 import operator
 
@@ -35,23 +36,8 @@ element_pat = re.compile(r'<(.+?)>')
 rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 
 LAST_RELEASE = datetime(2015, 3, 18)
+CONTRIBUTORS_FILE = "contributors.json"
 
-core_team_info = [{'usernames': ['skoudoro', 'skab12'],
-                   'fullname': 'Serge Koudoro',
-                   'affiliation': 'Indiana University, IN, USA',
-                   },
-                  {'usernames': ['garyfallidis', ],
-                   'fullname': 'Eleftherios Garyfallidis',
-                   'affiliation': 'Indiana University, IN, USA',
-                   },
-                  ]
-
-extra_release_information = {"v0.1.0": "",
-                             "v0.1.1": "",
-                             "v0.1.2": "",
-                             "v0.1.3": "",
-                             "v0.1.4": "",
-                             }
 
 # ----------------------------------------------------------------------------
 # Functions
@@ -160,6 +146,11 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
     cumulative_commits = 0
     desired_keys = ["login", "avatar_url", "html_url"]
+    with open(os.path.join(os.path.dirname(__file__), "..",
+                           CONTRIBUTORS_FILE)) as f:
+        extra_info = json.load(f)
+        extra_info = extra_info["team"] + extra_info["core_team"]
+    
     for contributor in r_json:
         contributor_dict = dict((k, contributor["author"][k])
                                 for k in desired_keys
@@ -171,8 +162,15 @@ def fetch_contributor_stats(project="fury-gl/fury"):
             continue
 
         # Replace key name
-        contributor_dict["username"] = contributor_dict.pop("login")
+        contributor_dict["username"] = usrname = contributor_dict.pop("login")
         contributor_dict["nb_commits"] = contributor["total"]
+
+        # Add extra information like fullname and affiliation
+        l_extra_info = [e for e in extra_info
+                        if e["username"].lower() == usrname.lower()]
+
+        l_extra_info = l_extra_info[0] if l_extra_info else {}
+        contributor_dict.update(l_extra_info)
 
         # Update total commits
         cumulative_commits += contributor_dict["nb_commits"]

@@ -46,7 +46,7 @@ Github
 	background: rgb(239, 239, 239) none repeat scroll 0% 0%;
 	padding: 2%;
 	margin: 0.6%;
-	width: 23.8%;
+	width: 32%;
 	float: left;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
@@ -90,7 +90,7 @@ Github
 	display: block;
 	text-align: center;
 	padding-top: 1em;
-	font-size: 1.2em;
+	font-size: 0.9em;
 	font-weight: 600;
 	color: #515151;
 }

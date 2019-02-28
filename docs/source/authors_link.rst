@@ -29,7 +29,11 @@ Credits
         <a href="{{ contributor.html_url }}" target="_blank">
         <div class="github_visualization_contributor_info">
             <img class="github_visualization_contributor_img" src="{{ contributor.avatar_url }}">
+            {% if contributor.fullname %}
+            <span class="github_visualization_contributor_name">{{ contributor.fullname }}</span>
+            {% else %}
             <span class="github_visualization_contributor_name">{{ contributor.username }}</span>
+            {% endif %}
             <span class="github_visualization_contributor_commits">Commits: {{ contributor.nb_commits }}</span>
             <span class="github_visualization_contributor_additions"> ++{{ contributor.total_additions }}</span>
             <span class="github_visualization_contributor_deletions"> --{{contributor.total_deletions }}</span>
