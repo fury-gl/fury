@@ -335,11 +335,6 @@ def version_compare(current_version, version_number, op='eq',
                           LooseVersion(ref.group()))
 
 
-def generate_release_information():
-    """Generate release information."""
-    pass
-
-
 def github_stats():
     """Get release github stats."""
     # Whether to add reST urls for all issues in printout.
@@ -444,11 +439,4 @@ def setup(app):
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument("--use_date")
-    # github_stats()
-    # import ipdb;ipdb.set_trace()
-    # generate_release_information()
-    # get_all_versions()
-    # get_all_versions('minor')
-    # get_all_versions('micro')
-    # print(fetch_basic_stats())
-    print(fetch_contributor_stats())
+    github_stats()
