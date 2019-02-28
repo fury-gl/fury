@@ -7,7 +7,7 @@ from warnings import warn
 import numpy as np
 from scipy import ndimage
 import vtk
-from vtk.util import numpy_support
+from vtk.util import numpy_support, colors
 
 from fury.tmpdirs import InTemporaryDirectory
 
@@ -919,7 +919,7 @@ def analyze_renderer(scene):
     return analyze_scene(scene)
 
 
-def analyze_snapshot(im, bg_color=(0, 0, 0), colors=None,
+def analyze_snapshot(im, bg_color=colors.black, colors=None,
                      find_objects=True,
                      strel=None):
     """Analyze snapshot from memory or file.
