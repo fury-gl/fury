@@ -225,7 +225,9 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
-    url = "https://api.github.com/repos/%s/%s?state=closed&sort=updated&since=%s&per_page=%i" % (project, which, period.strftime(ISO8601), PER_PAGE)
+    url = "https://api.github.com/repos/%s/%s?state=closed&sort=updated& \
+           since=%s&per_page=%i" % (project, which, period.strftime(ISO8601),
+                                    PER_PAGE)
     allclosed = get_paged_request(url)
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
     #                        since=period)

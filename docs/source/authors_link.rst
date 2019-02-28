@@ -9,19 +9,19 @@ Credits
             <div class="github_visualization_basic_stats_container">
                 <div class="github_visualization_basic_stats" id="github_visualization_repo_stars">
                     <span class="stat-value banner-start-link">{{ basic_stats["stargazers_count"] }}</span> Stars
-                    <img class="basic_stat_icon" src="images/stars.png">
+                    <img class="basic_stat_icon" src="_static/images/stars.png">
                 </div>
                 <div class="github_visualization_basic_stats" id="github_visualization_repo_forks">
                     <span class="stat-value">{{ basic_stats["forks_count"] }}</span> Forks
-                    <img class="basic_stat_icon" src="images/forks.png">
+                    <img class="basic_stat_icon" src="_static/images/forks.png">
                 </div>
                 <div class="github_visualization_basic_stats" id="github_visualization_repo_contributors_count">
                     <span class="stat-value">{{ contributors["total_contributors"] }}</span> Contributors
-                    <img class="basic_stat_icon" src="images/contributors.png">
+                    <img class="basic_stat_icon" src="_static/images/contributors.png">
                 </div>
                 <div class="github_visualization_basic_stats" id="github_visualization_repo_commits_count">
                     <span class="stat-value">{{ contributors["total_commits"] }}</span> Commits
-                    <img class="basic_stat_icon" src="images/commits.png">
+                    <img class="basic_stat_icon" src="_static/images/commits.png">
                 </div>
             </div>
         <div id="github_visualization_contributors_wrapper">
