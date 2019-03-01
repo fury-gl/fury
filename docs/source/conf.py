@@ -19,6 +19,7 @@
 #
 import os
 import sys
+from datetime import datetime
 # Add current path
 sys.path.insert(0, os.path.abspath('.'))
 # Add doc in path for finding tutorial and examples
@@ -48,7 +49,9 @@ extensions = [
     'numpydoc',
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
-    'ext.build_modref_templates'
+    'ext.build_modref_templates',
+    'ext.github_tools',
+    'ext.rstjinja'
 ]
 
 # Configuration options for plot_directive. See:
@@ -74,7 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'FURY'
-copyright = '2010-2018, FURY'
+copyright = '2010-{0}, FURY'.format(datetime.now().year)
 author = 'FURY'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -135,9 +138,17 @@ html_sidebars = {
     '**': [
         'relations.html',  # needs 'show_related': True theme option to display
         'searchbox.html',
+        'versions.html',
     ]
 }
 
+import github_tools as ght
+all_versions = ght.get_all_versions(ignore='micro')
+html_context = {'all_versions': all_versions,
+                'versions_list': ['dev', 'latest'] + all_versions,
+                'basic_stats': ght.fetch_basic_stats(),
+                'contributors': ght.fetch_contributor_stats(),
+                }
 
 # -- Options for HTMLHelp output ------------------------------------------
 
