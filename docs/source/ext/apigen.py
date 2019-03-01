@@ -84,14 +84,15 @@ class ApiDocWriter(object):
             module_skip_patterns = ['\\.setup$', '\\._']
         if object_skip_patterns is None:
             object_skip_patterns = []
-        self._package_name = package_name
+
+        self.root_path = ''
+        self.written_modules = None
+        self.package_name = package_name
         self.rst_extension = rst_extension
         self.package_skip_patterns = package_skip_patterns
         self.module_skip_patterns = module_skip_patterns
         self.object_skip_patterns = object_skip_patterns
         self.other_defines = other_defines
-        self.root_path = ''
-        self.written_modules = None
 
     def get_package_name(self):
         return self._package_name
@@ -387,7 +388,6 @@ class ApiDocWriter(object):
     def discover_modules(self):
         r"""Return module sequence discovered from ``self.package_name``.
 
-
         Parameters
         ----------
         None
@@ -406,7 +406,6 @@ class ApiDocWriter(object):
         >>> dw.package_skip_patterns.append('\.util$')
         >>> 'sphinx.util' in dw.discover_modules()
         False
-        >>>
 
         """
         modules = [self.package_name]

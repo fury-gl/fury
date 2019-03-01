@@ -35,7 +35,7 @@ def generate_api_reference_rst(app=None, package='fury', outdir='reference',
     docwriter = ApiDocWriter(package, rst_extension='.rst',
                              other_defines=defines)
     docwriter.package_skip_patterns += [r'.*test.*$',
-                                        r'^\.utils.*',
+                                        # r'^\.utils.*',
                                         r'\._version.*$',
                                         r'\.interactor.*$',
                                         r'\.optpkg.*$',
