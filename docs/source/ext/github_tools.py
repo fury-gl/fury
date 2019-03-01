@@ -9,21 +9,19 @@ Taken from ipython
 # ----------------------------------------------------------------------------
 
 from __future__ import print_function
-from future.standard_library import hooks
 from distutils.version import LooseVersion
 
 import json
 import re
 import sys
 import os
-# import argparse
+import argparse
 import operator
 
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-with hooks():
-    from urllib.request import urlopen
+from urllib.request import urlopen
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -150,7 +148,7 @@ def fetch_contributor_stats(project="fury-gl/fury"):
                            CONTRIBUTORS_FILE)) as f:
         extra_info = json.load(f)
         extra_info = extra_info["team"] + extra_info["core_team"]
-    
+
     for contributor in r_json:
         contributor_dict = dict((k, contributor["author"][k])
                                 for k in desired_keys
@@ -223,9 +221,9 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
-    url = "https://api.github.com/repos/%s/%s?state=closed&sort=updated& \
-           since=%s&per_page=%i" % (project, which, period.strftime(ISO8601),
-                                    PER_PAGE)
+    url = ("https://api.github.com/repos/%s/%s?state=closed&sort=updated&"
+           "since=%s&per_page=%i") % (project, which,
+                                      period.strftime(ISO8601), PER_PAGE)
     allclosed = get_paged_request(url)
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
     #                        since=period)
@@ -251,10 +249,10 @@ def report(issues, show_urls=False):
         for i in issues:
             role = 'ghpull' if 'merged_at' in i else 'ghissue'
             print('* :%s:`%d`: %s' % (role, i['number'],
-                                      i['title'].encode('utf-8')))
+                                      i['title']))
     else:
         for i in issues:
-            print('* %d: %s' % (i['number'], i['title'].encode('utf-8')))
+            print('* %d: %s' % (i['number'], i['title']))
 
 
 def get_all_versions(ignore='', project="fury-gl/fury"):
@@ -335,24 +333,58 @@ def version_compare(current_version, version_number, op='eq',
                           LooseVersion(ref.group()))
 
 
-def github_stats():
+def username_to_fullname(all_authors):
+    with open(os.path.join(os.path.dirname(__file__), "..",
+              CONTRIBUTORS_FILE)) as f:
+
+        extra_info = json.load(f)
+        extra_info = extra_info["team"] + extra_info["core_team"]
+        extra_info = {i["username"]: i['fullname'] for i in extra_info}
+
+    curent_authors = all_authors
+    for i, author in enumerate(all_authors):
+        if author[2:] in extra_info.keys():
+            curent_authors[i] = '* ' + extra_info[author[2:]]
+
+    return curent_authors
+
+
+def github_stats(**kwargs):
     """Get release github stats."""
     # Whether to add reST urls for all issues in printout.
     show_urls = True
+    save = kwargs.get('save', None)
+    if save:
+        version = kwargs.get('version', 'vx.x.x')
+        fname = "release" + version + '.rst'
+        fpath = os.path.join(os.path.dirname(__file__), '..', 'release_notes',
+                             fname)
+        f = open(fpath, 'w')
+        orig_stdout = sys.stdout
+        sys.stdout = f
+        print(".. _{}".format(fname))
+        print()
+        print(("=========================================\n"
+               " Release notes for Fury version {}\n"
+               "=========================================").format(version))
 
     # By default, search one month back
-    tag = None
-    if len(sys.argv) > 1:
-        try:
-            days = int(sys.argv[1])
-        except Exception:
-            tag = sys.argv[1]
-    else:
-        tag = check_output(['git', 'describe', '--abbrev=0']).strip()
+    tag = kwargs.get('tag', None)
+    if tag is None:
+        if len(sys.argv) > 1:
+            try:
+                days = int(sys.argv[1])
+            except Exception:
+                tag = sys.argv[1]
+        else:
+            tag = check_output(['git', 'describe', '--abbrev=0'],
+                               universal_newlines=True).strip()
 
     if tag:
         cmd = ['git', 'log', '-1', '--format=%ai', tag]
-        tagday, _ = check_output(cmd).strip().rsplit(' ', 1)
+        tagday, _ = check_output(cmd,
+                                 universal_newlines=True).strip().rsplit(' ',
+                                                                         1)
         since = datetime.strptime(tagday, "%Y-%m-%d %H:%M:%S")
     else:
         since = datetime.now() - timedelta(days=days)
@@ -379,16 +411,20 @@ def github_stats():
     print("GitHub stats for %s - %s (tag: %s)" % (since_day, today, tag))
     print()
     print("These lists are automatically generated, and may be incomplete or"
-          "contain duplicates.")
+          " contain duplicates.")
     print()
     if tag:
         # print git info, in addition to GitHub info:
         since_tag = tag+'..'
         cmd = ['git', 'log', '--oneline', since_tag]
-        ncommits = len(check_output(cmd).splitlines())
+        ncommits = check_output(cmd, universal_newlines=True).splitlines()
+        ncommits = len(ncommits)
 
         author_cmd = ['git', 'log', '--format=* %aN', since_tag]
-        all_authors = check_output(author_cmd).splitlines()
+        all_authors = check_output(author_cmd, universal_newlines=True) \
+            .splitlines()
+        # Replace username by author name
+        all_authors = username_to_fullname(all_authors)
         unique_authors = sorted(set(all_authors))
 
         if len(unique_authors) == 0:
@@ -411,6 +447,10 @@ def github_stats():
             print()
             print('Issues (%d):\n' % n_issues)
             report(issues, show_urls)
+
+    if save:
+        sys.stdout = orig_stdout
+        f.close()
 
 
 # ----------------------------------------------------------------------------
@@ -437,6 +477,16 @@ def setup(app):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--use_date")
-    github_stats()
+    # e.g github_tools.py --tag=v0.1.3 --save --version=0.1.4
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tag", type=str, default=None,
+                        help='from which tag version to get information')
+    parser.add_argument("--version", type=str, default='',
+                        help='current release version')
+    parser.add_argument("--save", dest='save', action='store_true',
+                        default=False, help=("Save in the release folder"
+                                             "and add rst header")
+                        )
+
+    args = parser.parse_args()
+    github_stats(**vars(args))
