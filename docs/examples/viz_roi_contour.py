@@ -83,8 +83,8 @@ interactive = False
 if interactive:
     window.show(scene)
 
-scene.zoom(1.5)
-scene.reset_clipping_range()
+# scene.zoom(1.5)
+# scene.reset_clipping_range()
 
 window.record(scene, out_path='contour_from_roi_tutorial.png',
-              size=(1200, 900), reset_camera=False)
+              size=(600, 600))
