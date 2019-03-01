@@ -1,7 +1,7 @@
 """Sphinx Extension: Pass thought jinja when reading source files."""
 
 
-def rstjinja(app, docname, source):
+def rstjinja(app, _docname, source):
     """Render our pages as a jinja template for fancy templating goodness."""
     # Make sure we're outputting HTML
     if app.builder.format != 'html':
