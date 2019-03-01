@@ -73,12 +73,16 @@ Ready to contribute? Here's how to set up `fury` for local development.
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
-5. Now you can make your changes locally.
+5. Install it locally
+
+    $ pip install --user -e .
+
+6. Now you can make your changes locally.
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-6. When you're done making changes, check that your changes pass flake8 and pytest::
+7. When you're done making changes, check that your changes pass flake8 and pytest::
 
     $ flake8 fury
     $ pytest -svv fury
