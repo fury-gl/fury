@@ -35,6 +35,8 @@ rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 
 LAST_RELEASE = datetime(2015, 3, 18)
 CONTRIBUTORS_FILE = "contributors.json"
+GH_TOKEN = os.environ.get('GH_TOHKEN', '')
+GH_TOKEN += '@' if GH_TOKEN else ''
 
 
 # ----------------------------------------------------------------------------
@@ -67,14 +69,14 @@ def get_paged_request(url):
 def get_issues(project="fury-gl/fury", state="closed", pulls=False):
     """Get a list of the issues from the Github API."""
     which = 'pulls' if pulls else 'issues'
-    url = "https://api.github.com/repos/%s/%s?state=%s&per_page=%i" % \
-        (project, which, state, PER_PAGE)
+    url = "https://%sapi.github.com/repos/%s/%s?state=%s&per_page=%i" % \
+        (GH_TOKEN, project, which, state, PER_PAGE)
     return get_paged_request(url)
 
 
 def get_tags(project="fury-gl/fury"):
     """Get a list of the tags from the Github API."""
-    url = "https://api.github.com/repos/{}/tags".format(project)
+    url = "https://{0}api.github.com/repos/{1}/tags".format(GH_TOKEN, project)
     return get_paged_request(url)
 
 
@@ -98,7 +100,7 @@ def fetch_basic_stats(project="fury-gl/fury"):
     desired_keys = ["stargazers_count", "stargazers_url", "watchers_count",
                     "watchers_url", "forks_count", "forks_url", "open_issues",
                     "issues_url", "subscribers_count", "subscribers_url"]
-    url = "https://api.github.com/repos/{}".format(project)
+    url = "https://{0}api.github.com/repos/{1}".format(GH_TOKEN, project)
     f = urlopen(url)
     r_json = json.load(f)
     basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
@@ -134,7 +136,7 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         }
 
     """
-    url = "https://api.github.com/repos/{}/stats/contributors".format(project)
+    url = "https://{0}api.github.com/repos/{1}/stats/contributors".format(GH_TOKEN,project)
     f = urlopen(url)
     r_json = json.load(f)
 
@@ -221,8 +223,8 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
-    url = ("https://api.github.com/repos/%s/%s?state=closed&sort=updated&"
-           "since=%s&per_page=%i") % (project, which,
+    url = ("https://%sapi.github.com/repos/%s/%s?state=closed&sort=updated&"
+           "since=%s&per_page=%i") % (GH_TOKEN, project, which,
                                       period.strftime(ISO8601), PER_PAGE)
     allclosed = get_paged_request(url)
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
