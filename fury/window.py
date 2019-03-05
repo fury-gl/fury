@@ -1039,21 +1039,20 @@ def enable_stereo(renwin, stereo_type):
 
     stereo_type = stereo_type.lower()
 
+    # stereo type ints from
+    # https://gitlab.kitware.com/vtk/vtk/blob/master/Rendering/Core/vtkRenderWindow.h#L57
+    stereo_type_dictionary = {
+        'opengl': 1,
+        'interlaced': 3,
+        'anaglyph': 7,
+        'checkerboard': 8,
+        'horizontal': 9
+    }
+
     # default to horizontal since it is easy to see if it is working
-    # otherwise enable the selected type
-    if stereo_type == 'opengl':
-        renwin.SetStereoTypeToCrystalEyes()
-    elif stereo_type == 'anaglyph':
-        renwin.SetStereoTypeToAnaglyph()
-    elif stereo_type == 'interlaced':
-        renwin.SetStereoTypeToInterlaced()
-    elif stereo_type == 'checkerboard':
-        renwin.SetStereoTypeToCheckerboard()
-    elif stereo_type == 'left':
-        renwin.SetStereoTypeToLeft()
-    elif stereo_type == 'right':
-        renwin.SetStereoTypeToRight()
-    elif stereo_type == 'horizontal':
-        renwin.SetStereoTypeToSplitViewportHorizontal()
-    else:
-        renwin.SetStereoTypeToSplitViewportHorizontal()
+    if stereo_type not in stereo_type_dictionary:
+        warn("Unknown stereo type provided. "
+             "Setting stereo type to 'horizontal'.")
+        stereo_type = 'horizontal'
+
+    renwin.SetStereoType(stereo_type_dictionary[stereo_type])
