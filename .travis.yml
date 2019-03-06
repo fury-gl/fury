@@ -46,7 +46,6 @@ env:
   - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
   - EXTRA_PIP_FLAGS="--timeout=60 --find-links=$EXTRA_WHEELS"
   - GH_REF: github.com/fury-gl/fury-website.git
-  - secure: h/xMHEc2Uzs5XBzyzEka/U+gj9oC+1k2tW/YXc8YO2Ts+VSb7GnWNpPbOO2NnXB69QwmOLbTVk7To2ShMHpuNhCyS7wHCl45jJTqKyHf9XLFh00Ibp+9+uOG1q2f+8vQ3Yb5yhIQH4N0yzrthPl4VyJhmvKSR6KrbrUPtOaahYPRTc5FLORJ253cXs6qCDL+IWiVnUfI8NXCfxJwU2vDOR9S+WzlAukY/ZDMIiZnBzUkwm3tyWmDO/zrfeeGOUd21jr5svQdq6kIN9ie1258XKB+JW4/5maO4tEjoRkxIBPTX9Acv7TuzUvkGyaQQHde8gOzYCGel2Ou/LOtHzUZRLdC0zTzPlzFC1sSFT44AZKf6t9aZfsHLFF7iIfymWLWOlrcseeJ8ojG25hbENu+BpWY6nj3T8Majs3qDMC+Uox7GSxubede/6aPhTnO5h53+M3LFcZ3QZFsYs0LEddXoKhmwJAFUSMv6BbkoHBA3r+2fF33dCOyJDTZn0WiwmDGx17wfJlTJQbK+2luspQqJRwyTxx7zReVjcdMHhuUkPKEnYx4HgCgKmNHpWbgQvhynji5Y2mwYvaeYlPhZM5qwIjyk80sznazjHZZ4XzBhzx5A8T2vDkfWvz1kH3wwwXMIR+p4LOheKXP5jkHCC2XcjNu6YK8zHkhADut3XhAsYU=
   matrix:
   - PY_VERSION="2.7"
   - PY_VERSION="3.5"
