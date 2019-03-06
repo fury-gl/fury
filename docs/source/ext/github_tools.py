@@ -35,7 +35,7 @@ rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 
 LAST_RELEASE = datetime(2015, 3, 18)
 CONTRIBUTORS_FILE = "contributors.json"
-GH_TOKEN = os.environ.get('GH_TOHKEN', '')
+GH_TOKEN = os.environ.get('GH_TOKEN', '')
 GH_TOKEN += '@' if GH_TOKEN else ''
 
 
