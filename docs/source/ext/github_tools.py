@@ -21,7 +21,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -36,6 +36,7 @@ rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 LAST_RELEASE = datetime(2015, 3, 18)
 CONTRIBUTORS_FILE = "contributors.json"
 GH_TOKEN = os.environ.get('GH_TOKEN', '')
+TOKEN_URL = "access_token={}".format(GH_TOKEN) if GH_TOKEN else ''
 
 
 # ----------------------------------------------------------------------------
@@ -57,11 +58,14 @@ def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
     while url:
+        if TOKEN_URL:
+            if "?" in url:
+                url += "&{0}".format(TOKEN_URL)
+            else:
+                url += "?{0}".format(TOKEN_URL)
+
         print("fetching %s" % url, file=sys.stderr)
-        request = Request(url)
-        if GH_TOKEN:
-            request.add_header('Authorization', 'token {}'.format(GH_TOKEN))
-        f = urlopen(request)
+        f = urlopen(url)
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
         url = links.get('next')
