@@ -686,7 +686,7 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
     """
 
     show_manager = ShowManager(scene, title, size, png_magnify, reset_camera,
-                               order_transparent, stereo)
+                               order_transparent, stereo=stereo)
     show_manager.initialize()
     show_manager.render()
     show_manager.start()
