@@ -345,7 +345,7 @@ class ShowManager(object):
 
     def __init__(self, scene=None, title='FURY', size=(300, 300),
                  png_magnify=1, reset_camera=True, order_transparent=False,
-                 interactor_style='custom'):
+                 interactor_style='custom', stereo='off'):
         """Manage the visualization pipeline.
 
         Parameters
@@ -372,6 +372,17 @@ class ShowManager(object):
             is used, if 'image' then vtkInteractorStyleImage() is used (no
             rotation) or if 'custom' then CustomInteractorStyle is used.
             Otherwise you can input your own interactor style.
+        stereo: string
+            Set the stereo type. Default is 'off'. Other types include: \n
+                'opengl': OpenGL frame-sequential stereo. Referred to as \
+                          'CrystalEyes' by VTK. \n
+                'anaglyph': For use with red/blue glasses. See VTK docs to \
+                use different colors. \n
+                'interlaced': Line interlaced. \n
+                'checkerboard': Checkerboard interlaced. \n
+                'left': Left eye only. \n
+                'right': Right eye only. \n
+                'horizontal': Side-by-side.
 
         Attributes
         ----------
@@ -416,12 +427,17 @@ class ShowManager(object):
         self.reset_camera = reset_camera
         self.order_transparent = order_transparent
         self.interactor_style = interactor_style
+        self.stereo = stereo
         self.timers = []
 
         if self.reset_camera:
             self.scene.ResetCamera()
 
         self.window = vtk.vtkRenderWindow()
+
+        if self.stereo.lower() != 'off':
+            enable_stereo(self.window, self.stereo)
+
         self.window.AddRenderer(scene)
 
         if self.title == 'FURY':
@@ -633,8 +649,8 @@ class ShowManager(object):
         self.iren.TerminateApp()
 
 
-def show(scene, title='FURY', size=(300, 300),
-         png_magnify=1, reset_camera=True, order_transparent=False):
+def show(scene, title='FURY', size=(300, 300), png_magnify=1,
+         reset_camera=True, order_transparent=False, stereo='off'):
     """Show window with current scene.
 
     Parameters
@@ -657,6 +673,17 @@ def show(scene, title='FURY', size=(300, 300),
         actors according to their relative position to the camera. The default
         option which is False will order the actors according to the order of
         their addition to the Scene().
+    stereo: string
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
+            'horizontal': Side-by-side.
 
     Notes
     -----
@@ -687,8 +714,8 @@ def show(scene, title='FURY', size=(300, 300),
 
     """
 
-    show_manager = ShowManager(scene, title, size,
-                               png_magnify, reset_camera, order_transparent)
+    show_manager = ShowManager(scene, title, size, png_magnify, reset_camera,
+                               order_transparent, stereo=stereo)
     show_manager.initialize()
     show_manager.render()
     show_manager.start()
@@ -696,7 +723,8 @@ def show(scene, title='FURY', size=(300, 300),
 
 def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
            out_path=None, path_numbering=False, n_frames=1, az_ang=10,
-           magnification=1, size=(300, 300), reset_camera=True, verbose=False):
+           magnification=1, size=(300, 300), reset_camera=True, stereo='off',
+           verbose=False):
     """Record a video of your scene.
 
     Records a video as a series of ``.png`` files of your scene by rotating the
@@ -729,6 +757,17 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     reset_camera : bool
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
+    stereo: string
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
+            'horizontal': Side-by-side.
     verbose : bool
         print information about the camera. Default is False.
 
@@ -756,6 +795,9 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     if reset_camera:
         scene.ResetCamera()
+
+    if stereo.lower() != 'off':
+        enable_stereo(renWin, stereo)
 
     renderLarge = vtk.vtkRenderLargeImage()
     renderLarge.SetInput(scene)
@@ -806,7 +848,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
 
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
-             order_transparent=False):
+             order_transparent=False, stereo='off'):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -821,6 +863,17 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Default True. Go stealthmode no window should appear.
     order_transparent : bool
         Default False. Use depth peeling to sort transparent objects.
+    stereo: string
+        Set the stereo type. Default is 'off'. Other types include: \n
+            'opengl': OpenGL frame-sequential stereo. Referred to as \
+                      'CrystalEyes' by VTK. \n
+            'anaglyph': For use with red/blue glasses. See VTK docs to \
+                        use different colors. \n
+            'interlaced': Line interlaced. \n
+            'checkerboard': Checkerboard interlaced. \n
+            'left': Left eye only. \n
+            'right': Right eye only. \n
+            'horizontal': Side-by-side.
 
     Returns
     -------
@@ -840,6 +893,8 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     render_window = vtk.vtkRenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
+    if stereo.lower() != 'off':
+        enable_stereo(render_window, stereo)
     render_window.AddRenderer(scene)
     render_window.SetSize(width, height)
 
@@ -991,3 +1046,45 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         report.objects = objects
 
     return report
+
+
+def enable_stereo(renwin, stereo_type):
+    """Enable the given stereo type on the RenderWindow
+
+    Parameters
+    ----------
+    renwin: vtkRenderWindow
+    stereo_type: string
+        'opengl': OpenGL frame-sequential stereo. Referred to as \
+                  'CrystalEyes' by VTK. \n
+        'anaglyph': For use with red/blue glasses. See VTK docs to \
+                    use different colors. \n
+        'interlaced': Line interlaced. \n
+        'checkerboard': Checkerboard interlaced. \n
+        'left': Left eye only. \n
+        'right': Right eye only. \n
+        'horizontal': Side-by-side.
+    """
+    renwin.GetStereoCapableWindow()
+    renwin.StereoCapableWindowOn()
+    renwin.StereoRenderOn()
+
+    stereo_type = stereo_type.lower()
+
+    # stereo type ints from
+    # https://gitlab.kitware.com/vtk/vtk/blob/master/Rendering/Core/vtkRenderWindow.h#L57
+    stereo_type_dictionary = {
+        'opengl': 1,
+        'interlaced': 3,
+        'anaglyph': 7,
+        'checkerboard': 8,
+        'horizontal': 9
+    }
+
+    # default to horizontal since it is easy to see if it is working
+    if stereo_type not in stereo_type_dictionary:
+        warn("Unknown stereo type provided. "
+             "Setting stereo type to 'horizontal'.")
+        stereo_type = 'horizontal'
+
+    renwin.SetStereoType(stereo_type_dictionary[stereo_type])
