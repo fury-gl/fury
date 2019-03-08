@@ -50,6 +50,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_gallery.gen_gallery',
     'ext.build_modref_templates',
+    'ext.github',
     'ext.github_tools',
     'ext.rstjinja'
 ]
@@ -141,6 +142,9 @@ html_sidebars = {
         'versions.html',
     ]
 }
+
+# ghissue config
+github_project_url = "https://github.com/fury-gl/fury"
 
 import github_tools as ght
 all_versions = ght.get_all_versions(ignore='micro')

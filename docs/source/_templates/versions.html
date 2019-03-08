@@ -10,7 +10,7 @@
             {% if v|version_compare(version, op='eq', all_versions=all_versions) %}
             <li><dt>fury {{ v }}</dt></li>
             {%else%}
-            <li><dd><a href="{{v}}/{{pagename}}">fury {{ v }}</a></dd></li>
+            <li><dd><a href="../{{v}}/{{pagename}}">fury {{ v }}</a></dd></li>
             {% endif%}
         {% endfor %}
       </dl>
