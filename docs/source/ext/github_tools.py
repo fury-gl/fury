@@ -58,14 +58,17 @@ def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
     while url:
-        if TOKEN_URL:
-            if "?" in url:
-                url += "&{0}".format(TOKEN_URL)
-            else:
-                url += "?{0}".format(TOKEN_URL)
-
-        print("fetching %s" % url, file=sys.stderr)
-        f = urlopen(url)
+        # if TOKEN_URL:
+        #     if "?" in url:
+        #         url += "&{0}".format(TOKEN_URL)
+        #     else:
+        #         url += "?{0}".format(TOKEN_URL)
+        try:
+            print("fetching %s" % url, file=sys.stderr)
+            f = urlopen(url)
+        except Exception as e:
+            print(e)
+            f = urlopen(url)
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
         url = links.get('next')
@@ -475,6 +478,7 @@ def setup(app):
     - Collect and clean authors
     - Adds extra jinja filters.
     """
+    # Todo: review GH_TOKEN and see why access Forbidden on master
     app.connect("builder-inited", add_jinja_filters)
     app.add_stylesheet("css/custom_github.css")
 
