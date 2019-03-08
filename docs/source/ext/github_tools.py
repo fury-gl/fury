@@ -55,11 +55,11 @@ def parse_link_header(headers):
 
 
 def get_json_from_url(url):
-    # if TOKEN_URL:
-    #     if "?" in url:
-    #         url += "&{0}".format(TOKEN_URL)
-    #     else:
-    #         url += "?{0}".format(TOKEN_URL)
+    if TOKEN_URL:
+        if "?" in url:
+            url += "&{0}".format(TOKEN_URL)
+        else:
+            url += "?{0}".format(TOKEN_URL)
     try:
         print("fetching %s" % url, file=sys.stderr)
         # url = Request(url,
