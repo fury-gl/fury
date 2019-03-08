@@ -54,6 +54,26 @@ def parse_link_header(headers):
     return d
 
 
+def get_json_from_url(url):
+    if TOKEN_URL:
+        if "?" in url:
+            url += "&{0}".format(TOKEN_URL)
+        else:
+            url += "?{0}".format(TOKEN_URL)
+    try:
+        print("fetching %s" % url, file=sys.stderr)
+        url = Request(url,
+                      headers={'Accept': 'application/vnd.github.v3+json',
+                               'User-agent': 'Defined'})
+        f = urlopen(url)
+    except Exception as e:
+        print(e)
+        print("fetching %s again" % url, file=sys.stderr)
+        f = urlopen(url)
+
+    return json.load(f)
+
+
 def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
@@ -65,9 +85,9 @@ def get_paged_request(url):
         #         url += "?{0}".format(TOKEN_URL)
         try:
             print("fetching %s" % url, file=sys.stderr)
-            # url = Request(url,
-            #               headers={'Accept': 'application/vnd.github.v3+json',
-            #                        'User-agent': 'Defined'})
+            url = Request(url,
+                          headers={'Accept': 'application/vnd.github.v3+json',
+                                   'User-agent': 'Defined'})
             f = urlopen(url)
         except Exception as e:
             print(e)
@@ -114,8 +134,9 @@ def fetch_basic_stats(project="fury-gl/fury"):
                     "watchers_url", "forks_count", "forks_url", "open_issues",
                     "issues_url", "subscribers_count", "subscribers_url"]
     url = "https://api.github.com/repos/{0}".format(project)
-    f = urlopen(url)
-    r_json = json.load(f)
+    import ipdb
+    ipdb.set_trace()
+    r_json = get_json_from_url(url)
     basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
     return basic_stats
 
@@ -150,8 +171,7 @@ def fetch_contributor_stats(project="fury-gl/fury"):
 
     """
     url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
-    f = urlopen(url)
-    r_json = json.load(f)
+    r_json = get_json_from_url(url)
 
     contributor_stats = {}
     contributor_stats["total_contributors"] = len(r_json)
