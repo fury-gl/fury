@@ -21,7 +21,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -65,9 +65,13 @@ def get_paged_request(url):
         #         url += "?{0}".format(TOKEN_URL)
         try:
             print("fetching %s" % url, file=sys.stderr)
+            url = Request(url,
+                          headers={'Accept': 'application/vnd.github.v3+json',
+                                   'User-agent': 'Defined'})
             f = urlopen(url)
         except Exception as e:
             print(e)
+            print("fetching %s again" % url, file=sys.stderr)
             f = urlopen(url)
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
