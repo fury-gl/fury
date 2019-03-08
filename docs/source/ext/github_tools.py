@@ -134,8 +134,6 @@ def fetch_basic_stats(project="fury-gl/fury"):
                     "watchers_url", "forks_count", "forks_url", "open_issues",
                     "issues_url", "subscribers_count", "subscribers_url"]
     url = "https://api.github.com/repos/{0}".format(project)
-    import ipdb
-    ipdb.set_trace()
     r_json = get_json_from_url(url)
     basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
     return basic_stats
@@ -189,7 +187,6 @@ def fetch_contributor_stats(project="fury-gl/fury"):
                                 for k in desired_keys
                                 if k in contributor["author"])
 
-        # import ipdb;ipdb.set_trace()
         # check if "author" is null
         if not contributor_dict["login"]:
             continue
