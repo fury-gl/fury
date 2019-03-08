@@ -46,6 +46,7 @@ env:
   - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
   - EXTRA_PIP_FLAGS="--timeout=60 --find-links=$EXTRA_WHEELS"
   - GH_REF: github.com/fury-gl/fury-website.git
+  - secure: WdsQHY7e6cXRv4cpuGrm3uooSUYCeKjiJbYJuGegtOdYv9jMbaFtNpRWA2ltrl33ND2AD5JH92FO7dItsrucFTUlJKKoHypICKo/ngkg5WmNQg6oahgVkTOqfbdbPKyM9D19Pyw2+34hjLyRK+N063dmBnEQEMGvid7BsHpgIwbxcNIJpfTsuhb30hvVz251ByqygR9EryXZ0eFPsUEo9zmiRLxzJWd7kdWyiMTCapHR/aIgFwToFRmxlUMIceyY/GLj4lhNd7L1VvNeI8nI3mGYrC+6VtumdXcaAR8ZPoGfNej/fDboxX/fZvFWMmw5Q0BXmGoKWB9l1CrkCj2Skt8t3KqYULEW1STyQZ1t3NhmLMpgHcla32Khws0ey7AZZmiTS2GRgdhqTMjOU89gS6HzTD8cuullrUkjy/IXZW5ytcmhNDSlyjCGrVJROOgkbmasNiqKSnKDtT9OljR+SdcvV0nfv4icK015pzYfwqy7dh4EI7BScmCUYX6qvXlo2O3ocS4arm2WGgcC5ZBYnl9oB6KwTv9sFk6+nz4T/kNWNlAnG561GM4lNcc8XSQvCTG4wCg9pgmzIi67HtaJvbncGBtTQhkDENgnIN6Ujog+7esOIioqtFAQ+/uAitzQ78Iu7i7ppDFaJBMaJMoQ2tnVL20IzGwlikld2D6SMt8=
   matrix:
   - PY_VERSION="2.7"
   - PY_VERSION="3.5"
@@ -71,4 +72,4 @@ after_success:
 cache:
   directories:
   - "$HOME/.cache/pip"
-  - "$HOME/.ccache"  # https://github.com/travis-ci/travis-ci/issues/5853
+  - "$HOME/.ccache"

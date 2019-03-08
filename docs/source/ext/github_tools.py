@@ -21,7 +21,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -36,7 +36,7 @@ rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 LAST_RELEASE = datetime(2015, 3, 18)
 CONTRIBUTORS_FILE = "contributors.json"
 GH_TOKEN = os.environ.get('GH_TOKEN', '')
-GH_TOKEN += '@' if GH_TOKEN else ''
+TOKEN_URL = "access_token={}".format(GH_TOKEN) if GH_TOKEN else ''
 
 
 # ----------------------------------------------------------------------------
@@ -54,12 +54,45 @@ def parse_link_header(headers):
     return d
 
 
+def get_json_from_url(url):
+    if TOKEN_URL:
+        if "?" in url:
+            url += "&{0}".format(TOKEN_URL)
+        else:
+            url += "?{0}".format(TOKEN_URL)
+    try:
+        print("fetching %s" % url, file=sys.stderr)
+        # url = Request(url,
+        #               headers={'Accept': 'application/vnd.github.v3+json',
+        #                        'User-agent': 'Defined'})
+        f = urlopen(url)
+    except Exception as e:
+        print(e)
+        print("fetching %s again" % url, file=sys.stderr)
+        f = urlopen(url)
+
+    return json.load(f)
+
+
 def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
     while url:
-        print("fetching %s" % url, file=sys.stderr)
-        f = urlopen(url)
+        # if TOKEN_URL:
+        #     if "?" in url:
+        #         url += "&{0}".format(TOKEN_URL)
+        #     else:
+        #         url += "?{0}".format(TOKEN_URL)
+        try:
+            print("fetching %s" % url, file=sys.stderr)
+            url = Request(url,
+                          headers={'Accept': 'application/vnd.github.v3+json',
+                                   'User-agent': 'Defined'})
+            f = urlopen(url)
+        except Exception as e:
+            print(e)
+            print("fetching %s again" % url, file=sys.stderr)
+            f = urlopen(url)
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
         url = links.get('next')
@@ -69,14 +102,14 @@ def get_paged_request(url):
 def get_issues(project="fury-gl/fury", state="closed", pulls=False):
     """Get a list of the issues from the Github API."""
     which = 'pulls' if pulls else 'issues'
-    url = "https://%sapi.github.com/repos/%s/%s?state=%s&per_page=%i" % \
-        (GH_TOKEN, project, which, state, PER_PAGE)
+    url = "https://api.github.com/repos/%s/%s?state=%s&per_page=%i" % \
+        (project, which, state, PER_PAGE)
     return get_paged_request(url)
 
 
 def get_tags(project="fury-gl/fury"):
     """Get a list of the tags from the Github API."""
-    url = "https://{0}api.github.com/repos/{1}/tags".format(GH_TOKEN, project)
+    url = "https://api.github.com/repos/{0}/tags".format(project)
     return get_paged_request(url)
 
 
@@ -100,9 +133,8 @@ def fetch_basic_stats(project="fury-gl/fury"):
     desired_keys = ["stargazers_count", "stargazers_url", "watchers_count",
                     "watchers_url", "forks_count", "forks_url", "open_issues",
                     "issues_url", "subscribers_count", "subscribers_url"]
-    url = "https://{0}api.github.com/repos/{1}".format(GH_TOKEN, project)
-    f = urlopen(url)
-    r_json = json.load(f)
+    url = "https://api.github.com/repos/{0}".format(project)
+    r_json = get_json_from_url(url)
     basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
     return basic_stats
 
@@ -136,9 +168,8 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         }
 
     """
-    url = "https://{0}api.github.com/repos/{1}/stats/contributors".format(GH_TOKEN,project)
-    f = urlopen(url)
-    r_json = json.load(f)
+    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    r_json = get_json_from_url(url)
 
     contributor_stats = {}
     contributor_stats["total_contributors"] = len(r_json)
@@ -156,7 +187,6 @@ def fetch_contributor_stats(project="fury-gl/fury"):
                                 for k in desired_keys
                                 if k in contributor["author"])
 
-        # import ipdb;ipdb.set_trace()
         # check if "author" is null
         if not contributor_dict["login"]:
             continue
@@ -223,8 +253,8 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
-    url = ("https://%sapi.github.com/repos/%s/%s?state=closed&sort=updated&"
-           "since=%s&per_page=%i") % (GH_TOKEN, project, which,
+    url = ("https://api.github.com/repos/%s/%s?state=closed&sort=updated&"
+           "since=%s&per_page=%i") % (project, which,
                                       period.strftime(ISO8601), PER_PAGE)
     allclosed = get_paged_request(url)
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
@@ -469,6 +499,7 @@ def setup(app):
     - Collect and clean authors
     - Adds extra jinja filters.
     """
+    # Todo: review GH_TOKEN and see why access Forbidden on master
     app.connect("builder-inited", add_jinja_filters)
     app.add_stylesheet("css/custom_github.css")
 
