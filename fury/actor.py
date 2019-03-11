@@ -189,7 +189,6 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
 
 def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
-
     """Generates a surface actor from an array of vertices
         The color and smoothness of the surface can be customized.
 

@@ -184,7 +184,7 @@ def test_surface():
     for smooth_type in s_loop:
         for face in f_loop:
             for color in c_loop:
-                renderer = window.renderer(background=(1, 1, 1))
+                renderer = window.Scene(background=(1, 1, 1))
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
                 renderer.add(surface_actor)
