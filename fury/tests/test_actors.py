@@ -180,10 +180,12 @@ def test_surface():
         for face in f_loop:
             for color in c_loop:
                 renderer = window.renderer(background=(1, 1, 1))
-                surface_actor = actor.surface(vertices, faces=face, colors=color, smooth=smooth_type)
+                surface_actor = actor.surface(vertices, faces=face,
+                                              colors=color, smooth=smooth_type)
                 renderer.add(surface_actor)
                 # window.show(renderer, size=(600, 600), reset_camera=False)
-                arr = window.snapshot(renderer, 'test_surface.png', offscreen=True)
+                arr = window.snapshot(renderer, 'test_surface.png',
+                                      offscreen=True)
                 report = window.analyze_snapshot(arr, find_objects=True)
                 npt.assert_equal(report.objects, 1)
 
