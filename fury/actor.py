@@ -8,7 +8,6 @@ from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
-from scipy.spatial import Delaunay
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -222,6 +221,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
             computed from the point cloud is returned.
 
     """
+    from scipy.spatial import Delaunay
     points = vtk.vtkPoints()
     points.SetData(numpy_support.numpy_to_vtk(vertices))
     triangle_poly_data = vtk.vtkPolyData()
