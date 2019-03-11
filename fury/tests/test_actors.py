@@ -1,16 +1,17 @@
 import os
 import numpy as np
+
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.utils import shallow_copy
 import itertools
+
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
 from tempfile import mkstemp
-import random
-import math
+
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
