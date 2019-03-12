@@ -162,6 +162,7 @@ def test_slicer():
 @xvfb_it
 def test_surface():
     import math
+    import random
     from scipy.spatial import Delaunay
     size = 11
     vertices = list()
