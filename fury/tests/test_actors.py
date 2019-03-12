@@ -1,6 +1,10 @@
 import os
 import numpy as np
+from fury import shaders
 from fury import actor, window
+from fury.actor import grid
+from fury.utils import shallow_copy
+import itertools
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import xvfb_it
