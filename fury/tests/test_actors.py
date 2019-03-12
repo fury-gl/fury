@@ -161,6 +161,8 @@ def test_slicer():
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_surface():
+    import math
+    from scipy.spatial import Delaunay
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -171,7 +173,6 @@ def test_surface():
             vertices.append([i, j, z_coord])
 
     c_arr = np.random.rand(len(vertices), 3)
-
     random.shuffle(vertices)
     vertices = np.array(vertices)
     tri = Delaunay(vertices[:, [0, 1]])
@@ -184,12 +185,12 @@ def test_surface():
     for smooth_type in s_loop:
         for face in f_loop:
             for color in c_loop:
-                renderer = window.Scene(background=(1, 1, 1))
+                scene = window.Scene(background=(1, 1, 1))
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
-                renderer.add(surface_actor)
-                # window.show(renderer, size=(600, 600), reset_camera=False)
-                arr = window.snapshot(renderer, 'test_surface.png',
+                scene.add(surface_actor)
+                # window.show(scene, size=(600, 600), reset_camera=False)
+                arr = window.snapshot(scene, 'test_surface.png',
                                       offscreen=True)
                 report = window.analyze_snapshot(arr, find_objects=True)
                 npt.assert_equal(report.objects, 1)
