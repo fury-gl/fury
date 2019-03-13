@@ -160,6 +160,45 @@ def test_slicer():
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
+def test_surface():
+    import math
+    import random
+    from scipy.spatial import Delaunay
+    size = 11
+    vertices = list()
+    for i in range(-size, size):
+        for j in range(-size, size):
+            fact1 = - math.sin(i) * math.cos(j)
+            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
+            z_coord = -abs(fact1 * fact2)
+            vertices.append([i, j, z_coord])
+
+    c_arr = np.random.rand(len(vertices), 3)
+    random.shuffle(vertices)
+    vertices = np.array(vertices)
+    tri = Delaunay(vertices[:, [0, 1]])
+    faces = tri.simplices
+
+    c_loop = [None, c_arr]
+    f_loop = [None, faces]
+    s_loop = [None, "butterfly", "loop"]
+
+    for smooth_type in s_loop:
+        for face in f_loop:
+            for color in c_loop:
+                scene = window.Scene(background=(1, 1, 1))
+                surface_actor = actor.surface(vertices, faces=face,
+                                              colors=color, smooth=smooth_type)
+                scene.add(surface_actor)
+                # window.show(scene, size=(600, 600), reset_camera=False)
+                arr = window.snapshot(scene, 'test_surface.png',
+                                      offscreen=True)
+                report = window.analyze_snapshot(arr, find_objects=True)
+                npt.assert_equal(report.objects, 1)
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_contour_from_roi():
 
     # Render volume
