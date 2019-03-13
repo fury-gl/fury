@@ -7,6 +7,9 @@
 .. image:: https://codecov.io/gh/fury-gl/fury/branch/master/graph/badge.svg
         :target: https://codecov.io/gh/fury-gl/fury
 
+.. image:: https://api.codacy.com/project/badge/Grade/922600af9f94445ead5a12423b813576
+        :alt: Codacy Badge
+        :target: https://app.codacy.com/app/fury-gl/fury?utm_source=github.com&utm_medium=referral&utm_content=fury-gl/fury&utm_campaign=Badge_Grade_Dashboard
 
 FURY - Free Unified Rendering in Python
 =======================================
@@ -21,19 +24,27 @@ FURY is a software library for scientific visualization in Python
 - **Issue tracker:** https://github.com/fury-gl/fury/issues
 - **Free software:** 3-clause BSD license
 
-Installation
+Dependencies
 ============
 
+FURY requires:
 
-1. from binaries
-~~~~~~~~~~~~~~~~
+- Numpy (>=1.7.1)
+- Vtk (>=8.1.0)
+- Scipy (>=0.9)
+
+Installation
+============
 
 .. code-block::
 
     pip install fury
 
-2. from source
-~~~~~~~~~~~~~~
+Development
+===========
+
+1. Installation from source
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Step 1.** Get the latest source by cloning this repo::
 
@@ -54,6 +65,17 @@ or::
 **Step 4:** Enjoy!
 
 For more information, see also `installation page on fury.gl <https://fury.gl/stable/installation.html>`_
+
+2. Testing
+~~~~~~~~~~
+
+After installation, you can install test suite requirements::
+
+    pip install -r requirements/test.txt
+    
+And to launch test suite::
+
+    pytest -svv fury
 
 Contribute
 ==========

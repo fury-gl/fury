@@ -1,0 +1,138 @@
+/*
+Github
+*/
+
+#github_visualization_main_container {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* basic stats styles */
+.github_visualization_basic_stats_container {
+	display: block;
+	overflow: auto;
+}
+
+.github_visualization_basic_stats {
+	background: #e5e5e5;
+	padding: 2%;
+	margin: 0.6%;
+	width: 48.8%;
+	float: left;
+	min-width: 50px;
+	font-family: Arial, Helvetica, sans-serif;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+.stat-value {
+	font-size: 2em;
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+.basic_stat_icon {
+	width: 3em;
+	float:  right;
+}
+
+/* contributors styles */
+
+#github_visualization_contributors_wrapper {
+	display: block;
+	overflow: hidden;
+}
+
+.github_visualization_contributor_info {
+	background: rgb(239, 239, 239) none repeat scroll 0% 0%;
+	padding: 2%;
+	margin: 0.6%;
+	width: 32%;
+	float: left;
+	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+	box-sizing: border-box;         /* Opera/IE 8+ */
+	transition: all 0.4s;
+}
+
+.github_visualization_contributor_info:hover {
+	background: #e3e9ef;
+	box-shadow: 0px 0px 15px -9px #63898C;
+}
+
+.github_visualization_contributor_img {
+	width: 8em;
+	border-radius: 50%;
+	margin: 0 auto;
+	display: block;
+	transition: all 0.5s ease;
+}
+
+@keyframes imgloader {
+	0% { opacity: 0.1; }
+	50% { opacity: 0.3; }
+	100% { opacity: 0.1; }
+}
+.img-loading {
+	width: 8em;
+	height: 8em;
+	background: url('../images/default_avatar.png') center;
+	background-size: cover;
+	opacity: 0.2;
+	transition: all 0.5s ease;
+	animation-name: imgloader;
+	animation-duration: 2s;
+	animation-timing-function: linear;
+	animation-delay: 0s;
+	animation-iteration-count: infinite;
+}
+
+.github_visualization_contributor_name {
+	display: block;
+	text-align: center;
+	padding-top: 1em;
+	font-size: 0.9em;
+	font-weight: 600;
+	color: #515151;
+}
+
+.github_visualization_contributor_commits {
+	display: block;
+	text-align: center;
+}
+
+.github_visualization_contributor_additions {
+	color: #409340;
+	width: 48%;
+	padding: 1%;
+	text-align: right;
+	display: block;
+	float: left;
+}
+
+.github_visualization_contributor_deletions {
+	color: #d45a5a;
+	width: 48%;
+	padding: 1%;
+	text-align: left;
+	float: left;
+	display: block;
+}
+
+@media (max-width: 768px) {
+	.github_visualization_basic_stats {
+		width: 98.8%;
+	}
+
+	.github_visualization_contributor_info {
+		width: 48.8%;
+	}
+
+}
+
+
+@media (max-width: 400px) {
+	.github_visualization_contributor_info {
+		width: 98.8%;
+	}
+
+}

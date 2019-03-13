@@ -4,15 +4,18 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
+import fury.shaders
+from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
+from fury.utils import numpy_to_vtk_matrix, shallow_copy
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
-    """ Cuts 3D scalar or rgb volumes into 2D images
+    """Cut 3D scalar or rgb volumes into 2D images.
 
     Parameters
     ----------
@@ -121,6 +124,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     class ImageActor(vtk.vtkImageActor):
         def __init__(self):
             self.picker = vtk.vtkCellPicker()
+            self.output = None
+            self.shape = None
 
         def input_connection(self, output):
             self.GetMapper().SetInputConnection(output.GetOutputPort())
@@ -279,7 +284,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
 def contour_from_roi(data, affine=None,
                      color=np.array([1, 0, 0]), opacity=1):
-    """Generates surface actor from a binary ROI.
+    """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
 
@@ -302,7 +307,6 @@ def contour_from_roi(data, affine=None,
         coordinates as calculated by the affine parameter.
 
     """
-
     if data.ndim != 3:
         raise ValueError('Only 3D arrays are currently supported.')
     else:
@@ -388,7 +392,7 @@ def contour_from_roi(data, affine=None,
 def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
-    """ Uses streamtubes to visualize polylines
+    """Use streamtubes to visualize polylines
 
     Parameters
     ----------
@@ -436,12 +440,12 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     --------
     >>> import numpy as np
     >>> from fury import actor, window
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
     >>> c = actor.streamtube(lines, colors)
-    >>> ren.add(c)
-    >>> #window.show(ren)
+    >>> scene.add(c)
+    >>> #window.show(scene)
 
     Notes
     -----
@@ -461,6 +465,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     See Also
     --------
     :func:`fury.actor.line`
+
     """
     # Poly data with lines and colors
     poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
@@ -528,7 +533,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 
 def line(lines, colors=None, opacity=1, linewidth=1,
          spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
-         lookup_colormap=None):
+         lookup_colormap=None, depth_cue=False, fake_tube=False):
     """ Create an actor for one or more lines.
 
     Parameters
@@ -571,6 +576,11 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     lookup_colormap : bool, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
+    depth_cue : boolean
+        Add a size depth cue so that lines shrink with distance to the camera.
+        Works best with linewidth <= 1.
+    fake_tube: boolean
+        Add shading to lines to approximate the look of tubes.
 
     Returns
     ----------
@@ -580,12 +590,12 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     Examples
     ----------
     >>> from fury import actor, window
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> lines = [np.random.rand(10, 3), np.random.rand(20, 3)]
     >>> colors = np.random.rand(2, 3)
     >>> c = actor.line(lines, colors)
-    >>> ren.add(c)
-    >>> #window.show(ren)
+    >>> scene.add(c)
+    >>> #window.show(scene)
     """
     # Poly data with lines and colors
     poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
@@ -605,6 +615,18 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper.SelectColorArray("Colors")
     poly_mapper.Update()
 
+    if depth_cue:
+        poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
+
+        @vtk.calldata_type(vtk.VTK_OBJECT)
+        def vtkShaderCallback(_caller, _event, calldata=None):
+            program = calldata
+            if program is not None:
+                program.SetUniformf("linewidth", linewidth)
+
+        poly_mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent,
+                                vtkShaderCallback)
+
     # Color Scale with a lookup table
     if is_colormap:
 
@@ -623,10 +645,12 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     else:
         actor = vtk.vtkActor()
 
-    # actor = vtk.vtkActor()
     actor.SetMapper(poly_mapper)
     actor.GetProperty().SetLineWidth(linewidth)
     actor.GetProperty().SetOpacity(opacity)
+
+    if fake_tube:
+        actor.GetProperty().SetRenderLinesAsTubes(True)
 
     return actor
 
@@ -763,6 +787,8 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     szx, szy, szz = odfs.shape[:3]
 
     class OdfSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             tmp_mask = np.zeros(odfs.shape[:3], dtype=np.bool)
@@ -776,7 +802,6 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
                                              scale=scale,
                                              norm=norm,
                                              radial_scale=radial_scale,
-                                             opacity=opacity,
                                              colormap=colormap,
                                              global_cm=global_cm)
             self.SetMapper(self.mapper)
@@ -795,13 +820,14 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     odf_actor = OdfSlicerActor()
     odf_actor.display_extent(0, szx - 1, 0, szy - 1,
                              int(np.floor(szz/2)), int(np.floor(szz/2)))
+    odf_actor.GetProperty().SetOpacity(opacity)
 
     return odf_actor
 
 
 def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
-                       norm=True, radial_scale=True, opacity=1.,
-                       colormap='plasma', global_cm=False):
+                       norm=True, radial_scale=True, colormap='plasma',
+                       global_cm=False):
     """ Helper function for slicing spherical fields
 
     Parameters
@@ -820,8 +846,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         Normalize `sphere_values`.
     radial_scale : bool
         Scale sphere points according to odf values.
-    opacity : float
-        Takes values from 0 (fully transparent) to 1 (opaque)
     colormap : None or str
         If None then white color is used. Otherwise the name of colormap is
         given. Matplotlib colormaps are supported (e.g., 'inferno').
@@ -923,15 +947,17 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
 
 
 def _makeNd(array, ndim):
-    """Pads as many 1s at the beginning of array's shape as are need to give
-    array ndim dimensions."""
+    """
+    Pads as many 1s at the beginning of array's shape as are need to give
+    array ndim dimensions.
+    """
     new_shape = (1,) * (ndim - array.ndim) + array.shape
     return array.reshape(new_shape)
 
 
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                   norm=True, opacity=1., scalar_colors=None):
-    """ Slice many tensors as ellipsoids in native or world coordinates
+    """Slice many tensors as ellipsoids in native or world coordinates.
 
     Parameters
     ----------
@@ -959,8 +985,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     ---------
     actor : vtkActor
         Ellipsoid
-    """
 
+    """
     if not evals.shape == evecs.shape[:-1]:
         raise RuntimeError(
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
@@ -976,6 +1002,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     szx, szy, szz = evals.shape[:3]
 
     class TensorSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             tmp_mask = np.zeros(evals.shape[:3], dtype=np.bool)
@@ -989,7 +1017,6 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                                                 sphere=sphere,
                                                 scale=scale,
                                                 norm=norm,
-                                                opacity=opacity,
                                                 scalar_colors=scalar_colors)
             self.SetMapper(self.mapper)
 
@@ -1008,13 +1035,14 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     tensor_actor.display_extent(0, szx - 1, 0, szy - 1,
                                 int(np.floor(szz/2)), int(np.floor(szz/2)))
 
+    tensor_actor.GetProperty().SetOpacity(opacity)
+
     return tensor_actor
 
 
 def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
-                          scale=2.2, norm=True, opacity=1.,
-                          scalar_colors=None):
-    """ Helper function for slicing tensor fields
+                          scale=2.2, norm=True, scalar_colors=None):
+    """Helper function for slicing tensor fields
 
     Parameters
     ----------
@@ -1032,8 +1060,6 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         Distance between spheres.
     norm : bool
         Normalize `sphere_values`.
-    opacity : float
-        Takes values from 0 (fully transparent) to 1 (opaque)
     scalar_colors : (3,) or (X, 3) or (X, Y, 3) or (X, Y, Z, 3) ndarray
         RGB colors used to show the tensors
         Default None, color the ellipsoids using ``color_fa``
@@ -1042,6 +1068,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     ---------
     mapper : vtkPolyDataMapper
         Ellipsoid mapper
+
     """
     if mask is None:
         mask = np.ones(evals.shape[:3])
@@ -1126,7 +1153,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                 colors=(1, 0, 0), opacity=1., linewidth=1,
                 lod=False, lod_points=10 ** 4, lod_points_size=3):
-    """ Visualize peak directions as given from ``peaks_from_model``
+    """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
     ----------
@@ -1182,6 +1209,8 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         mask = np.ones(grid_shape).astype(np.bool)
 
     class PeakSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.line = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
 
@@ -1213,11 +1242,13 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                                       peaks_dirs[tuple(center)][i] * pv + xyz))
                     list_dirs.append(symm)
 
-            self.mapper = line(list_dirs, colors=colors,
-                               opacity=opacity, linewidth=linewidth,
-                               lod=lod, lod_points=lod_points,
-                               lod_points_size=lod_points_size).GetMapper()
-            self.SetMapper(self.mapper)
+            self.line = line(list_dirs, colors=colors,
+                             opacity=opacity, linewidth=linewidth,
+                             lod=lod, lod_points=lod_points,
+                             lod_points_size=lod_points_size)
+
+            self.SetProperty(self.line.GetProperty())
+            self.SetMapper(self.line.GetMapper())
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
@@ -1240,7 +1271,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
-    """ Create one or more 3d points
+    """Create one or more 3d points.
 
     Parameters
     ----------
@@ -1259,7 +1290,6 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     fury.actor.point
 
     """
-
     if points.ndim == 2:
         points_no = points.shape[0]
     else:
@@ -1298,8 +1328,8 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
-def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
-    """ Visualize points as sphere glyphs
+def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
+    """Visualize points as sphere glyphs
 
     Parameters
     ----------
@@ -1318,20 +1348,20 @@ def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> pts = np.random.rand(5, 3)
     >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> ren.add(point_actor)
-    >>> # window.show(ren)
-    """
+    >>> scene.add(point_actor)
+    >>> # window.show(scene)
 
+    """
     return sphere(centers=points, colors=colors, radii=point_radius,
                   theta=theta, phi=phi, vertices=None, faces=None)
 
 
 def sphere(centers, colors, radii=1., theta=16, phi=16,
            vertices=None, faces=None):
-    """ Visualize one or many spheres with different colors and radii
+    """Visualize one or many spheres with different colors and radii
 
     Parameters
     ----------
@@ -1353,11 +1383,12 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> sphere_actor = actor.sphere(centers, window.colors.coral)
-    >>> ren.add(sphere_actor)
-    >>> # window.show(ren)
+    >>> scene.add(sphere_actor)
+    >>> # window.show(scene)
+
     """
 
     if np.array(colors).ndim == 1:
@@ -1417,7 +1448,7 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
 
 def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
           color=(1, 1, 1)):
-    """ Create a label actor.
+    """Create a label actor.
 
     This actor will always face the camera
 
@@ -1440,12 +1471,12 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     Examples
     --------
     >>> from fury import window, actor
-    >>> ren = window.Renderer()
+    >>> scene = window.Scene()
     >>> l = actor.label(text='Hello')
-    >>> ren.add(l)
-    >>> #window.show(ren)
-    """
+    >>> scene.add(l)
+    >>> #window.show(scene)
 
+    """
     atext = vtk.vtkVectorText()
     atext.SetText(text)
 
@@ -1460,3 +1491,353 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     texta.SetPosition(pos)
 
     return texta
+
+
+def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
+            font_size=12, font_family='Arial', justification='left',
+            vertical_justification="bottom",
+            bold=False, italic=False, shadow=False):
+    """ Generate 2D text that lives in the 3D world
+
+    Parameters
+    ----------
+    text : str
+    position : tuple
+    color : tuple
+    font_size : int
+    font_family : str
+    justification : str
+        Left, center or right (default left)
+    vertical_justification : str
+        Bottom, middle or top (default bottom)
+    bold : bool
+    italic : bool
+    shadow : bool
+
+    Returns
+    -------
+    textActor3D
+    """
+
+    class TextActor3D(vtk.vtkTextActor3D):
+        def message(self, text):
+            self.set_message(text)
+
+        def set_message(self, text):
+            self.SetInput(text)
+            self._update_user_matrix()
+
+        def get_message(self):
+            return self.GetInput()
+
+        def font_size(self, size):
+            self.GetTextProperty().SetFontSize(24)
+            text_actor.SetScale((1./24.*size,)*3)
+            self._update_user_matrix()
+
+        def font_family(self, _family='Arial'):
+            self.GetTextProperty().SetFontFamilyToArial()
+            # self._update_user_matrix()
+
+        def justification(self, justification):
+            tprop = self.GetTextProperty()
+            if justification == 'left':
+                tprop.SetJustificationToLeft()
+            elif justification == 'center':
+                tprop.SetJustificationToCentered()
+            elif justification == 'right':
+                tprop.SetJustificationToRight()
+            else:
+                raise ValueError("Unknown justification: '{}'"
+                                 .format(justification))
+
+            self._update_user_matrix()
+
+        def vertical_justification(self, justification):
+            tprop = self.GetTextProperty()
+            if justification == 'top':
+                tprop.SetVerticalJustificationToTop()
+            elif justification == 'middle':
+                tprop.SetVerticalJustificationToCentered()
+            elif justification == 'bottom':
+                tprop.SetVerticalJustificationToBottom()
+            else:
+                raise ValueError("Unknown vertical justification: '{}'"
+                                 .format(justification))
+
+            self._update_user_matrix()
+
+        def font_style(self, bold=False, italic=False, shadow=False):
+            tprop = self.GetTextProperty()
+            if bold:
+                tprop.BoldOn()
+            else:
+                tprop.BoldOff()
+            if italic:
+                tprop.ItalicOn()
+            else:
+                tprop.ItalicOff()
+            if shadow:
+                tprop.ShadowOn()
+            else:
+                tprop.ShadowOff()
+
+            self._update_user_matrix()
+
+        def color(self, color):
+            self.GetTextProperty().SetColor(*color)
+
+        def set_position(self, position):
+            self.SetPosition(position)
+
+        def get_position(self):
+            return self.GetPosition()
+
+        def _update_user_matrix(self):
+            """ Text justification of vtkTextActor3D doesn't seem to be
+            working, so we do it manually. Yeah!
+            """
+            user_matrix = np.eye(4)
+
+            text_bounds = [0, 0, 0, 0]
+            self.GetBoundingBox(text_bounds)
+
+            tprop = self.GetTextProperty()
+            if tprop.GetJustification() == vtk.VTK_TEXT_LEFT:
+                user_matrix[:3, -1] += (-text_bounds[0], 0, 0)
+            elif tprop.GetJustification() == vtk.VTK_TEXT_CENTERED:
+                tm = -(text_bounds[0] + (text_bounds[1] - text_bounds[0]) / 2.)
+                user_matrix[:3, -1] += (tm, 0, 0)
+            elif tprop.GetJustification() == vtk.VTK_TEXT_RIGHT:
+                user_matrix[:3, -1] += (-text_bounds[1], 0, 0)
+
+            if tprop.GetVerticalJustification() == vtk.VTK_TEXT_BOTTOM:
+                user_matrix[:3, -1] += (0, -text_bounds[2], 0)
+            elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_CENTERED:
+                tm = -(text_bounds[2] + (text_bounds[3] - text_bounds[2]) / 2.)
+                user_matrix[:3, -1] += (0, tm, 0)
+            elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_TOP:
+                user_matrix[:3, -1] += (0, -text_bounds[3], 0)
+
+            user_matrix[:3, -1] *= self.GetScale()
+            self.SetUserMatrix(numpy_to_vtk_matrix(user_matrix))
+
+    text_actor = TextActor3D()
+    text_actor.message(text)
+    text_actor.font_size(font_size)
+    text_actor.set_position(position)
+    text_actor.font_family(font_family)
+    text_actor.font_style(bold, italic, shadow)
+    text_actor.color(color)
+    text_actor.justification(justification)
+    text_actor.vertical_justification(vertical_justification)
+
+    return text_actor
+
+
+class Container(object):
+    """ Provides functionalities for grouping multiple actors using a given
+    layout.
+
+    Attributes
+    ----------
+    anchor : 3-tuple of float
+        Anchor of this container used when laying out items in a container.
+        The anchor point is relative to the center of the container.
+        Default: (0, 0, 0).
+
+    padding : 6-tuple of float
+        Padding around this container bounding box. The 6-tuple represents
+        (pad_x_neg, pad_x_pos, pad_y_neg, pad_y_pos, pad_z_neg, pad_z_pos).
+        Default: (0, 0, 0, 0, 0, 0)
+
+    """
+    def __init__(self, layout=layout.Layout()):
+        """
+        Parameters
+        ----------
+        layout : ``fury.layout.Layout`` object
+            Items of this container will be arranged according to `layout`.
+        """
+        self.layout = layout
+        self._items = []
+        self._need_update = True
+        self._position = np.zeros(3)
+        self._visibility = True
+        self.anchor = np.zeros(3)
+        self.padding = np.zeros(6)
+
+    @property
+    def items(self):
+        if self._need_update:
+            self.update()
+
+        return self._items
+
+    def add(self, *items, **kwargs):
+        """ Adds some items to this container.
+
+        Parameters
+        ----------
+        items : `vtkProp3D` objects
+            Items to add to this container.
+        borrow : bool
+            If True the items are added as-is, otherwise a shallow copy is
+            made first. If you intend to reuse the items elsewhere you
+            should set `borrow=False`. Default: True.
+        """
+        self._need_update = True
+
+        for item in items:
+            if not kwargs.get('borrow', True):
+                item = shallow_copy(item)
+
+            self._items.append(item)
+
+    def clear(self):
+        """ Clears all items of this container. """
+        self._need_update = True
+        del self._items[:]
+
+    def update(self):
+        """ Updates the position of the items of this container. """
+        self.layout.apply(self._items)
+        self._need_update = False
+
+    def add_to_scene(self, ren):
+        """ Adds the items of this container to a given renderer. """
+        for item in self.items:
+            if isinstance(item, Container):
+                item.add_to_scene(ren)
+            else:
+                ren.add(item)
+
+    def GetBounds(self):
+        """ Get the bounds of the container. """
+        bounds = np.zeros(6)    # x1, x2, y1, y2, z1, z2
+        bounds[::2] = np.inf    # x1, y1, z1
+        bounds[1::2] = -np.inf  # x2, y2, z2
+
+        for item in self.items:
+            item_bounds = item.GetBounds()
+            bounds[::2] = np.minimum(bounds[::2], item_bounds[::2])
+            bounds[1::2] = np.maximum(bounds[1::2], item_bounds[1::2])
+
+        # Add padding, if any.
+        bounds[::2] -= self.padding[::2]
+        bounds[1::2] += self.padding[1::2]
+
+        return tuple(bounds)
+
+    def GetVisibility(self):
+        return self._visibility
+
+    def SetVisibility(self, visibility):
+        self._visibility = visibility
+        for item in self.items:
+            item.SetVisibility(visibility)
+
+    def GetPosition(self):
+        return self._position
+
+    def AddPosition(self, position):
+        self._position += position
+        for item in self.items:
+            item.AddPosition(position)
+
+    def SetPosition(self, position):
+        self.AddPosition(np.array(position) - self._position)
+
+    def GetCenter(self):
+        """ Get the center of the bounding box. """
+        x1, x2, y1, y2, z1, z2 = self.GetBounds()
+        return ((x1+x2)/2., (y1+y2)/2., (z1+z2)/2.)
+
+    def GetLength(self):
+        """ Get the length of bounding box diagonal. """
+        x1, x2, y1, y2, z1, z2 = self.GetBounds()
+        width, height, depth = x2-x1, y2-y1, z2-z1
+        return np.sqrt(np.sum([width**2, height**2, depth**2]))
+
+    def NewInstance(self):
+        return Container(layout=self.layout)
+
+    def ShallowCopy(self, other):
+        self._position = other._position.copy()
+        self._anchor = other._anchor
+        self.clear()
+        self.add(*other._items, borrow=False)
+        self.update()
+
+    def __len__(self):
+        return len(self._items)
+
+
+def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
+         cell_shape="rect", aspect_ratio=16/9., dim=None):
+    """ Creates a grid of actors that lies in the xy-plane.
+
+    Parameters
+    ----------
+    actors : list of `vtkProp3D` objects
+        Actors to be layout in a grid manner.
+    captions : list of `vtkProp3D` objects
+        Objects serving as captions (can be any `vtkProp3D` object, not
+        necessarily text). There should be one caption per actor. By
+        default, there are no captions.
+    caption_offset : tuple of float (optional)
+        Tells where to position the caption w.r.t. the center of its
+        associated actor. Default: (0, -100, 0).
+    cell_padding : tuple of 2 floats or float
+        Each grid cell will be padded according to (pad_x, pad_y) i.e.
+        horizontally and vertically. Padding is evenly distributed on each
+        side of the cell. If a single float is provided then both pad_x and
+        pad_y will have the same value.
+    cell_shape : str
+        Specifies the desired shape of every grid cell.
+        'rect' ensures the cells are the tightest.
+        'square' ensures the cells are as wide as high.
+        'diagonal' ensures the content of the cells can be rotated without
+        colliding with content of the neighboring cells.
+    aspect_ratio : float
+        Aspect ratio of the grid (width/height). Default: 16:9.
+    dim : tuple of int
+        Dimension (nb_rows, nb_cols) of the grid. If provided,
+        `aspect_ratio` will be ignored.
+
+    Returns
+    -------
+    ``fury.actor.Container`` object
+        Object that represents the grid containing all the actors and
+        captions, if any.
+    """
+    grid_layout = layout.GridLayout(cell_padding=cell_padding,
+                                    cell_shape=cell_shape,
+                                    aspect_ratio=aspect_ratio, dim=dim)
+    grid = Container(layout=grid_layout)
+
+    if captions is not None:
+        actors_with_caption = []
+        for actor, caption in zip(actors, captions):
+
+            actor_center = np.array(actor.GetCenter())
+
+            # Offset accordingly the caption w.r.t.
+            # the center of the associated actor.
+            caption = shallow_copy(caption)
+            caption.SetPosition(actor_center + caption_offset)
+
+            actor_with_caption = Container()
+            actor_with_caption.add(actor, caption)
+
+            # We change the anchor of the container so
+            # the actor will be centered in the
+            # grid cell.
+            actor_with_caption.anchor = actor_center - \
+                actor_with_caption.GetCenter()
+            actors_with_caption.append(actor_with_caption)
+
+        actors = actors_with_caption
+
+    grid.add(*actors)
+    return grid

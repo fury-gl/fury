@@ -12,10 +12,13 @@ else:
     from tempfile import template, mkdtemp
 
     class TemporaryDirectory(object):
-        """Create and return a temporary directory.  This has the same
+        r"""Create and return a temporary directory.
+
+        This has the same
         behavior as mkdtemp but can be used as a context manager.
         Upon exiting the context, the directory and everthing contained
         in it are removed.
+
         Examples
         --------
         >>> import os
@@ -25,10 +28,11 @@ else:
         ...         _ = fobj.write('a string\\n')
         >>> os.path.exists(tmpdir)
         False
+
         """
 
-        def __init__(self, suffix="", prefix=template, dir=None):
-            self.name = mkdtemp(suffix, prefix, dir)
+        def __init__(self, suffix="", prefix=template, folder=None):
+            self.name = mkdtemp(suffix, prefix, folder)
             self._closed = False
 
         def __enter__(self):
@@ -44,7 +48,8 @@ else:
             return False
 
     class InTemporaryDirectory(TemporaryDirectory):
-        ''' Create, return, and change directory to a temporary directory
+        """Create, return, and change directory to a temporary directory.
+
         Examples
         --------
         >>> import os
@@ -57,7 +62,9 @@ else:
         False
         >>> os.getcwd() == my_cwd
         True
-        '''
+
+        """
+        _pwd = '.'
 
         def __enter__(self):
             self._pwd = os.getcwd()

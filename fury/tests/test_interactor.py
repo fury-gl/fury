@@ -21,12 +21,12 @@ def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))
     filename = "test_custom_interactor_style_events.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
-    renderer = window.Renderer()
+    scene = window.Scene()
 
     # the show manager allows to break the rendering process
     # in steps so that the widgets can be added properly
     interactor_style = interactor.CustomInteractorStyle()
-    show_manager = window.ShowManager(renderer, size=(800, 800),
+    show_manager = window.ShowManager(scene, size=(800, 800),
                                       reset_camera=False,
                                       interactor_style=interactor_style)
 
@@ -44,7 +44,7 @@ def test_custom_interactor_style_events(recording=False):
     cursor = vtk.vtkActor2D()
     cursor.SetMapper(mapper)
     cursor.GetProperty().SetColor(1, 0.5, 0)
-    renderer.add(cursor)
+    scene.add(cursor)
 
     def follow_mouse(iren, obj):
         obj.SetPosition(*iren.event.position)
@@ -59,13 +59,13 @@ def test_custom_interactor_style_events(recording=False):
     colors = np.array([[1., 0., 0.], [0.3, 0.7, 0.]])
     tube1 = actor.streamtube([lines[0]], colors[0])
     tube2 = actor.streamtube([lines[1]], colors[1])
-    renderer.add(tube1)
-    renderer.add(tube2)
+    scene.add(tube1)
+    scene.add(tube2)
 
     # Define some counter callback.
     states = defaultdict(lambda: 0)
 
-    def counter(iren, obj):
+    def counter(iren, _obj):
         states[iren.event.name] += 1
 
     # Assign the counter callback to every possible event.

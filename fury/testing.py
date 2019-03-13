@@ -1,7 +1,10 @@
 """Utilities for testing."""
 
+import sys
 import operator
 from functools import partial
+from contextlib import contextmanager
+from six import StringIO
 
 from numpy.testing import assert_array_equal
 import numpy as np
@@ -9,11 +12,32 @@ import scipy
 from distutils.version import LooseVersion
 
 
+@contextmanager
+def captured_output():
+    """Capture stdout, stderr from print or logging.
+
+    Examples
+    --------
+    >>> def foo():
+    ...    print('hello world!')
+    >>> with captured_output() as (out, err):
+    ...    foo()
+    >>> print(out.getvalue().strip())
+    hello world!
+
+    """
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
+    try:
+        sys.stdout, sys.stderr = new_out, new_err
+        yield sys.stdout, sys.stderr
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
+
+
 def assert_operator(value1, value2, msg="", op=operator.eq):
     """Check Boolean statement."""
-    try:
-        assert op(value1, value2)
-    except AssertionError:
+    if not op(value1, value2):
         raise AssertionError(msg.format(str(value2), str(value1)))
 
 
@@ -40,7 +64,7 @@ def assert_arrays_equal(arrays1, arrays2):
 def setup_test():
     """ Set numpy print options to "legacy" for new versions of numpy
     If imported into a file, nosetest will run this before any doctests.
-    
+
     References
     -----------
     https://github.com/numpy/numpy/commit/710e0327687b9f7653e5ac02d222ba62c657a718

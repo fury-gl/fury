@@ -1,0 +1,19 @@
+
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"> Documentation Versions</span>
+      <span class="fa fa-caret-down"></span>
+    </span>
+    <div class="rst-other-versions">               
+      <dl>
+        {% for v in versions_list %}
+            {% if v|version_compare(version, op='eq', all_versions=all_versions) %}
+            <li><dt>fury {{ v }}</dt></li>
+            {%else%}
+            <li><dd><a href="../{{v}}/{{pagename}}">fury {{ v }}</a></dd></li>
+            {% endif%}
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+

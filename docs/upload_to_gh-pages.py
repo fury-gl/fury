@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 """Script to commit the doc build outputs into the github-pages repo.
+
 Use:
-  upload_to_gh-pages.py 
+  upload_to_gh-pages.py
 """
 
 ###############################################################################
@@ -46,7 +47,9 @@ def sh(cmd):
 
 def sh2(cmd):
     """Execute command in a subshell, return stdout.
-    Stderr is unbuffered from the subshell.x"""
+
+    Stderr is unbuffered from the subshell.x
+    """
     p = Popen(cmd, stdout=PIPE, shell=True)
     out = p.communicate()[0]
     retcode = p.returncode
@@ -58,8 +61,10 @@ def sh2(cmd):
 
 
 def sh3(cmd):
-    """Execute command in a subshell, return stdout, stderr
-    If anything appears in stderr, print it out to sys.stderr"""
+    """Execute command in a subshell, return stdout, stderr.
+
+    If anything appears in stderr, print it out to sys.stderr
+    """
     p = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True)
     out, err = p.communicate()
     retcode = p.returncode
@@ -79,8 +84,13 @@ if __name__ == '__main__':
     # Load source package
     cd(pkg_path)
     mod = __import__(pkg_name)
-    if pjoin(pkg_path, pkg_name) != os.path.dirname(mod.__file__):
-        raise RuntimeError("You should work with with the source and not the"
+
+    if pjoin(pkg_path, pkg_name).lower() != \
+       os.path.dirname(mod.__file__).lower():
+
+        print(pjoin(pkg_path, pkg_name))
+        print(mod.__file__)
+        raise RuntimeError("You should work with the source and not the "
                            "installed package")
 
     # find the version number
@@ -88,11 +98,18 @@ if __name__ == '__main__':
 
     intro_msg = """
 ##############################################
-#  Documentation version {} \n
-#  using tag '{}' \n
+#  Documentation version {}
+#
+#  using tag '{}'
 ##############################################""".format(mod.__version__, tag)
 
     print(intro_msg)
+
+    if not os.path.exists(html_dir):
+        raise RuntimeError("Documentation build folder not found! You should "
+                           "generate the documentation first via this "
+                           "command: 'make -C docs html')"
+                           )
 
     if not os.path.exists(pages_dir):
         # clone the gh-pages repo if we haven't already.
@@ -106,7 +123,7 @@ if __name__ == '__main__':
     except BaseException:
         print("\nLooks like gh-pages branch does not exist!")
         print("Do you want to create a new one? (y/n)")
-        while(1):
+        while 1:
             choice = str(input()).lower()
             if choice == 'y':
                 sh("git checkout -b gh-pages")

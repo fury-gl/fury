@@ -30,19 +30,19 @@ skip_it = use_xvfb == 'skip'
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_slicer():
-    renderer = window.renderer()
+    scene = window.Scene()
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.eye(4)
     slicer = actor.slicer(data, affine)
     slicer.display(None, None, 25)
-    renderer.add(slicer)
+    scene.add(slicer)
 
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
-    # window.show(renderer)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    # window.show(scene)
 
     # copy pixels in numpy array directly
-    arr = window.snapshot(renderer, 'test_slicer.png', offscreen=True)
+    arr = window.snapshot(scene, 'test_slicer.png', offscreen=True)
     import scipy
     print(scipy.__version__)
     print(scipy.__file__)
@@ -60,32 +60,32 @@ def test_slicer():
 
     # The slicer can cut directly a smaller part of the image
     slicer.display_extent(10, 30, 10, 30, 35, 35)
-    renderer.ResetCamera()
+    scene.ResetCamera()
 
-    renderer.add(slicer)
+    scene.add(slicer)
 
     # save pixels in png file not a numpy array
     with InTemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'slice.png')
-        # window.show(renderer)
-        window.snapshot(renderer, fname, offscreen=True)
+        # window.show(scene)
+        window.snapshot(scene, fname, offscreen=True)
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
 
     npt.assert_raises(ValueError, actor.slicer, np.ones(10))
 
-    renderer.clear()
+    scene.clear()
 
     rgb = np.zeros((30, 30, 30, 3))
     rgb[..., 0] = 1.
     rgb_actor = actor.slicer(rgb)
 
-    renderer.add(rgb_actor)
+    scene.add(rgb_actor)
 
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
-    arr = window.snapshot(renderer, offscreen=True)
+    arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=[(255, 0, 0)])
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(report.colors_found, [True])
@@ -94,7 +94,7 @@ def test_slicer():
                                       hue_range=(0.4, 1.),
                                       saturation_range=(1, 1.),
                                       value_range=(0., 1.))
-    renderer.clear()
+    scene.clear()
     slicer_lut = actor.slicer(data, lookup_colormap=lut)
 
     slicer_lut.display(10, None, None)
@@ -109,31 +109,31 @@ def test_slicer():
     slicer_lut2.opacity(1)
     slicer_lut2.tolerance(0.025)
     slicer_lut2.display(None, None, 10)
-    renderer.add(slicer_lut2)
+    scene.add(slicer_lut2)
 
-    renderer.reset_clipping_range()
+    scene.reset_clipping_range()
 
-    arr = window.snapshot(renderer, offscreen=True)
+    arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 1)
 
-    renderer.clear()
+    scene.clear()
 
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.diag([1, 3, 2, 1])
     slicer = actor.slicer(data, affine, interpolation='nearest')
     slicer.display(None, None, 25)
 
-    renderer.add(slicer)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.add(slicer)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
-    arr = window.snapshot(renderer, offscreen=True)
+    arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(data.shape, slicer.shape)
 
-    renderer.clear()
+    scene.clear()
 
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.diag([1, 3, 2, 1])
@@ -146,12 +146,12 @@ def test_slicer():
     slicer = actor.slicer(data2, affine2, interpolation='linear')
     slicer.display(None, None, 25)
 
-    renderer.add(slicer)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.add(slicer)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
-    # window.show(renderer, reset_camera=False)
-    arr = window.snapshot(renderer, offscreen=True)
+    # window.show(scene, reset_camera=False)
+    arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 1)
     npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
@@ -202,7 +202,7 @@ def test_surface():
 def test_contour_from_roi():
 
     # Render volume
-    renderer = window.renderer()
+    scene = window.Scene()
     data = np.zeros((50, 50, 50))
     data[20:30, 25, 25] = 1.
     data[25, 20:30, 25] = 1.
@@ -210,14 +210,14 @@ def test_contour_from_roi():
     surface = actor.contour_from_roi(data, affine,
                                      color=np.array([1, 0, 1]),
                                      opacity=.5)
-    renderer.add(surface)
+    scene.add(surface)
 
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
-    # window.show(renderer)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    # window.show(scene)
 
     # Test binarization
-    renderer2 = window.renderer()
+    scene2 = window.Scene()
     data2 = np.zeros((50, 50, 50))
     data2[20:30, 25, 25] = 1.
     data2[35:40, 25, 25] = 1.
@@ -225,14 +225,14 @@ def test_contour_from_roi():
     surface2 = actor.contour_from_roi(data2, affine,
                                       color=np.array([0, 1, 1]),
                                       opacity=.5)
-    renderer2.add(surface2)
+    scene2.add(surface2)
 
-    renderer2.reset_camera()
-    renderer2.reset_clipping_range()
-    # window.show(renderer2)
+    scene2.reset_camera()
+    scene2.reset_clipping_range()
+    # window.show(scene2)
 
-    arr = window.snapshot(renderer, 'test_surface.png', offscreen=True)
-    arr2 = window.snapshot(renderer2, 'test_surface2.png', offscreen=True)
+    arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
+    arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
 
     report = window.analyze_snapshot(arr, find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
@@ -281,8 +281,8 @@ def test_contour_from_roi():
     seedroi_actor = actor.contour_from_roi(seed_mask, affine, [0, 1, 1], 0.5)
 
     # Create the 3d display.
-    r = window.Renderer()
-    r2 = window.Renderer()
+    r = window.Scene()
+    r2 = window.Scene()
     r.add(streamlines_actor)
     arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
     report3 = window.analyze_snapshot(arr3, find_objects=True)
@@ -301,7 +301,7 @@ def test_contour_from_roi():
 @npt.dec.skipif(skip_it)
 @xvfb_it
 def test_streamtube_and_line_actors():
-    renderer = window.renderer()
+    scene = window.Scene()
 
     line1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
     line2 = line1 + np.array([0.5, 0., 0.])
@@ -309,17 +309,17 @@ def test_streamtube_and_line_actors():
     lines = [line1, line2]
     colors = np.array([[1, 0, 0], [0, 0, 1.]])
     c = actor.line(lines, colors, linewidth=3)
-    window.add(renderer, c)
+    scene.add(c)
 
     c = actor.line(lines, colors, spline_subdiv=5, linewidth=3)
-    window.add(renderer, c)
+    scene.add(c)
 
     # create streamtubes of the same lines and shift them a bit
     c2 = actor.streamtube(lines, colors, linewidth=.1)
     c2.SetPosition(2, 0, 0)
-    window.add(renderer, c2)
+    scene.add(c2)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
 
     report = window.analyze_snapshot(arr,
                                      colors=[(255, 0, 0), (0, 0, 255)],
@@ -331,9 +331,9 @@ def test_streamtube_and_line_actors():
     # as before with splines
     c2 = actor.streamtube(lines, colors, spline_subdiv=5, linewidth=.1)
     c2.SetPosition(2, 0, 0)
-    window.add(renderer, c2)
+    scene.add(c2)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
 
     report = window.analyze_snapshot(arr,
                                      colors=[(255, 0, 0), (0, 0, 255)],
@@ -342,13 +342,21 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(report.objects, 4)
     npt.assert_equal(report.colors_found, [True, True])
 
+    c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
+
+    mapper_code = c3.GetMapper().GetGeometryShaderCode()
+    file_code = shaders.load("line.geom")
+    npt.assert_equal(mapper_code, file_code)
+
+    npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
+
 
 @npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_bundle_maps():
-    renderer = window.renderer()
+    scene = window.Scene()
     bundle = fornix_streamlines()
-    bundle, shift = center_streamlines(bundle)
+    bundle, _ = center_streamlines(bundle)
 
     mat = np.array([[1, 0, 0, 100],
                     [0, 1, 0, 100],
@@ -370,46 +378,46 @@ def test_bundle_maps():
                                       value_range=(1., 1))
 
     line = actor.line(bundle, metric, linewidth=0.1, lookup_colormap=lut)
-    window.add(renderer, line)
-    window.add(renderer, actor.scalar_bar(lut, ' '))
+    scene.add(line)
+    scene.add(actor.scalar_bar(lut, ' '))
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
 
     npt.assert_almost_equal(report.actors, 1)
-    # window.show(renderer)
+    # window.show(scene)
 
-    renderer.clear()
+    scene.clear()
 
     nb_points = np.sum([len(b) for b in bundle])
     values = 100 * np.random.rand(nb_points)
     # values[:nb_points/2] = 0
 
     line = actor.streamtube(bundle, values, linewidth=0.1, lookup_colormap=lut)
-    renderer.add(line)
-    # window.show(renderer)
+    scene.add(line)
+    # window.show(scene)
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     npt.assert_equal(report.actors_classnames[0], 'vtkLODActor')
 
-    renderer.clear()
+    scene.clear()
 
     colors = np.random.rand(nb_points, 3)
     # values[:nb_points/2] = 0
 
     line = actor.line(bundle, colors, linewidth=2)
-    renderer.add(line)
-    # window.show(renderer)
+    scene.add(line)
+    # window.show(scene)
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     npt.assert_equal(report.actors_classnames[0], 'vtkLODActor')
-    # window.show(renderer)
+    # window.show(scene)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report2 = window.analyze_snapshot(arr)
     npt.assert_equal(report2.objects, 1)
 
     # try other input options for colors
-    renderer.clear()
+    scene.clear()
     actor.line(bundle, (1., 0.5, 0))
     actor.line(bundle, np.arange(len(bundle)))
     actor.line(bundle)
@@ -435,7 +443,7 @@ def test_odf_slicer(interactive=False):
     odfs[:] = 1
 
     affine = np.eye(4)
-    renderer = window.Renderer()
+    scene = window.Scene()
 
     mask = np.ones(odfs.shape[:3])
     mask[:4, :4, :4] = 0
@@ -453,29 +461,29 @@ def test_odf_slicer(interactive=False):
     fa[5, 5, 5] = 1
 
     k = 5
-    I, J, K = odfs.shape[:3]
+    I, J, _ = odfs.shape[:3]
 
     fa_actor = actor.slicer(fa, affine)
     fa_actor.display_extent(0, I, 0, J, k, k)
-    renderer.add(odf_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.add(odf_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     odf_actor.display_extent(0, I, 0, J, k, k)
     odf_actor.GetProperty().SetOpacity(1.0)
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 11 * 11)
 
-    renderer.clear()
-    renderer.add(fa_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.clear()
+    scene.add(fa_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
     if interactive:
-        window.show(renderer)
+        window.show(scene)
 
     mask[:] = 0
     mask[5, 5, 5] = 1
@@ -486,17 +494,17 @@ def test_odf_slicer(interactive=False):
                                  sphere=sphere, scale=.25,
                                  colormap='plasma',
                                  norm=False, global_cm=True)
-    renderer.clear()
-    renderer.add(fa_actor)
-    renderer.add(odf_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.clear()
+    scene.add(fa_actor)
+    scene.add(odf_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
     if interactive:
-        window.show(renderer)
+        window.show(scene)
 
-    renderer.clear()
-    renderer.add(odf_actor)
-    renderer.add(fa_actor)
+    scene.clear()
+    scene.add(odf_actor)
+    scene.add(fa_actor)
     odfs[:, :, :] = 1
     mask = np.ones(odfs.shape[:3])
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
@@ -504,34 +512,34 @@ def test_odf_slicer(interactive=False):
                                  colormap='plasma',
                                  norm=False, global_cm=True)
 
-    renderer.clear()
-    renderer.add(odf_actor)
-    renderer.add(fa_actor)
-    renderer.add(actor.axes((11, 11, 11)))
+    scene.clear()
+    scene.add(odf_actor)
+    scene.add(fa_actor)
+    scene.add(actor.axes((11, 11, 11)))
     for i in range(11):
         odf_actor.display(i, None, None)
         fa_actor.display(i, None, None)
         if interactive:
-            window.show(renderer)
+            window.show(scene)
     for j in range(11):
         odf_actor.display(None, j, None)
         fa_actor.display(None, j, None)
         if interactive:
-            window.show(renderer)
+            window.show(scene)
     # with mask equal to zero everything should be black
     mask = np.zeros(odfs.shape[:3])
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
                                  colormap='plasma',
                                  norm=False, global_cm=True)
-    renderer.clear()
-    renderer.add(odf_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.clear()
+    scene.add(odf_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
     if interactive:
-        window.show(renderer)
+        window.show(scene)
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     npt.assert_equal(report.actors_classnames[0], 'vtkLODActor')
 
@@ -556,16 +564,16 @@ def test_peak_slicer(interactive=False):
 
     peak_dirs[:, :, :] = _peak_dirs
 
-    renderer = window.Renderer()
+    scene = window.Scene()
     peak_actor = actor.peak_slicer(peak_dirs)
-    renderer.add(peak_actor)
-    renderer.add(actor.axes((11, 11, 11)))
+    scene.add(peak_actor)
+    scene.add(actor.axes((11, 11, 11)))
     if interactive:
-        window.show(renderer)
+        window.show(scene)
 
-    renderer.clear()
-    renderer.add(peak_actor)
-    renderer.add(actor.axes((11, 11, 11)))
+    scene.clear()
+    scene.add(peak_actor)
+    scene.add(actor.axes((11, 11, 11)))
     for k in range(11):
         peak_actor.display_extent(0, 10, 0, 10, k, k)
 
@@ -575,7 +583,7 @@ def test_peak_slicer(interactive=False):
     for i in range(11):
         peak_actor.display(i, None, None)
 
-    renderer.rm_all()
+    scene.rm_all()
 
     peak_actor = actor.peak_slicer(
         peak_dirs,
@@ -583,18 +591,18 @@ def test_peak_slicer(interactive=False):
         mask=None,
         affine=np.diag([3, 2, 1, 1]),
         colors=None,
-        opacity=1,
+        opacity=0.8,
         linewidth=3,
         lod=True,
         lod_points=10 ** 4,
         lod_points_size=3)
 
-    renderer.add(peak_actor)
-    renderer.add(actor.axes((11, 11, 11)))
+    scene.add(peak_actor)
+    scene.add(actor.axes((11, 11, 11)))
     if interactive:
-        window.show(renderer)
+        window.show(scene)
 
-    report = window.analyze_renderer(renderer)
+    report = window.analyze_scene(scene)
     ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
@@ -617,31 +625,34 @@ def test_tensor_slicer(interactive=False):
     sphere = get_sphere('symmetric724')
 
     affine = np.eye(4)
-    renderer = window.Renderer()
+    scene = window.Scene()
 
     tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                       sphere=sphere,  scale=.3)
-    I, J, K = mevals.shape[:3]
-    renderer.add(tensor_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+                                       sphere=sphere, scale=.3, opacity=0.4)
+    _, J, K = mevals.shape[:3]
+    scene.add(tensor_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     tensor_actor.display_extent(0, 1, 0, J, 0, K)
+    if interactive:
+        window.show(scene, reset_camera=False)
+
     tensor_actor.GetProperty().SetOpacity(1.0)
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    npt.assert_equal(renderer.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
     # Test extent
-    big_extent = renderer.GetActors().GetLastActor().GetBounds()
+    big_extent = scene.GetActors().GetLastActor().GetBounds()
     big_extent_x = abs(big_extent[1] - big_extent[0])
     tensor_actor.display(x=2)
 
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    small_extent = renderer.GetActors().GetLastActor().GetBounds()
+    small_extent = scene.GetActors().GetLastActor().GetBounds()
     small_extent_x = abs(small_extent[1] - small_extent[0])
     npt.assert_equal(big_extent_x > small_extent_x, True)
 
@@ -657,42 +668,42 @@ def test_tensor_slicer(interactive=False):
     cfa = color_fa(fractional_anisotropy(mevals), mevecs)
     tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
                                        mask=mask, scalar_colors=cfa,
-                                       sphere=sphere,  scale=.3)
-    renderer.clear()
-    renderer.add(tensor_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+                                       sphere=sphere, scale=.3)
+    scene.clear()
+    scene.add(tensor_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    mask_extent = renderer.GetActors().GetLastActor().GetBounds()
+    mask_extent = scene.GetActors().GetLastActor().GetBounds()
     mask_extent_x = abs(mask_extent[1] - mask_extent[0])
     npt.assert_equal(big_extent_x > mask_extent_x, True)
 
     # test display
     tensor_actor.display()
-    current_extent = renderer.GetActors().GetLastActor().GetBounds()
+    current_extent = scene.GetActors().GetLastActor().GetBounds()
     current_extent_x = abs(current_extent[1] - current_extent[0])
     npt.assert_equal(big_extent_x > current_extent_x, True)
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
     tensor_actor.display(y=1)
-    current_extent = renderer.GetActors().GetLastActor().GetBounds()
+    current_extent = scene.GetActors().GetLastActor().GetBounds()
     current_extent_y = abs(current_extent[3] - current_extent[2])
     big_extent_y = abs(big_extent[3] - big_extent[2])
     npt.assert_equal(big_extent_y > current_extent_y, True)
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
     tensor_actor.display(z=1)
-    current_extent = renderer.GetActors().GetLastActor().GetBounds()
+    current_extent = scene.GetActors().GetLastActor().GetBounds()
     current_extent_z = abs(current_extent[5] - current_extent[4])
     big_extent_z = abs(big_extent[5] - big_extent[4])
     npt.assert_equal(big_extent_z > current_extent_z, True)
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
     # Test error handling of the method when
     # incompatible dimension of mevals and evecs are passed.
@@ -712,20 +723,20 @@ def test_dots(interactive=False):
 
     dots_actor = actor.dots(points, color=(0, 255, 0))
 
-    renderer = window.Renderer()
-    renderer.add(dots_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene = window.Scene()
+    scene.add(dots_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    npt.assert_equal(renderer.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    extent = renderer.GetActors().GetLastActor().GetBounds()
+    extent = scene.GetActors().GetLastActor().GetBounds()
     npt.assert_equal(extent, (0.0, 1.0, 0.0, 1.0, 0.0, 0.0))
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
                                      colors=(0, 255, 0))
     npt.assert_equal(report.objects, 3)
@@ -734,12 +745,12 @@ def test_dots(interactive=False):
     points = np.array([0, 0, 0])
     dot_actor = actor.dots(points, color=(0, 0, 255))
 
-    renderer.clear()
-    renderer.add(dot_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene.clear()
+    scene.add(dot_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
                                      colors=(0, 0, 255))
     npt.assert_equal(report.objects, 1)
@@ -751,19 +762,19 @@ def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    points_actor = actor.point(points,  colors)
+    points_actor = actor.point(points, colors)
 
-    renderer = window.Renderer()
-    renderer.add(points_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene = window.Scene()
+    scene.add(points_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    npt.assert_equal(renderer.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
@@ -775,15 +786,15 @@ def test_labels(interactive=False):
 
     text_actor = actor.label("Hello")
 
-    renderer = window.Renderer()
-    renderer.add(text_actor)
-    renderer.reset_camera()
-    renderer.reset_clipping_range()
+    scene = window.Scene()
+    scene.add(text_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(renderer, reset_camera=False)
+        window.show(scene, reset_camera=False)
 
-    npt.assert_equal(renderer.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
 
 @npt.dec.skipif(skip_it)
@@ -793,18 +804,116 @@ def test_spheres(interactive=False):
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
 
-    renderer = window.Renderer()
+    scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3])
-    renderer.add(sphere_actor)
+    scene.add(sphere_actor)
 
     if interactive:
-        window.show(renderer, order_transparent=True)
+        window.show(scene, order_transparent=True)
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_grid(_interactive=False):
+
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            (1., 0, 0), 1.)
+
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
+
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            (1., 0.5, 0), 1.)
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
+
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            (1., 0.5, 0.5), 1.)
+
+    scene = window.Scene()
+    actors = []
+    texts = []
+
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
+    texts.append(text_actor3)
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
+
+    # show the grid without the captions
+    container = grid(actors=actors, captions=None,
+                     caption_offset=(0, -40, 0),
+                     cell_padding=(10, 10), dim=(2, 3))
+
+    scene.add(container)
+
+    scene.projection('orthogonal')
+
+    counter = itertools.count()
+
+    show_m = window.ShowManager(scene)
+
+    show_m.initialize()
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        # show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 4:
+            show_m.exit()
+
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 6)
+
+    scene.rm_all()
+
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
+    # show the grid with the captions
+    container = grid(actors=actors, captions=texts,
+                     caption_offset=(0, -50, 0),
+                     cell_padding=(10, 10),
+                     dim=(3, 3))
+
+    scene.add(container)
+
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 6, True)
 
 
 if __name__ == "__main__":

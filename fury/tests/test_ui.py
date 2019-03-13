@@ -2,19 +2,20 @@ import os
 import sys
 import pickle
 import numpy as np
-import vtk
 
 from os.path import join as pjoin
 import numpy.testing as npt
 
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import ui
-from fury.ui import UI
 from fury import window, actor
 from fury.data import DATA_DIR
 from fury.decorators import xvfb_it
 from fury.testing import assert_arrays_equal
+from fury.utils import shallow_copy
 
+import itertools
+from fury.colormap import distinguishable_colormap
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
@@ -40,7 +41,7 @@ class EventCounter(object):
         # Events to count
         self.events_counts = {name: 0 for name in events_names}
 
-    def count(self, i_ren, obj, element):
+    def count(self, i_ren, _obj, _element):
         """ Simple callback that counts events occurences. """
         self.events_counts[i_ren.event.name] += 1
 
@@ -79,41 +80,12 @@ class EventCounter(object):
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
-def test_broken_ui_component():
-    class SimplestUI(UI):
-        def __init__(self):
-            super(SimplestUI, self).__init__()
-
-        def _setup(self):
-            self.actor = vtk.vtkActor2D()
-
-        def _set_position(self, coords):
-            self.actor.SetPosition(*coords)
-
-    # Can be instantiated.
-    SimplestUI()
-
-    # Instantiating UI subclasses that don't override all abstract methods.
-    for attr in ["_setup", "_set_position"]:
-        bkp = getattr(SimplestUI, attr)
-        delattr(SimplestUI, attr)
-        npt.assert_raises(NotImplementedError, SimplestUI)
-        setattr(SimplestUI, attr, bkp)
-
-    simple_ui = SimplestUI()
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'actors')
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'size')
-    npt.assert_raises(NotImplementedError, getattr, simple_ui, 'center')
-
-
-@npt.dec.skipif(skip_it)
-@xvfb_it
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
-    dummy_renderer = window.Renderer()
-    dummy_show_manager = window.ShowManager(dummy_renderer,
+    dummy_scene = window.Scene()
+    dummy_show_manager = window.ShowManager(dummy_scene,
                                             interactor_style='trackball')
-    npt.assert_raises(TypeError, panel.add_to_renderer, dummy_renderer)
+    npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
 @npt.dec.skipif(skip_it)
@@ -133,19 +105,19 @@ def test_ui_rectangle_2d():
     npt.assert_equal(rect.opacity, 0.5)
 
     # Check the rectangle is drawn at right place.
-    show_manager.ren.add(rect)
+    show_manager.scene.add(rect)
     # Uncomment this to start the visualisation
     # show_manager.start()
 
     colors = [rect.color]
-    arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
+    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
     assert report.objects == 1
     assert report.colors_found
 
     # Test visibility off.
     rect.set_visibility(False)
-    arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
+    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr)
     assert report.objects == 0
 
@@ -167,21 +139,22 @@ def test_ui_disk_2d():
     npt.assert_equal(disk.opacity, 0.5)
 
     # Check the rectangle is drawn at right place.
-    show_manager.ren.add(disk)
+    show_manager.scene.add(disk)
     # Uncomment this to start the visualisation
     # show_manager.start()
 
     colors = [disk.color]
-    arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
+    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
-    assert report.objects == 1
-    assert report.colors_found
+    npt.assert_equal(report.objects, 1)
+    # Should be False because of the offscreen
+    npt.assert_equal(report.colors_found, [False])
 
     # Test visibility off.
     disk.set_visibility(False)
-    arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
+    arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr)
-    assert report.objects == 0
+    npt.assert_equal(report.objects, 0)
 
 
 @npt.dec.skipif(skip_it)
@@ -205,7 +178,7 @@ def test_ui_button_panel(recording=False):
     button_test = ui.Button2D(icon_fnames=icon_files)
     button_test.center = (20, 20)
 
-    def make_invisible(i_ren, obj, button):
+    def make_invisible(i_ren, _obj, button):
         # i_ren: CustomInteractorStyle
         # obj: vtkActor picked
         # button: Button2D
@@ -213,7 +186,7 @@ def test_ui_button_panel(recording=False):
         i_ren.force_render()
         i_ren.event.abort()
 
-    def modify_button_callback(i_ren, obj, button):
+    def modify_button_callback(i_ren, _obj, button):
         # i_ren: CustomInteractorStyle
         # obj: vtkActor picked
         # button: Button2D
@@ -252,7 +225,7 @@ def test_ui_button_panel(recording=False):
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size, title="FURY Button")
 
-    show_manager.ren.add(panel)
+    show_manager.scene.add(panel)
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -277,8 +250,6 @@ def test_ui_textbox(recording=False):
 
     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
     another_textbox_test.set_message("Enter Text")
-    npt.assert_raises(NotImplementedError, setattr,
-                      another_textbox_test, "center", (10, 100))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
@@ -287,7 +258,7 @@ def test_ui_textbox(recording=False):
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size, title="FURY TextBox")
 
-    show_manager.ren.add(textbox_test)
+    show_manager.scene.add(textbox_test)
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -356,7 +327,7 @@ def test_text_block_2d_justification():
     for spec in grid_specs:
         line = ui.Rectangle2D(size=spec[1], color=line_color)
         line.center = spec[0]
-        show_manager.ren.add(line)
+        show_manager.scene.add(line)
 
     font_size = 60
     bg_color = (1, 1, 1)
@@ -409,12 +380,12 @@ def test_text_block_2d_justification():
                              justification="right",
                              vertical_justification="bottom")]
 
-    show_manager.ren.add(*texts)
+    show_manager.scene.add(*texts)
 
     # Uncomment this to start the visualisation
     # show_manager.start()
 
-    arr = window.snapshot(show_manager.ren, size=window_size, offscreen=True)
+    window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
 @npt.dec.skipif(skip_it)
@@ -436,7 +407,7 @@ def test_ui_line_slider_2d(recording=False):
     show_manager = window.ShowManager(size=current_size,
                                       title="FURY Line Slider")
 
-    show_manager.ren.add(line_slider_2d_test)
+    show_manager.scene.add(line_slider_2d_test)
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -462,7 +433,7 @@ def test_ui_line_double_slider_2d(interactive=False):
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.ren.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_test)
         show_manager.start()
 
     line_double_slider_2d_test = ui.LineDoubleSlider2D(
@@ -475,7 +446,7 @@ def test_ui_line_double_slider_2d(interactive=False):
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.ren.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_test)
         show_manager.start()
 
 
@@ -498,7 +469,7 @@ def test_ui_ring_slider_2d(recording=False):
     show_manager = window.ShowManager(size=current_size,
                                       title="FURY Ring Slider")
 
-    show_manager.ren.add(ring_slider_2d_test)
+    show_manager.scene.add(ring_slider_2d_test)
 
     if recording:
         # Record the following events
@@ -526,7 +497,7 @@ def test_ui_range_slider(interactive=False):
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.ren.add(range_slider_test)
+        show_manager.scene.add(range_slider_test)
         show_manager.start()
 
 
@@ -539,7 +510,7 @@ def test_ui_option(interactive=False):
 
     if interactive:
         showm = window.ShowManager(size=(600, 600))
-        showm.ren.add(option_test)
+        showm.scene.add(option_test)
         showm.start()
 
 
@@ -581,7 +552,7 @@ def test_ui_checkbox(interactive=False):
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY Checkbox")
-    show_manager.ren.add(checkbox_test)
+    show_manager.scene.add(checkbox_test)
 
     # Recorded events:
     #  1. Click on button of option 1.
@@ -605,7 +576,7 @@ def test_ui_checkbox(interactive=False):
                 ['option 2\nOption 2', 'option 3', 'option 1', 'option 4'],
                 ['option 2\nOption 2', 'option 3', 'option 4'],
                 ['option 3', 'option 4'], ['option 3'], []]
-    assert len(selected_options) == len(expected)
+    npt.assert_equal(len(selected_options), len(expected))
     assert_arrays_equal(selected_options, expected)
     del show_manager
 
@@ -614,7 +585,7 @@ def test_ui_checkbox(interactive=False):
                                             "option 3", "option 4"],
                                     position=(100, 100))
         showm = window.ShowManager(size=(600, 600))
-        showm.ren.add(checkbox_test)
+        showm.scene.add(checkbox_test)
         showm.start()
 
 
@@ -655,7 +626,7 @@ def test_ui_radio_button(interactive=False):
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY Checkbox")
-    show_manager.ren.add(radio_button_test)
+    show_manager.scene.add(radio_button_test)
 
     # Recorded events:
     #  1. Click on button of option 1.
@@ -674,7 +645,7 @@ def test_ui_radio_button(interactive=False):
     expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
                 ['option 2\nOption 2'], ['option 1'], ['option 3'],
                 ['option 4'], ['option 4']]
-    assert len(selected_option) == len(expected)
+    npt.assert_equal(len(selected_option), len(expected))
     assert_arrays_equal(selected_option, expected)
     del show_manager
 
@@ -683,7 +654,7 @@ def test_ui_radio_button(interactive=False):
             labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
             position=(100, 100))
         showm = window.ShowManager(size=(600, 600))
-        showm.ren.add(radio_button_test)
+        showm.scene.add(radio_button_test)
         showm.start()
 
 
@@ -707,7 +678,7 @@ def test_ui_listbox_2d(interactive=False):
 
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY ListBox")
-        show_manager.ren.add(listbox)
+        show_manager.scene.add(listbox)
         show_manager.start()
 
     # Recorded events:
@@ -743,7 +714,7 @@ def test_ui_listbox_2d(interactive=False):
 
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY ListBox")
-    show_manager.ren.add(listbox)
+    show_manager.scene.add(listbox)
     show_manager.play_events_from_file(recording_filename)
     expected = EventCounter.load(expected_events_counts_filename)
     event_counter.check_counts(expected)
@@ -760,7 +731,7 @@ def test_ui_listbox_2d(interactive=False):
 
     # Check if the right values were selected.
     expected = [[1], [2], [2], [42], [1], [42]]
-    assert len(selected_values) == len(expected)
+    npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
 
@@ -779,7 +750,7 @@ def test_ui_image_container_2d(interactive=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size, title="FURY Button")
-    show_manager.ren.add(image_test)
+    show_manager.scene.add(image_test)
     if interactive:
         show_manager.start()
 
@@ -787,14 +758,12 @@ def test_ui_image_container_2d(interactive=False):
 @npt.dec.skipif(skip_it or not have_dipy)
 @xvfb_it
 def test_timer():
-    """ Testing add a timer and exit window and app from inside timer.
-    """
-
+    """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
     xyzr2 = np.array([[0, 200, 0, 30], [100, 200, 0, 50], [300, 200, 0, 100]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.45]])
 
-    renderer = window.Renderer()
+    scene = window.Scene()
     global sphere_actor, tb, cnt
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3])
@@ -805,20 +774,20 @@ def test_timer():
                                  radii=xyzr2[:, 3], vertices=sphere.vertices,
                                  faces=sphere.faces.astype('i8'))
 
-    renderer.add(sphere_actor)
-    renderer.add(sphere_actor2)
+    scene.add(sphere_actor)
+    scene.add(sphere_actor2)
 
     tb = ui.TextBlock2D()
 
     cnt = 0
     global showm
-    showm = window.ShowManager(renderer,
+    showm = window.ShowManager(scene,
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
     showm.initialize()
 
-    def timer_callback(obj, event):
+    def timer_callback(_obj, _event):
         global cnt, sphere_actor, showm, tb
 
         cnt += 1
@@ -827,13 +796,13 @@ def test_timer():
         if cnt > 9:
             showm.exit()
 
-    renderer.add(tb)
+    scene.add(tb)
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    arr = window.snapshot(renderer)
+    arr = window.snapshot(scene)
 
     npt.assert_(np.sum(arr) > 0)
 
@@ -873,7 +842,7 @@ def test_ui_file_menu_2d(interactive=False):
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY FileMenu")
-    show_manager.ren.add(filemenu)
+    show_manager.scene.add(filemenu)
 
     # Recorded events:
     #  1. Click on 'testfile.txt'
@@ -891,7 +860,7 @@ def test_ui_file_menu_2d(interactive=False):
                 ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
                  "test4.txt", "test5.txt", "test6.txt"],
                 ["../"], ["testfile.txt"]]
-    assert len(selected_files) == len(expected)
+    npt.assert_equal(len(selected_files), len(expected))
     assert_arrays_equal(selected_files, expected)
 
     # Remove temporary directory and files
@@ -907,26 +876,157 @@ def test_ui_file_menu_2d(interactive=False):
         filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY FileMenu")
-        show_manager.ren.add(filemenu)
+        show_manager.scene.add(filemenu)
         show_manager.start()
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
+def test_grid_ui(interactive=False):
+
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
+
+    colors = distinguishable_colormap(nb_colors=3)
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            colors[0], 1.)
+
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
+
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            colors[1], 1.)
+
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
+
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            colors[2], 1.)
+
+    scene = window.Scene()
+    actors = []
+    texts = []
+
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
+    texts.append(text_actor3)
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
+
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 7', justification='center')
+    texts.append(text_actor1)
+
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 8', justification='center')
+    texts.append(text_actor2)
+
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 9', justification='center')
+    texts.append(text_actor3)
+
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 10:
+            show_m.exit()
+
+    # show the grid with the captions
+    grid_ui = ui.GridUI(actors=actors, captions=texts,
+                        caption_offset=(0, -50, 0),
+                        cell_padding=(60, 60), dim=(3, 3),
+                        rotation_axis=(1, 0, 0))
+
+    scene.add(grid_ui)
+
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 9, True)
+
+    # this needs to happen automatically when start() ends.
+    for act in actors:
+        act.RemoveAllObservers()
+
+    filename = "test_grid_ui"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+
+    current_size = (900, 600)
+    scene = window.Scene()
+    show_manager = window.ShowManager(scene,
+                                      size=current_size,
+                                      title="FURY GridUI")
+    show_manager.initialize()
+
+    grid_ui2 = ui.GridUI(actors=actors, captions=texts,
+                         caption_offset=(0, -50, 0),
+                         cell_padding=(60, 60), dim=(3, 3),
+                         rotation_axis=None)
+
+    scene.add(grid_ui2)
+
+    event_counter = EventCounter()
+    event_counter.monitor(grid_ui2)
+
+    if interactive:
+        show_manager.start()
+    recording = False
+
+    if recording:
+        # Record the following events
+        # 1. Left click on top left box (will rotate the box)
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
 
 
 if __name__ == "__main__":
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-        test_ui_button_panel(recording=True)
+        test_ui_button_panel(recording=False)
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-        test_ui_textbox(recording=True)
+        test_ui_textbox(recording=False)
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-        test_ui_line_slider_2d(recording=True)
+        test_ui_line_slider_2d(recording=False)
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
         test_ui_line_double_slider_2d(interactive=False)
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-        test_ui_ring_slider_2d(recording=True)
+        test_ui_ring_slider_2d(recording=False)
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
         test_ui_range_slider(interactive=False)
@@ -951,3 +1051,9 @@ if __name__ == "__main__":
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
         test_ui_file_menu_2d(interactive=False)
+
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
+        test_grid_ui(interactive=False)
+
+    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_disk_2d":
+        test_ui_disk_2d()

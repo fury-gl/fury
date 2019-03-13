@@ -10,7 +10,7 @@ from fury.colormap import line_colors
 
 
 def set_input(vtk_object, inp):
-    """ Generic input function which takes into account VTK 5 or 6
+    """Set Generic input function which takes into account VTK 5 or 6.
 
     Parameters
     ----------
@@ -26,10 +26,10 @@ def set_input(vtk_object, inp):
     This can be used in the following way::
         from fury.utils import set_input
         poly_mapper = set_input(vtk.vtkPolyDataMapper(), poly_data)
+
     """
-    if isinstance(inp, vtk.vtkPolyData) \
-       or isinstance(inp, vtk.vtkImageData):
-            vtk_object.SetInputData(inp)
+    if isinstance(inp, vtk.vtkPolyData) or isinstance(inp, vtk.vtkImageData):
+        vtk_object.SetInputData(inp)
     elif isinstance(inp, vtk.vtkAlgorithmOutput):
         vtk_object.SetInputConnection(inp)
 
@@ -38,7 +38,7 @@ def set_input(vtk_object, inp):
 
 
 def numpy_to_vtk_points(points):
-    """ Numpy points array to a vtk points array
+    """Convert Numpy points array to a vtk points array.
 
     Parameters
     ----------
@@ -47,6 +47,7 @@ def numpy_to_vtk_points(points):
     Returns
     -------
     vtk_points : vtkPoints()
+
     """
     vtk_points = vtk.vtkPoints()
     vtk_points.SetData(numpy_support.numpy_to_vtk(np.asarray(points),
@@ -55,7 +56,7 @@ def numpy_to_vtk_points(points):
 
 
 def numpy_to_vtk_colors(colors):
-    """ Numpy color array to a vtk color array
+    """Convert Numpy color array to a vtk color array.
 
     Parameters
     ----------
@@ -75,6 +76,7 @@ def numpy_to_vtk_colors(colors):
     >>> from fury.utils import numpy_to_vtk_colors
     >>> rgb_array = np.random.rand(100, 3)
     >>> vtk_colors = numpy_to_vtk_colors(255 * rgb_array)
+
     """
     vtk_colors = numpy_support.numpy_to_vtk(np.asarray(colors), deep=True,
                                             array_type=vtk.VTK_UNSIGNED_CHAR)
@@ -82,8 +84,8 @@ def numpy_to_vtk_colors(colors):
 
 
 def map_coordinates_3d_4d(input_array, indices):
-    """ Evaluate the input_array data at the given indices
-    using trilinear interpolation
+    """Evaluate the input_array data at the given indices
+    using trilinear interpolation.
 
     Parameters
     ----------
@@ -95,8 +97,8 @@ def map_coordinates_3d_4d(input_array, indices):
     -------
     output : ndarray
         1D or 2D array
-    """
 
+    """
     if input_array.ndim <= 2 or input_array.ndim >= 5:
         raise ValueError("Input array can only be 3d or 4d")
 
@@ -113,7 +115,7 @@ def map_coordinates_3d_4d(input_array, indices):
 
 
 def lines_to_vtk_polydata(lines, colors=None):
-    """ Create a vtkPolyData with lines and colors
+    """Create a vtkPolyData with lines and colors.
 
     Parameters
     ----------
@@ -142,8 +144,8 @@ def lines_to_vtk_polydata(lines, colors=None):
     -------
     poly_data : vtkPolyData
     is_colormap : bool, true if the input color array was a colormap
-    """
 
+    """
     # Get the 3d points_array
     points_array = np.vstack(lines)
 
@@ -231,7 +233,7 @@ def lines_to_vtk_polydata(lines, colors=None):
 
 
 def get_polydata_lines(line_polydata):
-    """ vtk polydata to a list of lines ndarrays
+    """Convert vtk polydata to a list of lines ndarrays.
 
     Parameters
     ----------
@@ -241,8 +243,10 @@ def get_polydata_lines(line_polydata):
     -------
     lines : list
         List of N curves represented as 2D ndarrays
+
     """
-    lines_vertices = numpy_support.vtk_to_numpy(line_polydata.GetPoints().GetData())
+    lines_vertices = numpy_support.vtk_to_numpy(line_polydata.GetPoints().
+                                                GetData())
     lines_idx = numpy_support.vtk_to_numpy(line_polydata.GetLines().GetData())
 
     lines = []
@@ -259,7 +263,7 @@ def get_polydata_lines(line_polydata):
 
 
 def get_polydata_triangles(polydata):
-    """ get triangles (ndarrays Nx3 int) from a vtk polydata
+    """Get triangles (ndarrays Nx3 int) from a vtk polydata.
 
     Parameters
     ----------
@@ -269,14 +273,17 @@ def get_polydata_triangles(polydata):
     -------
     output : array (N, 3)
         triangles
+
     """
     vtk_polys = numpy_support.vtk_to_numpy(polydata.GetPolys().GetData())
-    assert((vtk_polys[::4] == 3).all())  # test if its really triangles
+    # test if its really triangles
+    if not (vtk_polys[::4] == 3).all():
+        raise AssertionError("Shape error: this is not triangles")
     return np.vstack([vtk_polys[1::4], vtk_polys[2::4], vtk_polys[3::4]]).T
 
 
 def get_polydata_vertices(polydata):
-    """ get vertices (ndarrays Nx3 int) from a vtk polydata
+    """Get vertices (ndarrays Nx3 int) from a vtk polydata.
 
     Parameters
     ----------
@@ -286,12 +293,13 @@ def get_polydata_vertices(polydata):
     -------
     output : array (N, 3)
         points, represented as 2D ndarrays
+
     """
     return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
 
 
 def get_polydata_normals(polydata):
-    """ get vertices normal (ndarrays Nx3 int) from a vtk polydata
+    """Get vertices normal (ndarrays Nx3 int) from a vtk polydata.
 
     Parameters
     ----------
@@ -302,6 +310,7 @@ def get_polydata_normals(polydata):
     output : array (N, 3)
         Normals, represented as 2D ndarrays (Nx3). None if there are no normals
         in the vtk polydata.
+
     """
     vtk_normals = polydata.GetPointData().GetNormals()
     if vtk_normals is None:
@@ -311,7 +320,7 @@ def get_polydata_normals(polydata):
 
 
 def get_polydata_colors(polydata):
-    """ get points color (ndarrays Nx3 int) from a vtk polydata
+    """Get points color (ndarrays Nx3 int) from a vtk polydata.
 
     Parameters
     ----------
@@ -321,6 +330,7 @@ def get_polydata_colors(polydata):
     -------
     output : array (N, 3)
         Colors. None if no normals in the vtk polydata.
+
     """
     vtk_colors = polydata.GetPointData().GetScalars()
     if vtk_colors is None:
@@ -330,13 +340,14 @@ def get_polydata_colors(polydata):
 
 
 def set_polydata_triangles(polydata, triangles):
-    """ set polydata triangles with a numpy array (ndarrays Nx3 int)
+    """Set polydata triangles with a numpy array (ndarrays Nx3 int).
 
     Parameters
     ----------
     polydata : vtkPolyData
     triangles : array (N, 3)
         triangles, represented as 2D ndarrays (Nx3)
+
     """
     vtk_triangles = np.hstack(np.c_[np.ones(len(triangles)).astype(np.int) * 3,
                                     triangles])
@@ -349,12 +360,13 @@ def set_polydata_triangles(polydata, triangles):
 
 
 def set_polydata_vertices(polydata, vertices):
-    """ set polydata vertices with a numpy array (ndarrays Nx3 int)
+    """Set polydata vertices with a numpy array (ndarrays Nx3 int).
 
     Parameters
     ----------
     polydata : vtkPolyData
     vertices : vertices, represented as 2D ndarrays (Nx3)
+
     """
     vtk_points = vtk.vtkPoints()
     vtk_points.SetData(numpy_support.numpy_to_vtk(vertices, deep=True))
@@ -363,12 +375,13 @@ def set_polydata_vertices(polydata, vertices):
 
 
 def set_polydata_normals(polydata, normals):
-    """ set polydata normals with a numpy array (ndarrays Nx3 int)
+    """Set polydata normals with a numpy array (ndarrays Nx3 int).
 
     Parameters
     ----------
     polydata : vtkPolyData
     normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
+
     """
     vtk_normals = numpy_support.numpy_to_vtk(normals, deep=True)
     polydata.GetPointData().SetNormals(vtk_normals)
@@ -376,13 +389,14 @@ def set_polydata_normals(polydata, normals):
 
 
 def set_polydata_colors(polydata, colors):
-    """ set polydata colors with a numpy array (ndarrays Nx3 int)
+    """Set polydata colors with a numpy array (ndarrays Nx3 int).
 
     Parameters
     ----------
     polydata : vtkPolyData
     colors : colors, represented as 2D ndarrays (Nx3)
         colors are uint8 [0,255] RGB for each points
+
     """
     vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
                                             array_type=vtk.VTK_UNSIGNED_CHAR)
@@ -393,11 +407,12 @@ def set_polydata_colors(polydata, colors):
 
 
 def update_polydata_normals(polydata):
-    """ generate and update polydata normals
+    """Generate and update polydata normals.
 
     Parameters
     ----------
     polydata : vtkPolyData
+
     """
     normals_gen = set_input(vtk.vtkPolyDataNormals(), polydata)
     normals_gen.ComputePointNormalsOn()
@@ -413,7 +428,7 @@ def update_polydata_normals(polydata):
 
 
 def get_polymapper_from_polydata(polydata):
-    """ get vtkPolyDataMapper from a vtkPolyData
+    """Get vtkPolyDataMapper from a vtkPolyData.
 
     Parameters
     ----------
@@ -422,6 +437,7 @@ def get_polymapper_from_polydata(polydata):
     Returns
     -------
     poly_mapper : vtkPolyDataMapper
+
     """
     poly_mapper = set_input(vtk.vtkPolyDataMapper(), polydata)
     poly_mapper.ScalarVisibilityOn()
@@ -432,7 +448,7 @@ def get_polymapper_from_polydata(polydata):
 
 
 def get_actor_from_polymapper(poly_mapper):
-    """ get vtkActor from a vtkPolyDataMapper
+    """Get vtkActor from a vtkPolyDataMapper.
 
     Parameters
     ----------
@@ -441,6 +457,7 @@ def get_actor_from_polymapper(poly_mapper):
     Returns
     -------
     actor : vtkActor
+
     """
     actor = vtk.vtkActor()
     actor.SetMapper(poly_mapper)
@@ -451,7 +468,7 @@ def get_actor_from_polymapper(poly_mapper):
 
 
 def get_actor_from_polydata(polydata):
-    """ get vtkActor from a vtkPolyData
+    """Get vtkActor from a vtkPolyData.
 
     Parameters
     ----------
@@ -460,6 +477,7 @@ def get_actor_from_polydata(polydata):
     Returns
     -------
     actor : vtkActor
+
     """
     poly_mapper = get_polymapper_from_polydata(polydata)
     return get_actor_from_polymapper(poly_mapper)
@@ -540,3 +558,145 @@ def asbytes(s):
         return s.encode('latin1')
     else:
         return str(s)
+
+
+def vtk_matrix_to_numpy(matrix):
+    """Convert VTK matrix to numpy array."""
+    if matrix is None:
+        return None
+
+    size = (4, 4)
+    if isinstance(matrix, vtk.vtkMatrix3x3):
+        size = (3, 3)
+
+    mat = np.zeros(size)
+    for i in range(mat.shape[0]):
+        for j in range(mat.shape[1]):
+            mat[i, j] = matrix.GetElement(i, j)
+
+    return mat
+
+
+def numpy_to_vtk_matrix(array):
+    """Convert a numpy array to a VTK matrix."""
+    if array is None:
+        return None
+
+    if array.shape == (4, 4):
+        matrix = vtk.vtkMatrix4x4()
+    elif array.shape == (3, 3):
+        matrix = vtk.vtkMatrix3x3()
+    else:
+        raise ValueError("Invalid matrix shape: {0}".format(array.shape))
+
+    for i in range(array.shape[0]):
+        for j in range(array.shape[1]):
+            matrix.SetElement(i, j, array[i, j])
+
+    return matrix
+
+
+def get_bounding_box_sizes(actor):
+    """Get the bounding box sizes of an actor."""
+    X1, X2, Y1, Y2, Z1, Z2 = actor.GetBounds()
+    return (X2-X1, Y2-Y1, Z2-Z1)
+
+
+def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
+    """Construct a XY-grid based on the cells content shape.
+
+    This function generates the coordinates of every grid cell. The width and
+    height of every cell correspond to the largest width and the largest height
+    respectively. The grid dimensions will automatically be adjusted to respect
+    the given aspect ratio unless they are explicitly specified.
+
+    The grid follows a row-major order with the top left corner being at
+    coordinates (0,0,0) and the bottom right corner being at coordinates
+    (nb_cols*cell_width, -nb_rows*cell_height, 0). Note that the X increases
+    while the Y decreases.
+
+    Parameters
+    ----------
+    shapes : list of tuple of int
+        The shape (width, height) of every cell content.
+    aspect_ratio : float (optional)
+        Aspect ratio of the grid (width/height). Default: 16:9.
+    dim : tuple of int (optional)
+        Dimension (nb_rows, nb_cols) of the grid, if provided.
+
+    Returns
+    -------
+    ndarray
+        3D coordinates of every grid cell.
+
+    """
+    cell_shape = np.r_[np.max(shapes, axis=0), 0]
+    cell_aspect_ratio = cell_shape[0] / cell_shape[1]
+
+    count = len(shapes)
+    if dim is None:
+        # Compute the number of rows and columns.
+        n_cols = np.ceil(np.sqrt(count*aspect_ratio / cell_aspect_ratio))
+        n_rows = np.ceil(count / n_cols)
+        if n_cols * n_rows <= count:
+            raise ValueError("Too small")
+    else:
+        n_rows, n_cols = dim
+
+        if n_cols * n_rows < count:
+            msg = "Size is too small, it cannot contain at least {} elements."
+            raise ValueError(msg.format(count))
+
+    # Use indexing="xy" so the cells are in row-major (C-order). Also,
+    # the Y coordinates are negative so the cells are order from top to bottom.
+    X, Y, Z = np.meshgrid(np.arange(n_cols), -np.arange(n_rows),
+                          [0], indexing="xy")
+    return cell_shape * np.array([X.flatten(), Y.flatten(), Z.flatten()]).T
+
+
+def shallow_copy(vtk_object):
+    """Create a shallow copy of a given `vtkObject` object."""
+    copy = vtk_object.NewInstance()
+    copy.ShallowCopy(vtk_object)
+    return copy
+
+
+def rotate(actor, rotation=(90, 1, 0, 0)):
+    """Rotate actor around axis by angle.
+
+    Parameters
+    ----------
+    actor : vtkActor or other prop
+    rotation : tuple
+        Rotate with angle w around axis x, y, z. Needs to be provided
+        in the form (w, x, y, z).
+
+    """
+    prop3D = actor
+    center = np.array(prop3D.GetCenter())
+
+    oldMatrix = prop3D.GetMatrix()
+    orig = np.array(prop3D.GetOrigin())
+
+    newTransform = vtk.vtkTransform()
+    newTransform.PostMultiply()
+    if prop3D.GetUserMatrix() is not None:
+        newTransform.SetMatrix(prop3D.GetUserMatrix())
+    else:
+        newTransform.SetMatrix(oldMatrix)
+
+    newTransform.Translate(*(-center))
+    newTransform.RotateWXYZ(*rotation)
+    newTransform.Translate(*center)
+
+    # now try to get the composit of translate, rotate, and scale
+    newTransform.Translate(*(-orig))
+    newTransform.PreMultiply()
+    newTransform.Translate(*orig)
+
+    if prop3D.GetUserMatrix() is not None:
+        newTransform.GetMatrix(prop3D.GetUserMatrix())
+    else:
+        prop3D.SetPosition(newTransform.GetPosition())
+        prop3D.SetScale(newTransform.GetScale())
+        prop3D.SetOrientation(newTransform.GetOrientation())

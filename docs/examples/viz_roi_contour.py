@@ -68,12 +68,12 @@ seedroi_actor = actor.contour_from_roi(seed_mask, affine,
                                        surface_color, surface_opacity)
 
 ###############################################################################
-# Next, we initialize a ''Renderer'' object and add both actors
+# Next, we initialize a ''Scene'' object and add both actors
 # to the rendering.
 
-ren = window.Renderer()
-ren.add(streamlines_actor)
-ren.add(seedroi_actor)
+scene = window.Scene()
+scene.add(streamlines_actor)
+scene.add(seedroi_actor)
 
 ###############################################################################
 # If you uncomment the following line, the rendering will pop up in an
@@ -81,10 +81,10 @@ ren.add(seedroi_actor)
 
 interactive = False
 if interactive:
-    window.show(ren)
+    window.show(scene)
 
-ren.zoom(1.5)
-ren.reset_clipping_range()
+# scene.zoom(1.5)
+# scene.reset_clipping_range()
 
-window.record(ren, out_path='contour_from_roi_tutorial.png', size=(1200, 900),
-              reset_camera=False)
+window.record(scene, out_path='contour_from_roi_tutorial.png',
+              size=(600, 600))

@@ -22,15 +22,15 @@ xyz = 10 * np.random.rand(100, 3)
 colors = np.random.rand(100, 4)
 radii = np.random.rand(100) + 0.5
 
-renderer = window.Renderer()
+scene = window.Scene()
 
 sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
                             radii=radii)
 
-renderer.add(sphere_actor)
+scene.add(sphere_actor)
 
-showm = window.ShowManager(renderer,
+showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
@@ -42,21 +42,21 @@ tb = ui.TextBlock2D(bold=True)
 counter = itertools.count()
 
 
-def timer_callback(obj, event):
+def timer_callback(_obj, _event):
     cnt = next(counter)
     tb.message = "Let's count up to 100 and exit :" + str(cnt)
-    showm.ren.azimuth(0.05 * cnt)
+    showm.scene.azimuth(0.05 * cnt)
     sphere_actor.GetProperty().SetOpacity(cnt/100.)
     showm.render()
     if cnt == 100:
         showm.exit()
 
 
-renderer.add(tb)
+scene.add(tb)
 
 # Run every 200 milliseconds
 showm.add_timer_callback(True, 200, timer_callback)
 
 showm.start()
 
-window.record(showm.ren, size=(900, 768), out_path="viz_timer.png")
+window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")

@@ -2,41 +2,13 @@
 Release History
 ===============
 
-v0.1.4 (2018-11-26)
-------------------------------
+For a full list of the features implemented in the most recent release cycle, check out the release notes.
 
-This is a maintenance release
+.. toctree::
+   :maxdepth: 1
 
-* Add vtk.utils.color on window package
-* Update Readme, codecov, travis...
-
-v0.1.2 and v0.1.3 (2018-10-31)
-------------------------------
-
-This is a maintenance release
-
-* Update setup.py
-* Remove dependence on requirements.txt
-
-v0.1.1 (2018-10-29)
-----------------------------
-
-This is a maintenance release
-
-* Fix error on python 2.7
-* Travis integration
-* Documentation integration
-
-v0.1.0 (2018-09-21)
-----------------------------
-
-This initial release is a split from DIPY. It contains:
-
-* from ``dipy.viz.actors`` to ``fury.actors``
-* from ``dipy.viz.window`` to ``fury.window``
-* from ``dipy.viz.ui`` to ``fury.ui``
-* from ``dipy.viz.widget`` to ``fury.widget``
-* from ``dipy.viz.interactor`` to ``fury.interactor``
-* from ``dipy.viz.colormap`` to ``fury.colormap``
-* from ``dipy.viz.utils`` to ``fury.utils``
-
+   release_notes/releasev0.2.0
+   release_notes/releasev0.1.4
+   release_notes/releasev0.1.3
+   release_notes/releasev0.1.1
+   release_notes/releasev0.1.0

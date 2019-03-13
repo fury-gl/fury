@@ -116,6 +116,7 @@ select {
   padding: 0;
   border: 0;
 }
+
 @media screen {
   html,
   body {

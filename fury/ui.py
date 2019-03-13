@@ -4,19 +4,23 @@ from _warnings import warn
 import numpy as np
 import vtk
 import os
+import abc
+from six import with_metaclass
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
-from fury.utils import set_input
+from fury.utils import set_input, rotate
+from fury.actor import grid
+
 
 TWO_PI = 2 * np.pi
 
 
-class UI(object):
-    """ An umbrella class for all UI elements.
+class UI(with_metaclass(abc.ABCMeta, object)):
+    """An umbrella class for all UI elements.
 
-    While adding UI elements to the renderer, we go over all the sub-elements
-    that come with it and add those to the renderer automatically.
+    While adding UI elements to the scene, we go over all the sub-elements
+    that come with it and add those to the scene automatically.
 
     Attributes
     ----------
@@ -47,16 +51,20 @@ class UI(object):
         Callback function for when dragging using the right mouse button.
     on_key_press: function
         Callback function for when a keyboard key is pressed.
+
     """
 
     def __init__(self, position=(0, 0)):
-        """
+        """Init scene.
+
         Parameters
         ----------
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
+
         """
+        self._scene = object()
         self._position = np.array([0, 0])
         self._callbacks = []
 
@@ -76,47 +84,52 @@ class UI(object):
         self.on_right_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
 
+    @abc.abstractmethod
     def _setup(self):
-        """ Setup this UI component.
+        """Set up this UI component.
 
         This is where you should create all your needed actors and sub UI
         components.
+
         """
         msg = "Subclasses of UI must implement `_setup(self)`."
         raise NotImplementedError(msg)
 
+    @abc.abstractmethod
     def _get_actors(self):
-        """ Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         msg = "Subclasses of UI must implement `_get_actors(self)`."
         raise NotImplementedError(msg)
 
     @property
     def actors(self):
-        """ Actors composing this UI component. """
+        """Actors composing this UI component."""
         return self._get_actors()
 
-    def _add_to_renderer(self, ren):
-        """ Add all subcomponents or VTK props that compose this UI component.
+    @abc.abstractmethod
+    def _add_to_scene(self, _scene):
+        """Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        _scene : scene
+
         """
-        msg = "Subclasses of UI must implement `_add_to_renderer(self, ren)`."
+        msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
         raise NotImplementedError(msg)
 
-    def add_to_renderer(self, ren):
-        """ Allows UI objects to add their own props to the renderer.
+    def add_to_scene(self, scene):
+        """Allow UI objects to add their own props to the scene.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
+
         """
-        self._add_to_renderer(ren)
+        self._add_to_scene(scene)
 
         # Get a hold on the current interactor style.
-        iren = ren.GetRenderWindow().GetInteractor().GetInteractorStyle()
+        iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
 
         for callback in self._callbacks:
             if not isinstance(iren, CustomInteractorStyle):
@@ -124,10 +137,14 @@ class UI(object):
                        " order to use callbacks.")
                 raise TypeError(msg)
 
-            iren.add_callback(*callback, args=[self])
+            if callback[0] == self._scene:
+
+                iren.add_callback(iren, callback[1], callback[2], args=[self])
+            else:
+                iren.add_callback(*callback, args=[self])
 
     def add_callback(self, prop, event_type, callback, priority=0):
-        """ Adds a callback to a specific event for this UI component.
+        """Add a callback to a specific event for this UI component.
 
         Parameters
         ----------
@@ -139,9 +156,10 @@ class UI(object):
             The callback function.
         priority : int
             Higher number is higher priority.
+
         """
         # Actually since we need an interactor style we will add the callback
-        # only when this UI component is added to the renderer.
+        # only when this UI component is added to the scene.
         self._callbacks.append((prop, event_type, callback, priority))
 
     @property
@@ -154,13 +172,15 @@ class UI(object):
         self._set_position(coords)
         self._position = coords
 
-    def _set_position(self, coords):
-        """ Position the lower-left corner of this UI component.
+    @abc.abstractmethod
+    def _set_position(self, _coords):
+        """Position the lower-left corner of this UI component.
 
         Parameters
         ----------
-        coords: (float, float)
+        _coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         msg = "Subclasses of UI must implement `_set_position(self, coords)`."
         raise NotImplementedError(msg)
@@ -169,6 +189,7 @@ class UI(object):
     def size(self):
         return np.asarray(self._get_size(), dtype=int)
 
+    @abc.abstractmethod
     def _get_size(self):
         msg = "Subclasses of UI must implement property `size`."
         raise NotImplementedError(msg)
@@ -179,12 +200,13 @@ class UI(object):
 
     @center.setter
     def center(self, coords):
-        """ Position the center of this UI component.
+        """Position the center of this UI component.
 
         Parameters
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+
         """
         if not hasattr(self, "size"):
             msg = "Subclasses of UI must implement the `size` property."
@@ -196,8 +218,7 @@ class UI(object):
         self.position = new_lower_left_corner
 
     def set_visibility(self, visibility):
-        """ Sets visibility of this UI component.
-        """
+        """Set visibility of this UI component."""
         for actor in self.actors:
             actor.SetVisibility(visibility)
 
@@ -259,7 +280,7 @@ class UI(object):
 
 
 class Button2D(UI):
-    """ A 2D overlay button and is of type vtkTexturedActor2D.
+    """A 2D overlay button and is of type vtkTexturedActor2D.
 
     Currently supports::
 
@@ -269,7 +290,8 @@ class Button2D(UI):
     """
 
     def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
-        """
+        """Init class instance.
+
         Parameters
         ----------
         icon_fnames : List(string, string)
@@ -297,7 +319,7 @@ class Button2D(UI):
         return abs(size[:2])
 
     def _build_icons(self, icon_fnames):
-        """ Converts file names to vtkImageDataGeometryFilters.
+        """Convert file names to vtkImageDataGeometryFilters.
 
         A pre-processing step to prevent re-read of file names during every
         state change.
@@ -327,9 +349,10 @@ class Button2D(UI):
         return icons
 
     def _setup(self):
-        """ Setup this UI component.
+        """Set up this UI component.
 
         Creating the button actor used internally.
+
         """
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
@@ -377,26 +400,27 @@ class Button2D(UI):
         self.handle_events(self.actor)
 
     def _get_actors(self):
-        """ Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
-        """ Add all subcomponents or VTK props that compose this UI component.
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
+
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def resize(self, size):
-        """ Resize the button.
+        """Resize the button.
 
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
+
         """
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
@@ -548,14 +572,14 @@ class Rectangle2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def _get_size(self):
         # Get 2D coordinates of two opposed corners of the rectangle.
@@ -699,14 +723,14 @@ class Disk2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def _get_size(self):
         diameter = 2 * self.outer_radius
@@ -836,15 +860,15 @@ class Panel2D(UI):
 
         return actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         for element in self._elements:
-            element.add_to_renderer(ren)
+            element.add_to_scene(scene)
 
     def _get_size(self):
         return self.background.size
@@ -953,12 +977,12 @@ class Panel2D(UI):
         self.remove_element(element)
         self.add_element(element, coords, anchor)
 
-    def left_button_pressed(self, i_ren, obj, panel2d_object):
+    def left_button_pressed(self, i_ren, _obj, panel2d_object):
         click_pos = np.array(i_ren.event.position)
         self._drag_offset = click_pos - panel2d_object.position
         i_ren.event.abort()  # Stop propagating the event.
 
-    def left_button_dragged(self, i_ren, obj, panel2d_object):
+    def left_button_dragged(self, i_ren, _obj, _panel2d_object):
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
@@ -1070,17 +1094,17 @@ class TextBlock2D(UI):
 
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         if self._background is not None:
-            ren.add(self._background)
+            scene.add(self._background)
 
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     @property
     def message(self):
@@ -1352,19 +1376,7 @@ class TextBlock2D(UI):
             self.actor.GetTextProperty().SetBackgroundColor(*color)
             self.actor.GetTextProperty().SetBackgroundOpacity(1.)
 
-    @property
-    def position(self):
-        """ Gets text actor position.
-
-        Returns
-        -------
-        (float, float)
-            The current actor position. (x, y) in pixels.
-        """
-        return self.actor.GetPosition()
-
-    @position.setter
-    def position(self, position):
+    def _set_position(self, position):
         """ Set text actor position.
 
         Parameters
@@ -1375,6 +1387,11 @@ class TextBlock2D(UI):
         self.actor.SetPosition(*position)
         if self._background is not None:
             self._background.SetPosition(*self.actor.GetPosition())
+
+    def _get_size(self):
+        if self._background is not None:
+            return self._background.size
+        return self.font_size * 1.2, self.font_size * 1.2
 
 
 class TextBox2D(UI):
@@ -1471,14 +1488,14 @@ class TextBox2D(UI):
         """
         return self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.text.add_to_renderer(ren)
+        self.text.add_to_scene(scene)
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -1489,6 +1506,9 @@ class TextBox2D(UI):
             Absolute pixel coordinates (x, y).
         """
         self.text.position = coords
+
+    def _get_size(self):
+        return self.text.size
 
     def set_message(self, message):
         """ Set custom text to textbox.
@@ -1521,8 +1541,8 @@ class TextBox2D(UI):
             A multi line formatted text.
         """
         multi_line_text = ""
-        for i in range(len(text)):
-            multi_line_text += text[i]
+        for i, t in enumerate(text):
+            multi_line_text += t
             if (i + 1) % self.width == 0:
                 multi_line_text += "\n"
         return multi_line_text.rstrip("\n")
@@ -1679,7 +1699,7 @@ class TextBox2D(UI):
             self.caret_pos = 0
         self.render_text()
 
-    def left_button_press(self, i_ren, obj, textbox_object):
+    def left_button_press(self, i_ren, _obj, _textbox_object):
         """ Left button press handler for textbox
 
         Parameters
@@ -1687,13 +1707,13 @@ class TextBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        textbox_object: :class:`TextBox2D`
+        _textbox_object: :class:`TextBox2D`
         """
         i_ren.add_active_prop(self.text.actor)
         self.edit_mode()
         i_ren.force_render()
 
-    def key_press(self, i_ren, obj, textbox_object):
+    def key_press(self, i_ren, _obj, _textbox_object):
         """ Key press handler for textbox
 
         Parameters
@@ -1701,7 +1721,7 @@ class TextBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        textbox_object: :class:`TextBox2D`
+        _textbox_object: :class:`TextBox2D`
         """
         key = i_ren.event.key
         is_done = self.handle_character(key)
@@ -1835,16 +1855,16 @@ class LineSlider2D(UI):
         """
         return self.track.actors + self.handle.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handle.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handle.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
@@ -1924,7 +1944,8 @@ class LineSlider2D(UI):
 
         # Compute the ratio determined by the position of the slider disk.
         length = float(self.right_x_position - self.left_x_position)
-        assert length == self.track.width
+        if length != self.track.width:
+            raise Exception("Disk position outside the slider line")
         disk_position_x = self.handle.center[0]
         self._ratio = (disk_position_x - self.left_x_position) / length
 
@@ -1941,7 +1962,7 @@ class LineSlider2D(UI):
 
         self.on_change(self)
 
-    def track_click_callback(self, i_ren, vtkactor, slider):
+    def track_click_callback(self, i_ren, _vtkactor, _slider):
         """ Update disk position and grab the focus.
 
         Parameters
@@ -1949,14 +1970,14 @@ class LineSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         vtkactor : :class:`vtkActor`
             The picked actor
-        slider : :class:`LineSlider2D`
+        _slider : :class:`LineSlider2D`
         """
         position = i_ren.event.position
         self.set_position(position)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_move_callback(self, i_ren, vtkactor, slider):
+    def handle_move_callback(self, i_ren, _vtkactor, _slider):
         """ Actual handle movement.
 
         Parameters
@@ -1972,7 +1993,7 @@ class LineSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_release_callback(self, i_ren, vtkactor, slider):
+    def handle_release_callback(self, i_ren, _vtkactor, _slider):
         """ Change color when handle is released.
 
         Parameters
@@ -2128,18 +2149,18 @@ class LineDoubleSlider2D(UI):
                 self.handles[1].actors + self.text[0].actors +
                 self.text[1].actors)
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handles[0].add_to_renderer(ren)
-        self.handles[1].add_to_renderer(ren)
-        self.text[0].add_to_renderer(ren)
-        self.text[1].add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handles[0].add_to_scene(scene)
+        self.handles[1].add_to_scene(scene)
+        self.text[0].add_to_scene(scene)
+        self.text[1].add_to_scene(scene)
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
@@ -2339,7 +2360,7 @@ class LineDoubleSlider2D(UI):
             self.handles[disk_number].center[0],
             self.text[disk_number].position[1])
 
-    def handle_move_callback(self, i_ren, vtkactor, slider):
+    def handle_move_callback(self, i_ren, vtkactor, _slider):
         """ Actual handle movement.
 
         Parameters
@@ -2347,7 +2368,7 @@ class LineDoubleSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         vtkactor : :class:`vtkActor`
             The picked actor
-        slider : :class:`LineDoubleSlider2D`
+        _slider : :class:`LineDoubleSlider2D`
         """
         position = i_ren.event.position
         if vtkactor == self.handles[0].actors[0]:
@@ -2359,7 +2380,7 @@ class LineDoubleSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_release_callback(self, i_ren, vtkactor, slider):
+    def handle_release_callback(self, i_ren, vtkactor, _slider):
         """ Change color when handle is released.
 
         Parameters
@@ -2367,7 +2388,7 @@ class LineDoubleSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         vtkactor : :class:`vtkActor`
             The picked actor
-        slider : :class:`LineDoubleSlider2D`
+        _slider : :class:`LineDoubleSlider2D`
         """
         if vtkactor == self.handles[0].actors[0]:
             self.handles[0].color = self.default_color
@@ -2452,6 +2473,9 @@ class RingSlider2D(UI):
 
         self._value = initial_value
         self.value = initial_value
+        self._previous_value = initial_value
+        self._angle = 0
+        self._ratio = self.angle / TWO_PI
 
     def _setup(self):
         """ Setup this UI component.
@@ -2485,16 +2509,16 @@ class RingSlider2D(UI):
         """
         return self.track.actors + self.handle.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.track.add_to_renderer(ren)
-        self.handle.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.track.add_to_scene(scene)
+        self.handle.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         return self.track.size + self.handle.size
@@ -2592,7 +2616,7 @@ class RingSlider2D(UI):
 
         self.angle = angle
 
-    def track_click_callback(self, i_ren, obj, slider):
+    def track_click_callback(self, i_ren, _obj, _slider):
         """ Update disk position and grab the focus.
 
         Parameters
@@ -2600,14 +2624,14 @@ class RingSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         obj : :class:`vtkActor`
             The picked actor
-        slider : :class:`RingSlider2D`
+        _slider : :class:`RingSlider2D`
         """
         click_position = i_ren.event.position
         self.move_handle(click_position=click_position)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_move_callback(self, i_ren, obj, slider):
+    def handle_move_callback(self, i_ren, _obj, _slider):
         """ Move the slider's handle.
 
         Parameters
@@ -2615,7 +2639,7 @@ class RingSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         obj : :class:`vtkActor`
             The picked actor
-        slider : :class:`RingSlider2D`
+        _slider : :class:`RingSlider2D`
         """
         click_position = i_ren.event.position
         self.handle.color = self.active_color
@@ -2623,7 +2647,7 @@ class RingSlider2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def handle_release_callback(self, i_ren, obj, slider):
+    def handle_release_callback(self, i_ren, _obj, _slider):
         """ Change color when handle is released.
 
         Parameters
@@ -2631,7 +2655,7 @@ class RingSlider2D(UI):
         i_ren : :class:`CustomInteractorStyle`
         vtkactor : :class:`vtkActor`
             The picked actor
-        slider : :class:`RingSlider2D`
+        _slider : :class:`RingSlider2D`
         """
         self.handle.color = self.default_color
         i_ren.force_render()
@@ -2670,7 +2694,7 @@ class RangeSlider(UI):
         outer_radius : int
             Outer radius of the handles.
         handle_side : int
-            Side length of the handles (if sqaure).
+            Side length of the handles (if square).
         range_slider_center : (float, float)
             Center of the LineDoubleSlider2D object.
         value_slider_center : (float, float)
@@ -2748,15 +2772,15 @@ class RangeSlider(UI):
         """
         return self.range_slider.actors + self.value_slider.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.range_slider.add_to_renderer(ren)
-        self.value_slider.add_to_renderer(ren)
+        self.range_slider.add_to_scene(scene)
+        self.value_slider.add_to_scene(scene)
 
     def _get_size(self):
         return self.range_slider.size + self.value_slider.size
@@ -2764,7 +2788,7 @@ class RangeSlider(UI):
     def _set_position(self, coords):
         pass
 
-    def range_slider_handle_move_callback(self, i_ren, obj, slider):
+    def range_slider_handle_move_callback(self, i_ren, obj, _slider):
         """ Actual movement of range_slider's handles.
 
         Parameters
@@ -2772,7 +2796,7 @@ class RangeSlider(UI):
         i_ren : :class:`CustomInteractorStyle`
         obj : :class:`vtkActor`
             The picked actor
-        slider : :class:`RangeSlider`
+        _slider : :class:`RangeSlider`
 
         """
         position = i_ren.event.position
@@ -2915,14 +2939,14 @@ class ImageContainer2D(UI):
         """
         return [self.actor]
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        ren.add(self.actor)
+        scene.add(self.actor)
 
     def resize(self, size):
         """ Resize the image.
@@ -3030,15 +3054,15 @@ class Option(UI):
         """
         return self.button.actors + self.text.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.button.add_to_renderer(ren)
-        self.text.add_to_renderer(ren)
+        self.button.add_to_scene(scene)
+        self.text.add_to_scene(scene)
 
     def _get_size(self):
         width = self.button.size[0] + self.button_label_gap + self.text.size[0]
@@ -3059,7 +3083,7 @@ class Option(UI):
         offset = (self.button.size[0] + self.button_label_gap, 0)
         self.text.position = coords + offset
 
-    def toggle(self, i_ren, obj, element):
+    def toggle(self, i_ren, _obj, _element):
         if self.checked:
             self.deselect()
         else:
@@ -3142,15 +3166,15 @@ class Checkbox(UI):
             actors = actors + option.actors
         return actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
         for option in self.options:
-            option.add_to_renderer(ren)
+            option.add_to_scene(scene)
 
     def _get_size(self):
         option_width, option_height = self.options[0].get_size()
@@ -3184,9 +3208,9 @@ class Checkbox(UI):
         for option_no, option in enumerate(self.options):
             option.position = (coords[0], button_y)
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-            button_y = button_y + self.font_size * \
-                (self.labels[option_no].count('\n') + 1) * (line_spacing + 0.1)\
-                + self.padding
+            button_y = (button_y + self.font_size
+                        * (self.labels[option_no].count('\n') + 1)
+                        * (line_spacing + 0.1) + self.padding)
 
     @property
     def font_size(self):
@@ -3292,6 +3316,7 @@ class ListBox2D(UI):
         # self.panel.resize(size)
         self.values = values
         self.multiselection = multiselection
+        self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
 
@@ -3304,6 +3329,7 @@ class ListBox2D(UI):
         self.scroll_bar_active_color = (0.8, 0, 0)
         self.scroll_bar_inactive_color = (1, 0, 0)
         self.position = position
+        self.scroll_init_position = 0
         self.update()
 
         # Offer some standard hooks to the user.
@@ -3317,7 +3343,6 @@ class ListBox2D(UI):
         self.margin = 10
         size = self.panel_size
         font_size = self.font_size
-        line_spacing = self.line_spacing
         # Calculating the number of slots.
         self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
 
@@ -3387,14 +3412,14 @@ class ListBox2D(UI):
         """
         return self.panel.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.panel.add_to_renderer(ren)
+        self.panel.add_to_scene(scene)
 
     def _get_size(self):
         return self.panel.size
@@ -3409,7 +3434,7 @@ class ListBox2D(UI):
         """
         self.panel.position = coords
 
-    def up_button_callback(self, i_ren, obj, list_box):
+    def up_button_callback(self, i_ren, _obj, _list_box):
         """ Pressing up button scrolls up in the combo box.
 
         Parameters
@@ -3417,7 +3442,7 @@ class ListBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        list_box: :class:`ListBox2D`
+        _list_box: :class:`ListBox2D`
 
         """
         if self.view_offset > 0:
@@ -3434,7 +3459,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def down_button_callback(self, i_ren, obj, list_box):
+    def down_button_callback(self, i_ren, _obj, _list_box):
         """ Pressing down button scrolls down in the combo box.
 
         Parameters
@@ -3442,7 +3467,7 @@ class ListBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        list_box: :class:`ListBox2D`
+        _list_box: :class:`ListBox2D`
 
         """
         view_end = self.view_offset + self.nb_slots
@@ -3460,7 +3485,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def scroll_click_callback(self, i_ren, obj, rect_obj):
+    def scroll_click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
 
         Parameters
@@ -3468,7 +3493,7 @@ class ListBox2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        rect_obj: :class:`Rectangle2D`
+        _rect_obj: :class:`Rectangle2D`
 
         """
         self.scroll_bar.color = self.scroll_bar_active_color
@@ -3476,7 +3501,7 @@ class ListBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()
 
-    def scroll_release_callback(self, i_ren, obj, rect_obj):
+    def scroll_release_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is released.
 
         Parameters
@@ -3490,7 +3515,7 @@ class ListBox2D(UI):
         self.scroll_bar.color = self.scroll_bar_inactive_color
         i_ren.force_render()
 
-    def scroll_drag_callback(self, i_ren, obj, rect_obj):
+    def scroll_drag_callback(self, i_ren, _obj, _rect_obj):
         """ Dragging scroll bar in the combo box.
 
         Parameters
@@ -3597,7 +3622,9 @@ class ListBox2D(UI):
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
-            for i in range(self.last_selection_idx, selection_idx + step, step):
+            for i in range(self.last_selection_idx,
+                           selection_idx + step,
+                           step):
                 self.selected.append(self.values[i])
 
         elif self.multiselection and multiselect:
@@ -3633,6 +3660,7 @@ class ListBoxItem2D(UI):
         self._element = None
         self.list_box = list_box
         self.background.resize(size)
+        self.selected = False
         self.deselect()
 
     def _setup(self):
@@ -3656,15 +3684,15 @@ class ListBoxItem2D(UI):
         """
         return self.background.actors + self.textblock.actors
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.background.add_to_renderer(ren)
-        self.textblock.add_to_renderer(ren)
+        self.background.add_to_scene(scene)
+        self.textblock.add_to_scene(scene)
 
     def _get_size(self):
         return self.background.size
@@ -3702,7 +3730,7 @@ class ListBoxItem2D(UI):
         self._element = element
         self.textblock.message = "" if self._element is None else str(element)
 
-    def left_button_clicked(self, i_ren, obj, list_box_item):
+    def left_button_clicked(self, i_ren, _obj, _list_box_item):
         """ A callback to handle left click for this UI element.
 
         Parameters
@@ -3710,7 +3738,7 @@ class ListBoxItem2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        list_box_item: :class:`ListBoxItem2D`
+        _list_box_item: :class:`ListBoxItem2D`
 
         """
         multiselect = i_ren.event.ctrl_key
@@ -3733,7 +3761,7 @@ class FileMenu2D(UI):
 
     """
 
-    def __init__(self, directory_path, extensions=["*"], position=(0, 0),
+    def __init__(self, directory_path, extensions=None, position=(0, 0),
                  size=(100, 300), multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
         """
@@ -3762,7 +3790,7 @@ class FileMenu2D(UI):
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
-        self.extensions = extensions
+        self.extensions = extensions or ["*"]
         self.current_directory = directory_path
         self.menu_size = size
 
@@ -3828,14 +3856,14 @@ class FileMenu2D(UI):
         """
         self.listbox.position = coords
 
-    def _add_to_renderer(self, ren):
+    def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
 
         Parameters
         ----------
-        ren : renderer
+        scene : scene
         """
-        self.listbox.add_to_renderer(ren)
+        self.listbox.add_to_scene(scene)
 
     def _get_size(self):
         return self.listbox.size
@@ -3912,7 +3940,7 @@ class FileMenu2D(UI):
             elif self.directory_contents[list_idx][1] == "file":
                 slot.textblock.color = (0, 0, 0.7)
 
-    def scroll_callback(self, i_ren, obj, filemenu_item):
+    def scroll_callback(self, i_ren, _obj, _filemenu_item):
         """ A callback to handle scroll and change the slot text colors.
 
         Parameters
@@ -3920,13 +3948,13 @@ class FileMenu2D(UI):
         i_ren: :class:`CustomInteractorStyle`
         obj: :class:`vtkActor`
             The picked actor
-        filemenu_item: :class:`FileMenu2D`
+        _filemenu_item: :class:`FileMenu2D`
         """
         self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
 
-    def directory_click_callback(self, i_ren, obj, listboxitem):
+    def directory_click_callback(self, i_ren, _obj, listboxitem):
         """ A callback to move into a directory if it has been clicked.
 
         Parameters
@@ -3951,3 +3979,199 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class GridUI(UI):
+    """ Add actors in a grid and interact with them individually.
+    """
+
+    def __init__(self,
+                 actors, captions=None, caption_offset=(0, -100, 0),
+                 cell_padding=0,
+                 cell_shape="rect", aspect_ratio=16/9., dim=None,
+                 rotation_speed=1, rotation_axis=(0, 1, 0)):
+
+        # TODO: add rotation axis None by default
+
+        self.container = grid(actors, captions=captions,
+                              caption_offset=caption_offset,
+                              cell_padding=cell_padding,
+                              cell_shape=cell_shape,
+                              aspect_ratio=aspect_ratio, dim=dim)
+        self._actors = []
+        self._actors_dict = {}
+        self.rotation_speed = rotation_speed
+        self.rotation_axis = rotation_axis
+
+        for item in self.container._items:
+            self._actors.append(item._items[0])
+            self._actors_dict[item._items[0]] = {'x': -np.inf, 'y': -np.inf}
+
+        super(GridUI, self).__init__(position=(0, 0, 0))
+
+    def _get_size(self):
+        return
+
+    @staticmethod
+    def left_click_callback(istyle, _obj, _what):
+        istyle.trackball_actor.OnLeftButtonDown()
+        istyle.force_render()
+        istyle.event.abort()
+
+    @staticmethod
+    def left_release_callback(istyle, _obj, _what):
+
+        istyle.trackball_actor.OnLeftButtonUp()
+        istyle.force_render()
+        istyle.event.abort()
+
+    @staticmethod
+    def mouse_move_callback(istyle, _obj, _what):
+        istyle.trackball_actor.OnMouseMove()
+        istyle.force_render()
+        istyle.event.abort()
+
+    @staticmethod
+    def left_click_callback2(istyle, obj, self):
+
+        rx, ry, rz = self.rotation_axis
+        clockwise_rotation = np.array([self.rotation_speed,
+                                       rx, ry, rz])
+        rotate(obj, clockwise_rotation)
+
+        istyle.force_render()
+        istyle.event.abort()
+
+    @staticmethod
+    def left_release_callback2(istyle, _obj, _what):
+
+        istyle.force_render()
+        istyle.event.abort()
+
+    @staticmethod
+    def mouse_move_callback2(istyle, obj, self):
+
+        if self._actors_dict[obj]['y'] == - np.inf:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            self._actors_dict[obj]['y'] = event_pos[1]
+
+        else:
+
+            iren = istyle.GetInteractor()
+            event_pos = iren.GetEventPosition()
+            rx, ry, rz = self.rotation_axis
+
+            if event_pos[1] >= self._actors_dict[obj]['y']:
+                clockwise_rotation = np.array([-self.rotation_speed,
+                                               rx, ry, rz])
+                rotate(obj, clockwise_rotation)
+            else:
+                anti_clockwise_rotation = np.array(
+                    [self.rotation_speed, rx, ry, rz])
+                rotate(obj, anti_clockwise_rotation)
+
+            self._actors_dict[obj]['y'] = event_pos[1]
+
+            # print(event_pos)
+            istyle.force_render()
+            istyle.event.abort()
+
+    ANTICLOCKWISE_ROTATION_Y = np.array([-10, 0, 1, 0])
+    CLOCKWISE_ROTATION_Y = np.array([10, 0, 1, 0])
+    ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
+    CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
+
+    def key_press_callback(self, istyle, obj, what):
+        print('inside key_press event')
+        has_changed = False
+        if istyle.event.key == "Left":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Right":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_Y)
+        elif istyle.event.key == "Up":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.ANTICLOCKWISE_ROTATION_X)
+        elif istyle.event.key == "Down":
+            has_changed = True
+            for a in self._actors:
+                rotate(a, self.CLOCKWISE_ROTATION_X)
+
+        if has_changed:
+            istyle.force_render()
+
+    def _setup(self):
+        """Set up this UI component and the events of its actor
+        """
+        print(self.actors)
+        print(len(self.actors))
+
+        # Add default events listener to the VTK actor.
+        for actor in self._actors:
+            # self.handle_events(actor)
+
+            if self.rotation_axis is None:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback)
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback)
+            else:
+                self.add_callback(actor, "LeftButtonPressEvent",
+                                  self.left_click_callback2)
+                # TODO: possibly add this too
+                self.add_callback(actor, "LeftButtonReleaseEvent",
+                                  self.left_release_callback2)
+                self.add_callback(actor, "MouseMoveEvent",
+                                  self.mouse_move_callback2)
+
+            # TODO: this is currently not running
+            self.add_callback(actor, "KeyPressEvent",
+                              self.key_press_callback)
+        # self.on_key_press = self.key_press_callback2
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self._actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.container.add_to_scene(scene)
+
+    def resize(self, size):
+        """Resize the button.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Button size (width, height) in pixels.
+
+        """
+        # Update actor.
+        pass
+
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        # coords = (0, 0, 0)
+        pass
+        # self.actor.SetPosition(*coords)
+        # self.container.SetPosition(*coords)
