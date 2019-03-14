@@ -915,18 +915,19 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     #if colormap is not None:
     if global_cm:
         cols = create_colormap(all_ms.ravel(), colormap)
-    elif colormap is not None:
-        cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
-                        dtype='f4')
-        for k in range(ijk.shape[0]):
-            tmp = create_colormap(all_ms[k].ravel(), colormap)
-            cols[k] = tmp.copy()
+    else:
+        if colormap is not None:
+            cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
+                            dtype='f4')
+            for k in range(ijk.shape[0]):
+                tmp = create_colormap(all_ms[k].ravel(), colormap)
+                cols[k] = tmp.copy()
+        else:
+            cols = np.absolute(sphere.vertices)
 
         cols = np.ascontiguousarray(
             np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                       cols.shape[2])), dtype='f4')
-    else:
-        cols = np.absolute(sphere.vertices)
+                       cols.shape[2])), dtype='f4')        
 
     vtk_colors = numpy_support.numpy_to_vtk(
         np.asarray(255 * cols),
