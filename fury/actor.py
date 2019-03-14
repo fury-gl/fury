@@ -6,7 +6,7 @@ from vtk.util import numpy_support
 
 import fury.shaders
 from fury import layout
-from fury.colormap import colormap_lookup_table, create_colormap
+from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
@@ -922,7 +922,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
             if colormap is not None:
                 tmp = create_colormap(all_ms[k].ravel(), colormap)
             else:
-                tmp = np.absolute(sphere.vertices)
+                tmp = orient2rgb(sphere.vertices)
             cols[k] = tmp.copy()
 
 
