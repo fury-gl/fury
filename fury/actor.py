@@ -705,6 +705,68 @@ def _arrow(pos=(0, 0, 0), color=(1, 0, 0), scale=(1, 1, 1), opacity=1):
     return arrowa
 
 
+def directed_arrow(start_point, direction, length, color = None, opacity=1.0):
+
+    arrowSource = vtk.vtkArrowSource()
+    startPoint = start_point
+
+    # Compute a basis
+    normalizedX = [0 for i in range(3)]
+    normalizedY = [0 for i in range(3)]
+    normalizedZ = [0 for i in range(3)]
+
+    # The X axis is a vector from start to end
+    math = vtk.vtkMath()
+    # print(normalizedX)
+    # math.Subtract(endPoint, startPoint, normalizedX)
+
+    normalizedX = direction
+    math.Normalize(normalizedX)
+    # print(normalizedX)
+
+    # The Z axis is an arbitrary vector cross X
+    arbitrary = [0 for i in range(3)]
+    arbitrary[0] = random.uniform(-10, 10)
+    arbitrary[1] = random.uniform(-10, 10)
+    arbitrary[2] = random.uniform(-10, 10)
+    math.Cross(normalizedX, arbitrary, normalizedZ)
+    math.Normalize(normalizedZ)
+
+    # The Y axis is Z cross X
+    math.Cross(normalizedZ, normalizedX, normalizedY)
+    matrix = vtk.vtkMatrix4x4()
+
+    # Create the direction cosine matrix
+    matrix.Identity()
+    for i in range(3):
+        matrix.SetElement(i, 0, normalizedX[i])
+        matrix.SetElement(i, 1, normalizedY[i])
+        matrix.SetElement(i, 2, normalizedZ[i])
+
+    # print(matrix)
+    # Apply the transforms
+    transform = vtk.vtkTransform()
+    transform.Translate(startPoint)
+    transform.Concatenate(matrix)
+    transform.Scale(length, length, length)
+
+    # Transform the polydata
+    transformPD = vtk.vtkTransformPolyDataFilter()
+    transformPD.SetTransform(transform)
+    transformPD.SetInputConnection(arrowSource.GetOutputPort())
+
+    # Create a mapper and actor for the arrow
+    mapper = vtk.vtkPolyDataMapper()
+    arrow_actor = vtk.vtkActor()
+
+    mapper.SetInputConnection(transformPD.GetOutputPort())
+
+    arrow_actor.SetMapper(mapper)
+    arrow_actor.GetProperty().SetColor(color)
+    arrow_actor.GetProperty().SetOpacity(opacity)
+    return arrow_actor
+
+
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
          opacity=1):
     """ Create an actor with the coordinate's system axes where
