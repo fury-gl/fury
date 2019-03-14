@@ -847,8 +847,9 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     radial_scale : bool
         Scale sphere points according to odf values.
     colormap : None or str
-        If None then white color is used. Otherwise the name of colormap is
-        given. Matplotlib colormaps are supported (e.g., 'inferno').
+        If None then sphere vertices are used to compute orientation-based
+        color. Otherwise the name of colormap is given. Matplotlib colormaps
+        are supported (e.g., 'inferno').
     global_cm : bool
         If True the colormap will be applied in all ODFs. If False
         it will be applied individually at each voxel (default False).
