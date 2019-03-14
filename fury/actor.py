@@ -912,7 +912,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     cells = vtk.vtkCellArray()
     cells.SetCells(ncells, all_faces_vtk)
 
-    #if colormap is not None:
     if global_cm:
         cols = create_colormap(all_ms.ravel(), colormap)
     else:
@@ -942,7 +941,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     polydata.SetPoints(points)
     polydata.SetPolys(cells)
 
-    #if colormap is not None:
     polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()
