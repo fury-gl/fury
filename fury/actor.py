@@ -711,18 +711,14 @@ def directed_arrow(start_point, direction, length, color = None, opacity=1.0):
     startPoint = start_point
 
     # Compute a basis
-    normalizedX = [0 for i in range(3)]
+    normalizedX = direction
     normalizedY = [0 for i in range(3)]
     normalizedZ = [0 for i in range(3)]
 
     # The X axis is a vector from start to end
     math = vtk.vtkMath()
-    # print(normalizedX)
-    # math.Subtract(endPoint, startPoint, normalizedX)
 
-    normalizedX = direction
     math.Normalize(normalizedX)
-    # print(normalizedX)
 
     # The Z axis is an arbitrary vector cross X
     arbitrary = [0 for i in range(3)]
@@ -743,7 +739,6 @@ def directed_arrow(start_point, direction, length, color = None, opacity=1.0):
         matrix.SetElement(i, 1, normalizedY[i])
         matrix.SetElement(i, 2, normalizedZ[i])
 
-    # print(matrix)
     # Apply the transforms
     transform = vtk.vtkTransform()
     transform.Translate(startPoint)
