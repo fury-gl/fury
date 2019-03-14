@@ -912,33 +912,36 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     cells = vtk.vtkCellArray()
     cells.SetCells(ncells, all_faces_vtk)
 
-    if colormap is not None:
-        if global_cm:
-            cols = create_colormap(all_ms.ravel(), colormap)
-        else:
-            cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
-                            dtype='f4')
-            for k in range(ijk.shape[0]):
-                tmp = create_colormap(all_ms[k].ravel(), colormap)
-                cols[k] = tmp.copy()
+    #if colormap is not None:
+    if global_cm:
+        cols = create_colormap(all_ms.ravel(), colormap)
+    elif colormap is not None:
+        cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
+                        dtype='f4')
+        for k in range(ijk.shape[0]):
+            tmp = create_colormap(all_ms[k].ravel(), colormap)
+            cols[k] = tmp.copy()
 
-            cols = np.ascontiguousarray(
-                np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                           cols.shape[2])), dtype='f4')
+        cols = np.ascontiguousarray(
+            np.reshape(cols, (cols.shape[0] * cols.shape[1],
+                       cols.shape[2])), dtype='f4')
+    else:
+        cols = np.absolute(sphere.vertices)
 
-        vtk_colors = numpy_support.numpy_to_vtk(
-            np.asarray(255 * cols),
-            deep=True,
-            array_type=vtk.VTK_UNSIGNED_CHAR)
+    vtk_colors = numpy_support.numpy_to_vtk(
+        np.asarray(255 * cols),
+        deep=True,
+        array_type=vtk.VTK_UNSIGNED_CHAR)
 
-        vtk_colors.SetName("Colors")
+    vtk_colors.SetName("Colors")
+
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
     polydata.SetPolys(cells)
 
-    if colormap is not None:
-        polydata.GetPointData().SetScalars(vtk_colors)
+    #if colormap is not None:
+    polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polydata)
