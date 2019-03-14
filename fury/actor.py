@@ -925,7 +925,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
                 tmp = orient2rgb(sphere.vertices)
             cols[k] = tmp.copy()
 
-
         cols = np.ascontiguousarray(
             np.reshape(cols, (cols.shape[0] * cols.shape[1],
                        cols.shape[2])), dtype='f4')
@@ -936,7 +935,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         array_type=vtk.VTK_UNSIGNED_CHAR)
 
     vtk_colors.SetName("Colors")
-
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
