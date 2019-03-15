@@ -915,7 +915,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
 
     if global_cm:
         if colormap is None:
-            raise IOError("if global_cm=True, colormap must be defined"
+            raise IOError("if global_cm=True, colormap must be defined")
         else:
             cols = create_colormap(all_ms.ravel(), colormap)
     else:
