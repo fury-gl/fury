@@ -916,7 +916,8 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     if global_cm:
         if colormap == None:
             raise IOError("if global_cm=True, colormap must be defined"
-        cols = create_colormap(all_ms.ravel(), colormap)
+        else:
+            cols = create_colormap(all_ms.ravel(), colormap)
     else:
         cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
                         dtype='f4')
