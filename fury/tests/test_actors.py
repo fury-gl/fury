@@ -199,6 +199,13 @@ def test_surface():
 
 @npt.dec.skipif(skip_it)
 @xvfb_it
+def test_directed_arrow():
+
+
+
+
+@npt.dec.skipif(skip_it)
+@xvfb_it
 def test_contour_from_roi():
 
     # Render volume
