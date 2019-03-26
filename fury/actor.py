@@ -785,9 +785,12 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     vtkAssembly
     """
 
-    arrowx = directed_arrow(start_point=[0, 0, 0], direction=[1, 0, 0], color=colorx, scale=scale, opacity=opacity)
-    arrowy = directed_arrow(start_point=[0, 0, 0], direction=[0, 1, 0], color=colory, scale=scale, opacity=opacity)
-    arrowz = directed_arrow(start_point=[0, 0, 0], direction=[0, 0, 1], color=colorz, scale=scale, opacity=opacity)
+    arrowx = directed_arrow(start_point=[0, 0, 0], direction=[1, 0, 0],
+                            color=colorx, scale=scale, opacity=opacity)
+    arrowy = directed_arrow(start_point=[0, 0, 0], direction=[0, 1, 0],
+                            color=colory, scale=scale, opacity=opacity)
+    arrowz = directed_arrow(start_point=[0, 0, 0], direction=[0, 0, 1],
+                            color=colorz, scale=scale, opacity=opacity)
 
     ass = vtk.vtkAssembly()
     ass.AddPart(arrowx)
