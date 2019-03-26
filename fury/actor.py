@@ -705,7 +705,7 @@ def _arrow(pos=(0, 0, 0), color=(1, 0, 0), scale=(1, 1, 1), opacity=1):
     return arrowa
 
 
-def directed_arrow(start_point, direction, length, color=(0, 0, 0), opacity=1.0):
+def directed_arrow(start_point, direction, scale, color=(0, 0, 0), opacity=1.0):
 
     arrowSource = vtk.vtkArrowSource()
     startPoint = start_point
@@ -743,7 +743,7 @@ def directed_arrow(start_point, direction, length, color=(0, 0, 0), opacity=1.0)
     transform = vtk.vtkTransform()
     transform.Translate(startPoint)
     transform.Concatenate(matrix)
-    transform.Scale(length, length, length)
+    transform.Scale(scale[0], scale[1], scale[2])
 
     # Transform the polydata
     transformPD = vtk.vtkTransformPolyDataFilter()
@@ -785,12 +785,9 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     vtkAssembly
     """
 
-    arrowx = _arrow(color=colorx, scale=scale, opacity=opacity)
-    arrowy = _arrow(color=colory, scale=scale, opacity=opacity)
-    arrowz = _arrow(color=colorz, scale=scale, opacity=opacity)
-
-    arrowy.RotateZ(90)
-    arrowz.RotateY(-90)
+    arrowx = directed_arrow(start_point=[0, 0, 0], direction=[1, 0, 0], color=colorx, scale=scale, opacity=opacity)
+    arrowy = directed_arrow(start_point=[0, 0, 0], direction=[0, 1, 0], color=colory, scale=scale, opacity=opacity)
+    arrowz = directed_arrow(start_point=[0, 0, 0], direction=[0, 0, 1], color=colorz, scale=scale, opacity=opacity)
 
     ass = vtk.vtkAssembly()
     ass.AddPart(arrowx)
