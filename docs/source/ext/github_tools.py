@@ -58,8 +58,8 @@ def fetch_url(url):
         f = urlopen(url)
     except Exception as e:
         print(e)
-        print("fetching %s again" % url, file=sys.stderr)
-        f = urlopen(url)
+        print("return Empty data", file=sys.stderr)
+        return {}
 
     return f
 
@@ -77,7 +77,7 @@ def parse_link_header(headers):
 def get_json_from_url(url):
     """Fetch and read url."""
     f = fetch_url(url)
-    return json.load(f)
+    return json.load(f) if f else {}
 
 
 def get_paged_request(url):
@@ -85,6 +85,8 @@ def get_paged_request(url):
     results = []
     while url:
         f = fetch_url(url)
+        if not f:
+            continue
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
         url = links.get('next')
@@ -298,7 +300,7 @@ def get_all_versions(ignore='', project="fury-gl/fury"):
 
     """
     tags = get_tags(project=project)
-    l_version = [t['name']for t in tags]
+    l_version = [t['name'] for t in tags]
 
     if ignore.lower() in ['micro', 'minor']:
         l_version = list(set([re.sub(r'(\d+)$', 'x', v) for v in l_version]))
@@ -339,9 +341,11 @@ def version_compare(current_version, version_number, op='eq',
     current = p.search(current_version)
     ref = p.search(version_number)
 
-    # Check if it is the latest release
-    all_versions = all_versions or get_all_versions()
     if current_version.lower() == 'latest':
+        # Check if it is the latest release
+        all_versions = all_versions or get_all_versions()
+        if not all_versions:
+            return False
         last_version = sorted(all_versions)[0]
         last_version = p.search(last_version)
         if LooseVersion(last_version.group()) ==  \
@@ -491,7 +495,6 @@ def setup(app):
     - Collect and clean authors
     - Adds extra jinja filters.
     """
-    # Todo: review GH_TOKEN and see why access Forbidden on master
     app.connect("builder-inited", add_jinja_filters)
     app.add_stylesheet("css/custom_github.css")
 
