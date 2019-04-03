@@ -539,6 +539,18 @@ def test_odf_slicer(interactive=False):
     if interactive:
         window.show(scene)
 
+    # colormap=None and global_cm=False results in directionally encoded colors
+    scene.clear()
+    scene.add(odf_actor)
+    scene.add(fa_actor)
+    odfs[:, :, :] = 1
+    mask = np.ones(odfs.shape[:3])
+    odf_actor = actor.odf_slicer(odfs, None, mask=mask,
+                                 sphere=sphere, scale=.25,
+                                 colormap=None,
+                                 norm=False, global_cm=False)
+
+
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     npt.assert_equal(report.actors_classnames[0], 'vtkLODActor')

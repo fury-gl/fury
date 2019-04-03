@@ -6,7 +6,7 @@ from vtk.util import numpy_support
 
 import fury.shaders
 from fury import layout
-from fury.colormap import colormap_lookup_table, create_colormap
+from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
@@ -847,8 +847,9 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     radial_scale : bool
         Scale sphere points according to odf values.
     colormap : None or str
-        If None then white color is used. Otherwise the name of colormap is
-        given. Matplotlib colormaps are supported (e.g., 'inferno').
+        If None then sphere vertices are used to compute orientation-based
+        color. Otherwise the name of colormap is given. Matplotlib colormaps
+        are supported (e.g., 'inferno').
     global_cm : bool
         If True the colormap will be applied in all ODFs. If False
         it will be applied individually at each voxel (default False).
@@ -912,33 +913,37 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     cells = vtk.vtkCellArray()
     cells.SetCells(ncells, all_faces_vtk)
 
-    if colormap is not None:
-        if global_cm:
-            cols = create_colormap(all_ms.ravel(), colormap)
+    if global_cm:
+        if colormap is None:
+            raise IOError("if global_cm=True, colormap must be defined")
         else:
-            cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
-                            dtype='f4')
-            for k in range(ijk.shape[0]):
+            cols = create_colormap(all_ms.ravel(), colormap)
+    else:
+        cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
+                        dtype='f4')
+        for k in range(ijk.shape[0]):
+            if colormap is not None:
                 tmp = create_colormap(all_ms[k].ravel(), colormap)
-                cols[k] = tmp.copy()
+            else:
+                tmp = orient2rgb(sphere.vertices)
+            cols[k] = tmp.copy()
 
-            cols = np.ascontiguousarray(
-                np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                           cols.shape[2])), dtype='f4')
+        cols = np.ascontiguousarray(
+            np.reshape(cols, (cols.shape[0] * cols.shape[1],
+                       cols.shape[2])), dtype='f4')
 
-        vtk_colors = numpy_support.numpy_to_vtk(
-            np.asarray(255 * cols),
-            deep=True,
-            array_type=vtk.VTK_UNSIGNED_CHAR)
+    vtk_colors = numpy_support.numpy_to_vtk(
+        np.asarray(255 * cols),
+        deep=True,
+        array_type=vtk.VTK_UNSIGNED_CHAR)
 
-        vtk_colors.SetName("Colors")
+    vtk_colors.SetName("Colors")
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
     polydata.SetPolys(cells)
 
-    if colormap is not None:
-        polydata.GetPointData().SetScalars(vtk_colors)
+    polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputData(polydata)
