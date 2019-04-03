@@ -44,17 +44,7 @@ TOKEN_URL = "access_token={}".format(GH_TOKEN) if GH_TOKEN else ''
 # ----------------------------------------------------------------------------
 
 
-def parse_link_header(headers):
-    link_s = headers.get('link', '')
-    urls = element_pat.findall(link_s)
-    rels = rel_pat.findall(link_s)
-    d = {}
-    for rel, url in zip(rels, urls):
-        d[rel] = url
-    return d
-
-
-def get_json_from_url(url):
+def fetch_url(url):
     if TOKEN_URL:
         if "?" in url:
             url += "&{0}".format(TOKEN_URL)
@@ -71,6 +61,22 @@ def get_json_from_url(url):
         print("fetching %s again" % url, file=sys.stderr)
         f = urlopen(url)
 
+    return f
+
+
+def parse_link_header(headers):
+    link_s = headers.get('link', '')
+    urls = element_pat.findall(link_s)
+    rels = rel_pat.findall(link_s)
+    d = {}
+    for rel, url in zip(rels, urls):
+        d[rel] = url
+    return d
+
+
+def get_json_from_url(url):
+    """Fetch and read url."""
+    f = fetch_url(url)
     return json.load(f)
 
 
@@ -78,21 +84,7 @@ def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
     while url:
-        # if TOKEN_URL:
-        #     if "?" in url:
-        #         url += "&{0}".format(TOKEN_URL)
-        #     else:
-        #         url += "?{0}".format(TOKEN_URL)
-        try:
-            print("fetching %s" % url, file=sys.stderr)
-            url = Request(url,
-                          headers={'Accept': 'application/vnd.github.v3+json',
-                                   'User-agent': 'Defined'})
-            f = urlopen(url)
-        except Exception as e:
-            print(e)
-            print("fetching %s again" % url, file=sys.stderr)
-            f = urlopen(url)
+        f = fetch_url(url)
         results.extend(json.load(f))
         links = parse_link_header(f.headers)
         url = links.get('next')
