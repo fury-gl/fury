@@ -718,7 +718,6 @@ def directed_arrow(start_point, direction, scale, color=(0, 0, 0),
 
     # The X axis is a vector from start to end
     math = vtk.vtkMath()
-
     math.Normalize(normalizedX)
 
     # The Z axis is an arbitrary vector cross X

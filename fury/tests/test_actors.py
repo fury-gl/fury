@@ -212,7 +212,7 @@ def test_directed_arrow():
     arr = window.snapshot(scene, 'test_da.png',
                                           offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
-    npt.assert_equal(report.objects, 2)
+    npt.assert_equal(report.objects, 3)
 
 
 @npt.dec.skipif(skip_it)
