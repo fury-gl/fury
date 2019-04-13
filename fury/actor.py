@@ -721,10 +721,10 @@ def directed_arrow(start_point, direction, scale, color=(0, 0, 0),
     math.Normalize(normalizedX)
 
     # The Z axis is an arbitrary vector cross X
-    arbitrary = [0 for i in range(3)]
-    arbitrary[0] = random.uniform(-10, 10)
-    arbitrary[1] = random.uniform(-10, 10)
-    arbitrary[2] = random.uniform(-10, 10)
+    arbitrary = [i for i in range(3)]
+    # arbitrary[0] = random.uniform(-10, 10)
+    # arbitrary[1] = random.uniform(-10, 10)
+    # arbitrary[2] = random.uniform(-10, 10)
     math.Cross(normalizedX, arbitrary, normalizedZ)
     math.Normalize(normalizedZ)
 

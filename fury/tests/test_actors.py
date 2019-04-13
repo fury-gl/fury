@@ -204,15 +204,15 @@ def test_directed_arrow():
     direction = [1, 1, 1]
     arrow_actor = actor.directed_arrow(start, direction,
                                        scale=(5, 1, 1), color=(1, 0, 0))
-    axes_actor = actor.axes(scale=(12, 1, 1))
+    # axes_actor = actor.axes(scale=(12, 1, 1))
     scene = window.Scene(background=(1, 1, 1))
     scene.add(arrow_actor)
-    scene.add(axes_actor)
+    # scene.add(axes_actor)
 
     arr = window.snapshot(scene, 'test_da.png',
                                           offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 1)
 
 
 @npt.dec.skipif(skip_it)
