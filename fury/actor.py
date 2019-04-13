@@ -707,7 +707,6 @@ def _arrow(pos=(0, 0, 0), color=(1, 0, 0), scale=(1, 1, 1), opacity=1):
 
 def directed_arrow(start_point, direction, scale, color=(0, 0, 0),
                    opacity=1.0):
-    import random
     arrowSource = vtk.vtkArrowSource()
     startPoint = start_point
 
