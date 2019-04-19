@@ -1786,7 +1786,7 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
     ----------
     actors : list of `vtkProp3D` objects
         Actors to be layout in a grid manner.
-    captions : list of `vtkProp3D` objects
+    captions : list of `vtkProp3D` objects or list of str
         Objects serving as captions (can be any `vtkProp3D` object, not
         necessarily text). There should be one caption per actor. By
         default, there are no captions.
@@ -1829,7 +1829,10 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
 
             # Offset accordingly the caption w.r.t.
             # the center of the associated actor.
-            caption = shallow_copy(caption)
+            if isinstance(caption, str):
+                caption = text_3d(caption, justification='center')
+            else:
+                caption = shallow_copy(caption)
             caption.SetPosition(actor_center + caption_offset)
 
             actor_with_caption = Container()
