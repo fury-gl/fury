@@ -34,6 +34,8 @@ addons:
     - mesa-common-dev
   homebrew:
     update: true
+    casks:
+    - xquartz 
 env:
   global:
   - MESA_GL_VERSION_OVERRIDE=3.3
