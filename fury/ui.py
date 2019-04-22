@@ -49,6 +49,15 @@ class UI(with_metaclass(abc.ABCMeta, object)):
         (i.e. pressed -> released).
     on_right_mouse_button_dragged: function
         Callback function for when dragging using the right mouse button.
+    on_middle_mouse_button_pressed: function
+        Callback function for when the middle mouse button is pressed.
+    on_middle_mouse_button_released: function
+        Callback function for when the middle mouse button is released.
+    on_middle_mouse_button_clicked: function
+        Callback function for when clicking using the middle mouse button
+        (i.e. pressed -> released).
+    on_middle_mouse_button_dragged: function
+        Callback function for when dragging using the middle mouse button.
     on_key_press: function
         Callback function for when a keyboard key is pressed.
 
@@ -73,6 +82,7 @@ class UI(with_metaclass(abc.ABCMeta, object)):
 
         self.left_button_state = "released"
         self.right_button_state = "released"
+        self.middle_button_state = "released"
 
         self.on_left_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
@@ -82,6 +92,10 @@ class UI(with_metaclass(abc.ABCMeta, object)):
         self.on_right_mouse_button_released = lambda i_ren, obj, element: None
         self.on_right_mouse_button_clicked = lambda i_ren, obj, element: None
         self.on_right_mouse_button_dragged = lambda i_ren, obj, element: None
+        self.on_middle_mouse_button_pressed = lambda i_ren, obj, element: None
+        self.on_middle_mouse_button_released = lambda i_ren, obj, element: None
+        self.on_middle_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
 
     @abc.abstractmethod
@@ -231,6 +245,10 @@ class UI(with_metaclass(abc.ABCMeta, object)):
                           self.right_button_click_callback)
         self.add_callback(actor, "RightButtonReleaseEvent",
                           self.right_button_release_callback)
+        self.add_callback(actor, "MiddleButtonPressEvent",
+                          self.middle_button_click_callback)
+        self.add_callback(actor, "MiddleButtonReleaseEvent",
+                          self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
 
@@ -261,18 +279,39 @@ class UI(with_metaclass(abc.ABCMeta, object)):
         self.on_right_mouse_button_released(i_ren, obj, self)
 
     @staticmethod
+    def middle_button_click_callback(i_ren, obj, self):
+        self.middle_button_state = "pressing"
+        self.on_middle_mouse_button_pressed(i_ren, obj, self)
+        i_ren.event.abort()
+
+    @staticmethod
+    def middle_button_release_callback(i_ren, obj, self):
+        if self.middle_button_state == "pressing":
+            self.on_middle_mouse_button_clicked(i_ren, obj, self)
+        self.middle_button_state = "released"
+        self.on_middle_mouse_button_released(i_ren, obj, self)
+
+    @staticmethod
     def mouse_move_callback(i_ren, obj, self):
         left_pressing_or_dragging = (self.left_button_state == "pressing" or
                                      self.left_button_state == "dragging")
 
         right_pressing_or_dragging = (self.right_button_state == "pressing" or
                                       self.right_button_state == "dragging")
+
+        middle_pressing_or_dragging = \
+            (self.middle_button_state == "pressing" or
+             self.middle_button_state == "dragging")
+
         if left_pressing_or_dragging:
             self.left_button_state = "dragging"
             self.on_left_mouse_button_dragged(i_ren, obj, self)
         elif right_pressing_or_dragging:
             self.right_button_state = "dragging"
             self.on_right_mouse_button_dragged(i_ren, obj, self)
+        elif middle_pressing_or_dragging:
+            self.middle_button_state = "dragging"
+            self.on_middle_mouse_button_dragged(i_ren, obj, self)
 
     @staticmethod
     def key_press_callback(i_ren, obj, self):
