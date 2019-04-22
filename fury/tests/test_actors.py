@@ -867,15 +867,15 @@ def test_grid(_interactive=False):
     texts.append(text_actor3)
 
     actors.append(shallow_copy(contour_actor1))
-    text_actor1 = actor.text_3d('cube 4', justification='center')
+    text_actor1 = 'cube 4'
     texts.append(text_actor1)
 
     actors.append(shallow_copy(contour_actor2))
-    text_actor2 = actor.text_3d('cube 5', justification='center')
+    text_actor2 = 'cube 5'
     texts.append(text_actor2)
 
     actors.append(shallow_copy(contour_actor3))
-    text_actor3 = actor.text_3d('cube 6', justification='center')
+    text_actor3 = 'cube 6'
     texts.append(text_actor3)
 
     # show the grid without the captions
