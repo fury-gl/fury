@@ -4109,9 +4109,6 @@ class GridUI(UI):
     def _setup(self):
         """Set up this UI component and the events of its actor
         """
-        print(self.actors)
-        print(len(self.actors))
-
         # Add default events listener to the VTK actor.
         for actor in self._actors:
             # self.handle_events(actor)
