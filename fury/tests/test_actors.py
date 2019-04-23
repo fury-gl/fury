@@ -23,11 +23,7 @@ if have_dipy:
     from dipy.reconst.dti import color_fa, fractional_anisotropy
     from dipy.data import get_sphere
 
-use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-skip_it = use_xvfb == 'skip'
 
-
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_slicer():
     scene = window.Scene()
@@ -158,7 +154,6 @@ def test_slicer():
                            np.array(slicer.shape))
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_surface():
     import math
@@ -197,7 +192,6 @@ def test_surface():
                 npt.assert_equal(report.objects, 1)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_contour_from_roi():
 
@@ -298,7 +292,6 @@ def test_contour_from_roi():
     # window.show(r2)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_streamtube_and_line_actors():
     scene = window.Scene()
@@ -351,7 +344,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
 
-@npt.dec.skipif(skip_it or not have_dipy)
+@npt.dec.skipif(not have_dipy)
 @xvfb_it
 def test_bundle_maps():
     scene = window.Scene()
@@ -425,7 +418,7 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@npt.dec.skipif(skip_it or not have_dipy)
+@npt.dec.skipif(not have_dipy)
 @xvfb_it
 def test_odf_slicer(interactive=False):
 
@@ -563,7 +556,6 @@ def test_odf_slicer(interactive=False):
     os.remove(fname)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_peak_slicer(interactive=False):
 
@@ -619,7 +611,7 @@ def test_peak_slicer(interactive=False):
     npt.assert_equal(report.actors_classnames, ex)
 
 
-@npt.dec.skipif(skip_it or not have_dipy)
+@npt.dec.skipif(not have_dipy)
 @xvfb_it
 def test_tensor_slicer(interactive=False):
 
@@ -728,7 +720,6 @@ def test_tensor_slicer(interactive=False):
                                            sphere=sphere, scale=.3)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_dots(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
@@ -768,7 +759,6 @@ def test_dots(interactive=False):
     npt.assert_equal(report.objects, 1)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
@@ -792,7 +782,6 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_labels(interactive=False):
 
@@ -809,7 +798,6 @@ def test_labels(interactive=False):
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_spheres(interactive=False):
 
@@ -830,7 +818,6 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_grid(_interactive=False):
 
