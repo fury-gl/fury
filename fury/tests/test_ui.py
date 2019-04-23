@@ -23,9 +23,6 @@ dipy, have_dipy, _ = optional_package('dipy')
 if have_dipy:
     from dipy.data import get_sphere
 
-use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-skip_it = use_xvfb == 'skip'
-
 
 class EventCounter(object):
     def __init__(self, events_names=["CharEvent",
@@ -78,7 +75,6 @@ class EventCounter(object):
                              err_msg=msg.format(event))
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
@@ -88,7 +84,6 @@ def test_wrong_interactor_style():
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_rectangle_2d():
     window_size = (700, 700)
@@ -122,7 +117,6 @@ def test_ui_rectangle_2d():
     assert report.objects == 0
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_disk_2d():
     window_size = (700, 700)
@@ -157,7 +151,6 @@ def test_ui_disk_2d():
     npt.assert_equal(report.objects, 0)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_button_panel(recording=False):
     filename = "test_ui_button_panel"
@@ -238,7 +231,6 @@ def test_ui_button_panel(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
@@ -271,7 +263,6 @@ def test_ui_textbox(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_text_block_2d():
     text_block = ui.TextBlock2D()
@@ -304,7 +295,6 @@ def test_text_block_2d():
         text_block.vertical_justification = "left"
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_text_block_2d_justification():
     window_size = (700, 700)
@@ -388,7 +378,6 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_line_slider_2d(recording=False):
     filename = "test_ui_line_slider_2d"
@@ -420,7 +409,6 @@ def test_ui_line_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_test = ui.LineDoubleSlider2D(
@@ -450,7 +438,6 @@ def test_ui_line_double_slider_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_ring_slider_2d(recording=False):
     filename = "test_ui_ring_slider_2d"
@@ -489,7 +476,6 @@ def test_ui_ring_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_range_slider(interactive=False):
     range_slider_test = ui.RangeSlider(shape="square")
@@ -501,7 +487,6 @@ def test_ui_range_slider(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_option(interactive=False):
     option_test = ui.Option(label="option 1", position=(10, 10))
@@ -514,7 +499,6 @@ def test_ui_option(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_checkbox(interactive=False):
     filename = "test_ui_checkbox"
@@ -589,7 +573,6 @@ def test_ui_checkbox(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_radio_button(interactive=False):
     filename = "test_ui_radio_button"
@@ -658,7 +641,6 @@ def test_ui_radio_button(interactive=False):
         showm.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_listbox_2d(interactive=False):
 
@@ -735,7 +717,6 @@ def test_ui_listbox_2d(interactive=False):
     assert_arrays_equal(selected_values, expected)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_image_container_2d(interactive=False):
     fetch_viz_icons()
@@ -755,7 +736,7 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(skip_it or not have_dipy)
+@npt.dec.skipif(not have_dipy)
 @xvfb_it
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
@@ -808,7 +789,6 @@ def test_timer():
     npt.assert_(np.sum(arr) > 0)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"
@@ -881,7 +861,6 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_grid_ui(interactive=False):
 
