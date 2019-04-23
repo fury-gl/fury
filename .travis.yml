@@ -57,8 +57,6 @@ env:
   # - PY_VERSION="3.6" ENV_TYPE="pip"
   # - PY_VERSION="3.6" ENV_TYPE="pip" OPTIONAL_DEPS=1
 matrix:
-  allow_failures:
-  - os: osx
   include:
   - os: linux
     env: PY_VERSION="3.6" OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
