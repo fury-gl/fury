@@ -1,4 +1,5 @@
 import os
+import platform
 from os.path import join as pjoin
 from collections import defaultdict
 
@@ -13,9 +14,10 @@ from fury.decorators import xvfb_it
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
+skip_osx = platform.system().lower() == "darwin"
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or skip_osx)
 @xvfb_it
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))

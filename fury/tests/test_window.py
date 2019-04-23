@@ -1,4 +1,5 @@
 import os
+import platform
 import warnings
 import numpy as np
 from fury import actor, window
@@ -8,6 +9,7 @@ from fury.decorators import xvfb_it
 
 use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
 skip_it = use_xvfb == 'skip'
+skip_osx = platform.system().lower() == "darwin"
 
 
 @npt.dec.skipif(skip_it)
@@ -241,7 +243,7 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_it or skip_osx)
 @xvfb_it
 def test_order_transparent():
 
