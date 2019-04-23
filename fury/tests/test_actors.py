@@ -899,6 +899,7 @@ def test_grid(_interactive=False):
         show_m.render()
         if cnt == 4:
             show_m.exit()
+            show_m.destroy_timers()
 
     show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
