@@ -10,7 +10,7 @@ environment:
       EXTRA_PIP_FLAGS: "--timeout=60"
 
   matrix:
-    - PYTHON: C:\Miniconda-x64
+    - PYTHON: C:\Miniconda36-x64
     - PYTHON: C:\Python35-x64
     - PYTHON: C:\Python36-x64
     - PYTHON: C:\Python36-x64
@@ -40,6 +40,7 @@ install:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-desktop.ps1'))
   # Setup some environment variable 
   - ps: $env:Path = "$env:PYTHON;$env:PYTHON\\Scripts;$env:Path"
+  - ps: Write-Host "Env Path = " + $env:Path
 
   - ps: $env:PYTHON_ARCH = python -c "import struct; print(struct.calcsize('P') * 8)"
   - ps: $env:PYTHON_VERSION = python -c "import platform;print(platform.python_version())"
@@ -57,5 +58,5 @@ test_script:
   - "%CMD_IN_ENV% powershell ./ci/appveyor/script.ps1"
 
 cache:
-  # Avoid re-downloading large packages
-  - '%APPDATA%\pip\Cache'
+  # Avoid re-downloading large packages. More info: https://www.appveyor.com/docs/build-cache/
+  - '%LOCALAPPDATA%\pip\Cache -> appveyor.yml'
