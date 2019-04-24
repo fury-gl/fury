@@ -235,61 +235,64 @@ def test_contour_from_roi():
     npt.assert_equal(report2.objects, 2)
 
     # test on real streamlines using tracking example
-    from dipy.data import read_stanford_labels
-    from dipy.reconst.shm import CsaOdfModel
-    from dipy.data import default_sphere
-    from dipy.direction import peaks_from_model
-    from dipy.tracking.local import ThresholdTissueClassifier
-    from dipy.tracking import utils
-    from dipy.tracking.local import LocalTracking
-    from fury.colormap import line_colors
+    if have_dipy:
+        from dipy.data import read_stanford_labels
+        from dipy.reconst.shm import CsaOdfModel
+        from dipy.data import default_sphere
+        from dipy.direction import peaks_from_model
+        from dipy.tracking.local import ThresholdTissueClassifier
+        from dipy.tracking import utils
+        from dipy.tracking.local import LocalTracking
+        from fury.colormap import line_colors
 
-    hardi_img, gtab, labels_img = read_stanford_labels()
-    data = hardi_img.get_data()
-    labels = labels_img.get_data()
-    affine = hardi_img.affine
+        hardi_img, gtab, labels_img = read_stanford_labels()
+        data = hardi_img.get_data()
+        labels = labels_img.get_data()
+        affine = hardi_img.affine
 
-    white_matter = (labels == 1) | (labels == 2)
+        white_matter = (labels == 1) | (labels == 2)
 
-    csa_model = CsaOdfModel(gtab, sh_order=6)
-    csa_peaks = peaks_from_model(csa_model, data, default_sphere,
-                                 relative_peak_threshold=.8,
-                                 min_separation_angle=45,
-                                 mask=white_matter)
+        csa_model = CsaOdfModel(gtab, sh_order=6)
+        csa_peaks = peaks_from_model(csa_model, data, default_sphere,
+                                     relative_peak_threshold=.8,
+                                     min_separation_angle=45,
+                                     mask=white_matter)
 
-    classifier = ThresholdTissueClassifier(csa_peaks.gfa, .25)
+        classifier = ThresholdTissueClassifier(csa_peaks.gfa, .25)
 
-    seed_mask = labels == 2
-    seeds = utils.seeds_from_mask(seed_mask, density=[1, 1, 1], affine=affine)
+        seed_mask = labels == 2
+        seeds = utils.seeds_from_mask(seed_mask, density=[1, 1, 1],
+                                      affine=affine)
 
-    # Initialization of LocalTracking.
-    # The computation happens in the next step.
-    streamlines = LocalTracking(csa_peaks, classifier, seeds, affine,
-                                step_size=2)
+        # Initialization of LocalTracking.
+        # The computation happens in the next step.
+        streamlines = LocalTracking(csa_peaks, classifier, seeds, affine,
+                                    step_size=2)
 
-    # Compute streamlines and store as a list.
-    streamlines = list(streamlines)
+        # Compute streamlines and store as a list.
+        streamlines = list(streamlines)
 
-    # Prepare the display objects.
-    streamlines_actor = actor.line(streamlines, line_colors(streamlines))
-    seedroi_actor = actor.contour_from_roi(seed_mask, affine, [0, 1, 1], 0.5)
+        # Prepare the display objects.
+        streamlines_actor = actor.line(streamlines, line_colors(streamlines))
+        seedroi_actor = actor.contour_from_roi(seed_mask, affine,
+                                               [0, 1, 1], 0.5)
 
-    # Create the 3d display.
-    r = window.Scene()
-    r2 = window.Scene()
-    r.add(streamlines_actor)
-    arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
-    report3 = window.analyze_snapshot(arr3, find_objects=True)
-    r2.add(streamlines_actor)
-    r2.add(seedroi_actor)
-    arr4 = window.snapshot(r2, 'test_surface4.png', offscreen=True)
-    report4 = window.analyze_snapshot(arr4, find_objects=True)
+        # Create the 3d display.
+        r = window.Scene()
+        r2 = window.Scene()
+        r.add(streamlines_actor)
+        arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
+        report3 = window.analyze_snapshot(arr3, find_objects=True)
+        r2.add(streamlines_actor)
+        r2.add(seedroi_actor)
+        arr4 = window.snapshot(r2, 'test_surface4.png', offscreen=True)
+        report4 = window.analyze_snapshot(arr4, find_objects=True)
 
-    # assert that the seed ROI rendering is not far
-    # away from the streamlines (affine error)
-    npt.assert_equal(report3.objects, report4.objects)
-    # window.show(r)
-    # window.show(r2)
+        # assert that the seed ROI rendering is not far
+        # away from the streamlines (affine error)
+        npt.assert_equal(report3.objects, report4.objects)
+        # window.show(r)
+        # window.show(r2)
 
 
 @xvfb_it
