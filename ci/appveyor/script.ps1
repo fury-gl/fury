@@ -11,4 +11,9 @@ Invoke-Expression "$env:PIPI --user -e ."
 
 # Run tests
 Write-Host "Run FURY tests"
-Invoke-Expression "pytest -svv fury"
+try {
+    Invoke-Expression "pytest -svv fury"
+} catch {
+    Write-Host $_
+    exit 1
+}
