@@ -323,6 +323,7 @@ def test_stereo():
                       mono[150, 150], [0, 0, 0])
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
+
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
