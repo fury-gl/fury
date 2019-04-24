@@ -38,9 +38,9 @@ install:
         throw "There are newer queued builds for this pull request, failing early." }
   # Install OpenGL
   - "git clone --depth 1 git://github.com/vtkiorg/gl-ci-helpers.git"
-  - "%CMD_IN_ENV% powershell gl-ci-helpers/appveyor/install_opengl.ps1"
+  - "%CMD_IN_ENV% powershell ./gl-ci-helpers/appveyor/install_opengl.ps1"
 
-  # Headless trick
+  # Headless trick. More info: https://help.appveyor.com/discussions/problems/3586-black-screenshots#comment_38618584
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-desktop.ps1'))
   # Setup some environment variable 
   - ps: $env:Path = "$env:PYTHON;$env:PYTHON\\Scripts;$env:Path"
