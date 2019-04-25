@@ -59,9 +59,9 @@ install:
 
 build: false # Not a C# project, build stuff at the test step instead.
 
-test_script:
-  - ps: ./ci/appveyor/script.ps1 
-
 cache:
   # Avoid re-downloading large packages. More info: https://www.appveyor.com/docs/build-cache/
   - '%LOCALAPPDATA%\pip\Cache -> appveyor.yml'
+
+test_script:
+  - ps: ./ci/appveyor/script.ps1 
