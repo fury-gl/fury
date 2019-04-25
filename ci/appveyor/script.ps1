@@ -14,6 +14,7 @@ Write-Host "Run FURY tests"
 try {
     Invoke-Expression "pytest -svv fury"
 } catch {
+    Write-Host "Error, Exception "
     Write-Host $_
     exit 1
 }
