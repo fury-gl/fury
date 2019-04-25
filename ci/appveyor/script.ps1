@@ -7,8 +7,8 @@ Write-Output "Pip command: $env:PIPI"
 
 # Print and Install FURY
 Write-Output "======================== Install FURY ========================"
-$env:PIPI --user -e .
+& "$env:PIPI --user -e ."
 
 # Run tests
 Write-Output "======================== Run FURY tests ========================"
-pytest -svv fury
+& "pytest -svv fury"
