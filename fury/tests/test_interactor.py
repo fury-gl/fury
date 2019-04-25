@@ -12,9 +12,10 @@ import numpy.testing as npt
 from fury.decorators import xvfb_it
 
 skip_osx = platform.system().lower() == "darwin"
+skip_win = platform.system().lower() == "windows"
 
 
-@npt.dec.skipif(skip_osx)
+@npt.dec.skipif(skip_osx, skip_win)
 @xvfb_it
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))

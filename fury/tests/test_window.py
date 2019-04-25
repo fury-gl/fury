@@ -8,6 +8,7 @@ from fury.testing import captured_output
 from fury.decorators import xvfb_it
 
 skip_osx = platform.system().lower() == "darwin"
+skip_win = platform.system().lower() == "windows"
 
 
 @xvfb_it
@@ -237,7 +238,7 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-@npt.dec.skipif(skip_osx)
+@npt.dec.skipif(skip_osx or skip_win)
 @xvfb_it
 def test_order_transparent():
 
