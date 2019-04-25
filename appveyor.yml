@@ -60,7 +60,7 @@ install:
 build: false # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  - '%CMD_IN_ENV% powershell "&{./ci/appveyor/script.ps1 %* ;exit $LastExitCode}" set code=%errorlevel%'
+  - ps: ./ci/appveyor/script.ps1 
 
 cache:
   # Avoid re-downloading large packages. More info: https://www.appveyor.com/docs/build-cache/
