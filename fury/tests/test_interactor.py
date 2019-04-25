@@ -15,7 +15,7 @@ skip_osx = platform.system().lower() == "darwin"
 skip_win = platform.system().lower() == "windows"
 
 
-@npt.dec.skipif(skip_osx, skip_win)
+@npt.dec.skipif(skip_osx or skip_win)
 @xvfb_it
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))

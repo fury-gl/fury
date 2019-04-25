@@ -11,4 +11,4 @@ Invoke-Expression "$env:PIPI --user -e ."
 
 # Run tests
 Write-Output "======================== Run FURY tests ========================"
-pytest -svv fury
+Invoke-Expression "pytest -svv fury"

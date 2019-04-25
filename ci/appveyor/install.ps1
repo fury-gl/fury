@@ -3,7 +3,7 @@
 
 $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
 # Print and check this environment variable
-Write-Output "Pip command: " + $env:PIPI
+Write-Output "Pip command: $env:PIPI"
 
 if($env:PYTHON -match "conda")
 {
