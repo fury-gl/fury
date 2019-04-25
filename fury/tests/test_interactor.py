@@ -1,4 +1,3 @@
-import os
 import platform
 from os.path import join as pjoin
 from collections import defaultdict
