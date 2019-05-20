@@ -324,6 +324,7 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
+@xvfb_it
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
@@ -392,5 +393,4 @@ def test_record():
 
 
 if __name__ == '__main__':
-    test_record()
-    # npt.run_module_suite()
+    npt.run_module_suite()
