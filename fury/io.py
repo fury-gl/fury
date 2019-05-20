@@ -45,8 +45,7 @@ def load_image(file_name, as_vtktype=False):
 
     h, w, _ = reader.GetOutput().GetDimensions()
     vtk_array = reader.GetOutput().GetPointData().GetScalars()
-    # print(vtk_array.GetDataSize(), vtk_array.GetNumberOfComponents(),
-    #       vtk_array.GetDataType)
+
     components = vtk_array.GetNumberOfComponents()
     image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
     return image
@@ -133,7 +132,6 @@ def load_polydata(file_name, is_mni_obj=False):
     output : vtkPolyData
 
     """
-    # get file extension (type) lower case
     file_extension = file_name.split(".")[-1].lower()
 
     if file_extension == "vtk":

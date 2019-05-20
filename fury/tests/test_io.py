@@ -49,7 +49,6 @@ def test_save_and_load_options():
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
-            # print(fname_path, pd.GetNumberOfPoints())
             save_polydata(pd, fname_path, **option)
 
             npt.assert_equal(os.path.isfile(fname_path), True)
@@ -70,7 +69,6 @@ def test_save_and_load_options():
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
-            # print(fname_path, pd.GetNumberOfPoints())
             save_polydata(pd, fname_path, **option)
 
             npt.assert_equal(os.path.isfile(fname_path), True)
@@ -121,7 +119,4 @@ def test_save_load_image():
 
 
 if __name__ == "__main__":
-    # test_save_and_load_polydata()
-    # test_save_and_load_options()
-    # test_save_load_image()
     npt.run_module_suite()
