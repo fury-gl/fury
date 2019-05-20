@@ -1,4 +1,5 @@
 import os
+import platform
 import warnings
 import numpy as np
 from fury import actor, window
@@ -6,11 +7,9 @@ import numpy.testing as npt
 from fury.testing import captured_output
 from fury.decorators import xvfb_it
 
-use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-skip_it = use_xvfb == 'skip'
+skip_osx = platform.system().lower() == "darwin"
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_scene():
 
@@ -84,7 +83,6 @@ def test_scene():
     npt.assert_equal(err.getvalue().strip(), '')
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_deprecated():
     with warnings.catch_warnings(record=True) as w:
@@ -133,7 +131,6 @@ def test_deprecated():
         assert issubclass(w[-1].category, DeprecationWarning)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_active_camera():
     scene = window.Scene()
@@ -206,7 +203,6 @@ def test_active_camera():
     npt. assert_equal(view_up, cam.GetViewUp())
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_parallel_projection():
 
@@ -241,7 +237,7 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-@npt.dec.skipif(skip_it)
+@npt.dec.skipif(skip_osx)
 @xvfb_it
 def test_order_transparent():
 
@@ -291,7 +287,6 @@ def test_order_transparent():
     npt.assert_equal(arr[150, 150][0] > arr[150, 150][1], True)
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_stereo():
 

@@ -11,7 +11,10 @@ if [[ $TRAVIS_OS_NAME == 'osx' ]]; then
     mkdir /tmp/.X11-unix
     sudo chmod 1777 /tmp/.X11-unix
     sudo chown root /tmp/.X11-unix/
+    # Start Xquartz -> more info at https://www.xquartz.org/
+    Xquartz &
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+
 else
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
 fi

@@ -1,4 +1,3 @@
-import os
 import sys
 import numpy as np
 import numpy.testing as npt
@@ -9,8 +8,6 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk)
 from fury import actor, window, utils
 from fury.decorators import xvfb_it
-use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-skip_it = use_xvfb == 'skip'
 
 
 def test_map_coordinates_3d_4d():
@@ -52,7 +49,6 @@ def test_polydata_lines():
     npt.assert_array_equal(colors, np.flipud(res_colors))
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_polydata_polygon(interactive=False):
     # Create a cube
@@ -213,7 +209,6 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
-@npt.dec.skipif(skip_it)
 @xvfb_it
 def test_rotate(interactive=False):
 
