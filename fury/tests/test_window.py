@@ -324,6 +324,7 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
+@npt.dec.skipif(skip_osx)
 @xvfb_it
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
