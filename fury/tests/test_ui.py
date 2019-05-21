@@ -787,7 +787,7 @@ def test_timer():
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.45]])
 
     scene = window.Scene()
-    global sphere_actor, tb, cnt
+
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3])
 
@@ -803,7 +803,7 @@ def test_timer():
     tb = ui.TextBlock2D()
 
     cnt = 0
-    global showm
+
     showm = window.ShowManager(scene,
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
@@ -811,16 +811,20 @@ def test_timer():
     showm.initialize()
 
     def timer_callback(_obj, _event):
-        global cnt, sphere_actor, showm, tb
-
-        cnt += 1
-        tb.message = "Let's count to 10 and exit :" + str(cnt)
-        showm.render()
-        if cnt > 9:
-            showm.exit()
-            showm.destroy_timers()
+        timer_callback.cnt += 1
+        timer_callback.tb.message = "Let's count to 10 and exit :" + \
+            str(timer_callback.cnt)
+        timer_callback.showm.render()
+        if timer_callback.cnt > 9:
+            timer_callback.showm.exit()
+            timer_callback.showm.destroy_timers()
 
     scene.add(tb)
+
+    # abuse of function attribute
+    timer_callback.tb = tb
+    timer_callback.cnt = cnt
+    timer_callback.showm = showm
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
@@ -1035,7 +1039,8 @@ def test_grid_ui(interactive=False):
 
 
 if __name__ == "__main__":
-    test_callback()
+    # test_callback()
+    test_timer()
     exit()
 
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
