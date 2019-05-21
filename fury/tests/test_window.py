@@ -377,7 +377,8 @@ def test_record():
 
     # test size and clipping
     with InTemporaryDirectory():
-        window.record(scene, out_path='fury_1.png', size=(5000, 5000))
+        window.record(scene, out_path='fury_1.png', size=(1000, 1000),
+                      magnification=5)
         npt.assert_equal(os.path.isfile('fury_1.png'), True)
         arr = io.load_image('fury_1.png')
 
