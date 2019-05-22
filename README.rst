@@ -1,6 +1,9 @@
 .. image:: https://img.shields.io/travis/fury-gl/fury.svg
         :target: https://travis-ci.org/fury-gl/fury
 
+.. image:: https://ci.appveyor.com/api/projects/status/9asvp22cf5pkl45l?svg=true
+        :target: https://ci.appveyor.com/project/skoudoro/fury-o608g
+
 .. image:: https://img.shields.io/pypi/v/fury.svg
         :target: https://pypi.python.org/pypi/fury
 
