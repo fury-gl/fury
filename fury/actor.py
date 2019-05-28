@@ -113,13 +113,21 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     # Adding this will allow to support anisotropic voxels
     # and also gives the opportunity to slice per voxel coordinates
     RZS = affine[:3, :3]
-    zooms = np.sqrt(np.sum(RZS * RZS, axis=0))
+    zooms = np.sqrt(np.sum(RZS * RZS, axis=0))        
     image_resliced.SetOutputSpacing(*zooms)
 
     image_resliced.SetInterpolationModeToLinear()
     image_resliced.Update()
 
-    ex1, ex2, ey1, ey2, ez1, ez2 = image_resliced.GetOutput().GetExtent()
+    vtk_resliced_data = image_resliced.GetOutput()
+
+    ex1, ex2, ey1, ey2, ez1, ez2 = vtk_resliced_data.GetExtent()
+
+    resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
+
+    # swap axes here
+    resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
+  
 
     class ImageActor(vtk.vtkImageActor):
         def __init__(self):
@@ -145,6 +153,13 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 self.display_extent(ex1, ex2, y, y, ez1, ez2)
             if z is not None:
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
+
+        def get_numpy(self):
+            resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
+
+            # swap axes here
+            resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
+            return resliced
 
         def opacity(self, value):
             self.GetProperty().SetOpacity(value)
