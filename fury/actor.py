@@ -14,7 +14,8 @@ from fury.utils import numpy_to_vtk_matrix, shallow_copy
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
-           lookup_colormap=None, interpolation='linear', picking_tol=0.025):
+           lookup_colormap=None, interpolation='linear', picking_tol=0.025,
+           no_range_change=False):
     """Cut 3D scalar or rgb volumes into 2D images.
 
     Parameters
@@ -39,6 +40,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     picking_tol : float
         The tolerance for the vtkCellPicker, specified as a fraction of
         rendering window size.
+    no_range_change : bool
+
 
     Returns
     -------
@@ -60,11 +63,25 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     else:
         nb_components = 1
 
-    if value_range is None:
-        vol = np.interp(data, xp=[data.min(), data.max()], fp=[0, 255])
+    from time import time
+
+    t1 = time()
+    no_range_change = True
+    if no_range_change:
+        vol = data
     else:
-        vol = np.interp(data, xp=[value_range[0], value_range[1]], fp=[0, 255])
-    vol = vol.astype('uint8')
+        if value_range is None:
+            vol = np.interp(data, xp=[data.min(), data.max()], fp=[0, 255])
+        else:
+            vol = np.interp(data, xp=[value_range[0], value_range[1]], fp=[0, 255])
+    
+        vol = vol.astype('uint8')
+
+    t2 = time()
+
+    vol.dtype
+
+    print('t2', t2 - t1)
 
     im = vtk.vtkImageData()
     I, J, K = vol.shape[:3]
@@ -72,7 +89,10 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-    im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+
+    vtk_type = numpy_support.get_vtk_array_type(vol.dtype)
+    im.AllocateScalars(vtk_type, nb_components)
+    # im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
     # what I do below is the same as what is commented here but much faster
@@ -104,6 +124,10 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     transform.SetMatrix(transform_matrix)
     transform.Inverse()
 
+    t3 = time()
+
+    print('t3', t3 - t2)
+
     # Set the reslicing
     image_resliced = vtk.vtkImageReslice()
     set_input(image_resliced, im)
@@ -117,13 +141,22 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     image_resliced.SetOutputSpacing(*zooms)
 
     image_resliced.SetInterpolationModeToLinear()
+    t31 = time()
+    print('t31', t31 - t3)
     image_resliced.Update()
+
+    t32 = time()
+    print('t32', t32 - t3)
 
     vtk_resliced_data = image_resliced.GetOutput()
 
     ex1, ex2, ey1, ey2, ez1, ez2 = vtk_resliced_data.GetExtent()
 
     resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
+
+    t4 = time()
+
+    print('t4', t4 - t3)
 
     # from pdb import set_trace
     # set_trace()
@@ -190,12 +223,23 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 im_actor.GetMapper().BorderOn()
             return im_actor
 
+    t5 = time()
+
+    print('t5', t5 - t4)
+
+    # r1, r2 = np.percentile(data, [2, 98])
+    r1 = data.min()
+    r2 = data.max()
+
+    t51 = time()
+    print('t51', t51 - t4)
     image_actor = ImageActor()
     if nb_components == 1:
         lut = lookup_colormap
         if lookup_colormap is None:
             # Create a black/white lookup table.
-            lut = colormap_lookup_table((0, 255), (0, 0), (0, 0), (0, 1))
+            lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
+            # lut = colormap_lookup_table((0, 255), (0, 0), (0, 0), (0, 1))
 
         plane_colors = vtk.vtkImageMapToColors()
         plane_colors.SetLookupTable(lut)
@@ -215,6 +259,9 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     image_actor.GetMapper().BorderOn()
 
+    t6 = time()
+
+    print('t6', t6 - t5)
     return image_actor
 
 
