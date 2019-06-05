@@ -14,8 +14,7 @@ from fury.utils import numpy_to_vtk_matrix, shallow_copy
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
-           lookup_colormap=None, interpolation='linear', picking_tol=0.025,
-           no_range_change=False):
+           lookup_colormap=None, interpolation='linear', picking_tol=0.025):
     """Cut 3D scalar or rgb volumes into 2D images.
 
     Parameters
@@ -40,8 +39,6 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     picking_tol : float
         The tolerance for the vtkCellPicker, specified as a fraction of
         rendering window size.
-    no_range_change : bool
-
 
     Returns
     -------
@@ -66,6 +63,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     from time import time
 
     t1 = time()
+    """
     no_range_change = True
     if no_range_change:
         vol = data
@@ -77,8 +75,13 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     
         vol = vol.astype('uint8')
 
+    """
+    if value_range is None:
+        value_range = (data.min(), data.max())
+    
     t2 = time()
 
+    vol = data
     vol.dtype
 
     print('t2', t2 - t1)
@@ -228,8 +231,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     print('t5', t5 - t4)
 
     # r1, r2 = np.percentile(data, [2, 98])
-    r1 = data.min()
-    r2 = data.max()
+    r1, r2 = value_range
 
     t51 = time()
     print('t51', t51 - t4)
