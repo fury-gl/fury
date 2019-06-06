@@ -199,7 +199,6 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
 
             # swap axes here
-            #resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
             if data.ndim == 4:
                 if data.shape[-1] == 3:
                     resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
