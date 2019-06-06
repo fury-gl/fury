@@ -1907,6 +1907,7 @@ class LineSlider2D(UI):
         position : (float, float)
             The absolute position of the disk (x, y).
         """
+        print('in set position')
         x_position = position[0]
         x_position = max(x_position, self.left_x_position)
         x_position = min(x_position, self.right_x_position)
@@ -1941,7 +1942,7 @@ class LineSlider2D(UI):
 
     def update(self):
         """ Updates the slider. """
-
+        print('update')
         # Compute the ratio determined by the position of the slider disk.
         length = float(self.right_x_position - self.left_x_position)
         if length != self.track.width:
@@ -1972,6 +1973,7 @@ class LineSlider2D(UI):
             The picked actor
         _slider : :class:`LineSlider2D`
         """
+        print('in track click')
         position = i_ren.event.position
         self.set_position(position)
         i_ren.force_render()
@@ -1987,6 +1989,7 @@ class LineSlider2D(UI):
             The picked actor
         slider : :class:`LineSlider2D`
         """
+        print('in handle move')
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
@@ -2337,6 +2340,9 @@ class LineDoubleSlider2D(UI):
 
         return self.text_template.format(value=self._values[disk_number])
 
+    def on_change(self, slider):
+        print('D change')
+    
     def update(self, disk_number):
         """ Updates the slider.
 
@@ -2344,6 +2350,7 @@ class LineDoubleSlider2D(UI):
         ----------
         disk_number : Index of the disk to be updated.
         """
+        print('Double update')
         # Compute the ratio determined by the position of the slider disk.
         self._ratio[disk_number] = self.coord_to_ratio(
             self.handles[disk_number].center[0])
@@ -2359,6 +2366,8 @@ class LineDoubleSlider2D(UI):
         self.text[disk_number].position = (
             self.handles[disk_number].center[0],
             self.text[disk_number].position[1])
+        #!!!
+        self.on_change(self)
 
     def handle_move_callback(self, i_ren, vtkactor, _slider):
         """ Actual handle movement.
@@ -2370,6 +2379,7 @@ class LineDoubleSlider2D(UI):
             The picked actor
         _slider : :class:`LineDoubleSlider2D`
         """
+        print('Handle move')
         position = i_ren.event.position
         if vtkactor == self.handles[0].actors[0]:
             self.set_position(position, 0)
