@@ -205,6 +205,9 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                     resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
             if data.ndim == 3:
                 resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
+            
+            resliced = np.swapaxes(resliced, 0, 2)
+            resliced = np.ascontiguousarray(resliced)
             return resliced
 
         def opacity(self, value):
