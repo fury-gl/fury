@@ -1907,7 +1907,6 @@ class LineSlider2D(UI):
         position : (float, float)
             The absolute position of the disk (x, y).
         """
-        print('in set position')
         x_position = position[0]
         x_position = max(x_position, self.left_x_position)
         x_position = min(x_position, self.right_x_position)
@@ -1942,7 +1941,6 @@ class LineSlider2D(UI):
 
     def update(self):
         """ Updates the slider. """
-        print('update')
         # Compute the ratio determined by the position of the slider disk.
         length = float(self.right_x_position - self.left_x_position)
         if length != self.track.width:
