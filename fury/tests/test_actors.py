@@ -822,6 +822,27 @@ def test_spheres(interactive=False):
 
 
 @xvfb_it
+def test_cones(interactive=False):
+
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+
+    scene = window.Scene()
+    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
+                            heights=10, colors=colors[:])
+    scene.add(cone_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+
+@xvfb_it
 def test_grid(_interactive=False):
 
     vol1 = np.zeros((100, 100, 100))
