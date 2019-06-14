@@ -1479,7 +1479,7 @@ def cone(centers, directions, colors, heights=1., resolutions=10,
     >>> centers = np.random.rand(5, 3)
     >>> directions = np.random.rand(5, 3)
     >>> heights = np.random.rand(5)
-    >>> cone_actor = actor.cone(centers, directions, window.colors.coral, heights)
+    >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights)
     >>> scene.add(cone_actor)
     >>> # window.show(scene)
 
