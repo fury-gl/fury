@@ -1395,7 +1395,6 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     >>> # window.show(scene)
 
     """
-
     if np.array(colors).ndim == 1:
         colors = np.tile(colors, (len(centers), 1))
 
@@ -1451,22 +1450,26 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     return actor
 
 
-def cone(centers, directions, colors, heights=1., resolutions=10,
+def cone(centers, directions, colors, heights=1., resolution=10,
          vertices=None, faces=None):
     """Visualize one or many cones with different colors and radii
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    radii : float or ndarray, shape (N,)
-    theta : int
-    phi : int
+    heights : ndarray, shape (N)
+        The height of the cone.
+    resolution : int
+        The resolution of the cone.
     vertices : ndarray, shape (N, 3)
     faces : ndarray, shape (M, 3)
-        If faces is None then a sphere is created based on theta and phi angles
-        If not then a sphere is created with the provided vertices and faces.
+        If faces is None then a cone is created based on directions, heights
+        and resolution. If not then a cone is created with the provided
+        vertices and faces.
 
     Returns
     -------
@@ -1484,7 +1487,6 @@ def cone(centers, directions, colors, heights=1., resolutions=10,
     >>> # window.show(scene)
 
     """
-
     if np.array(colors).ndim == 1:
         colors = np.tile(colors, (len(centers), 1))
 
@@ -1506,7 +1508,7 @@ def cone(centers, directions, colors, heights=1., resolutions=10,
 
     if faces is None:
         src = vtk.vtkConeSource()
-        src.SetResolution(resolutions)
+        src.SetResolution(resolution)
         if isinstance(heights, int):
             src.SetHeight(heights)
     else:
