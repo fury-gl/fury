@@ -175,6 +175,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.picker = vtk.vtkCellPicker()
             self.output = None
             self.shape = None
+            self.outline_actor = None
 
         def input_connection(self, output):
             self.GetMapper().SetInputConnection(output.GetOutputPort())
@@ -184,6 +185,14 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
             self.Update()
+            #bounds = self.bounds
+            #from pdb import set_trace
+            #set_trace()
+            bounds = self.GetBounds()
+            xmin, xmax, ymin, ymax, zmin, zmax = bounds
+            line = np.array([[xmin, ymin, zmin]])
+            # self.outline_actor = actor.line()
+            # pass
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
@@ -227,6 +236,10 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 im_actor.SetInterpolate(True)
                 im_actor.GetMapper().BorderOn()
             return im_actor
+        
+        def shallow_copy(self):
+            # TODO rename copy to shallow_copy
+            self.copy()
 
     t5 = time()
 
