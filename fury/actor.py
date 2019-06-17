@@ -1395,7 +1395,6 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     >>> # window.show(scene)
 
     """
-
     if np.array(colors).ndim == 1:
         colors = np.tile(colors, (len(centers), 1))
 
@@ -1443,6 +1442,102 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     mapper.SetInputData(glyph.GetOutput())
     mapper.SetScalarModeToUsePointFieldData()
 
+    mapper.SelectColorArray('colors')
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
+
+def cone(centers, directions, colors, heights=1., resolution=10,
+         vertices=None, faces=None):
+    """Visualize one or many cones with different colors and radii
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cone.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the cone.
+    resolution : int
+        The resolution of the cone.
+    vertices : ndarray, shape (N, 3)
+    faces : ndarray, shape (M, 3)
+        If faces is None then a cone is created based on directions, heights
+        and resolution. If not then a cone is created with the provided
+        vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> directions = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights)
+    >>> scene.add(cone_actor)
+    >>> # window.show(scene)
+
+    """
+    if np.array(colors).ndim == 1:
+        colors = np.tile(colors, (len(centers), 1))
+
+    pts = numpy_to_vtk_points(np.ascontiguousarray(centers))
+    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
+    cols.SetName('colors')
+    if isinstance(heights, np.ndarray):
+        heights_fa = numpy_support.numpy_to_vtk(np.asarray(heights),
+                                                deep=True,
+                                                array_type=vtk.VTK_DOUBLE)
+        heights_fa.SetName('heights')
+    directions_fa = numpy_support.numpy_to_vtk(np.asarray(directions),
+                                               deep=True,
+                                               array_type=vtk.VTK_DOUBLE)
+    directions_fa.SetName('directions')
+
+    polydata_centers = vtk.vtkPolyData()
+    polydata_cone = vtk.vtkPolyData()
+
+    if faces is None:
+        src = vtk.vtkConeSource()
+        src.SetResolution(resolution)
+        if isinstance(heights, int):
+            src.SetHeight(heights)
+    else:
+        set_polydata_vertices(polydata_cone, vertices)
+        set_polydata_triangles(polydata_cone, faces)
+
+    polydata_centers.SetPoints(pts)
+    polydata_centers.GetPointData().AddArray(cols)
+    polydata_centers.GetPointData().AddArray(directions_fa)
+    polydata_centers.GetPointData().SetActiveVectors('directions')
+    if isinstance(heights, np.ndarray):
+        polydata_centers.GetPointData().AddArray(heights_fa)
+        polydata_centers.GetPointData().SetActiveScalars('heights')
+
+    glyph = vtk.vtkGlyph3D()
+    if faces is None:
+        glyph.SetSourceConnection(src.GetOutputPort())
+    else:
+        glyph.SetSourceData(polydata_cone)
+
+    glyph.SetInputData(polydata_centers)
+    glyph.SetOrient(True)
+    glyph.SetScaleModeToScaleByScalar()
+    glyph.SetVectorModeToUseVector()
+    glyph.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(glyph.GetOutput())
+    mapper.SetScalarModeToUsePointFieldData()
     mapper.SelectColorArray('colors')
 
     actor = vtk.vtkActor()

@@ -546,7 +546,6 @@ def test_odf_slicer(interactive=False):
                                  colormap=None,
                                  norm=False, global_cm=False)
 
-
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     npt.assert_equal(report.actors_classnames[0], 'vtkLODActor')
@@ -818,6 +817,59 @@ def test_spheres(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
                                      colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+
+@xvfb_it
+def test_cones(interactive=False):
+
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+    heights = np.array([5, 7, 10])
+
+    scene = window.Scene()
+    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
+                            heights=heights, colors=colors[:])
+    scene.add(cone_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+    colors = np.array([1.0, 1.0, 1.0, 1.0])
+    heights = 10
+    resolution = 8
+
+    scene.clear()
+    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
+                            heights=10, colors=colors[:],
+                            resolution=resolution)
+    scene.add(cone_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=[colors])
+    npt.assert_equal(report.objects, 3)
+
+    scene.clear()
+    vertices = np.array([[0, 0, 0], [0, 10, 0], [10, 0, 0], [0, 0, 10]])
+    faces = np.array([[0, 1, 3], [0, 1, 2]])
+    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
+                            colors=colors[:], vertices=vertices,
+                            faces=faces)
+    scene.add(cone_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=[colors])
     npt.assert_equal(report.objects, 3)
 
 
