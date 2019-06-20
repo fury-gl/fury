@@ -1971,7 +1971,7 @@ class LineSlider2D(UI):
             The picked actor
         _slider : :class:`LineSlider2D`
         """
-        print('in track click')
+        
         position = i_ren.event.position
         self.set_position(position)
         i_ren.force_render()
@@ -1987,7 +1987,7 @@ class LineSlider2D(UI):
             The picked actor
         slider : :class:`LineSlider2D`
         """
-        print('in handle move')
+        
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)

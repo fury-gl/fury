@@ -178,6 +178,18 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.outline_actor = None
 
         def input_connection(self, output):
+            
+            # outline only
+            outline = vtk.vtkOutlineFilter()
+            outline.SetInputData(vtk_resliced_data)
+            outline_mapper = vtk.vtkPolyDataMapper()
+            outline_mapper.SetInputConnection(outline.GetOutputPort())
+            self.outline_actor = vtk.vtkActor()
+            self.outline_actor.SetMapper(outline_mapper)
+            self.outline_actor.GetProperty().SetColor(1, 0.5, 0)
+            self.outline_actor.GetProperty().SetLineWidth(5)
+            self.outline_actor.GetProperty().SetRenderLinesAsTubes(True)
+            # crucial
             self.GetMapper().SetInputConnection(output.GetOutputPort())
             self.output = output
             self.shape = (ex2 + 1, ey2 + 1, ez2 + 1)
