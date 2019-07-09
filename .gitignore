@@ -79,15 +79,21 @@ target/
 .DS_Store
 *~
 
-#vim
+# Vim
 *.swp
 *.swo
 
-#pycharm
+# PyCharm
 .idea/*
 
-#vscode
+# VSCode
 .vscode/
 
-#Ipython Notebook
+# Ipython Notebook
 .ipynb_checkpoints
+
+# Others
+*.trk
+*.tck
+*.nii
+*.nii.gz
