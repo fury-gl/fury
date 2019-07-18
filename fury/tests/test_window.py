@@ -244,48 +244,37 @@ def test_order_transparent():
 
     scene = window.Scene()
 
-    lines = [np.array([[-1, 0, 0.], [1, 0, 0.]]),
-             np.array([[-1, 1, 0.], [1, 1, 0.]])]
+    lines = [np.array([[1, 0, 1.], [-1, 0, 1.]]),
+                np.array([[1, 0, -1.], [-1, 0, -1.]])]
     colors = np.array([[1., 0., 0.], [0., 1., 0.]])
     stream_actor = actor.streamtube(lines, colors, linewidth=0.3, opacity=0.5)
 
     scene.add(stream_actor)
-
     scene.reset_camera()
-
-    # green in front
-    scene.elevation(90)
-    scene.camera().OrthogonalizeViewUp()
     scene.reset_clipping_range()
-
-    scene.reset_camera()
 
     not_xvfb = os.environ.get("TEST_WITH_XVFB", False)
 
     if not_xvfb:
         arr = window.snapshot(scene, fname='green_front.png',
-                              offscreen=True, order_transparent=False)
+                            offscreen=True, order_transparent=False)
     else:
         arr = window.snapshot(scene, fname='green_front.png',
-                              offscreen=False, order_transparent=False)
+                            offscreen=False, order_transparent=False)
 
-    # therefore the green component must have a higher value (in RGB terms)
-    npt.assert_equal(arr[150, 150][1] > arr[150, 150][0], True)
-
-    # red in front
-    scene.elevation(-180)
-    scene.camera().OrthogonalizeViewUp()
-    scene.reset_clipping_range()
+    green_no_ot = arr[150, 150, 1]
 
     if not_xvfb:
         arr = window.snapshot(scene, fname='red_front.png',
-                              offscreen=True, order_transparent=True)
+                            offscreen=True, order_transparent=True)
     else:
         arr = window.snapshot(scene, fname='red_front.png',
-                              offscreen=False, order_transparent=True)
+                            offscreen=False, order_transparent=True)
 
-    # therefore the red component must have a higher value (in RGB terms)
-    npt.assert_equal(arr[150, 150][0] > arr[150, 150][1], True)
+    # when order transparency is True green should be weaker
+    green_ot = arr[150, 150, 1]
+
+    npt.assert_equal(green_no_ot > green_ot, True)
 
 
 @xvfb_it
