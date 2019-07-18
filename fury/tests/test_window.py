@@ -245,7 +245,7 @@ def test_order_transparent():
     scene = window.Scene()
 
     lines = [np.array([[1, 0, 1.], [-1, 0, 1.]]),
-                np.array([[1, 0, -1.], [-1, 0, -1.]])]
+             np.array([[1, 0, -1.], [-1, 0, -1.]])]
     colors = np.array([[1., 0., 0.], [0., 1., 0.]])
     stream_actor = actor.streamtube(lines, colors, linewidth=0.3, opacity=0.5)
 
@@ -257,19 +257,19 @@ def test_order_transparent():
 
     if not_xvfb:
         arr = window.snapshot(scene, fname='green_front.png',
-                            offscreen=True, order_transparent=False)
+                              offscreen=True, order_transparent=False)
     else:
         arr = window.snapshot(scene, fname='green_front.png',
-                            offscreen=False, order_transparent=False)
+                              offscreen=False, order_transparent=False)
 
     green_no_ot = arr[150, 150, 1]
 
     if not_xvfb:
         arr = window.snapshot(scene, fname='red_front.png',
-                            offscreen=True, order_transparent=True)
+                              offscreen=True, order_transparent=True)
     else:
         arr = window.snapshot(scene, fname='red_front.png',
-                            offscreen=False, order_transparent=True)
+                              offscreen=False, order_transparent=True)
 
     # when order transparency is True green should be weaker
     green_ot = arr[150, 150, 1]
