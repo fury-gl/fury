@@ -98,7 +98,7 @@ def change_text_callback(i_ren, _obj, _button):
 
 
 def change_icon_callback(i_ren, _obj, _button):
-    button.next_icon()
+    _button.next_icon()
     i_ren.force_render()
 
 
