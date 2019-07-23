@@ -53,7 +53,7 @@ def load_image(file_name, as_vtktype=False):
 
 def save_image(arr, file_name, compression_quality=100,
                compression_type='deflation'):
-    """Save an 2d or 3d image.
+    """Save a 2d or 3d image.
 
     Parameters
     ----------
