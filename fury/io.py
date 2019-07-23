@@ -13,7 +13,7 @@ def load_image(file_name, as_vtktype=False):
     file_name: string
         should be png, bmp, jpeg or jpg files
     as_vtktype: bool, optional
-        if True, return vtk output otherwise a ndarray. default(False)
+        if True, return vtk output otherwise a ndarray. Default False.
 
     Returns
     -------
