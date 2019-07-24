@@ -2339,7 +2339,7 @@ class LineDoubleSlider2D(UI):
         return self.text_template.format(value=self._values[disk_number])
 
     def on_change(self, slider):
-        print('D change')
+        pass
     
     def update(self, disk_number):
         """ Updates the slider.
