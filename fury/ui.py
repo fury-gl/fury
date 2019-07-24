@@ -1971,7 +1971,7 @@ class LineSlider2D(UI):
             The picked actor
         _slider : :class:`LineSlider2D`
         """
-        
+
         position = i_ren.event.position
         self.set_position(position)
         i_ren.force_render()
@@ -1987,7 +1987,7 @@ class LineSlider2D(UI):
             The picked actor
         slider : :class:`LineSlider2D`
         """
-        
+
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
@@ -2364,7 +2364,6 @@ class LineDoubleSlider2D(UI):
         self.text[disk_number].position = (
             self.handles[disk_number].center[0],
             self.text[disk_number].position[1])
-        #!!!
         self.on_change(self)
 
     def handle_move_callback(self, i_ren, vtkactor, _slider):
