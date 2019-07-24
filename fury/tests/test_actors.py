@@ -72,8 +72,8 @@ def test_slicer():
 
     scene.clear()
 
-    rgb = np.zeros((30, 30, 30, 3))
-    rgb[..., 0] = 1.
+    rgb = np.zeros((30, 30, 30, 3), dtype='f8')
+    rgb[..., 0] = 255 #1.
     rgb_actor = actor.slicer(rgb)
 
     scene.add(rgb_actor)
@@ -81,6 +81,8 @@ def test_slicer():
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    window.show(scene)
+    1/0
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=[(255, 0, 0)])
     npt.assert_equal(report.objects, 1)
