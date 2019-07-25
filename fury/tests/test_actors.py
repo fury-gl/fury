@@ -63,7 +63,6 @@ def test_slicer():
     # save pixels in png file not a numpy array
     with InTemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'slice.png')
-        # window.show(scene)
         window.snapshot(scene, fname, offscreen=True)
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
@@ -73,7 +72,7 @@ def test_slicer():
     scene.clear()
 
     rgb = np.zeros((30, 30, 30, 3), dtype='f8')
-    rgb[..., 0] = 255 #1.
+    rgb[..., 0] = 255
     rgb_actor = actor.slicer(rgb)
 
     scene.add(rgb_actor)
@@ -81,8 +80,6 @@ def test_slicer():
     scene.reset_camera()
     scene.reset_clipping_range()
 
-    window.show(scene)
-    1/0
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=[(255, 0, 0)])
     npt.assert_equal(report.objects, 1)

@@ -20,7 +20,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     Parameters
     ----------
     data : array, shape (X, Y, Z) or (X, Y, Z, 3)
-        A grayscale or rgb 4D volume as a numpy array.
+        A grayscale or rgb 4D volume as a numpy array. If rgb then values
+        expected on the range [0, 255].
     affine : array, shape (4, 4)
         Grid to space (usually RAS 1mm) transformation matrix. Default is None.
         If None then the identity matrix is used.
@@ -49,6 +50,9 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         coordinates as calculated by the affine parameter.
 
     """
+    if value_range is None:
+        value_range = (data.min(), data.max())
+
     if data.ndim != 3:
         if data.ndim == 4:
             if data.shape[3] != 3:
@@ -60,14 +64,12 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     else:
         nb_components = 1
 
-    if value_range is None:
-        value_range = (data.min(), data.max())
-    
     vol = data
 
     im = vtk.vtkImageData()
     I, J, K = vol.shape[:3]
     im.SetDimensions(I, J, K)
+    # for now setting up for 1x1x1 but transformation comes later.
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
@@ -77,7 +79,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     # im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
-    # what I do below is the same as what is 
+    # what I do below is the same as what is
     # commented here but much faster
     # for index in ndindex(vol.shape):
     #     i, j, k = index
@@ -106,7 +108,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         affine[3][0], affine[3][1], affine[3][2], affine[3][3]))
     transform.SetMatrix(transform_matrix)
     transform.Inverse()
-    
+
     # Set the reslicing
     image_resliced = vtk.vtkImageReslice()
     set_input(image_resliced, im)
@@ -126,7 +128,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     ex1, ex2, ey1, ey2, ez1, ez2 = vtk_resliced_data.GetExtent()
 
-    resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
+    resliced = numpy_support.vtk_to_numpy(
+        vtk_resliced_data.GetPointData().GetScalars())
 
     # swap axes here
     if data.ndim == 4:
@@ -134,7 +137,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
     if data.ndim == 3:
         resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
-  
+
     class ImageActor(vtk.vtkImageActor):
         def __init__(self):
             self.picker = vtk.vtkCellPicker()
@@ -143,7 +146,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.outline_actor = None
 
         def input_connection(self, output):
-            
+
             # outline only
             outline = vtk.vtkOutlineFilter()
             outline.SetInputData(vtk_resliced_data)
@@ -178,16 +181,19 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
 
         def get_numpy(self):
-            resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
+            resliced = numpy_support.vtk_to_numpy(
+                vtk_resliced_data.GetPointData().GetScalars())
 
             # swap axes here
             if data.ndim == 4:
                 if data.shape[-1] == 3:
                     resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
+                    print('in slicer', resliced.shape)
             if data.ndim == 3:
                 resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
             resliced = np.swapaxes(resliced, 0, 2)
             resliced = np.ascontiguousarray(resliced)
+            print('in slicer 2', resliced.shape)
             return resliced
 
         def opacity(self, value):
@@ -208,11 +214,11 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 im_actor.SetInterpolate(True)
                 im_actor.GetMapper().BorderOn()
             return im_actor
-        
+
         def shallow_copy(self):
             # TODO rename copy to shallow_copy
             self.copy()
-    
+
     r1, r2 = value_range
 
     image_actor = ImageActor()
@@ -221,7 +227,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         if lookup_colormap is None:
             # Create a black/white lookup table.
             lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
-            
+
         plane_colors = vtk.vtkImageMapToColors()
         plane_colors.SetLookupTable(lut)
         plane_colors.SetInputConnection(image_resliced.GetOutputPort())
