@@ -20,7 +20,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     Parameters
     ----------
     data : array, shape (X, Y, Z) or (X, Y, Z, 3)
-        A grayscale or rgb 4D volume as a numpy array.
+        A grayscale or rgb 4D volume as a numpy array. If rgb then values
+        expected on the range [0, 255].
     affine : array, shape (4, 4)
         Grid to space (usually RAS 1mm) transformation matrix. Default is None.
         If None then the identity matrix is used.
@@ -49,6 +50,9 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         coordinates as calculated by the affine parameter.
 
     """
+    if value_range is None:
+        value_range = (data.min(), data.max())
+
     if data.ndim != 3:
         if data.ndim == 4:
             if data.shape[3] != 3:
@@ -60,22 +64,23 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     else:
         nb_components = 1
 
-    if value_range is None:
-        vol = np.interp(data, xp=[data.min(), data.max()], fp=[0, 255])
-    else:
-        vol = np.interp(data, xp=[value_range[0], value_range[1]], fp=[0, 255])
-    vol = vol.astype('uint8')
+    vol = data
 
     im = vtk.vtkImageData()
     I, J, K = vol.shape[:3]
     im.SetDimensions(I, J, K)
+    # for now setting up for 1x1x1 but transformation comes later.
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-    im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+
+    vtk_type = numpy_support.get_vtk_array_type(vol.dtype)
+    im.AllocateScalars(vtk_type, nb_components)
+    # im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
-    # what I do below is the same as what is commented here but much faster
+    # what I do below is the same as what is
+    # commented here but much faster
     # for index in ndindex(vol.shape):
     #     i, j, k = index
     #     im.SetScalarComponentFromFloat(i, j, k, 0, vol[i, j, k])
@@ -119,15 +124,40 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     image_resliced.SetInterpolationModeToLinear()
     image_resliced.Update()
 
-    ex1, ex2, ey1, ey2, ez1, ez2 = image_resliced.GetOutput().GetExtent()
+    vtk_resliced_data = image_resliced.GetOutput()
+
+    ex1, ex2, ey1, ey2, ez1, ez2 = vtk_resliced_data.GetExtent()
+
+    resliced = numpy_support.vtk_to_numpy(
+        vtk_resliced_data.GetPointData().GetScalars())
+
+    # swap axes here
+    if data.ndim == 4:
+        if data.shape[-1] == 3:
+            resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
+    if data.ndim == 3:
+        resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
 
     class ImageActor(vtk.vtkImageActor):
         def __init__(self):
             self.picker = vtk.vtkCellPicker()
             self.output = None
             self.shape = None
+            self.outline_actor = None
 
         def input_connection(self, output):
+
+            # outline only
+            outline = vtk.vtkOutlineFilter()
+            outline.SetInputData(vtk_resliced_data)
+            outline_mapper = vtk.vtkPolyDataMapper()
+            outline_mapper.SetInputConnection(outline.GetOutputPort())
+            self.outline_actor = vtk.vtkActor()
+            self.outline_actor.SetMapper(outline_mapper)
+            self.outline_actor.GetProperty().SetColor(1, 0.5, 0)
+            self.outline_actor.GetProperty().SetLineWidth(5)
+            self.outline_actor.GetProperty().SetRenderLinesAsTubes(True)
+            # crucial
             self.GetMapper().SetInputConnection(output.GetOutputPort())
             self.output = output
             self.shape = (ex2 + 1, ey2 + 1, ez2 + 1)
@@ -135,6 +165,10 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
             self.Update()
+            bounds = self.GetBounds()
+            # xmin, xmax, ymin, ymax, zmin, zmax = bounds
+            # line = np.array([[xmin, ymin, zmin]])
+            # self.outline_actor = actor.line()
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
@@ -145,6 +179,21 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 self.display_extent(ex1, ex2, y, y, ez1, ez2)
             if z is not None:
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
+
+        def resliced_array(self):
+            """ Returns resliced array as numpy array"""
+            resliced = numpy_support.vtk_to_numpy(
+                vtk_resliced_data.GetPointData().GetScalars())
+
+            # swap axes here
+            if data.ndim == 4:
+                if data.shape[-1] == 3:
+                    resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
+            if data.ndim == 3:
+                resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
+            resliced = np.swapaxes(resliced, 0, 2)
+            resliced = np.ascontiguousarray(resliced)
+            return resliced
 
         def opacity(self, value):
             self.GetProperty().SetOpacity(value)
@@ -165,12 +214,18 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 im_actor.GetMapper().BorderOn()
             return im_actor
 
+        def shallow_copy(self):
+            # TODO rename copy to shallow_copy
+            self.copy()
+
+    r1, r2 = value_range
+
     image_actor = ImageActor()
     if nb_components == 1:
         lut = lookup_colormap
         if lookup_colormap is None:
             # Create a black/white lookup table.
-            lut = colormap_lookup_table((0, 255), (0, 0), (0, 0), (0, 1))
+            lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
 
         plane_colors = vtk.vtkImageMapToColors()
         plane_colors.SetLookupTable(lut)
