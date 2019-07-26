@@ -1,0 +1,45 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+jobs:
+- job: Windows
+  pool:
+    vmIMage: 'VS2017-Win2016'
+  variables:
+    AZURE_CI_WINDOWS: 'true'
+  strategy:
+    maxParallel: 4
+    matrix:
+      Python37-64bit:
+        python.version: '3.7'
+      Python36-64bit:
+        python.version: '3.6'
+      Python35-64bit:
+        python.version: '3.5'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: $(python.version)
+      architecture: 'x64'
+      addToPath: true
+  - powershell: |
+      Set-StrictMode -Version Latest
+      $ErrorActionPreference = "Stop"
+      $PSDefaultParameterValues['*:ErrorAction']='Stop'
+      git clone --depth 1 git://github.com/vtkiorg/gl-ci-helpers.git
+      powershell gl-ci-helpers/appveyor/install_opengl.ps1
+    displayName: 'Install OpenGL'
+  - powershell: |
+      Set-StrictMode -Version Latest
+      $ErrorActionPreference = "Stop"
+      $PSDefaultParameterValues['*:ErrorAction']='Stop'
+      ./ci/appveyor/install.ps1
+    displayName: 'Install dependencies with pip'
+  - powershell: |
+      ./ci/appveyor/script.ps1
+    displayName: 'Run Tests'
