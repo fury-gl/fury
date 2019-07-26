@@ -180,6 +180,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             if z is not None:
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
 
+        @auto_attr
         def resliced_array(self):
             """ Returns resliced array as numpy array"""
             resliced = numpy_support.vtk_to_numpy(
