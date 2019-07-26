@@ -2340,7 +2340,7 @@ class LineDoubleSlider2D(UI):
 
     def on_change(self, slider):
         pass
-    
+
     def update(self, disk_number):
         """ Updates the slider.
 
@@ -2348,7 +2348,7 @@ class LineDoubleSlider2D(UI):
         ----------
         disk_number : Index of the disk to be updated.
         """
-        print('Double update')
+
         # Compute the ratio determined by the position of the slider disk.
         self._ratio[disk_number] = self.coord_to_ratio(
             self.handles[disk_number].center[0])
@@ -2376,7 +2376,7 @@ class LineDoubleSlider2D(UI):
             The picked actor
         _slider : :class:`LineDoubleSlider2D`
         """
-        print('Handle move')
+
         position = i_ren.event.position
         if vtkactor == self.handles[0].actors[0]:
             self.set_position(position, 0)
@@ -4091,7 +4091,6 @@ class GridUI(UI):
     CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
 
     def key_press_callback(self, istyle, obj, what):
-        print('inside key_press event')
         has_changed = False
         if istyle.event.key == "Left":
             has_changed = True

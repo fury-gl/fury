@@ -166,7 +166,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
             self.Update()
             bounds = self.GetBounds()
-            xmin, xmax, ymin, ymax, zmin, zmax = bounds
+            # xmin, xmax, ymin, ymax, zmin, zmax = bounds
             # line = np.array([[xmin, ymin, zmin]])
             # self.outline_actor = actor.line()
 
@@ -180,7 +180,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             if z is not None:
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
 
-        def get_numpy(self):
+        def resliced_array(self):
+            """ Returns resliced array as numpy array"""
             resliced = numpy_support.vtk_to_numpy(
                 vtk_resliced_data.GetPointData().GetScalars())
 
@@ -188,12 +189,10 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             if data.ndim == 4:
                 if data.shape[-1] == 3:
                     resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1, 3)
-                    print('in slicer', resliced.shape)
             if data.ndim == 3:
                 resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
             resliced = np.swapaxes(resliced, 0, 2)
             resliced = np.ascontiguousarray(resliced)
-            print('in slicer 2', resliced.shape)
             return resliced
 
         def opacity(self, value):
