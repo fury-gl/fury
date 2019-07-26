@@ -888,139 +888,133 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 
-<<<<<<< HEAD
 def test_grid_ui(interactive=False):
-=======
-# @xvfb_it
-# def test_grid_ui(interactive=False):
->>>>>>> deactivacte 2test
+    vol1 = np.zeros((100, 100, 100))
+    vol1[25:75, 25:75, 25:75] = 100
 
-#     vol1 = np.zeros((100, 100, 100))
-#     vol1[25:75, 25:75, 25:75] = 100
+    colors = distinguishable_colormap(nb_colors=3)
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
+                                            colors[0], 1.)
 
-#     colors = distinguishable_colormap(nb_colors=3)
-#     contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
-#                                             colors[0], 1.)
+    vol2 = np.zeros((100, 100, 100))
+    vol2[25:75, 25:75, 25:75] = 100
 
-#     vol2 = np.zeros((100, 100, 100))
-#     vol2[25:75, 25:75, 25:75] = 100
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
+                                            colors[1], 1.)
 
-#     contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
-#                                             colors[1], 1.)
+    vol3 = np.zeros((100, 100, 100))
+    vol3[25:75, 25:75, 25:75] = 100
 
-#     vol3 = np.zeros((100, 100, 100))
-#     vol3[25:75, 25:75, 25:75] = 100
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
+                                            colors[2], 1.)
 
-#     contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
-#                                             colors[2], 1.)
+    scene = window.Scene()
+    actors = []
+    texts = []
 
-#     scene = window.Scene()
-#     actors = []
-#     texts = []
+    actors.append(contour_actor1)
+    text_actor1 = actor.text_3d('cube 1', justification='center')
+    texts.append(text_actor1)
 
-#     actors.append(contour_actor1)
-#     text_actor1 = actor.text_3d('cube 1', justification='center')
-#     texts.append(text_actor1)
+    actors.append(contour_actor2)
+    text_actor2 = actor.text_3d('cube 2', justification='center')
+    texts.append(text_actor2)
 
-#     actors.append(contour_actor2)
-#     text_actor2 = actor.text_3d('cube 2', justification='center')
-#     texts.append(text_actor2)
+    actors.append(contour_actor3)
+    text_actor3 = actor.text_3d('cube 3', justification='center')
+    texts.append(text_actor3)
 
-#     actors.append(contour_actor3)
-#     text_actor3 = actor.text_3d('cube 3', justification='center')
-#     texts.append(text_actor3)
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 4', justification='center')
+    texts.append(text_actor1)
 
-#     actors.append(shallow_copy(contour_actor1))
-#     text_actor1 = actor.text_3d('cube 4', justification='center')
-#     texts.append(text_actor1)
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 5', justification='center')
+    texts.append(text_actor2)
 
-#     actors.append(shallow_copy(contour_actor2))
-#     text_actor2 = actor.text_3d('cube 5', justification='center')
-#     texts.append(text_actor2)
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 6', justification='center')
+    texts.append(text_actor3)
 
-#     actors.append(shallow_copy(contour_actor3))
-#     text_actor3 = actor.text_3d('cube 6', justification='center')
-#     texts.append(text_actor3)
+    actors.append(shallow_copy(contour_actor1))
+    text_actor1 = actor.text_3d('cube 7', justification='center')
+    texts.append(text_actor1)
 
-#     actors.append(shallow_copy(contour_actor1))
-#     text_actor1 = actor.text_3d('cube 7', justification='center')
-#     texts.append(text_actor1)
+    actors.append(shallow_copy(contour_actor2))
+    text_actor2 = actor.text_3d('cube 8', justification='center')
+    texts.append(text_actor2)
 
-#     actors.append(shallow_copy(contour_actor2))
-#     text_actor2 = actor.text_3d('cube 8', justification='center')
-#     texts.append(text_actor2)
+    actors.append(shallow_copy(contour_actor3))
+    text_actor3 = actor.text_3d('cube 9', justification='center')
+    texts.append(text_actor3)
 
-#     actors.append(shallow_copy(contour_actor3))
-#     text_actor3 = actor.text_3d('cube 9', justification='center')
-#     texts.append(text_actor3)
+    counter = itertools.count()
+    show_m = window.ShowManager(scene)
+    show_m.initialize()
 
-#     counter = itertools.count()
-#     show_m = window.ShowManager(scene)
-#     show_m.initialize()
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        show_m.scene.zoom(1)
+        show_m.render()
+        if cnt == 10:
+            show_m.exit()
+            show_m.destroy_timers()
 
-#     def timer_callback(_obj, _event):
-#         cnt = next(counter)
-#         show_m.scene.zoom(1)
-#         show_m.render()
-#         if cnt == 10:
-#             show_m.exit()
-#             show_m.destroy_timers()
+    # show the grid with the captions
+    grid_ui = ui.GridUI(actors=actors, captions=texts,
+                        caption_offset=(0, -50, 0),
+                        cell_padding=(60, 60), dim=(3, 3),
+                        rotation_axis=(1, 0, 0))
 
-#     # show the grid with the captions
-#     grid_ui = ui.GridUI(actors=actors, captions=texts,
-#                         caption_offset=(0, -50, 0),
-#                         cell_padding=(60, 60), dim=(3, 3),
-#                         rotation_axis=(1, 0, 0))
+    scene.add(grid_ui)
 
-#     scene.add(grid_ui)
+    show_m.add_timer_callback(True, 200, timer_callback)
+    show_m.start()
 
-#     show_m.add_timer_callback(True, 200, timer_callback)
-#     show_m.start()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects > 9, True)
 
-#     arr = window.snapshot(scene)
-#     report = window.analyze_snapshot(arr)
-#     npt.assert_equal(report.objects > 9, True)
+    # this needs to happen automatically when start() ends.
+    for act in actors:
+        act.RemoveAllObservers()
 
-#     # this needs to happen automatically when start() ends.
-#     for act in actors:
-#         act.RemoveAllObservers()
+    filename = "test_grid_ui"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
 
-#     filename = "test_grid_ui"
-#     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-#     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    current_size = (900, 600)
+    scene = window.Scene()
+    show_manager = window.ShowManager(scene,
+                                      size=current_size,
+                                      title="FURY GridUI")
+    show_manager.initialize()
 
-#     current_size = (900, 600)
-#     scene = window.Scene()
-#     show_manager = window.ShowManager(scene,
-#                                       size=current_size,
-#                                       title="FURY GridUI")
-#     show_manager.initialize()
+    grid_ui2 = ui.GridUI(actors=actors, captions=texts,
+                         caption_offset=(0, -50, 0),
+                         cell_padding=(60, 60), dim=(3, 3),
+                         rotation_axis=None)
 
-#     grid_ui2 = ui.GridUI(actors=actors, captions=texts,
-#                          caption_offset=(0, -50, 0),
-#                          cell_padding=(60, 60), dim=(3, 3),
-#                          rotation_axis=None)
+    scene.add(grid_ui2)
 
-#     scene.add(grid_ui2)
+    event_counter = EventCounter()
+    event_counter.monitor(grid_ui2)
 
-#     event_counter = EventCounter()
-#     event_counter.monitor(grid_ui2)
+    if interactive:
+        show_manager.start()
+    recording = False
 
-#     if interactive:
-#         show_manager.start()
-#     recording = False
+    if recording:
+        # Record the following events
+        # 1. Left click on top left box (will rotate the box)
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
 
-#     if recording:
-#         # Record the following events
-#         # 1. Left click on top left box (will rotate the box)
-#         show_manager.record_events_to_file(recording_filename)
-#         print(list(event_counter.events_counts.items()))
-#         event_counter.save(expected_events_counts_filename)
-
-#     else:
-#         show_manager.play_events_from_file(recording_filename)
-#         expected = EventCounter.load(expected_events_counts_filename)
-#         event_counter.check_counts(expected)
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
 
 
 if __name__ == "__main__":

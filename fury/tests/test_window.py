@@ -266,7 +266,6 @@ def test_order_transparent():
 
 
 def test_stereo():
-
     scene = window.Scene()
 
     lines = [np.array([[-1, 0, 0.], [1, 0, 0.]]),
