@@ -323,11 +323,16 @@ def create_colormap(v, name='plasma', auto=True):
     -----
     FURY supports a few colormaps for those who do not use Matplotlib, for
     more colormaps consider downloading Matplotlib (see matplotlib.org).
+
     """
     if not have_matplotlib:
         msg = "You do not have Matplotlib installed. Some colormaps"
         msg += " might not work for you. Consider downloading Matplotlib."
         warn(msg)
+        if name.lower() not in ['jet', 'blues', 'accent', 'bone']:
+            name = 'accent'
+            msg = "unknown colormap, switch to accent colormap"
+            warn(msg)
 
     if name.lower() == 'jet':
         msg = 'Jet is a popular colormap but can often be misleading'
