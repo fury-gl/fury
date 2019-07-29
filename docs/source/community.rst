@@ -1,6 +1,16 @@
-========
-Credits
-========
+=========
+Community
+=========
+
+Join Us!
+--------
+
+- via Slack
+- via mailing list
+- via github
+
+Contributors
+------------
 
 .. raw:: html
 
