@@ -350,7 +350,7 @@ def set_polydata_triangles(polydata, triangles):
 
     """
     vtk_triangles = np.hstack(np.c_[np.ones(len(triangles)).astype(np.int) * 3,
-                                    triangles])
+                                    triangles], dtype=np.int_)
     vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
                                                           deep=True)
     vtk_cells = vtk.vtkCellArray()
