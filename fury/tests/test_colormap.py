@@ -4,6 +4,8 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import colormap
+from fury.optpkg import optional_package
+cm, have_matplotlib, _ = optional_package('matplotlib.cm')
 
 
 def test_boys2rgb():
@@ -63,6 +65,9 @@ def test_create_colormap():
                       value, name='fake')
     npt.assert_warns(DeprecationWarning, colormap.create_colormap, value,
                      name='jet', auto=False)
+
+    if not have_matplotlib:
+        npt.assert_warns(UserWarning, colormap.create_colormap, value)
 
 
 def test_lab_delta():
