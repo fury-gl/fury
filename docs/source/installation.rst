@@ -3,7 +3,7 @@ Installation
 ============
 
 FURY supports Python 3.5+. You can currently still use Python 2.7 but it will be removed as the Python 2.7 end of life
-is on December 2019, 31rst
+is on December 2019, 31
 
 Dependencies
 ------------
@@ -62,18 +62,18 @@ You can check your installation via this command::
 
     $ python -c "from fury import get_info; print(get_info())"
 
-It should return all the informations about FURY. After this success, we recommend you to play with all tutorial!
+This command will give you all informations about FURY. The next step will be to run a :doc:`Tutorial </tutorial/index>`.
 
 Running the Tests
 -----------------
 
-There is two ways to run FURY tests:
+There are two ways to run FURY tests:
 
 - From python interpreter::
 
     $ from fury.tests import test
     $ test()
 
-- From the command line. You need to be on FURY package folder::
+- From the command line. You need to be on the FURY package folder::
 
     pytest -svv fury
