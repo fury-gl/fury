@@ -1,10 +1,15 @@
 #!/bin/bash
 set -ev
 
-# Anaconda
-export PATH=${ENV_DIR}/miniconda/bin:$PATH
-hash -r
-conda activate testenv
+if [ "$INSTALL_TYPE" == "pip" ]; then
+  source activate testenv
+  hash -r
+else
+  # Anaconda
+  export PATH=${ENV_DIR}/miniconda/bin:$PATH
+  hash -r
+  conda activate testenv
+fi
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
