@@ -723,8 +723,8 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
 
 def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
            out_path=None, path_numbering=False, n_frames=1, az_ang=10,
-           magnification=1, size=(300, 300), reset_camera=True, stereo='off',
-           verbose=False):
+           magnification=1, size=(300, 300), reset_camera=True,
+           screen_clip=False, stereo='off', verbose=False):
     """Record a video of your scene.
 
     Records a video as a series of ``.png`` files of your scene by rotating the
@@ -754,6 +754,8 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         How much to magnify the saved frame. Default is 1.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
+    screen_clip: bool
+        Clip the the png based on screen resolution. Default is False.
     reset_camera : bool
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
@@ -786,6 +788,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         scene = vtk.vtkRenderer()
 
     renWin = vtk.vtkRenderWindow()
+    renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
     iren = vtk.vtkRenderWindowInteractor()
