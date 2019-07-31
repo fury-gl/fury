@@ -11,7 +11,7 @@ then
     # Setup environment
     export PATH=${ENV_DIR}/miniconda/bin:$PATH
     hash -r
-    source activate testenv
+    conda activate testenv
     cd ${TRAVIS_BUILD_DIR}
 
     # Setup git user
