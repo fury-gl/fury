@@ -4,7 +4,7 @@ set -ev
 # Anaconda
 export PATH=${ENV_DIR}/miniconda/bin:$PATH
 hash -r
-source activate testenv
+conda activate testenv
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
