@@ -21,7 +21,7 @@ fi
 
 if [ "$INSTALL_TYPE" == "pip" ]; then
     PIPI="pip install $EXTRA_PIP_FLAGS"
-    pip install --upgrade virtualenv
+    pip install --upgrade --user virtualenv
     virtualenv --python=python$PY_VERSION testenv
     source testenv/bin/activate
     $PIPI --upgrade pip setuptools mesalib xvfbwrapper
