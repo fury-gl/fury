@@ -42,6 +42,7 @@ else
     conda install conda-build anaconda-client
     conda config --add channels conda-forge
     conda create -n testenv --yes python=$PY_VERSION pip mesalib xvfbwrapper
+    conda init bash
     conda activate testenv
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/default.txt
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/test.txt

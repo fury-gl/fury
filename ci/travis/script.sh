@@ -8,6 +8,7 @@ else
   # Anaconda
   export PATH=${ENV_DIR}/miniconda/bin:$PATH
   hash -r
+  conda init bash
   conda activate testenv
 fi
 
