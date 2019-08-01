@@ -25,7 +25,7 @@ if [ "$INSTALL_TYPE" == "pip" ]; then
     virtualenv testenv -p `which python3`
     # virtualenv --python=$PY_VERSION testenv
     source testenv/bin/activate
-    $PIPI --upgrade pip setuptools mesalib xvfbwrapper
+    $PIPI --upgrade pip setuptools xvfbwrapper
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/test.txt
     if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
