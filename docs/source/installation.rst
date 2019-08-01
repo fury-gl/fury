@@ -2,8 +2,7 @@
 Installation
 ============
 
-FURY supports Python 3.5+. You can currently still use Python 2.7 but it will be removed as the Python 2.7 end of life
-is on December 31st 2019.
+FURY supports Python 3.5+. You can currently still use Python 2.7 but it will soon stop being supported as the Python 2.7 end of life is on December 31st 2019.
 
 Dependencies
 ------------
