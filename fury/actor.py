@@ -1567,8 +1567,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         if isinstance(heights, int):
             src.SetHeight(heights)
     else:
-        set_polydata_vertices(polydata_cone, vertices)
-        set_polydata_triangles(polydata_cone, faces)
+        set_polydata_vertices(polydata_cone, vertices.astype(np.int8))
+        set_polydata_triangles(polydata_cone, faces.astype(np.float))
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
