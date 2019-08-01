@@ -62,7 +62,7 @@ You can check your installation via this command::
 
     $ python -c "from fury import get_info; print(get_info())"
 
-This command will give you important information about FURY's installation. The next step will be to run a :doc:`Tutorial </tutorial/index>`.
+This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_tutorials/index>`.
 
 Running the Tests
 -----------------

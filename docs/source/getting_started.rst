@@ -46,14 +46,7 @@ FURY is distributed under the BSD 3 License
 Credits
 --------
 
-The following people have been involved in the development of FURY:
-
-* Eleftherios Garyfallidis, Indiana University, IN, USA
-* Marc-Alexandre Côté, Microsoft Research, Montreal, QC, CA
-* David Reagan, Indiana University, IN, USA
-* Ranveer Aggarwal, Microsoft, Hyderabad, Telangana, India
-* Serge Koudoro, Indiana University, IN, USA
-* Karandeep Singh Juneja, India
+Go to :doc:`Community page <community>` to see who have been involved in the development of FURY:
 
 Bug reports and support
 ---------------------------
