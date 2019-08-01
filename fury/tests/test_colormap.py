@@ -63,7 +63,7 @@ def test_create_colormap():
                       value.reshape((5, 5)))
     npt.assert_raises(ValueError, colormap.create_colormap,
                       value, name='fake')
-    npt.assert_warns(DeprecationWarning, colormap.create_colormap, value,
+    npt.assert_warns(PendingDeprecationWarning, colormap.create_colormap, value,
                      name='jet', auto=False)
 
     if not have_matplotlib:

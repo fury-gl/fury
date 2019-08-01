@@ -88,29 +88,29 @@ def test_scene():
 @xvfb_it
 def test_deprecated():
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", PendingDeprecationWarning)
         scene = window.Renderer()
         npt.assert_equal(scene.size(), (0, 0))
         assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
+        assert issubclass(w[-1].category, PendingDeprecationWarning)
 
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", PendingDeprecationWarning)
         scene = window.renderer(background=(0.0, 1.0, 0.0))
         npt.assert_equal(scene.size(), (0, 0))
         assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
+        assert issubclass(w[-1].category, PendingDeprecationWarning)
 
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", PendingDeprecationWarning)
         scene = window.ren()
         npt.assert_equal(scene.size(), (0, 0))
         assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
+        assert issubclass(w[-1].category, PendingDeprecationWarning)
 
     scene = window.Scene()
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", DeprecationWarning)
+        warnings.simplefilter("always", PendingDeprecationWarning)
         obj = actor.axes(scale=(1, 1, 1))
         window.add(scene, obj)
         arr = window.snapshot(scene)
@@ -130,7 +130,7 @@ def test_deprecated():
         report = window.analyze_renderer(scene)
         npt.assert_equal(report.actors, 0)
         npt.assert_equal(len(w), 6)
-        assert issubclass(w[-1].category, DeprecationWarning)
+        assert issubclass(w[-1].category, PendingDeprecationWarning)
 
 
 @xvfb_it

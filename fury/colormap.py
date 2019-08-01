@@ -273,7 +273,7 @@ def get_cmap(name):
         warn("The `Accent` colormap is deprecated as of version" +
              " 0.2 of Fury and will be removed in a future " +
              "version. Please use another colormap",
-             DeprecationWarning)
+             PendingDeprecationWarning)
 
     global dipy_cmaps
     if dipy_cmaps is None:
@@ -337,7 +337,7 @@ def create_colormap(v, name='plasma', auto=True):
     if name.lower() == 'jet':
         msg = 'Jet is a popular colormap but can often be misleading'
         msg += 'Use instead plasma, viridis, hot or inferno.'
-        warn(msg, DeprecationWarning)
+        warn(msg, PendingDeprecationWarning)
 
     if v.ndim > 1:
         msg = 'This function works only with 1d arrays. Use ravel()'
