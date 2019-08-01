@@ -2,7 +2,7 @@
 set -ev
 
 if [ "$INSTALL_TYPE" == "pip" ]; then
-  source activate testenv
+  source testenv/bin/activate
   hash -r
 else
   # Anaconda

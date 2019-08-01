@@ -35,7 +35,7 @@ addons:
   homebrew:
     update: true
     casks:
-    - xquartz 
+    - xquartz
 env:
   global:
   - MESA_GL_VERSION_OVERRIDE=3.3
@@ -55,8 +55,8 @@ env:
   - PY_VERSION="3.6"
   - PY_VERSION="3.7"
   - PY_VERSION="3.7" OPTIONAL_DEPS=1
-  - PY_VERSION="3.7" INSTALL_TYPE="pip"
-  - PY_VERSION="3.7" INSTALL_TYPE="pip" OPTIONAL_DEPS=1
+  - PY_VERSION="3.5" INSTALL_TYPE="pip"
+  - PY_VERSION="3.5" INSTALL_TYPE="pip" OPTIONAL_DEPS=1
 matrix:
   include:
   - os: linux
