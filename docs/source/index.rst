@@ -13,5 +13,5 @@ test
    reference/index
    contributing_link
    release-history
-   authors_link
+   community
    
