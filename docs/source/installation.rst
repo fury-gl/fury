@@ -23,7 +23,7 @@ The optional dependencies are:
 Installation with PyPi
 ----------------------
 
-Just use the `pip` command line::
+In a terminal, issue the following command::
 
     $ pip install fury
 
