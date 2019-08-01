@@ -799,7 +799,6 @@ def test_timer():
         timer_callback.showm.render()
         if timer_callback.cnt > 9:
             timer_callback.showm.exit()
-            timer_callback.showm.destroy_timers()
 
     scene.add(tb)
 
