@@ -133,11 +133,11 @@ Checklist before Releasing
 
 * Check the copyright years in ``docs/source/conf.py`` and ``LICENSE``
 
-* Generate release notes. Go to ``docs/source/ext`` and run ``github_tools.py``script the following way::
+* Generate release notes. Go to ``docs/source/ext`` and run ``github_tools.py`` script the following way::
 
     $ python github_tools.py --tag=v0.1.0 --save --version=0.2.0
 
-    This command will generate a new file named ``release0.2.0.rst``in ``release_notes folder.
+    This command will generate a new file named ``release0.2.0.rst`` in ``release_notes`` folder.
 
 * Check the examples and tutorial - we really need an automated check here.
 

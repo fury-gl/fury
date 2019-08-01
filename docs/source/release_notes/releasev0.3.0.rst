@@ -1,4 +1,4 @@
-.. _release0.3.0.rst
+.. _releasev0.3.0:
 
 =========================================
  Release notes for Fury version 0.3.0
