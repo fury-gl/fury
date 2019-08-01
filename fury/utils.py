@@ -349,8 +349,10 @@ def set_polydata_triangles(polydata, triangles):
         triangles, represented as 2D ndarrays (Nx3)
 
     """
-    vtk_triangles = np.hstack(np.c_[np.ones(len(triangles)).astype(np.int) * 3,
-                                    triangles])
+    isize = vtk.vtkIdTypeArray().GetDataTypeSize()
+    req_dtype = np.int32 if isize == 4 else np.int64
+    vtk_triangles = np.hstack(np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
+                                    triangles.astype(req_dtype)])
     vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
                                                           deep=True)
     vtk_cells = vtk.vtkCellArray()

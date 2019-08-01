@@ -239,10 +239,14 @@ def test_contour_from_roi():
         from dipy.reconst.shm import CsaOdfModel
         from dipy.data import default_sphere
         from dipy.direction import peaks_from_model
-        from dipy.tracking.local import ThresholdTissueClassifier
-        from dipy.tracking import utils
-        from dipy.tracking.local import LocalTracking
         from fury.colormap import line_colors
+        from dipy.tracking import utils
+        try:
+            from dipy.tracking.local import ThresholdTissueClassifier as ThresholdStoppingCriterion
+            from dipy.tracking.local import LocalTracking
+        except ModuleNotFoundError:
+            from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion
+            from dipy.tracking.local_tracking import LocalTracking
 
         hardi_img, gtab, labels_img = read_stanford_labels()
         data = hardi_img.get_data()
@@ -257,7 +261,7 @@ def test_contour_from_roi():
                                      min_separation_angle=45,
                                      mask=white_matter)
 
-        classifier = ThresholdTissueClassifier(csa_peaks.gfa, .25)
+        classifier = ThresholdStoppingCriterion(csa_peaks.gfa, .25)
 
         seed_mask = labels == 2
         seeds = utils.seeds_from_mask(seed_mask, density=[1, 1, 1],
@@ -447,7 +451,7 @@ def test_odf_slicer(interactive=False):
 
     odf_actor = actor.odf_slicer(odfs, affine,
                                  mask=mask, sphere=sphere, scale=.25,
-                                 colormap='plasma')
+                                 colormap='blues')
     fa = 0. * np.zeros(odfs.shape[:3])
     fa[:, 0, :] = 1.
     fa[:, -1, :] = 1.
@@ -487,7 +491,7 @@ def test_odf_slicer(interactive=False):
     fa_actor.display(None, None, 5)
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
-                                 colormap='plasma',
+                                 colormap='blues',
                                  norm=False, global_cm=True)
     scene.clear()
     scene.add(fa_actor)
@@ -504,7 +508,7 @@ def test_odf_slicer(interactive=False):
     mask = np.ones(odfs.shape[:3])
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
-                                 colormap='plasma',
+                                 colormap='blues',
                                  norm=False, global_cm=True)
 
     scene.clear()
@@ -525,7 +529,7 @@ def test_odf_slicer(interactive=False):
     mask = np.zeros(odfs.shape[:3])
     odf_actor = actor.odf_slicer(odfs, None, mask=mask,
                                  sphere=sphere, scale=.25,
-                                 colormap='plasma',
+                                 colormap='blues',
                                  norm=False, global_cm=True)
     scene.clear()
     scene.add(odf_actor)
