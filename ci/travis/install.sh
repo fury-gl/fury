@@ -22,7 +22,8 @@ fi
 if [ "$INSTALL_TYPE" == "pip" ]; then
     PIPI="pip install $EXTRA_PIP_FLAGS"
     pip install --upgrade --user virtualenv
-    virtualenv --python=$PY_VERSION testenv
+    virtualenv testenv -p `which python3`
+    # virtualenv --python=$PY_VERSION testenv
     source testenv/bin/activate
     $PIPI --upgrade pip setuptools mesalib xvfbwrapper
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
@@ -42,8 +43,7 @@ else
     conda install conda-build anaconda-client
     conda config --add channels conda-forge
     conda create -n testenv --yes python=$PY_VERSION pip mesalib xvfbwrapper
-    source ~/.bashrc
-    conda activate testenv
+    source activate testenv
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/default.txt
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/test.txt
     if [[ "${OPTIONAL_DEPS}" == "1" ]]; then

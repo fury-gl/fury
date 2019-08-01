@@ -8,8 +8,7 @@ else
   # Anaconda
   export PATH=${ENV_DIR}/miniconda/bin:$PATH
   hash -r
-  source ~/.bashrc
-  conda activate testenv
+  source activate testenv
 fi
 
 # Install and test FURY
