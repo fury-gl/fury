@@ -811,9 +811,9 @@ def test_timer():
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    arr = window.snapshot(scene)
+    # arr = window.snapshot(scene)
 
-    npt.assert_(np.sum(arr) > 0)
+    # npt.assert_(np.sum(arr) > 0)
 
 
 def test_ui_file_menu_2d(interactive=False):
