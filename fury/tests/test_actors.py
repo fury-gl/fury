@@ -850,7 +850,8 @@ def test_cones(interactive=False):
     npt.assert_equal(report.objects, 3)
 
     scene.clear()
-    vertices = np.array([[0, 0, 0], [0, 10, 0], [10, 0, 0], [0, 0, 10]])
+    vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
+                         [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
     faces = np.array([[0, 1, 3], [0, 1, 2]])
     cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
                             colors=colors[:], vertices=vertices,
