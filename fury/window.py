@@ -240,7 +240,7 @@ class Renderer(Scene):
     def __init__(self, _parent=None):
         """Init old class with a warning."""
         warn("Class 'fury.window.Renderer' is deprecated, instead"
-             " use class 'fury.window.Scene'.", DeprecationWarning)
+             " use class 'fury.window.Scene'.", PendingDeprecationWarning)
 
 
 def renderer(background=None):
@@ -273,7 +273,7 @@ def renderer(background=None):
     """
     deprecation_msg = ("Method 'fury.window.renderer' is deprecated, instead"
                        " use class 'fury.window.Scene'.")
-    warn(DeprecationWarning(deprecation_msg))
+    warn(PendingDeprecationWarning(deprecation_msg))
 
     scene = Scene()
     if background is not None:
@@ -300,7 +300,7 @@ def add(scene, a):
           `Scene().add`
     """
     warn("Class 'fury.window.add' is deprecated, instead"
-         " use class 'fury.window.Scene.add'.", DeprecationWarning)
+         " use class 'fury.window.Scene.add'.", PendingDeprecationWarning)
     scene.add(a)
 
 
@@ -312,7 +312,7 @@ def rm(scene, a):
           `Scene().rm`
     """
     warn("Class 'fury.window.rm' is deprecated, instead"
-         " use class 'fury.window.Scene.rm'.", DeprecationWarning)
+         " use class 'fury.window.Scene.rm'.", PendingDeprecationWarning)
     scene.rm(a)
 
 
@@ -324,7 +324,7 @@ def clear(scene):
           `Scene().clear`
     """
     warn("Class 'fury.window.clear' is deprecated, instead"
-         " use class 'fury.window.Scene.clear'.", DeprecationWarning)
+         " use class 'fury.window.Scene.clear'.", PendingDeprecationWarning)
     scene.clear()
 
 
@@ -336,7 +336,7 @@ def rm_all(scene):
           `Scene().rm_all`
     """
     warn("Class 'fury.window.rm_all' is deprecated, instead"
-         " use class 'fury.window.Scene.rm_all'.", DeprecationWarning)
+         " use class 'fury.window.Scene.rm_all'.", PendingDeprecationWarning)
     scene.rm_all()
 
 

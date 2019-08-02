@@ -114,7 +114,7 @@ Checklist before Releasing
   outstanding issues that can be closed, and whether there are any issues that
   should delay the release.  Label them !
 
-* Check whether there are no build failing on `Travis`. 
+* Check whether there are no build failing on `Travis`.
 
 * Review and update the release notes.  Review and update the :file:`Changelog`
   file.  Get a partial list of contributors with something like::
@@ -129,17 +129,22 @@ Checklist before Releasing
 * Use the opportunity to update the ``.mailmap`` file if there are any duplicate
   authors listed from ``git shortlog -ns``.
 
-* Add any new authors to the ``AUTHORS`` file.  Add any new entries to the
-  ``THANKS`` file.
+* Add any new authors to the ``AUTHORS`` file.
 
-* Check the copyright years in ``doc/conf.py`` and ``LICENSE``
+* Check the copyright years in ``docs/source/conf.py`` and ``LICENSE``
+
+* Generate release notes. Go to ``docs/source/ext`` and run ``github_tools.py`` script the following way::
+
+    $ python github_tools.py --tag=v0.1.0 --save --version=0.2.0
+
+    This command will generate a new file named ``release0.2.0.rst`` in ``release_notes`` folder.
 
 * Check the examples and tutorial - we really need an automated check here.
 
 * Make sure all tests pass on your local machine (from the ``<fury root>`` directory)::
 
     cd ..
-    pytest -s --verbose --with-docmodules fury
+    pytest -s --verbose --doctest-modules fury
     cd fury # back to the root directory
 
 * Check the documentation doctests::
