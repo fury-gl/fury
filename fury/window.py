@@ -511,7 +511,6 @@ class ShowManager(object):
         self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
-        del self.scene
 
     def record_events(self):
         """Record events during the interaction.
@@ -892,11 +891,11 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    if offscreen:
-        graphics_factory = vtk.vtkGraphicsFactory()
-        graphics_factory.SetOffScreenOnlyMode(1)
-        # TODO check if the line below helps in something
-        # graphics_factory.SetUseMesaClasses(1)
+    # if offscreen:
+    #     graphics_factory = vtk.vtkGraphicsFactory()
+    #     graphics_factory.SetOffScreenOnlyMode(1)
+    # TODO check if the line below helps in something
+    # graphics_factory.SetUseMesaClasses(1)
 
     render_window = vtk.vtkRenderWindow()
     if offscreen:

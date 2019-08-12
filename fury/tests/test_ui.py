@@ -783,9 +783,9 @@ def test_timer():
     scene.add(sphere_actor2)
 
     tb = ui.TextBlock2D()
+    scene.add(tb)
 
-    cnt = 0
-
+    counter = itertools.count()
     showm = window.ShowManager(scene,
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
@@ -793,26 +793,17 @@ def test_timer():
     showm.initialize()
 
     def timer_callback(_obj, _event):
-        timer_callback.cnt += 1
-        timer_callback.tb.message = "Let's count to 10 and exit :" + \
-            str(timer_callback.cnt)
-        timer_callback.showm.render()
-        if timer_callback.cnt > 9:
-            timer_callback.showm.exit()
-
-    scene.add(tb)
-
-    # abuse of function attribute
-    timer_callback.tb = tb
-    timer_callback.cnt = cnt
-    timer_callback.showm = showm
+        cnt = next(counter)
+        tb.message = "Let's count to 10 and exit :" + str(cnt)
+        showm.render()
+        if cnt > 9:
+            showm.exit()
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
     arr = window.snapshot(scene)
-
     npt.assert_(np.sum(arr) > 0)
 
 
