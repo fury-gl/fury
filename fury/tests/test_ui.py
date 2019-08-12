@@ -783,14 +783,13 @@ def test_timer():
     scene.add(sphere_actor2)
 
     tb = ui.TextBlock2D()
-    scene.add(tb)
-
     counter = itertools.count()
     showm = window.ShowManager(scene,
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
     showm.initialize()
+    scene.add(tb)
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
