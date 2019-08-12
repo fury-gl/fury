@@ -506,9 +506,12 @@ class ShowManager(object):
             self.iren.Start()
 
         self.window.RemoveRenderer(self.scene)
+        self.scene.GetRenderWindow().Finalize()
+        self.window.GetRenderWindow().Finalize()
         self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
+        del self.scene
 
     def record_events(self):
         """Record events during the interaction.
