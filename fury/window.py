@@ -505,9 +505,9 @@ class ShowManager(object):
             self.render()
             self.iren.Start()
 
-        self.window.RemoveRenderer(self.scene)
         self.scene.GetRenderWindow().Finalize()
-        self.window.GetRenderWindow().Finalize()
+        self.window.RemoveRenderer(self.scene)
+        self.window.Finalize()
         self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
