@@ -811,8 +811,7 @@ def test_timer():
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    del showm.scene
-    arr = window.snapshot(scene)
+    arr = window.snapshot(showm.scene)
 
     npt.assert_(np.sum(arr) > 0)
 
