@@ -2227,11 +2227,11 @@ class LineDoubleSlider2D(UI):
         track_position[1] -= self.track.size[1] / 2.
         self.track.position = track_position
 
-        self.handles[0].position = self.handles[0].position.astype('float64') # + self.handles[0].size / 2.
-        self.handles[1].position = self.handles[1].position.astype('float64') # + self.handles[1].size / 2.
+        self.handles[0].position = self.handles[0].position.astype('float64')
+        self.handles[1].position = self.handles[1].position.astype('float64')
 
-        self.handles[0].position += coords - self.position 
-        self.handles[1].position += coords - self.position 
+        self.handles[0].position += coords - self.position
+        self.handles[1].position += coords - self.position
 
         # Position the text below the handles.
         self.text[0].position = (self.handles[0].center[0],
