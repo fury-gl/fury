@@ -640,14 +640,12 @@ def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
         # Compute the number of rows and columns.
         n_cols = np.ceil(np.sqrt(count*aspect_ratio / cell_aspect_ratio))
         n_rows = np.ceil(count / n_cols)
-        if n_cols * n_rows <= count:
-            raise ValueError("Too small")
     else:
         n_rows, n_cols = dim
 
-        if n_cols * n_rows < count:
-            msg = "Size is too small, it cannot contain at least {} elements."
-            raise ValueError(msg.format(count))
+    if n_cols * n_rows < count:
+        msg = "Size is too small, it cannot contain at least {} elements."
+        raise ValueError(msg.format(count))
 
     # Use indexing="xy" so the cells are in row-major (C-order). Also,
     # the Y coordinates are negative so the cells are order from top to bottom.
