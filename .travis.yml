@@ -58,16 +58,20 @@ python:
 
 matrix:
   include:
-  - os: osx
+  - name: "Python:3.5"
+    os: osx
     language: generic
     env: TRAVIS_PYTHON_VERSION=3.5
-  - os: osx
+  - name: "Python:3.6 + OPTIONAL_DEPS=1"
+    os: osx
     language: generic
     env: TRAVIS_PYTHON_VERSION=3.6 OPTIONAL_DEPS=1
-  - os: osx
+  - name: "Python:3.6"
+    os: osx
     language: generic
     env: TRAVIS_PYTHON_VERSION=3.6
-  - os: osx
+  - name: "Python:3.7"
+    os: osx
     language: generic
     env: TRAVIS_PYTHON_VERSION=3.7
   - python: 3.7
@@ -76,7 +80,7 @@ matrix:
     env: INSTALL_TYPE="pip"
   - python: 3.7
     env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1
-  - name: Build Docs and Tutorials
+  - name: Build Docs, Tutorials an Examples
     os: linux
     python: 3.6
     env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
