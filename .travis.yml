@@ -3,7 +3,7 @@ language: python
 dist: xenial
 os:
 - linux
-- osx
+
 addons:
   apt:
     sources:
@@ -58,14 +58,23 @@ python:
 
 matrix:
   include:
-  - name: Conda installer py-3.7 + optional deps
-    python: 3.7
+  - os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.5
+  - os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.6 OPTIONAL_DEPS=1
+  - os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.6
+  - os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.7
+  - python: 3.7
     env: OPTIONAL_DEPS=1
-  - name: PIP installer py-3.6
-    python: 3.6
+  - python: 3.6
     env: INSTALL_TYPE="pip"
-  - name: PIP installer py-3.6 +optional deps
-    python: 3.7
+  - python: 3.7
     env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1
   - name: Build Docs and Tutorials
     os: linux
