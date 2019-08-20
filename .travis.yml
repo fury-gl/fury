@@ -1,5 +1,5 @@
 sudo: true
-language: generic
+language: python
 dist: xenial
 os:
 - linux
@@ -50,21 +50,41 @@ env:
   - GH_REF: github.com/fury-gl/fury-website.git
   - secure: WdsQHY7e6cXRv4cpuGrm3uooSUYCeKjiJbYJuGegtOdYv9jMbaFtNpRWA2ltrl33ND2AD5JH92FO7dItsrucFTUlJKKoHypICKo/ngkg5WmNQg6oahgVkTOqfbdbPKyM9D19Pyw2+34hjLyRK+N063dmBnEQEMGvid7BsHpgIwbxcNIJpfTsuhb30hvVz251ByqygR9EryXZ0eFPsUEo9zmiRLxzJWd7kdWyiMTCapHR/aIgFwToFRmxlUMIceyY/GLj4lhNd7L1VvNeI8nI3mGYrC+6VtumdXcaAR8ZPoGfNej/fDboxX/fZvFWMmw5Q0BXmGoKWB9l1CrkCj2Skt8t3KqYULEW1STyQZ1t3NhmLMpgHcla32Khws0ey7AZZmiTS2GRgdhqTMjOU89gS6HzTD8cuullrUkjy/IXZW5ytcmhNDSlyjCGrVJROOgkbmasNiqKSnKDtT9OljR+SdcvV0nfv4icK015pzYfwqy7dh4EI7BScmCUYX6qvXlo2O3ocS4arm2WGgcC5ZBYnl9oB6KwTv9sFk6+nz4T/kNWNlAnG561GM4lNcc8XSQvCTG4wCg9pgmzIi67HtaJvbncGBtTQhkDENgnIN6Ujog+7esOIioqtFAQ+/uAitzQ78Iu7i7ppDFaJBMaJMoQ2tnVL20IzGwlikld2D6SMt8=
   matrix:
-  - PY_VERSION="2.7"
-  - PY_VERSION="3.5"
-  - PY_VERSION="3.6"
-  - PY_VERSION="3.7"
-  - PY_VERSION="3.7" OPTIONAL_DEPS=1
-  - PY_VERSION="3.5" INSTALL_TYPE="pip"
-  - PY_VERSION="3.5" INSTALL_TYPE="pip" OPTIONAL_DEPS=1
+  - name: Conda installer py-2.7
+    python: 2.7
+  - name: Conda installer py-3.5
+    python: 3.5
+  - name: Conda installer py-3.6
+    python: 3.6
+  - name: Conda installer py-3.7
+    python: 3.7
+  - name: Conda installer py-3.7 + optional deps
+    python: 3.7
+    env: OPTIONAL_DEPS=1
+  - name: PIP installer py-3.6
+    python: 3.6
+    env: INSTALL_TYPE="pip"
+  - name: PIP installer py-3.6 +optional deps
+    python: 3.7
+    env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1
 matrix:
   include:
-  - os: linux
-    env: PY_VERSION="3.6" OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
-  - os: linux
-    env: PY_VERSION="3.6" OPTIONAL_DEPS=1 COVERAGE=1
+  - name: Build Docs and Tutorials
+    os: linux
+    python: 3.6
+    env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+  - name: Coverage
+    os: linux
+    python: 3.6
+    env: OPTIONAL_DEPS=1 COVERAGE=1
   # - os: linux
   #   env: PY_VERSION="3.6" INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+
+allow_failures:
+  - os: linux
+    python: 3.6
+    env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+
 install: bash ci/travis/install.sh
 script: bash ci/travis/script.sh
 after_success:
