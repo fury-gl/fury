@@ -88,12 +88,16 @@ matrix:
     os: linux
     python: 3.6
     env: OPTIONAL_DEPS=1 COVERAGE=1
-  # - os: linux
-  #   env: PY_VERSION="3.6" INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+  - python: 3.6
+    os: linux
+    env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
   allow_failures:
     - os: linux
       python: 3.6
       env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+    - python: 3.6
+      os: linux
+      env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
 
 install: bash ci/travis/install.sh
 script: bash ci/travis/script.sh
