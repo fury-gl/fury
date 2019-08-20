@@ -225,13 +225,13 @@ def orient2rgb(v):
 
     """
     if v.ndim == 1:
-        orient = v
-        orient = np.abs(orient / np.linalg.norm(orient))
+        r = np.linalg.norm(v)
+        orient = np.abs(np.divide(v, r, where=r != 0))
 
     elif v.ndim == 2:
         orientn = np.sqrt(v[:, 0] ** 2 + v[:, 1] ** 2 + v[:, 2] ** 2)
         orientn.shape = orientn.shape + (1,)
-        orient = np.abs(v / orientn)
+        orient = np.abs(np.divide(v, orientn, where=orientn != 0))
     else:
         raise IOError("Wrong vector dimension, It should be an array"
                       " with a shape (N, 3)")

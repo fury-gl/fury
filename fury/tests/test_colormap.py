@@ -44,7 +44,8 @@ def test_get_cmap():
     cmap = colormap.get_cmap('Blues')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected)
 
-    cmap = colormap.get_cmap('Accent')
+    with npt.assert_warns(PendingDeprecationWarning):
+        cmap = colormap.get_cmap('Accent')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected2)
 
 

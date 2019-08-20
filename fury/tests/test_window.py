@@ -308,14 +308,15 @@ def test_stereo():
                                size=(300, 300), order_transparent=True,
                                stereo='off')
 
-    if not_xvfb:
-        stereo = window.snapshot(scene, fname='stereo_horizontal.png',
-                                 offscreen=True, size=(300, 300),
-                                 order_transparent=True, stereo='On')
-    else:
-        stereo = window.snapshot(scene, fname='stereo_horizontal.png',
-                                 offscreen=False, size=(300, 300),
-                                 order_transparent=True, stereo='On')
+    with npt.assert_warns(UserWarning):
+        if not_xvfb:
+            stereo = window.snapshot(scene, fname='stereo_horizontal.png',
+                                     offscreen=True, size=(300, 300),
+                                     order_transparent=True, stereo='On')
+        else:
+            stereo = window.snapshot(scene, fname='stereo_horizontal.png',
+                                     offscreen=False, size=(300, 300),
+                                     order_transparent=True, stereo='On')
 
     # mono render should have values in the center
     # horizontal split stereo render should be empty in the center

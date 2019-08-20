@@ -7,10 +7,6 @@ cd ${ENV_DIR}
 
 if [ "$INSTALL_TYPE" == "pip" ]; then
     PIPI="pip install $EXTRA_PIP_FLAGS"
-    # pip install --upgrade --user virtualenv
-    # virtualenv -p `which python3` testenv
-    # virtualenv --python=$PY_VERSION testenv
-    # source testenv/bin/activate
     $PIPI --upgrade pip setuptools xvfbwrapper
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/test.txt

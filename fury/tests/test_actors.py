@@ -242,10 +242,12 @@ def test_contour_from_roi():
         from fury.colormap import line_colors
         from dipy.tracking import utils
         try:
-            from dipy.tracking.local import ThresholdTissueClassifier as ThresholdStoppingCriterion
+            from dipy.tracking.local import ThresholdTissueClassifier \
+                as ThresholdStoppingCriterion
             from dipy.tracking.local import LocalTracking
-        except ModuleNotFoundError:
-            from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion
+        except ImportError:
+            from dipy.tracking.stopping_criterion import \
+                ThresholdStoppingCriterion
             from dipy.tracking.local_tracking import LocalTracking
 
         hardi_img, gtab, labels_img = read_stanford_labels()

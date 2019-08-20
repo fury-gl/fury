@@ -16,7 +16,7 @@ from dipy.direction import peaks_from_model
 try:
     from dipy.tracking.local import ThresholdTissueClassifier as ThresholdStoppingCriterion
     from dipy.tracking.local import LocalTracking
-except ModuleNotFoundError:
+except ImportError:
     from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion
     from dipy.tracking.local_tracking import LocalTracking
 
