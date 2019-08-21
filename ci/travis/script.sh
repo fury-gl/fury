@@ -1,10 +1,14 @@
 #!/bin/bash
 set -ev
 
-# Anaconda
-export PATH=${ENV_DIR}/miniconda/bin:$PATH
-hash -r
-source activate testenv
+if [ "$INSTALL_TYPE" == "pip" ]; then
+  hash -r
+else
+  # Anaconda
+  export PATH=${ENV_DIR}/miniconda/bin:$PATH
+  hash -r
+  source activate testenv
+fi
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
@@ -20,5 +24,5 @@ fi
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
   # Build the documentation.
   xvfb-run --server-args="-screen 0, 1920x1080x24" \
-    make -C docs html  
+    make -C docs html
 fi

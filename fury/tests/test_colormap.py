@@ -44,7 +44,8 @@ def test_get_cmap():
     cmap = colormap.get_cmap('Blues')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected)
 
-    cmap = colormap.get_cmap('Accent')
+    with npt.assert_warns(PendingDeprecationWarning):
+        cmap = colormap.get_cmap('Accent')
     npt.assert_array_almost_equal(cmap((1, 0, 0)), expected2)
 
 
@@ -63,11 +64,12 @@ def test_create_colormap():
                       value.reshape((5, 5)))
     npt.assert_raises(ValueError, colormap.create_colormap,
                       value, name='fake')
-    npt.assert_warns(PendingDeprecationWarning, colormap.create_colormap, value,
-                     name='jet', auto=False)
+    npt.assert_warns(PendingDeprecationWarning, colormap.create_colormap,
+                     value, name='jet', auto=False)
 
     if not have_matplotlib:
-        npt.assert_warns(UserWarning, colormap.create_colormap, value)
+        with npt.assert_warns(UserWarning):
+            npt.assert_raises(ValueError, colormap.create_colormap, value)
 
 
 def test_lab_delta():
