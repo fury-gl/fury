@@ -5,9 +5,12 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk)
+                        rotate, vtk, matplotlib_figure_to_numpy)
 from fury import actor, window, utils
 from fury.decorators import xvfb_it
+from dipy.utils.optpkg import optional_package
+_, have_imread, _ = optional_package('Image')
+matplotlib, have_mpl, _ = optional_package("matplotlib")
 
 
 def test_map_coordinates_3d_4d():
@@ -254,6 +257,15 @@ def test_rotate(interactive=False):
         arr = window.snapshot(scene, offscreen=True)
         red_sum_new = arr[..., 0].sum()
         npt.assert_equal(red_sum_new > red_sum, True)
+
+
+def test_matplotlib_figure_to_numpy():
+    fig = matplotlib.pyplot.figure()
+    matplotlib.pyplot.plot([1, 2, 3])
+    matplotlib.pyplot.close()
+    arr = matplotlib_figure_to_numpy(fig)
+    test_arr = np.zeros_like(arr)
+    npt.assert_raises(AssertionError, npt.assert_array_equal, arr, test_arr)
 
 
 if __name__ == '__main__':

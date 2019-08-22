@@ -9,11 +9,8 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 from nibabel.tmpdirs import InTemporaryDirectory
 from dipy.utils.optpkg import optional_package
-_, have_imread, _ = optional_package('Image')
+from scipy.misc import imread
 matplotlib, have_mpl, _ = optional_package("matplotlib")
-
-if have_imread:
-    from scipy.misc import imread
 
 
 def set_input(vtk_object, inp):
