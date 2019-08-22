@@ -1,12 +1,19 @@
-
 from __future__ import division, print_function, absolute_import
 
+import os
 import sys
 import numpy as np
 import vtk
 from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
+from nibabel.tmpdirs import InTemporaryDirectory
+from dipy.utils.optpkg import optional_package
+_, have_imread, _ = optional_package('Image')
+matplotlib, have_mpl, _ = optional_package("matplotlib")
+
+if have_imread:
+    from scipy.misc import imread
 
 
 def set_input(vtk_object, inp):
@@ -351,7 +358,8 @@ def set_polydata_triangles(polydata, triangles):
     """
     isize = vtk.vtkIdTypeArray().GetDataTypeSize()
     req_dtype = np.int32 if isize == 4 else np.int64
-    vtk_triangles = np.hstack(np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
+    vtk_triangles = np.hstack(np.c_[np.ones(len(triangles),
+                                            dtype=req_dtype) * 3,
                                     triangles.astype(req_dtype)])
     vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
                                                           deep=True)
@@ -702,3 +710,43 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
         prop3D.SetPosition(newTransform.GetPosition())
         prop3D.SetScale(newTransform.GetScale())
         prop3D.SetOrientation(newTransform.GetOrientation())
+
+
+def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
+                               transparent=False):
+    r""" Convert a Matplotlib figure to a 3D numpy array with RGBA channels
+    Parameters
+    ----------
+    fig : obj,
+        A matplotlib figure object
+    dpi : int
+        Dots per inch
+    fname : str
+        If ``fname`` is given then the array will be saved as a png to this
+        position.
+    flip_up_down : bool
+        The origin is different from matlplotlib default and VTK's default
+        behaviour (default True).
+    transparent : bool
+        Make background transparent (default False).
+    Returns
+    -------
+    arr : ndarray
+        a numpy 3D array of RGBA values
+    """
+
+    if fname is None:
+        with InTemporaryDirectory() as tmpdir:
+            fname = os.path.join(tmpdir, 'tmp.png')
+            fig.savefig(fname, dpi=dpi, transparent=transparent,
+                        bbox_inches='tight', pad_inches=0)
+            arr = imread(fname)
+    else:
+        fig.savefig(fname, dpi=dpi, transparent=transparent,
+                    bbox_inches='tight', pad_inches=0)
+        arr = imread(fname)
+
+    if flip_up_down:
+        arr = np.flipud(arr)
+
+    return arr
