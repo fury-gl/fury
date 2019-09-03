@@ -28,7 +28,6 @@ env:
 
 python:
   - 2.7
-  - 3.5
   - 3.6
   - 3.7
 
@@ -52,6 +51,8 @@ matrix:
     env: TRAVIS_PYTHON_VERSION=3.7
   - python: 3.7
     env: OPTIONAL_DEPS=1
+  - python: 3.5
+    env: INSTALL_TYPE="pip"
   - python: 3.6
     env: INSTALL_TYPE="pip"
   - python: 3.7
