@@ -48,6 +48,8 @@ def test_polydata_lines():
     res_colors = np.unique(res_colors, axis=0) / 255
     npt.assert_array_equal(colors, np.flipud(res_colors))
 
+    npt.assert_equal(utils.get_polydata_colors(vtk.vtkPolyData()), None)
+
 
 @xvfb_it
 def test_polydata_polygon(interactive=False):
