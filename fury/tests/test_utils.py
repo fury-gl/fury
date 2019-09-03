@@ -51,7 +51,7 @@ def test_polydata_lines():
     npt.assert_equal(utils.get_polydata_colors(vtk.vtkPolyData()), None)
 
 
-@xvfb_it
+#@xvfb_it
 def test_polydata_polygon(interactive=False):
     # Create a cube
     my_triangles = np.array([[0, 6, 4],
@@ -211,7 +211,7 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
-@xvfb_it
+#@xvfb_it
 def test_rotate(interactive=False):
 
     A = np.zeros((50, 50, 50))
