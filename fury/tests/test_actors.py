@@ -24,7 +24,6 @@ if have_dipy:
     from dipy.data import get_sphere
 
 
-@xvfb_it
 def test_slicer():
     scene = window.Scene()
     data = (255 * np.random.rand(50, 50, 50))
@@ -153,7 +152,6 @@ def test_slicer():
                            np.array(slicer.shape))
 
 
-@xvfb_it
 def test_surface():
     import math
     import random
@@ -191,7 +189,6 @@ def test_surface():
                 npt.assert_equal(report.objects, 1)
 
 
-@xvfb_it
 def test_contour_from_roi():
 
     # Render volume
@@ -300,7 +297,6 @@ def test_contour_from_roi():
         # window.show(r2)
 
 
-@xvfb_it
 def test_streamtube_and_line_actors():
     scene = window.Scene()
 
@@ -353,7 +349,6 @@ def test_streamtube_and_line_actors():
 
 
 @npt.dec.skipif(not have_dipy)
-@xvfb_it
 def test_bundle_maps():
     scene = window.Scene()
     bundle = fornix_streamlines()
@@ -427,7 +422,6 @@ def test_bundle_maps():
 
 
 @npt.dec.skipif(not have_dipy)
-@xvfb_it
 def test_odf_slicer(interactive=False):
 
     sphere = get_sphere('symmetric362')
@@ -563,7 +557,6 @@ def test_odf_slicer(interactive=False):
     os.remove(fname)
 
 
-@xvfb_it
 def test_peak_slicer(interactive=False):
 
     _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
@@ -619,7 +612,6 @@ def test_peak_slicer(interactive=False):
 
 
 @npt.dec.skipif(not have_dipy)
-@xvfb_it
 def test_tensor_slicer(interactive=False):
 
     evals = np.array([1.4, .35, .35]) * 10 ** (-3)
@@ -727,7 +719,6 @@ def test_tensor_slicer(interactive=False):
                                            sphere=sphere, scale=.3)
 
 
-@xvfb_it
 def test_dots(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
 
@@ -766,7 +757,6 @@ def test_dots(interactive=False):
     npt.assert_equal(report.objects, 1)
 
 
-@xvfb_it
 def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -789,7 +779,6 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@xvfb_it
 def test_labels(interactive=False):
 
     text_actor = actor.label("Hello")
@@ -805,7 +794,6 @@ def test_labels(interactive=False):
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
 
-@xvfb_it
 def test_spheres(interactive=False):
 
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
@@ -825,7 +813,6 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@xvfb_it
 def test_cones(interactive=False):
 
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
@@ -878,7 +865,6 @@ def test_cones(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-@xvfb_it
 def test_grid(_interactive=False):
 
     vol1 = np.zeros((100, 100, 100))

@@ -12,7 +12,6 @@ skip_osx = platform.system().lower() == "darwin"
 skip_win = platform.system().lower() == "windows"
 
 
-#@xvfb_it
 def test_scene():
 
     scene = window.Scene()
@@ -85,7 +84,6 @@ def test_scene():
     npt.assert_equal(err.getvalue().strip(), '')
 
 
-#@xvfb_it
 def test_deprecated():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", PendingDeprecationWarning)
@@ -133,7 +131,6 @@ def test_deprecated():
         assert issubclass(w[-1].category, PendingDeprecationWarning)
 
 
-#@xvfb_it
 def test_active_camera():
     scene = window.Scene()
     scene.add(actor.axes(scale=(1, 1, 1)))
@@ -205,7 +202,6 @@ def test_active_camera():
     npt. assert_equal(view_up, cam.GetViewUp())
 
 
-#@xvfb_it
 def test_parallel_projection():
 
     scene = window.Scene()
@@ -240,7 +236,6 @@ def test_parallel_projection():
 
 
 @npt.dec.skipif(skip_osx or skip_win)
-#@xvfb_it
 def test_order_transparent():
 
     scene = window.Scene()
@@ -278,7 +273,6 @@ def test_order_transparent():
     npt.assert_equal(green_no_ot > green_ot, True)
 
 
-#@xvfb_it
 def test_stereo():
 
     scene = window.Scene()
@@ -326,7 +320,6 @@ def test_stereo():
 
 
 @npt.dec.skipif(skip_osx)
-#@xvfb_it
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
