@@ -149,14 +149,14 @@ def test_ui_rectangle_2d():
     colors = [rect.color]
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr, colors=colors)
-    assert report.objects == 1
-    assert report.colors_found
+    npt.assert_equal(report.objects, 1)
+    npt.assert_(report.colors_found)
 
     # Test visibility off.
     rect.set_visibility(False)
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr)
-    assert report.objects == 0
+    npt.assert_equal(report.objects, 0)
 
 
 @xvfb_it
@@ -745,7 +745,7 @@ def test_ui_listbox_2d(interactive=False):
 
     # Check if the right values were selected.
     expected = [[1], [1, 2], [1], [42], [1], values]
-    assert len(selected_values) == len(expected)
+    npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
     # Test without multiselection enabled.
