@@ -249,12 +249,12 @@ def test_order_transparent():
     scene.reset_clipping_range()
 
     arr = window.snapshot(scene, fname='green_front.png',
-                          offscreen=False, order_transparent=False)
+                          offscreen=True, order_transparent=False)
 
     green_no_ot = arr[150, 150, 1]
 
     arr = window.snapshot(scene, fname='red_front.png',
-                          offscreen=False, order_transparent=True)
+                          offscreen=True, order_transparent=True)
 
     # when order transparency is True green should be weaker
     green_ot = arr[150, 150, 1]
@@ -280,13 +280,13 @@ def test_stereo():
 
     scene.reset_camera()
 
-    mono = window.snapshot(scene, fname='stereo_off.png', offscreen=False,
+    mono = window.snapshot(scene, fname='stereo_off.png', offscreen=True,
                            size=(300, 300), order_transparent=True,
                            stereo='off')
 
     with npt.assert_warns(UserWarning):
         stereo = window.snapshot(scene, fname='stereo_horizontal.png',
-                                 offscreen=False, size=(300, 300),
+                                 offscreen=True, size=(300, 300),
                                  order_transparent=True, stereo='On')
 
     # mono render should have values in the center
