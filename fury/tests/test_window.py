@@ -5,7 +5,6 @@ import numpy as np
 from fury import actor, window, io
 import numpy.testing as npt
 from fury.testing import captured_output, assert_less_equal
-from fury.decorators import xvfb_it
 from fury.tmpdirs import InTemporaryDirectory
 
 skip_osx = platform.system().lower() == "darwin"

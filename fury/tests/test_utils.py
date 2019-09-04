@@ -7,7 +7,6 @@ from fury.utils import (map_coordinates_3d_4d,
                         get_grid_cells_position,
                         rotate, vtk)
 from fury import actor, window, utils
-from fury.decorators import xvfb_it
 
 
 def test_map_coordinates_3d_4d():

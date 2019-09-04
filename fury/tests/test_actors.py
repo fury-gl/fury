@@ -9,7 +9,6 @@ import itertools
 
 import numpy.testing as npt
 from fury.tmpdirs import InTemporaryDirectory
-from fury.decorators import xvfb_it
 from tempfile import mkstemp
 
 # Allow import, but disable doctests if we don't have dipy

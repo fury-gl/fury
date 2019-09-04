@@ -15,7 +15,6 @@ addons:
 env:
   global:
   - MESA_GL_VERSION_OVERRIDE=3.3
-  - TEST_WITH_XVFB=true
   - LIBGL_ALWAYS_INDIRECT=y
   - DISPLAY=:99
   - ENV_TYPE="conda"

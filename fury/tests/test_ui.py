@@ -10,7 +10,6 @@ import numpy.testing as npt
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import window, actor, ui
 from fury.data import DATA_DIR
-from fury.decorators import xvfb_it
 from fury.testing import assert_arrays_equal
 from fury.utils import shallow_copy
 
