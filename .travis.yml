@@ -32,10 +32,6 @@ python:
 
 matrix:
   include:
-  - name: "Python: 3.5"
-    os: osx
-    language: generic
-    env: TRAVIS_PYTHON_VERSION=3.5
   - name: "Python: 3.6 + OPTIONAL_DEPS=1"
     os: osx
     language: generic

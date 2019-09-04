@@ -1,7 +1,6 @@
 """Decorators for FURY tests."""
 
 import re
-import os
 
 
 SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
@@ -9,6 +8,7 @@ SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 def doctest_skip_parser(func):
     """Decorator replaces custom skip test markup in doctests.
+
     Say a function has a docstring::
     >>> something # skip if not HAVE_AMODULE
     >>> something + else
@@ -23,6 +23,7 @@ def doctest_skip_parser(func):
     >>> something # doctest: +SKIP
     >>> something + else
     >>> something
+
     """
     lines = func.__doc__.split('\n')
     new_lines = []
