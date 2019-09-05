@@ -7,8 +7,8 @@ import vtk
 from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
-from nibabel.tmpdirs import InTemporaryDirectory
-from dipy.utils.optpkg import optional_package
+from fury.tmpdirs import InTemporaryDirectory
+from fury.optpkg import optional_package
 from scipy.misc import imread
 matplotlib, have_mpl, _ = optional_package("matplotlib")
 
@@ -712,9 +712,11 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
 def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
                                transparent=False):
     r""" Convert a Matplotlib figure to a 3D numpy array with RGBA channels
+
     Parameters
     ----------
-    fig : obj,
+
+    fig : objs
         A matplotlib figure object
     dpi : int
         Dots per inch
@@ -726,6 +728,7 @@ def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
         behaviour (default True).
     transparent : bool
         Make background transparent (default False).
+
     Returns
     -------
     arr : ndarray

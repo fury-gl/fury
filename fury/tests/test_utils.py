@@ -8,8 +8,7 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk, matplotlib_figure_to_numpy)
 from fury import actor, window, utils
 from fury.decorators import xvfb_it
-from dipy.utils.optpkg import optional_package
-_, have_imread, _ = optional_package('Image')
+from fury.optpkg import optional_package
 matplotlib, have_mpl, _ = optional_package("matplotlib")
 
 
@@ -259,12 +258,16 @@ def test_rotate(interactive=False):
         npt.assert_equal(red_sum_new > red_sum, True)
 
 
+@npt.dec.skipif(not have_mpl)
 def test_matplotlib_figure_to_numpy():
+    # create a random plot
     fig = matplotlib.pyplot.figure()
     matplotlib.pyplot.plot([1, 2, 3])
     matplotlib.pyplot.close()
+    # convert it into a numpy array
     arr = matplotlib_figure_to_numpy(fig)
     test_arr = np.zeros_like(arr)
+    # test if the plot is empty or not
     npt.assert_raises(AssertionError, npt.assert_array_equal, arr, test_arr)
 
 
