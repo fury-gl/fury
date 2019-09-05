@@ -9,7 +9,7 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 from fury.tmpdirs import InTemporaryDirectory
 from fury.optpkg import optional_package
-from scipy.misc import imread
+from fury.io import load_image
 matplotlib, have_mpl, _ = optional_package("matplotlib")
 
 
@@ -740,11 +740,11 @@ def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
             fname = os.path.join(tmpdir, 'tmp.png')
             fig.savefig(fname, dpi=dpi, transparent=transparent,
                         bbox_inches='tight', pad_inches=0)
-            arr = imread(fname)
+            arr = load_image(fname)
     else:
         fig.savefig(fname, dpi=dpi, transparent=transparent,
                     bbox_inches='tight', pad_inches=0)
-        arr = imread(fname)
+        arr = load_image(fname)
 
     if flip_up_down:
         arr = np.flipud(arr)
