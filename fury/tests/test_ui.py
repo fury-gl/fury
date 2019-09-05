@@ -6,6 +6,7 @@ import vtk
 
 from os.path import join as pjoin
 import numpy.testing as npt
+import pytest
 
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import window, actor, ui
@@ -760,7 +761,7 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
-@npt.dec.skipif(not have_dipy)
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
