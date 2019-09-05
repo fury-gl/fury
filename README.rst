@@ -1,4 +1,4 @@
-.. image:: https://img.shields.io/travis/fury-gl/fury.svg
+.. image:: https://travis-ci.org/fury-gl/fury.svg?branch=master
         :target: https://travis-ci.org/fury-gl/fury
 
 .. image:: https://ci.appveyor.com/api/projects/status/9asvp22cf5pkl45l?svg=true
@@ -75,7 +75,7 @@ For more information, see also `installation page on fury.gl <https://fury.gl/st
 After installation, you can install test suite requirements::
 
     pip install -r requirements/test.txt
-    
+
 And to launch test suite::
 
     pytest -svv fury

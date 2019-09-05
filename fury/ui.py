@@ -2143,6 +2143,11 @@ class LineDoubleSlider2D(UI):
         self.left_disk_value = initial_values[0]
         self.right_disk_value = initial_values[1]
 
+        # This is required for correct initialization of the position
+        # of the handles
+        self.handles[0].position += np.array(self.handles[0].size, 'f8') / 2.
+        self.handles[1].position += np.array(self.handles[1].size, 'f8') / 2.
+
     def _setup(self):
         """ Setup this UI component.
 
@@ -2221,10 +2226,13 @@ class LineDoubleSlider2D(UI):
         # Offset the slider line height by half the slider line width.
         track_position[1] -= self.track.size[1] / 2.
         self.track.position = track_position
+
         self.handles[0].position = self.handles[0].position.astype('float64')
         self.handles[1].position = self.handles[1].position.astype('float64')
+
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
+
         # Position the text below the handles.
         self.text[0].position = (self.handles[0].center[0],
                                  self.handles[0].position[1] - 20)
@@ -4120,7 +4128,6 @@ class GridUI(UI):
 
             self._actors_dict[obj]['y'] = event_pos[1]
 
-            # print(event_pos)
             istyle.force_render()
             istyle.event.abort()
 

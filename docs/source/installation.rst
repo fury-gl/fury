@@ -76,3 +76,21 @@ There are two ways to run FURY tests:
 - From the command line. You need to be on the FURY package folder::
 
     pytest -svv fury
+
+Running the Tests Offscreen
+---------------------------
+
+FURY is based on VTK which uses OpenGL for all its rendering. For a headless rendering, we recommend to install and use Xvfb software on linux or OSX.
+Since Xvfb will require an X server (we also recommend to install XQuartz package on OSX). After Xvfb is installed you have 2 options to run FURY tests:
+
+- First option::
+
+    $ export DISPLAY=:0
+    $ Xvfb :0 -screen 1920x1080x24 > /dev/null 2>1 &
+    $ pytest -svv fury
+
+- Second option::
+
+    $ export DISPLAY=:0
+    $ xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
+
