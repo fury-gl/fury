@@ -81,7 +81,7 @@ Running the Tests Offscreen
 ---------------------------
 
 FURY is based on VTK which uses OpenGL for all its rendering. For a headless rendering, we recommend to install and use Xvfb software on linux or OSX.
-Since Xvfb will require a X server, we also recommend to install XQuartz package on OSX. After these installation you have 2 options to run FURY tests:
+Since Xvfb will require a X server, we also recommend to install XQuartz package on OSX. After these installations you have 2 options to run FURY tests:
 
 - First option::
 
