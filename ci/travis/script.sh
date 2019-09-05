@@ -23,6 +23,6 @@ fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
   # Build the documentation.
-  xvfb-run --server-args="-screen 0, 1920x1080x24" \
-    make -C docs html
+  # xvfb-run --server-args="-screen 0, 1920x1080x24" \
+  make -C docs html
 fi

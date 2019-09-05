@@ -10,7 +10,7 @@ if [ "$INSTALL_TYPE" == "pip" ]; then
     if [ -n "$USE_PRE" ]; then
         PIPI="$PIPI --find-links=$PRE_WHEELS --pre";
     fi
-    $PIPI --upgrade pip setuptools xvfbwrapper
+    $PIPI --upgrade pip setuptools
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/test.txt
     if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
@@ -40,7 +40,7 @@ else
     conda update --yes -q conda
     conda install conda-build anaconda-client
     conda config --add channels conda-forge
-    conda create -n testenv --yes python=$TRAVIS_PYTHON_VERSION pip mesalib xvfbwrapper
+    conda create -n testenv --yes python=$TRAVIS_PYTHON_VERSION pip
     source activate testenv
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/default.txt
     conda install --yes --file ${TRAVIS_BUILD_DIR}/requirements/test.txt
