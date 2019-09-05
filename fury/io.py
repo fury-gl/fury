@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import vtk
 from vtk.util import numpy_support
 from fury.utils import set_input

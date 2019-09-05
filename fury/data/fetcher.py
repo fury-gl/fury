@@ -40,7 +40,7 @@ def update_progressbar(progress, total_length):
     try:
         columns = os.popen('tput cols', 'r').read()
         bar_length = int(columns) - 46
-        if(not (bar_length > 1)):
+        if not (bar_length > 1):
             bar_length = 20
     except Exception:
         # Default value if determination of console size fails
@@ -66,14 +66,14 @@ def copyfileobj_withprogress(fsrc, fdst, total_length, length=16 * 1024):
 
 
 def _already_there_msg(folder):
-    """Print a message indicating that a certain data-set is already in place."""
+    """Print a message indicating that dataset is already in place."""
     msg = 'Dataset is already in place. If you want to fetch it again '
     msg += 'please first remove the folder %s ' % folder
     print(msg)
 
 
 def _get_file_md5(filename):
-    """Compute the md5 checksum of a file"""
+    """Compute the md5 checksum of a file."""
     md5_data = md5()
     with open(filename, 'rb') as f:
         for chunk in iter(lambda: f.read(128 * md5_data.block_size), b''):
@@ -115,7 +115,7 @@ def _get_file_data(fname, url):
             response_size = None
 
         with open(fname, 'wb') as data:
-            if(response_size is None):
+            if response_size is None:
                 copyfileobj(opener, data)
             else:
                 copyfileobj_withprogress(opener, data, response_size)

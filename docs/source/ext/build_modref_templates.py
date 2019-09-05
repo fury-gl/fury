@@ -25,7 +25,7 @@ def generate_api_reference_rst(app=None, package='fury', outdir='reference',
                                defines=True):
     try:
         __import__(package)
-    except ImportError as e:
+    except ImportError:
         abort("Can not import " + package)
 
     module = sys.modules[package]

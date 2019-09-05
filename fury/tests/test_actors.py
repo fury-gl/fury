@@ -661,7 +661,7 @@ def test_tensor_slicer(interactive=False):
     # Test empty mask
     empty_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
                                       mask=np.zeros(mevals.shape[:3]),
-                                      sphere=sphere,  scale=.3)
+                                      sphere=sphere, scale=.3)
     npt.assert_equal(empty_actor.GetMapper(), None)
 
     # Test mask
