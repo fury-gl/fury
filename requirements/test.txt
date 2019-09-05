@@ -3,8 +3,6 @@
 codecov
 coverage
 flake8
-# nosetests for numpy.testing<=1.15
-nose
 pytest
 # temporary Dependency for the tests
 dipy
