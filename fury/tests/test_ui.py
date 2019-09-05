@@ -10,7 +10,6 @@ import numpy.testing as npt
 from fury.data import read_viz_icons, fetch_viz_icons
 from fury import window, actor, ui
 from fury.data import DATA_DIR
-from fury.decorators import xvfb_it
 from fury.testing import assert_arrays_equal
 from fury.utils import shallow_copy
 
@@ -75,7 +74,6 @@ class EventCounter(object):
                              err_msg=msg.format(event))
 
 
-@xvfb_it
 def test_callback():
     events_name = ["CharEvent", "MouseMoveEvent", "KeyPressEvent",
                    "KeyReleaseEvent", "LeftButtonPressEvent",
@@ -117,7 +115,6 @@ def test_callback():
     npt.assert_equal(len(event_counter.events_counts), len(events_name))
 
 
-@xvfb_it
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
@@ -126,7 +123,6 @@ def test_wrong_interactor_style():
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
-@xvfb_it
 def test_ui_rectangle_2d():
     window_size = (700, 700)
     show_manager = window.ShowManager(size=window_size)
@@ -159,7 +155,6 @@ def test_ui_rectangle_2d():
     npt.assert_equal(report.objects, 0)
 
 
-@xvfb_it
 def test_ui_disk_2d():
     window_size = (700, 700)
     show_manager = window.ShowManager(size=window_size)
@@ -193,7 +188,6 @@ def test_ui_disk_2d():
     npt.assert_equal(report.objects, 0)
 
 
-@xvfb_it
 def test_ui_button_panel(recording=False):
     filename = "test_ui_button_panel"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -273,7 +267,6 @@ def test_ui_button_panel(recording=False):
         event_counter.check_counts(expected)
 
 
-@xvfb_it
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -305,7 +298,6 @@ def test_ui_textbox(recording=False):
         event_counter.check_counts(expected)
 
 
-@xvfb_it
 def test_text_block_2d():
     text_block = ui.TextBlock2D()
 
@@ -337,7 +329,6 @@ def test_text_block_2d():
         text_block.vertical_justification = "left"
 
 
-@xvfb_it
 def test_text_block_2d_justification():
     window_size = (700, 700)
     show_manager = window.ShowManager(size=window_size)
@@ -420,7 +411,6 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
-@xvfb_it
 def test_ui_line_slider_2d(recording=False):
     filename = "test_ui_line_slider_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -451,7 +441,6 @@ def test_ui_line_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@xvfb_it
 def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
@@ -480,7 +469,6 @@ def test_ui_line_double_slider_2d(interactive=False):
         show_manager.start()
 
 
-@xvfb_it
 def test_ui_ring_slider_2d(recording=False):
     filename = "test_ui_ring_slider_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -518,7 +506,6 @@ def test_ui_ring_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
-@xvfb_it
 def test_ui_range_slider(interactive=False):
     range_slider_test = ui.RangeSlider(shape="square")
 
@@ -529,7 +516,6 @@ def test_ui_range_slider(interactive=False):
         show_manager.start()
 
 
-@xvfb_it
 def test_ui_option(interactive=False):
     option_test = ui.Option(label="option 1", position=(10, 10))
 
@@ -541,7 +527,6 @@ def test_ui_option(interactive=False):
         showm.start()
 
 
-@xvfb_it
 def test_ui_checkbox(interactive=False):
     filename = "test_ui_checkbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -615,7 +600,6 @@ def test_ui_checkbox(interactive=False):
         showm.start()
 
 
-@xvfb_it
 def test_ui_radio_button(interactive=False):
     filename = "test_ui_radio_button"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -683,7 +667,6 @@ def test_ui_radio_button(interactive=False):
         showm.start()
 
 
-@xvfb_it
 def test_ui_listbox_2d(interactive=False):
 
     filename = "test_ui_listbox_2d"
@@ -759,7 +742,6 @@ def test_ui_listbox_2d(interactive=False):
     assert_arrays_equal(selected_values, expected)
 
 
-@xvfb_it
 def test_ui_image_container_2d(interactive=False):
     fetch_viz_icons()
     image_test = ui.ImageContainer2D(
@@ -779,7 +761,6 @@ def test_ui_image_container_2d(interactive=False):
 
 
 @npt.dec.skipif(not have_dipy)
-@xvfb_it
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
@@ -835,7 +816,6 @@ def test_timer():
     npt.assert_(np.sum(arr) > 0)
 
 
-@xvfb_it
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -907,7 +887,6 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 
-@xvfb_it
 def test_grid_ui(interactive=False):
 
     vol1 = np.zeros((100, 100, 100))

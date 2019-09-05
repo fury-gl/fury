@@ -7,7 +7,6 @@ from fury.utils import (map_coordinates_3d_4d,
                         get_grid_cells_position,
                         rotate, vtk)
 from fury import actor, window, utils
-from fury.decorators import xvfb_it
 
 
 def test_map_coordinates_3d_4d():
@@ -51,7 +50,6 @@ def test_polydata_lines():
     npt.assert_equal(utils.get_polydata_colors(vtk.vtkPolyData()), None)
 
 
-@xvfb_it
 def test_polydata_polygon(interactive=False):
     # Create a cube
     my_triangles = np.array([[0, 6, 4],
@@ -211,7 +209,6 @@ def test_get_grid_cell_position():
     npt.assert_almost_equal(CS[-1], [480., -250., 0])
 
 
-@xvfb_it
 def test_rotate(interactive=False):
 
     A = np.zeros((50, 50, 50))

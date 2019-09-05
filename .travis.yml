@@ -4,34 +4,10 @@ dist: xenial
 os:
 - linux
 
+services:
+  - xvfb
+
 addons:
-  apt:
-    sources:
-    - sourceline: ppa:ubuntu-x-swat/updates
-    - sourceline: ppa:oibaf/graphics-drivers
-    update: true
-    packages:
-    - libglew-dev
-    - freeglut3-dev
-    - libxi-dev
-    - libxmu-dev
-    - xorg-dev
-    - libgl1-mesa-dev
-    - libgl1-mesa-glx
-    - libglapi-mesa
-    - libgl1-mesa-dri
-    - libgbm1
-    - libxatracker-dev
-    - libxcursor-dev
-    - libpulse-dev
-    - libxinerama-dev
-    - libxrandr-dev
-    - libxv-dev
-    - libasound2-dev
-    - libudev-dev
-    - mesa-utils
-    - xvfb
-    - mesa-common-dev
   homebrew:
     update: true
     casks:
@@ -39,7 +15,6 @@ addons:
 env:
   global:
   - MESA_GL_VERSION_OVERRIDE=3.3
-  - TEST_WITH_XVFB=true
   - LIBGL_ALWAYS_INDIRECT=y
   - DISPLAY=:99
   - ENV_TYPE="conda"
@@ -52,16 +27,11 @@ env:
 
 python:
   - 2.7
-  - 3.5
   - 3.6
   - 3.7
 
 matrix:
   include:
-  - name: "Python: 3.5"
-    os: osx
-    language: generic
-    env: TRAVIS_PYTHON_VERSION=3.5
   - name: "Python: 3.6 + OPTIONAL_DEPS=1"
     os: osx
     language: generic
@@ -76,6 +46,8 @@ matrix:
     env: TRAVIS_PYTHON_VERSION=3.7
   - python: 3.7
     env: OPTIONAL_DEPS=1
+  - python: 3.5
+    env: INSTALL_TYPE="pip"
   - python: 3.6
     env: INSTALL_TYPE="pip"
   - python: 3.7

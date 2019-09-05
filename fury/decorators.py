@@ -1,7 +1,6 @@
 """Decorators for FURY tests."""
 
 import re
-import os
 
 
 SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
@@ -9,6 +8,7 @@ SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 def doctest_skip_parser(func):
     """Decorator replaces custom skip test markup in doctests.
+
     Say a function has a docstring::
     >>> something # skip if not HAVE_AMODULE
     >>> something + else
@@ -23,6 +23,7 @@ def doctest_skip_parser(func):
     >>> something # doctest: +SKIP
     >>> something + else
     >>> something
+
     """
     lines = func.__doc__.split('\n')
     new_lines = []
@@ -37,29 +38,3 @@ def doctest_skip_parser(func):
         new_lines.append(code)
     func.__doc__ = "\n".join(new_lines)
     return func
-
-
-###
-# In some cases (e.g., on Travis), we want to use a virtual frame-buffer for
-# testing. The following decorator runs the tests under xvfb (mediated by
-# xvfbwrapper) conditioned on an environment variable (that we set in
-# .travis.yml for these cases):
-use_xvfb = os.environ.get('TEST_WITH_XVFB', False)
-
-
-def xvfb_it(my_test):
-    """Run a test with xvfbwrapper."""
-    # When we use verbose testing we want the name:
-    fname = my_test.__name__
-
-    def test_with_xvfb(*args, **kwargs):
-        if use_xvfb:
-            from xvfbwrapper import Xvfb
-            display = Xvfb(width=1920, height=1080)
-            display.start()
-        my_test(*args, **kwargs)
-        if use_xvfb:
-            display.stop()
-    # Plant it back in and return the new function:
-    test_with_xvfb.__name__ = fname
-    return test_with_xvfb

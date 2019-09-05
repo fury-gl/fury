@@ -5,14 +5,12 @@ import numpy as np
 from fury import actor, window, io
 import numpy.testing as npt
 from fury.testing import captured_output, assert_less_equal
-from fury.decorators import xvfb_it
 from fury.tmpdirs import InTemporaryDirectory
 
 skip_osx = platform.system().lower() == "darwin"
 skip_win = platform.system().lower() == "windows"
 
 
-@xvfb_it
 def test_scene():
 
     scene = window.Scene()
@@ -85,7 +83,6 @@ def test_scene():
     npt.assert_equal(err.getvalue().strip(), '')
 
 
-@xvfb_it
 def test_deprecated():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always", PendingDeprecationWarning)
@@ -133,7 +130,6 @@ def test_deprecated():
         npt.assert_(issubclass(w[-1].category, PendingDeprecationWarning))
 
 
-@xvfb_it
 def test_active_camera():
     scene = window.Scene()
     scene.add(actor.axes(scale=(1, 1, 1)))
@@ -205,7 +201,6 @@ def test_active_camera():
     npt. assert_equal(view_up, cam.GetViewUp())
 
 
-@xvfb_it
 def test_parallel_projection():
 
     scene = window.Scene()
@@ -240,7 +235,6 @@ def test_parallel_projection():
 
 
 @npt.dec.skipif(skip_osx or skip_win)
-@xvfb_it
 def test_order_transparent():
 
     scene = window.Scene()
@@ -254,23 +248,13 @@ def test_order_transparent():
     scene.reset_camera()
     scene.reset_clipping_range()
 
-    not_xvfb = os.environ.get("TEST_WITH_XVFB", False)
-
-    if not_xvfb:
-        arr = window.snapshot(scene, fname='green_front.png',
-                              offscreen=True, order_transparent=False)
-    else:
-        arr = window.snapshot(scene, fname='green_front.png',
-                              offscreen=False, order_transparent=False)
+    arr = window.snapshot(scene, fname='green_front.png',
+                          offscreen=True, order_transparent=False)
 
     green_no_ot = arr[150, 150, 1]
 
-    if not_xvfb:
-        arr = window.snapshot(scene, fname='red_front.png',
-                              offscreen=True, order_transparent=True)
-    else:
-        arr = window.snapshot(scene, fname='red_front.png',
-                              offscreen=False, order_transparent=True)
+    arr = window.snapshot(scene, fname='red_front.png',
+                          offscreen=True, order_transparent=True)
 
     # when order transparency is True green should be weaker
     green_ot = arr[150, 150, 1]
@@ -278,7 +262,6 @@ def test_order_transparent():
     npt.assert_equal(green_no_ot > green_ot, True)
 
 
-@xvfb_it
 def test_stereo():
 
     scene = window.Scene()
@@ -297,26 +280,14 @@ def test_stereo():
 
     scene.reset_camera()
 
-    not_xvfb = os.environ.get("TEST_WITH_XVFB", False)
-
-    if not_xvfb:
-        mono = window.snapshot(scene, fname='stereo_off.png', offscreen=True,
-                               size=(300, 300), order_transparent=True,
-                               stereo='off')
-    else:
-        mono = window.snapshot(scene, fname='stereo_off.png', offscreen=False,
-                               size=(300, 300), order_transparent=True,
-                               stereo='off')
+    mono = window.snapshot(scene, fname='stereo_off.png', offscreen=True,
+                           size=(300, 300), order_transparent=True,
+                           stereo='off')
 
     with npt.assert_warns(UserWarning):
-        if not_xvfb:
-            stereo = window.snapshot(scene, fname='stereo_horizontal.png',
-                                     offscreen=True, size=(300, 300),
-                                     order_transparent=True, stereo='On')
-        else:
-            stereo = window.snapshot(scene, fname='stereo_horizontal.png',
-                                     offscreen=False, size=(300, 300),
-                                     order_transparent=True, stereo='On')
+        stereo = window.snapshot(scene, fname='stereo_horizontal.png',
+                                 offscreen=True, size=(300, 300),
+                                 order_transparent=True, stereo='On')
 
     # mono render should have values in the center
     # horizontal split stereo render should be empty in the center
@@ -326,7 +297,6 @@ def test_stereo():
 
 
 @npt.dec.skipif(skip_osx)
-@xvfb_it
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
