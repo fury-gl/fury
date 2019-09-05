@@ -347,6 +347,7 @@ def test_streamtube_and_line_actors():
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
+
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_bundle_maps():
     scene = window.Scene()
