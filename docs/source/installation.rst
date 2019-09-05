@@ -92,5 +92,5 @@ Since Xvfb will require a X server, we also recommend to install XQuartz package
 - Second option::
 
     $ export DISPLAY=:0
-    $ xvfb-run --server-args="-screen 1920x1080x24" pytest -svv fury
+    $ xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
 
