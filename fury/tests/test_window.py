@@ -1,5 +1,4 @@
 import os
-import platform
 import warnings
 import numpy as np
 from fury import actor, window, io
@@ -7,9 +6,7 @@ import numpy.testing as npt
 import pytest
 from fury.testing import captured_output, assert_less_equal
 from fury.tmpdirs import InTemporaryDirectory
-
-skip_osx = platform.system().lower() == "darwin"
-skip_win = platform.system().lower() == "windows"
+from fury.decorators import skip_osx, skip_win
 
 
 def test_scene():

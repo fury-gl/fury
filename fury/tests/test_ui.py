@@ -8,9 +8,9 @@ from os.path import join as pjoin
 import numpy.testing as npt
 import pytest
 
-from fury.data import read_viz_icons, fetch_viz_icons
 from fury import window, actor, ui
-from fury.data import DATA_DIR
+from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
+from fury.decorators import skip_win
 from fury.testing import assert_arrays_equal
 from fury.utils import shallow_copy
 
@@ -761,6 +761,8 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
+@pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
+                                     " Need to be introspected")
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
@@ -801,9 +803,7 @@ def test_timer():
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
-    del showm
-    print(scene)
-    print(scene.GetActors())
+
     arr = window.snapshot(scene, offscreen=True)
     npt.assert_(np.sum(arr) > 0)
 

@@ -1,4 +1,3 @@
-import platform
 from os.path import join as pjoin
 from collections import defaultdict
 
@@ -8,11 +7,10 @@ import vtk
 from fury import actor, window, interactor
 from fury import utils as vtk_utils
 from fury.data import DATA_DIR
+from fury.decorators import skip_osx, skip_win
+
 import numpy.testing as npt
 import pytest
-
-skip_osx = platform.system().lower() == "darwin"
-skip_win = platform.system().lower() == "windows"
 
 
 @pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
