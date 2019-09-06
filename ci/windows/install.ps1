@@ -1,12 +1,11 @@
 # Powershell Install script
 
-
-$env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
-# Print and check this environment variable
-Write-Output "Pip command: $env:PIPI"
-
-if($env:PYTHON -match "conda")
+if($env:INSTALL_TYPE -match "conda")
 {
+  # Add Anaconda to the path
+  Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  Write-Output "Conda path: $env:CONDA\Scripts"
+
   Invoke-Expression "conda config --set always_yes yes --set changeps1 no"
   Invoke-Expression "conda update -yq conda"
   Invoke-Expression "conda install conda-build anaconda-client"
@@ -21,6 +20,9 @@ if($env:PYTHON -match "conda")
 }
 else
 {
+  $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
+  # Print and check this environment variable
+  Write-Output "Pip command: $env:PIPI"
   Invoke-Expression "python -m pip install -U pip"
   Invoke-Expression "pip --version"
   Invoke-Expression "$env:PIPI -r requirements/default.txt"
