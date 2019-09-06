@@ -11,7 +11,7 @@ if($env:INSTALL_TYPE -match "conda")
   Invoke-Expression "conda install conda-build anaconda-client"
   Invoke-Expression "conda config --add channels conda-forge"
   Invoke-Expression "conda create -n testenv --yes python=$env:PYTHON_VERSION pip"
-  Invoke-Expression "conda activate testenv"
+  CALL conda.bat activate testenv
   Invoke-Expression "conda install -yq --file requirements/default.txt"
   Invoke-Expression "conda install -yq --file requirements/test.txt"
   if($env:OPTIONAL_DEPS)
