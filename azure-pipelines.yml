@@ -15,15 +15,15 @@ jobs:
   strategy:
     maxParallel: 4
     matrix:
-      Python37-64bit + OPTIONAL_DEPS:
-        python.version: '3.7'
-        OPTIONAL_DEPS: true
-      Python37-64bit:
-        python.version: '3.7'
-      Python36-64bit:
-        python.version: '3.6'
-      Python35-64bit:
-        python.version: '3.5'
+      # Python37-64bit + OPTIONAL_DEPS:
+      #   python.version: '3.7'
+      #   OPTIONAL_DEPS: true
+      # Python37-64bit:
+      #   python.version: '3.7'
+      # Python36-64bit:
+      #   python.version: '3.6'
+      # Python35-64bit:
+      #   python.version: '3.5'
       CONDA Python37-64bit + OPTIONAL_DEPS:
         python.version: '3.7'
         OPTIONAL_DEPS: true
@@ -42,7 +42,7 @@ jobs:
       addToPath: true
   - powershell: |
       Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-    displayName: Add conda to PATH
+    displayName: Add Conda to PATH
     condition: eq( variables['INSTALL_TYPE'], 'conda' )
   - powershell: |
       Set-StrictMode -Version Latest
