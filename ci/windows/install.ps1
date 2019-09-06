@@ -4,8 +4,8 @@ if($env:INSTALL_TYPE -match "conda")
 {
   # Get Anaconda path
   Write-Output "Conda path: $env:CONDA\Scripts"
-  Write-Output "Python version: $env:python.version"
-  Write-Output "ENV: $env"
+  gci env:*
+  Write-Output "ENV: $env:*"
 
   Invoke-Expression "conda config --set always_yes yes --set changeps1 no"
   Invoke-Expression "conda update -yq conda"
