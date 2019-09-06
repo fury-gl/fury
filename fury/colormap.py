@@ -300,7 +300,7 @@ def get_cmap(name):
     return simple_cmap
 
 
-def create_colormap(v, name='blues', auto=True):
+def create_colormap(v, name='plasma', auto=True):
     """Create colors from a specific colormap and return it
     as an array of shape (N,3) where every row gives the corresponding
     r,g,b value. The colormaps we use are similar with those of matplotlib.
