@@ -2,8 +2,7 @@
 
 if($env:INSTALL_TYPE -match "conda")
 {
-  # Add Anaconda to the path
-  Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+  # Get Anaconda path
   Write-Output "Conda path: $env:CONDA\Scripts"
 
   Invoke-Expression "conda config --set always_yes yes --set changeps1 no"

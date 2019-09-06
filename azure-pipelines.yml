@@ -41,6 +41,10 @@ jobs:
       architecture: 'x64'
       addToPath: true
   - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+    condition: eq( variables['INSTALL_TYPE'], 'conda' )
+  - powershell: |
       Set-StrictMode -Version Latest
       $ErrorActionPreference = "Stop"
       $PSDefaultParameterValues['*:ErrorAction']='Stop'
