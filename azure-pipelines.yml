@@ -31,15 +31,14 @@ jobs:
       Set-StrictMode -Version Latest
       $ErrorActionPreference = "Stop"
       $PSDefaultParameterValues['*:ErrorAction']='Stop'
-      git clone --depth 1 git://github.com/vtkiorg/gl-ci-helpers.git
-      powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      powershell ./ci/windows/install_opengl.ps1
     displayName: 'Install OpenGL'
   - powershell: |
       Set-StrictMode -Version Latest
       $ErrorActionPreference = "Stop"
       $PSDefaultParameterValues['*:ErrorAction']='Stop'
-      ./ci/appveyor/install.ps1
+      ./ci/windows/install.ps1
     displayName: 'Install dependencies with pip'
   - powershell: |
-      ./ci/appveyor/script.ps1
+      ./ci/windows/script.ps1
     displayName: 'Run Tests'
