@@ -505,10 +505,9 @@ class ShowManager(object):
             self.render()
             self.iren.Start()
 
-        self.scene.GetRenderWindow().Finalize()
         self.window.RemoveRenderer(self.scene)
-        self.window.Finalize()
         self.scene.SetRenderWindow(None)
+        self.window.Finalize()
         del self.iren
         del self.window
 
@@ -891,11 +890,11 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    # if offscreen:
-    #     graphics_factory = vtk.vtkGraphicsFactory()
-    #     graphics_factory.SetOffScreenOnlyMode(1)
+    if offscreen:
+        graphics_factory = vtk.vtkGraphicsFactory()
+        graphics_factory.SetOffScreenOnlyMode(1)
     # TODO check if the line below helps in something
-    # graphics_factory.SetUseMesaClasses(1)
+    graphics_factory.SetUseMesaClasses(1)
 
     render_window = vtk.vtkRenderWindow()
     if offscreen:

@@ -801,8 +801,10 @@ def test_timer():
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
-
-    arr = window.snapshot(scene)
+    del showm
+    print(scene)
+    print(scene.GetActors())
+    arr = window.snapshot(scene, offscreen=True)
     npt.assert_(np.sum(arr) > 0)
 
 
