@@ -2,7 +2,7 @@
 
 if($env:INSTALL_TYPE -match "conda")
 {
-    Invoke-Expression "source activate testenv"
+    Invoke-Expression "conda activate testenv"
 }
 
 $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
