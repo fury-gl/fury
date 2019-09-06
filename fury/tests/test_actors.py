@@ -8,6 +8,7 @@ from fury.utils import shallow_copy
 import itertools
 
 import numpy.testing as npt
+import pytest
 from fury.tmpdirs import InTemporaryDirectory
 from tempfile import mkstemp
 
@@ -347,7 +348,7 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
 
-@npt.dec.skipif(not have_dipy)
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_bundle_maps():
     scene = window.Scene()
     bundle = fornix_streamlines()
@@ -420,7 +421,7 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@npt.dec.skipif(not have_dipy)
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_odf_slicer(interactive=False):
 
     sphere = get_sphere('symmetric362')
@@ -610,7 +611,7 @@ def test_peak_slicer(interactive=False):
     npt.assert_equal(report.actors_classnames, ex)
 
 
-@npt.dec.skipif(not have_dipy)
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_tensor_slicer(interactive=False):
 
     evals = np.array([1.4, .35, .35]) * 10 ** (-3)
@@ -661,7 +662,7 @@ def test_tensor_slicer(interactive=False):
     # Test empty mask
     empty_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
                                       mask=np.zeros(mevals.shape[:3]),
-                                      sphere=sphere,  scale=.3)
+                                      sphere=sphere, scale=.3)
     npt.assert_equal(empty_actor.GetMapper(), None)
 
     # Test mask

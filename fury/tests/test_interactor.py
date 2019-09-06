@@ -9,12 +9,15 @@ from fury import actor, window, interactor
 from fury import utils as vtk_utils
 from fury.data import DATA_DIR
 import numpy.testing as npt
+import pytest
 
 skip_osx = platform.system().lower() == "darwin"
 skip_win = platform.system().lower() == "windows"
 
 
-@npt.dec.skipif(skip_osx or skip_win)
+@pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
+                                                 " Windows and OSX. Need to "
+                                                 " be introspected")
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))
     filename = "test_custom_interactor_style_events.log.gz"

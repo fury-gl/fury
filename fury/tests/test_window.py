@@ -4,6 +4,7 @@ import warnings
 import numpy as np
 from fury import actor, window, io
 import numpy.testing as npt
+import pytest
 from fury.testing import captured_output, assert_less_equal
 from fury.tmpdirs import InTemporaryDirectory
 
@@ -234,7 +235,9 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-@npt.dec.skipif(skip_osx or skip_win)
+@pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
+                                                 " Windows and OSX. Need to "
+                                                 " be introspected")
 def test_order_transparent():
 
     scene = window.Scene()
@@ -296,7 +299,9 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
-@npt.dec.skipif(skip_osx)
+@pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
+                                                 " Windows and OSX. Need to "
+                                                 " be introspected")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])

@@ -14,7 +14,8 @@ from dipy.reconst.shm import CsaOdfModel
 from dipy.data import default_sphere
 from dipy.direction import peaks_from_model
 try:
-    from dipy.tracking.local import ThresholdTissueClassifier as ThresholdStoppingCriterion
+    from dipy.tracking.local import ThresholdTissueClassifier as \
+        ThresholdStoppingCriterion
     from dipy.tracking.local import LocalTracking
 except ImportError:
     from dipy.tracking.stopping_criterion import ThresholdStoppingCriterion

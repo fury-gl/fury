@@ -87,6 +87,7 @@ class ApiDocWriter(object):
 
         self.root_path = ''
         self.written_modules = None
+        self._package_name = None
         self.package_name = package_name
         self.rst_extension = rst_extension
         self.package_skip_patterns = package_skip_patterns

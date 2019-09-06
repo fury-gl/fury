@@ -243,7 +243,6 @@ show_m.scene.add(panel)
 # the panel using its ``re_align`` method every time the window size changes.
 
 
-global size
 size = scene.GetSize()
 
 
