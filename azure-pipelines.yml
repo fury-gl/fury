@@ -46,6 +46,10 @@ jobs:
     displayName: Add Conda to PATH
     condition: eq( variables['INSTALL_TYPE'], 'conda' )
   - powershell: |
+      conda init powershell
+    displayName: Update Conda command
+    condition: eq( variables['INSTALL_TYPE'], 'conda' )
+  - powershell: |
       Set-StrictMode -Version Latest
       $ErrorActionPreference = "Stop"
       $PSDefaultParameterValues['*:ErrorAction']='Stop'
