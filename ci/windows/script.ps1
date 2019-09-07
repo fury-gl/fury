@@ -2,6 +2,7 @@
 
 if($env:INSTALL_TYPE -match "conda")
 {
+    Write-Output "Activate testenv"
     Invoke-Expression "activate testenv"
 }
 
