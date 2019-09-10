@@ -3340,7 +3340,8 @@ class ListBox2D(UI):
                  selected_color=(0.9, 0.6, 0.6),
                  unselected_color=(0.6, 0.6, 0.6),
                  scroll_bar_active_color=(0.6, 0.2, 0.2),
-                 scroll_bar_inactive_color=(0.9, 0.0, 0.0)):
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+                 background_opacity=1.):
         """
 
         Parameters
@@ -3366,6 +3367,7 @@ class ListBox2D(UI):
         unselected_color : tuple of 3 floats
         scroll_bar_active_color : tuple of 3 floats
         scroll_bar_inactive_color : tuple of 3 floats
+        background_opacity : float
         """
         self.view_offset = 0
         self.slots = []
@@ -3379,6 +3381,7 @@ class ListBox2D(UI):
         self.text_color = text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
+        self.background_opacity = background_opacity
 
         # self.panel.resize(size)
         self.values = values
@@ -3395,6 +3398,8 @@ class ListBox2D(UI):
 
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.scroll_bar.color = self.scroll_bar_inactive_color
+        self.scroll_bar.opacity = self.background_opacity
 
         self.position = position
         self.scroll_init_position = 0
@@ -3422,7 +3427,6 @@ class ListBox2D(UI):
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
                                       scroll_bar_height))
-        self.scroll_bar.color = (1, 0, 0)
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
@@ -3439,7 +3443,8 @@ class ListBox2D(UI):
                                  size=(slot_width, self.slot_height),
                                  text_color=self.text_color,
                                  selected_color=self.selected_color,
-                                 unselected_color=self.unselected_color)
+                                 unselected_color=self.unselected_color,
+                                 background_opacity=self.background_opacity)
             item.textblock.font_size = font_size
             self.slots.append(item)
             self.panel.add_element(item, (x, y + self.margin))
@@ -3719,8 +3724,9 @@ class ListBoxItem2D(UI):
     def __init__(self, list_box, size,
                  text_color=(1.0, 0.0, 0.0),
                  selected_color=(0.4, 0.4, 0.4),
-                 unselected_color=(0.9, 0.9, 0.9)):
-        """
+                 unselected_color=(0.9, 0.9, 0.9),
+                 background_opacity=1.):
+        """ Single ListBox Item
 
         Parameters
         ----------
@@ -3731,17 +3737,19 @@ class ListBoxItem2D(UI):
         text_color : tuple of 3 floats
         unselected_color : tuple of 3 floats
         selected_color : tuple of 3 floats
+        background_opacity : float
         """
         super(ListBoxItem2D, self).__init__()
         self._element = None
         self.list_box = list_box
         self.background.resize(size)
+        self.background_opacity = background_opacity
         self.selected = False
         self.text_color = text_color
         self.textblock.color = self.text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
-
+        self.background.opacity = self.background_opacity
         self.deselect()
 
     def _setup(self):

@@ -682,11 +682,14 @@ def test_ui_listbox_2d(interactive=False):
         listbox = ui.ListBox2D(values=values,
                                size=(500, 500),
                                multiselection=True,
-                               reverse_scrolling=False)
+                               reverse_scrolling=False,
+                               background_opacity=0.3)
         listbox.center = (300, 300)
+        listbox.panel.opacity = 0.2
 
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY ListBox")
+        show_manager.initialize()
         show_manager.scene.add(listbox)
         show_manager.start()
 
