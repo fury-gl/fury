@@ -3361,11 +3361,11 @@ class ListBox2D(UI):
             The font size in pixels.
         line_spacing: float
             Distance between listbox's items in pixels.
-        text_color : tuple of 3 floats        
+        text_color : tuple of 3 floats
         selected_color : tuple of 3 floats
         unselected_color : tuple of 3 floats
         scroll_bar_active_color : tuple of 3 floats
-        scroll_bar_inactive_color : tuple of 3 floats 
+        scroll_bar_inactive_color : tuple of 3 floats
         """
         self.view_offset = 0
         self.slots = []
@@ -3380,7 +3380,6 @@ class ListBox2D(UI):
         self.selected_color = selected_color
         self.unselected_color = unselected_color
 
-
         # self.panel.resize(size)
         self.values = values
         self.multiselection = multiselection
@@ -3393,7 +3392,7 @@ class ListBox2D(UI):
             denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) / denom
-        
+
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
 
@@ -3438,11 +3437,10 @@ class ListBox2D(UI):
             y -= self.slot_height
             item = ListBoxItem2D(list_box=self,
                                  size=(slot_width, self.slot_height),
-                                 text_color=self.text_color,                                 
+                                 text_color=self.text_color,
                                  selected_color=self.selected_color,
                                  unselected_color=self.unselected_color)
             item.textblock.font_size = font_size
-            # TODO item.textblock.color = (0, 0, 0)
             self.slots.append(item)
             self.panel.add_element(item, (x, y + self.margin))
 
@@ -3732,7 +3730,7 @@ class ListBoxItem2D(UI):
             The size of the listbox item.
         text_color : tuple of 3 floats
         unselected_color : tuple of 3 floats
-        selected_color : tuple of 3 floats 
+        selected_color : tuple of 3 floats
         """
         super(ListBoxItem2D, self).__init__()
         self._element = None
@@ -3743,7 +3741,7 @@ class ListBoxItem2D(UI):
         self.textblock.color = self.text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
-       
+
         self.deselect()
 
     def _setup(self):
