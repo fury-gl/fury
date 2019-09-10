@@ -669,8 +669,6 @@ def test_ui_radio_button(interactive=False):
 
 
 def test_ui_listbox_2d(interactive=False):
-
-    interactive=True
     filename = "test_ui_listbox_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
