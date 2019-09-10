@@ -3335,7 +3335,12 @@ class ListBox2D(UI):
 
     def __init__(self, values, position=(0, 0), size=(100, 300),
                  multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4):
+                 font_size=20, line_spacing=1.4,
+                 text_color=(0.2, 0.2, 0.2),
+                 selected_color=(0.9, 0.6, 0.6),
+                 unselected_color=(0.6, 0.6, 0.6),
+                 scroll_bar_active_color=(0.6, 0.2, 0.2),
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0)):
         """
 
         Parameters
@@ -3356,7 +3361,11 @@ class ListBox2D(UI):
             The font size in pixels.
         line_spacing: float
             Distance between listbox's items in pixels.
-
+        text_color : tuple of 3 floats        
+        selected_color : tuple of 3 floats
+        unselected_color : tuple of 3 floats
+        scroll_bar_active_color : tuple of 3 floats
+        scroll_bar_inactive_color : tuple of 3 floats 
         """
         self.view_offset = 0
         self.slots = []
@@ -3366,6 +3375,11 @@ class ListBox2D(UI):
         self.font_size = font_size
         self.line_spacing = line_spacing
         self.slot_height = int(self.font_size * self.line_spacing)
+
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+
 
         # self.panel.resize(size)
         self.values = values
@@ -3379,9 +3393,10 @@ class ListBox2D(UI):
             denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) / denom
+        
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
 
-        self.scroll_bar_active_color = (0.8, 0, 0)
-        self.scroll_bar_inactive_color = (1, 0, 0)
         self.position = position
         self.scroll_init_position = 0
         self.update()
@@ -3422,9 +3437,12 @@ class ListBox2D(UI):
         for _ in range(self.nb_slots):
             y -= self.slot_height
             item = ListBoxItem2D(list_box=self,
-                                 size=(slot_width, self.slot_height))
+                                 size=(slot_width, self.slot_height),
+                                 text_color=self.text_color,                                 
+                                 selected_color=self.selected_color,
+                                 unselected_color=self.unselected_color)
             item.textblock.font_size = font_size
-            item.textblock.color = (0, 0, 0)
+            # TODO item.textblock.color = (0, 0, 0)
             self.slots.append(item)
             self.panel.add_element(item, (x, y + self.margin))
 
@@ -3700,21 +3718,32 @@ class ListBox2D(UI):
 class ListBoxItem2D(UI):
     """ The text displayed in a listbox. """
 
-    def __init__(self, list_box, size):
+    def __init__(self, list_box, size,
+                 text_color=(1.0, 0.0, 0.0),
+                 selected_color=(0.4, 0.4, 0.4),
+                 unselected_color=(0.9, 0.9, 0.9)):
         """
 
         Parameters
         ----------
-        list_box: :class:`ListBox`
+        list_box : :class:`ListBox`
             The ListBox reference this text belongs to.
-        size: int
+        size : tuple of 2 ints
             The size of the listbox item.
+        text_color : tuple of 3 floats
+        unselected_color : tuple of 3 floats
+        selected_color : tuple of 3 floats 
         """
         super(ListBoxItem2D, self).__init__()
         self._element = None
         self.list_box = list_box
         self.background.resize(size)
         self.selected = False
+        self.text_color = text_color
+        self.textblock.color = self.text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+       
         self.deselect()
 
     def _setup(self):
@@ -3766,13 +3795,13 @@ class ListBoxItem2D(UI):
                                     position[1] - self.background.size[1] / 2.)
 
     def deselect(self):
-        self.background.color = (0.9, 0.9, 0.9)
+        self.background.color = self.unselected_color
         self.textblock.bold = False
         self.selected = False
 
     def select(self):
         self.textblock.bold = True
-        self.background.color = (0, 1, 1)
+        self.background.color = self.selected_color
         self.selected = True
 
     @property
