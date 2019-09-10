@@ -1,9 +1,22 @@
 # Powershell Install script
 
+function Invoke-CmdScript {
+  param(
+    [String] $scriptName
+  )
+  $cmdLine = """$scriptName"" $args & set"
+  & $Env:SystemRoot\system32\cmd.exe /c $cmdLine |
+  Select-String '^([^=]*)=(.*)$' | ForEach-Object {
+    $varName = $_.Matches[0].Groups[1].Value
+    $varValue = $_.Matches[0].Groups[2].Value
+    Set-Item Env:$varName $varValue
+  }
+}
+
 if($env:INSTALL_TYPE -match "conda")
 {
     Write-Output "Activate testenv"
-    Invoke-Expression "activate.ps1 testenv"
+    Invoke-CmdScript $env:CONDA\Scripts\activate.bat testenv
 }
 
 $env:PIPI = "pip install $env:EXTRA_PIP_FLAGS"
