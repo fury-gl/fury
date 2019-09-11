@@ -1,5 +1,6 @@
 # Powershell Install script
 
+# Useful function from https://stackoverflow.com/questions/50093582/powershell-not-recognizing-conda-as-cmdlet-function-or-operable-program
 function Invoke-CmdScript {
   param(
     [String] $scriptName

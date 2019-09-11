@@ -24,7 +24,7 @@ function DownloadMesaOpenGL ($architecture) {
     takeown /F $filepath /A
     icacls $filepath /grant "${env:ComputerName}\${env:UserName}:F"
     Remove-item -LiteralPath $filepath
-    Write-Host "Downloading" $url
+    Write-Output "Downloading" $url
     $retry_attempts = 2
     for($i=0; $i -lt $retry_attempts; $i++){
         try {
@@ -36,7 +36,7 @@ function DownloadMesaOpenGL ($architecture) {
         }
     }
     if (Test-Path $filepath) {
-        Write-Host "File saved at" $filepath
+        Write-Output "File saved at" $filepath
     } else {
         # Retry once to get the error message if any at the last try
         $webclient.DownloadFile($url, $filepath)
