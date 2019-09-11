@@ -800,7 +800,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
                norm=True, radial_scale=True, opacity=1.,
-               colormap='plasma', global_cm=False):
+               colormap='blues', global_cm=False):
     """ Slice spherical fields in native or world coordinates
 
     Parameters
@@ -1567,7 +1567,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         if isinstance(heights, int):
             src.SetHeight(heights)
     else:
-        set_polydata_vertices(polydata_cone, vertices)
+        set_polydata_vertices(polydata_cone, vertices.astype(np.int8))
         set_polydata_triangles(polydata_cone, faces)
 
     polydata_centers.SetPoints(pts)

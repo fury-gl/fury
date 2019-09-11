@@ -1,8 +1,11 @@
 """Decorators for FURY tests."""
 
 import re
+import platform
 
 
+skip_osx = platform.system().lower() == "darwin"
+skip_win = platform.system().lower() == "windows"
 SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 
 

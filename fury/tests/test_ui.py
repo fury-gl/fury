@@ -8,9 +8,9 @@ from os.path import join as pjoin
 import numpy.testing as npt
 import pytest
 
-from fury.data import read_viz_icons, fetch_viz_icons
 from fury import window, actor, ui
-from fury.data import DATA_DIR
+from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
+from fury.decorators import skip_win
 from fury.testing import assert_arrays_equal
 from fury.utils import shallow_copy
 
@@ -761,6 +761,8 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
+@pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
+                                     " Need to be introspected")
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
@@ -783,37 +785,26 @@ def test_timer():
     scene.add(sphere_actor2)
 
     tb = ui.TextBlock2D()
-
-    cnt = 0
-
+    counter = itertools.count()
     showm = window.ShowManager(scene,
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
     showm.initialize()
-
-    def timer_callback(_obj, _event):
-        timer_callback.cnt += 1
-        timer_callback.tb.message = "Let's count to 10 and exit :" + \
-            str(timer_callback.cnt)
-        timer_callback.showm.render()
-        if timer_callback.cnt > 9:
-            timer_callback.showm.exit()
-            timer_callback.showm.destroy_timers()
-
     scene.add(tb)
 
-    # abuse of function attribute
-    timer_callback.tb = tb
-    timer_callback.cnt = cnt
-    timer_callback.showm = showm
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        tb.message = "Let's count to 10 and exit :" + str(cnt)
+        showm.render()
+        if cnt > 9:
+            showm.exit()
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    arr = window.snapshot(scene)
-
+    arr = window.snapshot(scene, offscreen=True)
     npt.assert_(np.sum(arr) > 0)
 
 
@@ -889,7 +880,6 @@ def test_ui_file_menu_2d(interactive=False):
 
 
 def test_grid_ui(interactive=False):
-
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
 
@@ -1019,10 +1009,6 @@ def test_grid_ui(interactive=False):
 
 
 if __name__ == "__main__":
-    # test_callback()
-    test_timer()
-    exit()
-
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
         test_ui_button_panel(recording=False)
 
