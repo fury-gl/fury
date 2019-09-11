@@ -1,11 +1,14 @@
 .. image:: https://travis-ci.org/fury-gl/fury.svg?branch=master
         :target: https://travis-ci.org/fury-gl/fury
 
-.. image:: https://ci.appveyor.com/api/projects/status/9asvp22cf5pkl45l?svg=true
-        :target: https://ci.appveyor.com/project/skoudoro/fury-o608g
+.. image:: https://https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master
+        :target: https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master
 
 .. image:: https://img.shields.io/pypi/v/fury.svg
         :target: https://pypi.python.org/pypi/fury
+
+.. image:: https://anaconda.org/conda-forge/fury/badges/version.svg
+        :target: https://anaconda.org/conda-forge/fury
 
 .. image:: https://codecov.io/gh/fury-gl/fury/branch/master/graph/badge.svg
         :target: https://codecov.io/gh/fury-gl/fury
