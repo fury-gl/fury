@@ -669,7 +669,6 @@ def test_ui_radio_button(interactive=False):
 
 
 def test_ui_listbox_2d(interactive=False):
-
     filename = "test_ui_listbox_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
@@ -681,11 +680,14 @@ def test_ui_listbox_2d(interactive=False):
         listbox = ui.ListBox2D(values=values,
                                size=(500, 500),
                                multiselection=True,
-                               reverse_scrolling=False)
+                               reverse_scrolling=False,
+                               background_opacity=0.3)
         listbox.center = (300, 300)
+        listbox.panel.opacity = 0.2
 
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY ListBox")
+        show_manager.initialize()
         show_manager.scene.add(listbox)
         show_manager.start()
 
@@ -1009,6 +1011,7 @@ def test_grid_ui(interactive=False):
 
 
 if __name__ == "__main__":
+
     if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
         test_ui_button_panel(recording=False)
 
