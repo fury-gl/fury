@@ -42,7 +42,7 @@ def rectangle(size = (1, 1)):
     actor.SetMapper(mapper)
     return actor
 
-def square(scale=100):
+def square(scale=1):
     my_polydata = vtk.vtkPolyData()
 
     my_vertices = np.array([[0.0, 0.0, 0.0],
@@ -67,7 +67,15 @@ def square(scale=100):
     polydata = vtk.vtkPolyData()
     polydata.ShallowCopy(vertex_filter.GetOutput())
 
-    return get_actor_from_polydata(polydata)
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polydata)
+
+    square_actor = vtk.vtkActor()
+    square_actor.SetMapper(mapper)
+    square_actor.GetProperty().SetPointSize(200)
+    #square_actor.GetProperty().SetRenderPointsAsSpheres(True)
+
+    return square_actor
 
 
 def cube():
@@ -167,6 +175,44 @@ if obj == 'disk':
     scene.add(dis)
     mapper = dis.GetMapper()
 
+
+
+# mapper.AddShaderReplacement(
+#     vtk.vtkShader.Vertex,
+#     '//VTK::PositionVC::Dec',  # target the PositionVC block
+#     True,
+#     '''
+#     // include the default
+#     //VTK::PositionVC::Dec
+#     // now declare our attribute
+#     // in vec3 dummyAttribute;
+#     ''',
+#     False
+# )
+
+# mapper.AddShaderReplacement(
+#     vtk.vtkShader.Vertex,
+#     '//VTK::PositionVC::Impl',  # target the PositionVC block
+#     True,
+#     '''
+#     // replace the default
+#     // copy position in model coordinates
+#     vec4 myVertexMC = vertexMC;
+#     // modify coordinates with dummyAttribute
+#     // just for fun, 'swizzle' the parameters
+#     // subtract 0.5 so it stays centered
+#     myVertexMC.xyz = vertexMC.xyz; // + (dummyAttribute.yzx - 0.5);
+#     // this is used for lighting in the frag shader
+#     // need to calculate and include since we replaced the default
+#     vertexVCVSOutput = MCVCMatrix * myVertexMC;
+#     // transform from model to display coordinates
+#     gl_Position = MCDCMatrix * myVertexMC;
+#     ''',
+#     False
+# )
+
+
+
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Light::Dec',
@@ -191,6 +237,7 @@ def timer_callback(obj, event):
     timer += 1.0
     # print(timer)
     showm.render()
+    scene.set_camera(focal_point=(0,0,0))
     scene.azimuth(10)
 
 
@@ -208,7 +255,6 @@ def vtk_shader_callback(caller, event, calldata=None):
 mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 
-# TODO: Create Fragment Shader Canvas
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Light::Impl',
@@ -223,26 +269,63 @@ mapper.AddShaderReplacement(
     float tm = .2; // speed
     float vcm = 5;
 
-    float a = sin(normalVCVSOutput.y * vcm - time * tm) / 2.;
-    float b = cos(normalVCVSOutput.y * vcm - time * tm) / 2.;
-    float c = sin(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
-    float d = cos(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
+    float a = sin(gl_FragCoord.y * 0.01 * vcm - time * tm) / 2.;
+    float b = cos(gl_FragCoord.y * 0.01 * vcm - time * tm) / 2.;
+    float c = sin(gl_FragCoord.y * 0.01 * vcm - time * tm + 3.14) / 2.;
+    float d = cos(gl_FragCoord.y * 0.01 * vcm - time * tm + 3.14) / 2.;
 
     float div = 0.01; // default 0.01
 
-    float e = div / abs(normalVCVSOutput.x + a);
-    float f = div / abs(normalVCVSOutput.x + b);
-    float g = div / abs(normalVCVSOutput.x + c);
-    float h = div / abs(normalVCVSOutput.x + d);
+    float e = div / abs(gl_FragCoord.x * 0.01 + a);
+    float f = div / abs(gl_FragCoord.x * 0.01 + b);
+    float g = div / abs(gl_FragCoord.x * 0.01 + c);
+    float h = div / abs(gl_FragCoord.x * 0.01 + d);
 
     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
     fragOutput0 = vec4(destColor, 1.);
     //fragOutput0 = vec4(1 - normalVCVSOutput.x, 1 - normalVCVSOutput.y, 0, 1.);
-    fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
+    //fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
     //fragOutput0 = vec4(normalVCVSOutput.x, normalVCVSOutput.y, 0, 1.);
+    fragOutput0 = vec4(gl_FragCoord.x, 0, 0, 1.);
     ''',
     False
 )
+
+
+# mapper.AddShaderReplacement(
+#     vtk.vtkShader.Fragment,
+#     '//VTK::Light::Impl',
+#     True,
+#     '''
+#     //VTK::Light::Impl
+#     vec3 rColor = vec3(.9, .0, .3);
+#     vec3 gColor = vec3(.0, .9, .3);
+#     vec3 bColor = vec3(.0, .3, .9);
+#     vec3 yColor = vec3(.9, .9, .3);
+
+#     float tm = .2; // speed
+#     float vcm = 5;
+
+#     float a = sin(normalVCVSOutput.y * vcm - time * tm) / 2.;
+#     float b = cos(normalVCVSOutput.y * vcm - time * tm) / 2.;
+#     float c = sin(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
+#     float d = cos(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
+
+#     float div = 0.01; // default 0.01
+
+#     float e = div / abs(normalVCVSOutput.x + a);
+#     float f = div / abs(normalVCVSOutput.x + b);
+#     float g = div / abs(normalVCVSOutput.x + c);
+#     float h = div / abs(normalVCVSOutput.x + d);
+
+#     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
+#     fragOutput0 = vec4(destColor, 1.);
+#     //fragOutput0 = vec4(1 - normalVCVSOutput.x, 1 - normalVCVSOutput.y, 0, 1.);
+#     //fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
+#     //fragOutput0 = vec4(normalVCVSOutput.x, normalVCVSOutput.y, 0, 1.);
+#     ''',
+#     False
+# )
 
 showm.initialize()
 showm.add_timer_callback(True, 100, timer_callback)
