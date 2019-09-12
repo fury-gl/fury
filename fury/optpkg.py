@@ -29,7 +29,7 @@ def is_tripwire(obj):
     except TripWireError:
         return True
     except Exception:
-        pass
+        return False
     return False
 
 

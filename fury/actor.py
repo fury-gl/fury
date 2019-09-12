@@ -165,7 +165,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
             self.Update()
-            bounds = self.GetBounds()
+            # bounds = self.GetBounds()
             # xmin, xmax, ymin, ymax, zmin, zmax = bounds
             # line = np.array([[xmin, ymin, zmin]])
             # self.outline_actor = actor.line()
@@ -1916,7 +1916,7 @@ class Container(object):
 
     def ShallowCopy(self, other):
         self._position = other._position.copy()
-        self._anchor = other._anchor
+        self.anchor = other.anchor
         self.clear()
         self.add(*other._items, borrow=False)
         self.update()

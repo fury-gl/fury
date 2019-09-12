@@ -3882,6 +3882,7 @@ class FileMenu2D(UI):
         self.extensions = extensions or ["*"]
         self.current_directory = directory_path
         self.menu_size = size
+        self.directory_contents = []
 
         super(FileMenu2D, self).__init__()
         self.position = position
@@ -4171,7 +4172,7 @@ class GridUI(UI):
     ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
     CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
 
-    def key_press_callback(self, istyle, obj, what):
+    def key_press_callback(self, istyle, obj, _what):
         has_changed = False
         if istyle.event.key == "Left":
             has_changed = True

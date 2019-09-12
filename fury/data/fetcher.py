@@ -40,7 +40,7 @@ def update_progressbar(progress, total_length):
     try:
         columns = os.popen('tput cols', 'r').read()
         bar_length = int(columns) - 46
-        if not (bar_length > 1):
+        if bar_length < 1:
             bar_length = 20
     except Exception:
         # Default value if determination of console size fails
