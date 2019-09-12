@@ -3,7 +3,7 @@ import numpy as np
 from fury import actor, window, ui
 from fury.utils import numpy_to_vtk_points, set_polydata_colors
 from fury.utils import set_input, rotate, set_polydata_vertices
-from fury.utils import get_actor_from_polydata
+from fury.utils import get_actor_from_polydata, set_polydata_triangles
 import vtk
 
 def rectangle(size = (1, 1)):
@@ -55,6 +55,8 @@ def cube():
                             [1.0, 1.0, 0.0],
                             [1.0, 1.0, 1.0]])
 
+    my_vertices -= 0.5
+
     my_triangles = np.array([[0, 6, 4],
                             [0, 2, 6],
                             [0, 3, 2],
@@ -69,6 +71,7 @@ def cube():
                             [1, 7, 3]], dtype='i8')
 
     set_polydata_vertices(my_polydata, my_vertices)
+    set_polydata_triangles(my_polydata, my_triangles)
     return get_actor_from_polydata(my_polydata)
 
 
@@ -107,17 +110,28 @@ scene = window.Scene()
 # scene.background((1, 1, 1))
 showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True, interactor_style='custom')
 
-rec = rectangle(size=(100, 100))
-scene.add(rec)
-mapper = rec.GetMapper()
+obj = 'cube'
 
-# cu = cube()
-# scene.add(cu)
-# mapper = cu.GetMapper()
+if obj == 'rectangle':
 
-# dis = disk()
-# scene.add(dis)
-# mapper = dis.GetMapper()
+    rec = rectangle(size=(100, 100))
+    scene.add(rec)
+    mapper = rec.GetMapper()
+
+if obj == 'cube':
+
+    #rec.SetPosition(100, 0, 0)
+    cu = cube()
+    scene.add(cu)
+    scene.background((1, 1, 1))
+    # window.show(scene)
+    mapper = cu.GetMapper()
+
+if obj == 'disk':
+
+    dis = disk()
+    scene.add(dis)
+    mapper = dis.GetMapper()
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
@@ -143,6 +157,7 @@ def timer_callback(obj, event):
     timer += 1.0
     # print(timer)
     showm.render()
+    scene.azimuth(10)
 
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
 def vtk_shader_callback(caller, event, calldata=None):
@@ -186,13 +201,15 @@ mapper.AddShaderReplacement(
     float h = div / abs(normalVCVSOutput.x + d);
 
     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
-    fragOutput0 = vec4(destColor, 1.);
+    //fragOutput0 = vec4(destColor, 1.);
+    fragOutput0 = vec4(1 - normalVCVSOutput.x, 1 - normalVCVSOutput.y, 0, 1.);
+    //fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
     ''',
     False
 )
 
 showm.initialize()
-showm.add_timer_callback(True, 200, timer_callback)
+showm.add_timer_callback(True, 100, timer_callback)
 
 showm.initialize()
 showm.start()
