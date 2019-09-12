@@ -1,10 +1,10 @@
-
+import vtk
 import numpy as np
 from fury import actor, window, ui
 from fury.utils import numpy_to_vtk_points, set_polydata_colors
 from fury.utils import set_input, rotate, set_polydata_vertices
 from fury.utils import get_actor_from_polydata, set_polydata_triangles
-import vtk
+
 
 def rectangle(size = (1, 1)):
 
@@ -41,6 +41,33 @@ def rectangle(size = (1, 1)):
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     return actor
+
+def square(scale=100):
+    my_polydata = vtk.vtkPolyData()
+
+    my_vertices = np.array([[0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0],
+                            [1.0, 1.0, 0.0],
+                            [1.0, 0.0, 0.0]])
+
+    my_vertices -= np.array([0.5, 0.5, 0])
+
+    my_vertices = scale * my_vertices
+
+    my_triangles = np.array([[0, 1, 2],
+                             [2, 3, 0]], dtype='i8')
+
+    set_polydata_vertices(my_polydata, my_vertices)
+    set_polydata_triangles(my_polydata, my_triangles)
+
+    vertex_filter = vtk.vtkVertexGlyphFilter()
+    vertex_filter.SetInputData(my_polydata)
+    vertex_filter.Update()
+
+    polydata = vtk.vtkPolyData()
+    polydata.ShallowCopy(vertex_filter.GetOutput())
+
+    return get_actor_from_polydata(polydata)
 
 
 def cube():
@@ -107,10 +134,17 @@ def disk():
     return points_actor
 
 scene = window.Scene()
+scene.add(actor.axes())
 # scene.background((1, 1, 1))
 showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True, interactor_style='custom')
 
-obj = 'cube'
+obj = 'square'
+
+if obj == 'square':
+
+    sq = square()
+    scene.add(sq)
+    mapper = sq.GetMapper()
 
 if obj == 'rectangle':
 
@@ -120,7 +154,7 @@ if obj == 'rectangle':
 
 if obj == 'cube':
 
-    #rec.SetPosition(100, 0, 0)
+    # rec.SetPosition(100, 0, 0)
     cu = cube()
     scene.add(cu)
     scene.background((1, 1, 1))
@@ -159,6 +193,7 @@ def timer_callback(obj, event):
     showm.render()
     scene.azimuth(10)
 
+
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
 def vtk_shader_callback(caller, event, calldata=None):
     program = calldata
@@ -193,7 +228,7 @@ mapper.AddShaderReplacement(
     float c = sin(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
     float d = cos(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
 
-    float div = 0.1; // default 0.01
+    float div = 0.01; // default 0.01
 
     float e = div / abs(normalVCVSOutput.x + a);
     float f = div / abs(normalVCVSOutput.x + b);
@@ -201,9 +236,10 @@ mapper.AddShaderReplacement(
     float h = div / abs(normalVCVSOutput.x + d);
 
     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
-    //fragOutput0 = vec4(destColor, 1.);
-    fragOutput0 = vec4(1 - normalVCVSOutput.x, 1 - normalVCVSOutput.y, 0, 1.);
-    //fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
+    fragOutput0 = vec4(destColor, 1.);
+    //fragOutput0 = vec4(1 - normalVCVSOutput.x, 1 - normalVCVSOutput.y, 0, 1.);
+    fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
+    //fragOutput0 = vec4(normalVCVSOutput.x, normalVCVSOutput.y, 0, 1.);
     ''',
     False
 )
