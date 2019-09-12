@@ -1672,6 +1672,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
     """
 
     class TextActor3D(vtk.vtkTextActor3D):
+
         def message(self, text):
             self.set_message(text)
 

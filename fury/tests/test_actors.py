@@ -873,7 +873,28 @@ def test_cones(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-def test_container(_interactive=False):
+def test_text_3d(interactive=True):
+    msg = 'I love FURY'
+
+    txt_actor = actor.text_3d(msg)
+    npt.assert_equal(txt_actor.get_message().lower(), msg.lower())
+    npt.assert_raises(ValueError, txt_actor.justification, 'middle')
+
+    s = window.Scene()
+    s.add(txt_actor)
+    txt_actor.justification('right')
+    print(txt_actor.GetPosition())
+    if interactive:
+        window.show(s, size=(1920, 1080))
+    s.clear()
+    txt_actor.justification('left')
+    s.add(txt_actor)
+    if interactive:
+        window.show(s, size=(1920, 1080))
+    print(txt_actor.GetPosition())
+
+
+def test_container():
     container = actor.Container()
 
     axes = actor.axes()
