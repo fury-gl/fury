@@ -10,6 +10,7 @@ import itertools
 import numpy.testing as npt
 import pytest
 from fury.tmpdirs import InTemporaryDirectory
+from fury.testing import assert_greater
 from tempfile import mkstemp
 
 # Allow import, but disable doctests if we don't have dipy
@@ -870,6 +871,37 @@ def test_cones(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=[colors])
     npt.assert_equal(report.objects, 3)
+
+
+def test_container(_interactive=False):
+    container = actor.Container()
+
+    axes = actor.axes()
+    container.add(axes)
+    npt.assert_equal(len(container), 1)
+    npt.assert_equal(container.GetBounds(), axes.GetBounds())
+    npt.assert_equal(container.GetCenter(), axes.GetCenter())
+    npt.assert_equal(container.GetLength(), axes.GetLength())
+
+    container.clear()
+    npt.assert_equal(len(container), 0)
+
+    container.add(axes)
+    container_shallow_copy = shallow_copy(container)
+    container_shallow_copy.add(actor.axes())
+
+    assert_greater(len(container_shallow_copy), len(container))
+    npt.assert_equal(container_shallow_copy.GetPosition(),
+                     container.GetPosition())
+    npt.assert_equal(container_shallow_copy.GetVisibility(),
+                     container.GetVisibility())
+
+    # Check is the shallow_copy do not modify original container
+    container_shallow_copy.SetVisibility(False)
+    npt.assert_equal(container.GetVisibility(), True)
+
+    container_shallow_copy.SetPosition((1, 1, 1))
+    npt.assert_equal(container.GetPosition(), (0, 0, 0))
 
 
 def test_grid(_interactive=False):
