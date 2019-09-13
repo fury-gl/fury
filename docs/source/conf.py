@@ -61,7 +61,7 @@ plot_html_show_source_link = False
 plot_html_show_formats = False
 
 # Generate the API documentation when building
-autosummary_generate = False
+autosummary_generate = []
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
@@ -233,4 +233,6 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'matplotlib': ('https://matplotlib.org', None),
+    'dipy': ('https://dipy.org/documentation/latest',
+             'https://dipy.org/documentation/1.0.0./objects.inv/'),
 }
