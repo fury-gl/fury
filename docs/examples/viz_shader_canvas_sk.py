@@ -7,7 +7,7 @@ from fury.utils import set_input, rotate, set_polydata_vertices
 from fury.utils import get_actor_from_polydata, set_polydata_triangles
 
 
-def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
+def rectangle2(centers, colors, use_vertices=False, size=(2, 2)):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -24,10 +24,6 @@ def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
     cols.SetName('colors')
 
     polydata_centers = vtk.vtkPolyData()
-
-    src = vtk.vtkPlaneSource()
-    src.SetXResolution(size[0])
-    src.SetYResolution(size[0])
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
@@ -50,7 +46,7 @@ def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
                                 [1.0, 1.0, 0.0],
                                 [1.0, 0.0, 0.0]])
 
-        # my_vertices -= np.array([0.5, 0.5, 0])
+        my_vertices -= np.array([0.5, 0.5, 0])
 
         my_vertices = scale * my_vertices
 
@@ -62,6 +58,9 @@ def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
 
         glyph.SetSourceData(my_polydata)
     else:
+        src = vtk.vtkPlaneSource()
+        src.SetXResolution(size[0])
+        src.SetYResolution(size[1])
         glyph.SetSourceConnection(src.GetOutputPort())
 
     glyph.SetInputData(polydata_centers)
@@ -115,7 +114,7 @@ def rectangle(size = (1, 1)):
     actor.SetMapper(mapper)
     return actor
 
-def square(scale=100):
+def square(scale=1):
     my_polydata = vtk.vtkPolyData()
 
     my_vertices = np.array([[0.0, 0.0, 0.0],
@@ -133,14 +132,14 @@ def square(scale=100):
     set_polydata_vertices(my_polydata, my_vertices)
     set_polydata_triangles(my_polydata, my_triangles)
 
-    vertex_filter = vtk.vtkGlyph3D()
-    vertex_filter.SetInputData(my_polydata)
-    vertex_filter.Update()
+    # vertex_filter = vtk.vtkGlyph3D()
+    # vertex_filter.SetInputData(my_polydata)
+    # vertex_filter.Update()
 
-    polydata = vtk.vtkPolyData()
-    polydata.ShallowCopy(vertex_filter.GetOutput())
+    # polydata = vtk.vtkPolyData()
+    # polydata.ShallowCopy(vertex_filter.GetOutput())
 
-    actor = get_actor_from_polydata(polydata)
+    actor = get_actor_from_polydata(my_polydata)
     # actor.GetProperty().SetPointSize(100)
     # actor.GetProperty().SetRenderPointsAsSpheres(True)
     return actor
@@ -210,15 +209,17 @@ def disk():
     return points_actor
 
 scene = window.Scene()
+# scene.projection('parallel')
 scene.add(actor.axes())
 # scene.background((1, 1, 1))
 showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True, interactor_style='custom')
 
-obj = 'rectangle2'
+obj = 'square'
 
 if obj == 'square':
 
     sq = square()
+    sq.GetProperty().BackfaceCullingOff()
     scene.add(sq)
     mapper = sq.GetMapper()
 
@@ -232,9 +233,10 @@ if obj == 'rectangle2':
     n_points = 3
     # centers = np.random.rand(n_points, 3)
     # print(centers)
-    centers = np.array([[1, 0, 0],
+    centers = np.array([[1., 0, 0],
                         [0, 1, 0],
-                        [0, 0, 1],])
+                        [0, 0, 1],
+                        [1, 2, 0]])
     colors = 255 * np.random.rand(n_points, 3)
     rec = rectangle2(centers=centers, colors=colors)
     scene.add(rec)
@@ -363,16 +365,29 @@ mapper.AddShaderReplacement(
     fragOutput0 = vec4(destColor, 1.);
     //fragOutput0 = vec4(1 - myVertexMC.x, 1 - myVertexMC.y, 0, 1.);
     //fragOutput0 = vec4(myVertexMC.x, 0, 0, 1.);
-    vec2 p = myVertexMC.xy - my_centers_out[0].xy;//vec2(0.0,0.);
-    float z = 1.0 - length(p)/0.05;
-    if (z < 0.0) {fragOutput0 = vec4(0., 1., 0., 1.);return;}
-    fragOutput0 = vec4(1., 0., 0., 1.);
+    //vec2 p = vertexVCVSOutput.xy; //- vec2(1.5,0.5);
+    vec2 p = myVertexMC.xy;
+    fragOutput0 = vec4(p, 0., 1.);
+    //bc
+    //float z = 1.0 - length(p)/0.05;
+    //if (z < 0.0) {fragOutput0 = vec4(0., 1., 0., 1.);return;}
+    //fragOutput0 = vec4(1., 0., 0., 1.);
+    if (length(p - vec2(0, 0)) < 0.2) {
+        fragOutput0 = vec4(1, 0., 0., 1.);
+
+    }
+
+    if (length(p - vec2(1, 1)) < 0.2) {
+        fragOutput0 = vec4(1, 0., 0., 1.);
+    }
+
+
     ''',
     False
 )
 
 showm.initialize()
-showm.add_timer_callback(True, 100, timer_callback)
+# showm.add_timer_callback(True, 100, timer_callback)
 
 showm.initialize()
 showm.start()
