@@ -31,6 +31,15 @@ def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
+    print("NB pts: ", polydata_centers.GetNumberOfPoints())
+    print("NB arrays: ", polydata_centers.GetPointData().GetNumberOfArrays())
+    for i in range(polydata_centers.GetPointData().GetNumberOfArrays()):
+        print("Array {0}: {1}".format(i, polydata_centers.GetPointData().GetArrayName(i)))
+
+    for i in range(polydata_centers.GetCellData().GetNumberOfArrays()):
+        print("Cell {0}: {1}".format(i, polydata_centers.GetCellData().GetArrayName(i)))
+
+    print("Array pts: {}".format(polydata_centers.GetPoints().GetData().GetName()))
 
     glyph = vtk.vtkGlyph3D()
     if use_vertices:
@@ -41,7 +50,7 @@ def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
                                 [1.0, 1.0, 0.0],
                                 [1.0, 0.0, 0.0]])
 
-        my_vertices -= np.array([0.5, 0.5, 0])
+        # my_vertices -= np.array([0.5, 0.5, 0])
 
         my_vertices = scale * my_vertices
 
@@ -230,6 +239,11 @@ if obj == 'rectangle2':
     rec = rectangle2(centers=centers, colors=colors)
     scene.add(rec)
     mapper = rec.GetMapper()
+    mapper.MapDataArrayToVertexAttribute(
+        'my_centers',
+        'Points',
+        vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
+        -1)
 
 if obj == 'cube':
 
@@ -294,7 +308,9 @@ mapper.AddShaderReplacement(
     "//VTK::Normal::Dec",
     True,
     "//VTK::Normal::Dec\n"
-    "  out vec4 myVertexMC;\n",
+    "out vec4 myVertexMC;\n"
+    "in vec3 my_centers[3]; // now declare our attribute\n"
+    "out vec3 my_centers_out[3];",
     False
   )
 mapper.AddShaderReplacement(
@@ -302,7 +318,8 @@ mapper.AddShaderReplacement(
     "//VTK::Normal::Impl",
     True,
     "//VTK::Normal::Impl\n"
-    "  myVertexMC = vertexMC;\n",
+    "  myVertexMC = vertexMC;\n"
+    "my_centers_out = my_centers;",
     False
   )
 mapper.AddShaderReplacement(
@@ -310,7 +327,8 @@ mapper.AddShaderReplacement(
       "//VTK::Normal::Dec",
       True,
       "//VTK::Normal::Dec\n"
-      "  varying vec4 myVertexMC;",
+      "  varying vec4 myVertexMC;\n"
+      "  varying vec3  my_centers_out[3];",
       False
   )
 mapper.AddShaderReplacement(
@@ -319,6 +337,8 @@ mapper.AddShaderReplacement(
     True,
     '''
     //VTK::Light::Impl
+    if (myVertexMC == vec4(0.5, 0.5, 0.5, 1.0))
+        {fragOutput0 = vec4(1., 1., 1., 1.); return;}
     vec3 rColor = vec3(.9, .0, .3);
     vec3 gColor = vec3(.0, .9, .3);
     vec3 bColor = vec3(.0, .3, .9);
@@ -343,7 +363,10 @@ mapper.AddShaderReplacement(
     fragOutput0 = vec4(destColor, 1.);
     //fragOutput0 = vec4(1 - myVertexMC.x, 1 - myVertexMC.y, 0, 1.);
     //fragOutput0 = vec4(myVertexMC.x, 0, 0, 1.);
-    //fragOutput0 = vec4(myVertexMC.x, 0, 0, 1.);
+    vec2 p = myVertexMC.xy - my_centers_out[0].xy;//vec2(0.0,0.);
+    float z = 1.0 - length(p)/0.05;
+    if (z < 0.0) {fragOutput0 = vec4(0., 1., 0., 1.);return;}
+    fragOutput0 = vec4(1., 0., 0., 1.);
     ''',
     False
 )
