@@ -7,7 +7,7 @@ from fury.utils import set_input, rotate, set_polydata_vertices
 from fury.utils import get_actor_from_polydata, set_polydata_triangles
 
 
-def rectangle2(centers, colors, size=(2, 2)):
+def rectangle2(centers, colors, use_vertices=True, size=(2, 2)):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -33,7 +33,28 @@ def rectangle2(centers, colors, size=(2, 2)):
     polydata_centers.GetPointData().AddArray(cols)
 
     glyph = vtk.vtkGlyph3D()
-    glyph.SetSourceConnection(src.GetOutputPort())
+    if use_vertices:
+        scale = 1
+        my_polydata = vtk.vtkPolyData()
+        my_vertices = np.array([[0.0, 0.0, 0.0],
+                                [0.0, 1.0, 0.0],
+                                [1.0, 1.0, 0.0],
+                                [1.0, 0.0, 0.0]])
+
+        my_vertices -= np.array([0.5, 0.5, 0])
+
+        my_vertices = scale * my_vertices
+
+        my_triangles = np.array([[0, 1, 2],
+                                 [2, 3, 0]], dtype='i8')
+
+        set_polydata_vertices(my_polydata, my_vertices)
+        set_polydata_triangles(my_polydata, my_triangles)
+
+        glyph.SetSourceData(my_polydata)
+    else:
+        glyph.SetSourceConnection(src.GetOutputPort())
+
     glyph.SetInputData(polydata_centers)
     glyph.Update()
 
