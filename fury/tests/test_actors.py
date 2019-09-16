@@ -547,8 +547,7 @@ def test_odf_slicer(interactive=False):
     scene.add(odf_actor)
     scene.add(fa_actor)
     odfs[:, :, :] = 1
-    mask = np.ones(odfs.shape[:3])
-    odf_actor = actor.odf_slicer(odfs, None, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, None, mask=None,
                                  sphere=sphere, scale=.25,
                                  colormap=None,
                                  norm=False, global_cm=False)
@@ -617,6 +616,10 @@ def test_peak_slicer(interactive=False):
     report = window.analyze_scene(scene)
     ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
+
+    # 5d data
+    data_5d = (255 * np.random.rand(5, 5, 5, 5, 5))
+    npt.assert_raises(ValueError, actor.peak_slicer, data_5d, data_5d)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
@@ -819,6 +822,16 @@ def test_spheres(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
+
+    # test with an unique color for all centers
+    scene.clear()
+    sphere_actor = actor.sphere(centers=xyzr[:, :3],
+                                colors=np.array([1, 0, 0]),
+                                radii=xyzr[:, 3])
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
+    npt.assert_equal(report.colors_found, [True])
 
 
 def test_cones(interactive=False):

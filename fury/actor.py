@@ -911,8 +911,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     mapper : vtkPolyDataMapper
         Spheres mapper
     """
-    if mask is None:
-        mask = np.ones(odfs.shape[:3])
+    mask = np.ones(odfs.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
 
@@ -1127,8 +1126,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         Ellipsoid mapper
 
     """
-    if mask is None:
-        mask = np.ones(evals.shape[:3])
+    mask = np.ones(evals.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
     if len(ijk) == 0:
