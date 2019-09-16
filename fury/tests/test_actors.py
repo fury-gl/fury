@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from scipy.ndimage.measurements import center_of_mass
 
 from fury import shaders
 from fury import actor, window
@@ -10,7 +11,7 @@ import itertools
 import numpy.testing as npt
 import pytest
 from fury.tmpdirs import InTemporaryDirectory
-from fury.testing import assert_greater
+from fury.testing import assert_greater, assert_greater_equal
 from tempfile import mkstemp
 
 # Allow import, but disable doctests if we don't have dipy
@@ -873,25 +874,34 @@ def test_cones(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-def test_text_3d(interactive=True):
-    msg = 'I love FURY'
+def test_text_3d():
+    msg = 'I \nlove\n FURY'
 
     txt_actor = actor.text_3d(msg)
     npt.assert_equal(txt_actor.get_message().lower(), msg.lower())
     npt.assert_raises(ValueError, txt_actor.justification, 'middle')
+    npt.assert_raises(ValueError, txt_actor.vertical_justification, 'center')
 
-    s = window.Scene()
-    s.add(txt_actor)
+    scene = window.Scene()
+    scene.add(txt_actor)
     txt_actor.justification('right')
-    print(txt_actor.GetPosition())
-    if interactive:
-        window.show(s, size=(1920, 1080))
-    s.clear()
+    arr_right = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    scene.clear()
     txt_actor.justification('left')
-    s.add(txt_actor)
-    if interactive:
-        window.show(s, size=(1920, 1080))
-    print(txt_actor.GetPosition())
+    scene.add(txt_actor)
+    arr_left = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    # X axis of right alignment should have a lower center of mass position
+    # than left
+    assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
+    scene.clear()
+    txt_actor.vertical_justification('top')
+    scene.add(txt_actor)
+    arr_top = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    scene.clear()
+    txt_actor.vertical_justification('bottom')
+    scene.add(txt_actor)
+    arr_bottom = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    assert_greater_equal(center_of_mass(arr_top)[1], center_of_mass(arr_bottom)[1])
 
 
 def test_container():
