@@ -907,14 +907,17 @@ def test_text_3d():
     # than left
     assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
     scene.clear()
+    txt_actor.justification('center')
     txt_actor.vertical_justification('top')
     scene.add(txt_actor)
     arr_top = window.snapshot(scene, size=(1920, 1080), offscreen=True)
     scene.clear()
+    txt_actor.justification('center')
     txt_actor.vertical_justification('bottom')
     scene.add(txt_actor)
     arr_bottom = window.snapshot(scene, size=(1920, 1080), offscreen=True)
-    assert_greater_equal(center_of_mass(arr_top)[1], center_of_mass(arr_bottom)[1])
+    assert_greater_equal(center_of_mass(arr_bottom)[0],
+                         center_of_mass(arr_top)[0])
 
 
 def test_container():
