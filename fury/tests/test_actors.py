@@ -542,6 +542,10 @@ def test_odf_slicer(interactive=False):
     if interactive:
         window.show(scene)
 
+    npt.assert_raises(IOError, actor.odf_slicer, odfs, None, mask=None,
+                      sphere=sphere, scale=.25, colormap=None, norm=False,
+                      global_cm=True)
+
     # colormap=None and global_cm=False results in directionally encoded colors
     scene.clear()
     scene.add(odf_actor)
@@ -617,9 +621,9 @@ def test_peak_slicer(interactive=False):
     ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
-    # 5d data
-    data_5d = (255 * np.random.rand(5, 5, 5, 5, 5))
-    npt.assert_raises(ValueError, actor.peak_slicer, data_5d, data_5d)
+    # 6d data
+    data_6d = (255 * np.random.rand(5, 5, 5, 5, 5, 5))
+    npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
@@ -897,9 +901,11 @@ def test_text_3d():
 
     scene = window.Scene()
     scene.add(txt_actor)
+    txt_actor.vertical_justification('middle')
     txt_actor.justification('right')
     arr_right = window.snapshot(scene, size=(1920, 1080), offscreen=True)
     scene.clear()
+    txt_actor.vertical_justification('middle')
     txt_actor.justification('left')
     scene.add(txt_actor)
     arr_left = window.snapshot(scene, size=(1920, 1080), offscreen=True)
@@ -918,6 +924,12 @@ def test_text_3d():
     arr_bottom = window.snapshot(scene, size=(1920, 1080), offscreen=True)
     assert_greater_equal(center_of_mass(arr_bottom)[0],
                          center_of_mass(arr_top)[0])
+
+    scene.clear()
+    txt_actor.font_style(bold=True, italic=True, shadow=True)
+    scene.add(txt_actor)
+    arr = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    assert_greater_equal(arr.mean(), arr_bottom.mean())
 
 
 def test_container():
