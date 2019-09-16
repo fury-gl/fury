@@ -61,13 +61,13 @@ def cube():
     return get_actor_from_polydata(my_polydata)
 
 scene = window.Scene()
-scene.add(actor.axes())
+# scene.add(actor.axes())
 # scene.background((1, 1, 1))
 showm = window.ShowManager(scene, size=(1920, 1080),
                            order_transparent=True,
                            interactor_style='custom')
 
-obj = 'square'
+obj = 'cube'
 
 if obj == 'square':
 
@@ -80,6 +80,7 @@ if obj == 'cube':
 
     # rec.SetPosition(100, 0, 0)
     cu = cube()
+    cu.GetProperty().BackfaceCullingOff()
     scene.add(cu)
     scene.background((1, 1, 1))
     # window.show(scene)
@@ -188,15 +189,17 @@ mapper.AddShaderReplacement(
     //fragOutput0 = vec4(myVertexMC.x, 0, 0, 1.);
     //vec2 p = vertexVCVSOutput.xy; //- vec2(1.5,0.5);
     vec2 p = myVertexMC.xy;
-    fragOutput0 = 0.5 * (vec4(0, 0.5, 0., 1.) + fragOutput0);
+    //fragOutput0 = 0.5 * (vec4(0, 0.5, 0., 1.) + fragOutput0);
+    //fragOutput0 =  fragOutput0);
+
 
     if (length(p - vec2(0, 0)) < 0.2) {
-        fragOutput0 = vec4(1, 0., 0., 1.);
+        fragOutput0 = vec4(1, 0., 0., .5);
 
     }
 
     if (length(p - vec2(1, 1)) < 0.2) {
-        fragOutput0 = vec4(1, 0., 0., 1.);
+        fragOutput0 = vec4(1, 0., 0., .5);
     }
 
     ''',
