@@ -81,7 +81,9 @@ if obj == 'cube':
     # rec.SetPosition(100, 0, 0)
     cu = cube()
     cu.GetProperty().BackfaceCullingOff()
+    # cu.GetProperty().FrontfaceCullingOn()
     scene.add(cu)
+    scene.add(actor.axes())
     scene.background((1, 1, 1))
     # window.show(scene)
     mapper = cu.GetMapper()
@@ -100,6 +102,7 @@ def timer_callback(obj, event):
     timer += 1.0
     # print(timer)
     showm.render()
+    # cu.SetPosition(timer*0.01, 0, 0)
     # scene.azimuth(10)
 
 
@@ -135,17 +138,6 @@ mapper.AddShaderReplacement(
     False
   )
 
-# mapper.AddShaderReplacement(
-#     vtk.vtkShader.Fragment,
-#     '//VTK::Light::Dec',
-#     True,
-#     '''
-#     //VTK::Light::Dec
-#     uniform float time;
-#     ''',
-#     False
-# )
-
 mapper.AddShaderReplacement(
       vtk.vtkShader.Fragment,
       "//VTK::Normal::Dec",
@@ -161,8 +153,6 @@ mapper.AddShaderReplacement(
     True,
     '''
     //VTK::Light::Impl
-    if (myVertexMC == vec4(0.5, 0.5, 0.5, 1.0))
-        {fragOutput0 = vec4(1., 1., 1., 1.); return;}
     vec3 rColor = vec3(.9, .0, .3);
     vec3 gColor = vec3(.0, .9, .3);
     vec3 bColor = vec3(.0, .3, .9);
@@ -170,35 +160,28 @@ mapper.AddShaderReplacement(
 
     float tm = .2; // speed
     float vcm = 5;
+    vec4 tmp = myVertexMC;
 
-    float a = sin(myVertexMC.y * vcm - time * tm) / 2.;
-    float b = cos(myVertexMC.y * vcm - time * tm) / 2.;
-    float c = sin(myVertexMC.y * vcm - time * tm + 3.14) / 2.;
-    float d = cos(myVertexMC.y * vcm - time * tm + 3.14) / 2.;
+    float a = sin(tmp.y * vcm - time * tm) / 2.;
+    float b = cos(tmp.y * vcm - time * tm) / 2.;
+    float c = sin(tmp.y * vcm - time * tm + 3.14) / 2.;
+    float d = cos(tmp.y * vcm - time * tm + 3.14) / 2.;
 
-    float div = 0.01; // default 0.01
+    float div = .01; // default 0.01
 
-    float e = div / abs(myVertexMC.x + a);
-    float f = div / abs(myVertexMC.x + b);
-    float g = div / abs(myVertexMC.x + c);
-    float h = div / abs(myVertexMC.x + d);
+    float e = div / abs(tmp.x + a);
+    float f = div / abs(tmp.x + b);
+    float g = div / abs(tmp.x + c);
+    float h = div / abs(tmp.x + d);
 
     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
     fragOutput0 = vec4(destColor, 1.);
-    //fragOutput0 = vec4(1 - myVertexMC.x, 1 - myVertexMC.y, 0, 1.);
-    //fragOutput0 = vec4(myVertexMC.x, 0, 0, 1.);
-    //vec2 p = vertexVCVSOutput.xy; //- vec2(1.5,0.5);
-    vec2 p = myVertexMC.xy;
-    //fragOutput0 = 0.5 * (vec4(0, 0.5, 0., 1.) + fragOutput0);
-    //fragOutput0 =  fragOutput0);
 
+    vec2 p = tmp.xy;
+
+    p = p - vec2(time * 0.005, 0.);
 
     if (length(p - vec2(0, 0)) < 0.2) {
-        fragOutput0 = vec4(1, 0., 0., .5);
-
-    }
-
-    if (length(p - vec2(1, 1)) < 0.2) {
         fragOutput0 = vec4(1, 0., 0., .5);
     }
 
