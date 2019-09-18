@@ -1010,49 +1010,63 @@ def test_grid_ui(interactive=False):
         event_counter.check_counts(expected)
 
 
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def test_frame_rate():
+    """Testing add a timer and exit window and app from inside timer."""
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
+    xyzr2 = np.array([[0, 200, 0, 30], [100, 200, 0, 50], [300, 200, 0, 100]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.45]])
+
+    scene = window.Scene()
+    scene.background((0., .2, .2))
+    scene.fxaa_off()
+
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3])
+
+    sphere = get_sphere('repulsion724')
+
+    sphere_actor2 = actor.sphere(centers=xyzr2[:, :3], colors=colors[:],
+                                 radii=xyzr2[:, 3], vertices=sphere.vertices,
+                                 faces=sphere.faces.astype('i8'))
+
+    # scene.add(sphere_actor)
+    # scene.add(sphere_actor2)
+
+    tb = ui.TextBlock2D(font_size=14)
+
+    panel = ui.Panel2D(size=(400, 400))
+    panel.add_element(tb, (0., 0.))
+
+    counter = itertools.count()
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=False)
+
+    showm.initialize()
+    scene.add(panel)
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        # tb.message = "Let's count to 10 and exit :" + str(cnt)
+        if cnt % 5 == 0:
+            # msg = "FPS " + str(np.round(scene.frame_rate, 0)) + ' ' + str(cnt)
+            msg = 'Fury the best project ever!'
+            tb.message = msg
+            showm.render()
+        if cnt > 100:
+            showm.exit()
+
+    # Run every 200 milliseconds
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.initialize()
+    showm.start()
+
+    # arr = window.snapshot(scene, offscreen=True)
+    # npt.assert_(np.sum(arr) > 0)
+
+
 if __name__ == "__main__":
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-        test_ui_button_panel(recording=False)
+    test_frame_rate()
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-        test_ui_textbox(recording=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-        test_ui_line_slider_2d(recording=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
-        test_ui_line_double_slider_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-        test_ui_ring_slider_2d(recording=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
-        test_ui_range_slider(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
-        test_ui_option(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
-        test_ui_checkbox(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
-        test_ui_radio_button(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
-        test_ui_listbox_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
-        test_ui_image_container_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
-        test_timer()
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
-        test_ui_file_menu_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
-        test_grid_ui(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_disk_2d":
-        test_ui_disk_2d()
