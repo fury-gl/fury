@@ -96,6 +96,21 @@ global timer
 
 timer = 0
 
+scene.fxaa_on()
+
+num_spheres = 100000
+
+xyz = 200 * np.random.rand(num_spheres, 3) - 100
+colors = np.random.rand(num_spheres, 4)
+colors[:, 3] = .2
+radii = np.random.rand(num_spheres) + 0.5
+
+sphere_actor = actor.sphere(centers=xyz,
+                            colors=colors,
+                            radii=radii)
+
+scene.add(sphere_actor)
+
 def timer_callback(obj, event):
 
     global timer
@@ -103,7 +118,9 @@ def timer_callback(obj, event):
     # print(timer)
     showm.render()
     # cu.SetPosition(timer*0.01, 0, 0)
-    # scene.azimuth(10)
+    scene.azimuth(1)
+    if timer % 5 == 0:
+        print(showm.scene.frame_rate)
 
 
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)

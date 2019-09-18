@@ -222,6 +222,18 @@ class Scene(vtk.vtkRenderer):
         """
         return self.GetActiveCamera().GetDirectionOfProjection()
 
+    @property
+    def frame_rate(self):
+        rtis = self.GetLastRenderTimeInSeconds()
+        fps = 1.0 / rtis
+        return fps
+
+    def fxaa_on(self):
+        self.SetUseFXAA(True)
+
+    def fxaa_off(self):
+        self.SetUseFXAA(False)
+
 
 class Renderer(Scene):
     """Your scene class.
