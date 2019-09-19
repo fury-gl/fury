@@ -1,4 +1,4 @@
-from docs.examples.viz_shader_canvas import cube
+from viz_shader_canvas import cube
 from fury import window
 
 
@@ -46,16 +46,6 @@ mapper.AddShaderReplacement(
     //VTK::Normal::Dec  // we still want the default
     varying vec4 myVertexMC;
     uniform float time;
-    
-    float width = 0.2;
-    
-    float rand(vec2 p) {
-        p = fract(p * vec2(234.51, 124.89));
-        p += dot(p, p + 54.23);
-        p = fract(p * vec2(121.80, 456.12));
-        p += dot(p, p + 25.12);
-        return fract(p.x);
-    }
     """,
     False  # // only do it once
 )
@@ -90,30 +80,28 @@ mapper.AddShaderReplacement(
     False,  # // after the standard replacements
     """
     //VTK::Light::Impl  // we still want the default calc
-    //fragOutput0 = vec4(myVertexMC.xyz, 1.0);
-    //fragOutput0 = vec4(normalVCVSOutput.xyz, 1.0);
-    
-    vec2 pos = 5. * vec2(sin(time * .2) + .1 * time, cos(time * .2) + .1 * time);
-    vec3 col = vec3(0.);  //.5 + .5 * cos(time + (fragCoord / iResolution.xy).xyx + vec3(0, 2, 4));
-        
-    for(float i=5.; i < 10.; i += 1.) {
-        //vec2 uv = pos + ((20. - 1.8 * i) * (fragCoord - .5 * iResolution.xy) / iResolution.y);
-        vec2 uv = pos + ((20. - 1.8 * i) * myVertexMC.xy);
-        vec2 gv = fract(uv) - .5;
-        vec2 id = floor(uv);
-        vec3 col2 = (.5 + .2 * sin(time + (i / 2.) + .3 * uv.xyx + vec3(0, 2, 4)) * sin(time + (i / 2.) + .3 * uv.xyx + 
-            vec3(0, 2, 4)) + .5 * cos(time + (i / 2.) + .3 * uv.xyx + vec3(0, 2, 4))) * (i + 1.) / 11.;
-            
-        gv.x *= (float(rand(id * i) > .5) - .5) * 2.;
-        
-        float mask1 = smoothstep(-.01, .01, width - abs(gv.x + gv.y - .5 * sign(gv.x + gv.y + .01)));
-        float mask2 = smoothstep(-.2, .2, width - abs(gv.x + gv.y - .5 * sign(gv.x + gv.y + .01)));
-        
-        // Output to screen
-        col = - .3 * mask2 + .5 * (col2.r * col2.r + col2.g * col2.g + col2.b * col2.b + col2 * col2) * col2 * mask1 + 
-            col * (1. - mask1);
-    }
-    fragOutput0 = vec4(col,1.0);
+    vec3 rColor = vec3(.9, .0, .3);
+    vec3 gColor = vec3(.0, .9, .3);
+    vec3 bColor = vec3(.0, .3, .9);
+    vec3 yColor = vec3(.9, .9, .3);
+
+    float yScale = .5;  // 1 / 2. Original
+    float xScale = 2.5;  // 5. Original
+    float shiftScale = .2;  // .2 Original
+
+    float a = yScale * sin(myVertexMC.y * xScale - time * shiftScale);
+    float b = yScale * cos(myVertexMC.y * xScale - time * shiftScale);    
+    float c = yScale * sin(myVertexMC.y * xScale - time * shiftScale + 3.14);
+    float d = yScale * cos(myVertexMC.y * xScale - time * shiftScale + 3.14);
+
+    float e = .01 / abs(myVertexMC.x + a);
+    float f = .01 / abs(myVertexMC.x + b);
+    float g = .01 / abs(myVertexMC.x + c);
+    float h = .01 / abs(myVertexMC.x + d);
+
+    vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
+
+    fragOutput0 = vec4(destColor, .75);
     """,
     False
 )

@@ -1,4 +1,3 @@
-from fury import window
 from fury.utils import get_actor_from_polydata, set_polydata_triangles, set_polydata_vertices
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
