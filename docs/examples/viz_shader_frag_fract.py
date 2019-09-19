@@ -60,6 +60,9 @@ mapper = cube_actor.GetMapper()
 # add the cube to a scene and show it
 scene = window.Scene()
 scene.add(cube_actor)
+
+scene.background((1, 1, 1))
+
 window.show(scene, size=(500, 500))
 
 # let's use a frag shader to change how the cube is rendered
@@ -99,7 +102,7 @@ mapper.AddShaderReplacement(
 
     // function to calculate if the fragment is inside a circle
     float circle(in vec2 _st, in float _radius){
-        vec2 l = _st-vec2(0.5);
+        vec2 l = _st - vec2(0.5);
         return 1. - smoothstep(_radius-(_radius*0.01),
                                _radius+(_radius*0.01),
                                dot(l,l)*4.0);
@@ -118,12 +121,12 @@ mapper.AddShaderReplacement(
     //VTK::Color::Impl
 
     // calculate values needed for circle rendering
-    vec2 st = gl_FragCoord.xy / windowSize; // normalized window coordinates
-    st *= 100; // 50 = number circles in a row
+    vec2 st = vertexVCVSOutput.xy; //gl_FragCoord.xy / windowSize; // normalized window coordinates
+    st *= 20; // 50 = number circles in a row
     st = fract(st);
 
     // if close to camera, circlify it
-    if (vertexVCVSOutput.z > -3) {
+    if (vertexVCVSOutput.z > -100) {
         diffuseColor *= vec3(circle(st, 0.25));
     }
     ''',
