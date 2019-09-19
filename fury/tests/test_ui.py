@@ -1011,62 +1011,70 @@ def test_grid_ui(interactive=False):
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
-def test_frame_rate():
-    """Testing add a timer and exit window and app from inside timer."""
-    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
-    xyzr2 = np.array([[0, 200, 0, 30], [100, 200, 0, 50], [300, 200, 0, 100]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.45]])
+def test_frame_rate_and_anti_aliasing():
+    """Testing frame rate with and anti-aliasing"""
+
+    length_ = 200
+    multi_samples = 32
+    max_peels = 8
+
+    st_x = np.arange(length_)
+    st_y = np.sin(np.arange(length_))
+    st_z = np.zeros(st_x.shape)
+    st = np.zeros((length_, 3))
+    st[:, 0] = st_x
+    st[:, 1] = st_y
+    st[:, 2] = st_z
+
+    all_st = []
+    all_st.append(st)
+    for i in range(1000):
+        all_st.append(st + i * np.array([0., .5, 0]))
+
+    # st_actor = actor.line(all_st, linewidth=1)
+    # TODO: textblock disappears when lod=True
+    st_actor = actor.streamtube(all_st, linewidth=0.1, lod=False)
 
     scene = window.Scene()
-    scene.background((0., .2, .2))
-    scene.fxaa_off()
+    scene.background((1, 1., 1))
+    scene.fxaa_on()
 
-    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3])
+    tb = ui.TextBlock2D(font_size=40, color=(1, 0.5, 0))
 
-    sphere = get_sphere('repulsion724')
-
-    sphere_actor2 = actor.sphere(centers=xyzr2[:, :3], colors=colors[:],
-                                 radii=xyzr2[:, 3], vertices=sphere.vertices,
-                                 faces=sphere.faces.astype('i8'))
-
-    # scene.add(sphere_actor)
-    # scene.add(sphere_actor2)
-
-    tb = ui.TextBlock2D(font_size=14)
-
-    panel = ui.Panel2D(size=(400, 400))
-    panel.add_element(tb, (0., 0.))
+    panel = ui.Panel2D(position=(400, 400), size=(400, 400))
+    panel.add_element(tb, (0.2, 0.5))
 
     counter = itertools.count()
     showm = window.ShowManager(scene,
                                size=(1980, 1080), reset_camera=False,
-                               order_transparent=False)
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
 
     showm.initialize()
     scene.add(panel)
+    scene.add(st_actor)
+    scene.reset_camera_tight()
+    scene.zoom(5)
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
         # tb.message = "Let's count to 10 and exit :" + str(cnt)
         if cnt % 5 == 0:
-            # msg = "FPS " + str(np.round(scene.frame_rate, 0)) + ' ' + str(cnt)
-            msg = 'Fury the best project ever!'
+            msg = "FPS " + str(np.round(scene.frame_rate, 0)) + ' ' + str(cnt)
             tb.message = msg
             showm.render()
-        if cnt > 100:
+        if cnt > 10:
             showm.exit()
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
-    showm.initialize()
     showm.start()
 
-    # arr = window.snapshot(scene, offscreen=True)
-    # npt.assert_(np.sum(arr) > 0)
-
+    arr = window.snapshot(scene, offscreen=True)
+    npt.assert_(np.sum(arr) > 0)
 
 if __name__ == "__main__":
 
-    test_frame_rate()
-
+    npt.run_module_suite()
