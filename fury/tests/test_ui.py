@@ -1037,7 +1037,11 @@ def test_frame_rate_and_anti_aliasing():
 
     scene = window.Scene()
     scene.background((1, 1., 1))
+
+    # quick game style antialiasing
     scene.fxaa_on()
+    scene.fxaa_off()
+    # the good staff is later with multi-sampling
 
     tb = ui.TextBlock2D(font_size=40, color=(1, 0.5, 0))
 
@@ -1077,4 +1081,5 @@ def test_frame_rate_and_anti_aliasing():
 
 if __name__ == "__main__":
 
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_frame_rate_and_anti_aliasing()
