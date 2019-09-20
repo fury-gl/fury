@@ -1,4 +1,4 @@
-'''
+"""
 This simple example demonstrates how to use shaders to modify the fragments in
 your scene. We will use the AddShaderReplacement() function to modify the
 fragment shader with VTK's shader template system.
@@ -12,15 +12,13 @@ https://github.com/fury-gl/fury/blob/master/docs/examples/viz_surfaces.py
 
 The code for the circle pattern is borrowed from The Book of Shaders.
 https://thebookofshaders.com/09/
-'''
+"""
 
 import numpy as np
-from vtk.util import numpy_support as ns
 
 from fury import utils, window
 from fury.utils import vtk
 
-# create a vtkPolyData and the geometry information
 my_polydata = vtk.vtkPolyData()
 
 my_vertices = np.array([[0.0,  0.0,  0.0],
@@ -83,6 +81,7 @@ def vtkShaderCallback(caller, event, calldata=None):
     if program is not None:
         program.SetUniform2f("windowSize", [window_size[0], window_size[1]])
 
+
 # now register the event listener
 mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, vtkShaderCallback)
 
@@ -121,7 +120,9 @@ mapper.AddShaderReplacement(
     //VTK::Color::Impl
 
     // calculate values needed for circle rendering
-    vec2 st = vertexVCVSOutput.xy; //gl_FragCoord.xy / windowSize; // normalized window coordinates
+    
+    // normalized window coordinates
+    vec2 st = vertexVCVSOutput.xy; //gl_FragCoord.xy / windowSize;
     st *= 20; // 50 = number circles in a row
     st = fract(st);
 

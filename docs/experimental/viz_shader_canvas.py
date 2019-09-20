@@ -1,4 +1,4 @@
-from fury.utils import get_actor_from_polydata, set_polydata_triangles, set_polydata_vertices
+from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors, numpy_to_vtk_points, set_polydata_triangles, set_polydata_vertices)
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
 
@@ -39,6 +39,36 @@ def cube():
     return get_actor_from_polydata(my_polydata)
 
 
+def disk():
+
+    np.random.seed(42)
+    n_points = 1
+    centers = np.random.rand(n_points, 3)
+    colors = 255 * np.random.rand(n_points, 3)
+
+    vtk_points = numpy_to_vtk_points(centers)
+
+    points_polydata = vtk.vtkPolyData()
+    points_polydata.SetPoints(vtk_points)
+
+    vertex_filter = vtk.vtkVertexGlyphFilter()
+    vertex_filter.SetInputData(points_polydata)
+    vertex_filter.Update()
+
+    polydata = vtk.vtkPolyData()
+    polydata.ShallowCopy(vertex_filter.GetOutput())
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polydata)
+
+    points_actor = vtk.vtkActor()
+    points_actor.SetMapper(mapper)
+    points_actor.GetProperty().SetPointSize(1000)
+    points_actor.GetProperty().SetRenderPointsAsSpheres(True)
+
+    return points_actor
+
+
 def rectangle(size=(1, 1)):
     X, Y = size
 
@@ -75,35 +105,110 @@ def rectangle(size=(1, 1)):
     return actor
 
 
+def rectangle2(centers, colors, use_vertices=False, size=(2, 2)):
+    """Visualize one or many spheres with different colors and radii
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    """
+    if np.array(colors).ndim == 1:
+        colors = np.tile(colors, (len(centers), 1))
+
+    pts = numpy_to_vtk_points(np.ascontiguousarray(centers))
+    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
+    cols.SetName('colors')
+
+    polydata_centers = vtk.vtkPolyData()
+
+    polydata_centers.SetPoints(pts)
+    polydata_centers.GetPointData().AddArray(cols)
+
+    print("NB pts: ", polydata_centers.GetNumberOfPoints())
+    print("NB arrays: ", polydata_centers.GetPointData().GetNumberOfArrays())
+
+    for i in range(polydata_centers.GetPointData().GetNumberOfArrays()):
+        print("Array {0}: {1}".format(
+            i, polydata_centers.GetPointData().GetArrayName(i)))
+
+    for i in range(polydata_centers.GetCellData().GetNumberOfArrays()):
+        print("Cell {0}: {1}".format(
+            i, polydata_centers.GetCellData().GetArrayName(i)))
+
+    print("Array pts: {}".format(
+        polydata_centers.GetPoints().GetData().GetName()))
+
+    glyph = vtk.vtkGlyph3D()
+    if use_vertices:
+        scale = 1
+        my_polydata = vtk.vtkPolyData()
+        my_vertices = np.array([[0.0, 0.0, 0.0],
+                                [0.0, 1.0, 0.0],
+                                [1.0, 1.0, 0.0],
+                                [1.0, 0.0, 0.0]])
+
+        my_vertices -= np.array([0.5, 0.5, 0])
+
+        my_vertices = scale * my_vertices
+
+        my_triangles = np.array([[0, 1, 2],
+                                 [2, 3, 0]], dtype='i8')
+
+        set_polydata_vertices(my_polydata, my_vertices)
+        set_polydata_triangles(my_polydata, my_triangles)
+
+        glyph.SetSourceData(my_polydata)
+    else:
+        src = vtk.vtkPlaneSource()
+        src.SetXResolution(size[0])
+        src.SetYResolution(size[1])
+        glyph.SetSourceConnection(src.GetOutputPort())
+
+    glyph.SetInputData(polydata_centers)
+    glyph.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(glyph.GetOutput())
+    mapper.SetScalarModeToUsePointFieldData()
+
+    mapper.SelectColorArray('colors')
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+
+    return actor
+
+
 def square(scale=1):
-    my_polydata = vtk.vtkPolyData()
+    polydata = vtk.vtkPolyData()
 
-    my_vertices = np.array([[0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0],
-                            [1.0, 1.0, 0.0],
-                            [1.0, 0.0, 0.0]])
+    vertices = np.array([[0.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [1.0, 0.0, 0.0]])
 
-    my_vertices -= np.array([0.5, 0.5, 0])
+    vertices -= np.array([0.5, 0.5, 0])
 
-    my_vertices = scale * my_vertices
+    vertices = scale * vertices
 
-    my_triangles = np.array([[0, 1, 2],
-                             [2, 3, 0]], dtype='i8')
+    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
 
-    set_polydata_vertices(my_polydata, my_vertices)
-    set_polydata_triangles(my_polydata, my_triangles)
+    set_polydata_vertices(polydata, vertices)
+    set_polydata_triangles(polydata, triangles)
 
-    return get_actor_from_polydata(my_polydata)
+    return get_actor_from_polydata(polydata)
 
 
 def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     points = vtk.vtkPoints()
     points.SetData(numpy_support.numpy_to_vtk(vertices))
-    triangle_poly_data = vtk.vtkPolyData()
-    triangle_poly_data.SetPoints(points)
+    polydata = vtk.vtkPolyData()
+    polydata.SetPoints(points)
 
     if colors is not None:
-        triangle_poly_data.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
+        polydata.GetPointData().SetScalars(numpy_support.numpy_to_vtk(colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
@@ -120,17 +225,18 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         triangles = np.ascontiguousarray(triangles, 'int64')
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
-    triangle_poly_data.SetPolys(cells)
+    cells.SetCells(triangles.shape[0],
+                   numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    polydata.SetPolys(cells)
 
     clean_poly_data = vtk.vtkCleanPolyData()
-    clean_poly_data.SetInputData(triangle_poly_data)
+    clean_poly_data.SetInputData(polydata)
 
     mapper = vtk.vtkPolyDataMapper()
     surface_actor = vtk.vtkActor()
 
     if smooth is None:
-        mapper.SetInputData(triangle_poly_data)
+        mapper.SetInputData(polydata)
         surface_actor.SetMapper(mapper)
 
     elif smooth == "loop":

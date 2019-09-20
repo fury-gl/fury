@@ -1,6 +1,6 @@
-from viz_shader_canvas import surface
 from fury import window
 from scipy.spatial import Delaunay
+from viz_shader_canvas import surface
 
 
 import numpy as np
@@ -128,25 +128,29 @@ float noise(vec4 P) {
     vec4 g0111 = vec4(gx11.z, gy11.z, gz11.z, gw11.z);
     vec4 g1111 = vec4(gx11.w, gy11.w, gz11.w, gw11.w);
     
-    vec4 norm00 = taylorInvSqrt(vec4(dot(g0000, g0000), dot(g0100, g0100), dot(g1000, g1000), dot(g1100, g1100)));
+    vec4 norm00 = taylorInvSqrt(vec4(dot(g0000, g0000), dot(g0100, g0100), 
+        dot(g1000, g1000), dot(g1100, g1100)));
     g0000 *= norm00.x;
     g0100 *= norm00.y;
     g1000 *= norm00.z;
     g1100 *= norm00.w;
     
-    vec4 norm01 = taylorInvSqrt(vec4(dot(g0001, g0001), dot(g0101, g0101), dot(g1001, g1001), dot(g1101, g1101)));
+    vec4 norm01 = taylorInvSqrt(vec4(dot(g0001, g0001), dot(g0101, g0101), 
+        dot(g1001, g1001), dot(g1101, g1101)));
     g0001 *= norm01.x;
     g0101 *= norm01.y;
     g1001 *= norm01.z;
     g1101 *= norm01.w;
     
-    vec4 norm10 = taylorInvSqrt(vec4(dot(g0010, g0010), dot(g0110, g0110), dot(g1010, g1010), dot(g1110, g1110)));
+    vec4 norm10 = taylorInvSqrt(vec4(dot(g0010, g0010), dot(g0110, g0110), 
+        dot(g1010, g1010), dot(g1110, g1110)));
     g0010 *= norm10.x;
     g0110 *= norm10.y;
     g1010 *= norm10.z;
     g1110 *= norm10.w;
     
-    vec4 norm11 = taylorInvSqrt(vec4(dot(g0011, g0011), dot(g0111, g0111), dot(g1011, g1011), dot(g1111, g1111)));
+    vec4 norm11 = taylorInvSqrt(vec4(dot(g0011, g0011), dot(g0111, g0111), 
+        dot(g1011, g1011), dot(g1111, g1111)));
     g0011 *= norm11.x;
     g0111 *= norm11.y;
     g1011 *= norm11.z;
@@ -170,8 +174,10 @@ float noise(vec4 P) {
     float n1111 = dot(g1111, Pf1);
     
     vec4 fade_xyzw = fade(Pf0);
-    vec4 n_0w = mix(vec4(n0000, n1000, n0100, n1100), vec4(n0001, n1001, n0101, n1101), fade_xyzw.w);
-    vec4 n_1w = mix(vec4(n0010, n1010, n0110, n1110), vec4(n0011, n1011, n0111, n1111), fade_xyzw.w);
+    vec4 n_0w = mix(vec4(n0000, n1000, n0100, n1100), 
+        vec4(n0001, n1001, n0101, n1101), fade_xyzw.w);
+    vec4 n_1w = mix(vec4(n0010, n1010, n0110, n1110), 
+        vec4(n0011, n1011, n0111, n1111), fade_xyzw.w);
     vec4 n_zw = mix(n_0w, n_1w, fade_xyzw.z);
     vec2 n_yzw = mix(n_zw.xy, n_zw.zw, fade_xyzw.y);
     float n_xyzw = mix(n_yzw.x, n_yzw.y, fade_xyzw.x);
@@ -255,7 +261,8 @@ mapper.AddShaderReplacement(
             }
         }
     }
-    fragOutput0.rgb = opacity * vec3(ambientColor + noisyColor * diffuse + specular);
+    fragOutput0.rgb = opacity * 
+        vec3(ambientColor + noisyColor * diffuse + specular);
     fragOutput0.a = opacity;
     """,
     False

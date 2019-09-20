@@ -1,18 +1,18 @@
-from viz_shader_canvas import cube
 from fury import window
+from viz_shader_canvas import cube
 
 
 import vtk
 
 
 scene = window.Scene()
-showm = window.ShowManager(scene, order_transparent=True, interactor_style='custom')
+showm = window.ShowManager(scene, order_transparent=True)
 
-shader_actor = cube()
-shader_actor.GetProperty().BackfaceCullingOff()
-scene.add(shader_actor)
+canvas_actor = cube()
+canvas_actor.GetProperty().BackfaceCullingOff()
+scene.add(canvas_actor)
 scene.background((1, 1, 1))
-mapper = shader_actor.GetMapper()
+mapper = canvas_actor.GetMapper()
 
 # Modify the vertex shader to pass the position of the vertex
 mapper.AddShaderReplacement(
@@ -90,7 +90,7 @@ mapper.AddShaderReplacement(
     float shiftScale = .2;  // .2 Original
 
     float a = yScale * sin(myVertexMC.y * xScale - time * shiftScale);
-    float b = yScale * cos(myVertexMC.y * xScale - time * shiftScale);    
+    float b = yScale * cos(myVertexMC.y * xScale - time * shiftScale);
     float c = yScale * sin(myVertexMC.y * xScale - time * shiftScale + 3.14);
     float d = yScale * cos(myVertexMC.y * xScale - time * shiftScale + 3.14);
 

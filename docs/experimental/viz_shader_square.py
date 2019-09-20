@@ -1,64 +1,10 @@
-import vtk
-from vtk.util import numpy_support
+from fury import actor, window
+from viz_shader_canvas import cube, square
+
+
 import numpy as np
-from fury import actor, window, ui
-from fury.utils import numpy_to_vtk_points, numpy_to_vtk_colors, set_polydata_colors
-from fury.utils import set_input, rotate, set_polydata_vertices
-from fury.utils import get_actor_from_polydata, set_polydata_triangles
+import vtk
 
-
-
-def square(scale=1):
-    my_polydata = vtk.vtkPolyData()
-
-    my_vertices = np.array([[0.0, 0.0, 0.0],
-                            [0.0, 1.0, 0.0],
-                            [1.0, 1.0, 0.0],
-                            [1.0, 0.0, 0.0]])
-
-    my_vertices -= np.array([0.5, 0.5, 0])
-
-    my_vertices = scale * my_vertices
-
-    my_triangles = np.array([[0, 1, 2],
-                             [2, 3, 0]], dtype='i8')
-
-    set_polydata_vertices(my_polydata, my_vertices)
-    set_polydata_triangles(my_polydata, my_triangles)
-
-    return get_actor_from_polydata(my_polydata)
-
-
-def cube():
-    my_polydata = vtk.vtkPolyData()
-
-    my_vertices = np.array([[0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0],
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 1.0],
-                            [1.0, 0.0, 0.0],
-                            [1.0, 0.0, 1.0],
-                            [1.0, 1.0, 0.0],
-                            [1.0, 1.0, 1.0]])
-
-    my_vertices -= 0.5
-
-    my_triangles = np.array([[0, 6, 4],
-                            [0, 2, 6],
-                            [0, 3, 2],
-                            [0, 1, 3],
-                            [2, 7, 6],
-                            [2, 3, 7],
-                            [4, 6, 7],
-                            [4, 7, 5],
-                            [0, 4, 5],
-                            [0, 5, 1],
-                            [1, 5, 7],
-                            [1, 7, 3]], dtype='i8')
-
-    set_polydata_vertices(my_polydata, my_vertices)
-    set_polydata_triangles(my_polydata, my_triangles)
-    return get_actor_from_polydata(my_polydata)
 
 scene = window.Scene()
 # scene.add(actor.axes())
@@ -71,30 +17,26 @@ obj = 'cube'
 
 if obj == 'square':
 
-    sq = square(3)
-    sq.GetProperty().BackfaceCullingOff()
-    scene.add(sq)
-    mapper = sq.GetMapper()
+    canvas_actor = square(3)
+    canvas_actor.GetProperty().BackfaceCullingOff()
+    scene.add(canvas_actor)
+    mapper = canvas_actor.GetMapper()
 
 if obj == 'cube':
 
     # rec.SetPosition(100, 0, 0)
-    cu = cube()
-    cu.GetProperty().BackfaceCullingOff()
+    canvas_actor = cube()
+    canvas_actor.GetProperty().BackfaceCullingOff()
     # cu.GetProperty().FrontfaceCullingOn()
-    scene.add(cu)
+    scene.add(canvas_actor)
     scene.add(actor.axes())
     scene.background((1, 1, 1))
     # window.show(scene)
-    mapper = cu.GetMapper()
-
-
-import itertools
-counter = itertools.count(start=1)
+    mapper = canvas_actor.GetMapper()
 
 global timer
-
 timer = 0
+
 
 def timer_callback(obj, event):
 
@@ -125,33 +67,41 @@ mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
     "//VTK::Normal::Dec",
     True,
-    "//VTK::Normal::Dec\n"
-    "out vec4 myVertexMC;\n",
+    """
+    //VTK::Normal::Dec
+    out vec4 myVertexMC;
+    """,
     False
-  )
+)
+
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
     "//VTK::Normal::Impl",
     True,
-    "//VTK::Normal::Impl\n"
-    "  myVertexMC = vertexMC;\n",
+    """
+    //VTK::Normal::Impl
+    myVertexMC = vertexMC;
+    """,
     False
-  )
+)
 
 mapper.AddShaderReplacement(
-      vtk.vtkShader.Fragment,
-      "//VTK::Normal::Dec",
-      True,
-      "//VTK::Normal::Dec\n"
-      "varying vec4 myVertexMC;\n"
-      "uniform float time;\n",
-      False
-  )
+    vtk.vtkShader.Fragment,
+    "//VTK::Normal::Dec",
+    True,
+    """
+    //VTK::Normal::Dec
+    varying vec4 myVertexMC;
+    uniform float time;
+    """,
+    False
+)
+
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Light::Impl',
     True,
-    '''
+    """
     //VTK::Light::Impl
     vec3 rColor = vec3(.9, .0, .3);
     vec3 gColor = vec3(.0, .9, .3);
@@ -184,8 +134,7 @@ mapper.AddShaderReplacement(
     if (length(p - vec2(0, 0)) < 0.2) {
         fragOutput0 = vec4(1, 0., 0., .5);
     }
-
-    ''',
+    """,
     False
 )
 
