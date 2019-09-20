@@ -47,7 +47,7 @@ mapper.AddShaderReplacement(
     varying vec4 myVertexMC;
     uniform float time;
     
-    float width = 0.2;
+    float width = .2;
     
     float rand(vec2 p) {
         p = fract(p * vec2(234.51, 124.89));
@@ -94,8 +94,10 @@ mapper.AddShaderReplacement(
     //fragOutput0 = vec4(myVertexMC.xyz, 1.0);
     //fragOutput0 = vec4(normalVCVSOutput.xyz, 1.0);
     
+    float tScale = .1; // Original .2
+    
     vec2 pos = 5. * vec2(
-        sin(time * .2) + .1 * time, cos(time * .2) + .1 * time);
+        sin(time * tScale) + .1 * time, cos(time * tScale) + .1 * time);
     vec3 col = vec3(0.); /* .5 + 
         .5 * cos(time + (fragCoord / iResolution.xy).xyx + vec3(0, 2, 4));*/
     
