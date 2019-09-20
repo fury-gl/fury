@@ -72,7 +72,8 @@ def vtk_shader_callback(caller, event, calldata=None):
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
+                   vtk_shader_callback)
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,  # // in the fragment shader

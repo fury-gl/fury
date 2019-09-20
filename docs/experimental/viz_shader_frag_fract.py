@@ -118,7 +118,7 @@ mapper.AddShaderReplacement(
     '''
     // include the default
     //VTK::Color::Impl
-
+    
     // calculate values needed for circle rendering
     
     // normalized window coordinates

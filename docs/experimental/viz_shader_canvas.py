@@ -1,4 +1,6 @@
-from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors, numpy_to_vtk_points, set_polydata_triangles, set_polydata_vertices)
+from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
+                        numpy_to_vtk_points, set_polydata_triangles,
+                        set_polydata_vertices)
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
 
@@ -67,6 +69,39 @@ def disk():
     points_actor.GetProperty().SetRenderPointsAsSpheres(True)
 
     return points_actor
+
+
+def glyph_dot(centers, colors, radius=100):
+    if np.array(colors).ndim == 1:
+        colors = np.tile(colors, (len(centers), 1))
+
+    vtk_pnt = numpy_to_vtk_points(centers)
+
+    pnt_polydata = vtk.vtkPolyData()
+    pnt_polydata.SetPoints(vtk_pnt)
+
+    vertex_filter = vtk.vtkVertexGlyphFilter()
+    vertex_filter.SetInputData(pnt_polydata)
+    vertex_filter.Update()
+
+    polydata = vtk.vtkPolyData()
+    polydata.ShallowCopy(vertex_filter.GetOutput())
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polydata)
+    mapper.SetScalarModeToUsePointFieldData()
+
+    pnt_actor = vtk.vtkActor()
+    pnt_actor.SetMapper(mapper)
+
+    pnt_actor.GetProperty().SetPointSize(radius)
+
+    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
+    cols.SetName('colors')
+    polydata.GetPointData().AddArray(cols)
+    mapper.SelectColorArray('colors')
+
+    return pnt_actor
 
 
 def rectangle(size=(1, 1)):

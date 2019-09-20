@@ -39,51 +39,14 @@ if obj == 'disk':
     scene.add(canvas_actor)
     mapper = canvas_actor.GetMapper()
 
-
-
-# mapper.AddShaderReplacement(
-#     vtk.vtkShader.Vertex,
-#     '//VTK::PositionVC::Dec',  # target the PositionVC block
-#     True,
-#     '''
-#     // include the default
-#     //VTK::PositionVC::Dec
-#     // now declare our attribute
-#     // in vec3 dummyAttribute;
-#     ''',
-#     False
-# )
-
-# mapper.AddShaderReplacement(
-#     vtk.vtkShader.Vertex,
-#     '//VTK::PositionVC::Impl',  # target the PositionVC block
-#     True,
-#     '''
-#     // replace the default
-#     // copy position in model coordinates
-#     vec4 myVertexMC = vertexMC;
-#     // modify coordinates with dummyAttribute
-#     // just for fun, 'swizzle' the parameters
-#     // subtract 0.5 so it stays centered
-#     myVertexMC.xyz = vertexMC.xyz; // + (dummyAttribute.yzx - 0.5);
-#     // this is used for lighting in the frag shader
-#     // need to calculate and include since we replaced the default
-#     vertexVCVSOutput = MCVCMatrix * myVertexMC;
-#     // transform from model to display coordinates
-#     gl_Position = MCDCMatrix * myVertexMC;
-#     ''',
-#     False
-# )
-
-
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
     '//VTK::Light::Dec',
     True,
-    '''
+    """
     //VTK::Light::Dec
     uniform float time;
-    ''',
+    """,
     False
 )
 
@@ -149,40 +112,6 @@ mapper.AddShaderReplacement(
     """,
     False
 )
-
-# mapper.AddShaderReplacement(
-#     vtk.vtkShader.Fragment,
-#     '//VTK::Light::Impl',
-#     True,
-#     '''
-#     //VTK::Light::Impl
-#     vec3 rColor = vec3(.9, .0, .3);
-#     vec3 gColor = vec3(.0, .9, .3);
-#     vec3 bColor = vec3(.0, .3, .9);
-#     vec3 yColor = vec3(.9, .9, .3);
-
-#     float tm = .2; // speed
-#     float vcm = 5;
-
-#     float a = sin(normalVCVSOutput.y * vcm - time * tm) / 2.;
-#     float b = cos(normalVCVSOutput.y * vcm - time * tm) / 2.;
-#     float c = sin(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
-#     float d = cos(normalVCVSOutput.y * vcm - time * tm + 3.14) / 2.;
-
-#     float div = 0.01; // default 0.01
-
-#     float e = div / abs(normalVCVSOutput.x + a);
-#     float f = div / abs(normalVCVSOutput.x + b);
-#     float g = div / abs(normalVCVSOutput.x + c);
-#     float h = div / abs(normalVCVSOutput.x + d);
-
-#     vec3 destColor = rColor * e + gColor * f + bColor * g + yColor * h;
-#     fragOutput0 = vec4(destColor, 1.);
-#     //fragOutput0 = vec4(normalVCVSOutput.x, 0, 0, 1.);
-#     //fragOutput0 = vec4(normalVCVSOutput.x, normalVCVSOutput.y, 0, 1.);
-#     ''',
-#     False
-# )
 
 showm.initialize()
 showm.add_timer_callback(True, 100, timer_callback)
