@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from scipy.ndimage.measurements import center_of_mass
 
 from fury import shaders
 from fury import actor, window
@@ -10,6 +11,7 @@ import itertools
 import numpy.testing as npt
 import pytest
 from fury.tmpdirs import InTemporaryDirectory
+from fury.testing import assert_greater, assert_greater_equal
 from tempfile import mkstemp
 
 # Allow import, but disable doctests if we don't have dipy
@@ -24,11 +26,11 @@ if have_dipy:
     from dipy.data import get_sphere
 
 
-def test_slicer():
+def test_slicer(verbose=False):
     scene = window.Scene()
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.eye(4)
-    slicer = actor.slicer(data, affine)
+    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
     slicer.display(None, None, 25)
     scene.add(slicer)
 
@@ -38,15 +40,13 @@ def test_slicer():
 
     # copy pixels in numpy array directly
     arr = window.snapshot(scene, 'test_slicer.png', offscreen=True)
-    import scipy
-    print(scipy.__version__)
-    print(scipy.__file__)
 
-    print(arr.sum())
-    print(np.sum(arr == 0))
-    print(np.sum(arr > 0))
-    print(arr.shape)
-    print(arr.dtype)
+    if verbose:
+        print(arr.sum())
+        print(np.sum(arr == 0))
+        print(np.sum(arr > 0))
+        print(arr.shape)
+        print(arr.dtype)
 
     report = window.analyze_snapshot(arr, find_objects=True)
 
@@ -66,6 +66,9 @@ def test_slicer():
         report = window.analyze_snapshot(fname, find_objects=True)
         npt.assert_equal(report.objects, 1)
 
+    # Test Errors
+    data_4d = (255 * np.random.rand(50, 50, 50, 50))
+    npt.assert_raises(ValueError, actor.slicer, data_4d)
     npt.assert_raises(ValueError, actor.slicer, np.ones(10))
 
     scene.clear()
@@ -126,6 +129,8 @@ def test_slicer():
     report = window.analyze_snapshot(arr, find_objects=True)
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(data.shape, slicer.shape)
+    slicer2 = slicer.copy()
+    npt.assert_equal(slicer2.shape, slicer.shape)
 
     scene.clear()
 
@@ -205,6 +210,9 @@ def test_contour_from_roi():
     scene.reset_camera()
     scene.reset_clipping_range()
     # window.show(scene)
+
+    # Test Errors
+    npt.assert_raises(ValueError, actor.contour_from_roi, np.ones(50))
 
     # Test binarization
     scene2 = window.Scene()
@@ -534,13 +542,16 @@ def test_odf_slicer(interactive=False):
     if interactive:
         window.show(scene)
 
+    npt.assert_raises(IOError, actor.odf_slicer, odfs, None, mask=None,
+                      sphere=sphere, scale=.25, colormap=None, norm=False,
+                      global_cm=True)
+
     # colormap=None and global_cm=False results in directionally encoded colors
     scene.clear()
     scene.add(odf_actor)
     scene.add(fa_actor)
     odfs[:, :, :] = 1
-    mask = np.ones(odfs.shape[:3])
-    odf_actor = actor.odf_slicer(odfs, None, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, None, mask=None,
                                  sphere=sphere, scale=.25,
                                  colormap=None,
                                  norm=False, global_cm=False)
@@ -609,6 +620,10 @@ def test_peak_slicer(interactive=False):
     report = window.analyze_scene(scene)
     ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
+
+    # 6d data
+    data_6d = (255 * np.random.rand(5, 5, 5, 5, 5, 5))
+    npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
@@ -812,6 +827,16 @@ def test_spheres(interactive=False):
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
 
+    # test with an unique color for all centers
+    scene.clear()
+    sphere_actor = actor.sphere(centers=xyzr[:, :3],
+                                colors=np.array([1, 0, 0]),
+                                radii=xyzr[:, 3])
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
+    npt.assert_equal(report.colors_found, [True])
+
 
 def test_cones(interactive=False):
 
@@ -864,6 +889,78 @@ def test_cones(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=[colors])
     npt.assert_equal(report.objects, 3)
+
+
+def test_text_3d():
+    msg = 'I \nlove\n FURY'
+
+    txt_actor = actor.text_3d(msg)
+    npt.assert_equal(txt_actor.get_message().lower(), msg.lower())
+    npt.assert_raises(ValueError, txt_actor.justification, 'middle')
+    npt.assert_raises(ValueError, txt_actor.vertical_justification, 'center')
+
+    scene = window.Scene()
+    scene.add(txt_actor)
+    txt_actor.vertical_justification('middle')
+    txt_actor.justification('right')
+    arr_right = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    scene.clear()
+    txt_actor.vertical_justification('middle')
+    txt_actor.justification('left')
+    scene.add(txt_actor)
+    arr_left = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    # X axis of right alignment should have a lower center of mass position
+    # than left
+    assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
+    scene.clear()
+    txt_actor.justification('center')
+    txt_actor.vertical_justification('top')
+    scene.add(txt_actor)
+    arr_top = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    scene.clear()
+    txt_actor.justification('center')
+    txt_actor.vertical_justification('bottom')
+    scene.add(txt_actor)
+    arr_bottom = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    assert_greater_equal(center_of_mass(arr_bottom)[0],
+                         center_of_mass(arr_top)[0])
+
+    scene.clear()
+    txt_actor.font_style(bold=True, italic=True, shadow=True)
+    scene.add(txt_actor)
+    arr = window.snapshot(scene, size=(1920, 1080), offscreen=True)
+    assert_greater_equal(arr.mean(), arr_bottom.mean())
+
+
+def test_container():
+    container = actor.Container()
+
+    axes = actor.axes()
+    container.add(axes)
+    npt.assert_equal(len(container), 1)
+    npt.assert_equal(container.GetBounds(), axes.GetBounds())
+    npt.assert_equal(container.GetCenter(), axes.GetCenter())
+    npt.assert_equal(container.GetLength(), axes.GetLength())
+
+    container.clear()
+    npt.assert_equal(len(container), 0)
+
+    container.add(axes)
+    container_shallow_copy = shallow_copy(container)
+    container_shallow_copy.add(actor.axes())
+
+    assert_greater(len(container_shallow_copy), len(container))
+    npt.assert_equal(container_shallow_copy.GetPosition(),
+                     container.GetPosition())
+    npt.assert_equal(container_shallow_copy.GetVisibility(),
+                     container.GetVisibility())
+
+    # Check is the shallow_copy do not modify original container
+    container_shallow_copy.SetVisibility(False)
+    npt.assert_equal(container.GetVisibility(), True)
+
+    container_shallow_copy.SetPosition((1, 1, 1))
+    npt.assert_equal(container.GetPosition(), (0, 0, 0))
 
 
 def test_grid(_interactive=False):

@@ -165,7 +165,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             self.SetDisplayExtent(x1, x2, y1, y2, z1, z2)
             self.Update()
-            bounds = self.GetBounds()
+            # bounds = self.GetBounds()
             # xmin, xmax, ymin, ymax, zmin, zmax = bounds
             # line = np.array([[xmin, ymin, zmin]])
             # self.outline_actor = actor.line()
@@ -383,10 +383,7 @@ def contour_from_roi(data, affine=None,
     vol = np.swapaxes(vol, 0, 2)
     vol = np.ascontiguousarray(vol)
 
-    if nb_components == 1:
-        vol = vol.ravel()
-    else:
-        vol = np.reshape(vol, [np.prod(vol.shape[:3]), vol.shape[3]])
+    vol = vol.ravel()
 
     uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
     im.GetPointData().SetScalars(uchar_array)
@@ -914,8 +911,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     mapper : vtkPolyDataMapper
         Spheres mapper
     """
-    if mask is None:
-        mask = np.ones(odfs.shape[:3])
+    mask = np.ones(odfs.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
 
@@ -1130,8 +1126,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         Ellipsoid mapper
 
     """
-    if mask is None:
-        mask = np.ones(evals.shape[:3])
+    mask = np.ones(evals.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
     if len(ijk) == 0:
@@ -1675,6 +1670,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
     """
 
     class TextActor3D(vtk.vtkTextActor3D):
+
         def message(self, text):
             self.set_message(text)
 
@@ -1919,7 +1915,7 @@ class Container(object):
 
     def ShallowCopy(self, other):
         self._position = other._position.copy()
-        self._anchor = other._anchor
+        self.anchor = other.anchor
         self.clear()
         self.add(*other._items, borrow=False)
         self.update()

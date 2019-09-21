@@ -21,7 +21,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
 # ----------------------------------------------------------------------------
 # Globals

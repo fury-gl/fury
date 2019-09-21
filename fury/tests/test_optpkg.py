@@ -21,6 +21,7 @@ def test_get_info():
 def test_is_tripwire():
     assert_false(is_tripwire(object()))
     assert_true(is_tripwire(TripWire('some message')))
+    assert_false(is_tripwire(ValueError('some message')))
 
 
 def test_tripwire():
