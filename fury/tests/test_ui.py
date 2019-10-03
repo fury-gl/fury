@@ -1093,9 +1093,7 @@ def test_frame_rate_and_anti_aliasing():
                           occlusion_ratio=0.0)
 
     npt.assert_(np.sum(arr) > 0)
-
     npt.assert_(np.median(frh.fpss) > 0)
-    print(frh.fpss)
 
     frh.fpss = []
     counter = itertools.count()
@@ -1118,9 +1116,6 @@ def test_frame_rate_and_anti_aliasing():
                            max_peels=max_peels,
                            occlusion_ratio=0.0)
     npt.assert_(np.sum(arr2) > 0)
-    print(arr.mean())
-    print(arr2.mean())
-    print(frh.fpss)
 
 
 if __name__ == "__main__":
