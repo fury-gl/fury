@@ -124,7 +124,7 @@ def test_deprecated():
         window.clear(scene)
         report = window.analyze_renderer(scene)
         npt.assert_equal(report.actors, 0)
-        npt.assert_equal(len(w), 6)
+        npt.assert_equal(len(w), 7)
         npt.assert_(issubclass(w[-1].category, PendingDeprecationWarning))
 
 
