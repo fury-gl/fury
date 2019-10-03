@@ -862,18 +862,21 @@ def test_cones_vertices_faces(interactive=False):
 
 def test_geometry_actor(interactive=False):
 
-    actor_list = [actor.cone, actor.arrow]
-    xyz = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
+
+    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
+                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
+                  [actor.box, {'directions': dirs, 'size': (1, 3, 2)}]]
 
     scene = window.Scene()
 
-    for act_func in actor_list:
-        colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+    for act_func, extra_args in actor_list:
+        colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
         heights = np.array([5, 7, 10])
 
-        geom_actor = act_func(centers=xyz, directions=dirs,
-                              heights=heights, colors=colors[:])
+        geom_actor = act_func(centers=xyz, heights=heights, colors=colors[:],
+                              **extra_args)
         scene.add(geom_actor)
 
         if interactive:
@@ -884,12 +887,10 @@ def test_geometry_actor(interactive=False):
 
         colors = np.array([1.0, 1.0, 1.0, 1.0])
         heights = 10
-        resolution = 8
 
         scene.clear()
-        geom_actor = act_func(centers=xyz[:, :3], directions=dirs,
-                              heights=10, colors=colors[:],
-                              resolution=resolution)
+        geom_actor = act_func(centers=xyz[:, :3], heights=10, colors=colors[:],
+                              **extra_args)
         scene.add(geom_actor)
 
         if interactive:
@@ -1071,4 +1072,5 @@ def test_grid(_interactive=False):
 
 
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_geometry_actor(True)
