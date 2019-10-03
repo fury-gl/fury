@@ -1012,7 +1012,7 @@ def test_grid_ui(interactive=False):
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_frame_rate_and_anti_aliasing():
-    """Testing frame rate with and anti-aliasing"""
+    """Testing frame rate with anti-aliasing"""
 
     length_ = 200
     multi_samples = 32
@@ -1041,6 +1041,7 @@ def test_frame_rate_and_anti_aliasing():
     # quick game style antialiasing
     scene.fxaa_on()
     scene.fxaa_off()
+
     # the good staff is later with multi-sampling
 
     tb = ui.TextBlock2D(font_size=40, color=(1, 0.5, 0))
@@ -1062,11 +1063,17 @@ def test_frame_rate_and_anti_aliasing():
     scene.reset_camera_tight()
     scene.zoom(5)
 
+    class FrameRateHolder(object):
+        fpss = []
+
+    frh = FrameRateHolder()
+
     def timer_callback(_obj, _event):
         cnt = next(counter)
-        # tb.message = "Let's count to 10 and exit :" + str(cnt)
-        if cnt % 5 == 0:
-            msg = "FPS " + str(np.round(scene.frame_rate, 0)) + ' ' + str(cnt)
+        if cnt % 1 == 0:
+            fps = np.round(scene.frame_rate, 0)
+            frh.fpss.append(fps)
+            msg = "FPS " + str(fps) + ' ' + str(cnt)
             tb.message = msg
             showm.render()
         if cnt > 10:
@@ -1076,10 +1083,48 @@ def test_frame_rate_and_anti_aliasing():
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    arr = window.snapshot(scene, offscreen=True)
+    window.record(scene, reset_camera=False, out_path='aa.png')
+
+    arr = window.snapshot(scene, size=(1980, 1080),
+                          offscreen=True,
+                          order_transparent=True,
+                          multi_samples=multi_samples,
+                          max_peels=max_peels,
+                          occlusion_ratio=0.0)
+
     npt.assert_(np.sum(arr) > 0)
+
+    npt.assert_(np.median(frh.fpss) > 0)
+    print(frh.fpss)
+
+    frh.fpss = []
+    counter = itertools.count()
+    multi_samples = 0
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
+
+    showm.initialize()
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr2 = window.snapshot(scene, size=(1980, 1080),
+                           offscreen=True,
+                           order_transparent=True,
+                           multi_samples=multi_samples,
+                           max_peels=max_peels,
+                           occlusion_ratio=0.0)
+    npt.assert_(np.sum(arr2) > 0)
+    print(arr.mean())
+    print(arr2.mean())
+    print(frh.fpss)
+
 
 if __name__ == "__main__":
 
     # npt.run_module_suite()
     test_frame_rate_and_anti_aliasing()
+

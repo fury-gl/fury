@@ -457,8 +457,8 @@ class ShowManager(object):
 
         if self.order_transparent:
 
-            antializing(self.scene, self.window,
-                        multi_samples, max_peels, occlusion_ratio)
+            antialiasing(self.scene, self.window,
+                         multi_samples, max_peels, occlusion_ratio)
 
         if self.interactor_style == 'image':
             self.style = vtk.vtkInteractorStyleImage()
@@ -683,10 +683,12 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
             'horizontal': Side-by-side.
 
     multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
     max_peels : int
-    occlusion_ratio : int
-        Default 0 (exact image)
-
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
 
     Examples
     ----------
@@ -843,18 +845,23 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
         ang = +az_ang
 
-def antializing(scene, win, multi_samples=8, max_peels=4,
+
+def antialiasing(scene, win, multi_samples=8, max_peels=4,
                 occlusion_ratio=0.0):
-    """ Enable anti-alizing and ordered transparency
+    """ Enable anti-aliasing and ordered transparency
 
     Parameters
     ----------
     scene : Scene
     win : Window
+        Provided by Showmanager.window attribute.
     multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
     max_peels : int
-    occlusion_ratio : int
-        Default 0 (exact image)
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
     """
     # Use a render window with alpha bits
     # as default is 0 (false))
@@ -909,9 +916,12 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
             'horizontal': Side-by-side.
 
     multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
     max_peels : int
-    occlusion_ratio : int
-        Default 0 (exact image)
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
 
     Returns
     -------
@@ -931,8 +941,8 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     render_window.SetSize(width, height)
 
     if order_transparent:
-        antializing(scene, render_window, multi_samples, max_peels,
-                    occlusion_ratio)
+        antialiasing(scene, render_window, multi_samples, max_peels,
+                     occlusion_ratio)
 
     render_window.Render()
 
