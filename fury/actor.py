@@ -1492,7 +1492,7 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
         src.SetShaftResolution(resolution)
         src.SetTipLength(tip_length)
         src.SetTipRadius(tip_radius)
-        src.ShaftRadius(shaft_radius)
+        src.SetShaftRadius(shaft_radius)
 
     actor = repeat_sources(centers=centers, directions=directions,
                            colors=colors, active_scalars=heights, source=src,
