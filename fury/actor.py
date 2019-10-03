@@ -1439,6 +1439,59 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     return actor
 
 
+def box(centers, directions, colors, size=(1, 2, 3), heights=1,
+        vertices=None, faces=None):
+    """Visualize one or many Box with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Box positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the box.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    size : tuple (3,)
+        Box lengths on each direction (x, y, z), default(1, 2, 3)
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> sphere_actor = actor.box(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(sphere_actor)
+    >>> # window.show(scene)
+
+    """
+    src = vtk.vtkCubeSource() if faces is None else None
+
+    if src is not None:
+        src.SetXLength(size[0])
+        src.SetYLength(size[1])
+        src.SetZLength(size[2])
+
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
+    return actor
+
+
 def arrow(centers, directions, colors, heights=1., resolution=10,
           tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
           vertices=None, faces=None):
