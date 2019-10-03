@@ -868,7 +868,8 @@ def test_geometry_actor(interactive=False):
     actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
                   [actor.arrow, {'directions': dirs, 'resolution': 9}],
                   [actor.box, {'directions': dirs, 'size': (1, 3, 2)}],
-                  [actor.cube, {'directions': dirs}]]
+                  [actor.cube, {'directions': dirs}],
+                  [actor.cylinder, {'directions': dirs}]]
 
     scene = window.Scene()
 
@@ -1073,5 +1074,4 @@ def test_grid(_interactive=False):
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_geometry_actor(True)
+    npt.run_module_suite()

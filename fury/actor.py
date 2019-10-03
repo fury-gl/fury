@@ -1439,6 +1439,63 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     return actor
 
 
+def cylinder(centers, directions, colors, radius=0.05, heights=1,
+             capped=False, resolution=6, vertices=None, faces=None):
+    """Visualize one or many cylinder with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Cylinder positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cylinder.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    radius : float
+        cylinder radius, default: 1
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    capped : bool
+        Turn on/off whether to cap cylinder with polygons. Default (False)
+    resolution: int
+        Number of facets used to define cylinder.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> actor = actor.cylinder(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    src = vtk.vtkCylinderSource() if faces is None else None
+
+    if src is not None:
+        src.SetCapping(capped)
+        src.SetResolution(resolution)
+        src.SetRadius(radius)
+
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
+    return actor
+
+
 def box(centers, directions, colors, size=(1, 2, 3), heights=1,
         vertices=None, faces=None):
     """Visualize one or many Box with different features.
