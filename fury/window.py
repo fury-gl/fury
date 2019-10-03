@@ -398,9 +398,12 @@ class ShowManager(object):
                 'horizontal': Side-by-side.
 
         multi_samples : int
+            Number of samples for anti-aliazing (Default 8).
+            For no anti-aliasing use 0.
         max_peels : int
-        occlusion_ratio : int
-        Default 0 (exact image)
+            Maximum number of peels for depth peeling (Default 4).
+        occlusion_ratio : float
+            Occlusion ration for depth peeling (Default 0 - exact image).
 
         Attributes
         ----------

@@ -1012,7 +1012,7 @@ def test_grid_ui(interactive=False):
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_frame_rate_and_anti_aliasing():
-    """Testing frame rate with anti-aliasing"""
+    """Testing frame rate with/out anti-aliasing"""
 
     length_ = 200
     multi_samples = 32
