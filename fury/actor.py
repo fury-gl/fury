@@ -1472,8 +1472,8 @@ def box(centers, directions, colors, size=(1, 2, 3), heights=1,
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
     >>> heights = np.random.rand(5)
-    >>> sphere_actor = actor.box(centers, dirs, (1, 1, 1), heights=heights)
-    >>> scene.add(sphere_actor)
+    >>> box_actor = actor.box(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(box_actor)
     >>> # window.show(scene)
 
     """
@@ -1490,6 +1490,46 @@ def box(centers, directions, colors, size=(1, 2, 3), heights=1,
                            vertices=vertices, faces=faces)
 
     return actor
+
+
+def cube(centers, directions, colors, heights=1,
+         vertices=None, faces=None):
+    """Visualize one or many cube with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Cube positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cube.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> cube_actor = actor.cube(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(cubeactor)
+    >>> # window.show(scene)
+
+    """
+    return box(centers=centers, directions=directions, colors=colors,
+               size=(1, 1, 1), heights=1, vertices=None, faces=None)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,
