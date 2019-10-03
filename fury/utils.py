@@ -486,6 +486,72 @@ def get_actor_from_polydata(polydata):
     return get_actor_from_polymapper(poly_mapper)
 
 
+def repeat_sources(centers, colors, active_scalars=1., directions=None,
+                   source=None, vertices=None, faces=None):
+    """Transform a vtksource to glyph.
+
+    """
+    if source is None and faces is None:
+        raise IOError("A source or faces should be defined")
+
+    if np.array(colors).ndim == 1:
+        colors = np.tile(colors, (len(centers), 1))
+
+    pts = numpy_to_vtk_points(np.ascontiguousarray(centers))
+    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
+    cols.SetName('colors')
+    if isinstance(active_scalars, (float, int)):
+        active_scalars = np.tile(active_scalars, (len(centers), 1))
+    if isinstance(active_scalars, np.ndarray):
+        ascalars = numpy_support.numpy_to_vtk(np.asarray(active_scalars),
+                                              deep=True,
+                                              array_type=vtk.VTK_DOUBLE)
+        ascalars.SetName('active_scalars')
+
+    if directions is not None:
+        directions_fa = numpy_support.numpy_to_vtk(np.asarray(directions),
+                                                   deep=True,
+                                                   array_type=vtk.VTK_DOUBLE)
+        directions_fa.SetName('directions')
+
+    polydata_centers = vtk.vtkPolyData()
+    polydata_geom = vtk.vtkPolyData()
+
+    if faces is not None:
+        set_polydata_vertices(polydata_geom, vertices.astype(np.int8))
+        set_polydata_triangles(polydata_geom, faces)
+
+    polydata_centers.SetPoints(pts)
+    polydata_centers.GetPointData().AddArray(cols)
+    if directions is not None:
+        polydata_centers.GetPointData().AddArray(directions_fa)
+        polydata_centers.GetPointData().SetActiveVectors('directions')
+    if isinstance(active_scalars, np.ndarray):
+        polydata_centers.GetPointData().AddArray(ascalars)
+        polydata_centers.GetPointData().SetActiveScalars('active_scalars')
+
+    glyph = vtk.vtkGlyph3D()
+    if faces is None:
+        glyph.SetSourceConnection(source.GetOutputPort())
+    else:
+        glyph.SetSourceData(polydata_geom)
+
+    glyph.SetInputData(polydata_centers)
+    glyph.SetOrient(True)
+    glyph.SetScaleModeToScaleByScalar()
+    glyph.SetVectorModeToUseVector()
+    glyph.Update()
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(glyph.GetOutput())
+    mapper.SetScalarModeToUsePointFieldData()
+    mapper.SelectColorArray('colors')
+
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    return actor
+
+
 def apply_affine(aff, pts):
     """Apply affine matrix `aff` to points `pts`.
 
