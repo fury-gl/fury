@@ -618,7 +618,7 @@ def test_peak_slicer(interactive=False):
         window.show(scene)
 
     report = window.analyze_scene(scene)
-    ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
+    ex = ['vtkLODActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
     # 6d data

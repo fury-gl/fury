@@ -65,7 +65,7 @@ def test_scene():
     ren2.add(axes)
 
     report = window.analyze_scene(ren2)
-    npt.assert_equal(report.actors, 3)
+    npt.assert_equal(report.actors, 1)
 
     ren2.rm(axes)
     report = window.analyze_scene(ren2)
