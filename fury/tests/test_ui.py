@@ -11,7 +11,7 @@ import pytest
 from fury import window, actor, ui
 from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
 from fury.decorators import skip_win
-from fury.testing import assert_arrays_equal
+from fury.testing import assert_arrays_equal, assert_greater
 from fury.utils import shallow_copy
 
 import itertools
@@ -1083,8 +1083,6 @@ def test_frame_rate_and_anti_aliasing():
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    window.record(scene, reset_camera=False, out_path='aa.png')
-
     arr = window.snapshot(scene, size=(1980, 1080),
                           offscreen=True,
                           order_transparent=True,
@@ -1092,8 +1090,8 @@ def test_frame_rate_and_anti_aliasing():
                           max_peels=max_peels,
                           occlusion_ratio=0.0)
 
-    npt.assert_(np.sum(arr) > 0)
-    npt.assert_(np.median(frh.fpss) > 0)
+    assert_greater(np.sum(arr), 0)
+    assert_greater(np.median(frh.fpss), 0)
 
     frh.fpss = []
     counter = itertools.count()
@@ -1115,7 +1113,8 @@ def test_frame_rate_and_anti_aliasing():
                            multi_samples=multi_samples,
                            max_peels=max_peels,
                            occlusion_ratio=0.0)
-    npt.assert_(np.sum(arr2) > 0)
+    assert_greater(np.sum(arr2), 0)
+    assert_greater(np.median(frh.fpss), 0)
 
 
 if __name__ == "__main__":
