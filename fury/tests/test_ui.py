@@ -10,8 +10,8 @@ import pytest
 
 from fury import window, actor, ui
 from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
-from fury.decorators import skip_win
-from fury.testing import assert_arrays_equal
+from fury.decorators import skip_win, skip_osx
+from fury.testing import assert_arrays_equal, assert_greater
 from fury.utils import shallow_copy
 
 import itertools
@@ -1010,49 +1010,117 @@ def test_grid_ui(interactive=False):
         event_counter.check_counts(expected)
 
 
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def test_frame_rate_and_anti_aliasing():
+    """Testing frame rate with/out anti-aliasing"""
+
+    length_ = 200
+    multi_samples = 32
+    max_peels = 8
+
+    st_x = np.arange(length_)
+    st_y = np.sin(np.arange(length_))
+    st_z = np.zeros(st_x.shape)
+    st = np.zeros((length_, 3))
+    st[:, 0] = st_x
+    st[:, 1] = st_y
+    st[:, 2] = st_z
+
+    all_st = []
+    all_st.append(st)
+    for i in range(1000):
+        all_st.append(st + i * np.array([0., .5, 0]))
+
+    # st_actor = actor.line(all_st, linewidth=1)
+    # TODO: textblock disappears when lod=True
+    st_actor = actor.streamtube(all_st, linewidth=0.1, lod=False)
+
+    scene = window.Scene()
+    scene.background((1, 1., 1))
+
+    # quick game style antialiasing
+    scene.fxaa_on()
+    scene.fxaa_off()
+
+    # the good staff is later with multi-sampling
+
+    tb = ui.TextBlock2D(font_size=40, color=(1, 0.5, 0))
+
+    panel = ui.Panel2D(position=(400, 400), size=(400, 400))
+    panel.add_element(tb, (0.2, 0.5))
+
+    counter = itertools.count()
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
+
+    showm.initialize()
+    scene.add(panel)
+    scene.add(st_actor)
+    scene.reset_camera_tight()
+    scene.zoom(5)
+
+    class FrameRateHolder(object):
+        fpss = []
+
+    frh = FrameRateHolder()
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        if cnt % 1 == 0:
+            fps = np.round(scene.frame_rate, 0)
+            frh.fpss.append(fps)
+            msg = "FPS " + str(fps) + ' ' + str(cnt)
+            tb.message = msg
+            showm.render()
+        if cnt > 10:
+            showm.exit()
+
+    # Run every 200 milliseconds
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr = window.snapshot(scene, size=(1980, 1080),
+                          offscreen=True,
+                          order_transparent=True,
+                          multi_samples=multi_samples,
+                          max_peels=max_peels,
+                          occlusion_ratio=0.0)
+    assert_greater(np.sum(arr), 0)
+    # TODO: check why in osx we have issues in Azure
+    if not skip_osx:
+        assert_greater(np.median(frh.fpss), 0)
+
+    frh.fpss = []
+    counter = itertools.count()
+    multi_samples = 0
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
+
+    showm.initialize()
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr2 = window.snapshot(scene, size=(1980, 1080),
+                           offscreen=True,
+                           order_transparent=True,
+                           multi_samples=multi_samples,
+                           max_peels=max_peels,
+                           occlusion_ratio=0.0)
+    assert_greater(np.sum(arr2), 0)
+    if not skip_osx:
+        assert_greater(np.median(frh.fpss), 0)
+
+
 if __name__ == "__main__":
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_button_panel":
-        test_ui_button_panel(recording=False)
+    npt.run_module_suite()
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_textbox":
-        test_ui_textbox(recording=False)
 
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_slider_2d":
-        test_ui_line_slider_2d(recording=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_line_double_slider_2d":
-        test_ui_line_double_slider_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_ring_slider_2d":
-        test_ui_ring_slider_2d(recording=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_range_slider":
-        test_ui_range_slider(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_option":
-        test_ui_option(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_checkbox":
-        test_ui_checkbox(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_radio_button":
-        test_ui_radio_button(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_listbox_2d":
-        test_ui_listbox_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_image_container_2d":
-        test_ui_image_container_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_timer":
-        test_timer()
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_file_menu_2d":
-        test_ui_file_menu_2d(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_grid_ui":
-        test_grid_ui(interactive=False)
-
-    if len(sys.argv) <= 1 or sys.argv[1] == "test_ui_disk_2d":
-        test_ui_disk_2d()
