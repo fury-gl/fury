@@ -1060,5 +1060,35 @@ def test_grid(_interactive=False):
     npt.assert_equal(report.objects > 6, True)
 
 
+def _square(scale=1):
+    polydata = vtk.vtkPolyData()
+
+    vertices = np.array([[0.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [1.0, 0.0, 0.0]])
+
+    vertices -= np.array([0.5, 0.5, 0])
+
+    vertices = scale * vertices
+
+    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
+
+    set_polydata_vertices(polydata, vertices)
+    set_polydata_triangles(polydata, triangles)
+
+    return get_actor_from_polydata(polydata)
+
+
+
+def test_texture_mapping():
+
+    from fury.utils import rgb_to_vtk
+
+    vertices = np.array([])
+
+
+
+
 if __name__ == "__main__":
     npt.run_module_suite()

@@ -712,3 +712,4 @@ def rgb_to_vtk(data):
     grid.GetPointData().AddArray(vtkarr)
     grid.GetPointData().SetActiveScalars('Image')
     return grid
+
