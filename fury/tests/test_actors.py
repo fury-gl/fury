@@ -1061,6 +1061,7 @@ def test_grid(_interactive=False):
 
 
 def _square(scale=1):
+    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
     polydata = vtk.vtkPolyData()
 
     vertices = np.array([[0.0, 0.0, 0.0],
@@ -1077,18 +1078,51 @@ def _square(scale=1):
     set_polydata_vertices(polydata, vertices)
     set_polydata_triangles(polydata, triangles)
 
-    return get_actor_from_polydata(polydata)
+    #return get_actor_from_polydata(polydata)
+    return polydata
 
 
 
 def test_texture_mapping():
 
-    from fury.utils import rgb_to_vtk
+    from fury.utils import rgb_to_vtk, vtk
 
-    vertices = np.array([])
+    arr = 255*np.random.rand(512, 512, 3)
+    arr[:512//2] = np.array([1., 0, 0])
+    grid = rgb_to_vtk(arr)
 
+    my_polydata = _square()
+
+    # Create texture object
+    texture = vtk.vtkTexture()
+    texture.SetInputDataObject(grid)
+
+    # Map texture coordinates
+    #map_to_sphere = vtk.vtkTextureMapToSphere()
+    #map_to_sphere = vtk.vtkTextureMapToCylinder()
+    map_to_sphere = vtk.vtkTextureMapToPlane()
+    """
+    map_to_sphere.SetInputConnection(sphere.GetOutputPort())
+    """
+    map_to_sphere.SetInputData(my_polydata)
+    # map_to_sphere.PreventSeamOn()
+
+    # Create mapper and set the mapped texture as input
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(map_to_sphere.GetOutputPort())
+
+    # Create actor and set the mapper and the texture
+    act = vtk.vtkActor()
+    act.SetMapper(mapper)
+    act.SetTexture(texture)
+
+    scene = window.Scene()
+    scene.add(act)
+
+    window.show(scene)
 
 
 
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_texture_mapping()
