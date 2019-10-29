@@ -1,5 +1,5 @@
 
-test 
+test
 
 .. toctree::
    :maxdepth: 2
@@ -14,4 +14,4 @@ test
    contributing_link
    release-history
    community
-   
+

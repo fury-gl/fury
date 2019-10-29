@@ -67,6 +67,7 @@ docs/examples/*.gif
 docs/tutorials/*.png
 docs/tutorials/*.vtk
 docs/tutorials/*.gif
+docs/temp/
 
 # pytest
 .pytest_cache/
@@ -97,3 +98,4 @@ target/
 *.tck
 *.nii
 *.nii.gz
+*.npy

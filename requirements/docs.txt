@@ -4,8 +4,6 @@ ipython
 matplotlib
 numpydoc
 sphinx-copybutton
-# To uncomment when sphinx-gallery version > 0.2.0
-# sphinx-gallery
-https://github.com/sphinx-gallery/sphinx-gallery/archive/master.zip
+sphinx-gallery >=0.3.1
 pillow
 sphinx_rtd_theme

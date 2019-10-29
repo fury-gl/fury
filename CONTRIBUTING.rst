@@ -119,7 +119,7 @@ Checklist before Releasing
 * Review and update the release notes.  Review and update the :file:`Changelog`
   file.  Get a partial list of contributors with something like::
 
-      git shortlog -ns v0.1.0..
+      git shortlog -nse v0.1.0..
 
   where ``v0.1.0`` was the last release tag name.
 

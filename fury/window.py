@@ -245,21 +245,22 @@ class Renderer(Scene):
     available in ``vtkRenderer`` if necessary.
 
     .. deprecated:: 0.2.0
-          `Renderer()` will be removed in Fury 0.3.0, it is replaced by the
+          `Renderer()` will be removed in Fury v0.6.0, it is replaced by the
           class `Scene()`
     """
 
     def __init__(self, _parent=None):
         """Init old class with a warning."""
         warn("Class 'fury.window.Renderer' is deprecated, instead"
-             " use class 'fury.window.Scene'.", PendingDeprecationWarning)
+             " use class 'fury.window.Scene'. This class will be"
+             " removed in FURY v0.6.0", PendingDeprecationWarning)
 
 
 def renderer(background=None):
     """Create a Scene.
 
-    .. deprecated:: 0.2.0
-          `renderer` will be removed in Fury 0.3.0, it is replaced by the
+    .. deprecated:: 0.6.0
+          `renderer` will be removed in Fury 0.6.0, it is replaced by the
           class `Scene()`
 
     Parameters
@@ -284,7 +285,8 @@ def renderer(background=None):
 
     """
     deprecation_msg = ("Method 'fury.window.renderer' is deprecated, instead"
-                       " use class 'fury.window.Scene'.")
+                       " use class 'fury.window.Scene'. It will be"
+                       " removed in FURY v0.6.0")
     warn(PendingDeprecationWarning(deprecation_msg))
 
     scene = Scene()
@@ -298,7 +300,7 @@ def ren(background=None):
     """Create a Scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene()`
     """
     return renderer(background=background)
@@ -308,11 +310,12 @@ def add(scene, a):
     """Add a specific actor to the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().add`
     """
     warn("Class 'fury.window.add' is deprecated, instead"
-         " use class 'fury.window.Scene.add'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.add'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.add(a)
 
 
@@ -320,11 +323,12 @@ def rm(scene, a):
     """Remove a specific actor from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().rm`
     """
     warn("Class 'fury.window.rm' is deprecated, instead"
-         " use class 'fury.window.Scene.rm'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.rm'.It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.rm(a)
 
 
@@ -332,11 +336,12 @@ def clear(scene):
     """Remove all actors from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().clear`
     """
     warn("Class 'fury.window.clear' is deprecated, instead"
-         " use class 'fury.window.Scene.clear'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.clear'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.clear()
 
 
@@ -344,11 +349,12 @@ def rm_all(scene):
     """Remove all actors from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().rm_all`
     """
     warn("Class 'fury.window.rm_all' is deprecated, instead"
-         " use class 'fury.window.Scene.rm_all'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.rm_all'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.rm_all()
 
 
