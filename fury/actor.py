@@ -1586,7 +1586,7 @@ def cube(centers, directions, colors, heights=1,
 
     """
     return box(centers=centers, directions=directions, colors=colors,
-               size=(1, 1, 1), heights=1, vertices=None, faces=None)
+               size=(1, 1, 1), heights=heights, vertices=None, faces=None)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,
