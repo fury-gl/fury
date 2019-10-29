@@ -18,6 +18,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 import sys
 from datetime import datetime
 # Add current path
@@ -212,7 +213,7 @@ sphinx_gallery_conf = {
      'image_scrapers': (sc),
      'backreferences_dir': 'api',
      'reference_url': {'fury': None, },
-     'filename_pattern': '/'
+     'filename_pattern': re.escape(os.sep)
 }
 
 # -- Options for Texinfo output -------------------------------------------
