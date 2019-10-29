@@ -1,8 +1,18 @@
 .. _releasev0.3.0:
 
 =========================================
- Release notes for Fury version 0.3.0
+ Release notes for v0.3.0 (2019-08-02)
 =========================================
+
+Quick Overview
+--------------
+* Add cone actor and update odf actor
+* Add Appveyor CI and update MacOS CI
+* Update Documentation, examples and tutorials
+* Increase tests coverage and code quality
+
+Details
+-------
 
 GitHub stats for 2019/03/08 - 2019/08/02 (tag: v0.2.0)
 
