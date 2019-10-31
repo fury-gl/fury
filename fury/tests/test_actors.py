@@ -1,18 +1,17 @@
 import os
+import itertools
+from tempfile import mkstemp, TemporaryDirectory as InTemporaryDirectory
+
+import pytest
 import numpy as np
+import numpy.testing as npt
 from scipy.ndimage.measurements import center_of_mass
 
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.utils import shallow_copy
-import itertools
-
-import numpy.testing as npt
-import pytest
-from fury.tmpdirs import InTemporaryDirectory
 from fury.testing import assert_greater, assert_greater_equal
-from tempfile import mkstemp
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package

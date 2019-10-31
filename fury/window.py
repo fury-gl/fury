@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function, absolute_import
 
 import gzip
 from warnings import warn
@@ -9,7 +8,7 @@ from scipy import ndimage
 import vtk
 from vtk.util import numpy_support, colors
 
-from fury.tmpdirs import InTemporaryDirectory
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle
