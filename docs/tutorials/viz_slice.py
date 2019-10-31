@@ -8,8 +8,6 @@ Here we present an example for visualizing slices from 3D images.
 
 """
 
-from __future__ import division
-
 import os
 import nibabel as nib
 from dipy.data import fetch_bundles_2_subjects

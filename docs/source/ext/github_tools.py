@@ -7,8 +7,6 @@ Taken from ipython
 # ----------------------------------------------------------------------------
 # Imports
 # ----------------------------------------------------------------------------
-
-from __future__ import print_function
 from distutils.version import LooseVersion
 
 import json
