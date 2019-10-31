@@ -1,5 +1,3 @@
-from __future__ import division, print_function, absolute_import
-
 import numpy as np
 import vtk
 from vtk.util import numpy_support
@@ -10,8 +8,7 @@ from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         numpy_to_vtk_matrix, shallow_copy,
-                        set_polydata_vertices, set_polydata_triangles,
-                        repeat_sources)
+                        set_polydata_vertices, repeat_sources)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -767,7 +764,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     colors = np.array([colorx + (opacity,),
                        colory + (opacity,),
                        colorz + (opacity,)])
-    heights = np.array([1, 1, 1])
+    heights = np.array(scale)
 
     return arrow(centers, dirs, colors, heights)
 
@@ -1586,7 +1583,7 @@ def cube(centers, directions, colors, heights=1,
 
     """
     return box(centers=centers, directions=directions, colors=colors,
-               size=(1, 1, 1), heights=heights, vertices=None, faces=None)
+               size=(1, 1, 1), heights=heights, vertices=vertices, faces=faces)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,

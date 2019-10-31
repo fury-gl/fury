@@ -656,7 +656,7 @@ class ShowManager(object):
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
          reset_camera=True, order_transparent=False, stereo='off',
          multi_samples=8, max_peels=4, occlusion_ratio=0.0):
-    """Show window with current scene.
+    r"""Show window with current scene.
 
     Parameters
     ------------
@@ -717,9 +717,11 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
     fury.window.snapshot
 
     """
-
     show_manager = ShowManager(scene, title, size, png_magnify, reset_camera,
-                               order_transparent, stereo=stereo)
+                               order_transparent, stereo=stereo,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=occlusion_ratio)
     show_manager.initialize()
     show_manager.render()
     show_manager.start()
@@ -855,7 +857,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
-                occlusion_ratio=0.0):
+                 occlusion_ratio=0.0):
     """ Enable anti-aliasing and ordered transparency
 
     Parameters
