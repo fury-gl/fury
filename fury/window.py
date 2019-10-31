@@ -680,9 +680,9 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
         their addition to the Scene().
     stereo : string
         Set the stereo type. Default is 'off'. Other types include: \n
-            'opengl': OpenGL frame-sequential stereo. Referred to as \
+            'opengl': OpenGL frame-sequential stereo. Referred to as
                       'CrystalEyes' by VTK. \n
-            'anaglyph': For use with red/blue glasses. See VTK docs to \
+            'anaglyph': For use with red/blue glasses. See VTK docs to
                         use different colors. \n
             'interlaced': Line interlaced. \n
             'checkerboard': Checkerboard interlaced. \n
