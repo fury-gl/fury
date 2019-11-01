@@ -1,6 +1,6 @@
 import os
 import sys
-import pickle
+import json
 import numpy as np
 import vtk
 
@@ -48,14 +48,14 @@ class EventCounter(object):
                 ui_component.add_callback(obj_actor, event, self.count)
 
     def save(self, filename):
-        with open(filename, 'wb') as f:
-            pickle.dump(self.events_counts, f, protocol=2)
+        with open(filename, 'w') as f:
+            json.dump(self.events_counts, f)
 
     @classmethod
     def load(cls, filename):
         event_counter = cls()
-        with open(filename, 'rb') as f:
-            event_counter.events_counts = pickle.load(f)
+        with open(filename, 'r') as f:
+            event_counter.events_counts = json.load(f)
 
         return event_counter
 
@@ -191,7 +191,7 @@ def test_ui_disk_2d():
 def test_ui_button_panel(recording=False):
     filename = "test_ui_button_panel"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     # Rectangle
     rectangle_test = ui.Rectangle2D(size=(10, 10))
@@ -270,7 +270,7 @@ def test_ui_button_panel(recording=False):
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     # TextBox
     textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
@@ -414,7 +414,7 @@ def test_text_block_2d_justification():
 def test_ui_line_slider_2d(recording=False):
     filename = "test_ui_line_slider_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5)
@@ -472,7 +472,7 @@ def test_ui_line_double_slider_2d(interactive=False):
 def test_ui_ring_slider_2d(recording=False):
     filename = "test_ui_ring_slider_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     ring_slider_2d_test = ui.RingSlider2D()
     ring_slider_2d_test.center = (300, 300)
@@ -530,7 +530,7 @@ def test_ui_option(interactive=False):
 def test_ui_checkbox(interactive=False):
     filename = "test_ui_checkbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
                                         "option 3", "option 4"],
@@ -603,7 +603,7 @@ def test_ui_checkbox(interactive=False):
 def test_ui_radio_button(interactive=False):
     filename = "test_ui_radio_button"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     radio_button_test = ui.RadioButton(
         labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
@@ -670,7 +670,7 @@ def test_ui_radio_button(interactive=False):
 def test_ui_listbox_2d(interactive=False):
     filename = "test_ui_listbox_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     # Values that will be displayed by the listbox.
     values = list(range(1, 42 + 1))
@@ -812,7 +812,7 @@ def test_timer():
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     # Create temporary directory and files
     os.mkdir(os.path.join(os.getcwd(), "testdir"))
@@ -973,7 +973,7 @@ def test_grid_ui(interactive=False):
 
     filename = "test_grid_ui"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".pkl")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     current_size = (900, 600)
     scene = window.Scene()
