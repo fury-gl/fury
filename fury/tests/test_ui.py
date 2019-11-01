@@ -1,6 +1,6 @@
 import os
 import sys
-import pickle
+import json
 import numpy as np
 import vtk
 
@@ -48,14 +48,14 @@ class EventCounter(object):
                 ui_component.add_callback(obj_actor, event, self.count)
 
     def save(self, filename):
-        with open(filename, 'wb') as f:
-            pickle.dump(self.events_counts, f, protocol=2)
+        with open(filename, 'w') as f:
+            json.dump(self.events_counts, f)
 
     @classmethod
     def load(cls, filename):
         event_counter = cls()
-        with open(filename, 'rb') as f:
-            event_counter.events_counts = pickle.load(f)
+        with open(filename, 'r') as f:
+            event_counter.events_counts = json.load(f)
 
         return event_counter
 
