@@ -1082,12 +1082,11 @@ def _square(scale=1):
     return polydata
 
 
-
 def test_texture_mapping():
 
     from fury.utils import rgb_to_vtk, vtk
 
-    arr = 255*np.random.rand(512, 512, 3)
+    arr = 255 * np.random.rand(512, 512, 3)
     arr[:512//2] = np.array([1., 0, 0])
     grid = rgb_to_vtk(arr)
 
