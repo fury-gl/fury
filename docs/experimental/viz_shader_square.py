@@ -42,6 +42,8 @@ def timer_callback(obj, event):
 
     global timer
     timer += 1.0
+    #print(object)
+    #mapper.GetInput().ComputeBounds()
     # print(timer)
     showm.render()
     # cu.SetPosition(timer*0.01, 0, 0)
@@ -69,7 +71,27 @@ mapper.AddShaderReplacement(
     True,
     """
     //VTK::Normal::Dec
+    uniform float time;
     out vec4 myVertexMC;
+    mat4 rotationMatrix(vec3 axis, float angle) {
+        axis = normalize(axis);
+        float s = sin(angle);
+        float c = cos(angle);
+        float oc = 1.0 - c;
+
+        return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                    0.0,                                0.0,                                0.0,                                1.0);
+    }
+
+    vec3 rotate(vec3 v, vec3 axis, float angle) {
+	    mat4 m = rotationMatrix(axis, angle);
+	    return (m * vec4(v, 1.0)).xyz;
+    }
+
+    vec3 ax = vec3(1, 0, 0);
+
     """,
     False
 )
@@ -84,6 +106,21 @@ mapper.AddShaderReplacement(
     """,
     False
 )
+
+mapper.AddShaderReplacement(
+    vtk.vtkShader.Vertex,
+    "//VTK::Light::Impl",
+    True,
+    """
+    //VTK::Light::Impl
+    myVertexMC.xyz = rotate(vertexMC.xyz, ax, time*0.01);
+    vertexVCVSOutput = MCVCMatrix * myVertexMC;
+    gl_Position = MCDCMatrix * myVertexMC;
+
+    """,
+    False
+)
+
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
