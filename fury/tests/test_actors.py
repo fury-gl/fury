@@ -1081,25 +1081,79 @@ def _square(scale=1):
     #return get_actor_from_polydata(polydata)
     return polydata
 
+def _sphere(scale=1):
+
+    from dipy.data import get_sphere
+
+    sphere = get_sphere('symmetric362')
+
+    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
+    polydata = vtk.vtkPolyData()
+
+    set_polydata_vertices(polydata, scale*sphere.vertices)
+    set_polydata_triangles(polydata, sphere.faces)
+
+    return polydata
+
+def test_direct_sphere_mapping():
+
+    tss = vtk.vtkTexturedSphereSource()
+    tss.SetThetaResolution(18)
+    tss.SetPhiResolution(9)
+
+    earthMapper = vtk.vtkPolyDataMapper()
+    earthMapper.SetInputConnection(tss.GetOutputPort())
+
+    earthActor = vtk.vtkActor()
+    earthActor.SetMapper(earthMapper)
+    # load in the texture map
+    #
+    atext = vtk.vtkTexture()
+    pnmReader = vtk.vtkPNMReader()
+    pnmReader.SetFileName("earth.ppm")
+
+    atext.SetInputConnection(pnmReader.GetOutputPort())
+    atext.InterpolateOn()
+    earthActor.SetTexture(atext)
+
 
 def test_texture_mapping():
 
     from fury.utils import rgb_to_vtk, vtk
 
-    arr = 255 * np.random.rand(512, 512, 3)
-    arr[:512//2] = np.array([1., 0, 0])
-    grid = rgb_to_vtk(arr)
+    arr = 255 * np.random.rand(512, 212, 3)
 
-    my_polydata = _square()
+    from fury.io import load_image
+
+    import imageio
+    # arr = imageio.imread('/home/elef/Desktop/1_earth_8k.jpg')
+    # arr = imageio.imread('/home/elef/Desktop/dipy_1_percent.png')
+    arr = imageio.imread('/home/elef/Desktop/earth.ppm')
+    # arr = load_image('/home/elef/Desktop/green_front.png')
+
+    print(arr.shape)
+
+    #arr[512//2:] = 255 * np.array([0., 1., 0])
+    #arr[:512//2] = 255 * np.array([1., 0, 0])
+    #arr[:] = 255 * np.array([1., 0, 0])
+    grid = rgb_to_vtk(np.ascontiguousarray(arr))
+
+    Y, X = arr.shape[:2]
+    my_polydata = _square(scale=np.array([X, Y, 0]))
+    #my_polydata = _square(scale=100)
+
+    my_polydata = _sphere(scale=100)
 
     # Create texture object
     texture = vtk.vtkTexture()
     texture.SetInputDataObject(grid)
+    #texture.InterpolateOn()
+    # texture.RepeatOn()
 
     # Map texture coordinates
-    #map_to_sphere = vtk.vtkTextureMapToSphere()
+    map_to_sphere = vtk.vtkTextureMapToSphere()
     #map_to_sphere = vtk.vtkTextureMapToCylinder()
-    map_to_sphere = vtk.vtkTextureMapToPlane()
+    #map_to_sphere = vtk.vtkTextureMapToPlane()
     """
     map_to_sphere.SetInputConnection(sphere.GetOutputPort())
     """
@@ -1109,6 +1163,7 @@ def test_texture_mapping():
     # Create mapper and set the mapped texture as input
     mapper = vtk.vtkPolyDataMapper()
     mapper.SetInputConnection(map_to_sphere.GetOutputPort())
+    mapper.Update()
 
     # Create actor and set the mapper and the texture
     act = vtk.vtkActor()
@@ -1116,6 +1171,7 @@ def test_texture_mapping():
     act.SetTexture(texture)
 
     scene = window.Scene()
+    scene.add(actor.axes(scale=(100, 100, 100)))
     scene.add(act)
 
     window.show(scene)

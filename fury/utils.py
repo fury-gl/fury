@@ -706,8 +706,9 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
 def rgb_to_vtk(data):
     grid = vtk.vtkImageData()
     grid.SetDimensions(data.shape[1], data.shape[0], 1)
+    nd = data.shape[-1]
     vtkarr = numpy_support.numpy_to_vtk(
-        np.flip(data.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F'))
+        np.flip(data.swapaxes(0, 1), axis=1).reshape((-1, nd), order='F'))
     vtkarr.SetName('Image')
     grid.GetPointData().AddArray(vtkarr)
     grid.GetPointData().SetActiveScalars('Image')
