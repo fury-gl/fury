@@ -704,6 +704,17 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
 
 
 def rgb_to_vtk(data):
+    """ RGB or RGBA images to VTK arrays
+
+    Parameters
+    ----------
+    data : ndarray
+        Shape can be (X, Y, 3) or (X, Y, 4)
+
+    Returns
+    -------
+    vtkImageData
+    """
     grid = vtk.vtkImageData()
     grid.SetDimensions(data.shape[1], data.shape[0], 1)
     nd = data.shape[-1]
@@ -714,3 +725,46 @@ def rgb_to_vtk(data):
     grid.GetPointData().SetActiveScalars('Image')
     return grid
 
+
+def normalize_v3(arr):
+    """ Normalize a numpy array of 3 component vectors shape=(N, 3)
+
+    Parameters
+    -----------
+    array : ndarray
+        Shape (N, 3)
+
+    Returns
+    -------
+    norm_array
+    """
+    lens = np.sqrt(arr[:,0]**2 + arr[:,1]**2 + arr[:,2]**2)
+    arr[:, 0] /= lens
+    arr[:, 1] /= lens
+    arr[:, 2] /= lens
+    return arr
+
+def normals_from_v_f(vertices, faces):
+    """ Calculate normals from vertices and faces
+
+    Parameters
+    ----------
+    verices : ndarray
+    faces : ndarray
+
+    Returns
+    -------
+    normals : ndarray
+        Shape same as vertices
+    """
+
+    norm = np.zeros(vertices.shape, dtype=vertices.dtype )
+    tris = vertices[faces]
+    n = np.cross( tris[::,1 ] - tris[::,0]  , tris[::,2 ] - tris[::,0] )
+    normalize_v3(n)
+    norm[faces[:,0]] += n
+    norm[faces[:,1]] += n
+    norm[faces[:,2]] += n
+    normalize_v3(norm)
+
+    return norm

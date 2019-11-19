@@ -1092,16 +1092,18 @@ def _sphere(scale=1):
 
     set_polydata_vertices(polydata, scale*sphere.vertices)
     set_polydata_triangles(polydata, sphere.faces)
-    from fury.utils import set_polydata_normals
+    from fury.utils import set_polydata_normals, normals_from_v_f
 
-    return polydata
+    normals = normals_from_v_f(scale*sphere.vertices, sphere.faces)
+    set_polydata_normals(polydata, normals)
+    return polydata, scale*sphere.vertices, normals
 
 
-def _textured_sphere():
+def _textured_sphere(theta=60, phi=60):
     from fury.utils import rgb_to_vtk, vtk
     tss = vtk.vtkTexturedSphereSource()
-    tss.SetThetaResolution(30)
-    tss.SetPhiResolution(30)
+    tss.SetThetaResolution(theta)
+    tss.SetPhiResolution(phi)
 
     return tss
 
@@ -1113,8 +1115,11 @@ def test_direct_sphere_mapping():
 
     tss = _textured_sphere()
 
-    my_polydata = _sphere(scale=1)
+    my_polydata, verts, normals = _sphere(scale=1)
 
+    from fury.actor import cone
+
+    cone_actor = cone(verts, normals, colors=(1, 0, 0))
 
     earthMapper = vtk.vtkPolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
@@ -1130,7 +1135,9 @@ def test_direct_sphere_mapping():
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\earth.png')
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\jupiter.jpg')
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\dipy_1_percent.png')
-    arr = imageio.imread('C:\\Users\\elef\\Desktop\\1_earth_8k.jpg')
+    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\1_earth_8k.jpg')
+    arr = imageio.imread('/home/elef/Desktop/1_earth_8k.jpg')
+    # arr = imageio.imread('/home/elef/Desktop/jupiter.jpg')
 
     grid = rgb_to_vtk(arr)
 
@@ -1141,6 +1148,7 @@ def test_direct_sphere_mapping():
 
     scene = window.Scene()
     scene.add(earthActor)
+    # scene.add(cone_actor)
     window.show(scene)
 
 
