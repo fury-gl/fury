@@ -1092,29 +1092,56 @@ def _sphere(scale=1):
 
     set_polydata_vertices(polydata, scale*sphere.vertices)
     set_polydata_triangles(polydata, sphere.faces)
+    from fury.utils import set_polydata_normals
 
     return polydata
 
+
+def _textured_sphere():
+    from fury.utils import rgb_to_vtk, vtk
+    tss = vtk.vtkTexturedSphereSource()
+    tss.SetThetaResolution(30)
+    tss.SetPhiResolution(30)
+
+    return tss
+
+
 def test_direct_sphere_mapping():
 
-    tss = vtk.vtkTexturedSphereSource()
-    tss.SetThetaResolution(18)
-    tss.SetPhiResolution(9)
+    from fury.utils import rgb_to_vtk, vtk
+    import imageio
+
+    tss = _textured_sphere()
+
+    my_polydata = _sphere(scale=1)
+
 
     earthMapper = vtk.vtkPolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
+    #earthMapper.SetInputData(my_polydata)
+    #earthMapper.Update()
 
     earthActor = vtk.vtkActor()
     earthActor.SetMapper(earthMapper)
     # load in the texture map
     #
     atext = vtk.vtkTexture()
-    pnmReader = vtk.vtkPNMReader()
-    pnmReader.SetFileName("earth.ppm")
 
-    atext.SetInputConnection(pnmReader.GetOutputPort())
+    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\earth.png')
+    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\jupiter.jpg')
+    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\dipy_1_percent.png')
+    arr = imageio.imread('C:\\Users\\elef\\Desktop\\1_earth_8k.jpg')
+
+    grid = rgb_to_vtk(arr)
+
+    #atext.SetInputConnection(pnmReader.GetOutputPort())
+    atext.SetInputDataObject(grid)
     atext.InterpolateOn()
     earthActor.SetTexture(atext)
+
+    scene = window.Scene()
+    scene.add(earthActor)
+    window.show(scene)
 
 
 def test_texture_mapping():
@@ -1128,7 +1155,8 @@ def test_texture_mapping():
     import imageio
     # arr = imageio.imread('/home/elef/Desktop/1_earth_8k.jpg')
     # arr = imageio.imread('/home/elef/Desktop/dipy_1_percent.png')
-    arr = imageio.imread('/home/elef/Desktop/earth.ppm')
+    # arr = imageio.imread('/home/elef/Desktop/earth.ppm')
+    arr = imageio.imread('C:\\Users\\elef\\Desktop\\earth.png')
     # arr = load_image('/home/elef/Desktop/green_front.png')
 
     print(arr.shape)
@@ -1139,10 +1167,12 @@ def test_texture_mapping():
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
 
     Y, X = arr.shape[:2]
-    my_polydata = _square(scale=np.array([X, Y, 0]))
-    #my_polydata = _square(scale=100)
+    #my_polydata = _square(scale=np.array([X, Y, 0]))
+    my_polydata = _square(scale=100)
 
-    my_polydata = _sphere(scale=100)
+    #my_polydata = _sphere(scale=100)
+
+    #my_polydata_maybe = _textured_sphere()
 
     # Create texture object
     texture = vtk.vtkTexture()
@@ -1153,7 +1183,7 @@ def test_texture_mapping():
     # Map texture coordinates
     map_to_sphere = vtk.vtkTextureMapToSphere()
     #map_to_sphere = vtk.vtkTextureMapToCylinder()
-    #map_to_sphere = vtk.vtkTextureMapToPlane()
+    map_to_sphere = vtk.vtkTextureMapToPlane()
     """
     map_to_sphere.SetInputConnection(sphere.GetOutputPort())
     """
@@ -1180,4 +1210,5 @@ def test_texture_mapping():
 
 if __name__ == "__main__":
     # npt.run_module_suite()
-    test_texture_mapping()
+    # test_texture_mapping()
+    test_direct_sphere_mapping()
