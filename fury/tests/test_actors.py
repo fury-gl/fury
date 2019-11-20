@@ -1115,8 +1115,6 @@ def test_direct_sphere_mapping():
 
     tss = _textured_sphere()
 
-    my_polydata, verts, normals = _sphere(scale=1)
-
     from fury.actor import cone
 
     cone_actor = cone(verts, normals, colors=(1, 0, 0))
@@ -1136,7 +1134,9 @@ def test_direct_sphere_mapping():
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\jupiter.jpg')
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\dipy_1_percent.png')
     # arr = imageio.imread('C:\\Users\\elef\\Desktop\\1_earth_8k.jpg')
-    arr = imageio.imread('/home/elef/Desktop/1_earth_8k.jpg')
+    arr = imageio.imread('/home/elef/Desktop/1_earth_16k.jpg')
+    # arr = imageio.imread('/home/elef/Desktop/5_night_16k.jpg')
+
     # arr = imageio.imread('/home/elef/Desktop/jupiter.jpg')
 
     grid = rgb_to_vtk(arr)
@@ -1154,69 +1154,38 @@ def test_direct_sphere_mapping():
 
 def test_texture_mapping():
 
-    from fury.utils import rgb_to_vtk, vtk
-
-    arr = 255 * np.random.rand(512, 212, 3)
-
-    from fury.io import load_image
-
-    import imageio
-    # arr = imageio.imread('/home/elef/Desktop/1_earth_8k.jpg')
-    # arr = imageio.imread('/home/elef/Desktop/dipy_1_percent.png')
-    # arr = imageio.imread('/home/elef/Desktop/earth.ppm')
-    arr = imageio.imread('C:\\Users\\elef\\Desktop\\earth.png')
-    # arr = load_image('/home/elef/Desktop/green_front.png')
-
-    print(arr.shape)
-
-    #arr[512//2:] = 255 * np.array([0., 1., 0])
-    #arr[:512//2] = 255 * np.array([1., 0, 0])
-    #arr[:] = 255 * np.array([1., 0, 0])
-    grid = rgb_to_vtk(np.ascontiguousarray(arr))
-
-    Y, X = arr.shape[:2]
-    #my_polydata = _square(scale=np.array([X, Y, 0]))
-    my_polydata = _square(scale=100)
-
-    #my_polydata = _sphere(scale=100)
-
-    #my_polydata_maybe = _textured_sphere()
-
-    # Create texture object
-    texture = vtk.vtkTexture()
-    texture.SetInputDataObject(grid)
-    #texture.InterpolateOn()
-    # texture.RepeatOn()
-
-    # Map texture coordinates
-    map_to_sphere = vtk.vtkTextureMapToSphere()
-    #map_to_sphere = vtk.vtkTextureMapToCylinder()
-    map_to_sphere = vtk.vtkTextureMapToPlane()
-    """
-    map_to_sphere.SetInputConnection(sphere.GetOutputPort())
-    """
-    map_to_sphere.SetInputData(my_polydata)
-    # map_to_sphere.PreventSeamOn()
-
-    # Create mapper and set the mapped texture as input
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(map_to_sphere.GetOutputPort())
-    mapper.Update()
-
-    # Create actor and set the mapper and the texture
-    act = vtk.vtkActor()
-    act.SetMapper(mapper)
-    act.SetTexture(texture)
-
+    arr = np.random.rand(512, 212, 4)
+    tp = actor.texture(arr,
+                       interp=False)
     scene = window.Scene()
-    scene.add(actor.axes(scale=(100, 100, 100)))
-    scene.add(act)
+    scene.add(tp)
 
     window.show(scene)
+    arr = window.snapshot(scene)
+    res = window.analyze_snapshot(arr,
+                                  find_objects=True)
+    npt.assert_equal(res.objects, 1)
 
+
+def test_figure():
+
+    arr = np.random.rand(512, 212, 4)
+    arr[20:40, 20:40, 3] = 0
+    tp = actor.figure(arr)
+    tp2 = actor.texture(arr)
+    scene = window.Scene()
+    scene.add(tp)
+    scene.add(tp2)
+    tp2.SetPosition(0, 0, -50)
+    window.show(scene)
+    arr = window.snapshot(scene)
+    res = window.analyze_snapshot(arr,
+                                  find_objects=True)
+    npt.assert_equal(res.objects, 1)
 
 
 if __name__ == "__main__":
     # npt.run_module_suite()
     # test_texture_mapping()
-    test_direct_sphere_mapping()
+    test_figure()
+    #test_direct_sphere_mapping()

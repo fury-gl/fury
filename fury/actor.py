@@ -10,7 +10,8 @@ from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles)
-from fury.utils import numpy_to_vtk_matrix, shallow_copy
+from fury.utils import numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk
+from fury.io import load_image
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -1995,3 +1996,128 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
 
     grid.add(*actors)
     return grid
+
+
+def _square(scale=1):
+    polydata = vtk.vtkPolyData()
+
+    vertices = np.array([[0.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [1.0, 0.0, 0.0]])
+
+    vertices -= np.array([0.5, 0.5, 0])
+
+    vertices = scale * vertices
+
+    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
+
+    set_polydata_vertices(polydata, vertices)
+    set_polydata_triangles(polydata, triangles)
+    return polydata
+
+
+def figure(pic, interpolation='nearest'):
+    """ Return a figure as an image actor
+
+    Parameters
+    ----------
+    pic : filename or numpy RGBA array
+    interpolation : str
+        Options are nearest, linear or cubic. Default is nearest.
+
+    Returns
+    -------
+    image_actor : vtkImageActor
+    """
+
+    if isinstance(pic, str):
+        """
+        png = vtk.vtkPNGReader()
+        png.SetFileName(pic)
+        png.Update()
+        vtk_image_data = png.GetOutput()
+        """
+        vtk_image_data = load_image(pic, True)
+    else:
+
+        if pic.ndim == 3 and pic.shape[2] == 4:
+
+            vtk_image_data = vtk.vtkImageData()
+            vtk_image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 4)
+
+            # width, height
+            vtk_image_data.SetDimensions(pic.shape[1], pic.shape[0], 1)
+            vtk_image_data.SetExtent(0, pic.shape[1] - 1,
+                                     0, pic.shape[0] - 1,
+                                     0, 0)
+            pic_tmp = np.swapaxes(pic, 0, 1)
+            pic_tmp = pic.reshape(pic.shape[1] * pic.shape[0], 4)
+            pic_tmp = np.ascontiguousarray(pic_tmp)
+            uchar_array = numpy_support.numpy_to_vtk(pic_tmp, deep=True)
+            vtk_image_data.GetPointData().SetScalars(uchar_array)
+
+    image_actor = vtk.vtkImageActor()
+    image_actor.SetInputData(vtk_image_data)
+
+    if interpolation == 'nearest':
+        image_actor.GetProperty().SetInterpolationTypeToNearest()
+
+    if interpolation == 'linear':
+        image_actor.GetProperty().SetInterpolationTypeToLinear()
+
+    if interpolation == 'cubic':
+        image_actor.GetProperty().SetInterpolationTypeToCubic()
+
+    image_actor.Update()
+    return image_actor
+
+
+
+def texture(rgb, interp=True):
+    """ Map an RGB or RGBA texture on a plane
+
+    Parameters
+    ----------
+    rgb : ndarray
+        Input 2D RGB or RGBA array
+    interp : bool
+        Interpolate between grid centers. Default True.
+
+    Returns
+    -------
+    vtkActor
+    """
+    arr = rgb
+    grid = rgb_to_vtk(np.ascontiguousarray(arr))
+
+    Y, X = arr.shape[:2]
+
+    my_polydata = _square(scale=np.array([[X, Y, 0]]))
+
+    # Create texture object
+    texture = vtk.vtkTexture()
+    texture.SetInputDataObject(grid)
+    # texture.SetPremultipliedAlpha(True)
+    if interp:
+        texture.InterpolateOn()
+
+    # Map texture coordinates
+    map_to_sphere = vtk.vtkTextureMapToPlane()
+    map_to_sphere.SetInputData(my_polydata)
+
+    # Create mapper and set the mapped texture as input
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(map_to_sphere.GetOutputPort())
+    mapper.Update()
+
+    # Create actor and set the mapper and the texture
+    act = vtk.vtkActor()
+    act.SetMapper(mapper)
+    act.SetTexture(texture)
+
+    return act
+
+def texture_on_sphere(rgb, phi=60, theta=60):
+
+    pass
