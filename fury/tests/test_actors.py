@@ -1130,9 +1130,9 @@ def test_direct_sphere_mapping():
 
 def test_texture_mapping():
 
-    arr = np.random.rand(512, 212, 3)
-    arr[:256] = np.array([255, 0, 0.])
-    arr[256:] = np.array([0, 255, 0.])
+    arr = np.zeros((512, 212, 3), dtype='uint8')
+    arr[:256, :] = np.array([255, 0, 0])
+    arr[256:, :] = np.array([0, 255, 0])
     tp = actor.texture(arr,
                        interp=True)
     scene = window.Scene()
