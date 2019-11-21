@@ -1,12 +1,15 @@
 
 from __future__ import division, print_function, absolute_import
 
+import os
 import sys
 import numpy as np
 import vtk
 from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
+from tempfile import TemporaryDirectory
+# from fury.io import load_image
 
 
 def set_input(vtk_object, inp):
@@ -32,7 +35,6 @@ def set_input(vtk_object, inp):
         vtk_object.SetInputData(inp)
     elif isinstance(inp, vtk.vtkAlgorithmOutput):
         vtk_object.SetInputConnection(inp)
-
     vtk_object.Update()
     return vtk_object
 
@@ -723,6 +725,7 @@ def rgb_to_vtk(data):
     vtkarr.SetName('Image')
     grid.GetPointData().AddArray(vtkarr)
     grid.GetPointData().SetActiveScalars('Image')
+    grid.GetPointData().Update()
     return grid
 
 
@@ -766,5 +769,51 @@ def normals_from_v_f(vertices, faces):
     norm[faces[:,1]] += n
     norm[faces[:,2]] += n
     normalize_v3(norm)
-
     return norm
+
+
+def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
+                               transparent=False):
+    r""" Convert a Matplotlib figure to a 3D numpy array with RGBA channels
+    Parameters
+    ----------
+    fig : obj,
+        A matplotlib figure object
+    dpi : int
+        Dots per inch
+    fname : str
+        If ``fname`` is given then the array will be saved as a png to this
+        position.
+    flip_up_down : bool
+        The origin is different from matlplotlib default and VTK's default
+        behaviour (default True).
+    transparent : bool
+        Make background transparent (default False).
+    Returns
+    -------
+    arr : ndarray
+        a numpy 3D array of RGBA values
+    Notes
+    ------
+    The safest way to read the pixel values from the figure was to save them
+    using savefig as a png and then read again the png. There is a cleaner
+    way found here http://www.icare.univ-lille1.fr/drupal/node/1141 where
+    you can actually use fig.canvas.tostring_argb() to get the values directly
+    without saving to the disk. However, this was not stable across different
+    machines and needed more investigation from what time permited.
+    """
+    from imageio import imread
+    if fname is None:
+        with TemporaryDirectory() as tmpdir:
+            fname = os.path.join(tmpdir, 'tmp.png')
+            fig.savefig(fname, dpi=dpi, transparent=transparent,
+                        bbox_inches='tight', pad_inches=0)
+            arr = imread(fname)
+    else:
+        fig.savefig(fname, dpi=dpi, transparent=transparent,
+                    bbox_inches='tight', pad_inches=0)
+        arr = imread(fname)
+
+    if flip_up_down:
+        arr = np.flipud(arr)
+    return arr

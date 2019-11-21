@@ -2073,7 +2073,6 @@ def figure(pic, interpolation='nearest'):
     return image_actor
 
 
-
 def texture(rgb, interp=True):
     """ Map an RGB or RGBA texture on a plane
 
@@ -2097,6 +2096,7 @@ def texture(rgb, interp=True):
 
     # Create texture object
     texture = vtk.vtkTexture()
+    texture.UseSRGBColorSpaceOn()
     texture.SetInputDataObject(grid)
     # texture.SetPremultipliedAlpha(True)
     if interp:
@@ -2118,6 +2118,30 @@ def texture(rgb, interp=True):
 
     return act
 
-def texture_on_sphere(rgb, phi=60, theta=60):
 
-    pass
+def _textured_sphere_source(theta=60, phi=60):
+    from fury.utils import rgb_to_vtk, vtk
+    tss = vtk.vtkTexturedSphereSource()
+    tss.SetThetaResolution(theta)
+    tss.SetPhiResolution(phi)
+
+    return tss
+
+
+def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
+
+    tss = _textured_sphere_source()
+    earthMapper = vtk.vtkPolyDataMapper()
+    earthMapper.SetInputConnection(tss.GetOutputPort())
+
+    earthActor = vtk.vtkActor()
+    earthActor.SetMapper(earthMapper)
+
+    atext = vtk.vtkTexture()
+    grid = rgb_to_vtk(rgb)
+    atext.SetInputDataObject(grid)
+    if interpolate:
+        atext.InterpolateOn()
+    earthActor.SetTexture(atext)
+
+    return earthActor

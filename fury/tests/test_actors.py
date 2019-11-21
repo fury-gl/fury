@@ -5,7 +5,7 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
-from fury.utils import shallow_copy
+from fury.utils import shallow_copy, rotate
 import itertools
 
 import numpy.testing as npt
@@ -17,6 +17,7 @@ from tempfile import mkstemp
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
+matplotlib, have_matplotlib, _ = optional_package('dipy')
 
 if have_dipy:
     from dipy.tracking.streamline import (center_streamlines,
@@ -24,6 +25,10 @@ if have_dipy:
     from dipy.align.tests.test_streamlinear import fornix_streamlines
     from dipy.reconst.dti import color_fa, fractional_anisotropy
     from dipy.data import get_sphere
+
+if have_matplotlib:
+    import matplotlib.pyplot as plt
+    from fury.utils import matplotlib_figure_to_numpy
 
 
 def test_slicer(verbose=False):
@@ -1099,64 +1104,37 @@ def _sphere(scale=1):
     return polydata, scale*sphere.vertices, normals
 
 
-def _textured_sphere(theta=60, phi=60):
-    from fury.utils import rgb_to_vtk, vtk
-    tss = vtk.vtkTexturedSphereSource()
-    tss.SetThetaResolution(theta)
-    tss.SetPhiResolution(phi)
-
-    return tss
-
-
 def test_direct_sphere_mapping():
 
-    from fury.utils import rgb_to_vtk, vtk
-    import imageio
+    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
+    rows, cols, _ = arr.shape
 
-    tss = _textured_sphere()
+    rs = rows // 2
+    cs = cols // 2
 
-    from fury.actor import cone
+    w = 150 // 2
 
-    cone_actor = cone(verts, normals, colors=(1, 0, 0))
-
-    earthMapper = vtk.vtkPolyDataMapper()
-    earthMapper.SetInputConnection(tss.GetOutputPort())
-    #earthMapper.SetInputData(my_polydata)
-    #earthMapper.Update()
-
-    earthActor = vtk.vtkActor()
-    earthActor.SetMapper(earthMapper)
-    # load in the texture map
-    #
-    atext = vtk.vtkTexture()
-
-    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\earth.png')
-    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\jupiter.jpg')
-    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\dipy_1_percent.png')
-    # arr = imageio.imread('C:\\Users\\elef\\Desktop\\1_earth_8k.jpg')
-    arr = imageio.imread('/home/elef/Desktop/1_earth_16k.jpg')
-    # arr = imageio.imread('/home/elef/Desktop/5_night_16k.jpg')
-
-    # arr = imageio.imread('/home/elef/Desktop/jupiter.jpg')
-
-    grid = rgb_to_vtk(arr)
-
-    #atext.SetInputConnection(pnmReader.GetOutputPort())
-    atext.SetInputDataObject(grid)
-    atext.InterpolateOn()
-    earthActor.SetTexture(atext)
-
+    arr[rs - w : rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
+    # enable to see pacman on sphere
+    # arr[0: 2 * w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
     scene = window.Scene()
-    scene.add(earthActor)
-    # scene.add(cone_actor)
-    window.show(scene)
+    tsa = actor.texture_on_sphere(arr)
+    scene.add(tsa)
+    rotate(tsa, rotation=(90, 0, 1, 0))
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 127, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True])
 
 
 def test_texture_mapping():
 
-    arr = np.random.rand(512, 212, 4)
+    arr = np.random.rand(512, 212, 3)
+    arr[:256] = np.array([255, 0, 0.])
+    arr[256:] = np.array([0, 255, 0.])
     tp = actor.texture(arr,
-                       interp=False)
+                       interp=True)
     scene = window.Scene()
     scene.add(tp)
 
@@ -1167,25 +1145,60 @@ def test_texture_mapping():
     npt.assert_equal(res.objects, 1)
 
 
-def test_figure():
+def test_figure_vs_texture_actor():
 
-    arr = np.random.rand(512, 212, 4)
+    arr = np.ones((512, 212, 4), dtype='f8')
+    # arr[..., 3] = 0.5
     arr[20:40, 20:40, 3] = 0
-    tp = actor.figure(arr)
-    tp2 = actor.texture(arr)
+    tp = actor.figure((255 * arr).astype('uint8'))
+    # the texture is currently not affected
+    # by the alpha value of rgba
+    tp2 = actor.texture(255*arr[..., :3])
     scene = window.Scene()
     scene.add(tp)
     scene.add(tp2)
     tp2.SetPosition(0, 0, -50)
     window.show(scene)
-    arr = window.snapshot(scene)
-    res = window.analyze_snapshot(arr,
-                                  find_objects=True)
-    npt.assert_equal(res.objects, 1)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
+                                  colors=[(255, 0, 0), (255, 0, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
+
+
+@pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
+def test_matplotlib_figure():
+
+    names = ['group_a', 'group_b', 'group_c']
+    values = [1, 10, 100]
+
+    fig = plt.figure(figsize=(9, 3))
+
+    plt.subplot(131)
+    plt.bar(names, values)
+    plt.subplot(132)
+    plt.scatter(names, values)
+    plt.subplot(133)
+    plt.plot(names, values)
+    plt.suptitle('Categorical Plotting')
+
+    arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
+    tp = actor.figure(arr, 'cubic')
+    scene = window.Scene()
+    scene.background((1, 1, 1.))
+    scene.add(tp)
+    ax_actor = actor.axes(scale=(1000, 1000, 1000))
+    ax_actor.SetPosition(500, 0, -500)
+    scene.add(ax_actor)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
+                                  colors=[(31, 119, 180), (255, 0, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
 
 
 if __name__ == "__main__":
     # npt.run_module_suite()
-    # test_texture_mapping()
-    test_figure()
-    #test_direct_sphere_mapping()
+    # test_direct_sphere_mapping()
+    test_texture_mapping()
+    #test_figure_vs_texture_actor()
