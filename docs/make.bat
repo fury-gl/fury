@@ -34,8 +34,8 @@ if "%1" == "help" (
 
 if "%1" == "clean" (
 	:clean
-	del /q /s %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials
-	rmdir %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials
+	del /q /s %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials %SOURCEDIR%\\reference
+	rmdir %SOURCEDIR%\\api %SOURCEDIR%\\auto_examples %SOURCEDIR%\\auto_tutorials %SOURCEDIR%\\reference
 	%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% clean
 	exit /B
 )

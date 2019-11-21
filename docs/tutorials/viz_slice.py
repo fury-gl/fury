@@ -102,10 +102,9 @@ img = nib.load(fname_fa)
 fa = img.get_data()
 
 ###############################################################################
-# Notice here how the scale range is (0, 255) and not (0, 1) which is the usual
-# range of FA values.
+# Notice here how the scale range is. We use FA min and max values to set it up
 
-lut = actor.colormap_lookup_table(scale_range=(0, 255),
+lut = actor.colormap_lookup_table(scale_range=(fa.min(), fa.max()),
                                   hue_range=(0.4, 1.),
                                   saturation_range=(1, 1.),
                                   value_range=(0., 1.))
