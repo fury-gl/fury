@@ -623,7 +623,7 @@ def test_peak_slicer(interactive=False):
         window.show(scene)
 
     report = window.analyze_scene(scene)
-    ex = ['vtkLODActor', 'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor']
+    ex = ['vtkLODActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
     # 6d data
@@ -843,47 +843,16 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.colors_found, [True])
 
 
-def test_cones(interactive=False):
-
-    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
-    heights = np.array([5, 7, 10])
+def test_cones_vertices_faces(interactive=False):
 
     scene = window.Scene()
-    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
-                            heights=heights, colors=colors[:])
-    scene.add(cone_actor)
-
-    if interactive:
-        window.show(scene, order_transparent=True)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=colors)
-    npt.assert_equal(report.objects, 3)
-
-    colors = np.array([1.0, 1.0, 1.0, 1.0])
-    heights = 10
-    resolution = 8
-
-    scene.clear()
-    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
-                            heights=10, colors=colors[:],
-                            resolution=resolution)
-    scene.add(cone_actor)
-
-    if interactive:
-        window.show(scene, order_transparent=True)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=[colors])
-    npt.assert_equal(report.objects, 3)
-
-    scene.clear()
+    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
     vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
                          [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
     faces = np.array([[0, 1, 3], [0, 1, 2]])
-    cone_actor = actor.cone(centers=xyzr[:, :3], directions=dirs,
+    cone_actor = actor.cone(centers=centers, directions=directions,
                             colors=colors[:], vertices=vertices,
                             faces=faces)
     scene.add(cone_actor)
@@ -891,9 +860,53 @@ def test_cones(interactive=False):
     if interactive:
         window.show(scene, order_transparent=True)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=[colors])
+    report = window.analyze_snapshot(arr, colors=[colors])
     npt.assert_equal(report.objects, 3)
+    scene.clear()
+
+
+def test_geometry_actor(interactive=False):
+
+    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
+
+    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
+                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
+                  [actor.box, {'directions': dirs, 'size': (1, 3, 2)}],
+                  [actor.cube, {'directions': dirs}],
+                  [actor.cylinder, {'directions': dirs}]]
+
+    scene = window.Scene()
+
+    for act_func, extra_args in actor_list:
+        colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
+        heights = np.array([5, 7, 10])
+
+        geom_actor = act_func(centers=xyz, heights=heights, colors=colors[:],
+                              **extra_args)
+        scene.add(geom_actor)
+
+        if interactive:
+            window.show(scene, order_transparent=True)
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr, colors=colors)
+        npt.assert_equal(report.objects, 3)
+
+        colors = np.array([1.0, 1.0, 1.0, 1.0])
+        heights = 10
+
+        scene.clear()
+        geom_actor = act_func(centers=xyz[:, :3], heights=10, colors=colors[:],
+                              **extra_args)
+        scene.add(geom_actor)
+
+        if interactive:
+            window.show(scene, order_transparent=True)
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr, colors=[colors])
+        npt.assert_equal(report.objects, 3)
+
+        scene.clear()
 
 
 def test_text_3d():

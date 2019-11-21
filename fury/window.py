@@ -222,6 +222,18 @@ class Scene(vtk.vtkRenderer):
         """
         return self.GetActiveCamera().GetDirectionOfProjection()
 
+    @property
+    def frame_rate(self):
+        rtis = self.GetLastRenderTimeInSeconds()
+        fps = 1.0 / rtis
+        return fps
+
+    def fxaa_on(self):
+        self.SetUseFXAA(True)
+
+    def fxaa_off(self):
+        self.SetUseFXAA(False)
+
 
 class Renderer(Scene):
     """Your scene class.
@@ -233,21 +245,22 @@ class Renderer(Scene):
     available in ``vtkRenderer`` if necessary.
 
     .. deprecated:: 0.2.0
-          `Renderer()` will be removed in Fury 0.3.0, it is replaced by the
+          `Renderer()` will be removed in Fury v0.6.0, it is replaced by the
           class `Scene()`
     """
 
     def __init__(self, _parent=None):
         """Init old class with a warning."""
         warn("Class 'fury.window.Renderer' is deprecated, instead"
-             " use class 'fury.window.Scene'.", PendingDeprecationWarning)
+             " use class 'fury.window.Scene'. This class will be"
+             " removed in FURY v0.6.0", PendingDeprecationWarning)
 
 
 def renderer(background=None):
     """Create a Scene.
 
-    .. deprecated:: 0.2.0
-          `renderer` will be removed in Fury 0.3.0, it is replaced by the
+    .. deprecated:: 0.6.0
+          `renderer` will be removed in Fury 0.6.0, it is replaced by the
           class `Scene()`
 
     Parameters
@@ -272,7 +285,8 @@ def renderer(background=None):
 
     """
     deprecation_msg = ("Method 'fury.window.renderer' is deprecated, instead"
-                       " use class 'fury.window.Scene'.")
+                       " use class 'fury.window.Scene'. It will be"
+                       " removed in FURY v0.6.0")
     warn(PendingDeprecationWarning(deprecation_msg))
 
     scene = Scene()
@@ -286,7 +300,7 @@ def ren(background=None):
     """Create a Scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene()`
     """
     return renderer(background=background)
@@ -296,11 +310,12 @@ def add(scene, a):
     """Add a specific actor to the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().add`
     """
     warn("Class 'fury.window.add' is deprecated, instead"
-         " use class 'fury.window.Scene.add'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.add'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.add(a)
 
 
@@ -308,11 +323,12 @@ def rm(scene, a):
     """Remove a specific actor from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().rm`
     """
     warn("Class 'fury.window.rm' is deprecated, instead"
-         " use class 'fury.window.Scene.rm'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.rm'.It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.rm(a)
 
 
@@ -320,11 +336,12 @@ def clear(scene):
     """Remove all actors from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().clear`
     """
     warn("Class 'fury.window.clear' is deprecated, instead"
-         " use class 'fury.window.Scene.clear'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.clear'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.clear()
 
 
@@ -332,11 +349,12 @@ def rm_all(scene):
     """Remove all actors from the scene.
 
     .. deprecated:: 0.2.0
-          `ren` will be removed in Fury 0.3.0, it is replaced by
+          `ren` will be removed in Fury 0.6.0, it is replaced by
           `Scene().rm_all`
     """
     warn("Class 'fury.window.rm_all' is deprecated, instead"
-         " use class 'fury.window.Scene.rm_all'.", PendingDeprecationWarning)
+         " use class 'fury.window.Scene.rm_all'. It will be"
+         " removed in FURY v0.6.0", PendingDeprecationWarning)
     scene.rm_all()
 
 
@@ -345,7 +363,8 @@ class ShowManager(object):
 
     def __init__(self, scene=None, title='FURY', size=(300, 300),
                  png_magnify=1, reset_camera=True, order_transparent=False,
-                 interactor_style='custom', stereo='off'):
+                 interactor_style='custom', stereo='off',
+                 multi_samples=8, max_peels=4, occlusion_ratio=0.0):
         """Manage the visualization pipeline.
 
         Parameters
@@ -384,6 +403,14 @@ class ShowManager(object):
                 'right': Right eye only. \n
                 'horizontal': Side-by-side.
 
+        multi_samples : int
+            Number of samples for anti-aliazing (Default 8).
+            For no anti-aliasing use 0.
+        max_peels : int
+            Maximum number of peels for depth peeling (Default 4).
+        occlusion_ratio : float
+            Occlusion ration for depth peeling (Default 0 - exact image).
+
         Attributes
         ----------
         scene : Scene() or vtkRenderer()
@@ -397,15 +424,6 @@ class ShowManager(object):
         render()
         start()
         add_window_callback()
-
-        Notes
-        -----
-        Default interaction keys for
-
-        * 3d navigation are with left, middle and right mouse dragging
-        * resetting the camera press 'r'
-        * saving a screenshot press 's'
-        * for quiting press 'q'
 
         Examples
         --------
@@ -448,24 +466,8 @@ class ShowManager(object):
 
         if self.order_transparent:
 
-            # Use a render window with alpha bits
-            # as default is 0 (false))
-            self.window.SetAlphaBitPlanes(True)
-
-            # Force to not pick a framebuffer with a multisample buffer
-            # (default is 8)
-            self.window.SetMultiSamples(0)
-
-            # Choose to use depth peeling (if supported)
-            # (default is 0 (false)):
-            self.scene.UseDepthPeelingOn()
-
-            # Set depth peeling parameters
-            # Set the maximum number of rendering passes (default is 4)
-            scene.SetMaximumNumberOfPeels(4)
-
-            # Set the occlusion ratio (initial value is 0.0, exact image):
-            scene.SetOcclusionRatio(0.0)
+            antialiasing(self.scene, self.window,
+                         multi_samples, max_peels, occlusion_ratio)
 
         if self.interactor_style == 'image':
             self.style = vtk.vtkInteractorStyleImage()
@@ -653,7 +655,8 @@ class ShowManager(object):
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
-         reset_camera=True, order_transparent=False, stereo='off'):
+         reset_camera=True, order_transparent=False, stereo='off',
+         multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     """Show window with current scene.
 
     Parameters
@@ -676,7 +679,7 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
         actors according to their relative position to the camera. The default
         option which is False will order the actors according to the order of
         their addition to the Scene().
-    stereo: string
+    stereo : string
         Set the stereo type. Default is 'off'. Other types include: \n
             'opengl': OpenGL frame-sequential stereo. Referred to as \
                       'CrystalEyes' by VTK. \n
@@ -688,14 +691,13 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
             'right': Right eye only. \n
             'horizontal': Side-by-side.
 
-    Notes
-    -----
-    Default interaction keys for
-
-    * 3d navigation are with left, middle and right mouse dragging
-    * resetting the camera press 'r'
-    * saving a screenshot press 's'
-    * for quiting press 'q'
+    multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
+    max_peels : int
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
 
     Examples
     ----------
@@ -853,8 +855,47 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         ang = +az_ang
 
 
+def antialiasing(scene, win, multi_samples=8, max_peels=4,
+                occlusion_ratio=0.0):
+    """ Enable anti-aliasing and ordered transparency
+
+    Parameters
+    ----------
+    scene : Scene
+    win : Window
+        Provided by Showmanager.window attribute.
+    multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
+    max_peels : int
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
+    """
+    # Use a render window with alpha bits
+    # as default is 0 (false))
+    win.SetAlphaBitPlanes(True)
+
+    # Force to not pick a framebuffer with a multisample buffer
+    # (default is 8)
+    win.SetMultiSamples(multi_samples)
+
+    # Choose to use depth peeling (if supported)
+    # (default is 0 (false)):
+    scene.UseDepthPeelingOn()
+
+    # Set depth peeling parameters
+    # Set the maximum number of rendering passes (default is 4)
+    scene.SetMaximumNumberOfPeels(max_peels)
+
+    # Set the occlusion ratio (initial value is 0.0, exact image):
+    scene.SetOcclusionRatio(occlusion_ratio)
+
+
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
-             order_transparent=False, stereo='off'):
+             order_transparent=False, stereo='off',
+             multi_samples=8, max_peels=4,
+             occlusion_ratio=0.0):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -869,6 +910,8 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Default True. Go stealthmode no window should appear.
     order_transparent : bool
         Default False. Use depth peeling to sort transparent objects.
+        If True also enables anti-aliasing.
+
     stereo: string
         Set the stereo type. Default is 'off'. Other types include: \n
             'opengl': OpenGL frame-sequential stereo. Referred to as \
@@ -881,6 +924,14 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
             'right': Right eye only. \n
             'horizontal': Side-by-side.
 
+    multi_samples : int
+        Number of samples for anti-aliazing (Default 8).
+        For no anti-aliasing use 0.
+    max_peels : int
+        Maximum number of peels for depth peeling (Default 4).
+    occlusion_ratio : float
+        Occlusion ration for depth peeling (Default 0 - exact image).
+
     Returns
     -------
     arr : ndarray
@@ -889,12 +940,6 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     """
     width, height = size
-
-    if offscreen:
-        graphics_factory = vtk.vtkGraphicsFactory()
-        graphics_factory.SetOffScreenOnlyMode(1)
-        # TODO check if the line below helps in something
-        # graphics_factory.SetUseMesaClasses(1)
 
     render_window = vtk.vtkRenderWindow()
     if offscreen:
@@ -905,25 +950,8 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     render_window.SetSize(width, height)
 
     if order_transparent:
-
-        # Use a render window with alpha bits
-        # as default is 0 (false))
-        render_window.SetAlphaBitPlanes(True)
-
-        # Force to not pick a framebuffer with a multisample buffer
-        # (default is 8)
-        render_window.SetMultiSamples(0)
-
-        # Choose to use depth peeling (if supported)
-        # (default is 0 (false)):
-        scene.UseDepthPeelingOn()
-
-        # Set depth peeling parameters
-        # Set the maximum number of rendering passes (default is 4)
-        scene.SetMaximumNumberOfPeels(4)
-
-        # Set the occlusion ratio (initial value is 0.0, exact image):
-        scene.SetOcclusionRatio(0.0)
+        antialiasing(scene, render_window, multi_samples, max_peels,
+                     occlusion_ratio)
 
     render_window.Render()
 

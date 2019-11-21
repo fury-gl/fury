@@ -9,8 +9,9 @@ from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
-                        set_polydata_vertices, set_polydata_triangles)
-from fury.utils import numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk
+                        set_polydata_vertices, set_polydata_triangles, 
+                        numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
+                        repeat_sources)
 from fury.io import load_image
 
 
@@ -739,25 +740,6 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def _arrow(pos=(0, 0, 0), color=(1, 0, 0), scale=(1, 1, 1), opacity=1):
-    """ Internal function for generating arrow actors.
-    """
-    arrow = vtk.vtkArrowSource()
-    # arrow.SetTipLength(length)
-
-    arrowm = vtk.vtkPolyDataMapper()
-    arrowm.SetInputConnection(arrow.GetOutputPort())
-
-    arrowa = vtk.vtkActor()
-    arrowa.SetMapper(arrowm)
-
-    arrowa.GetProperty().SetColor(color)
-    arrowa.GetProperty().SetOpacity(opacity)
-    arrowa.SetScale(scale)
-
-    return arrowa
-
-
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
          opacity=1):
     """ Create an actor with the coordinate's system axes where
@@ -778,22 +760,17 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
 
     Returns
     -------
-    vtkAssembly
+    vtkActor
     """
 
-    arrowx = _arrow(color=colorx, scale=scale, opacity=opacity)
-    arrowy = _arrow(color=colory, scale=scale, opacity=opacity)
-    arrowz = _arrow(color=colorz, scale=scale, opacity=opacity)
+    centers = np.zeros((3, 3))
+    dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    colors = np.array([colorx + (opacity,),
+                       colory + (opacity,),
+                       colorz + (opacity,)])
+    heights = np.array([1, 1, 1])
 
-    arrowy.RotateZ(90)
-    arrowz.RotateY(-90)
-
-    ass = vtk.vtkAssembly()
-    ass.AddPart(arrowx)
-    ass.AddPart(arrowy)
-    ass.AddPart(arrowz)
-
-    return ass
+    return arrow(centers, dirs, colors, heights)
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
@@ -1422,12 +1399,15 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
+        Spheres positions
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     radii : float or ndarray, shape (N,)
+        Sphere radius
     theta : int
     phi : int
     vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
         If faces is None then a sphere is created based on theta and phi angles
         If not then a sphere is created with the provided vertices and faces.
@@ -1446,68 +1426,239 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     >>> # window.show(scene)
 
     """
-    if np.array(colors).ndim == 1:
-        colors = np.tile(colors, (len(centers), 1))
+    src = vtk.vtkSphereSource() if faces is None else None
 
-    if isinstance(radii, (float, int)):
-        radii = radii * np.ones(len(centers), dtype='f8')
-
-    pts = numpy_to_vtk_points(np.ascontiguousarray(centers))
-    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
-    cols.SetName('colors')
-
-    radii_fa = numpy_support.numpy_to_vtk(
-        np.ascontiguousarray(radii.astype('f8')), deep=0)
-    radii_fa.SetName('rad')
-
-    polydata_centers = vtk.vtkPolyData()
-    polydata_sphere = vtk.vtkPolyData()
-
-    if faces is None:
-        src = vtk.vtkSphereSource()
+    if src is not None:
         src.SetRadius(1)
         src.SetThetaResolution(theta)
         src.SetPhiResolution(phi)
 
-    else:
+    actor = repeat_sources(centers=centers, colors=colors,
+                           active_scalars=radii, source=src,
+                           vertices=vertices, faces=faces)
 
-        set_polydata_vertices(polydata_sphere, vertices)
-        set_polydata_triangles(polydata_sphere, faces)
+    return actor
 
-    polydata_centers.SetPoints(pts)
-    polydata_centers.GetPointData().AddArray(radii_fa)
-    polydata_centers.GetPointData().SetActiveScalars('rad')
-    polydata_centers.GetPointData().AddArray(cols)
 
-    glyph = vtk.vtkGlyph3D()
+def cylinder(centers, directions, colors, radius=0.05, heights=1,
+             capped=False, resolution=6, vertices=None, faces=None):
+    """Visualize one or many cylinder with different features.
 
-    if faces is None:
-        glyph.SetSourceConnection(src.GetOutputPort())
-    else:
-        glyph.SetSourceData(polydata_sphere)
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Cylinder positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cylinder.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    radius : float
+        cylinder radius, default: 1
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    capped : bool
+        Turn on/off whether to cap cylinder with polygons. Default (False)
+    resolution: int
+        Number of facets used to define cylinder.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
 
-    glyph.SetInputData(polydata_centers)
-    glyph.Update()
+    Returns
+    -------
+    vtkActor
 
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputData(glyph.GetOutput())
-    mapper.SetScalarModeToUsePointFieldData()
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> actor = actor.cylinder(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
 
-    mapper.SelectColorArray('colors')
+    """
+    src = vtk.vtkCylinderSource() if faces is None else None
 
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
+    if src is not None:
+        src.SetCapping(capped)
+        src.SetResolution(resolution)
+        src.SetRadius(radius)
 
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
+    return actor
+
+
+def box(centers, directions, colors, size=(1, 2, 3), heights=1,
+        vertices=None, faces=None):
+    """Visualize one or many Box with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Box positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the box.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    size : tuple (3,)
+        Box lengths on each direction (x, y, z), default(1, 2, 3)
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> box_actor = actor.box(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(box_actor)
+    >>> # window.show(scene)
+
+    """
+    src = vtk.vtkCubeSource() if faces is None else None
+
+    if src is not None:
+        src.SetXLength(size[0])
+        src.SetYLength(size[1])
+        src.SetZLength(size[2])
+
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
+    return actor
+
+
+def cube(centers, directions, colors, heights=1,
+         vertices=None, faces=None):
+    """Visualize one or many cube with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Cube positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the cube.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the sphere.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a sphere is created based on theta and phi angles
+        If not then a sphere is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> cube_actor = actor.cube(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(cubeactor)
+    >>> # window.show(scene)
+
+    """
+    return box(centers=centers, directions=directions, colors=colors,
+               size=(1, 1, 1), heights=heights, vertices=None, faces=None)
+
+
+def arrow(centers, directions, colors, heights=1., resolution=10,
+          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
+          vertices=None, faces=None):
+    """Visualize one or many arrow with differents features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Arrow positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the arrow.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the arrow.
+    resolution : int
+        The resolution of the arrow.
+    tip_length : float
+        The tip size of the arrow (default: 0.35)
+    tip_radius : float
+        the tip radius of the arrow (default: 0.1)
+    shaft_radius : float
+        The shaft radius of the arrow (default: 0.03)
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the arrow.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a arrow is created based on directions, heights
+        and resolution. If not then a arrow is created with the provided
+        vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> directions = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> arrow_actor = actor.arrow(centers, directions, (1, 1, 1), heights)
+    >>> scene.add(arrow_actor)
+    >>> # window.show(scene)
+
+    """
+    src = vtk.vtkArrowSource() if faces is None else None
+
+    if src is not None:
+        src.SetTipResolution(resolution)
+        src.SetShaftResolution(resolution)
+        src.SetTipLength(tip_length)
+        src.SetTipRadius(tip_radius)
+        src.SetShaftRadius(shaft_radius)
+
+    actor = repeat_sources(centers=centers, directions=directions,
+                           colors=colors, active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
     return actor
 
 
 def cone(centers, directions, colors, heights=1., resolution=10,
          vertices=None, faces=None):
-    """Visualize one or many cones with different colors and radii
+    """Visualize one or many cones with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
+        Cone positions
     directions : ndarray, shape (N, 3)
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
@@ -1517,6 +1668,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     resolution : int
         The resolution of the cone.
     vertices : ndarray, shape (N, 3)
+        The point cloud defining the cone.
     faces : ndarray, shape (M, 3)
         If faces is None then a cone is created based on directions, heights
         and resolution. If not then a cone is created with the provided
@@ -1538,62 +1690,14 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    if np.array(colors).ndim == 1:
-        colors = np.tile(colors, (len(centers), 1))
+    src = vtk.vtkConeSource() if faces is None else None
 
-    pts = numpy_to_vtk_points(np.ascontiguousarray(centers))
-    cols = numpy_to_vtk_colors(255 * np.ascontiguousarray(colors))
-    cols.SetName('colors')
-    if isinstance(heights, np.ndarray):
-        heights_fa = numpy_support.numpy_to_vtk(np.asarray(heights),
-                                                deep=True,
-                                                array_type=vtk.VTK_DOUBLE)
-        heights_fa.SetName('heights')
-    directions_fa = numpy_support.numpy_to_vtk(np.asarray(directions),
-                                               deep=True,
-                                               array_type=vtk.VTK_DOUBLE)
-    directions_fa.SetName('directions')
-
-    polydata_centers = vtk.vtkPolyData()
-    polydata_cone = vtk.vtkPolyData()
-
-    if faces is None:
-        src = vtk.vtkConeSource()
+    if src is not None:
         src.SetResolution(resolution)
-        if isinstance(heights, int):
-            src.SetHeight(heights)
-    else:
-        set_polydata_vertices(polydata_cone, vertices.astype(np.int8))
-        set_polydata_triangles(polydata_cone, faces)
 
-    polydata_centers.SetPoints(pts)
-    polydata_centers.GetPointData().AddArray(cols)
-    polydata_centers.GetPointData().AddArray(directions_fa)
-    polydata_centers.GetPointData().SetActiveVectors('directions')
-    if isinstance(heights, np.ndarray):
-        polydata_centers.GetPointData().AddArray(heights_fa)
-        polydata_centers.GetPointData().SetActiveScalars('heights')
-
-    glyph = vtk.vtkGlyph3D()
-    if faces is None:
-        glyph.SetSourceConnection(src.GetOutputPort())
-    else:
-        glyph.SetSourceData(polydata_cone)
-
-    glyph.SetInputData(polydata_centers)
-    glyph.SetOrient(True)
-    glyph.SetScaleModeToScaleByScalar()
-    glyph.SetVectorModeToUseVector()
-    glyph.Update()
-
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputData(glyph.GetOutput())
-    mapper.SetScalarModeToUsePointFieldData()
-    mapper.SelectColorArray('colors')
-
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-
+    actor = repeat_sources(centers=centers, directions=directions,
+                           colors=colors, active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
     return actor
 
 
