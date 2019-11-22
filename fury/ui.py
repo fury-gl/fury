@@ -1,11 +1,9 @@
-from __future__ import division
 from _warnings import warn
 
 import numpy as np
 import vtk
 import os
 import abc
-from six import with_metaclass
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
@@ -16,7 +14,7 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
-class UI(with_metaclass(abc.ABCMeta, object)):
+class UI(object, metaclass=abc.ABCMeta):
     """An umbrella class for all UI elements.
 
     While adding UI elements to the scene, we go over all the sub-elements

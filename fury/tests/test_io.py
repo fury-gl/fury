@@ -1,11 +1,11 @@
 import os
 from os.path import join as pjoin
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 import vtk
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
-from fury.tmpdirs import InTemporaryDirectory
 from fury.testing import assert_greater
 
 
