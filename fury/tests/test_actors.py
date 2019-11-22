@@ -1099,6 +1099,7 @@ def _square(scale=1):
     #return get_actor_from_polydata(polydata)
     return polydata
 
+
 def _sphere(scale=1):
 
     from dipy.data import get_sphere
@@ -1124,10 +1125,9 @@ def test_direct_sphere_mapping():
 
     rs = rows // 2
     cs = cols // 2
-
     w = 150 // 2
 
-    arr[rs - w : rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
+    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
     # enable to see pacman on sphere
     # arr[0: 2 * w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
     scene = window.Scene()
@@ -1150,31 +1150,28 @@ def test_texture_mapping():
                        interp=True)
     scene = window.Scene()
     scene.add(tp)
-
-    window.show(scene)
-    arr = window.snapshot(scene)
-    res = window.analyze_snapshot(arr,
-                                  find_objects=True)
-    npt.assert_equal(res.objects, 1)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 0, 0), (0, 255, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
 
 
 def test_figure_vs_texture_actor():
 
-    arr = np.ones((512, 212, 4), dtype='f8')
-    # arr[..., 3] = 0.5
+    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
+
     arr[20:40, 20:40, 3] = 0
-    tp = actor.figure((255 * arr).astype('uint8'))
-    # the texture is currently not affected
-    # by the alpha value of rgba
-    tp2 = actor.texture(255*arr[..., :3])
+    tp = actor.figure(arr)
+    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
+    tp2 = actor.texture(arr)
     scene = window.Scene()
     scene.add(tp)
     scene.add(tp2)
     tp2.SetPosition(0, 0, -50)
-    window.show(scene)
     display = window.snapshot(scene)
-    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
-                                  colors=[(255, 0, 0), (255, 0, 0)],
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 0, 0), (255, 255, 255)],
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True])
 
@@ -1182,36 +1179,50 @@ def test_figure_vs_texture_actor():
 @pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
 def test_matplotlib_figure():
 
-    names = ['group_a', 'group_b', 'group_c']
-    values = [1, 10, 100]
+    # names = ['group_a', 'group_b', 'group_c']
+    # values = [1, 10, 100]
 
-    fig = plt.figure(figsize=(9, 3))
+    # fig = plt.figure(figsize=(9, 3))
 
-    plt.subplot(131)
-    plt.bar(names, values)
-    plt.subplot(132)
-    plt.scatter(names, values)
-    plt.subplot(133)
-    plt.plot(names, values)
-    plt.suptitle('Categorical Plotting')
+    # plt.subplot(131)
+    # plt.bar(names, values)
+    # plt.subplot(132)
+    # plt.scatter(names, values)
+    # plt.subplot(133)
+    # plt.plot(names, values)
+    # plt.suptitle('Categorical Plotting')
 
-    arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
-    tp = actor.figure(arr, 'cubic')
+    #arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
+    arr = (255 * np.random.rand(1000, 1000, 4)).astype('uint8')
+
+    # fig_actor = actor.figure(arr, 'cubic')
+    # fig_actor2 = actor.figure(arr, 'cubic')
+    fig_actor = actor.texture(arr, 'cubic')
+    fig_actor2 = actor.texture(arr, 'cubic')
+
+    print(arr.shape)
     scene = window.Scene()
     scene.background((1, 1, 1.))
-    scene.add(tp)
+
     ax_actor = actor.axes(scale=(1000, 1000, 1000))
-    ax_actor.SetPosition(500, 0, -500)
+    ax_actor2 = actor.axes()
+    # ax_actor.SetPosition(500, 0, -500)
     scene.add(ax_actor)
-    display = window.snapshot(scene)
-    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
-                                  colors=[(31, 119, 180), (255, 0, 0)],
-                                  find_objects=False)
-    npt.assert_equal(res.colors_found, [True, True])
+    # scene.add(ax_actor2)
+    # scene.add(fig_actor)
+    # fig_actor2.SetPosition(0, 0, -800)
+    # scene.add(fig_actor2)
+    # fig_actor2.SetPosition(0, -400, -800)
+    # scene.add(ax_actor2)
+    ax_actor.GetProperty().SetOpacity(1)
+    window.show(scene, order_transparent=True)
+    # display = window.snapshot(scene)
+    # res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
+    #                               colors=[(31, 119, 180), (255, 0, 0)],
+    #                               find_objects=False)
+    # npt.assert_equal(res.colors_found, [True, True])
 
 
 if __name__ == "__main__":
     # npt.run_module_suite()
-    # test_direct_sphere_mapping()
-    test_texture_mapping()
-    #test_figure_vs_texture_actor()
+    test_matplotlib_figure()

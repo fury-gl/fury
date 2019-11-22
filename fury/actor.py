@@ -9,7 +9,7 @@ from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_points, numpy_to_vtk_colors,
-                        set_polydata_vertices, set_polydata_triangles, 
+                        set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
                         repeat_sources)
 from fury.io import load_image
@@ -2183,7 +2183,7 @@ def texture(rgb, interp=True):
     Parameters
     ----------
     rgb : ndarray
-        Input 2D RGB or RGBA array
+        Input 2D RGB or RGBA array. Dtype should be uint8.
     interp : bool
         Interpolate between grid centers. Default True.
 
@@ -2200,8 +2200,8 @@ def texture(rgb, interp=True):
 
     # Create texture object
     texture = vtk.vtkTexture()
-    texture.UseSRGBColorSpaceOn()
     texture.SetInputDataObject(grid)
+    # texture.UseSRGBColorSpaceOn()
     # texture.SetPremultipliedAlpha(True)
     if interp:
         texture.InterpolateOn()
