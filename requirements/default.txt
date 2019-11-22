@@ -2,4 +2,3 @@
 numpy>=1.7.1
 vtk>=8.1.2
 scipy>=0.9
-six
