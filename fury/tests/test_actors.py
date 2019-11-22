@@ -1205,11 +1205,10 @@ def test_matplotlib_figure():
     scene.background((1, 1, 1.))
 
     ax_actor = actor.axes(scale=(1000, 1000, 1000))
-    ax_actor2 = actor.axes()
     # ax_actor.SetPosition(500, 0, -500)
     scene.add(ax_actor)
     # scene.add(ax_actor2)
-    # scene.add(fig_actor)
+    scene.add(fig_actor)
     # fig_actor2.SetPosition(0, 0, -800)
     # scene.add(fig_actor2)
     # fig_actor2.SetPosition(0, -400, -800)

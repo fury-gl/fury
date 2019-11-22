@@ -768,7 +768,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     colors = np.array([colorx + (opacity,),
                        colory + (opacity,),
                        colorz + (opacity,)])
-    heights = np.array([1, 1, 1])
+    heights = np.array([*scale])
 
     return arrow(centers, dirs, colors, heights)
 
