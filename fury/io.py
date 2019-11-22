@@ -1,11 +1,15 @@
 import os
 import vtk
+import numpy as np
 from vtk.util import numpy_support
 from fury.utils import set_input
+from fury.optpkg import optional_package
+
+imageio, have_imageio, _ = optional_package('imageio')
 
 
-def load_image(file_name, as_vtktype=False):
-    """Load an image.
+def load_image(file_name, as_vtktype=False, use_imageio=False):
+    """ Load an image.
 
     Parameters
     ----------
@@ -13,20 +17,24 @@ def load_image(file_name, as_vtktype=False):
         should be png, bmp, jpeg or jpg files
     as_vtktype: bool, optional
         if True, return vtk output otherwise an ndarray. Default False.
+    use_imageio: bool
+        Use imageio python library to load the files.
 
     Returns
     -------
     image: ndarray or vtk output
         desired image array
-
     """
+
+    if use_imageio and have_imageio:
+        return imageio.imread(file_name)
+
     d_reader = {".png": vtk.vtkPNGReader,
                 ".bmp": vtk.vtkBMPReader,
                 ".jpeg": vtk.vtkJPEGReader,
                 ".jpg": vtk.vtkJPEGReader,
                 ".tiff": vtk.vtkTIFFReader,
-                ".tif": vtk.vtkTIFFReader,
-                }
+                ".tif": vtk.vtkTIFFReader}
 
     extension = os.path.splitext(os.path.basename(file_name).lower())[1]
 
@@ -51,7 +59,7 @@ def load_image(file_name, as_vtktype=False):
 
 
 def save_image(arr, file_name, compression_quality=100,
-               compression_type='deflation'):
+               compression_type='deflation', use_imageio=False):
     """Save a 2d or 3d image.
 
     Parameters
@@ -66,12 +74,17 @@ def save_image(arr, file_name, compression_quality=100,
     compression_type: str
         compression type for tiff file
         select between: None, lzw, deflation (default)
-
+    use_imageio: bool
+        Use imageio python library to save the files.
     """
     if arr.ndim > 3:
         raise IOError("Image Dimensions should be <=3")
     if arr.ndim == 2:
         arr = arr[..., None]
+
+    if use_imageio and have_imageio:
+        imageio.imwrite(file_name, np.squeeze(arr))
+        return
 
     d_writer = {".png": vtk.vtkPNGWriter,
                 ".bmp": vtk.vtkBMPWriter,

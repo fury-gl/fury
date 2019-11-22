@@ -17,7 +17,7 @@ from tempfile import mkstemp
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
-matplotlib, have_matplotlib, _ = optional_package('dipy')
+matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
 if have_dipy:
     from dipy.tracking.streamline import (center_streamlines,
@@ -1210,5 +1210,4 @@ def test_matplotlib_figure():
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_matplotlib_figure()
+    npt.run_module_suite()

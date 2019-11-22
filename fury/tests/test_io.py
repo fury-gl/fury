@@ -7,6 +7,7 @@ from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.tmpdirs import InTemporaryDirectory
 from fury.testing import assert_greater
+imageio, have_imageio, _ = optional_package('imageio')
 
 
 def test_save_and_load_polydata():
@@ -116,6 +117,18 @@ def test_save_load_image():
             save_image(data, fname_path, compression_type=ct)
             npt.assert_equal(os.path.isfile(fname_path), True)
             assert_greater(os.stat(fname_path).st_size, 0)
+
+
+@pytest.mark.skipif(not have_imageio, reason="Requires ImageIO")
+def test_imageio():
+
+    with InTemporaryDirectory() as odir:
+        data = (255 * np.random.rand(400, 255, 4)).astype(np.uint8)
+        fname_path = pjoin(odir, "test.png")
+        save_image(data, fname_path, use_imageio=True)
+        data2 = load_image(fname_path, use_imageio=True)
+        npt.assert_array_almost_equal(data, data2)
+        npt.assert_equal(data.dtype, data2.dtype)
 
 
 if __name__ == "__main__":
