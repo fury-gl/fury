@@ -2,11 +2,12 @@ import os
 from os.path import join as pjoin
 import numpy as np
 import numpy.testing as npt
-import vtk
+import pytest
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
-from fury.tmpdirs import InTemporaryDirectory
 from fury.testing import assert_greater
+from fury.optpkg import optional_package
 imageio, have_imageio, _ = optional_package('imageio')
 
 

@@ -10,7 +10,7 @@ import itertools
 
 import numpy.testing as npt
 import pytest
-from fury.tmpdirs import InTemporaryDirectory
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 from fury.testing import assert_greater, assert_greater_equal
 from tempfile import mkstemp
 
