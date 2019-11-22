@@ -1179,49 +1179,37 @@ def test_figure_vs_texture_actor():
 @pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
 def test_matplotlib_figure():
 
-    # names = ['group_a', 'group_b', 'group_c']
-    # values = [1, 10, 100]
+    names = ['group_a', 'group_b', 'group_c']
+    values = [1, 10, 100]
 
-    # fig = plt.figure(figsize=(9, 3))
+    fig = plt.figure(figsize=(9, 3))
 
-    # plt.subplot(131)
-    # plt.bar(names, values)
-    # plt.subplot(132)
-    # plt.scatter(names, values)
-    # plt.subplot(133)
-    # plt.plot(names, values)
-    # plt.suptitle('Categorical Plotting')
+    plt.subplot(131)
+    plt.bar(names, values)
+    plt.subplot(132)
+    plt.scatter(names, values)
+    plt.subplot(133)
+    plt.plot(names, values)
+    plt.suptitle('Categorical Plotting')
 
-    #arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
-    arr = (255 * np.random.rand(1000, 1000, 4)).astype('uint8')
-
-    # fig_actor = actor.figure(arr, 'cubic')
-    # fig_actor2 = actor.figure(arr, 'cubic')
-    fig_actor = actor.texture(arr, 'cubic')
-    fig_actor2 = actor.texture(arr, 'cubic')
-
-    print(arr.shape)
+    arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
+    fig_actor = actor.figure(arr, 'cubic')
+    fig_actor2 = actor.figure(arr, 'cubic')
     scene = window.Scene()
     scene.background((1, 1, 1.))
 
     ax_actor = actor.axes(scale=(1000, 1000, 1000))
-    # ax_actor.SetPosition(500, 0, -500)
     scene.add(ax_actor)
-    # scene.add(ax_actor2)
     scene.add(fig_actor)
-    # fig_actor2.SetPosition(0, 0, -800)
-    # scene.add(fig_actor2)
-    # fig_actor2.SetPosition(0, -400, -800)
-    # scene.add(ax_actor2)
-    ax_actor.GetProperty().SetOpacity(1)
-    window.show(scene, order_transparent=True)
-    # display = window.snapshot(scene)
-    # res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
-    #                               colors=[(31, 119, 180), (255, 0, 0)],
-    #                               find_objects=False)
-    # npt.assert_equal(res.colors_found, [True, True])
+    scene.add(fig_actor2)
+    ax_actor.SetPosition(0, 500, -800)
+    fig_actor2.SetPosition(500, 800, -400)
+    display = window.snapshot(scene, order_transparent=True)
+    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
+                                  colors=[(31, 119, 180), (255, 0, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_matplotlib_figure()
+    npt.run_module_suite()
