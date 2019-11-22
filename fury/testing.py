@@ -1,10 +1,10 @@
 """Utilities for testing."""
 
 import sys
+import io
 import operator
 from functools import partial
 from contextlib import contextmanager
-from six import StringIO
 
 from numpy.testing import assert_array_equal
 import numpy as np
@@ -26,7 +26,7 @@ def captured_output():
     hello world!
 
     """
-    new_out, new_err = StringIO(), StringIO()
+    new_out, new_err = io.StringIO(), io.StringIO()
     old_out, old_err = sys.stdout, sys.stderr
     try:
         sys.stdout, sys.stderr = new_out, new_err

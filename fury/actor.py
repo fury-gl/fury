@@ -1,5 +1,3 @@
-from __future__ import division, print_function, absolute_import
-
 import numpy as np
 import vtk
 from vtk.util import numpy_support
@@ -1587,7 +1585,7 @@ def cube(centers, directions, colors, heights=1,
 
     """
     return box(centers=centers, directions=directions, colors=colors,
-               size=(1, 1, 1), heights=heights, vertices=None, faces=None)
+               size=(1, 1, 1), heights=heights, vertices=vertices, faces=faces)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,

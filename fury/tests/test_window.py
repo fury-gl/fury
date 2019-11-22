@@ -1,11 +1,11 @@
 import os
 import warnings
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
-from fury import actor, window, io
 import numpy.testing as npt
 import pytest
+from fury import actor, window, io
 from fury.testing import captured_output, assert_less_equal
-from fury.tmpdirs import InTemporaryDirectory
 from fury.decorators import skip_osx, skip_win
 
 
