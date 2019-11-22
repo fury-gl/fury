@@ -768,9 +768,9 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     colors = np.array([colorx + (opacity,),
                        colory + (opacity,),
                        colorz + (opacity,)])
-    heights = np.array([*scale])
 
-    return arrow(centers, dirs, colors, heights)
+    scales = np.asarray(scale)
+    return arrow(centers, dirs, colors, scales)
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
@@ -2136,12 +2136,6 @@ def figure(pic, interpolation='nearest'):
     """
 
     if isinstance(pic, str):
-        """
-        png = vtk.vtkPNGReader()
-        png.SetFileName(pic)
-        png.Update()
-        vtk_image_data = png.GetOutput()
-        """
         vtk_image_data = load_image(pic, True)
     else:
 
@@ -2224,7 +2218,6 @@ def texture(rgb, interp=True):
 
 
 def _textured_sphere_source(theta=60, phi=60):
-    from fury.utils import rgb_to_vtk, vtk
     tss = vtk.vtkTexturedSphereSource()
     tss.SetThetaResolution(theta)
     tss.SetPhiResolution(phi)
@@ -2234,7 +2227,7 @@ def _textured_sphere_source(theta=60, phi=60):
 
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
-    tss = _textured_sphere_source()
+    tss = _textured_sphere_source(theta=theta, phi=phi)
     earthMapper = vtk.vtkPolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
 

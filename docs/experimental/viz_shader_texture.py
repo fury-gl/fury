@@ -94,7 +94,7 @@ mapper.SetFragmentShaderCode(
 )
 
 scene.add(canvas_actor)
-#scene.add(actor.axes())
-#scene.add(texture(np.random.randn(512, 512, 3)))
+# scene.add(actor.axes())
+# scene.add(texture(np.random.randn(512, 512, 3)))
 
 window.show(scene)

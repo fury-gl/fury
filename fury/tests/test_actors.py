@@ -1095,8 +1095,6 @@ def _square(scale=1):
 
     set_polydata_vertices(polydata, vertices)
     set_polydata_triangles(polydata, triangles)
-
-    #return get_actor_from_polydata(polydata)
     return polydata
 
 
@@ -1212,4 +1210,5 @@ def test_matplotlib_figure():
 
 
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_matplotlib_figure()

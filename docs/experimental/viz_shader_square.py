@@ -42,8 +42,8 @@ def timer_callback(obj, event):
 
     global timer
     timer += 1.0
-    #print(object)
-    #mapper.GetInput().ComputeBounds()
+    # print(object)
+    # mapper.GetInput().ComputeBounds()
     # print(timer)
     showm.render()
     # cu.SetPosition(timer*0.01, 0, 0)
@@ -86,8 +86,8 @@ mapper.AddShaderReplacement(
     }
 
     vec3 rotate(vec3 v, vec3 axis, float angle) {
-	    mat4 m = rotationMatrix(axis, angle);
-	    return (m * vec4(v, 1.0)).xyz;
+        mat4 m = rotationMatrix(axis, angle);
+        return (m * vec4(v, 1.0)).xyz;
     }
 
     vec3 ax = vec3(1, 0, 0);
