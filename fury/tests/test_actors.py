@@ -32,7 +32,7 @@ if have_dipy:
 
 if have_matplotlib:
     import matplotlib.pyplot as plt
-    from fury.utils import matplotlib_figure_to_numpy
+    from fury.convert import matplotlib_figure_to_numpy
 
 
 def test_slicer(verbose=False):
