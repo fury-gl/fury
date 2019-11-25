@@ -1,8 +1,10 @@
-
+import sys
+import warnings
 import numpy.testing as npt
 import fury
+from fury.testing import clear_and_catch_warnings, assert_true
 from fury.deprecator import (cmp_pkg_version, _add_dep_doc, _ensure_cr,
-                             deprecate_with_version)
+                             deprecate_with_version, ExpiredDeprecationError)
 
 
 def test_cmp_pkg_version():
@@ -61,3 +63,95 @@ def test__add_dep_doc():
                      ' bar\n\nfoo\nbaz\n\nSome explanation\n')
     npt.assert_equal(_add_dep_doc(' bar\n\n  Some explanation', 'foo\nbaz'),
                      ' bar\n  \n  foo\n  baz\n  \n  Some explanation\n')
+
+
+def test_deprecate_with_version():
+
+    def func_no_doc():
+        pass
+
+    def func_doc(i):
+        "A docstring"
+
+    def func_doc_long(i, j):
+        "A docstring\n\n   Some text"
+
+    class CustomError(Exception):
+        """ Custom error class for testing expired deprecation errors """
+
+    my_mod = sys.modules[__name__]
+    dec = deprecate_with_version
+
+    func = dec('foo')(func_no_doc)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(), None)
+        npt.assert_equal(len(w), 1)
+        assert_true(w[0].category is DeprecationWarning)
+    npt.assert_equal(func.__doc__, 'foo\n')
+    func = dec('foo')(func_doc)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(1), None)
+        npt.assert_equal(len(w), 1)
+    npt.assert_equal(func.__doc__, 'A docstring\n\nfoo\n')
+    func = dec('foo')(func_doc_long)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(1, 2), None)
+        npt.assert_equal(len(w), 1)
+    npt.assert_equal(func.__doc__,
+                     'A docstring\n   \n   foo\n   \n   Some text\n')
+
+    # Try some since and until versions
+    func = dec('foo', '0.2')(func_no_doc)
+    npt.assert_equal(func.__doc__, 'foo\n\n* deprecated from version: 0.2\n')
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(), None)
+        npt.assert_equal(len(w), 1)
+    func = dec('foo', until='0.6')(func_no_doc)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(), None)
+        npt.assert_equal(len(w), 1)
+    npt.assert_equal(func.__doc__,
+                     'foo\n\n* Will raise {} as of version: 0.6\n'
+                     .format(ExpiredDeprecationError))
+    func = dec('foo', until='0.3')(func_no_doc)
+    npt.assert_raises(ExpiredDeprecationError, func)
+    npt.assert_equal(func.__doc__,
+                     'foo\n\n* Raises {} as of version: 0.3\n'
+                     .format(ExpiredDeprecationError))
+    func = dec('foo', '0.2', '0.3')(func_no_doc)
+    npt.assert_raises(ExpiredDeprecationError, func)
+    npt.assert_equal(func.__doc__,
+                     'foo\n\n* deprecated from version: 0.2\n'
+                     '* Raises {} as of version: 0.3\n'
+                     .format(ExpiredDeprecationError))
+    func = dec('foo', '0.2', '0.3')(func_doc_long)
+    npt.assert_equal(func.__doc__,
+                     'A docstring\n   \n   foo\n   \n'
+                     '   * deprecated from version: 0.2\n'
+                     '   * Raises {} as of version: 0.3\n   \n'
+                     '   Some text\n'
+                     .format(ExpiredDeprecationError))
+    npt.assert_raises(ExpiredDeprecationError, func)
+
+    # Check different warnings and errors
+    func = dec('foo', warn_class=UserWarning)(func_no_doc)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(), None)
+        npt.assert_equal(len(w), 1)
+        assert_true(w[0].category is UserWarning)
+
+    func = dec('foo', error_class=CustomError)(func_no_doc)
+    with clear_and_catch_warnings(modules=[my_mod]) as w:
+        warnings.simplefilter('always')
+        npt.assert_equal(func(), None)
+        npt.assert_equal(len(w), 1)
+        assert_true(w[0].category is DeprecationWarning)
+
+    func = dec('foo', until='0.3', error_class=CustomError)(func_no_doc)
+    npt.assert_raises(CustomError, func)
