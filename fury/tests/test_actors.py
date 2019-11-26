@@ -11,11 +11,6 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.utils import shallow_copy, rotate
-import itertools
-
-import numpy.testing as npt
-import pytest
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
