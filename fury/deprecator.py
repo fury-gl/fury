@@ -16,7 +16,7 @@ from fury.optpkg import optional_package
 # packaging.version.parse is a third-party utility but is used by setuptools
 # (so probably already installed) and is conformant to the current PEP 440.
 # But just if it is not the case, we use distutils
-packaging, have_pkg, _ = optional_package('packaging')
+packaging, have_pkg, _ = optional_package('setuptools.extern.packaging')
 
 if have_pkg:
     from packaging import version
@@ -33,6 +33,7 @@ class ExpiredDeprecationError(RuntimeError):
     deprecation period.
 
     """
+
     pass
 
 
@@ -81,7 +82,7 @@ def _add_dep_doc(old_doc, dep_doc):
 
 
 def cmp_pkg_version(version_str, pkg_version_str=__version__):
-    """ Compare `version_str` to current package version
+    """Compare `version_str` to current package version.
 
     Parameters
     ----------
@@ -100,8 +101,8 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
     1
     >>> cmp_pkg_version('1.2.0dev', '1.2.0')
     -1
-    """
 
+    """
     version_cmp = version.parse if have_pkg else LooseVersion
 
     if any([re.match(r'^[a-z, A-Z]', v)for v in [version_str,
