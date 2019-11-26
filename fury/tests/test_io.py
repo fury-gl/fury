@@ -8,8 +8,6 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.testing import assert_greater
-from fury.optpkg import optional_package
-imageio, have_imageio, _ = optional_package('imageio')
 
 
 def test_save_and_load_polydata():
@@ -79,32 +77,31 @@ def test_save_and_load_options():
 
 
 def test_save_load_image():
-    l_ext = ["png", "jpeg", "jpg", "bmp", "tiff", "tif"]
+    l_ext = ["png", "jpeg", "jpg", "bmp", "tiff"]
     fname = "temp-io"
 
     for ext in l_ext:
         with InTemporaryDirectory() as odir:
-
             data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
 
-            save_image(data, fname_path)
+            save_image(data, fname_path, compression_quality=100)
 
             npt.assert_equal(os.path.isfile(fname_path), True)
             assert_greater(os.stat(fname_path).st_size, 0)
 
             out_image = load_image(fname_path)
-
-            # import ipdb;ipdb.set_trace()
-            if ext not in ["jpeg", "jpg", "tiff", "tif"]:
-                npt.assert_array_equal(data, out_image[..., 0])
+            if ext not in ["jpeg", "jpg", "tiff"]:
+                npt.assert_array_equal(data[..., 0], out_image[..., 0])
             else:
-                npt.assert_array_almost_equal(data, out_image[..., 0],
+
+                npt.assert_array_almost_equal(data[..., 0], out_image[..., 0],
                                               decimal=0)
 
     npt.assert_raises(IOError, load_image, "test.vtk")
-    npt.assert_raises(IOError, save_image, np.random.randint(0, 255,
-                                                             size=(50, 3)),
+    npt.assert_raises(IOError, load_image, "test.vtk", use_pillow=False)
+    npt.assert_raises(TypeError, save_image, np.random.randint(0, 255,
+                                                               size=(50, 3)),
                       "test.vtk")
     npt.assert_raises(IOError, save_image,
                       np.random.randint(0, 255, size=(50, 3, 1, 1)),
@@ -116,19 +113,18 @@ def test_save_load_image():
             data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
             fname_path = pjoin(odir, "{0}.tif".format(fname))
 
-            save_image(data, fname_path, compression_type=ct)
+            save_image(data, fname_path, compression_type=ct, use_pillow=False)
             npt.assert_equal(os.path.isfile(fname_path), True)
             assert_greater(os.stat(fname_path).st_size, 0)
 
 
-@pytest.mark.skipif(not have_imageio, reason="Requires ImageIO")
-def test_imageio():
+def test_pillow():
 
     with InTemporaryDirectory() as odir:
         data = (255 * np.random.rand(400, 255, 4)).astype(np.uint8)
         fname_path = pjoin(odir, "test.png")
-        save_image(data, fname_path, use_imageio=True)
-        data2 = load_image(fname_path, use_imageio=True)
+        save_image(data, fname_path, use_pillow=True)
+        data2 = load_image(fname_path, use_pillow=True)
         npt.assert_array_almost_equal(data, data2)
         npt.assert_equal(data.dtype, data2.dtype)
 
