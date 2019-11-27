@@ -63,7 +63,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             arr_tmp = np.ascontiguousarray(arr_tmp)
             uchar_array = numpy_support.numpy_to_vtk(arr_tmp, deep=True)
             vtk_image.GetPointData().SetScalars(uchar_array)
-            image = vtk_image.GetOutput()
+            image = vtk_image
 
         return image
 

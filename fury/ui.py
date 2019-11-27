@@ -7,6 +7,7 @@ import abc
 
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
+from fury.io import load_image
 from fury.utils import set_input, rotate
 from fury.actor import grid
 
@@ -374,14 +375,7 @@ class Button2D(UI):
         """
         icons = []
         for icon_name, icon_fname in icon_fnames:
-            if icon_fname.split(".")[-1] not in ["png", "PNG"]:
-                error_msg = "Skipping {}: not in the PNG format."
-                warn(Warning(error_msg.format(icon_fname)))
-            else:
-                png = vtk.vtkPNGReader()
-                png.SetFileName(icon_fname)
-                png.Update()
-                icons.append((icon_name, png.GetOutput()))
+            icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
 
         return icons
 
@@ -2894,41 +2888,9 @@ class ImageContainer2D(UI):
             Width and height in pixels of the image.
         """
         super(ImageContainer2D, self).__init__(position)
-        self.img = self._build_image(img_path)
+        self.img = load_image(img_path, as_vtktype=True)
         self.set_img(self.img)
         self.resize(size)
-
-    def _build_image(self, img_path):
-        """ Converts image path to vtkImageDataGeometryFilters.
-
-        A pre-processing step to prevent re-read of image during every
-        state change.
-
-        Parameters
-        ----------
-        img_path : string
-            Path of the image
-
-        Returns
-        -------
-        img : vtkImageDataGeometryFilters
-            The corresponding image .
-        """
-        imgExt = img_path.split(".")[-1].lower()
-        if imgExt == "png":
-            png = vtk.vtkPNGReader()
-            png.SetFileName(img_path)
-            png.Update()
-            img = png.GetOutput()
-        elif imgExt in ["jpg", "jpeg"]:
-            jpeg = vtk.vtkJPEGReader()
-            jpeg.SetFileName(img_path)
-            jpeg.Update()
-            img = jpeg.GetOutput()
-        else:
-            error_msg = "This file format is not supported by the Image Holder"
-            warn(Warning(error_msg))
-        return img
 
     def _get_size(self):
         lower_left_corner = self.texture_points.GetPoint(0)
