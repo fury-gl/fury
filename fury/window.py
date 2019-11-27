@@ -852,6 +852,9 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
         arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
                                          .GetScalars())
+        h, w, _ = renderLarge.GetOutput().GetDimensions()
+        components = renderLarge.GetOutput().GetNumberOfScalarComponents()
+        arr = arr.reshape((w, h, components))
         save_image(arr, filename)
 
         ang = +az_ang
