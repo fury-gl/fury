@@ -8,8 +8,9 @@ from fury.testing import clear_and_catch_warnings, assert_true
 from fury.deprecator import (cmp_pkg_version, _add_dep_doc, _ensure_cr,
                              deprecate_with_version, ExpiredDeprecationError)
 
+is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
 
-@pytest.mark.skipif(skip_win and sys.version_info == (3, 5),
+@pytest.mark.skipif(skip_win and is_py35,
                     reason="Issue with setuptools, check "
                            "https://github.com/pypa/setuptools/issues/1903")
 def test_cmp_pkg_version():
@@ -70,7 +71,7 @@ def test__add_dep_doc():
                      ' bar\n  \n  foo\n  baz\n  \n  Some explanation\n')
 
 
-@pytest.mark.skipif(skip_win and sys.version_info == (3, 5),
+@pytest.mark.skipif(skip_win and is_py35,
                     reason="Issue with setuptools, check "
                            "https://github.com/pypa/setuptools/issues/1903")
 def test_deprecate_with_version():
