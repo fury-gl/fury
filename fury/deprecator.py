@@ -18,11 +18,6 @@ from fury.optpkg import optional_package
 # But just if it is not the case, we use distutils
 packaging, have_pkg, _ = optional_package('setuptools.extern.packaging')
 
-if have_pkg:
-    from setuptools.extern.packaging import version
-else:
-    from distutils.version import LooseVersion
-
 _LEADING_WHITE = re.compile(r'^(\s*)')
 
 
@@ -103,7 +98,7 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
     -1
 
     """
-    version_cmp = version.parse if have_pkg else LooseVersion
+    version_cmp = packaging.version.parse if have_pkg else None
 
     if any([re.match(r'^[a-z, A-Z]', v)for v in [version_str,
                                                  pkg_version_str]]):
