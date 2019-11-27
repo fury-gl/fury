@@ -99,9 +99,12 @@ def test_save_load_image():
 
     npt.assert_raises(IOError, load_image, "test.vtk")
     npt.assert_raises(IOError, load_image, "test.vtk", use_pillow=False)
-    npt.assert_raises(TypeError, save_image, np.random.randint(0, 255,
-                                                               size=(50, 3)),
+    npt.assert_raises(IOError, save_image,
+                      np.random.randint(0, 255, size=(50, 3)),
                       "test.vtk")
+    npt.assert_raises(IOError, save_image,
+                      np.random.randint(0, 255, size=(50, 3)),
+                      "test.vtk", use_pillow=False)
     npt.assert_raises(IOError, save_image,
                       np.random.randint(0, 255, size=(50, 3, 1, 1)),
                       "test.png")
