@@ -6,11 +6,11 @@ import fury.shaders
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
-                        numpy_to_vtk_points, numpy_to_vtk_colors,
                         set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
                         repeat_sources)
 from fury.io import load_image
+from fury.primitive import square
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -2100,25 +2100,6 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
     return grid
 
 
-def _square(scale=1):
-    polydata = vtk.vtkPolyData()
-
-    vertices = np.array([[0.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0],
-                         [1.0, 1.0, 0.0],
-                         [1.0, 0.0, 0.0]])
-
-    vertices -= np.array([0.5, 0.5, 0])
-
-    vertices = scale * vertices
-
-    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
-
-    set_polydata_vertices(polydata, vertices)
-    set_polydata_triangles(polydata, triangles)
-    return polydata
-
-
 def figure(pic, interpolation='nearest'):
     """ Return a figure as an image actor
 
@@ -2188,7 +2169,14 @@ def texture(rgb, interp=True):
 
     Y, X = arr.shape[:2]
 
-    my_polydata = _square(scale=np.array([[X, Y, 0]]))
+    # Get vertices and triangles, then scale it
+    vertices, triangles = square()
+    vertices *= np.array([[X, Y, 0]])
+
+    # Create a polydata
+    my_polydata = vtk.vtkPolyData()
+    set_polydata_vertices(my_polydata, vertices)
+    set_polydata_triangles(my_polydata, triangles)
 
     # Create texture object
     texture = vtk.vtkTexture()

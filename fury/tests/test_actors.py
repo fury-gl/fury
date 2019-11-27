@@ -1077,26 +1077,6 @@ def test_grid(_interactive=False):
     npt.assert_equal(report.objects > 6, True)
 
 
-def _square(scale=1):
-    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
-    polydata = vtk.vtkPolyData()
-
-    vertices = np.array([[0.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0],
-                         [1.0, 1.0, 0.0],
-                         [1.0, 0.0, 0.0]])
-
-    vertices -= np.array([0.5, 0.5, 0])
-
-    vertices = scale * vertices
-
-    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
-
-    set_polydata_vertices(polydata, vertices)
-    set_polydata_triangles(polydata, triangles)
-    return polydata
-
-
 def _sphere(scale=1):
 
     from dipy.data import get_sphere
