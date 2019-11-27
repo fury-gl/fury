@@ -118,11 +118,6 @@ def save_image(arr, filename, compression_quality=75,
     if arr.ndim > 3:
         raise IOError("Image Dimensions should be <=3")
 
-    if use_pillow:
-        im = Image.fromarray(arr)
-        im.save(filename, quality=compression_quality)
-        return
-
     d_writer = {".png": vtk.vtkPNGWriter,
                 ".bmp": vtk.vtkBMPWriter,
                 ".jpeg": vtk.vtkJPEGWriter,
@@ -132,12 +127,18 @@ def save_image(arr, filename, compression_quality=75,
                 }
 
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
-    if arr.ndim == 2:
-        arr = arr[..., None]
 
     if extension.lower() not in d_writer.keys():
         raise IOError("Impossible to save the file {0}: Unknown extension {1}".
                       format(filename, extension))
+
+    if use_pillow:
+        im = Image.fromarray(arr)
+        im.save(filename, quality=compression_quality)
+        return
+
+    if arr.ndim == 2:
+        arr = arr[..., None]
 
     vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
     vtk_array = numpy_support.numpy_to_vtk(num_array=arr.ravel(), deep=True,
