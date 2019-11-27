@@ -19,7 +19,7 @@ from fury.optpkg import optional_package
 packaging, have_pkg, _ = optional_package('setuptools.extern.packaging')
 
 if have_pkg:
-    from packaging import version
+    from setuptools.extern.packaging import version
 else:
     from distutils.version import LooseVersion
 
