@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle
+from fury.io import load_image
 from fury.utils import asbytes
 
 try:
@@ -1036,17 +1037,7 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
 
     """
     if isinstance(im, basestring):
-        reader = vtk.vtkPNGReader()
-        reader.SetFileName(im)
-        reader.Update()
-        vtk_im = reader.GetOutput()
-        vtk_ext = vtk_im.GetExtent()
-        vtk_pd = vtk_im.GetPointData()
-        vtk_comp = vtk_pd.GetNumberOfComponents()
-        shape = (vtk_ext[1] - vtk_ext[0] + 1,
-                 vtk_ext[3] - vtk_ext[2] + 1, vtk_comp)
-        im = numpy_support.vtk_to_numpy(vtk_pd.GetArray(0))
-        im = im.reshape(shape)
+        im = load_image(im)
 
     class ReportSnapshot(object):
         objects = None
