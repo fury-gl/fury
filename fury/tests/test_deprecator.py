@@ -1,12 +1,17 @@
 import sys
 import warnings
 import numpy.testing as npt
+import pytest
 import fury
+from fury.decorators import skip_win
 from fury.testing import clear_and_catch_warnings, assert_true
 from fury.deprecator import (cmp_pkg_version, _add_dep_doc, _ensure_cr,
                              deprecate_with_version, ExpiredDeprecationError)
 
 
+@pytest.mark.skipif(skip_win and sys.version_info == (3, 5),
+                    reason="Issue with setuptools, check "
+                           "https://github.com/pypa/setuptools/issues/1903")
 def test_cmp_pkg_version():
     # Test version comparator
     npt.assert_equal(cmp_pkg_version(fury.__version__), 0)
@@ -65,6 +70,9 @@ def test__add_dep_doc():
                      ' bar\n  \n  foo\n  baz\n  \n  Some explanation\n')
 
 
+@pytest.mark.skipif(skip_win and sys.version_info == (3, 5),
+                    reason="Issue with setuptools, check "
+                           "https://github.com/pypa/setuptools/issues/1903")
 def test_deprecate_with_version():
 
     def func_no_doc():
