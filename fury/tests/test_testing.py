@@ -73,5 +73,4 @@ def test_clear_and_catch_warnings():
 
 
 if __name__ == '__main__':
-    # npt.run_module_suite()
-    test_clear_and_catch_warnings()
+    npt.run_module_suite()
