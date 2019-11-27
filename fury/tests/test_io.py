@@ -3,7 +3,6 @@ from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
-import pytest
 
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
@@ -115,7 +114,8 @@ def test_save_load_image():
                 data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
                 fname_path = pjoin(odir, "{0}.tif".format(fname))
 
-                save_image(data, fname_path, compression_type=ct, use_pillow=False)
+                save_image(data, fname_path, compression_type=ct,
+                           use_pillow=False)
                 npt.assert_equal(os.path.isfile(fname_path), True)
                 assert_greater(os.stat(fname_path).st_size, 0)
             except OSError:
