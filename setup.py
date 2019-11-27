@@ -60,7 +60,8 @@ setup(
         },
     install_requires=['numpy>=1.7.1',
                       'scipy>=0.9',
-                      'vtk>=8.1.0'],
+                      'vtk>=8.1.0',
+                      'pillow>=5.4.1'],
     license="BSD (3-clause)",
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

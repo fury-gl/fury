@@ -300,9 +300,6 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
-@pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
-                                                 " Windows and OSX. Need to "
-                                                 " be introspected")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
@@ -354,21 +351,25 @@ def test_record():
         test_content()
 
     # test size and clipping
-    with InTemporaryDirectory():
-        window.record(scene, out_path='fury_1.png', size=(1000, 1000),
-                      magnification=5)
-        npt.assert_equal(os.path.isfile('fury_1.png'), True)
-        arr = io.load_image('fury_1.png')
+    # Skip it on Mac mainly due to offscreen case on Travis. It works well
+    # with a display. Need to check if screen_clip works. Need to check if
+    # ReadFrontBufferOff(), ShouldRerenderOn() could improved this OSX case.
+    if not skip_osx:
+        with InTemporaryDirectory():
+            window.record(scene, out_path='fury_1.png', size=(1000, 1000),
+                          magnification=5)
+            npt.assert_equal(os.path.isfile('fury_1.png'), True)
+            arr = io.load_image('fury_1.png')
 
-        npt.assert_equal(arr.shape, (5000, 5000, 3))
+            npt.assert_equal(arr.shape, (5000, 5000, 3))
 
-        window.record(scene, out_path='fury_2.png', size=(5000, 5000),
-                      screen_clip=True)
-        npt.assert_equal(os.path.isfile('fury_2.png'), True)
-        arr = io.load_image('fury_2.png')
+            window.record(scene, out_path='fury_2.png', size=(5000, 5000),
+                          screen_clip=True)
+            npt.assert_equal(os.path.isfile('fury_2.png'), True)
+            arr = io.load_image('fury_2.png')
 
-        assert_less_equal(arr.shape[0], 5000)
-        assert_less_equal(arr.shape[1], 5000)
+            assert_less_equal(arr.shape[0], 5000)
+            assert_less_equal(arr.shape[1], 5000)
 
 
 if __name__ == '__main__':

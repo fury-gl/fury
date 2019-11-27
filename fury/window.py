@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle
+from fury.io import load_image, save_image
 from fury.utils import asbytes
 
 try:
@@ -813,7 +814,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
 
-    writer = vtk.vtkPNGWriter()
     ang = 0
 
     if cam_pos is not None:
@@ -838,7 +838,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
-        writer.SetInputConnection(renderLarge.GetOutputPort())
 
         if path_numbering:
             if out_path is None:
@@ -850,8 +849,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                 filename = 'fury.png'
             else:
                 filename = out_path
-        writer.SetFileName(filename)
-        writer.Write()
+
+        arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
+                                         .GetScalars())
+        h, w, _ = renderLarge.GetOutput().GetDimensions()
+        components = renderLarge.GetOutput().GetNumberOfScalarComponents()
+        arr = arr.reshape((w, h, components))
+        save_image(arr, filename)
 
         ang = +az_ang
 
@@ -969,10 +973,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     if fname is None:
         return arr
 
-    writer = vtk.vtkPNGWriter()
-    writer.SetFileName(fname)
-    writer.SetInputConnection(window_to_image_filter.GetOutputPort())
-    writer.Write()
+    save_image(arr, fname)
     return arr
 
 
@@ -1036,17 +1037,7 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
 
     """
     if isinstance(im, basestring):
-        reader = vtk.vtkPNGReader()
-        reader.SetFileName(im)
-        reader.Update()
-        vtk_im = reader.GetOutput()
-        vtk_ext = vtk_im.GetExtent()
-        vtk_pd = vtk_im.GetPointData()
-        vtk_comp = vtk_pd.GetNumberOfComponents()
-        shape = (vtk_ext[1] - vtk_ext[0] + 1,
-                 vtk_ext[3] - vtk_ext[2] + 1, vtk_comp)
-        im = numpy_support.vtk_to_numpy(vtk_pd.GetArray(0))
-        im = im.reshape(shape)
+        im = load_image(im)
 
     class ReportSnapshot(object):
         objects = None

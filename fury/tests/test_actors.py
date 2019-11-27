@@ -10,12 +10,13 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
-from fury.utils import shallow_copy
+from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
+matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
 if have_dipy:
     from dipy.tracking.streamline import (center_streamlines,
@@ -23,6 +24,10 @@ if have_dipy:
     from dipy.align.tests.test_streamlinear import fornix_streamlines
     from dipy.reconst.dti import color_fa, fractional_anisotropy
     from dipy.data import get_sphere
+
+if have_matplotlib:
+    import matplotlib.pyplot as plt
+    from fury.convert import matplotlib_figure_to_numpy
 
 
 def test_slicer(verbose=False):
@@ -1070,6 +1075,137 @@ def test_grid(_interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects > 6, True)
+
+
+def _square(scale=1):
+    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
+    polydata = vtk.vtkPolyData()
+
+    vertices = np.array([[0.0, 0.0, 0.0],
+                         [0.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [1.0, 0.0, 0.0]])
+
+    vertices -= np.array([0.5, 0.5, 0])
+
+    vertices = scale * vertices
+
+    triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
+
+    set_polydata_vertices(polydata, vertices)
+    set_polydata_triangles(polydata, triangles)
+    return polydata
+
+
+def _sphere(scale=1):
+
+    from dipy.data import get_sphere
+
+    sphere = get_sphere('symmetric362')
+
+    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
+    polydata = vtk.vtkPolyData()
+
+    set_polydata_vertices(polydata, scale*sphere.vertices)
+    set_polydata_triangles(polydata, sphere.faces)
+    from fury.utils import set_polydata_normals, normals_from_v_f
+
+    normals = normals_from_v_f(scale*sphere.vertices, sphere.faces)
+    set_polydata_normals(polydata, normals)
+    return polydata, scale*sphere.vertices, normals
+
+
+def test_direct_sphere_mapping():
+
+    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
+    rows, cols, _ = arr.shape
+
+    rs = rows // 2
+    cs = cols // 2
+    w = 150 // 2
+
+    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
+    # enable to see pacman on sphere
+    # arr[0: 2 * w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
+    scene = window.Scene()
+    tsa = actor.texture_on_sphere(arr)
+    scene.add(tsa)
+    rotate(tsa, rotation=(90, 0, 1, 0))
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 127, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True])
+
+
+def test_texture_mapping():
+
+    arr = np.zeros((512, 212, 3), dtype='uint8')
+    arr[:256, :] = np.array([255, 0, 0])
+    arr[256:, :] = np.array([0, 255, 0])
+    tp = actor.texture(arr,
+                       interp=True)
+    scene = window.Scene()
+    scene.add(tp)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 0, 0), (0, 255, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
+
+
+def test_figure_vs_texture_actor():
+
+    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
+
+    arr[20:40, 20:40, 3] = 0
+    tp = actor.figure(arr)
+    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
+    tp2 = actor.texture(arr)
+    scene = window.Scene()
+    scene.add(tp)
+    scene.add(tp2)
+    tp2.SetPosition(0, 0, -50)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(255, 0, 0), (255, 255, 255)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
+
+
+@pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
+def test_matplotlib_figure():
+
+    names = ['group_a', 'group_b', 'group_c']
+    values = [1, 10, 100]
+
+    fig = plt.figure(figsize=(9, 3))
+
+    plt.subplot(131)
+    plt.bar(names, values)
+    plt.subplot(132)
+    plt.scatter(names, values)
+    plt.subplot(133)
+    plt.plot(names, values)
+    plt.suptitle('Categorical Plotting')
+
+    arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
+    fig_actor = actor.figure(arr, 'cubic')
+    fig_actor2 = actor.figure(arr, 'cubic')
+    scene = window.Scene()
+    scene.background((1, 1, 1.))
+
+    ax_actor = actor.axes(scale=(1000, 1000, 1000))
+    scene.add(ax_actor)
+    scene.add(fig_actor)
+    scene.add(fig_actor2)
+    ax_actor.SetPosition(0, 500, -800)
+    fig_actor2.SetPosition(500, 800, -400)
+    display = window.snapshot(scene, order_transparent=True)
+    res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
+                                  colors=[(31, 119, 180), (255, 0, 0)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])
 
 
 if __name__ == "__main__":
