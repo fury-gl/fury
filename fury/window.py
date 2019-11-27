@@ -12,7 +12,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.interactor import CustomInteractorStyle
-from fury.io import load_image
+from fury.io import load_image, save_image
 from fury.utils import asbytes
 
 try:
@@ -814,7 +814,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
 
-    writer = vtk.vtkPNGWriter()
     ang = 0
 
     if cam_pos is not None:
@@ -839,7 +838,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
-        writer.SetInputConnection(renderLarge.GetOutputPort())
 
         if path_numbering:
             if out_path is None:
@@ -851,8 +849,10 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                 filename = 'fury.png'
             else:
                 filename = out_path
-        writer.SetFileName(filename)
-        writer.Write()
+
+        arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
+                                         .GetScalars())
+        save_image(arr, filename)
 
         ang = +az_ang
 
@@ -970,10 +970,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     if fname is None:
         return arr
 
-    writer = vtk.vtkPNGWriter()
-    writer.SetFileName(fname)
-    writer.SetInputConnection(window_to_image_filter.GetOutputPort())
-    writer.Write()
+    save_image(arr, fname)
     return arr
 
 
