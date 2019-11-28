@@ -10,7 +10,7 @@ if [ "$INSTALL_TYPE" == "pip" ]; then
     if [ -n "$USE_PRE" ]; then
         PIPI="$PIPI --find-links=$PRE_WHEELS --pre";
     fi
-    $PIPI --upgrade pip setuptools
+    $PIPI --upgrade setuptools pip
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/test.txt
     if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
