@@ -3,12 +3,11 @@ import warnings
 import numpy.testing as npt
 import pytest
 import fury
-from fury.decorators import skip_win
+from fury.decorators import skip_win, is_py35
 from fury.testing import clear_and_catch_warnings, assert_true
 from fury.deprecator import (cmp_pkg_version, _add_dep_doc, _ensure_cr,
                              deprecate_with_version, ExpiredDeprecationError)
 
-is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
 
 @pytest.mark.skipif(skip_win and is_py35,
                     reason="Issue with setuptools, check "
