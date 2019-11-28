@@ -10,7 +10,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
                         repeat_sources)
 from fury.io import load_image
-from fury.primitive import square
+from fury.primitive import prim_square
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -2170,7 +2170,7 @@ def texture(rgb, interp=True):
     Y, X = arr.shape[:2]
 
     # Get vertices and triangles, then scale it
-    vertices, triangles = square()
+    vertices, triangles = prim_square()
     vertices *= np.array([[X, Y, 0]])
 
     # Create a polydata

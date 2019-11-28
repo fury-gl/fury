@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def square():
+def prim_square():
     """Return vertices and triangles for a square geometry.
 
     Returns
@@ -21,7 +21,7 @@ def square():
     return vertices, triangles
 
 
-def box():
+def prim_box():
     """Return vertices and triangle for a box geometry.
 
     Returns

@@ -2,9 +2,10 @@ import numpy as np
 import numpy.testing as npt
 import fury.primitive as fp
 
+
 def test_vertices_primitives():
-    l_primitives = [(fp.square, (4, 3)),
-                    (fp.box, (8, 3))]
+    l_primitives = [(fp.prim_square, (4, 3)),
+                    (fp.prim_box, (8, 3))]
 
     for func, shape in l_primitives:
         vertices, _ = func()
@@ -16,8 +17,8 @@ def test_vertices_primitives():
 
 
 def test_triangles_primitives():
-    l_primitives = [(fp.square, (2, 3)),
-                    (fp.box, (12, 3))]
+    l_primitives = [(fp.prim_square, (2, 3)),
+                    (fp.prim_box, (12, 3))]
 
     for func, shape in l_primitives:
         vertices, triangles = func()
