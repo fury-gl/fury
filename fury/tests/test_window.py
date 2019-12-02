@@ -278,8 +278,8 @@ def test_order_transparent():
     npt.assert_equal(green_stronger > green_weaker, True)
 
 
-@pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
-                                     " Need to be introspected")
+# @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
+#                                      " Need to be introspected")
 def test_stereo():
     scene = window.Scene()
 

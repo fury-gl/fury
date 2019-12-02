@@ -114,7 +114,7 @@ def test_callback():
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
-    window.ShowManager(dummy_scene, interactor_style='trackball')
+    _ = window.ShowManager(dummy_scene, interactor_style='trackball')
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
