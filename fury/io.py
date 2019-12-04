@@ -6,6 +6,9 @@ from vtk.util import numpy_support
 from fury.utils import set_input
 
 
+SURFACE_FORMAT = [".vtk", ".vtp", ".fib", ".ply", ".stl", ".xml", ".obj"]
+
+
 def load_image(filename, as_vtktype=False, use_pillow=True):
     """Load an image.
 
@@ -169,15 +172,13 @@ def save_image(arr, filename, compression_quality=75,
     writer.Write()
 
 
-def load_polydata(file_name, is_mni_obj=False):
+def load_polydata(file_name):
     """Load a vtk polydata to a supported format file.
-
-    Supported file formats are OBJ, VTK, FIB, PLY, STL and XML
+    Supported file formats are VTK, VTP, FIB, PLY, STL XML and OBJ
 
     Parameters
     ----------
     file_name : string
-    is_mni_obj : bool
 
     Returns
     -------
@@ -186,35 +187,32 @@ def load_polydata(file_name, is_mni_obj=False):
     """
     file_extension = file_name.split(".")[-1].lower()
 
-    if file_extension == "vtk":
-        reader = vtk.vtkPolyDataReader()
-    elif file_extension == "fib":
-        reader = vtk.vtkPolyDataReader()
-    elif file_extension == "ply":
-        reader = vtk.vtkPLYReader()
-    elif file_extension == "stl":
-        reader = vtk.vtkSTLReader()
-    elif file_extension == "xml":
-        reader = vtk.vtkXMLPolyDataReader()
-    elif file_extension == "obj" and is_mni_obj:
-        reader = vtk.vtkMNIObjectReader()
+    poly_reader = {"vtk": vtk.vtkPolyDataReader,
+                   "vtp": vtk.vtkXMLPolyDataWriter,
+                   "fib": vtk.vtkPolyDataReader,
+                   "ply": vtk.vtkPLYReader,
+                   "stl": vtk.vtkSTLReader,
+                   "xml": vtk.vtkXMLPolyDataReader}
+
+    if file_extension in poly_reader.keys():
+        reader = poly_reader.get(file_extension)()
     elif file_extension == "obj":
-        try:  # try to read as a normal obj
-            reader = vtk.vtkOBJReader()
-        except Exception:  # than try load a MNI obj format
+        # Special case, since there is two obj format
+        reader = vtk.vtkOBJReader()
+        reader.SetFileName(file_name)
+        reader.Update()
+        if reader.GetOutput().GetNumberOfCells() == 0:
             reader = vtk.vtkMNIObjectReader()
     else:
-        raise IOError("polydata " + file_extension + " is not suported")
+        raise IOError("." + file_extension + " is not supported by Fury-gl")
 
     reader.SetFileName(file_name)
     reader.Update()
     return reader.GetOutput()
 
 
-def save_polydata(polydata, file_name, binary=False, color_array_name=None,
-                  is_mni_obj=False):
+def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     """Save a vtk polydata to a supported format file.
-
     Save formats can be VTK, FIB, PLY, STL and XML.
 
     Parameters
@@ -223,32 +221,29 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None,
     file_name : string
     binary : bool
     color_array_name: ndarray
-    is_mni_obj : bool
 
     """
     # get file extension (type)
     file_extension = file_name.split(".")[-1].lower()
+    poly_writer = {"vtk": vtk.vtkPolyDataWriter,
+                   "vtp": vtk.vtkXMLPolyDataWriter,
+                   "fib": vtk.vtkPolyDataWriter,
+                   "ply": vtk.vtkPLYWriter,
+                   "stl": vtk.vtkSTLWriter,
+                   "xml": vtk.vtkXMLPolyDataWriter}
 
-    if file_extension == "vtk":
-        writer = vtk.vtkPolyDataWriter()
-    elif file_extension == "fib":
-        writer = vtk.vtkPolyDataWriter()
-    elif file_extension == "ply":
-        writer = vtk.vtkPLYWriter()
-    elif file_extension == "stl":
-        writer = vtk.vtkSTLWriter()
-    elif file_extension == "xml":
-        writer = vtk.vtkXMLPolyDataWriter()
+    if file_extension in poly_writer.keys():
+        writer = poly_writer.get(file_extension)()
     elif file_extension == "obj":
-        if is_mni_obj:
+        # Special case, since there is two obj format
+        find_keyword = file_name.lower().split(".")
+        if "mni" in find_keyword or "mnc" in find_keyword:
             writer = vtk.vtkMNIObjectWriter()
         else:
-            # vtkObjWriter not available on python
-            # vtk.vtkOBJWriter()
-            raise IOError("OBJ Writer not available. MNI obj is the only"
-                          " available writer so set mni_tag option to True")
+            raise IOError("Wavefront obj requires a scene \n"
+                          " for MNI obj, use '.mni.obj' extension")
     else:
-        raise IOError("Unknown extension ({})".format(file_extension))
+        raise IOError("." + file_extension + " is not supported by Fury-gl")
 
     writer.SetFileName(file_name)
     writer = set_input(writer, polydata)

@@ -110,15 +110,16 @@ def map_coordinates_3d_4d(input_array, indices):
         return np.ascontiguousarray(np.array(values_4d).T)
 
 
-def lines_to_vtk_polydata(lines, colors=None):
+def lines_to_vtk_polydata(lines, colors="RGB"):
     """Create a vtkPolyData with lines and colors.
 
     Parameters
     ----------
     lines : list
         list of N curves represented as 2D ndarrays
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), None
-        If None then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
+        If None or False, no coloring is done
+        If "RGB" then a standard orientation colormap is used for every line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
@@ -140,6 +141,7 @@ def lines_to_vtk_polydata(lines, colors=None):
     -------
     poly_data : vtkPolyData
     is_colormap : bool, true if the input color array was a colormap
+        None if no color was used
 
     """
     # Get the 3d points_array
@@ -176,10 +178,18 @@ def lines_to_vtk_polydata(lines, colors=None):
     vtk_lines.GetData().DeepCopy(numpy_support.numpy_to_vtk(lines_array))
     vtk_lines.SetNumberOfCells(nb_lines)
 
+    # Create the poly_data
+    poly_data = vtk.vtkPolyData()
+    poly_data.SetPoints(vtk_points)
+    poly_data.SetLines(vtk_lines)
+
+    if colors is False or colors is None:
+        return poly_data, None
+
     is_colormap = False
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
-    if colors is None:  # set automatic rgb colors
+    if colors.lower() == "rgb":  # set automatic rgb colors
         cols_arr = line_colors(lines)
         colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
         vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
@@ -219,11 +229,6 @@ def lines_to_vtk_polydata(lines, colors=None):
                 is_colormap = True
 
     vtk_colors.SetName("Colors")
-
-    # Create the poly_data
-    poly_data = vtk.vtkPolyData()
-    poly_data.SetPoints(vtk_points)
-    poly_data.SetLines(vtk_lines)
     poly_data.GetPointData().SetScalars(vtk_colors)
     return poly_data, is_colormap
 

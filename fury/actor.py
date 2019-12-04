@@ -441,7 +441,7 @@ def contour_from_roi(data, affine=None,
     return skin_actor
 
 
-def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
+def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
     """Use streamtubes to visualize polylines
@@ -451,18 +451,21 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     lines : list
         list of N curves represented as 2D ndarrays
 
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), None
-        If None then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
+        If None or False, no coloring is done
+        If "RGB" then a standard orientation colormap is used for every line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
         Then every line is coloured with a different RGB color.
         If a list of RGB arrays is given then every point of every line takes
         a different color.
-        If an array (K, ) is given, where K is the number of points of all
+        If an array (K, 3) is given, where K is the number of points of all
+        lines then every point is colored with a different RGB color.
+        If an array (K,) is given, where K is the number of points of all
         lines then these are considered as the values to be used by the
         colormap.
-        If an array (L, ) is given, where L is the number of streamlines then
+        If an array (L,) is given, where L is the number of streamlines then
         these are considered as the values to be used by the colormap per
         streamline.
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
@@ -583,7 +586,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     return actor
 
 
-def line(lines, colors=None, opacity=1, linewidth=1,
+def line(lines, colors="RGB", opacity=1, linewidth=1,
          spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
          lookup_colormap=None, depth_cue=False, fake_tube=False):
     """ Create an actor for one or more lines.
@@ -592,18 +595,21 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     ------------
     lines :  list of arrays
 
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), None
-        If None then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
+        If None or False, no coloring is done
+        If "RGB" then a standard orientation colormap is used for every line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
         Then every line is coloured with a different RGB color.
         If a list of RGB arrays is given then every point of every line takes
         a different color.
-        If an array (K, ) is given, where K is the number of points of all
+        If an array (K, 3) is given, where K is the number of points of all
+        lines then every point is colored with a different RGB color.
+        If an array (K,) is given, where K is the number of points of all
         lines then these are considered as the values to be used by the
         colormap.
-        If an array (L, ) is given, where L is the number of streamlines then
+        If an array (L,) is given, where L is the number of streamlines then
         these are considered as the values to be used by the colormap per
         streamline.
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
