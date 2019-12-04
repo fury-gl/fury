@@ -183,13 +183,14 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
     poly_data.SetPoints(vtk_points)
     poly_data.SetLines(vtk_lines)
 
-    if colors is False or colors is None:
-        return poly_data, None
-
-    is_colormap = False
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
-    if colors.lower() == "rgb":  # set automatic rgb colors
+    is_colormap = False
+    if colors is False or colors is None:
+        # No color
+        return poly_data, None
+    elif isinstance(colors, str) and colors.lower() == "rgb":
+        # set automatic rgb colors
         cols_arr = line_colors(lines)
         colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
         vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
