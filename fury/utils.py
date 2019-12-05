@@ -140,7 +140,8 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
     Returns
     -------
     poly_data : vtkPolyData
-    is_colormap : bool, true if the input color array was a colormap
+    color_is_scalar : bool, true if the color array is a single scalar
+        Scalar array could be used with a colormap lut
         None if no color was used
 
     """
@@ -185,8 +186,8 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
 
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
-    is_colormap = False
-    if colors is False or colors is None:
+    color_is_scalar = False
+    if not colors:
         # No color
         return poly_data, None
     elif isinstance(colors, str) and colors.lower() == "rgb":
@@ -203,7 +204,7 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
                 if cols_arr.ndim == 1:  # values for every point
                     vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
                                                             deep=True)
-                    is_colormap = True
+                    color_is_scalar = True
                 elif cols_arr.ndim == 2:  # map color to each point
                     vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
 
@@ -215,7 +216,7 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
                     cols_arrx = np.array(cols_arrx)
                     vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
                                                             deep=True)
-                    is_colormap = True
+                    color_is_scalar = True
                 else:  # the same colors for all points
                     vtk_colors = numpy_to_vtk_colors(
                         np.tile(255 * cols_arr, (nb_points, 1)))
@@ -227,11 +228,11 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
                 #  get colors for each vertex
                 cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
                 vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
-                is_colormap = True
+                color_is_scalar = True
 
     vtk_colors.SetName("Colors")
     poly_data.GetPointData().SetScalars(vtk_colors)
-    return poly_data, is_colormap
+    return poly_data, color_is_scalar
 
 
 def get_polydata_lines(line_polydata):

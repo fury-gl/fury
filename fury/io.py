@@ -204,7 +204,7 @@ def load_polydata(file_name):
         if reader.GetOutput().GetNumberOfCells() == 0:
             reader = vtk.vtkMNIObjectReader()
     else:
-        raise IOError("." + file_extension + " is not supported by Fury-gl")
+        raise IOError("." + file_extension + " is not supported by FURY")
 
     reader.SetFileName(file_name)
     reader.Update()
@@ -243,7 +243,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
             raise IOError("Wavefront obj requires a scene \n"
                           " for MNI obj, use '.mni.obj' extension")
     else:
-        raise IOError("." + file_extension + " is not supported by Fury-gl")
+        raise IOError("." + file_extension + " is not supported by FURY")
 
     writer.SetFileName(file_name)
     writer = set_input(writer, polydata)

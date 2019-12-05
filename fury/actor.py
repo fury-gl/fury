@@ -523,7 +523,7 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
 
     """
     # Poly data with lines and colors
-    poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
+    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
     # Set Normals
@@ -562,7 +562,7 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
     poly_mapper.Update()
 
     # Color Scale with a lookup table
-    if is_colormap is not None and is_colormap:
+    if color_is_scalar:
         if lookup_colormap is None:
             lookup_colormap = colormap_lookup_table()
         poly_mapper.SetLookupTable(lookup_colormap)
@@ -656,7 +656,7 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     >>> #window.show(scene)
     """
     # Poly data with lines and colors
-    poly_data, is_colormap = lines_to_vtk_polydata(lines, colors)
+    poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
     # use spline interpolation
@@ -686,7 +686,7 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
                                 vtkShaderCallback)
 
     # Color Scale with a lookup table
-    if is_colormap is not None and is_colormap:
+    if color_is_scalar:
         if lookup_colormap is None:
             lookup_colormap = colormap_lookup_table()
 
