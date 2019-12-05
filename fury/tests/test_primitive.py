@@ -25,3 +25,19 @@ def test_triangles_primitives():
         npt.assert_equal(triangles.shape, shape)
         npt.assert_equal(list(set(np.concatenate(triangles, axis=None))),
                          list(range(len(vertices))))
+
+
+def test_spheres_primitives():
+    l_primitives = [('symmetric362', 362, 720), ('symmetric642', 642, 1280),
+                    ('symmetric724', 724, 1444), ('repulsion724', 724, 1444),
+                    ('repulsion100', 100, 196), ('repulsion200', 200, 396)]
+
+    for name, nb_verts, nb_triangles in l_primitives:
+        verts, faces = fp.prim_sphere(name)
+        npt.assert_equal(verts.shape, (nb_verts, 3))
+        npt.assert_almost_equal(np.mean(verts), 0)
+        npt.assert_equal(len(faces), nb_triangles)
+        npt.assert_equal(list(set(np.concatenate(faces, axis=None))),
+                         list(range(len(verts))))
+
+    npt.assert_raises(ValueError, fp.prim_sphere, 'sym362')
