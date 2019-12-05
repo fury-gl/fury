@@ -1,27 +1,22 @@
+from os.path import join as pjoin
 import os
 import json
+import itertools
 
 import numpy as np
 import vtk
 
-from os.path import join as pjoin
+
 import numpy.testing as npt
 import pytest
 
 from fury import window, actor, ui
+from fury.colormap import distinguishable_colormap
 from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
 from fury.decorators import skip_win, skip_osx
+from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater
 from fury.utils import shallow_copy
-
-import itertools
-from fury.colormap import distinguishable_colormap
-# Allow import, but disable doctests if we don't have dipy
-from fury.optpkg import optional_package
-dipy, have_dipy, _ = optional_package('dipy')
-
-if have_dipy:
-    from dipy.data import get_sphere
 
 
 class EventCounter(object):
@@ -764,7 +759,6 @@ def test_ui_image_container_2d(interactive=False):
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
                                      " Need to be introspected")
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
@@ -776,11 +770,11 @@ def test_timer():
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3])
 
-    sphere = get_sphere('repulsion724')
+    vertices, faces = prim_sphere('repulsion724')
 
     sphere_actor2 = actor.sphere(centers=xyzr2[:, :3], colors=colors[:],
-                                 radii=xyzr2[:, 3], vertices=sphere.vertices,
-                                 faces=sphere.faces.astype('i8'))
+                                 radii=xyzr2[:, 3], vertices=vertices,
+                                 faces=faces.astype('i8'))
 
     scene.add(sphere_actor)
     scene.add(sphere_actor2)
@@ -1010,7 +1004,6 @@ def test_grid_ui(interactive=False):
         event_counter.check_counts(expected)
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
 

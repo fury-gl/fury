@@ -10,6 +10,7 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
+from fury.primitive import prim_sphere
 from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 
@@ -19,11 +20,11 @@ dipy, have_dipy, _ = optional_package('dipy')
 matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
 if have_dipy:
+    from dipy.data import get_sphere
     from dipy.tracking.streamline import (center_streamlines,
                                           transform_streamlines)
     from dipy.align.tests.test_streamlinear import fornix_streamlines
     from dipy.reconst.dti import color_fa, fractional_anisotropy
-    from dipy.data import get_sphere
 
 if have_matplotlib:
     import matplotlib.pyplot as plt
@@ -642,8 +643,6 @@ def test_tensor_slicer(interactive=False):
     mevals[..., :] = evals
     mevecs[..., :, :] = evecs
 
-    from dipy.data import get_sphere
-
     sphere = get_sphere('symmetric724')
 
     affine = np.eye(4)
@@ -1079,20 +1078,18 @@ def test_grid(_interactive=False):
 
 def _sphere(scale=1):
 
-    from dipy.data import get_sphere
-
-    sphere = get_sphere('symmetric362')
+    vertices, faces = prim_sphere('symmetric362')
 
     from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
     polydata = vtk.vtkPolyData()
 
-    set_polydata_vertices(polydata, scale*sphere.vertices)
-    set_polydata_triangles(polydata, sphere.faces)
+    set_polydata_vertices(polydata, scale * vertices)
+    set_polydata_triangles(polydata, faces)
     from fury.utils import set_polydata_normals, normals_from_v_f
 
-    normals = normals_from_v_f(scale*sphere.vertices, sphere.faces)
+    normals = normals_from_v_f(scale * vertices, faces)
     set_polydata_normals(polydata, normals)
-    return polydata, scale*sphere.vertices, normals
+    return polydata, scale * vertices, normals
 
 
 def test_direct_sphere_mapping():
