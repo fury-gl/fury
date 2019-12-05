@@ -83,29 +83,29 @@ def test_scene():
 
 def test_deprecated():
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", PendingDeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
         scene = window.Renderer()
         npt.assert_equal(scene.size(), (0, 0))
         npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, PendingDeprecationWarning))
+        npt.assert_(issubclass(w[-1].category, DeprecationWarning))
 
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", PendingDeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
         scene = window.renderer(background=(0.0, 1.0, 0.0))
         npt.assert_equal(scene.size(), (0, 0))
         npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, PendingDeprecationWarning))
+        npt.assert_(issubclass(w[-1].category, DeprecationWarning))
 
     with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always", PendingDeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
         scene = window.ren()
         npt.assert_equal(scene.size(), (0, 0))
-        npt.assert_equal(len(w), 1)
-        npt.assert_(issubclass(w[-1].category, PendingDeprecationWarning))
+        npt.assert_equal(len(w), 2)
+        npt.assert_(issubclass(w[-1].category, DeprecationWarning))
 
     scene = window.Scene()
     with warnings.catch_warnings(record=True) as l_warn:
-        warnings.simplefilter("always", PendingDeprecationWarning)
+        warnings.simplefilter("always", DeprecationWarning)
         obj = actor.axes(scale=(1, 1, 1))
         window.add(scene, obj)
         arr = window.snapshot(scene)
@@ -126,9 +126,9 @@ def test_deprecated():
         npt.assert_equal(report.actors, 0)
         deprecated_warns = [w for w in l_warn
                             if issubclass(w.category,
-                                          PendingDeprecationWarning)]
-        npt.assert_equal(len(deprecated_warns), 6)
-        npt.assert_(issubclass(l_warn[-1].category, PendingDeprecationWarning))
+                                          DeprecationWarning)]
+        npt.assert_equal(len(deprecated_warns), 7)
+        npt.assert_(issubclass(l_warn[-1].category, DeprecationWarning))
 
 
 def test_active_camera():
