@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.testing as npt
 
-from fury.transform import sphere2cart, cart2sphere
+from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
+                            _AXES2TUPLE, _TUPLE2AXES)
 
 
 def _make_pts():
@@ -49,3 +50,17 @@ def test_sphere_cart():
     # Test full circle on x=1, y=1, z=1
     x, y, z = sphere2cart(*cart2sphere(1.0, 1.0, 1.0))
     npt.assert_array_almost_equal((x, y, z), (1.0, 1.0, 1.0))
+
+
+def test_euler_matrix():
+    rotation = euler_matrix(1, 2, 3, 'syxz')
+    npt.assert_equal(np.allclose(np.sum(rotation[0]), -1.34786452), True)
+
+    rotation = euler_matrix(1, 2, 3, (0, 1, 0, 1))
+    npt.assert_equal(np.allclose(np.sum(rotation[0]), -0.383436184), True)
+
+    ai, aj, ak = (4.0 * np.pi) * (np.random.random(3) - 0.5)
+    for axes in _AXES2TUPLE.keys():
+        _ = euler_matrix(ai, aj, ak, axes)
+    for axes in _TUPLE2AXES.keys():
+        _ = euler_matrix(ai, aj, ak, axes)
