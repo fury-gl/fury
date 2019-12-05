@@ -187,8 +187,8 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
     color_is_scalar = False
-    if not colors:
-        # No color
+    if colors is None or colors is False:
+        # No color array is used
         return poly_data, None
     elif isinstance(colors, str) and colors.lower() == "rgb":
         # set automatic rgb colors
