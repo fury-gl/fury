@@ -41,3 +41,22 @@ def test_spheres_primitives():
                          list(range(len(verts))))
 
     npt.assert_raises(ValueError, fp.prim_sphere, 'sym362')
+
+
+def test_superquadric_primitives():
+    # test default, should be like a sphere 362
+    sq_verts, sq_faces = fp.prim_superquadric()
+    s_verts, s_faces = fp.prim_sphere('symmetric362')
+
+    npt.assert_equal(sq_verts.shape, s_verts.shape)
+    npt.assert_equal(sq_faces.shape, s_faces.shape)
+
+    npt.assert_almost_equal(sq_verts, s_verts)
+
+    # Apply roundness
+    sq_verts, sq_faces = fp.prim_superquadric(roundness=(2, 3))
+    print(sq_verts.shape, sq_faces.shape)
+    npt.assert_equal(sq_verts.shape, s_verts.shape)
+    npt.assert_equal(sq_faces.shape, s_faces.shape)
+
+    # TODO: We need to check some superquadrics shape

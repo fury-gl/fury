@@ -1,6 +1,7 @@
 from os.path import join as pjoin
 import numpy as np
 from fury.data import DATA_DIR
+from fury.transform import cart2sphere
 from scipy.spatial import ConvexHull
 
 
@@ -134,3 +135,47 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     verts = res['vertices']
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
     return verts, faces
+
+
+def prim_superquadric(roundness=(1, 1)):
+    """Provide vertices and triangles of a superquadrics.
+
+    Parameters
+    ----------
+    roundness : tuple, optional
+        parameters (Phi and Theta) that control the shape of the superquadric
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that composed our sphere
+    triangles: ndarray
+        triangles that composed our sphere
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury.primitive import prim_superquadric
+    >>> verts, faces = prim_superquadric(roundness=(1, 1))
+    >>> verts.shape == (362, 3)
+    True
+    >>> faces.shape == (720, 3)
+    True
+
+    """
+    def _fexp(x, p):
+        """Return a different kind of exponentiation."""
+        return np.sign(x) * (np.abs(x) ** p)
+
+    sphere_verts, sphere_triangles = prim_sphere('symmetric362')
+    _, sphere_phi, sphere_theta = cart2sphere(*sphere_verts.T)
+
+    phi, theta = roundness
+    x = _fexp(np.sin(sphere_phi), phi) * _fexp(np.cos(sphere_theta), theta)
+    y = _fexp(np.sin(sphere_phi), phi) * _fexp(np.sin(sphere_theta), theta)
+    z = _fexp(np.cos(sphere_phi), phi)
+    xyz = np.vstack([x, y, z]).T
+
+    vertices = np.ascontiguousarray(xyz)
+
+    return vertices, sphere_triangles
