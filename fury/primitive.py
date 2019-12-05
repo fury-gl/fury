@@ -1,6 +1,7 @@
 from os.path import join as pjoin
 import numpy as np
 from fury.data import DATA_DIR
+from scipy.spatial import ConvexHull
 
 
 SPHERE_FILES = {
@@ -11,6 +12,29 @@ SPHERE_FILES = {
     'repulsion100': pjoin(DATA_DIR, 'repulsion100.npz'),
     'repulsion200': pjoin(DATA_DIR, 'repulsion200.npz')
 }
+
+
+def faces_from_sphere_vertices(vertices):
+    """
+    Triangulate a set of vertices on the sphere.
+
+    Parameters
+    ----------
+    vertices : (M, 3) ndarray
+        XYZ coordinates of vertices on the sphere.
+
+    Returns
+    -------
+    faces : (N, 3) ndarray
+        Indices into vertices; forms triangular faces.
+
+    """
+    hull = ConvexHull(vertices, qhull_options='Qbb Qc')
+    faces = np.ascontiguousarray(hull.simplices)
+    if len(vertices) < 2**16:
+        return np.asarray(faces, np.uint16)
+    else:
+        return faces
 
 
 def prim_square():
@@ -67,7 +91,7 @@ def prim_box():
     return vertices, triangles
 
 
-def prim_sphere(name='symmetric362'):
+def prim_sphere(name='symmetric362', gen_faces=False):
     """Provide vertices and triangles of the spheres.
 
     Parameters
@@ -80,6 +104,9 @@ def prim_sphere(name='symmetric362'):
         * 'repulsion724'
         * 'repulsion100'
         * 'repulsion200'
+    gen_faces : bool, optional
+        If True, triangulate a set of vertices on the sphere to get the faces.
+        Otherwise, we load the saved faces from a file. Default: False
 
     Returns
     -------
@@ -104,4 +131,6 @@ def prim_sphere(name='symmetric362'):
         raise ValueError('No sphere called "%s"' % name)
     res = np.load(fname)
 
-    return res['vertices'], res['faces']
+    verts = res['vertices']
+    faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
+    return verts, faces
