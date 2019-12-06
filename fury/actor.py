@@ -8,9 +8,9 @@ from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
-                        repeat_sources)
+                        repeat_sources, get_actor_from_primitive)
 from fury.io import load_image
-from fury.primitive import prim_square
+import fury.primitive as fp
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -1699,6 +1699,65 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
+def superquadrics(centers, roundness=(1, 1), directions=(1, 0, 0),
+                  colors=(255, 0, 0), scale=1):
+    """Visualize one or many superquadrics with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Superquadrics positions
+    roundness : ndarray, shape (N, 2) or tuple/list (2,), optional
+        parameters (Phi and Theta) that control the shape of the superquadric
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
+        The orientation vector of the cone.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : ndarray, shape (N) or (N,3) or float or int, optional
+        The height of the cone.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3) * 10
+    >>> directions = np.random.rand(3, 3)
+    >>> scale = np.random.rand(5)
+    >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
+    >>> cone_actor = actor.superquadrics(centers, roundness=roundness,
+    ...                                  directions=directions,
+    ...                                  colors=colors, scale=scale)
+    >>> scene.add(cone_actor)
+    >>> # window.show(scene)
+
+    """
+    def have_2_dimensions(arr):
+        return all(isinstance(i, (list, tuple, np.ndarray)) for i in arr)
+
+    # reshape roundness to a valid numpy array
+    if (isinstance(roundness, (tuple, list, np.ndarray)) and
+       len(roundness) == 2 and not have_2_dimensions(roundness)):
+        roundness = np.array([roundness] * centers.shape[0])
+    elif isinstance(roundness, np.ndarray) and len(roundness) == 1:
+        roundness = np.repeat(roundness, centers.shape[0], axis=0)
+    else:
+        roundness = np.array(roundness)
+
+    res = fp.repeat_primitive_function(func=fp.prim_superquadric,
+                                       centers=centers,
+                                       func_args=roundness,
+                                       directions=directions,
+                                       colors=colors)
+
+    big_verts, big_faces, big_colors = res
+    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return actor
+
+
 def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
           color=(1, 1, 1)):
     """Create a label actor.
@@ -2170,7 +2229,7 @@ def texture(rgb, interp=True):
     Y, X = arr.shape[:2]
 
     # Get vertices and triangles, then scale it
-    vertices, triangles = prim_square()
+    vertices, triangles = fp.prim_square()
     vertices *= np.array([[X, Y, 0]])
 
     # Create a polydata
