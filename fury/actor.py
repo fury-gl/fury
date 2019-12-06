@@ -1699,8 +1699,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def superquadrics(centers, roundness=(1, 1), directions=(1, 0, 0),
-                  colors=(255, 0, 0), scale=1):
+def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
+                 colors=(255, 0, 0), scale=1):
     """Visualize one or many superquadrics with different features.
 
     Parameters
@@ -1728,9 +1728,9 @@ def superquadrics(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> directions = np.random.rand(3, 3)
     >>> scale = np.random.rand(5)
     >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
-    >>> sq_actor = actor.superquadrics(centers, roundness=roundness,
-    ...                                directions=directions,
-    ...                                colors=colors, scale=scale)
+    >>> sq_actor = actor.superquadric(centers, roundness=roundness,
+    ...                               directions=directions,
+    ...                               colors=colors, scale=scale)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
 
