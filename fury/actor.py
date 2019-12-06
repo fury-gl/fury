@@ -1728,10 +1728,10 @@ def superquadrics(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> directions = np.random.rand(3, 3)
     >>> scale = np.random.rand(5)
     >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
-    >>> cone_actor = actor.superquadrics(centers, roundness=roundness,
-    ...                                  directions=directions,
-    ...                                  colors=colors, scale=scale)
-    >>> scene.add(cone_actor)
+    >>> sq_actor = actor.superquadrics(centers, roundness=roundness,
+    ...                                directions=directions,
+    ...                                colors=colors, scale=scale)
+    >>> scene.add(sq_actor)
     >>> # window.show(scene)
 
     """
