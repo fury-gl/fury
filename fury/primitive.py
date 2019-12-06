@@ -276,13 +276,22 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     return verts, faces
 
 
-def prim_superquadric(roundness=(1, 1)):
+def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     """Provide vertices and triangles of a superquadrics.
 
     Parameters
     ----------
     roundness : tuple, optional
         parameters (Phi and Theta) that control the shape of the superquadric
+
+    sphere_name : str, optional
+        which sphere - one of:
+        * 'symmetric362'
+        * 'symmetric642'
+        * 'symmetric724'
+        * 'repulsion724'
+        * 'repulsion100'
+        * 'repulsion200'
 
     Returns
     -------
@@ -306,7 +315,7 @@ def prim_superquadric(roundness=(1, 1)):
         """Return a different kind of exponentiation."""
         return np.sign(x) * (np.abs(x) ** p)
 
-    sphere_verts, sphere_triangles = prim_sphere('symmetric362')
+    sphere_verts, sphere_triangles = prim_sphere(sphere_name)
     _, sphere_phi, sphere_theta = cart2sphere(*sphere_verts.T)
 
     phi, theta = roundness
