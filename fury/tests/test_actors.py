@@ -1185,7 +1185,7 @@ def test_matplotlib_figure():
     npt.assert_equal(res.colors_found, [True, True])
 
 
-def test_superquadrics_actor(interactive=False):
+def test_superquadric_actor(interactive=False):
     scene = window.Scene()
     centers = np.random.rand(3, 3) * 8
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
@@ -1193,10 +1193,10 @@ def test_superquadrics_actor(interactive=False):
     scale = np.random.rand(3)
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
-    sq_actor = actor.superquadrics(centers, roundness=roundness,
-                                   directions=directions,
-                                   colors=colors.astype(np.uint8),
-                                   scale=scale)
+    sq_actor = actor.superquadric(centers, roundness=roundness,
+                                  directions=directions,
+                                  colors=colors.astype(np.uint8),
+                                  scale=scale)
     scene.add(sq_actor)
     if interactive:
         window.show(scene)
