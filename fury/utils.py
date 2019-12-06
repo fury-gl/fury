@@ -482,6 +482,46 @@ def get_actor_from_polydata(polydata):
     return get_actor_from_polymapper(poly_mapper)
 
 
+def get_actor_from_primitive(vertices, triangles, colors=None,
+                             normals=None, backface_culling=True):
+    """Get vtkActor from a vtkPolyData.
+
+    Parameters
+    ----------
+    vertices : (Mx3) ndarray
+        XYZ coordinates of the object
+    triangles: (Nx3) ndarray
+        Indices into vertices; forms triangular faces.
+    colors: (Nx3) ndarray
+        N is equal to the number of lines. Every line is coloured with a
+        different RGB color.
+    normals: (Nx3) ndarray
+        normals, represented as 2D ndarrays (Nx3) (one per vertex)
+    backface_culling: bool
+        culling of polygons based on orientation of normal with respect to
+        camera. If backface culling is True, polygons facing away from camera
+        are not drawn. Default: True
+
+
+    Returns
+    -------
+    actor : vtkActor
+
+    """
+    # Create a Polydata
+    pd = vtk.vtkPolyData()
+    set_polydata_vertices(pd, vertices)
+    set_polydata_triangles(pd, triangles)
+    if isinstance(colors, np.ndarray):
+        set_polydata_colors(pd, colors)
+    if isinstance(normals, np.ndarray):
+        set_polydata_normals(pd, normals)
+
+    current_actor = get_actor_from_polydata(pd)
+    current_actor.GetProperty().SetBackfaceCulling(backface_culling)
+    return current_actor
+
+
 def repeat_sources(centers, colors, active_scalars=1., directions=None,
                    source=None, vertices=None, faces=None):
     """Transform a vtksource to glyph.

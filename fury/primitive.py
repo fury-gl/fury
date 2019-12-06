@@ -1,7 +1,9 @@
 from os.path import join as pjoin
 import numpy as np
 from fury.data import DATA_DIR
+from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
+from scipy.spatial.transform import Rotation
 
 
 SPHERE_FILES = {
@@ -35,6 +37,144 @@ def faces_from_sphere_vertices(vertices):
         return np.asarray(faces, np.uint16)
     else:
         return faces
+
+
+def repeat_primitive_function(func, centers, func_args=[],
+                              directions=(1, 0, 0), colors=(255, 0, 0),
+                              scale=1):
+    """Repeat Vertices and triangles of a specific primitive function.
+
+    It could be seen as a glyph. The primitive function should generate and
+    return vertices and faces
+
+    Parameters
+    ----------
+    func : callable
+        primitive functions
+    centers : ndarray, shape (N, 3)
+        Superquadrics positions
+    func_args : args
+        primitive functions arguments/parameters
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
+        The orientation vector of the cone.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : ndarray, shape (N) or (N,3) or float or int, optional
+        The height of the cone.
+
+    Returns
+    -------
+    big_vertices: ndarray
+        Expanded vertices at the centers positions
+    big_triangles: ndarray
+        Expanded triangles that composed our shape to duplicate
+    big_colors : ndarray
+        Expanded colors applied to all vertices/faces
+
+    """
+    # Get faces
+    _, faces = func()
+    if len(func_args) == 1:
+        func_args = np.squeeze(np.array([func_args] * centers.shape[0]))
+    elif len(func_args) != centers.shape[0]:
+        raise IOError("sq_params should 1 or equal to the numbers \
+                        of centers")
+
+    vertices = np.concatenate([func(i)[0] for i in func_args])
+    return repeat_primitive(vertices=vertices, faces=faces, centers=centers,
+                            directions=directions, colors=colors, scale=scale,
+                            have_tiled_verts=True)
+
+
+def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
+                     colors=(255, 0, 0), scale=1, have_tiled_verts=False):
+    """Repeat Vertices and triangles of a specific primitive shape.
+
+    It could be seen as a glyph.
+
+    Parameters
+    ----------
+    vertices: ndarray
+        vertices coords to duplicate at the centers positions
+    triangles: ndarray
+        triangles that composed our shape to duplicate
+    centers : ndarray, shape (N, 3)
+        Superquadrics positions
+    directions : ndarray, shape (N, 3) or tuple (3,), optional
+        The orientation vector of the cone.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : ndarray, shape (N) or (N,3) or float or int, optional
+        The height of the cone.
+    have_tiled_verts : bool
+        option to control if we need to duplicate vertices of a shape or not
+
+    Returns
+    -------
+    big_vertices: ndarray
+        Expanded vertices at the centers positions
+    big_triangles: ndarray
+        Expanded triangles that composed our shape to duplicate
+    big_colors : ndarray
+        Expanded colors applied to all vertices/faces
+
+    """
+    # duplicated vertices if needed
+    if not have_tiled_verts:
+        vertices = np.tile(vertices, (centers.shape[0], 1))
+
+    # Get unit shape
+    unit_verts_size = vertices.shape[0] // centers.shape[0]
+    unit_triangles_size = faces.shape[0]
+
+    big_centers = np.repeat(centers, unit_verts_size, axis=0)
+    # apply centers position
+    big_vertices = vertices + big_centers
+    # scale them
+    if isinstance(scale, (list, tuple, np.ndarray)):
+        scale = np.repeat(scale, unit_verts_size, axis=0)
+        scale = scale.reshape((big_vertices.shape[0], 1))
+    big_vertices *= scale
+
+    # update triangles
+    big_triangles = np.array(np.tile(faces,
+                             (centers.shape[0], 1)),
+                             dtype=np.int32)
+    big_triangles += np.repeat(np.arange(0, centers.shape[0] *
+                               unit_verts_size, step=unit_verts_size),
+                               unit_triangles_size,
+                               axis=0).reshape((big_triangles.shape[0], 1))
+
+    def normalize_input(arr, arr_name=''):
+        if isinstance(arr, (tuple, list, np.ndarray)) and len(arr) == 3 and \
+          not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
+            return np.array([arr] * centers.shape[0])
+        elif isinstance(arr, np.ndarray) and len(arr) == 1:
+            return np.repeat(arr, centers.shape[0], axis=0)
+        elif len(arr) != len(centers):
+            msg = "{} size should be 1 or ".format(arr_name)
+            msg += "equal to the numbers of centers"
+            raise IOError(msg)
+        else:
+            return np.array(arr)
+
+    # update colors
+    colors = normalize_input(colors, 'colors')
+    big_colors = np.repeat(colors, unit_verts_size, axis=0)
+
+    # update orientations
+    directions = normalize_input(directions, 'directions')
+    big_vertices -= big_centers
+    for pts, dirs in enumerate(directions):
+        ai, aj, ak = Rotation.from_rotvec(np.pi/2 * dirs).as_euler('zyx')
+        rotation_matrix = euler_matrix(ai, aj, ak)
+        big_vertices[pts * unit_verts_size: (pts+1) * unit_verts_size] = \
+            np.dot(rotation_matrix[:3, :3],
+                   big_vertices[pts * unit_verts_size:
+                                (pts+1) * unit_verts_size].T).T
+    big_vertices += big_centers
+
+    return big_vertices, big_triangles, big_colors
 
 
 def prim_square():
@@ -134,3 +274,56 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     verts = res['vertices']
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
     return verts, faces
+
+
+def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
+    """Provide vertices and triangles of a superquadrics.
+
+    Parameters
+    ----------
+    roundness : tuple, optional
+        parameters (Phi and Theta) that control the shape of the superquadric
+
+    sphere_name : str, optional
+        which sphere - one of:
+        * 'symmetric362'
+        * 'symmetric642'
+        * 'symmetric724'
+        * 'repulsion724'
+        * 'repulsion100'
+        * 'repulsion200'
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that composed our sphere
+    triangles: ndarray
+        triangles that composed our sphere
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury.primitive import prim_superquadric
+    >>> verts, faces = prim_superquadric(roundness=(1, 1))
+    >>> verts.shape == (362, 3)
+    True
+    >>> faces.shape == (720, 3)
+    True
+
+    """
+    def _fexp(x, p):
+        """Return a different kind of exponentiation."""
+        return np.sign(x) * (np.abs(x) ** p)
+
+    sphere_verts, sphere_triangles = prim_sphere(sphere_name)
+    _, sphere_phi, sphere_theta = cart2sphere(*sphere_verts.T)
+
+    phi, theta = roundness
+    x = _fexp(np.sin(sphere_phi), phi) * _fexp(np.cos(sphere_theta), theta)
+    y = _fexp(np.sin(sphere_phi), phi) * _fexp(np.sin(sphere_theta), theta)
+    z = _fexp(np.cos(sphere_phi), phi)
+    xyz = np.vstack([x, y, z]).T
+
+    vertices = np.ascontiguousarray(xyz)
+
+    return vertices, sphere_triangles
