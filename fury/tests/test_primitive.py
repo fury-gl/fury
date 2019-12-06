@@ -55,8 +55,46 @@ def test_superquadric_primitives():
 
     # Apply roundness
     sq_verts, sq_faces = fp.prim_superquadric(roundness=(2, 3))
-    print(sq_verts.shape, sq_faces.shape)
     npt.assert_equal(sq_verts.shape, s_verts.shape)
     npt.assert_equal(sq_faces.shape, s_faces.shape)
 
     # TODO: We need to check some superquadrics shape
+
+
+def test_repeat_primitive():
+    # init variables
+    verts, faces = fp.prim_square()
+    centers = np.array([[0, 0, 0], [5, 0, 0], [10, 0, 0]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
+
+    big_verts, big_faces, big_colors = fp.repeat_primitive(vertices=verts,
+                                                           faces=faces,
+                                                           centers=centers,
+                                                           directions=dirs,
+                                                           colors=colors)
+
+    npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_faces.shape[0],  faces.shape[0] * centers.shape[0])
+    npt.assert_equal(big_colors.shape[0],  verts.shape[0] * centers.shape[0])
+
+    # TODO: Check the array content
+
+
+def test_repeat_primitive_function():
+    # init variables
+    centers = np.array([[0, 0, 0], [5, 0, 0], [10, 0, 0]])
+    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) * 255
+    phi_theta = np.array([[1, 1], [1, 2], [2, 1]])
+
+    res = fp.repeat_primitive_function(func=fp.prim_superquadric,
+                                       centers=centers,
+                                       func_args=phi_theta,
+                                       directions=dirs,
+                                       colors=colors)
+
+    big_verts, big_faces, big_colors = res
+
+    # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
+
