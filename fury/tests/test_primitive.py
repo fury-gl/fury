@@ -97,4 +97,3 @@ def test_repeat_primitive_function():
     big_verts, big_faces, big_colors = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
-
