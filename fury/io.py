@@ -6,9 +6,6 @@ from vtk.util import numpy_support
 from fury.utils import set_input
 
 
-SURFACE_FORMAT = [".vtk", ".vtp", ".fib", ".ply", ".stl", ".xml", ".obj"]
-
-
 def load_image(filename, as_vtktype=False, use_pillow=True):
     """Load an image.
 
