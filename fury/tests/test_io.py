@@ -59,8 +59,8 @@ def test_save_and_load_options():
 
             npt.assert_array_equal(data, out_data)
 
-    l_ext = ["stl", "obj"]
-    l_options = [{}, {'is_mni_obj': True, }]
+    l_ext = ["vtk", "vtp", "ply", "stl", "mni.obj"]
+    l_options = [{}, {'binary': False, }]
     for ext, option in zip(l_ext, l_options):
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
