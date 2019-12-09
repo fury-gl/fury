@@ -1756,10 +1756,50 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                                        centers=centers,
                                        func_args=roundness,
                                        directions=directions,
-                                       colors=colors)
+                                       colors=colors, scale=scale)
 
     big_verts, big_faces, big_colors = res
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return actor
+
+
+def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
+          fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None, texture=None):
+
+    verts, faces = fp.prim_square()
+    big_verts, big_faces, big_colors = fp.repeat_primitive(verts, faces,
+                                                           centers=centers,
+                                                           colors=colors,
+                                                           scale=scale)
+
+    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    big_centers = np.repeat(centers, verts.shape[0], axis=0)
+    big_scales = np.repeat(scale, verts.shape[0], axis=0)
+    big_centers *= big_scales[:, np.newaxis]
+    vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
+    vtk_centers.SetNumberOfComponents(3)
+    vtk_centers.SetName("center")
+    actor.GetMapper().GetInput().GetPointData().AddArray(vtk_centers)
+    mapper = actor.GetMapper()
+
+    mapper.MapDataArrayToVertexAttribute(
+        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
+        fury.shaders.load("billboard_dec.vert"), False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
+        fury.shaders.load("billboard_impl.vert"), False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
+        fury.shaders.load("billboard_dec.frag"), False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
+        fury.shaders.load("billboard_impl.frag"), False)
     return actor
 
 
