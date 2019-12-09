@@ -1,7 +1,7 @@
 from fury import actor, window
 from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
-                        numpy_to_vtk_points, set_polydata_triangles,
-                        set_polydata_vertices, set_polydata_colors)
+                        set_polydata_triangles, set_polydata_vertices,
+                        set_polydata_colors)
 import fury.primitive as fp
 from vtk.util import numpy_support
 
@@ -36,15 +36,15 @@ def test_spheres_on_canvas():
 
     big_verts += big_cents
 
-    #print(big_verts)
+    # print(big_verts)
 
     big_scales = np.repeat(radius, verts.shape[0], axis=0)
 
-    #print(big_scales)
+    # print(big_scales)
 
     big_verts *= big_scales[:, np.newaxis]
 
-    #print(big_verts)
+    # print(big_verts)
 
     tris = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
 
@@ -54,19 +54,19 @@ def test_spheres_on_canvas():
 
     big_tris += shifts[:, np.newaxis]
 
-    #print(big_tris)
+    # print(big_tris)
 
     big_cols = np.repeat(colors, verts.shape[0], axis=0)
 
-    #print(big_cols)
+    # print(big_cols)
 
     big_centers = np.repeat(centers, verts.shape[0], axis=0)
 
-    #print(big_centers)
+    # print(big_centers)
 
     big_centers *= big_scales[:, np.newaxis]
 
-    #print(big_centers)
+    # print(big_centers)
 
     set_polydata_vertices(polydata, big_verts)
     set_polydata_triangles(polydata, big_tris)
@@ -187,13 +187,13 @@ def test_spheres_on_canvas():
         cam_pos = camera.GetPosition()
         foc_pnt = camera.GetFocalPoint()
         view_up = camera.GetViewUp()
-        cam_light_mat = camera.GetCameraLightTransformMatrix()
-        #comp_proj_mat = camera.GetCompositeProjectionTransformMatrix()
-        exp_proj_mat = camera.GetExplicitProjectionTransformMatrix()
-        eye_mat = camera.GetEyeTransformMatrix()
-        model_mat = camera.GetModelTransformMatrix()
-        model_view_mat = camera.GetModelViewTransformMatrix()
-        proj_mat = camera.GetProjectionTransformMatrix(scene)
+        # cam_light_mat = camera.GetCameraLightTransformMatrix()
+        # comp_proj_mat = camera.GetCompositeProjectionTransformMatrix()
+        # exp_proj_mat = camera.GetExplicitProjectionTransformMatrix()
+        # eye_mat = camera.GetEyeTransformMatrix()
+        # model_mat = camera.GetModelTransformMatrix()
+        # model_view_mat = camera.GetModelViewTransformMatrix()
+        # proj_mat = camera.GetProjectionTransformMatrix(scene)
         view_mat = camera.GetViewTransformMatrix()
         mat = view_mat
         np.set_printoptions(precision=3, suppress=True)
@@ -203,22 +203,22 @@ def test_spheres_on_canvas():
                 np_mat[i, j] = mat.GetElement(i, j)
         program = calldata
         if program is not None:
-            #print("\nCamera position: {}".format(cam_pos))
-            #print("Focal point: {}".format(foc_pnt))
-            #print("View up: {}".format(view_up))
-            #print(mat)
-            #print(np_mat)
-            #print(np.dot(-np_mat[:3, 3], np_mat[:3, :3]))
-            #a = np.array(cam_pos) - np.array(foc_pnt)
-            #print(a / np.linalg.norm(a))
-            #print(cam_light_mat)
-            ##print(comp_proj_mat)
-            #print(exp_proj_mat)
-            #print(eye_mat)
-            #print(model_mat)
-            #print(model_view_mat)
-            #print(proj_mat)
-            #print(view_mat)
+            # print("\nCamera position: {}".format(cam_pos))
+            # print("Focal point: {}".format(foc_pnt))
+            # print("View up: {}".format(view_up))
+            # print(mat)
+            # print(np_mat)
+            # print(np.dot(-np_mat[:3, 3], np_mat[:3, :3]))
+            # a = np.array(cam_pos) - np.array(foc_pnt)
+            # print(a / np.linalg.norm(a))
+            # print(cam_light_mat)
+            # #print(comp_proj_mat)
+            # print(exp_proj_mat)
+            # print(eye_mat)
+            # print(model_mat)
+            # print(model_view_mat)
+            # print(proj_mat)
+            # print(view_mat)
             program.SetUniform2f("Ext_res", res)
             program.SetUniform3f("Ext_camPos", cam_pos)
             program.SetUniform3f("Ext_focPnt", foc_pnt)
@@ -235,8 +235,8 @@ def test_spheres_on_canvas():
         timer += 1.
         showm.render()
         scene.azimuth(2)
-        #scene.elevation(5)
-        #scene.roll(5)
+        # scene.elevation(5)
+        # scene.roll(5)
 
     label = vtk.vtkOpenGLBillboardTextActor3D()
     label.SetInput("FURY Rocks!!!")
@@ -244,15 +244,17 @@ def test_spheres_on_canvas():
     label.GetTextProperty().SetFontSize(40)
     label.GetTextProperty().SetColor(.5, .5, .5)
     # TODO: Get Billboard's mapper
-    #l_mapper = label.GetActors()
+    # l_mapper = label.GetActors()
 
-    #scene.add(label)
+    # scene.add(label)
     scene.add(actor.axes())
 
     scene.background((1, 1, 1))
 
-    #scene.set_camera(position=(1.5, 2.5, 15), focal_point=(1.5, 2.5, 1.5), view_up=(0, 1, 0))
-    scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0), view_up=(0, 1, 0))
+    # scene.set_camera(position=(1.5, 2.5, 15), focal_point=(1.5, 2.5, 1.5),
+    #                  view_up=(0, 1, 0))
+    scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0),
+                     view_up=(0, 1, 0))
     showm.initialize()
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
@@ -287,6 +289,7 @@ def test_fireballs_on_canvas():
 
     big_verts += big_cents
 
+    import ipdb; ipdb.set_trace()
     big_scales = np.repeat(radius, verts.shape[0], axis=0)
 
     big_verts *= big_scales[:, np.newaxis]
@@ -431,7 +434,6 @@ def test_fireballs_on_canvas():
     showm.initialize()
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
-
 
 
 # test_spheres_on_canvas()

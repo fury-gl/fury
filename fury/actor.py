@@ -1803,10 +1803,13 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
                                                            scale=scale)
 
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    # actor.GetProperty().BackfaceCullingOff()
+    actor.GetProperty().BackfaceCullingOff()
     big_centers = np.repeat(centers, verts.shape[0], axis=0)
-    big_scales = np.repeat(scale, verts.shape[0], axis=0)
-    big_centers *= big_scales[:, np.newaxis]
+    # import ipdb; ipdb.set_trace()
+    if isinstance(scale, (list, tuple, np.ndarray)):
+        scale = np.repeat(scale, verts.shape[0], axis=0)
+        scale = scale.reshape((big_centers.shape[0], 1))
+    big_centers *= scale
     vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
     vtk_centers.SetNumberOfComponents(3)
     vtk_centers.SetName("center")
@@ -1821,7 +1824,7 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
             raise IOError("The only supported format are string or filename,"
                           "list of string or filename")
 
-        if isinstance(str):
+        if isinstance(glsl_code, str):
             code += "\n"
             code += fs.load(glsl_code) if op.isfile(glsl_code) else glsl_code
             return code
@@ -1834,7 +1837,7 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
     vs_dec_code = get_code(vs_dec) + "\n" + fs.load("billboard_dec.vert")
     vs_impl_code = get_code(vs_impl) + "\n" + fs.load("billboard_impl.vert")
     fs_dec_code = get_code(fs_dec) + "\n" + fs.load("billboard_dec.frag")
-    fs_impl_code = get_code(fs_impl) + "\n" + fs.load("billboard_impl.frag")
+    fs_impl_code = fs.load("billboard_impl.frag") + "\n" + get_code(fs_impl)
     gs_dec_code = get_code(gs_dec)
     gs_impl_code = get_code(gs_impl)
 

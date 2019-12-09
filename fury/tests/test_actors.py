@@ -1209,15 +1209,30 @@ def test_superquadric_actor(interactive=False):
 
 
 def test_canva_actor(interactive=False):
-    scene = window.Scene(background=(255, 255, 255))
-    # scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0), view_up=(0, 1, 0))
+    scene = window.Scene()
+    scene.background((1, 1, 1))
     centers = np.random.rand(3, 3) * 3
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    scale = np.random.rand(3)
+    scale = 1  # np.random.rand(3) * 5
+
+    fake_sphere = \
+    """
+    float len = length(point);
+    float radius = 1.;
+    if(len > radius)
+        {discard;}
+
+    vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
+    vec3 direction = normalize(vec3(1., 1., 1.));
+    float df = max(0, dot(direction, normalizedPoint));
+    float sf = pow(df, 24);
+    fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
+    """
 
     canva_actor = actor.canva(centers,
                               colors=colors.astype(np.uint8),
-                              scale=scale)
+                              scale=scale,
+                              fs_impl=fake_sphere)
     scene.add(canva_actor)
     scene.add(actor.axes())
     if interactive:
@@ -1225,5 +1240,5 @@ def test_canva_actor(interactive=False):
 
 
 if __name__ == "__main__":
-    npt.run_module_suite()
-    # test_canva_actor(True)
+    # npt.run_module_suite()
+    test_canva_actor(True)

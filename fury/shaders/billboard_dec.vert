@@ -1,10 +1,5 @@
-/*
- * The goal of this shader is to increase simulate billboard
- */
-
+/* Billboard  vertex shader declaration */
 //VTK::ValuePass::Dec
 in vec3 center;
-uniform mat4 Ext_mat;
 out vec3 centeredVertexMC;
-out vec3 cameraPosition;
-out vec3 viewUp;
+out float scalingFactor;

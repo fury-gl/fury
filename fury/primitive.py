@@ -117,6 +117,8 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
         Expanded triangles that composed our shape to duplicate
     big_colors : ndarray
         Expanded colors applied to all vertices/faces
+    big_centers : ndarray
+        Expanded centers for all vertices/faces
 
     """
     # duplicated vertices if needed
@@ -128,12 +130,14 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     unit_triangles_size = faces.shape[0]
 
     big_centers = np.repeat(centers, unit_verts_size, axis=0)
+
     # apply centers position
     big_vertices = vertices + big_centers
     # scale them
     if isinstance(scale, (list, tuple, np.ndarray)):
         scale = np.repeat(scale, unit_verts_size, axis=0)
         scale = scale.reshape((big_vertices.shape[0], 1))
+    print(scale)
     big_vertices *= scale
 
     # update triangles
