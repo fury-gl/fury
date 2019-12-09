@@ -1208,5 +1208,22 @@ def test_superquadric_actor(interactive=False):
     npt.assert_equal(res.colors_found, [True, True, True])
 
 
+def test_canva_actor(interactive=False):
+    scene = window.Scene(background=(255, 255, 255))
+    # scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0), view_up=(0, 1, 0))
+    centers = np.random.rand(3, 3) * 3
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = np.random.rand(3)
+
+    canva_actor = actor.canva(centers,
+                              colors=colors.astype(np.uint8),
+                              scale=scale)
+    scene.add(canva_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+
 if __name__ == "__main__":
     npt.run_module_suite()
+    # test_canva_actor(True)
