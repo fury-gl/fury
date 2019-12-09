@@ -1,8 +1,9 @@
+import os.path as op
 import numpy as np
 import vtk
 from vtk.util import numpy_support
 
-import fury.shaders
+import fury.shaders as fs
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
@@ -674,7 +675,7 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     poly_mapper.Update()
 
     if depth_cue:
-        poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
+        poly_mapper.SetGeometryShaderCode(fs.load("line.geom"))
 
         @vtk.calldata_type(vtk.VTK_OBJECT)
         def vtkShaderCallback(_caller, _event, calldata=None):
@@ -1764,8 +1765,37 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
 
 
 def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
-          fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None, texture=None):
+          fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+    """Visualize one or many custom shaders through a canvas
 
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Superquadrics positions
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : ndarray, shape (N) or (N,3) or float or int, optional
+        The height of the cone.
+    vs_dec : str or list of str, optional
+        vertex shaders code that contains all variable/function delarations
+    vs_impl : str or list of str, optional
+        vertex shaders code that contains all variable/function implementation
+    fs_dec : str or list of str, optional
+        Fragment shaders code that contains all variable/function delarations
+    fs_impl : str or list of str, optional
+        Fragment shaders code that contains all variable/function
+        implementation
+    gs_dec : str or list of str, optional
+        Geometry shaders code that contains all variable/function delarations
+    gs_impl : str or list of str, optional
+        Geometry shaders code that contains all variable/function
+        mplementation
+
+    Returns
+    -------
+    vtkActor
+
+    """
     verts, faces = fp.prim_square()
     big_verts, big_faces, big_colors = fp.repeat_primitive(verts, faces,
                                                            centers=centers,
@@ -1773,6 +1803,7 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
                                                            scale=scale)
 
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    # actor.GetProperty().BackfaceCullingOff()
     big_centers = np.repeat(centers, verts.shape[0], axis=0)
     big_scales = np.repeat(scale, verts.shape[0], axis=0)
     big_centers *= big_scales[:, np.newaxis]
@@ -1780,26 +1811,61 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
     vtk_centers.SetNumberOfComponents(3)
     vtk_centers.SetName("center")
     actor.GetMapper().GetInput().GetPointData().AddArray(vtk_centers)
-    mapper = actor.GetMapper()
 
+    def get_code(glsl_code):
+        code = ""
+        if not glsl_code:
+            return code
+
+        if not all(isinstance(i, (str)) for i in glsl_code):
+            raise IOError("The only supported format are string or filename,"
+                          "list of string or filename")
+
+        if isinstance(str):
+            code += "\n"
+            code += fs.load(glsl_code) if op.isfile(glsl_code) else glsl_code
+            return code
+
+        for content in glsl_code:
+            code += "\n"
+            code += fs.load(content) if op.isfile(content) else content
+        return code
+
+    vs_dec_code = get_code(vs_dec) + "\n" + fs.load("billboard_dec.vert")
+    vs_impl_code = get_code(vs_impl) + "\n" + fs.load("billboard_impl.vert")
+    fs_dec_code = get_code(fs_dec) + "\n" + fs.load("billboard_dec.frag")
+    fs_impl_code = get_code(fs_impl) + "\n" + fs.load("billboard_impl.frag")
+    gs_dec_code = get_code(gs_dec)
+    gs_impl_code = get_code(gs_impl)
+
+    mapper = actor.GetMapper()
     mapper.MapDataArrayToVertexAttribute(
         "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
-        fury.shaders.load("billboard_dec.vert"), False)
+        vs_dec_code, False)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
-        fury.shaders.load("billboard_impl.vert"), False)
+        vs_impl_code, False)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
-        fury.shaders.load("billboard_dec.frag"), False)
+        fs_dec_code, False)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
-        fury.shaders.load("billboard_impl.frag"), False)
+        fs_impl_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Geometry, "//VTK::Output::Dec", True,
+        gs_dec_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Geometry, "//VTK::Output::Impl", True,
+        gs_impl_code, False)
+
     return actor
 
 
