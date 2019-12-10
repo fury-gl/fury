@@ -626,9 +626,10 @@ class ShowManager(object):
 
         self.play_events(events)
 
-    def add_window_callback(self, win_callback):
+    def add_window_callback(self, win_callback,
+                            event=vtk.vtkCommand.ModifiedEvent):
         """Add window callbacks."""
-        self.window.AddObserver(vtk.vtkCommand.ModifiedEvent, win_callback)
+        self.window.AddObserver(event, win_callback)
         self.window.Render()
 
     def add_timer_callback(self, repeat, duration, timer_callback):
