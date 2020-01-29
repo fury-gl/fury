@@ -2,7 +2,8 @@
 
 from os.path import join as pjoin, dirname
 
-from fury.data.fetcher import fetch_viz_icons, read_viz_icons
+from fury.data.fetcher import (fetch_viz_icons, read_viz_icons,
+                               fetch_viz_wiki_nw)
 
 DATA_DIR = pjoin(dirname(__file__), 'files')
 
