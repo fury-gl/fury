@@ -1759,7 +1759,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                                        directions=directions,
                                        colors=colors, scale=scale)
 
-    big_verts, big_faces, big_colors = res
+    big_verts, big_faces, big_colors, _ = res
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return actor
 
@@ -1797,19 +1797,13 @@ def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
 
     """
     verts, faces = fp.prim_square()
-    big_verts, big_faces, big_colors = fp.repeat_primitive(verts, faces,
-                                                           centers=centers,
-                                                           colors=colors,
-                                                           scale=scale)
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scale=scale)
+
+    big_verts, big_faces, big_colors, big_centers = res
 
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     actor.GetProperty().BackfaceCullingOff()
-    big_centers = np.repeat(centers, verts.shape[0], axis=0)
-    # import ipdb; ipdb.set_trace()
-    if isinstance(scale, (list, tuple, np.ndarray)):
-        scale = np.repeat(scale, verts.shape[0], axis=0)
-        scale = scale.reshape((big_centers.shape[0], 1))
-    big_centers *= scale
     vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
     vtk_centers.SetNumberOfComponents(3)
     vtk_centers.SetName("center")

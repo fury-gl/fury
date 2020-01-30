@@ -1208,12 +1208,32 @@ def test_superquadric_actor(interactive=False):
     npt.assert_equal(res.colors_found, [True, True, True])
 
 
+def test_square_actor(interactive=False):
+    from fury import utils, primitive as fp
+    scene = window.Scene()
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = [1, 2, 3]
+
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scale=scale)
+
+    big_verts, big_faces, big_colors, _  = res
+    sq_actor = utils.get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetProperty().BackfaceCullingOff()
+    scene.add(sq_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+
 def test_canva_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
-    centers = np.random.rand(3, 3) * 3
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    scale = 1  # np.random.rand(3) * 5
+    scale = [1, 2, 1]
 
     fake_sphere = \
     """
@@ -1240,5 +1260,6 @@ def test_canva_actor(interactive=False):
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
     test_canva_actor(True)
+    # test_square_actor(True)
+    # test_superquadric_actor(True)
