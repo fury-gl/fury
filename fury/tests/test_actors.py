@@ -1228,7 +1228,7 @@ def test_square_actor(interactive=False):
         window.show(scene)
 
 
-def test_canva_actor(interactive=False):
+def test_canvas_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
@@ -1249,10 +1249,10 @@ def test_canva_actor(interactive=False):
     fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
     """
 
-    canva_actor = actor.canva(centers,
-                              colors=colors.astype(np.uint8),
-                              scale=scale,
-                              fs_impl=fake_sphere)
+    canva_actor = actor.canvas(centers,
+                               colors=colors.astype(np.uint8),
+                               scale=scale,
+                               fs_impl=fake_sphere)
     scene.add(canva_actor)
     scene.add(actor.axes())
     if interactive:
@@ -1260,6 +1260,6 @@ def test_canva_actor(interactive=False):
 
 
 if __name__ == "__main__":
-    test_canva_actor(True)
+    test_canvas_actor(True)
     # test_square_actor(True)
     # test_superquadric_actor(True)

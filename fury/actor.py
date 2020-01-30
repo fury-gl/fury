@@ -1764,8 +1764,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return actor
 
 
-def canva(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
-          fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+def canvas(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
+           fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
     """Visualize one or many custom shaders through a canvas
 
     Parameters
