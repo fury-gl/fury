@@ -1219,7 +1219,7 @@ def test_square_actor(interactive=False):
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
                               scale=scale)
 
-    big_verts, big_faces, big_colors, _  = res
+    big_verts, big_faces, big_colors, _ = res
     sq_actor = utils.get_actor_from_primitive(big_verts, big_faces, big_colors)
     sq_actor.GetProperty().BackfaceCullingOff()
     scene.add(sq_actor)
