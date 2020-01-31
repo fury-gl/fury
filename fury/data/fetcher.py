@@ -24,7 +24,10 @@ else:
 
 # The URL to the University of Washington Researchworks repository:
 UW_RW_URL = \
-  "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
+    "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
+
+FURY_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/examples/"
 
 
 class FetcherError(Exception):
@@ -248,7 +251,26 @@ fetch_viz_icons = _make_fetcher("fetch_viz_icons",
                                 ['94a07cba06b4136b6687396426f1e380'],
                                 data_size="12KB",
                                 doc="Download icons for fury",
-                                unzip=True)
+                                unzip=True
+                                )
+
+
+fetch_viz_wiki_nw = _make_fetcher("fetch_viz_wiki_nw",
+                                  pjoin(fury_home, "examples", "wiki_nw"),
+                                  FURY_DATA_URL,
+                                  ['wiki_categories.txt', 'wiki_edges.txt',
+                                   'wiki_positions.txt'],
+                                  ['wiki_categories.txt', 'wiki_edges.txt',
+                                   'wiki_positions.txt'],
+                                  ['465cac68c14fbda4f384ea6ae518b6b8',
+                                   '7d7a4aff581a54bc873eb617c156467d',
+                                   '607d628ec615f98db13640eb96428465'],
+                                  doc="Download the following wiki information"
+                                      "Interdisciplinary map of the journals",
+                                  msg=("More information about complex "
+                                       "networks can be found in this papers:"
+                                       " https://arxiv.org/abs/0711.3199")
+                                  )
 
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
