@@ -1249,11 +1249,11 @@ def test_canvas_actor(interactive=False):
     fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
     """
 
-    canva_actor = actor.canvas(centers,
-                               colors=colors.astype(np.uint8),
-                               scale=scale,
-                               fs_impl=fake_sphere)
-    scene.add(canva_actor)
+    canvas_actor = actor.canvas(centers,
+                                colors=colors.astype(np.uint8),
+                                scale=scale,
+                                fs_impl=fake_sphere)
+    scene.add(canvas_actor)
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
