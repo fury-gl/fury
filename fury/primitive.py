@@ -3,7 +3,7 @@ import numpy as np
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
-from scipy.spatial.transform import Rotation
+from scipy.spatial import transform
 
 
 SPHERE_FILES = {
@@ -166,7 +166,8 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     directions = normalize_input(directions, 'directions')
     big_vertices -= big_centers
     for pts, dirs in enumerate(directions):
-        ai, aj, ak = Rotation.from_rotvec(np.pi/2 * dirs).as_euler('zyx')
+        ai, aj, ak = transform.Rotation.from_rotvec(np.pi/2 * dirs). \
+            as_euler('zyx')
         rotation_matrix = euler_matrix(ai, aj, ak)
         big_vertices[pts * unit_verts_size: (pts+1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
