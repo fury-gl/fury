@@ -13,13 +13,9 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     ----------
     filename: str
         should be png, bmp, jpeg or jpg files
-    extension : str, optional
-        The image file format assumed for reading the data. If not
-        given, the format is deduced from the filename (By default, it
-        will try PNG deduction failed.)
     as_vtktype: bool, optional
         if True, return vtk output otherwise an ndarray. Default False.
-    use_pillow: bool
+    use_pillow: bool, optional
         Use pillow python library to load the files. Default True
 
     Returns
@@ -106,13 +102,13 @@ def save_image(arr, filename, compression_quality=75,
         array to save
     filename : string
         should be png, bmp, jpeg or jpg files
-    compression_quality : int
+    compression_quality : int, optional
         compression_quality for jpeg data.
         0 = Low quality, 100 = High quality
-    compression_type : str
+    compression_type : str, optional
         compression type for tiff file
         select between: None, lzw, deflation (default)
-    use_pillow : bool
+    use_pillow : bool, optional
         Use imageio python library to save the files.
     """
     if arr.ndim > 3:
