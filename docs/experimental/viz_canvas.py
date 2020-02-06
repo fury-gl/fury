@@ -332,12 +332,12 @@ vec3 calcNormal( in vec3 pos )
     fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);*/
     """
 
-    canvas_actor = actor.canvas(centers,
-                                colors=colors.astype(np.uint8),
-                                scale=scale,
-                                fs_dec=fs_dec,
-                                fs_impl=fake_sphere)
-    scene.add(canvas_actor)
+    billboard_actor = actor.billboard(centers,
+                                      colors=colors.astype(np.uint8),
+                                      scale=scale,
+                                      fs_dec=fs_dec,
+                                      fs_impl=fake_sphere)
+    scene.add(billboard_actor)
     scene.add(actor.axes())
     scene.camera_info()
     matrix = scene.camera().GetViewTransformMatrix()

@@ -1764,9 +1764,12 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return actor
 
 
-def canvas(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
-           fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
-    """Visualize one or many custom shaders through a canvas
+def billboard(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
+              fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+    """Create a billboard actor.
+
+    Billboards are 2D elements incrusted in a 3D world. It offers you the
+    possibility to draw differents shapes/elements at the shader level.
 
     Parameters
     ----------
