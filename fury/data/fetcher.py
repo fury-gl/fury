@@ -75,14 +75,14 @@ def _already_there_msg(folder):
     print(msg)
 
 
-
 def _get_file_sha(filename):
     """Generates SHA checksum for the entire file in blocks of 256
 
     Parameters
     ----------
     filename: str
-        The path to the file whose sha checksum is to be generated 
+        The path to the file whose sha checksum is to be generated
+        
     """
     sha256_data = sha256()
     with open(filename, 'rb') as f:
@@ -98,7 +98,7 @@ def check_sha(filename, stored_sha256=None):
     filename: str
         The path to the file whose checksum is to be compared
     stored_sha: string input, optional
-        Used to verify the generated SHA checksum 
+        Used to verify the generated SHA checksum
 
     """
     if stored_sha256 is not None:
