@@ -77,8 +77,7 @@ def _already_there_msg(folder):
 
 
 def _get_file_sha(filename):
-    """
-    Generates SHA checksum for the entire file in blocks of 256
+    """Generates SHA checksum for the entire file in blocks of 256
 
     Parameters
     ----------
@@ -92,7 +91,7 @@ def _get_file_sha(filename):
     return sha256_data.hexdigest()
 
 def check_sha(filename, stored_sha256=None):
-    """ Checks the generated sha checksum.
+    """Checks the generated sha checksum.
 
     Parameters
     ----------
