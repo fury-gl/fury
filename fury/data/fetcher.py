@@ -82,7 +82,7 @@ def _get_file_sha(filename):
     ----------
     filename: str
         The path to the file whose sha checksum is to be generated
-        
+
     """
     sha256_data = sha256()
     with open(filename, 'rb') as f:
@@ -104,10 +104,15 @@ def check_sha(filename, stored_sha256=None):
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename).upper()
         if stored_sha256 != computed_sha256:
-            msg = """The downloaded file, %s, does not have the expected sha
-            checksum of "%s". Instead, the sha checksum was: "%s". This could mean that
-            something is wrong with the file or that the upstream file has been updated.
-            You can try downloading the file again or updating to the newest version of
+            msg = """The downloaded file, %s,
+             does not have the expected sha
+            checksum of "%s".
+             Instead, the sha checksum was: "%s".
+             This could mean that
+            something is wrong with the file
+             or that the upstream file has been updated.
+            You can try downloading the file again
+             or updating to the newest version of
             Fury.""" % (filename, stored_sha256, computed_sha256)
             raise FetcherError(msg)
 
