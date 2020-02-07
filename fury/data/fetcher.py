@@ -95,7 +95,6 @@ def check_sha(filename,stored_sha256=None):
 			raise FetcherError(msg)
 
 
-
 def _get_file_data(fname, url):
     with contextlib.closing(urlopen(url)) as opener:
         try:
