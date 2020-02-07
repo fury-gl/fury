@@ -5,7 +5,7 @@ import sys
 import contextlib
 
 from os.path import join as pjoin
-from hashlib import md5
+from hashlib import sha256
 from shutil import copyfileobj
 
 import tarfile
@@ -75,39 +75,18 @@ def _already_there_msg(folder):
     print(msg)
 
 
-def _get_file_md5(filename):
-    """Compute the md5 checksum of a file."""
-    md5_data = md5()
-    with open(filename, 'rb') as f:
-        for chunk in iter(lambda: f.read(128 * md5_data.block_size), b''):
-            md5_data.update(chunk)
-    return md5_data.hexdigest()
 
+def _get_file_sha(filename):
+	sha256_data = sha256()
+	with open(filename,'rb') as f:
+		for chunk in iter(lambda: f.read(256*sha256_data.block_size),b''):
+			sha256_data.update(chunk)
+	return sha256_data.hexdigest()
 
 def check_md5(filename, stored_md5=None):
     """Compute the md5 of filename.
+def check_sha(filename,stored_sha256=None):
 
-    check if it matches with the supplied string md5
-
-    Parameters
-    ----------
-    filename : string
-        Path to a file.
-    md5 : string
-        Known md5 of filename to check against. If None (default), checking is
-        skipped
-
-    """
-    if stored_md5 is not None:
-        computed_md5 = _get_file_md5(filename)
-        if stored_md5 != computed_md5:
-            msg = """The downloaded file, %s, does not have the expected md5
-   checksum of "%s". Instead, the md5 checksum was: "%s". This could mean that
-   something is wrong with the file or that the upstream file has been updated.
-   You can try downloading the file again or updating to the newest version of
-   Fury.""" % (filename, stored_md5,
-               computed_md5)
-            raise FetcherError(msg)
 
 
 def _get_file_data(fname, url):
@@ -125,14 +104,14 @@ def _get_file_data(fname, url):
 
 
 def fetch_data(files, folder, data_size=None):
-    """Downloads files to folder and checks their md5 checksums.
+    """Downloads files to folder and checks their sha checksums.
 
     Parameters
     ----------
     files : dictionary
-        For each file in `files` the value should be (url, md5). The file will
+        For each file in `files` the value should be (url, sha). The file will
         be downloaded from url if the file does not already exist or if the
-        file exists but the md5 checksum does not match.
+        file exists but the sha checksum does not match.
     folder : str
         The directory where to save the file, the directory will be created if
         it does not already exist.
@@ -143,7 +122,7 @@ def fetch_data(files, folder, data_size=None):
     Raises
     ------
     FetcherError
-        Raises if the md5 checksum of the file does not match the expected
+        Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
 
     """
@@ -156,14 +135,14 @@ def fetch_data(files, folder, data_size=None):
 
     all_skip = True
     for f in files:
-        url, md5 = files[f]
+        url, sha256 = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_md5(fullpath) == md5):
+        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha256):
             continue
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
         _get_file_data(fullpath, url)
-        check_md5(fullpath, md5)
+        check_sha(fullpath, sha256)
     if all_skip:
         _already_there_msg(folder)
     else:
@@ -171,7 +150,7 @@ def fetch_data(files, folder, data_size=None):
 
 
 def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
-                  md5_list=None, doc="", data_size=None, msg=None,
+                  sha_list=None, doc="", data_size=None, msg=None,
                   unzip=False):
     """Create a new fetcher.
 
@@ -188,9 +167,10 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
         The names of the files in the baseurl location
     local_fnames : list of strings
         The names of the files to be saved on the local filesystem
-    md5_list : list of strings, optional
-        The md5 checksums of the files. Used to verify the content of the
-        files. Default: None, skipping checking md5.
+    
+    sha_list : list of strings, optional
+        The sha checksums of the files. Used to verify the content of the
+        files. Default: None, skipping checking sha.
     doc : str, optional.
         Documentation of the fetcher.
     data_size : str, optional.
@@ -213,8 +193,8 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     def fetcher():
         files = {}
         for i, (f, n), in enumerate(zip(remote_fnames, local_fnames)):
-            files[n] = (baseurl + f, md5_list[i] if
-                        md5_list is not None else None)
+            files[n] = (baseurl + f, sha_list[i] if
+                        sha_list is not None else None)
         fetch_data(files, folder, data_size)
 
         if msg is not None:
@@ -248,7 +228,7 @@ fetch_viz_icons = _make_fetcher("fetch_viz_icons",
                                 UW_RW_URL + "1773/38478/",
                                 ['icomoon.tar.gz'],
                                 ['icomoon.tar.gz'],
-                                ['94a07cba06b4136b6687396426f1e380'],
+                                ['BC1FEEA6F58BA3601D6A0B029EB8DFC5F352E21F2A16BA41099A96AA3F5A4735'],
                                 data_size="12KB",
                                 doc="Download icons for fury",
                                 unzip=True
