@@ -127,7 +127,7 @@ def fetch_data(files, folder, data_size=None):
         the screen. Default does not produce any information about data size.
 
     Raises
-    ------
+    -----
     FetcherError
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
