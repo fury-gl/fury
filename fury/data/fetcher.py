@@ -77,13 +77,31 @@ def _already_there_msg(folder):
 
 
 def _get_file_sha(filename):
+    """
+    Generates SHA checksum for the entire file in blocks of 256
+
+    Parameters
+    ----------
+    filename: str
+        The path to the file whose sha checksum is to be generated 
+    """
     sha256_data = sha256()
-    with open(filename,'rb') as f:
-        for chunk in iter(lambda: f.read(256*sha256_data.block_size),b''):
+    with open(filename, 'rb') as f:
+        for chunk in iter(lambda: f.read(256*sha256_data.block_size), b''):
             sha256_data.update(chunk)
     return sha256_data.hexdigest()
 
-def check_sha(filename,stored_sha256=None):
+def check_sha(filename, stored_sha256=None):
+    """ Checks the generated sha checksum.
+
+    Parameters
+    ----------
+    filename: str
+        The path to the file whose checksum is to be compared
+    stored_sha: string input, optional
+        Used to verify the generated SHA checksum 
+
+    """
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename).upper()
         if stored_sha256 != computed_sha256:
@@ -91,9 +109,8 @@ def check_sha(filename,stored_sha256=None):
             checksum of "%s". Instead, the sha checksum was: "%s". This could mean that
             something is wrong with the file or that the upstream file has been updated.
             You can try downloading the file again or updating to the newest version of
-            Fury.""" % (filename, stored_sha256,computed_sha256)
+            Fury.""" % (filename, stored_sha256, computed_sha256)
             raise FetcherError(msg)
-
 
 def _get_file_data(fname, url):
     with contextlib.closing(urlopen(url)) as opener:
@@ -126,7 +143,7 @@ def fetch_data(files, folder, data_size=None):
         the screen. Default does not produce any information about data size.
 
     Raises
-    -----
+    ------
     FetcherError
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
@@ -141,19 +158,18 @@ def fetch_data(files, folder, data_size=None):
 
     all_skip = True
     for f in files:
-        url, sha256 = files[f]
+        url, sha = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha256):
+        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha):
             continue
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
         _get_file_data(fullpath, url)
-        check_sha(fullpath, sha256)
+        check_sha(fullpath, sha)
     if all_skip:
         _already_there_msg(folder)
     else:
         print("Files successfully downloaded to %s" % (folder))
-
 
 def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
                   sha_list=None, doc="", data_size=None, msg=None,
@@ -173,7 +189,6 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
         The names of the files in the baseurl location
     local_fnames : list of strings
         The names of the files to be saved on the local filesystem
-    
     sha_list : list of strings, optional
         The sha checksums of the files. Used to verify the content of the
         files. Default: None, skipping checking sha.
