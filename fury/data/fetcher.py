@@ -82,6 +82,11 @@ def _get_file_sha(filename):
     ----------
     filename: str
         The path to the file whose sha checksum is to be generated
+    
+    Returns
+    -------
+    sha256_data: str
+        The computed sha hash from the input file
 
     """
     sha256_data = sha256()
@@ -97,8 +102,9 @@ def check_sha(filename, stored_sha256=None):
     ----------
     filename: str
         The path to the file whose checksum is to be compared
-    stored_sha: string input, optional
-        Used to verify the generated SHA checksum
+    stored_sha256: str, optional
+        Used to verify the generated SHA checksum.
+        Default: None, checking is skipped
 
     """
     if stored_sha256 is not None:
