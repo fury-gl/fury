@@ -82,7 +82,6 @@ def _get_file_sha(filename):
     ----------
     filename: str
         The path to the file whose sha checksum is to be generated
-    
     Returns
     -------
     sha256_data: str
