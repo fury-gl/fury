@@ -273,9 +273,9 @@ fetch_viz_wiki_nw = _make_fetcher("fetch_viz_wiki_nw",
                                    'wiki_positions.txt'],
                                   ['wiki_categories.txt', 'wiki_edges.txt',
                                    'wiki_positions.txt'],
-                                  ['465cac68c14fbda4f384ea6ae518b6b8',
-                                   '7d7a4aff581a54bc873eb617c156467d',
-                                   '607d628ec615f98db13640eb96428465'],
+                                  ['1679241B13D2FD01209160F0C186E14AB55855478300B713D5369C12854CFF82',
+                                   '702EE8713994243C8619A29C9ECE32F95305737F583B747C307500F3EC4A6B56',
+                                   '044917A8FBD0EB980D93B6C406A577BEA416FA934E897C26C87E91C218EF4432'],
                                   doc="Download the following wiki information"
                                       "Interdisciplinary map of the journals",
                                   msg=("More information about complex "
