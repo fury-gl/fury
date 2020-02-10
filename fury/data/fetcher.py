@@ -107,8 +107,8 @@ def check_sha(filename, stored_sha256=None):
 
     """
     if stored_sha256 is not None:
-        computed_sha256 = _get_file_sha(filename).upper()
-        if stored_sha256 != computed_sha256:
+        computed_sha256 = _get_file_sha(filename)
+        if stored_sha256.lower() != computed_sha256:
             msg = """The downloaded file, %s,
              does not have the expected sha
             checksum of "%s".
