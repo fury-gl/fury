@@ -82,6 +82,7 @@ def _get_file_sha(filename):
     ----------
     filename: str
         The path to the file whose sha checksum is to be generated
+
     Returns
     -------
     sha256_data: str
@@ -93,6 +94,7 @@ def _get_file_sha(filename):
         for chunk in iter(lambda: f.read(256*sha256_data.block_size), b''):
             sha256_data.update(chunk)
     return sha256_data.hexdigest()
+
 
 def check_sha(filename, stored_sha256=None):
     """Checks the generated sha checksum.
@@ -120,6 +122,7 @@ def check_sha(filename, stored_sha256=None):
              or updating to the newest version of
             Fury.""" % (filename, stored_sha256, computed_sha256)
             raise FetcherError(msg)
+
 
 def _get_file_data(fname, url):
     with contextlib.closing(urlopen(url)) as opener:
@@ -169,7 +172,7 @@ def fetch_data(files, folder, data_size=None):
     for f in files:
         url, sha = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha):
+        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha.lower()):
             continue
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
@@ -179,6 +182,7 @@ def fetch_data(files, folder, data_size=None):
         _already_there_msg(folder)
     else:
         print("Files successfully downloaded to %s" % (folder))
+
 
 def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
                   sha_list=None, doc="", data_size=None, msg=None,
