@@ -10,8 +10,8 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
-from fury.primitive import prim_sphere
-from fury.utils import shallow_copy, rotate
+from fury.primitive import prim_sphere, prim_square, repeat_primitive
+from fury.utils import shallow_copy, rotate, get_actor_from_primitive
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -1209,18 +1209,17 @@ def test_superquadric_actor(interactive=False):
 
 
 def test_square_actor(interactive=False):
-    from fury import utils, primitive as fp
     scene = window.Scene()
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     scale = [1, 2, 3]
 
-    verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scale=scale)
+    verts, faces = prim_square()
+    res = repeat_primitive(verts, faces, centers=centers, colors=colors,
+                           scale=scale)
 
     big_verts, big_faces, big_colors, _ = res
-    sq_actor = utils.get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     sq_actor.GetProperty().BackfaceCullingOff()
     scene.add(sq_actor)
     scene.add(actor.axes())
