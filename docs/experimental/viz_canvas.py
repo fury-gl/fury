@@ -206,7 +206,7 @@ vec3 calcNormal( in vec3 pos )
 
     scene = window.Scene()
     scene.background((0.8, 0.8, 0.8))
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+    centers = np.array([[2, 0, 0], [0, 0, 0], [-2, 0, 0]])
     # np.random.rand(3, 3) * 3
     # colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     colors = np.random.rand(3, 3) * 255
@@ -294,7 +294,7 @@ vec3 calcNormal( in vec3 pos )
     vec3 ro = MCVCMatrix[3].xyz * mat3(MCVCMatrix);  // camera position
 
     // create view ray
-    vec3 rd = normalize( point.x*uu + point.y*vv + 3*ww );
+    vec3 rd = normalize( point.x*-uu + point.y*-vv + 7*ww);
     vec3 col = vec3(0.0);
 
     float t = castRay(ro, rd);
