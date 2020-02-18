@@ -329,6 +329,87 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
 
     return vertices, sphere_triangles
 
+def primRhombi():
+    '''Return vertices and triangle for rhombicuboctahedron geometry
+
+    :return:
+    ---------
+    my_vertices: ndarray
+        vertices coords that composed our rhombicuboctahedron
+    my_triangles: ndarray
+        Triangles that composed our rhombicuboctahedron
+    '''
+    my_vertices = np.array([[-2, 4, 2],
+                            [-4, 2, 2],
+                            [-4, -2, 2],
+                            [-2, -4, 2],
+                            [2, -4, 2],
+                            [4, -2, 2],
+                            [4, 2, 2],
+                            [2, 4, 2],
+                            [-2, 2, 4],
+                            [-2, -2, 4],
+                            [2, -2, 4],
+                            [2, 2, 4],
+                            [-2, 4, -2],
+                            [-4, 2, -2],
+                            [-4, -2, -2],
+                            [-2, -4, -2],
+                            [2, -4, -2],
+                            [4, -2, -2],
+                            [4, 2, -2],
+                            [2, 4, -2],
+                            [-2, 2, -4],
+                            [-2, -2, -4],
+                            [2, -2, -4],
+                            [2, 2, -4]])
+
+    my_triangles = np.array([[0, 1, 8],
+                             [1, 2, 9],
+                             [1, 8, 9],
+                             [2, 3, 9],
+                             [3, 9, 10],
+                             [3, 4, 10],
+                             [4, 10, 5],
+                             [5, 11, 10],
+                             [5, 6, 11],
+                             [6, 7, 11],
+                             [7, 8, 11],
+                             [7, 8, 0],
+                             [8, 9, 10],
+                             [8, 10, 11],
+                             [12, 13, 20],
+                             [13, 14, 21],
+                             [13, 20, 21],
+                             [14, 15, 21],
+                             [15, 21, 22],
+                             [15, 16, 22],
+                             [16, 22, 17],
+                             [17, 22, 23],
+                             [17, 23, 18],
+                             [18, 19, 23],
+                             [19, 20, 23],
+                             [19, 20, 12],
+                             [20, 21, 22],
+                             [20, 22, 23],
+                             [7, 18, 19],
+                             [6, 7, 18],
+                             [6, 17, 18],
+                             [5, 6, 17],
+                             [4, 5, 16],
+                             [5, 16, 17],
+                             [0, 1, 12],
+                             [1, 12, 13],
+                             [1, 2, 13],
+                             [2, 13, 14],
+                             [2, 3, 14],
+                             [3, 14, 15],
+                             [0, 7, 12],
+                             [7, 12, 19],
+                             [3, 15, 16],
+                             [3, 4, 16],
+                             ], dtype='i8')
+    return my_vertices, my_triangles
 
 def primStar(dim=2):
     '''Return vertices and triangle for star geometry
@@ -340,7 +421,7 @@ def primStar(dim=2):
     vertices: ndarray
         vertices coords that composed our star
     triangles: ndarray
-        Triangles that composed our box
+        Triangles that composed our star
 
 
     '''
