@@ -328,3 +328,82 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     vertices = np.ascontiguousarray(xyz)
 
     return vertices, sphere_triangles
+
+
+def primStar(dim=2):
+    '''Return vertices and triangle for star geometry
+
+
+    :param dim: default 2
+    :return:
+    ---------
+    vertices: ndarray
+        vertices coords that composed our star
+    triangles: ndarray
+        Triangles that composed our box
+
+
+    '''
+    if(dim == 2):
+        vert = np.array([[-2.0, -3.0, 0.0],
+                     [0.0, -2.0, 0.0],
+                     [3.0, -3.0, 0.0],
+                     [2.0, -1.0, 0.0],
+                     [3.0, 1.0, 0.0],
+                     [1.0, 1.0, 0.0],
+                     [0.0, 3.0, 0.0],
+                     [-1.0, 1.0, 0.0],
+                     [-3.0, 1.0, 0.0],
+                     [-2.0, -1.0, 0.0]])
+
+        triangles = np.array([[1, 9, 0],
+                          [1, 2, 3],
+                          [3, 4, 5],
+                          [5, 6, 7],
+                          [7, 8, 9],
+                          [1, 9, 3],
+                          [3, 7, 9],
+                          [3, 5, 7]], dtype='i8')
+
+    if(dim == 3):
+        vert = np.array([[-2.0, -3.0, 0.0],
+                         [0.0, -2, 0.0],
+                         [3.0, -3.0, 0.0],
+                         [2.0, -1.0, 0.0],
+                         [3.0, 0.5, 0.0],
+                         [1.0, 0.5, 0.0],
+                         [0, 3.0, 0.0],
+                         [-1.0, 0.5, 0.0],
+                         [-3.0, 0.5, 0.0],
+                         [-2.0, -1.0, 0.0],
+                         [2.0, 1.5, 0.5],
+                         [2.0, 1.5, -0.5]])
+        triangles = np.array([[1, 9, 0],
+                              [1, 2, 3],
+                              [3, 4, 5],
+                              [5, 6, 7],
+                              [7, 8, 9],
+                              [1, 9, 3],
+                              [3, 7, 9],
+                              [3, 5, 7],
+                              [1, 0, 10],
+                              [0, 9, 10],
+                              [10, 9, 8],
+                              [7, 8, 10],
+                              [6, 7, 10],
+                              [5, 6, 10],
+                              [5, 10, 4],
+                              [10, 3, 4],
+                              [3, 10, 2],
+                              [10, 1, 2],
+                              [1, 0, 11],
+                              [0, 9, 11],
+                              [11, 9, 8],
+                              [7, 8, 10],
+                              [6, 7, 11],
+                              [5, 6, 11],
+                              [5, 10, 4],
+                              [11, 3, 4],
+                              [3, 11, 2],
+                              [11, 1, 2]], dtype='i8')
+    return vert, triangles
