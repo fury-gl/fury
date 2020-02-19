@@ -3124,8 +3124,8 @@ class Checkbox(UI):
     ----------
     labels : list(string)
         List of labels of each option.
-    options : list(Option)
-        List of all the options in the checkbox set.
+    options : dict{label:Option}
+        Dictionary of all the (label,option) pairs in the checkbox set.
     padding : float
         Distance between two adjacent options
     """
@@ -3158,7 +3158,7 @@ class Checkbox(UI):
     def _setup(self):
         """ Setup this UI component.
         """
-        self.options = []
+        self.options = {}
         button_y = self.position[1]
         for label in self.labels:
             option = Option(label=label,
@@ -3167,16 +3167,25 @@ class Checkbox(UI):
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = button_y + self.font_size * \
                 (label.count('\n') + 1) * (line_spacing + 0.1) + self.padding
-            self.options.append(option)
+            self.options[label] = option
 
             # Set callback
             option.on_change = self._handle_option_change
+
+    def _get_option(self,label):
+        """ Get the option corresponding to the given label.
+        
+        Parameters
+        ----------
+        label : string
+        """
+        return self.options[label]
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
         actors = []
-        for option in self.options:
+        for option in self.options.values():
             actors = actors + option.actors
         return actors
 
@@ -3187,11 +3196,11 @@ class Checkbox(UI):
         ----------
         scene : scene
         """
-        for option in self.options:
+        for option in self.options.values():
             option.add_to_scene(scene)
 
     def _get_size(self):
-        option_width, option_height = self.options[0].get_size()
+        option_width, option_height = self.options.values()[0].get_size()
         height = len(self.labels) * (option_height + self.padding) \
             - self.padding
         return np.asarray([option_width, height])
@@ -3219,7 +3228,7 @@ class Checkbox(UI):
             Absolute pixel coordinates (x, y).
         """
         button_y = coords[1]
-        for option_no, option in enumerate(self.options):
+        for option_no, option in enumerate(self.options.values()):
             option.position = (coords[0], button_y)
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = (button_y + self.font_size
@@ -3276,7 +3285,7 @@ class RadioButton(Checkbox):
                                           font_family=font_family)
 
     def _handle_option_change(self, option):
-        for option_ in self.options:
+        for option_ in self.options.values():
             option_.deselect()
 
         option.select()
