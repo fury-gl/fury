@@ -3172,9 +3172,9 @@ class Checkbox(UI):
             # Set callback
             option.on_change = self._handle_option_change
 
-    def _get_option(self,label):
+    def _get_option(self, label):
         """ Get the option corresponding to the given label.
-        
+
         Parameters
         ----------
         label : string
