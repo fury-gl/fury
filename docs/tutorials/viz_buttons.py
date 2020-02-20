@@ -80,6 +80,6 @@ current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
 
 show_manager.scene.add(panel)
-#panel.set_visibility(True)    #Default visibility is True
+panel.set_visibility(True)      #Default visibility is True
 
 show_manager.start()
