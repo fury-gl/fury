@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 ===============
-User Interfaces
+Buttons & Text
 ===============
 
-This example shows how to use the UI API. We will demonstrate how to create 
+This example shows how to use the UI API. We will demonstrate how to create
 panel having buttons with callbacks.
 
 First, some imports.
@@ -73,7 +73,6 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 ###############################################################################
 # Show Manager
 # ==================================
-#
 # Now that all the elements have been initialised, we add them to the show
 # manager.
 

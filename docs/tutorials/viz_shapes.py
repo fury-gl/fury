@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===============
-User Interfaces
-===============
+==============
+Simple Shapes
+==============
 
 This example shows how to use the UI API. We will demonstrate how to draw
 some geometric shapes from DIPY UI elements.
