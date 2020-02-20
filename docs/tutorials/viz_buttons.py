@@ -77,7 +77,7 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size,title="DIPY Button Example")
+show_manager = window.ShowManager(size=current_size, title="DIPY Button Example")
 
 show_manager.scene.add(panel)
 
