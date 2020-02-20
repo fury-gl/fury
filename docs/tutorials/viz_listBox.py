@@ -60,7 +60,8 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size,title="DIPY UI ListBox_Example")
+show_manager = window.ShowManager(size=current_size, 
+                                  title="DIPY UI ListBox_Example")
 
 show_manager.scene.add(listbox)
 show_manager.scene.add(Get_text)
