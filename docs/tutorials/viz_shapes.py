@@ -41,7 +41,7 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 600),
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
+show_manager = window.ShowManager(size=current_size, title="DIPY Shapes Example")
 
 show_manager.scene.add(rect)
 show_manager.scene.add(disk)

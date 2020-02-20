@@ -79,7 +79,7 @@ line_slider.on_change = translate_cube
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
+show_manager = window.ShowManager(size=current_size, title="DIPY Cube Example")
 
 show_manager.scene.add(cube)
 show_manager.scene.add(ring_slider)
