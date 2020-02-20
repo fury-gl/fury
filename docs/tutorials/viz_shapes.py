@@ -29,8 +29,7 @@ disk = ui.Disk2D(outer_radius=50, center=(400, 200), color=(1, 1, 0))
 ###############################################################################
 # Add an inner radius to make a ring.
 
-ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 600),
-                 color=(0, 1, 1))
+ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 600), color=(0, 1, 1))
 
 
 ###############################################################################
