@@ -4,8 +4,8 @@
 User Interfaces
 ===============
 
-This example shows how to use the UI API. We will demonstrate how to 
-create panel having buttons with callbacks.
+This example shows how to use the UI API. We will demonstrate how to create 
+panel having buttons with callbacks.
 
 First, some imports.
 """
@@ -26,8 +26,8 @@ panel.center = (500, 400)
 # Then we'll make two text labels and place them on the panel.
 # Note that we specifiy the position with integer numbers of pixels.
 
-text = ui.TextBlock2D(text='Click me')
-text2 = ui.TextBlock2D(text='Me too')
+text = ui.TextBlock2D(text="Click me")
+text2 = ui.TextBlock2D(text="Me too")
 panel.add_element(text, (50, 100))
 panel.add_element(text2, (180, 100))
 
@@ -39,13 +39,14 @@ panel.add_element(text2, (180, 100))
 
 
 button_example = ui.Button2D(
-    icon_fnames=[('square', read_viz_icons(fname='stop2.png'))])
+    icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
+)
 
 icon_files = []
-icon_files.append(('down', read_viz_icons(fname='circle-down.png')))
-icon_files.append(('left', read_viz_icons(fname='circle-left.png')))
-icon_files.append(('up', read_viz_icons(fname='circle-up.png')))
-icon_files.append(('right', read_viz_icons(fname='circle-right.png')))
+icon_files.append(("down", read_viz_icons(fname="circle-down.png")))
+icon_files.append(("left", read_viz_icons(fname="circle-left.png")))
+icon_files.append(("up", read_viz_icons(fname="circle-up.png")))
+icon_files.append(("right", read_viz_icons(fname="circle-right.png")))
 
 second_button_example = ui.Button2D(icon_fnames=icon_files)
 
@@ -57,7 +58,7 @@ panel.add_element(second_button_example, (0.66, 0.33))
 
 
 def change_text_callback(i_ren, _obj, _button):
-    text.message = 'Clicked!'
+    text.message = "Clicked!"
     i_ren.force_render()
 
 
@@ -80,6 +81,9 @@ current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
 
 show_manager.scene.add(panel)
-panel.set_visibility(True)      #Default visibility is True
 
+###############################################################################
+# Default Visibility is True.
+
+panel.set_visibility(True)
 show_manager.start()
