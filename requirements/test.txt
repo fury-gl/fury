@@ -3,6 +3,8 @@
 codecov
 coverage
 flake8
+nose
 pytest
 # temporary Dependency for the tests
 dipy
+nibabel
