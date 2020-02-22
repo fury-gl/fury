@@ -705,7 +705,7 @@ class Disk2D(UI):
 
     def __init__(self, outer_radius, inner_radius=0, center=(0, 0),
                  color=(1, 1, 1), opacity=1.0):
-        """ Initializes a rectangle.
+        """ Initializes a 2D Disk.
 
         Parameters
         ----------
@@ -781,14 +781,14 @@ class Disk2D(UI):
 
     @property
     def color(self):
-        """ Gets the rectangle's color.
+        """ Gets the color of this UI component.
         """
         color = self.actor.GetProperty().GetColor()
         return np.asarray(color)
 
     @color.setter
     def color(self, color):
-        """ Sets the rectangle's color.
+        """ Sets the color of this UI component.
 
         Parameters
         ----------
@@ -799,13 +799,13 @@ class Disk2D(UI):
 
     @property
     def opacity(self):
-        """ Gets the rectangle's opacity.
+        """ Gets the opacity of this UI component.
         """
         return self.actor.GetProperty().GetOpacity()
 
     @opacity.setter
     def opacity(self, opacity):
-        """ Sets the rectangle's opacity.
+        """ Sets the opacity of this UI component.
 
         Parameters
         ----------
