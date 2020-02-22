@@ -3172,15 +3172,6 @@ class Checkbox(UI):
             # Set callback
             option.on_change = self._handle_option_change
 
-    def _get_option(self, label):
-        """ Get the option corresponding to the given label.
-
-        Parameters
-        ----------
-        label : string
-        """
-        return self.options[label]
-
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
