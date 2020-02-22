@@ -3124,8 +3124,8 @@ class Checkbox(UI):
     ----------
     labels : list(string)
         List of labels of each option.
-    options : dict{label:Option}
-        Dictionary of all the (label,option) pairs in the checkbox set.
+    options : list(Option)
+        List of all the options in the checkbox set.
     padding : float
         Distance between two adjacent options
     """
@@ -3247,8 +3247,8 @@ class RadioButton(Checkbox):
     ----------
     labels : list(string)
         List of labels of each option.
-    options : dict{label:Option}
-        Dictionary of all the (label,option) pairs in the checkbox set.
+    options : list(Option)
+        List of all the options in the checkbox set.
     padding : float
         Distance between two adjacent options
     """
