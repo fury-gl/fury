@@ -4,8 +4,9 @@
 VTK Shaders
 ===============
 
-This example shows how to use shaders to generate a shaded output. We will demonstrate
-how to load polydata then use a custom shader calls to render a custom shaded model.
+This example shows how to use shaders to generate a shaded output. We will
+demonstrate how to load polydata then use a custom shader calls to render
+a custom shaded model.
 First, a bunch of imports.
 
 """
@@ -18,8 +19,8 @@ import vtk
 # Polydata
 # ======
 #
-# Let's start by loading the polydata of choice. 
-# For this example we use the standard utah teapot model . 
+# Let's start by loading the polydata of choice.
+# For this example we use the standard utah teapot model.
 # currently supported formats include OBJ, VKT, FIB, PLY, STL and XML
 
 utah = io.load_polydata('models/utah.obj')
@@ -34,20 +35,19 @@ mapper = utah.GetMapper()
 # Specify fragment shader using vtkShader.Fragment
 
 mapper.AddShaderReplacement(
-     vtk.vtkShader.Vertex,
-    "//VTK::Output::Dec", # declaration any uniforms/varying needed for normals
+	vtk.vtkShader.Vertex,
+    "//VTK::Output::Dec",
     True,
     """
     //VTK::Output::Dec
     out vec4 myVertexVC;
-
     """,
     False
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Output::Impl",# implementation for normals
+    "//VTK::Output::Impl",
     True,
     """
     //VTK::Output::Impl
@@ -76,7 +76,6 @@ mapper.AddShaderReplacement(
     """
     //VTK::Light::Impl
     vec2 iResolution = vec2(1024,720);
-    
     vec2 uv = myVertexVC.xy/iResolution;
     vec3 col = 0.5 + 0.5 * cos((time/30) + uv.xyx + vec3(0, 2, 4));
     fragOutput0 = vec4(col, 1.0);
@@ -103,7 +102,6 @@ timer = 0
 
 ##############################################################################
 # The timer will call this user defined callback every 30 milliseconds.
-
 
 
 def timer_callback(obj, event):
