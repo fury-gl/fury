@@ -1,11 +1,25 @@
-# Create a basic shader
+# -*- coding: utf-8 -*-
+"""
+===============
+VTK Shaders
+===============
+
+This example shows how to use shaders to generate a shaded output. We will demonstrate
+how to load polydata then use a custom shader calls to render a custom shaded model.
+First, a bunch of imports.
+
+"""
 
 import numpy as np
 from fury import window, actor, ui, io, utils
 import vtk
 
-# import the 3D model of choice
-# to import a model, use io.load_polydata()
+###############################################################################
+# Polydata
+# ======
+#
+# Let's start by loading the polydata of choice. 
+# For this example we use the standard utah teapot model . 
 # currently supported formats include OBJ, VKT, FIB, PLY, STL and XML
 
 utah = io.load_polydata('models/utah.obj')
@@ -14,7 +28,11 @@ utah = utils.get_actor_from_polymapper(utah)
 mapper = utah.GetMapper()
 
 
-# Replace fragment shader using vtkShader.Vertex
+###############################################################################
+# To change the default shader ew add a shader replacement.
+# Specify vertex shader using vtkShader.Vertex
+# Specify fragment shader using vtkShader.Fragment
+
 mapper.AddShaderReplacement(
      vtk.vtkShader.Vertex,
     "//VTK::Output::Dec", # declaration any uniforms/varying needed for normals
@@ -67,24 +85,38 @@ mapper.AddShaderReplacement(
 )
 
 
-# create a scene to be rendered in 
+# Let's create a scene.
+
 scene = window.Scene()
+
+###############################################################################
+# Show Manager
+# ==================================
+#
+# Now that all the elements have been initialised, we add them to the show
+# manager.
 
 showm = window.ShowManager(scene, size=(1024, 720), reset_camera=False)
 
 global timer
 timer = 0
 
+##############################################################################
+# The timer will call this user defined callback every 30 milliseconds.
+
+
 
 def timer_callback(obj, event):
     global timer
     timer += 1.0
     showm.render()
-    #  print(timer)
-    #  scene.azimuth(10)
+    scene.azimuth(5)
 
 
-#  add a decorator to your custom callback
+###############################################################################
+# We can use a decorator to callback to the shader.
+
+
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
 def vtk_shader_callback(caller, event, calldata=None):
     program = calldata
@@ -95,19 +127,28 @@ def vtk_shader_callback(caller, event, calldata=None):
         except ValueError:
             pass
 
-# Add a textblock to add text to 
+
+# Let's add a textblock to the scene with a custom message
+
 tb = ui.TextBlock2D()
 tb.message = "Hello Shaders"
 
-# change the property of the actor
+
+# Change the property of the actor
+
 utah.GetProperty().SetOpacity(0.5)
 
+
 # Invoke callbacks to any VTK object
+
 mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 showm.initialize()
 showm.add_timer_callback(True, 30, timer_callback)
-# add created actors to the scene
+
+##############################################################################
+# We add all actors (visual objects) defined above to the scene.
+
 scene.add(utah)
 scene.add(tb)
 
