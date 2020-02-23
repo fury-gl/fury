@@ -36,49 +36,53 @@ mapper = utah.GetMapper()
 
 
 mapper.AddShaderReplacement(
-	vtk.vtkShader.Vertex,
-	"//VTK::Output::Dec",
-	True,
-	"""
-	//VTK::Output::Dec
-	out vec4 myVertexVC;
-	""",
-	False)
+    vtk.vtkShader.Vertex,
+    "//VTK::Output::Dec",
+    True,
+    """
+    //VTK::Output::Dec
+    out vec4 myVertexVC;
+    """,
+    False
+)
 
 mapper.AddShaderReplacement(
-	vtk.vtkShader.Vertex,
-	"//VTK::Output::Impl",
-	True,
-	"""
-	//VTK::Output::Impl
-	myVertexVC = vertexVC;
-	""",
-	False)
+    vtk.vtkShader.Vertex,
+    "//VTK::Output::Impl",
+    True,
+    """
+    //VTK::Output::Impl
+    myVertexVC = vertexVC;
+    """,
+    False
+)
 
 mapper.AddShaderReplacement(
-	vtk.vtkShader.Fragment,
-	"//VTK::Light::Dec",
-	True,
-	"""
-	//VTK::Light::Dec
-	uniform float time;
-	varying vec4 myVertexVC;
-	""",
-	False)
+    vtk.vtkShader.Fragment,
+    "//VTK::Light::Dec",
+    True,
+    """
+    //VTK::Light::Dec
+    uniform float time;
+    varying vec4 myVertexVC;
+    """,
+    False
+)
 
 
 mapper.AddShaderReplacement(
-	vtk.vtkShader.Fragment,
-	'//VTK::Light::Impl',
-	True,
-	"""
-	//VTK::Light::Impl
-	vec2 iResolution = vec2(1024,720);
-	vec2 uv = myVertexVC.xy/iResolution;
-	vec3 col = 0.5 + 0.5 * cos((time/30) + uv.xyx + vec3(0, 2, 4));
-	fragOutput0 = vec4(col, 1.0);
-	""",
-	False)
+    vtk.vtkShader.Fragment,
+    '//VTK::Light::Impl',
+    True,
+    """
+    //VTK::Light::Impl
+    vec2 iResolution = vec2(1024,720);
+    vec2 uv = myVertexVC.xy/iResolution;
+    vec3 col = 0.5 + 0.5 * cos((time/30) + uv.xyx + vec3(0, 2, 4));
+    fragOutput0 = vec4(col, 1.0);
+    """,
+    False
+)
 
 
 # Let's create a scene.
@@ -102,10 +106,10 @@ timer = 0
 
 
 def timer_callback(obj, event):
-	global timer
-	timer += 1.0
-	showm.render()
-	scene.azimuth(5)
+    global timer
+    timer += 1.0
+    showm.render()
+    scene.azimuth(5)
 
 
 ###############################################################################
@@ -114,13 +118,13 @@ def timer_callback(obj, event):
 
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
 def vtk_shader_callback(caller, event, calldata=None):
-	program = calldata
-	global timer
-	if program is not None:
-		try:
-			program.SetUniformf("time", timer)
-		except ValueError:
-			pass
+    program = calldata
+    global timer
+    if program is not None:
+        try:
+            program.SetUniformf("time", timer)
+        except ValueError:
+            pass
 
 
 # Let's add a textblock to the scene with a custom message
