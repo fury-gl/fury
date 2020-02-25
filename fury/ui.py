@@ -1792,6 +1792,7 @@ class LineSlider2D(UI):
                  length=200, line_width=5,
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
+                 axis = 0,
                  text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
         """
         Parameters
@@ -1816,6 +1817,8 @@ class LineSlider2D(UI):
             Side length of the handles (if sqaure).
         font_size : int
             Size of the text to display alongside the slider (pt).
+        axis : int
+            0 implies Horizontal layout and 1 implies Vertical layout
         text_template : str, callable
             If str, text template can contain one or multiple of the
             replacement fields: `{value:}`, `{ratio:}`.
@@ -1826,12 +1829,18 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
+        self.axis = axis
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         super(LineSlider2D, self).__init__()
 
-        self.track.width = length
-        self.track.height = line_width
+        if self.axis == 0:
+            self.track.width = length
+            self.track.height = line_width
+        else:
+            self.track.width = line_width
+            self.track.height = length
+
         if shape == "disk":
             self.handle.inner_radius = inner_radius
             self.handle.outer_radius = outer_radius
