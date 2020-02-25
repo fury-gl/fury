@@ -1585,7 +1585,7 @@ def cube(centers, directions, colors, heights=1,
     >>> dirs = np.random.rand(5, 3)
     >>> heights = np.random.rand(5)
     >>> cube_actor = actor.cube(centers, dirs, (1, 1, 1), heights=heights)
-    >>> scene.add(cubeactor)
+    >>> scene.add(cube_actor)
     >>> # window.show(scene)
 
     """
