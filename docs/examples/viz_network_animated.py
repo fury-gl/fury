@@ -1,11 +1,13 @@
 """
 =======================================================
-Visualize Interdisciplinary map of the journals network
+Visualize Networks (Animated version)
 =======================================================
 
-The goal of this app is to show an overview of the journals network structure
-as a complex network. Each journal is shown as a node and their connections
-indicates a citation between two of them.
+The goal of this demo is to show how to visualize a 
+complex network and use an force directed algorithm to
+layout the network. A simpler animation of the network
+made by adding some random displacements to nodes 
+positions is also demoed.
 
 """
 
