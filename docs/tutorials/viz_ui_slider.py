@@ -9,8 +9,6 @@ create a cube and control with sliders.
 
 First, some imports.
 """
-from fury.data import read_viz_icons, fetch_viz_icons
-
 from fury import ui, window
 
 ###############################################################################

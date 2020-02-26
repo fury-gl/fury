@@ -9,7 +9,6 @@ some geometric shapes from DIPY UI elements.
 
 First, a bunch of imports.
 """
-from fury.data import read_viz_icons, fetch_viz_icons
 
 from fury import ui, window
 

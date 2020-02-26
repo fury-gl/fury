@@ -77,8 +77,6 @@ show_manager = window.ShowManager(size=current_size,
 
 show_manager.scene.add(panel)
 
-###############################################################################
-
 interactive = False
 
 if interactive:
