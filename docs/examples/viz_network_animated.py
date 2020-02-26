@@ -3,10 +3,10 @@
 Visualize Networks (Animated version)
 =======================================================
 
-The goal of this demo is to show how to visualize a 
+The goal of this demo is to show how to visualize a
 complex network and use an force directed algorithm to
 layout the network. A simpler animation of the network
-made by adding some random displacements to nodes 
+made by adding some random displacements to nodes
 positions is also demoed.
 
 """
@@ -123,7 +123,8 @@ mapper = lines_actor.GetMapper()
 # Defining timer callback and layout iterator
 
 
-def new_layout_timer(showm, edges_list, vertices_count, max_iterations=2000, vertex_initial_positions=None):
+def new_layout_timer(showm, edges_list, vertices_count,
+                     max_iterations=2000, vertex_initial_positions=None):
     view_size = 500
     viscosity = 0.10
     alpha = 0.5
@@ -152,7 +153,9 @@ def new_layout_timer(showm, edges_list, vertices_count, max_iterations=2000, ver
                     x1, y1, z1 = pos[vertex1]
                     x2, y2, z2 = pos[vertex2]
                     distance = math.sqrt(
-                        (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1)) + alpha
+                        (x2-x1)*(x2-x1) +
+                        (y2-y1)*(y2-y1) +
+                        (z2-z1)*(z2-z1)) + alpha
                     rx = (x2-x1)/distance
                     ry = (y2-y1)/distance
                     rz = (z2-z1)/distance
@@ -168,7 +171,9 @@ def new_layout_timer(showm, edges_list, vertices_count, max_iterations=2000, ver
                 x1, y1, z1 = pos[vFrom]
                 x2, y2, z2 = pos[vTo]
                 distance = math.sqrt(
-                    (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) + (z2-z1)*(z2-z1))
+                    (x2-x1)*(x2-x1) +
+                    (y2-y1)*(y2-y1) +
+                    (z2-z1)*(z2-z1))
                 Rx = (x2-x1)
                 Ry = (y2-y1)
                 Rz = (z2-z1)
@@ -227,8 +232,8 @@ scene.add(lines_actor)
 scene.add(sphere_actor)
 
 ###############################################################################
-# The final step ! Visualize the result of our creation! Also, we need to move the
-# camera a little bit farther from the network.
+# The final step ! Visualize the result of our creation! Also, we need to move
+# the camera a little bit farther from the network.
 
 
 showm = window.ShowManager(scene, reset_camera=False, size=(
