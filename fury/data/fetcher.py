@@ -290,13 +290,13 @@ fetch_viz_wiki_nw = _make_fetcher("fetch_viz_wiki_nw",
                                   )
 
 fetch_viz_models = _make_fetcher("fetch_viz_models",
-                                  pjoin(fury_home,"models"),
-                                  MODEL_DATA_URL,
-                                  ['utah.obj'],
-                                  ['utah.obj'],
-                                  ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3'],
-                                  doc="Download the utah teapot model for shader tutorial"
-                                  )
+                                 pjoin(fury_home, "models"),
+                                 MODEL_DATA_URL,
+                                 ['utah.obj'],
+                                 ['utah.obj'],
+                                 ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3'],
+                                 doc="Download the utah teapot model for shader tutorial"
+                                 )
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
     """Read specific icon from specific style.
