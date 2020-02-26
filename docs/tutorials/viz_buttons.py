@@ -13,7 +13,7 @@ from fury import ui, window
 from fury.data import read_viz_icons
 
 ###############################################################################
-# Let's create some buttons and text and put them in a panel. 
+# Let's create some buttons and text and put them in a panel.
 # First we'll make the panel.
 
 panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")

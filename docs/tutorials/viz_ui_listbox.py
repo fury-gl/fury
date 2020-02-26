@@ -15,7 +15,8 @@ from fury import ui, window
 # Create some text blocks that will be showm when
 # list elements will be selected
 
-welcome_text = ui.TextBlock2D(text="Welcome", font_size=30, position=(500, 400))
+welcome_text = ui.TextBlock2D(text="Welcome", font_size=30,
+                              position=(500, 400))
 bye_text = ui.TextBlock2D(text="Bye", font_size=30, position=(500, 400))
 fury_text = ui.TextBlock2D(text="Fury", font_size=30, position=(500, 400))
 
@@ -69,4 +70,5 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_listbox.png")
+window.record(show_manager.scene,
+              size=current_size, out_path="viz_listbox.png")
