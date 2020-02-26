@@ -13,11 +13,8 @@ from fury import ui, window
 from fury.data import read_viz_icons
 
 ###############################################################################
-# Panel with buttons and text
-# ===========================
-#
-# Let's create some buttons and text and put them in a panel. First we'll
-# make the panel.
+# Let's create some buttons and text and put them in a panel. 
+# First we'll make the panel.
 
 panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
 panel.center = (500, 400)
@@ -71,8 +68,6 @@ button_example.on_left_mouse_button_clicked = change_text_callback
 second_button_example.on_left_mouse_button_pressed = change_icon_callback
 
 ###############################################################################
-# Show Manager
-# ==================================
 # Now that all the elements have been initialised, we add them to the show
 # manager.
 
@@ -83,7 +78,11 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(panel)
 
 ###############################################################################
-# Default Visibility is True.
 
-panel.set_visibility(True)
-show_manager.start()
+interactive = False
+
+if interactive:
+    show_manager.start()
+
+window.record(show_manager.scene, size=current_size,
+              out_path="viz_button.png")

@@ -41,10 +41,10 @@ cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 ###############################################################################
 # Now we'll add two sliders: one circular and one linear.
 
-ring_slider = ui.RingSlider2D(center=(740, 400), initial_value=0,
+ring_slider = ui.RingSlider2D(center=(630, 400), initial_value=0,
                               text_template="{angle:5.1f}°")
 
-line_slider = ui.LineSlider2D(center=(500, 250), initial_value=0,
+line_slider = ui.LineSlider2D(center=(400, 230), initial_value=0,
                               min_value=-10, max_value=10)
 
 ###############################################################################
@@ -99,4 +99,10 @@ show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 150))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
-show_manager.start()
+interactive = False
+
+if interactive:
+    show_manager.start()
+
+window.record(show_manager.scene,
+              size=current_size, out_path="viz_slider.png")

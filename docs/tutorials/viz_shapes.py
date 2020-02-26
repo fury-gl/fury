@@ -14,9 +14,6 @@ from fury.data import read_viz_icons, fetch_viz_icons
 from fury import ui, window
 
 ###############################################################################
-# Shapes
-# ======
-#
 # Let's draw some simple shapes. First, a rectangle.
 
 rect = ui.Rectangle2D(size=(100, 100), position=(400, 400), color=(1, 0, 1))
@@ -34,9 +31,6 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45,
 
 
 ###############################################################################
-# Show Manager
-# ==================================
-#
 # Now that all the elements have been initialised, we add them to the show
 # manager.
 
@@ -48,4 +42,9 @@ show_manager.scene.add(rect)
 show_manager.scene.add(disk)
 show_manager.scene.add(ring)
 
-show_manager.start()
+interactive = False
+
+if interactive:
+    show_manager.start()
+
+window.record(show_manager.scene, size=current_size, out_path="viz_shapes.png")
