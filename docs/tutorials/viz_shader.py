@@ -14,16 +14,24 @@ First, a bunch of imports.
 import numpy as np
 from fury import window, actor, ui, io, utils
 import vtk
+from os.path import join as pjoin
+###############################################################################
+# Let's download  and load the model
+
+from fury.data.fetcher import fetch_viz_models, read_viz_models
+fetch_viz_models()
+model = read_viz_models('utah.obj')
+
 
 ###############################################################################
 # Polydata
-# ======
+# =======
 #
 # Let's start by loading the polydata of choice.
 # For this example we use the standard utah teapot model.
 # currently supported formats include OBJ, VKT, FIB, PLY, STL and XML
 
-utah = io.load_polydata('models/utah.obj')
+utah = io.load_polydata(model)
 utah = utils.get_polymapper_from_polydata(utah)
 utah = utils.get_actor_from_polymapper(utah)
 mapper = utah.GetMapper()
@@ -85,14 +93,13 @@ mapper.AddShaderReplacement(
 )
 
 
+###############################################################################
 # Let's create a scene.
 
 scene = window.Scene()
 
-###############################################################################
 # Show Manager
-# ==================================
-#
+# 
 # Now that all the elements have been initialised, we add them to the show
 # manager.
 
@@ -127,17 +134,18 @@ def vtk_shader_callback(caller, event, calldata=None):
             pass
 
 
+###############################################################################
 # Let's add a textblock to the scene with a custom message
 
 tb = ui.TextBlock2D()
 tb.message = "Hello Shaders"
 
-
+###############################################################################
 # Change the property of the actor
 
 utah.GetProperty().SetOpacity(0.5)
 
-
+###############################################################################
 # Invoke callbacks to any VTK object
 
 mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
