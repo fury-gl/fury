@@ -30,7 +30,7 @@ from fury import actor, window, colormap as cmap
 # displacements
 #
 
-mode = 1
+mode = 0
 
 ###############################################################################
 # Then let's download some available datasets. (mode 1)
