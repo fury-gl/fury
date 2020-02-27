@@ -5,15 +5,33 @@ import fury.primitive as fp
 
 def test_vertices_primitives():
     l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3))]
+                    (fp.prim_box, (8, 3)),
+                    (fp.primStar()),
+                    (fp.primStar(3)),
+                    (fp.primRhombi())]
 
     for func, shape in l_primitives:
         vertices, _ = func()
-
-        npt.assert_equal(vertices.shape, shape)
-        npt.assert_equal(np.mean(vertices), 0)
-        npt.assert_equal(vertices.min(), -.5)
-        npt.assert_equal(vertices.max(), 0.5)
+        if(shape == fp.primStar()):
+            npt.assert_equal(vertices.shape, shape)
+            npt.assert_equal(np.mean(vertices), 0)
+            npt.assert_equal(vertices.max, 3.0)
+            npt.assert_equal(vertices.min, -3.0)
+        if(shape == fp.primStar(3)):
+            npt.assert_equal(vertices.shape, shape)
+            npt.assert_equal(np.mean(vertices), 0)
+            npt.assert_equal(vertices.max, 3.0)
+            npt.assert_equal(vertices.min, -3.0)
+        if(shape == fp.primRhombi()):
+            npt.assert_equal(vertices.shape, shape)
+            npt.assert_equal(np.mean(vertices), 0)
+            npt.assert_equal(vertices.max, 4.0)
+            npt.assert_equal(vertices.min, -4.0)
+        else:
+            npt.assert_equal(vertices.shape, shape)
+            npt.assert_equal(np.mean(vertices), 0)
+            npt.assert_equal(vertices.min(), -.5)
+            npt.assert_equal(vertices.max(), 0.5)
 
 
 def test_triangles_primitives():
@@ -96,4 +114,3 @@ def test_repeat_primitive_function():
 
     big_verts, big_faces, big_colors = res
 
-    # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
