@@ -1792,7 +1792,7 @@ class LineSlider2D(UI):
                  length=200, line_width=5,
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
-                 axis=0,
+                 orientation="horizontal",
                  text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
         """
         Parameters
@@ -1817,8 +1817,8 @@ class LineSlider2D(UI):
             Side length of the handles (if sqaure).
         font_size : int
             Size of the text to display alongside the slider (pt).
-        axis : int
-            0 implies Horizontal layout and 1 implies Vertical layout
+        orientation : str
+            horizontal or vertical
         text_template : str, callable
             If str, text template can contain one or multiple of the
             replacement fields: `{value:}`, `{ratio:}`.
@@ -1829,17 +1829,19 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
-        self.axis = axis
+        self.orientation = orientation
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         super(LineSlider2D, self).__init__()
 
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             self.track.width = length
             self.track.height = line_width
-        else:
+        elif self.orientation == "vertical":
             self.track.width = line_width
             self.track.height = length
+        else:
+            raise ValueError("Unknown orientation")
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -1910,8 +1912,7 @@ class LineSlider2D(UI):
         # Consider the handle's size when computing the slider's size.
         width = None
         height = None
-        
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             width = self.track.width + self.handle.size[0]
             height = max(self.track.height, self.handle.size[1])
         else:
@@ -1930,7 +1931,7 @@ class LineSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handle.size / 2.
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             # Offset the slider line height by half the slider line width.
             track_position[1] -= self.track.size[1] / 2.
         else:
@@ -1940,12 +1941,12 @@ class LineSlider2D(UI):
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             self.text.position = (self.handle.center[0],
-                                self.handle.position[1] - 10)
+                                  self.handle.position[1] - 10)
         else:
             self.text.position = (self.handle.position[0] - 35,
-                                self.handle.center[1])
+                                  self.handle.center[1])
 
     @property
     def bottom_y_position(self):
@@ -1971,18 +1972,17 @@ class LineSlider2D(UI):
         position : (float, float)
             The absolute position of the disk (x, y).
         """
-        x_position = position[0]
-        x_position = max(x_position, self.left_x_position)
-        x_position = min(x_position, self.right_x_position)
-
-        y_position = position[1]
-        y_position = max(y_position, self.bottom_y_position)
-        y_position = min(y_position, self.top_y_position)
 
         # Move slider disk.
-        if self.axis == 0:
+        if self.orientation == "horizontal":
+            x_position = position[0]
+            x_position = max(x_position, self.left_x_position)
+            x_position = min(x_position, self.right_x_position)
             self.handle.center = (x_position, self.track.center[1])
         else:
+            y_position = position[1]
+            y_position = max(y_position, self.bottom_y_position)
+            y_position = min(y_position, self.top_y_position)
             self.handle.center = (self.track.center[0], y_position)
         self.update()  # Update information.
 
@@ -2017,16 +2017,16 @@ class LineSlider2D(UI):
         disk_position_x = None
         disk_position_y = None
 
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             length = float(self.right_x_position - self.left_x_position)
             if length != self.track.width:
-                raise Exception("Disk position outside the slider line")
+                raise ValueError("Disk position outside the slider line")
             disk_position_x = self.handle.center[0]
             self._ratio = (disk_position_x - self.left_x_position) / length
         else:
             length = float(self.top_y_position - self.bottom_y_position)
             if length != self.track.height:
-                raise Exception("Disk position outside the slider line")
+                raise ValueError("Disk position outside the slider line")
             disk_position_y = self.handle.center[1]
             self._ratio = (disk_position_y - self.bottom_y_position) / length
 
@@ -2039,7 +2039,7 @@ class LineSlider2D(UI):
         self.text.message = text
 
         # Move the text below the slider's handle.
-        if self.axis == 0:
+        if self.orientation == "horizontal":
             self.text.position = (disk_position_x, self.text.position[1])
         else:
             self.text.position = (self.text.position[0], disk_position_y)
