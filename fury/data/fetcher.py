@@ -295,8 +295,9 @@ fetch_viz_models = _make_fetcher("fetch_viz_models",
                                  ['utah.obj'],
                                  ['utah.obj'],
                                  ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3'],
-                                 doc="Download the utah teapot model for shader tutorial"
+                                 doc="Download the model for shader tutorial"
                                  )
+
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
     """Read specific icon from specific style.
@@ -318,18 +319,20 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
 
+
 def read_viz_models(fname):
     """Read specific model.
 
     Parameters
     ----------
     fname : str
-        Filename of the model. This should be found in folder HOME/.fury/models/.
+        Filename of the model.
+        This should be found in folder HOME/.fury/models/.
 
     Returns
     --------
     path : str
-        Complete path of icon.
+        Complete path of models.
 
     """
     folder = pjoin(fury_home, 'models')

@@ -24,8 +24,6 @@ model = read_viz_models('utah.obj')
 
 
 ###############################################################################
-# Polydata
-# =======
 #
 # Let's start by loading the polydata of choice.
 # For this example we use the standard utah teapot model.
@@ -38,7 +36,7 @@ mapper = utah.GetMapper()
 
 
 ###############################################################################
-# To change the default shader ew add a shader replacement.
+# To change the default shader we add a shader replacement.
 # Specify vertex shader using vtkShader.Vertex
 # Specify fragment shader using vtkShader.Fragment
 
@@ -98,13 +96,6 @@ mapper.AddShaderReplacement(
 
 scene = window.Scene()
 
-# Show Manager
-# 
-# Now that all the elements have been initialised, we add them to the show
-# manager.
-
-showm = window.ShowManager(scene, size=(1024, 720), reset_camera=False)
-
 global timer
 timer = 0
 
@@ -148,7 +139,18 @@ utah.GetProperty().SetOpacity(0.5)
 ###############################################################################
 # Invoke callbacks to any VTK object
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
+                   vtk_shader_callback)
+
+
+###############################################################################
+# Show Manager
+#
+# Now that all the elements have been initialised, we add them to the show
+# manager.
+
+current_size = (1024, 720)
+showm = window.ShowManager(scene, size=current_size, reset_camera=False)
 
 showm.initialize()
 showm.add_timer_callback(True, 30, timer_callback)
@@ -159,4 +161,8 @@ showm.add_timer_callback(True, 30, timer_callback)
 scene.add(utah)
 scene.add(tb)
 
-showm.start()
+interactive = False
+if interactive:
+    showm.start()
+
+window.record(showm.scene, size=current_size, out_path="viz_shader.png")
