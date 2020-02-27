@@ -128,16 +128,21 @@ def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
     return cube_actor
 
 
-cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
+cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 5, 0))
 
 ###############################################################################
-# Now we'll add two sliders: one circular and one linear.
+# Now we'll add three sliders: one circular and two linear.
 
 ring_slider = ui.RingSlider2D(center=(740, 400), initial_value=0,
                               text_template="{angle:5.1f}°")
 
-line_slider = ui.LineSlider2D(center=(500, 250), initial_value=0,
-                              min_value=-10, max_value=10)
+line_slider_x = ui.LineSlider2D(center=(500, 250), initial_value=0,
+                                min_value=-10, max_value=10,
+                                orientation="horizontal")
+
+line_slider_y = ui.LineSlider2D(center=(650, 350), initial_value=0,
+                                min_value=-10, max_value=10,
+                                orientation="vertical")
 
 ###############################################################################
 # We can use a callback to rotate the cube with the ring slider.
@@ -153,15 +158,27 @@ def rotate_cube(slider):
 ring_slider.on_change = rotate_cube
 
 ###############################################################################
-# Similarly, we can translate the cube with the line slider.
+# Similarly, we can translate the cube with line sliders.
+# We use global variables to keep track of the position of the cube.
+
+cube_x = 0
+cube_y = 0
 
 
-def translate_cube(slider):
-    value = slider.value
-    cube.SetPosition(value, 0, 0)
+def translate_cube_x(slider):
+    global cube_x, cube_y
+    cube_x = slider.value
+    cube.SetPosition(cube_x, cube_y, 0)
 
 
-line_slider.on_change = translate_cube
+def translate_cube_y(slider):
+    global cube_x, cube_y
+    cube_y = slider.value
+    cube.SetPosition(cube_x, cube_y, 0)
+
+
+line_slider_x.on_change = translate_cube_x
+line_slider_y.on_change = translate_cube_y
 
 ###############################################################################
 # Range Slider
@@ -187,7 +204,7 @@ range_slider = ui.RangeSlider(
 # We'll first make a list of the examples.
 
 examples = [[rect], [disk, ring], [img], [panel],
-            [ring_slider, line_slider], [range_slider]]
+            [ring_slider, line_slider_x, line_slider_y], [range_slider]]
 
 ###############################################################################
 # Now we'll make a function to hide all the examples. Then we'll call it so
@@ -252,6 +269,7 @@ show_manager.scene.set_camera(position=(0, 0, 200))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
 
+# To interact with the UI, set interactive = True
 interactive = False
 
 if interactive:
