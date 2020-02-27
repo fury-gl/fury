@@ -1942,8 +1942,8 @@ class LineSlider2D(UI):
             self.text.position = (self.handle.center[0],
                                 self.handle.position[1] - 10)
         else:
-            self.text.position = (self.handle.position[0],
-                                self.handle.center[1] - 10)
+            self.text.position = (self.handle.position[0] - 35,
+                                self.handle.center[1])
 
     @property
     def bottom_y_position(self):
