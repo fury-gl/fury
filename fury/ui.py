@@ -1908,8 +1908,16 @@ class LineSlider2D(UI):
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
-        width = self.track.width + self.handle.size[0]
-        height = max(self.track.height, self.handle.size[1])
+        width = None
+        height = None
+        
+        if self.axis == 0:
+            width = self.track.width + self.handle.size[0]
+            height = max(self.track.height, self.handle.size[1])
+        else:
+            width = max(self.track.width, self.handle.size[0])
+            height = self.track.height + self.handle.size[1]
+
         return np.array([width, height])
 
     def _set_position(self, coords):
@@ -1924,12 +1932,26 @@ class LineSlider2D(UI):
         track_position = coords + self.handle.size / 2.
         # Offset the slider line height by half the slider line width.
         track_position[1] -= self.track.size[1] / 2.
+        # Offset the slider line width by half the slider line height.
+        track_position[0] += self.track.size[0] / 2.
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
-        self.text.position = (self.handle.center[0],
-                              self.handle.position[1] - 10)
+        if self.axis == 0:
+            self.text.position = (self.handle.center[0],
+                                self.handle.position[1] - 10)
+        else:
+            self.text.position = (self.handle.position[0],
+                                self.handle.center[1] - 10)
+
+    @property
+    def bottom_y_position(self):
+        return self.track.position[1]
+
+    @property
+    def top_y_position(self):
+        return self.track.position[1] + self.track.size[1]
 
     @property
     def left_x_position(self):
@@ -1951,8 +1973,16 @@ class LineSlider2D(UI):
         x_position = max(x_position, self.left_x_position)
         x_position = min(x_position, self.right_x_position)
 
+        y_position = position[1]
+        y_position = max(y_position, self.bottom_y_position)
+        y_position = min(y_position, self.top_y_position)
+
         # Move slider disk.
-        self.handle.center = (x_position, self.track.center[1])
+        if self.axis == 0:
+            self.handle.center = (x_position, self.track.center[1])
+        else:
+            self.handle.center = (self.track.center[0], y_position)
+        
         self.update()  # Update information.
 
     @property
@@ -1971,7 +2001,8 @@ class LineSlider2D(UI):
     @ratio.setter
     def ratio(self, ratio):
         position_x = self.left_x_position + ratio * self.track.width
-        self.set_position((position_x, None))
+        position_y = self.bottom_y_position + ratio * self.track.height
+        self.set_position((position_x, position_y))
 
     def format_text(self):
         """ Returns formatted text to display along the slider. """
@@ -1982,11 +2013,21 @@ class LineSlider2D(UI):
     def update(self):
         """ Updates the slider. """
         # Compute the ratio determined by the position of the slider disk.
-        length = float(self.right_x_position - self.left_x_position)
-        if length != self.track.width:
-            raise Exception("Disk position outside the slider line")
-        disk_position_x = self.handle.center[0]
-        self._ratio = (disk_position_x - self.left_x_position) / length
+        disk_position_x = None
+        disk_position_y = None
+
+        if self.axis == 0:
+            length = float(self.right_x_position - self.left_x_position)
+            if length != self.track.width:
+                raise Exception("Disk position outside the slider line")
+            disk_position_x = self.handle.center[0]
+            self._ratio = (disk_position_x - self.left_x_position) / length
+        else:
+            length = float(self.top_y_position - self.bottom_y_position)
+            if length != self.track.height:
+                raise Exception("Disk position outside the slider line")
+            disk_position_y = self.handle.center[1]
+            self._ratio = (disk_position_y - self.bottom_y_position) / length
 
         # Compute the selected value considering min_value and max_value.
         value_range = self.max_value - self.min_value
@@ -1997,7 +2038,10 @@ class LineSlider2D(UI):
         self.text.message = text
 
         # Move the text below the slider's handle.
-        self.text.position = (disk_position_x, self.text.position[1])
+        if self.axis == 0:
+            self.text.position = (disk_position_x, self.text.position[1])
+        else:
+            self.text.position = (self.text.position[0], disk_position_y)
 
         self.on_change(self)
 
