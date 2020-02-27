@@ -155,9 +155,6 @@ showm = window.ShowManager(scene, size=current_size, reset_camera=False)
 showm.initialize()
 showm.add_timer_callback(True, 30, timer_callback)
 
-##############################################################################
-# We add all actors (visual objects) defined above to the scene.
-
 scene.add(utah)
 scene.add(tb)
 
