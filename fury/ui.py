@@ -1792,7 +1792,7 @@ class LineSlider2D(UI):
                  length=200, line_width=5,
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
-                 axis = 0,
+                 axis=0,
                  text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
         """
         Parameters
@@ -1930,10 +1930,12 @@ class LineSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handle.size / 2.
-        # Offset the slider line height by half the slider line width.
-        track_position[1] -= self.track.size[1] / 2.
-        # Offset the slider line width by half the slider line height.
-        track_position[0] += self.track.size[0] / 2.
+        if self.axis == 0:
+            # Offset the slider line height by half the slider line width.
+            track_position[1] -= self.track.size[1] / 2.
+        else:
+            # Offset the slider line width by half the slider line height.
+            track_position[0] += self.track.size[0] / 2.
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
@@ -1982,7 +1984,6 @@ class LineSlider2D(UI):
             self.handle.center = (x_position, self.track.center[1])
         else:
             self.handle.center = (self.track.center[0], y_position)
-        
         self.update()  # Update information.
 
     @property
