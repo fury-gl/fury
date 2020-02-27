@@ -1545,8 +1545,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> box_actor = actor.square(centers, dirs)
-    >>> scene.add(box_actor)
+    >>> sq_actor = actor.square(centers, dirs)
+    >>> scene.add(sq_actor)
     >>> # window.show(scene)
 
     """
@@ -1558,6 +1558,40 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     sq_actor.GetProperty().BackfaceCullingOff()
     return sq_actor
+
+
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+              scale=(1, 2, 0)):
+    """Visualize one or many rectangles with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Rectangle positions
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the rectangle.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Rectangle size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> rect_actor = actor.rectangle(centers, dirs)
+    >>> scene.add(rect_actor)
+    >>> # window.show(scene)
+
+    """
+    return square(centers=centers, directions=directions, colors=colors,
+                  scale=scale)
 
 
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):

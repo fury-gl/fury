@@ -981,7 +981,8 @@ def test_basic_geometry_actor(interactive=False):
 
     actor_list = [[actor.cube, {}],
                   [actor.box, {}],
-                  [actor.square, {}]]
+                  [actor.square, {}],
+                  [actor.rectangle, {}]]
 
     scene = window.Scene()
 
