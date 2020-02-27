@@ -5,7 +5,6 @@ from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
 
-
 SPHERE_FILES = {
     'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
     'symmetric642': pjoin(DATA_DIR, 'evenly_distributed_sphere_642.npz'),
@@ -33,7 +32,7 @@ def faces_from_sphere_vertices(vertices):
     """
     hull = ConvexHull(vertices, qhull_options='Qbb Qc')
     faces = np.ascontiguousarray(hull.simplices)
-    if len(vertices) < 2**16:
+    if len(vertices) < 2 ** 16:
         return np.asarray(faces, np.uint16)
     else:
         return faces
@@ -96,7 +95,7 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     ----------
     vertices: ndarray
         vertices coords to duplicate at the centers positions
-    triangles: ndarray
+    faces: ndarray
         triangles that composed our shape to duplicate
     centers : ndarray, shape (N, 3)
         Superquadrics positions
@@ -137,16 +136,16 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
 
     # update triangles
     big_triangles = np.array(np.tile(faces,
-                             (centers.shape[0], 1)),
+                                     (centers.shape[0], 1)),
                              dtype=np.int32)
     big_triangles += np.repeat(np.arange(0, centers.shape[0] *
-                               unit_verts_size, step=unit_verts_size),
+                                         unit_verts_size, step=unit_verts_size),
                                unit_triangles_size,
                                axis=0).reshape((big_triangles.shape[0], 1))
 
     def normalize_input(arr, arr_name=''):
         if isinstance(arr, (tuple, list, np.ndarray)) and len(arr) == 3 and \
-          not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
+                not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
             return np.array([arr] * centers.shape[0])
         elif isinstance(arr, np.ndarray) and len(arr) == 1:
             return np.repeat(arr, centers.shape[0], axis=0)
@@ -164,13 +163,13 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     # update orientations
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
-        ai, aj, ak = transform.Rotation.from_rotvec(np.pi/2 * dirs). \
+        ai, aj, ak = transform.Rotation.from_rotvec(np.pi / 2 * dirs). \
             as_euler('zyx')
         rotation_matrix = euler_matrix(ai, aj, ak)
-        big_vertices[pts * unit_verts_size: (pts+1) * unit_verts_size] = \
+        big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
                    big_vertices[pts * unit_verts_size:
-                                (pts+1) * unit_verts_size].T).T
+                                (pts + 1) * unit_verts_size].T).T
 
     # apply centers position
     big_centers = np.repeat(centers, unit_verts_size, axis=0)
@@ -313,6 +312,7 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     True
 
     """
+
     def _fexp(x, p):
         """Return a different kind of exponentiation."""
         return np.sign(x) * (np.abs(x) ** p)
@@ -329,8 +329,10 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     vertices = np.ascontiguousarray(xyz)
 
     return vertices, sphere_triangles
+
+
 def primRhombi():
-    '''Return vertices and triangle for rhombicuboctahedron geometry
+    """Return vertices and triangle for rhombicuboctahedron geometry
 
     :return:
     ---------
@@ -338,7 +340,7 @@ def primRhombi():
         vertices coords that composed our rhombicuboctahedron
     my_triangles: ndarray
         Triangles that composed our rhombicuboctahedron
-    '''
+    """
     my_vertices = np.array([[-2, 4, 2],
                             [-4, 2, 2],
                             [-4, -2, 2],
@@ -411,42 +413,45 @@ def primRhombi():
                              ], dtype='i8')
     return my_vertices, my_triangles
 
+
 def primStar(dim=2):
-    '''Return vertices and triangle for star geometry
+    """Return vertices and triangle for star geometry
 
+    Parameters
+    ----------
+    dim: int
+        default 2, dimensions of the desired star
 
-    :param dim: default 2
-    :return:
-    ---------
+    Returns
+    -------
     vertices: ndarray
         vertices coords that composed our star
     triangles: ndarray
         Triangles that composed our star
 
-
-    '''
-    if(dim == 2):
+    """
+    if dim == 2:
         vert = np.array([[-2.0, -3.0, 0.0],
-                     [0.0, -2.0, 0.0],
-                     [3.0, -3.0, 0.0],
-                     [2.0, -1.0, 0.0],
-                     [3.0, 1.0, 0.0],
-                     [1.0, 1.0, 0.0],
-                     [0.0, 3.0, 0.0],
-                     [-1.0, 1.0, 0.0],
-                     [-3.0, 1.0, 0.0],
-                     [-2.0, -1.0, 0.0]])
+                         [0.0, -2.0, 0.0],
+                         [3.0, -3.0, 0.0],
+                         [2.0, -1.0, 0.0],
+                         [3.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [0.0, 3.0, 0.0],
+                         [-1.0, 1.0, 0.0],
+                         [-3.0, 1.0, 0.0],
+                         [-2.0, -1.0, 0.0]])
 
         triangles = np.array([[1, 9, 0],
-                          [1, 2, 3],
-                          [3, 4, 5],
-                          [5, 6, 7],
-                          [7, 8, 9],
-                          [1, 9, 3],
-                          [3, 7, 9],
-                          [3, 5, 7]], dtype='i8')
+                              [1, 2, 3],
+                              [3, 4, 5],
+                              [5, 6, 7],
+                              [7, 8, 9],
+                              [1, 9, 3],
+                              [3, 7, 9],
+                              [3, 5, 7]], dtype='i8')
 
-    if(dim == 3):
+    if dim == 3:
         vert = np.array([[-2.0, -3.0, 0.0],
                          [0.0, -2, 0.0],
                          [3.0, -3.0, 0.0],
@@ -488,4 +493,3 @@ def primStar(dim=2):
                               [3, 11, 2],
                               [11, 1, 2]], dtype='i8')
     return vert, triangles
-
