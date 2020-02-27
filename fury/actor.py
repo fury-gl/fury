@@ -1551,8 +1551,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
 
     """
     verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scale=scale)
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
 
     big_verts, big_faces, big_colors, _ = res
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1624,8 +1624,8 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
 
     """
     verts, faces = fp.prim_box()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scale=scale)
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
 
     big_verts, big_faces, big_colors, _ = res
     box_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
