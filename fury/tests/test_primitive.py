@@ -4,16 +4,22 @@ import fury.primitive as fp
 
 
 def test_vertices_primitives():
+    #Tests the default vertices of all the built in primitive shapes.
     l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3))]
+                    (fp.prim_box, (8, 3)),
+                    (fp.primStar()),
+                    (fp.primStar(3)),
+                    (fp.primRhombi())]
 
     for func, shape in l_primitives:
         vertices, _ = func()
-
+        print(shape)
+        print(fp.primStar())
         npt.assert_equal(vertices.shape, shape)
         npt.assert_equal(np.mean(vertices), 0)
         npt.assert_equal(vertices.min(), -.5)
         npt.assert_equal(vertices.max(), 0.5)
+
 
 
 def test_triangles_primitives():
