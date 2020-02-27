@@ -132,9 +132,14 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     unit_triangles_size = faces.shape[0]
 
     # scale them
-    if isinstance(scale, (list, tuple, np.ndarray)):
+    if not isinstance(scale, np.ndarray):
+        scale = np.array(scale)
+    if scale.ndim == 1:
+        if scale.size == centers.shape[0]:
+            scale = np.repeat(scale, unit_verts_size, axis=0)
+            scale = scale.reshape((big_vertices.shape[0], 1))
+    elif scale.ndim == 2:
         scale = np.repeat(scale, unit_verts_size, axis=0)
-        scale = scale.reshape((big_vertices.shape[0], 1))
     big_vertices *= scale
 
     # update triangles
