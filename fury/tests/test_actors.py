@@ -971,15 +971,41 @@ def test_frustum_vertices_faces(interactive=False):
     scene.clear()
 
 
-def test_geometry_actor(interactive=False):
+def test_basic_geometry_actor(interactive=False):
+    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    directions = np.array([[1, 1, 0], [0, 1, 1], [1, 0, 1]])
 
+    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
+                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
+
+    actor_list = [[actor.cube, {}],
+                  [actor.box, {}],
+                  [actor.square, {}]]
+
+    scene = window.Scene()
+
+    for act_func, extra_args in actor_list:
+        for scale in scale_list:
+            g_actor = act_func(centers=centers, colors=colors,
+                               directions=directions, scale=scale,
+                               **extra_args)
+
+            scene.add(g_actor)
+            if interactive:
+                window.show(scene)
+            arr = window.snapshot(scene)
+            report = window.analyze_snapshot(arr, colors=colors)
+            npt.assert_equal(report.objects, 3)
+            scene.clear()
+
+
+def test_advanced_geometry_actor(interactive=False):
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
 
     actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
                   [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.box, {'directions': dirs, 'size': (1, 3, 2)}],
-                  [actor.cube, {'directions': dirs}],
                   [actor.cylinder, {'directions': dirs}]]
 
     scene = window.Scene()
@@ -1315,25 +1341,6 @@ def test_superquadric_actor(interactive=False):
     res = window.analyze_snapshot(arr, colors=colors.astype(np.uint8),
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True, True])
-
-
-def test_square_actor(interactive=False):
-    scene = window.Scene()
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
-    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    scale = [1, 2, 3]
-
-    verts, faces = prim_square()
-    res = repeat_primitive(verts, faces, centers=centers, colors=colors,
-                           scale=scale)
-
-    big_verts, big_faces, big_colors, _ = res
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    sq_actor.GetProperty().BackfaceCullingOff()
-    scene.add(sq_actor)
-    scene.add(actor.axes())
-    if interactive:
-        window.show(scene)
 
 
 def test_billboard_actor(interactive=False):
