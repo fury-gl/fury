@@ -11,10 +11,8 @@ First, a bunch of imports.
 
 """
 
-import numpy as np
-from fury import window, actor, ui, io, utils
+from fury import window, ui, io, utils
 import vtk
-from os.path import join as pjoin
 ###############################################################################
 # Let's download  and load the model
 
