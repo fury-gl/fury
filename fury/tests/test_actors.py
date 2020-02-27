@@ -1211,22 +1211,6 @@ def test_grid(_interactive=False):
     npt.assert_equal(report.objects > 6, True)
 
 
-def _sphere(scale=1):
-
-    vertices, faces = prim_sphere('symmetric362')
-
-    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
-    polydata = vtk.vtkPolyData()
-
-    set_polydata_vertices(polydata, scale * vertices)
-    set_polydata_triangles(polydata, faces)
-    from fury.utils import set_polydata_normals, normals_from_v_f
-
-    normals = normals_from_v_f(scale * vertices, faces)
-    set_polydata_normals(polydata, normals)
-    return polydata, scale * vertices, normals
-
-
 def test_direct_sphere_mapping():
 
     arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
