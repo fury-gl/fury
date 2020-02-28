@@ -128,13 +128,23 @@ def test_save_load_image():
 def test_pillow():
 
     with InTemporaryDirectory() as odir:
-        data = (255 * np.random.rand(400, 255, 4)).astype(np.uint8)
+        # data = (255 * np.random.rand(400, 255, 4)).astype(np.uint8)
+        data = np.arange(126).reshape((6,7,3)).astype(np.uint8)
         fname_path = pjoin(odir, "test.png")
         save_image(data, fname_path, use_pillow=True)
         data2 = load_image(fname_path, use_pillow=True)
         npt.assert_array_almost_equal(data, data2)
         npt.assert_equal(data.dtype, data2.dtype)
 
+        import ipdb; ipdb.set_trace()
+        save_image(data, fname_path, use_pillow=False)
+        data3 = load_image(fname_path, use_pillow=False)
+        npt.assert_array_almost_equal(data, data3)
+        npt.assert_array_almost_equal(data2, data3)
+        npt.assert_equal(data.dtype, data3.dtype)
+        npt.assert_equal(data2.dtype, data3.dtype)
+
 
 if __name__ == "__main__":
-    npt.run_module_suite()
+    # npt.run_module_suite()
+    test_pillow()

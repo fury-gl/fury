@@ -859,17 +859,25 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
         arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
                                          .GetScalars())
-        h, w, _ = renderLarge.GetOutput().GetDimensions()
+        w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = arr.reshape((w, h, components))
-        save_image(arr, filename)
+        print(arr.shape, arr.flags)
+        print(arr)
+        # import ipdb; ipdb.set_trace()
+        arr = np.flipud(arr.reshape((h, w, components)))
+        print(arr.ravel()[800*100:800*200])
+        import matplotlib.pyplot as plt
+        plt.imshow(arr)
+        plt.show()
+
+        save_image(arr, filename, use_pillow=False)
 
         ang = +az_ang
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
                  occlusion_ratio=0.0):
-    """ Enable anti-aliasing and ordered transparency
+    """Enable anti-aliasing and ordered transparency.
 
     Parameters
     ----------

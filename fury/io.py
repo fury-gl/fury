@@ -82,12 +82,12 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     reader.GetOutput().GetPointData().GetArray(0).SetName("original")
 
     if not as_vtktype:
-        h, w, _ = reader.GetOutput().GetDimensions()
+        w, h, _ = reader.GetOutput().GetDimensions()
         vtk_array = reader.GetOutput().GetPointData().GetScalars()
 
         components = vtk_array.GetNumberOfComponents()
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
-        image = np.swapaxes(image, 0, 1)
+        image = np.flipud(image)
 
     return reader.GetOutput() if as_vtktype else image
 
@@ -110,6 +110,7 @@ def save_image(arr, filename, compression_quality=75,
         select between: None, lzw, deflation (default)
     use_pillow : bool, optional
         Use imageio python library to save the files.
+
     """
     if arr.ndim > 3:
         raise IOError("Image Dimensions should be <=3")
@@ -136,14 +137,20 @@ def save_image(arr, filename, compression_quality=75,
     if arr.ndim == 2:
         arr = arr[..., None]
 
+    # import ipdb; ipdb.set_trace()
+    shape = arr.shape
+    arr = np.flipud(arr)
+    arr = arr.reshape((shape[0]*shape[1], shape[2]))
+    print(arr.shape, arr.flags)
     vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
-    vtk_array = numpy_support.numpy_to_vtk(num_array=arr.ravel(), deep=True,
+    vtk_array = numpy_support.numpy_to_vtk(num_array=np.ascontiguousarray(arr, dtype=arr.dtype),
+                                           deep=True,
                                            array_type=vtk_array_type)
 
     # Todo, look the following link for managing png 16bit
     # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
     vtk_data = vtk.vtkImageData()
-    vtk_data.SetDimensions(arr.shape)
+    vtk_data.SetDimensions(shape[1], shape[0], shape[2])
     vtk_data.SetSpacing(1.0, 1.0, 1.0)
     vtk_data.SetOrigin(0.0, 0.0, 0.0)
     vtk_data.GetPointData().SetScalars(vtk_array)
