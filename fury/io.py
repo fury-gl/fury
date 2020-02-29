@@ -2,6 +2,7 @@ import os
 import vtk
 import numpy as np
 from PIL import Image
+import PIL.ImageOps
 from vtk.util import numpy_support
 from fury.utils import set_input
 
@@ -130,6 +131,7 @@ def save_image(arr, filename, compression_quality=75,
 
     if use_pillow:
         im = Image.fromarray(arr)
+        im = im.transpose(Image.FLIP_TOP_BOTTOM)
         im.save(filename, quality=compression_quality)
         return
 
