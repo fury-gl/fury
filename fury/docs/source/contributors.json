@@ -1,0 +1,134 @@
+{
+    "core_team": [
+        {
+            "username": "garyfallidis",
+            "fullname": "Eleftherios Garyfallidis",
+            "affiliation": "Indiana University, IN, USA"
+        },
+        {
+            "username": "skoudoro",
+            "fullname": "Serge Koudoro",
+            "affiliation": "Indiana University, IN, USA"
+        },
+        {
+            "username": "ranveeraggarwal",
+            "fullname": "Ranveer Aggarwal",
+            "affiliation": "Microsoft, Hyderabad, Telangana, India"
+        },
+        {
+            "username": "marccote",
+            "fullname": "Marc Alexandre Cote",
+            "affiliation": "Microsoft Research, Montreal, QC, CA"
+        },
+        {
+            "username": "karandeepsj",
+            "fullname": "Karandeep  Singh Juneja",
+            "affiliation": "International Institute of Information Technology, Hyderabad, India"
+        },
+        {
+            "username": "dmreagan",
+            "fullname": "David Reagan",
+            "affiliation": "Indiana University, IN, USA"
+        }
+    ],
+    "team": [
+        {
+            "username": "arokem",
+            "fullname": "Ariel Rokem",
+            "affiliation": "University of Washington, WA, USA"
+        },
+        {
+            "username": "matthew-brett",
+            "fullname": "Matthew Brett",
+            "affiliation": "Birmingham University, Birmingham, UK"
+        },
+        {
+            "username": "khessijordan",
+            "fullname": "Khessi Jordan",
+            "affiliation": "University of California, San Francisco, CA, USA"
+        },
+        {
+            "username": "omarocegueda",
+            "fullname": "Omar Ocegueda",
+            "affiliation": "Google, San Francisco, CA"
+        },
+        {
+            "username": "mrbago",
+            "fullname": "Bago Amirbekian",
+            "affiliation": "Databricks, San Francisco, CA, USA"
+        },
+        {
+            "username": "grlee77",
+            "fullname": "Gregory R. Lee",
+            "affiliation": "Cincinnati Children’s Hospital Medical Center, Cincinnati, OH, USA"
+        },
+        {
+            "username": "stefanv",
+            "fullname": "Stefan Van der Walt",
+            "affiliation": "University of California, Berkeley, CA, USA"
+        },
+        {
+            "username": "albayenes",
+            "fullname": "Enes Albay",
+            "affiliation": ""
+        },
+        {
+            "username": "jhlegaretta",
+            "fullname": "John Legaretta",
+            "affiliation": "University of Sherbrooke, QC, CA"
+        },
+        {
+            "username": "gauvinalexandre",
+            "fullname": "Alexander Gauvin",
+            "affiliation": "University of Sherbrooke, QC, CA"
+        },
+        {
+            "username": "theaverageguy",
+            "fullname": "Yash Sherry",
+            "affiliation": "MIT Research Affiliate"
+        },
+        {
+            "username": "stongeetienne",
+            "fullname": "Etienne St-Onge",
+            "affiliation": "University of Sherbrooke, QC, CA"
+        },
+        {
+            "username": "cnguyen",
+            "fullname": "Christopher Nguyen",
+            "affiliation": "Massachusetts General Hospital, MA, USA"
+        },
+        {
+            "username": "samuelstjean",
+            "fullname": "Samuel St-Jean",
+            "affiliation": "University Medical Center (UMC) Utrecht, Utrecht, NL"
+        },
+        {
+            "username": "borda",
+            "fullname": "Jiri Borovec",
+            "affiliation": "Czech Technical University, Prague, CZ"
+        },
+        {
+            "username": "yarikoptic",
+            "fullname": "Yaroslav Halchenko",
+            "affiliation": "Center for Open Neuroscience , Darmouth, US"
+        },
+        {
+            "username": "arybinski",
+            "fullname": "Adam Rybinski",
+            "affiliation": ""
+        },
+        {
+            "username": "wasserth",
+            "fullname": "Jakob Wasserthal",
+            "affiliation": "DKFZ MIC - German Cancer Research Center, Germany"
+        }
+
+    ],
+    "release": {
+            "v0.1.0": "",
+            "v0.1.1": "",
+            "v0.1.2": "",
+            "v0.1.3": "",
+            "v0.1.4": ""
+        }
+}
