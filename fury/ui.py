@@ -3599,7 +3599,7 @@ class ListBox2D(UI):
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             char_width = slot.textblock.size[0] - self.margin
-            text_width = char_width * len(choice) * 0.783
+            text_width = char_width * len(str(choice)) * 0.783
             if text_width > self.slot_width:
                 excess_width = text_width - self.slot_width
                 excess_chars = excess_width//char_width
