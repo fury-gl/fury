@@ -3604,7 +3604,8 @@ class ListBox2D(UI):
                 excess_width = text_width - self.slot_width
                 excess_chars = excess_width//char_width
                 wrapped_choice = choice[:int(-excess_chars) - 3] + "..."
-                slot.element = wrapped_choice
+                slot.element = choice
+                slot.textblock.message = wrapped_choice
             else:
                 slot.element = choice
             slot.set_visibility(True)
