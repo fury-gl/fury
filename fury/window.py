@@ -61,7 +61,7 @@ class Scene(vtk.vtkRenderer):
         self.RemoveAllViewProps()
 
     def projection(self, proj_type='perspective'):
-        """Decide between parallel or perspective projection.
+        """Deside between parallel or perspective projection.
 
         Parameters
         ----------
