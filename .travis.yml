@@ -1,0 +1,81 @@
+sudo: true
+language: python
+dist: xenial
+os:
+- linux
+
+services:
+  - xvfb
+
+addons:
+  homebrew:
+    update: true
+    casks:
+    - xquartz
+env:
+  global:
+  - MESA_GL_VERSION_OVERRIDE=3.3
+  - LIBGL_ALWAYS_INDIRECT=y
+  - DISPLAY=:99
+  - ENV_TYPE="conda"
+  - ENV_DIR="${HOME}/envs"
+  - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
+  - PRE_WHEELS="https://7933911d6844c6c53a7d-47bd50c35cd79bd838daf386af554a83.ssl.cf2.rackcdn.com"
+  - EXTRA_PIP_FLAGS="--timeout=60 --find-links=$EXTRA_WHEELS"
+  - GH_REF: github.com/fury-gl/fury-website.git
+  - secure: WdsQHY7e6cXRv4cpuGrm3uooSUYCeKjiJbYJuGegtOdYv9jMbaFtNpRWA2ltrl33ND2AD5JH92FO7dItsrucFTUlJKKoHypICKo/ngkg5WmNQg6oahgVkTOqfbdbPKyM9D19Pyw2+34hjLyRK+N063dmBnEQEMGvid7BsHpgIwbxcNIJpfTsuhb30hvVz251ByqygR9EryXZ0eFPsUEo9zmiRLxzJWd7kdWyiMTCapHR/aIgFwToFRmxlUMIceyY/GLj4lhNd7L1VvNeI8nI3mGYrC+6VtumdXcaAR8ZPoGfNej/fDboxX/fZvFWMmw5Q0BXmGoKWB9l1CrkCj2Skt8t3KqYULEW1STyQZ1t3NhmLMpgHcla32Khws0ey7AZZmiTS2GRgdhqTMjOU89gS6HzTD8cuullrUkjy/IXZW5ytcmhNDSlyjCGrVJROOgkbmasNiqKSnKDtT9OljR+SdcvV0nfv4icK015pzYfwqy7dh4EI7BScmCUYX6qvXlo2O3ocS4arm2WGgcC5ZBYnl9oB6KwTv9sFk6+nz4T/kNWNlAnG561GM4lNcc8XSQvCTG4wCg9pgmzIi67HtaJvbncGBtTQhkDENgnIN6Ujog+7esOIioqtFAQ+/uAitzQ78Iu7i7ppDFaJBMaJMoQ2tnVL20IzGwlikld2D6SMt8=
+
+python:
+  - 3.6
+  - 3.7
+
+matrix:
+  include:
+  - name: "Python: 3.6 + OPTIONAL_DEPS=1"
+    os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.6 OPTIONAL_DEPS=1
+  - name: "Python: 3.6"
+    os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.6
+  - name: "Python: 3.7"
+    os: osx
+    language: generic
+    env: TRAVIS_PYTHON_VERSION=3.7
+  - python: 3.7
+    env: OPTIONAL_DEPS=1
+  - python: 3.5
+    env: INSTALL_TYPE="pip"
+  - python: 3.6
+    env: INSTALL_TYPE="pip"
+  - python: 3.7
+    env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1
+  - name: Build Docs, Tutorials an Examples
+    os: linux
+    python: 3.6
+    env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+  - name: Coverage
+    os: linux
+    python: 3.6
+    env: OPTIONAL_DEPS=1 COVERAGE=1
+  - python: 3.6
+    os: linux
+    env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+  allow_failures:
+    - os: linux
+      python: 3.6
+      env: OPTIONAL_DEPS=1 BUILD_DOCS=1 DEPLOY_DOCS=1
+    - python: 3.6
+      os: linux
+      env: INSTALL_TYPE="pip" OPTIONAL_DEPS=1 USE_PRE=1
+
+install: bash ci/travis/install.sh
+script: bash ci/travis/script.sh
+after_success:
+- if [ "${COVERAGE}" == "1" ]; then coveralls; codecov; fi
+- bash ci/travis/deploy_docs.sh
+cache:
+  directories:
+  - "$HOME/.cache/pip"
+  - "$HOME/.ccache"

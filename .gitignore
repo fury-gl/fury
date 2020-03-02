@@ -1,0 +1,104 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+venv/
+*.egg-info/
+.installed.cfg
+*.egg
+*.png
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx documentation
+docs/build/
+docs/source/generated/
+docs/source/api
+docs/source/auto_examples
+docs/source/auto_tutorials
+docs/source/reference
+docs/examples/*.png
+docs/examples/*.vtk
+docs/examples/*.gif
+docs/tutorials/*.png
+docs/tutorials/*.vtk
+docs/tutorials/*.gif
+docs/temp/
+
+# pytest
+.pytest_cache/
+
+# PyBuilder
+target/
+
+# Editor files
+#mac
+.DS_Store
+*~
+
+# Vim
+*.swp
+*.swo
+
+# PyCharm
+.idea/*
+
+# VSCode
+.vscode/
+
+# Ipython Notebook
+.ipynb_checkpoints
+
+# Others
+*.trk
+*.tck
+*.nii
+*.nii.gz
+*.npy
+*.vtk
+*.jpeg
+*.jpg
