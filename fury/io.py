@@ -22,8 +22,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     -------
     image: ndarray or vtk output
         desired image array
-    """
 
+    """
     if use_pillow:
         with Image.open(filename) as pil_image:
             if pil_image.mode in ['RGBA', 'RGB', 'L']:
@@ -96,6 +96,9 @@ def save_image(arr, filename, compression_quality=75,
                compression_type='deflation', use_pillow=True):
     """Save a 2d or 3d image.
 
+    Expect an image with the following shape: (H,W) or (H,W, 1) or (H,W,3)
+    or (H,W,4).
+
     Parameters
     ----------
     arr : ndarray
@@ -137,13 +140,12 @@ def save_image(arr, filename, compression_quality=75,
     if arr.ndim == 2:
         arr = arr[..., None]
 
-    # import ipdb; ipdb.set_trace()
     shape = arr.shape
     arr = np.flipud(arr)
-    arr = arr.reshape((shape[0]*shape[1], shape[2]))
-    print(arr.shape, arr.flags)
+    arr = arr.reshape((shape[1] * shape[0], shape[2]))
+    arr = np.ascontiguousarray(arr, dtype=arr.dtype)
     vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
-    vtk_array = numpy_support.numpy_to_vtk(num_array=np.ascontiguousarray(arr, dtype=arr.dtype),
+    vtk_array = numpy_support.numpy_to_vtk(num_array=arr,
                                            deep=True,
                                            array_type=vtk_array_type)
 
@@ -151,6 +153,9 @@ def save_image(arr, filename, compression_quality=75,
     # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
     vtk_data = vtk.vtkImageData()
     vtk_data.SetDimensions(shape[1], shape[0], shape[2])
+    vtk_data.SetExtent(0, shape[1] - 1,
+                       0, shape[0] - 1,
+                       0, 0)
     vtk_data.SetSpacing(1.0, 1.0, 1.0)
     vtk_data.SetOrigin(0.0, 0.0, 0.0)
     vtk_data.GetPointData().SetScalars(vtk_array)

@@ -861,16 +861,8 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                                          .GetScalars())
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        print(arr.shape, arr.flags)
-        print(arr)
-        # import ipdb; ipdb.set_trace()
         arr = np.flipud(arr.reshape((h, w, components)))
-        print(arr.ravel()[800*100:800*200])
-        import matplotlib.pyplot as plt
-        plt.imshow(arr)
-        plt.show()
-
-        save_image(arr, filename, use_pillow=False)
+        save_image(arr, filename)
 
         ang = +az_ang
 
