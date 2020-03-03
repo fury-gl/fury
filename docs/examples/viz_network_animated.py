@@ -111,9 +111,6 @@ lines_actor = actor.line(np.zeros((len(edges), 2, 3)),
                          colors=edges_colors, lod=False,
                          fake_tube=True, linewidth=3)
 
-
-mapper = lines_actor.GetMapper()
-
 ###############################################################################
 # Defining timer callback and layout iterator
 
