@@ -15,24 +15,29 @@ application will exit after the callback has been called 100 times.
 
 
 import numpy as np
-from fury import window, actor, ui
+from fury import window, actor, ui, transform
 import itertools
 
 xyz = 10 * np.random.rand(100, 3)
-colors = np.random.rand(100, 4)
+directions = xyz.copy() / 10.
+
+colors = np.random.rand(100, 3)
 radii = np.random.rand(100) + 0.5
 
 scene = window.Scene()
 
-sphere_actor = actor.sphere(centers=xyz,
-                            colors=colors,
-                            radii=radii)
+sphere_actor = actor.arrow(centers=xyz,
+                           directions=directions,
+                           colors=colors)
+
+# sphere_actor = actor.sphere(centers=xyz,
+#                             colors=colors)
 
 scene.add(sphere_actor)
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+                           order_transparent=False)
 
 showm.initialize()
 
@@ -41,12 +46,29 @@ tb = ui.TextBlock2D(bold=True)
 # use itertools to avoid global variables
 counter = itertools.count()
 
+pts = transform.vertices(sphere_actor, False)
+
+print(pts.shape)
+
+
+sphere_actor.GetProperty().BackfaceCullingOn()
+#sphere_actor.GetProperty().FrontfaceCullingOff()
+
+displacements = np.zeros((pts.shape[0], 3), 'f4')
+
+sphere_update = transform.affine(sphere_actor, displacements)
+
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
     tb.message = "Let's count up to 100 and exit :" + str(cnt)
-    showm.scene.azimuth(0.05 * cnt)
-    sphere_actor.GetProperty().SetOpacity(cnt/100.)
+    global displacements
+    # displacements += 0.05 * (np.random.rand(*displacements.shape) - 0.5)
+    displacements += np.array([.5, 0, 0], dtype='f4')
+    sphere_update.update()
+    # sphere_actor.GetMapper().GetInput().ComputeBounds()
+    # showm.scene.azimuth(0.05 * cnt)
+    # sphere_actor.GetProperty().SetOpacity(cnt/100.)
     showm.render()
     if cnt == 100:
         showm.exit()

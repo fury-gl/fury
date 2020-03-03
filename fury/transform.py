@@ -1,5 +1,7 @@
 import math
 import numpy as np
+import vtk
+from vtk.util import numpy_support
 
 
 # axis sequences for Euler angles
@@ -203,3 +205,62 @@ def cart2sphere(x, y, z):
     phi = np.arctan2(y, x)
     r, theta, phi = np.broadcast_arrays(r, theta, phi)
     return r, theta, phi
+
+
+def vertices(actor, only_nb=True):
+
+   nb_pts = actor.GetMapper().GetInput().GetReferenceCount()
+   if only_nb:
+      return nb_pts
+
+   pts = numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().GetPoints().GetData())
+   return pts
+
+
+def affine(actor, displacements, scales=None, rotations=None):
+
+   vtk_displacements = numpy_support.numpy_to_vtk(displacements, deep=False)
+   vtk_displacements.SetNumberOfComponents(3)
+   vtk_displacements.SetName("displacement")
+   mapper = actor.GetMapper()
+   mapper.GetInput().GetPointData().AddArray(vtk_displacements)
+
+   mapper.MapDataArrayToVertexAttribute(
+      "displacement", "displacement", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+
+   mapper.AddShaderReplacement(
+      vtk.vtkShader.Vertex,
+      "//VTK::ValuePass::Dec",
+      True,
+      """
+      //VTK::ValuePass::Dec
+      in vec3 displacement;
+      """,
+      False
+   )
+
+   shadervertex = \
+      """
+      vertexVCVSOutput = MCVCMatrix * (vertexMC + vec4(displacement, 0));
+      gl_Position = MCDCMatrix * (vertexMC + vec4(displacement, 0));
+      """
+
+   mapper.AddShaderReplacement(
+      vtk.vtkShader.Vertex,
+      "//VTK::ValuePass::Impl",
+      True,
+      shadervertex,
+      False
+      )
+
+   class AffineUpdate:
+      def update(self):
+
+         vtk_displacements.Modified()
+         # mapper.GetInput().ComputeBounds()
+
+   affine_update = AffineUpdate()
+   affine_update.update()
+
+   return affine_update
+
