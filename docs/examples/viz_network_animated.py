@@ -85,7 +85,7 @@ colors = np.array([category_colors[category2index[category]]
 radii = 1 + np.random.rand(len(positions))
 
 ###############################################################################
-# Lets create our edges now. They will indicate a citation between two nodes.
+# Let's create our edges now. They will indicate a citation between two nodes.
 # The colors of each edge are interpolated between the two endpoints.
 
 edges_colors = []
@@ -93,7 +93,6 @@ for source, target in edges:
     edges_colors.append(np.array([colors[source], colors[target]]))
 
 edges_colors = np.average(np.array(edges_colors), axis=1)
-
 
 ###############################################################################
 # Our data preparation is ready, it is time to visualize them all. We start to
@@ -113,7 +112,6 @@ lines_actor = actor.line(np.zeros((len(edges), 2, 3)),
 
 ###############################################################################
 # Defining timer callback and layout iterator
-
 
 def new_layout_timer(showm, edges_list, vertices_count,
                      max_iterations=1000, vertex_initial_positions=None):
@@ -225,7 +223,7 @@ scene.add(lines_actor)
 scene.add(sphere_actor)
 
 ###############################################################################
-# The final step ! Visualize the result of our creation! Also, we need to move
+# The final step! Visualize the result of our creation! Also, we need to move
 # the camera a little bit farther from the network. you can increase the
 # parameter max_iteractions of the timer callback to let the animation run for
 # more time.
