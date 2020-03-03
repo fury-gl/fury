@@ -725,7 +725,8 @@ def test_ui_listbox_2d(interactive=False):
     event_counter.check_counts(expected)
 
     # Check if the right values were selected.
-    expected = [[1], [1, 2], [1], ["A Very Very Long Item To Test Text Overflow of List Box 2D"], [1], values]
+    expected = [[1], [1, 2], [1], ["A Very Very Long Item To Test Text Overflow \
+of List Box 2D"], [1], values]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -735,7 +736,9 @@ def test_ui_listbox_2d(interactive=False):
     show_manager.play_events_from_file(recording_filename)
 
     # Check if the right values were selected.
-    expected = [[1], [2], [2], ["A Very Very Long Item To Test Text Overflow of List Box 2D"], [1], ["A Very Very Long Item To Test Text Overflow of List Box 2D"]]
+    expected = [[1], [2], [2], ["A Very Very Long Item To Test \
+Text Overflow of List Box 2D"], [1], ["A Very Very Long Item To Test \
+Text Overflow of List Box 2D"]]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
