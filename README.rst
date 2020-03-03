@@ -1,4 +1,4 @@
-.. image:: https://travis-ci.org/fury-gl/fury.svg?branch=master
+﻿.. image:: https://travis-ci.org/fury-gl/fury.svg?branch=master
         :target: https://travis-ci.org/fury-gl/fury
 
 .. image:: https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master
@@ -84,10 +84,10 @@ And to launch test suite::
     pytest -svv fury
 
 Contribute
-==========
+=====================================================================================================================================================
 
 
-We love contributions!
+We love contributions! 
 
 You've discovered a bug or something else you want to change - excellent! Create an `issue <https://github.com/fury-gl/fury/issues/new>`_!
 
