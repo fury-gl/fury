@@ -1595,7 +1595,7 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
 
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
-    """Visualize one or many Boxes with different features.
+    """Visualize one or many boxes with different features.
 
     Parameters
     ----------
@@ -1633,7 +1633,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
 
 
 def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
-    """Visualize one or many cube with different features.
+    """Visualize one or many cubes with different features.
 
     Parameters
     ----------
@@ -1668,7 +1668,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
 def arrow(centers, directions, colors, heights=1., resolution=10,
           tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
           vertices=None, faces=None):
-    """Visualize one or many arrow with differents features.
+    """Visualize one or many arrows with differents features.
 
     Parameters
     ----------
