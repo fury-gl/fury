@@ -3329,11 +3329,8 @@ class ListBox2D(UI):
         scroll_bar_inactive_color : tuple of 3 floats
         background_opacity : float
         """
-<<<<<<< HEAD
-=======
         self._values = values 
         self.compressed_values = [] 
->>>>>>> list_box_text_overflow
         self.view_offset = 0
         self.slots = []
         self.selected = []
@@ -3341,12 +3338,8 @@ class ListBox2D(UI):
         self.panel_size = size
         self.font_size = font_size
         self.line_spacing = line_spacing
-<<<<<<< HEAD
-=======
         self.slot_width = 0 
->>>>>>> list_box_text_overflow
         self.slot_height = int(self.font_size * self.line_spacing)
-
         self.text_color = text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
@@ -3358,15 +3351,11 @@ class ListBox2D(UI):
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
-<<<<<<< HEAD
-
         denom = len(self.values) - self.nb_slots
-=======
-       
+
         # Compressing the values to avoid text overflow in listbox
         self.compressed_values=self.compressValues(values) 
         denom = len(self._values) - self.nb_slots
->>>>>>> list_box_text_overflow
         if not denom:
             denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
@@ -3411,10 +3400,7 @@ class ListBox2D(UI):
         # Initialisation of empty text actors
         slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
-<<<<<<< HEAD
-=======
         self.slot_width=slot_width 
->>>>>>> list_box_text_overflow
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
@@ -3613,28 +3599,21 @@ class ListBox2D(UI):
         """ Refresh listbox's content. """
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
-<<<<<<< HEAD
         values_to_show = self.values[view_start:view_end]
 
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element = choice
-=======
         values_to_show = self.compressed_values[view_start:view_end] 
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element=choice
->>>>>>> list_box_text_overflow
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
             else:
                 slot.deselect()
-<<<<<<< HEAD
-
-=======
->>>>>>> list_box_text_overflow
         # Flush remaining slots.
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
@@ -3683,27 +3662,15 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-<<<<<<< HEAD
         selection_idx = self.values.index(item.element)
-=======
         actual_value=self.get_actual_value(item.element) 
         selection_idx = self._values.index(actual_value)
->>>>>>> list_box_text_overflow
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
             for i in range(self.last_selection_idx,
                            selection_idx + step,
                            step):
-<<<<<<< HEAD
-                self.selected.append(self.values[i])
-
-        elif self.multiselection and multiselect:
-            if item.element in self.selected:
-                self.selected.remove(item.element)
-            else:
-                self.selected.append(item.element)
-=======
                 self.selected.append(self._values[i])
 
         elif self.multiselection and multiselect:
@@ -3711,22 +3678,15 @@ class ListBox2D(UI):
                 self.selected.remove(actual_value)
             else:
                 self.selected.append(actual_value)
->>>>>>> list_box_text_overflow
             self.last_selection_idx = selection_idx
 
         else:
             self.clear_selection()
-<<<<<<< HEAD
-            self.selected.append(item.element)
-=======
             self.selected.append(actual_value)
->>>>>>> list_box_text_overflow
             self.last_selection_idx = selection_idx
 
         self.on_change()  # Call hook.
         self.update()
-<<<<<<< HEAD
-=======
         
     def compress_values(self, values):
         compressed_names = [] 
@@ -3755,7 +3715,6 @@ class ListBox2D(UI):
     
     
 
->>>>>>> list_box_text_overflow
 
 
 class ListBoxItem2D(UI):
@@ -4040,14 +3999,9 @@ class FileMenu2D(UI):
             List of all file names as string.
         """
         # A list of file names with extension in the current directory
-<<<<<<< HEAD
-        for (_, _, files) in os.walk(self.current_directory):
-            break
-=======
         files = [] 
         for (_, _, files) in os.walk(self.current_directory):
             break 
->>>>>>> list_box_text_overflow
 
         file_names = []
         if "*" in self.extensions or "" in self.extensions:
@@ -4097,22 +4051,14 @@ class FileMenu2D(UI):
         listboxitem: :class:`ListBoxItem2D`
         """
         if (listboxitem.element, "directory") in self.directory_contents:
-<<<<<<< HEAD
             new_directory_path = os.path.join(self.current_directory,
                                               listboxitem.element)
-=======
-            new_directory_path = os.path.join(self.current_directory, listboxitem.element)
->>>>>>> list_box_text_overflow
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
                 self.listbox.clear_selection()
-<<<<<<< HEAD
-                self.listbox.values = content_names
-=======
                 self.listbox.set_values(content_names)
->>>>>>> list_box_text_overflow
                 self.listbox.view_offset = 0
                 self.listbox.update()
                 self.listbox.update_scrollbar()
