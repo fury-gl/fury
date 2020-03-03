@@ -1829,7 +1829,7 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
-        self.orientation = orientation
+        self.orientation = orientation.lower()
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         super(LineSlider2D, self).__init__()
