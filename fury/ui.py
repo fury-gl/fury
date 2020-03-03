@@ -3354,7 +3354,7 @@ class ListBox2D(UI):
         denom = len(self.values) - self.nb_slots
 
         # Compressing the values to avoid text overflow in listbox
-        self.compressed_values=self.compressValues(values) 
+        self.compressed_values=self.compress_values(values) 
         denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
@@ -3662,7 +3662,6 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        selection_idx = self.values.index(item.element)
         actual_value=self.get_actual_value(item.element) 
         selection_idx = self._values.index(actual_value)
         if self.multiselection and range_select:
@@ -3674,7 +3673,7 @@ class ListBox2D(UI):
                 self.selected.append(self._values[i])
 
         elif self.multiselection and multiselect:
-            if item.element in self.selected:
+            if actual_value in self.selected:
                 self.selected.remove(actual_value)
             else:
                 self.selected.append(actual_value)
