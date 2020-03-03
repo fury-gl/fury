@@ -141,5 +141,4 @@ def test_pillow():
 
 
 if __name__ == "__main__":
-    # npt.run_module_suite()
-    test_pillow()
+    npt.run_module_suite()

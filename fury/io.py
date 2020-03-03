@@ -142,6 +142,8 @@ def save_image(arr, filename, compression_quality=75,
 
     shape = arr.shape
     arr = np.flipud(arr)
+    if extension.lower() in ['.png', ]:
+        arr = arr.astype(np.uint8)
     arr = arr.reshape((shape[1] * shape[0], shape[2]))
     arr = np.ascontiguousarray(arr, dtype=arr.dtype)
     vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
