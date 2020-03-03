@@ -3,7 +3,9 @@ from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
+import pytest
 
+from fury.decorators import skip_osx
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.testing import assert_greater
@@ -125,6 +127,9 @@ def test_save_load_image():
                 continue
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on OSX due to "
+                                     "libpng version conflict. Need to be "
+                                     "introspected on Travis")
 def test_pillow():
 
     with InTemporaryDirectory() as odir:
