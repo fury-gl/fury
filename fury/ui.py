@@ -1,6 +1,4 @@
-# changes 
 from _warnings import warn
-
 
 import numpy as np
 import vtk
@@ -3330,8 +3328,8 @@ class ListBox2D(UI):
         scroll_bar_inactive_color : tuple of 3 floats
         background_opacity : float
         """
-        self._values=values;
-        self.compressed_values=[];
+        self._values = values 
+        self.compressed_values = [] 
         self.view_offset = 0
         self.slots = []
         self.selected = []
@@ -3339,7 +3337,7 @@ class ListBox2D(UI):
         self.panel_size = size
         self.font_size = font_size
         self.line_spacing = line_spacing
-        self.slot_width=0;
+        self.slot_width = 0 
         self.slot_height = int(self.font_size * self.line_spacing)
 
         self.text_color = text_color
@@ -3352,7 +3350,9 @@ class ListBox2D(UI):
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
-        self.compressed_values=self.compressValues(values);
+       
+        # Compressing the values to avoid text overflow in listbox
+        self.compressed_values=self.compressValues(values) 
         denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
@@ -3398,7 +3398,7 @@ class ListBox2D(UI):
         # Initialisation of empty text actors
         slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
-        self.slot_width=slot_width;
+        self.slot_width=slot_width 
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
@@ -3597,27 +3597,15 @@ class ListBox2D(UI):
         """ Refresh listbox's content. """
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
-        values_to_show = self.compressed_values[view_start:view_end];
-        #print(values_to_show);
-
-        # Populate slots according to the view.
+        values_to_show = self.compressed_values[view_start:view_end] 
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            #slot.element = choice;
-            #print(choice)
-            # assign actual value to self.selected
-    
             slot.element=choice
             slot.set_visibility(True)
             if self.get_actual_value(choice) in self.selected:
                 slot.select()
             else:
                 slot.deselect()
-            """if self.indexOf(self.selected,slot.element)!=-1:
-                    slot.select()
-            else:
-                    slot.deselect();"""
-
         # Flush remaining slots.
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
@@ -3666,7 +3654,7 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        actual_value=self.get_actual_value(item.element);
+        actual_value=self.get_actual_value(item.element) 
         selection_idx = self._values.index(actual_value)
         if self.multiselection and range_select:
             self.clear_selection()
@@ -3690,71 +3678,31 @@ class ListBox2D(UI):
 
         self.on_change()  # Call hook.
         self.update()
-        #print(item.element);
-
-        """selection_idx = self.indexOf(self._values,item.element)
-        if selection_idx is -1:
-            print("Something is wrong");
-            return;
-        if self.multiselection and range_select:
-            self.clear_selection()
-            step = 1 if selection_idx >= self.last_selection_idx else -1
-            for i in range(self.last_selection_idx,
-                           selection_idx + step,
-                           step):
-                self.selected.append(self._values[i])
-
-        elif self.multiselection and multiselect:
-            if item.element in self.selected:
-                self.selected.remove(item.element)
-            else:
-                self.selected.append(item.element)
-            self.last_selection_idx = selection_idx
-
-        else:
-            self.clear_selection()
-            self.selected.append(item.element)
-            self.last_selection_idx = selection_idx
-
-        self.on_change()  # Call hook.
-        self.update()"""
-
-    """def indexOf(self,collection,key):
-        for i in range(len(collection)):
-            if str(collection[i][1])==str(key[1]):
-                return i;
-        return -1;"""
-   
-    def compressValues(self,values):
-        valuesPairWithCompressedName=[];
-        textblock_width=self.slots[0].textblock.size[0];
+        
+    def compress_values(self, values):
+        compressed_names = [] 
+        textblock_width = self.slots[0].textblock.size[0] 
         for value in values:
             char_width = textblock_width - self.margin
             text_width = char_width * len(str(value)) * 0.783
-            #print("char_width"+str(char_width));
-            #print("text_width"+str(text_width));
             if text_width > self.slot_width:
                 excess_width = text_width - self.slot_width
                 excess_chars = excess_width//char_width
                 wrapped_value = value[:int(-excess_chars) - 3] + "..."
-                #print("new name:"+wrapped_value);
-                valuesPairWithCompressedName.append(wrapped_value);
+                compressed_names.append(wrapped_value) 
             else:
-                valuesPairWithCompressedName.append(value);
-        #print(valuesPairWithCompressedName)
-        return valuesPairWithCompressedName;
+                compressed_names.append(value) 
+        return compressed_names 
     
-    def set_values(self,values):
-        self._values=values;
-        self.compressed_values=self.compressValues(values);
+    def set_values(self, values):
+        self._values=values 
+        self.compressed_values=self.compress_values(values) 
     
-    def get_actual_value(self,compressed_value):
+    def get_actual_value(self, compressed_value):
         for i in range(len(self.compressed_values)):
             if(self.compressed_values[i]==compressed_value):
-                #print(str(self._values[i]))
-                return self._values[i];
-        
-        return "";
+                return self._values[i] 
+        return "" 
     
     
 
@@ -3936,28 +3884,21 @@ class FileMenu2D(UI):
         """
         self.directory_contents = self.get_all_file_names()
         content_names = [x[0] for x in self.directory_contents]
-        #print(content_names)
-
-        
         self.listbox = ListBox2D(
             values=content_names, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
             reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
-
         self.add_callback(self.listbox.scroll_bar.actor, "MouseMoveEvent",
                           self.scroll_callback)
-
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
         down_event = "MouseWheelBackwardEvent"
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
-
         self.add_callback(self.listbox.panel.background.actor, up_event,
                           self.scroll_callback)
         self.add_callback(self.listbox.panel.background.actor, down_event,
                           self.scroll_callback)
-
         # Handle mouse wheel events on the slots.
         for slot in self.listbox.slots:
             self.add_callback(slot.background.actor, up_event,
@@ -4049,11 +3990,9 @@ class FileMenu2D(UI):
             List of all file names as string.
         """
         # A list of file names with extension in the current directory
-        files=[];
+        files = [] 
         for (_, _, files) in os.walk(self.current_directory):
-            break
-        #print("print files")
-        #print(files);
+            break 
 
         file_names = []
         if "*" in self.extensions or "" in self.extensions:
@@ -4103,13 +4042,13 @@ class FileMenu2D(UI):
         listboxitem: :class:`ListBoxItem2D`
         """
         if (listboxitem.element, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory,listboxitem.element)
+            new_directory_path = os.path.join(self.current_directory, listboxitem.element)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
                 self.listbox.clear_selection()
-                self.listbox.set_values(content_names);
+                self.listbox.set_values(content_names)
                 self.listbox.view_offset = 0
                 self.listbox.update()
                 self.listbox.update_scrollbar()
