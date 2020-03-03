@@ -7,3 +7,4 @@ sphinx-copybutton
 sphinx-gallery>=0.3.1
 pillow
 sphinx_rtd_theme
+networkx
