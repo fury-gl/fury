@@ -1920,7 +1920,7 @@ class LineSlider2D(UI):
         self.handle.position += coords - self.position
         # Position the text below the handle.
         self.text.position = (self.handle.center[0],
-                              self.handle.position[1] - 10)
+                              self.handle.position[1] + 35)
 
     @property
     def left_x_position(self):
