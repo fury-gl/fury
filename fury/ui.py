@@ -3599,11 +3599,11 @@ class ListBox2D(UI):
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             char_width = slot.textblock.size[0] - self.margin
-            text_width = char_width * len(str(choice)) * 0.783
-            if text_width > self.slot_width:
-                excess_width = text_width - self.slot_width
-                excess_chars = excess_width//char_width
-                wrapped_choice = choice[:int(-excess_chars) - 3] + "..."
+            permissible_chars = int(self.slot_width)//char_width
+            total_chars = len(str(choice))
+            if total_chars > permissible_chars:
+                excess_chars = total_chars - permissible_chars
+                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
                 slot.element = choice
                 slot.textblock.message = wrapped_choice
             else:
