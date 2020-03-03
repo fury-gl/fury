@@ -58,10 +58,12 @@ if(mode == 0):
     vertices_count = 100
     view_size = 100
     network = nx.random_geometric_graph(vertices_count, 0.2)
-    positions = view_size*np.random.random((vertices_count, 3))-view_size/2.0
+    positions = view_size * \
+        np.random.random((vertices_count, 3)) - view_size / 2.0
     categories = np.arange(0, vertices_count)
     edges = np.array(network.edges())
-    positions = view_size*np.random.random((vertices_count, 3))-view_size/2.0
+    positions = view_size * \
+        np.random.random((vertices_count, 3)) - view_size / 2.0
 
 ###############################################################################
 # We attribute a color to each category of our dataset which correspond to our
@@ -84,8 +86,7 @@ radii = 1 + np.random.rand(len(positions))
 
 ###############################################################################
 # Lets create our edges now. They will indicate a citation between two nodes.
-# OF course, the colors of each edges will be an interpolation between the two
-# node that it connects.
+# The colors of each edge are interpolated between the two endpoints.
 
 edges_colors = []
 for source, target in edges:
@@ -101,20 +102,14 @@ edges_colors = np.average(np.array(edges_colors), axis=1)
 
 sphere_actor = actor.sphere(centers=np.zeros(positions.shape),
                             colors=colors,
-                            radii=radii*0.5,
+                            radii=radii * 0.5,
                             theta=8,
-                            phi=8,
-                            )
+                            phi=8)
 
 
 lines_actor = actor.line(np.zeros((len(edges), 2, 3)),
-                         colors=edges_colors, lod=False)
-lines_actor.GetProperty().SetRenderLinesAsTubes(1)
-lines_actor.GetProperty().SetLineWidth(5)
-lines_actor.GetProperty().SetOpacity(1)
-
-###############################################################################
-# Shaders Trick
+                         colors=edges_colors, lod=False,
+                         fake_tube=True, linewidth=3)
 
 
 mapper = lines_actor.GetMapper()
@@ -124,7 +119,7 @@ mapper = lines_actor.GetMapper()
 
 
 def new_layout_timer(showm, edges_list, vertices_count,
-                     max_iterations=2000, vertex_initial_positions=None):
+                     max_iterations=1000, vertex_initial_positions=None):
     view_size = 500
     viscosity = 0.10
     alpha = 0.5
@@ -134,12 +129,13 @@ def new_layout_timer(showm, edges_list, vertices_count,
 
     sphere_geometry = np.array(numpy_support.vtk_to_numpy(
         sphere_actor.GetMapper().GetInput().GetPoints().GetData()))
-    geometry_length = sphere_geometry.shape[0]/vertices_count
+    geometry_length = sphere_geometry.shape[0] / vertices_count
 
     if(vertex_initial_positions is not None):
         pos = np.array(vertex_initial_positions)
     else:
-        pos = view_size*np.random.random((vertices_count, 3))-view_size/2.0
+        pos = view_size * \
+            np.random.random((vertices_count, 3)) - view_size / 2.0
 
     velocities = np.zeros((vertices_count, 3))
 
@@ -153,15 +149,15 @@ def new_layout_timer(showm, edges_list, vertices_count,
                     x1, y1, z1 = pos[vertex1]
                     x2, y2, z2 = pos[vertex2]
                     distance = math.sqrt(
-                        (x2-x1)*(x2-x1) +
-                        (y2-y1)*(y2-y1) +
-                        (z2-z1)*(z2-z1)) + alpha
-                    rx = (x2-x1)/distance
-                    ry = (y2-y1)/distance
-                    rz = (z2-z1)/distance
-                    Fx = -b*rx/distance/distance
-                    Fy = -b*ry/distance/distance
-                    Fz = -b*rz/distance/distance
+                        (x2 - x1) * (x2 - x1) +
+                        (y2 - y1) * (y2 - y1) +
+                        (z2 - z1) * (z2 - z1)) + alpha
+                    rx = (x2 - x1) / distance
+                    ry = (y2 - y1) / distance
+                    rz = (z2 - z1) / distance
+                    Fx = -b * rx / distance / distance
+                    Fy = -b * ry / distance / distance
+                    Fz = -b * rz / distance / distance
                     forces[vertex1] += np.array([Fx, Fy, Fz])
                     forces[vertex2] -= np.array([Fx, Fy, Fz])
             # attractive forces
@@ -171,20 +167,20 @@ def new_layout_timer(showm, edges_list, vertices_count,
                 x1, y1, z1 = pos[vFrom]
                 x2, y2, z2 = pos[vTo]
                 distance = math.sqrt(
-                    (x2-x1)*(x2-x1) +
-                    (y2-y1)*(y2-y1) +
-                    (z2-z1)*(z2-z1))
-                Rx = (x2-x1)
-                Ry = (y2-y1)
-                Rz = (z2-z1)
-                Fx = a*Rx*distance
-                Fy = a*Ry*distance
-                Fz = a*Rz*distance
+                    (x2 - x1) * (x2 - x1) +
+                    (y2 - y1) * (y2 - y1) +
+                    (z2 - z1) * (z2 - z1))
+                Rx = (x2 - x1)
+                Ry = (y2 - y1)
+                Rz = (z2 - z1)
+                Fx = a * Rx * distance
+                Fy = a * Ry * distance
+                Fz = a * Rz * distance
                 forces[vFrom] += np.array([Fx, Fy, Fz])
                 forces[vTo] -= np.array([Fx, Fy, Fz])
-            velocities += forces*deltaT
-            velocities *= (1.0-viscosity)
-            pos += velocities*deltaT
+            velocities += forces * deltaT
+            velocities *= (1.0 - viscosity)
+            pos += velocities * deltaT
         pos[:, 0] -= np.mean(pos[:, 0])
         pos[:, 1] -= np.mean(pos[:, 1])
         pos[:, 2] -= np.mean(pos[:, 2])
@@ -196,7 +192,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
         if(mode == 0):
             iterate(1)
         else:
-            pos[:] += (np.random.random(pos.shape)-0.5)*1.5
+            pos[:] += (np.random.random(pos.shape) - 0.5) * 1.5
         spheres_positions = numpy_support.vtk_to_numpy(
             sphere_actor.GetMapper().GetInput().GetPoints().GetData())
         spheres_positions[:] = sphere_geometry + \
@@ -233,8 +229,9 @@ scene.add(sphere_actor)
 
 ###############################################################################
 # The final step ! Visualize the result of our creation! Also, we need to move
-# the camera a little bit farther from the network.
-
+# the camera a little bit farther from the network. you can increase the
+# parameter max_iteractions of the timer callback to let the animation run for
+# more time.
 
 showm = window.ShowManager(scene, reset_camera=False, size=(
     900, 768), order_transparent=True, multi_samples=8)
@@ -244,16 +241,15 @@ showm.initialize()
 scene.set_camera(position=(0, 0, -300))
 
 timer_callback = new_layout_timer(
-    showm, edges, vertices_count, vertex_initial_positions=positions)
+    showm, edges, vertices_count,
+    max_iterations=200,
+    vertex_initial_positions=positions)
 
 
-# Run every 200 milliseconds
+# Run every 16 milliseconds
 showm.add_timer_callback(True, 16, timer_callback)
 
 showm.start()
 
-# window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")
-
-###############################################################################
-# This example can be improved by adding some interactivy with slider,
-# picking, etc. Play with it, improve it!
+window.record(showm.scene, size=(900, 768),
+              out_path="viz_animated_networks.png")
