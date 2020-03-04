@@ -3538,12 +3538,18 @@ class ListBox2D(UI):
         """ Refresh listbox's content. """
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
+        values_to_show = self._values[view_start:view_end]
+
+        # Populate slots according to the view.
+        for i, choice in enumerate(values_to_show):
+            slot = self.slots[i]
+            slot.element = choice
         values_to_show = self.compressed_values[view_start:view_end]
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element=choice
             slot.set_visibility(True)
-            if self.get_actual_value(slot.element) in self.selected:
+            if slot.element in self.selected:
                 slot.select()
             else:
                 slot.deselect()
@@ -3975,9 +3981,9 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        if (self.listbox.get_actual_value(listboxitem.element), "directory") in self.directory_contents:
+        if (listboxitem.element, "directory") in self.directory_contents:
             new_directory_path = os.path.join(self.current_directory,
-                                              self.listbox.get_actual_value(listboxitem.element))
+                                              listboxitem.element)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
