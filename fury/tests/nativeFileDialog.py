@@ -1,10 +1,8 @@
-import numpy as np
 from os.path import join as pjoin
 
 from fury import actor, window
 
-import textwrapper;
-import ui;
+from fury import ui;
 scene = window.Scene()
 scene.background((1, 1, 1))
 
