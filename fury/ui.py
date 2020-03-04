@@ -319,17 +319,12 @@ class UI(object, metaclass=abc.ABCMeta):
 
 class Button2D(UI):
     """A 2D overlay button and is of type vtkTexturedActor2D.
-
     Currently supports::
-
         - Multiple icons.
         - Switching between icons.
-
     """
-
     def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
         """Init class instance.
-
         Parameters
         ----------
         icon_fnames : List(string, string)
@@ -338,10 +333,8 @@ class Button2D(UI):
             Absolute coordinates (x, y) of the lower-left corner of the button.
         size : (int, int), optional
             Width and height in pixels of the button.
-
         """
         super(Button2D, self).__init__(position)
-
         self.icon_extents = dict()
         self.icons = self._build_icons(icon_fnames)
         self.icon_names = [icon[0] for icon in self.icons]
@@ -358,32 +351,25 @@ class Button2D(UI):
 
     def _build_icons(self, icon_fnames):
         """Convert file names to vtkImageDataGeometryFilters.
-
         A pre-processing step to prevent re-read of file names during every
         state change.
-
         Parameters
         ----------
         icon_fnames : List(string, string)
             ((iconname, filename), (iconname, filename), ....)
-
         Returns
         -------
         icons : List
             A list of corresponding vtkImageDataGeometryFilters.
-
         """
         icons = []
         for icon_name, icon_fname in icon_fnames:
             icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
-
         return icons
 
     def _setup(self):
         """Set up this UI component.
-
         Creating the button actor used internally.
-
         """
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
@@ -391,7 +377,6 @@ class Button2D(UI):
         self.texture_polydata = vtk.vtkPolyData()
         self.texture_points = vtk.vtkPoints()
         self.texture_points.SetNumberOfPoints(4)
-
         polys = vtk.vtkCellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
@@ -399,7 +384,6 @@ class Button2D(UI):
         polys.InsertCellPoint(2)
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
-
         tc = vtk.vtkFloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
@@ -412,21 +396,16 @@ class Button2D(UI):
         tc.InsertComponent(3, 0, 0.0)
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
-
         texture_mapper = vtk.vtkPolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
-
         button = vtk.vtkTexturedActor2D()
         button.SetMapper(texture_mapper)
-
         self.texture = vtk.vtkTexture()
         button.SetTexture(self.texture)
-
         button_property = vtk.vtkProperty2D()
         button_property.SetOpacity(1.0)
         button.SetProperty(button_property)
         self.actor = button
-
         # Add default events listener to the VTK actor.
         self.handle_events(self.actor)
 
@@ -436,22 +415,18 @@ class Button2D(UI):
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
-
         Parameters
         ----------
         scene : scene
-
         """
         scene.add(self.actor)
 
     def resize(self, size):
         """Resize the button.
-
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
-
         """
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
@@ -462,7 +437,6 @@ class Button2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
-
         Parameters
         ----------
         coords: (float, float)
@@ -480,7 +454,6 @@ class Button2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the button's color.
-
         Parameters
         ----------
         color : (float, float, float)
@@ -490,7 +463,6 @@ class Button2D(UI):
 
     def scale(self, factor):
         """ Scales the button.
-
         Parameters
         ----------
         factor : (float, float)
@@ -500,7 +472,6 @@ class Button2D(UI):
 
     def set_icon_by_name(self, icon_name):
         """ Set the button icon using its name.
-
         Parameters
         ----------
         icon_name : str
@@ -510,7 +481,6 @@ class Button2D(UI):
 
     def set_icon(self, icon):
         """ Modifies the icon used by the vtkTexturedActor2D.
-
         Parameters
         ----------
         icon : imageDataGeometryFilter
@@ -527,7 +497,6 @@ class Button2D(UI):
 
     def next_icon(self):
         """ Increments the state of the Button.
-
             Also changes the icon.
         """
         self.next_icon_id()
@@ -537,11 +506,9 @@ class Button2D(UI):
 class Rectangle2D(UI):
     """ A 2D rectangle sub-classed from UI.
     """
-
     def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1),
                  opacity=1.0):
         """ Initializes a rectangle.
-
         Parameters
         ----------
         size : (int, int)
@@ -560,7 +527,6 @@ class Rectangle2D(UI):
 
     def _setup(self):
         """ Setup this UI component.
-
         Creating the polygon actor used internally.
         """
         # Setup four points
@@ -605,7 +571,6 @@ class Rectangle2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
-
         Parameters
         ----------
         scene : scene
@@ -637,7 +602,6 @@ class Rectangle2D(UI):
 
     def resize(self, size):
         """ Sets the button size.
-
         Parameters
         ----------
         size : (float, float)
@@ -655,7 +619,6 @@ class Rectangle2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
-
         Parameters
         ----------
         coords: (float, float)
@@ -673,7 +636,6 @@ class Rectangle2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the rectangle's color.
-
         Parameters
         ----------
         color : (float, float, float)
@@ -690,7 +652,6 @@ class Rectangle2D(UI):
     @opacity.setter
     def opacity(self, opacity):
         """ Sets the rectangle's opacity.
-
         Parameters
         ----------
         opacity : float
@@ -706,7 +667,6 @@ class Disk2D(UI):
     def __init__(self, outer_radius, inner_radius=0, center=(0, 0),
                  color=(1, 1, 1), opacity=1.0):
         """ Initializes a 2D Disk.
-
         Parameters
         ----------
         outer_radius : int
@@ -770,7 +730,6 @@ class Disk2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component's bounding box.
-
         Parameters
         ----------
         coords: (float, float)
@@ -789,7 +748,6 @@ class Disk2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the color of this UI component.
-
         Parameters
         ----------
         color : (float, float, float)
@@ -806,7 +764,6 @@ class Disk2D(UI):
     @opacity.setter
     def opacity(self, opacity):
         """ Sets the opacity of this UI component.
-
         Parameters
         ----------
         opacity : float
@@ -835,9 +792,7 @@ class Disk2D(UI):
 
 class Panel2D(UI):
     """ A 2D UI Panel.
-
     Can contain one or more UI elements.
-
     Attributes
     ----------
     alignment : [left, right]
@@ -870,7 +825,6 @@ class Panel2D(UI):
 
     def _setup(self):
         """ Setup this UI component.
-
         Create the background (Rectangle2D) of the panel.
         """
         self._elements = []
@@ -893,7 +847,6 @@ class Panel2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
-
         Parameters
         ----------
         scene : scene
@@ -906,7 +859,6 @@ class Panel2D(UI):
 
     def resize(self, size):
         """ Sets the panel size.
-
         Parameters
         ----------
         size : (float, float)
@@ -916,7 +868,6 @@ class Panel2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
-
         Parameters
         ----------
         coords: (float, float)
@@ -944,10 +895,8 @@ class Panel2D(UI):
 
     def add_element(self, element, coords, anchor="position"):
         """ Adds a UI component to the panel.
-
         The coordinates represent an offset from the lower left corner of the
         panel.
-
         Parameters
         ----------
         element : UI
@@ -993,7 +942,6 @@ class Panel2D(UI):
 
     def update_element(self, element, coords, anchor="position"):
         """ Updates the position of a UI component in the panel.
-
         Parameters
         ----------
         element : UI
@@ -1022,7 +970,6 @@ class Panel2D(UI):
 
     def re_align(self, window_size_change):
         """ Re-organises the elements in case the window size is changed.
-
         Parameters
         ----------
         window_size_change : (int, int)
@@ -1039,9 +986,7 @@ class Panel2D(UI):
 
 class TextBlock2D(UI):
     """ Wraps over the default vtkTextActor and helps setting the text.
-
     Contains member functions for text formatting.
-
     Attributes
     ----------
     actor : :class:`vtkTextActor`
@@ -1127,7 +1072,6 @@ class TextBlock2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
-
         Parameters
         ----------
         scene : scene
@@ -1140,7 +1084,6 @@ class TextBlock2D(UI):
     @property
     def message(self):
         """ Gets message from the text.
-
         Returns
         -------
         str
@@ -1151,7 +1094,6 @@ class TextBlock2D(UI):
     @message.setter
     def message(self, text):
         """ Sets the text message.
-
         Parameters
         ----------
         text : str
@@ -1162,7 +1104,6 @@ class TextBlock2D(UI):
     @property
     def font_size(self):
         """ Gets text font size.
-
         Returns
         ----------
         int
@@ -1173,7 +1114,6 @@ class TextBlock2D(UI):
     @font_size.setter
     def font_size(self, size):
         """ Sets font size.
-
         Parameters
         ----------
         size : int
@@ -3383,6 +3323,8 @@ class ListBox2D(UI):
         scroll_bar_inactive_color : tuple of 3 floats
         background_opacity : float
         """
+        self._values = values
+        self.compressed_values = []
         self.view_offset = 0
         self.slots = []
         self.selected = []
@@ -3390,21 +3332,23 @@ class ListBox2D(UI):
         self.panel_size = size
         self.font_size = font_size
         self.line_spacing = line_spacing
+        self.slot_width = 0
         self.slot_height = int(self.font_size * self.line_spacing)
-
         self.text_color = text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
         self.background_opacity = background_opacity
 
         # self.panel.resize(size)
-        self.values = values
         self.multiselection = multiselection
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
+        denom = len(self._values) - self.nb_slots
 
-        denom = len(self.values) - self.nb_slots
+        # Compressing the values to avoid text overflow in listbox
+        self.compressed_values = self.compress_values(values)
+        denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
@@ -3438,10 +3382,10 @@ class ListBox2D(UI):
 
         # Add a scroll bar
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
-            / len(self.values)
+            // len(self._values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
                                       scroll_bar_height))
-        if len(self.values) <= self.nb_slots:
+        if len(self._values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
@@ -3449,6 +3393,7 @@ class ListBox2D(UI):
         # Initialisation of empty text actors
         slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
+        self.slot_width = slot_width
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
@@ -3560,7 +3505,7 @@ class ListBox2D(UI):
 
         """
         view_end = self.view_offset + self.nb_slots
-        if view_end < len(self.values):
+        if view_end < len(self._values):
             self.view_offset += 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
@@ -3622,9 +3567,9 @@ class ListBox2D(UI):
             offset = min(offset, self.view_offset)
 
         elif offset < 0 and (
-                self.view_offset + self.nb_slots < len(self.values)):
+                self.view_offset + self.nb_slots < len(self._values)):
             offset = min(-offset,
-                         len(self.values) - self.nb_slots - self.view_offset)
+                         len(self._values) - self.nb_slots - self.view_offset)
             offset = - offset
         else:
             return
@@ -3647,18 +3592,15 @@ class ListBox2D(UI):
         """ Refresh listbox's content. """
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
-        values_to_show = self.values[view_start:view_end]
-
-        # Populate slots according to the view.
+        values_to_show = self.compressed_values[view_start:view_end]
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
             slot.element = choice
             slot.set_visibility(True)
-            if slot.element in self.selected:
+            if self.get_actual_value(slot.element) in self.selected:
                 slot.select()
             else:
                 slot.deselect()
-
         # Flush remaining slots.
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
@@ -3672,17 +3614,17 @@ class ListBox2D(UI):
         self.scroll_bar.set_visibility(True)
 
         self.scroll_bar.height = self.nb_slots * \
-            (self.panel_size[1] - 2 * self.margin) / len(self.values)
+            (self.panel_size[1] - 2 * self.margin) // len(self._values)
 
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) \
-            / (len(self.values) - self.nb_slots)
+            / (len(self._values) - self.nb_slots)
 
         self.panel.update_element(
             self.scroll_bar, self.panel_size - self.scroll_bar.size -
             self.margin)
 
-        if len(self.values) <= self.nb_slots:
+        if len(self._values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
 
     def clear_selection(self):
@@ -3707,41 +3649,87 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        selection_idx = self.values.index(item.element)
+        actual_value = self.get_actual_value(item.element)
+        selection_idx = self._values.index(actual_value)
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
             for i in range(self.last_selection_idx,
                            selection_idx + step,
                            step):
-                self.selected.append(self.values[i])
+                self.selected.append(self._values[i])
 
         elif self.multiselection and multiselect:
-            if item.element in self.selected:
-                self.selected.remove(item.element)
+            if actual_value in self.selected:
+                self.selected.remove(actual_value)
             else:
-                self.selected.append(item.element)
+                self.selected.append(actual_value)
             self.last_selection_idx = selection_idx
 
         else:
             self.clear_selection()
-            self.selected.append(item.element)
+            self.selected.append(actual_value)
             self.last_selection_idx = selection_idx
 
         self.on_change()  # Call hook.
         self.update()
+        
+    def compress_values(self, values):
+        """ Compressing the listboxitem element to fit into textbox
 
+        Parameters
+        ----------
+        values: :class:`ListBox2D`
+        """
+        compressed_names = []
+        textblock_width = self.slots[0].textblock.size[0]
+        for value in values:
+            char_width = textblock_width - self.margin
+            permissible_chars = int(self.slot_width)//char_width
+            total_chars = len(str(value))
+            if total_chars > permissible_chars:
+                excess_chars = total_chars - permissible_chars
+                wrapped_value = value[:int(-excess_chars) - 3] + "..."
+                compressed_names.append(wrapped_value)
+            else:
+                compressed_names.append(value)
+        return compressed_names
+    
+    def set_values(self, values):
+        self._values = values
+        self.compressed_values = self.compress_values(values)
+
+    def get_actual_value(self, compressed_value):
+        """ Retrieving the actual value of element by compressed value. 
+         Parameters
+        ----------
+        compressed_value:the key for the actual value
+        """
+        for i in range(len(self.compressed_values)):
+            if(self.compressed_values[i]==compressed_value):
+                return self._values[i]
+        return ""
+
+    def get_actual_value(self, compressed_value):
+        """ Retrieving the actual value of element by compressed value.
+
+        Parameters
+        ----------
+        compressed_value: compressed_value
+        """
+        for i in range(len(self.compressed_values)):
+            if(self.compressed_values[i] == compressed_value):
+                return self._values[i]
+        return ""
 
 class ListBoxItem2D(UI):
     """ The text displayed in a listbox. """
-
     def __init__(self, list_box, size,
                  text_color=(1.0, 0.0, 0.0),
                  selected_color=(0.4, 0.4, 0.4),
                  unselected_color=(0.9, 0.9, 0.9),
                  background_opacity=1.):
         """ Single ListBox Item
-
         Parameters
         ----------
         list_box : :class:`ListBox`
@@ -3768,7 +3756,6 @@ class ListBoxItem2D(UI):
 
     def _setup(self):
         """ Setup this UI component.
-
         Create the ListBoxItem2D with its background (Rectangle2D) and its
         label (TextBlock2D).
         """
@@ -3912,21 +3899,17 @@ class FileMenu2D(UI):
             values=content_names, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
             reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
-
         self.add_callback(self.listbox.scroll_bar.actor, "MouseMoveEvent",
                           self.scroll_callback)
-
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
         down_event = "MouseWheelBackwardEvent"
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
-
         self.add_callback(self.listbox.panel.background.actor, up_event,
                           self.scroll_callback)
         self.add_callback(self.listbox.panel.background.actor, down_event,
                           self.scroll_callback)
-
         # Handle mouse wheel events on the slots.
         for slot in self.listbox.slots:
             self.add_callback(slot.background.actor, up_event,
@@ -4018,6 +4001,7 @@ class FileMenu2D(UI):
             List of all file names as string.
         """
         # A list of file names with extension in the current directory
+        files = []
         for (_, _, files) in os.walk(self.current_directory):
             break
 
@@ -4068,15 +4052,16 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        if (listboxitem.element, "directory") in self.directory_contents:
+        if (self.listbox.get_actual_value(listboxitem.element),
+            "directory") in self.directory_contents:
             new_directory_path = os.path.join(self.current_directory,
-                                              listboxitem.element)
+                                              self.listbox.get_actual_value(listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
                 self.listbox.clear_selection()
-                self.listbox.values = content_names
+                self.listbox.set_values(content_names)
                 self.listbox.view_offset = 0
                 self.listbox.update()
                 self.listbox.update_scrollbar()
