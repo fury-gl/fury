@@ -4040,9 +4040,10 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        actual_value=self.listbox.get_actual_value(listboxitem.element)
+        actual_value = self.listbox.get_actual_value(listboxitem.element)
         if (actual_value, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory, actual_value)
+            new_directory_path = os.path.join(self.current_directory, 
+                                              actual_value)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
