@@ -66,6 +66,11 @@ This command will give you important information about FURY's installation. The 
 Running the Tests
 -----------------
 
+Let's install all required packages for the running the test::
+
+    $ pip install -r requirements/default.txt
+    $ pip install -r requirements/test.txt
+
 There are two ways to run FURY tests:
 
 - From python interpreter::
@@ -94,3 +99,62 @@ Since Xvfb will require an X server (we also recommend to install XQuartz packag
     $ export DISPLAY=:0
     $ xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
 
+
+Populating our Documentation
+----------------------------
+
+Folder Structure
+~~~~~~~~~~~~~~~~
+
+Let’s start by showcasing the ``docs`` folder structure:
+
+| fury
+| ├── docs
+| │   ├── build
+| │   ├── make.bat
+| │   ├── Makefile
+| │   ├── Readme.md
+| │   ├── upload_to_gh-pages.py
+| │   ├── demos
+| │   ├── tutorials
+| │   ├── experimental
+| │   └── source
+| ├── requirements.txt
+| ├── fury
+| │   ├── simpleble.py
+| │   ├── ...
+| │
+| │── ...
+|
+|
+
+In our ``docs`` folder structure above:
+
+- ``source`` is the folder that contains all ``*.rst`` files.
+- ``tutorials`` is the directory where we have all python scripts that describe how to use the api.
+- ``demos`` being the FURY app showcases.
+- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of expermiental work.
+
+An important note here is that the folder ``simpleble-master`` is what we will refer to as our `Repository root`, while the folder ``simpleble-master/docs`` will be our `Sphinx root` or, equivalently, our `Documentation root`. Similarly, ``simpleble-master/docs/source`` will be our `Sphinx source root` and ``simpleble-master/docs/build`` is our `Sphinx build root`.
+
+
+Building the documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Step 1.** Install all required packages for the documentation generation::
+
+    $ pip install -U -r requirements/default.txt
+    $ pip install -U -r requirements/optional.txt
+    $ pip install -U -r requirements/docs.txt
+
+**Step 2.** Go to the ``docs`` folder and run the following command to generate it (Linux and macOS)::
+
+    $ make -C . clean && make -C . html
+
+or under Windows::
+
+    $ ./make.bat clean
+    $ ./make.bat html
+
+
+**Step 3.** Congratulation! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
