@@ -3673,7 +3673,7 @@ class ListBox2D(UI):
 
         self.on_change()  # Call hook.
         self.update()
-        
+
     def compress_values(self, values):
         """ Compressing the listboxitem element to fit into textbox
 
@@ -3694,28 +3694,16 @@ class ListBox2D(UI):
             else:
                 compressed_names.append(value)
         return compressed_names
-    
+
     def set_values(self, values):
         self._values = values
         self.compressed_values = self.compress_values(values)
 
     def get_actual_value(self, compressed_value):
-        """ Retrieving the actual value of element by compressed value. 
+        """ Retrieving the actual value of element by compressed value.
          Parameters
         ----------
         compressed_value:the key for the actual value
-        """
-        for i in range(len(self.compressed_values)):
-            if(self.compressed_values[i]==compressed_value):
-                return self._values[i]
-        return ""
-
-    def get_actual_value(self, compressed_value):
-        """ Retrieving the actual value of element by compressed value.
-
-        Parameters
-        ----------
-        compressed_value: compressed_value
         """
         for i in range(len(self.compressed_values)):
             if(self.compressed_values[i] == compressed_value):
@@ -4052,10 +4040,9 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        if (self.listbox.get_actual_value(listboxitem.element),
-            "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory,
-                                              self.listbox.get_actual_value(listboxitem.element))
+        actual_value=self.listbox.get_actual_value(listboxitem.element)
+        if (actual_value, "directory") in self.directory_contents:
+            new_directory_path = os.path.join(self.current_directory, actual_value)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
