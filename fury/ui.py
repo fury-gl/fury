@@ -3293,7 +3293,7 @@ class ListBox2D(UI):
         denom = len(self._values) - self.nb_slots
 
         # Compressing the values to avoid text overflow in listbox
-        self.compressed_values=self.compress_values(values) 
+        self.compressed_values=self.compress_values(values)
         denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
@@ -3621,6 +3621,12 @@ class ListBox2D(UI):
         self.update()
         
     def compress_values(self, values):
+        """ Compressing the listboxitem element to fit into textbox
+
+        Parameters
+        ----------
+        values: :class:`ListBox2D`
+        """
         compressed_names = []
         textblock_width = self.slots[0].textblock.size[0]
         for value in values:
@@ -3636,12 +3642,18 @@ class ListBox2D(UI):
         return compressed_names
     
     def set_values(self, values):
-        self._values=values
-        self.compressed_values=self.compress_values(values)
+        self._values = values
+        self.compressed_values = self.compress_values(values)
     
     def get_actual_value(self, compressed_value):
+        """ Retrieving the actual value of element by compressed value.
+
+        Parameters
+        ----------
+        compressed_value: compressed_value
+        """
         for i in range(len(self.compressed_values)):
-            if(self.compressed_values[i]==compressed_value):
+            if(self.compressed_values[i] == compressed_value):
                 return self._values[i]
         return ""
 
