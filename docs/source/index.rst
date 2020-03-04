@@ -6,7 +6,7 @@ test
    :caption: About Fury
    :hidden:
 
-   getting_started
+   introduction
    License <symlink/license.rst>
 
 .. toctree::
@@ -15,7 +15,7 @@ test
    :hidden:
 
    installation
-   usage
+   getting_started
    auto_tutorials/index
    auto_examples/index
 

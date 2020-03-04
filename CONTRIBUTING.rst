@@ -64,28 +64,29 @@ Ready to contribute? Here's how to set up `fury` for local development.
 3. Add a tracking branch which can always have the last version of `fury`::
 
     $ git remote add fury-gl https://github.com/fury-gl/fury.git
-    git fetch fury-gl
-    git branch fury-gl-master --track fury-gl/master
-    git checkout fury-gl-master
-    git pull
+    $ git fetch fury-gl
+    $ git branch fury-gl-master --track fury-gl/master
+    $ git checkout fury-gl-master
+    $ git pull
 
 4. Create a branch from the last dev version of your tracking branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
-5. Install it locally
+5. Install it locally::
 
     $ pip install --user -e .
 
-6. Now you can make your changes locally.
+6. Now you can make your changes locally::
+
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
 7. Install the required packages for running the unittests::
 
-  $ pip install -r requirements/optional.txt
-  $ pip install -r requirements/test.txt
+    $ pip install -r requirements/optional.txt
+    $ pip install -r requirements/test.txt
 
 8. When you're done making changes, check that your changes pass flake8 and pytest::
 
