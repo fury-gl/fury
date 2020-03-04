@@ -5,4 +5,4 @@ coverage
 flake8
 pytest
 # temporary Dependency for the tests
-dipy
+dipy>=1.0.0
