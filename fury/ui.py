@@ -2124,7 +2124,8 @@ class LineDoubleSlider2D(UI):
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, center=(450, 300), length=200,
                  initial_values=(0, 100), min_value=0, max_value=100,
-                 font_size=16, text_template="{value:.1f}", shape="disk"):
+                 font_size=16, text_template="{value:.1f}",
+                 orientation = "horizontal", shape="disk"):
         """
         Parameters
         ----------
@@ -2153,6 +2154,8 @@ class LineDoubleSlider2D(UI):
             replacement fields: `{value:}`, `{ratio:}`.
             If callable, this instance of `:class:LineDoubleSlider2D` will be
             passed as argument to the text template function.
+        orientation : str
+            horizontal or vertical
         shape : string
             Describes the shape of the handle.
             Currently supports 'disk' and 'square'.
@@ -2161,10 +2164,18 @@ class LineDoubleSlider2D(UI):
         self.shape = shape
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
+        self.orientation = orientation.lower()
         super(LineDoubleSlider2D, self).__init__()
 
-        self.track.width = length
-        self.track.height = line_width
+        if self.orientation == "horizontal":
+            self.track.width = length
+            self.track.height = line_width
+        elif self.orientation == "vertical":
+            self.track.width = line_width
+            self.track.height = length
+        else:
+            raise ValueError("Unknown orientation")
+
         self.center = center
         if shape == "disk":
             self.handles[0].inner_radius = inner_radius
@@ -2255,8 +2266,15 @@ class LineDoubleSlider2D(UI):
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
-        width = self.track.width + 2 * self.handles[0].size[0]
-        height = max(self.track.height, self.handles[0].size[1])
+        width = None
+        height = None
+        if self.orientation == "horizontal":
+            width = self.track.width + 2 * self.handles[0].size[0]
+            height = max(self.track.height, self.handles[0].size[1])
+        else:
+            width = max(self.track.width, self.handles[0].size[0])
+            height = self.track.height + 2 * self.handles[0].size[1]
+
         return np.array([width, height])
 
     def _set_position(self, coords):
@@ -2269,8 +2287,12 @@ class LineDoubleSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handles[0].size / 2.
-        # Offset the slider line height by half the slider line width.
-        track_position[1] -= self.track.size[1] / 2.
+        if self.orientation == "horizontal":
+            # Offset the slider line height by half the slider line width.
+            track_position[1] -= self.track.size[1] / 2.
+        else:
+            # Offset the slider line width by half the slider line height.
+            track_position[0] -= self.track.size[0] / 2.
         self.track.position = track_position
 
         self.handles[0].position = self.handles[0].position.astype('float64')
@@ -2279,11 +2301,26 @@ class LineDoubleSlider2D(UI):
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
 
-        # Position the text below the handles.
-        self.text[0].position = (self.handles[0].center[0],
-                                 self.handles[0].position[1] - 20)
-        self.text[1].position = (self.handles[1].center[0],
-                                 self.handles[1].position[1] - 20)
+        if self.orientation == "horizontal":
+            # Position the text below the handles.
+            self.text[0].position = (self.handles[0].center[0],
+                                    self.handles[0].position[1] - 20)
+            self.text[1].position = (self.handles[1].center[0],
+                                    self.handles[1].position[1] - 20)
+        else:
+            # Position the text to the left of the handles.
+            self.text[0].position = (self.handles[0].center[1] - 35,
+                                    self.handles[0].position[0])
+            self.text[1].position = (self.handles[1].center[1] - 35,
+                                    self.handles[1].position[0])
+
+    @property
+    def bottom_y_position(self):
+        return self.track.position[1]
+
+    @property
+    def top_y_position(self):
+        return self.track.position[1] + self.track.size[1]
 
     @property
     def left_x_position(self):
