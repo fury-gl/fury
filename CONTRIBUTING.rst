@@ -82,14 +82,19 @@ Ready to contribute? Here's how to set up `fury` for local development.
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. When you're done making changes, check that your changes pass flake8 and pytest::
+7. Install the required packages for running the unittests::
+
+  $ pip install -r requirements/optional.txt
+  $ pip install -r requirements/test.txt
+
+8. When you're done making changes, check that your changes pass flake8 and pytest::
 
     $ flake8 fury
     $ pytest -svv fury
 
    To get flake8 and pytest, just pip install them into your virtualenv.
 
-7. Submit a pull request through the GitHub website.
+9. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
