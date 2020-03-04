@@ -2378,20 +2378,35 @@ class LineDoubleSlider2D(UI):
         disk_number : int
             The index of disk being moved.
         """
-        x_position = position[0]
 
-        if disk_number == 0 and x_position >= self.handles[1].center[0]:
-            x_position = self.ratio_to_coord(
-                self.value_to_ratio(self._values[1] - 1))
+        if self.orientation == "horizontal":
+            x_position = position[0]
 
-        if disk_number == 1 and x_position <= self.handles[0].center[0]:
-            x_position = self.ratio_to_coord(
-                self.value_to_ratio(self._values[0] + 1))
+            if disk_number == 0 and x_position >= self.handles[1].center[0]:
+                x_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1] - 1))
 
-        x_position = max(x_position, self.left_x_position)
-        x_position = min(x_position, self.right_x_position)
+            if disk_number == 1 and x_position <= self.handles[0].center[0]:
+                x_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[0] + 1))
 
-        self.handles[disk_number].center = (x_position, self.track.center[1])
+            x_position = max(x_position, self.left_x_position)
+            x_position = min(x_position, self.right_x_position)
+
+            self.handles[disk_number].center = (x_position, self.track.center[1])
+        else:
+            y_position = position[1]
+
+            if disk_number == 0 and y_position <= self.handles[1].center[1]:
+                y_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1] - 1))
+            
+            if disk_number == 1 and y_position <= self.handles[0].center[1]:
+                y_position = min(self._values[0] + 1)
+
+            y_position = max(y_position, self.bottom_y_position)
+            y_position = min(y_position, self.top_y_position)
+            self.handles[disk_number].center = (self.track.center[0], y_position)
         self.update(disk_number)
 
     @property
@@ -2438,7 +2453,8 @@ class LineDoubleSlider2D(UI):
         left_disk_ratio : New ratio for the left disk.
         """
         position_x = self.ratio_to_coord(left_disk_ratio)
-        self.set_position((position_x, None), 0)
+        position_y = self.ratio_to_coord(left_disk_ratio)
+        self.set_position((position_x, position_y), 0)
 
     @property
     def right_disk_ratio(self):
@@ -2454,7 +2470,8 @@ class LineDoubleSlider2D(UI):
         right_disk_ratio : New ratio for the right disk.
         """
         position_x = self.ratio_to_coord(right_disk_ratio)
-        self.set_position((position_x, None), 1)
+        position_y = self.ratio_to_coord(right_disk_ratio)
+        self.set_position((position_x, position_y), 1)
 
     def format_text(self, disk_number):
         """ Returns formatted text to display along the slider.
