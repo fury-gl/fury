@@ -2405,11 +2405,11 @@ class LineDoubleSlider2D(UI):
 
             if disk_number == 0 and y_position >= self.handles[1].center[1]:
                 y_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[0] - 1))
+                    self.value_to_ratio(self._values[1] - 1))
             
             if disk_number == 1 and y_position <= self.handles[0].center[1]:
                 y_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1] + 1))
+                    self.value_to_ratio(self._values[0] + 1))
 
             y_position = max(y_position, self.bottom_y_position)
             y_position = min(y_position, self.top_y_position)
