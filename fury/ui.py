@@ -2125,7 +2125,7 @@ class LineDoubleSlider2D(UI):
                  handle_side=20, center=(450, 300), length=200,
                  initial_values=(0, 100), min_value=0, max_value=100,
                  font_size=16, text_template="{value:.1f}",
-                 orientation = "horizontal", shape="disk"):
+                 orientation="horizontal", shape="disk"):
         """
         Parameters
         ----------
@@ -2304,15 +2304,15 @@ class LineDoubleSlider2D(UI):
         if self.orientation == "horizontal":
             # Position the text below the handles.
             self.text[0].position = (self.handles[0].center[0],
-                                    self.handles[0].position[1] - 20)
+                                     self.handles[0].position[1] - 20)
             self.text[1].position = (self.handles[1].center[0],
-                                    self.handles[1].position[1] - 20)
+                                     self.handles[1].position[1] - 20)
         else:
             # Position the text to the left of the handles.
             self.text[0].position = (self.handles[0].center[0] - 35,
-                                    self.handles[0].position[1])
+                                     self.handles[0].position[1])
             self.text[1].position = (self.handles[1].center[0] - 35,
-                                    self.handles[1].position[1])
+                                     self.handles[1].position[1])
 
     @property
     def bottom_y_position(self):
@@ -2399,14 +2399,15 @@ class LineDoubleSlider2D(UI):
             x_position = max(x_position, self.left_x_position)
             x_position = min(x_position, self.right_x_position)
 
-            self.handles[disk_number].center = (x_position, self.track.center[1])
+            self.handles[disk_number].center = \
+                (x_position, self.track.center[1])
         else:
             y_position = position[1]
 
             if disk_number == 0 and y_position >= self.handles[1].center[1]:
                 y_position = self.ratio_to_coord(
                     self.value_to_ratio(self._values[1] - 1))
-            
+
             if disk_number == 1 and y_position <= self.handles[0].center[1]:
                 y_position = self.ratio_to_coord(
                     self.value_to_ratio(self._values[0] + 1))
@@ -2414,7 +2415,8 @@ class LineDoubleSlider2D(UI):
             y_position = max(y_position, self.bottom_y_position)
             y_position = min(y_position, self.top_y_position)
 
-            self.handles[disk_number].center = (self.track.center[0], y_position)
+            self.handles[disk_number].center = \
+                (self.track.center[0], y_position)
         self.update(disk_number)
 
     @property
