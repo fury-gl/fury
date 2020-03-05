@@ -2347,7 +2347,10 @@ class LineDoubleSlider2D(UI):
         ----------
         ratio : float
         """
-        return self.left_x_position + ratio * self.track.width
+        if self.orientation == "horizontal":
+            return self.left_x_position + ratio * self.track.width
+        else:
+            return self.bottom_y_position + ratio * self.track.height
 
     def coord_to_ratio(self, coord):
         """ Converts the x coordinate of a disk to the ratio
@@ -2356,7 +2359,10 @@ class LineDoubleSlider2D(UI):
         ----------
         coord : float
         """
-        return (coord - self.left_x_position) / self.track.width
+        if self.orientation == "horizontal":
+            return (coord - self.left_x_position) / self.track.width
+        else:
+            return (coord - self.bottom_y_position) / self.track.height
 
     def ratio_to_value(self, ratio):
         """ Converts the ratio to the value of the disk.
@@ -2397,9 +2403,9 @@ class LineDoubleSlider2D(UI):
         else:
             y_position = position[1]
 
-            if disk_number == 0 and y_position <= self.handles[1].center[1]:
+            if disk_number == 0 and y_position >= self.handles[1].center[1]:
                 y_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1] - 1))
+                    self.value_to_ratio(self._values[0] - 1))
             
             if disk_number == 1 and y_position <= self.handles[0].center[1]:
                 y_position = self.ratio_to_coord(
@@ -2407,6 +2413,7 @@ class LineDoubleSlider2D(UI):
 
             y_position = max(y_position, self.bottom_y_position)
             y_position = min(y_position, self.top_y_position)
+
             self.handles[disk_number].center = (self.track.center[0], y_position)
         self.update(disk_number)
 
@@ -2498,8 +2505,12 @@ class LineDoubleSlider2D(UI):
         """
 
         # Compute the ratio determined by the position of the slider disk.
-        self._ratio[disk_number] = self.coord_to_ratio(
-            self.handles[disk_number].center[0])
+        if self.orientation == "horizontal":
+            self._ratio[disk_number] = self.coord_to_ratio(
+                self.handles[disk_number].center[0])
+        else:
+            self._ratio[disk_number] = self.coord_to_ratio(
+                self.handles[disk_number].center[1])
 
         # Compute the selected value considering min_value and max_value.
         self._values[disk_number] = self.ratio_to_value(
