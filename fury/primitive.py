@@ -5,6 +5,7 @@ from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
 
+
 SPHERE_FILES = {
     'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
     'symmetric642': pjoin(DATA_DIR, 'evenly_distributed_sphere_642.npz'),
