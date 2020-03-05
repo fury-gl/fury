@@ -2309,10 +2309,10 @@ class LineDoubleSlider2D(UI):
                                     self.handles[1].position[1] - 20)
         else:
             # Position the text to the left of the handles.
-            self.text[0].position = (self.handles[0].center[1] - 35,
-                                    self.handles[0].position[0])
-            self.text[1].position = (self.handles[1].center[1] - 35,
-                                    self.handles[1].position[0])
+            self.text[0].position = (self.handles[0].center[0] - 35,
+                                    self.handles[0].position[1])
+            self.text[1].position = (self.handles[1].center[0] - 35,
+                                    self.handles[1].position[1])
 
     @property
     def bottom_y_position(self):
@@ -2520,9 +2520,14 @@ class LineDoubleSlider2D(UI):
         text = self.format_text(disk_number)
         self.text[disk_number].message = text
 
-        self.text[disk_number].position = (
-            self.handles[disk_number].center[0],
-            self.text[disk_number].position[1])
+        if self.orientation == "horizontal":
+            self.text[disk_number].position = (
+                self.handles[disk_number].center[0],
+                self.text[disk_number].position[1])
+        else:
+            self.text[disk_number].position = (
+                self.text[disk_number].position[0],
+                self.handles[disk_number].center[1])
         self.on_change(self)
 
     def handle_move_callback(self, i_ren, vtkactor, _slider):
