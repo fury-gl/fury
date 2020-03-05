@@ -73,14 +73,21 @@ Let's install all required packages for the running the test::
 
 There are two ways to run FURY tests:
 
-- From python interpreter::
-
-    $ from fury.tests import test
-    $ test()
-
 - From the command line. You need to be on the FURY package folder::
 
     pytest -svv fury
+
+- To run a specific test file::
+
+    pytest -svv fury/tests/test_actor.py
+
+- To run a specific test directory::
+
+    pytest -svv fury/tests
+
+- To run a specific test function::
+
+    pytest -svv -k "test_my_function_name"
 
 Running the Tests Offscreen
 ---------------------------
