@@ -2420,6 +2420,36 @@ class LineDoubleSlider2D(UI):
         self.update(disk_number)
 
     @property
+    def bottom_disk_value(self):
+        """ Returns the value of the bottom disk. """
+        return self._values[0]
+    
+    @bottom_disk_value.setter
+    def bottom_disk_value(self, bottom_disk_value):
+        """ Sets the value of the bottom disk. 
+
+        Parameters
+        ----------
+        bottom_disk_value : New value for the bottom disk.
+        """
+        self.bottom_disk_ratio = self.value_to_ratio(bottom_disk_value)
+
+    @property
+    def top_disk_value(self):
+        """ Returns the value of the top disk. """
+        return self._values[1]
+
+    @top_disk_value.setter
+    def top_disk_value(self, top_disk_value):
+        """ Sets the value of the top disk.
+
+        Parameters
+        ----------
+        top_disk_value : New value for the top disk.
+        """
+        self.top_disk_ratio = self.value_to_ratio(top_disk_value)
+
+    @property
     def left_disk_value(self):
         """ Returns the value of the left disk. """
         return self._values[0]
@@ -2448,6 +2478,40 @@ class LineDoubleSlider2D(UI):
         right_disk_value : New value for the right disk.
         """
         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
+
+    @property
+    def bottom_disk_ratio(self):
+        """ Returns the ratio of the bottom disk. """
+        return self._ratio[0]
+
+    @bottom_disk_ratio.setter
+    def bottom_disk_ratio(self, bottom_disk_ratio):
+        """ Sets the ratio of the bottom disk.
+
+        Parameters
+        ----------
+        left_disk_ratio : New ratio for the bottom disk.
+        """
+        position_x = self.ratio_to_coord(bottom_disk_ratio)
+        position_y = self.ratio_to_coord(bottom_disk_ratio)
+        self.set_position((position_x, position_y), 0)
+
+    @property
+    def top_disk_ratio(self):
+        """ Returns the ratio of the top disk. """
+        return self._ratio[1]
+
+    @top_disk_ratio.setter
+    def top_disk_ratio(self, top_disk_ratio):
+        """ Sets the ratio of the top disk.
+
+        Parameters
+        ----------
+        right_disk_ratio : New ratio for the top disk.
+        """
+        position_x = self.ratio_to_coord(top_disk_ratio)
+        position_y = self.ratio_to_coord(top_disk_ratio)
+        self.set_position((position_x, position_y), 1)        
 
     @property
     def left_disk_ratio(self):
