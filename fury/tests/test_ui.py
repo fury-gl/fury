@@ -472,16 +472,22 @@ def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
         max_value=10, initial_values=(-10, 10))
-    npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_horizontal_test.left_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 10)
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
         max_value=10, initial_values=(-10, 10))
-    npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_vertical_test.bottom_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 10)
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
@@ -493,16 +499,22 @@ def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="square", handle_side=5,
         orientation="horizontal", initial_values=(50, 40))
-    npt.assert_equal(line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
-    npt.assert_equal(line_double_slider_2d_horizontal_test._values[0], 39)
-    npt.assert_equal(line_double_slider_2d_horizontal_test.right_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test._values[0], 39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 40)
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="square", handle_side=5,
         orientation="vertical", initial_values=(50, 40))
-    npt.assert_equal(line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
-    npt.assert_equal(line_double_slider_2d_vertical_test._values[0], 39)
-    npt.assert_equal(line_double_slider_2d_vertical_test.top_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test._values[0], 39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 40)
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),

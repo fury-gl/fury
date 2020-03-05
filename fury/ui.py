@@ -2423,10 +2423,10 @@ class LineDoubleSlider2D(UI):
     def bottom_disk_value(self):
         """ Returns the value of the bottom disk. """
         return self._values[0]
-    
+
     @bottom_disk_value.setter
     def bottom_disk_value(self, bottom_disk_value):
-        """ Sets the value of the bottom disk. 
+        """ Sets the value of the bottom disk.
 
         Parameters
         ----------
@@ -2511,7 +2511,7 @@ class LineDoubleSlider2D(UI):
         """
         position_x = self.ratio_to_coord(top_disk_ratio)
         position_y = self.ratio_to_coord(top_disk_ratio)
-        self.set_position((position_x, position_y), 1)        
+        self.set_position((position_x, position_y), 1)
 
     @property
     def left_disk_ratio(self):
