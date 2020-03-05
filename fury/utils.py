@@ -212,7 +212,7 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
                 if len(cols_arr) == nb_lines:  # values for every streamline
                     cols_arrx = []
                     for (i, value) in enumerate(colors):
-                        cols_arrx += lines[i].shape[0]*[value]
+                        cols_arrx += lines[i].shape[0] * [value]
                     cols_arrx = np.array(cols_arrx)
                     vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
                                                             deep=True)
@@ -711,10 +711,10 @@ def numpy_to_vtk_matrix(array):
 def get_bounding_box_sizes(actor):
     """Get the bounding box sizes of an actor."""
     X1, X2, Y1, Y2, Z1, Z2 = actor.GetBounds()
-    return (X2-X1, Y2-Y1, Z2-Z1)
+    return (X2 - X1, Y2 - Y1, Z2 - Z1)
 
 
-def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
+def get_grid_cells_position(shapes, aspect_ratio=16 / 9., dim=None):
     """Construct a XY-grid based on the cells content shape.
 
     This function generates the coordinates of every grid cell. The width and
@@ -748,7 +748,7 @@ def get_grid_cells_position(shapes, aspect_ratio=16/9., dim=None):
     count = len(shapes)
     if dim is None:
         # Compute the number of rows and columns.
-        n_cols = np.ceil(np.sqrt(count*aspect_ratio / cell_aspect_ratio))
+        n_cols = np.ceil(np.sqrt(count * aspect_ratio / cell_aspect_ratio))
         n_rows = np.ceil(count / n_cols)
     else:
         n_rows, n_cols = dim
@@ -880,3 +880,87 @@ def normals_from_v_f(vertices, faces):
     norm[faces[:, 2]] += n
     normalize_v3(norm)
     return norm
+
+
+def whatOrder(verts, tri):
+    """Determines the winding order of a given set of vertices and a triangle
+
+    Parameter
+    ---------
+    verts: ndarray
+        array of vertices making up a shape
+    tri: ndarray
+
+    Returns
+    -------
+    0 or 1: int
+        If the order is counter clockwise, returns 0.
+        Otherwise, returns 1.
+    """
+    v1 = verts[tri[0] - 1]
+    v2 = verts[tri[1] - 1]
+    v3 = verts[tri[2] - 1]
+
+    x1 = v1[0]
+    x2 = v2[0]
+    x3 = v3[0]
+
+    y1 = v1[1]
+    y2 = v2[1]
+    y3 = v3[1]
+
+    val = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1)
+
+    if val < 0:
+        return 1
+    return 0
+
+
+def changeOrder(tri):
+    """ Changes the order of a given triangle
+
+    Parameter
+    ---------
+    tri: ndarray
+        array of 3 vertices making up a triangle
+
+    Returns
+    -------
+    np.array(newVert): ndarray
+        new array of vertices making up a triangle in the opposite winding order
+        of the given parameter
+    """
+
+    newVert = [tri[2], tri[1], tri[0]]
+
+    return np.array(newVert)
+
+
+def checkOrder(vert, triarr):
+    """
+
+    Parameter
+    ---------
+    vert: ndarray
+        array of vertices corresponding to a shape
+    triarr: ndarray
+        array of triangles corresponding to a shape
+
+    Returns
+    -------
+    correct_vert: ndarray
+        The corrected order of the vert parameter
+
+    """
+
+    shape = triarr.shape
+    correct_vert = np.empty(shape)
+    correct_order = whatOrder(vert, triarr[0])
+    for nb, i in enumerate(triarr):
+        order2 = whatOrder(vert, i)
+        if correct_order != order2:
+            temp = changeOrder(i)
+            correct_vert[nb] = temp
+        else:
+            correct_vert[nb] = i
+    return correct_vert
