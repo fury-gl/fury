@@ -4,36 +4,25 @@ import fury.primitive as fp
 
 
 def test_vertices_primitives():
-    l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3)),
-                    (fp.primStar()),
-                    (fp.primStar(3)),
-                    (fp.primRhombi())]
+    l_primitives = [(fp.prim_square, (4, 3), -.5, .5, 0),
+                    (fp.prim_box, (8, 3), -.5, .5, 0),
+                    (fp.prim_star, (10, 3), -3, 3, -0.06666666666666667),
+                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0)]
 
-    for func, shape in l_primitives:
+    for func, shape, min, max, mean in l_primitives:
         vertices, _ = func()
-        if(shape == fp.primStar()):
-            npt.assert_equal(vertices.shape, shape)
-            npt.assert_equal(np.mean(vertices), 0)
-            npt.assert_equal(vertices.max, 3.0)
-            npt.assert_equal(vertices.min, -3.0)
-        if(shape == fp.primStar(3)):
-            npt.assert_equal(vertices.shape, shape)
-            npt.assert_equal(np.mean(vertices), 0)
-            npt.assert_equal(vertices.max, 3.0)
-            npt.assert_equal(vertices.min, -3.0)
-        if(shape == fp.primRhombi()):
-            npt.assert_equal(vertices.shape, shape)
-            npt.assert_equal(np.mean(vertices), 0)
-            npt.assert_equal(vertices.max, 4.0)
-            npt.assert_equal(vertices.min, -4.0)
-        else:
-            npt.assert_equal(vertices.shape, shape)
-            npt.assert_equal(np.mean(vertices), 0)
-            npt.assert_equal(vertices.min(), -.5)
-            npt.assert_equal(vertices.max(), 0.5)
+        npt.assert_equal(vertices.shape, shape)
+        npt.assert_equal(np.mean(vertices), mean)
+        npt.assert_equal(vertices.min(), min)
+        npt.assert_equal(vertices.max(), max)
 
+    vertices, _ = fp.prim_star(3)
+    npt.assert_equal(vertices.shape, (12, 3))
+    npt.assert_equal(np.mean(vertices), 0.1111111111111111)
+    npt.assert_equal(vertices.min(), -3)
+    npt.assert_equal(vertices.max(), 3)
 
+test_vertices_primitives()
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
                     (fp.prim_box, (12, 3))]
