@@ -2,7 +2,6 @@ import numpy as np
 import numpy.testing as npt
 import fury.primitive as fp
 
-
 def test_vertices_primitives():
     l_primitives = [(fp.prim_square, (4, 3), -.5, .5, 0),
                     (fp.prim_box, (8, 3), -.5, .5, 0),
@@ -21,7 +20,6 @@ def test_vertices_primitives():
     npt.assert_equal(np.mean(vertices), 0.1111111111111111)
     npt.assert_equal(vertices.min(), -3)
     npt.assert_equal(vertices.max(), 3)
-
 
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
