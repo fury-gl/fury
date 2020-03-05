@@ -21,6 +21,7 @@ def test_vertices_primitives():
     npt.assert_equal(vertices.min(), -3)
     npt.assert_equal(vertices.max(), 3)
 
+
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
                     (fp.prim_box, (12, 3))]
