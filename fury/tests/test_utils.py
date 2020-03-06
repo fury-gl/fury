@@ -260,18 +260,12 @@ def test_rotate(interactive=False):
 
 def test_vertices_from_actor():
 
-    my_vertices = np.array([[ 2.5, -0.5,  0. ],
-                            [ 1.5, -0.5,  0. ],
-                            [ 1.5,  0.5,  0. ],
-                            [ 2.5,  0.5,  0. ],
-                            [ 1.,   1.,   0. ],
-                            [-1.,   1.,   0. ],
-                            [-1.,   3.,   0. ],
-                            [ 1.,   3.,   0. ],
-                            [ 0.5, -0.5,  0. ],
-                            [-0.5, -0.5,  0. ],
-                            [-0.5,  0.5,  0. ],
-                            [ 0.5,  0.5,  0. ]])
+    my_vertices = np.array([[ 2.5, -0.5,  0. ], [ 1.5, -0.5,  0. ],
+                            [ 1.5,  0.5,  0. ], [ 2.5,  0.5,  0. ],
+                            [ 1.,   1.,   0. ], [-1.,   1.,   0. ],
+                            [-1.,   3.,   0. ], [ 1.,   3.,   0. ],
+                            [ 0.5, -0.5,  0. ], [-0.5, -0.5,  0. ],
+                            [-0.5,  0.5,  0. ], [ 0.5,  0.5,  0. ]])
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     scale = [1, 2, 1]
@@ -280,7 +274,6 @@ def test_vertices_from_actor():
                               scale=scale)
 
     big_verts, big_faces, big_colors, big_centers = res
-
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     actor.GetProperty().BackfaceCullingOff()
     res_vertices = vertices_from_actor(actor)

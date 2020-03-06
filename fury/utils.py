@@ -892,14 +892,13 @@ def vertices_from_actor(actor):
 def compute_bounds(actor):
 
     """ This function will compute the bounds
-    
     """
     actor.GetMapper().GetInput().ComputeBounds()
 
 def modify_actor(actor):
 
     """This function will modify
-    
     """
-    actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+    points=actor.GetMapper().GetInput().GetPoints()
+    points.GetData().GetModified()
 
