@@ -885,14 +885,17 @@ def vertices_from_actor(actor):
 
     """ This function will return vertices from actor
     """
-    return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
-                                      GetPoints().GetData())
+    vtkPoint = actor.GetMapper().GetInput()
+    points = vtkPoint.GetPoints()
+    data = points.GetData()
+    return numpy_support.vtk_to_numpy(data)
 
 def compute_bounds(actor):
 
     """ This function will compute the bounds
     """
-    actor.GetMapper().GetInput().ComputeBounds()
+    vtkPoint = actor.GetMapper().GetInput()
+    vtkPoint.ComputeBounds()
 
 def modify_actor(actor):
 
@@ -901,4 +904,3 @@ def modify_actor(actor):
     vtkPoint = actor.GetMapper().GetInput()
     points = vtkPoint.GetPoints()
     points.GetData().GetModified()
-
