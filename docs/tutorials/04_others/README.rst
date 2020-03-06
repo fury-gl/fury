@@ -1,4 +1,4 @@
-Others Features
+Other Features
 -----------------------
 
 These tutorials show:

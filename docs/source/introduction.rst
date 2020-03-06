@@ -8,7 +8,7 @@ Overview
 Free Unified Rendering for Python
 
 
-What is Fury ?
+What is FURY ?
 ---------------
 
 
@@ -46,7 +46,7 @@ FURY is distributed under the BSD 3 License
 Credits
 --------
 
-Go to :doc:`Community page <community>` to see who have been involved in the development of FURY:
+Go to :doc:`Community page <community>` to see who have been involved in the development of FURY.
 
 Bug reports and support
 ---------------------------

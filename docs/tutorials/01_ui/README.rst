@@ -1,4 +1,4 @@
-Basic User Interface Element
-----------------------------
+Basic User Interface Elements
+-----------------------------
 
-These Examples show how to create basic user interfaces element.
+These tutorials show how to create basic user interfaces elements.

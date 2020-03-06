@@ -9,47 +9,47 @@ Start by importing FURY.
     import numpy as np
     from fury import window, actor, ui, io, utils
 
-To import a model, use ``io.load_polydata()``. Currently supported formats include OBJ, VTK, FIB, PLY, STL and XML.
-Let us include the Suzannemodel used by blender
+To import a model, use :py:func:`.io.load_polydata`. Currently supported formats include OBJ, VTK, FIB, PLY, STL and XML.
+Let us include the ``suzanne`` model used by Blender
 
 .. code-block:: python
 
-    suzanne = io.load_polydata('models/suzanne.obj')
+    suzanne = io.load_polydata('suzanne.obj')
     suzanne = utils.get_polymapper_from_polydata(suzanne)
     suzanne = utils.get_actor_from_polymapper(suzanne)
 
-Set the Opacity of the model::
+Set the opacity of the model::
 
     modelsuzanne.GetProperty().SetOpacity(0.5)
 
-Let's create random variables for cylinder parameters
+Let's create some random variables for the cylinder parameters
 
 .. code-block:: python
 
-    centres = np.random.rand(2,3)
-    directions = np.random.rand(2,3)
+    centers = np.random.rand(2, 3)
+    directions = np.random.rand(2, 3)
     heights = np.random.rand(2)
-    colors = np.random.rand(2,3)
+    colors = np.random.rand(2, 3)
 
-Now, we Create a cylinder::
+Now, we create a cylinder::
 
-    cylinders = actor.cylinder(centres,directions,colors,heights=heights)
+    cylinders = actor.cylinder(centers, directions, colors, heights=heights)
 
-We create a scene. Everything to be rendered is to be added to the scene::
+Anything that has to be rendered needs to be added to the scene so let's create a :py:class:`.Scene()`::
 
     scene = window.Scene()
 
-We set window scene variable Eg: (width, height)::
+We set the window scene variables e.g. (width, height)::
 
-    showm = window.ShowManager(scene,size=(1024,720),reset_camera=False)
+    showm = window.ShowManager(scene, size=(1024,720), reset_camera=False)
     showm.initialize()
 
-We add a text block to add ome information::
+We add a text block to add some information::
 
     tb = ui.TextBlock2D()
     tb.message = "Hello Fury"
 
-The funcition scene.add() is used to add the created objects to the scene to be rendered::
+The function :py:meth:`.Scene.add()` is used to add the created objects to the scene to be rendered::
 
     scene.add(suzanne)
     scene.add(cylinders)

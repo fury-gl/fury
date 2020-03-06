@@ -128,7 +128,7 @@ Let’s start by showcasing the ``docs`` folder structure:
 | │   └── source
 | ├── requirements.txt
 | ├── fury
-| │   ├── simpleble.py
+| │   ├── actor.py
 | │   ├── ...
 | │
 | │── ...
@@ -141,9 +141,6 @@ In our ``docs`` folder structure above:
 - ``tutorials`` is the directory where we have all python scripts that describe how to use the api.
 - ``demos`` being the FURY app showcases.
 - ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of expermiental work.
-
-An important note here is that the folder ``simpleble-master`` is what we will refer to as our `Repository root`, while the folder ``simpleble-master/docs`` will be our `Sphinx root` or, equivalently, our `Documentation root`. Similarly, ``simpleble-master/docs/source`` will be our `Sphinx source root` and ``simpleble-master/docs/build`` is our `Sphinx build root`.
-
 
 Building the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
