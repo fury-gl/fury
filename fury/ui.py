@@ -838,7 +838,9 @@ class Disk2D(UI):
 
 class Panel2D(UI):
     """ A 2D UI Panel.
+    
     Can contain one or more UI elements.
+
     Attributes
     ----------
     alignment : [left, right]
