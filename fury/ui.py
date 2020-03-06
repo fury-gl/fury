@@ -319,12 +319,16 @@ class UI(object, metaclass=abc.ABCMeta):
 
 class Button2D(UI):
     """A 2D overlay button and is of type vtkTexturedActor2D.
+
     Currently supports::
+
         - Multiple icons.
         - Switching between icons.
+
     """
     def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
         """Init class instance.
+
         Parameters
         ----------
         icon_fnames : List(string, string)
@@ -333,8 +337,10 @@ class Button2D(UI):
             Absolute coordinates (x, y) of the lower-left corner of the button.
         size : (int, int), optional
             Width and height in pixels of the button.
+        
         """
         super(Button2D, self).__init__(position)
+
         self.icon_extents = dict()
         self.icons = self._build_icons(icon_fnames)
         self.icon_names = [icon[0] for icon in self.icons]
@@ -351,16 +357,20 @@ class Button2D(UI):
 
     def _build_icons(self, icon_fnames):
         """Convert file names to vtkImageDataGeometryFilters.
+
         A pre-processing step to prevent re-read of file names during every
         state change.
+
         Parameters
         ----------
         icon_fnames : List(string, string)
             ((iconname, filename), (iconname, filename), ....)
+        
         Returns
         -------
         icons : List
             A list of corresponding vtkImageDataGeometryFilters.
+        
         """
         icons = []
         for icon_name, icon_fname in icon_fnames:
@@ -369,7 +379,9 @@ class Button2D(UI):
 
     def _setup(self):
         """Set up this UI component.
+        
         Creating the button actor used internally.
+        
         """
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
@@ -377,6 +389,7 @@ class Button2D(UI):
         self.texture_polydata = vtk.vtkPolyData()
         self.texture_points = vtk.vtkPoints()
         self.texture_points.SetNumberOfPoints(4)
+        
         polys = vtk.vtkCellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
@@ -384,6 +397,7 @@ class Button2D(UI):
         polys.InsertCellPoint(2)
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
+       
         tc = vtk.vtkFloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
@@ -396,8 +410,10 @@ class Button2D(UI):
         tc.InsertComponent(3, 0, 0.0)
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
+        
         texture_mapper = vtk.vtkPolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
+        
         button = vtk.vtkTexturedActor2D()
         button.SetMapper(texture_mapper)
         self.texture = vtk.vtkTexture()
@@ -406,6 +422,7 @@ class Button2D(UI):
         button_property.SetOpacity(1.0)
         button.SetProperty(button_property)
         self.actor = button
+        
         # Add default events listener to the VTK actor.
         self.handle_events(self.actor)
 
@@ -415,18 +432,22 @@ class Button2D(UI):
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
+
         Parameters
         ----------
         scene : scene
+        
         """
         scene.add(self.actor)
 
     def resize(self, size):
         """Resize the button.
+
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
+        
         """
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
@@ -437,16 +458,19 @@ class Button2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
+
         Parameters
         ----------
         coords: (float, float)
             Absolute pixel coordinates (x, y).
+        
         """
         self.actor.SetPosition(*coords)
 
     @property
     def color(self):
         """ Gets the button's color.
+        
         """
         color = self.actor.GetProperty().GetColor()
         return np.asarray(color)
@@ -454,41 +478,50 @@ class Button2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the button's color.
+
         Parameters
         ----------
         color : (float, float, float)
             RGB. Must take values in [0, 1].
+        
         """
         self.actor.GetProperty().SetColor(*color)
 
     def scale(self, factor):
         """ Scales the button.
+
         Parameters
         ----------
         factor : (float, float)
             Scaling factor (width, height) in pixels.
+        
         """
         self.resize(self.size * factor)
 
     def set_icon_by_name(self, icon_name):
         """ Set the button icon using its name.
+
         Parameters
         ----------
         icon_name : str
+        
         """
         icon_id = self.icon_names.index(icon_name)
         self.set_icon(self.icons[icon_id][1])
 
     def set_icon(self, icon):
         """ Modifies the icon used by the vtkTexturedActor2D.
+        
         Parameters
         ----------
         icon : imageDataGeometryFilter
+        
         """
         self.texture = set_input(self.texture, icon)
 
     def next_icon_id(self):
         """ Sets the next icon ID while cycling through icons.
+        
         """
         self.current_icon_id += 1
         if self.current_icon_id == len(self.icons):
@@ -497,6 +530,7 @@ class Button2D(UI):
 
     def next_icon(self):
         """ Increments the state of the Button.
+        
             Also changes the icon.
         """
         self.next_icon_id()
@@ -506,9 +540,11 @@ class Button2D(UI):
 class Rectangle2D(UI):
     """ A 2D rectangle sub-classed from UI.
     """
+    
     def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1),
                  opacity=1.0):
         """ Initializes a rectangle.
+        
         Parameters
         ----------
         size : (int, int)
@@ -527,6 +563,7 @@ class Rectangle2D(UI):
 
     def _setup(self):
         """ Setup this UI component.
+        
         Creating the polygon actor used internally.
         """
         # Setup four points
@@ -571,6 +608,7 @@ class Rectangle2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
+        
         Parameters
         ----------
         scene : scene
@@ -602,6 +640,7 @@ class Rectangle2D(UI):
 
     def resize(self, size):
         """ Sets the button size.
+        
         Parameters
         ----------
         size : (float, float)
@@ -619,6 +658,7 @@ class Rectangle2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
+        
         Parameters
         ----------
         coords: (float, float)
@@ -636,6 +676,7 @@ class Rectangle2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the rectangle's color.
+        
         Parameters
         ----------
         color : (float, float, float)
@@ -652,6 +693,7 @@ class Rectangle2D(UI):
     @opacity.setter
     def opacity(self, opacity):
         """ Sets the rectangle's opacity.
+        
         Parameters
         ----------
         opacity : float
@@ -667,6 +709,7 @@ class Disk2D(UI):
     def __init__(self, outer_radius, inner_radius=0, center=(0, 0),
                  color=(1, 1, 1), opacity=1.0):
         """ Initializes a 2D Disk.
+        
         Parameters
         ----------
         outer_radius : int
@@ -730,6 +773,7 @@ class Disk2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component's bounding box.
+        
         Parameters
         ----------
         coords: (float, float)
@@ -748,6 +792,7 @@ class Disk2D(UI):
     @color.setter
     def color(self, color):
         """ Sets the color of this UI component.
+        
         Parameters
         ----------
         color : (float, float, float)
@@ -764,6 +809,7 @@ class Disk2D(UI):
     @opacity.setter
     def opacity(self, opacity):
         """ Sets the opacity of this UI component.
+        
         Parameters
         ----------
         opacity : float
@@ -825,6 +871,7 @@ class Panel2D(UI):
 
     def _setup(self):
         """ Setup this UI component.
+        
         Create the background (Rectangle2D) of the panel.
         """
         self._elements = []
@@ -847,6 +894,7 @@ class Panel2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
+        
         Parameters
         ----------
         scene : scene
@@ -859,6 +907,7 @@ class Panel2D(UI):
 
     def resize(self, size):
         """ Sets the panel size.
+        
         Parameters
         ----------
         size : (float, float)
@@ -868,6 +917,7 @@ class Panel2D(UI):
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
+        
         Parameters
         ----------
         coords: (float, float)
@@ -895,8 +945,10 @@ class Panel2D(UI):
 
     def add_element(self, element, coords, anchor="position"):
         """ Adds a UI component to the panel.
+        
         The coordinates represent an offset from the lower left corner of the
         panel.
+        
         Parameters
         ----------
         element : UI
@@ -942,6 +994,7 @@ class Panel2D(UI):
 
     def update_element(self, element, coords, anchor="position"):
         """ Updates the position of a UI component in the panel.
+        
         Parameters
         ----------
         element : UI
@@ -970,6 +1023,7 @@ class Panel2D(UI):
 
     def re_align(self, window_size_change):
         """ Re-organises the elements in case the window size is changed.
+        
         Parameters
         ----------
         window_size_change : (int, int)
@@ -986,7 +1040,9 @@ class Panel2D(UI):
 
 class TextBlock2D(UI):
     """ Wraps over the default vtkTextActor and helps setting the text.
+    
     Contains member functions for text formatting.
+    
     Attributes
     ----------
     actor : :class:`vtkTextActor`
@@ -1072,6 +1128,7 @@ class TextBlock2D(UI):
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
+        
         Parameters
         ----------
         scene : scene
@@ -1084,6 +1141,7 @@ class TextBlock2D(UI):
     @property
     def message(self):
         """ Gets message from the text.
+        
         Returns
         -------
         str
@@ -1094,6 +1152,7 @@ class TextBlock2D(UI):
     @message.setter
     def message(self, text):
         """ Sets the text message.
+        
         Parameters
         ----------
         text : str
@@ -1104,6 +1163,7 @@ class TextBlock2D(UI):
     @property
     def font_size(self):
         """ Gets text font size.
+        
         Returns
         ----------
         int
@@ -1114,6 +1174,7 @@ class TextBlock2D(UI):
     @font_size.setter
     def font_size(self, size):
         """ Sets font size.
+        
         Parameters
         ----------
         size : int
@@ -3696,14 +3757,20 @@ class ListBox2D(UI):
         return compressed_names
 
     def set_values(self, values):
+        """ This function will set the values to ListBox's private object 'values'.
+
+        The compressed_values function will store the compressed value such that
+        there should not be text overflow."""
+
         self._values = values
         self.compressed_values = self.compress_values(values)
 
     def get_actual_value(self, compressed_value):
-        """ Retrieving the actual value of element by compressed value.
+        """ Retrieving the actual value of element using compressed value.
+
          Parameters
         ----------
-        compressed_value:the key for the actual value
+        compressed_value : the key for the actual value
         """
         for i in range(len(self.compressed_values)):
             if(self.compressed_values[i] == compressed_value):
@@ -3718,6 +3785,7 @@ class ListBoxItem2D(UI):
                  unselected_color=(0.9, 0.9, 0.9),
                  background_opacity=1.):
         """ Single ListBox Item
+
         Parameters
         ----------
         list_box : :class:`ListBox`
