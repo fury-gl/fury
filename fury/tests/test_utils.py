@@ -1,12 +1,16 @@
 import sys
 import numpy as np
 import numpy.testing as npt
+from vtk.util import numpy_support
 from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk)
+                        rotate, vtk, vertices_from_actor, 
+                        modify_actor, compute_bounds, 
+                        get_actor_from_primitive, set_input)
 from fury import actor, window, utils
+import fury.primitive as fp
 
 
 def test_map_coordinates_3d_4d():
@@ -253,6 +257,69 @@ def test_rotate(interactive=False):
         arr = window.snapshot(scene, offscreen=True)
         red_sum_new = arr[..., 0].sum()
         npt.assert_equal(red_sum_new > red_sum, True)
+
+def test_vertices_from_actor():
+    my_vertices = np.array([[ 2.5, -0.5,  0. ],
+                                  [ 1.5, -0.5,  0. ],
+                                  [ 1.5,  0.5,  0. ],
+                                  [ 2.5,  0.5,  0. ],
+                                  [ 1.,   1.,   0. ],
+                                  [-1.,   1.,   0. ],
+                                  [-1.,   3.,   0. ],
+                                  [ 1.,   3.,   0. ],
+                                  [ 0.5, -0.5,  0. ],
+                                  [-0.5, -0.5,  0. ],
+                                  [-0.5,  0.5,  0. ],
+                                  [ 0.5,  0.5,  0. ]])
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = [1, 2, 1]
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scale=scale)
+
+    big_verts, big_faces, big_colors, big_centers = res
+
+    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actor.GetProperty().BackfaceCullingOff()
+    res_vertices = vertices_from_actor(actor)
+    npt.assert_array_almost_equal(my_vertices, res_vertices)
+
+def test_compute_bounds():
+    size = (1, 1)
+    _points = vtk.vtkPoints()
+    _points.InsertNextPoint(0, 0, 0)
+    _points.InsertNextPoint(size[0], 0, 0)
+    _points.InsertNextPoint(size[0], size[1], 0)
+    _points.InsertNextPoint(0, size[1], 0)
+
+    # Create the polygon
+    polygon = vtk.vtkPolygon()
+    polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
+    polygon.GetPointIds().SetId(0, 0)
+    polygon.GetPointIds().SetId(1, 1)
+    polygon.GetPointIds().SetId(2, 2)
+    polygon.GetPointIds().SetId(3, 3)
+
+    # Add the polygon to a list of polygons
+    polygons = vtk.vtkCellArray()
+    polygons.InsertNextCell(polygon)
+
+    # Create a PolyData
+    _polygonPolyData = vtk.vtkPolyData()
+    _polygonPolyData.SetPoints(_points)
+    _polygonPolyData.SetPolys(polygons)
+
+    # Create a mapper and actor
+    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = set_input(mapper, _polygonPolyData)
+
+    actor = vtk.vtkActor2D()
+    actor.SetMapper(mapper)
+    npt.assert_equal(compute_bounds(actor), None)
+
+
+
 
 
 if __name__ == '__main__':
