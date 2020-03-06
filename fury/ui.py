@@ -1174,7 +1174,7 @@ class TextBlock2D(UI):
     @font_size.setter
     def font_size(self, size):
         """ Sets font size.
-        
+
         Parameters
         ----------
         size : int
@@ -4110,7 +4110,7 @@ class FileMenu2D(UI):
         """
         actual_value = self.listbox.get_actual_value(listboxitem.element)
         if (actual_value, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory, 
+            new_directory_path = os.path.join(self.current_directory,
                                               actual_value)
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
