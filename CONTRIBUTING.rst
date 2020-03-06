@@ -54,14 +54,14 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `fury` for local development.
+Ready to contribute? Here's how to set up `FURY` for local development.
 
-1. Fork the `fury` repo on GitHub.
+1. Fork the `FURY` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone https://github.com/your_name_here/fury.git
 
-3. Add a tracking branch which can always have the last version of `fury`::
+3. Add a tracking branch which can always have the last version of `FURY`::
 
     $ git remote add fury-gl https://github.com/fury-gl/fury.git
     $ git fetch fury-gl
@@ -116,7 +116,7 @@ Publishing Releases
 Checklist before Releasing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Review the open list of `fury issues <https://github.com/fury-gl/fury/issues>`_.  Check whether there are
+* Review the open list of `FURY issues <https://github.com/fury-gl/fury/issues>`_.  Check whether there are
   outstanding issues that can be closed, and whether there are any issues that
   should delay the release.  Label them !
 
