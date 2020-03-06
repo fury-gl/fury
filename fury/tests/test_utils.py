@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import numpy.testing as npt
-from vtk.util import numpy_support
 from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
@@ -273,7 +272,9 @@ def test_vertices_from_actor():
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
                               scale=scale)
 
-    big_verts, big_faces, big_colors, big_centers = res
+    big_verts = res[0]
+    big_faces = res[1]
+    big_colors = res[2]
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     actor.GetProperty().BackfaceCullingOff()
     res_vertices = vertices_from_actor(actor)
@@ -308,9 +309,9 @@ def test_compute_bounds():
     mapper = vtk.vtkPolyDataMapper2D()
     mapper = set_input(mapper, _polygonPolyData)
 
-    actor = vtk.vtkActor2D()
-    actor.SetMapper(mapper)
-    npt.assert_equal(compute_bounds(actor), None)
+    vtk_actor = vtk.vtkActor2D()
+    vtk_actor.SetMapper(mapper)
+    npt.assert_equal(compute_bounds(vtk_actor), None)
 
 
 

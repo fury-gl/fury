@@ -884,7 +884,6 @@ def normals_from_v_f(vertices, faces):
 def vertices_from_actor(actor):
 
     """ This function will return vertices from actor
-    
     """
     return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
                                       GetPoints().GetData())
@@ -899,6 +898,7 @@ def modify_actor(actor):
 
     """This function will modify
     """
-    points=actor.GetMapper().GetInput().GetPoints()
+    vtkPoint = actor.GetMapper().GetInput()
+    points = vtkPoint.GetPoints()
     points.GetData().GetModified()
 
