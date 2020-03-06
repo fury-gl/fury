@@ -6,8 +6,8 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk, vertices_from_actor, 
-                        modify_actor, compute_bounds, 
+                        rotate, vtk, vertices_from_actor,
+                        modify_actor, compute_bounds,
                         get_actor_from_primitive, set_input)
 from fury import actor, window, utils
 import fury.primitive as fp
@@ -259,18 +259,19 @@ def test_rotate(interactive=False):
         npt.assert_equal(red_sum_new > red_sum, True)
 
 def test_vertices_from_actor():
+
     my_vertices = np.array([[ 2.5, -0.5,  0. ],
-                                  [ 1.5, -0.5,  0. ],
-                                  [ 1.5,  0.5,  0. ],
-                                  [ 2.5,  0.5,  0. ],
-                                  [ 1.,   1.,   0. ],
-                                  [-1.,   1.,   0. ],
-                                  [-1.,   3.,   0. ],
-                                  [ 1.,   3.,   0. ],
-                                  [ 0.5, -0.5,  0. ],
-                                  [-0.5, -0.5,  0. ],
-                                  [-0.5,  0.5,  0. ],
-                                  [ 0.5,  0.5,  0. ]])
+                            [ 1.5, -0.5,  0. ],
+                            [ 1.5,  0.5,  0. ],
+                            [ 2.5,  0.5,  0. ],
+                            [ 1.,   1.,   0. ],
+                            [-1.,   1.,   0. ],
+                            [-1.,   3.,   0. ],
+                            [ 1.,   3.,   0. ],
+                            [ 0.5, -0.5,  0. ],
+                            [-0.5, -0.5,  0. ],
+                            [-0.5,  0.5,  0. ],
+                            [ 0.5,  0.5,  0. ]])
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     scale = [1, 2, 1]

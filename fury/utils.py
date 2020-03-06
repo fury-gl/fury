@@ -882,18 +882,24 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 def vertices_from_actor(actor):
+
     """ This function will return vertices from actor
+    
     """
     return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
                                       GetPoints().GetData())
 
 def compute_bounds(actor):
+
     """ This function will compute the bounds
+    
     """
     actor.GetMapper().GetInput().ComputeBounds()
 
 def modify_actor(actor):
+
     """This function will modify
+    
     """
     actor.GetMapper().GetInput().GetPoints().GetData().Modified()
 
