@@ -42,8 +42,8 @@ cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 ring_slider = ui.RingSlider2D(center=(630, 400), initial_value=0,
                               text_template="{angle:5.1f}°")
 
-line_slider = ui.LineSlider2D(center=(400, 230), initial_value=0, orientation='vertical',
-                              min_value=-10, max_value=10, alingment='left')
+line_slider = ui.LineSlider2D(center=(400, 230), initial_value=0, orientation='horizontal',
+                              min_value=-10, max_value=10, alingment='top')
 
 ###############################################################################
 # We can use a callback to rotate the cube with the ring slider.
