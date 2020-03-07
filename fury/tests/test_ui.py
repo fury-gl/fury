@@ -406,13 +406,14 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
-def test_ui_line_slider_2d(recording=False):
-    filename = "test_ui_line_slider_2d"
+def test_ui_line_slider_2d_horizontal(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
-                                          min_value=-5, max_value=5)
+                                          min_value=-5, max_value=5,
+                                          orientation="horizontal")
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -421,7 +422,38 @@ def test_ui_line_slider_2d(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
-                                      title="FURY Line Slider")
+                                      title="FURY Horizontal Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_vertical(recording=False):
+    filename = "test_ui_line_slider_2d_vertical"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="vertical")
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Vertical Line Slider")
 
     show_manager.scene.add(line_slider_2d_test)
 
