@@ -413,8 +413,7 @@ def test_ui_line_slider_2d_horizontal(recording=False):
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
-                                          orientation="horizontal",
-                                          alingment='top')
+                                          orientation="horizontal")
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -445,8 +444,7 @@ def test_ui_line_slider_2d_vertical(recording=False):
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
-                                          orientation="vertical",
-                                          alingment='right')
+                                          orientation="vertical")
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
