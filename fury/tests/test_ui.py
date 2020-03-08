@@ -528,8 +528,9 @@ def test_ui_checkbox_initial_state(interactive=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
-                                        "option 3", "option 4"], position=(100, 100), 
-                                        checked_labels=["option 1", "option 4"])
+                                "option 3", "option 4"],
+                                position=(100, 100),
+                                checked_labels=["option 1", "option 4"])
 
     # Collect the sequence of options that have been checked in this list.
     selected_options = []
@@ -571,7 +572,7 @@ def test_ui_checkbox_initial_state(interactive=False):
                 ['option 2\nOption 2', 'option 3', 'option 1'],
                 ['option 3', 'option 1'], ['option 3', 'option 1', 'option 4'],
                 ['option 1', 'option 4']]
-    
+
     npt.assert_equal(len(selected_options), len(expected))
     assert_arrays_equal(selected_options, expected)
     del show_manager
@@ -782,10 +783,11 @@ def test_ui_radio_button_default(interactive=False):
 
 
 def test_multiple_raio_button_pre_selected():
-    npt.assert_raises(ValueError, 
-                        ui.RadioButton, 
-                        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-                        checked_labels=["option 1", "option 4"])
+    npt.assert_raises(ValueError,
+                      ui.RadioButton,
+                      labels=["option 1", "option 2\nOption 2",
+                              "option 3", "option 4"],
+                      checked_labels=["option 1", "option 4"])
 
 
 def test_ui_listbox_2d(interactive=False):
@@ -1241,5 +1243,3 @@ def test_frame_rate_and_anti_aliasing():
 if __name__ == "__main__":
 
     npt.run_module_suite()
-
-

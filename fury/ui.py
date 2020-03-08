@@ -3171,14 +3171,11 @@ class Checkbox(UI):
         self.options = []
         button_y = self.position[1]
         for label in self.labels:
-            if label in self.checked_labels:
-                checked = True
-            else:
-                checked = False
+            checked = bool(label in self.checked_labels)
 
             option = Option(label=label,
                             font_size=self.font_size,
-                            position=(self.position[0], button_y), 
+                            position=(self.position[0], button_y),
                             checked=checked)
 
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
@@ -3288,12 +3285,13 @@ class RadioButton(Checkbox):
             the button of the first option.
         """
         if len(checked_labels) > 1:
-            raise ValueError("Only one option can be pre-selected for radio buttons.")
+            raise ValueError("Only one option \
+                             can be pre-selected for radio buttons.")
 
         super(RadioButton, self).__init__(labels=labels, position=position,
                                           padding=padding,
                                           font_size=font_size,
-                                          font_family=font_family, 
+                                          font_family=font_family,
                                           checked_labels=checked_labels)
 
     def _handle_option_change(self, option):
