@@ -34,13 +34,13 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         value_range[1]) to (0, 255).
     opacity : float, optional
         Opacity of 0 means completely transparent and 1 completely visible.
-    lookup_colormap : vtkLookupTable
+    lookup_colormap : vtkLookupTable, optional
         If None (default) then a grayscale map is created.
-    interpolation : string
+    interpolation : string, optional
         If 'linear' (default) then linear interpolation is used on the final
         texture mapping. If 'nearest' then nearest neighbor interpolation is
         used on the final texture mapping.
-    picking_tol : float
+    picking_tol : float, optional
         The tolerance for the vtkCellPicker, specified as a fraction of
         rendering window size.
 
@@ -474,23 +474,23 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
         colormap are interpolated automatically using trilinear interpolation.
 
-    opacity : float
+    opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
-    linewidth : float
+    linewidth : float, optional
         Default is 0.01.
-    tube_sides : int
+    tube_sides : int, optional
         Default is 9.
-    lod : bool
+    lod : bool, optional
         Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
-    lod_points : int
+    lod_points : int, optional
         Number of points to be used when LOD is in effect. Default is 10000.
-    lod_points_size : int
+    lod_points_size : int, optional
         Size of points when lod is in effect. Default is 3.
-    spline_subdiv : int
+    spline_subdiv : int, optional
         Number of splines subdivision to smooth streamtubes. Default is None.
-    lookup_colormap : vtkLookupTable
+    lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
 
@@ -626,21 +626,21 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     spline_subdiv : int, optional
         Number of splines subdivision to smooth streamtubes. Default is None
         which means no subdivision.
-    lod : bool
+    lod : bool, optional
         Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
-    lod_points : int
+    lod_points : int, optional
         Number of points to be used when LOD is in effect. Default is 10000.
     lod_points_size : int
         Size of points when lod is in effect. Default is 3.
-    lookup_colormap : bool, optional
+    lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
-    depth_cue : boolean
+    depth_cue : boolean, optional
         Add a size depth cue so that lines shrink with distance to the camera.
         Works best with linewidth <= 1.
-    fake_tube: boolean
+    fake_tube: boolean, optional
         Add shading to lines to approximate the look of tubes.
 
     Returns
