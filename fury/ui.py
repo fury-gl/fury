@@ -3023,7 +3023,7 @@ class Option(UI):
             Font Size of the label.
     """
 
-    def __init__(self, label, position=(0, 0), font_size=18):
+    def __init__(self, label, position=(0, 0), font_size=18, checked = False):
         """
         Parameters
         ----------
@@ -3034,10 +3034,12 @@ class Option(UI):
             the button of the option.
         font_size : int
             Font size of the label.
+        checked : bool
+            Boolean value indicates the initial state of the option
         """
         self.label = label
         self.font_size = font_size
-        self.checked = False
+        self.checked = checked
         self.button_size = (font_size * 1.2, font_size * 1.2)
         self.button_label_gap = 10
         super(Option, self).__init__(position)
@@ -3058,6 +3060,10 @@ class Option(UI):
                                size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
+
+        # Display initial state
+        if self.checked:
+                self.button_set_icon_by_name("checked")
 
         # Add callbacks
         self.button.on_left_mouse_button_clicked = self.toggle
@@ -3130,7 +3136,7 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels, padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3146,14 +3152,18 @@ class Checkbox(UI):
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
+        checked_labels: list(string)
+            List of labels that are checked on setting up.
         """
+
         self.labels = list(reversed(labels))
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
+        self.checked_labels = []
+        self.checked_labels.extend(checked_labels)
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
-        self.checked = []
 
     def _setup(self):
         """ Setup this UI component.
@@ -3161,9 +3171,15 @@ class Checkbox(UI):
         self.options = []
         button_y = self.position[1]
         for label in self.labels:
+            if label in self.checked_labels:
+                checked = True
+            else:
+                checked = False
+
             option = Option(label=label,
                             font_size=self.font_size,
-                            position=(self.position[0], button_y))
+                            position=(self.position[0], button_y), checked=checked)
+
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = button_y + self.font_size * \
                 (label.count('\n') + 1) * (line_spacing + 0.1) + self.padding
