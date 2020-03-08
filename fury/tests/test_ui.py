@@ -521,19 +521,68 @@ def test_ui_option(interactive=False):
         showm.scene.add(option_test)
         showm.start()
 
-
-def test_ui_checkbox(interactive=False):
+def test_ui_checkbox_initial_state(interactive=False):
     filename = "test_ui_checkbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
                                         "option 3", "option 4"],
-                                position=(10, 10))
+                                position=(100, 100), checked_labels=["option 1", "option 4"])
+
+
+    # Collect the sequence of options that have been checked in this list.
+    selected_options = []
+    def _on_change(checkbox):
+        selected_options.append(list(checkbox.checked_labels))
+
+    # Set up a callback when selection changes
+    checkbox_test.on_change = _on_change
+
+    event_counter = EventCounter()
+    event_counter.monitor(checkbox_test)
+
+    # Create a show manager and record/play events.
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Checkbox")
+    show_manager.scene.add(checkbox_test)
+    show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Recorded events:
+    #  1. Click on button of option 1.
+    #  2. Click on button of option 2.
+    #  3. Click on button of option 1.
+    #  4. Click on text of option 3.
+    #  5. Click on text of option 1.
+    #  6. Click on button of option 4.
+    #  7. Click on text of option 1.
+    #  8. Click on text of option 2.
+    #  9. Click on text of option 4.
+    #  10. Click on button of option 3.
+    # Check if the right options were selected.
+    expected = [['option 4'], ['option 4', 'option 2\nOption 2'],
+                ['option 1','option 4','option 2\nOption 2'], ['option 1','option 4','option 2\nOption 2', 'option 3'],
+                ['option 2\nOption 2', 'option 3','option 4'],
+                ['option 2\nOption 2', 'option 3'],
+                ['option 2\nOption 2', 'option 3', 'option 1'],
+                ['option 3', 'option 1'], ['option 1', 'option 3', 'option 4'], ['option 1','option 4']]
+
+
+def test_ui_checkbox_default(interactive=False):
+    filename = "test_ui_checkbox"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
+                                        "option 3", "option 4"],
+                                position=(10, 10), checked_labels=[])
 
     old_positions = []
     for option in checkbox_test.options:
         old_positions.append(option.position)
+
     old_positions = np.asarray(old_positions)
     checkbox_test.position = (100, 100)
     new_positions = []
@@ -547,7 +596,7 @@ def test_ui_checkbox(interactive=False):
     selected_options = []
 
     def _on_change(checkbox):
-        selected_options.append(list(checkbox.checked))
+        selected_options.append(list(checkbox.checked_labels))
 
     # Set up a callback when selection changes
     checkbox_test.on_change = _on_change
@@ -589,37 +638,24 @@ def test_ui_checkbox(interactive=False):
     if interactive:
         checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
                                             "option 3", "option 4"],
-                                    position=(100, 100))
+                                    position=(100, 100), checked_labels=[])
         showm = window.ShowManager(size=(600, 600))
         showm.scene.add(checkbox_test)
         showm.start()
 
-
-def test_ui_radio_button(interactive=False):
+def test_ui_radio_button_initial_state(interactive=False):
     filename = "test_ui_radio_button"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     radio_button_test = ui.RadioButton(
         labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-        position=(10, 10))
-
-    old_positions = []
-    for option in radio_button_test.options:
-        old_positions.append(option.position)
-    old_positions = np.asarray(old_positions)
-    radio_button_test.position = (100, 100)
-    new_positions = []
-    for option in radio_button_test.options:
-        new_positions.append(option.position)
-    new_positions = np.asarray(new_positions)
-    npt.assert_allclose(new_positions - old_positions,
-                        90 * np.ones((4, 2)))
+        position=(100, 100), checked_labels=['option 4'])
 
     selected_option = []
 
     def _on_change(radio_button):
-        selected_option.append(radio_button.checked)
+        selected_option.append(radio_button.checked_labels)
 
     # Set up a callback when selection changes
     radio_button_test.on_change = _on_change
@@ -656,10 +692,80 @@ def test_ui_radio_button(interactive=False):
     if interactive:
         radio_button_test = ui.RadioButton(
             labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-            position=(100, 100))
+            position=(100, 100), checked_labels=[])
         showm = window.ShowManager(size=(600, 600))
         showm.scene.add(radio_button_test)
         showm.start()
+
+def test_ui_radio_button_default(interactive=False):
+    filename = "test_ui_radio_button"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    radio_button_test = ui.RadioButton(
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+        position=(10, 10), checked_labels=[])
+
+    old_positions = []
+    for option in radio_button_test.options:
+        old_positions.append(option.position)
+    old_positions = np.asarray(old_positions)
+    radio_button_test.position = (100, 100)
+    new_positions = []
+    for option in radio_button_test.options:
+        new_positions.append(option.position)
+    new_positions = np.asarray(new_positions)
+    npt.assert_allclose(new_positions - old_positions,
+                        90 * np.ones((4, 2)))
+
+    selected_option = []
+
+    def _on_change(radio_button):
+        selected_option.append(radio_button.checked_labels)
+
+    # Set up a callback when selection changes
+    radio_button_test.on_change = _on_change
+
+    event_counter = EventCounter()
+    event_counter.monitor(radio_button_test)
+
+    # Create a show manager and record/play events.
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Checkbox")
+    show_manager.scene.add(radio_button_test)
+
+    # Recorded events:
+    #  1. Click on button of option 1.
+    #  2. Click on button of option 2.
+    #  3. Click on button of option 2.
+    #  4. Click on text of option 2.
+    #  5. Click on button of option 1.
+    #  6. Click on text of option 3.
+    #  7. Click on button of option 4.
+    #  8. Click on text of option 4.
+    show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Check if the right options were selected.
+    expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+                ['option 2\nOption 2'], ['option 1'], ['option 3'],
+                ['option 4'], ['option 4']]
+    npt.assert_equal(len(selected_option), len(expected))
+    assert_arrays_equal(selected_option, expected)
+    del show_manager
+
+    if interactive:
+        radio_button_test = ui.RadioButton(
+            labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+            position=(100, 100), checked_labels=[])
+        showm = window.ShowManager(size=(600, 600))
+        showm.scene.add(radio_button_test)
+        showm.start()
+
+def test_multiple_raio_button_pre_selected():
+    npt.assert_raises(ValueError, ui.RadioButton, labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+                      checked_labels=["option 1", "option 4"])
 
 
 def test_ui_listbox_2d(interactive=False):
