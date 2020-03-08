@@ -3023,7 +3023,7 @@ class Option(UI):
             Font Size of the label.
     """
 
-    def __init__(self, label, position=(0, 0), font_size=18, checked = False):
+    def __init__(self, label, position=(0, 0), font_size=18, checked=False):
         """
         Parameters
         ----------
@@ -3136,7 +3136,7 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, checked_labels = [], padding=1, font_size=18,
+    def __init__(self, labels, checked_labels=None, padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3160,7 +3160,8 @@ class Checkbox(UI):
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
-        self.checked_labels = checked_labels
+        self.checked_labels = []
+        self.checked_labels.extend(checked_labels)
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
 
@@ -3177,7 +3178,8 @@ class Checkbox(UI):
 
             option = Option(label=label,
                             font_size=self.font_size,
-                            position=(self.position[0], button_y), checked=checked)
+                            position=(self.position[0], button_y), 
+                            checked=checked)
 
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = button_y + self.font_size * \
@@ -3286,12 +3288,13 @@ class RadioButton(Checkbox):
             the button of the first option.
         """
         if len(checked_labels) > 1:
-            raise ValueError("Only one option can be pre-selected for radio buttons")
+            raise ValueError("Only one option can be pre-selected for radio buttons.")
 
         super(RadioButton, self).__init__(labels=labels, position=position,
                                           padding=padding,
                                           font_size=font_size,
-                                          font_family=font_family, checked_labels=checked_labels)
+                                          font_family=font_family, 
+                                          checked_labels=checked_labels)
 
     def _handle_option_change(self, option):
         for option_ in self.options:
