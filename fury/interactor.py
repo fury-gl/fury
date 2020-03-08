@@ -134,7 +134,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.on_mouse_move(obj, evt)
         elif evt == "CharEvent":
             self.on_char(obj, evt)
-        elif evt == "KeyPressEvent":
+        elif evt == "KeyPressEvent":    
             self.on_key_press(obj, evt)
         elif evt == "KeyReleaseEvent":
             self.on_key_release(obj, evt)
