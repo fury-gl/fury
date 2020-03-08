@@ -55,7 +55,7 @@ ver_line_slider_text_right = ui.LineSlider2D(center=(150, 400), initial_value=0,
                               min_value=-10, max_value=10, alingment='right')
 
 ###############################################################################
-# By default the alingment are 'bottom' for horizontal and 'top' for vertical 
+# By default the alingment are 'bottom' for horizontal and 'top' for vertical
 
 hor_line_slider = ui.LineSlider2D(center=(650, 100), initial_value=0, orientation='horizontal',
                               min_value=-10, max_value=10)

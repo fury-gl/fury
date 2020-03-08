@@ -157,7 +157,7 @@ def test_slicer(verbose=False):
     # window.show(scene, reset_camera=False)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, find_objects=True)
-    npt.assert_equal(report.objects, 1)
+    npt.assert_equal(report.objects, 2)
     npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
                            np.array(slicer.shape))
 

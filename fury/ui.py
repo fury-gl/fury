@@ -1946,7 +1946,7 @@ class LineSlider2D(UI):
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] += self.track.size[0] / 2.
-            
+
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position

@@ -1149,5 +1149,3 @@ def test_frame_rate_and_anti_aliasing():
 if __name__ == "__main__":
 
     npt.run_module_suite()
-
-
