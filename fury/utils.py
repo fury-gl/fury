@@ -862,7 +862,7 @@ def normals_from_v_f(vertices, faces):
 
     Parameters
     ----------
-    vertices : ndarray
+    verices : ndarray
     faces : ndarray
 
     Returns

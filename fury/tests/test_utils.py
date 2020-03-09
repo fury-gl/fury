@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 import numpy.testing as npt
+from fury import actor, window, utils
 from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
@@ -8,7 +9,6 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk, vertices_from_actor,
                         modify_actor, compute_bounds,
                         get_actor_from_primitive, set_input)
-from fury import actor, window, utils
 import fury.primitive as fp
 
 
