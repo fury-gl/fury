@@ -919,4 +919,4 @@ def modify_actor(actor):
 
     """
     actor.GetMapper().GetInput().\
-    GetPoints().GetData().GetModified()
+    GetPoints().GetData().Modified()
