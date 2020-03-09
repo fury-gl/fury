@@ -701,7 +701,6 @@ def test_ui_listbox_2d(interactive=False):
 
     # Values that will be displayed by the listbox.
     values = list(range(1, 42 + 1))
-    values.append("A Very Very Long Item To Test Text Overflow of List Box 2D")
 
     if interactive:
         listbox = ui.ListBox2D(values=values,
@@ -723,11 +722,11 @@ def test_ui_listbox_2d(interactive=False):
     #  2. Ctrl + click on 2,
     #  3. Ctrl + click on 2.
     #  4. Use scroll bar to scroll to the bottom.
-    #  5. Click on "A Very Very Long Item...".
+    #  5. Click on 42.
     #  6. Use scroll bar to scroll to the top.
     #  7. Click on 1
     #  8. Use mouse wheel to scroll down.
-    #  9. Shift + click on "A Very Very Long Item...".
+    #  9. Shift + click on 42.
     # 10. Use mouse wheel to scroll back up.
 
     listbox = ui.ListBox2D(values=values,
@@ -757,8 +756,7 @@ def test_ui_listbox_2d(interactive=False):
     event_counter.check_counts(expected)
 
     # Check if the right values were selected.
-    expected = [[1], [1, 2], [1], ["A Very Very Long Item To \
-Test Text Overflow of List Box 2D"], [1], values]
+    expected = [[1], [1, 2], [1], [42], [1], values]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -768,9 +766,7 @@ Test Text Overflow of List Box 2D"], [1], values]
     show_manager.play_events_from_file(recording_filename)
 
     # Check if the right values were selected.
-    expected = [[1], [2], [2], ["A Very Very Long Item To \
-Test Text Overflow of List Box 2D"], [1], ["A Very Very Long Item To Test \
-Text Overflow of List Box 2D"]]
+    expected = [[1], [2], [2], [42], [1], [42]]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 

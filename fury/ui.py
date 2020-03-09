@@ -1073,7 +1073,7 @@ class TextBlock2D(UI):
     def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
                  bold=False, italic=False, shadow=False,
-                 color=(1, 1, 1), bg_color=None, position=(0, 0)):
+                 color=(1, 1, 1), bg_color=None, position=(0, 0), alingment='left'):
         """
         Parameters
         ----------
@@ -1793,8 +1793,7 @@ class LineSlider2D(UI):
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
                  orientation="horizontal",
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk",
-                 alignment=''):
+                 text_template="{value:.1f} ({ratio:.0%})", shape="disk", alingment='left'):
         """
         Parameters
         ----------
@@ -1833,20 +1832,15 @@ class LineSlider2D(UI):
         self.orientation = orientation.lower()
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
-        self.alignment = alignment.lower()
+        self.alingment = alingment
         super(LineSlider2D, self).__init__()
+
         if self.orientation == "horizontal":
             self.track.width = length
             self.track.height = line_width
-            self.alignment = 'bottom' if not self.alignment else self.alignment
-            if self.alignment not in ['top', 'bottom']:
-                raise ValueError("Unknown alignment: should be top or bottom")
         elif self.orientation == "vertical":
             self.track.width = line_width
             self.track.height = length
-            self.alignment = 'left' if not self.alignment else self.alignment
-            if self.alignment not in ['left', 'right']:
-                raise ValueError("Unknown alignment: should be left or right")
         else:
             raise ValueError("Unknown orientation")
 
@@ -1868,7 +1862,7 @@ class LineSlider2D(UI):
 
         self.value = initial_value
         self.update()
-
+        
     def _setup(self):
         """ Setup this UI component.
 
@@ -1944,17 +1938,17 @@ class LineSlider2D(UI):
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] += self.track.size[0] / 2.
-
+            
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
-            align = 35 if self.alignment == 'top' else -10
+            align = 35 if self.alingment == 'right' else -10 
             self.text.position = (self.handle.center[0],
                                   self.handle.position[1] + align)
-        else:
-            align = 70 if self.alignment == 'right' else -35
+        else:       
+            align = 70 if self.alingment == 'right' else -35
             self.text.position = (self.handle.position[0] + align,
                                   self.handle.center[1] + 2)
 
@@ -2101,7 +2095,9 @@ class LineSlider2D(UI):
         """
         self.handle.color = self.default_color
         i_ren.force_render()
-
+    
+    def set_align(self, alingment):
+        self.alingment = alingment
 
 class LineDoubleSlider2D(UI):
     """ A 2D Line Slider with two sliding rings.
@@ -3457,14 +3453,14 @@ class ListBox2D(UI):
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
         # Initialisation of empty text actors
-        self.slot_width = size[0] - self.scroll_bar.size[0] - \
+        slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
             y -= self.slot_height
             item = ListBoxItem2D(list_box=self,
-                                 size=(self.slot_width, self.slot_height),
+                                 size=(slot_width, self.slot_height),
                                  text_color=self.text_color,
                                  selected_color=self.selected_color,
                                  unselected_color=self.unselected_color,
@@ -3662,16 +3658,7 @@ class ListBox2D(UI):
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            char_width = slot.textblock.size[0] - self.margin
-            permissible_chars = int(self.slot_width)//char_width
-            total_chars = len(str(choice))
-            if total_chars > permissible_chars:
-                excess_chars = total_chars - permissible_chars
-                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
-                slot.element = choice
-                slot.textblock.message = wrapped_choice
-            else:
-                slot.element = choice
+            slot.element = choice
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
