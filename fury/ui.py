@@ -1794,7 +1794,7 @@ class LineSlider2D(UI):
                  font_size=16,
                  orientation="horizontal",
                  text_template="{value:.1f} ({ratio:.0%})", shape="disk",
-                 alingment=''):
+                 alignment=''):
         """
         Parameters
         ----------
@@ -1833,21 +1833,21 @@ class LineSlider2D(UI):
         self.orientation = orientation.lower()
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
-        self.alingment = alingment.lower()
+        self.alignment = alignment.lower()
         super(LineSlider2D, self).__init__()
         if self.orientation == "horizontal":
             self.track.width = length
             self.track.height = line_width
-            self.alingment = 'bottom' if not self.alingment else self.alingment
-            if self.alingment not in ['top', 'bottom']:
-                raise ValueError("""Unknown alingment: choose from 'top'
+            self.alignment = 'bottom' if not self.alignment else self.alignment
+            if self.alignment not in ['top', 'bottom']:
+                raise ValueError("""Unknown alignment: choose from 'top'
                                  or 'bottom'""")
         elif self.orientation == "vertical":
             self.track.width = line_width
             self.track.height = length
-            self.alingment = 'left' if not self.alingment else self.alingment
-            if self.alingment not in ['left', 'right']:
-                raise ValueError("""Unknown alingment: choose from 'left'
+            self.alignment = 'left' if not self.alignment else self.alignment
+            if self.alignment not in ['left', 'right']:
+                raise ValueError("""Unknown alignment: choose from 'left'
                                  or 'right'""")
         else:
             raise ValueError("Unknown orientation")
@@ -1952,11 +1952,11 @@ class LineSlider2D(UI):
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
-            align = 35 if self.alingment == 'top' else -10
+            align = 35 if self.alignment == 'top' else -10
             self.text.position = (self.handle.center[0],
                                   self.handle.position[1] + align)
         else:
-            align = 70 if self.alingment == 'right' else -35
+            align = 70 if self.alignment == 'right' else -35
             self.text.position = (self.handle.position[0] + align,
                                   self.handle.center[1] + 2)
 
