@@ -887,7 +887,7 @@ def vertices_from_actor(actor):
 
     Parameters
     ----------
-    actor : actor whose vertices are required
+    actor : actor
 
     Returns
     ---------
