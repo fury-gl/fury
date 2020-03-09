@@ -883,7 +883,6 @@ def normals_from_v_f(vertices, faces):
 
 
 def vertices_from_actor(actor):
-
     """Return vertices from actor.
 
     Parameters
@@ -900,7 +899,6 @@ def vertices_from_actor(actor):
 
 
 def compute_bounds(actor):
-
     """Compute Bounds of actor.
 
     Parameters
@@ -913,7 +911,6 @@ def compute_bounds(actor):
 
 
 def modify_actor(actor):
-
     """Modifies actor.
 
     Parameters
