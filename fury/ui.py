@@ -2359,10 +2359,12 @@ class LineDoubleSlider2D(UI):
         ----------
         coord : float
         """
+        ratio = None
         if self.orientation == "horizontal":
-            return (coord - self.left_x_position) / self.track.width
+            ratio = (coord - self.left_x_position) / self.track.width
         else:
-            return (coord - self.bottom_y_position) / self.track.height
+            ratio = (coord - self.bottom_y_position) / self.track.height
+        return ratio
 
     def ratio_to_value(self, ratio):
         """ Converts the ratio to the value of the disk.
