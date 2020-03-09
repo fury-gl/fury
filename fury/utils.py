@@ -904,7 +904,7 @@ def compute_bounds(actor):
     Parameters
     ---------
     actor : actor
-    
+
     """
     actor.GetMapper().GetInput()\
     .ComputeBounds()
@@ -918,5 +918,5 @@ def modify_actor(actor):
     actor : actor
 
     """
-    vtkPoint = actor.GetMapper().GetInput().\
+    actor.GetMapper().GetInput().\
     GetPoints().GetData().GetModified()

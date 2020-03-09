@@ -275,9 +275,9 @@ def test_vertices_from_actor():
     big_verts = res[0]
     big_faces = res[1]
     big_colors = res[2]
-    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    actor.GetProperty().BackfaceCullingOff()
-    res_vertices = vertices_from_actor(actor)
+    actr = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actr.GetProperty().BackfaceCullingOff()
+    res_vertices = vertices_from_actor(actr)
     npt.assert_array_almost_equal(my_vertices, res_vertices)
 
 def test_compute_bounds():
