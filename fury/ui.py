@@ -3457,14 +3457,14 @@ class ListBox2D(UI):
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
         # Initialisation of empty text actors
-        slot_width = size[0] - self.scroll_bar.size[0] - \
+        self.slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
             y -= self.slot_height
             item = ListBoxItem2D(list_box=self,
-                                 size=(slot_width, self.slot_height),
+                                 size=(self.slot_width, self.slot_height),
                                  text_color=self.text_color,
                                  selected_color=self.selected_color,
                                  unselected_color=self.unselected_color,
@@ -3662,7 +3662,16 @@ class ListBox2D(UI):
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            slot.element = choice
+            char_width = slot.textblock.size[0] - self.margin
+            permissible_chars = int(self.slot_width)//char_width
+            total_chars = len(str(choice))
+            if total_chars > permissible_chars:
+                excess_chars = total_chars - permissible_chars
+                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
+                slot.element = choice
+                slot.textblock.message = wrapped_choice
+            else:
+                slot.element = choice
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
