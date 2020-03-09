@@ -862,7 +862,7 @@ def normals_from_v_f(vertices, faces):
 
     Parameters
     ----------
-    verices : ndarray
+    vertices : ndarray
     faces : ndarray
 
     Returns
@@ -881,26 +881,45 @@ def normals_from_v_f(vertices, faces):
     normalize_v3(norm)
     return norm
 
+
 def vertices_from_actor(actor):
 
-    """ This function will return vertices from actor
+    """Return vertices from actor.
+
+    Parameters
+    ----------
+    actor : actor whose vertices are required
+
+    Returns
+    ---------
+    vertices : ndarray
+
     """
-    vtkPoint = actor.GetMapper().GetInput()
-    points = vtkPoint.GetPoints()
-    data = points.GetData()
-    return numpy_support.vtk_to_numpy(data)
+    return numpy_support.vtk_to_numpy(actor.GetMapper().\
+        GetInput().GetPoints().GetData())
+
 
 def compute_bounds(actor):
 
-    """ This function will compute the bounds
+    """Compute Bounds of actor.
+
+    Parameters
+    ---------
+    actor : actor
+    
     """
-    vtkPoint = actor.GetMapper().GetInput()
-    vtkPoint.ComputeBounds()
+    actor.GetMapper().GetInput()\
+    .ComputeBounds()
+
 
 def modify_actor(actor):
 
-    """This function will modify
+    """Modifies actor.
+
+    Parameters
+    ---------
+    actor : actor
+
     """
-    vtkPoint = actor.GetMapper().GetInput()
-    points = vtkPoint.GetPoints()
-    points.GetData().GetModified()
+    vtkPoint = actor.GetMapper().GetInput().\
+    GetPoints().GetData().GetModified()

@@ -313,7 +313,38 @@ def test_compute_bounds():
     vtk_actor.SetMapper(mapper)
     npt.assert_equal(compute_bounds(vtk_actor), None)
 
+def test_modify_actor():
+    size = (1, 1)
+    _points = vtk.vtkPoints()
+    _points.InsertNextPoint(0, 0, 0)
+    _points.InsertNextPoint(size[0], 0, 0)
+    _points.InsertNextPoint(size[0], size[1], 0)
+    _points.InsertNextPoint(0, size[1], 0)
 
+    # Create the polygon
+    polygon = vtk.vtkPolygon()
+    polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
+    polygon.GetPointIds().SetId(0, 0)
+    polygon.GetPointIds().SetId(1, 1)
+    polygon.GetPointIds().SetId(2, 2)
+    polygon.GetPointIds().SetId(3, 3)
+
+    # Add the polygon to a list of polygons
+    polygons = vtk.vtkCellArray()
+    polygons.InsertNextCell(polygon)
+
+    # Create a PolyData
+    _polygonPolyData = vtk.vtkPolyData()
+    _polygonPolyData.SetPoints(_points)
+    _polygonPolyData.SetPolys(polygons)
+
+    # Create a mapper and actor
+    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = set_input(mapper, _polygonPolyData)
+
+    vtk_actor = vtk.vtkActor2D()
+    vtk_actor.SetMapper(mapper)
+    npt.assert_equal(modify_actor(vtk_actor), None)
 
 
 
