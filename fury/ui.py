@@ -1073,7 +1073,7 @@ class TextBlock2D(UI):
     def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
                  bold=False, italic=False, shadow=False,
-                 color=(1, 1, 1), bg_color=None, position=(0, 0), alingment='left'):
+                 color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """
         Parameters
         ----------
@@ -1793,7 +1793,8 @@ class LineSlider2D(UI):
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
                  orientation="horizontal",
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk", alingment='left'):
+                 text_template="{value:.1f} ({ratio:.0%})", shape="disk",
+                 alingment=''):
         """
         Parameters
         ----------
@@ -1832,15 +1833,22 @@ class LineSlider2D(UI):
         self.orientation = orientation.lower()
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
-        self.alingment = alingment
+        self.alingment = alingment.lower()
         super(LineSlider2D, self).__init__()
-
         if self.orientation == "horizontal":
             self.track.width = length
             self.track.height = line_width
+            self.alingment = 'bottom' if not self.alingment else self.alingment
+            if self.alingment not in ['top', 'bottom']:
+                raise ValueError("""Unknown alingment: choose from 'top'
+                                 or 'bottom'""")
         elif self.orientation == "vertical":
             self.track.width = line_width
             self.track.height = length
+            self.alingment = 'left' if not self.alingment else self.alingment
+            if self.alingment not in ['left', 'right']:
+                raise ValueError("""Unknown alingment: choose from 'left'
+                                 or 'right'""")
         else:
             raise ValueError("Unknown orientation")
 
@@ -1938,16 +1946,16 @@ class LineSlider2D(UI):
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] += self.track.size[0] / 2.
-            
+
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
-            align = 35 if self.alingment == 'right' else -10 
+            align = 35 if self.alingment == 'top' else -10
             self.text.position = (self.handle.center[0],
                                   self.handle.position[1] + align)
-        else:       
+        else:
             align = 70 if self.alingment == 'right' else -35
             self.text.position = (self.handle.position[0] + align,
                                   self.handle.center[1] + 2)
@@ -2095,9 +2103,7 @@ class LineSlider2D(UI):
         """
         self.handle.color = self.default_color
         i_ren.force_render()
-    
-    def set_align(self, alingment):
-        self.alingment = alingment
+
 
 class LineDoubleSlider2D(UI):
     """ A 2D Line Slider with two sliding rings.
