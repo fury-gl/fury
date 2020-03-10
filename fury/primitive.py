@@ -331,8 +331,7 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     return vertices, sphere_triangles
 
 def prim_tetrahedron():
-
-    '''
+    """
     returns vertices and triangles to a tetrahedron
     with side two
     
@@ -343,7 +342,7 @@ def prim_tetrahedron():
         4 vertices co-ordinates
     triangles: ndarray
         4 triangles representing the tetrahedron
-    '''
+    """
 
 
     pyramid_vert = np.array([[0.0, 0.0, 0.0],
@@ -359,7 +358,7 @@ def prim_tetrahedron():
     return pyramid_vert, pyramid_triag
 
 def prim_icosahedron():
-    '''
+    """
     returns vertices and triangles to a icosahedron
 
     Returns
@@ -368,7 +367,7 @@ def prim_icosahedron():
         12 vertices co-ordinates to the icosahedron
     icosahedron_mesh: ndarray
         20 triangles representing the tetrahedron
-    '''
+    """
 
 
     phi = (1 + math.sqrt(5))/2.0
