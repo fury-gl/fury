@@ -416,15 +416,22 @@ def test_ui_line_slider_2d_horizontal(recording=False):
                                           orientation="horizontal", alignment='top')
     line_slider_2d_test.center = (300, 300)
 
+    # line_slider_2d_bottom_test = ui.LineSlider2D(initial_value=-2,
+    #                                       min_value=-5, max_value=5,
+    #                                       orientation="horizontal",
+    #                                       alignment='bottom')
+    # line_slider_2d_bottom_test.center = (300, 290)
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(line_slider_2d_test)
+    # event_counter.monitor(line_slider_2d_bottom_test)
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
                                       title="FURY Horizontal Line Slider")
 
     show_manager.scene.add(line_slider_2d_test)
+    # show_manager.scene.add(line_slider_2d_bottom_test)
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
