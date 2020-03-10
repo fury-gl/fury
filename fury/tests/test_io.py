@@ -3,7 +3,9 @@ from os.path import join as pjoin
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
+import pytest
 
+from fury.decorators import skip_osx
 from fury.io import load_polydata, save_polydata, load_image, save_image
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.testing import assert_greater
@@ -125,15 +127,22 @@ def test_save_load_image():
                 continue
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on OSX due to "
+                                     "libpng version conflict. Need to be "
+                                     "introspected on Travis")
 def test_pillow():
 
     with InTemporaryDirectory() as odir:
         data = (255 * np.random.rand(400, 255, 4)).astype(np.uint8)
         fname_path = pjoin(odir, "test.png")
-        save_image(data, fname_path, use_pillow=True)
-        data2 = load_image(fname_path, use_pillow=True)
-        npt.assert_array_almost_equal(data, data2)
-        npt.assert_equal(data.dtype, data2.dtype)
+
+        for opt1, opt2 in [(True, True), (False, True), (True, False),
+                           (False, False)]:
+
+            save_image(data, fname_path, use_pillow=opt1)
+            data2 = load_image(fname_path, use_pillow=opt2)
+            npt.assert_array_almost_equal(data, data2)
+            npt.assert_equal(data.dtype, data2.dtype)
 
 
 if __name__ == "__main__":

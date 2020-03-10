@@ -859,9 +859,9 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
         arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
                                          .GetScalars())
-        h, w, _ = renderLarge.GetOutput().GetDimensions()
+        w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = arr.reshape((w, h, components))
+        arr = np.flipud(arr.reshape((h, w, components)))
         save_image(arr, filename)
 
         ang = +az_ang
@@ -869,7 +869,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
                  occlusion_ratio=0.0):
-    """ Enable anti-aliasing and ordered transparency
+    """Enable anti-aliasing and ordered transparency.
 
     Parameters
     ----------
