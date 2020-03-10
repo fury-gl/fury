@@ -96,7 +96,7 @@ def save_image(arr, filename, compression_quality=75,
                compression_type='deflation', use_pillow=True):
     """Save a 2d or 3d image.
 
-    Expect an image with the following shape: (H, W) or (H, W, 1) or 
+    Expect an image with the following shape: (H, W) or (H, W, 1) or
     (H, W, 3) or (H, W, 4).
 
     Parameters
