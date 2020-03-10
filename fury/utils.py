@@ -910,8 +910,8 @@ def compute_bounds(actor):
     .ComputeBounds()
 
 
-def modify_actor(actor):
-    """Modifies actor.
+def update_actor(actor):
+    """Update actor.
 
     Parameters
     ---------

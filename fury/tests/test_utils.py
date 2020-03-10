@@ -313,7 +313,7 @@ def test_compute_bounds():
     vtk_actor.SetMapper(mapper)
     npt.assert_equal(compute_bounds(vtk_actor), None)
 
-def test_modify_actor():
+def test_update_actor():
     size = (1, 1)
     _points = vtk.vtkPoints()
     _points.InsertNextPoint(0, 0, 0)
@@ -344,7 +344,7 @@ def test_modify_actor():
 
     vtk_actr = vtk.vtkActor2D()
     vtk_actr.SetMapper(mapper)
-    npt.assert_equal(modify_actor(vtk_actr), None)
+    npt.assert_equal(update_actor(vtk_actr), None)
 
 
 
