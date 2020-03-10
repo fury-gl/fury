@@ -41,10 +41,10 @@ mapper = utah.GetMapper()
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Output::Dec",
+    "//VTK::ValuePass::Dec",
     True,
     """
-    //VTK::Output::Dec
+    //VTK::ValuePass::Dec
     out vec4 myVertexVC;
     """,
     False
@@ -52,10 +52,10 @@ mapper.AddShaderReplacement(
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Output::Impl",
+    "//VTK::ValuePass::Impl",
     True,
     """
-    //VTK::Output::Impl
+    //VTK::ValuePass::Impl
     myVertexVC = vertexVC;
     """,
     False
