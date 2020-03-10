@@ -4,7 +4,7 @@ from fury.data import DATA_DIR
 from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
-import math as m
+import math 
 
 
 SPHERE_FILES = {
@@ -348,8 +348,8 @@ def prim_tetrahedron():
 
     pyramid_vert = np.array([[0.0, 0.0, 0.0],
                    [2.0, 0.0, 0.0],
-                   [1.0, m.sqrt(3), 0.0],
-                   [1.0, 2.0/m.sqrt(3), 2.0*m.sqrt(5.0/12.0)]])
+                   [1.0, math.sqrt(3), 0.0],
+                   [1.0, 2.0/math.sqrt(3), 2.0*math.sqrt(5.0/12.0)]])
 
     pyramid_triag = np.array([[1,2,0],
                           [3,2,0],
@@ -371,7 +371,7 @@ def prim_icosahedron():
     '''
 
 
-    phi = (1 + m.sqrt(5))/2.0
+    phi = (1 + math.sqrt(5))/2.0
 
     icosahedron_vertices = np.array([[-1.0, 0.0, phi],
 			    	     [ 0.0, phi, 1.0],
