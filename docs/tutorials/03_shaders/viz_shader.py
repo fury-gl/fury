@@ -56,7 +56,7 @@ mapper.AddShaderReplacement(
     True,
     """
     //VTK::ValuePass::Impl
-    myVertexVC = vertexVC;
+    myVertexVC = vertexMC;
     """,
     False
 )
@@ -156,7 +156,7 @@ showm.add_timer_callback(True, 30, timer_callback)
 scene.add(utah)
 scene.add(tb)
 
-interactive = False
+interactive = True
 if interactive:
     showm.start()
 
