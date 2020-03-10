@@ -886,7 +886,7 @@ def vertices_from_actor(actor):
     """Return vertices from actor.
 
     Parameters
-    ----------
+    -------------
     actor : actor
 
     Returns
@@ -902,7 +902,7 @@ def compute_bounds(actor):
     """Compute Bounds of actor.
 
     Parameters
-    ---------
+    -------------------
     actor : actor
 
     """
@@ -914,7 +914,7 @@ def update_actor(actor):
     """Update actor.
 
     Parameters
-    ---------
+    ------------------
     actor : actor
 
     """
