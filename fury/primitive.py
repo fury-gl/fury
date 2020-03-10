@@ -328,3 +328,82 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     vertices = np.ascontiguousarray(xyz)
 
     return vertices, sphere_triangles
+
+def prim_tetrahedron():
+
+    '''
+    returns vertices and triangles to a tetrahedron
+    with side two
+    
+
+    Returns
+    -------
+    pyramid_vert: numpy array
+        4 vertices co-ordinates
+    triangles: ndarray
+        4 triangles representing the tetrahedron
+    '''
+
+
+    pyramid_vert = np.array([[0.0, 0.0, 0.0],
+                   [2.0, 0.0, 0.0],
+                   [1.0, m.sqrt(3), 0.0],
+                   [1.0, 2.0/m.sqrt(3), 2.0*m.sqrt(5.0/12.0)]])
+
+    pyramid_triag = np.array([[1,2,0],
+                          [3,2,0],
+                          [0,3,1],
+                          [1,2,3]], dtype='i8')
+
+    return pyramid_vert, pyramid_triag
+def prim_icosahedron():
+    '''
+    returns vertices and triangles to a icosahedron
+
+    Returns
+    -------
+    icosahedron_vertices: numpy array
+        12 vertices co-ordinates to the icosahedron
+    icosahedron_mesh: ndarray
+        20 triangles representing the tetrahedron
+    '''
+
+
+phi = (1 + m.sqrt(5))/2.0
+
+icosahedron_vertices = np.array([[-1.0, 0.0, phi],
+						 [ 0.0, phi, 1.0],
+						 [ 1.0, 0.0, phi],
+						 [-phi, 1.0, 0.0],
+						 [ 0.0, phi,-1.0],
+						 [ phi, 1.0, 0.0],
+						 [-phi,-1.0, 0.0],
+						 [ 0.0,-phi, 1.0],
+						 [ phi,-1.0, 0.0],
+						 [-1.0, 0.0,-phi],
+                         [ 0.0,-phi,-1.0],
+                         [ 1.0, 0.0,-phi]])
+
+
+icosahedron_mesh = np.array([[1,0,2],
+				     		 [2,5,1],
+				     		 [5,4,1],
+				     		 [3,1,4],
+				     	     [0,1,3],
+				     	     [0,6,3],
+				     		 [9,3,6],
+				     		 [8,2,7],
+				     		 [2,0,7],
+				     		 [0,7,6],
+				     	     [5,2,8],
+				     		 [11,5,8],
+				     		 [11,4,5],
+				     		 [9,11,4],
+				     		 [4,3,9],
+				     	     [11,10,8],
+				     		 [8,10,7],
+				     		 [6,7,10],
+				     		 [10,9,6],
+				     	     [9,10,11]], dtype='i8')
+
+
