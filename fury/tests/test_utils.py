@@ -342,9 +342,9 @@ def test_modify_actor():
     mapper = vtk.vtkPolyDataMapper2D()
     mapper = set_input(mapper, _polygonPolyData)
 
-    vtk_actor = vtk.vtkActor2D()
-    vtk_actor.SetMapper(mapper)
-    npt.assert_equal(modify_actor(vtk_actor), None)
+    vtk_actr = vtk.vtkActor2D()
+    vtk_actr.SetMapper(mapper)
+    npt.assert_equal(modify_actor(vtk_actr), None)
 
 
 
