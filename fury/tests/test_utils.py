@@ -7,7 +7,7 @@ from fury.utils import (map_coordinates_3d_4d,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
                         rotate, vtk, vertices_from_actor,
-                        modify_actor, compute_bounds,
+                        update_actor, compute_bounds,
                         get_actor_from_primitive, set_input)
 import fury.primitive as fp
 
