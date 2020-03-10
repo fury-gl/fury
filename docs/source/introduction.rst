@@ -16,7 +16,7 @@ What is FURY ?
 Mission Statement
 ------------------
 
-The purpose of FURY is to make it easier to do better diffusion MR imaging research. Following up with the nipy mission statement we aim to build software that is
+The purpose of FURY is to make it easier to perform advanced visualizations and animations. We aim to build software that is:
 
 * clearly written
 * clearly explained

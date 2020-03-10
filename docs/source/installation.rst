@@ -161,4 +161,4 @@ or under Windows::
     $ ./make.bat html
 
 
-**Step 3.** Congratulation! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
+**Step 3.** Congratulations! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
