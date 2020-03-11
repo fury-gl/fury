@@ -2199,6 +2199,8 @@ class LineDoubleSlider2D(UI):
         self._ratio = [None, None]
         self.left_disk_value = initial_values[0]
         self.right_disk_value = initial_values[1]
+        self.bottom_disk_value = initial_values[0]
+        self.top_disk_value = initial_values[1]
 
         # This is required for correct initialization of the position
         # of the handles
