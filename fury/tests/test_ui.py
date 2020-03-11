@@ -505,6 +505,10 @@ def test_ui_line_double_slider_2d(interactive=False):
         line_double_slider_2d_horizontal_test._values[0], 39)
     npt.assert_equal(
         line_double_slider_2d_horizontal_test.right_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
 
     line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="square", handle_side=5,
@@ -515,6 +519,10 @@ def test_ui_line_double_slider_2d(interactive=False):
         line_double_slider_2d_vertical_test._values[0], 39)
     npt.assert_equal(
         line_double_slider_2d_vertical_test.top_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
