@@ -66,16 +66,28 @@ This command will give you important information about FURY's installation. The 
 Running the Tests
 -----------------
 
+Let's install all required packages for the running the test::
+
+    $ pip install -r requirements/default.txt
+    $ pip install -r requirements/test.txt
+
 There are two ways to run FURY tests:
-
-- From python interpreter::
-
-    $ from fury.tests import test
-    $ test()
 
 - From the command line. You need to be on the FURY package folder::
 
     pytest -svv fury
+
+- To run a specific test file::
+
+    pytest -svv fury/tests/test_actor.py
+
+- To run a specific test directory::
+
+    pytest -svv fury/tests
+
+- To run a specific test function::
+
+    pytest -svv -k "test_my_function_name"
 
 Running the Tests Offscreen
 ---------------------------
@@ -94,3 +106,59 @@ Since Xvfb will require an X server (we also recommend to install XQuartz packag
     $ export DISPLAY=:0
     $ xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
 
+
+Populating our Documentation
+----------------------------
+
+Folder Structure
+~~~~~~~~~~~~~~~~
+
+Let’s start by showcasing the ``docs`` folder structure:
+
+| fury
+| ├── docs
+| │   ├── build
+| │   ├── make.bat
+| │   ├── Makefile
+| │   ├── Readme.md
+| │   ├── upload_to_gh-pages.py
+| │   ├── demos
+| │   ├── tutorials
+| │   ├── experimental
+| │   └── source
+| ├── requirements.txt
+| ├── fury
+| │   ├── actor.py
+| │   ├── ...
+| │
+| │── ...
+|
+|
+
+In our ``docs`` folder structure above:
+
+- ``source`` is the folder that contains all ``*.rst`` files.
+- ``tutorials`` is the directory where we have all python scripts that describe how to use the api.
+- ``demos`` being the FURY app showcases.
+- ``experimental`` directory contains experimental Python scripts. The goal is to keep a trace of expermiental work.
+
+Building the documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Step 1.** Install all required packages for the documentation generation::
+
+    $ pip install -U -r requirements/default.txt
+    $ pip install -U -r requirements/optional.txt
+    $ pip install -U -r requirements/docs.txt
+
+**Step 2.** Go to the ``docs`` folder and run the following command to generate it (Linux and macOS)::
+
+    $ make -C . clean && make -C . html
+
+or under Windows::
+
+    $ ./make.bat clean
+    $ ./make.bat html
+
+
+**Step 3.** Congratulations! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.

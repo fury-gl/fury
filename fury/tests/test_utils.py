@@ -253,7 +253,3 @@ def test_rotate(interactive=False):
         arr = window.snapshot(scene, offscreen=True)
         red_sum_new = arr[..., 0].sum()
         npt.assert_equal(red_sum_new > red_sum, True)
-
-
-if __name__ == '__main__':
-    npt.run_module_suite()

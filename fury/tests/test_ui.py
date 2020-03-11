@@ -1208,8 +1208,3 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
-
-
-if __name__ == "__main__":
-
-    npt.run_module_suite()
