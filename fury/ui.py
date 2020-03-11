@@ -1848,8 +1848,11 @@ class LineSlider2D(UI):
         else:
             raise ValueError("Unknown orientation")
 
-        if self.text_position != "below" and self.text_position != "above" and self.text_position != "left" and self.text_position != "right":
-            raise ValueError("Unknown text position")
+        if (self.text_position != "below"
+            and self.text_position != "above"
+            and self.text_position != "left"
+            and self.text_position != "right"):
+                raise ValueError("Unknown text position")
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -1952,17 +1955,17 @@ class LineSlider2D(UI):
         if self.orientation == "horizontal":
             if self.text_position == "below":
                 self.text.position = (self.handle.center[0],
-                                  self.handle.position[1] - 10)
+                    self.handle.position[1] - 10)
             else:
                 self.text.position = (self.handle.center[0],
-                                  self.handle.position[1] + 35)
+                    self.handle.position[1] + 35)
         else:
             if self.text_position == "left":
                 self.text.position = (self.handle.position[0] - 35,
-                                  self.handle.center[1])
+                    self.handle.center[1])
             else:
                 self.text.position = (self.handle.position[0] + 70,
-                                  self.handle.center[1])
+                    self.handle.center[1])
 
     @property
     def bottom_y_position(self):
