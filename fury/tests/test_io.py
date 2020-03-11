@@ -143,7 +143,3 @@ def test_pillow():
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
-
-
-if __name__ == "__main__":
-    npt.run_module_suite()

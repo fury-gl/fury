@@ -16,7 +16,3 @@ def test_load():
     npt.assert_string_equal(fs.load(dummy_file_name), dummy_file_contents)
 
     os.remove(os.path.join(fs.SHADERS_DIR, dummy_file_name))
-
-
-if __name__ == '__main__':
-    npt.run_module_suite()

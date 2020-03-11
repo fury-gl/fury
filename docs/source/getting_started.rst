@@ -1,55 +1,60 @@
-================
+===============
 Getting Started
-================
+===============
 
-Overview
----------
+Start by importing FURY.
 
-Free Unified Rendering for Python
+.. code-block:: python
 
+    import numpy as np
+    from fury import window, actor, ui, io, utils
 
-What is Fury ?
----------------
+To import a model, use :py:func:`.io.load_polydata`. Currently supported formats include OBJ, VTK, FIB, PLY, STL and XML.
+Let us include the ``suzanne`` model used by Blender
 
+.. code-block:: python
 
+    suzanne = io.load_polydata('suzanne.obj')
+    suzanne = utils.get_polymapper_from_polydata(suzanne)
+    suzanne = utils.get_actor_from_polymapper(suzanne)
 
-Mission Statement
-------------------
+Set the opacity of the model::
 
-The purpose of FURY is to make it easier to do better diffusion MR imaging research. Following up with the nipy mission statement we aim to build software that is
+    modelsuzanne.GetProperty().SetOpacity(0.5)
 
-* clearly written
-* clearly explained
-* a good fit for the underlying ideas
-* a natural home for collaboration
+Let's create some random variables for the cylinder parameters
 
-We hope that, if we fail to do this, you will let us know and we will try and make it better.
+.. code-block:: python
 
-Features
----------
+    centers = np.random.rand(2, 3)
+    directions = np.random.rand(2, 3)
+    heights = np.random.rand(2)
+    colors = np.random.rand(2, 3)
 
-**Efficient**
+Now, we create a cylinder::
 
+    cylinders = actor.cylinder(centers, directions, colors, heights=heights)
 
+Anything that has to be rendered needs to be added to the scene so let's create a :py:class:`.Scene()`::
 
-**Robust**
+    scene = window.Scene()
 
+We set the window scene variables e.g. (width, height)::
 
-**Multiplatform**
+    showm = window.ShowManager(scene, size=(1024,720), reset_camera=False)
+    showm.initialize()
 
+We add a text block to add some information::
 
-License
----------
+    tb = ui.TextBlock2D()
+    tb.message = "Hello Fury"
 
-FURY is distributed under the BSD 3 License
+The function :py:meth:`.Scene.add()` is used to add the created objects to the scene to be rendered::
 
-Credits
---------
+    scene.add(suzanne)
+    scene.add(cylinders)
+    scene.add(tb)
 
-Go to :doc:`Community page <community>` to see who have been involved in the development of FURY:
+Start the rendering of the scene::
 
-Bug reports and support
----------------------------
-
-Please report any issues via https://github.com/fury-gl/fury/issues. All types of issues are welcome including bug reports, documentation typos, feature requests and so on.
-
+    showm.start()
