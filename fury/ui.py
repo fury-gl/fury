@@ -1830,27 +1830,28 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
-        self.orientation = orientation.lower()
+        self.orientation = orientation.lower().strip()
+        self.align_dict = {'horizontal': ['top', 'bottom'],
+                           'vertical': ['left', 'right']}
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         self.alignment = alignment.lower()
         super(LineSlider2D, self).__init__()
+
         if self.orientation == "horizontal":
+            self.alignment = 'bottom' if not self.alignment else self.alignment
             self.track.width = length
             self.track.height = line_width
-            self.alignment = 'bottom' if not self.alignment else self.alignment
-            if self.alignment not in ['top', 'bottom']:
-                raise ValueError("""Unknown alignment: choose from 'top'
-                                 or 'bottom'""")
         elif self.orientation == "vertical":
+            self.alignment = 'left' if not self.alignment else self.alignment
             self.track.width = line_width
             self.track.height = length
-            self.alignment = 'left' if not self.alignment else self.alignment
-            if self.alignment not in ['left', 'right']:
-                raise ValueError("""Unknown alignment: choose from 'left'
-                                 or 'right'""")
         else:
             raise ValueError("Unknown orientation")
+
+        if self.alignment not in self.align_dict[self.orientation]:
+            raise ValueError("Unknown alignment: choose from '{}' or '{}'".
+                             format(*self.align_dict[self.orientation]))
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -1870,7 +1871,7 @@ class LineSlider2D(UI):
 
         self.value = initial_value
         self.update()
-        
+
     def _setup(self):
         """ Setup this UI component.
 
