@@ -524,6 +524,9 @@ def test_ui_line_double_slider_2d(interactive=False):
     npt.assert_equal(
         line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
 
+    with npt.assert_raises(ValueError):
+        ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
+
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
