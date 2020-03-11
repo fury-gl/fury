@@ -2204,8 +2204,6 @@ class LineDoubleSlider2D(UI):
 
         # This is required for correct initialization of the position
         # of the handles
-        self.handles[0].position += np.array(self.handles[0].size, 'f8') / 2.
-        self.handles[1].position += np.array(self.handles[1].size, 'f8') / 2.
 
     def _setup(self):
         """ Setup this UI component.
