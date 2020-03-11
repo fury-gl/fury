@@ -1793,6 +1793,7 @@ class LineSlider2D(UI):
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
                  orientation="horizontal",
+                 text_position="below",
                  text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
         """
         Parameters
@@ -1819,6 +1820,9 @@ class LineSlider2D(UI):
             Size of the text to display alongside the slider (pt).
         orientation : str
             horizontal or vertical
+        text_position : str
+            below or above (if orientation = horizontal)
+            left or right (if orientation = vertical)
         text_template : str, callable
             If str, text template can contain one or multiple of the
             replacement fields: `{value:}`, `{ratio:}`.
@@ -1830,6 +1834,7 @@ class LineSlider2D(UI):
         """
         self.shape = shape
         self.orientation = orientation.lower()
+        self.text_position = text_position.lower()
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         super(LineSlider2D, self).__init__()
@@ -1842,6 +1847,9 @@ class LineSlider2D(UI):
             self.track.height = length
         else:
             raise ValueError("Unknown orientation")
+
+        if self.text_position != "below" and self.text_position != "above" and self.text_position != "left" and self.text_position != "right":
+            raise ValueError("Unknown text position")
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -1942,10 +1950,18 @@ class LineSlider2D(UI):
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
-            self.text.position = (self.handle.center[0],
+            if self.text_position == "below":
+                self.text.position = (self.handle.center[0],
                                   self.handle.position[1] - 10)
+            else:
+                self.text.position = (self.handle.center[0],
+                                  self.handle.position[1] + 35)
         else:
-            self.text.position = (self.handle.position[0] - 35,
+            if self.text_position == "left":
+                self.text.position = (self.handle.position[0] - 35,
+                                  self.handle.center[1])
+            else:
+                self.text.position = (self.handle.position[0] + 70,
                                   self.handle.center[1])
 
     @property
@@ -2039,7 +2055,7 @@ class LineSlider2D(UI):
         self.text.message = text
 
         # Move the text below the slider's handle.
-        if self.orientation == "horizontal":
+        if self.orientation == "horizontal": 
             self.text.position = (disk_position_x, self.text.position[1])
         else:
             self.text.position = (self.text.position[0], disk_position_y)
