@@ -882,7 +882,7 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 
-def whatOrder(verts, tri):
+def what_order(verts, tri):
     """Determines the winding order of a given set of vertices and a triangle
 
     Parameter
@@ -916,7 +916,7 @@ def whatOrder(verts, tri):
     return 0
 
 
-def changeOrder(tri):
+def change_order(tri):
     """ Changes the order of a given triangle
 
     Parameter
@@ -936,7 +936,7 @@ def changeOrder(tri):
     return np.array(newVert)
 
 
-def checkOrder(vert, triarr):
+def check_order(vert, triarr):
     """
 
     Parameter
@@ -955,11 +955,11 @@ def checkOrder(vert, triarr):
 
     shape = triarr.shape
     correct_vert = np.empty(shape)
-    correct_order = whatOrder(vert, triarr[0])
+    correct_order = what_order(vert, triarr[0])
     for nb, i in enumerate(triarr):
-        order2 = whatOrder(vert, i)
+        order2 = what_order(vert, i)
         if correct_order != order2:
-            temp = changeOrder(i)
+            temp = change_order(i)
             correct_vert[nb] = temp
         else:
             correct_vert[nb] = i
