@@ -1187,10 +1187,10 @@ def test_matplotlib_figure():
 
 def test_superquadric_actor(interactive=False):
     scene = window.Scene()
-    centers = np.random.rand(3, 3) * 8
+    centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     directions = np.random.rand(3, 3)
-    scale = np.random.rand(3)
+    scale = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
     sq_actor = actor.superquadric(centers, roundness=roundness,
@@ -1256,9 +1256,3 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
-
-
-if __name__ == "__main__":
-    test_billboard_actor(True)
-    # test_square_actor(True)
-    # test_superquadric_actor(True)
