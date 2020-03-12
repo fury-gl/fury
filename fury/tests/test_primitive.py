@@ -5,16 +5,25 @@ import math
 
 
 def test_vertices_primitives():
-    l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3)),
-                    (fp.prim_tetrahedron, (4, 3))]
+    # Tests the default vertices of all the built in primitive shapes.
+    l_primitives = [(fp.prim_square, (4, 3), -.5, .5, 0),
+                    (fp.prim_box, (8, 3), -.5, .5, 0),
+                    (fp.prim_tetrahedron, (4, 3), -.5, .5, 0),
+                    (fp.prim_star, (10, 3), -3, 3, -0.0666666666),
+                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0)]
 
-    for func, shape in l_primitives:
+    for func, shape, e_min, e_max, e_mean in l_primitives:
         vertices, _ = func()
         npt.assert_equal(vertices.shape, shape)
-        npt.assert_equal(np.mean(vertices), 0)
-        npt.assert_equal(vertices.min(), -0.5)
-        npt.assert_equal(vertices.max(), 0.5)
+        npt.assert_almost_equal(np.mean(vertices), e_mean)
+        npt.assert_equal(vertices.min(), e_min)
+        npt.assert_equal(vertices.max(), e_max)
+
+    vertices, _ = fp.prim_star(3)
+    npt.assert_equal(vertices.shape, (12, 3))
+    npt.assert_almost_equal(abs(np.mean(vertices)), .11111111)
+    npt.assert_equal(vertices.min(), -3)
+    npt.assert_equal(vertices.max(), 3)
 
 
 def test_vertices_primitives_icosahedron():
