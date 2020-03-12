@@ -156,7 +156,7 @@ showm.add_timer_callback(True, 30, timer_callback)
 scene.add(utah)
 scene.add(tb)
 
-interactive = True
+interactive = False
 if interactive:
     showm.start()
 
