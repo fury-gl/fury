@@ -72,15 +72,18 @@ def test_repeat_primitive():
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
 
-    big_verts, big_faces, big_colors = fp.repeat_primitive(vertices=verts,
-                                                           faces=faces,
-                                                           centers=centers,
-                                                           directions=dirs,
-                                                           colors=colors)
+    res = fp.repeat_primitive(vertices=verts,
+                              faces=faces,
+                              centers=centers,
+                              directions=dirs,
+                              colors=colors)
+
+    big_verts, big_faces, big_colors, big_centers = res
 
     npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
     npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
     npt.assert_equal(big_colors.shape[0], verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_centers.shape[0], verts.shape[0] * centers.shape[0])
 
     # TODO: Check the array content
 
