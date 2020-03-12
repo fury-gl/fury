@@ -338,10 +338,9 @@ def prim_tetrahedron():
     returns vertices and triangles to a tetrahedron
     that has a side length of two units.
 
-
     Returns
     -------
-    pyramid_vert: numpy.ndarray 
+    pyramid_vert: numpy.ndarray
         4 vertices coordinates
     triangles: numpy.ndarray
         4 triangles representing the tetrahedron
@@ -366,7 +365,7 @@ def prim_icosahedron():
 
     Returns
     -------
-    icosahedron_vertices: numpy.ndarray 
+    icosahedron_vertices: numpy.ndarray
         12 vertices coordinates to the icosahedron
     icosahedron_mesh: numpy.ndarray
         20 triangles representing the tetrahedron
