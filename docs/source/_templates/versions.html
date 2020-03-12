@@ -4,7 +4,7 @@
       <span class="fa fa-book"> Documentation Versions</span>
       <span class="fa fa-caret-down"></span>
     </span>
-    <div class="rst-other-versions">               
+    <div class="rst-other-versions">
       <dl>
         {% for v in versions_list %}
             {% if v|version_compare(version, op='eq', all_versions=all_versions) %}

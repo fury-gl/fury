@@ -10,8 +10,8 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
-from fury.primitive import prim_sphere
-from fury.utils import shallow_copy, rotate
+from fury.primitive import prim_sphere, prim_square, repeat_primitive
+from fury.utils import shallow_copy, rotate, get_actor_from_primitive
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -1187,10 +1187,10 @@ def test_matplotlib_figure():
 
 def test_superquadric_actor(interactive=False):
     scene = window.Scene()
-    centers = np.random.rand(3, 3) * 8
+    centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     directions = np.random.rand(3, 3)
-    scale = np.random.rand(3)
+    scale = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
     sq_actor = actor.superquadric(centers, roundness=roundness,
@@ -1208,5 +1208,51 @@ def test_superquadric_actor(interactive=False):
     npt.assert_equal(res.colors_found, [True, True, True])
 
 
-if __name__ == "__main__":
-    npt.run_module_suite()
+def test_square_actor(interactive=False):
+    scene = window.Scene()
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = [1, 2, 3]
+
+    verts, faces = prim_square()
+    res = repeat_primitive(verts, faces, centers=centers, colors=colors,
+                           scale=scale)
+
+    big_verts, big_faces, big_colors, _ = res
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetProperty().BackfaceCullingOff()
+    scene.add(sq_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+
+def test_billboard_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((1, 1, 1))
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = [1, 2, 1]
+
+    fake_sphere = \
+    """
+    float len = length(point);
+    float radius = 1.;
+    if(len > radius)
+        {discard;}
+
+    vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
+    vec3 direction = normalize(vec3(1., 1., 1.));
+    float df = max(0, dot(direction, normalizedPoint));
+    float sf = pow(df, 24);
+    fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
+    """
+
+    billboard_actor = actor.billboard(centers,
+                                      colors=colors.astype(np.uint8),
+                                      scale=scale,
+                                      fs_impl=fake_sphere)
+    scene.add(billboard_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
