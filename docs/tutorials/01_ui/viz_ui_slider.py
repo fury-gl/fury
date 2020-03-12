@@ -43,20 +43,26 @@ ring_slider = ui.RingSlider2D(center=(630, 400), initial_value=0,
                               text_template="{angle:5.1f}°")
 
 hor_line_slider_text_top = ui.LineSlider2D(center=(400, 230), initial_value=0,
-                                           orientation='horizontal',min_value=-10,
-                                           max_value=10, alignment='top')
+                                           orientation='horizontal',
+                                           min_value=-10, max_value=10,
+                                           alignment='top')
 
-hor_line_slider_text_bottom = ui.LineSlider2D(center=(400, 200), initial_value=0,
-                                              orientation='horizontal',min_value=-10,
-                                              max_value=10, alignment='bottom')
+hor_line_slider_text_bottom = ui.LineSlider2D(center=(400, 200),
+                                              initial_value=0,
+                                              orientation='horizontal',
+                                              min_value=-10, max_value=10,
+                                              alignment='bottom')
 
 ver_line_slider_text_left = ui.LineSlider2D(center=(100, 400), initial_value=0,
-                                            orientation='vertical',min_value=-10,
-                                            max_value=10, alignment='left')
+                                            orientation='vertical',
+                                            min_value=-10, max_value=10,
+                                            alignment='left')
 
-ver_line_slider_text_right = ui.LineSlider2D(center=(150, 400), initial_value=0,
-                                             orientation='vertical',min_value=-10,
-                                             max_value=10, alignment='right')
+ver_line_slider_text_right = ui.LineSlider2D(center=(150, 400),
+                                             initial_value=0,
+                                             orientation='vertical',
+                                             min_value=-10, max_value=10,
+                                             alignment='right')
 
 ###############################################################################
 # By default the alignment are 'bottom' for horizontal and 'top' for vertical
