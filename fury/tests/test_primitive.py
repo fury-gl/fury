@@ -5,7 +5,9 @@ import fury.primitive as fp
 
 def test_vertices_primitives():
     l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3))]
+                    (fp.prim_box, (8, 3)),
+                    (fp.prim_tetrahedron, (4, 3)),
+                    (fp.prim_icosahedron, (12, 3))]
 
     for func, shape in l_primitives:
         vertices, _ = func()
@@ -18,7 +20,9 @@ def test_vertices_primitives():
 
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
-                    (fp.prim_box, (12, 3))]
+                    (fp.prim_box, (12, 3)),
+                    (fp.prim_tetrahedron, (4, 3)),
+                    (fp.prim_icosahedron, (20, 3))]
 
     for func, shape in l_primitives:
         vertices, triangles = func()
@@ -74,9 +78,9 @@ def test_repeat_primitive():
                                                            directions=dirs,
                                                            colors=colors)
 
-    npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
-    npt.assert_equal(big_faces.shape[0],  faces.shape[0] * centers.shape[0])
-    npt.assert_equal(big_colors.shape[0],  verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
+    npt.assert_equal(big_colors.shape[0], verts.shape[0] * centers.shape[0])
 
     # TODO: Check the array content
 

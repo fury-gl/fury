@@ -346,11 +346,14 @@ def prim_tetrahedron():
     triangles: numpy.ndarray
         4 triangles representing the tetrahedron
     """
-    pyramid_vert = np.array([[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [1.0, math.sqrt(
-        3), 0.0], [1.0, 2.0 / math.sqrt(3), 2.0 * math.sqrt(5.0 / 12.0)]])
 
-    pyramid_triag = np.array([[1, 2, 0],
-                              [3, 2, 0],
+    pyramid_vert = np.array([[1.0, 1.0, 1.0],
+                             [1.0, -1.0, -1.0],
+                             [-1.0, 1.0, -1.0],
+                             [-1.0, -1.0, 1.0]])
+
+    pyramid_triag = np.array([[2, 0, 1],
+                              [0, 3, 2],
                               [0, 3, 1],
                               [1, 2, 3]], dtype='i8')
 
