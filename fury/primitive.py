@@ -176,9 +176,12 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
             np.dot(rotation_matrix[:3, :3],
                    big_vertices[pts * unit_verts_size:
                                 (pts + 1) * unit_verts_size].T).T
+
+    # apply centers position
+    big_centers = np.repeat(centers, unit_verts_size, axis=0)
     big_vertices += big_centers
 
-    return big_vertices, big_triangles, big_colors
+    return big_vertices, big_triangles, big_colors, big_centers
 
 
 def prim_square():
