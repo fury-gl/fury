@@ -87,7 +87,7 @@ def test_repeat_primitive():
                               colors=colors)
 
     big_verts, big_faces, big_colors, big_centers = res
-    
+
     npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
     npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
     npt.assert_equal(big_colors.shape[0], verts.shape[0] * centers.shape[0])
