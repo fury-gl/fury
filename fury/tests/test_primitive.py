@@ -7,8 +7,10 @@ def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
     l_primitives = [(fp.prim_square, (4, 3)),
                     (fp.prim_box, (8, 3)),
-                    (fp.prim_star, np.shape(fp.prim_star()), -3, 3, -0.666666666667),
-                    (fp.prim_rhombicuboctahedron, np.shape(fp.prim_rhombicuboctahedron()), -4, 4, 0)]
+                    (fp.prim_star, np.shape(fp.prim_star()),
+                     -3, 3, -0.666666666667),
+                    (fp.prim_rhombicuboctahedron,
+                     np.shape(fp.prim_rhombicuboctahedron()), -4, 4, 0)]
 
     for func, shape, min, max, mean in l_primitives:
         vertices, _ = func()
