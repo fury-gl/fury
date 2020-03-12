@@ -341,7 +341,7 @@ def prim_tetrahedron():
 
     Returns
     -------
-    pyramid_vert: numpy.ndarray array
+    pyramid_vert: numpy.ndarray 
         4 vertices coordinates
     triangles: numpy.ndarray
         4 triangles representing the tetrahedron
@@ -366,7 +366,7 @@ def prim_icosahedron():
 
     Returns
     -------
-    icosahedron_vertices: numpy.ndarray array
+    icosahedron_vertices: numpy.ndarray 
         12 vertices coordinates to the icosahedron
     icosahedron_mesh: numpy.ndarray
         20 triangles representing the tetrahedron
