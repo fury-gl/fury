@@ -15,16 +15,18 @@ def test_vertices_primitives():
         npt.assert_equal(vertices.shape, shape)
         npt.assert_equal(np.mean(vertices), 0)
         npt.assert_equal(vertices.min(), -0.5)
-        npt.assert_equal(vertices.max(),  0.5)
+        npt.assert_equal(vertices.max(), 0.5)
+
 
 def test_vertices_primitives_icosahedron():
     vertices, _ = fp.prim_icosahedron()
-    shape = (12,3)
+    shape = (12, 3)
     phi = (1 + math.sqrt(5)) / 2.0
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
     npt.assert_equal(vertices.min(), -phi)
-    npt.assert_equal(vertices.max(),  phi)
+    npt.assert_equal(vertices.max(), phi)
+
 
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
@@ -87,7 +89,6 @@ def test_repeat_primitive():
                               colors=colors)
 
     big_verts, big_faces, big_colors, big_centers = res
-
 
     npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
     npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
