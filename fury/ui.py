@@ -1793,7 +1793,8 @@ class LineSlider2D(UI):
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
                  orientation="horizontal",
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
+                 text_template="{value:.1f} ({ratio:.0%})", shape="disk",
+                 alignment=''):
         """
         Parameters
         ----------
@@ -1829,19 +1830,28 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
-        self.orientation = orientation.lower()
+        self.orientation = orientation.lower().strip()
+        self.align_dict = {'horizontal': ['top', 'bottom'],
+                           'vertical': ['left', 'right']}
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
+        self.alignment = alignment.lower()
         super(LineSlider2D, self).__init__()
 
         if self.orientation == "horizontal":
+            self.alignment = 'bottom' if not self.alignment else self.alignment
             self.track.width = length
             self.track.height = line_width
         elif self.orientation == "vertical":
+            self.alignment = 'left' if not self.alignment else self.alignment
             self.track.width = line_width
             self.track.height = length
         else:
             raise ValueError("Unknown orientation")
+
+        if self.alignment not in self.align_dict[self.orientation]:
+            raise ValueError("Unknown alignment: choose from '{}' or '{}'".
+                             format(*self.align_dict[self.orientation]))
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -1937,16 +1947,19 @@ class LineSlider2D(UI):
         else:
             # Offset the slider line width by half the slider line height.
             track_position[0] += self.track.size[0] / 2.
+
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
+            align = 35 if self.alignment == 'top' else -10
             self.text.position = (self.handle.center[0],
-                                  self.handle.position[1] - 10)
+                                  self.handle.position[1] + align)
         else:
-            self.text.position = (self.handle.position[0] - 35,
-                                  self.handle.center[1])
+            align = 70 if self.alignment == 'right' else -35
+            self.text.position = (self.handle.position[0] + align,
+                                  self.handle.center[1] + 2)
 
     @property
     def bottom_y_position(self):
