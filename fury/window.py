@@ -496,7 +496,7 @@ class ShowManager(object):
         """Render only once."""
         self.window.Render()
 
-    def start(self):
+    def start(self,fname = None):
         """Start interaction."""
         try:
             self.iren.Start()
@@ -510,12 +510,26 @@ class ShowManager(object):
             self.render()
             self.iren.Start()
 
-        self.window.RemoveRenderer(self.scene)
-        self.scene.SetRenderWindow(None)
         self.window.Finalize()
+        if fname is not None:
+            renderLarge = vtk.vtkRenderLargeImage()
+            renderLarge.SetInput(self.scene)
+            renderLarge.Update()
+            vtk_image = renderLarge.GetOutput()
+            h, w, _ = vtk_image.GetDimensions()
+            vtk_array = vtk_image.GetPointData().GetScalars()
+            components = vtk_array.GetNumberOfComponents()
+            arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
+            
+            writer = vtk.vtkPNGWriter()
+            writer.SetFileName(fname)
+            writer.SetInputConnection(renderLarge.GetOutputPort())
+            writer.Write()
+        
+        self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
-
+    
     def record_events(self):
         """Record events during the interaction.
 
