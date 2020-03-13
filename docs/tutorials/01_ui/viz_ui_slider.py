@@ -37,7 +37,8 @@ def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
 cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 
 ###############################################################################
-# Now we'll add two sliders: 1 circular and 4 linear sliders.
+# Now we'll add five sliders: 1 circular and 4 linear sliders.
+# By default the alignments are 'bottom' for horizontal and 'top' for vertical.
 
 ring_slider = ui.RingSlider2D(center=(630, 400), initial_value=0,
                               text_template="{angle:5.1f}°")
@@ -64,20 +65,9 @@ ver_line_slider_text_right = ui.LineSlider2D(center=(150, 400),
                                              min_value=-10, max_value=10,
                                              alignment='right')
 
-###############################################################################
-# By default the alignment are 'bottom' for horizontal and 'top' for vertical
-
-hor_line_slider = ui.LineSlider2D(center=(650, 100), initial_value=0,
-                                  orientation='horizontal', min_value=-10,
-                                  max_value=10)
-
-ver_line_slider = ui.LineSlider2D(center=(700, 250), initial_value=0,
-                                  orientation='vertical', min_value=-10,
-                                  max_value=10)
 
 ###############################################################################
 # We can use a callback to rotate the cube with the ring slider.
-
 
 def rotate_cube(slider):
     angle = slider.value
@@ -101,8 +91,6 @@ hor_line_slider_text_top.on_change = translate_cube
 hor_line_slider_text_bottom.on_change = translate_cube
 ver_line_slider_text_left.on_change = translate_cube
 ver_line_slider_text_right.on_change = translate_cube
-hor_line_slider.on_change = translate_cube
-ver_line_slider.on_change = translate_cube
 
 ###############################################################################
 # Show Manager
@@ -120,8 +108,6 @@ show_manager.scene.add(hor_line_slider_text_top)
 show_manager.scene.add(hor_line_slider_text_bottom)
 show_manager.scene.add(ver_line_slider_text_left)
 show_manager.scene.add(ver_line_slider_text_right)
-show_manager.scene.add(hor_line_slider)
-show_manager.scene.add(ver_line_slider)
 
 
 ###############################################################################
@@ -133,8 +119,6 @@ hor_line_slider_text_top.set_visibility(True)
 hor_line_slider_text_bottom.set_visibility(True)
 ver_line_slider_text_left.set_visibility(True)
 ver_line_slider_text_right.set_visibility(True)
-hor_line_slider.set_visibility(True)
-ver_line_slider.set_visibility(True)
 
 ###############################################################################
 # Set camera for better visualization
