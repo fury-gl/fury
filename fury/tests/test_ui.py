@@ -502,7 +502,7 @@ def test_ui_line_double_slider_2d(interactive=False):
     npt.assert_equal(
         line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
     npt.assert_equal(
-        line_double_slider_2d_horizontal_test._values[0], 39)
+        line_double_slider_2d_horizontal_test.left_disk_value, 39)
     npt.assert_equal(
         line_double_slider_2d_horizontal_test.right_disk_value, 40)
     npt.assert_equal(
@@ -516,7 +516,7 @@ def test_ui_line_double_slider_2d(interactive=False):
     npt.assert_equal(
         line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
     npt.assert_equal(
-        line_double_slider_2d_vertical_test._values[0], 39)
+        line_double_slider_2d_vertical_test.bottom_disk_value, 39)
     npt.assert_equal(
         line_double_slider_2d_vertical_test.top_disk_value, 40)
     npt.assert_equal(

@@ -2346,8 +2346,7 @@ class LineDoubleSlider2D(UI):
         """
         if self.orientation == "horizontal":
             return self.left_x_position + ratio * self.track.width
-        else:
-            return self.bottom_y_position + ratio * self.track.height
+        return self.bottom_y_position + ratio * self.track.height
 
     def coord_to_ratio(self, coord):
         """ Converts the x coordinate of a disk to the ratio
@@ -2356,12 +2355,9 @@ class LineDoubleSlider2D(UI):
         ----------
         coord : float
         """
-        ratio = None
         if self.orientation == "horizontal":
-            ratio = (coord - self.left_x_position) / self.track.width
-        else:
-            ratio = (coord - self.bottom_y_position) / self.track.height
-        return ratio
+            return (coord - self.left_x_position) / float(self.track.width)
+        return (coord - self.bottom_y_position) / float(self.track.height)
 
     def ratio_to_value(self, ratio):
         """ Converts the ratio to the value of the disk.
@@ -2429,7 +2425,8 @@ class LineDoubleSlider2D(UI):
 
         Parameters
         ----------
-        bottom_disk_value : New value for the bottom disk.
+        bottom_disk_value : float
+            New value for the bottom disk.
         """
         self.bottom_disk_ratio = self.value_to_ratio(bottom_disk_value)
 
@@ -2444,7 +2441,8 @@ class LineDoubleSlider2D(UI):
 
         Parameters
         ----------
-        top_disk_value : New value for the top disk.
+        top_disk_value : float
+            New value for the top disk.
         """
         self.top_disk_ratio = self.value_to_ratio(top_disk_value)
 
@@ -2489,7 +2487,8 @@ class LineDoubleSlider2D(UI):
 
         Parameters
         ----------
-        bottom_disk_ratio : New ratio for the bottom disk.
+        bottom_disk_ratio : float
+            New ratio for the bottom disk.
         """
         position_x = self.ratio_to_coord(bottom_disk_ratio)
         position_y = self.ratio_to_coord(bottom_disk_ratio)
@@ -2506,7 +2505,8 @@ class LineDoubleSlider2D(UI):
 
         Parameters
         ----------
-        top_disk_ratio : New ratio for the top disk.
+        top_disk_ratio : float
+            New ratio for the top disk.
         """
         position_x = self.ratio_to_coord(top_disk_ratio)
         position_y = self.ratio_to_coord(top_disk_ratio)
