@@ -187,13 +187,17 @@ line_slider_y.on_change = translate_cube_y
 # Finally, we can add a range slider. This element is composed of two sliders.
 # The first slider has two handles which let you set the range of the second.
 
-range_slider = ui.RangeSlider(
-    line_width=8, handle_side=25, range_slider_center=(550, 450),
-    value_slider_center=(550, 350), length=250, min_value=0,
+range_slider_x = ui.RangeSlider(
+    line_width=8, handle_side=25, range_slider_center=(450, 450),
+    value_slider_center=(450, 350), length=150, min_value=0,
     max_value=10, font_size=18, range_precision=2, value_precision=4,
     shape="square")
 
-
+range_slider_y = ui.RangeSlider(
+    line_width=8, handle_side=25, range_slider_center=(750, 400),
+    value_slider_center=(650, 400), length=150, min_value=0,
+    max_value=10, font_size=18, range_precision=2, value_precision=4,
+    orientation="vertical", shape="square")
 ###############################################################################
 # Select menu
 # ============
@@ -204,7 +208,7 @@ range_slider = ui.RangeSlider(
 # We'll first make a list of the examples.
 
 examples = [[rect], [disk, ring], [img], [panel],
-            [ring_slider, line_slider_x, line_slider_y], [range_slider]]
+            [ring_slider, line_slider_x, line_slider_y], [range_slider_x, range_slider_y]]
 
 ###############################################################################
 # Now we'll make a function to hide all the examples. Then we'll call it so
@@ -225,7 +229,7 @@ hide_all_examples()
 # correspond with the examples.
 
 values = ['Rectangle', 'Disks', 'Image', "Button Panel",
-          "Line and Ring Slider", "Range Slider"]
+          "Line & Ring Slider", "Range Slider"]
 
 ###############################################################################
 # Now we can create the menu.
