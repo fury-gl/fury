@@ -460,15 +460,9 @@ class ShowManager(object):
             enable_stereo(self.window, self.stereo)
 
         self.window.AddRenderer(scene)
-
-        if self.title == 'FURY':
-            self.window.SetWindowName(title + ' ' + fury_version)
-        else:
-            self.window.SetWindowName(title)
         self.window.SetSize(size[0], size[1])
 
         if self.order_transparent:
-
             antialiasing(self.scene, self.window,
                          multi_samples, max_peels, occlusion_ratio)
 
@@ -495,6 +489,7 @@ class ShowManager(object):
     def render(self):
         """Render only once."""
         self.window.Render()
+        self.window.SetWindowName(self.title)
 
     def start(self):
         """Start interaction."""
