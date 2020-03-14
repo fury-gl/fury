@@ -208,7 +208,8 @@ range_slider_y = ui.RangeSlider(
 # We'll first make a list of the examples.
 
 examples = [[rect], [disk, ring], [img], [panel],
-            [ring_slider, line_slider_x, line_slider_y], [range_slider_x, range_slider_y]]
+            [ring_slider, line_slider_x, line_slider_y],
+            [range_slider_x, range_slider_y]]
 
 ###############################################################################
 # Now we'll make a function to hide all the examples. Then we'll call it so
