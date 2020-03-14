@@ -47,17 +47,20 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
             vtk_image = vtk.vtkImageData()
             depth = 1 if image.ndim == 2 else image.shape[2]
-            vtk_image.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, depth)
 
             # width, height
-            vtk_image.SetDimensions(image.shape[1], image.shape[0], 1)
+            vtk_image.SetDimensions(image.shape[1], image.shape[0], depth)
             vtk_image.SetExtent(0, image.shape[1] - 1,
                                 0, image.shape[0] - 1,
                                 0, 0)
-            arr_tmp = np.swapaxes(image, 0, 1)
-            arr_tmp = image.reshape(image.shape[1] * image.shape[0], 4)
-            arr_tmp = np.ascontiguousarray(arr_tmp)
-            uchar_array = numpy_support.numpy_to_vtk(arr_tmp, deep=True)
+            vtk_image.SetSpacing(1.0, 1.0, 1.0)
+            vtk_image.SetOrigin(0.0, 0.0, 0.0)
+            arr_tmp = np.flipud(image)
+            arr_tmp = arr_tmp.reshape(image.shape[1] * image.shape[0], depth)
+            arr_tmp = np.ascontiguousarray(arr_tmp, dtype=image.dtype)
+            vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
+            uchar_array = numpy_support.numpy_to_vtk(arr_tmp, deep=True,
+                                                     array_type=vtk_array_type)
             vtk_image.GetPointData().SetScalars(uchar_array)
             image = vtk_image
 
