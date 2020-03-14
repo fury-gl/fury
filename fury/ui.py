@@ -3000,7 +3000,7 @@ class RangeSlider(UI):
                                initial_values=(self.min_value,
                                                self.max_value),
                                font_size=self.font_size, shape=self.shape,
-                               orientation = self.orientation,
+                               orientation=self.orientation,
                                text_template=self.range_slider_text_template)
 
         self.value_slider = \
@@ -3012,7 +3012,7 @@ class RangeSlider(UI):
                          min_value=self.min_value, max_value=self.max_value,
                          initial_value=(self.min_value + self.max_value) / 2,
                          font_size=self.font_size, shape=self.shape,
-                         orientation = self.orientation,
+                         orientation=self.orientation,
                          text_template=self.value_slider_text_template)
 
         # Add default events listener for this UI component.
