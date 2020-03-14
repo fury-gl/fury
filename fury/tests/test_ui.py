@@ -639,12 +639,15 @@ def test_ui_ring_slider_2d(recording=False):
 
 
 def test_ui_range_slider(interactive=False):
-    range_slider_test = ui.RangeSlider(shape="square")
+    range_slider_test_horizontal = ui.RangeSlider(shape="square")
+    range_slider_test_vertical = ui.RangeSlider(shape="square",
+                                                orientation="vertical")
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(range_slider_test)
+        show_manager.scene.add(range_slider_test_horizontal)
+        show_manager.scene.add(range_slider_test_vertical)
         show_manager.start()
 
 
