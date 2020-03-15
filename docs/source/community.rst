@@ -5,9 +5,13 @@ Community
 Join Us!
 --------
 
-- via `Slack <https://join.slack.com/t/fury-gl/shared_invite/enQtNzE1NTk2Mzc3OTQyLTQyNDZiNTUxNWUyZjFmMzZlNDUxZDQ0MzllYjUyYTY1MjFhMmQyYmI3NjJkYzc3YTMwNmRjOWIzMDBjNTYzMDU>`_
-- via `mailing list <https://mail.python.org/mailman3/lists/fury.python.org>`_
-- via `github <https://github.com/fury-gl/fury>`_
+.. raw:: html
+
+    <ul style="list-style-type:none;">
+        <li style="display: block"><a href='https://join.slack.com/t/fury-gl/shared_invite/enQtNzE1NTk2Mzc3OTQyLTQyNDZiNTUxNWUyZjFmMzZlNDUxZDQ0MzllYjUyYTY1MjFhMmQyYmI3NjJkYzc3YTMwNmRjOWIzMDBjNTYzMDU'><i class="fa fa-slack fa-fw"></i> Slack</a></li>
+        <li style="display: block"><a href='https://mail.python.org/mailman3/lists/fury.python.org'><i class="fa fa-envelope fa-fw"></i> Mailing list</a></li>
+        <li style="display: block"><a href='https://github.com/fury-gl/fury'><i class="fa fa-github fa-fw"></i> Github</a></li>
+    <ul>
 
 Contributors
 ------------

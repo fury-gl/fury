@@ -4,6 +4,7 @@ from fury.data import DATA_DIR
 from fury.transform import cart2sphere, euler_matrix
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
+import math
 
 
 SPHERE_FILES = {
@@ -137,16 +138,18 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
 
     # update triangles
     big_triangles = np.array(np.tile(faces,
-                             (centers.shape[0], 1)),
+                                     (centers.shape[0], 1)),
                              dtype=np.int32)
-    big_triangles += np.repeat(np.arange(0, centers.shape[0] *
-                               unit_verts_size, step=unit_verts_size),
+    big_triangles += np.repeat(np.arange(0,
+                                         centers.shape[0] * unit_verts_size,
+                                         step=unit_verts_size),
                                unit_triangles_size,
-                               axis=0).reshape((big_triangles.shape[0], 1))
+                               axis=0).reshape((big_triangles.shape[0],
+                                                1))
 
     def normalize_input(arr, arr_name=''):
         if isinstance(arr, (tuple, list, np.ndarray)) and len(arr) == 3 and \
-          not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
+                not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
             return np.array([arr] * centers.shape[0])
         elif isinstance(arr, np.ndarray) and len(arr) == 1:
             return np.repeat(arr, centers.shape[0], axis=0)
@@ -164,13 +167,13 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     # update orientations
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
-        ai, aj, ak = transform.Rotation.from_rotvec(np.pi/2 * dirs). \
+        ai, aj, ak = transform.Rotation.from_rotvec(np.pi / 2 * dirs). \
             as_euler('zyx')
         rotation_matrix = euler_matrix(ai, aj, ak)
-        big_vertices[pts * unit_verts_size: (pts+1) * unit_verts_size] = \
+        big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
                    big_vertices[pts * unit_verts_size:
-                                (pts+1) * unit_verts_size].T).T
+                                (pts + 1) * unit_verts_size].T).T
 
     # apply centers position
     big_centers = np.repeat(centers, unit_verts_size, axis=0)
@@ -329,3 +332,79 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     vertices = np.ascontiguousarray(xyz)
 
     return vertices, sphere_triangles
+
+
+def prim_tetrahedron():
+    """
+    returns vertices and triangles to a tetrahedron
+    that has a side length of two units.
+
+    Returns
+    -------
+    pyramid_vert: numpy.ndarray
+        4 vertices coordinates
+    triangles: numpy.ndarray
+        4 triangles representing the tetrahedron
+    """
+
+    pyramid_vert = np.array([[0.5, 0.5, 0.5],
+                             [0.5, -0.5, -0.5],
+                             [-0.5, 0.5, -0.5],
+                             [-0.5, -0.5, 0.5]])
+
+    pyramid_triag = np.array([[2, 0, 1],
+                              [0, 3, 2],
+                              [0, 3, 1],
+                              [1, 2, 3]], dtype='i8')
+
+    return pyramid_vert, pyramid_triag
+
+
+def prim_icosahedron():
+    """
+    returns vertices and triangles to a icosahedron
+
+    Returns
+    -------
+    icosahedron_vertices: numpy.ndarray
+        12 vertices coordinates to the icosahedron
+    icosahedron_mesh: numpy.ndarray
+        20 triangles representing the tetrahedron
+    """
+    phi = (1 + math.sqrt(5)) / 2.0
+
+    icosahedron_vertices = np.array([[-1.0, 0.0, phi],
+                                     [0.0, phi, 1.0],
+                                     [1.0, 0.0, phi],
+                                     [-phi, 1.0, 0.0],
+                                     [0.0, phi, -1.0],
+                                     [phi, 1.0, 0.0],
+                                     [-phi, -1.0, 0.0],
+                                     [0.0, -phi, 1.0],
+                                     [phi, -1.0, 0.0],
+                                     [-1.0, 0.0, -phi],
+                                     [0.0, -phi, -1.0],
+                                     [1.0, 0.0, -phi]])
+
+    icosahedron_mesh = np.array([[1, 0, 2],
+                                 [2, 5, 1],
+                                 [5, 4, 1],
+                                 [3, 1, 4],
+                                 [0, 1, 3],
+                                 [0, 6, 3],
+                                 [9, 3, 6],
+                                 [8, 2, 7],
+                                 [2, 0, 7],
+                                 [0, 7, 6],
+                                 [5, 2, 8],
+                                 [11, 5, 8],
+                                 [11, 4, 5],
+                                 [9, 11, 4],
+                                 [4, 3, 9],
+                                 [11, 10, 8],
+                                 [8, 10, 7],
+                                 [6, 7, 10],
+                                 [10, 9, 6],
+                                 [9, 10, 11]], dtype='i8')
+
+    return icosahedron_vertices, icosahedron_mesh

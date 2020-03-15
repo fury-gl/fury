@@ -406,14 +406,15 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
-def test_ui_line_slider_2d_horizontal(recording=False):
-    filename = "test_ui_line_slider_2d_horizontal"
+def test_ui_line_slider_2d_horizontal_bottom(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal_bottom"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
-                                          orientation="horizontal")
+                                          orientation="horizontal",
+                                          alignment='bottom')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -437,14 +438,79 @@ def test_ui_line_slider_2d_horizontal(recording=False):
         event_counter.check_counts(expected)
 
 
-def test_ui_line_slider_2d_vertical(recording=False):
-    filename = "test_ui_line_slider_2d_vertical"
+def test_ui_line_slider_2d_horizontal_top(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal_top"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
-                                          orientation="vertical")
+                                          orientation="horizontal",
+                                          alignment='top')
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Horizontal Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_vertical_left(recording=False):
+    filename = "test_ui_line_slider_2d_vertical_left"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="vertical",
+                                          alignment='left')
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Vertical Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_vertical_right(recording=False):
+    filename = "test_ui_line_slider_2d_vertical_right"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="vertical",
+                                          alignment='right')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -469,30 +535,69 @@ def test_ui_line_slider_2d_vertical(recording=False):
 
 
 def test_ui_line_double_slider_2d(interactive=False):
-    line_double_slider_2d_test = ui.LineDoubleSlider2D(
+    line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
         max_value=10, initial_values=(-10, 10))
-    npt.assert_equal(line_double_slider_2d_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_test.left_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_test.right_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 10)
+
+    line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
+        center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
+        max_value=10, initial_values=(-10, 10))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 10)
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_horizontal_test)
+        show_manager.scene.add(line_double_slider_2d_vertical_test)
         show_manager.start()
 
-    line_double_slider_2d_test = ui.LineDoubleSlider2D(
+    line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="square", handle_side=5,
-        initial_values=(50, 40))
-    npt.assert_equal(line_double_slider_2d_test.handles[0].size, (5, 5))
-    npt.assert_equal(line_double_slider_2d_test._values[0], 39)
-    npt.assert_equal(line_double_slider_2d_test.right_disk_value, 40)
+        orientation="horizontal", initial_values=(50, 40))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value, 39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
+
+    line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
+        center=(300, 300), shape="square", handle_side=5,
+        orientation="vertical", initial_values=(50, 40))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value, 39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
+
+    with npt.assert_raises(ValueError):
+        ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_horizontal_test)
+        show_manager.scene.add(line_double_slider_2d_vertical_test)
         show_manager.start()
 
 
@@ -701,6 +806,7 @@ def test_ui_listbox_2d(interactive=False):
 
     # Values that will be displayed by the listbox.
     values = list(range(1, 42 + 1))
+    values.append("A Very Very Long Item To Test Text Overflow of List Box 2D")
 
     if interactive:
         listbox = ui.ListBox2D(values=values,
@@ -722,11 +828,11 @@ def test_ui_listbox_2d(interactive=False):
     #  2. Ctrl + click on 2,
     #  3. Ctrl + click on 2.
     #  4. Use scroll bar to scroll to the bottom.
-    #  5. Click on 42.
+    #  5. Click on "A Very Very Long Item...".
     #  6. Use scroll bar to scroll to the top.
     #  7. Click on 1
     #  8. Use mouse wheel to scroll down.
-    #  9. Shift + click on 42.
+    #  9. Shift + click on "A Very Very Long Item...".
     # 10. Use mouse wheel to scroll back up.
 
     listbox = ui.ListBox2D(values=values,
@@ -756,7 +862,8 @@ def test_ui_listbox_2d(interactive=False):
     event_counter.check_counts(expected)
 
     # Check if the right values were selected.
-    expected = [[1], [1, 2], [1], [42], [1], values]
+    expected = [[1], [1, 2], [1], ["A Very Very Long Item To \
+Test Text Overflow of List Box 2D"], [1], values]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -766,7 +873,9 @@ def test_ui_listbox_2d(interactive=False):
     show_manager.play_events_from_file(recording_filename)
 
     # Check if the right values were selected.
-    expected = [[1], [2], [2], [42], [1], [42]]
+    expected = [[1], [2], [2], ["A Very Very Long Item To \
+Test Text Overflow of List Box 2D"], [1], ["A Very Very Long Item To Test \
+Text Overflow of List Box 2D"]]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -1142,10 +1251,3 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
-
-
-if __name__ == "__main__":
-
-    npt.run_module_suite()
-
-
