@@ -1,24 +1,37 @@
 import numpy as np
 import numpy.testing as npt
 import fury.primitive as fp
+import math
 
 
 def test_vertices_primitives():
     l_primitives = [(fp.prim_square, (4, 3)),
-                    (fp.prim_box, (8, 3))]
+                    (fp.prim_box, (8, 3)),
+                    (fp.prim_tetrahedron, (4, 3))]
 
     for func, shape in l_primitives:
         vertices, _ = func()
-
         npt.assert_equal(vertices.shape, shape)
         npt.assert_equal(np.mean(vertices), 0)
-        npt.assert_equal(vertices.min(), -.5)
+        npt.assert_equal(vertices.min(), -0.5)
         npt.assert_equal(vertices.max(), 0.5)
+
+
+def test_vertices_primitives_icosahedron():
+    vertices, _ = fp.prim_icosahedron()
+    shape = (12, 3)
+    phi = (1 + math.sqrt(5)) / 2.0
+    npt.assert_equal(vertices.shape, shape)
+    npt.assert_equal(np.mean(vertices), 0)
+    npt.assert_equal(vertices.min(), -phi)
+    npt.assert_equal(vertices.max(), phi)
 
 
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
-                    (fp.prim_box, (12, 3))]
+                    (fp.prim_box, (12, 3)),
+                    (fp.prim_tetrahedron, (4, 3)),
+                    (fp.prim_icosahedron, (20, 3))]
 
     for func, shape in l_primitives:
         vertices, triangles = func()
@@ -68,15 +81,18 @@ def test_repeat_primitive():
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
 
-    big_verts, big_faces, big_colors = fp.repeat_primitive(vertices=verts,
-                                                           faces=faces,
-                                                           centers=centers,
-                                                           directions=dirs,
-                                                           colors=colors)
+    res = fp.repeat_primitive(vertices=verts,
+                              faces=faces,
+                              centers=centers,
+                              directions=dirs,
+                              colors=colors)
 
-    npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
-    npt.assert_equal(big_faces.shape[0],  faces.shape[0] * centers.shape[0])
-    npt.assert_equal(big_colors.shape[0],  verts.shape[0] * centers.shape[0])
+    big_verts, big_faces, big_colors, big_centers = res
+
+    npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
+    npt.assert_equal(big_colors.shape[0], verts.shape[0] * centers.shape[0])
+    npt.assert_equal(big_centers.shape[0], verts.shape[0] * centers.shape[0])
 
     # TODO: Check the array content
 
@@ -94,6 +110,6 @@ def test_repeat_primitive_function():
                                        directions=dirs,
                                        colors=colors)
 
-    big_verts, big_faces, big_colors = res
+    # big_verts, big_faces, big_colors, big_centers = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])

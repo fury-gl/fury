@@ -29,6 +29,9 @@ UW_RW_URL = \
 FURY_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/examples/"
 
+MODEL_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/models/"
+
 
 class FetcherError(Exception):
     pass
@@ -286,6 +289,15 @@ fetch_viz_wiki_nw = _make_fetcher("fetch_viz_wiki_nw",
                                        " https://arxiv.org/abs/0711.3199")
                                   )
 
+fetch_viz_models = _make_fetcher("fetch_viz_models",
+                                 pjoin(fury_home, "models"),
+                                 MODEL_DATA_URL,
+                                 ['utah.obj'],
+                                 ['utah.obj'],
+                                 ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3'],
+                                 doc="Download the model for shader tutorial"
+                                 )
+
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
     """Read specific icon from specific style.
@@ -305,4 +317,23 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
 
     """
     folder = pjoin(fury_home, 'icons', style)
+    return pjoin(folder, fname)
+
+
+def read_viz_models(fname):
+    """Read specific model.
+
+    Parameters
+    ----------
+    fname : str
+        Filename of the model.
+        This should be found in folder HOME/.fury/models/.
+
+    Returns
+    --------
+    path : str
+        Complete path of models.
+
+    """
+    folder = pjoin(fury_home, 'models')
     return pjoin(folder, fname)

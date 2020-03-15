@@ -370,7 +370,3 @@ def test_record():
 
             assert_less_equal(arr.shape[0], 5000)
             assert_less_equal(arr.shape[1], 5000)
-
-
-if __name__ == '__main__':
-    npt.run_module_suite()
