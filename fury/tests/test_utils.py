@@ -278,32 +278,34 @@ def test_what_order():
     npt.assert_equal(1, order2)
 
 
-def test_change_order():
+def test_change_vertices_order():
 
-    test_tri = np.array([[1, 2, 3],
-                         [3, 2, 1],
-                         [5, 4, 3],
-                         [3, 4, 5]])
+    triangles = np.array([[1, 2, 3],
+                          [3, 2, 1],
+                          [5, 4, 3],
+                          [3, 4, 5]])
 
-    npt.assert_equal(test_tri[0], utils.change_order(test_tri[1]))
+    npt.assert_equal(triangles[0], utils.change_vertices_order(triangles[1]))
 
-    npt.assert_equal(test_tri[2], utils.change_order(test_tri[3]))
+    npt.assert_equal(triangles[2], utils.change_vertices_order(triangles[3]))
 
 
-def test_check_order():
+def test_winding_order():
 
-    test_vert = np.array([[0, 0, 0],
-                          [1, 2, 0],
-                          [3, 0, 0],
-                          [2, 0, 0]])
+    vertices = np.array([[0, 0, 0],
+                         [1, 2, 0],
+                         [3, 0, 0],
+                         [2, 0, 0]])
 
-    test_tri = np.array([[1, 2, 4],
-                         [4, 3, 2]])
+    triangles = np.array([[1, 2, 4],
+                          [4, 3, 2]])
 
-    test_tri2 = np.array([[1, 2, 4],
-                          [2, 3, 4]])
+    expected_triangles = np.array([[1, 2, 4],
+                                   [2, 3, 4]])
 
     npt.assert_equal(test_tri2, utils.check_order(test_vert, test_tri))
+    npt.assert_equal(expected_triangles,
+                     utils.fix_winding_order(vertices, triangles))
 
 
 def test_vertices_from_actor():
