@@ -528,7 +528,7 @@ def test_ui_checkbox_initial_state(interactive=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
-                                "option 3", "option 4"],
+                                        "option 3", "option 4"],
                                 position=(100, 100),
                                 checked_labels=["option 1", "option 4"])
 
@@ -1238,8 +1238,3 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
-
-
-if __name__ == "__main__":
-
-    npt.run_module_suite()
