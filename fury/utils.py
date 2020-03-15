@@ -880,3 +880,87 @@ def normals_from_v_f(vertices, faces):
     norm[faces[:, 2]] += n
     normalize_v3(norm)
     return norm
+
+
+def what_order(verts, tri):
+    """Determines the winding order of a given set of vertices and a triangle
+
+    Parameter
+    ---------
+    verts: ndarray
+        array of vertices making up a shape
+    tri: ndarray
+
+    Returns
+    -------
+    0 or 1: int
+        If the order is counter clockwise, returns 0.
+        Otherwise, returns 1.
+    """
+    v1 = verts[tri[0] - 1]
+    v2 = verts[tri[1] - 1]
+    v3 = verts[tri[2] - 1]
+
+    x1 = v1[0]
+    x2 = v2[0]
+    x3 = v3[0]
+
+    y1 = v1[1]
+    y2 = v2[1]
+    y3 = v3[1]
+
+    val = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1)
+
+    if val < 0:
+        return 1
+    return 0
+
+
+def change_order(tri):
+    """ Changes the order of a given triangle
+
+    Parameter
+    ---------
+    tri: ndarray
+        array of 3 vertices making up a triangle
+
+    Returns
+    -------
+    np.array(newVert): ndarray
+        new array of vertices making up a triangle in the opposite winding order
+        of the given parameter
+    """
+
+    newVert = [tri[2], tri[1], tri[0]]
+
+    return np.array(newVert)
+
+
+def check_order(vert, triarr):
+    """
+
+    Parameter
+    ---------
+    vert: ndarray
+        array of vertices corresponding to a shape
+    triarr: ndarray
+        array of triangles corresponding to a shape
+
+    Returns
+    -------
+    correct_vert: ndarray
+        The corrected order of the vert parameter
+
+    """
+
+    shape = triarr.shape
+    correct_vert = np.empty(shape)
+    correct_order = what_order(vert, triarr[0])
+    for nb, i in enumerate(triarr):
+        order2 = what_order(vert, i)
+        if correct_order != order2:
+            temp = change_order(i)
+            correct_vert[nb] = temp
+        else:
+            correct_vert[nb] = i
+    return correct_vert

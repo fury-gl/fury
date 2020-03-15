@@ -70,7 +70,3 @@ def test_clear_and_catch_warnings():
     with ft.clear_and_catch_warnings():
         warnings.warn('Another warning')
     assert_warn_len_equal(my_mod, 2)
-
-
-if __name__ == '__main__':
-    npt.run_module_suite()

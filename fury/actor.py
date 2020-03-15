@@ -1,8 +1,11 @@
+"""Module that provide actors to render."""
+
+import os.path as op
 import numpy as np
 import vtk
 from vtk.util import numpy_support
 
-import fury.shaders
+import fury.shaders as fs
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
@@ -31,13 +34,13 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         value_range[1]) to (0, 255).
     opacity : float, optional
         Opacity of 0 means completely transparent and 1 completely visible.
-    lookup_colormap : vtkLookupTable
+    lookup_colormap : vtkLookupTable, optional
         If None (default) then a grayscale map is created.
-    interpolation : string
+    interpolation : string, optional
         If 'linear' (default) then linear interpolation is used on the final
         texture mapping. If 'nearest' then nearest neighbor interpolation is
         used on the final texture mapping.
-    picking_tol : float
+    picking_tol : float, optional
         The tolerance for the vtkCellPicker, specified as a fraction of
         rendering window size.
 
@@ -471,23 +474,23 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
         If an array (X, Y, Z) or (X, Y, Z, 3) is given then the values for the
         colormap are interpolated automatically using trilinear interpolation.
 
-    opacity : float
+    opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
-    linewidth : float
+    linewidth : float, optional
         Default is 0.01.
-    tube_sides : int
+    tube_sides : int, optional
         Default is 9.
-    lod : bool
+    lod : bool, optional
         Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
-    lod_points : int
+    lod_points : int, optional
         Number of points to be used when LOD is in effect. Default is 10000.
-    lod_points_size : int
+    lod_points_size : int, optional
         Size of points when lod is in effect. Default is 3.
-    spline_subdiv : int
+    spline_subdiv : int, optional
         Number of splines subdivision to smooth streamtubes. Default is None.
-    lookup_colormap : vtkLookupTable
+    lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
 
@@ -623,21 +626,21 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     spline_subdiv : int, optional
         Number of splines subdivision to smooth streamtubes. Default is None
         which means no subdivision.
-    lod : bool
+    lod : bool, optional
         Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
-    lod_points : int
+    lod_points : int, optional
         Number of points to be used when LOD is in effect. Default is 10000.
     lod_points_size : int
         Size of points when lod is in effect. Default is 3.
-    lookup_colormap : bool, optional
+    lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
-    depth_cue : boolean
+    depth_cue : boolean, optional
         Add a size depth cue so that lines shrink with distance to the camera.
         Works best with linewidth <= 1.
-    fake_tube: boolean
+    fake_tube: boolean, optional
         Add shading to lines to approximate the look of tubes.
 
     Returns
@@ -674,7 +677,7 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     poly_mapper.Update()
 
     if depth_cue:
-        poly_mapper.SetGeometryShaderCode(fury.shaders.load("line.geom"))
+        poly_mapper.SetGeometryShaderCode(fs.load("line.geom"))
 
         @vtk.calldata_type(vtk.VTK_OBJECT)
         def vtkShaderCallback(_caller, _event, calldata=None):
@@ -1756,10 +1759,115 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                                        centers=centers,
                                        func_args=roundness,
                                        directions=directions,
-                                       colors=colors)
+                                       colors=colors, scale=scale)
 
-    big_verts, big_faces, big_colors = res
+    big_verts, big_faces, big_colors, _ = res
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return actor
+
+
+def billboard(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
+              fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+    """Create a billboard actor.
+
+    Billboards are 2D elements incrusted in a 3D world. It offers you the
+    possibility to draw differents shapes/elements at the shader level.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Superquadrics positions
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : ndarray, shape (N) or (N,3) or float or int, optional
+        The height of the cone.
+    vs_dec : str or list of str, optional
+        vertex shaders code that contains all variable/function delarations
+    vs_impl : str or list of str, optional
+        vertex shaders code that contains all variable/function implementation
+    fs_dec : str or list of str, optional
+        Fragment shaders code that contains all variable/function delarations
+    fs_impl : str or list of str, optional
+        Fragment shaders code that contains all variable/function
+        implementation
+    gs_dec : str or list of str, optional
+        Geometry shaders code that contains all variable/function delarations
+    gs_impl : str or list of str, optional
+        Geometry shaders code that contains all variable/function
+        mplementation
+
+    Returns
+    -------
+    vtkActor
+
+    """
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scale=scale)
+
+    big_verts, big_faces, big_colors, big_centers = res
+
+    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actor.GetProperty().BackfaceCullingOff()
+    vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
+    vtk_centers.SetNumberOfComponents(3)
+    vtk_centers.SetName("center")
+    actor.GetMapper().GetInput().GetPointData().AddArray(vtk_centers)
+
+    def get_code(glsl_code):
+        code = ""
+        if not glsl_code:
+            return code
+
+        if not all(isinstance(i, (str)) for i in glsl_code):
+            raise IOError("The only supported format are string or filename,"
+                          "list of string or filename")
+
+        if isinstance(glsl_code, str):
+            code += "\n"
+            code += fs.load(glsl_code) if op.isfile(glsl_code) else glsl_code
+            return code
+
+        for content in glsl_code:
+            code += "\n"
+            code += fs.load(content) if op.isfile(content) else content
+        return code
+
+    vs_dec_code = get_code(vs_dec) + "\n" + fs.load("billboard_dec.vert")
+    vs_impl_code = get_code(vs_impl) + "\n" + fs.load("billboard_impl.vert")
+    fs_dec_code = get_code(fs_dec) + "\n" + fs.load("billboard_dec.frag")
+    fs_impl_code = fs.load("billboard_impl.frag") + "\n" + get_code(fs_impl)
+    gs_dec_code = get_code(gs_dec)
+    gs_impl_code = get_code(gs_impl)
+
+    mapper = actor.GetMapper()
+    mapper.MapDataArrayToVertexAttribute(
+        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
+        vs_dec_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
+        vs_impl_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
+        fs_dec_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
+        fs_impl_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Geometry, "//VTK::Output::Dec", True,
+        gs_dec_code, False)
+
+    mapper.AddShaderReplacement(
+        vtk.vtkShader.Geometry, "//VTK::Output::Impl", True,
+        gs_impl_code, False)
+
     return actor
 
 

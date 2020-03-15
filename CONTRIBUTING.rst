@@ -54,42 +54,48 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `fury` for local development.
+Ready to contribute? Here's how to set up `FURY` for local development.
 
-1. Fork the `fury` repo on GitHub.
+1. Fork the `FURY` repo on GitHub.
 2. Clone your fork locally::
 
     $ git clone https://github.com/your_name_here/fury.git
 
-3. Add a tracking branch which can always have the last version of `fury`::
+3. Add a tracking branch which can always have the last version of `FURY`::
 
     $ git remote add fury-gl https://github.com/fury-gl/fury.git
-    git fetch fury-gl
-    git branch fury-gl-master --track fury-gl/master
-    git checkout fury-gl-master
-    git pull
+    $ git fetch fury-gl
+    $ git branch fury-gl-master --track fury-gl/master
+    $ git checkout fury-gl-master
+    $ git pull
 
 4. Create a branch from the last dev version of your tracking branch for local development::
 
     $ git checkout -b name-of-your-bugfix-or-feature
 
-5. Install it locally
+5. Install it locally::
 
     $ pip install --user -e .
 
-6. Now you can make your changes locally.
+6. Now you can make your changes locally::
+
     $ git add .
     $ git commit -m "Your detailed description of your changes."
     $ git push origin name-of-your-bugfix-or-feature
 
-7. When you're done making changes, check that your changes pass flake8 and pytest::
+7. Install the required packages for running the unittests::
+
+    $ pip install -r requirements/optional.txt
+    $ pip install -r requirements/test.txt
+
+8. When you're done making changes, check that your changes pass flake8 and pytest::
 
     $ flake8 fury
     $ pytest -svv fury
 
    To get flake8 and pytest, just pip install them into your virtualenv.
 
-7. Submit a pull request through the GitHub website.
+9. Submit a pull request through the GitHub website.
 
 Pull Request Guidelines
 -----------------------
@@ -110,7 +116,7 @@ Publishing Releases
 Checklist before Releasing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Review the open list of `fury issues <https://github.com/fury-gl/fury/issues>`_.  Check whether there are
+* Review the open list of `FURY issues <https://github.com/fury-gl/fury/issues>`_.  Check whether there are
   outstanding issues that can be closed, and whether there are any issues that
   should delay the release.  Label them !
 

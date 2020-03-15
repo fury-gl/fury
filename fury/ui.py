@@ -1792,7 +1792,9 @@ class LineSlider2D(UI):
                  length=200, line_width=5,
                  inner_radius=0, outer_radius=10, handle_side=20,
                  font_size=16,
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
+                 orientation="horizontal",
+                 text_template="{value:.1f} ({ratio:.0%})", shape="disk",
+                 alignment=''):
         """
         Parameters
         ----------
@@ -1816,6 +1818,8 @@ class LineSlider2D(UI):
             Side length of the handles (if sqaure).
         font_size : int
             Size of the text to display alongside the slider (pt).
+        orientation : str
+            horizontal or vertical
         text_template : str, callable
             If str, text template can contain one or multiple of the
             replacement fields: `{value:}`, `{ratio:}`.
@@ -1826,12 +1830,29 @@ class LineSlider2D(UI):
             Currently supports 'disk' and 'square'.
         """
         self.shape = shape
+        self.orientation = orientation.lower().strip()
+        self.align_dict = {'horizontal': ['top', 'bottom'],
+                           'vertical': ['left', 'right']}
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
+        self.alignment = alignment.lower()
         super(LineSlider2D, self).__init__()
 
-        self.track.width = length
-        self.track.height = line_width
+        if self.orientation == "horizontal":
+            self.alignment = 'bottom' if not self.alignment else self.alignment
+            self.track.width = length
+            self.track.height = line_width
+        elif self.orientation == "vertical":
+            self.alignment = 'left' if not self.alignment else self.alignment
+            self.track.width = line_width
+            self.track.height = length
+        else:
+            raise ValueError("Unknown orientation")
+
+        if self.alignment not in self.align_dict[self.orientation]:
+            raise ValueError("Unknown alignment: choose from '{}' or '{}'".
+                             format(*self.align_dict[self.orientation]))
+
         if shape == "disk":
             self.handle.inner_radius = inner_radius
             self.handle.outer_radius = outer_radius
@@ -1899,8 +1920,15 @@ class LineSlider2D(UI):
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
-        width = self.track.width + self.handle.size[0]
-        height = max(self.track.height, self.handle.size[1])
+        width = None
+        height = None
+        if self.orientation == "horizontal":
+            width = self.track.width + self.handle.size[0]
+            height = max(self.track.height, self.handle.size[1])
+        else:
+            width = max(self.track.width, self.handle.size[0])
+            height = self.track.height + self.handle.size[1]
+
         return np.array([width, height])
 
     def _set_position(self, coords):
@@ -1913,14 +1941,33 @@ class LineSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handle.size / 2.
-        # Offset the slider line height by half the slider line width.
-        track_position[1] -= self.track.size[1] / 2.
+        if self.orientation == "horizontal":
+            # Offset the slider line height by half the slider line width.
+            track_position[1] -= self.track.size[1] / 2.
+        else:
+            # Offset the slider line width by half the slider line height.
+            track_position[0] += self.track.size[0] / 2.
+
         self.track.position = track_position
         self.handle.position = self.handle.position.astype('float64')
         self.handle.position += coords - self.position
         # Position the text below the handle.
-        self.text.position = (self.handle.center[0],
-                              self.handle.position[1] - 10)
+        if self.orientation == "horizontal":
+            align = 35 if self.alignment == 'top' else -10
+            self.text.position = (self.handle.center[0],
+                                  self.handle.position[1] + align)
+        else:
+            align = 70 if self.alignment == 'right' else -35
+            self.text.position = (self.handle.position[0] + align,
+                                  self.handle.center[1] + 2)
+
+    @property
+    def bottom_y_position(self):
+        return self.track.position[1]
+
+    @property
+    def top_y_position(self):
+        return self.track.position[1] + self.track.size[1]
 
     @property
     def left_x_position(self):
@@ -1938,12 +1985,18 @@ class LineSlider2D(UI):
         position : (float, float)
             The absolute position of the disk (x, y).
         """
-        x_position = position[0]
-        x_position = max(x_position, self.left_x_position)
-        x_position = min(x_position, self.right_x_position)
 
         # Move slider disk.
-        self.handle.center = (x_position, self.track.center[1])
+        if self.orientation == "horizontal":
+            x_position = position[0]
+            x_position = max(x_position, self.left_x_position)
+            x_position = min(x_position, self.right_x_position)
+            self.handle.center = (x_position, self.track.center[1])
+        else:
+            y_position = position[1]
+            y_position = max(y_position, self.bottom_y_position)
+            y_position = min(y_position, self.top_y_position)
+            self.handle.center = (self.track.center[0], y_position)
         self.update()  # Update information.
 
     @property
@@ -1962,7 +2015,8 @@ class LineSlider2D(UI):
     @ratio.setter
     def ratio(self, ratio):
         position_x = self.left_x_position + ratio * self.track.width
-        self.set_position((position_x, None))
+        position_y = self.bottom_y_position + ratio * self.track.height
+        self.set_position((position_x, position_y))
 
     def format_text(self):
         """ Returns formatted text to display along the slider. """
@@ -1973,11 +2027,21 @@ class LineSlider2D(UI):
     def update(self):
         """ Updates the slider. """
         # Compute the ratio determined by the position of the slider disk.
-        length = float(self.right_x_position - self.left_x_position)
-        if length != self.track.width:
-            raise Exception("Disk position outside the slider line")
-        disk_position_x = self.handle.center[0]
-        self._ratio = (disk_position_x - self.left_x_position) / length
+        disk_position_x = None
+        disk_position_y = None
+
+        if self.orientation == "horizontal":
+            length = float(self.right_x_position - self.left_x_position)
+            if length != self.track.width:
+                raise ValueError("Disk position outside the slider line")
+            disk_position_x = self.handle.center[0]
+            self._ratio = (disk_position_x - self.left_x_position) / length
+        else:
+            length = float(self.top_y_position - self.bottom_y_position)
+            if length != self.track.height:
+                raise ValueError("Disk position outside the slider line")
+            disk_position_y = self.handle.center[1]
+            self._ratio = (disk_position_y - self.bottom_y_position) / length
 
         # Compute the selected value considering min_value and max_value.
         value_range = self.max_value - self.min_value
@@ -1988,7 +2052,10 @@ class LineSlider2D(UI):
         self.text.message = text
 
         # Move the text below the slider's handle.
-        self.text.position = (disk_position_x, self.text.position[1])
+        if self.orientation == "horizontal":
+            self.text.position = (disk_position_x, self.text.position[1])
+        else:
+            self.text.position = (self.text.position[0], disk_position_y)
 
         self.on_change(self)
 
@@ -2070,7 +2137,8 @@ class LineDoubleSlider2D(UI):
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, center=(450, 300), length=200,
                  initial_values=(0, 100), min_value=0, max_value=100,
-                 font_size=16, text_template="{value:.1f}", shape="disk"):
+                 font_size=16, text_template="{value:.1f}",
+                 orientation="horizontal", shape="disk"):
         """
         Parameters
         ----------
@@ -2099,6 +2167,8 @@ class LineDoubleSlider2D(UI):
             replacement fields: `{value:}`, `{ratio:}`.
             If callable, this instance of `:class:LineDoubleSlider2D` will be
             passed as argument to the text template function.
+        orientation : str
+            horizontal or vertical
         shape : string
             Describes the shape of the handle.
             Currently supports 'disk' and 'square'.
@@ -2107,10 +2177,18 @@ class LineDoubleSlider2D(UI):
         self.shape = shape
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
+        self.orientation = orientation.lower()
         super(LineDoubleSlider2D, self).__init__()
 
-        self.track.width = length
-        self.track.height = line_width
+        if self.orientation == "horizontal":
+            self.track.width = length
+            self.track.height = line_width
+        elif self.orientation == "vertical":
+            self.track.width = line_width
+            self.track.height = length
+        else:
+            raise ValueError("Unknown orientation")
+
         self.center = center
         if shape == "disk":
             self.handles[0].inner_radius = inner_radius
@@ -2134,11 +2212,8 @@ class LineDoubleSlider2D(UI):
         self._ratio = [None, None]
         self.left_disk_value = initial_values[0]
         self.right_disk_value = initial_values[1]
-
-        # This is required for correct initialization of the position
-        # of the handles
-        self.handles[0].position += np.array(self.handles[0].size, 'f8') / 2.
-        self.handles[1].position += np.array(self.handles[1].size, 'f8') / 2.
+        self.bottom_disk_value = initial_values[0]
+        self.top_disk_value = initial_values[1]
 
     def _setup(self):
         """ Setup this UI component.
@@ -2201,8 +2276,15 @@ class LineDoubleSlider2D(UI):
 
     def _get_size(self):
         # Consider the handle's size when computing the slider's size.
-        width = self.track.width + 2 * self.handles[0].size[0]
-        height = max(self.track.height, self.handles[0].size[1])
+        width = None
+        height = None
+        if self.orientation == "horizontal":
+            width = self.track.width + 2 * self.handles[0].size[0]
+            height = max(self.track.height, self.handles[0].size[1])
+        else:
+            width = max(self.track.width, self.handles[0].size[0])
+            height = self.track.height + 2 * self.handles[0].size[1]
+
         return np.array([width, height])
 
     def _set_position(self, coords):
@@ -2215,8 +2297,12 @@ class LineDoubleSlider2D(UI):
         """
         # Offset the slider line by the handle's radius.
         track_position = coords + self.handles[0].size / 2.
-        # Offset the slider line height by half the slider line width.
-        track_position[1] -= self.track.size[1] / 2.
+        if self.orientation == "horizontal":
+            # Offset the slider line height by half the slider line width.
+            track_position[1] -= self.track.size[1] / 2.
+        else:
+            # Offset the slider line width by half the slider line height.
+            track_position[0] -= self.track.size[0] / 2.
         self.track.position = track_position
 
         self.handles[0].position = self.handles[0].position.astype('float64')
@@ -2225,11 +2311,26 @@ class LineDoubleSlider2D(UI):
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
 
-        # Position the text below the handles.
-        self.text[0].position = (self.handles[0].center[0],
-                                 self.handles[0].position[1] - 20)
-        self.text[1].position = (self.handles[1].center[0],
-                                 self.handles[1].position[1] - 20)
+        if self.orientation == "horizontal":
+            # Position the text below the handles.
+            self.text[0].position = (self.handles[0].center[0],
+                                     self.handles[0].position[1] - 20)
+            self.text[1].position = (self.handles[1].center[0],
+                                     self.handles[1].position[1] - 20)
+        else:
+            # Position the text to the left of the handles.
+            self.text[0].position = (self.handles[0].center[0] - 35,
+                                     self.handles[0].position[1])
+            self.text[1].position = (self.handles[1].center[0] - 35,
+                                     self.handles[1].position[1])
+
+    @property
+    def bottom_y_position(self):
+        return self.track.position[1]
+
+    @property
+    def top_y_position(self):
+        return self.track.position[1] + self.track.size[1]
 
     @property
     def left_x_position(self):
@@ -2256,7 +2357,9 @@ class LineDoubleSlider2D(UI):
         ----------
         ratio : float
         """
-        return self.left_x_position + ratio * self.track.width
+        if self.orientation == "horizontal":
+            return self.left_x_position + ratio * self.track.width
+        return self.bottom_y_position + ratio * self.track.height
 
     def coord_to_ratio(self, coord):
         """ Converts the x coordinate of a disk to the ratio
@@ -2265,7 +2368,9 @@ class LineDoubleSlider2D(UI):
         ----------
         coord : float
         """
-        return (coord - self.left_x_position) / self.track.width
+        if self.orientation == "horizontal":
+            return (coord - self.left_x_position) / float(self.track.width)
+        return (coord - self.bottom_y_position) / float(self.track.height)
 
     def ratio_to_value(self, ratio):
         """ Converts the ratio to the value of the disk.
@@ -2287,21 +2392,72 @@ class LineDoubleSlider2D(UI):
         disk_number : int
             The index of disk being moved.
         """
-        x_position = position[0]
 
-        if disk_number == 0 and x_position >= self.handles[1].center[0]:
-            x_position = self.ratio_to_coord(
-                self.value_to_ratio(self._values[1] - 1))
+        if self.orientation == "horizontal":
+            x_position = position[0]
 
-        if disk_number == 1 and x_position <= self.handles[0].center[0]:
-            x_position = self.ratio_to_coord(
-                self.value_to_ratio(self._values[0] + 1))
+            if disk_number == 0 and x_position >= self.handles[1].center[0]:
+                x_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1] - 1))
 
-        x_position = max(x_position, self.left_x_position)
-        x_position = min(x_position, self.right_x_position)
+            if disk_number == 1 and x_position <= self.handles[0].center[0]:
+                x_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[0] + 1))
 
-        self.handles[disk_number].center = (x_position, self.track.center[1])
+            x_position = max(x_position, self.left_x_position)
+            x_position = min(x_position, self.right_x_position)
+
+            self.handles[disk_number].center = \
+                (x_position, self.track.center[1])
+        else:
+            y_position = position[1]
+
+            if disk_number == 0 and y_position >= self.handles[1].center[1]:
+                y_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[1] - 1))
+
+            if disk_number == 1 and y_position <= self.handles[0].center[1]:
+                y_position = self.ratio_to_coord(
+                    self.value_to_ratio(self._values[0] + 1))
+
+            y_position = max(y_position, self.bottom_y_position)
+            y_position = min(y_position, self.top_y_position)
+
+            self.handles[disk_number].center = \
+                (self.track.center[0], y_position)
         self.update(disk_number)
+
+    @property
+    def bottom_disk_value(self):
+        """ Returns the value of the bottom disk. """
+        return self._values[0]
+
+    @bottom_disk_value.setter
+    def bottom_disk_value(self, bottom_disk_value):
+        """ Sets the value of the bottom disk.
+
+        Parameters
+        ----------
+        bottom_disk_value : float
+            New value for the bottom disk.
+        """
+        self.bottom_disk_ratio = self.value_to_ratio(bottom_disk_value)
+
+    @property
+    def top_disk_value(self):
+        """ Returns the value of the top disk. """
+        return self._values[1]
+
+    @top_disk_value.setter
+    def top_disk_value(self, top_disk_value):
+        """ Sets the value of the top disk.
+
+        Parameters
+        ----------
+        top_disk_value : float
+            New value for the top disk.
+        """
+        self.top_disk_ratio = self.value_to_ratio(top_disk_value)
 
     @property
     def left_disk_value(self):
@@ -2334,6 +2490,42 @@ class LineDoubleSlider2D(UI):
         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
 
     @property
+    def bottom_disk_ratio(self):
+        """ Returns the ratio of the bottom disk. """
+        return self._ratio[0]
+
+    @bottom_disk_ratio.setter
+    def bottom_disk_ratio(self, bottom_disk_ratio):
+        """ Sets the ratio of the bottom disk.
+
+        Parameters
+        ----------
+        bottom_disk_ratio : float
+            New ratio for the bottom disk.
+        """
+        position_x = self.ratio_to_coord(bottom_disk_ratio)
+        position_y = self.ratio_to_coord(bottom_disk_ratio)
+        self.set_position((position_x, position_y), 0)
+
+    @property
+    def top_disk_ratio(self):
+        """ Returns the ratio of the top disk. """
+        return self._ratio[1]
+
+    @top_disk_ratio.setter
+    def top_disk_ratio(self, top_disk_ratio):
+        """ Sets the ratio of the top disk.
+
+        Parameters
+        ----------
+        top_disk_ratio : float
+            New ratio for the top disk.
+        """
+        position_x = self.ratio_to_coord(top_disk_ratio)
+        position_y = self.ratio_to_coord(top_disk_ratio)
+        self.set_position((position_x, position_y), 1)
+
+    @property
     def left_disk_ratio(self):
         """ Returns the ratio of the left disk. """
         return self._ratio[0]
@@ -2347,7 +2539,8 @@ class LineDoubleSlider2D(UI):
         left_disk_ratio : New ratio for the left disk.
         """
         position_x = self.ratio_to_coord(left_disk_ratio)
-        self.set_position((position_x, None), 0)
+        position_y = self.ratio_to_coord(left_disk_ratio)
+        self.set_position((position_x, position_y), 0)
 
     @property
     def right_disk_ratio(self):
@@ -2363,7 +2556,8 @@ class LineDoubleSlider2D(UI):
         right_disk_ratio : New ratio for the right disk.
         """
         position_x = self.ratio_to_coord(right_disk_ratio)
-        self.set_position((position_x, None), 1)
+        position_y = self.ratio_to_coord(right_disk_ratio)
+        self.set_position((position_x, position_y), 1)
 
     def format_text(self, disk_number):
         """ Returns formatted text to display along the slider.
@@ -2389,8 +2583,12 @@ class LineDoubleSlider2D(UI):
         """
 
         # Compute the ratio determined by the position of the slider disk.
-        self._ratio[disk_number] = self.coord_to_ratio(
-            self.handles[disk_number].center[0])
+        if self.orientation == "horizontal":
+            self._ratio[disk_number] = self.coord_to_ratio(
+                self.handles[disk_number].center[0])
+        else:
+            self._ratio[disk_number] = self.coord_to_ratio(
+                self.handles[disk_number].center[1])
 
         # Compute the selected value considering min_value and max_value.
         self._values[disk_number] = self.ratio_to_value(
@@ -2400,9 +2598,14 @@ class LineDoubleSlider2D(UI):
         text = self.format_text(disk_number)
         self.text[disk_number].message = text
 
-        self.text[disk_number].position = (
-            self.handles[disk_number].center[0],
-            self.text[disk_number].position[1])
+        if self.orientation == "horizontal":
+            self.text[disk_number].position = (
+                self.handles[disk_number].center[0],
+                self.text[disk_number].position[1])
+        else:
+            self.text[disk_number].position = (
+                self.text[disk_number].position[0],
+                self.handles[disk_number].center[1])
         self.on_change(self)
 
     def handle_move_callback(self, i_ren, vtkactor, _slider):
@@ -3414,14 +3617,14 @@ class ListBox2D(UI):
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
         # Initialisation of empty text actors
-        slot_width = size[0] - self.scroll_bar.size[0] - \
+        self.slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
             y -= self.slot_height
             item = ListBoxItem2D(list_box=self,
-                                 size=(slot_width, self.slot_height),
+                                 size=(self.slot_width, self.slot_height),
                                  text_color=self.text_color,
                                  selected_color=self.selected_color,
                                  unselected_color=self.unselected_color,
@@ -3619,7 +3822,16 @@ class ListBox2D(UI):
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            slot.element = choice
+            char_width = slot.textblock.size[0] - self.margin
+            permissible_chars = int(self.slot_width)//char_width
+            total_chars = len(str(choice))
+            if total_chars > permissible_chars:
+                excess_chars = total_chars - permissible_chars
+                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
+                slot.element = choice
+                slot.textblock.message = wrapped_choice
+            else:
+                slot.element = choice
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
