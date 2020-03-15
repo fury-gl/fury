@@ -4,6 +4,5 @@ codecov
 coverage
 flake8
 pytest
-nose
 # temporary Dependency for the tests
 dipy

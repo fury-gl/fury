@@ -3034,7 +3034,7 @@ class Option(UI):
             the button of the option.
         font_size : int
             Font size of the label.
-        checked : bool
+        checked : bool, optional
             Boolean value indicates the initial state of the option
         """
         self.label = label
@@ -3136,7 +3136,7 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, checked_labels=None, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels=[], padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3152,7 +3152,7 @@ class Checkbox(UI):
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
-        checked_labels: list(string)
+        checked_labels: list(string), optional
             List of labels that are checked on setting up.
         """
 
@@ -3160,8 +3160,7 @@ class Checkbox(UI):
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
-        self.checked_labels = []
-        self.checked_labels.extend(checked_labels)
+        self.checked_labels = list(checked_labels)
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
 
@@ -3171,12 +3170,11 @@ class Checkbox(UI):
         self.options = []
         button_y = self.position[1]
         for label in self.labels:
-            checked = bool(label in self.checked_labels)
 
             option = Option(label=label,
                             font_size=self.font_size,
                             position=(self.position[0], button_y),
-                            checked=checked)
+                            checked=(label in self.checked_labels))
 
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = button_y + self.font_size * \
@@ -3283,10 +3281,12 @@ class RadioButton(Checkbox):
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
+        checked_labels: list(string), optional
+            List of labels that are checked on setting up.
         """
         if len(checked_labels) > 1:
-            raise ValueError("Only one option \
-                             can be pre-selected for radio buttons.")
+            err_msg = "Only one option can be pre-selected for radio buttons."
+            raise ValueError(err_msg)
 
         super(RadioButton, self).__init__(labels=labels, position=position,
                                           padding=padding,

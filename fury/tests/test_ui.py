@@ -782,7 +782,7 @@ def test_ui_radio_button_default(interactive=False):
         showm.start()
 
 
-def test_multiple_raio_button_pre_selected():
+def test_multiple_radio_button_pre_selected():
     npt.assert_raises(ValueError,
                       ui.RadioButton,
                       labels=["option 1", "option 2\nOption 2",
