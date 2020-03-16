@@ -3226,7 +3226,7 @@ class Option(UI):
             Font Size of the label.
     """
 
-    def __init__(self, label, position=(0, 0), font_size=18):
+    def __init__(self, label, position=(0, 0), font_size=18, checked=False):
         """
         Parameters
         ----------
@@ -3237,10 +3237,12 @@ class Option(UI):
             the button of the option.
         font_size : int
             Font size of the label.
+        checked : bool, optional
+            Boolean value indicates the initial state of the option
         """
         self.label = label
         self.font_size = font_size
-        self.checked = False
+        self.checked = checked
         self.button_size = (font_size * 1.2, font_size * 1.2)
         self.button_label_gap = 10
         super(Option, self).__init__(position)
@@ -3261,6 +3263,10 @@ class Option(UI):
                                size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
+
+        # Display initial state
+        if self.checked:
+            self.button.set_icon_by_name("checked")
 
         # Add callbacks
         self.button.on_left_mouse_button_clicked = self.toggle
@@ -3333,7 +3339,7 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels=None, padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3349,14 +3355,17 @@ class Checkbox(UI):
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
+        checked_labels: list(string), optional
+            List of labels that are checked on setting up.
         """
+
         self.labels = list(reversed(labels))
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
+        self.checked_labels = checked_labels or []
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
-        self.checked = []
 
     def _setup(self):
         """ Setup this UI component.
@@ -3364,9 +3373,12 @@ class Checkbox(UI):
         self.options = []
         button_y = self.position[1]
         for label in self.labels:
+
             option = Option(label=label,
                             font_size=self.font_size,
-                            position=(self.position[0], button_y))
+                            position=(self.position[0], button_y),
+                            checked=(label in self.checked_labels))
+
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
             button_y = button_y + self.font_size * \
                 (label.count('\n') + 1) * (line_spacing + 0.1) + self.padding
@@ -3407,9 +3419,9 @@ class Checkbox(UI):
         option : :class:`Option`
         """
         if option.checked:
-            self.checked.append(option.label)
+            self.checked_labels.append(option.label)
         else:
-            self.checked.remove(option.label)
+            self.checked_labels.remove(option.label)
 
         self.on_change(self)
 
@@ -3456,7 +3468,7 @@ class RadioButton(Checkbox):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels, padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3472,18 +3484,25 @@ class RadioButton(Checkbox):
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
+        checked_labels: list(string), optional
+            List of labels that are checked on setting up.
         """
+        if len(checked_labels) > 1:
+            err_msg = "Only one option can be pre-selected for radio buttons."
+            raise ValueError(err_msg)
+
         super(RadioButton, self).__init__(labels=labels, position=position,
                                           padding=padding,
                                           font_size=font_size,
-                                          font_family=font_family)
+                                          font_family=font_family,
+                                          checked_labels=checked_labels)
 
     def _handle_option_change(self, option):
         for option_ in self.options:
             option_.deselect()
 
         option.select()
-        self.checked = [option.label]
+        self.checked_labels = [option.label]
         self.on_change(self)
 
 
