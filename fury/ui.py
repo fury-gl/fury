@@ -3363,9 +3363,7 @@ class Checkbox(UI):
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
-        if checked_labels is None:
-            self.checked_labels = []
-        self.checked_labels = list(checked_labels)
+        self.checked_labels = checked_labels or []
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
 
