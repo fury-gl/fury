@@ -2932,7 +2932,7 @@ class RangeSlider(UI):
                  handle_side=20, range_slider_center=(450, 400),
                  value_slider_center=(450, 300), length=200, min_value=0,
                  max_value=100, font_size=16, range_precision=1,
-                 value_precision=2, shape="disk"):
+                 orientation="horizontal", value_precision=2, shape="disk"):
         """
         Parameters
         ----------
@@ -2958,6 +2958,8 @@ class RangeSlider(UI):
             Size of the text to display alongside the sliders (pt).
         range_precision : int
             Number of decimal places to show the min and max values set.
+        orientation : str
+            horizontal or vertical
         value_precision : int
             Number of decimal places to show the value set on slider.
         shape : string
@@ -2973,6 +2975,7 @@ class RangeSlider(UI):
         self.line_width = line_width
         self.font_size = font_size
         self.shape = shape
+        self.orientation = orientation.lower()
 
         self.range_slider_text_template = \
             "{value:." + str(range_precision) + "f}"
@@ -2997,6 +3000,7 @@ class RangeSlider(UI):
                                initial_values=(self.min_value,
                                                self.max_value),
                                font_size=self.font_size, shape=self.shape,
+                               orientation=self.orientation,
                                text_template=self.range_slider_text_template)
 
         self.value_slider = \
@@ -3008,6 +3012,7 @@ class RangeSlider(UI):
                          min_value=self.min_value, max_value=self.max_value,
                          initial_value=(self.min_value + self.max_value) / 2,
                          font_size=self.font_size, shape=self.shape,
+                         orientation=self.orientation,
                          text_template=self.value_slider_text_template)
 
         # Add default events listener for this UI component.
