@@ -489,8 +489,8 @@ class ShowManager(object):
 
     def render(self):
         """Render only once."""
-        self.window.Render() 
-        if self.title=="FURY":
+        self.window.Render()
+        if self.title == "FURY":
             self.window.SetWindowName(self.title + " " + fury_version)
         else:
             self.window.SetWindowName(self.title)
