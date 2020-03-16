@@ -3345,7 +3345,7 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, checked_labels=None, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels=(), padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
@@ -3369,7 +3369,7 @@ class Checkbox(UI):
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
-        self.checked_labels = list(checked_labels) or []
+        self.checked_labels = list(checked_labels)
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
 
