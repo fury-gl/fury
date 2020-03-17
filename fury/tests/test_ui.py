@@ -414,7 +414,7 @@ def test_ui_line_slider_2d_horizontal_bottom(recording=False):
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
                                           orientation="horizontal",
-                                          alignment='bottom')
+                                          text_alignment='bottom')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -446,7 +446,7 @@ def test_ui_line_slider_2d_horizontal_top(recording=False):
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
                                           orientation="horizontal",
-                                          alignment='top')
+                                          text_alignment='top')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -478,7 +478,7 @@ def test_ui_line_slider_2d_vertical_left(recording=False):
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
                                           orientation="vertical",
-                                          alignment='left')
+                                          text_alignment='left')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -510,7 +510,7 @@ def test_ui_line_slider_2d_vertical_right(recording=False):
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
                                           min_value=-5, max_value=5,
                                           orientation="vertical",
-                                          alignment='right')
+                                          text_alignment='right')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.

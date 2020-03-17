@@ -46,24 +46,24 @@ ring_slider = ui.RingSlider2D(center=(630, 400), initial_value=0,
 hor_line_slider_text_top = ui.LineSlider2D(center=(400, 230), initial_value=0,
                                            orientation='horizontal',
                                            min_value=-10, max_value=10,
-                                           alignment='top')
+                                           text_alignment='top')
 
 hor_line_slider_text_bottom = ui.LineSlider2D(center=(400, 200),
                                               initial_value=0,
                                               orientation='horizontal',
                                               min_value=-10, max_value=10,
-                                              alignment='bottom')
+                                              text_alignment='bottom')
 
 ver_line_slider_text_left = ui.LineSlider2D(center=(100, 400), initial_value=0,
                                             orientation='vertical',
                                             min_value=-10, max_value=10,
-                                            alignment='left')
+                                            text_alignment='left')
 
 ver_line_slider_text_right = ui.LineSlider2D(center=(150, 400),
                                              initial_value=0,
                                              orientation='vertical',
                                              min_value=-10, max_value=10,
-                                             alignment='right')
+                                             text_alignment='right')
 
 
 ###############################################################################

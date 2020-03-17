@@ -1791,10 +1791,8 @@ class LineSlider2D(UI):
                  initial_value=50, min_value=0, max_value=100,
                  length=200, line_width=5,
                  inner_radius=0, outer_radius=10, handle_side=20,
-                 font_size=16,
-                 orientation="horizontal",
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk",
-                 alignment=''):
+                 font_size=16, orientation="horizontal", text_alignment='',
+                 text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
         """
         Parameters
         ----------
@@ -1820,6 +1818,9 @@ class LineSlider2D(UI):
             Size of the text to display alongside the slider (pt).
         orientation : str
             horizontal or vertical
+        text_alignment : str
+            define text alignment on a slider. Left (default)/ right for the
+            vertical slider or top/bottom (default) for an horizontal slider.
         text_template : str, callable
             If str, text template can contain one or multiple of the
             replacement fields: `{value:}`, `{ratio:}`.
@@ -1835,7 +1836,7 @@ class LineSlider2D(UI):
                            'vertical': ['left', 'right']}
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
-        self.alignment = alignment.lower()
+        self.alignment = text_alignment.lower()
         super(LineSlider2D, self).__init__()
 
         if self.orientation == "horizontal":
@@ -3344,31 +3345,31 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, checked_labels=None, padding=1, font_size=18,
+    def __init__(self, labels, checked_labels=(), padding=1, font_size=18,
                  font_family='Arial', position=(0, 0)):
         """
         Parameters
         ----------
-        labels : list(string)
+        labels : list(str)
             List of labels of each option.
-        padding : float
+        checked_labels: list(str), optional
+            List of labels that are checked on setting up.
+        padding : float, optional
             The distance between two adjacent options
-        font_size : int
+        font_size : int, optional
             Size of the text font.
-        font_family : str
+        font_family : str, optional
             Currently only supports Arial.
-        position : (float, float)
+        position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
-        checked_labels: list(string), optional
-            List of labels that are checked on setting up.
         """
 
         self.labels = list(reversed(labels))
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
-        self.checked_labels = checked_labels or []
+        self.checked_labels = list(checked_labels)
         super(Checkbox, self).__init__(position)
         self.on_change = lambda checkbox: None
 
@@ -3478,19 +3479,19 @@ class RadioButton(Checkbox):
         """
         Parameters
         ----------
-        labels : list(string)
+        labels : list(str)
             List of labels of each option.
-        padding : float
+        checked_labels: list(str), optional
+            List of labels that are checked on setting up.
+        padding : float, optional
             The distance between two adjacent options
-        font_size : int
+        font_size : int, optional
             Size of the text font.
-        font_family : str
+        font_family : str, optional
             Currently only supports Arial.
-        position : (float, float)
+        position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of
             the button of the first option.
-        checked_labels: list(string), optional
-            List of labels that are checked on setting up.
         """
         if len(checked_labels) > 1:
             err_msg = "Only one option can be pre-selected for radio buttons."
