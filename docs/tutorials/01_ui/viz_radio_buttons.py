@@ -23,23 +23,23 @@ def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
     cube.SetXLength(size[0])
     cube.SetYLength(size[1])
     cube.SetZLength(size[2])
-    
+
     if center is not None:
         cube.SetCenter(*center)
-    
+
     cube_mapper = window.vtk.vtkPolyDataMapper()
     cube_mapper.SetInputConnection(cube.GetOutputPort())
     cube_actor = window.vtk.vtkActor()
     cube_actor.SetMapper(cube_mapper)
-    
+
     if color is not None:
         cube_actor.GetProperty().SetColor(color)
-    
+
     return cube_actor
 
 
 # Creating a dict of possible options and mapping it with their values.
-options = {'Blue': (0, 0, 1) , 'Red': (1, 0, 0), 'Green': (0, 1, 0)}
+options = {'Blue': (0, 0, 1), 'Red': (1, 0, 0), 'Green': (0, 1, 0)}
 
 color_toggler = ui.RadioButton(list(options), checked_labels=['Blue'],
                                padding=1, font_size=16,
@@ -52,7 +52,9 @@ def toggle_color(radio):
     color = options[radio.checked_labels[0]]
     cube.GetProperty().SetColor(*color)
 
+
 color_toggler.on_change = toggle_color
+
 
 ###############################################################################
 # Show Manager
