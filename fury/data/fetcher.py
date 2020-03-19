@@ -296,7 +296,7 @@ fetch_viz_models = _make_fetcher("fetch_viz_models",
                                  ['utah.obj', 'suzanne.obj'],
                                  ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3',
                                   'BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621'],
-                                 doc="Download the model for shader tutorial"
+                                 doc=" Download the models for shader tutorial"
                                  )
 
 
