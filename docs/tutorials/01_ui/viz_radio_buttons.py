@@ -13,7 +13,7 @@ from fury import ui, window
 
 ########################################################################
 # Cube and Radio Buttons
-# ================
+# ======================
 #
 # Add a cube to the scene.
 
@@ -47,6 +47,7 @@ color_toggler = ui.RadioButton(list(options), checked_labels=['Blue'],
 
 cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 
+
 # A callback which will set the values for the box
 def toggle_color(radio):
     color = options[radio.checked_labels[0]]
@@ -58,13 +59,13 @@ color_toggler.on_change = toggle_color
 
 ###############################################################################
 # Show Manager
-# ============================================================================
+# ============
 #
 # Now that all the elements have been initialised, we add them to the show
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="DIPY Cube Example")
+show_manager = window.ShowManager(size=current_size, title="FURY Cube Example")
 
 show_manager.scene.add(cube)
 show_manager.scene.add(color_toggler)
