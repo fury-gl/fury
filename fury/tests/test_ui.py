@@ -406,13 +406,15 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
-def test_ui_line_slider_2d(recording=False):
-    filename = "test_ui_line_slider_2d"
+def test_ui_line_slider_2d_horizontal_bottom(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal_bottom"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
-                                          min_value=-5, max_value=5)
+                                          min_value=-5, max_value=5,
+                                          orientation="horizontal",
+                                          text_alignment='bottom')
     line_slider_2d_test.center = (300, 300)
 
     # Assign the counter callback to every possible event.
@@ -421,7 +423,103 @@ def test_ui_line_slider_2d(recording=False):
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
-                                      title="FURY Line Slider")
+                                      title="FURY Horizontal Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_horizontal_top(recording=False):
+    filename = "test_ui_line_slider_2d_horizontal_top"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="horizontal",
+                                          text_alignment='top')
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Horizontal Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_vertical_left(recording=False):
+    filename = "test_ui_line_slider_2d_vertical_left"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="vertical",
+                                          text_alignment='left')
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Vertical Line Slider")
+
+    show_manager.scene.add(line_slider_2d_test)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_line_slider_2d_vertical_right(recording=False):
+    filename = "test_ui_line_slider_2d_vertical_right"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d_test = ui.LineSlider2D(initial_value=-2,
+                                          min_value=-5, max_value=5,
+                                          orientation="vertical",
+                                          text_alignment='right')
+    line_slider_2d_test.center = (300, 300)
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d_test)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Vertical Line Slider")
 
     show_manager.scene.add(line_slider_2d_test)
 
@@ -437,30 +535,69 @@ def test_ui_line_slider_2d(recording=False):
 
 
 def test_ui_line_double_slider_2d(interactive=False):
-    line_double_slider_2d_test = ui.LineDoubleSlider2D(
+    line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
         max_value=10, initial_values=(-10, 10))
-    npt.assert_equal(line_double_slider_2d_test.handles[0].size, (30, 30))
-    npt.assert_equal(line_double_slider_2d_test.left_disk_value, -10)
-    npt.assert_equal(line_double_slider_2d_test.right_disk_value, 10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 10)
+
+    line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
+        center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
+        max_value=10, initial_values=(-10, 10))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (30, 30))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value, -10)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 10)
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_horizontal_test)
+        show_manager.scene.add(line_double_slider_2d_vertical_test)
         show_manager.start()
 
-    line_double_slider_2d_test = ui.LineDoubleSlider2D(
+    line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="square", handle_side=5,
-        initial_values=(50, 40))
-    npt.assert_equal(line_double_slider_2d_test.handles[0].size, (5, 5))
-    npt.assert_equal(line_double_slider_2d_test._values[0], 39)
-    npt.assert_equal(line_double_slider_2d_test.right_disk_value, 40)
+        orientation="horizontal", initial_values=(50, 40))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_value, 39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.left_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_horizontal_test.right_disk_ratio, 0.4)
+
+    line_double_slider_2d_vertical_test = ui.LineDoubleSlider2D(
+        center=(300, 300), shape="square", handle_side=5,
+        orientation="vertical", initial_values=(50, 40))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.handles[0].size, (5, 5))
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_value, 39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_value, 40)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.bottom_disk_ratio, 0.39)
+    npt.assert_equal(
+        line_double_slider_2d_vertical_test.top_disk_ratio, 0.4)
+
+    with npt.assert_raises(ValueError):
+        ui.LineDoubleSlider2D(orientation="Not_hor_not_vert")
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(line_double_slider_2d_test)
+        show_manager.scene.add(line_double_slider_2d_horizontal_test)
+        show_manager.scene.add(line_double_slider_2d_vertical_test)
         show_manager.start()
 
 
@@ -502,12 +639,15 @@ def test_ui_ring_slider_2d(recording=False):
 
 
 def test_ui_range_slider(interactive=False):
-    range_slider_test = ui.RangeSlider(shape="square")
+    range_slider_test_horizontal = ui.RangeSlider(shape="square")
+    range_slider_test_vertical = ui.RangeSlider(shape="square",
+                                                orientation="vertical")
 
     if interactive:
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY Line Double Slider")
-        show_manager.scene.add(range_slider_test)
+        show_manager.scene.add(range_slider_test_horizontal)
+        show_manager.scene.add(range_slider_test_vertical)
         show_manager.start()
 
 
@@ -522,18 +662,83 @@ def test_ui_option(interactive=False):
         showm.start()
 
 
-def test_ui_checkbox(interactive=False):
+def test_ui_checkbox_initial_state(interactive=False):
     filename = "test_ui_checkbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
                                         "option 3", "option 4"],
-                                position=(10, 10))
+                                position=(100, 100),
+                                checked_labels=["option 1", "option 4"])
+
+    # Collect the sequence of options that have been checked in this list.
+    selected_options = []
+
+    def _on_change(checkbox):
+        selected_options.append(list(checkbox.checked_labels))
+
+    # Set up a callback when selection changes
+    checkbox_test.on_change = _on_change
+
+    event_counter = EventCounter()
+    event_counter.monitor(checkbox_test)
+
+    # Create a show manager and record/play events.
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Checkbox")
+    show_manager.scene.add(checkbox_test)
+    show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Recorded events:
+    #  1. Click on button of option 1.
+    #  2. Click on button of option 2.
+    #  3. Click on button of option 1.
+    #  4. Click on text of option 3.
+    #  5. Click on text of option 1.
+    #  6. Click on button of option 4.
+    #  7. Click on text of option 1.
+    #  8. Click on text of option 2.
+    #  9. Click on text of option 4.
+    #  10. Click on button of option 3.
+    # Check if the right options were selected.
+    expected = [['option 4'], ['option 4', 'option 2\nOption 2'],
+                ['option 4', 'option 2\nOption 2', 'option 1'],
+                ['option 4', 'option 2\nOption 2', 'option 1', 'option 3'],
+                ['option 4', 'option 2\nOption 2', 'option 3'],
+                ['option 2\nOption 2', 'option 3'],
+                ['option 2\nOption 2', 'option 3', 'option 1'],
+                ['option 3', 'option 1'], ['option 3', 'option 1', 'option 4'],
+                ['option 1', 'option 4']]
+
+    npt.assert_equal(len(selected_options), len(expected))
+    assert_arrays_equal(selected_options, expected)
+    del show_manager
+
+    if interactive:
+        checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
+                                            "option 3", "option 4"],
+                                    position=(100, 100), checked_labels=[])
+        showm = window.ShowManager(size=(600, 600))
+        showm.scene.add(checkbox_test)
+        showm.start()
+
+
+def test_ui_checkbox_default(interactive=False):
+    filename = "test_ui_checkbox"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
+                                        "option 3", "option 4"],
+                                position=(10, 10), checked_labels=[])
 
     old_positions = []
     for option in checkbox_test.options:
         old_positions.append(option.position)
+
     old_positions = np.asarray(old_positions)
     checkbox_test.position = (100, 100)
     new_positions = []
@@ -547,7 +752,7 @@ def test_ui_checkbox(interactive=False):
     selected_options = []
 
     def _on_change(checkbox):
-        selected_options.append(list(checkbox.checked))
+        selected_options.append(list(checkbox.checked_labels))
 
     # Set up a callback when selection changes
     checkbox_test.on_change = _on_change
@@ -589,37 +794,25 @@ def test_ui_checkbox(interactive=False):
     if interactive:
         checkbox_test = ui.Checkbox(labels=["option 1", "option 2\nOption 2",
                                             "option 3", "option 4"],
-                                    position=(100, 100))
+                                    position=(100, 100), checked_labels=[])
         showm = window.ShowManager(size=(600, 600))
         showm.scene.add(checkbox_test)
         showm.start()
 
 
-def test_ui_radio_button(interactive=False):
+def test_ui_radio_button_initial_state(interactive=False):
     filename = "test_ui_radio_button"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     radio_button_test = ui.RadioButton(
         labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-        position=(10, 10))
-
-    old_positions = []
-    for option in radio_button_test.options:
-        old_positions.append(option.position)
-    old_positions = np.asarray(old_positions)
-    radio_button_test.position = (100, 100)
-    new_positions = []
-    for option in radio_button_test.options:
-        new_positions.append(option.position)
-    new_positions = np.asarray(new_positions)
-    npt.assert_allclose(new_positions - old_positions,
-                        90 * np.ones((4, 2)))
+        position=(100, 100), checked_labels=['option 4'])
 
     selected_option = []
 
     def _on_change(radio_button):
-        selected_option.append(radio_button.checked)
+        selected_option.append(radio_button.checked_labels)
 
     # Set up a callback when selection changes
     radio_button_test.on_change = _on_change
@@ -656,10 +849,85 @@ def test_ui_radio_button(interactive=False):
     if interactive:
         radio_button_test = ui.RadioButton(
             labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-            position=(100, 100))
+            position=(100, 100), checked_labels=[])
         showm = window.ShowManager(size=(600, 600))
         showm.scene.add(radio_button_test)
         showm.start()
+
+
+def test_ui_radio_button_default(interactive=False):
+    filename = "test_ui_radio_button"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    radio_button_test = ui.RadioButton(
+        labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+        position=(10, 10), checked_labels=[])
+
+    old_positions = []
+    for option in radio_button_test.options:
+        old_positions.append(option.position)
+    old_positions = np.asarray(old_positions)
+    radio_button_test.position = (100, 100)
+    new_positions = []
+    for option in radio_button_test.options:
+        new_positions.append(option.position)
+    new_positions = np.asarray(new_positions)
+    npt.assert_allclose(new_positions - old_positions,
+                        90 * np.ones((4, 2)))
+
+    selected_option = []
+
+    def _on_change(radio_button):
+        selected_option.append(radio_button.checked_labels)
+
+    # Set up a callback when selection changes
+    radio_button_test.on_change = _on_change
+
+    event_counter = EventCounter()
+    event_counter.monitor(radio_button_test)
+
+    # Create a show manager and record/play events.
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Checkbox")
+    show_manager.scene.add(radio_button_test)
+
+    # Recorded events:
+    #  1. Click on button of option 1.
+    #  2. Click on button of option 2.
+    #  3. Click on button of option 2.
+    #  4. Click on text of option 2.
+    #  5. Click on button of option 1.
+    #  6. Click on text of option 3.
+    #  7. Click on button of option 4.
+    #  8. Click on text of option 4.
+    show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Check if the right options were selected.
+    expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+                ['option 2\nOption 2'], ['option 1'], ['option 3'],
+                ['option 4'], ['option 4']]
+    npt.assert_equal(len(selected_option), len(expected))
+    assert_arrays_equal(selected_option, expected)
+    del show_manager
+
+    if interactive:
+        radio_button_test = ui.RadioButton(
+            labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
+            position=(100, 100), checked_labels=[])
+        showm = window.ShowManager(size=(600, 600))
+        showm.scene.add(radio_button_test)
+        showm.start()
+
+
+def test_multiple_radio_button_pre_selected():
+    npt.assert_raises(ValueError,
+                      ui.RadioButton,
+                      labels=["option 1", "option 2\nOption 2",
+                              "option 3", "option 4"],
+                      checked_labels=["option 1", "option 4"])
 
 
 def test_ui_listbox_2d(interactive=False):
@@ -669,6 +937,7 @@ def test_ui_listbox_2d(interactive=False):
 
     # Values that will be displayed by the listbox.
     values = list(range(1, 42 + 1))
+    values.append("A Very Very Long Item To Test Text Overflow of List Box 2D")
 
     if interactive:
         listbox = ui.ListBox2D(values=values,
@@ -690,11 +959,11 @@ def test_ui_listbox_2d(interactive=False):
     #  2. Ctrl + click on 2,
     #  3. Ctrl + click on 2.
     #  4. Use scroll bar to scroll to the bottom.
-    #  5. Click on 42.
+    #  5. Click on "A Very Very Long Item...".
     #  6. Use scroll bar to scroll to the top.
     #  7. Click on 1
     #  8. Use mouse wheel to scroll down.
-    #  9. Shift + click on 42.
+    #  9. Shift + click on "A Very Very Long Item...".
     # 10. Use mouse wheel to scroll back up.
 
     listbox = ui.ListBox2D(values=values,
@@ -724,7 +993,8 @@ def test_ui_listbox_2d(interactive=False):
     event_counter.check_counts(expected)
 
     # Check if the right values were selected.
-    expected = [[1], [1, 2], [1], [42], [1], values]
+    expected = [[1], [1, 2], [1], ["A Very Very Long Item To \
+Test Text Overflow of List Box 2D"], [1], values]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -734,7 +1004,9 @@ def test_ui_listbox_2d(interactive=False):
     show_manager.play_events_from_file(recording_filename)
 
     # Check if the right values were selected.
-    expected = [[1], [2], [2], [42], [1], [42]]
+    expected = [[1], [2], [2], ["A Very Very Long Item To \
+Test Text Overflow of List Box 2D"], [1], ["A Very Very Long Item To Test \
+Text Overflow of List Box 2D"]]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
@@ -1110,10 +1382,3 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
-
-
-if __name__ == "__main__":
-
-    npt.run_module_suite()
-
-
