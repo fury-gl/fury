@@ -96,11 +96,11 @@ def cone_maker(color=(1, 1, 1), radius=5.0, center=(0, 0, 0),
 # =========================
 
 
-def arrow_maker(color=(1, 1, 1), start_point=(0, 25, 0), 
-                end_point=(40, 25, 0), shaft_resolution=50, 
+def arrow_maker(color=(1, 1, 1), start_point=(0, 25, 0),
+                end_point=(40, 25, 0), shaft_resolution=50,
                 tip_resolution=50):
 
-    #Create an arrow.
+    # Create an arrow.
     arrow = window.vtk.vtkArrowSource()
     arrow.SetShaftResolution(shaft_resolution)
     arrow.SetTipResolution(tip_resolution)
@@ -143,7 +143,7 @@ def arrow_maker(color=(1, 1, 1), start_point=(0, 25, 0),
     transformPD.SetTransform(transform)
     transformPD.SetInputConnection(arrow.GetOutputPort())
 
-    #Create a mapper and actor for the arrow
+    # Create a mapper and actor for the arrow
     arrow_mapper = window.vtk.vtkPolyDataMapper()
     arrow_actor = window.vtk.vtkActor()
     arrow_actor.SetUserMatrix(transform.GetMatrix())
@@ -188,7 +188,7 @@ def toggle_color(radio):
 cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
 sphere = sphere_maker(color=(0, 0, 1), radius=11.0, center=(50, 0, 0),
                       theta_resolution=360, phi_resolution=360)
-cone = cone_maker(color=(0, 0, 1), radius=10.0, center=(-20,-0.5,0),
+cone = cone_maker(color=(0, 0, 1), radius=10.0, center=(-20, -0.5, 0),
                   height=20)
 arrow = arrow_maker(color=(0, 0, 1), start_point=(0, 25, 0),
                     end_point=(40, 25, 0), shaft_resolution=50,
