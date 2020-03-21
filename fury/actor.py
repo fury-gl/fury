@@ -443,6 +443,43 @@ def contour_from_roi(data, affine=None,
 
     return skin_actor
 
+def contour_from_label(data, affine=None,
+                       color=np.array([1, 0, 0]), opacity=1):
+    """Generate surface actor from a binary labeled Array.
+
+    The color and opacity of the surface can be customized.
+
+    Parameters
+    ----------
+    data : array, shape (X, Y, Z)
+        A labeled array file that will be binarized and displayed.
+    affine : array, shape (4, 4)
+        Grid to space (usually RAS 1mm) transformation matrix. Default is None.
+        If None then the identity matrix is used.
+    color : (1, 3) ndarray
+        RGB values in [0,1].
+    opacity : float
+        Opacity of surface between 0 and 1.
+
+    Returns
+    -------
+    tuple of contour_assembly : vtkAssembly
+        Tuple of Array surface object displayed in space
+        coordinates as calculated by the affine parameter
+        in the order of their roi ids.
+    """
+    unique_roi_surfaces = []
+
+    unique_roi_id = np.unique(data)
+
+    for roi_id in unique_roi_id:
+        if roi_id != 0:
+            roi_surface = np.isin(data, roi_id)
+            roi_surface = roi_surface * 1
+            roi_surface = contour_from_roi(roi_surface, affine, color=color, opacity=opacity)
+            unique_roi_surfaces.append(roi_surface)
+
+    return tuple(unique_roi_surfaces)
 
 def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
