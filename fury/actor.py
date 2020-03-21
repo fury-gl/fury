@@ -443,6 +443,7 @@ def contour_from_roi(data, affine=None,
 
     return skin_actor
 
+
 def contour_from_label(data, affine=None,
                        color=np.array([1, 0, 0]), opacity=1):
     """Generate surface actor from a binary labeled Array.
@@ -476,10 +477,11 @@ def contour_from_label(data, affine=None,
         if roi_id != 0:
             roi_surface = np.isin(data, roi_id)
             roi_surface = roi_surface * 1
-            roi_surface = contour_from_roi(roi_surface, affine, color=color, opacity=opacity)
+            roi_surface = contour_from_roi(roi_surface, affine, color, opacity)
             unique_roi_surfaces.append(roi_surface)
 
     return tuple(unique_roi_surfaces)
+
 
 def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
