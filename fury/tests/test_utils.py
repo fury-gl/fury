@@ -423,7 +423,7 @@ def test_update_actor():
     compute_bounds(actor)
     update_actor(actor)
     npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
-    updated_size = (30, 30)
+    updated_size = (35, 35)
     texture_points.SetPoint(0, 0, 0, 0.0)
     texture_points.SetPoint(1, updated_size[0], 0, 0.0)
     texture_points.SetPoint(2, updated_size[0], updated_size[1], 0.0)
@@ -431,8 +431,8 @@ def test_update_actor():
     texture_polydata.SetPoints(texture_points)
     texture_points.ComputeBounds()
     texture_points.Modified()
-    test_bounds = [0.0, 30.0,
-                   0.0, 30.0,
+    test_bounds = [0.0, 35.0,
+                   0.0, 35.0,
                    0.0, 0.0]
     compute_bounds(actor)
     update_actor(actor)
