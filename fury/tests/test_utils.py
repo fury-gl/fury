@@ -9,6 +9,7 @@ from fury.utils import (map_coordinates_3d_4d,
                         compute_bounds, set_input,
                         update_actor,get_actor_from_primitive)
 from fury import actor, window, utils
+import fury.primitive as fp
 
 
 def test_map_coordinates_3d_4d():
@@ -436,3 +437,6 @@ def test_update_actor():
     compute_bounds(actor)
     update_actor(actor)
     npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
+
+if __name__ == '__main__':
+    npt.run_module_suite()
