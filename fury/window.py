@@ -31,21 +31,10 @@ class Scene(vtk.vtkRenderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
-    
+
     def background(self, color):
         """Set a background color."""
-        if type(color)==tuple:
-            self.SetBackground(color)
-       
-        elif type(color)==str:
-            if color[0]=="#":
-                color=color[1:]
-
-            r=int("0x"+color[0:2],0)/256
-            g=int("0x"+color[2:4],0)/256
-            b=int("0x"+color[4:6],0)/256
-
-            self.SetBackground((r,g,b))
+        self.SetBackground(color)
 
     def add(self, *actors):
         """Add an actor to the scene."""
