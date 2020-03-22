@@ -274,7 +274,10 @@ show_manager.scene.set_camera(position=(0, 0, 200))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
 
+# To interact with the UI, set interactive = True
+interactive = False
 
-show_manager.start()
+if interactive:
+    show_manager.start()
 
 window.record(show_manager.scene, size=current_size, out_path="viz_ui.png")
