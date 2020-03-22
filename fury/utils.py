@@ -965,6 +965,7 @@ def check_order(vert, triarr):
             correct_vert[nb] = i
     return correct_vert
 
+
 def vertices_from_actor(actor):
     """Return vertices from actor.
 
@@ -975,10 +976,9 @@ def vertices_from_actor(actor):
     Returns
     ---------
     vertices : ndarray
-
     """
-    return numpy_support.vtk_to_numpy(actor.GetMapper().\
-        GetInput().GetPoints().GetData())
+    return numpy_support.vtk_to_numpy(actor.GetMapper()\
+                .GetInput().GetPoints().GetData())
 
 
 def compute_bounds(actor):
@@ -987,7 +987,6 @@ def compute_bounds(actor):
     Parameters
     -------------------
     actor : actor
-
     """
     actor.GetMapper().GetInput()\
     .ComputeBounds()
@@ -999,7 +998,6 @@ def update_actor(actor):
     Parameters
     ------------------
     actor : actor
-
     """
     actor.GetMapper().GetInput().\
     GetPoints().GetData().Modified()
