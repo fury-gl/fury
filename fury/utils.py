@@ -964,3 +964,42 @@ def check_order(vert, triarr):
         else:
             correct_vert[nb] = i
     return correct_vert
+
+def vertices_from_actor(actor):
+    """Return vertices from actor.
+
+    Parameters
+    -------------
+    actor : actor
+
+    Returns
+    ---------
+    vertices : ndarray
+
+    """
+    return numpy_support.vtk_to_numpy(actor.GetMapper().\
+        GetInput().GetPoints().GetData())
+
+
+def compute_bounds(actor):
+    """Compute Bounds of actor.
+
+    Parameters
+    -------------------
+    actor : actor
+
+    """
+    actor.GetMapper().GetInput()\
+    .ComputeBounds()
+
+
+def update_actor(actor):
+    """Update actor.
+
+    Parameters
+    ------------------
+    actor : actor
+
+    """
+    actor.GetMapper().GetInput().\
+    GetPoints().GetData().Modified()

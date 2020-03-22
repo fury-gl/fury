@@ -5,7 +5,9 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk)
+                        rotate, vtk, vertices_from_actor,
+                        compute_bounds, set_input,
+                        update_actor,get_actor_from_primitive)
 from fury import actor, window, utils
 
 
@@ -300,3 +302,137 @@ def test_check_order():
                           [2, 3, 4]])
 
     npt.assert_equal(test_tri2, utils.check_order(test_vert, test_tri))
+
+def test_vertices_from_actor():
+
+    my_vertices = np.array([[2.5, -0.5, 0.], [1.5, -0.5, 0.],
+                            [1.5, 0.5, 0.], [2.5, 0.5, 0.],
+                            [1., 1., 0.], [-1., 1., 0.],
+                            [-1., 3., 0.], [1., 3., 0.],
+                            [0.5, -0.5, 0.], [-0.5, -0.5, 0.],
+                            [-0.5, 0.5, 0.], [0.5, 0.5, 0.]])
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    scale = [1, 2, 1]
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scale=scale)
+
+    big_verts = res[0]
+    big_faces = res[1]
+    big_colors = res[2]
+    actr = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    actr.GetProperty().BackfaceCullingOff()
+    res_vertices = vertices_from_actor(actr)
+    npt.assert_array_almost_equal(my_vertices, res_vertices)
+
+def test_compute_bounds():
+    size = (15, 15)
+    texture_polydata = vtk.vtkPolyData()
+    texture_points = vtk.vtkPoints()
+    texture_points.SetNumberOfPoints(4)
+    polys = vtk.vtkCellArray()
+    polys.InsertNextCell(4)
+    polys.InsertCellPoint(0)
+    polys.InsertCellPoint(1)
+    polys.InsertCellPoint(2)
+    polys.InsertCellPoint(3)
+    texture_polydata.SetPolys(polys)
+    bounds = texture_points.GetBounds()
+    texture_points.SetPoint(0, 0, 0, 0.0)
+    texture_points.SetPoint(1, size[0], 0, 0.0)
+    texture_points.SetPoint(2, size[0], size[1], 0.0)
+    texture_points.SetPoint(3, 0, size[1], 0.0)
+    texture_polydata.SetPoints(texture_points)
+    texture_points.ComputeBounds()
+    texture_points.Modified()
+    test_bounds = [0.0, 15, 
+                   0.0, 15, 
+                   0.0, 0.0]
+    tc = vtk.vtkFloatArray()
+    tc.SetNumberOfComponents(2)
+    tc.SetNumberOfTuples(4)
+    tc.InsertComponent(0, 0, 0.0)
+    tc.InsertComponent(0, 1, 0.0)
+    tc.InsertComponent(1, 0, 1.0)
+    tc.InsertComponent(1, 1, 0.0)
+    tc.InsertComponent(2, 0, 1.0)
+    tc.InsertComponent(2, 1, 1.0)
+    tc.InsertComponent(3, 0, 0.0)
+    tc.InsertComponent(3, 1, 1.0)
+    texture_polydata.GetPointData().SetTCoords(tc)
+    texture_mapper = vtk.vtkPolyDataMapper2D()
+    texture_mapper = set_input(texture_mapper, texture_polydata)
+    actor = vtk.vtkTexturedActor2D()
+    actor.SetMapper(texture_mapper)
+    texture = vtk.vtkTexture()
+    actor.SetTexture(texture)
+    actor_property = vtk.vtkProperty2D()
+    actor_property.SetOpacity(1.0)
+    actor.SetProperty(actor_property)
+    compute_bounds(actor)
+    actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+    npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
+
+    
+def test_update_actor():
+    size = (15, 15)
+    texture_polydata = vtk.vtkPolyData()
+    texture_points = vtk.vtkPoints()
+    texture_points.SetNumberOfPoints(4)
+    polys = vtk.vtkCellArray()
+    polys.InsertNextCell(4)
+    polys.InsertCellPoint(0)
+    polys.InsertCellPoint(1)
+    polys.InsertCellPoint(2)
+    polys.InsertCellPoint(3)
+    texture_polydata.SetPolys(polys)
+    texture_points.SetPoint(0, 0, 0, 0.0)
+    texture_points.SetPoint(1, size[0], 0, 0.0)
+    texture_points.SetPoint(2, size[0], size[1], 0.0)
+    texture_points.SetPoint(3, 0, size[1], 0.0)
+    texture_polydata.SetPoints(texture_points)
+    texture_points.ComputeBounds()
+    texture_points.Modified()
+    test_bounds = [0.0, 15.0, 
+                   0.0, 15.0, 
+                   0.0, 0.0]
+    tc = vtk.vtkFloatArray()
+    tc.SetNumberOfComponents(2)
+    tc.SetNumberOfTuples(4)
+    tc.InsertComponent(0, 0, 0.0)
+    tc.InsertComponent(0, 1, 0.0)
+    tc.InsertComponent(1, 0, 1.0)
+    tc.InsertComponent(1, 1, 0.0)
+    tc.InsertComponent(2, 0, 1.0)
+    tc.InsertComponent(2, 1, 1.0)
+    tc.InsertComponent(3, 0, 0.0)
+    tc.InsertComponent(3, 1, 1.0)
+    texture_polydata.GetPointData().SetTCoords(tc)
+    texture_mapper = vtk.vtkPolyDataMapper2D()
+    texture_mapper = set_input(texture_mapper, texture_polydata)
+    actor = vtk.vtkTexturedActor2D()
+    actor.SetMapper(texture_mapper)
+    texture = vtk.vtkTexture()
+    actor.SetTexture(texture)
+    actor_property = vtk.vtkProperty2D()
+    actor_property.SetOpacity(1.0)
+    actor.SetProperty(actor_property)
+
+    compute_bounds(actor)
+    update_actor(actor)
+    npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds()) 
+    updated_size = (30, 30)
+    texture_points.SetPoint(0, 0, 0, 0.0)
+    texture_points.SetPoint(1, updated_size[0], 0, 0.0)
+    texture_points.SetPoint(2, updated_size[0], updated_size[1], 0.0)
+    texture_points.SetPoint(3, 0, updated_size[1], 0.0)
+    texture_polydata.SetPoints(texture_points)
+    texture_points.ComputeBounds()
+    texture_points.Modified()
+    test_bounds = [0.0, 30.0, 
+                   0.0, 30.0, 
+                   0.0, 0.0]
+    compute_bounds(actor)
+    update_actor(actor)
+    npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
