@@ -7,7 +7,7 @@ from fury.utils import (map_coordinates_3d_4d,
                         get_grid_cells_position,
                         rotate, vtk, vertices_from_actor,
                         compute_bounds, set_input,
-                        update_actor,get_actor_from_primitive)
+                        update_actor, get_actor_from_primitive)
 from fury import actor, window, utils
 import fury.primitive as fp
 
@@ -304,6 +304,7 @@ def test_check_order():
 
     npt.assert_equal(test_tri2, utils.check_order(test_vert, test_tri))
 
+
 def test_vertices_from_actor():
 
     my_vertices = np.array([[2.5, -0.5, 0.], [1.5, -0.5, 0.],
@@ -326,6 +327,7 @@ def test_vertices_from_actor():
     actr.GetProperty().BackfaceCullingOff()
     res_vertices = vertices_from_actor(actr)
     npt.assert_array_almost_equal(my_vertices, res_vertices)
+
 
 def test_compute_bounds():
     size = (15, 15)
@@ -373,6 +375,7 @@ def test_compute_bounds():
     compute_bounds(actor)
     actor.GetMapper().GetInput().GetPoints().GetData().Modified()
     npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
+
 
 def test_update_actor():
     size = (15, 15)
@@ -434,6 +437,3 @@ def test_update_actor():
     compute_bounds(actor)
     update_actor(actor)
     npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
-
-if __name__ == '__main__':
-    npt.run_module_suite()
