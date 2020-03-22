@@ -495,9 +495,10 @@ def contour_from_label(data, affine=None,
     for i, roi_id in enumerate(unique_roi_id):
         if roi_id != 0:
             roi_data = np.isin(data, roi_id)
-            
+
             roi_data = roi_data * 1
-            vol = np.interp(roi_data, xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
+            vol = np.interp(roi_data,
+                            xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
             vol = vol.astype('uint8')
 
             vol = vol.ravel()
@@ -523,7 +524,7 @@ def contour_from_label(data, affine=None,
             image_resliced.SetOutputSpacing(*zooms)
 
             image_resliced.SetInterpolationModeToLinear()
-            image_resliced.Update()            
+            image_resliced.Update()
 
             skin_extractor.SetInputData(image_resliced.GetOutput())
             skin_extractor.SetValue(i, roi_id)
