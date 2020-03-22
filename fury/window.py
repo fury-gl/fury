@@ -857,12 +857,14 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
             else:
                 filename = out_path
 
-        arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
-                                         .GetScalars())
-        w, h, _ = renderLarge.GetOutput().GetDimensions()
-        components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = np.flipud(arr.reshape((h, w, components)))
-        save_image(arr, filename)
+        w2if = vtk.vtkWindowToImageFilter()
+        w2if.SetInput(renWin)
+        w2if.Update()
+
+        writer = vtk.vtkPNGWriter()
+        writer.SetFileName(filename)
+        writer.SetInputConnection(w2if.GetOutputPort())
+        writer.Write()
 
         ang = +az_ang
 
