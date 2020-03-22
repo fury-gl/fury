@@ -988,8 +988,7 @@ def compute_bounds(actor):
     -------------------
     actor : actor
     """
-    actor.GetMapper().GetInput()\
-    .ComputeBounds()
+    actor.GetMapper().GetInput().ComputeBounds()
 
 
 def update_actor(actor):
