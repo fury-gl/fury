@@ -339,7 +339,6 @@ def test_compute_bounds():
     polys.InsertCellPoint(2)
     polys.InsertCellPoint(3)
     texture_polydata.SetPolys(polys)
-    bounds = texture_points.GetBounds()
     texture_points.SetPoint(0, 0, 0, 0.0)
     texture_points.SetPoint(1, size[0], 0, 0.0)
     texture_points.SetPoint(2, size[0], size[1], 0.0)
@@ -347,8 +346,8 @@ def test_compute_bounds():
     texture_polydata.SetPoints(texture_points)
     texture_points.ComputeBounds()
     texture_points.Modified()
-    test_bounds = [0.0, 15, 
-                   0.0, 15, 
+    test_bounds = [0.0, 15,
+                   0.0, 15,
                    0.0, 0.0]
     tc = vtk.vtkFloatArray()
     tc.SetNumberOfComponents(2)
@@ -375,7 +374,6 @@ def test_compute_bounds():
     actor.GetMapper().GetInput().GetPoints().GetData().Modified()
     npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
 
-    
 def test_update_actor():
     size = (15, 15)
     texture_polydata = vtk.vtkPolyData()
@@ -395,8 +393,8 @@ def test_update_actor():
     texture_polydata.SetPoints(texture_points)
     texture_points.ComputeBounds()
     texture_points.Modified()
-    test_bounds = [0.0, 15.0, 
-                   0.0, 15.0, 
+    test_bounds = [0.0, 15.0,
+                   0.0, 15.0,
                    0.0, 0.0]
     tc = vtk.vtkFloatArray()
     tc.SetNumberOfComponents(2)
@@ -419,10 +417,9 @@ def test_update_actor():
     actor_property = vtk.vtkProperty2D()
     actor_property.SetOpacity(1.0)
     actor.SetProperty(actor_property)
-
     compute_bounds(actor)
     update_actor(actor)
-    npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds()) 
+    npt.assert_equal(test_bounds, actor.GetMapper().GetInput().GetBounds())
     updated_size = (30, 30)
     texture_points.SetPoint(0, 0, 0, 0.0)
     texture_points.SetPoint(1, updated_size[0], 0, 0.0)
@@ -431,8 +428,8 @@ def test_update_actor():
     texture_polydata.SetPoints(texture_points)
     texture_points.ComputeBounds()
     texture_points.Modified()
-    test_bounds = [0.0, 30.0, 
-                   0.0, 30.0, 
+    test_bounds = [0.0, 30.0,
+                   0.0, 30.0,
                    0.0, 0.0]
     compute_bounds(actor)
     update_actor(actor)
