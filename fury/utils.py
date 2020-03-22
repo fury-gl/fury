@@ -976,7 +976,7 @@ def vertices_from_actor(actor):
     Returns
     ---------
     vertices : ndarray
-    
+
     """
     return numpy_support.vtk_to_numpy(actor.GetMapper()\
                 .GetInput().GetPoints().GetData())
@@ -986,7 +986,7 @@ def compute_bounds(actor):
     """Compute Bounds of actor.
 
     Parameters
-    -------------------
+    ------------
     actor : actor
 
     """
@@ -997,7 +997,7 @@ def update_actor(actor):
     """Update actor.
 
     Parameters
-    ------------------
+    ------------
     actor : actor
 
     """
