@@ -464,23 +464,86 @@ def contour_from_label(data, affine=None,
 
     Returns
     -------
-    tuple of contour_assembly : vtkAssembly
+    contour_assembly : vtkAssembly
         Tuple of Array surface object displayed in space
         coordinates as calculated by the affine parameter
         in the order of their roi ids.
     """
-    unique_roi_surfaces = []
+    if data.ndim != 3:
+        raise ValueError('Only 3D arrays are currently supported.')
+    else:
+        nb_components = 1
 
     unique_roi_id = np.unique(data)
 
-    for roi_id in unique_roi_id:
-        if roi_id != 0:
-            roi_surface = np.isin(data, roi_id)
-            roi_surface = roi_surface * 1
-            roi_surface = contour_from_roi(roi_surface, affine, color, opacity)
-            unique_roi_surfaces.append(roi_surface)
+    if affine is None:
+        affine = np.eye(4)
 
-    return tuple(unique_roi_surfaces)
+    # Set the transform (identity if none given)
+    transform = vtk.vtkTransform()
+    transform_matrix = vtk.vtkMatrix4x4()
+    transform_matrix.DeepCopy((
+        affine[0][0], affine[0][1], affine[0][2], affine[0][3],
+        affine[1][0], affine[1][1], affine[1][2], affine[1][3],
+        affine[2][0], affine[2][1], affine[2][2], affine[2][3],
+        affine[3][0], affine[3][1], affine[3][2], affine[3][3]))
+    transform.SetMatrix(transform_matrix)
+    transform.Inverse()
+
+    skin_extractor = vtk.vtkContourFilter()
+
+    for i, roi_id in enumerate(unique_roi_id):
+        if roi_id != 0:
+            roi_data = np.isin(data, roi_id)
+            
+            roi_data = roi_data * 1
+            vol = np.interp(roi_data, xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
+            vol = vol.astype('uint8')
+
+            vol = vol.ravel()
+
+            im = vtk.vtkImageData()
+            di, dj, dk = vol.shape[:3]
+            im.SetDimensions(di, dj, dk)
+            voxsz = (1., 1., 1.)
+            # im.SetOrigin(0,0,0)
+            im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
+            im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+
+            uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
+            im.GetPointData().SetScalars(uchar_array)
+
+            image_resliced = vtk.vtkImageReslice()
+            set_input(image_resliced, im)
+            image_resliced.SetResliceTransform(transform)
+            image_resliced.AutoCropOutputOn()
+
+            rzs = affine[:3, :3]
+            zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
+            image_resliced.SetOutputSpacing(*zooms)
+
+            image_resliced.SetInterpolationModeToLinear()
+            image_resliced.Update()            
+
+            skin_extractor.SetInputData(image_resliced.GetOutput())
+            skin_extractor.SetValue(i, roi_id)
+
+    skin_normals = vtk.vtkPolyDataNormals()
+    skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
+    skin_normals.SetFeatureAngle(60.0)
+
+    skin_mapper = vtk.vtkPolyDataMapper()
+    skin_mapper.SetInputConnection(skin_normals.GetOutputPort())
+    skin_mapper.ScalarVisibilityOff()
+
+    skin_actor = vtk.vtkActor()
+
+    skin_actor.SetMapper(skin_mapper)
+    skin_actor.GetProperty().SetOpacity(opacity)
+
+    skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
+
+    return skin_actor
 
 
 def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
