@@ -48,9 +48,10 @@ class Scene(vtk.vtkRenderer):
             else:
                 self.AddActor(actor)
 
-    def rm(self, actor):
-        """Remove a specific actor."""
-        self.RemoveActor(actor)
+    def rm(self, *actors):
+        """Remove more than one actor at once."""
+        for actor in actors:
+            self.RemoveActor(actor)
 
     def clear(self):
         """Remove all actors from the scene."""
