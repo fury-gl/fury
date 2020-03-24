@@ -964,3 +964,14 @@ def check_order(vert, triarr):
         else:
             correct_vert[nb] = i
     return correct_vert
+
+def hex_color(color):
+    if color[0] == "#":
+        color[1:]
+
+    r = int("0x" + color[0: 2], 0) / 256
+    g = int("0x" + color[2: 4], 0) / 256
+    b = int("0x" + color[4: 6], 0) / 256
+
+    return((r, g, b))
+    
