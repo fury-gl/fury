@@ -927,8 +927,8 @@ def change_order(tri):
     Returns
     -------
     np.array(newVert): ndarray
-        new array of vertices making up a triangle in the opposite winding order
-        of the given parameter
+        new array of vertices making up a triangle in the opposite winding\
+        order of the given parameter
     """
 
     newVert = [tri[2], tri[1], tri[0]]
@@ -1001,5 +1001,20 @@ def update_actor(actor):
     actor : actor
 
     """
-    actor.GetMapper().GetInput().\
-    GetPoints().GetData().Modified()
+    actor.GetMapper().GetInput()\
+    .GetPoints().GetData().Modified()
+
+
+def get_bounds(actor):
+    """Return Bounds of actor.
+
+    Parameters
+    ------------
+    actor : actor
+
+    Returns
+    ----------
+    vertices : ndarray
+
+    """
+    return actor.GetMapper().GetInput().GetBounds()
