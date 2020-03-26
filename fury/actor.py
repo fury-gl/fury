@@ -501,8 +501,6 @@ def contour_from_label(data, affine=None,
                         xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
         vol = vol.astype('uint8')
 
-        vol = vol.ravel()
-
         im = vtk.vtkImageData()
         di, dj, dk = vol.shape[:3]
         im.SetDimensions(di, dj, dk)
@@ -510,6 +508,11 @@ def contour_from_label(data, affine=None,
         # im.SetOrigin(0,0,0)
         im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
         im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+
+        vol = np.swapaxes(vol, 0, 2)
+        vol = np.ascontiguousarray(vol)
+
+        vol = vol.ravel()
 
         uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
         im.GetPointData().SetScalars(uchar_array)
