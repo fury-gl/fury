@@ -445,7 +445,7 @@ def contour_from_roi(data, affine=None,
 
 
 def contour_from_label(data, affine=None,
-                       color=np.array([1, 0, 0]), opacity=1):
+                       color=None, opacity=1):
     """Generate surface actor from a binary labeled Array.
 
     The color and opacity of the surface can be customized.
@@ -457,8 +457,9 @@ def contour_from_label(data, affine=None,
     affine : array, shape (4, 4)
         Grid to space (usually RAS 1mm) transformation matrix. Default is None.
         If None then the identity matrix is used.
-    color : (1, 3) ndarray
-        RGB values in [0,1].
+    color : (N, 3) ndarray
+        RGB values in [0,1]. Default is None.
+        If None then random colors are used.
     opacity : float
         Opacity of surface between 0 and 1.
 
@@ -476,6 +477,11 @@ def contour_from_label(data, affine=None,
 
     unique_roi_id = np.unique(data)
 
+    if color is None:
+        color = np.random.rand(len(unique_roi_id), 3)
+    elif color.shape != (len(unique_roi_id), 3):
+        raise ValueError("Incorrect color array shape")
+    
     if affine is None:
         affine = np.eye(4)
 
