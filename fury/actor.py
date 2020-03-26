@@ -493,41 +493,41 @@ def contour_from_label(data, affine=None,
     skin_extractor = vtk.vtkContourFilter()
 
     for i, roi_id in enumerate(unique_roi_id):
-        if roi_id != 0:
-            roi_data = np.isin(data, roi_id)
+        if roi_id == 0:
+            continue
+        roi_data = np.isin(data, roi_id).astype(np.int)
 
-            roi_data = roi_data * 1
-            vol = np.interp(roi_data,
-                            xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
-            vol = vol.astype('uint8')
+        vol = np.interp(roi_data,
+                        xp=[roi_data.min(), roi_data.max()], fp=[0, 255])
+        vol = vol.astype('uint8')
 
-            vol = vol.ravel()
+        vol = vol.ravel()
 
-            im = vtk.vtkImageData()
-            di, dj, dk = vol.shape[:3]
-            im.SetDimensions(di, dj, dk)
-            voxsz = (1., 1., 1.)
-            # im.SetOrigin(0,0,0)
-            im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-            im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+        im = vtk.vtkImageData()
+        di, dj, dk = vol.shape[:3]
+        im.SetDimensions(di, dj, dk)
+        voxsz = (1., 1., 1.)
+        # im.SetOrigin(0,0,0)
+        im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
+        im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
 
-            uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
-            im.GetPointData().SetScalars(uchar_array)
+        uchar_array = numpy_support.numpy_to_vtk(vol, deep=0)
+        im.GetPointData().SetScalars(uchar_array)
 
-            image_resliced = vtk.vtkImageReslice()
-            set_input(image_resliced, im)
-            image_resliced.SetResliceTransform(transform)
-            image_resliced.AutoCropOutputOn()
+        image_resliced = vtk.vtkImageReslice()
+        set_input(image_resliced, im)
+        image_resliced.SetResliceTransform(transform)
+        image_resliced.AutoCropOutputOn()
 
-            rzs = affine[:3, :3]
-            zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
-            image_resliced.SetOutputSpacing(*zooms)
+        rzs = affine[:3, :3]
+        zooms = np.sqrt(np.sum(rzs * rzs, axis=0))
+        image_resliced.SetOutputSpacing(*zooms)
 
-            image_resliced.SetInterpolationModeToLinear()
-            image_resliced.Update()
+        image_resliced.SetInterpolationModeToLinear()
+        image_resliced.Update()
 
-            skin_extractor.SetInputData(image_resliced.GetOutput())
-            skin_extractor.SetValue(i, roi_id)
+        skin_extractor.SetInputData(image_resliced.GetOutput())
+        skin_extractor.SetValue(i, roi_id)
 
     skin_normals = vtk.vtkPolyDataNormals()
     skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
