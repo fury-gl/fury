@@ -445,7 +445,7 @@ def contour_from_roi(data, affine=None,
 
 
 def contour_from_label(data, affine=None,
-                       color=None, opacity=1):
+                       color=None, opacity=None):
     """Generate surface actor from a binary labeled Array.
 
     The color and opacity of the individual surfaces can be customized.
@@ -473,16 +473,25 @@ def contour_from_label(data, affine=None,
 
     unique_roi_id = np.delete(np.unique(data), 0)
 
+    nb_surfaces = len(unique_roi_id)
+
     unique_roi_surfaces = vtk.vtkAssembly()
 
+    if opacity is None:
+        opacity = np.ones((nb_surfaces, 1))
+    elif isinstance(opacity, (float, int)):
+        opacity = np.full((nb_surfaces, 1), opacity).flatten()
+    elif opacity.shape != (nb_surfaces, 1):
+        raise ValueError("Incorrect opacity array shape")
+
     if color is None:
-        color = np.random.rand(len(unique_roi_id), 3)
-    elif color.shape != (len(unique_roi_id), 3):
+        color = np.random.rand(nb_surfaces, 3)
+    elif color.shape != (nb_surfaces, 3):
         raise ValueError("Incorrect color array shape")
 
-    for i, roi_id in enumerate(unique_roi_id):
+    for roi_id in unique_roi_id:
         roi_data = np.isin(data, roi_id).astype(np.int)
-        roi_surface = contour_from_roi(roi_data, affine, color=color[i], opacity=opacity)
+        roi_surface = contour_from_roi(roi_data, affine, color=color[int(roi_id)-1], opacity=opacity[int(roi_id)-1])
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces
