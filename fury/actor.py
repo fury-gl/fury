@@ -481,7 +481,7 @@ def contour_from_label(data, affine=None,
         color = np.random.rand(len(unique_roi_id), 3)
     elif color.shape != (len(unique_roi_id), 3):
         raise ValueError("Incorrect color array shape")
-    
+
     if affine is None:
         affine = np.eye(4)
 
