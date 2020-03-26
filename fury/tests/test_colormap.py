@@ -115,3 +115,10 @@ def test_lab2rgb():
     res = np.round(colormap._lab2rgb(lab_color))
     res[res < 0] = 0
     npt.assert_array_almost_equal(res, expected)
+
+def test_hex_to_rgb():
+    expected = np.array([1, 1, 1])
+    hexcode="#FFFFFF"
+    
+    res = colormap.hex_to_rgb(hexcode)
+    npt.asset_array_almost_equal(res,expected)
