@@ -448,7 +448,7 @@ def contour_from_label(data, affine=None,
                        color=None, opacity=None):
     """Generate surface actor from a binary labeled Array.
 
-    The color and opacity of the individual surfaces can be customized.
+    The color and opacity of individual surfaces can be customized.
 
     Parameters
     ----------
@@ -460,13 +460,15 @@ def contour_from_label(data, affine=None,
     color : (N, 3) ndarray
         RGB values in [0,1]. Default is None.
         If None then random colors are used.
-    opacity : float
-        Opacity of surface between 0 and 1.
+    opacity : float or (N, 1) ndarray
+        Opacity of surface between 0 and 1. Default is None
+        if opacity is numeric, same value is applied to all surfaces.
+        if opacity is None, then 1.0 is used by default for all surfaces.
 
     Returns
     -------
     contour_assembly : vtkAssembly
-        Tuple of Array surface object displayed in space
+        Array surface object displayed in space
         coordinates as calculated by the affine parameter
         in the order of their roi ids.
     """
@@ -478,7 +480,7 @@ def contour_from_label(data, affine=None,
     unique_roi_surfaces = vtk.vtkAssembly()
 
     if opacity is None:
-        opacity = np.ones((nb_surfaces, 1))
+        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
     elif isinstance(opacity, (float, int)):
         opacity = np.full((nb_surfaces, 1), opacity).flatten()
     elif opacity.shape != (nb_surfaces, 1):
