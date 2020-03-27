@@ -460,7 +460,7 @@ def contour_from_label(data, affine=None,
     color : (N, 3) ndarray
         RGB values in [0,1]. Default is None.
         If None then random colors are used.
-    opacity : float or (N, 1) ndarray
+    opacity : float or (N,) ndarray
         Opacity of surface between 0 and 1. Default is None
         if opacity is numeric, same value is applied to all surfaces.
         if opacity is None, then 1.0 is used by default for all surfaces.
@@ -482,8 +482,8 @@ def contour_from_label(data, affine=None,
     if opacity is None:
         opacity = np.ones((nb_surfaces, 1)).astype(np.float)
     elif isinstance(opacity, (float, int)):
-        opacity = np.full((nb_surfaces, 1), opacity).flatten()
-    elif opacity.shape != (nb_surfaces, 1):
+        opacity = np.full((nb_surfaces), opacity)
+    elif opacity.shape != (nb_surfaces,):
         raise ValueError("Incorrect opacity array shape")
 
     if color is None:

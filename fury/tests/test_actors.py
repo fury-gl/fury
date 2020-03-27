@@ -309,6 +309,64 @@ def test_contour_from_roi():
         # window.show(r)
         # window.show(r2)
 
+def test_contour_from_label():
+    
+    # Render volumne
+    scene = window.Scene()
+    data = np.zeros((50, 50, 50))
+    data[15:20, 25, 25] = 1.
+    data[25, 20:30, 25] = 2.
+    data[25, 40:50, 30:50] = 3.
+
+    color = np.array(
+        [[1, 0, 0],
+         [0, 1, 0],
+         [0, 0, 1]])
+
+    opacity = 0.6
+
+    surface = actor.contour_from_label(data, color=color, opacity=opacity)
+
+    scene.add(surface)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    # window.show(scene)
+
+    # Test Errors
+    with npt.assert_raises(ValueError):
+        actor.contour_from_label(data, opacity=np.array([1, 2, 3, 4]))
+        actor.contour_from_label(data, color=np.array([1, 2, 3]))
+        actor.contour_from_label(np.ones(50))
+
+    # Test binarization
+    scene2 = window.Scene()
+    data2 = np.zeros((50, 50, 50))
+    data2[25, 25, 15:20] = 1.
+    data2[25, 30:50, 20] = 2.
+    data2[30:50, 25, 30] = 3.
+
+    color2 = np.array(
+        [[1, 0, 1],
+         [1, 1, 0],
+         [0, 1, 1]])
+
+    opacity2 = np.array([1, 0.5, 0.3])
+
+    surface2 = actor.contour_from_label(data2, color=color2, opacity=opacity2)
+
+    scene2.add(surface2)
+    scene2.reset_camera()
+    scene2.reset_clipping_range()
+    # window.show(scene2)
+
+    arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
+    arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
+
+    report = window.analyze_snapshot(arr, find_objects=True)
+    report2 = window.analyze_snapshot(arr2, find_objects=True)
+
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report2.objects, 3)
 
 def test_streamtube_and_line_actors():
     scene = window.Scene()
