@@ -493,7 +493,9 @@ def contour_from_label(data, affine=None,
 
     for roi_id in unique_roi_id:
         roi_data = np.isin(data, roi_id).astype(np.int)
-        roi_surface = contour_from_roi(roi_data, affine, color=color[int(roi_id)-1], opacity=opacity[int(roi_id)-1])
+        roi_surface = contour_from_roi(roi_data, affine,
+                                       color=color[int(roi_id)-1],
+                                       opacity=opacity[int(roi_id)-1])
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces

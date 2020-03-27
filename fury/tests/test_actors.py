@@ -309,8 +309,9 @@ def test_contour_from_roi():
         # window.show(r)
         # window.show(r2)
 
+
 def test_contour_from_label():
-    
+
     # Render volumne
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
@@ -367,6 +368,7 @@ def test_contour_from_label():
 
     npt.assert_equal(report.objects, 3)
     npt.assert_equal(report2.objects, 3)
+
 
 def test_streamtube_and_line_actors():
     scene = window.Scene()
