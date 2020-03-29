@@ -3448,7 +3448,6 @@ class Checkbox(UI):
                         * (self.labels[option_no].count('\n') + 1)
                         * (line_spacing + 0.1) + self.padding)
 
-
     @property
     def font_size(self):
         """ Gets the font size of text.
