@@ -956,31 +956,25 @@ def fix_winding_order(vertices, triangles, clockwise=True):
         The corrected order of the vert parameter
 
     """
-<<<<<<< HEAD
-
-    shape = triarr.shape
-    correct_vert = np.empty(shape)
-    correct_order = what_order(vert, triarr[0])
-    for nb, i in enumerate(triarr):
-        order2 = what_order(vert, i)
-        if correct_order != order2:
-            temp = change_order(i)
-            correct_vert[nb] = temp
-        else:
-            correct_vert[nb] = i
-    return correct_vert
+    corrected_triangles = triangles.copy()
+    desired_order = clockwise
+    for nb, face in enumerate(triangles):
+        current_order = triangle_order(vertices, face)
+        if desired_order != current_order:
+            corrected_triangles[nb] = change_vertices_order(face)
+    return corrected_triangles
 
 
 def vertices_from_actor(actor):
     """Return vertices from actor.
 
     Parameters
-    -------------
-    actor : actor
+    ----------
+    actor : vtk.vtkActor
 
     Returns
-    ---------
-    vertices : ndarray
+    -------
+    vertices : np.ndarray
 
     """
     return numpy_support.vtk_to_numpy(
@@ -992,8 +986,8 @@ def compute_bounds(actor):
     """Compute Bounds of actor.
 
     Parameters
-    ------------
-    actor : actor
+    ----------
+    actor : vtk.vtkActor
 
     """
     actor.GetMapper().GetInput().ComputeBounds()
@@ -1003,32 +997,23 @@ def update_actor(actor):
     """Update actor.
 
     Parameters
-    ------------
-    actor : actor
+    ----------
+    actor : vtk.vtkActor
 
     """
     actor.GetMapper().GetInput().GetPoints().GetData().Modified()
 
 
 def get_bounds(actor):
-    """Returns Bounds of actor.
+    """Return Bounds of actor.
 
     Parameters
-    --------------
-    actor : actor
+    ----------
+    actor : vtk.vtkActor
 
     Returns
-    ------------
+    -------
     vertices : ndarray
 
     """
     return actor.GetMapper().GetInput().GetBounds()
-=======
-    corrected_triangles = triangles.copy()
-    desired_order = clockwise
-    for nb, face in enumerate(triangles):
-        current_order = triangle_order(vertices, face)
-        if desired_order != current_order:
-            corrected_triangles[nb] = change_vertices_order(face)
-    return corrected_triangles
->>>>>>> rename winding order
