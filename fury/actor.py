@@ -459,6 +459,7 @@ def contour_from_label(data, affine=None, color=None):
     color : (N, 3) or (N, 4) ndarray
         RGB/RGBA values in [0,1]. Default is None.
         If None then random colors are used.
+        Alpha channel is set to 1 by default.
 
     Returns
     -------
@@ -476,10 +477,10 @@ def contour_from_label(data, affine=None, color=None):
 
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
-    elif color.shape[0] != nb_surfaces or color.shape[1] < 3:
+    elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
         raise ValueError("Incorrect color array shape")
 
-    if color.shape[1] == 4:
+    if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
         color = color[:, :-1]
     else:
