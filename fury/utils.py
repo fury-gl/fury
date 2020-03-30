@@ -882,21 +882,21 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 
-def what_order(vertices, faces):
+def triangle_order(vertices, faces):
     """Determine the winding order of a given set of vertices and a triangle.
 
     Parameters
     ----------
-    vertices: np.ndarray
+    vertices : np.ndarray
         array of vertices making up a shape
-    faces: np.ndarray
+    faces : np.ndarray
         array of triangles
 
     Returns
     -------
-    order: int
-        If the order is counter clockwise, returns 0.
-        Otherwise, returns 1.
+    order : int
+        If the order is counter clockwise, returns True.
+        Otherwise, returns False.
 
     """
     v1 = vertices[faces[0] - 1]
@@ -912,26 +912,16 @@ def what_order(vertices, faces):
     y3 = v3[1]
 
     val = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1)
-
-    if val < 0:
-        return 1
-    return 0
+    return True if val > 0 else False
 
 
-def change_vertices_order(triangle, clockwise=True):
+def change_vertices_order(triangle):
     """Change the vertices order of a given triangle.
-
-    Given an ordering of the triangle's three vertices, a triangle can appear
-    to have a clockwise winding or counter-clockwise winding.
-    Clockwise means that the three vertices, in order, rotate clockwise around
-    the triangle's center.
 
     Parameters
     ----------
     triangle : np.ndarray, shape(1, 3)
         array of 3 vertices making up a triangle
-    clockwise : bool
-        triangle order type: clockwise (default) or counter-clockwise.
 
     Returns
     -------
@@ -943,8 +933,13 @@ def change_vertices_order(triangle, clockwise=True):
     return np.array([triangle[2], triangle[1], triangle[0]])
 
 
-def fix_winding_order(vertices, triangles):
+def fix_winding_order(vertices, triangles, clockwise=True):
     """Return corrected triangles.
+
+    Given an ordering of the triangle's three vertices, a triangle can appear
+    to have a clockwise winding or counter-clockwise winding.
+    Clockwise means that the three vertices, in order, rotate clockwise around
+    the triangle's center.
 
     Parameters
     ----------
@@ -952,6 +947,8 @@ def fix_winding_order(vertices, triangles):
         array of vertices corresponding to a shape
     triangles: np.ndarray
         array of triangles corresponding to a shape
+    clockwise : bool
+        triangle order type: clockwise (default) or counter-clockwise.
 
     Returns
     -------
@@ -1028,11 +1025,10 @@ def get_bounds(actor):
     return actor.GetMapper().GetInput().GetBounds()
 =======
     corrected_triangles = triangles.copy()
-    correct_order = what_order(vertices, triangles[0])
+    desired_order = clockwise
     for nb, face in enumerate(triangles):
-        current_order = what_order(vertices, face)
-        if correct_order != current_order:
-            temp = change_vertices_order(face)
-            corrected_triangles[nb] = temp
+        current_order = triangle_order(vertices, face)
+        if desired_order != current_order:
+            corrected_triangles[nb] = change_vertices_order(face)
     return corrected_triangles
 >>>>>>> rename winding order

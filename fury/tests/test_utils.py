@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import numpy.testing as npt
 from fury.utils import (map_coordinates_3d_4d,
@@ -104,8 +103,8 @@ def test_polydata_polygon(interactive=False):
     actor2 = utils.get_actor_from_polydata(my_polydata)
 
     scene = window.Scene()
-    for actor in [actor1, actor2]:
-        scene.add(actor)
+    for act in [actor1, actor2]:
+        scene.add(act)
         if interactive:
             window.show(scene)
         arr = window.snapshot(scene)
@@ -117,9 +116,8 @@ def test_polydata_polygon(interactive=False):
 def test_asbytes():
     text = [b'test', 'test']
 
-    if sys.version_info[0] >= 3:
-        for t in text:
-            npt.assert_equal(utils.asbytes(t), b'test')
+    for t in text:
+        npt.assert_equal(utils.asbytes(t), b'test')
 
 
 def trilinear_interp_numpy(input_array, indices):
@@ -269,13 +267,11 @@ def test_what_order():
     test_tri = np.array([[1, 2, 4],
                          [4, 3, 2]])
 
-    order1 = utils.what_order(test_vert, test_tri[0])
+    clockwise1 = utils.triangle_order(test_vert, test_tri[0])
+    clockwise2 = utils.triangle_order(test_vert, test_tri[1])
 
-    order2 = utils.what_order(test_vert, test_tri[1])
-
-    npt.assert_equal(0, order1)
-
-    npt.assert_equal(1, order2)
+    npt.assert_equal(True, clockwise1)
+    npt.assert_equal(False, clockwise2)
 
 
 def test_change_vertices_order():
@@ -286,7 +282,6 @@ def test_change_vertices_order():
                           [3, 4, 5]])
 
     npt.assert_equal(triangles[0], utils.change_vertices_order(triangles[1]))
-
     npt.assert_equal(triangles[2], utils.change_vertices_order(triangles[3]))
 
 
