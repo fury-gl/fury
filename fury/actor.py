@@ -444,9 +444,8 @@ def contour_from_roi(data, affine=None,
     return skin_actor
 
 
-def contour_from_label(data, affine=None,
-                       color=None, opacity=None):
-    """Generate surface actor from a binary labeled Array.
+def contour_from_label(data, affine=None, color=None):
+    """Generate surface actor from a labeled Array.
 
     The color and opacity of individual surfaces can be customized.
 
@@ -457,13 +456,9 @@ def contour_from_label(data, affine=None,
     affine : array, shape (4, 4)
         Grid to space (usually RAS 1mm) transformation matrix. Default is None.
         If None then the identity matrix is used.
-    color : (N, 3) ndarray
-        RGB values in [0,1]. Default is None.
+    color : (N, 3) or (N, 4) ndarray
+        RGB/RGBA values in [0,1]. Default is None.
         If None then random colors are used.
-    opacity : float or (N,) ndarray
-        Opacity of surface between 0 and 1. Default is None
-        if opacity is numeric, same value is applied to all surfaces.
-        if opacity is None, then 1.0 is used by default for all surfaces.
 
     Returns
     -------
@@ -479,17 +474,16 @@ def contour_from_label(data, affine=None,
 
     unique_roi_surfaces = vtk.vtkAssembly()
 
-    if opacity is None:
-        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
-    elif isinstance(opacity, (float, int)):
-        opacity = np.full((nb_surfaces), opacity)
-    elif opacity.shape != (nb_surfaces,):
-        raise ValueError("Incorrect opacity array shape")
-
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
-    elif color.shape != (nb_surfaces, 3):
+    elif color.shape[0] != nb_surfaces or color.shape[1] < 3:
         raise ValueError("Incorrect color array shape")
+
+    if color.shape[1] == 4:
+        opacity = color[:, -1]
+        color = color[:, :-1]
+    else:
+        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
 
     for roi_id in unique_roi_id:
         roi_data = np.isin(data, roi_id).astype(np.int)
