@@ -736,13 +736,13 @@ def test_ui_checkbox_default(interactive=False):
                                 position=(10, 10), checked_labels=[])
 
     old_positions = []
-    for option in checkbox_test.options:
+    for option in checkbox_test.options.values():
         old_positions.append(option.position)
 
     old_positions = np.asarray(old_positions)
     checkbox_test.position = (100, 100)
     new_positions = []
-    for option in checkbox_test.options:
+    for option in checkbox_test.options.values():
         new_positions.append(option.position)
     new_positions = np.asarray(new_positions)
     npt.assert_allclose(new_positions - old_positions,
@@ -865,12 +865,12 @@ def test_ui_radio_button_default(interactive=False):
         position=(10, 10), checked_labels=[])
 
     old_positions = []
-    for option in radio_button_test.options:
+    for option in radio_button_test.options.values():
         old_positions.append(option.position)
     old_positions = np.asarray(old_positions)
     radio_button_test.position = (100, 100)
     new_positions = []
-    for option in radio_button_test.options:
+    for option in radio_button_test.options.values():
         new_positions.append(option.position)
     new_positions = np.asarray(new_positions)
     npt.assert_allclose(new_positions - old_positions,

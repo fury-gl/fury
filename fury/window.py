@@ -496,7 +496,6 @@ class ShowManager(object):
         else:
             self.window.SetWindowName(self.title)
 
-
     def start(self):
         """Start interaction."""
         try:
