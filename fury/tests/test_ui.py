@@ -1099,7 +1099,7 @@ def test_ui_file_menu_2d(interactive=False):
         selected_files.append(list(filemenu.listbox.selected))
 
     # Set up a callback when selection changes.
-    filemenu.listbox.on_change = _on_change
+    filemenu.on_change = _on_change
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
@@ -1382,3 +1382,12 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("function")
+    parser.add_argument("--interactive", action="store_true")
+    args = parser.parse_args()
+    locals()[args.function](args.interactive)
