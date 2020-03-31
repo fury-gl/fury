@@ -454,7 +454,7 @@ def get_polymapper_from_polydata(polydata):
 
 
 def get_actor_from_polymapper(poly_mapper):
-    """Get vtkActor from a vtkPolyDataMapper.
+    """Get actor from a vtkPolyDataMapper.
 
     Parameters
     ----------
@@ -462,7 +462,7 @@ def get_actor_from_polymapper(poly_mapper):
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     actor = vtk.vtkActor()
@@ -474,7 +474,7 @@ def get_actor_from_polymapper(poly_mapper):
 
 
 def get_actor_from_polydata(polydata):
-    """Get vtkActor from a vtkPolyData.
+    """Get actor from a vtkPolyData.
 
     Parameters
     ----------
@@ -482,7 +482,7 @@ def get_actor_from_polydata(polydata):
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     poly_mapper = get_polymapper_from_polydata(polydata)
@@ -491,7 +491,7 @@ def get_actor_from_polydata(polydata):
 
 def get_actor_from_primitive(vertices, triangles, colors=None,
                              normals=None, backface_culling=True):
-    """Get vtkActor from a vtkPolyData.
+    """Get actor from a vtkPolyData.
 
     Parameters
     ----------
@@ -512,7 +512,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     # Create a Polydata
@@ -776,7 +776,7 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
 
     Parameters
     ----------
-    actor : vtkActor or other prop
+    actor : actor or other prop
     rotation : tuple
         Rotate with angle w around axis x, y, z. Needs to be provided
         in the form (w, x, y, z).
@@ -970,7 +970,7 @@ def vertices_from_actor(actor):
 
     Parameters
     ----------
-    actor : vtk.vtkActor
+    actor : actor
 
     Returns
     -------
@@ -987,7 +987,7 @@ def compute_bounds(actor):
 
     Parameters
     ----------
-    actor : vtk.vtkActor
+    actor : actor
 
     """
     actor.GetMapper().GetInput().ComputeBounds()
@@ -998,7 +998,7 @@ def update_actor(actor):
 
     Parameters
     ----------
-    actor : vtk.vtkActor
+    actor : actor
 
     """
     actor.GetMapper().GetInput().GetPoints().GetData().Modified()
@@ -1009,7 +1009,7 @@ def get_bounds(actor):
 
     Parameters
     ----------
-    actor : vtk.vtkActor
+    actor : actor
 
     Returns
     -------
