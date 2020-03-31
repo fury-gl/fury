@@ -887,9 +887,9 @@ def triangle_order(vertices, faces):
 
     Parameters
     ----------
-    vertices : np.ndarray
+    vertices : ndarray
         array of vertices making up a shape
-    faces : np.ndarray
+    faces : ndarray
         array of triangles
 
     Returns
@@ -920,12 +920,12 @@ def change_vertices_order(triangle):
 
     Parameters
     ----------
-    triangle : np.ndarray, shape(1, 3)
+    triangle : ndarray, shape(1, 3)
         array of 3 vertices making up a triangle
 
     Returns
     -------
-    new_triangle: np.ndarray, shape(1, 3)
+    new_triangle : ndarray, shape(1, 3)
         new array of vertices making up a triangle in the opposite winding
         order of the given parameter
 
@@ -943,16 +943,16 @@ def fix_winding_order(vertices, triangles, clockwise=False):
 
     Parameters
     ----------
-    vertices: np.ndarray
+    vertices : ndarray
         array of vertices corresponding to a shape
-    triangles: np.ndarray
+    triangles : ndarray
         array of triangles corresponding to a shape
     clockwise : bool
         triangle order type: clockwise (default) or counter-clockwise.
 
     Returns
     -------
-    corrected_triangles: np.ndarray
+    corrected_triangles : ndarray
         The corrected order of the vert parameter
 
     """
@@ -974,7 +974,7 @@ def vertices_from_actor(actor):
 
     Returns
     -------
-    vertices : np.ndarray
+    vertices : ndarray
 
     """
     return numpy_support.vtk_to_numpy(
