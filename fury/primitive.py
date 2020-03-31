@@ -2,6 +2,7 @@ from os.path import join as pjoin
 import numpy as np
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere, euler_matrix
+from fury.utils import fix_winding_order
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
 import math
@@ -278,6 +279,7 @@ def prim_sphere(name='symmetric362', gen_faces=False):
 
     verts = res['vertices'].copy()
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
+    faces = fix_winding_order(res['vertices'], faces)
     return res['vertices'], faces
 
 
