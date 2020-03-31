@@ -276,9 +276,9 @@ def prim_sphere(name='symmetric362', gen_faces=False):
         raise ValueError('No sphere called "%s"' % name)
     res = np.load(fname)
 
-    verts = res['vertices']
+    verts = res['vertices'].copy()
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-    return verts, faces
+    return res['vertices'], faces
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):

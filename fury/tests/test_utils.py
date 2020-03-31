@@ -257,20 +257,20 @@ def test_rotate(interactive=False):
         npt.assert_equal(red_sum_new > red_sum, True)
 
 
-def test_what_order():
+def test_triangle_order():
 
-    test_vert = np.array([[0, 0, 0],
-                          [1, 2, 0],
-                          [3, 0, 0],
-                          [2, 0, 0]])
+    test_vert = np.array([[-1, -2, 0],
+                          [1, -1, 0],
+                          [2, 1, 0],
+                          [3, 0, 0]])
 
-    test_tri = np.array([[1, 2, 4],
-                         [4, 3, 2]])
+    test_tri = np.array([[0, 1, 2],
+                         [2, 1, 0]])
 
     clockwise1 = utils.triangle_order(test_vert, test_tri[0])
     clockwise2 = utils.triangle_order(test_vert, test_tri[1])
 
-    npt.assert_equal(True, clockwise1)
+    npt.assert_equal(False, clockwise1)
     npt.assert_equal(False, clockwise2)
 
 
@@ -292,13 +292,12 @@ def test_winding_order():
                          [3, 0, 0],
                          [2, 0, 0]])
 
-    triangles = np.array([[1, 2, 4],
-                          [4, 3, 2]])
+    triangles = np.array([[0, 1, 3],
+                          [2, 1, 0]])
 
-    expected_triangles = np.array([[1, 2, 4],
-                                   [2, 3, 4]])
+    expected_triangles = np.array([[0, 1, 3],
+                                   [2, 1, 0]])
 
-    npt.assert_equal(test_tri2, utils.check_order(test_vert, test_tri))
     npt.assert_equal(expected_triangles,
                      utils.fix_winding_order(vertices, triangles))
 

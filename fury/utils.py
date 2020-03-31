@@ -895,23 +895,23 @@ def triangle_order(vertices, faces):
     Returns
     -------
     order : int
-        If the order is counter clockwise, returns True.
+        If the order is counter clockwise (CCW), returns True.
         Otherwise, returns False.
 
     """
-    v1 = vertices[faces[0] - 1]
-    v2 = vertices[faces[1] - 1]
-    v3 = vertices[faces[2] - 1]
+    v1 = vertices[faces[0]]
+    v2 = vertices[faces[1]]
+    v3 = vertices[faces[2]]
 
-    x1 = v1[0]
-    x2 = v2[0]
-    x3 = v3[0]
+    # https://stackoverflow.com/questions/40454789/computing-face-normals-and-winding
+    m_orient = np.ones((4, 4))
+    m_orient[0, :3] = v1
+    m_orient[1, :3] = v2
+    m_orient[2, :3] = v3
+    m_orient[3, :3] = 0
 
-    y1 = v1[1]
-    y2 = v2[1]
-    y3 = v3[1]
+    val = np.linalg.det(m_orient)
 
-    val = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1)
     return True if val > 0 else False
 
 
@@ -933,7 +933,7 @@ def change_vertices_order(triangle):
     return np.array([triangle[2], triangle[1], triangle[0]])
 
 
-def fix_winding_order(vertices, triangles, clockwise=True):
+def fix_winding_order(vertices, triangles, clockwise=False):
     """Return corrected triangles.
 
     Given an ordering of the triangle's three vertices, a triangle can appear
