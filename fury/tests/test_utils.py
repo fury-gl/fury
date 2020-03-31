@@ -1,3 +1,4 @@
+"""Module for testing primitive."""
 import numpy as np
 import numpy.testing as npt
 from fury.utils import (map_coordinates_3d_4d,

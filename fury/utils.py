@@ -912,7 +912,7 @@ def triangle_order(vertices, faces):
 
     val = np.linalg.det(m_orient)
 
-    return True if val > 0 else False
+    return bool(val > 0)
 
 
 def change_vertices_order(triangle):
