@@ -3683,7 +3683,8 @@ class ListBox2D(UI):
             for slot in self.slots:
                 slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
                                   self.directory_click_callback)
-                slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
+                slot.add_callback(slot.background.actor,
+                                  "LeftButtonPressEvent",
                                   self.directory_click_callback)
 
     def resize(self, size):
