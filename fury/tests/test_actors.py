@@ -353,8 +353,10 @@ def test_contour_from_label():
     scene2.reset_clipping_range()
     # window.show(scene2)
 
-    arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
-    arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
+    arr = window.snapshot(scene, 'test_surface.png', offscreen=True,
+                          order_transparent=True)
+    arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True,
+                           order_transparent=True)
 
     report = window.analyze_snapshot(arr, find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
