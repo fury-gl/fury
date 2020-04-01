@@ -3530,8 +3530,7 @@ class ListBox2D(UI):
                  unselected_color=(0.6, 0.6, 0.6),
                  scroll_bar_active_color=(0.6, 0.2, 0.2),
                  scroll_bar_inactive_color=(0.9, 0.0, 0.0),
-                 background_opacity=1., directory_path=None,
-                 extensions=None):
+                 background_opacity=1.):
         """
 
         Parameters
@@ -3578,17 +3577,7 @@ class ListBox2D(UI):
         self.multiselection = multiselection
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
-        self.current_directory = directory_path
-        if directory_path:
-            self.extensions = extensions
-            self.directory_contents = self.get_all_file_names()
-            content_names = [x[0] for x in self.directory_contents]
-            self.values = content_names
-
         super(ListBox2D, self).__init__()
-
-        if directory_path:
-            self.set_slot_colors()
 
         denom = len(self.values) - self.nb_slots
         if not denom:
@@ -3679,14 +3668,6 @@ class ListBox2D(UI):
             self.add_callback(slot.textblock.actor, down_event,
                               self.down_button_callback)
 
-        click_event = "LeftButtonPressEvent"
-        if self.current_directory:
-            for slot in self.slots:
-                slot.add_callback(slot.textblock.actor, click_event,
-                                  self.directory_click_callback)
-                slot.add_callback(slot.background.actor, click_event,
-                                  self.directory_click_callback)
-
     def resize(self, size):
         pass
 
@@ -3738,8 +3719,7 @@ class ListBox2D(UI):
             self.panel.element_offsets[scroll_bar_idx] = (
                 self.scroll_bar,
                 (self.scroll_bar.position - self.panel.position))
-        if self.current_directory:
-            self.set_slot_colors()
+
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -3765,8 +3745,7 @@ class ListBox2D(UI):
             self.panel.element_offsets[scroll_bar_idx] = (
                 self.scroll_bar,
                 (self.scroll_bar.position - self.panel.position))
-        if self.current_directory:
-            self.set_slot_colors()
+
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -3836,105 +3815,6 @@ class ListBox2D(UI):
 
         self.panel.element_offsets[scroll_bar_idx] = (
             self.scroll_bar, (self.scroll_bar.position - self.panel.position))
-        i_ren.force_render()
-        i_ren.event.abort()
-
-    def get_all_file_names(self):
-        """ Gets file and directory names.
-
-        Returns
-        -------
-        all_file_names: list((string, {"directory", "file"}))
-            List of all file and directory names as string.
-        """
-        all_file_names = []
-
-        directory_names = self.get_directory_names()
-        for directory_name in directory_names:
-            all_file_names.append((directory_name, "directory"))
-
-        file_names = self.get_file_names()
-        for file_name in file_names:
-            all_file_names.append((file_name, "file"))
-
-        return all_file_names
-
-    def get_directory_names(self):
-        """ Finds names of all directories in the current_directory
-
-        Returns
-        -------
-        directory_names: list(string)
-            List of all directory names as string.
-        """
-        # A list of directory names in the current directory
-        directory_names = []
-        for (_, dirnames, _) in os.walk(self.current_directory):
-            directory_names += dirnames
-            break
-        directory_names.sort(key=lambda s: s.lower())
-        directory_names.insert(0, "../")
-        return directory_names
-
-    def get_file_names(self):
-        """ Finds names of all files in the current_directory
-
-        Returns
-        -------
-        file_names: list(string)
-            List of all file names as string.
-        """
-        # A list of file names with extension in the current directory
-        for (_, _, files) in os.walk(self.current_directory):
-            break
-
-        file_names = []
-        if "*" in self.extensions or "" in self.extensions:
-            file_names = files
-        else:
-            for ext in self.extensions:
-                for file in files:
-                    if file.endswith("." + ext):
-                        file_names.append(file)
-        file_names.sort(key=lambda s: s.lower())
-        return file_names
-
-    def set_slot_colors(self):
-        """ Sets the text color of the slots based on the type of element
-        they show. Blue for directories and green for files.
-        """
-        for idx, slot in enumerate(self.slots):
-            # print("hello")
-            list_idx = min(self.view_offset + idx,
-                           len(self.directory_contents)-1)
-            if self.directory_contents[list_idx][1] == "directory":
-                slot.textblock.color = (0, 0.6, 0)
-            elif self.directory_contents[list_idx][1] == "file":
-                slot.textblock.color = (0, 0, 0.7)
-
-    def directory_click_callback(self, i_ren, _obj, listboxitem):
-        """ A callback to move into a directory if it has been clicked.
-
-        Parameters
-        ----------
-        i_ren: :class:`CustomInteractorStyle`
-        obj: :class:`vtkActor`
-            The picked actor
-        listboxitem: :class:`ListBoxItem2D`
-        """
-        if (listboxitem.element, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory,
-                                              listboxitem.element)
-            if os.access(new_directory_path, os.R_OK):
-                self.current_directory = new_directory_path
-                self.directory_contents = self.get_all_file_names()
-                content_names = [x[0] for x in self.directory_contents]
-                self.clear_selection()
-                self.values = content_names
-                self.view_offset = 0
-                self.update()
-                self.update_scrollbar()
-                self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
 
@@ -4204,16 +4084,24 @@ class FileMenu2D(UI):
 
         super(FileMenu2D, self).__init__()
         self.position = position
+        self.set_slot_colors()
+
+        # Offer some standard hooks to the user.
+        self.on_change = lambda: None
 
     def _setup(self):
         """ Setup this UI component.
         Create the ListBox (Panel2D) filled with empty slots (ListBoxItem2D).
         """
+        self.directory_contents = self.get_all_file_names()
+        content_names = [x[0] for x in self.directory_contents]
         self.listbox = ListBox2D(
-            values=None, multiselection=self.multiselection,
+            values=content_names, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling, size=self.menu_size,
-            directory_path=self.current_directory, extensions=self.extensions)
+            reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
+
+        # Leverage ListBox2D callback to detect when directory has been selected.
+        self.listbox.on_change = self.directory_click_callback
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4244,6 +4132,113 @@ class FileMenu2D(UI):
 
     def _get_size(self):
         return self.listbox.size
+
+    def get_all_file_names(self):
+        """ Gets file and directory names.
+
+        Returns
+        -------
+        all_file_names: list((string, {"directory", "file"}))
+            List of all file and directory names as string.
+        """
+        all_file_names = []
+
+        directory_names = self.get_directory_names()
+        for directory_name in directory_names:
+            all_file_names.append((directory_name, "directory"))
+
+        file_names = self.get_file_names()
+        for file_name in file_names:
+            all_file_names.append((file_name, "file"))
+
+        return all_file_names
+
+    def get_directory_names(self):
+        """ Finds names of all directories in the current_directory
+
+        Returns
+        -------
+        directory_names: list(string)
+            List of all directory names as string.
+        """
+        # A list of directory names in the current directory
+        directory_names = []
+        for (_, dirnames, _) in os.walk(self.current_directory):
+            directory_names += dirnames
+            break
+        directory_names.sort(key=lambda s: s.lower())
+        directory_names.insert(0, "../")
+        return directory_names
+
+    def get_file_names(self):
+        """ Finds names of all files in the current_directory
+
+        Returns
+        -------
+        file_names: list(string)
+            List of all file names as string.
+        """
+        # A list of file names with extension in the current directory
+        for (_, _, files) in os.walk(self.current_directory):
+            break
+
+        file_names = []
+        if "*" in self.extensions or "" in self.extensions:
+            file_names = files
+        else:
+            for ext in self.extensions:
+                for file in files:
+                    if file.endswith("." + ext):
+                        file_names.append(file)
+        file_names.sort(key=lambda s: s.lower())
+        return file_names
+
+    def set_slot_colors(self):
+        """ Sets the text color of the slots based on the type of element
+        they show. Blue for directories and green for files.
+        """
+        for idx, slot in enumerate(self.listbox.slots):
+            list_idx = min(self.listbox.view_offset + idx,
+                           len(self.directory_contents)-1)
+            if self.directory_contents[list_idx][1] == "directory":
+                slot.textblock.color = (0, 0.6, 0)
+            elif self.directory_contents[list_idx][1] == "file":
+                slot.textblock.color = (0, 0, 0.7)
+
+    def directory_click_callback(self):
+        """ A callback to move into a directory if it has been clicked.
+
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+        obj: :class:`vtkActor`
+            The picked actor
+        listboxitem: :class:`ListBoxItem2D`
+        """
+        # TODO: In this callback, the content of `listbox.selected` is before changing directory (if that happens).
+        #       Is this what we want?
+        self.on_change()
+
+        if len(self.listbox.selected) == 0:
+            return
+
+        # TODO: Make it easier to access selected slots/listitem in ListBox2D.
+        listboxitem = [slot for slot in self.listbox.slots if slot.element == self.listbox.selected[0]][0]
+
+        if (listboxitem.element, "directory") in self.directory_contents:
+            new_directory_path = os.path.join(self.current_directory,
+                                              listboxitem.element)
+            if os.access(new_directory_path, os.R_OK):
+                self.current_directory = new_directory_path
+                self.directory_contents = self.get_all_file_names()
+                content_names = [x[0] for x in self.directory_contents]
+                self.listbox.clear_selection()
+                self.listbox.values = content_names
+                self.listbox.view_offset = 0
+                self.listbox.update()
+                self.listbox.update_scrollbar()
+                self.set_slot_colors()
+
 
 
 class GridUI(UI):
