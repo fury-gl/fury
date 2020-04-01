@@ -110,16 +110,16 @@ def map_coordinates_3d_4d(input_array, indices):
         return np.ascontiguousarray(np.array(values_4d).T)
 
 
-def lines_to_vtk_polydata(lines, colors="RGB"):
+def lines_to_vtk_polydata(lines, colors=None):
     """Create a vtkPolyData with lines and colors.
 
     Parameters
     ----------
     lines : list
         list of N curves represented as 2D ndarrays
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
-        If None or False, no coloring is done
-        If "RGB" then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,)
+        If None or False, a standard orientation colormap is used for every
+        line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
@@ -188,9 +188,6 @@ def lines_to_vtk_polydata(lines, colors="RGB"):
     #           - if/else tested and work in normal simple case
     color_is_scalar = False
     if colors is None or colors is False:
-        # No color array is used
-        return poly_data, None
-    elif isinstance(colors, str) and colors.lower() == "rgb":
         # set automatic rgb colors
         cols_arr = line_colors(lines)
         colors_mapper = np.repeat(lines_range, points_per_line, axis=0)

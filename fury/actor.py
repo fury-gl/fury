@@ -496,7 +496,7 @@ def contour_from_label(data, affine=None, color=None):
     return unique_roi_surfaces
 
 
-def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
+def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
     """Use streamtubes to visualize polylines
@@ -506,9 +506,9 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
     lines : list
         list of N curves represented as 2D ndarrays
 
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
-        If None or False, no coloring is done
-        If "RGB" then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,)
+        If None or False, a standard orientation colormap is used for every
+        line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
@@ -641,7 +641,7 @@ def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
     return actor
 
 
-def line(lines, colors="RGB", opacity=1, linewidth=1,
+def line(lines, colors=None, opacity=1, linewidth=1,
          spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
          lookup_colormap=None, depth_cue=False, fake_tube=False):
     """ Create an actor for one or more lines.
@@ -650,9 +650,9 @@ def line(lines, colors="RGB", opacity=1, linewidth=1,
     ------------
     lines :  list of arrays
 
-    colors : array (N, 3), list of arrays, tuple (3,), array (K,), "RGB"
-        If None or False, no coloring is done
-        If "RGB" then a standard orientation colormap is used for every line.
+    colors : array (N, 3), list of arrays, tuple (3,), array (K,)
+        If None or False, a standard orientation colormap is used for every
+        line.
         If one tuple of color is used. Then all streamlines will have the same
         colour.
         If an array (N, 3) is given, where N is equal to the number of lines.
