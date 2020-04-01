@@ -444,6 +444,58 @@ def contour_from_roi(data, affine=None,
     return skin_actor
 
 
+def contour_from_label(data, affine=None, color=None):
+    """Generate surface actor from a labeled Array.
+
+    The color and opacity of individual surfaces can be customized.
+
+    Parameters
+    ----------
+    data : array, shape (X, Y, Z)
+        A labeled array file that will be binarized and displayed.
+    affine : array, shape (4, 4)
+        Grid to space (usually RAS 1mm) transformation matrix. Default is None.
+        If None then the identity matrix is used.
+    color : (N, 3) or (N, 4) ndarray
+        RGB/RGBA values in [0,1]. Default is None.
+        If None then random colors are used.
+        Alpha channel is set to 1 by default.
+
+    Returns
+    -------
+    contour_assembly : vtkAssembly
+        Array surface object displayed in space
+        coordinates as calculated by the affine parameter
+        in the order of their roi ids.
+    """
+
+    unique_roi_id = np.delete(np.unique(data), 0)
+
+    nb_surfaces = len(unique_roi_id)
+
+    unique_roi_surfaces = vtk.vtkAssembly()
+
+    if color is None:
+        color = np.random.rand(nb_surfaces, 3)
+    elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
+        raise ValueError("Incorrect color array shape")
+
+    if color.shape == (nb_surfaces, 4):
+        opacity = color[:, -1]
+        color = color[:, :-1]
+    else:
+        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
+
+    for roi_id in unique_roi_id:
+        roi_data = np.isin(data, roi_id).astype(np.int)
+        roi_surface = contour_from_roi(roi_data, affine,
+                                       color=color[int(roi_id)-1],
+                                       opacity=opacity[int(roi_id)-1])
+        unique_roi_surfaces.AddPart(roi_surface)
+
+    return unique_roi_surfaces
+
+
 def streamtube(lines, colors="RGB", opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
