@@ -454,7 +454,7 @@ def get_polymapper_from_polydata(polydata):
 
 
 def get_actor_from_polymapper(poly_mapper):
-    """Get vtkActor from a vtkPolyDataMapper.
+    """Get actor from a vtkPolyDataMapper.
 
     Parameters
     ----------
@@ -462,7 +462,7 @@ def get_actor_from_polymapper(poly_mapper):
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     actor = vtk.vtkActor()
@@ -474,7 +474,7 @@ def get_actor_from_polymapper(poly_mapper):
 
 
 def get_actor_from_polydata(polydata):
-    """Get vtkActor from a vtkPolyData.
+    """Get actor from a vtkPolyData.
 
     Parameters
     ----------
@@ -482,7 +482,7 @@ def get_actor_from_polydata(polydata):
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     poly_mapper = get_polymapper_from_polydata(polydata)
@@ -491,7 +491,7 @@ def get_actor_from_polydata(polydata):
 
 def get_actor_from_primitive(vertices, triangles, colors=None,
                              normals=None, backface_culling=True):
-    """Get vtkActor from a vtkPolyData.
+    """Get actor from a vtkPolyData.
 
     Parameters
     ----------
@@ -512,7 +512,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     Returns
     -------
-    actor : vtkActor
+    actor : actor
 
     """
     # Create a Polydata
@@ -776,7 +776,7 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
 
     Parameters
     ----------
-    actor : vtkActor or other prop
+    actor : actor or other prop
     rotation : tuple
         Rotate with angle w around axis x, y, z. Needs to be provided
         in the form (w, x, y, z).
@@ -882,99 +882,98 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 
-def what_order(verts, tri):
-    """Determines the winding order of a given set of vertices and a triangle
+def triangle_order(vertices, faces):
+    """Determine the winding order of a given set of vertices and a triangle.
 
-    Parameter
-    ---------
-    verts: ndarray
+    Parameters
+    ----------
+    vertices : ndarray
         array of vertices making up a shape
-    tri: ndarray
+    faces : ndarray
+        array of triangles
 
     Returns
     -------
-    0 or 1: int
-        If the order is counter clockwise, returns 0.
-        Otherwise, returns 1.
+    order : int
+        If the order is counter clockwise (CCW), returns True.
+        Otherwise, returns False.
+
     """
-    v1 = verts[tri[0] - 1]
-    v2 = verts[tri[1] - 1]
-    v3 = verts[tri[2] - 1]
+    v1 = vertices[faces[0]]
+    v2 = vertices[faces[1]]
+    v3 = vertices[faces[2]]
 
-    x1 = v1[0]
-    x2 = v2[0]
-    x3 = v3[0]
+    # https://stackoverflow.com/questions/40454789/computing-face-normals-and-winding
+    m_orient = np.ones((4, 4))
+    m_orient[0, :3] = v1
+    m_orient[1, :3] = v2
+    m_orient[2, :3] = v3
+    m_orient[3, :3] = 0
 
-    y1 = v1[1]
-    y2 = v2[1]
-    y3 = v3[1]
+    val = np.linalg.det(m_orient)
 
-    val = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1)
-
-    if val < 0:
-        return 1
-    return 0
+    return bool(val > 0)
 
 
-def change_order(tri):
-    """ Changes the order of a given triangle
+def change_vertices_order(triangle):
+    """Change the vertices order of a given triangle.
 
-    Parameter
-    ---------
-    tri: ndarray
+    Parameters
+    ----------
+    triangle : ndarray, shape(1, 3)
         array of 3 vertices making up a triangle
 
     Returns
     -------
-    np.array(newVert): ndarray
-        new array of vertices making up a triangle in the opposite winding\
+    new_triangle : ndarray, shape(1, 3)
+        new array of vertices making up a triangle in the opposite winding
         order of the given parameter
+
     """
-
-    newVert = [tri[2], tri[1], tri[0]]
-
-    return np.array(newVert)
+    return np.array([triangle[2], triangle[1], triangle[0]])
 
 
-def check_order(vert, triarr):
-    """
+def fix_winding_order(vertices, triangles, clockwise=False):
+    """Return corrected triangles.
 
-    Parameter
-    ---------
-    vert: ndarray
+    Given an ordering of the triangle's three vertices, a triangle can appear
+    to have a clockwise winding or counter-clockwise winding.
+    Clockwise means that the three vertices, in order, rotate clockwise around
+    the triangle's center.
+
+    Parameters
+    ----------
+    vertices : ndarray
         array of vertices corresponding to a shape
-    triarr: ndarray
+    triangles : ndarray
         array of triangles corresponding to a shape
+    clockwise : bool
+        triangle order type: clockwise (default) or counter-clockwise.
 
     Returns
     -------
-    correct_vert: ndarray
+    corrected_triangles : ndarray
         The corrected order of the vert parameter
 
     """
-
-    shape = triarr.shape
-    correct_vert = np.empty(shape)
-    correct_order = what_order(vert, triarr[0])
-    for nb, i in enumerate(triarr):
-        order2 = what_order(vert, i)
-        if correct_order != order2:
-            temp = change_order(i)
-            correct_vert[nb] = temp
-        else:
-            correct_vert[nb] = i
-    return correct_vert
+    corrected_triangles = triangles.copy()
+    desired_order = clockwise
+    for nb, face in enumerate(triangles):
+        current_order = triangle_order(vertices, face)
+        if desired_order != current_order:
+            corrected_triangles[nb] = change_vertices_order(face)
+    return corrected_triangles
 
 
 def vertices_from_actor(actor):
     """Return vertices from actor.
 
     Parameters
-    -------------
+    ----------
     actor : actor
 
     Returns
-    ---------
+    -------
     vertices : ndarray
 
     """
@@ -987,7 +986,7 @@ def compute_bounds(actor):
     """Compute Bounds of actor.
 
     Parameters
-    ------------
+    ----------
     actor : actor
 
     """
@@ -998,7 +997,7 @@ def update_actor(actor):
     """Update actor.
 
     Parameters
-    ------------
+    ----------
     actor : actor
 
     """
@@ -1006,14 +1005,14 @@ def update_actor(actor):
 
 
 def get_bounds(actor):
-    """Returns Bounds of actor.
+    """Return Bounds of actor.
 
     Parameters
-    --------------
+    ----------
     actor : actor
 
     Returns
-    ------------
+    -------
     vertices : ndarray
 
     """

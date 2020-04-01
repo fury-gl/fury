@@ -1,7 +1,9 @@
+"""Module dedicated for basic primitive."""
 from os.path import join as pjoin
 import numpy as np
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere, euler_matrix
+from fury.utils import fix_winding_order
 from scipy.spatial import ConvexHull
 from scipy.spatial import transform
 import math
@@ -276,9 +278,10 @@ def prim_sphere(name='symmetric362', gen_faces=False):
         raise ValueError('No sphere called "%s"' % name)
     res = np.load(fname)
 
-    verts = res['vertices']
+    verts = res['vertices'].copy()
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-    return verts, faces
+    faces = fix_winding_order(res['vertices'], faces)
+    return res['vertices'], faces
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
@@ -335,9 +338,9 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
 
 
 def prim_tetrahedron():
-    """
-    returns vertices and triangles to a tetrahedron
-    that has a side length of two units.
+    """Return vertices and triangles for a tetrahedron.
+
+    This shape has a side length of two units.
 
     Returns
     -------
@@ -345,6 +348,7 @@ def prim_tetrahedron():
         4 vertices coordinates
     triangles: numpy.ndarray
         4 triangles representing the tetrahedron
+
     """
 
     pyramid_vert = np.array([[0.5, 0.5, 0.5],
@@ -361,8 +365,7 @@ def prim_tetrahedron():
 
 
 def prim_icosahedron():
-    """
-    returns vertices and triangles to a icosahedron
+    """Return vertices and triangles for icosahedron.
 
     Returns
     -------
@@ -370,6 +373,7 @@ def prim_icosahedron():
         12 vertices coordinates to the icosahedron
     icosahedron_mesh: numpy.ndarray
         20 triangles representing the tetrahedron
+
     """
     phi = (1 + math.sqrt(5)) / 2.0
 

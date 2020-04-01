@@ -1,4 +1,4 @@
-import sys
+"""Module for testing primitive."""
 import numpy as np
 import numpy.testing as npt
 from fury.utils import (map_coordinates_3d_4d,
@@ -104,8 +104,8 @@ def test_polydata_polygon(interactive=False):
     actor2 = utils.get_actor_from_polydata(my_polydata)
 
     scene = window.Scene()
-    for actor in [actor1, actor2]:
-        scene.add(actor)
+    for act in [actor1, actor2]:
+        scene.add(act)
         if interactive:
             window.show(scene)
         arr = window.snapshot(scene)
@@ -117,9 +117,8 @@ def test_polydata_polygon(interactive=False):
 def test_asbytes():
     text = [b'test', 'test']
 
-    if sys.version_info[0] >= 3:
-        for t in text:
-            npt.assert_equal(utils.asbytes(t), b'test')
+    for t in text:
+        npt.assert_equal(utils.asbytes(t), b'test')
 
 
 def trilinear_interp_numpy(input_array, indices):
@@ -259,51 +258,49 @@ def test_rotate(interactive=False):
         npt.assert_equal(red_sum_new > red_sum, True)
 
 
-def test_what_order():
+def test_triangle_order():
 
-    test_vert = np.array([[0, 0, 0],
-                          [1, 2, 0],
-                          [3, 0, 0],
-                          [2, 0, 0]])
+    test_vert = np.array([[-1, -2, 0],
+                          [1, -1, 0],
+                          [2, 1, 0],
+                          [3, 0, 0]])
 
-    test_tri = np.array([[1, 2, 4],
-                         [4, 3, 2]])
+    test_tri = np.array([[0, 1, 2],
+                         [2, 1, 0]])
 
-    order1 = utils.what_order(test_vert, test_tri[0])
+    clockwise1 = utils.triangle_order(test_vert, test_tri[0])
+    clockwise2 = utils.triangle_order(test_vert, test_tri[1])
 
-    order2 = utils.what_order(test_vert, test_tri[1])
-
-    npt.assert_equal(0, order1)
-
-    npt.assert_equal(1, order2)
+    npt.assert_equal(False, clockwise1)
+    npt.assert_equal(False, clockwise2)
 
 
-def test_change_order():
+def test_change_vertices_order():
 
-    test_tri = np.array([[1, 2, 3],
-                         [3, 2, 1],
-                         [5, 4, 3],
-                         [3, 4, 5]])
+    triangles = np.array([[1, 2, 3],
+                          [3, 2, 1],
+                          [5, 4, 3],
+                          [3, 4, 5]])
 
-    npt.assert_equal(test_tri[0], utils.change_order(test_tri[1]))
+    npt.assert_equal(triangles[0], utils.change_vertices_order(triangles[1]))
+    npt.assert_equal(triangles[2], utils.change_vertices_order(triangles[3]))
 
-    npt.assert_equal(test_tri[2], utils.change_order(test_tri[3]))
 
+def test_winding_order():
 
-def test_check_order():
+    vertices = np.array([[0, 0, 0],
+                         [1, 2, 0],
+                         [3, 0, 0],
+                         [2, 0, 0]])
 
-    test_vert = np.array([[0, 0, 0],
-                          [1, 2, 0],
-                          [3, 0, 0],
-                          [2, 0, 0]])
+    triangles = np.array([[0, 1, 3],
+                          [2, 1, 0]])
 
-    test_tri = np.array([[1, 2, 4],
-                         [4, 3, 2]])
+    expected_triangles = np.array([[0, 1, 3],
+                                   [2, 1, 0]])
 
-    test_tri2 = np.array([[1, 2, 4],
-                          [2, 3, 4]])
-
-    npt.assert_equal(test_tri2, utils.check_order(test_vert, test_tri))
+    npt.assert_equal(expected_triangles,
+                     utils.fix_winding_order(vertices, triangles))
 
 
 def test_vertices_from_actor():
