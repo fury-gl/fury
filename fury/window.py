@@ -491,14 +491,15 @@ class ShowManager(object):
     def render(self):
         """Render only once."""
         self.window.Render()
-        if self.title == "FURY":
-            self.window.SetWindowName(self.title + " " + fury_version)
-        else:
-            self.window.SetWindowName(self.title)
 
     def start(self):
         """Start interaction."""
         try:
+            self.render()
+            if self.title.upper() == "FURY":
+                self.window.SetWindowName(self.title + " " + fury_version)
+            else:
+                self.window.SetWindowName(self.title)
             self.iren.Start()
         except AttributeError:
             self.__init__(self.scene, self.title, size=self.size,
@@ -508,6 +509,10 @@ class ShowManager(object):
                           interactor_style=self.interactor_style)
             self.initialize()
             self.render()
+            if self.title.upper() == "FURY":
+                self.window.SetWindowName(self.title + " " + fury_version)
+            else:
+                self.window.SetWindowName(self.title)
             self.iren.Start()
 
         self.window.RemoveRenderer(self.scene)

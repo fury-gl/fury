@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===============
-VTK Shaders
-===============
+=============
+Varying Color
+=============
 
 This example shows how to use shaders to generate a shaded output. We will
 demonstrate how to load polydata then use a custom shader calls to render
@@ -13,6 +13,7 @@ First, a bunch of imports.
 
 from fury import window, ui, io, utils
 import vtk
+
 ###############################################################################
 # Let's download  and load the model
 
