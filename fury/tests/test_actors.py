@@ -364,6 +364,8 @@ def test_contour_from_label():
     npt.assert_equal(report.objects, 3)
     npt.assert_equal(report2.objects, 1)
 
+    actor.test_contour_from_label(data)
+
 
 def test_streamtube_and_line_actors():
     scene = window.Scene()
