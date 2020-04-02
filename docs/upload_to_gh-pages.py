@@ -94,7 +94,9 @@ if __name__ == '__main__':
                            "installed package")
 
     # find the version number
-    tag = "dev" if 'dev' or 'post' in mod.__version__ else mod.__version__
+    tag = "dev"
+    if any(t in mod.__version__.lower() for t in ['dev', 'post']):
+        tag = mod.__version__
 
     intro_msg = """
 ##############################################
