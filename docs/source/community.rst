@@ -8,7 +8,7 @@ Join Us!
 .. raw:: html
 
     <ul style="list-style-type:none;">
-        <li style="display: block"><a href='https://join.slack.com/t/fury-gl/shared_invite/enQtNzE1NTk2Mzc3OTQyLTQyNDZiNTUxNWUyZjFmMzZlNDUxZDQ0MzllYjUyYTY1MjFhMmQyYmI3NjJkYzc3YTMwNmRjOWIzMDBjNTYzMDU'><i class="fa fa-slack fa-fw"></i> Slack</a></li>
+        <li style="display: block"><a href='https://discord.gg/6btFPPj'><i class="fa fa-discord fa-fw"></i> Discord</a></li>
         <li style="display: block"><a href='https://mail.python.org/mailman3/lists/fury.python.org'><i class="fa fa-envelope fa-fw"></i> Mailing list</a></li>
         <li style="display: block"><a href='https://github.com/fury-gl/fury'><i class="fa fa-github fa-fw"></i> Github</a></li>
     <ul>
