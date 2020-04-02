@@ -235,5 +235,5 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
     'matplotlib': ('https://matplotlib.org', None),
     'dipy': ('https://dipy.org/documentation/latest',
-             'https://dipy.org/documentation/1.0.0./objects.inv/'),
+             'https://dipy.org/documentation/latest/objects.inv/'),
 }
