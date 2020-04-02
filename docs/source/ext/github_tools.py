@@ -382,7 +382,7 @@ def github_stats(**kwargs):
     save = kwargs.get('save', None)
     if save:
         version = kwargs.get('version', 'vx.x.x')
-        fname = "release" + version + '.rst'
+        fname = "releasev" + version + '.rst'
         fpath = os.path.join(os.path.dirname(__file__), '..', 'release_notes',
                              fname)
         f = open(fpath, 'w')
@@ -390,9 +390,9 @@ def github_stats(**kwargs):
         sys.stdout = f
         print(".. _{}".format(fname))
         print()
-        print(("=========================================\n"
-               " Release notes for Fury version {}\n"
-               "=========================================").format(version))
+        print(("==============================\n"
+               " Release notes version {}\n"
+               "==============================").format(version))
 
     # By default, search one month back
     tag = kwargs.get('tag', None)

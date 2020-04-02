@@ -15,6 +15,7 @@ Core Development Team
 Contributors
 ------------
 
+* Javier Guaje
 * Ariel Rokem, University of Washington, WA, USA
 * Matthew Brett, Birmingham University, Birmingham, UK
 * Yaroslav Halchenko
@@ -43,3 +44,15 @@ Contributors
 * Gauvin Alexandre
 * Ian Nimmo-Smith
 * Yaroslav Halchenko
+* Soham Biswas
+* Lenix Lobo
+* Vivek Choudhary
+* Saransh Jain
+* Shreyas Bhujbal
+* Ibrahim Anis
+* Filipi Nascimento Silva
+* Naman Bansal
+* Nasim Anousheh
+* Gottipati Gautam
+* Liam Donohue
+* Devanshu Modi
