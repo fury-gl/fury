@@ -143,7 +143,7 @@ Checklist before Releasing
 
     $ python github_tools.py --tag=v0.1.0 --save --version=0.2.0
 
-    This command will generate a new file named ``release0.2.0.rst`` in ``release_notes`` folder.
+  This command will generate a new file named ``release0.2.0.rst`` in ``release_notes`` folder.
 
 * Check the examples and tutorial - we really need an automated check here.
 
