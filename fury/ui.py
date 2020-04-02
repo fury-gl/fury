@@ -4100,7 +4100,8 @@ class FileMenu2D(UI):
             font_size=self.font_size, line_spacing=self.line_spacing,
             reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
 
-        # Leverage ListBox2D callback to detect when directory has been selected.
+        # Leverage ListBox2D callback to detect when directory
+        # has been selected.
         self.listbox.on_change = self.directory_click_callback
 
     def _get_actors(self):
@@ -4215,7 +4216,8 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        # TODO: In this callback, the content of `listbox.selected` is before changing directory (if that happens).
+        # TODO: In this callback, the content of `listbox.selected`
+        # is before changing directory (if that happens).
         #       Is this what we want?
         self.on_change()
 
@@ -4223,7 +4225,8 @@ class FileMenu2D(UI):
             return
 
         # TODO: Make it easier to access selected slots/listitem in ListBox2D.
-        listboxitem = [slot for slot in self.listbox.slots if slot.element == self.listbox.selected[0]][0]
+        listboxitem = [slot for slot in self.listbox.slots
+                       if slot.element == self.listbox.selected[0]][0]
 
         if (listboxitem.element, "directory") in self.directory_contents:
             new_directory_path = os.path.join(self.current_directory,
@@ -4238,7 +4241,6 @@ class FileMenu2D(UI):
                 self.listbox.update()
                 self.listbox.update_scrollbar()
                 self.set_slot_colors()
-
 
 
 class GridUI(UI):
