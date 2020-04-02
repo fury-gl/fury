@@ -245,9 +245,8 @@ class ApiDocWriter(object):
             if not self.other_defines and not getmodule(obj) == mod:
                 continue
             # figure out if obj is a function or class
-            if (hasattr(obj, 'func_name') or
-                    isinstance(obj, BuiltinFunctionType) or
-                    ismethod(obj) or isinstance(obj, FunctionType)):
+            if (hasattr(obj, 'func_name') or ismethod(obj) or
+                    isinstance(obj, (BuiltinFunctionType, FunctionType))):
                 functions.append(obj_str)
             else:
                 try:

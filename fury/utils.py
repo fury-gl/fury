@@ -25,7 +25,7 @@ def set_input(vtk_object, inp):
         poly_mapper = set_input(vtk.vtkPolyDataMapper(), poly_data)
 
     """
-    if isinstance(inp, vtk.vtkPolyData) or isinstance(inp, vtk.vtkImageData):
+    if isinstance(inp, (vtk.vtkPolyData, vtk.vtkImageData)):
         vtk_object.SetInputData(inp)
     elif isinstance(inp, vtk.vtkAlgorithmOutput):
         vtk_object.SetInputConnection(inp)
@@ -315,8 +315,8 @@ def get_polydata_normals(polydata):
     vtk_normals = polydata.GetPointData().GetNormals()
     if vtk_normals is None:
         return None
-    else:
-        return numpy_support.vtk_to_numpy(vtk_normals)
+
+    return numpy_support.vtk_to_numpy(vtk_normals)
 
 
 def get_polydata_colors(polydata):
@@ -335,8 +335,8 @@ def get_polydata_colors(polydata):
     vtk_colors = polydata.GetPointData().GetScalars()
     if vtk_colors is None:
         return None
-    else:
-        return numpy_support.vtk_to_numpy(vtk_colors)
+
+    return numpy_support.vtk_to_numpy(vtk_colors)
 
 
 def set_polydata_triangles(polydata, triangles):
@@ -661,12 +661,9 @@ def apply_affine(aff, pts):
 
 
 def asbytes(s):
-    if sys.version_info[0] >= 3:
-        if isinstance(s, bytes):
-            return s
-        return s.encode('latin1')
-    else:
-        return str(s)
+    if isinstance(s, bytes):
+        return s
+    return s.encode('latin1')
 
 
 def vtk_matrix_to_numpy(matrix):
@@ -974,9 +971,8 @@ def vertices_from_actor(actor):
     vertices : ndarray
 
     """
-    return numpy_support.vtk_to_numpy(
-                                     actor.GetMapper().GetInput().
-                                     GetPoints().GetData())
+    return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
+                                      GetPoints().GetData())
 
 
 def compute_bounds(actor):

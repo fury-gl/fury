@@ -33,10 +33,10 @@ class ImageFileScraper(object):
             image_names.append(path_new)
             shutil.copyfile(path_orig, path_new)
 
-        if len(image_names) == 0:
+        if not image_names:
             return ''
-        else:
-            return figure_rst(image_names, gallery_conf['src_dir'])
+
+        return figure_rst(image_names, gallery_conf['src_dir'])
 
 
 def _find_images(path, image_extensions=['jpg', 'jpeg', 'png', 'gif']):
