@@ -142,6 +142,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.on_mouse_wheel_forward(obj, evt)
         elif evt == "MouseWheelBackwardEvent":
             self.on_mouse_wheel_backward(obj, evt)
+        elif evt == "LeftButtonDoubleClickEvent":
+            self.on_left_button_double_click(obj, evt)
 
         self.event.reset()  # Event fully processed.
 
@@ -160,6 +162,22 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.propagate_event(evt, *self.selected_props["left_button"])
         self.selected_props["left_button"].clear()
         self.trackball_camera.OnLeftButtonUp()
+
+    def on_left_button_double_click(self, _obj, evt):
+        self.left_button_down = False
+        prop = self.get_prop_at_event_position()
+
+        final_state = initial_state = []
+        self.trackball_camera.OnLeftButtonDown()
+        self.trackball_camera.GetInteractor.GetEventPosition(initial_state)
+        self.trackball_camera.OnLeftButtonUp()
+
+        self.trackball_camera.OnLeftButtonDown()
+        self.trackball_camera.GetInteractor.GetEventPosition(final_state)
+
+        if initial_state == final_state:
+            if prop is not None:
+                self.propagate_event(evt, prop)
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
