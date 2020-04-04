@@ -13,7 +13,5 @@ include fury/_version.py
 
 # If including data files in the package, add them like:
 # include path/to/data_file
-include fury/data/files/*.json
-include fury/data/files/*.log.gz
-include fury/data/files/*.pkl
-include fury/shaders/*.geom
+include fury/data/files/*
+include fury/shaders/*
