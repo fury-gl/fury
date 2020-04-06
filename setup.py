@@ -52,10 +52,8 @@ setup(
             # When adding files here, remember to update MANIFEST.in as well,
             # or else they will not be included in the distribution on PyPI!
             # 'path/to/data_file',
-            "fury/data/files/*.json",
-            "fury/data/files/*.log.gz",
-            "fury/data/files/*.pkl"
-            "fury/shaders/*.geom"
+            "fury/data/files/*",
+            "fury/shaders/*"
             ]
         },
     install_requires=['numpy>=1.7.1',
