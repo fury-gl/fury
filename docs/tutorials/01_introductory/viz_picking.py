@@ -11,14 +11,14 @@ Here we present a tutorial of picking objects in the 3D world.
 import numpy as np
 from fury import actor, window, ui, utils
 
-xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [200, 0, 0, 100]])
+xyzr = np.array([[0, 0, 0, 25], [100, 0, 0, 50], [200, 0, 0, 100]])
 
 colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
 
 ###############################################################################
 # Let's create a panel to show what is picked
 
-panel = ui.Panel2D(size=(200, 150), color=(1, 1, 1), align="right")
+panel = ui.Panel2D(size=(200, 150), color=(1, .5, .0), align="right")
 panel.center = (150, 200)
 
 text_block = ui.TextBlock2D(text="Pick")
@@ -37,31 +37,34 @@ vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
 num_objects = xyzr.shape[0]
 
-
 scene.add(sphere_actor)
 scene.reset_camera()
 
 global showm
 
-
 def picking(mode='face'):
     if mode == 'face':
         picker = window.vtk.vtkCellPicker()
-    elif mode == 'prop':
-        picker = window.vtk.vtkPropPicker()
+    elif mode == 'point':
+        picker = window.vtk.vtkPointPicker()
     else:
         raise ValueError('Unknown picker option')
 
     def pick(x, y, z, sc):
         picker.Pick(x, y, z, sc)
-        return {'vertex': picker.GetPointId(), 'face' : picker.GetCellId()}
+        if mode == 'face':
+            return {'vertex': picker.GetPointId(),
+                    'face' : picker.GetCellId()}
+        if mode == 'point':
+            return {'vertex': picker.GetPointId(),
+                    'face' : None}
 
     picker.pick = pick
     return picker
 
 
 global picker
-picker = picking('face')
+picker = picking('point')
 
 
 def left_click_callback(obj, event):
@@ -75,8 +78,9 @@ def left_click_callback(obj, event):
     print(picked_info)
     vertex_index = picked_info['vertex']
     face_index = picked_info['face']
-    text = 'Object ' + str(np.floor((vertex_index/num_vertices) * num_objects)) + '\n'
-    text += 'Point ID ' + str(vertex_index) + '\n'
+    object_index = np.floor((vertex_index/num_vertices) * num_objects)
+    text = 'Object ' + str(object_index) + '\n'
+    text += 'Vertex ID ' + str(vertex_index) + '\n'
     text += 'Face ID ' + str(face_index)
     text_block.message = text
     showm.render()
