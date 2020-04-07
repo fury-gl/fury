@@ -21,7 +21,7 @@ colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
 panel = ui.Panel2D(size=(200, 150), color=(1, .5, .0), align="right")
 panel.center = (150, 200)
 
-text_block = ui.TextBlock2D(text="Pick")
+text_block = ui.TextBlock2D(text="Pick a \nsphere")
 panel.add_element(text_block, (0.3, 0.3))
 
 ###############################################################################
@@ -45,7 +45,7 @@ global showm
 def picking(mode='face'):
     if mode == 'face':
         picker = window.vtk.vtkCellPicker()
-    elif mode == 'point':
+    elif mode == 'vertex':
         picker = window.vtk.vtkPointPicker()
     else:
         raise ValueError('Unknown picker option')
@@ -55,7 +55,7 @@ def picking(mode='face'):
         if mode == 'face':
             return {'vertex': picker.GetPointId(),
                     'face' : picker.GetCellId()}
-        if mode == 'point':
+        if mode == 'vertex':
             return {'vertex': picker.GetPointId(),
                     'face' : None}
 
@@ -63,14 +63,17 @@ def picking(mode='face'):
     return picker
 
 
+###############################################################################
+# Select a picking option
+
 global picker
-picker = picking('point')
+picker = picking('face')
+# picker = picking('vertex')
 
 
 def left_click_callback(obj, event):
 
     global text_block, showm, picker
-    x, y, z = obj.GetCenter()
     event_pos = showm.iren.GetEventPosition()
 
     picked_info = picker.pick(event_pos[0], event_pos[1],
