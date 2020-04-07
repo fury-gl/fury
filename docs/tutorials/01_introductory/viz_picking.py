@@ -33,7 +33,6 @@ sphere_actor = actor.sphere(centers=0.5 * xyzr[:, :3],
                             colors=colors[:],
                             radii=0.1 * xyzr[:, 3])
 
-
 vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
 num_objects = xyzr.shape[0]
@@ -44,8 +43,25 @@ scene.reset_camera()
 
 global showm
 
+
+def picking(mode='face'):
+    if mode == 'face':
+        picker = window.vtk.vtkCellPicker()
+    elif mode == 'prop':
+        picker = window.vtk.vtkPropPicker()
+    else:
+        raise ValueError('Unknown picker option')
+
+    def pick(x, y, z, sc):
+        picker.Pick(x, y, z, sc)
+        return {'vertex': picker.GetPointId(), 'face' : picker.GetCellId()}
+
+    picker.pick = pick
+    return picker
+
+
 global picker
-picker = window.vtk.vtkCellPicker()
+picker = picking('face')
 
 
 def left_click_callback(obj, event):
@@ -54,14 +70,14 @@ def left_click_callback(obj, event):
     x, y, z = obj.GetCenter()
     event_pos = showm.iren.GetEventPosition()
 
-    picker.Pick(event_pos[0], event_pos[1],
-                0, showm.scene)
-
-    cell_index = picker.GetCellId()
-    point_index = picker.GetPointId()
-    text = 'Object ' + str(np.floor((point_index/num_vertices) * num_objects)) + '\n'
-    text += 'Point ID ' + str(point_index) + '\n'
-    text += 'Face ID ' + str(cell_index)
+    picked_info = picker.pick(event_pos[0], event_pos[1],
+                              0, showm.scene)
+    print(picked_info)
+    vertex_index = picked_info['vertex']
+    face_index = picked_info['face']
+    text = 'Object ' + str(np.floor((vertex_index/num_vertices) * num_objects)) + '\n'
+    text += 'Point ID ' + str(vertex_index) + '\n'
+    text += 'Face ID ' + str(face_index)
     text_block.message = text
     showm.render()
 
