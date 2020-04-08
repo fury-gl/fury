@@ -42,42 +42,53 @@ scene.reset_camera()
 
 global showm
 
-def picking(mode='face'):
-    if mode == 'face':
-        picker = window.vtk.vtkCellPicker()
-    elif mode == 'vertex':
-        picker = window.vtk.vtkPointPicker()
-    else:
-        raise ValueError('Unknown picker option')
 
-    def pick(x, y, z, sc):
-        picker.Pick(x, y, z, sc)
-        if mode == 'face':
-            return {'vertex': picker.GetPointId(),
-                    'face' : picker.GetCellId()}
-        if mode == 'vertex':
-            return {'vertex': picker.GetPointId(),
-                    'face' : None}
+class PickingManager(object):
+    def __init__(self, mode='face'):
+        self.mode = mode
+        if self.mode == 'face':
+            self.picker = window.vtk.vtkCellPicker()
+        elif mode == 'vertex':
+            self.picker = window.vtk.vtkPointPicker()
+        elif self.mode == 'actor':
+            self.picker = window.vtk.vtkPropPicker()
+        elif mode == 'world':
+            self.picker = window.vtk.vtkWorldPointPicker()
+        elif self.mode == 'selector':
+            self.picker = window.vtk.vtkScenePicker()
+        else:
+            raise ValueError('Unknown picking option')
 
-    picker.pick = pick
-    return picker
+    def pick(self, x, y, z, sc):
+        self.picker.Pick(x, y, z, sc)
+        if self.mode == 'face':
+            return {'vertex': self.picker.GetPointId(),
+                    'face': self.picker.GetCellId()}
+        elif self.mode == 'vertex':
+            return {'vertex': self.picker.GetPointId(),
+                    'face': None}
+        else:
+            raise ValueError('Uknown picking mode to pick')
+
+    def event_position(self, iren):
+        return showm.iren.GetEventPosition()
 
 
 ###############################################################################
 # Select a picking option
 
-global picker
-picker = picking('face')
-# picker = picking('vertex')
+pickm = PickingManager('face')
+# pickm = PickingManager('vertex')
 
 
 def left_click_callback(obj, event):
 
-    global text_block, showm, picker
-    event_pos = showm.iren.GetEventPosition()
+    global text_block, showm
 
-    picked_info = picker.pick(event_pos[0], event_pos[1],
-                              0, showm.scene)
+    event_pos = pickm.event_position(showm.iren)
+
+    picked_info = pickm.pick(event_pos[0], event_pos[1],
+                             0, showm.scene)
     print(picked_info)
     vertex_index = picked_info['vertex']
     face_index = picked_info['face']
