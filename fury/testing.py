@@ -147,5 +147,4 @@ def setup_test():
     # (module + line number) where the warning is issued
     if LooseVersion(np.__version__) >= LooseVersion('1.15') and \
             LooseVersion(scipy.version.short_version) <= '1.1.0':
-        import warnings
         warnings.simplefilter("default")

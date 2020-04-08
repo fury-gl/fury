@@ -367,8 +367,8 @@ def contour_from_roi(data, affine=None,
     """
     if data.ndim != 3:
         raise ValueError('Only 3D arrays are currently supported.')
-    else:
-        nb_components = 1
+
+    nb_components = 1
 
     data = (data > 0) * 1
     vol = np.interp(data, xp=[data.min(), data.max()], fp=[0, 255])
