@@ -280,7 +280,7 @@ def prim_sphere(name='symmetric362', gen_faces=False):
 
     verts = res['vertices'].copy()
     faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-    faces = fix_winding_order(res['vertices'], faces)
+    faces = fix_winding_order(res['vertices'], faces, clockwise=True)
     return res['vertices'], faces
 
 
