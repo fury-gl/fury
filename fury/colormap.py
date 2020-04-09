@@ -592,8 +592,9 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
 
     return _generate_next_color()
 
+
 def hex_to_color(color):
-    #Converts Hexadecimal color code to rgb()
+    # Converts Hexadecimal color code to rgb()
     if color[0] == "#":
         color = color[1:]
 
