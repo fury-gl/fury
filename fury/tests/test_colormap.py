@@ -118,7 +118,7 @@ def test_lab2rgb():
 
 
 def test_hex_to_rgb():
-    expected = np.array([1, 1, 1])
+    expected = np.array([0.99609375, 0.99609375, 0.99609375])
     hexcode = "#FFFFFF"
     res = colormap.hex_to_rgb(hexcode)
     npt.asset_array_almost_equal(res, expected)
