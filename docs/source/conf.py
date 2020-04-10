@@ -79,7 +79,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'FURY'
-copyright = '2010-{0}, FURY'.format(datetime.now().year)
+copyright = '2018-{0}, FURY'.format(datetime.now().year)
 author = 'FURY'
 
 # The version info for the project you're documenting, acts as replacement for
