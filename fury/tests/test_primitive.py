@@ -11,7 +11,6 @@ def test_vertices_primitives():
 
     for func, shape in l_primitives:
         vertices, _ = func()
-        print('ddfsdf')
         npt.assert_equal(vertices.shape, shape)
         npt.assert_equal(np.mean(vertices), 0)
         npt.assert_equal(vertices.min(), -0.5)
