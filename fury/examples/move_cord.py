@@ -47,7 +47,8 @@ objcollision = p.createCollisionShape(
 obj = p.createMultiBody(baseMass=0.5,
                         baseCollisionShapeIndex=objcollision,
                         basePosition=[0, 0, 4],
-                        baseOrientation=[-0.4044981, -0.8089962, -0.4044981, 0.1352322])
+                        baseOrientation=[-0.4044981, -0.8089962,
+                                         -0.4044981, 0.1352322])
 
 p.changeDynamics(obj, -1, lateralFriction=0.5)
 p.changeDynamics(obj, -1, restitution=0.6)
@@ -71,8 +72,11 @@ sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
                             radii=radii)
 
-cuboid_actor = actor.box(centers=xyz, directions=np.array(p.getEulerFromQuaternion(
-    [-0.4044981, -0.8089962, -0.4044981, 0.1352322])), size=(0.2, 0.2, 1), colors=(0, 1, 1))
+cuboid_actor = actor.box(centers=xyz,
+                         directions=np.array(p.getEulerFromQuaternion(
+                             [-0.4044981, -0.8089962, -0.4044981, 0.1352322])),
+                         size=(0.2, 0.2, 1),
+                         colors=(0, 1, 1))
 
 wall_actor_1 = actor.box(centers=np.array([[-4, 0, 4]]),
                          directions=np.array([[1.57, 0, 0]]),
@@ -109,8 +113,10 @@ def timer_callback(_obj, _event):
     if storage.f:
         print("entered")
         for j in range(5):
-            p.applyExternalForce(
-                obj, -1, forceObj=[-1000, 0, 0], posObj=pos, flags=p.WORLD_FRAME)
+            p.applyExternalForce(obj, -1,
+                                 forceObj=[-1000, 0, 0],
+                                 posObj=pos,
+                                 flags=p.WORLD_FRAME)
             _, orn = p.getBasePositionAndOrientation(obj)
             storage.f = 0
     cuboid_actor.SetPosition(pos[0], pos[1], pos[2])
