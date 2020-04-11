@@ -169,11 +169,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         final_state = initial_state = []
         self.trackball_camera.OnLeftButtonDown()
-        self.trackball_camera.GetInteractor.GetEventPosition(initial_state)
+        self.trackball_camera.GetInteractor().GetEventPosition(initial_state)
         self.trackball_camera.OnLeftButtonUp()
 
         self.trackball_camera.OnLeftButtonDown()
-        self.trackball_camera.GetInteractor.GetEventPosition(final_state)
+        self.trackball_camera.GetInteractor().GetEventPosition(final_state)
 
         if initial_state == final_state:
             if prop is not None:
