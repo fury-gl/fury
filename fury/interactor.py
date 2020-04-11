@@ -83,6 +83,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.right_button_down = False
         self.middle_button_down = False
         self.active_props = set()
+        self.nb_left_clicks = 0
+        self.reset_pixel_distance = 5
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
@@ -165,23 +167,33 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
     def on_left_button_down(self, _obj, evt):
         self.left_button_down = False
+        self.nb_left_clicks += 1
         prop = self.get_prop_at_event_position()
 
         final_state = initial_state = []
-        self.trackball_camera.OnLeftButtonDown()
         initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
-        self.trackball_camera.OnLeftButtonUp()
 
         print("Initial state:", initial_state)
 
-        self.trackball_camera.OnLeftButtonDown()
         final_state = self.trackball_camera.GetInteractor().GetEventPosition()
 
         print("Final state:", final_state)
 
-        if initial_state == final_state:
+        x_dist = final_state[0] - initial_state[0]
+        y_dist = final_state[1] - initial_state[1]
+
+        dist_moved = int((x_dist**2 + y_dist**2)**0.5)
+
+        if dist_moved > self.reset_pixel_distance:
+            self.nb_left_clicks = 1
+        
+        if self.nb_left_clicks == 2:
+            print("Double Clicked...")
+            self.nb_left_clicks = 0
             if prop is not None:
                 self.propagate_event(evt, prop)
+
+        self.trackball_camera.OnLeftButtonDown()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
