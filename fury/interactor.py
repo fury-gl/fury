@@ -147,33 +147,37 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         self.event.reset()  # Event fully processed.
 
-    def on_left_button_down(self, _obj, evt):
-        self.left_button_down = True
-        prop = self.get_prop_at_event_position()
-        if prop is not None:
-            self.selected_props["left_button"].add(prop)
-            self.propagate_event(evt, prop)
+    # def on_left_button_down(self, _obj, evt):
+    #     self.left_button_down = True
+    #     prop = self.get_prop_at_event_position()
+    #     if prop is not None:
+    #         self.selected_props["left_button"].add(prop)
+    #         self.propagate_event(evt, prop)
 
-        if not self.event.abort_flag:
-            self.trackball_camera.OnLeftButtonDown()
-
-    # def on_left_button_up(self, _obj, evt):
-    #     self.left_button_down = False
-    #     self.propagate_event(evt, *self.selected_props["left_button"])
-    #     self.selected_props["left_button"].clear()
-    #     self.trackball_camera.OnLeftButtonUp()
+    #     if not self.event.abort_flag:
+    #         self.trackball_camera.OnLeftButtonDown()
 
     def on_left_button_up(self, _obj, evt):
+        self.left_button_down = False
+        self.propagate_event(evt, *self.selected_props["left_button"])
+        self.selected_props["left_button"].clear()
+        self.trackball_camera.OnLeftButtonUp()
+
+    def on_left_button_down(self, _obj, evt):
         self.left_button_down = False
         prop = self.get_prop_at_event_position()
 
         final_state = initial_state = []
         self.trackball_camera.OnLeftButtonDown()
-        self.trackball_camera.GetInteractor().GetEventPosition(initial_state)
+        initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
         self.trackball_camera.OnLeftButtonUp()
 
+        print("Initial state:", initial_state)
+
         self.trackball_camera.OnLeftButtonDown()
-        self.trackball_camera.GetInteractor().GetEventPosition(final_state)
+        final_state = self.trackball_camera.GetInteractor().GetEventPosition()
+
+        print("Final state:", final_state)
 
         if initial_state == final_state:
             if prop is not None:
