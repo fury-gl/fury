@@ -8,7 +8,6 @@ from scipy.spatial import ConvexHull
 from scipy.spatial import transform
 import math
 
-
 SPHERE_FILES = {
     'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
     'symmetric642': pjoin(DATA_DIR, 'evenly_distributed_sphere_642.npz'),
@@ -36,7 +35,7 @@ def faces_from_sphere_vertices(vertices):
     """
     hull = ConvexHull(vertices, qhull_options='Qbb Qc')
     faces = np.ascontiguousarray(hull.simplices)
-    if len(vertices) < 2**16:
+    if len(vertices) < 2 ** 16:
         return np.asarray(faces, np.uint16)
     else:
         return faces
@@ -350,7 +349,6 @@ def prim_tetrahedron():
         4 triangles representing the tetrahedron
 
     """
-
     pyramid_vert = np.array([[0.5, 0.5, 0.5],
                              [0.5, -0.5, -0.5],
                              [-0.5, 0.5, -0.5],
@@ -412,3 +410,168 @@ def prim_icosahedron():
                                  [9, 10, 11]], dtype='i8')
 
     return icosahedron_vertices, icosahedron_mesh
+
+
+def prim_rhombicuboctahedron():
+    """Return vertices and triangle for rhombicuboctahedron geometry.
+
+    Returns
+    -------
+    my_vertices: ndarray
+        vertices coords that composed our rhombicuboctahedron
+    my_triangles: ndarray
+        Triangles that composed our rhombicuboctahedron
+
+    """
+    my_vertices = np.array([[-2, 4, 2],
+                            [-4, 2, 2],
+                            [-4, -2, 2],
+                            [-2, -4, 2],
+                            [2, -4, 2],
+                            [4, -2, 2],
+                            [4, 2, 2],
+                            [2, 4, 2],
+                            [-2, 2, 4],
+                            [-2, -2, 4],
+                            [2, -2, 4],
+                            [2, 2, 4],
+                            [-2, 4, -2],
+                            [-4, 2, -2],
+                            [-4, -2, -2],
+                            [-2, -4, -2],
+                            [2, -4, -2],
+                            [4, -2, -2],
+                            [4, 2, -2],
+                            [2, 4, -2],
+                            [-2, 2, -4],
+                            [-2, -2, -4],
+                            [2, -2, -4],
+                            [2, 2, -4]])
+
+    my_triangles = np.array([[0, 1, 8],
+                             [1, 2, 9],
+                             [1, 8, 9],
+                             [2, 3, 9],
+                             [3, 9, 10],
+                             [3, 4, 10],
+                             [4, 10, 5],
+                             [5, 11, 10],
+                             [5, 6, 11],
+                             [6, 7, 11],
+                             [7, 8, 11],
+                             [7, 8, 0],
+                             [8, 9, 10],
+                             [8, 10, 11],
+                             [12, 13, 20],
+                             [13, 14, 21],
+                             [13, 20, 21],
+                             [14, 15, 21],
+                             [15, 21, 22],
+                             [15, 16, 22],
+                             [16, 22, 17],
+                             [17, 22, 23],
+                             [17, 23, 18],
+                             [18, 19, 23],
+                             [19, 20, 23],
+                             [19, 20, 12],
+                             [20, 21, 22],
+                             [20, 22, 23],
+                             [7, 18, 19],
+                             [6, 7, 18],
+                             [6, 17, 18],
+                             [5, 6, 17],
+                             [4, 5, 16],
+                             [5, 16, 17],
+                             [0, 1, 12],
+                             [1, 12, 13],
+                             [1, 2, 13],
+                             [2, 13, 14],
+                             [2, 3, 14],
+                             [3, 14, 15],
+                             [0, 7, 12],
+                             [7, 12, 19],
+                             [3, 15, 16],
+                             [3, 4, 16],
+                             ], dtype='i8')
+    return my_vertices, my_triangles
+
+
+def prim_star(dim=2):
+    """Return vertices and triangle for star geometry.
+
+    Parameters
+    ----------
+    dim: int
+        Represents the dimension of the wanted star
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that composed our star
+    triangles: ndarray
+        Triangles that composed our star
+
+    """
+    if dim == 2:
+        vert = np.array([[-2.0, -3.0, 0.0],
+                         [0.0, -2.0, 0.0],
+                         [3.0, -3.0, 0.0],
+                         [2.0, -1.0, 0.0],
+                         [3.0, 1.0, 0.0],
+                         [1.0, 1.0, 0.0],
+                         [0.0, 3.0, 0.0],
+                         [-1.0, 1.0, 0.0],
+                         [-3.0, 1.0, 0.0],
+                         [-2.0, -1.0, 0.0]])
+
+        triangles = np.array([[1, 9, 0],
+                              [1, 2, 3],
+                              [3, 4, 5],
+                              [5, 6, 7],
+                              [7, 8, 9],
+                              [1, 9, 3],
+                              [3, 7, 9],
+                              [3, 5, 7]], dtype='i8')
+
+    if dim == 3:
+        vert = np.array([[-2.0, -3.0, 0.0],
+                         [0.0, -2, 0.0],
+                         [3.0, -3.0, 0.0],
+                         [2.0, -1.0, 0.0],
+                         [3.0, 0.5, 0.0],
+                         [1.0, 0.5, 0.0],
+                         [0, 3.0, 0.0],
+                         [-1.0, 0.5, 0.0],
+                         [-3.0, 0.5, 0.0],
+                         [-2.0, -1.0, 0.0],
+                         [0.0, 0.0, 0.5],
+                         [0.0, 0.0, -0.5]])
+        triangles = np.array([[1, 9, 0],
+                              [1, 2, 3],
+                              [3, 4, 5],
+                              [5, 6, 7],
+                              [7, 8, 9],
+                              [1, 9, 3],
+                              [3, 7, 9],
+                              [3, 5, 7],
+                              [1, 0, 10],
+                              [0, 9, 10],
+                              [10, 9, 8],
+                              [7, 8, 10],
+                              [6, 7, 10],
+                              [5, 6, 10],
+                              [5, 10, 4],
+                              [10, 3, 4],
+                              [3, 10, 2],
+                              [10, 1, 2],
+                              [1, 0, 11],
+                              [0, 9, 11],
+                              [11, 9, 8],
+                              [7, 8, 10],
+                              [6, 7, 11],
+                              [5, 6, 11],
+                              [5, 10, 4],
+                              [11, 3, 4],
+                              [3, 11, 2],
+                              [11, 1, 2]], dtype='i8')
+    return vert, triangles
