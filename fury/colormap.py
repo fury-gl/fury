@@ -598,8 +598,8 @@ def hex_to_rgb(color):
     if color[0] == "#":
         color = color[1:]
 
-    r = int("0x" + color[0: 2], 0) / 256
-    g = int("0x" + color[2: 4], 0) / 256
-    b = int("0x" + color[4: 6], 0) / 256
+    r = int("0x" + color[0: 2], 0) / 255
+    g = int("0x" + color[2: 4], 0) / 255
+    b = int("0x" + color[4: 6], 0) / 255
 
     return(np.array([r, g, b]))
