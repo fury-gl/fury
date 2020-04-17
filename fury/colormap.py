@@ -591,3 +591,35 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
         return [c for i, c in zip(range(nb_colors), _generate_next_color())]
 
     return _generate_next_color()
+
+
+def hex_to_rgb(color):
+    """Converts Hexadecimal color code to rgb()
+    
+    color : string containting hexcode of color (can also start with a hash)
+    
+    Returns
+    -------
+    c : array, shape(1, 3) matrix of rbg colors corresponding to the 
+        hexcode string given in color.
+    
+    Examples
+    --------
+    >>> from fury import colormap
+    >>> color = "#FFFFFF"
+    >>> c = colormap.hex_to_rgb(color)
+    
+   
+    >>> from fury import colormap
+    >>> color = "FFFFFF"
+    >>> c = colormap.hex_to_rgb(color)
+    
+    """
+    if color[0] == "#":
+        color = color[1:]
+
+    r = int("0x" + color[0: 2], 0) / 255
+    g = int("0x" + color[2: 4], 0) / 255
+    b = int("0x" + color[4: 6], 0) / 255
+
+    return(np.array([r, g, b]))
