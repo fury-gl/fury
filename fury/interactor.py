@@ -170,7 +170,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.nb_left_clicks += 1
         prop = self.get_prop_at_event_position()
 
-        final_state = initial_state = []
         initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
 
         print("Initial state:", initial_state)
