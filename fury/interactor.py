@@ -170,27 +170,28 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.nb_left_clicks += 1
         prop = self.get_prop_at_event_position()
 
-        initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
+        if self.nb_left_clicks == 1:
+            self.initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
+            print("Initial state:", self.initial_state)
+            print("Single Clicked...")
 
-        print("Initial state:", initial_state)
-
-        final_state = self.trackball_camera.GetInteractor().GetEventPosition()
-
-        print("Final state:", final_state)
-
-        x_dist = final_state[0] - initial_state[0]
-        y_dist = final_state[1] - initial_state[1]
-
-        dist_moved = int((x_dist**2 + y_dist**2)**0.5)
-
-        if dist_moved > self.reset_pixel_distance:
-            self.nb_left_clicks = 1
-        
         if self.nb_left_clicks == 2:
-            print("Double Clicked...")
-            self.nb_left_clicks = 0
-            if prop is not None:
-                self.propagate_event(evt, prop)
+            final_state = self.trackball_camera.GetInteractor().GetEventPosition()
+            print("Final state:", final_state)
+
+            x_dist = final_state[0] - self.initial_state[0]
+            y_dist = final_state[1] - self.initial_state[1]
+
+            dist_moved = int((x_dist**2 + y_dist**2)**0.5)
+
+            if dist_moved > self.reset_pixel_distance:
+                print("Single Clicked...")
+                self.nb_left_clicks = 0
+            else:
+                print("Double Clicked...")
+                self.nb_left_clicks = 0
+                if prop is not None:
+                    self.propagate_event(evt, prop)
 
         self.trackball_camera.OnLeftButtonDown()
 
