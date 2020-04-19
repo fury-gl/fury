@@ -85,6 +85,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.active_props = set()
         self.nb_left_clicks = 0
         self.reset_pixel_distance = 5
+        self.click_history = []
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
@@ -172,12 +173,19 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         if self.nb_left_clicks == 1:
             self.initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
-            print("Initial state:", self.initial_state)
-            print("Single Clicked...")
+            if self.initial_state == self.click_history:
+                # stop single click event here...
+                print("Double Clicked... [disables previous single click]")
+                self.nb_left_clicks = 0
+                if prop is not None:
+                    self.propagate_event(evt, prop)
+            else:
+                # print("Initial state:", self.initial_state)
+                print("Single Clicked...")
 
         if self.nb_left_clicks == 2:
             final_state = self.trackball_camera.GetInteractor().GetEventPosition()
-            print("Final state:", final_state)
+            # print("Final state:", final_state)
 
             x_dist = final_state[0] - self.initial_state[0]
             y_dist = final_state[1] - self.initial_state[1]
@@ -185,6 +193,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             dist_moved = int((x_dist**2 + y_dist**2)**0.5)
 
             if dist_moved > self.reset_pixel_distance:
+                self.click_history = final_state
                 print("Single Clicked...")
                 self.nb_left_clicks = 0
             else:
