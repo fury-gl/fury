@@ -167,7 +167,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.trackball_camera.OnLeftButtonUp()
 
     def on_left_button_down(self, _obj, evt):
-        self.left_button_down = False
+        self.left_button_down = True
         self.nb_left_clicks += 1
         prop = self.get_prop_at_event_position()
 
@@ -175,13 +175,17 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
             if self.initial_state == self.click_history:
                 # stop single click event here...
-                print("Double Clicked... [disables previous single click]")
+                print("Double Clicked... [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event(evt, prop)
             else:
                 # print("Initial state:", self.initial_state)
                 print("Single Clicked...")
+                if prop is not None:
+                    # Single Clicked Events...
+                    self.selected_props["left_button"].add(prop)
+                    self.propagate_event(evt, prop)
 
         if self.nb_left_clicks == 2:
             final_state = self.trackball_camera.GetInteractor().GetEventPosition()
@@ -195,9 +199,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             if dist_moved > self.reset_pixel_distance:
                 self.click_history = final_state
                 print("Single Clicked...")
+                if prop is not None:
+                    # Single Clicked Events...
+                    self.selected_props["left_button"].add(prop)
+                    self.propagate_event(evt, prop)
                 self.nb_left_clicks = 0
             else:
-                print("Double Clicked...")
+                print("Double Clicked... [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event(evt, prop)
