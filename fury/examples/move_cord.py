@@ -103,9 +103,10 @@ counter = itertools.count()
 class storage:
     f = 1
     orn_prev = (-0.4044981, -0.8089962, -0.4044981, 0.1352322)
-
+    contact = []
 
 def timer_callback(_obj, _event):
+    print(wall)
     cnt = next(counter)
     showm.render()
     pos, orn = p.getBasePositionAndOrientation(obj)
@@ -119,12 +120,28 @@ def timer_callback(_obj, _event):
                                  flags=p.WORLD_FRAME)
             _, orn = p.getBasePositionAndOrientation(obj)
             storage.f = 0
+
+    if len(p.getContactPoints(wall, obj)):
+        curr = [i[5] for i in p.getContactPoints(wall, obj)]
+        if curr != storage.contact:
+            print("change color")
+        # print([i[5] for i in p.getContactPoints(wall, obj)])
+        storage.contact = curr
+    
+    if len(p.getContactPoints(wall_1, obj)):
+        curr = [i[5] for i in p.getContactPoints(wall_1, obj)]
+        if curr != storage.contact:
+            print("change color wall 1")
+        print([i[5] for i in p.getContactPoints(wall_1, obj)])
+        storage.contact = curr
+
+
     cuboid_actor.SetPosition(pos[0], pos[1], pos[2])
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     cuboid_actor.SetOrientation(orn_deg[0], orn_deg[1], orn_deg[2])
     # cuboid_actor.RotateWXYZ(orn[1], orn[2], orn[3], orn[0])
     p.stepSimulation()
-    print(orn)
+    # print(orn)
     storage.orn_prev = orn
 
     if cnt == 2000:
@@ -133,4 +150,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
-window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")
+# window.record(showm.scene, size=(900, 768), out_path="viz_timer.png")
