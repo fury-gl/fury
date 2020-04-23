@@ -87,6 +87,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.reset_pixel_distance = 5
         self.click_history = []
 
+        self.DoubleClickEvent = vtk.vtkCommand.UserEvent+1
+
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
                                "middle_button": set()}
@@ -145,8 +147,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.on_mouse_wheel_forward(obj, evt)
         elif evt == "MouseWheelBackwardEvent":
             self.on_mouse_wheel_backward(obj, evt)
-        # elif evt == "LeftButtonDoubleClickEvent":
-        #     self.on_left_button_double_click(obj, evt)
+        elif evt == "DoubleClickEvent":
+            self.on_double_click(obj, evt)
 
         self.event.reset()  # Event fully processed.
 
@@ -175,13 +177,14 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
             if self.initial_state == self.click_history:
                 # stop single click event here...
-                print("Double Clicked... [Aborts previous single click]")
+                print("Double Clicked Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    self.propagate_event(evt, prop)
+                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                self.event.abort()
             else:
                 # print("Initial state:", self.initial_state)
-                print("Single Clicked...")
+                print("Single Click Detected.")
                 if prop is not None:
                     # Single Clicked Events...
                     self.selected_props["left_button"].add(prop)
@@ -198,19 +201,29 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
             if dist_moved > self.reset_pixel_distance:
                 self.click_history = final_state
-                print("Single Clicked...")
+                print("Single Clicked Detected.")
                 if prop is not None:
                     # Single Clicked Events...
                     self.selected_props["left_button"].add(prop)
                     self.propagate_event(evt, prop)
                 self.nb_left_clicks = 0
             else:
-                print("Double Clicked... [Aborts previous single click]")
+                print("Double Click Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    self.propagate_event(evt, prop)
+                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                self.event.abort()
 
         self.trackball_camera.OnLeftButtonDown()
+
+    def on_double_click(self, obj, evt):
+        print("Inside double click Method")
+        prop = self.get_prop_at_event_position()
+        if prop is not None:
+            self.propagate_event(evt, prop)
+
+        if not self.event.abort_flag:
+            self.trackball_camera.OnLeftButtonDown()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
@@ -348,6 +361,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.AddObserver("RightButtonReleaseEvent", self._process_event)
         self.AddObserver("MiddleButtonPressEvent", self._process_event)
         self.AddObserver("MiddleButtonReleaseEvent", self._process_event)
+        self.AddObserver("DoubleClickEvent", self._process_event)
 
         # Windows and special events.
         # TODO: we ever find them useful we could support them.
