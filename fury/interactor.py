@@ -181,7 +181,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 print("Double Clicked Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    prop.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
             else:
                 # print("Initial state:", self.initial_state)
                 print("Single Click Detected.")
@@ -212,7 +212,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 print("Double Click Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    prop.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
 
         self.trackball_camera.OnLeftButtonDown()
 
