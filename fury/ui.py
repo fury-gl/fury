@@ -4324,16 +4324,16 @@ class FileMenu2D(UI):
         i_ren.force_render()
         i_ren.event.abort()
 
-class ComboBox(UI):
+class ComboBox2D(UI):
     """ UI element to create drop-down menus.
     
     Attributes
     ----------
-    selection        : :class: 'TextBox2D'
+    selectionBox        : :class: 'TextBox2D'
         Display selection and placeholder text.
-    drop_down_button : :class: 'Button2D'
+    dropDownButton : :class: 'Button2D'
         Button to show or hide menu.
-    drop_down_menu   : :class: 'ListBox2D'
+    dropDownMenu   : :class: 'ListBox2D'
         Container for item list.
     """
 
@@ -4370,10 +4370,60 @@ class ComboBox(UI):
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
         self.size = size
+        self.selection = placeholder
+        self.drop_down_menu_size = None #Implement Later
+        self.drop_down_button_size = None #Implement Later
 
-        super(FileMenu2D, self).__init__()
+        super(ComboBox2D, self).__init__()
         self.position = position
         self.set_slot_colors()
+
+        def _setup(self):
+            """ Setup this UI component.
+            Create the ListBox (Panel2D) filled with empty slots (ListBoxItem2D).
+            Create TextBox with placeholder text.
+            Create Button for toggling drop down menu.
+            """
+
+            max_text_width = len(max(self.items, key=len))
+
+            self.selectionBox = TextBox2D(width=max_text_width, height=1, position=(None, None), text=self.selection)
+
+            self.dropDownButton = Button2D(icon_fnames=[('square', read_viz_icons(fname='circle-up.png'))], position=(None,None), size=(None,None))
+
+            self.dropDownMenu = ListBox2D(
+                values=self.items, multiselection=self.multiselection,
+                font_size=self.font_size, line_spacing=self.line_spacing,
+                reverse_scrolling=self.reverse_scrolling, size=self.drop_down_menu_size)
+
+            self.add_callback(self.drop_down_menu.scroll_bar.actor, "MouseMoveEvent",
+                            self.scroll_callback)
+
+            # Handle mouse wheel events on the panel.
+            up_event = "MouseWheelForwardEvent"
+            down_event = "MouseWheelBackwardEvent"
+            if self.reverse_scrolling:
+                up_event, down_event = down_event, up_event  # Swap events
+
+            self.add_callback(self.drop_down_menu.panel.background.actor, up_event,
+                            self.scroll_callback)
+            self.add_callback(self.drop_down_menu.panel.background.actor, down_event,
+                            self.scroll_callback)
+
+            # Handle mouse wheel events on the slots.
+            for slot in self.drop_down_menu.slots:
+                self.add_callback(slot.background.actor, up_event,
+                                self.scroll_callback)
+                self.add_callback(slot.background.actor, down_event,
+                                self.scroll_callback)
+                self.add_callback(slot.textblock.actor, up_event,
+                                self.scroll_callback)
+                self.add_callback(slot.textblock.actor, down_event,
+                                self.scroll_callback)
+                slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
+                                self.directory_click_callback)
+                slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
+                                self.directory_click_callback)
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
