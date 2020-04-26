@@ -4324,6 +4324,56 @@ class FileMenu2D(UI):
         i_ren.force_render()
         i_ren.event.abort()
 
+class ComboBox(UI):
+    """ UI element to create drop-down menus.
+    
+    Attributes
+    ----------
+    selection        : :class: 'TextBox2D'
+        Display selection and placeholder text.
+    drop_down_button : :class: 'Button2D'
+        Button to show or hide menu.
+    drop_down_menu   : :class: 'ListBox2D'
+        Container for item list.
+    """
+
+    def __init__(self, items=[], position=(0,0), size=(100, 300),
+                 placeholder="Choose selection...",
+                 multiselection=True, reverse_scrolling=False,
+                 font_size=20, line_spacing=1.4):
+        """
+
+        Parameters
+        ----------
+        items: list(string)
+            List of items to be displayed as choices.
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (int, int)
+            Width and height in pixels of this UI component.
+        placeholder : str
+            Holds the default text to be displayed.
+        multiselection: {True, False}
+            Whether multiple values can be selected at once.
+        reverse_scrolling: {True, False}
+            If True, scrolling up will move the list of files down.
+        font_size: int
+            The font size in pixels.
+        line_spacing: float
+            Distance between listbox's items in pixels.
+        """
+
+        self.items = items
+        self.font_size = font_size
+        self.multiselection = multiselection
+        self.reverse_scrolling = reverse_scrolling
+        self.line_spacing = line_spacing
+        self.size = size
+
+        super(FileMenu2D, self).__init__()
+        self.position = position
+        self.set_slot_colors()
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
