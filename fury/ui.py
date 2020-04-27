@@ -3514,7 +3514,6 @@ class RadioButton(Checkbox):
 
 
 class ScrollBar(UI):
-    
     def __init__(self, ListBox2D):
         self.listbox = ListBox2D
         self.reverse_scrolling = self.listbox.reverse_scrolling
