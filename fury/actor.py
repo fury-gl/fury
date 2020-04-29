@@ -1188,6 +1188,159 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 
     return mapper
 
+def superquadric_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2, norm=True,
+                        opacity=1., scalar_colors=None):
+    if not evals.shape == evecs.shape[:-1]:
+        raise RuntimeError(
+            "Eigenvalues shape {} is not compatible with eigenvectors' {}."
+            "Please provide eigenvalue and"
+            " eigenvector arrays that have compatible dimensions.".format(evals.hape, evecs.shape)
+        )
+    if mask is None:
+        mask = np.ones(evals.shape[:3], dtype=np.bool)
+    else:
+        mask = mask.astype(np.bool)
+
+    szx, szy, szz = evals.shape[:3]
+
+    class SuperquadricSlicerActor(vtk.vtkLODActor):
+        def __init__(self):
+            self.mapper = None
+
+        def display_extent(self, x1, x2, y1, y2, z1, z2):
+            from dipy.reconst.dti import fractional_anisotropy, mean_diffusivity
+            tmp_mask = np.zeros(evals.shape[:3], dtype=np.bool)
+            tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
+            tmp_mask = np.bitwise_and(tmp_mask, mask)
+
+            self.mapper = _superquadric_slicer_mapper(evals=evals,
+                                                      evecs=evecs,
+                                                      affine=affine,
+                                                      mask=tmp_mask,
+                                                      sphere=sphere,
+                                                      scale=scale,
+                                                      norm=norm,
+                                                      scalar_colors=scalar_colors,
+                                                      fa=fractional_anisotropy(evals),
+                                                      md=mean_diffusivity(evals))
+            self.SetMapper(self.mapper)
+
+    def display(self, x=None, y=None, z=None):
+        if x is None and y is None and z is None:
+            self.display_extent(0, szx - 1, 0, szy - 1,
+                                int(np.floor(szz / 2)), int(np.floor(szz / 2)))
+        if x is not None:
+            self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
+        if y is not None:
+            self.display_extent(0, szx - 1, y, y, 0, szz - 1)
+        if z is not None:
+            self.display_extent(0, szx - 1, 0, szy - 1, z, z)
+
+    superquadric_actor = SuperquadricSlicerActor()
+    superquadric_actor.display_extent(0, szx - 1, 0, szy - 1,
+                                      int(np.floor(szz / 2)), int(np.floor(szz / 2)))
+    superquadric_actor.GetProperty().SetOpacity(opacity)
+
+    return superquadric_actor
+
+
+def _superquadric_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
+                                norm=True, scalar_colors=None, fa=None, md=None):
+    mask = np.ones(evals.shape[:3]) if mask is None else mask
+
+    ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
+    if len(ijk) == 0:
+        return None
+
+    if affine is not None:
+        ijk = np.ascontiguousarray(apply_affine(affine, ijk))
+
+    if scalar_colors is None:
+        from dipy.reconst.dti import color_fa, fractional_anisotropy
+        cfa = color_fa(fractional_anisotropy(evals), evecs)
+    else:
+        cfa = _makeNd(scalar_colors, 4)
+
+    cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
+                    dtype='f4')
+
+    all_xyz = []
+    all_faces = []
+    print("FA, MD", fa, md)
+    for (k, center) in enumerate(ijk):
+        faces, vertices = primitive.prim_superquadric((fa, md))
+        ea = evals[tuple(center.astype(np.int))]
+        # print("faces", faces)
+        if norm:
+            ea /= ea.max()
+        ea = np.diag(ea.copy())
+
+        ev = evecs[tuple(center.astype(np.int))].copy()
+        xyz = np.dot(ev, np.dot(ea, vertices.T))
+
+        xyz = xyz.T
+        all_xyz.append(scale * xyz + center)
+        all_faces.append(faces + k * xyz.shape[0])
+
+        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))], [0, 1],
+                                 [0, 255]).astype('ubyte')
+
+    if scalar_colors is None:
+        from dipy.reconst.dti import color_fa, fractional_anisotropy
+        cfa = color_fa(fractional_anisotropy(evals), evecs)
+    else:
+        cfa = _makeNd(scalar_colors, 4)
+
+    cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
+                    dtype='f4')
+
+    all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
+    all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
+
+    all_faces = np.concatenate(all_faces)
+    #print(all_faces.shape)
+    #print(3 * np.ones((len(all_faces), 1)).shape)
+    #print(3 * np.ones((len(all_faces), 1)))
+    #all_faces = np.hstack((3 * np.ones((len(all_faces), 1)).T,
+    #                       all_faces))
+    ncells = len(all_faces)
+
+    all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
+    all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
+                                                          deep=True)
+
+    points = vtk.vtkPoints()
+    points.SetData(all_xyz_vtk)
+
+    cells = vtk.vtkCellArray()
+    cells.SetCells(ncells, all_faces_vtk)
+
+    cols = np.ascontiguousarray(
+        np.reshape(cols, (cols.shape[0] * cols.shape[1],
+                          cols.shape[2])), dtype='f4')
+
+    vtk_colors = numpy_support.numpy_to_vtk(
+        cols,
+        deep=True,
+        array_type=vtk.VTK_UNSIGNED_CHAR)
+    vtk_colors.SetName("Colors")
+
+    # my color code for testing
+    # vtk_colors = vtk.vtkNamedColors()
+    # vtk_colors = vtk.vtkNamedColors.GetColor3d(vtk_colors, "red")
+    # print(vtk_colors)
+    # end of my color code for testing
+
+    polydata = vtk.vtkPolyData()
+    polydata.SetPoints(points)
+    polydata.SetPolys(cells)
+    polydata.GetPointData().SetScalars(vtk_colors)
+
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(polydata)
+
+    return mapper
+
 
 def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                 colors=(1, 0, 0), opacity=1., linewidth=1,
