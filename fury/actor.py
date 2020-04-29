@@ -1268,7 +1268,7 @@ def _superquadric_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=Non
     all_faces = []
     print("FA, MD", fa, md)
     for (k, center) in enumerate(ijk):
-        faces, vertices = primitive.prim_superquadric((fa, md))
+        faces, vertices = primitive.prim_superquadric((fa[k], md[k]))
         ea = evals[tuple(center.astype(np.int))]
         # print("faces", faces)
         if norm:
