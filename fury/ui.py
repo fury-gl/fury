@@ -4373,6 +4373,7 @@ class ComboBox2D(UI):
         self.selection = placeholder
         self.drop_down_menu_size = None #Implement Later
         self.drop_down_button_size = None #Implement Later
+        self.menu_visibility = False
 
         super(ComboBox2D, self).__init__()
         self.position = position
@@ -4389,7 +4390,7 @@ class ComboBox2D(UI):
 
             self.selectionBox = TextBox2D(width=max_text_width, height=1, position=(None, None), text=self.selection)
 
-            self.dropDownButton = Button2D(icon_fnames=[('square', read_viz_icons(fname='circle-up.png'))], position=(None,None), size=(None,None))
+            self.dropDownButton = Button2D(icon_fnames=[('square', read_viz_icons(fname='circle-down.png'))], position=(None,None), size=(None,None))
 
             self.dropDownMenu = ListBox2D(
                 values=self.items, multiselection=self.multiselection,
@@ -4420,10 +4421,64 @@ class ComboBox2D(UI):
                                 self.scroll_callback)
                 self.add_callback(slot.textblock.actor, down_event,
                                 self.scroll_callback)
+
                 slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
-                                self.directory_click_callback)
+                                self.select_option)
                 slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
-                                self.directory_click_callback)
+                                self.select_option_callback)
+
+                self.dropDownButton.on_left_mouse_button_clicked = self.menu_toggle_callback
+
+    def select_option_callback(self, i_ren, _obj, listboxitem):
+        """ Callback to select the appropriate option
+
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+        obj: :class:`vtkActor`
+            The picked actor
+        listboxitem: :class:`ListBoxItem2D`
+        """
+
+        # Set the Text of TextBlock2D to the text of listboxitem
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def menu_toggle_callback(self, i_ren, _vtkactor, _combobox):
+        """ Callback to toggle visibility of drop down menu list.
+
+        Parameters
+        ----------
+        i_ren : :class:`CustomInteractorStyle`
+        vtkactor : :class:`vtkActor`
+            The picked actor
+        combobox : :class:`ComboBox2D`
+        """
+
+        if self.menu_visibility:
+            # Hide menu here
+            self.menu_visibility = False
+        else:
+            # Show menu here
+            self.menu_visibility = True
+
+        i_ren.force_render()
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def scroll_callback(self, i_ren, _obj, _combobox_item):
+        """ A callback to handle scroll and change the slot text colors.
+
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+        obj: :class:`vtkActor`
+            The picked actor
+        _combobox_item: :class:`ComboBox2D`
+        """
+
+        i_ren.force_render()
+        i_ren.event.abort()
+
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
