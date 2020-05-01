@@ -575,3 +575,7 @@ def prim_star(dim=2):
                               [3, 11, 2],
                               [11, 1, 2]], dtype='i8')
     return vert, triangles
+
+
+def prism():
+    pass
