@@ -122,3 +122,13 @@ def test_repeat_primitive_function():
     # big_verts, big_faces, big_colors, big_centers = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
+
+def test_vertices_primitives_octagonalprism():
+    #Tests default vertices of octagonal prism
+    vertices, _ = fp.prim_octagonalprism()
+    shape = (16, 3)
+    phi = (1 + math.sqrt(5)) / 2.0
+    npt.assert_equal(vertices.shape, shape)
+    npt.assert_equal(np.mean(vertices), 0)
+    npt.assert_equal(vertices.min(), -phi)
+    npt.assert_equal(vertices.max(),phi)
