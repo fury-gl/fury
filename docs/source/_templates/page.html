@@ -73,6 +73,7 @@
             <a href="{{ pathto('reference/index')}}" class="main-nav-link">API</a>
             <a href="{{ pathto('auto_tutorials/index')}}" class="main-nav-link">Tutorial</a>
             <a href="{{ pathto('auto_examples/index')}}" class="main-nav-link">Demos</a>
+            <a href="{{ pathto('blog')}}" class="main-nav-link">Blog</a>
             <a href="{{ pathto('community')}}" class="main-nav-link">Community</a>
             <a href="https://github.com/fury-gl/fury" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
         </nav>
@@ -167,6 +168,7 @@
         <a href="{{ pathto('reference/index')}}" class="mobile-nav-link">API</a>
         <a href="{{ pathto('auto_tutorials/index')}}" class="mobile-nav-link">Tutorial</a>
         <a href="{{ pathto('auto_examples/index')}}" class="mobile-nav-link">Demos</a>
+        <a href="{{ pathto('blog')}}" class="main-nav-link">Blog</a>
         <a href="{{ pathto('community')}}" class="mobile-nav-link">Community</a>
         <a href="https://github.com/fury-gl/fury" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
         <li class="mobile-nav-item">
@@ -187,6 +189,7 @@
 
   {% extends "!page.html" %}
   {% block footer %} {{ super() }}
+    <link rel="stylesheet" href="{{ pathto('_static/css/blog.css', 1) }}" type="text/css">
     <style>
     /* Sidebar header (and topbar for mobile) */
     .wy-side-nav-search, .wy-nav-top {
