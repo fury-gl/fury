@@ -577,5 +577,75 @@ def prim_star(dim=2):
     return vert, triangles
 
 
-def prism():
-    pass
+def prim_octagonalprism():
+    """Return vertices and triangle for an octagonal prism.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+    
+    vertices = np.array([[-1, -(1+math.sqrt(2)), -1],
+                         [1, -(1+math.sqrt(2)), -1],
+                         [1, (1+math.sqrt(2)), -1],
+                         [-1, (1+math.sqrt(2)), -1],
+                         [-(1+math.sqrt(2)), -1, -1],
+                         [(1+math.sqrt(2)), -1, -1],
+                         [(1+math.sqrt(2)), 1, -1],
+                         [-(1+math.sqrt(2)), 1, -1],
+                         [-1, -(1+math.sqrt(2)), 1],
+                         [1, -(1+math.sqrt(2)), 1],
+                         [1, (1+math.sqrt(2)), 1],
+                         [-1, (1+math.sqrt(2)), 1],
+                         [-(1+math.sqrt(2)), -1, 1],
+                         [(1+math.sqrt(2)), -1, 1],
+                         [(1+math.sqrt(2)), 1, 1],
+                         [-(1+math.sqrt(2)), 1, 1]])
+    triangles = np.array([[4, 12, 13], #this and below are triangles of the side faces of the prism
+                          [13, 5, 4],
+                          [5, 13, 9],
+                          [9, 1, 5],
+                          [1, 9, 10],
+                          [10, 2, 1],
+                          [2, 10, 14],
+                          [14, 6, 2],
+                          [6, 14, 15],
+                          [15, 7, 6],
+                          [7, 15, 11],
+                          [3, 11, 8],
+                          [8, 0, 3],
+                          [3, 0, 12],
+                          [12, 4, 8], 
+                          [7, 3, 6],#this and below are triangles of the octagon faces of the prism
+                          [3, 6, 0],
+                          [6, 0, 2],
+                          [0, 2, 4],
+                          [2, 4, 1],
+                          [4, 1, 5],
+                          [15, 11, 14],
+                          [11, 14, 8],
+                          [14, 8, 10],
+                          [8, 10, 12],
+                          [10, 12, 19],
+                          [12, 9, 13]], dtype='u8')
+    return vertices, triangles
+
+    def prim_frustum():
+    """Return vertices and triangle for a frustum square pyramid.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our pyramid.
+    triangles: ndarray
+        triangles that compose our pyramid
+
+    """
+    
+    vertices = np.array([[]])
+    triangles = np.array([[]], dtype='u8')
+    return vertices, triangles
