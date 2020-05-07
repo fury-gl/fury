@@ -24,11 +24,11 @@ The **major highlights** of this release are:
 
 Run the following command in your terminal::
 
-    pip install --upgrade dipy
+    pip install --upgrade fury
 
 or::
 
-    conda install -c conda-forge dipy
+    conda install -c conda-forge fury
 
 
 **Questions or suggestions?**
