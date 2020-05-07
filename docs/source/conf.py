@@ -53,7 +53,8 @@ extensions = [
     'ext.build_modref_templates',
     'ext.github',
     'ext.github_tools',
-    'ext.rstjinja'
+    'ext.rstjinja',
+    'ablog',
 ]
 
 # Configuration options for plot_directive. See:
@@ -66,7 +67,8 @@ autosummary_generate = []
 numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+import ablog
+templates_path = ['_templates', ablog.get_html_templates_path()]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -215,6 +217,13 @@ sphinx_gallery_conf = {
      'reference_url': {'fury': None, },
      'filename_pattern': re.escape(os.sep)
 }
+
+# -- Options for Blog -------------------------------------------
+
+blog_baseurl = "https://fury.gl/"
+blog_feed_fulltext = True
+blog_feed_length = 10
+blog_feed_archives = True
 
 # -- Options for Texinfo output -------------------------------------------
 
