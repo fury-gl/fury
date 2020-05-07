@@ -4370,10 +4370,14 @@ class ComboBox2D(UI):
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
         self.size = size
-        self.selection = placeholder
-        self.drop_down_menu_size = None #Implement Later
-        self.drop_down_button_size = None #Implement Later
-        self.menu_visibility = False
+        self._selection = placeholder
+        self._drop_down_menu_size = None #Implement Later
+        self._drop_down_button_size = None #Implement Later
+        self._menu_visibility = False
+        self._selection_ID = None
+        self._icon_files = []
+        self._icon_files.append(('left', read_viz_icons(fname='circle-left.png')))
+        self._icon_files.append(('down', read_viz_icons(fname='circle-down.png')))
 
         super(ComboBox2D, self).__init__()
         self.position = position
@@ -4388,9 +4392,9 @@ class ComboBox2D(UI):
 
             max_text_width = len(max(self.items, key=len))
 
-            self.selectionBox = TextBox2D(width=max_text_width, height=1, position=(None, None), text=self.selection)
+            self.selectionBox = TextBox2D(width=max_text_width, height=1, position=(None, None), text=self._selection)
 
-            self.dropDownButton = Button2D(icon_fnames=[('square', read_viz_icons(fname='circle-down.png'))], position=(None,None), size=(None,None))
+            self.dropDownButton = Button2D(icon_fnames=self._icon_files, position=(None,None), size=(None,None))
 
             self.dropDownMenu = ListBox2D(
                 values=self.items, multiselection=self.multiselection,
@@ -4441,6 +4445,15 @@ class ComboBox2D(UI):
         """
 
         # Set the Text of TextBlock2D to the text of listboxitem
+        self._selection = listboxitem.element()
+        self._selection_ID = self.items.index(self._selection)
+
+        self.selectionBox.set_message(self._selection)
+        self.dropDownMenu.set_visibility(False)
+        self.menu_visibility = False
+
+        self.dropDownButton.next_icon()
+
         i_ren.force_render()
         i_ren.event.abort()
 
@@ -4455,12 +4468,10 @@ class ComboBox2D(UI):
         combobox : :class:`ComboBox2D`
         """
 
-        if self.menu_visibility:
-            # Hide menu here
-            self.menu_visibility = False
-        else:
-            # Show menu here
-            self.menu_visibility = True
+        self.menu_visibility = not self.menu_visibility
+        self.dropDownMenu.set_visibility(self.menu_visibility)
+
+        self.dropDownButton.next_icon()
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
