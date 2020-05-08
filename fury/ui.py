@@ -4480,6 +4480,26 @@ class ComboBox2D(UI):
     def _get_size(self):
         return self.panel.size
 
+    @property
+    def getCurrentText(self):
+        return self._selection
+    
+    @property
+    def getCurrentIndex(self):
+        return self._selection_ID
+    
+    @property
+    def appendItem(self, item):
+        """ item : str : Name of the item.
+        """
+        self.items.append(item)
+
+    @property
+    def appendItems(self, items):
+        """ items : list(str) : list of names of the items.
+        """
+        self.items.extend(items)
+
     def select_option_callback(self, i_ren, _obj, listboxitem):
         """ Callback to select the appropriate option
 
