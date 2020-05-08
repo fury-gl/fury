@@ -4483,11 +4483,11 @@ class ComboBox2D(UI):
     @property
     def getCurrentText(self):
         return self._selection
-    
+
     @property
     def getCurrentIndex(self):
         return self._selection_ID
-    
+
     @property
     def appendItem(self, item):
         """ item : str : Name of the item.
