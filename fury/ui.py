@@ -4376,12 +4376,15 @@ class ComboBox2D(UI):
         self._drop_down_button_size = None   # Implement Later
         self._menu_visibility = False
         self._selection_ID = None
+
         self._icon_files = [
             ('left', read_viz_icons(fname='circle-left.png')),
             ('down', read_viz_icons(fname='circle-down.png'))]
 
-        super(ComboBox2D, self).__init__()
         self.position = position
+        self.panel = Panel2D(self.size, self.position, opacity=0.0)
+
+        super(ComboBox2D, self).__init__()
         self.set_slot_colors()
 
         def _setup(self):
@@ -4395,11 +4398,9 @@ class ComboBox2D(UI):
 
             self.selectionBox = TextBox2D(
                 width=max_text_width, height=1,
-                position=(None, None), text=self._selection)
+                text=self._selection)
 
-            self.dropDownButton = Button2D(
-                icon_fnames=self._icon_files,
-                position=(None, None), size=(None, None))
+            self.dropDownButton = Button2D(icon_fnames=self._icon_files)
 
             self.dropDownMenu = ListBox2D(
                 values=self.items, multiselection=self.multiselection,
@@ -4407,11 +4408,14 @@ class ComboBox2D(UI):
                 reverse_scrolling=self.reverse_scrolling,
                 size=self.drop_down_menu_size)
 
+            self.panel.add_element(self.selectionBox, (0.01, 0.3))
+            self.panel.add_element(self.dropDownButton, (0.7, 0.3))
+            self.panel.add_element(self.dropDownMenu, (0.01, 0.7))
+
             self.add_callback(self.drop_down_menu.scroll_bar.actor,
                               "MouseMoveEvent",
                               self.scroll_callback)
 
-            # Handle mouse wheel events on the panel.
             up_event = "MouseWheelForwardEvent"
             down_event = "MouseWheelBackwardEvent"
             if self.reverse_scrolling:
