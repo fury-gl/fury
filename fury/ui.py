@@ -4385,71 +4385,100 @@ class ComboBox2D(UI):
         self.panel = Panel2D(self.size, self.position, opacity=0.0)
 
         super(ComboBox2D, self).__init__()
-        self.set_slot_colors()
 
-        def _setup(self):
-            """ Setup this UI component.
-            Create the ListBox filled with empty slots (ListBoxItem2D).
-            Create TextBox with placeholder text.
-            Create Button for toggling drop down menu.
-            """
+    def _setup(self):
+        """ Setup this UI component.
+        Create the ListBox filled with empty slots (ListBoxItem2D).
+        Create TextBox with placeholder text.
+        Create Button for toggling drop down menu.
+        """
 
-            max_text_width = len(max(self.items, key=len))
+        max_text_width = len(max(self.items, key=len))
 
-            self.selectionBox = TextBox2D(
-                width=max_text_width, height=1,
-                text=self._selection)
+        self.selectionBox = TextBox2D(
+            width=max_text_width, height=1,
+            text=self._selection)
 
-            self.dropDownButton = Button2D(icon_fnames=self._icon_files)
+        self.dropDownButton = Button2D(icon_fnames=self._icon_files)
 
-            self.dropDownMenu = ListBox2D(
-                values=self.items, multiselection=self.multiselection,
-                font_size=self.font_size, line_spacing=self.line_spacing,
-                reverse_scrolling=self.reverse_scrolling,
-                size=self.drop_down_menu_size)
+        self.dropDownMenu = ListBox2D(
+            values=self.items, multiselection=self.multiselection,
+            font_size=self.font_size, line_spacing=self.line_spacing,
+            reverse_scrolling=self.reverse_scrolling,
+            size=self.drop_down_menu_size)
 
-            self.panel.add_element(self.selectionBox, (0.01, 0.3))
-            self.panel.add_element(self.dropDownButton, (0.7, 0.3))
-            self.panel.add_element(self.dropDownMenu, (0.01, 0.7))
+        self.panel.add_element(self.selectionBox, (0.01, 0.3))
+        self.panel.add_element(self.dropDownButton, (0.7, 0.3))
+        self.panel.add_element(self.dropDownMenu, (0.01, 0.7))
 
-            self.add_callback(self.drop_down_menu.scroll_bar.actor,
-                              "MouseMoveEvent",
+        self.add_callback(self.drop_down_menu.scroll_bar.actor,
+                          "MouseMoveEvent",
+                          self.scroll_callback)
+
+        up_event = "MouseWheelForwardEvent"
+        down_event = "MouseWheelBackwardEvent"
+        if self.reverse_scrolling:
+            up_event, down_event = down_event, up_event  # Swap events
+
+        self.add_callback(
+            self.drop_down_menu.panel.background.actor, up_event,
+            self.scroll_callback)
+
+        self.add_callback(
+            self.drop_down_menu.panel.background.actor, down_event,
+            self.scroll_callback)
+
+        # Handle mouse wheel events on the slots.
+        for slot in self.drop_down_menu.slots:
+            self.add_callback(slot.background.actor, up_event,
+                              self.scroll_callback)
+            self.add_callback(slot.background.actor, down_event,
+                              self.scroll_callback)
+            self.add_callback(slot.textblock.actor, up_event,
+                              self.scroll_callback)
+            self.add_callback(slot.textblock.actor, down_event,
                               self.scroll_callback)
 
-            up_event = "MouseWheelForwardEvent"
-            down_event = "MouseWheelBackwardEvent"
-            if self.reverse_scrolling:
-                up_event, down_event = down_event, up_event  # Swap events
+            slot.add_callback(
+                slot.textblock.actor, "LeftButtonPressEvent",
+                self.select_option)
 
-            self.add_callback(
-                self.drop_down_menu.panel.background.actor, up_event,
-                self.scroll_callback)
+            slot.add_callback(
+                slot.background.actor, "LeftButtonPressEvent",
+                self.select_option_callback)
 
-            self.add_callback(
-                self.drop_down_menu.panel.background.actor, down_event,
-                self.scroll_callback)
+            self.dropDownButton.on_left_mouse_button_clicked = \
+                self.menu_toggle_callback
 
-            # Handle mouse wheel events on the slots.
-            for slot in self.drop_down_menu.slots:
-                self.add_callback(slot.background.actor, up_event,
-                                  self.scroll_callback)
-                self.add_callback(slot.background.actor, down_event,
-                                  self.scroll_callback)
-                self.add_callback(slot.textblock.actor, up_event,
-                                  self.scroll_callback)
-                self.add_callback(slot.textblock.actor, down_event,
-                                  self.scroll_callback)
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.panel.actors
 
-                slot.add_callback(
-                    slot.textblock.actor, "LeftButtonPressEvent",
-                    self.select_option)
+    def resize(self):
+        pass
 
-                slot.add_callback(
-                    slot.background.actor, "LeftButtonPressEvent",
-                    self.select_option_callback)
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
 
-                self.dropDownButton.on_left_mouse_button_clicked = \
-                    self.menu_toggle_callback
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.panel.position = coords
+
+    def _add_to_scene(self, scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.panel.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.panel.size
 
     def select_option_callback(self, i_ren, _obj, listboxitem):
         """ Callback to select the appropriate option
