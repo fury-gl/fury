@@ -4370,10 +4370,8 @@ class ComboBox2D(UI):
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
-        self.size = size
+        self.panel_size = size
         self._selection = placeholder
-        self._drop_down_menu_size = None     # Implement Later
-        self._drop_down_button_size = None   # Implement Later
         self._menu_visibility = False
         self._selection_ID = None
 
@@ -4381,8 +4379,7 @@ class ComboBox2D(UI):
             ('left', read_viz_icons(fname='circle-left.png')),
             ('down', read_viz_icons(fname='circle-down.png'))]
 
-        self.position = position
-        self.panel = Panel2D(self.size, self.position, opacity=0.0)
+        self.panel_position = position
 
         super(ComboBox2D, self).__init__()
 
@@ -4404,14 +4401,17 @@ class ComboBox2D(UI):
         self.dropDownMenu = ListBox2D(
             values=self.items, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling,
-            size=self.drop_down_menu_size)
+            reverse_scrolling=self.reverse_scrolling)
+
+        self.dropDownMenu.set_visibility(False)
+
+        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=0.0)
 
         self.panel.add_element(self.selectionBox, (0.01, 0.3))
         self.panel.add_element(self.dropDownButton, (0.7, 0.3))
         self.panel.add_element(self.dropDownMenu, (0.01, 0.7))
 
-        self.add_callback(self.drop_down_menu.scroll_bar.actor,
+        self.add_callback(self.dropDownMenu.scroll_bar.actor,
                           "MouseMoveEvent",
                           self.scroll_callback)
 
@@ -4421,15 +4421,15 @@ class ComboBox2D(UI):
             up_event, down_event = down_event, up_event  # Swap events
 
         self.add_callback(
-            self.drop_down_menu.panel.background.actor, up_event,
+            self.dropDownMenu.panel.background.actor, up_event,
             self.scroll_callback)
 
         self.add_callback(
-            self.drop_down_menu.panel.background.actor, down_event,
+            self.dropDownMenu.panel.background.actor, down_event,
             self.scroll_callback)
 
         # Handle mouse wheel events on the slots.
-        for slot in self.drop_down_menu.slots:
+        for slot in self.dropDownMenu.slots:
             self.add_callback(slot.background.actor, up_event,
                               self.scroll_callback)
             self.add_callback(slot.background.actor, down_event,
@@ -4441,7 +4441,7 @@ class ComboBox2D(UI):
 
             slot.add_callback(
                 slot.textblock.actor, "LeftButtonPressEvent",
-                self.select_option)
+                self.select_option_callback)
 
             slot.add_callback(
                 slot.background.actor, "LeftButtonPressEvent",
@@ -4535,8 +4535,8 @@ class ComboBox2D(UI):
         combobox : :class:`ComboBox2D`
         """
 
-        self.menu_visibility = not self.menu_visibility
-        self.dropDownMenu.set_visibility(self.menu_visibility)
+        self._menu_visibility = not self._menu_visibility
+        self.dropDownMenu.set_visibility(self._menu_visibility)
 
         self.dropDownButton.next_icon()
 
