@@ -224,6 +224,9 @@ blog_baseurl = "https://fury.gl/"
 blog_feed_fulltext = True
 blog_feed_length = 10
 blog_feed_archives = True
+blog_authors = {
+    'skoudoro': ('Serge Koudoro', 'https://github.com/skoudoro'),
+}
 
 # -- Options for Texinfo output -------------------------------------------
 
