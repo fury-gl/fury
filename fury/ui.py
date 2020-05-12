@@ -3536,9 +3536,6 @@ class ScrollBar(UI):
             Height of each slot in the list.
         nb_values: (int)
             Number of values in the list.
-        values: list of objects
-            Values used to populate this listbox. Objects must be castable
-            to string.
         reverse_scrolling: {True, False}
             If True, scrolling up will move the list of files down.
         list_position: (int,int)
