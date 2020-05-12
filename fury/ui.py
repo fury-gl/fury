@@ -1047,7 +1047,7 @@ class TextBlock2D(UI):
     ----------
     actor : :class:`vtkTextActor`
         The text actor.
-    message : str
+    message : strslac
         The initial text while building the actor.
     position : (float, float)
         (x, y) in pixels.
@@ -3514,43 +3514,85 @@ class RadioButton(Checkbox):
 
 
 class ScrollBar(UI):
-    def __init__(self, ListBox2D):
-        self.listbox = ListBox2D
-        self.reverse_scrolling = self.listbox.reverse_scrolling
+    """ UI component that allows the user to add scroll bar to a list.
 
-        denom = len(self.listbox.values) - self.listbox.nb_slots
+    Attributes
+    ----------
+    on_change: function
+        Callback function for when the viewed items have changed.
+    """
+
+    def __init__(self, nb_values, nb_slots, slot_height, Panel2D,
+                 list_position=(0, 0), panel_size=(100, 300),
+                 reverse_scrolling=False, active_color=(0.6, 0.2, 0.2),
+                 inactive_color=(0.9, 0.0, 0.0), opacity=1.):
+
+        """
+        Parameters
+        ----------
+        nb_slots: (int)
+            Number of slots in the list.
+        list_slot_height:(int)
+            Height of each slot in the list.
+        nb_values: (int)
+            Number of values in the list.
+        values: list of objects
+            Values used to populate this listbox. Objects must be castable
+            to string.
+        reverse_scrolling: {True, False}
+            If True, scrolling up will move the list of files down.
+        list_position: (int,int)
+            Coordinates of the list.
+        panel_size: (int,int)
+            Size of the panel (width*length).
+        bar_active_color : tuple of 3 floats
+        bar_inactive_color : tuple of 3 floats
+        opacity : float
+        """
+        self.panel = Panel2D
+        self.panel_size = panel_size
+        self.reverse_scrolling = reverse_scrolling
+        self.slot_height = slot_height
+        self.nb_slots = nb_slots
+        self.nb_values = nb_values
+        denom = self.nb_values - self.nb_slots
         if not denom:
             denom += 1
+        self.margin = 10
+        self.view_offset = 0
         super(ScrollBar, self).__init__()
-        self.scroll_step_size = (self.listbox.slot_height *
-                                 self.listbox.nb_slots -
-                                 self.scroll_bar.height) / denom
-        self.scroll_bar_active_color = self.listbox.scroll_bar_active_color
-        self.scroll_bar_inactive_color = self.listbox.scroll_bar_inactive_color
-        self.scroll_bar.color = self.listbox.scroll_bar_inactive_color
-        self.scroll_bar.opacity = self.listbox.background_opacity
-        self.scroll_init_position = 0
+        self.step_size = (self.slot_height *
+                          self.nb_slots -
+                          self.bar.height) / denom
+        self.bar.active_color = active_color
+        self.bar.inactive_color = inactive_color
+        self.bar.color = inactive_color
+        self.bar.opacity = opacity
+        self.init_position = 0
+        self.on_change = lambda: None
 
     def _setup(self):
-        scroll_bar_height = self.listbox.nb_slots * (
-            self.listbox.panel_size[1] - 2 * self.listbox.margin) \
-            / len(self.listbox.values)
-        self.scroll_bar = Rectangle2D(size=(int(self.listbox.panel_size[0]/20),
-                                      scroll_bar_height))
-        if len(self.listbox.values) <= self.listbox.nb_slots:
-            self.scroll_bar.set_visibility(False)
+        bar_height = self.nb_slots * (
+            self.panel_size[1] - 2 * self.margin) \
+            / self.nb_values
+        self.bar = Rectangle2D(size=(int(self.panel_size[0]/20), bar_height))
 
-        self.listbox.panel.add_element(
-            self.scroll_bar, self.listbox.panel_size -
-            self.scroll_bar.size - self.listbox.margin)
-        self.scroll_bar.on_left_mouse_button_pressed = \
-            self.scroll_click_callback
-        self.scroll_bar.on_left_mouse_button_released = \
-            self.scroll_release_callback
-        self.scroll_bar.on_left_mouse_button_dragged = \
-            self.scroll_drag_callback
+        # Setting view of the list for current scroll bar position.
+        if self.nb_values <= self.nb_slots:
+            self.bar.set_visibility(False)
 
-    def scroll_click_callback(self, i_ren, _obj, _rect_obj):
+        # Adding callbacks for scrolling of bar on click drag and realease.
+        self.panel.add_element(
+            self.bar, self.panel_size -
+            self.bar.size - self.margin)
+        self.bar.on_left_mouse_button_pressed = \
+            self.click_callback
+        self.bar.on_left_mouse_button_released = \
+            self.release_callback
+        self.bar.on_left_mouse_button_dragged = \
+            self.drag_callback
+
+    def click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
 
         Parameters
@@ -3561,12 +3603,12 @@ class ScrollBar(UI):
         _rect_obj: :class:`Rectangle2D`
 
         """
-        self.scroll_bar.color = self.scroll_bar_active_color
-        self.scroll_init_position = i_ren.event.position[1]
+        self.bar.color = self.bar.active_color
+        self.init_position = i_ren.event.position[1]
         i_ren.force_render()
         i_ren.event.abort()
 
-    def scroll_release_callback(self, i_ren, _obj, _rect_obj):
+    def release_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is released.
 
         Parameters
@@ -3577,10 +3619,10 @@ class ScrollBar(UI):
         rect_obj: :class:`Rectangle2D`
 
         """
-        self.scroll_bar.color = self.scroll_bar_inactive_color
+        self.bar.color = self.bar.inactive_color
         i_ren.force_render()
 
-    def scroll_drag_callback(self, i_ren, _obj, _rect_obj):
+    def drag_callback(self, i_ren, _obj, _rect_obj):
         """ Dragging scroll bar in the combo box.
 
         Parameters
@@ -3592,62 +3634,61 @@ class ScrollBar(UI):
 
         """
         position = i_ren.event.position
-        offset = int((position[1] - self.scroll_init_position) /
-                     self.scroll_step_size)
-        if offset > 0 and self.listbox.view_offset > 0:
-            offset = min(offset, self.listbox.view_offset)
+        offset = int((position[1] - self.init_position) /
+                     self.step_size)
+        if offset > 0 and self.view_offset > 0:
+            offset = min(offset, self.view_offset)
 
         elif offset < 0 and (
-                self.listbox.view_offset +
-                self.listbox.nb_slots < len(self.listbox.values)):
+                self.view_offset +
+                self.nb_slots < self.nb_values):
             offset = min(-offset,
-                         len(self.listbox.values) -
-                         self.listbox.nb_slots - self.listbox.view_offset)
+                         self.nb_values -
+                         self.nb_slots - self.view_offset)
             offset = - offset
         else:
             return
 
-        self.listbox.view_offset -= offset
-        self.listbox.update()
-        scroll_bar_idx = self.listbox.panel._elements.index(self.scroll_bar)
-        self.scroll_bar.center = (self.scroll_bar.center[0],
-                                  self.scroll_bar.center[1] +
-                                  offset * self.scroll_step_size)
+        self.view_offset -= offset
+        self.on_change()
+        scroll_bar_idx = self.panel._elements.index(self.bar)
+        self.bar.center = (self.bar.center[0],
+                           self.bar.center[1] +
+                           offset * self.step_size)
 
-        self.scroll_init_position += offset * self.scroll_step_size
-
-        self.listbox.panel.element_offsets[scroll_bar_idx] = (
-            self.scroll_bar, (self.scroll_bar.position -
-                              self.listbox.panel.position))
+        self.init_position += offset * self.step_size
+        self.panel.element_offsets[scroll_bar_idx] = (
+                self.bar, (self.bar.position -
+                           self.panel.position))
         i_ren.force_render()
         i_ren.event.abort()
 
     def update_scrollbar(self):
         """ Change the scroll-bar height when the values
-        in the listbox change
+            in the listbox change
         """
-        self.scroll_bar.set_visibility(True)
+        self.bar.set_visibility(True)
 
-        self.scroll_bar.height = self.listbox.nb_slots * \
-            (self.listbox.panel_size[1] - 2 *
-             self.listbox.margin) / len(self.listbox.values)
+        self.bar.height = self.nb_slots * \
+            (self.panel_size[1] - 2 *
+             self.margin) / self.nb_values
 
-        self.scroll_step_size = (self.listbox.slot_height *
-                                 self.listbox.nb_slots -
-                                 self.scroll_bar.height) \
-            / (len(self.listbox.values) - self.listbox.nb_slots)
+        self.step_size = (self.slot_height *
+                          self.nb_slots -
+                          self.bar.height) \
+            / (self.nb_values - self.nb_slots)
 
-        self.listbox.panel.update_element(
-            self.scroll_bar, self.listbox.panel_size - self.scroll_bar.size -
-            self.listbox.margin)
+        self.panel.update_element(
+            self.bar, self.panel_size - self.bar.size -
+            self.margin)
 
-        if len(self.listbox.values) <= self.listbox.nb_slots:
-            self.scroll_bar.set_visibility(False)
+        if self.nb_values <= self.nb_slots:
+            self.bar.set_visibility(False)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        return self.listbox.panel.actors
+        return self.panel.actors
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -3656,10 +3697,10 @@ class ScrollBar(UI):
         ----------
         scene : scene
         """
-        self.listbox.panel.add_to_scene(scene)
+        self.panel.add_to_scene(scene)
 
     def _get_size(self):
-        return self.listbox.panel.size
+        return self.panel.size
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -3669,7 +3710,7 @@ class ScrollBar(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.listbox.position = coords
+        self.list_position = coords
 
 
 class ListBox2D(UI):
@@ -3778,7 +3819,16 @@ class ListBox2D(UI):
             self.panel.add_element(item, (x, y + self.margin))
 
         # Add a scroll bar
-        self.Scrollbar = ScrollBar(self)
+        self.Scrollbar = ScrollBar(len(self.values), self.nb_slots,
+                                   self.slot_height,
+                                   self.panel, self.position,
+                                   self.panel_size, self.reverse_scrolling,
+                                   self.scroll_bar_active_color,
+                                   self.scroll_bar_inactive_color,
+                                   self.background_opacity)
+
+        # Adding update to the hook of ScrollBar
+        self.Scrollbar.on_change = self.update
 
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
@@ -3843,18 +3893,18 @@ class ListBox2D(UI):
         _list_box: :class:`ListBox2D`
 
         """
-        if self.view_offset > 0:
-            self.view_offset -= 1
+        if self.Scrollbar.view_offset > 0:
+            self.Scrollbar.view_offset -= 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(
-                             self.Scrollbar.scroll_bar)
-            self.Scrollbar.scroll_bar.center = (
-                                      self.Scrollbar.scroll_bar.center[0],
-                                      self.Scrollbar.scroll_bar.center[1] +
-                                      self.Scrollbar.scroll_step_size)
+                                                        self.Scrollbar.bar)
+            self.Scrollbar.bar.center = (
+                                      self.Scrollbar.bar.center[0],
+                                      self.Scrollbar.bar.center[1] +
+                                      self.Scrollbar.step_size)
             self.panel.element_offsets[scroll_bar_idx] = (
-                self.Scrollbar.scroll_bar,
-                (self.Scrollbar.scroll_bar.position - self.panel.position))
+                self.Scrollbar.bar,
+                (self.Scrollbar.bar.position - self.panel.position))
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
@@ -3870,26 +3920,26 @@ class ListBox2D(UI):
         _list_box: :class:`ListBox2D`
 
         """
-        view_end = self.view_offset + self.nb_slots
+        view_end = self.Scrollbar.view_offset + self.nb_slots
         if view_end < len(self.values):
-            self.view_offset += 1
+            self.Scrollbar.view_offset += 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(
-                                                    self.Scrollbar.scroll_bar)
-            self.Scrollbar.scroll_bar.center = (
-                                      self.Scrollbar.scroll_bar.center[0],
-                                      self.Scrollbar.scroll_bar.center[1] -
-                                      self.Scrollbar.scroll_step_size)
+                                                    self.Scrollbar.bar)
+            self.Scrollbar.bar.center = (
+                                      self.Scrollbar.bar.center[0],
+                                      self.Scrollbar.bar.center[1] -
+                                      self.Scrollbar.step_size)
             self.panel.element_offsets[scroll_bar_idx] = (
-                self.Scrollbar.scroll_bar,
-                (self.Scrollbar.scroll_bar.position - self.panel.position))
+                self.Scrollbar.bar,
+                (self.Scrollbar.bar.position - self.panel.position))
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
     def update(self):
         """ Refresh listbox's content. """
-        view_start = self.view_offset
+        view_start = self.Scrollbar.view_offset
         view_end = view_start + self.nb_slots
         values_to_show = self.values[view_start:view_end]
 
