@@ -589,63 +589,48 @@ def prim_octagonalprism():
 
     """
     
-    vertices = np.array([[-1, -(1+math.sqrt(2)), -1],
+    vertices = np.array([[-1, -(1+math.sqrt(2)), -1], 
                          [1, -(1+math.sqrt(2)), -1],
-                         [1, (1+math.sqrt(2)), -1],
-                         [-1, (1+math.sqrt(2)), -1],
-                         [-(1+math.sqrt(2)), -1, -1],
-                         [(1+math.sqrt(2)), -1, -1],
-                         [(1+math.sqrt(2)), 1, -1],
-                         [-(1+math.sqrt(2)), 1, -1],
-                         [-1, -(1+math.sqrt(2)), 1],
-                         [1, -(1+math.sqrt(2)), 1],
-                         [1, (1+math.sqrt(2)), 1],
-                         [-1, (1+math.sqrt(2)), 1],
+                         [1, (1+math.sqrt(2)), -1], 
+                         [-1, (1+math.sqrt(2)), -1], 
+                         [-(1+math.sqrt(2)), -1, -1], 
+                         [(1+math.sqrt(2)), -1, -1], 
+                         [(1+math.sqrt(2)), 1, -1], 
+                         [-(1+math.sqrt(2)), 1, -1], 
+                         [-1, -(1+math.sqrt(2)), 1], 
+                         [1, -(1+math.sqrt(2)), 1], 
+                         [1, (1+math.sqrt(2)), 1], 
+                         [-1, (1+math.sqrt(2)), 1], 
                          [-(1+math.sqrt(2)), -1, 1],
-                         [(1+math.sqrt(2)), -1, 1],
+                         [(1+math.sqrt(2)), -1, 1], 
                          [(1+math.sqrt(2)), 1, 1],
-                         [-(1+math.sqrt(2)), 1, 1]])
-    triangles = np.array([[4, 12, 13], #this and below are triangles of the side faces of the prism
-                          [13, 5, 4],
-                          [5, 13, 9],
-                          [9, 1, 5],
-                          [1, 9, 10],
-                          [10, 2, 1],
-                          [2, 10, 14],
-                          [14, 6, 2],
-                          [6, 14, 15],
-                          [15, 7, 6],
+                         [-(1+math.sqrt(2)), 1, 1]]) 
+    triangles = np.array([[0, 8, 9], 
+                          [9, 1, 0], 
+                          [5, 13, 9], 
+                          [9, 1, 5], 
+                          [3, 11, 10], 
+                          [10, 2, 3], 
+                          [2, 10, 14], 
+                          [14, 6, 2], 
+                          [5, 13, 14], 
+                          [14, 6, 5], 
                           [7, 15, 11],
-                          [3, 11, 8],
-                          [8, 0, 3],
-                          [3, 0, 12],
-                          [12, 4, 8], 
-                          [7, 3, 6],#this and below are triangles of the octagon faces of the prism
-                          [3, 6, 0],
-                          [6, 0, 2],
-                          [0, 2, 4],
-                          [2, 4, 1],
-                          [4, 1, 5],
-                          [15, 11, 14],
-                          [11, 14, 8],
-                          [14, 8, 10],
-                          [8, 10, 12],
-                          [10, 12, 19],
-                          [12, 9, 13]], dtype='u8')
-    return vertices, triangles
-
-    def prim_frustum():
-    """Return vertices and triangle for a frustum square pyramid.
-
-    Returns
-    -------
-    vertices: ndarray
-        vertices coords that compose our pyramid.
-    triangles: ndarray
-        triangles that compose our pyramid
-
-    """
-    
-    vertices = np.array([[]])
-    triangles = np.array([[]], dtype='u8')
+                          [11, 3, 7], 
+                          [7, 15, 12], 
+                          [12, 4, 7], 
+                          [0, 8, 12],
+                          [12, 4, 0],
+                          [0, 3, 4],
+                          [3, 4, 7],
+                          [0, 3, 1],
+                          [1, 2, 3],
+                          [2, 5, 6],
+                          [5, 2, 1],
+                          [8, 11, 12],
+                          [11, 12, 15],
+                          [8, 11, 9],
+                          [9, 10, 11],
+                          [10, 13, 14],
+                          [13, 10, 9]], dtype= 'u8')
     return vertices, triangles
