@@ -634,3 +634,38 @@ def prim_octagonalprism():
                           [10, 13, 14],
                           [13, 10, 9]], dtype= 'u8')
     return vertices, triangles
+
+def prim_frustum():
+    """Return vertices and triangle for a square frustum prism.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+
+    vertices = np.array([[-.5, -.5, 1],
+                        [.5, -.5, 1],
+                        [.5, .5, 1],
+                        [-.5, .5, 1],
+                        [-1, -1, 0],
+                        [1, -1, 0],
+                        [1, 1, 0],
+                        [-1, 1, 0]])
+    triangles = np.array([[4, 6, 5],
+                         [6, 4, 7],
+                         [0, 2, 1],
+                         [2, 0, 3],
+                         [4, 3, 0],
+                         [3, 4, 7],
+                         [7, 2, 3],
+                         [2, 7, 6],
+                         [6, 1, 2],
+                         [1, 6, 5],
+                         [5, 0, 1],
+                         [0, 5, 4]], dtype='u8')
+
+    return vertices, triangles
