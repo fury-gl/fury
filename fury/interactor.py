@@ -172,11 +172,12 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         prop = self.get_prop_at_event_position()
 
         if self.nb_left_clicks == 1:
-            self.initial_state = self.trackball_camera.GetInteractor().GetEventPosition()
+            self.initial_state = \
+                self.trackball_camera.GetInteractor().GetEventPosition()
             if self.initial_state == self.click_history:
                 # stop single click event here...
                 self.event.abort()
-                print("Double Clicked Detected. [Aborts previous single click]")
+                print("Double Clicked Detected. [Aborts prev single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
@@ -189,7 +190,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                     self.propagate_event(evt, prop)
 
         if self.nb_left_clicks == 2:
-            final_state = self.trackball_camera.GetInteractor().GetEventPosition()
+            final_state = \
+                self.trackball_camera.GetInteractor().GetEventPosition()
             # print("Final state:", final_state)
 
             x_dist = final_state[0] - self.initial_state[0]
@@ -207,7 +209,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 self.nb_left_clicks = 0
             else:
                 self.event.abort()
-                print("Double Click Detected. [Aborts previous single click]")
+                print("Double Click Detected. [Aborts prev single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
