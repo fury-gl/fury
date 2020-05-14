@@ -4392,8 +4392,9 @@ class ComboBox2D(UI):
 
         max_text_width = len(max(self.items, key=len))
 
-        self.selection_box = TextBox2D(
-            width=max_text_width, height=1,
+        self.selection_box = TextBlock2D(
+            font_size = self.font_size,
+            position=None, # Implement later.
             text=self._selection)
 
         self.drop_down_button = Button2D(icon_fnames=self._icon_files)
@@ -4515,7 +4516,7 @@ class ComboBox2D(UI):
         self._selection = listboxitem.element()
         self._selection_ID = self.items.index(self._selection)
 
-        self.selection_box.set_message(self._selection)
+        self.selection_box.message(self._selection)
         self.drop_down_menu.set_visibility(False)
         self.menu_visibility = False
 
