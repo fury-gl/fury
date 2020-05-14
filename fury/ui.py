@@ -4392,26 +4392,26 @@ class ComboBox2D(UI):
 
         max_text_width = len(max(self.items, key=len))
 
-        self.selectionBox = TextBox2D(
+        self.selection_box = TextBox2D(
             width=max_text_width, height=1,
             text=self._selection)
 
-        self.dropDownButton = Button2D(icon_fnames=self._icon_files)
+        self.drop_down_button = Button2D(icon_fnames=self._icon_files)
 
-        self.dropDownMenu = ListBox2D(
+        self.drop_down_menu = ListBox2D(
             values=self.items, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
             reverse_scrolling=self.reverse_scrolling)
 
-        self.dropDownMenu.set_visibility(False)
+        self.drop_down_menu.set_visibility(False)
 
         self.panel = Panel2D(self.panel_size, self.panel_position, opacity=0.0)
 
-        self.panel.add_element(self.selectionBox, (0.01, 0.3))
-        self.panel.add_element(self.dropDownButton, (0.7, 0.3))
-        self.panel.add_element(self.dropDownMenu, (0.01, 0.7))
+        self.panel.add_element(self.selection_box, (0.01, 0.3))
+        self.panel.add_element(self.drop_down_button, (0.7, 0.3))
+        self.panel.add_element(self.drop_down_menu, (0.01, 0.7))
 
-        self.add_callback(self.dropDownMenu.scroll_bar.actor,
+        self.add_callback(self.drop_down_menu.scroll_bar.actor,
                           "MouseMoveEvent",
                           self.scroll_callback)
 
@@ -4421,15 +4421,15 @@ class ComboBox2D(UI):
             up_event, down_event = down_event, up_event  # Swap events
 
         self.add_callback(
-            self.dropDownMenu.panel.background.actor, up_event,
+            self.drop_down_menu.panel.background.actor, up_event,
             self.scroll_callback)
 
         self.add_callback(
-            self.dropDownMenu.panel.background.actor, down_event,
+            self.drop_down_menu.panel.background.actor, down_event,
             self.scroll_callback)
 
         # Handle mouse wheel events on the slots.
-        for slot in self.dropDownMenu.slots:
+        for slot in self.drop_down_menu.slots:
             self.add_callback(slot.background.actor, up_event,
                               self.scroll_callback)
             self.add_callback(slot.background.actor, down_event,
@@ -4447,7 +4447,7 @@ class ComboBox2D(UI):
                 slot.background.actor, "LeftButtonPressEvent",
                 self.select_option_callback)
 
-            self.dropDownButton.on_left_mouse_button_clicked = \
+            self.drop_down_button.on_left_mouse_button_clicked = \
                 self.menu_toggle_callback
 
     def _get_actors(self):
@@ -4515,11 +4515,11 @@ class ComboBox2D(UI):
         self._selection = listboxitem.element()
         self._selection_ID = self.items.index(self._selection)
 
-        self.selectionBox.set_message(self._selection)
-        self.dropDownMenu.set_visibility(False)
+        self.selection_box.set_message(self._selection)
+        self.drop_down_menu.set_visibility(False)
         self.menu_visibility = False
 
-        self.dropDownButton.next_icon()
+        self.drop_down_button.next_icon()
 
         i_ren.force_render()
         i_ren.event.abort()
@@ -4536,9 +4536,9 @@ class ComboBox2D(UI):
         """
 
         self._menu_visibility = not self._menu_visibility
-        self.dropDownMenu.set_visibility(self._menu_visibility)
+        self.drop_down_menu.set_visibility(self._menu_visibility)
 
-        self.dropDownButton.next_icon()
+        self.drop_down_button.next_icon()
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
