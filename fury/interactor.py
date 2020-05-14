@@ -87,8 +87,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.reset_pixel_distance = 5
         self.click_history = []
 
-        self.DoubleClickEvent = vtk.vtkCommand.UserEvent+1
-
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
                                "middle_button": set()}
@@ -181,7 +179,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 print("Double Clicked Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                    self.propagate_event("DoubleClickEvent", prop)
             else:
                 # print("Initial state:", self.initial_state)
                 print("Single Click Detected.")
@@ -212,7 +210,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 print("Double Click Detected. [Aborts previous single click]")
                 self.nb_left_clicks = 0
                 if prop is not None:
-                    self.InvokeEvent(self.DoubleClickEvent, 'DoubleClickEvent')
+                    self.propagate_event("DoubleClickEvent", prop)
 
         self.trackball_camera.OnLeftButtonDown()
 
@@ -361,7 +359,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.AddObserver("RightButtonReleaseEvent", self._process_event)
         self.AddObserver("MiddleButtonPressEvent", self._process_event)
         self.AddObserver("MiddleButtonReleaseEvent", self._process_event)
-        self.AddObserver("DoubleClickEvent", self._process_event)
 
         # Windows and special events.
         # TODO: we ever find them useful we could support them.
