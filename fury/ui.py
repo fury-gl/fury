@@ -4509,10 +4509,10 @@ class ComboBox2D(UI):
         """
 
         # Set the Text of TextBlock2D to the text of listboxitem
-        self._selection = listboxitem.element()
+        self._selection = listboxitem.element
         self._selection_ID = self.items.index(self._selection)
 
-        self.selection_box.message(self._selection)
+        self.selection_box.message = self._selection
         self.drop_down_menu.set_visibility(False)
         self.menu_visibility = False
 
