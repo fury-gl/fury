@@ -4374,6 +4374,9 @@ class ComboBox2D(UI):
         self._selection = placeholder
         self._menu_visibility = False
         self._selection_ID = None
+        self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
+        self.drop_menu_size = (size[0], int(0.7*size[1]))
+        self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
 
         self._icon_files = [
             ('left', read_viz_icons(fname='circle-left.png')),
@@ -4394,23 +4397,23 @@ class ComboBox2D(UI):
 
         self.selection_box = TextBlock2D(
             font_size = self.font_size,
-            position=None, # Implement later.
+            position=self.position,
             text=self._selection)
 
-        self.drop_down_button = Button2D(icon_fnames=self._icon_files)
+        self.drop_down_button = Button2D(icon_fnames=self._icon_files, size=self.drop_button_size)
 
         self.drop_down_menu = ListBox2D(
             values=self.items, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling)
+            reverse_scrolling=self.reverse_scrolling, size=self.drop_menu_size)
 
         self.drop_down_menu.set_visibility(False)
 
-        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=0.0)
+        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=1.0)
 
-        self.panel.add_element(self.selection_box, (0.01, 0.3))
-        self.panel.add_element(self.drop_down_button, (0.7, 0.3))
-        self.panel.add_element(self.drop_down_menu, (0.01, 0.7))
+        self.panel.add_element(self.selection_box, (0, 0))
+        self.panel.add_element(self.drop_down_button, (0.8, 0))
+        self.panel.add_element(self.drop_down_menu, (0, 0.3))
 
         self.add_callback(self.drop_down_menu.scroll_bar.actor,
                           "MouseMoveEvent",
