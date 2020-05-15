@@ -179,14 +179,14 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                self.prev_prop_clicked == prop:
                 # stop single click event here...
                 self.event.abort()
-                print("Double Clicked Detected. [Aborts prev single click]")
+                # print("Double Clicked Detected. [Aborts prev single click]")
                 self.prev_prop_clicked = None
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
             else:
                 # print("Initial state:", self.initial_state)
-                print("Single Click Detected.")
+                # print("Single Click Detected.")
                 self.prev_prop_clicked = prop
                 if prop is not None:
                     # Single Clicked Events...
@@ -206,7 +206,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             if dist_moved > self.reset_pixel_distance or \
                self.prev_prop_clicked != prop:
                 self.click_history = final_state
-                print("Single Clicked Detected.")
+                # print("Single Clicked Detected.")
                 self.prev_prop_clicked = prop
                 if prop is not None:
                     # Single Clicked Events...
@@ -215,22 +215,13 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 self.nb_left_clicks = 0
             else:
                 self.event.abort()
-                print("Double Click Detected. [Aborts prev single click]")
+                # print("Double Click Detected. [Aborts prev single click]")
                 self.prev_prop_clicked = None
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
 
         self.trackball_camera.OnLeftButtonDown()
-
-    def on_double_click(self, obj, evt):
-        print("Inside double click Method")
-        prop = self.get_prop_at_event_position()
-        if prop is not None:
-            self.propagate_event(evt, prop)
-
-        if not self.event.abort_flag:
-            self.trackball_camera.OnLeftButtonDown()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
