@@ -86,6 +86,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.nb_left_clicks = 0
         self.reset_pixel_distance = 5
         self.click_history = []
+        self.prev_prop_clicked = None
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
@@ -174,16 +175,18 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if self.nb_left_clicks == 1:
             self.initial_state = \
                 self.trackball_camera.GetInteractor().GetEventPosition()
-            if self.initial_state == self.click_history:
+            if self.initial_state == self.click_history and self.prev_prop_clicked == prop:
                 # stop single click event here...
                 self.event.abort()
                 print("Double Clicked Detected. [Aborts prev single click]")
+                self.prev_prop_clicked = None
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
             else:
                 # print("Initial state:", self.initial_state)
                 print("Single Click Detected.")
+                self.prev_prop_clicked = prop
                 if prop is not None:
                     # Single Clicked Events...
                     self.selected_props["left_button"].add(prop)
@@ -199,9 +202,10 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
             dist_moved = int((x_dist**2 + y_dist**2)**0.5)
 
-            if dist_moved > self.reset_pixel_distance:
+            if dist_moved > self.reset_pixel_distance or self.prev_prop_clicked != prop:
                 self.click_history = final_state
                 print("Single Clicked Detected.")
+                self.prev_prop_clicked = prop
                 if prop is not None:
                     # Single Clicked Events...
                     self.selected_props["left_button"].add(prop)
@@ -210,6 +214,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             else:
                 self.event.abort()
                 print("Double Click Detected. [Aborts prev single click]")
+                self.prev_prop_clicked = None
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
