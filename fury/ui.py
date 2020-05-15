@@ -4482,22 +4482,15 @@ class ComboBox2D(UI):
         return self.panel.size
 
     @property
-    def getCurrentText(self):
+    def text(self):
         return self._selection
 
     @property
-    def getCurrentIndex(self):
+    def text_index(self):
         return self._selection_ID
 
-    @property
-    def appendItem(self, item):
-        """ item : str : Name of the item.
-        """
-        self.items.append(item)
-
-    @property
-    def appendItems(self, items):
-        """ items : list(str) : list of names of the items.
+    def append_item(self, *items):
+        """ item : str : Name of the items.
         """
         self.items.extend(items)
 
