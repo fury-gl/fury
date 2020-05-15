@@ -220,8 +220,9 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 self.nb_left_clicks = 0
                 if prop is not None:
                     self.propagate_event("DoubleClickEvent", prop)
-
-        self.trackball_camera.OnLeftButtonDown()
+        
+        if not self.event.abort_flag:
+            self.trackball_camera.OnLeftButtonDown()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
