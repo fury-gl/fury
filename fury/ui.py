@@ -4411,9 +4411,9 @@ class ComboBox2D(UI):
 
         self.panel = Panel2D(self.panel_size, self.panel_position, opacity=1.0)
 
-        self.panel.add_element(self.selection_box, (0, 0))
-        self.panel.add_element(self.drop_down_button, (0.8, 0))
-        self.panel.add_element(self.drop_down_menu, (0, 0.3))
+        self.panel.add_element(self.selection_box, (1, 1))
+        self.panel.add_element(self.drop_down_button, (0.8, 0.7))
+        self.panel.add_element(self.drop_down_menu, (0, 0))
 
         self.add_callback(self.drop_down_menu.scroll_bar.actor,
                           "MouseMoveEvent",
