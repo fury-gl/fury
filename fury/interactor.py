@@ -1,5 +1,7 @@
 """Custom Interactor Style."""
 
+from collections import deque
+
 import numpy as np
 import vtk
 
@@ -77,16 +79,16 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.picker = vtk.vtkPropPicker()
         self.chosen_element = None
         self.event = Event()
+        self.event2id = {}  # To map an event's name to an ID.
 
         # Define some interaction states
         self.left_button_down = False
         self.right_button_down = False
         self.middle_button_down = False
         self.active_props = set()
-        self.nb_left_clicks = 0
-        self.reset_pixel_distance = 5
-        self.click_history = []
-        self.prev_prop_clicked = None
+
+        self.history = deque(maxlen=10)  # Events history.
+        # self.click_radius_square = 5 ** 2  # In pixel.
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
@@ -114,6 +116,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         return prop
 
     def propagate_event(self, evt, *props):
+        evt = self.event2id.get(evt, evt)
         for prop in props:
             # Propagate event to the prop.
             prop.InvokeEvent(evt)
@@ -122,6 +125,12 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 return
 
     def _process_event(self, obj, evt):
+        self.event.update(evt, self.GetInteractor())
+        self.history.append({
+            "event": evt,
+            "pos": self.event.position,
+        })
+
         if evt == "LeftButtonPressEvent":
             self.on_left_button_down(obj, evt)
         elif evt == "LeftButtonReleaseEvent":
@@ -146,20 +155,53 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             self.on_mouse_wheel_forward(obj, evt)
         elif evt == "MouseWheelBackwardEvent":
             self.on_mouse_wheel_backward(obj, evt)
-        elif evt == "DoubleClickEvent":
-            self.on_double_click(obj, evt)
 
         self.event.reset()  # Event fully processed.
 
-    # def on_left_button_down(self, _obj, evt):
-    #     self.left_button_down = True
-    #     prop = self.get_prop_at_event_position()
-    #     if prop is not None:
-    #         self.selected_props["left_button"].add(prop)
-    #         self.propagate_event(evt, prop)
+    def _button_clicked(self, button, last_event=-1, before_last_event=-2):
+        if len(self.history) < abs(before_last_event):
+            return False
 
-    #     if not self.event.abort_flag:
-    #         self.trackball_camera.OnLeftButtonDown()
+        if self.history[last_event]["event"] != button + "ButtonReleaseEvent":
+            return False
+
+        if self.history[before_last_event]["event"] != button + "ButtonPressEvent":
+            return False
+
+        # if self.history[before_last_event]["prop"] != self.history[last_event]["prop"]:
+            # return False
+
+        # dx = self.history[before_last_event]["pos"][0] - self.history[last_event]["pos"][0]
+        # dy = self.history[before_last_event]["pos"][1] - self.history[last_event]["pos"][1]
+        # if (dx**2 + dy**2) > self.click_radius_square:
+            # return False
+
+        return True
+
+    def _button_double_clicked(self, button):
+        if not (self._button_clicked(button) and self._button_clicked(button, -3, -4)):
+            return False
+
+        # if self.history[-3]["prop"] != self.history[-1]["prop"]:
+            # return False
+
+        # dx = self.history[-3]["pos"][0] - self.history[-1]["pos"][0]
+        # dy = self.history[-3]["pos"][1] - self.history[-1]["pos"][1]
+        # if (dx**2 + dy**2) > self.click_radius_square:
+            # return False
+
+        return True
+
+    def on_left_button_down(self, _obj, evt):
+        self.left_button_down = True
+        prop = self.get_prop_at_event_position()
+        # self.history[-1]["prop"] = prop
+        if prop is not None:
+            self.selected_props["left_button"].add(prop)
+            self.propagate_event(evt, prop)
+
+        if not self.event.abort_flag:
+            self.trackball_camera.OnLeftButtonDown()
 
     def on_left_button_up(self, _obj, evt):
         self.left_button_down = False
@@ -167,62 +209,12 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.selected_props["left_button"].clear()
         self.trackball_camera.OnLeftButtonUp()
 
-    def on_left_button_down(self, _obj, evt):
-        self.left_button_down = True
-        self.nb_left_clicks += 1
         prop = self.get_prop_at_event_position()
+        # self.history[-1]["prop"] = prop
 
-        if self.nb_left_clicks == 1:
-            self.initial_state = \
-                self.trackball_camera.GetInteractor().GetEventPosition()
-            if self.initial_state == self.click_history and \
-               self.prev_prop_clicked == prop:
-                # stop single click event here...
-                self.event.abort()
-                # print("Double Clicked Detected. [Aborts prev single click]")
-                self.prev_prop_clicked = None
-                self.nb_left_clicks = 0
-                if prop is not None:
-                    self.propagate_event("DoubleClickEvent", prop)
-            else:
-                # print("Initial state:", self.initial_state)
-                # print("Single Click Detected.")
-                self.prev_prop_clicked = prop
-                if prop is not None:
-                    # Single Clicked Events...
-                    self.selected_props["left_button"].add(prop)
-                    self.propagate_event(evt, prop)
-
-        if self.nb_left_clicks == 2:
-            final_state = \
-                self.trackball_camera.GetInteractor().GetEventPosition()
-            # print("Final state:", final_state)
-
-            x_dist = final_state[0] - self.initial_state[0]
-            y_dist = final_state[1] - self.initial_state[1]
-
-            dist_moved = int((x_dist**2 + y_dist**2)**0.5)
-
-            if dist_moved > self.reset_pixel_distance or \
-               self.prev_prop_clicked != prop:
-                self.click_history = final_state
-                # print("Single Clicked Detected.")
-                self.prev_prop_clicked = prop
-                if prop is not None:
-                    # Single Clicked Events...
-                    self.selected_props["left_button"].add(prop)
-                    self.propagate_event(evt, prop)
-                self.nb_left_clicks = 0
-            else:
-                self.event.abort()
-                # print("Double Click Detected. [Aborts prev single click]")
-                self.prev_prop_clicked = None
-                self.nb_left_clicks = 0
-                if prop is not None:
-                    self.propagate_event("DoubleClickEvent", prop)
-        
-        if not self.event.abort_flag:
-            self.trackball_camera.OnLeftButtonDown()
+        if self._button_double_clicked("Left"):
+            self.propagate_event("LeftButtonDoubleClickEvent", prop)
+            self.history.clear()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
@@ -240,6 +232,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.selected_props["right_button"].clear()
         self.trackball_camera.OnRightButtonUp()
 
+        if self._button_double_clicked("Right"):
+            prop = self.get_prop_at_event_position()
+            self.propagate_event("RightButtonDoubleClickEvent", prop)
+            self.history.clear()
+
     def on_middle_button_down(self, _obj, evt):
         self.middle_button_down = True
         prop = self.get_prop_at_event_position()
@@ -255,6 +252,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.propagate_event(evt, *self.selected_props["middle_button"])
         self.selected_props["middle_button"].clear()
         self.trackball_camera.OnMiddleButtonUp()
+
+        if self._button_double_clicked("Middle"):
+            prop = self.get_prop_at_event_position()
+            self.propagate_event("MiddleButtonDoubleClickEvent", prop)
+            self.history.clear()
 
     def on_mouse_move(self, _obj, evt):
         """On mouse move."""
@@ -394,10 +396,16 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             # Update event information.
             interactor_ = self.GetInteractor()
             if interactor_ is not None:
-                self.event.update(event_name, interactor_)
+                #self.event.update(event_name, interactor_)
                 callback(self, prop, *args)
             else:
                 print('interactor is none')
                 print('event name is', event_name)
+
+        if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
+            if event_type not in self.event2id:
+                self.event2id[event_type] = vtk.vtkCommand.UserEvent + len(self.event2id) + 1
+
+            event_type = self.event2id[event_type]
 
         prop.AddObserver(event_type, _callback, priority)
