@@ -1197,7 +1197,7 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 def test_ui_combobox_2d(interactive=False):
-    values = ["An Item" for i in range(0,5)]
+    values = ["An Item" + str(i) for i in range(0,5)]
 
     combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 100))
 
