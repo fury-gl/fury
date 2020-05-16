@@ -4393,14 +4393,13 @@ class ComboBox2D(UI):
         Create Button for toggling drop down menu.
         """
 
-        max_text_width = len(max(self.items, key=len))
-
         self.selection_box = TextBlock2D(
-            font_size = self.font_size,
+            font_size=self.font_size,
             position=self.position,
             text=self._selection)
 
-        self.drop_down_button = Button2D(icon_fnames=self._icon_files, size=self.drop_button_size)
+        self.drop_down_button = Button2D(
+            icon_fnames=self._icon_files, size=self.drop_button_size)
 
         self.drop_down_menu = ListBox2D(
             values=self.items, multiselection=self.multiselection,
@@ -4514,7 +4513,7 @@ class ComboBox2D(UI):
 
         self.selection_box.message = self._selection
         self.drop_down_menu.set_visibility(False)
-        self.menu_visibility = False
+        self._menu_visibility = False
 
         self.drop_down_button.next_icon()
 

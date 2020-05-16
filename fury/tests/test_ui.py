@@ -1196,17 +1196,21 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.scene.add(filemenu)
         show_manager.start()
 
-def test_ui_combobox_2d(interactive=False):
-    values = ["An Item" + str(i) for i in range(0,5)]
 
-    combobox = ui.ComboBox2D(items=values, position=(400, 400), size=(300, 100))
+def test_ui_combobox_2d(interactive=False):
+    values = ["An Item" + str(i) for i in range(0, 5)]
+
+    combobox = ui.ComboBox2D(
+        items=values, position=(400, 400), size=(300, 100))
 
     current_size = (800, 800)
-    show_manager = window.ShowManager(size=current_size, title="ComboBox UI Example")
+    show_manager = window.ShowManager(
+        size=current_size, title="ComboBox UI Example")
     show_manager.scene.add(combobox)
 
     if interactive:
         show_manager.start()
+
 
 def test_grid_ui(interactive=False):
     vol1 = np.zeros((100, 100, 100))
