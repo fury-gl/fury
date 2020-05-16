@@ -4394,9 +4394,8 @@ class ComboBox2D(UI):
         """
 
         self.selection_box = TextBlock2D(
-            font_size=self.font_size,
-            position=self.position,
-            text=self._selection)
+            font_size=self.font_size, color=(0, 0, 0),
+            text=self._selection, bg_color=(1, 1, 1))
 
         self.drop_down_button = Button2D(
             icon_fnames=self._icon_files, size=self.drop_button_size)
@@ -4410,7 +4409,7 @@ class ComboBox2D(UI):
 
         self.panel = Panel2D(self.panel_size, self.panel_position, opacity=1.0)
 
-        self.panel.add_element(self.selection_box, (1, 1))
+        self.panel.add_element(self.selection_box, (0.008, 0.7))
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
