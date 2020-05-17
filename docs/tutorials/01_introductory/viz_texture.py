@@ -32,6 +32,6 @@ scene.add(actor.texture_on_sphere(image))
 # Lastly, record the scene. If you want to manipulate your new sphere with a 
 # texture, use ``window.show`` as commented out.
 
-window.show(scene, size=(600, 600), reset_camera=False)
-#window.record(scene, size=(900, 768), out_path="viz_texture.png")
+#window.show(scene, size=(600, 600), reset_camera=False)
+window.record(scene, size=(900, 768), out_path="viz_texture.png")
 
