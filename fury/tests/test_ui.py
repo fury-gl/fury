@@ -1201,7 +1201,7 @@ def test_ui_combobox_2d(interactive=False):
     values = ["An Item" + str(i) for i in range(0, 5)]
 
     combobox = ui.ComboBox2D(
-        items=values, position=(400, 400), size=(300, 100))
+        items=values, position=(400, 400), size=(300, 200))
 
     current_size = (800, 800)
     show_manager = window.ShowManager(
