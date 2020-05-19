@@ -36,4 +36,3 @@ scene.add(actor.texture_on_sphere(image))
 
 # window.show(scene, size=(600, 600), reset_camera=False)
 window.record(scene, size=(900, 768), out_path="viz_texture.png")
-
