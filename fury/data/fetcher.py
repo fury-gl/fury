@@ -303,21 +303,21 @@ fetch_viz_models = _make_fetcher(
     )
 
 fetch_viz_textures = _make_fetcher(
-    "fetch_viz_textures", 
+    "fetch_viz_textures",
     pjoin(fury_home, "textures"),
     TEXTURE_DATA_URL,
     ['1_earth_8k.jpg', '2_no_clouds_8k.jpg', 
-    '5_night_8k.jpg', 'earth.ppm', 
-    'jupiter.jpg', 'masonry.bmp',
-    'skybox-nx.jpg', 'skybox-ny.jpg', 
-    'skybox-px.jpg', 'skybox-py.jpg',
-    'skybox-pz.jpg'], 
-    ['1_earth_8k.jpg', '2_no_clouds_8k.jpg', 
-    '5_night_8k.jpg', 'earth.ppm', 
-    'jupiter.jpg', 'masonry.bmp',
-    'skybox-nx.jpg', 'skybox-ny.jpg', 
-    'skybox-px.jpg', 'skybox-py.jpg',
-    'skybox-pz.jpg'], 
+     '5_night_8k.jpg', 'earth.ppm',
+     'jupiter.jpg', 'masonry.bmp',
+     'skybox-nx.jpg', 'skybox-ny.jpg',
+     'skybox-px.jpg', 'skybox-py.jpg',
+     'skybox-pz.jpg'],
+    ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
+     '5_night_8k.jpg', 'earth.ppm',
+     'jupiter.jpg', 'masonry.bmp',
+     'skybox-nx.jpg', 'skybox-ny.jpg',
+     'skybox-px.jpg', 'skybox-py.jpg',
+     'skybox-pz.jpg'],
     doc="Download textures for fury"
     )
 
@@ -361,6 +361,7 @@ def read_viz_models(fname):
     folder = pjoin(fury_home, 'models')
     return pjoin(folder, fname)
 
+
 def read_viz_textures(fname):
     """Read specific texture.
 
@@ -372,7 +373,7 @@ def read_viz_textures(fname):
 
     Returns
     -------
-    path : str 
+    path : str
         Complete path of models.
 
     """
