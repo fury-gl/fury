@@ -46,7 +46,7 @@ def test_vertices_primitives_octagonalprism():
 
 
 def test_vertices_primitives_frsutum():
-    #Testing the default vertices of the primitive frustum square pyramid.
+    #Testing the default vertices of the primitive frustum pyramid.
     vertices, _ = fp.prim_frustum()
     shape = (8, 3)
     npt.assert_equal(vertices.shape, shape)
