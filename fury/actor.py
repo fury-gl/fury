@@ -1694,15 +1694,6 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkArrowSource() if faces is None else None
-
-    if src is not None:
-        src.SetTipResolution(resolution)
-        src.SetShaftResolution(resolution)
-        src.SetTipLength(tip_length)
-        src.SetTipRadius(tip_radius)
-        src.SetShaftRadius(shaft_radius)
-
     actor = repeat_sources(centers=centers, directions=directions,
                            colors=colors, active_scalars=heights, source=src,
                            vertices=vertices, faces=faces)
@@ -1756,6 +1747,93 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     actor = repeat_sources(centers=centers, directions=directions,
                            colors=colors, active_scalars=heights, source=src,
                            vertices=vertices, faces=faces)
+    return actor
+
+
+def octagonalprism(centers, directions, colors, heights=1,
+         vertices=None, faces=None):
+    """Visualize one or many octagonal prisms with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Octagonal prism positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the octagonal prism.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the octagonal prism.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the octagonal prism.
+    faces : ndarray, shape (M, 3)
+        If faces is None then an octagonal prism is created based on theta and phi angles
+        If not then an octagonal prism is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> actor = actor.octagonalprism(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
+    return actor
+
+def frustum(centers, directions, colors, heights=1,
+         vertices=None, faces=None):
+    """Visualize one or many frustum square pyramids with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Frustum pyramid positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the frustum pyramid.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : ndarray, shape (N)
+        The height of the frustum pyramid.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the frustum pyramid.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a frustum pyramid is created based on theta and phi angles
+        If not then a frustum pyramid is created with the provided vertices and faces.
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> heights = np.random.rand(5)
+    >>> actor = actor.frustum(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    actor = repeat_sources(centers=centers, colors=colors,
+                           directions=directions,
+                           active_scalars=heights, source=src,
+                           vertices=vertices, faces=faces)
+
     return actor
 
 
