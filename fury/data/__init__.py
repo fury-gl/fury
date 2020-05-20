@@ -8,5 +8,6 @@ from fury.data.fetcher import (fetch_viz_icons, read_viz_icons,
 
 DATA_DIR = pjoin(dirname(__file__), 'files')
 
-__all__ = ['fetch_viz_icons', 'read_viz_icons', 'DATA_DIR', 
-           'fetch_viz_textures', 'read_viz_textures']
+__all__ = ['fetch_viz_icons', 'read_viz_icons', 'DATA_DIR',
+           'fetch_viz_textures', 'read_viz_textures',
+           'fetch_viz_wiki_nw']
