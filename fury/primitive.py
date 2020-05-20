@@ -586,7 +586,6 @@ def prim_octagonalprism():
         vertices coords that compose our prism
     triangles: ndarray
         triangles that compose our prism
-
     """
     
     vertices = np.array([[-1, -(1+math.sqrt(2)), -1], 
@@ -637,14 +636,12 @@ def prim_octagonalprism():
 
 def prim_frustum():
     """Return vertices and triangle for a square frustum prism.
-
     Returns
     -------
     vertices: ndarray
         vertices coords that compose our prism
     triangles: ndarray
         triangles that compose our prism
-
     """
 
     vertices = np.array([[-.5, -.5, .5],
