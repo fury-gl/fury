@@ -165,21 +165,26 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         if self.history[last_event]["event"] != button + "ButtonReleaseEvent":
             return False
 
-        if self.history[before_last_event]["event"] != button + "ButtonPressEvent":
+        if self.history[before_last_event]["event"] \
+                != button + "ButtonPressEvent":
             return False
 
-        # if self.history[before_last_event]["prop"] != self.history[last_event]["prop"]:
+        # if self.history[before_last_event]["prop"] \
+        #       != self.history[last_event]["prop"]:
             # return False
 
-        # dx = self.history[before_last_event]["pos"][0] - self.history[last_event]["pos"][0]
-        # dy = self.history[before_last_event]["pos"][1] - self.history[last_event]["pos"][1]
+        # dx = self.history[before_last_event]["pos"][0]\
+        #  - self.history[last_event]["pos"][0]
+        # dy = self.history[before_last_event]["pos"][1]\
+        #  - self.history[last_event]["pos"][1]
         # if (dx**2 + dy**2) > self.click_radius_square:
             # return False
 
         return True
 
     def _button_double_clicked(self, button):
-        if not (self._button_clicked(button) and self._button_clicked(button, -3, -4)):
+        if not (self._button_clicked(button) and
+                self._button_clicked(button, -3, -4)):
             return False
 
         # if self.history[-3]["prop"] != self.history[-1]["prop"]:
@@ -396,7 +401,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             # Update event information.
             interactor_ = self.GetInteractor()
             if interactor_ is not None:
-                #self.event.update(event_name, interactor_)
+                # self.event.update(event_name, interactor_)
                 callback(self, prop, *args)
             else:
                 print('interactor is none')
@@ -404,7 +409,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
             if event_type not in self.event2id:
-                self.event2id[event_type] = vtk.vtkCommand.UserEvent + len(self.event2id) + 1
+                self.event2id[event_type] = \
+                    vtk.vtkCommand.UserEvent + len(self.event2id) + 1
 
             event_type = self.event2id[event_type]
 
