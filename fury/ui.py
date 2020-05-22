@@ -4430,7 +4430,7 @@ class ComboBox2D(UI):
                 self.menu_toggle_callback
 
         # Offer some standard hooks to the user.
-        self.on_selection_change = lambda ui: None
+        self.on_change = lambda ui: None
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4496,7 +4496,7 @@ class ComboBox2D(UI):
 
         self.drop_down_button.next_icon()
 
-        self.on_selection_change(self)
+        self.on_change(self)
 
         i_ren.force_render()
         i_ren.event.abort()
