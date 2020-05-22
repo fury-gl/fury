@@ -4413,34 +4413,8 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
-        self.add_callback(self.drop_down_menu.scroll_bar.actor,
-                          "MouseMoveEvent",
-                          self.scroll_callback)
-
-        up_event = "MouseWheelForwardEvent"
-        down_event = "MouseWheelBackwardEvent"
-        if self.reverse_scrolling:
-            up_event, down_event = down_event, up_event  # Swap events
-
-        self.add_callback(
-            self.drop_down_menu.panel.background.actor, up_event,
-            self.scroll_callback)
-
-        self.add_callback(
-            self.drop_down_menu.panel.background.actor, down_event,
-            self.scroll_callback)
-
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
-            self.add_callback(slot.background.actor, up_event,
-                              self.scroll_callback)
-            self.add_callback(slot.background.actor, down_event,
-                              self.scroll_callback)
-            self.add_callback(slot.textblock.actor, up_event,
-                              self.scroll_callback)
-            self.add_callback(slot.textblock.actor, down_event,
-                              self.scroll_callback)
-
             slot.add_callback(
                 slot.textblock.actor, "LeftButtonPressEvent",
                 self.select_option_callback)
@@ -4538,19 +4512,6 @@ class ComboBox2D(UI):
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
-    def scroll_callback(self, i_ren, _obj, _combobox_item):
-        """ A callback to handle scroll and change the slot text colors.
-
-        Parameters
-        ----------
-        i_ren: :class:`CustomInteractorStyle`
-        obj: :class:`vtkActor`
-            The picked actor
-        _combobox_item: :class:`ComboBox2D`
-        """
-
-        i_ren.force_render()
-        i_ren.event.abort()
 
 
 class GridUI(UI):
