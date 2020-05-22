@@ -91,6 +91,8 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     Returns
     -------
+    vtk_cell : vtkCellArray
+        connectivity + offset information
 
     """
     data = np.array(data)
