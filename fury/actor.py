@@ -309,8 +309,14 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         triangles = np.ascontiguousarray(triangles, 'int64')
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0],
-                   numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        cells.SetData(
+            triangles.shape[0],
+            numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    else:
+        cells.SetCells(
+            triangles.shape[0],
+            numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
     triangle_poly_data.SetPolys(cells)
 
     clean_poly_data = vtk.vtkCleanPolyData()
@@ -998,7 +1004,10 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     points.SetData(all_xyz_vtk)
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(ncells, all_faces_vtk)
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        cells.SetData(ncells, all_faces_vtk)
+    else:
+        cells.SetCells(ncells, all_faces_vtk)
 
     if global_cm:
         if colormap is None:
@@ -1217,7 +1226,10 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     points.SetData(all_xyz_vtk)
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(ncells, all_faces_vtk)
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        cells.SetData(ncells, all_faces_vtk)
+    else:
+        cells.SetCells(ncells, all_faces_vtk)
 
     cols = np.ascontiguousarray(
         np.reshape(cols, (cols.shape[0] * cols.shape[1],
