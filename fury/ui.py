@@ -4413,6 +4413,9 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
+        self.drop_down_menu.panel.background.on_left_mouse_button_dragged =\
+            lambda i_ren, _obj, _panel2d_object: i_ren.force_render
+
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
             slot.add_callback(
