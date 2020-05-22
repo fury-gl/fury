@@ -11,7 +11,8 @@ from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
-                        repeat_sources, get_actor_from_primitive)
+                        repeat_sources, get_actor_from_primitive,
+                        numpy_to_vtk_cells)
 from fury.io import load_image
 import fury.primitive as fp
 
@@ -310,9 +311,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     cells = vtk.vtkCellArray()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
-        cells.SetData(
-            triangles.shape[0],
-            numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+        cells = numpy_to_vtk_cells(faces, is_coords=False)
     else:
         cells.SetCells(
             triangles.shape[0],
@@ -988,14 +987,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
 
-    all_faces = np.concatenate(all_faces)
-    all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
-                           all_faces))
-    ncells = len(all_faces)
-
-    all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
-    all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
-                                                          deep=True)
     if global_cm:
         all_ms = np.ascontiguousarray(
             np.concatenate(all_ms), dtype='f4')
@@ -1003,10 +994,18 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     points = vtk.vtkPoints()
     points.SetData(all_xyz_vtk)
 
+    all_faces = np.concatenate(all_faces)
     cells = vtk.vtkCellArray()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
-        cells.SetData(ncells, all_faces_vtk)
+        cells = numpy_to_vtk_cells(all_faces, is_coords=False)
     else:
+        all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
+                              all_faces))
+        ncells = len(all_faces)
+
+        all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
+        all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
+                                                              deep=True)
         cells.SetCells(ncells, all_faces_vtk)
 
     if global_cm:
@@ -1213,22 +1212,20 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
 
-    all_faces = np.concatenate(all_faces)
-    all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
-                           all_faces))
-    ncells = len(all_faces)
-
-    all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
-    all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
-                                                          deep=True)
-
     points = vtk.vtkPoints()
     points.SetData(all_xyz_vtk)
 
+    all_faces = np.concatenate(all_faces)
     cells = vtk.vtkCellArray()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
-        cells.SetData(ncells, all_faces_vtk)
+        cells = numpy_to_vtk_cells(all_faces, is_coords=False)
     else:
+        all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
+                              all_faces))
+        ncells = len(all_faces)
+        all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
+        all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
+                                                              deep=True)
         cells.SetCells(ncells, all_faces_vtk)
 
     cols = np.ascontiguousarray(

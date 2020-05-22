@@ -79,25 +79,25 @@ def numpy_to_vtk_colors(colors):
     return vtk_colors
 
 
-def numpy_to_vtk_cells(points):
+def numpy_to_vtk_cells(data, is_coords=True):
     """Convert numpy array to a vtk cell array.
 
     Parameters
     ----------
-    offsets : ndarray
-        Offsets is an array of [numCells+1] values indicating the index in the
-        Connectivity array where each cell's points start
-    connectivity : ndarray
-        The Connectivity array stores the lists of point ids for each cell.
+    data : ndarray
+        points coordinate or connectivity array (e.g triangles).
+    is_coords : ndarray
+        Select the type of array. default: True.
 
     Returns
     -------
 
     """
-    nb_cells = len(points)
+    data = np.array(data)
+    nb_cells = len(data)
 
     # Get lines_array in vtk input format
-    connectivity = []
+    connectivity = data.flatten() if not is_coords else []
     offset = [0, ]
     current_position = 0
 
@@ -105,12 +105,13 @@ def numpy_to_vtk_cells(points):
 
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
         for i in range(nb_cells):
-            current_len = len(points[i])
+            current_len = len(data[i])
             offset.append(offset[-1] + current_len)
 
-            end_position = current_position + current_len
-            connectivity += range(current_position, end_position)
-            current_position = end_position
+            if is_coords:
+                end_position = current_position + current_len
+                connectivity += range(current_position, end_position)
+                current_position = end_position
 
         connectivity = np.array(connectivity, np.intp)
         offset = np.array(offset, dtype=connectivity.dtype)
@@ -218,7 +219,6 @@ def lines_to_vtk_polydata(lines, colors=None):
 
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
-    # import ipdb; ipdb.set_trace()
     nb_points = len(points_array)
     nb_lines = len(lines)
     lines_range = range(nb_lines)
@@ -387,17 +387,17 @@ def set_polydata_triangles(polydata, triangles):
         triangles, represented as 2D ndarrays (Nx3)
 
     """
-    isize = vtk.vtkIdTypeArray().GetDataTypeSize()
-    req_dtype = np.int32 if isize == 4 else np.int64
-    vtk_triangles = np.hstack(
-        np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
-              triangles.astype(req_dtype)])
-    vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
-                                                          deep=True)
     vtk_cells = vtk.vtkCellArray()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
-        vtk_cells.SetData(len(triangles), vtk_triangles)
+        vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
     else:
+        isize = vtk.vtkIdTypeArray().GetDataTypeSize()
+        req_dtype = np.int32 if isize == 4 else np.int64
+        all_triangles = np.hstack(
+            np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
+                  triangles.astype(req_dtype)])
+        vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(all_triangles,
+                                                              deep=True)
         vtk_cells.SetCells(len(triangles), vtk_triangles)
     polydata.SetPolys(vtk_cells)
     return polydata

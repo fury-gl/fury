@@ -919,7 +919,6 @@ def test_cones_vertices_faces(interactive=False):
     npt.assert_equal(report.objects, 3)
     scene.clear()
 
-test_cones_vertices_faces()
 
 def test_geometry_actor(interactive=False):
 
