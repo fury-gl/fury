@@ -79,6 +79,63 @@ def numpy_to_vtk_colors(colors):
     return vtk_colors
 
 
+def numpy_to_vtk_cells(points):
+    """Convert numpy array to a vtk cell array.
+
+    Parameters
+    ----------
+    offsets : ndarray
+        Offsets is an array of [numCells+1] values indicating the index in the
+        Connectivity array where each cell's points start
+    connectivity : ndarray
+        The Connectivity array stores the lists of point ids for each cell.
+
+    Returns
+    -------
+
+    """
+    nb_cells = len(points)
+
+    # Get lines_array in vtk input format
+    connectivity = []
+    offset = [0, ]
+    current_position = 0
+
+    cell_array = vtk.vtkCellArray()
+
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        for i in range(nb_cells):
+            current_len = len(points[i])
+            offset.append(offset[-1] + current_len)
+
+            end_position = current_position + current_len
+            connectivity += range(current_position, end_position)
+            current_position = end_position
+
+        connectivity = np.array(connectivity, np.intp)
+        offset = np.array(offset, dtype=connectivity.dtype)
+
+        vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+        cell_array.SetData(
+            numpy_support.numpy_to_vtk(offset, deep=True,
+                                       array_type=vtk_array_type),
+            numpy_support.numpy_to_vtk(connectivity, deep=True,
+                                       array_type=vtk_array_type))
+    else:
+        for i in range(nb_cells):
+            current_len = len(points[i])
+            end_position = current_position + current_len
+            connectivity += [current_len]
+            connectivity += range(current_position, end_position)
+            current_position = end_position
+
+        connectivity = np.array(connectivity)
+        cell_array.GetData().DeepCopy(numpy_support.numpy_to_vtk(connectivity))
+
+    cell_array.SetNumberOfCells(nb_cells)
+    return cell_array
+
+
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate the input_array data at the given indices
     using trilinear interpolation.
@@ -148,44 +205,25 @@ def lines_to_vtk_polydata(lines, colors=None):
     # Get the 3d points_array
     points_array = np.vstack(lines)
 
-    nb_lines = len(lines)
-    nb_points = len(points_array)
-
-    lines_range = range(nb_lines)
-
-    # Get lines_array in vtk input format
-    lines_array = []
-    # Using np.intp (instead of int64), because of a bug in numpy:
-    # https://github.com/nipy/dipy/pull/789
-    # https://github.com/numpy/numpy/issues/4384
-    points_per_line = np.zeros([nb_lines], np.intp)
-    current_position = 0
-    for i in lines_range:
-        current_len = len(lines[i])
-        points_per_line[i] = current_len
-
-        end_position = current_position + current_len
-        lines_array += [current_len]
-        lines_array += range(current_position, end_position)
-        current_position = end_position
-
-    lines_array = np.array(lines_array)
-
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
 
     # Set Lines to vtk array format
-    vtk_lines = vtk.vtkCellArray()
-    vtk_lines.GetData().DeepCopy(numpy_support.numpy_to_vtk(lines_array))
-    vtk_lines.SetNumberOfCells(nb_lines)
+    vtk_cell_array = numpy_to_vtk_cells(lines)
 
     # Create the poly_data
     poly_data = vtk.vtkPolyData()
     poly_data.SetPoints(vtk_points)
-    poly_data.SetLines(vtk_lines)
+    poly_data.SetLines(vtk_cell_array)
 
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
+    # import ipdb; ipdb.set_trace()
+    nb_points = len(points_array)
+    nb_lines = len(lines)
+    lines_range = range(nb_lines)
+    points_per_line = [len(lines[i]) for i in lines_range]
+    points_per_line = np.array(points_per_line, np.intp)
     color_is_scalar = False
     if colors is None or colors is False:
         # set automatic rgb colors
