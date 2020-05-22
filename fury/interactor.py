@@ -406,8 +406,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 print('interactor is none')
                 print('event name is', event_name)
 
+        # Check whether the Event is predefined or not.
         if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
             if event_type not in self.event2id:
+                # If the event type was not previously defined,
+                # then create an extra user defined event.
                 self.event2id[event_type] = \
                     vtk.vtkCommand.UserEvent + len(self.event2id) + 1
 
