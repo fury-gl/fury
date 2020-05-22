@@ -261,8 +261,8 @@ def test_contour_from_roi():
             from dipy.tracking.local_tracking import LocalTracking
 
         hardi_img, gtab, labels_img = read_stanford_labels()
-        data = hardi_img.get_data()
-        labels = labels_img.get_data()
+        data = np.asanyarray(hardi_img.dataobj)
+        labels = np.asanyarray(labels_img.dataobj)
         affine = hardi_img.affine
 
         white_matter = (labels == 1) | (labels == 2)
@@ -919,6 +919,7 @@ def test_cones_vertices_faces(interactive=False):
     npt.assert_equal(report.objects, 3)
     scene.clear()
 
+test_cones_vertices_faces()
 
 def test_geometry_actor(interactive=False):
 
