@@ -1199,6 +1199,7 @@ def test_ui_file_menu_2d(interactive=False):
 
 def test_ui_combobox_2d(interactive=False):
     values = ["An Item" + str(i) for i in range(0, 5)]
+    new_values = ["An Item5", "An Item6"]
 
     combobox = ui.ComboBox2D(
         items=values, position=(400, 400), size=(300, 200))
@@ -1207,6 +1208,19 @@ def test_ui_combobox_2d(interactive=False):
     show_manager = window.ShowManager(
         size=current_size, title="ComboBox UI Example")
     show_manager.scene.add(combobox)
+
+    values.extend(new_values)
+    combobox.append_item(new_values)
+    npt.assert_equal(values, combobox.items)
+
+    values.append("An Item7")
+    combobox.append_item("An Item7")
+    npt.assert_equal(values, combobox.items)
+
+    values.append("An Item8")
+    values.append("An Item9")
+    combobox.append_item("An Item8", "An Item9")
+    npt.assert_equal(values, combobox.items)
 
     npt.assert_equal(values, combobox.items)
     npt.assert_equal((60, 60), combobox.drop_button_size)
