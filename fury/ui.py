@@ -4407,7 +4407,7 @@ class ComboBox2D(UI):
 
         self.drop_down_menu.set_visibility(False)
 
-        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=1.0)
+        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=0.0)
 
         self.panel.add_element(self.selection_box, (0.008, 0.715))
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
@@ -4511,7 +4511,6 @@ class ComboBox2D(UI):
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
-
 
 
 class GridUI(UI):
