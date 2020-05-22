@@ -1208,6 +1208,11 @@ def test_ui_combobox_2d(interactive=False):
         size=current_size, title="ComboBox UI Example")
     show_manager.scene.add(combobox)
 
+    npt.assert_equal(values, combobox.items)
+    npt.assert_equal((60, 60), combobox.drop_button_size)
+    npt.assert_equal([300, 140], combobox.drop_menu_size)
+    npt.assert_equal([300, 200], combobox.size)
+
     if interactive:
         show_manager.start()
 
