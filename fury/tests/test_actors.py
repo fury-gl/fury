@@ -315,9 +315,9 @@ def test_contour_from_label():
     # Render volumne
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
-    data[15:20, 25, 25] = 1.
-    data[25, 20:30, 25] = 2.
-    data[25, 40:50, 30:50] = 3.
+    data[5:15, 1:10, 25] = 1.
+    data[25:35, 20:30, 25] = 2.
+    data[40:49, 40:50, 30:50] = 3.
 
     color = np.array(
         [[1, 0, 0, 0.6],
@@ -354,7 +354,7 @@ def test_contour_from_label():
     # window.show(scene2)
 
     arr = window.snapshot(scene, 'test_surface.png', offscreen=True,
-                          order_transparent=True)
+                          order_transparent=False)
     arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True,
                            order_transparent=True)
 
@@ -1223,7 +1223,7 @@ def test_matplotlib_figure():
     plt.plot(names, values)
     plt.suptitle('Categorical Plotting')
 
-    arr = matplotlib_figure_to_numpy(fig, dpi=300, transparent=True)
+    arr = matplotlib_figure_to_numpy(fig, dpi=500, transparent=True)
     fig_actor = actor.figure(arr, 'cubic')
     fig_actor2 = actor.figure(arr, 'cubic')
     scene = window.Scene()
@@ -1235,7 +1235,8 @@ def test_matplotlib_figure():
     scene.add(fig_actor2)
     ax_actor.SetPosition(0, 500, -800)
     fig_actor2.SetPosition(500, 800, -400)
-    display = window.snapshot(scene, order_transparent=True)
+    display = window.snapshot(scene, 'test_mpl.png', order_transparent=False,
+                              offscreen=True)
     res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
                                   colors=[(31, 119, 180), (255, 0, 0)],
                                   find_objects=False)
