@@ -401,7 +401,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             # Update event information.
             interactor_ = self.GetInteractor()
             if interactor_ is not None:
-                # self.event.update(event_name, interactor_)
                 callback(self, prop, *args)
             else:
                 print('interactor is none')
