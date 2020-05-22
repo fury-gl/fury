@@ -126,10 +126,10 @@ def numpy_to_vtk_cells(data, is_coords=True):
                                        array_type=vtk_array_type))
     else:
         for i in range(nb_cells):
-            current_len = len(points[i])
+            current_len = len(data[i])
             end_position = current_position + current_len
             connectivity += [current_len]
-            connectivity += range(current_position, end_position)
+            connectivity += list(range(current_position, end_position))
             current_position = end_position
 
         connectivity = np.array(connectivity)

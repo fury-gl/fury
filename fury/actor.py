@@ -1000,7 +1000,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         cells = numpy_to_vtk_cells(all_faces, is_coords=False)
     else:
         all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
-                              all_faces))
+                               all_faces))
         ncells = len(all_faces)
 
         all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
