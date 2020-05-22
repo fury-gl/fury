@@ -310,7 +310,7 @@ def test_contour_from_roi():
         # window.show(r2)
 
 
-def test_contour_from_label():
+def test_contour_from_label(interactive=False):
 
     # Render volumne
     scene = window.Scene()
@@ -319,17 +319,17 @@ def test_contour_from_label():
     data[25:35, 20:30, 25] = 2.
     data[40:49, 40:50, 30:50] = 3.
 
-    color = np.array(
-        [[1, 0, 0, 0.6],
-         [0, 1, 0, 0.5],
-         [0, 0, 1, 1.0]])
+    color = np.array([[255, 0, 0, 0.6],
+                      [0, 255, 0, 0.5],
+                      [0, 0, 255, 1.0]])
 
     surface = actor.contour_from_label(data, color=color)
 
     scene.add(surface)
     scene.reset_camera()
     scene.reset_clipping_range()
-    # window.show(scene)
+    if interactive:
+        window.show(scene)
 
     # Test Errors
     with npt.assert_raises(ValueError):
@@ -342,16 +342,16 @@ def test_contour_from_label():
     data2[20:30, 25, 25] = 1.
     data2[25, 20:30, 25] = 2.
 
-    color2 = np.array(
-        [[1, 0, 1],
-         [1, 1, 0]])
+    color2 = np.array([[255, 0, 255],
+                       [255, 255, 0]])
 
     surface2 = actor.contour_from_label(data2, color=color2)
 
     scene2.add(surface2)
     scene2.reset_camera()
     scene2.reset_clipping_range()
-    # window.show(scene2)
+    if interactive:
+        window.show(scene2)
 
     arr = window.snapshot(scene, 'test_surface.png', offscreen=True,
                           order_transparent=False)
