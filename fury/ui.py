@@ -4338,7 +4338,7 @@ class ComboBox2D(UI):
         Container for item list.
     """
 
-    def __init__(self, items=[], position=(0, 0), size=(100, 300),
+    def __init__(self, items=[], position=(0, 0), size=(300, 200),
                  placeholder="Choose selection...",
                  multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
