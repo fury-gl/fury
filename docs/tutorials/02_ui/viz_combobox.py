@@ -82,6 +82,7 @@ color_combobox = ui.ComboBox2D(items=list(colors.keys()), size=(300, 200))
 #
 # Now we create callbacks for setting the chosen actor and color.
 
+
 def change_actor(combobox):
 
     global chosen_actor, chosen_color
@@ -96,6 +97,7 @@ def change_actor(combobox):
     chosen_actor.SetVisibility(True)
     chosen_actor.GetProperty().SetColor(*chosen_color)
 
+
 def change_color(combobox):
 
     global chosen_actor, chosen_color
@@ -103,6 +105,7 @@ def change_color(combobox):
     if chosen_actor is not None:
         chosen_color = colors[combobox.text]
         chosen_actor.GetProperty().SetColor(*chosen_color)
+
 
 actor_combobox.on_change = change_actor
 color_combobox.on_change = change_color
