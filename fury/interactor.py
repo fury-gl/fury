@@ -169,17 +169,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 != button + "ButtonPressEvent":
             return False
 
-        # if self.history[before_last_event]["prop"] \
-        #       != self.history[last_event]["prop"]:
-            # return False
-
-        # dx = self.history[before_last_event]["pos"][0]\
-        #  - self.history[last_event]["pos"][0]
-        # dy = self.history[before_last_event]["pos"][1]\
-        #  - self.history[last_event]["pos"][1]
-        # if (dx**2 + dy**2) > self.click_radius_square:
-            # return False
-
         return True
 
     def _button_double_clicked(self, button):
