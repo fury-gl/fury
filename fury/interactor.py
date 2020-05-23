@@ -88,7 +88,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.active_props = set()
 
         self.history = deque(maxlen=10)  # Events history.
-        # self.click_radius_square = 5 ** 2  # In pixel.
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
