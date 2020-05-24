@@ -57,27 +57,24 @@ mapper.AddShaderReplacement(
 
 	uniform mat4 MCVCMatrix;
 
-
-
     float sdTorus(vec3 p, vec2 t)
     {
     	vec2 q = vec2(length(p.xz) - t.x, p.y);
     	return length(q) - t.y;
     }
 
-    float map( in vec3 pos)
+    float map( in vec3 position)
     {
-    	float d1 = sdTorus(pos, vec2(0.5, 0.1));
-    	//float d1 = sdCone(pos, vec2(0.1,0.1), 0.5);
+    	float d1 = sdTorus(position, vec2(0.4, 0.1));
     	return d1;
     }
 
-    vec3 calculateNormal( in vec3 posi )
+    vec3 calculateNormal( in vec3 position )
     {
-    	vec2 e = vec2(0.0001, 0.0);
-    	return normalize( vec3( map(posi + e.xyy) - map(posi - e.xyy),
-    							map(posi + e.yxy) - map(posi - e.yxy),
-    							map(posi + e.yyx) - map(posi - e.yyx)
+    	vec2 e = vec2(0.001, 0.0);
+    	return normalize( vec3( map(position + e.xyy) - map(position - e.xyy),
+    							map(position + e.yxy) - map(position - e.yxy),
+    							map(position + e.yyx) - map(position - e.yyx)
     						)
     					);
 
@@ -86,13 +83,13 @@ mapper.AddShaderReplacement(
     float castRay(in vec3 ro, vec3 rd)
     {
     	float t = 0.0;
-    	for(int i=0; i<300; i++){
+    	for(int i=0; i<400; i++){
 
-    		vec3 posi = ro + t *rd;
-    		vec3 norm = calculateNormal(posi);
+    		vec3 position = ro + t * rd;
+    		vec3 norm = calculateNormal(position);
 
-    		float  h = map(posi);
-    		if(h<0.0001) break;
+    		float  h = map(position);
+    		if(h<0.001) break;
 
     		t += h;
     		if ( t > 20.0) break;
@@ -112,8 +109,7 @@ mapper.AddShaderReplacement(
 	//VTK::Light::Impl
 
 	vec3 point  = centeredVertexMC;
-	//TODO: Create a camera system
-
+	
 	vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]); // camera right
     vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]); //  camera up
     vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]); // camera direction
@@ -125,6 +121,7 @@ mapper.AddShaderReplacement(
     vec3 rd = normalize(point - ro.xyz);
 
     float t = castRay(ro.xyz, rd);
+    
     if(t < 20.0)
     {
     	vec3 pos = ro.xyz + t * rd;
