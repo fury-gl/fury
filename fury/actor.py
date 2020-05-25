@@ -412,7 +412,6 @@ def contour_from_roi(data, affine=None,
     skin_extractor.SetInputData(image_resliced.GetOutput())
 
     skin_extractor.SetValue(0, 1)
-
     skin_normals = vtk.vtkPolyDataNormals()
     skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
     skin_normals.SetFeatureAngle(60.0)
@@ -424,9 +423,8 @@ def contour_from_roi(data, affine=None,
     skin_actor = vtk.vtkActor()
 
     skin_actor.SetMapper(skin_mapper)
-    skin_actor.GetProperty().SetOpacity(opacity)
-
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
+    skin_actor.GetProperty().SetOpacity(opacity)
 
     return skin_actor
 
@@ -473,11 +471,11 @@ def contour_from_label(data, affine=None, color=None):
     else:
         opacity = np.ones((nb_surfaces, 1)).astype(np.float)
 
-    for roi_id in unique_roi_id:
+    for i, roi_id in enumerate(unique_roi_id):
         roi_data = np.isin(data, roi_id).astype(np.int)
         roi_surface = contour_from_roi(roi_data, affine,
-                                       color=color[int(roi_id)-1],
-                                       opacity=opacity[int(roi_id)-1])
+                                       color=color[i],
+                                       opacity=opacity[i])
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces
