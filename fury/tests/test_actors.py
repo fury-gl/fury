@@ -10,6 +10,7 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
+from fury.decorators import skip_osx
 from fury.primitive import prim_sphere, prim_square, repeat_primitive
 from fury.utils import shallow_copy, rotate, get_actor_from_primitive
 from fury.testing import assert_greater, assert_greater_equal
@@ -310,6 +311,12 @@ def test_contour_from_roi():
         # window.show(r2)
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
+                                     "Travis. It works on a local machine"
+                                     " with 3 different version of VTK. There"
+                                     " is 2 problem to check: Travis macOS vs"
+                                     " Azure macOS and an issue with"
+                                     " vtkAssembly + actor opacity.")
 def test_contour_from_label(interactive=False):
 
     # Render volumne
