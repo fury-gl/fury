@@ -4330,11 +4330,11 @@ class ComboBox2D(UI):
 
     Attributes
     ----------
-    selectionBox        : :class: 'TextBox2D'
+    selection_box        : :class: 'TextBox2D'
         Display selection and placeholder text.
-    dropDownButton : :class: 'Button2D'
+    drop_down_button : :class: 'Button2D'
         Button to show or hide menu.
-    dropDownMenu   : :class: 'ListBox2D'
+    drop_down_menu   : :class: 'ListBox2D'
         Container for item list.
     """
 
@@ -4382,9 +4382,8 @@ class ComboBox2D(UI):
             ('left', read_viz_icons(fname='circle-left.png')),
             ('down', read_viz_icons(fname='circle-down.png'))]
 
-        self.panel_position = position
-
         super(ComboBox2D, self).__init__()
+        self.panel.position = position
 
     def _setup(self):
         """ Setup this UI component.
@@ -4407,7 +4406,7 @@ class ComboBox2D(UI):
 
         self.drop_down_menu.set_visibility(False)
 
-        self.panel = Panel2D(self.panel_size, self.panel_position, opacity=0.0)
+        self.panel = Panel2D(self.panel_size, opacity=0.0)
 
         self.panel.add_element(self.selection_box, (0.008, 0.715))
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
@@ -4463,11 +4462,11 @@ class ComboBox2D(UI):
         return self.panel.size
 
     @property
-    def text(self):
+    def selected_text(self):
         return self._selection
 
     @property
-    def text_index(self):
+    def selected_text_index(self):
         return self._selection_ID
 
     def append_item(self, *items):
