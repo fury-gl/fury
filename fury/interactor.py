@@ -176,20 +176,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
                 self._button_clicked(button, -3, -4)):
             return False
 
-        # if self.history[-3]["prop"] != self.history[-1]["prop"]:
-            # return False
-
-        # dx = self.history[-3]["pos"][0] - self.history[-1]["pos"][0]
-        # dy = self.history[-3]["pos"][1] - self.history[-1]["pos"][1]
-        # if (dx**2 + dy**2) > self.click_radius_square:
-            # return False
-
         return True
 
     def on_left_button_down(self, _obj, evt):
         self.left_button_down = True
         prop = self.get_prop_at_event_position()
-        # self.history[-1]["prop"] = prop
         if prop is not None:
             self.selected_props["left_button"].add(prop)
             self.propagate_event(evt, prop)
@@ -204,7 +195,6 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.trackball_camera.OnLeftButtonUp()
 
         prop = self.get_prop_at_event_position()
-        # self.history[-1]["prop"] = prop
 
         if self._button_double_clicked("Left"):
             self.propagate_event("LeftButtonDoubleClickEvent", prop)
