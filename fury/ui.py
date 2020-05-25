@@ -88,13 +88,16 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_left_mouse_button_released = lambda i_ren, obj, element: None
         self.on_left_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_left_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_right_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_right_mouse_button_released = lambda i_ren, obj, element: None
         self.on_right_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_right_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_right_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_released = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
 
