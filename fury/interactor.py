@@ -118,7 +118,8 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         evt = self.event2id.get(evt, evt)
         for prop in props:
             # Propagate event to the prop.
-            prop.InvokeEvent(evt)
+            if prop is not None:
+                prop.InvokeEvent(evt)
 
             if self.event.abort_flag:
                 return
