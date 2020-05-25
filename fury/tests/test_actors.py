@@ -315,12 +315,12 @@ def test_contour_from_label(interactive=False):
     # Render volumne
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
-    data[5:15, 1:10, 25] = 1.
-    data[25:35, 20:30, 25] = 2.
-    data[40:49, 40:50, 30:50] = 3.
+    data[5:15, 1:10, 10:50] = 1.
+    data[25:35, 1:10, 25] = 2.
+    # data[40:49, 1:10, 25] = 3.
 
     color = np.array([[255, 0, 0, 0.6],
-                      [0, 255, 0, 0.5],
+                    #   [0, 255, 0, 0.5],
                       [0, 0, 255, 1.0]])
 
     surface = actor.contour_from_label(data, color=color)
@@ -329,7 +329,7 @@ def test_contour_from_label(interactive=False):
     scene.reset_camera()
     scene.reset_clipping_range()
     if interactive:
-        window.show(scene)
+        window.show(scene, order_transparent=True)
 
     # Test Errors
     with npt.assert_raises(ValueError):
@@ -351,21 +351,27 @@ def test_contour_from_label(interactive=False):
     scene2.reset_camera()
     scene2.reset_clipping_range()
     if interactive:
-        window.show(scene2)
+        window.show(scene2, order_transparent=False)
 
     arr = window.snapshot(scene, 'test_surface.png', offscreen=True,
-                          order_transparent=False)
+                          order_transparent=True)
     arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True,
                            order_transparent=True)
 
-    report = window.analyze_snapshot(arr, find_objects=True)
+    report = window.analyze_snapshot(arr, colors=[(255, 0, 0),
+                                                  (0, 255, 0),
+                                                  (0, 0, 255)],
+                                     find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
 
+    print(report.colors_found, report.objects)
+    import ipdb; ipdb.set_trace()
     npt.assert_equal(report.objects, 3)
     npt.assert_equal(report2.objects, 1)
 
     actor.contour_from_label(data)
 
+test_contour_from_label(True)
 
 def test_streamtube_and_line_actors():
     scene = window.Scene()
