@@ -1694,6 +1694,15 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
+    src = vtk.vtkArrowSource() if faces is None else None
+
+    if src is not None:
+        src.SetTipResolution(resolution)
+        src.SetShaftResolution(resolution)
+        src.SetTipLength(tip_length)
+        src.SetTipRadius(tip_radius)
+        src.SetShaftRadius(shaft_radius)
+
     actor = repeat_sources(centers=centers, directions=directions,
                            colors=colors, active_scalars=heights, source=src,
                            vertices=vertices, faces=faces)
@@ -1750,8 +1759,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def octagonalprism(centers, directions, colors, heights=1,
-         vertices=None, faces=None):
+def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -1762,13 +1770,8 @@ def octagonalprism(centers, directions, colors, heights=1,
         The orientation vector of the octagonal prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    heights : ndarray, shape (N)
-        The height of the octagonal prism.
-    vertices : ndarray, shape (N, 3)
-        The point cloud defining the octagonal prism.
-    faces : ndarray, shape (M, 3)
-        If faces is None then an octagonal prism is created based on theta and phi angles
-        If not then an octagonal prism is created with the provided vertices and faces.
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Octagonal prism size on each direction (x, y), default(1)
 
     Returns
     -------
@@ -1786,15 +1789,16 @@ def octagonalprism(centers, directions, colors, heights=1,
     >>> # window.show(scene)
 
     """
-    actor = repeat_sources(centers=centers, colors=colors,
-                           directions=directions,
-                           active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
+    verts, faces = fp.prim_octagonalprism()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
 
-    return actor
+    big_verts, big_faces, big_colors, _ = res
+    oct_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return oct_actor
 
-def frustum(centers, directions, colors, heights=1,
-         vertices=None, faces=None):
+
+def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
     """Visualize one or many frustum square pyramids with different features.
 
     Parameters
@@ -1805,14 +1809,8 @@ def frustum(centers, directions, colors, heights=1,
         The orientation vector of the frustum pyramid.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    heights : ndarray, shape (N)
-        The height of the frustum pyramid.
-    vertices : ndarray, shape (N, 3)
-        The point cloud defining the frustum pyramid.
-    faces : ndarray, shape (M, 3)
-        If faces is None then a frustum pyramid is created based on theta and phi angles
-        If not then a frustum pyramid is created with the provided vertices and faces.
-
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Frustum pyramid size on each direction (x, y), default(1)
     Returns
     -------
     vtkActor
@@ -1829,12 +1827,13 @@ def frustum(centers, directions, colors, heights=1,
     >>> # window.show(scene)
 
     """
-    actor = repeat_sources(centers=centers, colors=colors,
-                           directions=directions,
-                           active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
+    verts, faces = fp.prim_frustum()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
 
-    return actor
+    big_verts, big_faces, big_colors, _ = res
+    frustum_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return frustum_actor
 
 
 def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
