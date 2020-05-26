@@ -1799,7 +1799,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1,
 
 
 def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
-    """Visualize one or many frustum square pyramids with different features.
+    """Visualize one or many frustum pyramids with different features.
 
     Parameters
     ----------
