@@ -1210,7 +1210,7 @@ def test_ui_combobox_2d(interactive=False):
     show_manager.scene.add(combobox)
 
     values.extend(new_values)
-    combobox.append_item(new_values)
+    combobox.append_item(*new_values)
     npt.assert_equal(values, combobox.items)
 
     values.append("An Item7")
