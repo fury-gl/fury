@@ -4365,7 +4365,7 @@ class ComboBox2D(UI):
             Distance between listbox's items in pixels.
         """
 
-        self.items = items
+        self.items = items.copy()
         self.font_size = font_size
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
