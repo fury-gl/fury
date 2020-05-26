@@ -4482,6 +4482,10 @@ class ComboBox2D(UI):
             else:
                 raise TypeError("Invalid item instance {}".format(type(item)))
 
+        self.drop_down_menu.update_scrollbar()
+        if not self._menu_visibility:
+            self.drop_down_menu.scroll_bar.set_visibility(False)
+
     def select_option_callback(self, i_ren, _obj, listboxitem):
         """ Callback to select the appropriate option
 
