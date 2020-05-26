@@ -4480,7 +4480,7 @@ class ComboBox2D(UI):
             elif isinstance(item, (str, Number)):
                 self.items.append(str(item))
             else:
-                raise ValueError("Invalid Argument " + str(type(item)))
+                raise TypeError("Invalid item instance {}".format(type(item)))
 
     def select_option_callback(self, i_ren, _obj, listboxitem):
         """ Callback to select the appropriate option

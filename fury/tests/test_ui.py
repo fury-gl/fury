@@ -1222,10 +1222,13 @@ def test_ui_combobox_2d(interactive=False):
     combobox.append_item("An Item8", "An Item9")
     npt.assert_equal(values, combobox.items)
 
-    complex_list = [[0], [1, [[2, 3], 4], 5], [6]]
+    complex_list = [[0], (1, [[2, 3], 4], 5)]
     combobox.append_item(*complex_list)
-    values.extend([str(i) for i in range(7)])
+    values.extend([str(i) for i in range(6)])
     npt.assert_equal(values, combobox.items)
+
+    invalid_item = {"Hello": 1, "World": 2}
+    npt.assert_raises(TypeError, combobox.append_item, invalid_item)
 
     npt.assert_equal(values, combobox.items)
     npt.assert_equal((60, 60), combobox.drop_button_size)
