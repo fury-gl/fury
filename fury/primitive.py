@@ -587,37 +587,37 @@ def prim_octagonalprism():
     triangles: ndarray
         triangles that compose our prism
     """
-    
-    vertices = np.array([[-1, -(1+math.sqrt(2)), -1], 
+
+    vertices = np.array([[-1, -(1+math.sqrt(2)), -1],
                          [1, -(1+math.sqrt(2)), -1],
-                         [1, (1+math.sqrt(2)), -1], 
-                         [-1, (1+math.sqrt(2)), -1], 
-                         [-(1+math.sqrt(2)), -1, -1], 
-                         [(1+math.sqrt(2)), -1, -1], 
-                         [(1+math.sqrt(2)), 1, -1], 
-                         [-(1+math.sqrt(2)), 1, -1], 
-                         [-1, -(1+math.sqrt(2)), 1], 
-                         [1, -(1+math.sqrt(2)), 1], 
-                         [1, (1+math.sqrt(2)), 1], 
-                         [-1, (1+math.sqrt(2)), 1], 
+                         [1, (1+math.sqrt(2)), -1],
+                         [-1, (1+math.sqrt(2)), -1],
+                         [-(1+math.sqrt(2)), -1, -1],
+                         [(1+math.sqrt(2)), -1, -1],
+                         [(1+math.sqrt(2)), 1, -1],
+                         [-(1+math.sqrt(2)), 1, -1],
+                         [-1, -(1+math.sqrt(2)), 1],
+                         [1, -(1+math.sqrt(2)), 1],
+                         [1, (1+math.sqrt(2)), 1],
+                         [-1, (1+math.sqrt(2)), 1],
                          [-(1+math.sqrt(2)), -1, 1],
-                         [(1+math.sqrt(2)), -1, 1], 
+                         [(1+math.sqrt(2)), -1, 1],
                          [(1+math.sqrt(2)), 1, 1],
-                         [-(1+math.sqrt(2)), 1, 1]]) 
-    triangles = np.array([[0, 8, 9], 
-                          [9, 1, 0], 
-                          [5, 13, 9], 
-                          [9, 1, 5], 
-                          [3, 11, 10], 
-                          [10, 2, 3], 
-                          [2, 10, 14], 
-                          [14, 6, 2], 
-                          [5, 13, 14], 
-                          [14, 6, 5], 
+                         [-(1+math.sqrt(2)), 1, 1]])
+    triangles = np.array([[0, 8, 9],
+                          [9, 1, 0],
+                          [5, 13, 9],
+                          [9, 1, 5],
+                          [3, 11, 10],
+                          [10, 2, 3],
+                          [2, 10, 14],
+                          [14, 6, 2],
+                          [5, 13, 14],
+                          [14, 6, 5],
                           [7, 15, 11],
-                          [11, 3, 7], 
-                          [7, 15, 12], 
-                          [12, 4, 7], 
+                          [11, 3, 7],
+                          [7, 15, 12],
+                          [12, 4, 7],
                           [0, 8, 12],
                           [12, 4, 0],
                           [0, 3, 4],
@@ -632,6 +632,7 @@ def prim_octagonalprism():
                           [9, 10, 11],
                           [10, 13, 14],
                           [13, 10, 9]], dtype= 'u8')
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
 
 def prim_frustum():
@@ -664,5 +665,5 @@ def prim_frustum():
                          [1, 6, 5],
                          [5, 0, 1],
                          [0, 5, 4]], dtype='u8')
-
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
