@@ -314,8 +314,8 @@ def test_contour_from_roi():
 @pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
                                      "Travis. It works on a local machine"
                                      " with 3 different version of VTK. There"
-                                     " is 2 problem to check: Travis macOS vs"
-                                     " Azure macOS and an issue with"
+                                     " are 2 problems to check: Travis macOS"
+                                     " vs Azure macOS and an issue with"
                                      " vtkAssembly + actor opacity.")
 def test_contour_from_label(interactive=False):
 
