@@ -10,14 +10,14 @@ from fury import window, actor, utils, primitive, io
 from fury.data.fetcher import read_viz_textures, fetch_viz_textures
 
 ##############################################################################
-# Create a a scene to start.
+# Create a scene to start.
 
 scene = window.Scene()
 
 ##############################################################################
 # Load an image (png, bmp, jpeg or jpg) using ``io.prim_sphere``. In this
 # example, we will use ``read_viz_textures`` to access an image of the
-# Earth's surface from the fury github after using ''fetch_viz_textures()''
+# Earth's surface from the fury Github after using ''fetch_viz_textures()''
 # to download the available textures.
 
 fetch_viz_textures()
@@ -33,8 +33,10 @@ image = io.load_image(filename)
 scene.add(actor.texture_on_sphere(image))
 
 ##############################################################################
-# Lastly, record the scene. If you want to manipulate your new sphere with a
-# texture, use ``window.show`` as commented out.
+# Lastly, record the scene, or set interactive to True if you would like to
+# manipulate your new sphere.
 
-# window.show(scene, size=(600, 600), reset_camera=False)
+interactive = False
+if interactive:
+    window.show(scene, size=(600, 600), reset_camera=False)
 window.record(scene, size=(900, 768), out_path="viz_texture.png")
