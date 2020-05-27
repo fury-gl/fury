@@ -4375,6 +4375,8 @@ class ComboBox2D(UI):
         self._selection = placeholder
         self._menu_visibility = False
         self._selection_ID = None
+
+        # Define subcomponent sizes.
         self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
         self.drop_menu_size = (size[0], int(0.7*size[1]))
         self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
@@ -4413,8 +4415,13 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
-        self.drop_down_menu.panel.background.on_left_mouse_button_dragged =\
-            lambda i_ren, _obj, _panel2d_object: i_ren.force_render
+        self.drop_down_button.on_left_mouse_button_dragged = self.left_button_dragged
+        self.drop_down_menu.panel.background.on_left_mouse_button_dragged = self.left_button_dragged
+        self.selection_box.on_left_mouse_button_dragged = self.left_button_dragged
+
+        self.drop_down_button.on_left_mouse_button_pressed = self.left_button_pressed
+        self.drop_down_menu.panel.background.on_left_mouse_button_pressed = self.left_button_pressed
+        self.selection_box.on_left_mouse_button_pressed = self.left_button_pressed
 
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
@@ -4530,6 +4537,18 @@ class ComboBox2D(UI):
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
 
 
 class GridUI(UI):
