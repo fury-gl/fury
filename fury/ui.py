@@ -4341,8 +4341,7 @@ class ComboBox2D(UI):
 
     def __init__(self, items=[], position=(0, 0), size=(300, 200),
                  placeholder="Choose selection...", draggable=True,
-                 multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4):
+                 reverse_scrolling=False, font_size=20, line_spacing=1.4):
         """
 
         Parameters
@@ -4358,8 +4357,6 @@ class ComboBox2D(UI):
             Holds the default text to be displayed.
         draggable: {True, False}
             Whether the UI element is draggable or not.
-        multiselection: {True, False}
-            Whether multiple values can be selected at once.
         reverse_scrolling: {True, False}
             If True, scrolling up will move the list of files down.
         font_size: int
@@ -4370,7 +4367,6 @@ class ComboBox2D(UI):
 
         self.items = items.copy()
         self.font_size = font_size
-        self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
         self.panel_size = size
@@ -4406,7 +4402,7 @@ class ComboBox2D(UI):
             icon_fnames=self._icon_files, size=self.drop_button_size)
 
         self.drop_down_menu = ListBox2D(
-            values=self.items, multiselection=self.multiselection,
+            values=self.items, multiselection=False,
             font_size=self.font_size, line_spacing=self.line_spacing,
             reverse_scrolling=self.reverse_scrolling, size=self.drop_menu_size)
 
