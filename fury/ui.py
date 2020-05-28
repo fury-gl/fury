@@ -4340,7 +4340,7 @@ class ComboBox2D(UI):
     """
 
     def __init__(self, items=[], position=(0, 0), size=(300, 200),
-                 placeholder="Choose selection...",
+                 placeholder="Choose selection...", draggable=True,
                  multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
         """
@@ -4356,6 +4356,8 @@ class ComboBox2D(UI):
             Width and height in pixels of this UI component.
         placeholder : str
             Holds the default text to be displayed.
+        draggable: {True, False}
+            Whether the UI element is draggable or not.
         multiselection: {True, False}
             Whether multiple values can be selected at once.
         reverse_scrolling: {True, False}
@@ -4375,6 +4377,7 @@ class ComboBox2D(UI):
         self._selection = placeholder
         self._menu_visibility = False
         self._selection_ID = None
+        self.draggable = draggable
 
         # Define subcomponent sizes.
         self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
@@ -4415,19 +4418,25 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
-        self.drop_down_button.on_left_mouse_button_dragged =\
-            self.left_button_dragged
-        self.drop_down_menu.panel.background.on_left_mouse_button_dragged =\
-            self.left_button_dragged
-        self.selection_box.on_left_mouse_button_dragged =\
-            self.left_button_dragged
+        if self.draggable:
+            self.drop_down_button.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
+                = self.left_button_dragged
+            self.selection_box.on_left_mouse_button_dragged =\
+                self.left_button_dragged
 
-        self.drop_down_button.on_left_mouse_button_pressed =\
-            self.left_button_pressed
-        self.drop_down_menu.panel.background.on_left_mouse_button_pressed =\
-            self.left_button_pressed
-        self.selection_box.on_left_mouse_button_pressed =\
-            self.left_button_pressed
+            self.drop_down_button.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.drop_down_menu.panel.background.on_left_mouse_button_pressed\
+                = self.left_button_pressed
+            self.selection_box.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+        else:
+            self.panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
+                = lambda i_ren, _obj, _comp: i_ren.force_render
 
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
