@@ -1082,10 +1082,11 @@ class TextBlock2D(UI):
         Adds text shadow.
     """
 
-    def __init__(self, text="Text Block", font_size=18, font_family='Arial',
+    def __init__(self, text="Text Block", font_size=0, font_family='Arial',
                  justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False,
-                 color=(1, 1, 1), bg_color=None, position=(0, 0)):
+                 bold=False, italic=False, shadow=False, border=False,
+                 color=(1, 1, 1), bg_color=None, bbox_size=(100, 100),
+                 position=(0, 0)):
         """
         Parameters
         ----------
@@ -1111,7 +1112,13 @@ class TextBlock2D(UI):
             Makes text italicised.
         shadow : bool
             Adds text shadow.
+        border : bool
+            show bounding box.
+        bbox_size : (int, int)
+            width & height of bounding box
         """
+        self.bbox_size = bbox_size
+        self.border = border
         super(TextBlock2D, self).__init__(position=position)
         self.color = color
         self.background_color = bg_color
@@ -1126,6 +1133,32 @@ class TextBlock2D(UI):
 
     def _setup(self):
         self.actor = vtk.vtkTextActor()
+
+        text_representation = vtk.vtkTextRepresentation()
+        # Set Coordinate systems for:
+        # PositionCoordinate = bottom-left corner.
+        # PositionCoordinate2 = top-right corner.
+        text_representation.GetPositionCoordinate().SetCoordinateSystemToDisplay()
+        text_representation.GetPosition2Coordinate().SetCoordinateSystemToDisplay()
+
+        # Set coordinates.
+        text_representation.GetPositionCoordinate().SetValue(*self.position)
+        text_representation.GetPosition2Coordinate().SetValue(*self.bbox_size)
+
+        if self.border:
+            text_representation.SetShowBorderToOn()
+        else:
+            text_representation.SetShowBorderToOff()
+
+        text_widget = vtk.vtkTextWidget()
+        text_widget.SetRepresentation(text_representation)
+        text_widget.SetTextActor(self.actor)
+        text_widget.SelectableOff()
+        text_widget.ResizableOff()
+        text_widget.On()
+
+        self.actor = text_widget.GetTextActor()
+
         self._background = None  # For VTK < 7
         self.handle_events(self.actor)
 
