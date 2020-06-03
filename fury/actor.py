@@ -1759,7 +1759,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
+def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+scale=(1, 1, 1)):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
