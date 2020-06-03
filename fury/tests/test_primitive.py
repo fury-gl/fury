@@ -35,8 +35,9 @@ def test_vertices_primitives_icosahedron():
     npt.assert_equal(vertices.min(), -phi)
     npt.assert_equal(vertices.max(), phi)
 
+
 def test_vertices_primitives_octagonalprism():
-    #Testing the default vertices of the primitive octagonal prism.
+    # Testing the default vertices of the primitive octagonal prism.
     vertices, _ = fp.prim_octagonalprism()
     shape = (16, 3)
     npt.assert_equal(vertices.shape, shape)
@@ -46,7 +47,7 @@ def test_vertices_primitives_octagonalprism():
 
 
 def test_vertices_primitives_frsutum():
-    #Testing the default vertices of the primitive frustum sqaure pyramid.
+    # Testing the default vertices of the primitive frustum sqaure pyramid.
     vertices, _ = fp.prim_frustum()
     shape = (8, 3)
     npt.assert_equal(vertices.shape, shape)
@@ -142,3 +143,4 @@ def test_repeat_primitive_function():
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
 
+test_vertices_primitives_octagonalprism()
