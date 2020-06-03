@@ -42,8 +42,8 @@ def test_vertices_primitives_octagonalprism():
     shape = (16, 3)
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
-    npt.assert_equal(vertices.min(), -1)
-    npt.assert_equal(vertices.max(), 1)
+    npt.assert_equal(vertices.min(), -(1+float('{:.7f}'.format(math.sqrt(2)))))
+    npt.assert_equal(vertices.max(), (1+float('{:.7f}'.format(math.sqrt(2)))))
 
 
 def test_vertices_primitives_frsutum():
@@ -142,5 +142,3 @@ def test_repeat_primitive_function():
     # big_verts, big_faces, big_colors, big_centers = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
-
-test_vertices_primitives_octagonalprism()
