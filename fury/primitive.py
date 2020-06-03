@@ -576,7 +576,6 @@ def prim_star(dim=2):
                               [11, 1, 2]], dtype='i8')
     return vert, triangles
 
-
 def prim_octagonalprism():
     """Return vertices and triangle for an octagonal prism.
 
@@ -587,23 +586,26 @@ def prim_octagonalprism():
     triangles: ndarray
         triangles that compose our prism
     """
+    # Local variable to represent the square root of two rounded
+    # to 7 decimal places
+    two = float('{:.7f}'.format(math.sqrt(2)))
 
-    vertices = np.array([[-1, -(1+math.sqrt(2)), -1],
-                         [1, -(1+math.sqrt(2)), -1],
-                         [1, (1+math.sqrt(2)), -1],
-                         [-1, (1+math.sqrt(2)), -1],
-                         [-(1+math.sqrt(2)), -1, -1],
-                         [(1+math.sqrt(2)), -1, -1],
-                         [(1+math.sqrt(2)), 1, -1],
-                         [-(1+math.sqrt(2)), 1, -1],
-                         [-1, -(1+math.sqrt(2)), 1],
-                         [1, -(1+math.sqrt(2)), 1],
-                         [1, (1+math.sqrt(2)), 1],
-                         [-1, (1+math.sqrt(2)), 1],
-                         [-(1+math.sqrt(2)), -1, 1],
-                         [(1+math.sqrt(2)), -1, 1],
-                         [(1+math.sqrt(2)), 1, 1],
-                         [-(1+math.sqrt(2)), 1, 1]])
+    vertices = np.array([[-1, -(1+two), -1],
+                         [1, -(1+two), -1],
+                         [1, (1+two), -1],
+                         [-1, (1+two), -1],
+                         [-(1+two), -1, -1],
+                         [(1+two), -1, -1],
+                         [(1+two), 1, -1],
+                         [-(1+two), 1, -1],
+                         [-1, -(1+two), 1],
+                         [1, -(1+two), 1],
+                         [1, (1+two), 1],
+                         [-1, (1+two), 1],
+                         [-(1+two), -1, 1],
+                         [(1+two), -1, 1],
+                         [(1+two), 1, 1],
+                         [-(1+two), 1, 1]])
     triangles = np.array([[0, 8, 9],
                           [9, 1, 0],
                           [5, 13, 9],
