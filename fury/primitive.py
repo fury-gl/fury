@@ -631,9 +631,10 @@ def prim_octagonalprism():
                           [8, 11, 9],
                           [9, 10, 11],
                           [10, 13, 14],
-                          [13, 10, 9]], dtype= 'u8')
+                          [13, 10, 9]], dtype='u8')
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
+
 
 def prim_frustum():
     """Return vertices and triangle for a square frustum prism.
