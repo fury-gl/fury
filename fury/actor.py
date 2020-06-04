@@ -1442,7 +1442,7 @@ def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     >>> scene = window.Scene()
     >>> pts = np.random.rand(5, 3)
     >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> scene.add(point_actor)F
+    >>> scene.add(point_actor)
     >>> # window.show(scene)
 
     """
@@ -1800,7 +1800,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
     return oct_actor
 
 
-def frustum(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=1):
+def frustum(centers, directions=(1, 0, 0), colors=(0, 255, 0), scale=1):
     """Visualize one or many frustum pyramids with different features.
 
     Parameters
