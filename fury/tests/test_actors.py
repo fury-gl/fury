@@ -925,7 +925,7 @@ def test_octprism_vertices_faces(interactive=False):
     scene = window.Scene()
     centers = np.array([[0, 0, 0], [1, 3, 0], [2, 0, 4]])
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colors = np.array([[1, 0.5, 0], [0, 1, 0.25], [0.5, 0.5, 0.1]])
+    colors = np.array([[255, 0, 0], [0, 100, 100], [50, 0, 100]])
     octprism_actor = actor.octagonalprism(centers=centers, directions=directions,
                                           colors=colors)
     scene.add(octprism_actor)
@@ -941,9 +941,9 @@ def test_octprism_vertices_faces(interactive=False):
 def test_frustum_vertices_faces(interactive=False):
 
     scene = window.Scene()
-    centers = np.array([[1, 0, 0], [0, 6, 2], [3, 1, 1]])
+    centers = np.array([[1, 0, 0], [0, 1, 2], [3, 0, 1]])
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colors = np.array([[0, 0.5, 0], [0.1, 0.6, 0], [0.2, 0.5, 0.1]])
+    colors = np.array([[0, 200, 0], [100, 0, 50], [0, 200, 100]])
     frustum_actor = actor.frustum(centers=centers, directions=directions,
                                           colors=colors)
     scene.add(frustum_actor)
