@@ -1442,7 +1442,7 @@ def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     >>> scene = window.Scene()
     >>> pts = np.random.rand(5, 3)
     >>> point_actor = actor.point(pts, window.colors.coral)
-    >>> scene.add(point_actor)
+    >>> scene.add(point_actor)F
     >>> # window.show(scene)
 
     """
@@ -1760,7 +1760,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
 
 
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-scale=(1, 1, 1)):
+                   scale=(1, 1, 1)):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -1782,10 +1782,10 @@ scale=(1, 1, 1)):
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
-    >>> centers = np.random.rand(5, 3)
-    >>> dirs = np.random.rand(5, 3)
-    >>> heights = np.random.rand(5)
-    >>> actor = actor.octagonalprism(centers, dirs, (1, 1, 1), heights=heights)
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> actor = actor.octagonalprism(centers, dirs, colors, (1, 1, 1))
     >>> scene.add(actor)
     >>> # window.show(scene)
 
@@ -1810,7 +1810,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
         The orientation vector of the frustum pyramid.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    heights : int or ndarray (N,3) or tuple (3,), optional
         Frustum pyramid size on each direction (x, y), default(1)
     Returns
     -------
@@ -1820,10 +1820,10 @@ def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 1, 1)):
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
-    >>> centers = np.random.rand(5, 3)
+    >>> centers = np.random.rand(4, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> heights = np.random.rand(5)
-    >>> actor = actor.frustum(centers, dirs, (1, 1, 1), heights=heights)
+    >>> scale = np.random.rand(5)
+    >>> actor = actor.frustum(centers, dirs, (1, 1, 1), scale)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
