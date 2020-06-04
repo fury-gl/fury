@@ -1759,7 +1759,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
                    scale=1):
     """Visualize one or many octagonal prisms with different features.
 
@@ -1784,8 +1784,9 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3)
     >>> dirs = np.random.rand(3, 3)
-    >>> colors = np.random.rand(3, 3)
-    >>> actor = actor.octagonalprism(centers, dirs, colors)
+    >>> colors = np.random.rand(3, 3)*255
+    >>> scales = np.random.rand(4, 1)
+    >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
@@ -1799,7 +1800,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     return oct_actor
 
 
-def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
+def frustum(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=1):
     """Visualize one or many frustum pyramids with different features.
 
     Parameters
@@ -1821,9 +1822,10 @@ def frustum(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> centers = np.random.rand(4, 3)
-    >>> dirs = np.random.rand(5, 3)
-    >>> colors = np.random.rand(3, 3)
-    >>> actor = actor.frustum(centers, dirs, colors)
+    >>> dirs = np.random.rand(4, 3)
+    >>> colors = np.random.rand(4, 3)*255
+    >>> scales = np.random.rand(4, 1)
+    >>> actor = actor.frustum(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
 
