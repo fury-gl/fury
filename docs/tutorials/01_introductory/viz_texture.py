@@ -7,7 +7,7 @@ In this tutorial, we will show how to create a sphere with a texture.
 
 import numpy as np
 from fury import window, actor, utils, primitive, io
-from fury.data.fetcher import read_viz_textures, fetch_viz_textures
+from fury.data import read_viz_textures, fetch_viz_textures
 
 ##############################################################################
 # Create a scene to start.
@@ -15,7 +15,7 @@ from fury.data.fetcher import read_viz_textures, fetch_viz_textures
 scene = window.Scene()
 
 ##############################################################################
-# Load an image (png, bmp, jpeg or jpg) using ``io.prim_sphere``. In this
+# Load an image (png, bmp, jpeg or jpg) using ``io.load_image``. In this
 # example, we will use ``read_viz_textures`` to access an image of the
 # Earth's surface from the fury Github after using ''fetch_viz_textures()''
 # to download the available textures.
