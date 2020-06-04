@@ -29,6 +29,9 @@ FURY_DATA_URL = \
 MODEL_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/models/"
 
+TEXTURE_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
+
 
 class FetcherError(Exception):
     pass
@@ -299,6 +302,36 @@ fetch_viz_models = _make_fetcher(
     doc=" Download the models for shader tutorial"
     )
 
+fetch_viz_textures = _make_fetcher(
+    "fetch_viz_textures",
+    pjoin(fury_home, "textures"),
+    TEXTURE_DATA_URL,
+    ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
+     '5_night_8k.jpg', 'earth.ppm',
+     'jupiter.jpg', 'masonry.bmp',
+     'skybox-nx.jpg', 'skybox-ny.jpg',
+     'skybox-px.jpg', 'skybox-py.jpg',
+     'skybox-pz.jpg'],
+    ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
+     '5_night_8k.jpg', 'earth.ppm',
+     'jupiter.jpg', 'masonry.bmp',
+     'skybox-nx.jpg', 'skybox-ny.jpg',
+     'skybox-px.jpg', 'skybox-py.jpg',
+     'skybox-pz.jpg'],
+    ['0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F',
+     '5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465',
+     'DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A',
+     '34CE9AD183D7C7B11E2F682D7EBB84C803E661BE09E01ADB887175AE60C58156',
+     '5DF6A384E407BD0D5F18176B7DB96AAE1EEA3CFCFE570DDCE0D34B4F0E493668',
+     '045E30B2ABFEAE6318C2CF955040C4A37E6DE595ACE809CE6766D397C0EE205D',
+     '12B1CE6C91AA3AAF258A8A5944DF739A6C1CC76E89D4D7119D1F795A30FC1BF2',
+     'E18FE2206B63D3DF2C879F5E0B9937A61D99734B6C43AC288226C58D2418D23E',
+     'BF20ACD6817C9E7073E485BBE2D2CE56DACFF73C021C2B613BA072BA2DF2B754',
+     '16F0D692AF0B80E46929D8D8A7E596123C76729CC5EB7DFD1C9184B115DD143A',
+     'B850B5E882889DF26BE9289D7C25BA30524B37E56BC2075B968A83197AD977F3'],
+    doc="Download textures for fury"
+    )
+
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
     """Read specific icon from specific style.
@@ -337,4 +370,23 @@ def read_viz_models(fname):
 
     """
     folder = pjoin(fury_home, 'models')
+    return pjoin(folder, fname)
+
+
+def read_viz_textures(fname):
+    """Read specific texture.
+
+    Parameters
+    ----------
+    fname: str
+        Filename of the texture.
+        This should be found in folder HOME/.fury/textures/.
+
+    Returns
+    -------
+    path : str
+        Complete path of models.
+
+    """
+    folder = pjoin(fury_home, 'textures')
     return pjoin(folder, fname)
