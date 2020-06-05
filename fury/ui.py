@@ -1084,7 +1084,7 @@ class TextBlock2D(UI):
 
     def __init__(self, text="Text Block", font_size=None, font_family='Arial',
                  justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False, position2=None,
+                 bold=False, italic=False, shadow=False, size=None,
                  color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """
         Parameters
@@ -1111,19 +1111,17 @@ class TextBlock2D(UI):
             Makes text italicised.
         shadow : bool
             Adds text shadow.
-        border : bool
-            show bounding box.
-        bbox_size : (int, int)
-            width & height of bounding box
+        size : (int, int)
+            Size (width, height) in pixels of the Text.
         """
         super(TextBlock2D, self).__init__(position=position)
         self.color = color
         self.background_color = bg_color
         if font_size is not None:
             self.font_size = font_size
-        if position2 is not None:
-            self.position2 = position2
-        if font_size is None and position2 is None:
+        if size is not None:
+            self.size = size
+        if font_size is None and size is None:
             self.font_size = 18
         self.font_family = font_family
         self.justification = justification
@@ -1440,34 +1438,15 @@ class TextBlock2D(UI):
         if self._background is not None:
             self._background.SetPosition(*self.actor.GetPosition())
 
-    @property
-    def position2(self):
-        """
-        Gets top-right corner position.
-
-        Returns
-        -------
-        (float, float, float)
-        """
-        return self.actor.GetPosition2()
-
-    @position2.setter
-    def _set_position2(self, position2=(100, 100, 0)):
-        """ Set text actor position2.
-
-        Parameters
-        ----------
-        position : (float, float)
-            The new position. (x, y) in pixels.
-        """
-        self.actor.SetPosition2(*position2)
-        if self._background is not None:
-            self._background.SetPosition2(*self.actor.GetPosition2())
-
     def _get_size(self):
         if self._background is not None:
             return self._background.size
-        return self.font_size * 1.2, self.font_size * 1.2
+
+        size = np.array([0, 0])
+        size[0] = self.actor.GetPosition2()[0] - self.actor.GetPosition()[0]
+        size[1] = self.actor.GetPosition2()[1] - self.actor.GetPosition()[1]
+
+        return size
 
 
 class TextBox2D(UI):
