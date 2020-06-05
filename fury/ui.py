@@ -1082,9 +1082,9 @@ class TextBlock2D(UI):
         Adds text shadow.
     """
 
-    def __init__(self, text="Text Block", font_size=None, font_family='Arial',
+    def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False, size=None,
+                 bold=False, italic=False, shadow=False, size=(100, 100),
                  color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """
         Parameters
@@ -1112,17 +1112,13 @@ class TextBlock2D(UI):
         shadow : bool
             Adds text shadow.
         size : (int, int)
-            Size (width, height) in pixels of the Text.
+            Size (width, height) in pixels of the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
+        self.resize(size)
         self.color = color
         self.background_color = bg_color
-        if font_size is not None:
-            self.font_size = font_size
-        if size is not None:
-            self.size = size
-        if font_size is None and size is None:
-            self.font_size = 18
+        self.font_size = font_size
         self.font_family = font_family
         self.justification = justification
         self.bold = bold
@@ -1133,8 +1129,22 @@ class TextBlock2D(UI):
 
     def _setup(self):
         self.actor = vtk.vtkTextActor()
+        self.actor.SetTextScaleModeToProp()
+        self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
         self._background = None  # For VTK < 7
         self.handle_events(self.actor)
+
+    def resize(self, size):
+        """Resize the button.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Text bounding box size(width, height) in pixels.
+        """
+
+        position2 = self.position + size
+        self.actor.SetPosition2(*position2)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
