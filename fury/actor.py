@@ -2555,8 +2555,9 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitve='Torus'):
+def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus'):
     """Create a SDF actor
+
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -2566,14 +2567,14 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitve='Torus'):
     directions : ndarray, shape (N, 3)
         The orientation vector of the cube.
     primitive : String
-    The Primitive of choice to be rendered
+        The primitive of choice to be rendered
 
     Returns
     -------
     vtkActor
     """
 
-    prims = {'Sphere': 1.0, 'Torus': 2.0}
+    prims = {'sphere': 1.0, 'torus': 2.0}
     verts, faces = fp.prim_box()
 
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
@@ -2615,7 +2616,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitve='Torus'):
     @vtk.calldata_type(vtk.VTK_OBJECT)
     def vtkShaderCallback(caller, event, calldata=None):
         program = calldata
-        prim = prims[primitve]
+        prim = prims[primitive]
         if program is not None:
             program.SetUniformf('prim', prim)
 
