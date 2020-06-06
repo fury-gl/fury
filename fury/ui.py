@@ -1084,7 +1084,7 @@ class TextBlock2D(UI):
 
     def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False, size=(100, 100),
+                 bold=False, italic=False, shadow=False, size=None,
                  color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """
         Parameters
@@ -1115,10 +1115,14 @@ class TextBlock2D(UI):
             Size (width, height) in pixels of the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
-        self.resize(size)
+        if size is not None:
+            self.actor.SetTextScaleModeToProp()
+            self.resize(size)
+        else:
+            self.actor.SetTextScaleModeToNone()
+            self.font_size = font_size
         self.color = color
         self.background_color = bg_color
-        self.font_size = font_size
         self.font_family = font_family
         self.justification = justification
         self.bold = bold
@@ -1129,7 +1133,6 @@ class TextBlock2D(UI):
 
     def _setup(self):
         self.actor = vtk.vtkTextActor()
-        self.actor.SetTextScaleModeToProp()
         self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
         self._background = None  # For VTK < 7
         self.handle_events(self.actor)
@@ -1208,6 +1211,7 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
+        self.actor.SetTextScaleModeToNone()
         self.actor.GetTextProperty().SetFontSize(size)
 
     @property
@@ -1451,6 +1455,9 @@ class TextBlock2D(UI):
     def _get_size(self):
         if self._background is not None:
             return self._background.size
+
+        if not self.actor.GetTextScaleMode():
+            return self.font_size * 1.2, self.font_size * 1.2
 
         size = np.array([0, 0])
         size[0] = self.actor.GetPosition2()[0] - self.actor.GetPosition()[0]
