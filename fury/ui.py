@@ -1145,7 +1145,7 @@ class TextBlock2D(UI):
         size : (int, int)
             Text bounding box size(width, height) in pixels.
         """
-
+        self.actor.SetTextScaleModeToProp()
         position2 = self.position + size
         self.actor.SetPosition2(*position2)
 
