@@ -406,6 +406,28 @@ def test_text_block_2d_justification():
     window.snapshot(show_manager.scene, size=window_size, offscreen=True)
 
 
+def test_ui_text_block_2d_size():
+    text_block_1 = ui.TextBlock2D(position=(50, 50), size=(100, 100))
+
+    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 1)
+    npt.assert_equal(text_block_1.size, (100, 100))
+
+    text_block_1.font_size = 50
+
+    npt.assert_equal(text_block_1.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_1.font_size, 50)
+
+    text_block_2 = ui.TextBlock2D(position=(50, 50), font_size=50)
+
+    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 0)
+    npt.assert_equal(text_block_2.font_size, 50)
+
+    text_block_2.resize((100, 100))
+
+    npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 1)
+    npt.assert_equal(text_block_2.size, (100, 100))
+
+
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):
     filename = "test_ui_line_slider_2d_horizontal_bottom"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
