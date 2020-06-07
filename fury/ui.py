@@ -4625,11 +4625,16 @@ class TabUI(UI):
     """ UI element to add multiple panels within a single window.
     """
 
-    def __init__(self, position=(0, 0), size=(100, 100), tabs=1,
+    def __init__(self, position=(0, 0), size=(100, 100), nb_tabs=1,
                  draggable=False):
         """
         """
-        self.tabs = tabs
+        self.position = position
+        self.tabs = []
+        self.nb_tabs = nb_tabs
+        self.size = size
+        self.content_size = (size[0], int(0.8 * size[1]))
+
         super(TabUI, self).__init__()
         self.parent_panel.position = position
 
@@ -4639,10 +4644,20 @@ class TabUI(UI):
         Create tab panels.
         Create add new tab button.
         """
-        self.parent_panel = Panel2D()
+        self.parent_panel = Panel2D(self.size, opacity=0.0)
         self.new_tab_button = Button2D(
-            icon_fnames=("new", read_viz_icons("plus.png"))
+            icon_fnames=("new_tab", read_viz_icons("plus.png"))
         )
+
+        # Calculate the size of Tab panels based on nb_tabs.
+
+        for _ in range(self.nb_tabs):
+            content_panel = Panel2D(position=self.position,
+                                    size=self.content_size)
+            tab_panel = TabPanel2D(content_panel=content_panel) # Implement later.
+            self.tabs.append(tab_panel)
+
+        self.update_tabs()
 
     def _get_actors(self):
         pass
@@ -4656,24 +4671,37 @@ class TabUI(UI):
     def _get_size(self):
         pass
 
+    def close_tab_callback(self, iren, _obj, _close_button):
+        pass
+
+    def new_tab_callback(self, iren, _obj, _new_button):
+        pass
+
+    def select_tab_callback(self, iren, _obj, _tab_ui):
+        pass
+
+    def update_tabs(self):
+        """ Update callbacks for tab panels.
+        """
+        pass
 
 class TabPanel2D(UI):
     """ The information contained within a Tab.
     """
 
     def __init__(self, position=(0, 0), size=(100, 100),
-                 text="Tab", color=(1, 1, 1), panel=None):
+                 text="New Tab", color=(1, 1, 1), content_panel=None):
         """
         """
         self.size = size
         self.color = color
-        self.content_panel = panel
+        self.content_panel = content_panel
+        self.text = text
         self._text_size = (int(0.7 * size[0]), size[1])
         self._button_size = (int(0.3 * size[0]), size[1])
 
         super(TabPanel2D, self).__init__()
         self.panel.position = position
-        self.text.message = text
 
     def _setup(self):
         """ Setup this UI component.
@@ -4682,12 +4710,12 @@ class TabPanel2D(UI):
         Create Button to close tab.
         """
         self.panel = Panel2D(size=self.size, color=self.color)
-        self.text = TextBlock2D(size=self._text_size)
+        self.text_block = TextBlock2D(text=self.text, size=self._text_size)
         self.close_button = Button2D(
-            icon_fnames=("close", read_viz_icons(fname='cross.png')),
+            icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
             size=self._button_size)
 
-        self.panel.add_element(self.text, (0, 0))
+        self.panel.add_element(self.text_block, (0, 0))
         self.panel.add_element(self.close_button, (0.7, 0))
 
     def _get_actors(self):
