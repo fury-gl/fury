@@ -4661,14 +4661,13 @@ class TabPanel2D(UI):
     """ The information contained within a Tab.
     """
 
-    def __init__(self, tab_ui=None, position=(0, 0), size=(100, 100),
+    def __init__(self, position=(0, 0), size=(100, 100),
                  text="Tab", color=(1, 1, 1), panel=None):
         """
         """
         self.size = size
         self.color = color
         self.content_panel = panel
-        self.tab_ui = tab_ui
         self._text_size = (int(0.7 * size[0]), size[1])
         self._button_size = (int(0.3 * size[0]), size[1])
 
@@ -4687,6 +4686,9 @@ class TabPanel2D(UI):
         self.close_button = Button2D(
             icon_fnames=("close", read_viz_icons(fname='cross.png')),
             size=self._button_size)
+
+        self.panel.add_element(self.text, (0, 0))
+        self.panel.add_element(self.close_button, (0.7, 0))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4713,7 +4715,6 @@ class TabPanel2D(UI):
             Absolute pixel coordinates (x, y).
         """
         self.panel.position = _coords
-        # Implement content_panel position = TabUI pos
 
     def _get_size(self):
         self.panel.size
