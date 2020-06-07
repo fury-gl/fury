@@ -4654,7 +4654,8 @@ class TabUI(UI):
         for _ in range(self.nb_tabs):
             content_panel = Panel2D(position=self.position,
                                     size=self.content_size)
-            tab_panel = TabPanel2D(content_panel=content_panel) # Implement later.
+            # Implement later.
+            tab_panel = TabPanel2D(content_panel=content_panel)
             self.tabs.append(tab_panel)
 
         self.update_tabs()
@@ -4684,6 +4685,7 @@ class TabUI(UI):
         """ Update callbacks for tab panels.
         """
         pass
+
 
 class TabPanel2D(UI):
     """ The information contained within a Tab.
@@ -4732,7 +4734,6 @@ class TabPanel2D(UI):
         """
         self.panel.add_to_scene(_scene)
         self.content_panel.add_to_scene(_scene)
-
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
