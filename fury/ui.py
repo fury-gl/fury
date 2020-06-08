@@ -4629,14 +4629,13 @@ class TabUI(UI):
                  draggable=False):
         """
         """
-        self.position = position
         self.tabs = []
         self.nb_tabs = nb_tabs
-        self.size = size
+        self.parent_size = size
         self.content_size = (size[0], int(0.8 * size[1]))
 
         super(TabUI, self).__init__()
-        self.parent_panel.position = position
+        self.position = position
 
     def _setup(self):
         """ Setup this UI component.
@@ -4644,14 +4643,13 @@ class TabUI(UI):
         Create tab panels.
         Create add new tab button.
         """
-        self.parent_panel = Panel2D(self.size, opacity=0.0)
+        self.parent_panel = Panel2D(self.parent_size, opacity=0.0)
         # self.new_tab_button = Button2D(
         #     icon_fnames=("new_tab", read_viz_icons("plus.png"))
         # )
 
         for _ in range(self.nb_tabs):
-            content_panel = Panel2D(position=self.position,
-                                    size=self.content_size)
+            content_panel = Panel2D(size=self.content_size)
             # Implement later.
             tab_panel = TabPanel2D(content_panel=content_panel)
             self.tabs.append(tab_panel)
@@ -4707,6 +4705,7 @@ class TabUI(UI):
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
             tab_panel.on_left_mouse_button_clicked = self.select_tab_callback
+            tab_panel.content_panel.position = self.position
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
@@ -4723,12 +4722,12 @@ class TabPanel2D(UI):
         """
         self.content_panel = content_panel
         self.text = text
+        self.panel_size = size
         self._text_size = (int(0.7 * size[0]), size[1])
         self._button_size = (int(0.3 * size[0]), size[1])
 
         super(TabPanel2D, self).__init__()
         self.panel.position = position
-        self.resize(size)
         self.color = color
 
     def _setup(self):
@@ -4737,7 +4736,7 @@ class TabPanel2D(UI):
         Create Text to hold tab information.
         Create Button to close tab.
         """
-        self.panel = Panel2D(size=self.size, color=self.color)
+        self.panel = Panel2D(size=self.panel_size)
         self.text_block = TextBlock2D(text=self.text, size=self._text_size)
         self.close_button = Button2D(
             icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
