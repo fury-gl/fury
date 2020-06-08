@@ -4699,7 +4699,8 @@ class TabUI(UI):
     def update_tabs(self):
         """ Update position, size and callbacks for tab panels.
         """
-        self.tab_panel_size = (self.size // self.nb_tabs, int(0.2*self.size[1]))
+        self.tab_panel_size =\
+            (self.size // self.nb_tabs, int(0.2*self.size[1]))
 
         tab_panel_pos = [0.0, 0.8]
         for tab_panel in self.tabs:
@@ -4787,6 +4788,7 @@ class TabPanel2D(UI):
     @color.setter
     def color(self, color):
         self.panel.color = color
+
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
