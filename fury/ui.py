@@ -4645,11 +4645,9 @@ class TabUI(UI):
         Create add new tab button.
         """
         self.parent_panel = Panel2D(self.size, opacity=0.0)
-        self.new_tab_button = Button2D(
-            icon_fnames=("new_tab", read_viz_icons("plus.png"))
-        )
-
-        # Calculate the size of Tab panels based on nb_tabs.
+        # self.new_tab_button = Button2D(
+        #     icon_fnames=("new_tab", read_viz_icons("plus.png"))
+        # )
 
         for _ in range(self.nb_tabs):
             content_panel = Panel2D(position=self.position,
@@ -4672,19 +4670,28 @@ class TabUI(UI):
     def _get_size(self):
         pass
 
-    def close_tab_callback(self, iren, _obj, _close_button):
-        pass
+    # def close_tab_callback(self, iren, _obj, _close_button):
+    #     pass
 
-    def new_tab_callback(self, iren, _obj, _new_button):
-        pass
+    # def new_tab_callback(self, iren, _obj, _new_button):
+    #     pass
 
-    def select_tab_callback(self, iren, _obj, _tab_ui):
+    def select_tab_callback(self, iren, _obj, _tab_panel):
         pass
 
     def update_tabs(self):
-        """ Update callbacks for tab panels.
+        """ Update position, size and callbacks for tab panels.
         """
-        pass
+        self.tab_panel_size = (self.size // self.nb_tabs, int(0.2*self.size[1]))
+
+        tab_panel_pos = [0.0, 0.8]
+        for tab_panel in self.tabs:
+            tab_panel.resize(self.tab_panel_size)
+            tab_panel.on_left_mouse_button_clicked = self.select_tab_callback
+            tab_panel.content_panel.resize(self.content_size)
+            self.parent_panel.add_element(tab_panel, tab_panel_pos)
+            self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
+            tab_panel_pos[0] += self.tab_panel_size[0]
 
 
 class TabPanel2D(UI):
@@ -4695,7 +4702,6 @@ class TabPanel2D(UI):
                  text="New Tab", color=(1, 1, 1), content_panel=None):
         """
         """
-        self.size = size
         self.color = color
         self.content_panel = content_panel
         self.text = text
@@ -4704,6 +4710,7 @@ class TabPanel2D(UI):
 
         super(TabPanel2D, self).__init__()
         self.panel.position = position
+        self.resize(size)
 
     def _setup(self):
         """ Setup this UI component.
@@ -4747,6 +4754,13 @@ class TabPanel2D(UI):
 
     def _get_size(self):
         self.panel.size
+
+    def resize(self, size):
+        self._text_size = (int(0.7 * size[0]), size[1])
+        self._button_size = (int(0.3 * size[0]), size[1])
+        self.panel.resize(size)
+        self.text_block.resize(self._text_size)
+        self.close_button.resize(self._button_size)
 
 
 class GridUI(UI):
