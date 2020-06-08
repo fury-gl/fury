@@ -4659,16 +4659,23 @@ class TabUI(UI):
         self.update_tabs()
 
     def _get_actors(self):
-        pass
+        actors = []
+        actors += self.parent_panel.actors
+        for tab_panel in self.tabs:
+            actors += tab_panel.actors
+
+        return actors
 
     def _add_to_scene(self, _scene):
-        pass
+        self.parent_panel.add_to_scene(_scene)
+        for tab_panel in self.tabs:
+            tab_panel.add_to_scene(_scene)
 
     def _set_position(self, _coords):
-        pass
+        self.parent_panel.position = _coords
 
     def _get_size(self):
-        pass
+        return self.parent_panel.size
 
     # def close_tab_callback(self, iren, _obj, _close_button):
     #     pass
