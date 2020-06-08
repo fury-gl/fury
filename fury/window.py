@@ -657,10 +657,9 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        if self.timers:
-            self.destroy_timers()
         self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
+        self.timers.clear()
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
