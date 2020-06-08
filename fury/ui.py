@@ -4677,7 +4677,19 @@ class TabUI(UI):
     #     pass
 
     def select_tab_callback(self, iren, _obj, _tab_panel):
-        pass
+        """ Handles events when a tab is clicked.
+        """
+
+        for tab_panel in self.tabs:
+            if tab_panel is not _tab_panel:
+                tab_panel.color = (0.1, 0.1, 0.1)
+                tab_panel.content_panel.set_visibility(False)
+            else:
+                tab_panel.color = (0, 0, 0)
+                tab_panel.content_panel.set_visibility(True)
+
+        iren.force_render()
+        iren.event.abort()
 
     def update_tabs(self):
         """ Update position, size and callbacks for tab panels.
@@ -4702,7 +4714,6 @@ class TabPanel2D(UI):
                  text="New Tab", color=(1, 1, 1), content_panel=None):
         """
         """
-        self.color = color
         self.content_panel = content_panel
         self.text = text
         self._text_size = (int(0.7 * size[0]), size[1])
@@ -4711,6 +4722,7 @@ class TabPanel2D(UI):
         super(TabPanel2D, self).__init__()
         self.panel.position = position
         self.resize(size)
+        self.color = color
 
     def _setup(self):
         """ Setup this UI component.
@@ -4762,6 +4774,13 @@ class TabPanel2D(UI):
         self.text_block.resize(self._text_size)
         self.close_button.resize(self._button_size)
 
+    @property
+    def color(self):
+        return self.panel.color
+
+    @color.setter
+    def color(self, color):
+        self.panel.color = color
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
