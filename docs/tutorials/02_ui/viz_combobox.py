@@ -4,7 +4,7 @@
 ComboBox
 ========
 
-This example shows how to use the UI API. We will demonstrate how to
+This example shows how to use the Combobox UI. We will demonstrate how to
 create ComboBoxes for selecting colors for a label.
 
 First, some imports.
@@ -54,7 +54,8 @@ color_combobox = ui.ComboBox2D(items=list(colors.keys()),
 def change_color(combobox):
     label.color = colors[combobox.selected_text]
 
-
+# `on_change` callback is set to `change_color` method so that
+# it's called whenever a different option is selected.
 color_combobox.on_change = change_color
 
 ###############################################################################
@@ -67,12 +68,7 @@ current_size = (400, 400)
 showm = window.ShowManager(size=current_size, title="ComboBox UI Example")
 showm.scene.add(label, color_combobox)
 
-###############################################################################
-# Set camera for better visualization
-
-showm.scene.reset_camera()
-showm.scene.reset_clipping_range()
-showm.scene.azimuth(30)
+# To interact with the UI, set interactive = True
 interactive = False
 
 if interactive:
