@@ -77,8 +77,8 @@ class PickingManager(object):
 ###############################################################################
 # Select a picking option
 
-pickm = PickingManager('face')
-# pickm = PickingManager('vertex')
+# pickm = PickingManager('face')
+pickm = PickingManager('vertex')
 
 
 def left_click_callback(obj, event):
