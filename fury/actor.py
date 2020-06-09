@@ -298,20 +298,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         tri = Delaunay(vertices[:, [0, 1]])
         faces = np.array(tri.simplices, dtype='i8')
 
-    if faces.shape[1] == 3:
-        triangles = np.empty((faces.shape[0], 4), dtype=np.int64)
-        triangles[:, -3:] = faces
-        triangles[:, 0] = 3
-    else:
-        triangles = faces
-
-    if not triangles.flags['C_CONTIGUOUS'] or triangles.dtype != 'int64':
-        triangles = np.ascontiguousarray(triangles, 'int64')
-
-    cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0],
-                   numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
-    triangle_poly_data.SetPolys(cells)
+    set_polydata_triangles(triangle_poly_data, faces)
 
     clean_poly_data = vtk.vtkCleanPolyData()
     clean_poly_data.SetInputData(triangle_poly_data)
@@ -425,7 +412,6 @@ def contour_from_roi(data, affine=None,
     skin_extractor.SetInputData(image_resliced.GetOutput())
 
     skin_extractor.SetValue(0, 1)
-
     skin_normals = vtk.vtkPolyDataNormals()
     skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
     skin_normals.SetFeatureAngle(60.0)
@@ -437,9 +423,8 @@ def contour_from_roi(data, affine=None,
     skin_actor = vtk.vtkActor()
 
     skin_actor.SetMapper(skin_mapper)
-    skin_actor.GetProperty().SetOpacity(opacity)
-
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
+    skin_actor.GetProperty().SetOpacity(opacity)
 
     return skin_actor
 
@@ -486,11 +471,11 @@ def contour_from_label(data, affine=None, color=None):
     else:
         opacity = np.ones((nb_surfaces, 1)).astype(np.float)
 
-    for roi_id in unique_roi_id:
+    for i, roi_id in enumerate(unique_roi_id):
         roi_data = np.isin(data, roi_id).astype(np.int)
         roi_surface = contour_from_roi(roi_data, affine,
-                                       color=color[int(roi_id)-1],
-                                       opacity=opacity[int(roi_id)-1])
+                                       color=color[i],
+                                       opacity=opacity[i])
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces
@@ -982,14 +967,6 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
 
-    all_faces = np.concatenate(all_faces)
-    all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
-                           all_faces))
-    ncells = len(all_faces)
-
-    all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
-    all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
-                                                          deep=True)
     if global_cm:
         all_ms = np.ascontiguousarray(
             np.concatenate(all_ms), dtype='f4')
@@ -997,8 +974,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     points = vtk.vtkPoints()
     points.SetData(all_xyz_vtk)
 
-    cells = vtk.vtkCellArray()
-    cells.SetCells(ncells, all_faces_vtk)
+    all_faces = np.concatenate(all_faces)
 
     if global_cm:
         if colormap is None:
@@ -1028,7 +1004,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
-    polydata.SetPolys(cells)
+    set_polydata_triangles(polydata, all_faces)
 
     polydata.GetPointData().SetScalars(vtk_colors)
 
@@ -1204,20 +1180,10 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
 
-    all_faces = np.concatenate(all_faces)
-    all_faces = np.hstack((3 * np.ones((len(all_faces), 1)),
-                           all_faces))
-    ncells = len(all_faces)
-
-    all_faces = np.ascontiguousarray(all_faces.ravel(), dtype='i8')
-    all_faces_vtk = numpy_support.numpy_to_vtkIdTypeArray(all_faces,
-                                                          deep=True)
-
     points = vtk.vtkPoints()
     points.SetData(all_xyz_vtk)
 
-    cells = vtk.vtkCellArray()
-    cells.SetCells(ncells, all_faces_vtk)
+    all_faces = np.concatenate(all_faces)
 
     cols = np.ascontiguousarray(
         np.reshape(cols, (cols.shape[0] * cols.shape[1],
@@ -1232,7 +1198,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
-    polydata.SetPolys(cells)
+    set_polydata_triangles(polydata, all_faces)
     polydata.GetPointData().SetScalars(vtk_colors)
 
     mapper = vtk.vtkPolyDataMapper()

@@ -285,13 +285,12 @@ def test_stereo():
     scene.reset_camera()
 
     mono = window.snapshot(scene, fname='stereo_off.png', offscreen=True,
-                           size=(300, 300), order_transparent=True,
-                           stereo='off')
+                           size=(300, 300), stereo='off')
 
     with npt.assert_warns(UserWarning):
         stereo = window.snapshot(scene, fname='stereo_horizontal.png',
                                  offscreen=True, size=(300, 300),
-                                 order_transparent=True, stereo='On')
+                                 stereo='On')
 
     # mono render should have values in the center
     # horizontal split stereo render should be empty in the center
