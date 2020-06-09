@@ -43,6 +43,9 @@ jobs:
     displayName: Add Conda to PATH
     condition: eq( variables['INSTALL_TYPE'], 'conda' )
   - powershell: |
+      Invoke-WebRequest -Uri https://stacks.stanford.edu/file/druid:yx282xq2090/dwi.bvals -UseDefaultCredentials
+    displayName: Add/Verify whether the certificate has been installed correctly
+  - powershell: |
       Set-StrictMode -Version Latest
       $ErrorActionPreference = "Stop"
       $PSDefaultParameterValues['*:ErrorAction']='Stop'
