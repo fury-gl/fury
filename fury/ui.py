@@ -1116,10 +1116,8 @@ class TextBlock2D(UI):
         """
         super(TextBlock2D, self).__init__(position=position)
         if size is not None:
-            self.actor.SetTextScaleModeToProp()
             self.resize(size)
         else:
-            self.actor.SetTextScaleModeToNone()
             self.font_size = font_size
         self.color = color
         self.background_color = bg_color
