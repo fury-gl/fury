@@ -4385,7 +4385,7 @@ class ComboBox2D(UI):
             ('down', read_viz_icons(fname='circle-down.png'))]
 
         super(ComboBox2D, self).__init__()
-        self.panel.position = position
+        self.position = position
 
     def _setup(self):
         """ Setup this UI component.
@@ -4455,8 +4455,16 @@ class ComboBox2D(UI):
         """
         return self.panel.actors
 
-    def resize(self):
-        pass
+    def resize(self, size):
+        self.panel.resize(size)
+
+        self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
+        self.drop_menu_size = (size[0], int(0.7*size[1]))
+        self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
+
+        self.drop_down_button.resize(self.drop_button_size)
+        self.drop_down_menu.resize(self.drop_menu_size)
+        # self.selection_box.resize(self.text_block_size)
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
