@@ -4462,6 +4462,10 @@ class ComboBox2D(UI):
         self.drop_menu_size = (size[0], int(0.7*size[1]))
         self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
 
+        self.panel.update_element(self.selection_box, (0.008, 0.715))
+        self.panel.update_element(self.drop_down_button, (0.8, 0.7))
+        self.panel.update_element(self.drop_down_menu, (0, 0))
+
         self.drop_down_button.resize(self.drop_button_size)
         self.drop_down_menu.resize(self.drop_menu_size)
         # self.selection_box.resize(self.text_block_size)
