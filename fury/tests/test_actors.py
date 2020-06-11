@@ -942,10 +942,13 @@ def test_frustum_vertices_faces(interactive=False):
 
     scene = window.Scene()
     centers = np.array([[1, 0, 0], [0, 1, 2], [3, 0, 1]])
-    directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colors = np.array([[0, 200, 0], [100, 0, 50], [0, 200, 100]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [1, 0, 0]])
+    colors = np.array([[0, 200, 0], [255, 0, 0], [0, 200, 100]])
     frustum_actor = actor.frustum(centers=centers, directions=directions,
-                                          colors=colors)
+                                  colors=colors)
+    frustum_actor.GetProperty().SetAmbient(1)
+    frustum_actor.GetProperty().SetDiffuse(0.0)
+    frustum_actor.GetProperty().SetSpecular(0.0)
     scene.add(frustum_actor)
 
     if interactive:
@@ -1349,3 +1352,5 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
+
+test_frustum_vertices_faces(True)
