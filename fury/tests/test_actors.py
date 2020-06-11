@@ -926,7 +926,8 @@ def test_octprism_vertices_faces(interactive=False):
     centers = np.array([[0, 0, 0], [1, 3, 0], [2, 0, 4]])
     directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([[255, 0, 0], [0, 100, 100], [50, 0, 100]])
-    octprism_actor = actor.octagonalprism(centers=centers, directions=directions,
+    octprism_actor = actor.octagonalprism(centers=centers,
+                                          directions=directions,
                                           colors=colors)
     scene.add(octprism_actor)
 
@@ -944,7 +945,8 @@ def test_frustum_vertices_faces(interactive=False):
     centers = np.array([[1, 0, 0], [0, 1, 2], [3, 0, 1]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [1, 0, 0]])
     colors = np.array([[0, 200, 0], [255, 0, 0], [0, 200, 100]])
-    frustum_actor = actor.frustum(centers=centers, directions=directions,
+    frustum_actor = actor.frustum(centers=centers,
+                                  directions=directions,
                                   colors=colors)
     frustum_actor.GetProperty().SetAmbient(1)
     frustum_actor.GetProperty().SetDiffuse(0.0)
@@ -1352,5 +1354,3 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
-
-test_frustum_vertices_faces(True)
