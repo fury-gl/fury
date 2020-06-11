@@ -2555,7 +2555,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus'):
+def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus', scale=1):
     """Create a SDF actor
 
     Parameters
@@ -2568,6 +2568,9 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus'):
         The orientation vector of the cube.
     primitive : String
         The primitive of choice to be rendered
+    scale : float
+        The size of the cube
+
 
     Returns
     -------
@@ -2578,7 +2581,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus'):
     verts, faces = fp.prim_box()
 
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
-                                   colors=colors, directions=directions)
+                                   colors=colors, directions=directions, scale=scale)
 
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
