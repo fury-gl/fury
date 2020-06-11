@@ -2,4 +2,5 @@
 
 //VTK::ValuePass::Impl
 
-centeredVertexMC = vertexMC.xyz - center;
+centeredVertexMC = vertexMC.xyz;
+centt = center;

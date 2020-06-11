@@ -4,3 +4,4 @@
 
 in vec3 center;
 out vec3 centeredVertexMC;
+out vec3 centt;
