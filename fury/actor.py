@@ -2628,7 +2628,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus', sc
     return box_actor
 
 
-def multiSDF(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=4):
+def multi_sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=4):
     """Create a SDF actor
 
     Parameters

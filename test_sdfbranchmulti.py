@@ -8,7 +8,7 @@ scene.background((1.0, 0.8, 0.8))
 #centers = np.random.rand(7,3)
 #colors = np.random.rand(7,3) * 255
 centers = np.array([[0, 0, 0]])
-sdfactor = actor.multiSDF(centers = centers, scale=6)
+sdfactor = actor.multi_sdf(centers = centers, scale=6)
 scene.add(sdfactor)
 
 scene.add(actor.axes())
