@@ -1115,6 +1115,7 @@ class TextBlock2D(UI):
             Size (width, height) in pixels of the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
+        self.bg = bool(bg_color)
         if size is not None:
             self.resize(size)
         else:
@@ -1132,7 +1133,7 @@ class TextBlock2D(UI):
     def _setup(self):
         self.actor = vtk.vtkTextActor()
         self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
-        self._background = None  # For VTK < 7
+        self.background = Rectangle2D()
         self.handle_events(self.actor)
 
     def resize(self, size):
@@ -1143,17 +1144,15 @@ class TextBlock2D(UI):
         size : (int, int)
             Text bounding box size(width, height) in pixels.
         """
+        if self.bg:
+            self.background.resize(size)
         self.actor.SetTextScaleModeToProp()
-        position2 = self.position + size
-        self.actor.SetPosition2(*position2)
+        self.actor.SetPosition2(*size)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        if self._background is not None:
-            return [self.actor, self._background]
-
-        return [self.actor]
+        return [self.actor] + self.background.actors
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -1162,10 +1161,7 @@ class TextBlock2D(UI):
         ----------
         scene : scene
         """
-        if self._background is not None:
-            scene.add(self._background)
-
-        scene.add(self.actor)
+        scene.add(self.background, self.actor)
 
     @property
     def message(self):
@@ -1414,10 +1410,10 @@ class TextBlock2D(UI):
             If None, there no background color.
             Otherwise, background color in RGB.
         """
-        if self.actor.GetTextProperty().GetBackgroundOpacity() == 0:
+        if not self.bg:
             return None
 
-        return self.actor.GetTextProperty().GetBackgroundColor()
+        return self.background.color
 
     @background_color.setter
     def background_color(self, color):
@@ -1432,11 +1428,11 @@ class TextBlock2D(UI):
 
         if color is None:
             # Remove background.
-            self.actor.GetTextProperty().SetBackgroundOpacity(0.)
+            self.background.set_visibility(False)
 
         else:
-            self.actor.GetTextProperty().SetBackgroundColor(*color)
-            self.actor.GetTextProperty().SetBackgroundOpacity(1.)
+            self.background.set_visibility(True)
+            self.background.color = color
 
     def _set_position(self, position):
         """ Set text actor position.
@@ -1447,21 +1443,16 @@ class TextBlock2D(UI):
             The new position. (x, y) in pixels.
         """
         self.actor.SetPosition(*position)
-        if self._background is not None:
-            self._background.SetPosition(*self.actor.GetPosition())
+        self.background.position = position
 
     def _get_size(self):
-        if self._background is not None:
-            return self._background.size
+        if self.bg:
+            return self.background.size
 
         if not self.actor.GetTextScaleMode():
             return self.font_size * 1.2, self.font_size * 1.2
 
-        size = np.array([0, 0])
-        size[0] = self.actor.GetPosition2()[0] - self.actor.GetPosition()[0]
-        size[1] = self.actor.GetPosition2()[1] - self.actor.GetPosition()[1]
-
-        return size
+        return self.actor.GetPosition2()
 
 
 class TextBox2D(UI):
