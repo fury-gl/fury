@@ -264,13 +264,16 @@ def test_order_transparent():
     arr = window.snapshot(scene, fname=None,
                           offscreen=True, order_transparent=False)
 
-    # scene.add(actor.texture(arr))
-    # window.show(scene)
+    # check if flags are set as expected (here no order transparency)
+    npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 0)
 
     green_stronger = arr[150, 150, 1]
 
     arr = window.snapshot(scene, fname=None,
                           offscreen=True, order_transparent=True)
+
+    # # check if flags are set as expected (here with order transparency)
+    npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 1)
 
     # when order transparency is True green should be weaker
     green_weaker = arr[150, 150, 1]
