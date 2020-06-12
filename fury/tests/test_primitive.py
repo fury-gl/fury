@@ -46,7 +46,7 @@ def test_vertices_primitives_octagonalprism():
     npt.assert_equal(vertices.max(), (1+float('{:.7f}'.format(math.sqrt(2)))))
 
 
-def test_vertices_primitives_frsutum():
+def test_vertices_primitives_frustum():
     # Testing the default vertices of the primitive frustum sqaure pyramid.
     vertices, _ = fp.prim_frustum()
     shape = (8, 3)
