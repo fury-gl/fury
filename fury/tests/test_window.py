@@ -235,9 +235,6 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-# @pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
-#                                                  " Windows and OSX. Need to "
-#                                                  " be introspected")
 def test_order_transparent():
 
     scene = window.Scene()
