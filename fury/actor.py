@@ -1785,7 +1785,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
     >>> centers = np.random.rand(3, 3)
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)*255
-    >>> scales = np.random.rand(4, 1)
+    >>> scales = np.random.rand(3, 1)
     >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
