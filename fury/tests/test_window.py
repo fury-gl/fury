@@ -235,34 +235,47 @@ def test_parallel_projection():
     npt.assert_equal(np.sum(arr2 > 0), np.sum(arr > 0))
 
 
-@pytest.mark.skipif(skip_osx or skip_win, reason="This test does not work on"
-                                                 " Windows and OSX. Need to "
-                                                 " be introspected")
 def test_order_transparent():
 
     scene = window.Scene()
 
-    lines = [np.array([[1, 0, 1.], [-1, 0, 1.]]),
-             np.array([[1, 0, -1.], [-1, 0, -1.]])]
-    colors = np.array([[1., 0., 0.], [0., 1., 0.]])
-    stream_actor = actor.streamtube(lines, colors, linewidth=0.3, opacity=0.5)
+    red_cube = actor.cube(centers=np.array([[0., 0., 2]]),
+                          directions=np.array([[0, 1., 0]]),
+                          colors=np.array([[1, 0., 0]]))
 
-    scene.add(stream_actor)
+    green_cube = actor.cube(centers=np.array([[0., 0., -2]]),
+                            directions=np.array([[0, 1., 0]]),
+                            colors=np.array([[0, 1., 0]]))
+
+    red_cube.GetProperty().SetOpacity(0.2)
+    green_cube.GetProperty().SetOpacity(0.2)
+
+    scene.add(red_cube)
+    scene.add(green_cube)
+
     scene.reset_camera()
     scene.reset_clipping_range()
 
-    arr = window.snapshot(scene, fname='green_front.png',
+    # without order_transparency the green will look stronger
+    # when looked from behind the red cube
+    arr = window.snapshot(scene, fname=None,
                           offscreen=True, order_transparent=False)
 
-    green_no_ot = arr[150, 150, 1]
+    # check if flags are set as expected (here no order transparency)
+    npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 0)
 
-    arr = window.snapshot(scene, fname='red_front.png',
+    green_stronger = arr[150, 150, 1]
+
+    arr = window.snapshot(scene, fname=None,
                           offscreen=True, order_transparent=True)
 
-    # when order transparency is True green should be weaker
-    green_ot = arr[150, 150, 1]
+    # # check if flags are set as expected (here with order transparency)
+    npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 1)
 
-    npt.assert_equal(green_no_ot > green_ot, True)
+    # when order transparency is True green should be weaker
+    green_weaker = arr[150, 150, 1]
+
+    npt.assert_equal(green_stronger > green_weaker, True)
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
