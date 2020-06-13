@@ -1440,7 +1440,6 @@ class TextBlock2D(UI):
             If None, remove background.
             Otherwise, RGB values (must be between 0-1).
         """
-
         if color is None:
             # Remove background.
             self.bg = False
