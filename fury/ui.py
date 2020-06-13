@@ -1428,9 +1428,11 @@ class TextBlock2D(UI):
 
         if color is None:
             # Remove background.
+            self.bg = False
             self.background.set_visibility(False)
 
         else:
+            self.bg = True
             self.background.set_visibility(True)
             self.background.color = color
 
