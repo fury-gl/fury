@@ -1082,7 +1082,7 @@ class TextBlock2D(UI):
         Adds text shadow.
     """
 
-    def __init__(self, text="Text Block", font_size=None, font_family='Arial',
+    def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
                  bold=False, italic=False, shadow=False, size=None,
                  color=(1, 1, 1), bg_color=None, position=(0, 0)):
@@ -1116,22 +1116,10 @@ class TextBlock2D(UI):
         """
         super(TextBlock2D, self).__init__(position=position)
         self.bg = bool(bg_color)
-
-        # Background is rendered in 2 different ways:
-        # 0 : Actor mode -> When only font_size as parameter
-        #                    or only default parameters.
-        #                    Background is handled by the vtkTextActor.
-        # 1 : Rectangle mode -> All other cases.
-        #                       Background is handle by Rectangle2D.
         if size is not None:
-            self.bg_mode = 1
             self.resize(size)
         else:
-            self.bg_mode = 0
-            if font_size is None:
-                self.font_size = 18
-            else:
-                self.font_size = font_size
+            self.font_size = font_size
         self.color = color
         self.background_color = bg_color
         self.font_family = font_family
@@ -1425,9 +1413,6 @@ class TextBlock2D(UI):
         if not self.bg:
             return None
 
-        if self.bg_mode == 0:
-            return self.actor.GetTextProperty().GetBackgroundColor()
-
         return self.background.color
 
     @background_color.setter
@@ -1442,20 +1427,11 @@ class TextBlock2D(UI):
         """
         if color is None:
             # Remove background.
-            self.bg = False
-            if self.bg_mode == 0:
-                self.actor.GetTextProperty().SetBackgroundOpacity(0.)
-            else:
-                self.background.set_visibility(False)
+            self.background.set_visibility(False)
 
         else:
-            self.bg = True
-            if self.bg_mode == 0:
-                self.actor.GetTextProperty().SetBackgroundColor(*color)
-                self.actor.GetTextProperty().SetBackgroundOpacity(1.)
-            else:
-                self.background.set_visibility(True)
-                self.background.color = color
+            self.background.set_visibility(True)
+            self.background.color = color
 
     def _set_position(self, position):
         """ Set text actor position.
