@@ -4341,6 +4341,10 @@ class ComboBox2D(UI):
 
     def __init__(self, items=[], position=(0, 0), size=(300, 200),
                  placeholder="Choose selection...", draggable=True,
+                 selection_text_color=(0, 0, 0), selection_bg_color=(1, 1, 1),
+                 menu_text_color=(0.2, 0.2, 0.2), selected_color=(0.9, 0.6, 0.6),
+                 unselected_color=(0.6, 0.6, 0.6), scroll_bar_active_color=(0.6, 0.2, 0.2),
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0), menu_opacity=1.,
                  reverse_scrolling=False, font_size=20, line_spacing=1.4):
         """
 
@@ -4374,6 +4378,14 @@ class ComboBox2D(UI):
         self._menu_visibility = False
         self._selection_ID = None
         self.draggable = draggable
+        self.sel_text_color = selection_text_color
+        self.sel_bg_color = selection_bg_color
+        self.menu_txt_color = menu_text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_active_color = scroll_bar_active_color
+        self.scroll_inactive_color = scroll_bar_inactive_color
+        self.menu_opacity = menu_opacity
 
         # Define subcomponent sizes.
         self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
@@ -4395,8 +4407,8 @@ class ComboBox2D(UI):
         """
 
         self.selection_box = TextBlock2D(
-            font_size=self.font_size, color=(0, 0, 0),
-            text=self._selection, bg_color=(1, 1, 1))
+            font_size=self.font_size, color=self.sel_text_color,
+            bg_color=self.sel_bg_color, text=self._selection)
 
         self.drop_down_button = Button2D(
             icon_fnames=self._icon_files, size=self.drop_button_size)
@@ -4404,6 +4416,11 @@ class ComboBox2D(UI):
         self.drop_down_menu = ListBox2D(
             values=self.items, multiselection=False,
             font_size=self.font_size, line_spacing=self.line_spacing,
+            text_color=self.menu_txt_color, selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_active_color,
+            scroll_bar_inactive_color=self.scroll_inactive_color,
+            background_opacity=self.menu_opacity,
             reverse_scrolling=self.reverse_scrolling, size=self.drop_menu_size)
 
         self.drop_down_menu.set_visibility(False)
