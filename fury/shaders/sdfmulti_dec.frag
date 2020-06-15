@@ -1,7 +1,7 @@
 /* SDF fragment shader declaration */
 
 //VTK::ValuePass::Dec
-in vec3 centeredVertexMC;
+in vec4 vertexMCVSOutput;
 
 uniform mat4 MCVCMatrix;
 uniform mat4 MCWCMatrix;

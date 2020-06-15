@@ -2,11 +2,7 @@
 
 //VKT::Light::Impl
 
-vec3 point = centeredVertexMC;
-
-vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]); // camera right
-vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]); //  camera up
-vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]); // camera direction
+vec3 point = vertexMCVSOutput.xyz;
 
 //ray origin
 vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space

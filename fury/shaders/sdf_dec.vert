@@ -3,5 +3,6 @@
 //VTK::ValuePass::Dec
 
 in vec3 center;
-out vec3 centeredVertexMC;
-out vec3 centt;
+out vec4 vertexMCVSOutput;
+
+out vec3 centerWCVSOutput;

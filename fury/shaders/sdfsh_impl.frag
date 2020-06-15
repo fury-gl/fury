@@ -12,18 +12,14 @@ vec3 col = vertexColorVSOutput.rgb;
 //ray direction
 vec3 rd = normalize(point - ro.xyz);
 
-//light direction
-vec3 ld = vec3(1.0, 1.0, 0.0);
 
-float t = castRay(ro.xyz, rd);
+vec3 t = castRay(ro.xyz, rd);
     
-if(t < 20.0)
+if(t.y > -0.05)
 {
-    vec3 position = ro.xyz + t * rd;
-    vec3 norm = calculateNormal(position);
-    float light = dot(ld, norm);
+    vec3 mater = 0.5*mix( vec3(1.0,0.6,0.15), vec3(0.2,0.4,0.5), t.y ); 	
 
-    fragOutput0 = vec4(col * light, 1.0);
+    fragOutput0 = vec4( mater , 1.0);
     //fragOutput0 = vec4( norm, 1.0);
     	
 }
