@@ -26,7 +26,8 @@ scene = window.Scene()
 # filename = read_viz_textures("1_earth_8k.jpg")
 # image = io.load_image(filename)
 
-filename = r"C:\Users\melin\Downloads\1_earth_8k.jpg"
+fetch_viz_textures()
+filename = read_viz_textures("1_earth_8k.jpg")
 image = io.load_image(filename)
 
 ##############################################################################
@@ -38,7 +39,8 @@ earth_actor = actor.texture_on_sphere(image)
 ##############################################################################
 # Then, do the same for the moon.
 
-filename = r"C:\Users\melin\Downloads\moon_8k.jpg"
+fetch_viz_textures()
+filename = read_viz_textures("moon_8k.jpg")
 image = io.load_image(filename)
 
 moon_actor = actor.texture_on_sphere(image)
@@ -97,9 +99,10 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 ##############################################################################
 # Let's also import a model of a satellite to visualize circling the moon.
 
-obj = io.load_polydata(r"C:\Users\melin\OneDrive\Desktop\summer2020internship\satellite_obj.obj")
-obj_mapper = utils.get_polymapper_from_polydata(obj)
-satellite_actor = utils.get_actor_from_polymapper(obj_mapper)
+fetch_viz_models()
+filename = read_viz_models("satellite_obj.obj")
+satellite_actor = utils.get_actor_from_polymapper(filename)
+
 satellite_actor.SetPosition(-0.75, 0.1, 0.4)
 satellite_actor.SetScale(0.005, 0.005, 0.005)
 
