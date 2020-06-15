@@ -100,8 +100,15 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 obj = io.load_polydata(r"C:\Users\melin\OneDrive\Desktop\summer2020internship\satellite_obj.obj")
 obj_mapper = utils.get_polymapper_from_polydata(obj)
 satellite_actor = utils.get_actor_from_polymapper(obj_mapper)
-satellite_actor.SetPosition(0.75, 0.1, 0.4)
+satellite_actor.SetPosition(-0.75, 0.1, 0.4)
 satellite_actor.SetScale(0.005, 0.005, 0.005)
+
+
+##############################################################################
+# In the ``timer_callback`` function, use if statements to specify when
+# certain events will happen in the animation, based on the position that
+# the counter is at. So, for example, the earth actor will continue to
+# rotate while the count is less than 450.
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
@@ -110,28 +117,33 @@ def timer_callback(_obj, _event):
         utils.rotate(earth_actor, (1, 0, 1, 0))
     if cnt % 5 == 0 and cnt < 450:
         showm.scene.azimuth(-1)
-    if cnt == 450:
-        scene.set_camera(position=(-4.34, 0.00, 0.24), focal_point=(0.00, 0.35, 0.00), view_up=(0.00, 1.00, 0.00))
-    if cnt > 450 and cnt < 700:
+    if cnt == 300:
+         scene.set_camera(position=(-3.679, 0.00, 2.314), focal_point=(0.0, 0.35, 0.00), view_up=(0.00, 1.00, 0.00))
+    if cnt > 300 and cnt < 450:
         scene.zoom(1.01)
-    if cnt >= 700 and cnt < 725:
+    if cnt == 450:
+        print(scene.get_camera())
+    if cnt >= 450 and cnt < 1500:
         scene.add(sphere_actor)
         scene.add(text_actor)
-    if cnt == 725:
-        scene.set_camera(position=(0.5, 0.1, 0.00), focal_point=(1, 0.1, 0.5), view_up=(0.00, 1.00, 0.00))
+    if cnt >= 450 and cnt < 550:
+        scene.zoom(1.01)
+    if cnt == 550:
+        moon_actor.SetPosition(-1, 0.1, 0.5)
+        scene.set_camera(position=(-0.5, 0.1, 0.00), focal_point=(-1, 0.1, 0.5), view_up=(0.00, 1.00, 0.00))
         scene.zoom(0.03)
         scene.add(satellite_actor)
         scene.rm(earth_actor)
-    if cnt > 725 and cnt < 1000:
+    if cnt > 550 and cnt < 750:
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
-        satellite_actor.SetPosition(0.75, 0.1-cnt/10000, 0.4)
-        #print(satellite_actor.GetPosition())
-    if cnt >= 1000 and cnt < 1300:
+        satellite_actor.SetPosition(-0.8, 0.1-cnt/10000, 0.4)
+        print(satellite_actor.GetPosition())
+    if cnt >= 750 and cnt < 950:
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
-        satellite_actor.SetPosition(0.75, 0+cnt/10000, 0.4)
-    if cnt == 2000:
+        satellite_actor.SetPosition(-0.8, 0.02+cnt/15000, 0.4)
+    if cnt == 1000:
         showm.exit()
 
 ##############################################################################
