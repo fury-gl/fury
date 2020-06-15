@@ -1080,6 +1080,8 @@ class TextBlock2D(UI):
         Makes text italicised.
     shadow : bool
         Adds text shadow.
+    size : (int, int)
+        Size (width, height) in pixels of the text bounding box.
     """
 
     def __init__(self, text="Text Block", font_size=18, font_family='Arial',
@@ -1137,7 +1139,7 @@ class TextBlock2D(UI):
         self.handle_events(self.actor)
 
     def resize(self, size):
-        """Resize the button.
+        """Resize TextBlock2D.
 
         Parameters
         ----------
