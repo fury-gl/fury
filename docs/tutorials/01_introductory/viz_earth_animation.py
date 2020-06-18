@@ -80,7 +80,8 @@ counter = itertools.count()
 # The timer will call this user defined callback every 200 milliseconds. The
 # application will exit after the callback has been called 200 times.
 
-scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00), view_up=(0.00, 1.00, 0.00))
+scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00), 
+                 view_up=(0.00, 1.00, 0.00))
 
 ##############################################################################
 # Let's create a sphere actor to add to the Earth. We will place this sphere
@@ -93,7 +94,8 @@ sphere_actor = actor.sphere(center, window.colors.blue_medium, radius)
 ##############################################################################
 # Also creating a text actor to add below the sphere.
 
-text_actor = actor.text_3d("Bloomington, Indiana", (-0.42, 0.31, 0.03), window.colors.white, 0.004,)
+text_actor = actor.text_3d("Bloomington, Indiana", (-0.42, 0.31, 0.03), 
+                           window.colors.white, 0.004)
 utils.rotate(text_actor, (-90, 0, 1, 0))
 
 ##############################################################################
@@ -121,7 +123,9 @@ def timer_callback(_obj, _event):
     if cnt % 5 == 0 and cnt < 450:
         showm.scene.azimuth(-1)
     if cnt == 300:
-         scene.set_camera(position=(-3.679, 0.00, 2.314), focal_point=(0.0, 0.35, 0.00), view_up=(0.00, 1.00, 0.00))
+        scene.set_camera(position=(-3.679, 0.00, 2.314),
+                         focal_point=(0.0, 0.35, 0.00),
+                         view_up=(0.00, 1.00, 0.00))
     if cnt > 300 and cnt < 450:
         scene.zoom(1.01)
     if cnt == 450:
@@ -133,7 +137,9 @@ def timer_callback(_obj, _event):
         scene.zoom(1.01)
     if cnt == 550:
         moon_actor.SetPosition(-1, 0.1, 0.5)
-        scene.set_camera(position=(-0.5, 0.1, 0.00), focal_point=(-1, 0.1, 0.5), view_up=(0.00, 1.00, 0.00))
+        scene.set_camera(position=(-0.5, 0.1, 0.00),
+                         focal_point=(-1, 0.1, 0.5),
+                         view_up=(0.00, 1.00, 0.00))
         scene.zoom(0.03)
         scene.add(satellite_actor)
         scene.rm(earth_actor)
@@ -148,6 +154,7 @@ def timer_callback(_obj, _event):
         satellite_actor.SetPosition(-0.8, 0.02+cnt/15000, 0.4)
     if cnt == 1000:
         showm.exit()
+
 
 ##############################################################################
 # Watch your new animation take place!
