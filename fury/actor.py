@@ -1725,6 +1725,86 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
+def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
+                   scale=1):
+    """Visualize one or many octagonal prisms with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Octagonal prism positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the octagonal prism.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Octagonal prism size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)*255
+    >>> scales = np.random.rand(3, 1)
+    >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_octagonalprism()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
+
+    big_verts, big_faces, big_colors, _ = res
+    oct_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return oct_actor
+
+
+def frustum(centers, directions=(1, 0, 0), colors=(0, 255, 0), scale=1):
+    """Visualize one or many frustum pyramids with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Frustum pyramid positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the frustum pyramid.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    heights : int or ndarray (N,3) or tuple (3,), optional
+        Frustum pyramid size on each direction (x, y), default(1)
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(4, 3)
+    >>> dirs = np.random.rand(4, 3)
+    >>> colors = np.random.rand(4, 3)*255
+    >>> scales = np.random.rand(4, 1)
+    >>> actor = actor.frustum(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_frustum()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
+
+    big_verts, big_faces, big_colors, _ = res
+    frustum_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return frustum_actor
+
+
 def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                  colors=(255, 0, 0), scale=1):
     """Visualize one or many superquadrics with different features.

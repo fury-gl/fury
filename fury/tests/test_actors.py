@@ -930,6 +930,47 @@ def test_cones_vertices_faces(interactive=False):
     scene.clear()
 
 
+def test_octprism_vertices_faces(interactive=False):
+
+    scene = window.Scene()
+    centers = np.array([[0, 0, 0], [1, 3, 0], [2, 0, 4]])
+    directions = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    colors = np.array([[255, 0, 0], [0, 100, 100], [50, 0, 100]])
+    octprism_actor = actor.octagonalprism(centers=centers,
+                                          directions=directions,
+                                          colors=colors)
+    scene.add(octprism_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
+    scene.clear()
+
+
+def test_frustum_vertices_faces(interactive=False):
+
+    scene = window.Scene()
+    centers = np.array([[1, 0, 0], [0, 1, 2], [3, 0, 1]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [1, 0, 0]])
+    colors = np.array([[0, 200, 0], [255, 0, 0], [0, 200, 100]])
+    frustum_actor = actor.frustum(centers=centers,
+                                  directions=directions,
+                                  colors=colors)
+    frustum_actor.GetProperty().SetAmbient(1)
+    frustum_actor.GetProperty().SetDiffuse(0.0)
+    frustum_actor.GetProperty().SetSpecular(0.0)
+    scene.add(frustum_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
+    scene.clear()
+
+
 def test_geometry_actor(interactive=False):
 
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
