@@ -1,4 +1,5 @@
 """
+================================
 Collisions of particles in a box
 ================================
 
@@ -8,7 +9,7 @@ particles in a box using FURY.
 
 ##############################################################################
 # In this example, the particles collide with each other and with the walls
-# of the container. When the collision happens between two particles,
+# of the container. When the the collision happens between two particles,
 # the particle with less velocity changes its color and gets the same color
 # as the particle with higher velocity. For simplicity, in this demo we
 # do not apply forces.
@@ -58,7 +59,7 @@ def collision():
         distance = np.linalg.norm(xyz[i] - xyz[j])
         vel_mag_i = np.linalg.norm(vel[i])
         vel_mag_j = np.linalg.norm(vel[j])
-        # Collision happens if the distance between the centers of two
+        # Collision happens if the distance between the centars of two
         # particles is less or equal to the sum of their radii
         if (distance <= (radii[i] + radii[j])):
             vel[i] = -vel[i]
@@ -107,9 +108,10 @@ radii = np.random.rand(num_particles) + 0.01
 scene = window.Scene()
 box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
-box_colors = np.array([[1, 1, 1, 0.2]])
+box_colors = np.array([[255, 255, 255]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
-                      scales=(box_lx, box_ly, box_lz))
+                      scale=(box_lx, box_ly, box_lz))
+utils.opacity(box_actor, 0.2)
 scene.add(box_actor)
 
 lines = box_edges(box_lx, box_ly, box_lz)
@@ -127,7 +129,6 @@ showm = window.ShowManager(scene,
 showm.initialize()
 tb = ui.TextBlock2D(bold=True)
 scene.zoom(0.8)
-scene.azimuth(30)
 
 # use itertools to avoid global variables
 counter = itertools.count()
@@ -151,6 +152,7 @@ def timer_callback(_obj, _event):
     utils.update_actor(sphere_actor)
 
     scene.reset_clipping_range()
+    # scene.azimuth(0.1)
     showm.render()
 
     if cnt == steps:
@@ -159,9 +161,4 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 showm.add_timer_callback(True, 50, timer_callback)
-
-interactive = False
-if interactive:
-    showm.start()
-
-window.record(showm.scene, size=(900, 768), out_path="simple_collisions.png")
+showm.start()
