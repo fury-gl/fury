@@ -1,5 +1,4 @@
 """
-================================
 Collisions of particles in a box
 ================================
 
@@ -117,11 +116,6 @@ scene.add(box_actor)
 lines = box_edges(box_lx, box_ly, box_lz)
 line_actor = actor.streamtube(lines, colors=(1, 0.5, 0), linewidth=0.1)
 scene.add(line_actor)
-
-sphere_actor = actor.sphere(centers=xyz,
-                            colors=colors,
-                            radii=radii)
-scene.add(sphere_actor)
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=True,
