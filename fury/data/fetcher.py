@@ -361,11 +361,13 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
 
 def read_viz_models(fname):
     """Read specific model.
+    
     Parameters
     ----------
     fname : str
         Filename of the model.
         This should be found in folder HOME/.fury/models/.
+    
     Returns
     --------
     path : str
@@ -377,11 +379,13 @@ def read_viz_models(fname):
 
 def read_viz_textures(fname):
     """Read specific texture.
+    
     Parameters
     ----------
     fname: str
         Filename of the texture.
         This should be found in folder HOME/.fury/textures/.
+    
     Returns
     -------
     path : str

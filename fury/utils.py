@@ -79,6 +79,66 @@ def numpy_to_vtk_colors(colors):
     return vtk_colors
 
 
+def numpy_to_vtk_cells(data, is_coords=True):
+    """Convert numpy array to a vtk cell array.
+
+    Parameters
+    ----------
+    data : ndarray
+        points coordinate or connectivity array (e.g triangles).
+    is_coords : ndarray
+        Select the type of array. default: True.
+
+    Returns
+    -------
+    vtk_cell : vtkCellArray
+        connectivity + offset information
+
+    """
+    data = np.array(data)
+    nb_cells = len(data)
+
+    # Get lines_array in vtk input format
+    connectivity = data.flatten() if not is_coords else []
+    offset = [0, ]
+    current_position = 0
+
+    cell_array = vtk.vtkCellArray()
+
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        for i in range(nb_cells):
+            current_len = len(data[i])
+            offset.append(offset[-1] + current_len)
+
+            if is_coords:
+                end_position = current_position + current_len
+                connectivity += list(range(current_position, end_position))
+                current_position = end_position
+
+        connectivity = np.array(connectivity, np.intp)
+        offset = np.array(offset, dtype=connectivity.dtype)
+
+        vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+        cell_array.SetData(
+            numpy_support.numpy_to_vtk(offset, deep=True,
+                                       array_type=vtk_array_type),
+            numpy_support.numpy_to_vtk(connectivity, deep=True,
+                                       array_type=vtk_array_type))
+    else:
+        for i in range(nb_cells):
+            current_len = len(data[i])
+            end_position = current_position + current_len
+            connectivity += [current_len]
+            connectivity += list(range(current_position, end_position))
+            current_position = end_position
+
+        connectivity = np.array(connectivity)
+        cell_array.GetData().DeepCopy(numpy_support.numpy_to_vtk(connectivity))
+
+    cell_array.SetNumberOfCells(nb_cells)
+    return cell_array
+
+
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate the input_array data at the given indices
     using trilinear interpolation.
@@ -148,44 +208,24 @@ def lines_to_vtk_polydata(lines, colors=None):
     # Get the 3d points_array
     points_array = np.vstack(lines)
 
-    nb_lines = len(lines)
-    nb_points = len(points_array)
-
-    lines_range = range(nb_lines)
-
-    # Get lines_array in vtk input format
-    lines_array = []
-    # Using np.intp (instead of int64), because of a bug in numpy:
-    # https://github.com/nipy/dipy/pull/789
-    # https://github.com/numpy/numpy/issues/4384
-    points_per_line = np.zeros([nb_lines], np.intp)
-    current_position = 0
-    for i in lines_range:
-        current_len = len(lines[i])
-        points_per_line[i] = current_len
-
-        end_position = current_position + current_len
-        lines_array += [current_len]
-        lines_array += range(current_position, end_position)
-        current_position = end_position
-
-    lines_array = np.array(lines_array)
-
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
 
     # Set Lines to vtk array format
-    vtk_lines = vtk.vtkCellArray()
-    vtk_lines.GetData().DeepCopy(numpy_support.numpy_to_vtk(lines_array))
-    vtk_lines.SetNumberOfCells(nb_lines)
+    vtk_cell_array = numpy_to_vtk_cells(lines)
 
     # Create the poly_data
     poly_data = vtk.vtkPolyData()
     poly_data.SetPoints(vtk_points)
-    poly_data.SetLines(vtk_lines)
+    poly_data.SetLines(vtk_cell_array)
 
     # Get colors_array (reformat to have colors for each points)
     #           - if/else tested and work in normal simple case
+    nb_points = len(points_array)
+    nb_lines = len(lines)
+    lines_range = range(nb_lines)
+    points_per_line = [len(lines[i]) for i in lines_range]
+    points_per_line = np.array(points_per_line, np.intp)
     color_is_scalar = False
     if colors is None or colors is False:
         # set automatic rgb colors
@@ -349,15 +389,18 @@ def set_polydata_triangles(polydata, triangles):
         triangles, represented as 2D ndarrays (Nx3)
 
     """
-    isize = vtk.vtkIdTypeArray().GetDataTypeSize()
-    req_dtype = np.int32 if isize == 4 else np.int64
-    vtk_triangles = np.hstack(
-        np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
-              triangles.astype(req_dtype)])
-    vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(vtk_triangles,
-                                                          deep=True)
     vtk_cells = vtk.vtkCellArray()
-    vtk_cells.SetCells(len(triangles), vtk_triangles)
+    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+        vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
+    else:
+        isize = vtk.vtkIdTypeArray().GetDataTypeSize()
+        req_dtype = np.int32 if isize == 4 else np.int64
+        all_triangles = np.hstack(
+            np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
+                  triangles.astype(req_dtype)])
+        vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(all_triangles,
+                                                              deep=True)
+        vtk_cells.SetCells(len(triangles), vtk_triangles)
     polydata.SetPolys(vtk_cells)
     return polydata
 
