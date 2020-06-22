@@ -32,7 +32,6 @@ MODEL_DATA_URL = \
 TEXTURE_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
 
-
 class FetcherError(Exception):
     pass
 
@@ -300,7 +299,7 @@ fetch_viz_textures = _make_fetcher(
      'jupiter.jpg', 'masonry.bmp',
      'skybox-nx.jpg', 'skybox-ny.jpg',
      'skybox-px.jpg', 'skybox-py.jpg',
-     'skybox-pz.jpg', 'moon_8k.jpg'
+     'skybox-pz.jpg', 'moon_8k.jpg',
      '8k_mercury', '8k_venus_surface',
      '8k_mars', '8k_saturn',
      '8k_saturn_ring_alpha',
@@ -311,7 +310,7 @@ fetch_viz_textures = _make_fetcher(
      'jupiter.jpg', 'masonry.bmp',
      'skybox-nx.jpg', 'skybox-ny.jpg',
      'skybox-px.jpg', 'skybox-py.jpg',
-     'skybox-pz.jpg', 'moon_8k.jpg',
+     'skybox-pz.jpg', 'moon-8k.jpg', # 12
      '8k_mercury', '8k_venus_surface',
      '8k_mars', '8k_saturn',
      '8k_saturn_ring_alpha',
