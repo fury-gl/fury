@@ -2,13 +2,14 @@
 ===============
 Texture Sphere Animation
 ===============
-In this tutorial, we will show how to animated a textured sphere.
+In this tutorial, we will show how to animate a textured sphere.
 """
 
 import numpy as np
 from fury import window, actor, utils, primitive, io
 import itertools
 from fury.data.fetcher import read_viz_textures, fetch_viz_textures
+from fury.data.fetcher import read_viz_models, fetch_viz_models
 
 ##############################################################################
 # Create a scene to start.
@@ -21,10 +22,6 @@ scene = window.Scene()
 # Collect the Earth texture from the FURY github using ``fetch_viz_textures``
 # and  ``read_viz_textures``, then use ``io.load_image`` to load in the
 # image.
-
-# fetch_viz_textures()
-# filename = read_viz_textures("1_earth_8k.jpg")
-# image = io.load_image(filename)
 
 fetch_viz_textures()
 filename = read_viz_textures("1_earth_8k.jpg")
@@ -39,8 +36,7 @@ earth_actor = actor.texture_on_sphere(image)
 ##############################################################################
 # Then, do the same for the moon.
 
-fetch_viz_textures()
-filename = read_viz_textures("moon_8k.jpg")
+filename = read_viz_textures("moon-8k.jpg")
 image = io.load_image(filename)
 
 moon_actor = actor.texture_on_sphere(image)
@@ -80,7 +76,7 @@ counter = itertools.count()
 # The timer will call this user defined callback every 200 milliseconds. The
 # application will exit after the callback has been called 200 times.
 
-scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00), 
+scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00),
                  view_up=(0.00, 1.00, 0.00))
 
 ##############################################################################
@@ -94,7 +90,7 @@ sphere_actor = actor.sphere(center, window.colors.blue_medium, radius)
 ##############################################################################
 # Also creating a text actor to add below the sphere.
 
-text_actor = actor.text_3d("Bloomington, Indiana", (-0.42, 0.31, 0.03), 
+text_actor = actor.text_3d("Bloomington, Indiana", (-0.42, 0.31, 0.03),
                            window.colors.white, 0.004)
 utils.rotate(text_actor, (-90, 0, 1, 0))
 
