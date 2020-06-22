@@ -4,7 +4,6 @@
 
 """
 
-
 import numpy as np
 import sys
 import math
@@ -12,28 +11,32 @@ from fury import window, actor, ui
 import itertools
 from numba import numpy_support
 from vtk.util import numpy_support
-import itertools
 
-num_particles = 20
-box_lx = 100
-box_ly = 100
-box_lz = 100
-global force, velocity, xyz
-force = np.random.rand(num_particles, 3)
-velocity = np.random.rand(num_particles, 3)
-xyz =  np.random.rand(num_particles, 3)
+global xyz, box_lx, box_ly, box_lz, dt, steps
+
+num_particles = 100
+box_lx = 50
+box_ly = 50
+box_lz = 50
+steps = 500
+dt = 0.5
+xyz = np.random.rand(num_particles, 3)
+vel = np.random.rand(num_particles, 3) - 0.5
 colors = np.random.rand(num_particles, 3)
-radii = 10 * np.random.rand(num_particles)
+radii = 0.7  # * np.random.rand(num_particles)
 
 scene = window.Scene()
 box_centers = np.array([[box_lx * 0.5, box_ly * 0.5, box_lz * 0.5]])
 box_directions = np.array([[0, 1, 0]])
-box_colors = np.array([[1, 0, 0, 0.2]])
+box_colors = np.array([[1, 1, 1, 0.2]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
                       size=(box_lx, box_ly, box_lz),
                       heights=1, vertices=None, faces=None)
-box_actor.GetProperty().SetRepresentationToWireframe()
-box_actor.GetProperty().SetLineWidth(10)
+
+
+# box_actor.GetProperty().SetRepresentationToWireframe()
+box_actor.GetProperty().SetLineWidth(1)
+box_actor.GetProperty().SetOpacity(1)
 
 sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
@@ -71,23 +74,29 @@ global all_vertices
 all_vertices = get_vertices(sphere_actor)
 initial_vertices = all_vertices.copy()
 no_vertices_per_sphere = len(all_vertices)/num_particles
-dt = 0.5
 
-steps = 100
 def timer_callback(_obj, _event):
-    global force, velocity, xyz
+    global vel, xyz, box_lx, box_ly, box_lz, dt, steps
     cnt = next(counter)
-    tb.message = "Let's count up to 100 and exit :" + str(cnt)
-    velocity = velocity + force * (0.5 * dt)
-    xyz = xyz + velocity * dt
-    xyz[:, 0] = np.where(xyz[:, 0] >= (box_lx-radii),  xyz[:, 0] - (box_lx - radii), xyz[:, 0])
-    xyz[:, 0] = np.where(xyz[:, 0] <= radii,  xyz[:, 0] + radii, xyz[:, 0])
+    tb.message = "Let's count up to 500 and exit :" + str(cnt)
+    xyz = xyz + vel * dt
+    vel[:, 0] = np.where(xyz[:, 0] <= 0, vel[:, 0] * -1 , vel[:, 0])
+    xyz[:, 0] = np.where(xyz[:, 0] <= 0,  1.5 * radii, xyz[:, 0])
 
-    xyz[:, 1] = np.where(xyz[:, 1] >= (box_ly-radii),  xyz[:, 1] - (box_ly - radii), xyz[:, 1])
-    xyz[:, 1] = np.where(xyz[:, 1] <= radii,  xyz[:, 1] + radii, xyz[:, 1])
+    vel[:, 0] = np.where(xyz[:, 0] >= (box_lx-radii), vel[:, 0] * -1 , vel[:, 0])
+    xyz[:, 0] = np.where(xyz[:, 0] >= (box_lx-radii),  box_lx - 1.5*radii, xyz[:, 0])
 
-    xyz[:, 2] = np.where(xyz[:, 2] >= (box_lz-radii),  xyz[:, 2] - (box_lz - radii), xyz[:, 2])
-    xyz[:, 2] = np.where(xyz[:, 2] <= radii,  xyz[:, 2] + radii, xyz[:, 2])
+    vel[:, 1] = np.where(xyz[:, 1] <= 0, vel[:, 1] * -1 , vel[:, 1])
+    xyz[:, 1] = np.where(xyz[:, 1] <= 0,  1.5 * radii, xyz[:, 1])
+
+    vel[:, 1] = np.where(xyz[:, 1] >= (box_ly-radii), vel[:, 1] * -1 , vel[:, 1])
+    xyz[:, 1] = np.where(xyz[:, 1] >= (box_ly-radii),  box_ly - 1.5*radii, xyz[:, 1])
+
+    vel[:, 2] = np.where(xyz[:, 2] <= 0, vel[:, 2] * -1 , vel[:, 2])
+    xyz[:, 2] = np.where(xyz[:, 2] <= 0,  1.5 * radii, xyz[:, 2])
+
+    vel[:, 2] = np.where(xyz[:, 2] >= (box_lz-radii), vel[:, 2] * -1 , vel[:, 2])
+    xyz[:, 2] = np.where(xyz[:, 2] >= (box_lz-radii),  box_lz - 1.5*radii, xyz[:, 2])
 
     all_vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_sphere, axis=0)
