@@ -78,7 +78,9 @@ for i in range(wall_height):
         pos, _ = p.getBasePositionAndOrientation(brick)
         brick_actor.SetPosition(*pos)
 
-        # Set brick collision with the ball and base.
+        # NOTE: Collision is enabled by default for dynamic bodies.
+        # For example, we can set brick collision with the ball and base
+        # explicitly.
         enableCol = 1
         p.setCollisionFilterPair(ball, brick, -1, -1, enableCol)
         p.setCollisionFilterPair(base, brick, -1, -1, enableCol)
@@ -109,6 +111,13 @@ apply_force = True
 base_pos, base_orn = p.getBasePositionAndOrientation(base)
 base_actor.SetPosition(*base_pos)
 
+# Function for syncing actors with multibodies.
+def sync_actor(actor, multibody):
+    pos, orn = p.getBasePositionAndOrientation(multibody)
+    actor.SetPosition(*pos)
+    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
+    actor.SetOrientation(*orn_deg)
+    actor.RotateWXYZ(*orn)
 
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
@@ -130,19 +139,12 @@ def timer_callback(_obj, _event):
             apply_force = False
 
     # Set position and orientation of the ball.
-    ball_actor.SetPosition(*ball_pos)
-    orn_deg = np.degrees(p.getEulerFromQuaternion(ball_orn))
-    ball_actor.SetOrientation(*orn_deg)
-    ball_actor.RotateWXYZ(*ball_orn)
+    sync_actor(ball_actor, ball)
 
     # Updating the position and orientation of each individual brick.
     for i, brick_row in enumerate(brick_actors):
         for j, brick_actor in enumerate(brick_row):
-            brick_pos, brick_orn = p.getBasePositionAndOrientation(brick_Ids[i][j])
-            brick_actor.SetPosition(*brick_pos)
-            orn_deg = np.degrees(p.getEulerFromQuaternion(brick_orn))
-            brick_actor.SetOrientation(*orn_deg)
-            brick_actor.RotateWXYZ(*brick_orn)
+            sync_actor(brick_actor, brick_Ids[i][j])
 
     # Simulate a step.
     p.stepSimulation()
