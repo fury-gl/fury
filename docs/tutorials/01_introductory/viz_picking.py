@@ -9,7 +9,7 @@ Here we present a tutorial of picking objects in the 3D world.
 """
 
 import numpy as np
-from fury import actor, window, ui, utils
+from fury import actor, window, ui, utils, pick
 
 xyzr = np.array([[0, 0, 0, 25], [100, 0, 0, 50], [200, 0, 0, 100]])
 
@@ -37,48 +37,20 @@ vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
 num_objects = xyzr.shape[0]
 
+print(sphere_actor)
+
 scene.add(sphere_actor)
 scene.reset_camera()
 
 global showm
 
-
-class PickingManager(object):
-    def __init__(self, mode='face'):
-        self.mode = mode
-        if self.mode == 'face':
-            self.picker = window.vtk.vtkCellPicker()
-        elif mode == 'vertex':
-            self.picker = window.vtk.vtkPointPicker()
-        elif self.mode == 'actor':
-            self.picker = window.vtk.vtkPropPicker()
-        elif mode == 'world':
-            self.picker = window.vtk.vtkWorldPointPicker()
-        elif self.mode == 'selector':
-            self.picker = window.vtk.vtkScenePicker()
-        else:
-            raise ValueError('Unknown picking option')
-
-    def pick(self, x, y, z, sc):
-        self.picker.Pick(x, y, z, sc)
-        if self.mode == 'face':
-            return {'vertex': self.picker.GetPointId(),
-                    'face': self.picker.GetCellId()}
-        elif self.mode == 'vertex':
-            return {'vertex': self.picker.GetPointId(),
-                    'face': None}
-        else:
-            raise ValueError('Uknown picking mode to pick')
-
-    def event_position(self, iren):
-        return showm.iren.GetEventPosition()
-
-
 ###############################################################################
 # Select a picking option
 
-# pickm = PickingManager('face')
-pickm = PickingManager('vertex')
+pickm = pick.PickingManager('world')
+# pickm = pick.PickingManager('actor')
+# pickm = pick.PickingManager('face')
+# pickm = PickingManager('vertex')
 
 
 def left_click_callback(obj, event):
