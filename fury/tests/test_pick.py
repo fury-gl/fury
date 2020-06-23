@@ -35,17 +35,21 @@ def test_picking_manager():
     # use itertools to avoid global variables
     counter = itertools.count()
 
-
+    mode = 'face'
+    pickm = pick.PickingManager(mode=mode)
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
         tb.message = "Let's count up to 100 and exit :" + str(cnt)
-        showm.scene.azimuth(0.05 * cnt)
+        # showm.scene.azimuth(0.05 * cnt)
         sphere_actor.GetProperty().SetOpacity(cnt/100.)
+        if cnt % 10 == 0:
+            info = pickm.pick(900/2, 768/2, 0, scene)
+            print(info)
+
         showm.render()
         if cnt == 100:
             showm.exit()
-
 
     scene.add(tb)
 
