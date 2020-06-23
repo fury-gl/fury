@@ -25,8 +25,8 @@ def test_picking_manager():
     scene.add(sphere_actor)
 
     showm = window.ShowManager(scene,
-                            size=(900, 768), reset_camera=False,
-                            order_transparent=True)
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
 
     showm.initialize()
 
@@ -35,8 +35,9 @@ def test_picking_manager():
     # use itertools to avoid global variables
     counter = itertools.count()
 
-    mode = 'face'
+    mode = 'selector'
     pickm = pick.PickingManager(mode=mode)
+    pickm.picker.SetRenderer(scene)
 
     def timer_callback(_obj, _event):
         cnt = next(counter)

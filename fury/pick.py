@@ -1,20 +1,36 @@
-from fury import window
-
+import vtk
+# from vtkmodules import vtkCommonCore
 
 class PickingManager(object):
     def __init__(self, mode='face', selector_vertex=True):
+        """ Picking Manager helps with picking 3D objects
+
+        Parameters
+        -----------
+        mode : str
+            If ``vertex`` allows to pick vertices indices.
+            If ``face`` allows to pick face indices and vertices indices.
+            If ``actor`` allows to pick actor index.
+            If ``world`` allows to pick xyz position in world coords.
+            If ``selector`` allows to pick faces and vertices but should
+            be faster in hovering.
+
+        selector_vertex : bool
+            Used only in ``selector`` mode.
+        """
         self.mode = mode
+        self.selector_vertex = selector_vertex
         if self.mode == 'face':
-            self.picker = window.vtk.vtkCellPicker()
+            self.picker = vtk.vtkCellPicker()
         elif mode == 'vertex':
-            self.picker = window.vtk.vtkPointPicker()
+            self.picker = vtk.vtkPointPicker()
         elif self.mode == 'actor':
-            self.picker = window.vtk.vtkPropPicker()
+            self.picker = vtk.vtkPropPicker()
         elif mode == 'world':
-            self.picker = window.vtk.vtkWorldPointPicker()
+            self.picker = vtk.vtkWorldPointPicker()
         elif self.mode == 'selector':
-            self.picker = window.vtk.vtkScenePicker()
-            self.picker.SetEnableVertexPicking(selector_vertex)
+            self.picker = vtk.vtkScenePicker()
+            self.picker.SetEnableVertexPicking(self.selector_vertex)
         else:
             raise ValueError('Unknown picking option')
 
@@ -34,7 +50,7 @@ class PickingManager(object):
         elif self.mode == 'world':
             info['xyz'] = self.picker.GetPickPosition()
         elif self.mode == 'selector':
-            event_pos = (x, y, z)
+            event_pos = (int(x), int(y))
             info['vertex'] = self.picker.GetVertexId(event_pos)
             info['face'] = self.picker.GetCellId(event_pos)
         else:
