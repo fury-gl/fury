@@ -158,4 +158,4 @@ def timer_callback(_obj, _event):
 showm.initialize()
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
-window.record(showm.scene, size=(900,768), out_path="viz_earth_animation.png")
+window.record(showm.scene, size=(900, 768), out_path="viz_earth_animation.png")
