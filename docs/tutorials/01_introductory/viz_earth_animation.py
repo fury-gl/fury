@@ -99,7 +99,7 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 
 fetch_viz_models()
 filename = read_viz_models("satellite_obj.obj")
-satellite_actor = utils.get_actor_from_polymapper(filename)
+satellite_actor = utils.get_actor_from_polydata(filename)
 
 satellite_actor.SetPosition(-0.75, 0.1, 0.4)
 satellite_actor.SetScale(0.005, 0.005, 0.005)
