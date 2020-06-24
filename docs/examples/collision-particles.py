@@ -20,7 +20,7 @@ box_lx = 50
 box_ly = 50
 box_lz = 50
 steps = 500
-dt = 2
+dt = 0.5
 
 xyz = 20 * (np.random.rand(num_particles, 3) - 0.5)
 vel = np.random.rand(num_particles, 3) - 0.5
@@ -82,20 +82,18 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
     tb.message = "Let's count up to 500 and exit :" + str(cnt)
 
+    vel[:, 0] = np.where(((xyz[:, 0] < - 0.5 * box_lx + radii) | (xyz[:, 0] > (0.5 * box_lx - radii))),
+                         - vel[:, 0], vel[:, 0])
+    vel[:, 1] = np.where(((xyz[:, 1] < - 0.5 * box_ly + radii) | (xyz[:, 1] > (0.5 * box_ly - radii))),
+                         - vel[:, 1], vel[:, 1])
+    vel[:, 2] = np.where(((xyz[:, 2] < -0.5 * box_lz + radii) | (xyz[:, 2] > (0.5 * box_lz - radii))),
+                         - vel[:, 2], vel[:, 2])
+
     xyz = xyz + vel * dt
     all_vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_sphere, axis=0)
     set_vertices(sphere_actor, all_vertices)
     modified(sphere_actor)
-
-    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + radii) | (xyz[:, 0] >= (0.5 * box_lx - radii))),
-                         - vel[:, 0], vel[:, 0])
-    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + radii) | (xyz[:, 1] >= (0.5 * box_ly - radii))),
-                         - vel[:, 1], vel[:, 1])
-    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + radii) | (xyz[:, 2] >= (0.5 * box_lz - radii))),
-                         - vel[:, 2], vel[:, 2])
-
-
     showm.render()
 
     if cnt == steps:
@@ -103,5 +101,5 @@ def timer_callback(_obj, _event):
 
 
 scene.add(tb)
-showm.add_timer_callback(True, 100, timer_callback)
+showm.add_timer_callback(True, 200, timer_callback)
 showm.start()
