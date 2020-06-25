@@ -1,0 +1,100 @@
+import numpy as np
+from fury import window, actor, ui
+import itertools
+import pybullet as p
+
+client = p.connect(p.DIRECT)
+
+red_radius = 0.5
+blue_radius = 0.5
+duration = 50
+
+#### Red Ball
+red_ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
+                            colors=np.array([[1, 0, 0]]),
+                            radii=red_radius)
+
+red_ball_coll = p.createCollisionShape(
+    p.GEOM_SPHERE,
+    radius=red_radius)
+
+red_ball = p.createMultiBody(baseMass=0.5,
+                        baseCollisionShapeIndex=red_ball_coll,
+                        basePosition=[10, 0, 0],
+                        baseOrientation=[0, 0, 0, 1])
+
+### Blue ball
+blue_ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
+                            colors=np.array([[0, 0, 1]]),
+                            radii=blue_radius)
+
+blue_ball_coll = p.createCollisionShape(
+    p.GEOM_SPHERE,
+    radius=blue_radius)
+
+blue_ball = p.createMultiBody(baseMass=0.5,
+                        baseCollisionShapeIndex=red_ball_coll,
+                        basePosition=[-10, 0, 0],
+                        baseOrientation=[0, 0, 0, 1])
+
+p.changeDynamics(red_ball, -1, restitution=0.6)
+p.changeDynamics(blue_ball, -1, restitution=0.6)
+
+scene = window.Scene()
+scene.add(actor.axes())
+scene.add(red_ball_actor)
+scene.add(blue_ball_actor)
+
+showm = window.ShowManager(scene,
+                           size=(900, 700), reset_camera=False,
+                           order_transparent=True)
+
+showm.initialize()
+counter = itertools.count()
+
+def sync_actor(actor, multibody):
+    pos, orn = p.getBasePositionAndOrientation(multibody)
+    actor.SetPosition(*pos)
+    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
+    actor.SetOrientation(*orn_deg)
+    actor.RotateWXYZ(*orn)
+
+apply_force = True
+tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
+scene.add(tb)
+
+def timer_callback(_obj, _event):
+    global apply_force
+    cnt = next(counter)
+    showm.render()
+    red_pos, red_orn = p.getBasePositionAndOrientation(red_ball)
+    blue_pos, blue_orn = p.getBasePositionAndOrientation(blue_ball)
+
+    if apply_force:
+        p.applyExternalForce(red_ball, -1,
+                                forceObj=[-40000, 0, 0],
+                                posObj=red_pos,
+                                flags=p.WORLD_FRAME)
+
+        p.applyExternalForce(blue_ball, -1,
+                                forceObj=[40000, 0, 0],
+                                posObj=blue_pos,
+                                flags=p.WORLD_FRAME)
+
+        apply_force = 0
+
+    sync_actor(blue_ball_actor, blue_ball)
+    sync_actor(red_ball_actor, red_ball)
+
+    contact = p.getContactPoints(red_ball, blue_ball, -1, -1)
+    if len(contact) != 0:
+        tb.message = "Collision!!"
+
+    p.stepSimulation()
+
+    if cnt == 1200:
+        showm.exit()
+
+
+showm.add_timer_callback(True, duration, timer_callback)
+showm.start()
