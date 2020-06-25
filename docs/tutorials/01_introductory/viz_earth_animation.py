@@ -81,7 +81,7 @@ scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00),
 
 ##############################################################################
 # Let's create a sphere actor to add to the Earth. We will place this sphere
-# on the Earth's surface on Bloomington, home of FURY's headquarters!
+# on the Earth's surface on Bloomington, IN, home of FURY's headquarters!
 
 center = [[-0.39, 0.3175, 0.025]]
 radius = 0.002
