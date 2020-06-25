@@ -11,9 +11,13 @@ Here we present a tutorial of picking objects in the 3D world.
 import numpy as np
 from fury import actor, window, ui, utils, pick
 
-xyzr = np.array([[0, 0, 0, 25], [100, 0, 0, 50], [200, 0, 0, 100]])
+centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 
 colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
+
+radii = 0.1 * np.array([25, 50, 100.])
+
+selected = np.zeros(3, dtype=np.bool)
 
 ###############################################################################
 # Let's create a panel to show what is picked
@@ -30,13 +34,13 @@ panel.add_element(text_block, (0.3, 0.3))
 scene = window.Scene()
 
 label_actor = actor.label(text='Test')
-sphere_actor = actor.sphere(centers=0.5 * xyzr[:, :3],
-                            colors=colors[:],
-                            radii=0.1 * xyzr[:, 3])
+sphere_actor = actor.sphere(centers=centers,
+                            colors=colors,
+                            radii=radii)
 
 vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
-num_objects = xyzr.shape[0]
+num_objects = centers.shape[0]
 
 ax = actor.axes(scale=(10, 10, 10))
 
@@ -64,11 +68,24 @@ def left_click_callback(obj, event):
                              0, showm.scene)
     print(picked_info)
 
-    try:
-        vertex_index = picked_info['vertex']
-        object_index = np.floor((vertex_index / num_vertices) * num_objects)
-    except TypeError:
-        object_index = None
+
+    vertex_index = picked_info['vertex']
+    object_index = np.int(np.floor((vertex_index / num_vertices) * num_objects))
+
+    sec = np.int(num_vertices / num_objects)
+
+    if not selected[object_index]:
+        scale = 6/5
+        selected[object_index] = True
+    else:
+        scale = 5/6
+        selected[object_index] = False
+
+    vertices[object_index * sec: object_index * sec + sec] = scale * \
+        (vertices[object_index * sec: object_index * sec + sec] - \
+         centers[object_index]) + centers[object_index]
+
+    utils.update_actor(sphere_actor)
 
     face_index = picked_info['face']
 
