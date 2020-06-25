@@ -41,7 +41,7 @@ num_objects = xyzr.shape[0]
 ax = actor.axes(scale=(10, 10, 10))
 
 scene.add(sphere_actor)
-# scene.add(label_actor)
+scene.add(label_actor)
 scene.add(ax)
 scene.reset_camera()
 
@@ -50,9 +50,8 @@ global showm
 ###############################################################################
 # Select a picking option
 
-mode = 'face'
 
-pickm = pick.PickingManager(mode=mode)
+pickm = pick.PickingManager()
 
 
 def left_click_callback(obj, event):
@@ -67,7 +66,7 @@ def left_click_callback(obj, event):
 
     try:
         vertex_index = picked_info['vertex']
-        object_index = np.floor((vertex_index/num_vertices) * num_objects)
+        object_index = np.floor((vertex_index / num_vertices) * num_objects)
     except TypeError:
         object_index = None
 
