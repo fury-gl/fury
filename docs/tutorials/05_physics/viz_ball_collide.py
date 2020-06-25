@@ -62,6 +62,9 @@ def sync_actor(actor, multibody):
 apply_force = True
 tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
 scene.add(tb)
+scene.set_camera(position=(0.30, -18.78, 0.89),
+                 focal_point=(0.15, 0.25, 0.40),
+                 view_up=(0, 0, 1.00))
 
 def timer_callback(_obj, _event):
     global apply_force
