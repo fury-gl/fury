@@ -1,15 +1,15 @@
 """
-===============
+=========================
 Texture Sphere Animation
-===============
+=========================
 In this tutorial, we will show how to animate a textured sphere.
 """
 
 import numpy as np
 from fury import window, actor, utils, primitive, io
 import itertools
-from fury.data.fetcher import read_viz_textures, fetch_viz_textures
-from fury.data.fetcher import read_viz_models, fetch_viz_models
+from fury.data import read_viz_textures, fetch_viz_textures
+from fury.data import read_viz_models, fetch_viz_models
 
 ##############################################################################
 # Create a scene to start.
@@ -24,22 +24,22 @@ scene = window.Scene()
 # image.
 
 fetch_viz_textures()
-filename = read_viz_textures("1_earth_8k.jpg")
-image = io.load_image(filename)
+earth_filename = read_viz_textures("1_earth_8k.jpg")
+earth_image = io.load_image(earth_filename)
 
 ##############################################################################
 # Using ``actor.texture_on_sphere()``, create an earth_actor with your newly
 # loaded texture.
 
-earth_actor = actor.texture_on_sphere(image)
+earth_actor = actor.texture_on_sphere(earth_image)
 
 ##############################################################################
 # Then, do the same for the moon.
 
-filename = read_viz_textures("moon-8k.jpg")
-image = io.load_image(filename)
+moon_filename = read_viz_textures("moon-8k.jpg")
+moon_image = io.load_image(moon_filename)
 
-moon_actor = actor.texture_on_sphere(image)
+moon_actor = actor.texture_on_sphere(moon_image)
 
 ##############################################################################
 # Add both actors to the already existing scene.
@@ -73,8 +73,8 @@ showm = window.ShowManager(scene,
 counter = itertools.count()
 
 ##############################################################################
-# The timer will call this user defined callback every 200 milliseconds. The
-# application will exit after the callback has been called 200 times.
+# Use ``set_camera`` to ensure the camera is in the optimal position for the
+# scene.
 
 scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00),
                  view_up=(0.00, 1.00, 0.00))
@@ -98,8 +98,8 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 # Let's also import a model of a satellite to visualize circling the moon.
 
 fetch_viz_models()
-filename = read_viz_models("satellite_obj.obj")
-satellite = io.load_polydata(filename)
+satellite_filename = read_viz_models("satellite_obj.obj")
+satellite = io.load_polydata(satellite_filename)
 satellite_actor = utils.get_actor_from_polydata(satellite)
 
 satellite_actor.SetPosition(-0.75, 0.1, 0.4)
@@ -125,8 +125,6 @@ def timer_callback(_obj, _event):
                          view_up=(0.00, 1.00, 0.00))
     if cnt > 300 and cnt < 450:
         scene.zoom(1.01)
-    if cnt == 450:
-        print(scene.get_camera())
     if cnt >= 450 and cnt < 1500:
         scene.add(sphere_actor)
         scene.add(text_actor)
@@ -144,12 +142,10 @@ def timer_callback(_obj, _event):
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
         satellite_actor.SetPosition(-0.8, 0.1-cnt/10000, 0.4)
-        print(satellite_actor.GetPosition())
     if cnt >= 750 and cnt < 1100:
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
         satellite_actor.SetPosition(-0.8, -0.07+cnt/10000, 0.4)
-        print(satellite_actor.GetPosition())
     if cnt == 1100:
         showm.exit()
 
