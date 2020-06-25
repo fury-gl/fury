@@ -119,20 +119,21 @@ def sync_actor(actor, multibody):
     actor.SetOrientation(*orn_deg)
     actor.RotateWXYZ(*orn)
 
-fpss = []
+fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
 scene.add(tb)
 
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
-    global apply_force
+    global apply_force, fpss
     cnt = next(counter)
     showm.render()
 
     if cnt % 1 == 0:
         fps = scene.frame_rate
-        fpss.append(fps)
-        tb.message = "Avg. FPS: " + str(sum(fpss)//len(fpss)) + "\nSim Steps: " + str(cnt)
+        fpss = np.append(fpss, fps)
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
+            "\nSim Steps: " + str(cnt)
 
     # Get the position and orientation of the ball.
     ball_pos, ball_orn = p.getBasePositionAndOrientation(ball)
