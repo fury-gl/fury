@@ -38,6 +38,7 @@ class FetcherError(Exception):
 
 def update_progressbar(progress, total_length):
     """Show progressbar.
+
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
     # Try to set the bar_length according to the console size
@@ -78,14 +79,17 @@ def _already_there_msg(folder):
 
 def _get_file_sha(filename):
     """Generate SHA checksum for the entire file in blocks of 256.
-    Parameters
+
+   Parameters
     ----------
     filename : str
         The path to the file whose sha checksum is to be generated
+
     Returns
     -------
     sha256_data : str
         The computed sha hash from the input file
+
     """
     sha256_data = sha256()
     with open(filename, 'rb') as f:
@@ -96,6 +100,7 @@ def _get_file_sha(filename):
 
 def check_sha(filename, stored_sha256=None):
     """Check the generated sha checksum.
+
     Parameters
     ----------
     filename : str
@@ -103,6 +108,7 @@ def check_sha(filename, stored_sha256=None):
     stored_sha256 : str, optional
         Used to verify the generated SHA checksum.
         Default: None, checking is skipped
+
     """
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename)
@@ -136,6 +142,7 @@ def _get_file_data(fname, url):
 
 def fetch_data(files, folder, data_size=None):
     """Download files to folder and checks their sha checksums.
+
     Parameters
     ----------
     files : dictionary
@@ -148,11 +155,13 @@ def fetch_data(files, folder, data_size=None):
     data_size : str, optional
         A string describing the size of the data (e.g. "91 MB") to be logged to
         the screen. Default does not produce any information about data size.
+
     Raises
     ------
     FetcherError
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
+
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
@@ -181,6 +190,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
                   sha_list=None, doc="", data_size=None, msg=None,
                   unzip=False):
     """Create a new fetcher.
+
     Parameters
     ----------
     name : str
@@ -208,11 +218,13 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     unzip : bool, optional
         Whether to unzip the file(s) after downloading them. Supports zip, gz,
         and tar.gz files.
+
     Returns
     -------
     fetcher : function
         A function that, when called, fetches data according to the designated
         inputs
+
     """
     def fetcher():
         files = {}
@@ -355,6 +367,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     --------
     path : str
         Complete path of icon.
+
     """
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
@@ -368,10 +381,12 @@ def read_viz_models(fname):
     fname : str
         Filename of the model.
         This should be found in folder HOME/.fury/models/.
+
     Returns
     --------
     path : str
         Complete path of models.
+
     """
     folder = pjoin(fury_home, 'models')
     return pjoin(folder, fname)
