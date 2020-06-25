@@ -122,6 +122,9 @@ def sync_actor(actor, multibody):
 fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
 scene.add(tb)
+scene.set_camera(position=(10.46, -8.13, 6.18),
+                 focal_point=(0.0, 0.0, 0.79),
+                 view_up=(-0.27, 0.26, 0.90))
 
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
