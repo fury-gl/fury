@@ -1,5 +1,5 @@
 import numpy as np
-from fury import window, actor
+from fury import window, actor, ui
 import itertools
 import pybullet as p
 
@@ -119,24 +119,32 @@ def sync_actor(actor, multibody):
     actor.SetOrientation(*orn_deg)
     actor.RotateWXYZ(*orn)
 
+fpss = []
+tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
+scene.add(tb)
+
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
     global apply_force
     cnt = next(counter)
     showm.render()
 
+    if cnt % 1 == 0:
+        fps = scene.frame_rate
+        fpss.append(fps)
+        tb.message = "Avg. FPS: " + str(sum(fpss)//len(fpss)) + "\nSim Steps: " + str(cnt)
+
     # Get the position and orientation of the ball.
     ball_pos, ball_orn = p.getBasePositionAndOrientation(ball)
 
     # Apply force for 5 times for the first step of simulation.
     if apply_force:
-        for j in range(5):
-            # Apply the force.
-            p.applyExternalForce(ball, -1,
-                                  forceObj=[-2000, 0, 0],
-                                  posObj=ball_pos,
-                                  flags=p.WORLD_FRAME)
-            apply_force = False
+        # Apply the force.
+        p.applyExternalForce(ball, -1,
+                                forceObj=[-10000, 0, 0],
+                                posObj=ball_pos,
+                                flags=p.WORLD_FRAME)
+        apply_force = False
 
     # Set position and orientation of the ball.
     sync_actor(ball_actor, ball)
