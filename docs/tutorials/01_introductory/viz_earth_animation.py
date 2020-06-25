@@ -99,7 +99,8 @@ utils.rotate(text_actor, (-90, 0, 1, 0))
 
 fetch_viz_models()
 filename = read_viz_models("satellite_obj.obj")
-satellite_actor = utils.get_actor_from_polydata(filename)
+satellite = io.load_polydata(filename)
+satellite_actor = utils.get_actor_from_polydata(satellite)
 
 satellite_actor.SetPosition(-0.75, 0.1, 0.4)
 satellite_actor.SetScale(0.005, 0.005, 0.005)
@@ -131,7 +132,7 @@ def timer_callback(_obj, _event):
         scene.add(text_actor)
     if cnt >= 450 and cnt < 550:
         scene.zoom(1.01)
-    if cnt == 550:
+    if cnt == 575:
         moon_actor.SetPosition(-1, 0.1, 0.5)
         scene.set_camera(position=(-0.5, 0.1, 0.00),
                          focal_point=(-1, 0.1, 0.5),
@@ -139,16 +140,17 @@ def timer_callback(_obj, _event):
         scene.zoom(0.03)
         scene.add(satellite_actor)
         scene.rm(earth_actor)
-    if cnt > 550 and cnt < 750:
+    if cnt > 575 and cnt < 750:
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
         satellite_actor.SetPosition(-0.8, 0.1-cnt/10000, 0.4)
         print(satellite_actor.GetPosition())
-    if cnt >= 750 and cnt < 950:
+    if cnt >= 750 and cnt < 1100:
         showm.scene.azimuth(-2)
         utils.rotate(moon_actor, (-2, 0, 1, 0))
-        satellite_actor.SetPosition(-0.8, 0.02+cnt/15000, 0.4)
-    if cnt == 1000:
+        satellite_actor.SetPosition(-0.8, -0.07+cnt/10000, 0.4)
+        print(satellite_actor.GetPosition())
+    if cnt == 1100:
         showm.exit()
 
 
