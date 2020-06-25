@@ -33,7 +33,7 @@ blue_ball_coll = p.createCollisionShape(
     radius=blue_radius)
 
 blue_ball = p.createMultiBody(baseMass=0.5,
-                        baseCollisionShapeIndex=red_ball_coll,
+                        baseCollisionShapeIndex=blue_ball_coll,
                         basePosition=[-10, 0, 0],
                         baseOrientation=[0, 0, 0, 1])
 
