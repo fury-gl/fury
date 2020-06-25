@@ -50,7 +50,7 @@ global showm
 ###############################################################################
 # Select a picking option
 
-mode = 'selector'
+mode = 'face'
 
 pickm = pick.PickingManager(mode=mode)
 

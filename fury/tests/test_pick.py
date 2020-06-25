@@ -35,9 +35,9 @@ def test_picking_manager():
     # use itertools to avoid global variables
     counter = itertools.count()
 
-    mode = 'selector'
+    mode = 'face'
+
     pickm = pick.PickingManager(mode=mode)
-    pickm.picker.SetRenderer(scene)
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
