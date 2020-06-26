@@ -13,7 +13,7 @@ from fury import actor, window, ui, utils, pick
 
 centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 
-colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1.]])
+colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
 
 radii = 0.1 * np.array([25, 50, 100.])
 
@@ -42,6 +42,12 @@ vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
+
+vcolors = utils.colors_from_actor(sphere_actor, 'colors')
+print(vcolors.max(), vcolors.min())
+print(vcolors.shape)
+print(vcolors.dtype)
+
 ax = actor.axes(scale=(10, 10, 10))
 
 scene.add(sphere_actor)
@@ -68,7 +74,6 @@ def left_click_callback(obj, event):
                              0, showm.scene)
     print(picked_info)
 
-
     vertex_index = picked_info['vertex']
     object_index = np.int(np.floor((vertex_index / num_vertices) * num_objects))
 
@@ -76,15 +81,18 @@ def left_click_callback(obj, event):
 
     if not selected[object_index]:
         scale = 6/5
+        color_add = np.array([30, 30, 0], dtype='uint8')
         selected[object_index] = True
     else:
         scale = 5/6
+        color_add = np.array([-30, -30, 0], dtype='uint8')
         selected[object_index] = False
 
     vertices[object_index * sec: object_index * sec + sec] = scale * \
-        (vertices[object_index * sec: object_index * sec + sec] - \
+        (vertices[object_index * sec: object_index * sec + sec] -
          centers[object_index]) + centers[object_index]
 
+    vcolors[object_index * sec: object_index * sec + sec] += color_add
     utils.update_actor(sphere_actor)
 
     face_index = picked_info['face']
