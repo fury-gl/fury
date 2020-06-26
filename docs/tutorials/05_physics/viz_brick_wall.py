@@ -70,7 +70,7 @@ for i in range(wall_height):
                                             halfExtents=[0.1, 0.2, 0.1])
         brick = p.createMultiBody(baseMass=0.5,
                                    baseCollisionShapeIndex=brick_coll,
-                                   basePosition=[-1, (j*0.4) - 1.5, (0.2*i)],
+                                   basePosition=[-1, (j*0.4)-1.8, (0.2*i)+0.1],
                                    baseOrientation=[ 0, 0, 0, 1 ])
         p.changeDynamics(brick, -1, lateralFriction=0.1, restitution=0.1)
 
