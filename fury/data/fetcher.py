@@ -295,10 +295,11 @@ fetch_viz_models = _make_fetcher(
     "fetch_viz_models",
     pjoin(fury_home, "models"),
     MODEL_DATA_URL,
-    ['utah.obj', 'suzanne.obj'],
-    ['utah.obj', 'suzanne.obj'],
+    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj'],
+    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj'],
     ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3',
-     'BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621'],
+     'BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621',
+     '90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74'],
     doc=" Download the models for shader tutorial"
     )
 
@@ -311,13 +312,23 @@ fetch_viz_textures = _make_fetcher(
      'jupiter.jpg', 'masonry.bmp',
      'skybox-nx.jpg', 'skybox-ny.jpg',
      'skybox-px.jpg', 'skybox-py.jpg',
-     'skybox-pz.jpg'],
+     'skybox-pz.jpg', 'moon_8k.jpg',
+     '8k_mercury.jpg', '8k_venus_surface.jpg',
+     '8k_mars.jpg', '8k_saturn.jpg',
+     '8k_saturn_ring_alpha.png',
+     '2k_uranus.jpg', '2k_neptune.jpg',
+     '8k_sun.jpg'],
     ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
      '5_night_8k.jpg', 'earth.ppm',
      'jupiter.jpg', 'masonry.bmp',
      'skybox-nx.jpg', 'skybox-ny.jpg',
      'skybox-px.jpg', 'skybox-py.jpg',
-     'skybox-pz.jpg'],
+     'skybox-pz.jpg', 'moon-8k.jpg',
+     '8k_mercury.jpg', '8k_venus_surface.jpg',
+     '8k_mars.jpg', '8k_saturn.jpg',
+     '8k_saturn_ring_alpha.png',
+     '2k_uranus.jpg', '2k_neptune.jpg',
+     '8k_sun.jpg'],
     ['0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F',
      '5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465',
      'DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A',
@@ -328,7 +339,16 @@ fetch_viz_textures = _make_fetcher(
      'E18FE2206B63D3DF2C879F5E0B9937A61D99734B6C43AC288226C58D2418D23E',
      'BF20ACD6817C9E7073E485BBE2D2CE56DACFF73C021C2B613BA072BA2DF2B754',
      '16F0D692AF0B80E46929D8D8A7E596123C76729CC5EB7DFD1C9184B115DD143A',
-     'B850B5E882889DF26BE9289D7C25BA30524B37E56BC2075B968A83197AD977F3'],
+     'B850B5E882889DF26BE9289D7C25BA30524B37E56BC2075B968A83197AD977F3',
+     '7397A6C2CE0348E148C66EBEFE078467DDB9D0370FF5E63434D0451477624839',
+     '5C8BD885AE3571C6BA2CD34B3446B9C6D767E314BF0EE8C1D5C147CADD388FC3',
+     '9BC21A50577ED8AC734CDA91058724C7A741C19427AA276224CE349351432C5B',
+     '4CC52149924ABC6AE507D63032F994E1D42A55CB82C09E002D1A567FF66C23EE',
+     '0D39A4A490C87C3EDABE00A3881A29BB3418364178C79C534FE0986E97E09853',
+     'F1F826933C9FF87D64ECF0518D6256B8ED990B003722794F67E96E3D2B876AE4',
+     'D15239D46F82D3EA13D2B260B5B29B2A382F42F2916DAE0694D0387B1204A09D',
+     'CB42EA82709741D28B0AF44D8B283CBC6DBD0C521A7F0E1E1E010ADE00977DF6',
+     'F22B1CFB306DDCE72A7E3B628668A0175B745038CE6268557CB2F7F1BDF98B9D'],
     doc="Download textures for fury"
     )
 
@@ -385,7 +405,7 @@ def read_viz_textures(fname):
     Returns
     -------
     path : str
-        Complete path of models.
+        Complete path of textures.
 
     """
     folder = pjoin(fury_home, 'textures')
