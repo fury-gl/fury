@@ -1,12 +1,7 @@
-import os
-import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
-import numpy.testing as npt
-import pytest
 from fury import actor, window, io, ui, pick
 from fury.testing import captured_output, assert_less_equal
-from fury.decorators import skip_osx, skip_win
 import itertools
 
 

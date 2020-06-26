@@ -87,7 +87,8 @@ def left_click_callback(obj, event):
 
     # Calculate the objects index
 
-    object_index = np.int(np.floor((vertex_index / num_vertices) * num_objects))
+    object_index = np.int(np.floor((vertex_index / num_vertices) * \
+                          snum_objects))
 
     # Find how many vertices correspond to each object
     sec = np.int(num_vertices / num_objects)
@@ -98,7 +99,7 @@ def left_click_callback(obj, event):
         selected[object_index] = True
     else:
         scale = 5/6
-        color_add = np.array([-30, -30, 30], dtype='uint8')
+        color_add = np.array([-30, -30, -30], dtype='uint8')
         selected[object_index] = False
 
     # Update vertices positions
