@@ -4,3 +4,4 @@
 
 vertexMCVSOutput = vertexMC;
 centerWCVSOutput = center;
+primitiveVSOutput = primitive;

@@ -3,7 +3,7 @@
 //VTK::ValuePass::Dec
 in vec4 vertexMCVSOutput;
 in vec3 centerWCVSOutput;
-uniform int prim;
+flat in int primitiveVSOutput;
 
 uniform mat4 MCVCMatrix;
 uniform mat4 MCWCMatrix;
@@ -24,10 +24,10 @@ float sdTorus(vec3 p, vec2 t)
 float map( in vec3 position)
 {
 	float d1;
-		if(prim==1){
+		if(primitiveVSOutput==1){
 			d1 = sdSphere(position - centerWCVSOutput, 0.25);
     	}
-    	else if(prim==2){
+    	else if(primitiveVSOutput==2){
     	
     		d1 = sdTorus(position - centerWCVSOutput, vec2(0.4, 0.1));
     	}

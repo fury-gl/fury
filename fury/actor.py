@@ -2580,6 +2580,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
     """
 
     prims = {'sphere': 1, 'torus': 2}
+
     verts, faces = fp.prim_box()
 
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
@@ -2589,10 +2590,17 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
 
-    vtk_center = numpy_support.numpy_to_vtk(rep_centers)
+    vtk_center = numpy_support.numpy_to_vtk(rep_centers, deep=True)
     vtk_center.SetNumberOfComponents(3)
     vtk_center.SetName("center")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
+
+    rep_prims = np.repeat(prims[primitive], rep_centers.shape[0], axis=0)
+   
+    vtk_primitive = numpy_support.numpy_to_vtk(rep_prims, deep=True)
+    vtk_primitive.SetNumberOfComponents(1)
+    vtk_primitive.SetName("primitive")
+    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_primitive)
 
     vs_dec_code = fs.load("sdf_dec.vert")
     vs_impl_code = fs.load("sdf_impl.vert")
@@ -2603,138 +2611,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
     mapper.MapDataArrayToVertexAttribute(
         "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
 
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
-        vs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
-        vs_impl_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
-        fs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
-        fs_impl_code, False)
-
-    @vtk.calldata_type(vtk.VTK_OBJECT)
-    def vtkShaderCallback(caller, event, calldata=None):
-        program = calldata
-        prim = prims[primitive]
-        if program is not None:
-            program.SetUniformi('prim', prim)
-
-    mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent,
-                       vtkShaderCallback)
-    return box_actor
-
-
-def multi_sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=4):
-    """Create a SDF actor
-
-    Parameters
-    ----------
-    centers : ndarray, shape (N, 3)
-        SDF primitive positions
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    directions : ndarray, shape (N, 3)
-        The orientation vector of the cube.
-    scale : float
-        The size of the cube
-
-
-    Returns
-    -------
-    vtkActor
-    """
-
-    verts, faces = fp.prim_box()
-
-    repeated = fp.repeat_primitive(verts, faces, centers=centers,
-                                   colors=colors, directions=directions,
-                                   scale=scale)
-
-    rep_verts, rep_faces, rep_colors, rep_centers = repeated
-    box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
-
-    vtk_center = numpy_support.numpy_to_vtk(rep_centers)
-    vtk_center.SetNumberOfComponents(3)
-    vtk_center.SetName("center")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
-
-    vs_dec_code = fs.load("sdf_dec.vert")
-    vs_impl_code = fs.load("sdf_impl.vert")
-    fs_dec_code = fs.load("sdfmulti_dec.frag")
-    fs_impl_code = fs.load("sdfmulti_impl.frag")
-
-    mapper = box_actor.GetMapper()
     mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
-        vs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
-        vs_impl_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
-        fs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
-        fs_impl_code, False)
-
-    return box_actor
-
-
-def sdf_sh(centers, directions=(1, 0, 0), colors=(255, 0, 0), scale=1):
-    """Create a SDF actor
-
-    Parameters
-    ----------
-    centers : ndarray, shape (N, 3)
-        SDF primitive positions
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    directions : ndarray, shape (N, 3)
-        The orientation vector of the cube.
-    scale : float
-        The size of the cube
-
-
-    Returns
-    -------
-    vtkActor
-    """
-
-    verts, faces = fp.prim_box()
-
-    repeated = fp.repeat_primitive(verts, faces, centers=centers,
-                                   colors=colors, directions=directions,
-                                   scale=scale)
-
-    rep_verts, rep_faces, rep_colors, rep_centers = repeated
-    box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
-
-    vtk_center = numpy_support.numpy_to_vtk(rep_centers)
-    vtk_center.SetNumberOfComponents(3)
-    vtk_center.SetName("center")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
-
-    vs_dec_code = fs.load("sdf_dec.vert")
-    vs_impl_code = fs.load("sdf_impl.vert")
-    fs_dec_code = fs.load("sdfsh_dec.frag")
-    fs_impl_code = fs.load("sdfsh_impl.frag")
-
-    mapper = box_actor.GetMapper()
-    mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        "primitive", "primitive", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,

@@ -23,8 +23,8 @@ if(t < 20.0)
     vec3 norm = calculateNormal(position);
     float light = dot(ld, norm);
 
-    fragOutput0 = vec4(col * light, 1.0);
-    //fragOutput0 = vec4( norm, 1.0);
+    //fragOutput0 = vec4(col * light, 1.0);
+    fragOutput0 = vec4( norm, 1.0);
     	
 }
 else{
