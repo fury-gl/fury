@@ -137,6 +137,7 @@ def timer_callback(_obj, _event):
                          view_up=(0.00, 1.00, 0.00))
         scene.zoom(0.03)
         scene.add(satellite_actor)
+        utils.rotate(satellite_actor, (180, 0, 1, 0))
         scene.rm(earth_actor)
     if cnt > 575 and cnt < 750:
         showm.scene.azimuth(-2)
