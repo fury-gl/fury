@@ -32,6 +32,7 @@ MODEL_DATA_URL = \
 TEXTURE_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
 
+
 class FetcherError(Exception):
     pass
 
@@ -405,6 +406,7 @@ def read_viz_textures(fname):
     -------
     path : str
         Complete path of textures.
+
     """
     folder = pjoin(fury_home, 'textures')
     return pjoin(folder, fname)
