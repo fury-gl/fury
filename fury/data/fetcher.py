@@ -32,6 +32,7 @@ MODEL_DATA_URL = \
 TEXTURE_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
 
+
 class FetcherError(Exception):
     pass
 
@@ -80,7 +81,7 @@ def _already_there_msg(folder):
 def _get_file_sha(filename):
     """Generate SHA checksum for the entire file in blocks of 256.
 
-   Parameters
+    Parameters
     ----------
     filename : str
         The path to the file whose sha checksum is to be generated
@@ -405,6 +406,7 @@ def read_viz_textures(fname):
     -------
     path : str
         Complete path of textures.
+
     """
     folder = pjoin(fury_home, 'textures')
     return pjoin(folder, fname)

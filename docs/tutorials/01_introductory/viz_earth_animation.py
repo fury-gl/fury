@@ -5,9 +5,8 @@ Texture Sphere Animation
 In this tutorial, we will show how to animate a textured sphere.
 """
 
-import numpy as np
-from fury import window, actor, utils, primitive, io
 import itertools
+from fury import window, actor, utils, io
 from fury.data import read_viz_textures, fetch_viz_textures
 from fury.data import read_viz_models, fetch_viz_models
 
