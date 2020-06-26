@@ -5,16 +5,18 @@ Simple picking
 =====================
 
 Here we present a tutorial of picking objects in the 3D world.
+All objects to be picked are part of a single actor.
+FURY likes to bundle objects in a few actors to reduce code and
+increase speed.
 
+When the objects will be picked they will change size and color.
 """
 
 import numpy as np
 from fury import actor, window, ui, utils, pick
 
 centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
-
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-
 radii = 0.1 * np.array([25, 50, 100.])
 
 selected = np.zeros(3, dtype=np.bool)
@@ -38,16 +40,20 @@ sphere_actor = actor.sphere(centers=centers,
                             colors=colors,
                             radii=radii)
 
+###############################################################################
+# Access the memory of the vertices of all the spheres
+
 vertices = utils.vertices_from_actor(sphere_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
+###############################################################################
+# Access the memory of the colors of all the spheres
 
 vcolors = utils.colors_from_actor(sphere_actor, 'colors')
-print(vcolors.max(), vcolors.min())
-print(vcolors.shape)
-print(vcolors.dtype)
 
+###############################################################################
+# Adding an actor showing the axes of the world coordinates
 ax = actor.axes(scale=(10, 10, 10))
 
 scene.add(sphere_actor)
@@ -58,45 +64,57 @@ scene.reset_camera()
 global showm
 
 ###############################################################################
-# Select a picking option
-
+# Create the Picking manager
 
 pickm = pick.PickingManager()
+
+###############################################################################
+# Time to make the callback which will be called when we pick an object
 
 
 def left_click_callback(obj, event):
 
     global text_block, showm
 
-    event_pos = pickm.event_position(showm.iren)
+    # Get the event position on display and pick
 
+    event_pos = pickm.event_position(showm.iren)
     picked_info = pickm.pick(event_pos[0], event_pos[1],
                              0, showm.scene)
     print(picked_info)
 
     vertex_index = picked_info['vertex']
+
+    # Calculate the objects index
+
     object_index = np.int(np.floor((vertex_index / num_vertices) * num_objects))
 
+    # Find how many vertices correspond to each object
     sec = np.int(num_vertices / num_objects)
 
     if not selected[object_index]:
         scale = 6/5
-        color_add = np.array([30, 30, 0], dtype='uint8')
+        color_add = np.array([30, 30, 30], dtype='uint8')
         selected[object_index] = True
     else:
         scale = 5/6
-        color_add = np.array([-30, -30, 0], dtype='uint8')
+        color_add = np.array([-30, -30, 30], dtype='uint8')
         selected[object_index] = False
 
+    # Update vertices positions
     vertices[object_index * sec: object_index * sec + sec] = scale * \
         (vertices[object_index * sec: object_index * sec + sec] -
          centers[object_index]) + centers[object_index]
 
+    # Update colors
     vcolors[object_index * sec: object_index * sec + sec] += color_add
+
+    # Tell actor that memory is modified
     utils.update_actor(sphere_actor)
 
     face_index = picked_info['face']
 
+    # Show some info
     text = 'Object ' + str(object_index) + '\n'
     text += 'Vertex ID ' + str(vertex_index) + '\n'
     text += 'Face ID ' + str(face_index) + '\n'
@@ -105,10 +123,13 @@ def left_click_callback(obj, event):
     showm.render()
 
 
+###############################################################################
+# Bind the callback to the actor
+
 sphere_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
+# Show everything
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
-
 showm.initialize()
 scene.add(panel)
 showm.start()
