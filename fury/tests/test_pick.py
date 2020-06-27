@@ -1,7 +1,6 @@
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 from fury import actor, window, io, ui, pick
-from fury.testing import captured_output, assert_less_equal
+import numpy.testing as npt
 import itertools
 
 
@@ -32,25 +31,44 @@ def test_picking_manager():
 
     pickm = pick.PickingManager()
 
+    record_indices = {'vertex_indices': [],
+                      'face_indices': [],
+                      'xyz': [],
+                      'actor': []}
+
     def timer_callback(_obj, _event):
         cnt = next(counter)
         tb.message = "Let's count up to 100 and exit :" + str(cnt)
         showm.scene.azimuth(0.05 * cnt)
-        sphere_actor.GetProperty().SetOpacity(cnt/100.)
+        # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
+            # pick at position
             info = pickm.pick(900/2, 768/2, 0, scene)
-            print(info)
+            record_indices['vertex_indices'].append(info['vertex'])
+            record_indices['face_indices'].append(info['face'])
+            record_indices['xyz'].append(info['xyz'])
+            record_indices['actor'].append(info['actor'])
 
         showm.render()
-        if cnt == 100:
+        if cnt == 15:
             showm.exit()
 
     scene.add(tb)
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
-
     showm.start()
+
+    npt.assert_equal(np.sum(np.array(record_indices['vertex_indices'])) > 1,
+                     True)
+    npt.assert_equal(np.sum(np.array(record_indices['face_indices'])) > 1,
+                     True)
+    for ac in record_indices['actor']:
+        if ac is not None:
+            npt.assert_equal(ac is sphere_actor, True)
+
+    npt.assert_equal(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
+                                                    axis=0))) > 0, True)
 
 
 if __name__ == "__main__":
