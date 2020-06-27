@@ -4,8 +4,8 @@
 Simple picking
 =====================
 
-Here we present a tutorial of picking objects in the 3D world.
-All objects to be picked are part of a single actor.
+Here we present a tutorial showing how to interact with objects in the
+3D world. All objects to be picked are part of a single actor.
 FURY likes to bundle objects in a few actors to reduce code and
 increase speed.
 
@@ -17,7 +17,7 @@ from fury import actor, window, ui, utils, pick
 
 centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-radii = 0.1 * np.array([25, 50, 100.])
+radii = 0.1 * np.array([50, 100, 150.])
 
 selected = np.zeros(3, dtype=np.bool)
 
@@ -27,7 +27,7 @@ selected = np.zeros(3, dtype=np.bool)
 panel = ui.Panel2D(size=(400, 150), color=(1, .5, .0), align="right")
 panel.center = (150, 200)
 
-text_block = ui.TextBlock2D(text="Pick a \nsphere")
+text_block = ui.TextBlock2D(text="Left click on object \n")
 panel.add_element(text_block, (0.3, 0.3))
 
 ###############################################################################
@@ -36,32 +36,42 @@ panel.add_element(text_block, (0.3, 0.3))
 scene = window.Scene()
 
 label_actor = actor.label(text='Test')
-sphere_actor = actor.sphere(centers=centers,
-                            colors=colors,
-                            radii=radii)
+
+###############################################################################
+# This actor is made with 3 cubes of different orientation
+
+directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
+                       [np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                       [0, np.sqrt(2)/2, np.sqrt(2)/2]])
+fury_actor = actor.cube(centers, directions, colors, heights=radii)
+
+###############################################################################
+# Uncomment the following lines to see the same effect with spheres
+
+# fury_actor = actor.sphere(centers=centers,
+#                           colors=colors,
+#                           radii=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the spheres
 
-vertices = utils.vertices_from_actor(sphere_actor)
+vertices = utils.vertices_from_actor(fury_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
 ###############################################################################
 # Access the memory of the colors of all the spheres
 
-vcolors = utils.colors_from_actor(sphere_actor, 'colors')
+vcolors = utils.colors_from_actor(fury_actor, 'colors')
 
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
 ax = actor.axes(scale=(10, 10, 10))
 
-scene.add(sphere_actor)
+scene.add(fury_actor)
 scene.add(label_actor)
 scene.add(ax)
 scene.reset_camera()
-
-global showm
 
 ###############################################################################
 # Create the Picking manager
@@ -74,21 +84,18 @@ pickm = pick.PickingManager()
 
 def left_click_callback(obj, event):
 
-    global text_block, showm
-
     # Get the event position on display and pick
 
     event_pos = pickm.event_position(showm.iren)
     picked_info = pickm.pick(event_pos[0], event_pos[1],
                              0, showm.scene)
     print(picked_info)
-
     vertex_index = picked_info['vertex']
 
     # Calculate the objects index
 
     object_index = np.int(np.floor((vertex_index / num_vertices) * \
-                          snum_objects))
+                          num_objects))
 
     # Find how many vertices correspond to each object
     sec = np.int(num_vertices / num_objects)
@@ -111,7 +118,7 @@ def left_click_callback(obj, event):
     vcolors[object_index * sec: object_index * sec + sec] += color_add
 
     # Tell actor that memory is modified
-    utils.update_actor(sphere_actor)
+    utils.update_actor(fury_actor)
 
     face_index = picked_info['face']
 
@@ -127,10 +134,26 @@ def left_click_callback(obj, event):
 ###############################################################################
 # Bind the callback to the actor
 
-sphere_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
+fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
-# Show everything
+###############################################################################
+# Make the window appear
+
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
 showm.initialize()
 scene.add(panel)
-showm.start()
+
+###############################################################################
+# Change interactive to True to start interacting with the scene
+
+interactive = False
+
+if interactive:
+
+    showm.start()
+
+
+###############################################################################
+# Save the current framebuffer in a PNG file
+
+window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")
