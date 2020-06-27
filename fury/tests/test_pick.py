@@ -68,7 +68,7 @@ def test_picking_manager():
             npt.assert_equal(ac is sphere_actor, True)
 
     npt.assert_equal(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
-                                                    axis=0))) > 0, True)
+                                           axis=0))) > 0, True)
 
 
 if __name__ == "__main__":

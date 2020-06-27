@@ -94,7 +94,7 @@ def left_click_callback(obj, event):
 
     # Calculate the objects index
 
-    object_index = np.int(np.floor((vertex_index / num_vertices) * \
+    object_index = np.int(np.floor((vertex_index / num_vertices) *
                           num_objects))
 
     # Find how many vertices correspond to each object
