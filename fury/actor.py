@@ -2555,7 +2555,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
+def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
         scale=1):
     """Create a SDF actor
 
@@ -2582,7 +2582,6 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
     prims = {'sphere': 1, 'torus': 2}
 
     verts, faces = fp.prim_box()
-
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
                                    colors=colors, directions=directions,
                                    scale=scale)
@@ -2595,8 +2594,14 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
     vtk_center.SetName("center")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
 
-    rep_prims = np.repeat(prims[primitive], rep_centers.shape[0], axis=0)
-   
+    if(isinstance(primitives,  (list, tuple, np.ndarray))):
+        primlist = []
+        for prim in primitives:
+    	    primlist.append(prims[prim])
+        rep_prims = np.repeat(primlist, verts.shape[0])
+    else:
+        rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)
+
     vtk_primitive = numpy_support.numpy_to_vtk(rep_prims, deep=True)
     vtk_primitive.SetNumberOfComponents(1)
     vtk_primitive.SetName("primitive")
@@ -2612,7 +2617,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
         "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
 
     mapper.MapDataArrayToVertexAttribute(
-        "primitive", "primitive", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        "primitive", "primitive", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
+        -1)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
@@ -2631,4 +2637,3 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitive='torus',
         fs_impl_code, False)
 
     return box_actor
-

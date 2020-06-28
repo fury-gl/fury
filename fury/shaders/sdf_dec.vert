@@ -3,7 +3,7 @@
 //VTK::ValuePass::Dec
 
 in vec3 center;
-in int primitive;
+in float primitive;
 
 out vec4 vertexMCVSOutput;
 

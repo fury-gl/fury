@@ -8,7 +8,8 @@ colors = np.random.rand(7, 3) * 255
 centers = np.array([[2, 0, 0], [0, 0, 0], [-2, 0, 0], [0, 2, 0], [0, -2, 0],
                     [0, 0, -2], [0, 0, 2]])
 sdfactor = actor.sdf(centers=centers, directions=dirs, colors=colors,
-                     primitive='torus')
+                     primitives=['torus', 'sphere', 'torus', 'sphere',
+                     'sphere', 'torus', 'sphere'])
 scene.add(sdfactor)
 
 scene.add(actor.axes())

@@ -1355,3 +1355,20 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
+
+
+def test_sdf_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((1, 1, 1))
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    scale = [1, 2, 3]
+    primitive = ['sphere','sphere','torus']
+
+    sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scale)
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
