@@ -52,6 +52,8 @@ image = io.load_image(filename)
 jupiter_actor = actor.texture_on_sphere(image)
 scene.add(jupiter_actor)
 
+utils.rotate(jupiter_actor, (90, 1, 0, 0))
+
 filename = read_viz_textures("8k_saturn.jpg")
 image = io.load_image(filename)
 saturn_actor = actor.texture_on_sphere(image)
