@@ -120,17 +120,7 @@ g_uranus = 8.7
 g_neptune = 11.0
 
 ##############################################################################
-# Also define the mass and orbital radii of each of the planets.
-
-constant = np.power(10, 24)
-m_mercury = 0.330 * constant
-m_venus = 4.87 * constant
-m_earth = 5.97 * constant
-m_mars = 0.642 * constant
-m_jupiter = 1898 * constant
-m_saturn = 568 * constant
-m_uranus = 86.8 * constant
-m_neptune = 102 * constant
+# Also define the orbital radii of each of the planets.
 
 r_mercury = 7
 r_venus = 9
@@ -144,21 +134,14 @@ r_neptune = 25
 ##############################################################################
 # Let's define two functions that will help us calculate the position of each
 # planets as it orbits around the sun: ``get_orbit_period`` and
-# ``get_orbital_position``. The orbital period for each planet is a constant,
-# so assign these values to a corresponding variable.
+# ``get_orbital_position``. For the purpose of this tutorial, we will not be
+# using the mass of each planet to calculate their orbital period, and
+# instead will assume them all to be 1. This will improve the orbit
+# visualization for the planets.
 
 def get_orbit_period(radius, gravity):
     temp = np.sqrt(np.power(radius, 3)/gravity)
     return 2*np.pi * temp
-
-orbit_period_mercury = get_orbit_period(r_mercury, g_mercury)
-orbit_period_venus = get_orbit_period(r_venus, g_venus)
-orbit_period_earth = get_orbit_period(r_earth, g_earth)
-orbit_period_mars = get_orbit_period(r_mars, g_mars)
-orbit_period_jupiter = get_orbit_period(r_jupiter, g_jupiter)
-orbit_period_saturn = get_orbit_period(r_saturn, g_saturn)
-orbit_period_uranus = get_orbit_period(r_uranus, g_uranus)
-orbit_period_neptune = get_orbit_period(r_neptune, g_neptune)
 
 def get_orbital_position(radius, time, gravity):
     orbit_period = get_orbit_period(radius, gravity)
@@ -194,6 +177,15 @@ scene.add(actor.axes(scale=(12, 12, 12)))
 # actor using ``get_orbital_position,`` assigning the x and y values of
 # each planet's position with the newly calculated ones.
 
+earth_points_orbit = np.zeros((50, 3), dtype='f8')
+
+global earth_track
+earth_track = []
+earth_orbit_actor = actor.dots(earth_points_orbit, color=(1, 1, 1))
+scene.add(earth_orbit_actor)
+
+positions = utils.vertices_from_actor(earth_orbit_actor)
+
 def timer_callback(_obj, _event):
     cnt = next(counter)
     showm.render()
@@ -221,6 +213,11 @@ def timer_callback(_obj, _event):
 
     pos_neptune = get_orbital_position(r_neptune, cnt, g_neptune)
     neptune_actor.SetPosition(pos_neptune[0], 0, pos_neptune[1])
+
+    if cnt % 50 == 0:
+        positions[:] = np.array(earth_track)
+        utils.update_actor(earth_orbit_actor)
+        earth_track = []
 
     if cnt == 1000:
         showm.exit()
