@@ -465,8 +465,10 @@ class ShowManager(object):
         self.window.SetSize(size[0], size[1])
 
         if self.order_transparent:
+            occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples, max_peels, occlusion_ratio)
+                         multi_samples=0, max_peels=max_peels,
+                         occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
             self.style = vtk.vtkInteractorStyleImage()
