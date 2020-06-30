@@ -43,7 +43,7 @@ def test_picking_manager():
         # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
             # pick at position
-            info = pickm.pick(900/2, 768/2, 0, scene)
+            info = pickm.pick((900/2, 768/2), scene)
             record_indices['vertex_indices'].append(info['vertex'])
             record_indices['face_indices'].append(info['face'])
             record_indices['xyz'].append(info['xyz'])

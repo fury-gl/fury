@@ -28,39 +28,48 @@ class PickingManager(object):
         if world_coords:
             self.pickers['world_coords'] = vtk.vtkWorldPointPicker()
 
-        # if self.mode == 'face':
-        #     self.picker = vtk.vtkCellPicker()
-        # elif mode == 'vertex':
-        #     self.picker = vtk.vtkPointPicker()
-        # elif self.mode == 'actor':
-        #     self.picker = vtk.vtkPropPicker()
-        # elif mode == 'world':
-        #     self.picker = vtk.vtkWorldPointPicker()
-        # else:
-        #     raise ValueError('Unknown picking option')
+    def pick(self, disp_xy, sc):
+        """ Pick on display coordinates
 
-    def pick(self, x, y, z, sc):
+        Parameters
+        ----------
+        disp_xyz : tuple
+            Display coordinates x, y.
 
+        sc : Scene
+        """
+
+        x, y = disp_xy
+        z = 0
         info = {'vertex': None, 'face': None, 'actor': None, 'xyz': None}
+        keys = self.pickers.keys()
 
-        if 'vertices' in self.pickers.keys():
+        if 'vertices' in keys:
             self.pickers['vertices'].Pick(x, y, z, sc)
             info['vertex'] = self.pickers['vertices'].GetPointId()
 
-        if 'faces' in self.pickers.keys():
+        if 'faces' in keys:
             self.pickers['faces'].Pick(x, y, z, sc)
             info['vertex'] = self.pickers['faces'].GetPointId()
             info['face'] = self.pickers['faces'].GetCellId()
 
-        if 'actors' in self.pickers.keys():
+        if 'actors' in keys:
             self.pickers['actors'].Pick(x, y, z, sc)
             info['actor'] = self.pickers['actors'].GetViewProp()
 
-        if 'world_coords' in self.pickers.keys():
+        if 'world_coords' in keys:
             self.pickers['world_coords'].Pick(x, y, z, sc)
             info['xyz'] = self.pickers['world_coords'].GetPickPosition()
 
         return info
 
     def event_position(self, iren):
+        """ Returns event display position from interactor
+
+        Parameters
+        ----------
+        iren : interactor
+            The interactor object can be retrieved for example
+            using providing ShowManager's iren attribute.
+        """
         return iren.GetEventPosition()

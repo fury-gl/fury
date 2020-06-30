@@ -24,7 +24,7 @@ selected = np.zeros(3, dtype=np.bool)
 ###############################################################################
 # Let's create a panel to show what is picked
 
-panel = ui.Panel2D(size=(400, 150), color=(1, .5, .0), align="right")
+panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
 panel.center = (150, 200)
 
 text_block = ui.TextBlock2D(text="Left click on object \n")
@@ -87,9 +87,8 @@ def left_click_callback(obj, event):
     # Get the event position on display and pick
 
     event_pos = pickm.event_position(showm.iren)
-    picked_info = pickm.pick(event_pos[0], event_pos[1],
-                             0, showm.scene)
-    print(picked_info)
+    picked_info = pickm.pick(event_pos, showm.scene)
+
     vertex_index = picked_info['vertex']
 
     # Calculate the objects index
@@ -126,7 +125,8 @@ def left_click_callback(obj, event):
     text = 'Object ' + str(object_index) + '\n'
     text += 'Vertex ID ' + str(vertex_index) + '\n'
     text += 'Face ID ' + str(face_index) + '\n'
-    text += 'World pos ' + str(np.round(picked_info['xyz'], 2))
+    text += 'World pos ' + str(np.round(picked_info['xyz'], 2)) + '\n'
+    text += 'Actor ID ' + str(id(picked_info['actor']))
     text_block.message = text
     showm.render()
 
@@ -146,7 +146,7 @@ scene.add(panel)
 ###############################################################################
 # Change interactive to True to start interacting with the scene
 
-interactive = False
+interactive = True
 
 if interactive:
 
