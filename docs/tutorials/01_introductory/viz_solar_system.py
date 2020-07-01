@@ -7,6 +7,7 @@ using textured spheres.
 """
 
 import numpy as np
+import vtk
 from fury import window, actor, utils, primitive, io
 import itertools
 from fury.data.fetcher import read_viz_textures, fetch_viz_textures
@@ -59,7 +60,12 @@ image = io.load_image(filename)
 saturn_actor = actor.texture_on_sphere(image)
 scene.add(saturn_actor)
 
-# Add saturn's rings as a superquadratic
+source = vtk.vtkSuperquadricSource()
+source.SetCenter(19.0, 0.0, 0.0)
+source.SetScale(2.0, 2.0, 2.0)
+source.SetToroidal(1)
+saturn_rings_actor = utils.repeat_sources(centers=(19, 0, 0), colors=(1, 0, 0), source=source)
+scene.add(saturn_rings_actor)
 
 filename = read_viz_textures("2k_uranus.jpg")
 image = io.load_image(filename)
@@ -90,6 +96,7 @@ earth_actor.SetScale(0.4, 0.4, 0.4)
 mars_actor.SetScale(0.8, 0.8, 0.8)
 jupiter_actor.SetScale(2, 2, 2)
 saturn_actor.SetScale(2, 2, 2)
+saturn_rings_actor.SetScale(2, 2, 2)
 uranus_actor.SetScale(1, 1, 1)
 neptune_actor.SetScale(1, 1, 1)
 
@@ -99,6 +106,7 @@ earth_actor.SetPosition(11, 0, 0)
 mars_actor.SetPosition(13, 0, 0)
 jupiter_actor.SetPosition(16, 0, 0)
 saturn_actor.SetPosition(19, 0, 0)
+saturn_rings_actor.SetPosition(19, 0, 0)
 uranus_actor.SetPosition(22, 0, 0)
 neptune_actor.SetPosition(25, 0, 0)
 
