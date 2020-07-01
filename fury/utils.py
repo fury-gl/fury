@@ -1003,7 +1003,7 @@ def fix_winding_order(vertices, triangles, clockwise=False):
 
 
 def vertices_from_actor(actor):
-    """Return vertices from actor.
+    """ Access to vertices from actor.
 
     Parameters
     ----------
@@ -1016,6 +1016,26 @@ def vertices_from_actor(actor):
     """
     return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
                                       GetPoints().GetData())
+
+
+def colors_from_actor(actor, array_name='colors'):
+    """ Access colors from actor which uses polydata
+
+    Parameters
+    ----------
+    actor : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+        Colors
+    """
+    vtk_colors = \
+        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
+    if vtk_colors is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_colors)
 
 
 def compute_bounds(actor):
