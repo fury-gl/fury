@@ -10,22 +10,21 @@ import sys
 import math
 from fury import window, actor, ui
 import itertools
-from numba import numpy_support
 from vtk.util import numpy_support
 
 global xyz, box_lx, box_ly, box_lz, dt, steps
 
-num_particles = 1000
+num_particles = 200
 box_lx = 50
 box_ly = 50
 box_lz = 50
-steps = 500
+steps = 1000
 dt = 0.5
 
-xyz = 20 * (np.random.rand(num_particles, 3) - 0.5)
-vel = np.random.rand(num_particles, 3) - 0.5
+xyz = (box_lz * 0.75) * (np.random.rand(num_particles, 3) - 0.5)
+vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
 colors = np.random.rand(num_particles, 3)
-radii = 0.5 #np.ones(num_particles) * 0.5
+radii = np.random.rand(num_particles) + 0.01
 
 scene = window.Scene()
 
@@ -80,13 +79,20 @@ initial_vertices = all_vertices.copy() - np.repeat(xyz, no_vertices_per_sphere, 
 def timer_callback(_obj, _event):
     global vel, xyz, box_lx, box_ly, box_lz, dt, steps
     cnt = next(counter)
-    tb.message = "Let's count up to 500 and exit :" + str(cnt)
+    tb.message = "Let's count up to 1000 and exit :" + str(cnt)
+    for i,j in np.ndindex(num_particles, num_particles):
+        distance = (((xyz[i, 0]-xyz[j, 0])**2) + ((xyz[i, 1]-xyz[j, 1])**2) + ((xyz[i, 1]-xyz[j, 1])**2))** 0.5
+        if (i == j):
+            continue
+        if (distance <= (radii[i] + radii[j])):
+            vel[i, :] = - vel[i, :]
+            vel[j, :] = - vel[j, :]
 
-    vel[:, 0] = np.where(((xyz[:, 0] < - 0.5 * box_lx + radii) | (xyz[:, 0] > (0.5 * box_lx - radii))),
+    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + radii[:]) | (xyz[:, 0] >= (0.5 * box_lx - radii[:]))),
                          - vel[:, 0], vel[:, 0])
-    vel[:, 1] = np.where(((xyz[:, 1] < - 0.5 * box_ly + radii) | (xyz[:, 1] > (0.5 * box_ly - radii))),
+    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + radii[:]) | (xyz[:, 1] >= (0.5 * box_ly - radii[:]))),
                          - vel[:, 1], vel[:, 1])
-    vel[:, 2] = np.where(((xyz[:, 2] < -0.5 * box_lz + radii) | (xyz[:, 2] > (0.5 * box_lz - radii))),
+    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + radii[:]) | (xyz[:, 2] >= (0.5 * box_lz - radii[:]))),
                          - vel[:, 2], vel[:, 2])
 
     xyz = xyz + vel * dt
@@ -101,5 +107,5 @@ def timer_callback(_obj, _event):
 
 
 scene.add(tb)
-showm.add_timer_callback(True, 200, timer_callback)
+showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
