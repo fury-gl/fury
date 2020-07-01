@@ -152,7 +152,7 @@ def get_orbital_position(radius, time, gravity):
 ##############################################################################
 # Let's change the camera position to visualize the planets better.
 
-scene.set_camera(position=(-20, 50, 100))
+scene.set_camera(position=(-20, 60, 100))
 
 ##############################################################################
 # The ShowManager class is the interface between the scene, the window and the
@@ -169,55 +169,145 @@ showm = window.ShowManager(scene,
 
 counter = itertools.count()
 
-scene.add(actor.axes(scale=(12, 12, 12)))
+##############################################################################
+# To track the orbital paths of the planets, we will create several new
+# variables to map the planet's orbits using ``actor.dots``. It is important
+# to define the track variable for each planet as global, allowing it to be
+# used within the ``timer_callback`` function.
+
+mercury_points_orbit = np.zeros((250, 3), dtype='f8')
+global mercury_track
+mercury_track = []
+mercury_orbit_actor = actor.dots(mercury_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(mercury_orbit_actor)
+positions_mercury = utils.vertices_from_actor(mercury_orbit_actor)
+
+venus_points_orbit = np.zeros((250, 3), dtype='f8')
+global venus_track
+venus_track = []
+venus_orbit_actor = actor.dots(venus_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(venus_orbit_actor)
+positions_venus = utils.vertices_from_actor(venus_orbit_actor)
+
+earth_points_orbit = np.zeros((250, 3), dtype='f8')
+global earth_track
+earth_track = []
+earth_orbit_actor = actor.dots(earth_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(earth_orbit_actor)
+positions_earth = utils.vertices_from_actor(earth_orbit_actor)
+
+mars_points_orbit = np.zeros((250, 3), dtype='f8')
+global mars_track
+mars_track = []
+mars_orbit_actor = actor.dots(mars_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(mars_orbit_actor)
+positions_mars = utils.vertices_from_actor(mars_orbit_actor)
+
+jupiter_points_orbit = np.zeros((250, 3), dtype='f8')
+global jupiter_track
+jupiter_track = []
+jupiter_orbit_actor = actor.dots(jupiter_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(jupiter_orbit_actor)
+positions_jupiter = utils.vertices_from_actor(jupiter_orbit_actor)
+
+saturn_points_orbit = np.zeros((250, 3), dtype='f8')
+global saturn_track
+saturn_track = []
+saturn_orbit_actor = actor.dots(saturn_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(saturn_orbit_actor)
+positions_saturn = utils.vertices_from_actor(saturn_orbit_actor)
+
+uranus_points_orbit = np.zeros((250, 3), dtype='f8')
+global uranus_track
+uranus_track = []
+uranus_orbit_actor = actor.dots(uranus_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(uranus_orbit_actor)
+positions_uranus = utils.vertices_from_actor(uranus_orbit_actor)
+
+neptune_points_orbit = np.zeros((250, 3), dtype='f8')
+global neptune_track
+neptune_track = []
+neptune_orbit_actor = actor.dots(neptune_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+scene.add(neptune_orbit_actor)
+positions_neptune = utils.vertices_from_actor(neptune_orbit_actor)
 
 ##############################################################################
 # Define the ``timer_callback`` function, which controls what events happen
 # at certain times, using the counter. Redefine the position of each planet
 # actor using ``get_orbital_position,`` assigning the x and y values of
-# each planet's position with the newly calculated ones.
-
-earth_points_orbit = np.zeros((50, 3), dtype='f8')
-
-global earth_track
-earth_track = []
-earth_orbit_actor = actor.dots(earth_points_orbit, color=(1, 1, 1))
-scene.add(earth_orbit_actor)
-
-positions = utils.vertices_from_actor(earth_orbit_actor)
+# each planet's position with the newly calculated ones. Append each new
+# planet position to its corresponding track array.
 
 def timer_callback(_obj, _event):
+    global mercury_track, venus_track, earth_track, mars_track, jupiter_track
+    global saturn_track, uranus_track, neptune_track
     cnt = next(counter)
     showm.render()
 
     pos_mercury = get_orbital_position(r_mercury, cnt, g_mercury)
     mercury_actor.SetPosition(pos_mercury[0], 0, pos_mercury[1])
+    mercury_track.append([pos_mercury[0], 0, pos_mercury[1]])
 
     pos_venus = get_orbital_position(r_venus, cnt, g_venus)
     venus_actor.SetPosition(pos_venus[0], 0, pos_venus[1])
+    venus_track.append([pos_venus[0], 0, pos_venus[1]])
 
     pos_earth = get_orbital_position(r_earth, cnt, g_earth)
     earth_actor.SetPosition(pos_earth[0], 0, pos_earth[1])
+    earth_track.append([pos_earth[0], 0, pos_earth[1]])
 
     pos_mars = get_orbital_position(r_mars, cnt, g_mars)
     mars_actor.SetPosition(pos_mars[0], 0, pos_mars[1])
+    mars_track.append([pos_mars[0], 0, pos_mars[1]])
 
     pos_jupiter = get_orbital_position(r_jupiter, cnt, g_jupiter)
     jupiter_actor.SetPosition(pos_jupiter[0], 0, pos_jupiter[1])
+    jupiter_track.append([pos_jupiter[0], 0, pos_jupiter[1]])
 
     pos_saturn = get_orbital_position(r_saturn, cnt, g_saturn)
     saturn_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
+    saturn_track.append([pos_saturn[0], 0, pos_saturn[1]])
 
     pos_uranus = get_orbital_position(r_uranus, cnt, g_uranus)
     uranus_actor.SetPosition(pos_uranus[0], 0, pos_uranus[1])
+    uranus_track.append([pos_uranus[0], 0, pos_uranus[1]])
 
     pos_neptune = get_orbital_position(r_neptune, cnt, g_neptune)
     neptune_actor.SetPosition(pos_neptune[0], 0, pos_neptune[1])
+    neptune_track.append([pos_neptune[0], 0, pos_neptune[1]])
 
-    if cnt % 50 == 0:
-        positions[:] = np.array(earth_track)
+    if cnt == 249:
+        positions_mercury[:] = np.array(mercury_track)
+        utils.update_actor(mercury_orbit_actor)
+        mercury_track = []
+
+        positions_venus[:] = np.array(venus_track)
+        utils.update_actor(venus_orbit_actor)
+        venus_track = []
+
+        positions_earth[:] = np.array(earth_track)
         utils.update_actor(earth_orbit_actor)
         earth_track = []
+
+        positions_mars[:] = np.array(mars_track)
+        utils.update_actor(mars_orbit_actor)
+        mars_track = []
+
+        positions_jupiter[:] = np.array(jupiter_track)
+        utils.update_actor(jupiter_orbit_actor)
+        jupiter_track = []
+
+        positions_saturn[:] = np.array(saturn_track)
+        utils.update_actor(saturn_orbit_actor)
+        saturn_track = []
+
+        positions_uranus[:] = np.array(uranus_track)
+        utils.update_actor(uranus_orbit_actor)
+        uranus_track = []
+
+        positions_neptune[:] = np.array(neptune_track)
+        utils.update_actor(neptune_orbit_actor)
+        neptune_track = []
 
     if cnt == 1000:
         showm.exit()
