@@ -46,21 +46,14 @@ directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
 fury_actor = actor.cube(centers, directions, colors, heights=radii)
 
 ###############################################################################
-# Uncomment the following lines to see the same effect with spheres
-
-# fury_actor = actor.sphere(centers=centers,
-#                           colors=colors,
-#                           radii=radii)
-
-###############################################################################
-# Access the memory of the vertices of all the spheres
+# Access the memory of the vertices of all the cubes
 
 vertices = utils.vertices_from_actor(fury_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
 ###############################################################################
-# Access the memory of the colors of all the spheres
+# Access the memory of the colors of all the cubes
 
 vcolors = utils.colors_from_actor(fury_actor, 'colors')
 
