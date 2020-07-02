@@ -60,11 +60,8 @@ image = io.load_image(filename)
 saturn_actor = actor.texture_on_sphere(image)
 scene.add(saturn_actor)
 
-source = vtk.vtkSuperquadricSource()
-source.SetCenter(19.0, 0.0, 0.0)
-source.SetScale(2.0, 2.0, 2.0)
-source.SetToroidal(1)
-saturn_rings_actor = utils.repeat_sources(centers=(19, 0, 0), colors=(1, 0, 0), source=source)
+centers = [[19.0, 0.0, 0.0]]
+saturn_rings_actor = actor.superquadric(centers)
 scene.add(saturn_rings_actor)
 
 filename = read_viz_textures("2k_uranus.jpg")
