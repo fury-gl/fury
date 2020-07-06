@@ -2,8 +2,11 @@
 ===============
 Texture Sphere Animation
 ===============
+
 In this tutorial, we will create an animation of the solar system
-using textured spheres.
+using textured spheres. We will also show how to manipulate the
+position of these sphere actors in a timer_callback function
+to simulate orbital motion.
 """
 
 import numpy as np
@@ -19,72 +22,77 @@ scene = window.Scene()
 
 ##############################################################################
 # Next, load in a texture for each of the actors, starting with the Earth.
+
 fetch_viz_textures()
-filename = read_viz_textures("1_earth_8k.jpg")
-image = io.load_image(filename)
+earth_filename = read_viz_textures("1_earth_8k.jpg")
+earth_image = io.load_image(earth_filename)
 
 ##############################################################################
 # Using ``actor.texture_on_sphere()``, create an earth_actor with your newly
 # loaded texture. Add the actor to the scene.
 
-earth_actor = actor.texture_on_sphere(image)
+earth_actor = actor.texture_on_sphere(earth_image)
 scene.add(earth_actor)
 
 ##############################################################################
-# Do the same for the sun and the rest of the planets.
+# Do the same for the rest of the planets.
 
-filename = read_viz_textures("8k_mercury.jpg")
-image = io.load_image(filename)
-mercury_actor = actor.texture_on_sphere(image)
+mercury_filename = read_viz_textures("8k_mercury.jpg")
+mercury_image = io.load_image(mercury_filename)
+mercury_actor = actor.texture_on_sphere(mercury_image)
 scene.add(mercury_actor)
 
-filename = read_viz_textures("8k_venus_surface.jpg")
-image = io.load_image(filename)
-venus_actor = actor.texture_on_sphere(image)
+venus_filename = read_viz_textures("8k_venus_surface.jpg")
+venus_image = io.load_image(venus_filename)
+venus_actor = actor.texture_on_sphere(venus_image)
 scene.add(venus_actor)
 
-filename = read_viz_textures("8k_mars.jpg")
-image = io.load_image(filename)
-mars_actor = actor.texture_on_sphere(image)
+earth_filename = read_viz_textures("8k_mars.jpg")
+earth_image = io.load_image(earth_filename)
+mars_actor = actor.texture_on_sphere(earth_image)
 scene.add(mars_actor)
 
-filename = read_viz_textures("jupiter.jpg")
-image = io.load_image(filename)
-jupiter_actor = actor.texture_on_sphere(image)
+jupiter_filename = read_viz_textures("jupiter.jpg")
+jupiter_image = io.load_image(jupiter_filename)
+jupiter_actor = actor.texture_on_sphere(jupiter_image)
 scene.add(jupiter_actor)
 
+# Rotate this actor to correctly orient the texture
 utils.rotate(jupiter_actor, (90, 1, 0, 0))
 
-filename = read_viz_textures("8k_saturn.jpg")
-image = io.load_image(filename)
-saturn_actor = actor.texture_on_sphere(image)
+saturn_filename = read_viz_textures("8k_saturn.jpg")
+saturn_image = io.load_image(saturn_filename)
+saturn_actor = actor.texture_on_sphere(saturn_image)
 scene.add(saturn_actor)
 
-centers = [[19.0, 0.0, 0.0]]
-saturn_rings_actor = actor.superquadric(centers)
+saturn_ring_filename = read_viz_textures("8k_saturn_ring_alpha.png")
+saturn_ring_image = io.load_image(saturn_ring_filename)
+saturn_rings_actor = actor.texture_on_sphere(saturn_ring_image)
 scene.add(saturn_rings_actor)
 
-filename = read_viz_textures("2k_uranus.jpg")
-image = io.load_image(filename)
-uranus_actor = actor.texture_on_sphere(image)
+uranus_filename = read_viz_textures("2k_uranus.jpg")
+uranus_image = io.load_image(uranus_filename)
+uranus_actor = actor.texture_on_sphere(uranus_image)
 scene.add(uranus_actor)
 
-filename = read_viz_textures("2k_neptune.jpg")
-image = io.load_image(filename)
-neptune_actor = actor.texture_on_sphere(image)
+neptune_filename = read_viz_textures("2k_neptune.jpg")
+neptune_image = io.load_image(neptune_filename)
+neptune_actor = actor.texture_on_sphere(neptune_image)
 scene.add(neptune_actor)
 
 ##############################################################################
 # Lastly, create an actor for the sun.
 
-filename = read_viz_textures("8k_sun.jpg")
-image = io.load_image(filename)
-sun_actor = actor.texture_on_sphere(image)
+sun_filename = read_viz_textures("8k_sun.jpg")
+sun_image = io.load_image(sun_filename)
+sun_actor = actor.texture_on_sphere(sun_image)
 scene.add(sun_actor)
 
 ##############################################################################
 # Next, change the positions and scales of the planets according to their
-# position and size within the solar system.
+# position and size within the solar system (relatively). For the purpose
+# of this tutorial, planet sizes and positions will not be completely
+# accurate.
 
 sun_actor.SetScale(10, 10, 10)
 mercury_actor.SetScale(0.4, 0.4, 0.4)
@@ -93,7 +101,7 @@ earth_actor.SetScale(0.4, 0.4, 0.4)
 mars_actor.SetScale(0.8, 0.8, 0.8)
 jupiter_actor.SetScale(2, 2, 2)
 saturn_actor.SetScale(2, 2, 2)
-saturn_rings_actor.SetScale(2, 2, 2)
+saturn_rings_actor.SetScale(3, 0.5, 3)
 uranus_actor.SetScale(1, 1, 1)
 neptune_actor.SetScale(1, 1, 1)
 
@@ -138,7 +146,7 @@ r_neptune = 25
 
 ##############################################################################
 # Let's define two functions that will help us calculate the position of each
-# planets as it orbits around the sun: ``get_orbit_period`` and
+# planet as it orbits around the sun: ``get_orbit_period`` and
 # ``get_orbital_position``. For the purpose of this tutorial, we will not be
 # using the mass of each planet to calculate their orbital period, and
 # instead will assume them all to be 1. This will improve the orbit
@@ -160,8 +168,8 @@ def get_orbital_position(radius, time, gravity):
 scene.set_camera(position=(-20, 60, 100))
 
 ##############################################################################
-# The ShowManager class is the interface between the scene, the window and the
-# interactor.
+# Next, create a ShowManager object. The ShowManager class is the interface
+# between the scene, the window and the interactor.
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
@@ -175,10 +183,10 @@ showm = window.ShowManager(scene,
 counter = itertools.count()
 
 ##############################################################################
-# To track the orbital paths of the planets, we will create several new
-# variables to map the planet's orbits using ``actor.dots``. It is important
-# to define the track variable for each planet as global, allowing it to be
-# used within the ``timer_callback`` function.
+# To track and visualize the orbital paths of the planets, we will create
+# several new variables to map each planet's orbits using ``actor.dots``.
+# It is important to define the track variable for each planet as global,
+# allowing it to be used within the ``timer_callback`` function.
 
 mercury_points_orbit = np.zeros((250, 3), dtype='f8')
 global mercury_track
@@ -271,6 +279,7 @@ def timer_callback(_obj, _event):
 
     pos_saturn = get_orbital_position(r_saturn, cnt, g_saturn)
     saturn_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
+    saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
     saturn_track.append([pos_saturn[0], 0, pos_saturn[1]])
 
     pos_uranus = get_orbital_position(r_uranus, cnt, g_uranus)
@@ -318,9 +327,10 @@ def timer_callback(_obj, _event):
         showm.exit()
 
 ##############################################################################
-# Watch your new animation take place!
+# Watch the planets orbit the sun in your new animation!
 
 showm.initialize()
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
+
 window.record(showm.scene, size=(900,768), out_path="viz_solar_system_animation.png")
