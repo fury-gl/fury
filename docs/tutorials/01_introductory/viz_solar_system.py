@@ -119,9 +119,7 @@ neptune_actor.SetPosition(25, 0, 0)
 # Next, let's define the gravitational constants for each of these planets.
 # This will allow us to visualize the orbit of each planet in our solar
 # system. The gravitational constant, G, is measured in meters per second
-# squared.
-
-    # https://nssdc.gsfc.nasa.gov/planetary/factsheet/
+# squared. (https://nssdc.gsfc.nasa.gov/planetary/factsheet/)
 
 g_mercury = 3.7
 g_venus = 8.9
@@ -156,17 +154,19 @@ def get_orbit_period(radius, gravity):
     temp = np.sqrt(np.power(radius, 3)/gravity)
     return 2*np.pi * temp
 
+
 def get_orbital_position(radius, time, gravity):
     orbit_period = get_orbit_period(radius, gravity)
     x = radius * np.cos((2*np.pi*time)/orbit_period)
     y = radius * np.sin((2*np.pi*time)/orbit_period)
     return (x, y)
 
+
 ##############################################################################
 # Let's change the camera position to visualize the planets better.
 
 scene.set_camera(position=(-20, 60, 100))
-
+S
 ##############################################################################
 # Next, create a ShowManager object. The ShowManager class is the interface
 # between the scene, the window and the interactor.
@@ -191,56 +191,64 @@ counter = itertools.count()
 mercury_points_orbit = np.zeros((250, 3), dtype='f8')
 global mercury_track
 mercury_track = []
-mercury_orbit_actor = actor.dots(mercury_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+mercury_orbit_actor = actor.dots(mercury_points_orbit, color=(1, 1, 1),
+                                 opacity=1, dot_size=2)
 scene.add(mercury_orbit_actor)
 positions_mercury = utils.vertices_from_actor(mercury_orbit_actor)
 
 venus_points_orbit = np.zeros((250, 3), dtype='f8')
 global venus_track
 venus_track = []
-venus_orbit_actor = actor.dots(venus_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+venus_orbit_actor = actor.dots(venus_points_orbit, color=(1, 1, 1),
+                               opacity=1, dot_size=2)
 scene.add(venus_orbit_actor)
 positions_venus = utils.vertices_from_actor(venus_orbit_actor)
 
 earth_points_orbit = np.zeros((250, 3), dtype='f8')
 global earth_track
 earth_track = []
-earth_orbit_actor = actor.dots(earth_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+earth_orbit_actor = actor.dots(earth_points_orbit, color=(1, 1, 1),
+                               opacity=1, dot_size=2)
 scene.add(earth_orbit_actor)
 positions_earth = utils.vertices_from_actor(earth_orbit_actor)
 
 mars_points_orbit = np.zeros((250, 3), dtype='f8')
 global mars_track
 mars_track = []
-mars_orbit_actor = actor.dots(mars_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+mars_orbit_actor = actor.dots(mars_points_orbit, color=(1, 1, 1),
+                              opacity=1, dot_size=2)
 scene.add(mars_orbit_actor)
 positions_mars = utils.vertices_from_actor(mars_orbit_actor)
 
 jupiter_points_orbit = np.zeros((250, 3), dtype='f8')
 global jupiter_track
 jupiter_track = []
-jupiter_orbit_actor = actor.dots(jupiter_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+jupiter_orbit_actor = actor.dots(jupiter_points_orbit, color=(1, 1, 1),
+                                 opacity=1, dot_size=2)
 scene.add(jupiter_orbit_actor)
 positions_jupiter = utils.vertices_from_actor(jupiter_orbit_actor)
 
 saturn_points_orbit = np.zeros((250, 3), dtype='f8')
 global saturn_track
 saturn_track = []
-saturn_orbit_actor = actor.dots(saturn_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+saturn_orbit_actor = actor.dots(saturn_points_orbit, color=(1, 1, 1),
+                                opacity=1, dot_size=2)
 scene.add(saturn_orbit_actor)
 positions_saturn = utils.vertices_from_actor(saturn_orbit_actor)
 
 uranus_points_orbit = np.zeros((250, 3), dtype='f8')
 global uranus_track
 uranus_track = []
-uranus_orbit_actor = actor.dots(uranus_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+uranus_orbit_actor = actor.dots(uranus_points_orbit, color=(1, 1, 1),
+                    opacity=1, dot_size=2)
 scene.add(uranus_orbit_actor)
 positions_uranus = utils.vertices_from_actor(uranus_orbit_actor)
 
 neptune_points_orbit = np.zeros((250, 3), dtype='f8')
 global neptune_track
 neptune_track = []
-neptune_orbit_actor = actor.dots(neptune_points_orbit, color=(1, 1, 1), opacity=1, dot_size=2)
+neptune_orbit_actor = actor.dots(neptune_points_orbit, color=(1, 1, 1),
+                                 opacity=1, dot_size=2)
 scene.add(neptune_orbit_actor)
 positions_neptune = utils.vertices_from_actor(neptune_orbit_actor)
 
@@ -256,6 +264,7 @@ def timer_callback(_obj, _event):
     global saturn_track, uranus_track, neptune_track
     cnt = next(counter)
     showm.render()
+
 
     pos_mercury = get_orbital_position(r_mercury, cnt, g_mercury)
     mercury_actor.SetPosition(pos_mercury[0], 0, pos_mercury[1])
@@ -326,6 +335,7 @@ def timer_callback(_obj, _event):
     if cnt == 1000:
         showm.exit()
 
+
 ##############################################################################
 # Watch the planets orbit the sun in your new animation!
 
@@ -333,4 +343,4 @@ showm.initialize()
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900,768), out_path="viz_solar_system_animation.png")
+window.record(showm.scene, size=(900,768) , out_path="viz_solar_system_animation.png")
