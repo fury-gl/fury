@@ -345,4 +345,4 @@ showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
 
 window.record(showm.scene, size=(900, 768),
-            out_path="viz_solar_system_animation.png")
+              out_path="viz_solar_system_animation.png")
