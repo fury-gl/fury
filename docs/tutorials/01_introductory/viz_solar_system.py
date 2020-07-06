@@ -150,6 +150,7 @@ r_neptune = 25
 # instead will assume them all to be 1. This will improve the orbit
 # visualization for the planets.
 
+
 def get_orbit_period(radius, gravity):
     temp = np.sqrt(np.power(radius, 3)/gravity)
     return 2*np.pi * temp
@@ -166,7 +167,7 @@ def get_orbital_position(radius, time, gravity):
 # Let's change the camera position to visualize the planets better.
 
 scene.set_camera(position=(-20, 60, 100))
-S
+
 ##############################################################################
 # Next, create a ShowManager object. The ShowManager class is the interface
 # between the scene, the window and the interactor.
@@ -240,7 +241,7 @@ uranus_points_orbit = np.zeros((250, 3), dtype='f8')
 global uranus_track
 uranus_track = []
 uranus_orbit_actor = actor.dots(uranus_points_orbit, color=(1, 1, 1),
-                    opacity=1, dot_size=2)
+                                opacity=1, dot_size=2)
 scene.add(uranus_orbit_actor)
 positions_uranus = utils.vertices_from_actor(uranus_orbit_actor)
 
@@ -259,12 +260,12 @@ positions_neptune = utils.vertices_from_actor(neptune_orbit_actor)
 # each planet's position with the newly calculated ones. Append each new
 # planet position to its corresponding track array.
 
+
 def timer_callback(_obj, _event):
     global mercury_track, venus_track, earth_track, mars_track, jupiter_track
     global saturn_track, uranus_track, neptune_track
     cnt = next(counter)
     showm.render()
-
 
     pos_mercury = get_orbital_position(r_mercury, cnt, g_mercury)
     mercury_actor.SetPosition(pos_mercury[0], 0, pos_mercury[1])
@@ -343,4 +344,5 @@ showm.initialize()
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900,768), out_path="viz_solar_system_animation.png")
+window.record(showm.scene, size=(900, 768),
+            out_path="viz_solar_system_animation.png")
