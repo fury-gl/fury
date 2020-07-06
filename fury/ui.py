@@ -38,6 +38,9 @@ class UI(object, metaclass=abc.ABCMeta):
     on_left_mouse_button_clicked: function
         Callback function for when clicked using the left mouse button
         (i.e. pressed -> released).
+    on_left_mouse_double_clicked: function
+        Callback function for when left mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
     on_left_mouse_button_dragged: function
         Callback function for when dragging using the left mouse button.
     on_right_mouse_button_pressed: function
@@ -47,6 +50,9 @@ class UI(object, metaclass=abc.ABCMeta):
     on_right_mouse_button_clicked: function
         Callback function for when clicking using the right mouse button
         (i.e. pressed -> released).
+    on_right_mouse_double_clicked: function
+        Callback function for when right mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
     on_right_mouse_button_dragged: function
         Callback function for when dragging using the right mouse button.
     on_middle_mouse_button_pressed: function
@@ -56,6 +62,9 @@ class UI(object, metaclass=abc.ABCMeta):
     on_middle_mouse_button_clicked: function
         Callback function for when clicking using the middle mouse button
         (i.e. pressed -> released).
+    on_middle_mouse_double_clicked: function
+        Callback function for when middle mouse button is double clicked
+        (i.e pressed -> released -> pressed -> released).
     on_middle_mouse_button_dragged: function
         Callback function for when dragging using the middle mouse button.
     on_key_press: function
@@ -88,13 +97,16 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_left_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_left_mouse_button_released = lambda i_ren, obj, element: None
         self.on_left_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_left_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_right_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_right_mouse_button_released = lambda i_ren, obj, element: None
         self.on_right_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_right_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_right_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_pressed = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_released = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_clicked = lambda i_ren, obj, element: None
+        self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
 
