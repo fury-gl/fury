@@ -1,5 +1,7 @@
 """Custom Interactor Style."""
 
+from collections import deque
+
 import numpy as np
 import vtk
 
@@ -77,12 +79,15 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.picker = vtk.vtkPropPicker()
         self.chosen_element = None
         self.event = Event()
+        self.event2id = {}  # To map an event's name to an ID.
 
         # Define some interaction states
         self.left_button_down = False
         self.right_button_down = False
         self.middle_button_down = False
         self.active_props = set()
+
+        self.history = deque(maxlen=10)  # Events history.
 
         self.selected_props = {"left_button": set(),
                                "right_button": set(),
@@ -110,14 +115,22 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         return prop
 
     def propagate_event(self, evt, *props):
+        evt = self.event2id.get(evt, evt)
         for prop in props:
             # Propagate event to the prop.
-            prop.InvokeEvent(evt)
+            if prop is not None:
+                prop.InvokeEvent(evt)
 
             if self.event.abort_flag:
                 return
 
     def _process_event(self, obj, evt):
+        self.event.update(evt, self.GetInteractor())
+        self.history.append({
+            "event": evt,
+            "pos": self.event.position,
+        })
+
         if evt == "LeftButtonPressEvent":
             self.on_left_button_down(obj, evt)
         elif evt == "LeftButtonReleaseEvent":
@@ -145,6 +158,26 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         self.event.reset()  # Event fully processed.
 
+    def _button_clicked(self, button, last_event=-1, before_last_event=-2):
+        if len(self.history) < abs(before_last_event):
+            return False
+
+        if self.history[last_event]["event"] != button + "ButtonReleaseEvent":
+            return False
+
+        if self.history[before_last_event]["event"] \
+                != button + "ButtonPressEvent":
+            return False
+
+        return True
+
+    def _button_double_clicked(self, button):
+        if not (self._button_clicked(button) and
+                self._button_clicked(button, -3, -4)):
+            return False
+
+        return True
+
     def on_left_button_down(self, _obj, evt):
         self.left_button_down = True
         prop = self.get_prop_at_event_position()
@@ -160,6 +193,12 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.propagate_event(evt, *self.selected_props["left_button"])
         self.selected_props["left_button"].clear()
         self.trackball_camera.OnLeftButtonUp()
+
+        prop = self.get_prop_at_event_position()
+
+        if self._button_double_clicked("Left"):
+            self.propagate_event("LeftButtonDoubleClickEvent", prop)
+            self.history.clear()
 
     def on_right_button_down(self, _obj, evt):
         self.right_button_down = True
@@ -177,6 +216,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.selected_props["right_button"].clear()
         self.trackball_camera.OnRightButtonUp()
 
+        if self._button_double_clicked("Right"):
+            prop = self.get_prop_at_event_position()
+            self.propagate_event("RightButtonDoubleClickEvent", prop)
+            self.history.clear()
+
     def on_middle_button_down(self, _obj, evt):
         self.middle_button_down = True
         prop = self.get_prop_at_event_position()
@@ -192,6 +236,11 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         self.propagate_event(evt, *self.selected_props["middle_button"])
         self.selected_props["middle_button"].clear()
         self.trackball_camera.OnMiddleButtonUp()
+
+        if self._button_double_clicked("Middle"):
+            prop = self.get_prop_at_event_position()
+            self.propagate_event("MiddleButtonDoubleClickEvent", prop)
+            self.history.clear()
 
     def on_mouse_move(self, _obj, evt):
         """On mouse move."""
@@ -331,10 +380,20 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
             # Update event information.
             interactor_ = self.GetInteractor()
             if interactor_ is not None:
-                self.event.update(event_name, interactor_)
                 callback(self, prop, *args)
             else:
                 print('interactor is none')
                 print('event name is', event_name)
+
+        # Dealing with custom events not defined in VTK.
+        # Check whether the Event is predefined or not.
+        if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
+            if event_type not in self.event2id:
+                # If the event type was not previously defined,
+                # then create an extra user defined event.
+                self.event2id[event_type] = \
+                    vtk.vtkCommand.UserEvent + len(self.event2id) + 1
+
+            event_type = self.event2id[event_type]
 
         prop.AddObserver(event_type, _callback, priority)
