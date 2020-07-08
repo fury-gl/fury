@@ -31,6 +31,8 @@ planet_filenames = ["8k_mercury.jpg", "8k_venus_surface.jpg",
                     "2k_uranus.jpg", "2k_neptune.jpg",
                     "8k_sun.jpg"]
 fetch_viz_textures()
+
+
 def init_planet(filename):
     """Initialize a planet actor.
 
@@ -169,9 +171,10 @@ counter = itertools.count()
 # allowing it to be used within the ``timer_callback`` function. To do this,
 # create a function called ``get_orbit_actor``.
 
+
 def get_orbit_actor(orbit_points):
     orbit_actor = actor.dots(orbit_points, color=(1, 1, 1),
-                                 opacity=1, dot_size=1)
+                             opacity=1, dot_size=1)
     return orbit_actor
 
 
@@ -230,6 +233,7 @@ neptune_track = []
 # positions and their tracks to visualize their orbit: ``update_track`` and
 # ``update_planet_position``.
 
+
 def update_planet_position(r_planet, planet_actor, planet_track, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
     planet_actor.SetPosition(pos_planet[0], 0, pos_planet[1])
@@ -266,7 +270,8 @@ def timer_callback(_obj, _event):
 
     update_planet_position(r_jupiter, jupiter_actor, jupiter_track, cnt)
 
-    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track, cnt)
+    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track, 
+                                        cnt)
     saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
 
     update_planet_position(r_uranus, uranus_actor, uranus_track, cnt)
