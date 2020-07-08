@@ -79,10 +79,12 @@ def _already_there_msg(folder):
 
 def _get_file_sha(filename):
     """Generate SHA checksum for the entire file in blocks of 256.
+
     Parameters
     ----------
     filename : str
         The path to the file whose sha checksum is to be generated
+
     Returns
     -------
     sha256_data : str
@@ -97,6 +99,7 @@ def _get_file_sha(filename):
 
 def check_sha(filename, stored_sha256=None):
     """Check the generated sha checksum.
+
     Parameters
     ----------
     filename : str
@@ -137,6 +140,7 @@ def _get_file_data(fname, url):
 
 def fetch_data(files, folder, data_size=None):
     """Download files to folder and checks their sha checksums.
+
     Parameters
     ----------
     files : dictionary
@@ -149,6 +153,7 @@ def fetch_data(files, folder, data_size=None):
     data_size : str, optional
         A string describing the size of the data (e.g. "91 MB") to be logged to
         the screen. Default does not produce any information about data size.
+
     Raises
     ------
     FetcherError
@@ -182,6 +187,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
                   sha_list=None, doc="", data_size=None, msg=None,
                   unzip=False):
     """Create a new fetcher.
+
     Parameters
     ----------
     name : str
@@ -209,6 +215,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     unzip : bool, optional
         Whether to unzip the file(s) after downloading them. Supports zip, gz,
         and tar.gz files.
+
     Returns
     -------
     fetcher : function
@@ -343,6 +350,7 @@ fetch_viz_textures = _make_fetcher(
 
 def read_viz_icons(style='icomoon', fname='infinity.png'):
     """Read specific icon from specific style.
+
     Parameters
     ----------
     style : str
@@ -350,6 +358,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     fname : str
         Filename of icon. This should be found in folder HOME/.fury/style/.
         Default is infinity.png.
+
     Returns
     --------
     path : str
@@ -361,11 +370,13 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
 
 def read_viz_models(fname):
     """Read specific model.
+
     Parameters
     ----------
     fname : str
         Filename of the model.
         This should be found in folder HOME/.fury/models/.
+
     Returns
     --------
     path : str
@@ -377,11 +388,13 @@ def read_viz_models(fname):
 
 def read_viz_textures(fname):
     """Read specific texture.
+
     Parameters
     ----------
     fname: str
         Filename of the texture.
         This should be found in folder HOME/.fury/textures/.
+
     Returns
     -------
     path : str
