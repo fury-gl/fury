@@ -270,7 +270,7 @@ def timer_callback(_obj, _event):
 
     update_planet_position(r_jupiter, jupiter_actor, jupiter_track, cnt)
 
-    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track, 
+    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track,
                                         cnt)
     saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
 
