@@ -1,7 +1,7 @@
 """
-===============
+=======================
 Solar System Animation
-===============
+=======================
 
 In this tutorial, we will create an animation of the solar system
 using textured spheres. We will also show how to manipulate the
