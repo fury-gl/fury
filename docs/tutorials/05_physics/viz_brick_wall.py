@@ -117,7 +117,7 @@ def sync_actor(actor, multibody):
     actor.SetPosition(*pos)
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
-    actor.RotateWXYZ(*orn)
+    # actor.RotateWXYZ(*orn)
 
 fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))

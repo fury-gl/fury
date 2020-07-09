@@ -14,6 +14,7 @@ When the objects will be picked they will change size and color.
 
 import numpy as np
 from fury import actor, window, ui, utils, pick
+from scipy.spatial.transform import Rotation as R
 
 centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
@@ -25,7 +26,7 @@ selected = np.zeros(3, dtype=np.bool)
 # Let's create a panel to show what is picked
 
 panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
-panel.center = (150, 200)
+panel.center = (150, 100)
 
 text_block = ui.TextBlock2D(text="Left click on object \n")
 panel.add_element(text_block, (0.3, 0.3))
@@ -101,15 +102,37 @@ def left_click_callback(obj, event):
         color_add = np.array([-30, -30, -30], dtype='uint8')
         selected[object_index] = False
 
-    # Update vertices positions
-    vertices[object_index * sec: object_index * sec + sec] = scale * \
+    new_pos = np.array([1, 2, 3])
+
+    # # Update vertices positions
+    # vertices[object_index * sec: object_index * sec + sec] = \
+    #     (vertices[object_index * sec: object_index * sec + sec] -
+    #      centers[object_index]) + new_pos
+
+    # centers[object_index] = new_pos
+
+    # def get_R(gamma, beta, alpha):
+    #     """ Returns rotational matrix.
+    #     """
+    #     r = [
+    #         [np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma) - np.sin(alpha)*np.cos(gamma),
+    #         np.cos(alpha)*np.sin(beta)*np.cos(gamma) + np.sin(alpha)*np.sin(gamma)],
+    #         [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma) + np.cos(alpha)*np.cos(gamma),
+    #         np.sin(alpha)*np.sin(beta)*np.cos(gamma) - np.cos(alpha)*np.sin(gamma)],
+    #         [-np.sin(beta), np.cos(beta)*np.sin(gamma), np.cos(beta)*np.cos(gamma)]
+    #     ]
+    #     r = np.array(r)
+    #     return r
+
+    vertices[object_index * sec: object_index * sec + sec] = \
         (vertices[object_index * sec: object_index * sec + sec] -
-         centers[object_index]) + centers[object_index]
+         centers[object_index])@R.from_euler('xyz', [0, np.pi/4, np.pi/4]).as_matrix() + centers[object_index]
 
     # Update colors
     vcolors[object_index * sec: object_index * sec + sec] += color_add
 
     # Tell actor that memory is modified
+    utils.update_polydata_normals(fury_actor.GetMapper().GetInput())
     utils.update_actor(fury_actor)
 
     face_index = picked_info['face']
@@ -132,14 +155,14 @@ fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 ###############################################################################
 # Make the window appear
 
-showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
+showm = window.ShowManager(scene, size=(500, 500), order_transparent=True)
 showm.initialize()
 scene.add(panel)
-
+scene.background((1, 1, 1))
 ###############################################################################
 # Change interactive to True to start interacting with the scene
 
-interactive = False
+interactive = True
 
 if interactive:
 
