@@ -4,8 +4,8 @@ import re
 import platform
 
 
-skip_osx = platform.system().lower() == "darwin"
-skip_win = platform.system().lower() == "windows"
+skip_osx = is_osx = platform.system().lower() == "darwin"
+skip_win = is_win = platform.system().lower() == "windows"
 is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
 SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
 

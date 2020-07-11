@@ -125,8 +125,8 @@ def test_deprecated():
         report = window.analyze_renderer(scene)
         npt.assert_equal(report.actors, 0)
         deprecated_warns = [w for w in l_warn
-                            if issubclass(w.category,
-                                          DeprecationWarning)]
+                            if issubclass(w.category, DeprecationWarning)
+                            if "deprecated from version" in str(w.message)]
         npt.assert_equal(len(deprecated_warns), 7)
         npt.assert_(issubclass(l_warn[-1].category, DeprecationWarning))
 

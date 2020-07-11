@@ -116,7 +116,7 @@ def deprecate_with_version(message, since='', until='',
                            version_comparator=cmp_pkg_version,
                            warn_class=DeprecationWarning,
                            error_class=ExpiredDeprecationError):
-    """Return decorator function function for deprecation warning / error.
+    """Return decorator function for deprecation warning / error.
 
     The decorated function / method will:
 
