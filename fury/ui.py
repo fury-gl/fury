@@ -1166,8 +1166,8 @@ class TextBlock2D(UI):
         """
         self.scene = scene
         if self.bg:
-            size = np.array(2)
-            self.actor.GetSize(self.scene, size)
+            size = np.zeros(2)
+            self.actor.GetSize(scene, size)
             self.background.resize(size)
         scene.add(self.background, self.actor)
 
@@ -1460,7 +1460,7 @@ class TextBlock2D(UI):
 
         if not self.actor.GetTextScaleMode():
             if self.scene is not None:
-                size = np.array(2)
+                size = np.zeros(2)
                 self.actor.GetSize(self.scene, size)
                 return size
             else:
@@ -3876,7 +3876,7 @@ class ListBox2D(UI):
             total_chars = len(str(choice))
             if total_chars > permissible_chars:
                 excess_chars = total_chars - permissible_chars
-                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
+                wrapped_choice = str(choice)[:(-excess_chars) + 3] + "..."
                 slot.element = choice
                 slot.textblock.message = wrapped_choice
             else:
