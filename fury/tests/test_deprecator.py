@@ -78,10 +78,10 @@ def test_deprecate_with_version():
     def func_no_doc():
         pass
 
-    def func_doc(i):
+    def func_doc(_i):
         "A docstring"
 
-    def func_doc_long(i, j):
+    def func_doc_long(_i, _j):
         "A docstring\n\n   Some text"
 
     class CustomError(Exception):

@@ -22,6 +22,8 @@ jobs:
         python.version: '3.7'
       Python36-64bit:
         python.version: '3.6'
+      Python38-64bit:
+        python.version: '3.8'
       CONDA Python37-64bit + OPTIONAL_DEPS:
         python.version: '3.7'
         OPTIONAL_DEPS: true

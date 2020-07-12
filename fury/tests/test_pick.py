@@ -1,5 +1,6 @@
 import numpy as np
-from fury import actor, window, io, ui, pick
+from fury import actor, window, ui, pick
+from fury.testing import assert_greater
 import numpy.testing as npt
 import itertools
 
@@ -59,16 +60,15 @@ def test_picking_manager():
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
-    npt.assert_equal(np.sum(np.array(record_indices['vertex_indices'])) > 1,
-                     True)
-    npt.assert_equal(np.sum(np.array(record_indices['face_indices'])) > 1,
-                     True)
+    assert_greater(np.sum(np.array(record_indices['vertex_indices'])), 1)
+    assert_greater(np.sum(np.array(record_indices['face_indices'])), 1)
+
     for ac in record_indices['actor']:
         if ac is not None:
             npt.assert_equal(ac is sphere_actor, True)
 
-    npt.assert_equal(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
-                                           axis=0))) > 0, True)
+    assert_greater(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
+                                         axis=0))), 0)
 
 
 if __name__ == "__main__":
