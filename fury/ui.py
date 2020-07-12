@@ -1117,6 +1117,7 @@ class TextBlock2D(UI):
             Size (width, height) in pixels of the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
+        self.scene = None
         self.bg = bool(bg_color)
         if size is not None:
             self.resize(size)
@@ -1163,6 +1164,11 @@ class TextBlock2D(UI):
         ----------
         scene : scene
         """
+        self.scene = scene
+        if self.bg:
+            size = np.array(2)
+            self.actor.GetSize(self.scene, size)
+            self.background.resize(size)
         scene.add(self.background, self.actor)
 
     @property
@@ -1453,7 +1459,13 @@ class TextBlock2D(UI):
             return self.background.size
 
         if not self.actor.GetTextScaleMode():
-            return self.font_size * 1.2, self.font_size * 1.2
+            if self.scene is not None:
+                size = np.array(2)
+                self.actor.GetSize(self.scene, size)
+                return size
+            else:
+                warn("TextBlock2D must be added to the scene before\
+                    querying its size while TextScaleMode is set to None.")
 
         return self.actor.GetPosition2()
 
