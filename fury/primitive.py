@@ -173,9 +173,18 @@ def repeat_primitive(vertices, faces, centers, directions=(1, 0, 0),
     # update orientations
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
-        ai, aj, ak = transform.Rotation.from_rotvec(np.pi / 2 * dirs). \
-            as_euler('zyx')
-        rotation_matrix = euler_matrix(ai, aj, ak)
+        if 0:
+            # rotation around an axis
+            ai, aj, ak = transform.Rotation.from_rotvec(np.pi / 2 * dirs). \
+                as_euler('zyx')
+            rotation_matrix = euler_matrix(ai, aj, ak)
+        else:
+            # rotation in direction of an axis
+            w = np.cos(0.5 * np.pi)
+            f = np.sin(0.5 * np.pi) / np.linalg.norm(dirs/2.)
+            dirs = np.append((dirs / 2.) * f, w)
+            rotation_matrix = transform.Rotation.from_quat(dirs).as_dcm()
+
         big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
                    big_vertices[pts * unit_verts_size:
