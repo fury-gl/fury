@@ -11,8 +11,7 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx
-from fury.primitive import prim_sphere, prim_square, repeat_primitive
-from fury.utils import shallow_copy, rotate, get_actor_from_primitive
+from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
