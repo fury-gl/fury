@@ -184,7 +184,7 @@ def get_orbit_actor(orbit_points):
 # orbit actors into the scene. Also initialize the track variables for each
 # planet.
 
-orbit_points = np.zeros((2100, 3), dtype='f8')
+orbit_points = np.zeros((1000, 3), dtype='f8')
 
 mercury_orbit_actor = get_orbit_actor(orbit_points)
 scene.add(mercury_orbit_actor)
@@ -277,7 +277,7 @@ def timer_callback(_obj, _event):
 
     update_planet_position(r_neptune, neptune_actor, neptune_track, cnt)
 
-    if cnt == 2099:
+    if cnt == 999:
         update_track(positions_mercury, mercury_track, mercury_orbit_actor)
 
         update_track(positions_venus, venus_track, venus_orbit_actor)
@@ -294,7 +294,7 @@ def timer_callback(_obj, _event):
 
         update_track(positions_neptune, neptune_track, neptune_orbit_actor)
 
-    if cnt == 3000:
+    if cnt == 1500:
         showm.exit()
 
 
@@ -302,7 +302,7 @@ def timer_callback(_obj, _event):
 # Watch the planets orbit the sun in your new animation!
 
 showm.initialize()
-showm.add_timer_callback(True, 3, timer_callback)
+showm.add_timer_callback(True, 5, timer_callback)
 showm.start()
 
 window.record(showm.scene, size=(900, 768),
