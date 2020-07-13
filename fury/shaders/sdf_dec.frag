@@ -2,8 +2,10 @@
 
 //VTK::ValuePass::Dec
 in vec4 vertexMCVSOutput;
+
 in vec3 centerWCVSOutput;
 flat in int primitiveVSOutput;
+in float scaleVSOutput;
 
 uniform mat4 MCVCMatrix;
 uniform mat4 MCWCMatrix;
@@ -25,11 +27,11 @@ float map( in vec3 position)
 {
 	float d1;
 		if(primitiveVSOutput==1){
-			d1 = sdSphere(position - centerWCVSOutput, 0.25);
+			d1 = sdSphere((position - centerWCVSOutput)/scaleVSOutput, 0.25)*scaleVSOutput;
     	}
     	else if(primitiveVSOutput==2){
     	
-    		d1 = sdTorus(position - centerWCVSOutput, vec2(0.4, 0.1));
+    		d1 = sdTorus((position - centerWCVSOutput)/scaleVSOutput, vec2(0.4, 0.1))*scaleVSOutput;
     	}
     return d1;
 }

@@ -8,7 +8,7 @@ import vtk
 
 verts, faces = fp.prim_box()
 
-centers = np.array([[0, 0, 0]])
+centers = np.array([[0, 0, 0],[8, 0, 0]])
 repeated = fp.repeat_primitive(verts, faces, centers=centers, scale=5)
 
 rep_verts, rep_faces, rep_colors, rep_centers = repeated
@@ -47,7 +47,40 @@ mapper.AddShaderReplacement(
 scene = window.Scene()
 scene.background((1.0, 0.8, 0.8))
 centers = np.array([[0, 0, 0]])
-scene.add(sdfactor)
 
+
+global timer
+timer = 0
+
+def timer_callback(obj, event):
+    global timer
+    timer += 1.0
+    showm.render()
+
+
+@window.vtk.calldata_type(window.vtk.VTK_OBJECT)
+def vtk_shader_callback(caller, event, calldata=None):
+    program = calldata
+    global timer
+    if program is not None:
+        try:
+            program.SetUniformf("time", timer)
+        except ValueError:
+            pass
+
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
+                   vtk_shader_callback)
+
+
+
+showm = window.ShowManager(scene, reset_camera=False)
+
+showm.initialize()
+showm.add_timer_callback(True, 10, timer_callback)
+
+
+scene.add(sdfactor)
 scene.add(actor.axes())
-window.show(scene, size=(1920, 1080))
+
+
+showm.start()

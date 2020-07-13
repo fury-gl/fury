@@ -28,6 +28,6 @@ if(t < 20.0)
     	
 }
 else{
-    //fragOutput0 = vec4(0, 0, 0, 0.3);
-    discard;
+    fragOutput0 = vec4(0, 0, 0, 0.3);
+    //discard;
 }

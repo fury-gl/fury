@@ -2607,6 +2607,17 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     vtk_primitive.SetName("primitive")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_primitive)
 
+    if(isinstance(scale, (list, tuple, np.ndarray))):
+        rep_scales = np.repeat(scale, verts.shape[0])
+    else:
+        rep_scales = np.repeat(scale, rep_centers.shape[0], axis=0)
+
+    vtk_scale = numpy_support.numpy_to_vtk(rep_scales, deep=True)
+    vtk_scale.SetNumberOfComponents(1)
+    vtk_scale.SetName("scale")
+    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_scale)
+
+
     vs_dec_code = fs.load("sdf_dec.vert")
     vs_impl_code = fs.load("sdf_impl.vert")
     fs_dec_code = fs.load("sdf_dec.frag")
@@ -2619,6 +2630,9 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     mapper.MapDataArrayToVertexAttribute(
         "primitive", "primitive", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
         -1)
+
+    mapper.MapDataArrayToVertexAttribute(
+        "scale", "scale", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,

@@ -5,3 +5,4 @@
 vertexMCVSOutput = vertexMC;
 centerWCVSOutput = center;
 primitiveVSOutput = int(primitive);
+scaleVSOutput = scale;

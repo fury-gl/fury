@@ -2,11 +2,13 @@
 
 //VTK::ValuePass::Dec
 in vec4 vertexMCVSOutput;
+in vec3 centerWCVSOutput;
 
 uniform mat4 MCVCMatrix;
 uniform mat4 MCWCMatrix;
 uniform mat3 WCVCMatrix;
 
+uniform float time;
 
 #define AA 1   // make this 1 is your machine is too slow
 
@@ -185,7 +187,18 @@ vec3 opTwist( vec3 p )
 //---------------------------------------------------------------
 vec2 map( in vec3 pos)
 {
+    
 
+    float  theta = time * 0.01;
+
+    mat3 transform = mat3(
+        1, 0, 0,
+        0, cos(theta), sin(theta),
+        0, -sin(theta), cos(theta)
+    );
+
+    pos = transform * pos;
+    pos = pos - centerWCVSOutput;
 
     vec2 res = opU( vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ), vec2( sdBox(       pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) );
     res = opU( res, vec2( udRoundBox(  pos-vec3( 1.0,0.25, 1.0), vec3(0.15), 0.1 ), 41.0 ) );
@@ -226,7 +239,7 @@ vec2 castRay(in vec3 ro, vec3 rd)
 
     float t = tmin;
     float m = -1.0;
-    for( int i=0; i<64; i++ )
+    for( int i=0; i<400; i++ )
     {
         float precis = 0.0005*t;
         vec2 res = map( ro+rd*t );
