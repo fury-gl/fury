@@ -291,6 +291,12 @@ def test_deprecated_argument_not_allowed_use():
         def test3(**kwargs):
             return kwargs
 
+    # wrong number of arguments
+    with pytest.raises(ValueError):
+        @deprecated_params(['a', 'b', 'c'], ['x', 'y'], '0.3')
+        def test4(**kwargs):
+            return kwargs
+
 
 def test_deprecated_argument_remove():
     @deprecated_params('x', None, '0.3', alternative='test2.y')
@@ -299,6 +305,15 @@ def test_deprecated_argument_remove():
 
     @deprecated_params('x', None, '0.3', '0.5', alternative='test2.y')
     def test2(dummy=11, x=3):
+        return dummy, x
+
+    @deprecated_params(['dummy', 'x'], None, '0.3', alternative='test2.y')
+    def test3(dummy=11, x=3):
+        return dummy, x
+
+    @deprecated_params(['dummy', 'x'], None, '0.3', '0.5',
+                       alternative='test2.y')
+    def test4(dummy=11, x=3):
         return dummy, x
 
     with pytest.warns(ArgsDeprecationWarning,
@@ -315,6 +330,13 @@ def test_deprecated_argument_remove():
                       match=r'Use test2\.y instead'):
         npt.assert_equal(test(121, 1), (121, 1))
 
+    with pytest.warns(ArgsDeprecationWarning,
+                      match=r'Use test2\.y instead') as w:
+        npt.assert_equal(test3(121, 1), (121, 1))
+
+    npt.assert_raises(ExpiredDeprecationError, test4, 121, 1)
+    npt.assert_raises(ExpiredDeprecationError, test4, dummy=121, x=1)
+    npt.assert_raises(ExpiredDeprecationError, test4, 121, x=1)
     npt.assert_raises(ExpiredDeprecationError, test2, x=1)
     npt.assert_equal(test(), (11, 3))
     npt.assert_equal(test(121), (121, 3))
