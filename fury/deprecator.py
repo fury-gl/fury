@@ -337,10 +337,10 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                 # In case the argument is not found in the list of arguments
                 # the only remaining possibility is that it should be caught
                 # by some kind of **kwargs argument.
-                raise TypeError(
-                    f'"{n_name}" was not specified in the function '
-                    'signature. If it was meant to be part of '
-                    '"**kwargs" then set "arg_in_kwargs" to "True"')
+                msg = '"{}" was not specified in the function '.format(n_name)
+                msg += 'signature. If it was meant to be part of '
+                msg += '"**kwargs" then set "arg_in_kwargs" to "True"'
+                raise TypeError(msg)
 
             key = o_name if n_name is None else n_name
             param = arguments[key]
@@ -354,17 +354,18 @@ def deprecated_params(old_name, new_name=None, since='', until='',
             else:
                 # positional-only argument, varargs, varkwargs or some
                 # unknown type:
-                raise TypeError(f'cannot replace argument "{new_name[i]}" '
-                                f'of kind {repr(param.kind)}.')
+                msg = 'cannot replace argument "{}" '.format(n_name)
+                msg += 'of kind {}.'.format(repr(param.kind))
+                raise TypeError(msg)
 
         @functools.wraps(function)
         def wrapper(*args, **kwargs):
             for i, (o_name, n_name) in enumerate(zip(old_name, new_name)):
-                messages = [f'"{o_name}" was deprecated', ]
+                messages = ['"{}" was deprecated'.format(o_name), ]
                 if (since[i], until[i]) != ('', ''):
                     messages.append('')
                 if since[i]:
-                    messages.append(f'* deprecated from version: {since[i]}')
+                    messages.append('* deprecated from version: ' + since[i])
                 if until[i]:
                     messages.append('* {0} {1} as of version: {2}'.format(
                         "Raises" if is_bad_version(until[i]) else "Will raise",
@@ -384,10 +385,10 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                     newarg_in_kwargs = n_name in kwargs
 
                     if newarg_in_args or newarg_in_kwargs:
-                        raise TypeError(
-                            f'cannot specify both "{o_name}"'
-                            ' (deprecated parameter) and '
-                            f'"{n_name}" (new parameter name).')
+                        msg = 'cannot specify both "{}"'.format(o_name)
+                        msg += ' (deprecated parameter) and '
+                        msg += '"{}" (new parameter name).'.format(n_name)
+                        raise TypeError(msg)
 
                     # Pass the value of the old argument with the
                     # name of the new argument to the function
@@ -395,9 +396,10 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                     kwargs[key] = value
 
                     if n_name is not None:
-                        message += f'* Use argument "{n_name}" instead.'
+                        message += '* Use argument "{}" instead.' \
+                            .format(n_name)
                     elif alternative:
-                        message += f'* Use {alternative} instead.'
+                        message += '* Use {} instead.'.format(alternative)
 
                     if until[i] and is_bad_version(until[i],
                                                    version_comparator):
@@ -409,7 +411,7 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                 elif (not n_name and positions[i] and
                       len(args) > positions[i]):
                     if alternative:
-                        message += f'\n        Use {alternative} instead.'
+                        message += '* Use {} instead.'.format(alternative)
                     if until[i] and is_bad_version(until[i],
                                                    version_comparator):
                         raise error_class(message)
