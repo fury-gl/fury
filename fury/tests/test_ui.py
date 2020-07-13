@@ -9,6 +9,7 @@ import vtk
 
 import numpy.testing as npt
 import pytest
+import warnings
 
 from fury import window, actor, ui
 from fury.colormap import distinguishable_colormap
@@ -421,6 +422,11 @@ def test_text_block_2d_size():
 
     npt.assert_equal(text_block_2.actor.GetTextScaleMode(), 0)
     npt.assert_equal(text_block_2.font_size, 50)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", RuntimeWarning)
+        text_block_2.size
+        npt.assert_equal(len(w), 1)
+        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
 
     text_block_2.resize((100, 100))
 
@@ -429,6 +435,26 @@ def test_text_block_2d_size():
 
     text_block_2.position = (100, 100)
     npt.assert_equal(text_block_2.position, (100, 100))
+
+    window_size = (700, 700)
+    show_manager = window.ShowManager(size=window_size)
+
+    text_block_3 = ui.TextBlock2D(text="FURY\nFURY\nFURY\nHello",
+                                  position=(150, 100), bg_color=(1, 0, 0),
+                                  color=(0, 1, 0), size=(100, 100))
+
+    show_manager.scene.add(text_block_3)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always", RuntimeWarning)
+        text_block_3.font_size = 100
+        npt.assert_equal(len(w), 1)
+        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
+        npt.assert_equal(text_block_3.size, (100, 100))
+
+        text_block_3.font_size = 12
+        npt.assert_equal(len(w), 1)
+        npt.assert_(issubclass(w[-1].category, RuntimeWarning))
+        npt.assert_equal(text_block_3.font_size, 12)
 
 
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):
