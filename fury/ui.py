@@ -1119,7 +1119,7 @@ class TextBlock2D(UI):
         """
         super(TextBlock2D, self).__init__(position=position)
         self.scene = None
-        self.bg = bool(bg_color)
+        self.have_bg = bool(bg_color)
         if size is not None:
             self.resize(size)
         else:
@@ -1148,7 +1148,7 @@ class TextBlock2D(UI):
         size : (int, int)
             Text bounding box size(width, height) in pixels.
         """
-        if self.bg:
+        if self.have_bg:
             self.background.resize(size)
         self.actor.SetTextScaleModeToProp()
         self.actor.SetPosition2(*size)
@@ -1166,7 +1166,7 @@ class TextBlock2D(UI):
         scene : scene
         """
         self.scene = scene
-        if self.bg:
+        if self.have_bg:
             size = np.zeros(2)
             self.actor.GetSize(scene, size)
             self.background.resize(size)
@@ -1419,7 +1419,7 @@ class TextBlock2D(UI):
             If None, there no background color.
             Otherwise, background color in RGB.
         """
-        if not self.bg:
+        if not self.have_bg:
             return None
 
         return self.background.color
@@ -1436,11 +1436,11 @@ class TextBlock2D(UI):
         """
         if color is None:
             # Remove background.
-            self.bg = False
+            self.have_bg = False
             self.background.set_visibility(False)
 
         else:
-            self.bg = True
+            self.have_bg = True
             self.background.set_visibility(True)
             self.background.color = color
 
@@ -1456,7 +1456,7 @@ class TextBlock2D(UI):
         self.background.position = position
 
     def _get_size(self):
-        if self.bg:
+        if self.have_bg:
             return self.background.size
 
         if not self.actor.GetTextScaleMode():
@@ -1465,8 +1465,9 @@ class TextBlock2D(UI):
                 self.actor.GetSize(self.scene, size)
                 return size
             else:
-                warn("TextBlock2D must be added to the scene before\
-                    querying its size while TextScaleMode is set to None.")
+                warn("TextBlock2D must be added to the scene before "
+                "querying its size while TextScaleMode is set to None.", 
+                RuntimeWarning)
 
         return self.actor.GetPosition2()
 
