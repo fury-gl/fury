@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from warnings import warn
+from numbers import Number
 
 import numpy as np
 import vtk
@@ -4472,7 +4473,14 @@ class ComboBox2D(UI):
     def append_item(self, *items):
         """ item : str : Name of the items.
         """
-        self.items.extend(items)
+        for item in items:
+            if isinstance(item, (list, tuple)):
+                # Useful when n-d lists/tuples are used.
+                self.append_item(*item)
+            elif isinstance(item, (str, Number)):
+                self.items.append(str(item))
+            else:
+                raise ValueError("Invalid Argument " + str(type(item)))
 
     def select_option_callback(self, i_ren, _obj, listboxitem):
         """ Callback to select the appropriate option
