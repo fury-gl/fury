@@ -1166,7 +1166,7 @@ class TextBlock2D(UI):
         scene : scene
         """
         self.scene = scene
-        if self.have_bg:
+        if self.have_bg and not self.actor.GetTextScaleMode():
             size = np.zeros(2)
             self.actor.GetSize(scene, size)
             self.background.resize(size)
@@ -1214,8 +1214,18 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
+        prev_size = self.font_size
         self.actor.SetTextScaleModeToNone()
         self.actor.GetTextProperty().SetFontSize(size)
+
+        if self.scene is not None and self.have_bg:
+            bb_size = np.zeros(2)
+            self.actor.GetSize(self.scene, bb_size)
+            bg_size = self.background.size
+            if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
+                warn("Font size exceeds background bounding box."
+                " Font Size will not be updated.", RuntimeWarning)
+                self.actor.GetTextProperty().SetFontSize(prev_size)
 
     @property
     def font_family(self):
