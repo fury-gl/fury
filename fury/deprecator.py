@@ -365,7 +365,8 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                 if (since[i], until[i]) != ('', ''):
                     messages.append('')
                 if since[i]:
-                    messages.append('* deprecated from version: ' + since[i])
+                    messages.append('* deprecated from version: ' +
+                                    str(since[i]))
                 if until[i]:
                     messages.append('* {0} {1} as of version: {2}'.format(
                         "Raises" if is_bad_version(until[i]) else "Will raise",
