@@ -1214,7 +1214,6 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
-        prev_size = self.font_size
         self.actor.SetTextScaleModeToNone()
         self.actor.GetTextProperty().SetFontSize(size)
 
@@ -1225,7 +1224,8 @@ class TextBlock2D(UI):
             if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
                 warn("Font size exceeds background bounding box."
                 " Font Size will not be updated.", RuntimeWarning)
-                self.actor.GetTextProperty().SetFontSize(prev_size)
+                self.actor.SetTextScaleModeToProp()
+                self.actor.SetPosition2(*bg_size)
 
     @property
     def font_family(self):
