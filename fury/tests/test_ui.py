@@ -1198,11 +1198,19 @@ def test_ui_file_menu_2d(interactive=False):
 
 
 def test_ui_combobox_2d(interactive=False):
+    filename = "test_ui_combobox_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
     values = ["An Item" + str(i) for i in range(0, 5)]
     new_values = ["An Item5", "An Item6"]
 
     combobox = ui.ComboBox2D(
         items=values, position=(400, 400), size=(300, 200))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(combobox)
 
     current_size = (800, 800)
     show_manager = window.ShowManager(
@@ -1237,18 +1245,23 @@ def test_ui_combobox_2d(interactive=False):
 
     ui.ComboBox2D(items=values, draggable=False)
 
-    combobox.resize((450, 300))
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
 
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    npt.assert_equal("An Item1", combobox.selected_text)
+    npt.assert_equal(1, combobox.selected_text_index)
+
+    combobox.resize((450, 300))
     npt.assert_equal((360, 90), combobox.text_block_size)
     npt.assert_equal((90, 90), combobox.drop_button_size)
     npt.assert_equal((450, 210), combobox.drop_menu_size)
-
-    print(combobox.selected_text)
-    print(combobox.selected_text_index)
-
-    if interactive:
-        show_manager.start()
-
 
 def test_grid_ui(interactive=False):
     vol1 = np.zeros((100, 100, 100))
