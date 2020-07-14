@@ -4409,7 +4409,7 @@ class ComboBox2D(UI):
         """
 
         self.selection_box = TextBlock2D(
-            font_size=self.font_size, color=self.sel_text_color,
+            size=self.text_block_size, color=self.sel_text_color,
             bg_color=self.sel_bg_color, text=self._selection)
 
         self.drop_down_button = Button2D(
@@ -4429,7 +4429,7 @@ class ComboBox2D(UI):
 
         self.panel = Panel2D(self.panel_size, opacity=0.0)
 
-        self.panel.add_element(self.selection_box, (0.008, 0.715))
+        self.panel.add_element(self.selection_box, (0.001, 0.7))
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
@@ -4440,12 +4440,16 @@ class ComboBox2D(UI):
                 = self.left_button_dragged
             self.selection_box.on_left_mouse_button_dragged =\
                 self.left_button_dragged
+            self.selection_box.background.on_left_mouse_button_dragged =\
+                self.left_button_dragged
 
             self.drop_down_button.on_left_mouse_button_pressed =\
                 self.left_button_pressed
             self.drop_down_menu.panel.background.on_left_mouse_button_pressed\
                 = self.left_button_pressed
             self.selection_box.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.selection_box.background.on_left_mouse_button_pressed =\
                 self.left_button_pressed
         else:
             self.panel.background.on_left_mouse_button_dragged =\
@@ -4481,7 +4485,7 @@ class ComboBox2D(UI):
         self.drop_menu_size = (size[0], int(0.7*size[1]))
         self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
 
-        self.panel.update_element(self.selection_box, (0.008, 0.715))
+        self.panel.update_element(self.selection_box, (0.001, 0.7))
         self.panel.update_element(self.drop_down_button, (0.8, 0.7))
         self.panel.update_element(self.drop_down_menu, (0, 0))
 
@@ -4507,6 +4511,7 @@ class ComboBox2D(UI):
         scene : scene
         """
         self.panel.add_to_scene(scene)
+        self.selection_box.font_size = self.font_size
 
     def _get_size(self):
         return self.panel.size
