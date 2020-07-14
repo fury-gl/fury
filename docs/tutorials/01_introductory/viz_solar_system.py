@@ -12,7 +12,7 @@ to simulate orbital motion.
 import numpy as np
 from fury import window, actor, utils, io
 import itertools
-from fury.data.fetcher import read_viz_textures, fetch_viz_textures
+from fury.data import read_viz_textures, fetch_viz_textures
 
 ##############################################################################
 # Create a scene to start.
@@ -58,8 +58,7 @@ def init_planet(filename):
 # in the ``planet_files`` list. Then, assign each actor to its corresponding
 # actor in the list.
 
-planet_iterator = map(init_planet, planet_filenames)
-planet_actor_list = list(planet_iterator)
+planet_actor_list = list(map(init_planet, planet_filenames))
 
 mercury_actor = planet_actor_list[0]
 venus_actor = planet_actor_list[1]
