@@ -44,12 +44,9 @@ normals = utils.normals_from_v_f(vertices, triangles)
 # spikes (represented with arrows).
 # So, let's create an arrow actor at the center of each vertex.
 
-# arrow_actor = actor.arrow(centers=vertices,
-#                           directions=normals, colors=(1, 0, 0), heights=0.2,
-#                           resolution=10, vertices=None, faces=None)
-print(normals)
-arrow_actor = actor.box(centers=vertices, directions=normals, colors=(255, 0, 0),
-                        scale=(0.01, 0.02, 0.3))
+arrow_actor = actor.arrow(centers=vertices,
+                          directions=normals, colors=(1, 0, 0), heights=0.2,
+                          resolution=10, vertices=None, faces=None)
 
 ##############################################################################
 # To be able to visualize the surface of the primitive sphere, we use
@@ -94,14 +91,14 @@ def timer_callback(_obj, _event):
     showm.scene.azimuth(0.05 * cnt)
     primitive_actor.GetProperty().SetOpacity(cnt/10.)
     showm.render()
-    if cnt == 200:
+    if cnt == 20:
         showm.exit()
 
 
 showm.initialize()
 showm.add_timer_callback(True, 200, timer_callback)
 showm.start()
-# window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
+window.record(showm.scene, size=(900, 768), out_path="viz_spiky.png")
 
 ##############################################################################
 # Instead of arrows, you can choose other geometrical objects

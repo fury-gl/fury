@@ -8,6 +8,7 @@ from vtk.util import numpy_support
 import fury.shaders as fs
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
+from fury.deprecator import deprecated_params
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
@@ -1594,6 +1595,8 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                   scale=scale)
 
 
+@deprecated_params(['size', 'heights'], ['scale', 'scale'],
+                   since='0.6', until='0.8')
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
@@ -1632,6 +1635,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
     return box_actor
 
 
+@deprecated_params('heights', 'scale', since='0.6', until='0.8')
 def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
     """Visualize one or many cubes with different features.
 
