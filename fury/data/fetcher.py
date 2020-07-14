@@ -160,9 +160,9 @@ def fetch_data(files, folder, data_size=None):
     Raises
     ------
     FetcherError
+
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
-
     """
     if not os.path.exists(folder):
         print("Creating new folder %s" % (folder))
