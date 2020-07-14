@@ -1235,6 +1235,17 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal([300, 140], combobox.drop_menu_size)
     npt.assert_equal([300, 200], combobox.size)
 
+    ui.ComboBox2D(items=values, draggable=False)
+
+    combobox.resize((450, 300))
+
+    npt.assert_equal((360, 90), combobox.text_block_size)
+    npt.assert_equal((90, 90), combobox.drop_button_size)
+    npt.assert_equal((450, 210), combobox.drop_menu_size)
+
+    print(combobox.selected_text)
+    print(combobox.selected_text_index)
+
     if interactive:
         show_manager.start()
 
