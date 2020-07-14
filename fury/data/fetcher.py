@@ -39,6 +39,7 @@ class FetcherError(Exception):
 
 def update_progressbar(progress, total_length):
     """Show progressbar.
+
     Takes a number between 0 and 1 to indicate progress from 0 to 100%.
     """
     # Try to set the bar_length according to the console size
@@ -89,6 +90,7 @@ def _get_file_sha(filename):
     -------
     sha256_data : str
         The computed sha hash from the input file
+
     """
     sha256_data = sha256()
     with open(filename, 'rb') as f:
@@ -107,6 +109,7 @@ def check_sha(filename, stored_sha256=None):
     stored_sha256 : str, optional
         Used to verify the generated SHA checksum.
         Default: None, checking is skipped
+
     """
     if stored_sha256 is not None:
         computed_sha256 = _get_file_sha(filename)
@@ -157,6 +160,7 @@ def fetch_data(files, folder, data_size=None):
     Raises
     ------
     FetcherError
+
         Raises if the sha checksum of the file does not match the expected
         value. The downloaded file is not deleted when this error is raised.
     """
@@ -221,6 +225,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     fetcher : function
         A function that, when called, fetches data according to the designated
         inputs
+
     """
     def fetcher():
         files = {}
@@ -363,6 +368,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     --------
     path : str
         Complete path of icon.
+
     """
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
@@ -381,6 +387,7 @@ def read_viz_models(fname):
     --------
     path : str
         Complete path of models.
+
     """
     folder = pjoin(fury_home, 'models')
     return pjoin(folder, fname)
