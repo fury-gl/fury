@@ -6,10 +6,31 @@ in vec4 vertexMCVSOutput;
 in vec3 centerWCVSOutput;
 flat in int primitiveVSOutput;
 in float scaleVSOutput;
+in vec3 directionVSOutput;
 
 uniform mat4 MCVCMatrix;
 uniform mat4 MCWCMatrix;
 uniform mat3 WCVCMatrix;
+
+mat4 rotationAxisAngle( vec3 v, float angle )
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    float ic = 1.0 - c;
+
+    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
+                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
+                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
+                 0.0,                0.0,                0.0,                1.0 );
+}
+
+mat4 translate( float x, float y, float z )
+{
+    return mat4( 1.0, 0.0, 0.0, 0.0,
+                 0.0, 1.0, 0.0, 0.0,
+                 0.0, 0.0, 1.0, 0.0,
+                 x,   y,   z,   1.0 );
+}
 
 
 float sdSphere( vec3 p, float s )
@@ -25,14 +46,23 @@ float sdTorus(vec3 p, vec2 t)
 
 float map( in vec3 position)
 {
-	float d1;
-		if(primitiveVSOutput==1){
-			d1 = sdSphere((position - centerWCVSOutput)/scaleVSOutput, 0.25)*scaleVSOutput;
-    	}
-    	else if(primitiveVSOutput==2){
-    	
-    		d1 = sdTorus((position - centerWCVSOutput)/scaleVSOutput, vec2(0.4, 0.1))*scaleVSOutput;
-    	}
+
+    mat4 rot = rotationAxisAngle( normalize(directionVSOutput), 180.0 );
+    mat4 tra = translate( 0.0, 1.0, 0.0 );
+    mat4 txi = tra * rot; 
+
+    vec3 pos = (txi*vec4(position  - centerWCVSOutput, 0.0)).xyz;
+	
+    float d1;
+	
+    if(primitiveVSOutput==1){
+		d1 = sdSphere((pos)/scaleVSOutput, 0.25)*scaleVSOutput;
+    }
+    
+    else if(primitiveVSOutput==2){
+    	d1 = sdTorus((pos)/scaleVSOutput, vec2(0.4, 0.1))*scaleVSOutput;
+    }
+    
     return d1;
 }
 
@@ -57,7 +87,7 @@ float castRay(in vec3 ro, vec3 rd)
     	float  h = map(position);
     	if(h<0.001) break;
 
-    	t += h;
+    	t += 0.1*h;
     	if ( t > 20.0) break;
     }
     return t;

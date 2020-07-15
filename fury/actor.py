@@ -2557,7 +2557,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
 def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
         scale=1):
-    """Create a SDF actor
+    """Create a SDF primitive based actor
 
     Parameters
     ----------
@@ -2566,12 +2566,12 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     directions : ndarray, shape (N, 3)
-        The orientation vector of the cube.
+        The orientation vector of the SDF primitive.
     primitive : String
         The primitive of choice to be rendered.
         Options are sphere and torus. Default is torus
     scale : float
-        The size of the cube
+        The size of the SDF primitive
 
 
     Returns
@@ -2617,6 +2617,16 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     vtk_scale.SetName("scale")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_scale)
 
+    if isinstance(directions, (list, tuple, np.ndarray)) and \
+            len(directions) == 3:
+        rep_directions = np.repeat(directions, rep_centers.shape[0], axis=0)
+    else:
+        rep_directions = np.repeat(directions, verts.shape[0], axis=0)
+
+    vtk_direction = numpy_support.numpy_to_vtk(rep_directions, deep=True)
+    vtk_direction.SetNumberOfComponents(3)
+    vtk_direction.SetName("direction")
+    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_direction)
 
     vs_dec_code = fs.load("sdf_dec.vert")
     vs_impl_code = fs.load("sdf_impl.vert")
@@ -2633,6 +2643,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
 
     mapper.MapDataArrayToVertexAttribute(
         "scale", "scale", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+
+    mapper.MapDataArrayToVertexAttribute(
+        "direction", "direction", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
+        -1)
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,

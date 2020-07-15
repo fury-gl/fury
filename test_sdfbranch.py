@@ -11,7 +11,8 @@ centers = np.array([[3, 0, 0], [0, 0, 0], [-3, 0, 0], [0, 3, 0], [0, -3, 0],
 scale = [2, 0.5, 0.5, 2, 1, 1, 1.5]
 sdfactor = actor.sdf(centers=centers, directions=dirs, colors=colors,
                      primitives=['torus', 'sphere', 'torus', 'sphere',
-                     'sphere', 'torus', 'sphere'],scale=scale)
+                                 'sphere', 'torus', 'sphere'],
+                     scale=scale)
 scene.add(sdfactor)
 
 scene.add(actor.axes())
