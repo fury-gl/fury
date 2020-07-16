@@ -180,7 +180,8 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
         w = np.cos(0.5 * np.pi)
-        f = np.sin(0.5 * np.pi) / np.linalg.norm(dirs/2.)
+        denom = np.linalg.norm(dirs/2.)
+        f = (np.sin(0.5 * np.pi) / denom) if denom else 0
         dirs = np.append((dirs / 2.) * f, w)
         rot = transform.Rotation.from_quat(dirs)
         rotation_matrix = rot.as_matrix() if SCIPY_1_4_PLUS else rot.as_dcm()
