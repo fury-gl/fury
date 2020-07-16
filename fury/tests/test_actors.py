@@ -973,8 +973,7 @@ def test_frustum_vertices_faces(interactive=False):
 def test_basic_geometry_actor(interactive=False):
     centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    directions = np.array([[1, 1, 0], [0, 1, 1], [1, 0, 1]])
-
+    directions = np.array([[1, 1, 0]])
     scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
                   np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
 
@@ -983,10 +982,9 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.square, {}],
                   [actor.rectangle, {}]]
 
-    scene = window.Scene()
-
     for act_func, extra_args in actor_list:
         for scale in scale_list:
+            scene = window.Scene()
             g_actor = act_func(centers=centers, colors=colors,
                                directions=directions, scale=scale,
                                **extra_args)
@@ -994,10 +992,11 @@ def test_basic_geometry_actor(interactive=False):
             scene.add(g_actor)
             if interactive:
                 window.show(scene)
+
             arr = window.snapshot(scene)
             report = window.analyze_snapshot(arr, colors=colors)
-            npt.assert_equal(report.objects, 3)
-            scene.clear()
+            msg = 'Failed with {}, scale={}'.format(act_func.__name__, scale)
+            npt.assert_equal(report.objects, 3, err_msg=msg)
 
 
 def test_advanced_geometry_actor(interactive=False):
