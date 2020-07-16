@@ -147,8 +147,9 @@ def test_double_click_events(recording=False):
         text="FURY rocks!!!"
     )
 
-    cube = actor.cube([(0, 0, 0)], [(0.16526678, 0.0186237, 0.01906076)],
-                       (1, 1, 1), heights=3)
+    cube = actor.cube(np.array([(0, 0, 0)]),
+                      np.array([(0.16526678, 0.0186237, 0.01906076)]),
+                      (1, 1, 1), scale=3)
 
     states = defaultdict(lambda: 0)
 
