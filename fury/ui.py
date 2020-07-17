@@ -266,6 +266,26 @@ class UI(object, metaclass=abc.ABCMeta):
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
 
     @staticmethod
+    def clip_overflow(self, textblock, width):
+        original_str = textblock.message
+        original_len = len(original_str)
+        end_ptr = original_len - 1
+
+        while True:
+            current_str = textblock.message
+            if textblock.size[0] == width: break
+            elif textblock.size[0] < width:
+                if len(current_str) <= len(original_str):
+                    textblock.message = original_str
+                    break
+                else:
+                    end_ptr = (end_ptr + original_len)//2
+                    textblock.message = original_str[:end_ptr] + "..."
+            else:
+                end_ptr //= 2
+                textblock.message = original_str[:end_ptr] + "..."
+
+    @staticmethod
     def left_button_click_callback(i_ren, obj, self):
         self.left_button_state = "pressing"
         self.on_left_mouse_button_pressed(i_ren, obj, self)
