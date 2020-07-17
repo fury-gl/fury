@@ -85,11 +85,11 @@ nyc_actor = actor.text_3d("New York City, New York\n40.7128° N, 74.0060° W",
                           window.colors.white, 0.01)
 paris_actor = actor.text_3d("Paris, France\n48.8566° N, 2.3522° E",
                             (locationthree[0]-0.04, locationthree[1],
-                            locationthree[2]-0.07),
+                             locationthree[2]-0.07),
                             window.colors.white, 0.01)
 beijing_actor = actor.text_3d("Beijing, China\n39.9042° N, 116.4074° E",
-                             (locationtwo[0]-0.06, locationtwo[1],
-                              locationtwo[2]-0.07),
+                              (locationtwo[0]-0.06, locationtwo[1],
+                               locationtwo[2]-0.07),
                               window.colors.white, 0.01)
 utils.rotate(paris_actor, (85, 0, 1, 0))
 utils.rotate(beijing_actor, (180, 0, 1, 0))
