@@ -317,7 +317,7 @@ fetch_viz_textures = _make_fetcher(
      '8k_mars.jpg', '8k_saturn.jpg',
      '8k_saturn_ring_alpha.png',
      '2k_uranus.jpg', '2k_neptune.jpg',
-     '8k_sun.jpg'],
+     '8k_sun.jpg', '1_earth_16k.jpg'],
     ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
      '5_night_8k.jpg', 'earth.ppm',
      'jupiter.jpg', 'masonry.bmp',
@@ -328,7 +328,7 @@ fetch_viz_textures = _make_fetcher(
      '8k_mars.jpg', '8k_saturn.jpg',
      '8k_saturn_ring_alpha.png',
      '2k_uranus.jpg', '2k_neptune.jpg',
-     '8k_sun.jpg'],
+     '8k_sun.jpg', '1_earth_16k.jpg'],
     ['0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F',
      '5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465',
      'DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A',
@@ -348,7 +348,8 @@ fetch_viz_textures = _make_fetcher(
      'F1F826933C9FF87D64ECF0518D6256B8ED990B003722794F67E96E3D2B876AE4',
      'D15239D46F82D3EA13D2B260B5B29B2A382F42F2916DAE0694D0387B1204A09D',
      'CB42EA82709741D28B0AF44D8B283CBC6DBD0C521A7F0E1E1E010ADE00977DF6',
-     'F22B1CFB306DDCE72A7E3B628668A0175B745038CE6268557CB2F7F1BDF98B9D'],
+     'F22B1CFB306DDCE72A7E3B628668A0175B745038CE6268557CB2F7F1BDF98B9D',
+     '7DD1DAC926101B5D7B7F2E952E53ACF209421B5CCE57C03168BCE0AAD675998A'],
     doc="Download textures for fury"
     )
 
