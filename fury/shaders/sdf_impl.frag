@@ -12,6 +12,8 @@ vec3 col = vertexColorVSOutput.rgb;
 //ray direction
 vec3 rd = normalize(point - ro.xyz);
 
+ro += vec4((point - ro.xyz),0.0);
+
 //light direction
 vec3 ld = vec3(1.0, 1.0, 0.0);
 

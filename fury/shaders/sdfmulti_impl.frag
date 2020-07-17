@@ -10,6 +10,8 @@ vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
 //ray direction
 vec3 rd = normalize(point - ro.xyz);
 
+ro += vec4((point - ro.xyz),0.0);
+
 //float t = castRay(ro.xyz, rd);
  vec2 res =  castRay(ro.xyz, rd);
  float t = res.x;
