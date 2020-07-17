@@ -41,15 +41,15 @@ earth_actor.SetScale(2, 2, 2)
 # In this function, convert to radians, then to spherical coordinates, and
 # lastly, to cartesian coordinates.
 
+
 def latlong_coordinates(lat, lon):
-    #Convert latitude and longitude to spherical coordinates
+    # Convert latitude and longitude to spherical coordinates
     degrees_to_radians = math.pi/180.0
-    #phi = 90 - latitude
+    # phi = 90 - latitude
     phi = (90-lat)*degrees_to_radians
-    #theta = longitude
+    # theta = longitude
     theta = lon*degrees_to_radians*-1
-    #r is radius 1
-    #now convert to cartesian
+    # now convert to cartesian
     x = np.sin(phi)*np.cos(theta)
     y = np.sin(phi)*np.sin(theta)
     z = np.cos(phi)
@@ -61,9 +61,9 @@ def latlong_coordinates(lat, lon):
 # Use this new function to place some sphere actors on several big cities
 # around the Earth.
 
-locationone = latlong_coordinates(40.730610, -73.935242) #new york city, us
-locationtwo = latlong_coordinates(39.916668, 116.383331) #beijing, china
-locationthree = latlong_coordinates(48.864716, 2.349014) #paris, france
+locationone = latlong_coordinates(40.730610, -73.935242) # new york city, us
+locationtwo = latlong_coordinates(39.916668, 116.383331) # beijing, china
+locationthree = latlong_coordinates(48.864716, 2.349014) # paris, france
 
 ###############################################################################
 # Set the centers, radii, and colors of these spheres, and create a new
@@ -80,14 +80,17 @@ scene.add(sphere_actor)
 # geographical coordinates.
 
 nyc_actor = actor.text_3d("New York City, New York\n40.7128° N, 74.0060° W",
-                         (locationone[0]-0.04, locationone[1], locationone[2]+0.07),
-                         window.colors.white, 0.01)
+                          (locationone[0]-0.04, locationone[1],
+                          locationone[2]+0.07),
+                          window.colors.white, 0.01)
 paris_actor = actor.text_3d("Paris, France\n48.8566° N, 2.3522° E",
-                           (locationthree[0]-0.04, locationthree[1], locationthree[2]-0.07),
-                           window.colors.white, 0.01)
+                           (locationthree[0]-0.04, locationthree[1],
+                            locationthree[2]-0.07),
+                            window.colors.white, 0.01)
 beijing_actor = actor.text_3d("Beijing, China\n39.9042° N, 116.4074° E",
-                             (locationtwo[0]-0.06, locationtwo[1], locationtwo[2]-0.07),
-                             window.colors.white, 0.01)
+                             (locationtwo[0]-0.06, locationtwo[1],
+                              locationtwo[2]-0.07),
+                              window.colors.white, 0.01)
 utils.rotate(paris_actor, (85, 0, 1, 0))
 utils.rotate(beijing_actor, (180, 0, 1, 0))
 utils.rotate(nyc_actor, (5, 1, 0, 0))
@@ -106,6 +109,7 @@ showm = window.ShowManager(scene,
 # location.
 
 counter = itertools.count()
+
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
