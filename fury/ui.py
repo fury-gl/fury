@@ -4621,46 +4621,6 @@ class ComboBox2D(UI):
         i_ren.force_render()
 class TabItem2D(UI):
     """ The information contained within a Tab.
-    """
-
-    def __init__(self, position=(0, 0), size=(100, 100),
-                 text="Tab", color=(1, 1, 1)):
-        """
-        """
-        self.size = size
-        self.color = color
-        self._text_size = (int(0.7 * size[0]), size[1])
-        self._button_size = (int(0.3 * size[0]), size[1])
-
-        super(TabItem2D, self).__init__()
-        self.panel.position = position
-        self.text.message = text
-
-    def _setup(self):
-        """ Setup this UI component.
-        Create parent panel.
-        Create Text to hold tab information.
-        Create Button to close tab.
-        """
-        self.panel = Panel2D(size=self.size, color=self.color)
-        self.text = TextBlock2D(size=self._text_size)
-        self.close_button = Button2D(
-            icon_fnames=("close", read_viz_icons(fname='cross.png')),
-            size=self._button_size)
-
-    def _get_actors(self):
-        pass
-
-    def _add_to_scene(self, _scene):
-        pass
-
-    def _set_position(self, _coords):
-        pass
-
-    def _get_size(self):
-        pass
-
-
 class TabUI(UI):
     """ UI element to add multiple panels within a single window.
     """
@@ -4676,12 +4636,10 @@ class TabUI(UI):
     def _setup(self):
         """ Setup this UI component.
         Create parent panel.
-        Create content panels.
-        Create tab item elements.
+        Create tab panels.
         Create add new tab button.
         """
         self.parent_panel = Panel2D()
-        self.content_panel = Panel2D()
         self.new_tab_button = Button2D(
             icon_fnames=("new", read_viz_icons("plus.png"))
         )
@@ -4698,6 +4656,67 @@ class TabUI(UI):
     def _get_size(self):
         pass
 
+
+class TabPanel2D(UI):
+    """ The information contained within a Tab.
+    """
+
+    def __init__(self, tab_ui=None, position=(0, 0), size=(100, 100),
+                 text="Tab", color=(1, 1, 1), panel=None):
+        """
+        """
+        self.size = size
+        self.color = color
+        self.content_panel = panel
+        self.tab_ui = tab_ui
+        self._text_size = (int(0.7 * size[0]), size[1])
+        self._button_size = (int(0.3 * size[0]), size[1])
+
+        super(TabPanel2D, self).__init__()
+        self.panel.position = position
+        self.text.message = text
+
+    def _setup(self):
+        """ Setup this UI component.
+        Create parent panel.
+        Create Text to hold tab information.
+        Create Button to close tab.
+        """
+        self.panel = Panel2D(size=self.size, color=self.color)
+        self.text = TextBlock2D(size=self._text_size)
+        self.close_button = Button2D(
+            icon_fnames=("close", read_viz_icons(fname='cross.png')),
+            size=self._button_size)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.panel.actors + self.content_panel.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.panel.add_to_scene(_scene)
+        self.content_panel.add_to_scene(_scene)
+
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.panel.position = _coords
+        # Implement content_panel position = TabUI pos
+
+    def _get_size(self):
+        self.panel.size
 
 
 class GridUI(UI):
