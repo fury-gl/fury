@@ -2594,7 +2594,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     vtk_center.SetName("center")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
 
-    if(isinstance(primitives,  (list, tuple, np.ndarray))):
+    if isinstance(primitives,  (list, tuple, np.ndarray)):
         primlist = [prims[prim] for prim in primitives]
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
@@ -2605,7 +2605,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     vtk_primitive.SetName("primitive")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_primitive)
 
-    if(isinstance(scale, (list, tuple, np.ndarray))):
+    if isinstance(scale, (list, tuple, np.ndarray)):
         rep_scales = np.repeat(scale, verts.shape[0])
     else:
         rep_scales = np.repeat(scale, rep_centers.shape[0], axis=0)
