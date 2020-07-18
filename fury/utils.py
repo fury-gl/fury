@@ -1075,21 +1075,23 @@ def get_bounds(actor):
     return actor.GetMapper().GetInput().GetBounds()
 
 
-def clip_overflow(self, textblock, width):
-        original_str = textblock.message
-        original_len = len(original_str)
-        end_ptr = original_len - 1
+def clip_overflow(textblock, width):
+    original_str = textblock.message
+    original_len = len(original_str)
+    end_ptr = original_len - 1
 
-        while True:
-            current_str = textblock.message
-            if textblock.size[0] == width: break
-            elif textblock.size[0] < width:
-                if len(current_str) <= len(original_str):
-                    textblock.message = original_str
-                    break
-                else:
-                    end_ptr = (end_ptr + original_len)//2
-                    textblock.message = original_str[:end_ptr] + "..."
+    while True:
+        current_str = textblock.message
+        if textblock.size[0] == width: break
+        elif textblock.size[0] < width:
+            if len(current_str) <= len(original_str):
+                textblock.message = original_str
+                break
             else:
-                end_ptr //= 2
+                end_ptr = (end_ptr + original_len)//2
                 textblock.message = original_str[:end_ptr] + "..."
+        else:
+            end_ptr //= 2
+            textblock.message = original_str[:end_ptr] + "..."
+    
+    return current_str
