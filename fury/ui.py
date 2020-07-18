@@ -4331,11 +4331,11 @@ class ComboBox2D(UI):
 
     Attributes
     ----------
-    selection_box        : :class: 'TextBox2D'
+    selection_box: :class: 'TextBox2D'
         Display selection and placeholder text.
-    drop_down_button : :class: 'Button2D'
+    drop_down_button: :class: 'Button2D'
         Button to show or hide menu.
-    drop_down_menu   : :class: 'ListBox2D'
+    drop_down_menu: :class: 'ListBox2D'
         Container for item list.
     """
 
@@ -4363,14 +4363,27 @@ class ComboBox2D(UI):
             Holds the default text to be displayed.
         draggable: {True, False}
             Whether the UI element is draggable or not.
+        selection_text_color : tuple of 3 floats
+            Color of the selected text to be displayed.
+        selection_bg_color : tuple of 3 floats
+            Background color of the selection text.
+        menu_text_color : tuple of 3 floats.
+            Color of the options displayed in drop down menu.
+        selected_color : tuple of 3 floats.
+            Background color of the selected option in drop down menu.
+        unselected_color : tuple of 3 floats.
+            Background color of the unselected option in drop down menu.
+        scroll_bar_active_color : tuple of 3 floats.
+            Color of the scrollbar when in active use.
+        scroll_bar_inactive_color : tuple of 3 floats.
+            Color of the scrollbar when inactive.
         reverse_scrolling: {True, False}
             If True, scrolling up will move the list of files down.
         font_size: int
-            The font size in pixels.
+            The font size of selected text in pixels.
         line_spacing: float
-            Distance between listbox's items in pixels.
+            Distance between drop down menu's items in pixels.
         """
-
         self.items = items.copy()
         self.font_size = font_size
         self.reverse_scrolling = reverse_scrolling
@@ -4407,7 +4420,6 @@ class ComboBox2D(UI):
         Create TextBox with placeholder text.
         Create Button for toggling drop down menu.
         """
-
         self.selection_box = TextBlock2D(
             size=self.text_block_size, color=self.sel_text_color,
             bg_color=self.sel_bg_color, text=self._selection)
@@ -4428,7 +4440,6 @@ class ComboBox2D(UI):
         self.drop_down_menu.set_visibility(False)
 
         self.panel = Panel2D(self.panel_size, opacity=0.0)
-
         self.panel.add_element(self.selection_box, (0.001, 0.7))
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
@@ -4479,6 +4490,13 @@ class ComboBox2D(UI):
         return self.panel.actors
 
     def resize(self, size):
+        """ Resizes ComboBox2D.
+
+        Parameters
+        ----------
+        size : (int, int)
+            ComboBox size(width, height) in pixels.
+        """
         self.panel.resize(size)
 
         self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
@@ -4491,7 +4509,7 @@ class ComboBox2D(UI):
 
         self.drop_down_button.resize(self.drop_button_size)
         self.drop_down_menu.resize(self.drop_menu_size)
-        # self.selection_box.resize(self.text_block_size)
+        self.selection_box.resize(self.text_block_size)
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -4525,7 +4543,12 @@ class ComboBox2D(UI):
         return self._selection_ID
 
     def append_item(self, *items):
-        """ item : str : Name of the items.
+        """ Append additional options to the menu.
+
+        Parameters
+        ----------
+        items : n-d list, n-d tuple, Number or str
+            Additional options.
         """
         for item in items:
             if isinstance(item, (list, tuple)):
