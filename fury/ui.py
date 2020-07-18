@@ -4619,8 +4619,8 @@ class ComboBox2D(UI):
         self.panel.position += change
         self._click_position = click_position
         i_ren.force_render()
-class TabItem2D(UI):
-    """ The information contained within a Tab.
+
+
 class TabUI(UI):
     """ UI element to add multiple panels within a single window.
     """
