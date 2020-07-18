@@ -4619,6 +4619,85 @@ class ComboBox2D(UI):
         self.panel.position += change
         self._click_position = click_position
         i_ren.force_render()
+class TabItem2D(UI):
+    """ The information contained within a Tab.
+    """
+
+    def __init__(self, position=(0, 0), size=(100, 100),
+                 text="Tab", color=(1, 1, 1)):
+        """
+        """
+        self.size = size
+        self.color = color
+        self._text_size = (int(0.7 * size[0]), size[1])
+        self._button_size = (int(0.3 * size[0]), size[1])
+
+        super(TabItem2D, self).__init__()
+        self.panel.position = position
+        self.text.message = text
+
+    def _setup(self):
+        """ Setup this UI component.
+        Create parent panel.
+        Create Text to hold tab information.
+        Create Button to close tab.
+        """
+        self.panel = Panel2D(size=self.size, color=self.color)
+        self.text = TextBlock2D(size=self._text_size)
+        self.close_button = Button2D(
+            icon_fnames=("close", read_viz_icons(fname='cross.png')),
+            size=self._button_size)
+
+    def _get_actors(self):
+        pass
+
+    def _add_to_scene(self, _scene):
+        pass
+
+    def _set_position(self, _coords):
+        pass
+
+    def _get_size(self):
+        pass
+
+
+class TabUI(UI):
+    """ UI element to add multiple panels within a single window.
+    """
+
+    def __init__(self, position=(0, 0), size=(100, 100), tabs=1,
+                 draggable=False):
+        """
+        """
+        self.tabs = tabs
+        super(TabUI, self).__init__()
+        self.parent_panel.position = position
+
+    def _setup(self):
+        """ Setup this UI component.
+        Create parent panel.
+        Create content panels.
+        Create tab item elements.
+        Create add new tab button.
+        """
+        self.parent_panel = Panel2D()
+        self.content_panel = Panel2D()
+        self.new_tab_button = Button2D(
+            icon_fnames=("new", read_viz_icons("plus.png"))
+        )
+
+    def _get_actors(self):
+        pass
+
+    def _add_to_scene(self, _scene):
+        pass
+
+    def _set_position(self, _coords):
+        pass
+
+    def _get_size(self):
+        pass
+
 
 
 class GridUI(UI):
