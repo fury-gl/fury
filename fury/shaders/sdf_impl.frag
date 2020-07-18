@@ -26,10 +26,9 @@ if(t < 20.0)
     float light = dot(ld, norm);
 
     fragOutput0 = vec4(col * light, 1.0);
-    //fragOutput0 = vec4( norm, 1.0);
     	
 }
 else{
-    //fragOutput0 = vec4(0, 0, 0, 0.3);
+    
     discard;
 }

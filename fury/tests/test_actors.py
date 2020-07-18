@@ -1364,7 +1364,7 @@ def test_sdf_actor(interactive=False):
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
     scale = [1, 2, 3]
-    primitive = ['sphere','sphere','torus']
+    primitive = ['sphere', 'ellipsoid', 'torus']
 
     sdf_actor = actor.sdf(centers, directions,
                           colors, primitive, scale)
@@ -1372,3 +1372,7 @@ def test_sdf_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)

@@ -2567,7 +2567,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     directions : ndarray, shape (N, 3)
         The orientation vector of the SDF primitive.
-    primitive : String
+    primitives : str
         The primitive of choice to be rendered.
         Options are sphere and torus. Default is torus
     scale : float
@@ -2595,9 +2595,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
 
     if(isinstance(primitives,  (list, tuple, np.ndarray))):
-        primlist = []
-        for prim in primitives:
-    	    primlist.append(prims[prim])
+        primlist = [prims[prim] for prim in primitives]
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
         rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)

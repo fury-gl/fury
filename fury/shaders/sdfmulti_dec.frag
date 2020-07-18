@@ -19,10 +19,12 @@ float sdPlane( vec3 p )
     return p.y;
 }
 
+
 float sdSphere( vec3 p, float s )
 {
     return length(p)-s;
 }
+
 
 float sdBox( vec3 p, vec3 b )
 {
@@ -30,32 +32,33 @@ float sdBox( vec3 p, vec3 b )
     return min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0));
 }
 
+
 float sdEllipsoid( in vec3 p, in vec3 r )
 {
     return (length( p/r ) - 1.0) * min(min(r.x,r.y),r.z);
 }
+
 
 float udRoundBox( vec3 p, vec3 b, float r )
 {
     return length(max(abs(p)-b,0.0))-r;
 }
 
+
 float sdTorus( vec3 p, vec2 t )
 {
     return length( vec2(length(p.xz)-t.x,p.y) )-t.y;
 }
 
+
 float sdHexPrism( vec3 p, vec2 h )
 {
     vec3 q = abs(p);
-#if 0
-    return max(q.z-h.y,max((q.x*0.866025+q.y*0.5),q.y)-h.x);
-#else
     float d1 = q.z-h.y;
     float d2 = max((q.x*0.866025+q.y*0.5),q.y)-h.x;
     return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
-#endif
 }
+
 
 float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
 {
@@ -63,6 +66,7 @@ float sdCapsule( vec3 p, vec3 a, vec3 b, float r )
     float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
     return length( pa - ba*h ) - r;
 }
+
 
 float sdEquilateralTriangle(  in vec2 p )
 {
@@ -74,26 +78,24 @@ float sdEquilateralTriangle(  in vec2 p )
     return -length(p)*sign(p.y);
 }
 
+
 float sdTriPrism( vec3 p, vec2 h )
 {
     vec3 q = abs(p);
     float d1 = q.z-h.y;
-#if 1
-    // distance bound
+
     float d2 = max(q.x*0.866025+p.y*0.5,-p.y)-h.x*0.5;
-#else
-    // correct distance
-    h.x *= 0.866025;
-    float d2 = sdEquilateralTriangle(p.xy/h.x)*h.x;
-#endif
+
     return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
 }
+
 
 float sdCylinder( vec3 p, vec2 h )
 {
   vec2 d = abs(vec2(length(p.xz),p.y)) - h;
   return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
+
 
 float sdCone( in vec3 p, in vec3 c )
 {
@@ -102,6 +104,7 @@ float sdCone( in vec3 p, in vec3 c )
     float d2 = max( dot(q,c.xy), q.y);
     return length(max(vec2(d1,d2),0.0)) + min(max(d1,d2), 0.);
 }
+
 
 float sdConeSection( in vec3 p, in float h, in float r1, in float r2 )
 {
@@ -126,10 +129,12 @@ float sdPryamid4(vec3 p, vec3 h ) // h = { cos a, sin a, height }
     return max(-box,octa); // Subtraction
  }
 
+
 float length2( vec2 p )
 {
     return sqrt( p.x*p.x + p.y*p.y );
 }
+
 
 float length6( vec2 p )
 {
@@ -137,11 +142,13 @@ float length6( vec2 p )
     return pow( p.x + p.y, 1.0/6.0 );
 }
 
+
 float length8( vec2 p )
 {
     p = p*p; p = p*p; p = p*p;
     return pow( p.x + p.y, 1.0/8.0 );
 }
+
 
 float sdTorus82( vec3 p, vec2 t )
 {
@@ -149,33 +156,37 @@ float sdTorus82( vec3 p, vec2 t )
     return length8(q)-t.y;
 }
 
+
 float sdTorus88( vec3 p, vec2 t )
 {
     vec2 q = vec2(length8(p.xz)-t.x,p.y);
     return length8(q)-t.y;
 }
 
+
 float sdCylinder6( vec3 p, vec2 h )
 {
     return max( length6(p.xz)-h.x, abs(p.y)-h.y );
 }
 
-//---------------------------------------------------------------
 
 float opS( float d1, float d2 )
 {
     return max(-d2,d1);
 }
 
+
 vec2 opU( vec2 d1, vec2 d2 )
 {
     return (d1.x<d2.x) ? d1 : d2;
 }
 
+
 vec3 opRep( vec3 p, vec3 c )
 {
     return mod(p,c)-0.5*c;
 }
+
 
 vec3 opTwist( vec3 p )
 {
@@ -184,11 +195,10 @@ vec3 opTwist( vec3 p )
     mat2   m = mat2(c,-s,s,c);
     return vec3(m*p.xz,p.y);
 }
-//---------------------------------------------------------------
-vec2 map( in vec3 pos)
-{
-    
 
+
+vec2 map( in vec3 pos )
+{
     float  theta = time * 0.01;
 
     mat3 transform = mat3(
@@ -200,7 +210,7 @@ vec2 map( in vec3 pos)
     pos = transform * pos;
     pos = pos - centerWCVSOutput;
 
-    vec2 res = opU( vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ), vec2( sdBox(       pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) );
+    vec2 res = opU( vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ), vec2( sdBox( pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) );
     res = opU( res, vec2( udRoundBox(  pos-vec3( 1.0,0.25, 1.0), vec3(0.15), 0.1 ), 41.0 ) );
     res = opU( res, vec2( sdTorus(     pos-vec3( 0.0,0.25, 1.0), vec2(0.20,0.05) ), 25.0 ) );
     res = opU( res, vec2( sdCapsule(   pos,vec3(-1.3,0.10,-0.1), vec3(-0.8,0.50,0.2), 0.1  ), 31.9 ) );
@@ -217,9 +227,8 @@ vec2 map( in vec3 pos)
 
     return res;
 
-
-
 }
+
 
 vec3 calcNormal( in vec3 pos )
 {
@@ -232,7 +241,7 @@ vec3 calcNormal( in vec3 pos )
 }
 
 
-vec2 castRay(in vec3 ro, vec3 rd)
+vec2 castRay( in vec3 ro, vec3 rd )
 {
     float tmin = 0.2;
     float tmax = 30.0;
