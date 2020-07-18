@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 ========
 ComboBox
@@ -54,6 +53,7 @@ color_combobox = ui.ComboBox2D(items=list(colors.keys()),
 def change_color(combobox):
     label.color = colors[combobox.selected_text]
 
+
 # `on_change` callback is set to `change_color` method so that
 # it's called whenever a different option is selected.
 color_combobox.on_change = change_color
@@ -73,3 +73,5 @@ interactive = False
 
 if interactive:
     showm.start()
+
+window.record(showm.scene, out_path="combobox_ui.png", size=(400, 400))
