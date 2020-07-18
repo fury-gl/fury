@@ -1074,6 +1074,7 @@ def get_bounds(actor):
     """
     return actor.GetMapper().GetInput().GetBounds()
 
+
 def clip_overflow(self, textblock, width):
         original_str = textblock.message
         original_len = len(original_str)
