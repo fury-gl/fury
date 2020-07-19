@@ -2,14 +2,24 @@
 ===================
 Visualize SDF Actor
 ===================
-Here is a simple tutorial that shows how to visualize SDF primtives using FURY.
+Here is a simple tutorial that shows how to visualize SDF primitives using
+FURY.
+
+SDFs or Signed-distance functions when passed the coordinates of a point in
+space, return the shortest distance between that point and some surface.
+This property of SDFs can be used to model 3D geometry at a faster rate
+compared to traditional polygons based modeling.
+
+In this example we use the raymarching algorithm to render the SDF primitives
+shapes using shaders
+
 """
 
 import numpy as np
 from fury import window, actor
 
 ###############################################################################
-# Lets define varibles for the SDF Actor
+# Lets define variables for the SDF Actor
 
 dirs = np.random.rand(3, 3)
 colors = np.random.rand(3, 3) * 255
@@ -35,13 +45,14 @@ scene.add(sdfactor)
 ###############################################################################
 # Show Manager
 #
-# Since all the elements have been initialised,we add them to the show manager.
+# Since all the elements have been initialised ,we add them to the show
+# manager.
 
 current_size = (1024, 720)
 showm = window.ShowManager(scene, size=current_size,
                            title="Visualize SDF Actor")
 
-interactive = True
+interactive = False
 
 if interactive:
     showm.start()
