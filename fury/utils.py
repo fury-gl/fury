@@ -1076,6 +1076,20 @@ def get_bounds(actor):
 
 
 def clip_overflow(textblock, width):
+    """Clips overflowing text of TextBlock2D with respect to width.
+
+    Parameters
+    ----------
+    textblock : TextBlock2D
+        The textblock object whose text needs to be clipped.
+    width : int
+        Required width of the clipped text.
+
+    Returns
+    -------
+    clipped text : str
+        Clipped version of the text.
+    """
     original_str = textblock.message
     start_ptr = 0
     end_ptr = len(original_str)
