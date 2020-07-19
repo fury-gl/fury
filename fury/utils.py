@@ -1105,10 +1105,7 @@ def clip_overflow(textblock, width):
                 start_ptr = mid_ptr
             elif textblock.size[0] > width:
                 end_ptr = mid_ptr
-            else:
-                return textblock.message
 
-            if mid_ptr == (start_ptr + end_ptr)//2:
+            if mid_ptr == (start_ptr + end_ptr)//2 \
+            or textblock.size[0] == width:
                 return textblock.message
-
-    return textblock.message
