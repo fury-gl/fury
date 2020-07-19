@@ -1077,22 +1077,25 @@ def get_bounds(actor):
 
 def clip_overflow(textblock, width):
     original_str = textblock.message
-    original_len = len(original_str)
-    end_ptr = original_len
+    start_ptr = 0
+    end_ptr = len(original_str)
 
-    while True:
-        current_str = textblock.message
-        if textblock.size[0] == width: break
-        elif textblock.size[0] < width:
-            if len(current_str) <= len(original_str) and \
-            current_str == original_str:
-                current_str = original_str
-                break
-            else:
-                end_ptr = (end_ptr + original_len)//2
-                textblock.message = original_str[:end_ptr] + "..."
-        else:
-            end_ptr //= 2
-            textblock.message = original_str[:end_ptr] + "..."
+
+    if textblock.size[0] == width or textblock.size[0] <= width:
+        return original_str
     
-    return current_str
+    else:
+        while start_ptr < end_ptr:
+            mid_ptr = (start_ptr + end_ptr)//2
+            textblock.message = original_str[:mid_ptr] + "..."
+            if textblock.size[0] < width:
+                start_ptr = mid_ptr
+            elif textblock.size[0] > width:
+                end_ptr = mid_ptr
+            else:
+                return textblock.message
+
+            if mid_ptr == (start_ptr + end_ptr)//2:
+                return textblock.message
+
+    return textblock.message
