@@ -1516,3 +1516,7 @@ def test_clip_overflow():
     text.message = "Hello wassup"
     ui.clip_overflow(text, rectangle.size[0])
     npt.assert_equal("Hello was...", text.message)
+
+    text.message = "A very very long message to clip text overflow"
+    ui.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("A very ve...", text.message)
