@@ -10,7 +10,7 @@ import abc
 from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
-from fury.utils import set_input, rotate
+from fury.utils import set_input, rotate, clip_overflow
 from fury.actor import grid
 
 
@@ -3884,16 +3884,7 @@ class ListBox2D(UI):
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            char_width = slot.textblock.size[0] - self.margin
-            permissible_chars = int(self.slot_width)//char_width
-            total_chars = len(str(choice))
-            if total_chars > permissible_chars:
-                excess_chars = total_chars - permissible_chars
-                wrapped_choice = str(choice)[:(-excess_chars) + 3] + "..."
-                slot.element = choice
-                slot.textblock.message = wrapped_choice
-            else:
-                slot.element = choice
+            slot.element = choice
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
