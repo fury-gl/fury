@@ -459,9 +459,9 @@ def test_clip_overflow():
     sm.scene.add(rectangle, text)
 
     text.message = "Hello"
-    text.message = clip_overflow(text, rectangle.size[0])
+    clip_overflow(text, rectangle.size[0])
     npt.assert_equal("Hello", text.message)
 
     text.message = "Hello wassup"
-    text.message = utils.clip_overflow(text, rectangle.size[0])
+    clip_overflow(text, rectangle.size[0])
     npt.assert_equal("Hello was...", text.message)
