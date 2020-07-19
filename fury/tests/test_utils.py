@@ -450,3 +450,18 @@ def test_get_bounds():
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
+
+def test_clip_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "Hello"
+    text.message = utils.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello", text.message)
+
+    text.message = "Hello wassup"
+    text.message = utils.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello was...", text.message)
