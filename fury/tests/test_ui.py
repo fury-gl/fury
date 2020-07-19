@@ -1263,6 +1263,7 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((90, 90), combobox.drop_button_size)
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
+
 def test_grid_ui(interactive=False):
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
@@ -1499,3 +1500,23 @@ def test_frame_rate_and_anti_aliasing():
     assert_greater(np.sum(arr2), 0)
     if not skip_osx:
         assert_greater(np.median(frh.fpss), 0)
+
+
+def test_clip_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "Hello"
+    ui.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello", text.message)
+
+    text.message = "Hello wassup"
+    ui.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello was...", text.message)
+
+    text.message = "A very very long message to clip text overflow"
+    ui.clip_overflow(text, rectangle.size[0])
+    npt.assert_equal("A very ve...", text.message)

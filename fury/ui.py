@@ -17,6 +17,45 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
+def clip_overflow(textblock, width):
+    """Clips overflowing text of TextBlock2D with respect to width.
+
+    Parameters
+    ----------
+    textblock : TextBlock2D
+        The textblock object whose text needs to be clipped.
+    width : int
+        Required width of the clipped text.
+
+    Returns
+    -------
+    clipped text : str
+        Clipped version of the text.
+    """
+    original_str = textblock.message
+    start_ptr = 0
+    end_ptr = len(original_str)
+    prev_bg = textblock.have_bg
+    textblock.have_bg = False
+
+    if textblock.size[0] == width or textblock.size[0] <= width:
+        textblock.have_bg = prev_bg
+        return original_str
+
+    while start_ptr < end_ptr:
+        mid_ptr = (start_ptr + end_ptr)//2
+        textblock.message = original_str[:mid_ptr] + "..."
+        if textblock.size[0] < width:
+            start_ptr = mid_ptr
+        elif textblock.size[0] > width:
+            end_ptr = mid_ptr
+
+        if mid_ptr == (start_ptr + end_ptr)//2 or\
+           textblock.size[0] == width:
+            textblock.have_bg = prev_bg
+            return textblock.message
+
+
 class UI(object, metaclass=abc.ABCMeta):
     """An umbrella class for all UI elements.
 
@@ -1224,7 +1263,7 @@ class TextBlock2D(UI):
             bg_size = self.background.size
             if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
                 warn("Font size exceeds background bounding box."
-                " Font Size will not be updated.", RuntimeWarning)
+                     " Font Size will not be updated.", RuntimeWarning)
                 self.actor.SetTextScaleModeToProp()
                 self.actor.SetPosition2(*bg_size)
 
@@ -1477,8 +1516,8 @@ class TextBlock2D(UI):
                 return size
             else:
                 warn("TextBlock2D must be added to the scene before "
-                "querying its size while TextScaleMode is set to None.", 
-                RuntimeWarning)
+                     "querying its size while TextScaleMode is set to None.",
+                     RuntimeWarning)
 
         return self.actor.GetPosition2()
 
@@ -3741,6 +3780,8 @@ class ListBox2D(UI):
         scene : scene
         """
         self.panel.add_to_scene(scene)
+        for slot in self.slots:
+            clip_overflow(slot.textblock, self.slot_width)
 
     def _get_size(self):
         return self.panel.size
@@ -3884,16 +3925,9 @@ class ListBox2D(UI):
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            char_width = slot.textblock.size[0] - self.margin
-            permissible_chars = int(self.slot_width)//char_width
-            total_chars = len(str(choice))
-            if total_chars > permissible_chars:
-                excess_chars = total_chars - permissible_chars
-                wrapped_choice = str(choice)[:(-excess_chars) + 3] + "..."
-                slot.element = choice
-                slot.textblock.message = wrapped_choice
-            else:
-                slot.element = choice
+            slot.element = choice
+            if slot.textblock.scene is not None:
+                clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
             if slot.element in self.selected:
                 slot.select()
@@ -4579,6 +4613,8 @@ class ComboBox2D(UI):
         self._selection_ID = self.items.index(self._selection)
 
         self.selection_box.message = self._selection
+        clip_overflow(self.selection_box,
+                        self.selection_box.background.size[0])
         self.drop_down_menu.set_visibility(False)
         self._menu_visibility = False
 
