@@ -8,8 +8,8 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds)
-from fury import actor, window, utils
+                        get_bounds, clip_overflow)
+from fury import actor, window, utils, ui
 import fury.primitive as fp
 
 
@@ -459,7 +459,7 @@ def test_clip_overflow():
     sm.scene.add(rectangle, text)
 
     text.message = "Hello"
-    text.message = utils.clip_overflow(text, rectangle.size[0])
+    text.message = clip_overflow(text, rectangle.size[0])
     npt.assert_equal("Hello", text.message)
 
     text.message = "Hello wassup"
