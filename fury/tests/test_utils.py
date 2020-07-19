@@ -451,6 +451,7 @@ def test_get_bounds():
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
 
+
 def test_clip_overflow():
     text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
     rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
