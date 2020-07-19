@@ -1093,8 +1093,11 @@ def clip_overflow(textblock, width):
     original_str = textblock.message
     start_ptr = 0
     end_ptr = len(original_str)
+    prev_bg = textblock.have_bg
+    textblock.have_bg = False
 
     if textblock.size[0] == width or textblock.size[0] <= width:
+        textblock.have_bg = prev_bg
         return original_str
 
     else:
@@ -1108,4 +1111,5 @@ def clip_overflow(textblock, width):
 
             if mid_ptr == (start_ptr + end_ptr)//2 \
             or textblock.size[0] == width:
+                textblock.have_bg = prev_bg
                 return textblock.message

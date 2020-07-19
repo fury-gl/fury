@@ -3741,6 +3741,8 @@ class ListBox2D(UI):
         scene : scene
         """
         self.panel.add_to_scene(scene)
+        for slot in self.slots:
+            clip_overflow(slot.textblock, self.slot_width)
 
     def _get_size(self):
         return self.panel.size
@@ -4572,6 +4574,9 @@ class ComboBox2D(UI):
         self._selection_ID = self.items.index(self._selection)
 
         self.selection_box.message = self._selection
+        if self.selection_box.scene is not None:
+            clip_overflow(self.selection_box,
+                          self.selection_box.background.size[0])
         self.drop_down_menu.set_visibility(False)
         self._menu_visibility = False
 
