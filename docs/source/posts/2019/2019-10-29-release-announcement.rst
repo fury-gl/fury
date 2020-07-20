@@ -10,7 +10,7 @@ FURY 0.4.0 Released
 The FURY project is happy to announce the release of FURY 0.4.0!
 FURY is a free and open source software library for scientific visualization and 3D animations.
 
-You can support us by `adding a star <https://github.com/fury-gl/fury/stargazers>`_ on FURY github project.
+You can show your support by `adding a star <https://github.com/fury-gl/fury/stargazers>`_ on FURY github project.
 
 The **major highlights** of this release are:
 
@@ -18,7 +18,7 @@ The **major highlights** of this release are:
     :start-after: --------------
     :end-before: Details
 
-.. note:: The complete release notes is :ref:`available here <releasev0.4.0>`
+.. note:: The complete release notes are :ref:`available here <releasev0.4.0>`
 
 **To upgrade or install FURY**
 
