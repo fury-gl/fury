@@ -51,6 +51,8 @@ Contributors
 * Shreyas Bhujbal
 * Ibrahim Anis
 * Filipi Nascimento Silva
+* Melina Raglin
+* Tushar
 * Naman Bansal
 * Nasim Anousheh
 * Gottipati Gautam
