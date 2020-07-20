@@ -8,7 +8,7 @@ Success on Brain Art Competition using FURY
    :category: news
 
 
-Congratulations to `David <https://github.com/dmreagan>`_ who win the `OHBM BrainArt (MELPOMENE category) <https://www.neurobureau.org/galleries/brain-art-competition-2019-2/>`_ by using DIPY and FURY!!!
+Congratulations to `David <https://github.com/dmreagan>`_ who won the `OHBM BrainArt (MELPOMENE category) <https://www.neurobureau.org/galleries/brain-art-competition-2019-2/>`_ by using DIPY and FURY!!!
 
 As you can see below, really beautiful streamlines effect created during shader experiment/fail!
 
