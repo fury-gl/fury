@@ -34,7 +34,7 @@ The following 9 authors contributed 266 commits.
 * Serge Koudoro
 * Soham Biswas
 * Tushar
-* lenixlobo
+* Lenix Lobo
 
 
 We closed a total of 60 issues, 25 pull requests and 35 regular issues;
