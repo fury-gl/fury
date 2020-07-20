@@ -7,15 +7,15 @@
 Quick Overview
 --------------
 
-* Added new features: Picking and DoubleClick callback
+* Added new features: Picking and DoubleClick callback.
 * Added Signed Distance Field actor.
-* Added a new UI ComboBox
-* Added multiples primitives (Rhombocuboctahedron, ...)
-* Huge improvement of multiple UI and actors
-* Fixed Compatibility with VTK9
-* Large documentation update, examples and tutorials (5 new)
-* Added a blog system
-* Increased tests coverage and code quality
+* Added a new UI ComboBox.
+* Added multiples primitives (Rhombocuboctahedron, ...).
+* Huge improvement of multiple UIs and actors.
+* Fixed Compatibility with VTK9.
+* Large documentation update, examples and tutorials (5 new).
+* Added a blog system.
+* Increased tests coverage and code quality.
 
 Details
 -------
