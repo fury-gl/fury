@@ -70,7 +70,7 @@ brick_colors = np.random.rand(nb_bricks, 3)
 brick_coll = p.createCollisionShape(p.GEOM_BOX,
                                     halfExtents=[0.1, 0.2, 0.1])
 
-bricks = np.zeros(nb_bricks)
+bricks = np.zeros(nb_bricks, dtype=np.int8)
 i = 0
 for k in range(wall_height):
     for j in range(wall_width):
@@ -174,7 +174,7 @@ def timer_callback(_obj, _event):
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
-        _sync_actor(idx, int(brick))
+        _sync_actor(idx, brick)
         utils.update_actor(brick_actor_single)
 
     # Simulate a step.
