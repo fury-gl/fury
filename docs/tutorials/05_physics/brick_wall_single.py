@@ -1,7 +1,8 @@
 import numpy as np
-from fury import window, actor, ui
+from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
+from scipy.spatial.transform import Rotation as R
 
 # Instantiate Pybullet client.
 client = p.connect(p.DIRECT)
@@ -30,8 +31,8 @@ p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 ###### Creating BASE Plane
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=[0,0,0],
-                         size=(5, 5, 0.2) ,
-                         colors=(1, 1, 1))
+                         scale=(5, 5, 0.2),
+                         colors=(255, 255, 255))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
 base = p.createMultiBody(
@@ -81,55 +82,10 @@ for k in range(wall_height):
                                    baseOrientation=[ 0, 0, 0, 1 ])
         i += 1
 
-print(brick_centers)
-
-brick_centers_real = []
-
 brick_actor_single = actor.box(centers=brick_centers,
                          directions=brick_directions,
-                         heights=brick_sizes,
-                         colors=brick_colors)
-
-for i in range(wall_height):
-    temp = []
-    temp_actors=[]
-    for j in range(wall_width):
-        # brick defination
-        brick_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                         directions=np.array([1.57, 0,0]),
-                         size=(0.2, 0.4, 0.2),
-                         colors=np.random.rand(1,3))
-        brick_coll = p.createCollisionShape(p.GEOM_BOX,
-                                            halfExtents=[0.1, 0.2, 0.1])
-        brick = p.createMultiBody(baseMass=0.5,
-                                   baseCollisionShapeIndex=brick_coll,
-                                   basePosition=[-1, (j*0.4)-1.8, (0.2*i)+0.1],
-                                   baseOrientation=[ 0, 0, 0, 1 ])
-        p.changeDynamics(brick, -1, lateralFriction=0.1, restitution=0.1)
-
-        # Get the position of brick from pybullet
-        pos, _ = p.getBasePositionAndOrientation(brick)
-        brick_centers_real.append(pos)
-        brick_actor.SetPosition(*pos)
-
-        # NOTE: Collision is enabled by default for dynamic bodies.
-        # For example, we can set brick collision with the ball and base
-        # explicitly.
-        enableCol = 1
-        p.setCollisionFilterPair(ball, brick, -1, -1, enableCol)
-        p.setCollisionFilterPair(base, brick, -1, -1, enableCol)
-
-        # add the bricks to the scene.
-        # scene.add(brick_actor)
-
-        temp_actors.append(brick_actor)
-        temp.append(brick)
-
-    brick_Ids.append(temp)
-    brick_actors.append(temp_actors)
-
-print(brick_centers, np.array(brick_centers_real))
-np.testing.assert_array_almost_equal(brick_centers, np.array(brick_centers_real))
+                         scale=brick_sizes,
+                         colors=brick_colors * 255)
 
 scene.add(brick_actor_single)
 
@@ -150,13 +106,32 @@ apply_force = True
 base_pos, base_orn = p.getBasePositionAndOrientation(base)
 base_actor.SetPosition(*base_pos)
 
+vertices = utils.vertices_from_actor(brick_actor_single)
+num_vertices = vertices.shape[0]
+num_objects = brick_centers.shape[0]
+sec = np.int(num_vertices / num_objects)
+
+# Function for syncing position
+def update_position(object_index, position):
+    vertices[object_index * sec: object_index * sec + sec] = \
+        (vertices[object_index * sec: object_index * sec + sec] -
+         brick_centers[object_index]) + position
+    
+    brick_centers[object_index] = position
+
+# Function for syncing orientation
+def update_orientation(object_index, orientation):
+    rot_mat = R.from_quat(orientation).as_matrix()
+    
+    vertices[object_index * sec: object_index * sec + sec] = \
+        (vertices[object_index * sec: object_index * sec + sec] -
+         brick_centers[object_index])@rot_mat + brick_centers[object_index]
+
 # Function for syncing actors with multibodies.
-def sync_actor(actor, multibody):
+def sync_actor(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
-    actor.SetPosition(*pos)
-    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
-    actor.SetOrientation(*orn_deg)
-    actor.RotateWXYZ(*orn)
+    update_position(object_index, pos)
+    update_orientation(object_index, orn)
 
 fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
@@ -179,7 +154,6 @@ def timer_callback(_obj, _event):
 
     # Get the position and orientation of the ball.
     ball_pos, ball_orn = p.getBasePositionAndOrientation(ball)
-
     # Apply force for 5 times for the first step of simulation.
     if apply_force:
         # Apply the force.
@@ -193,9 +167,9 @@ def timer_callback(_obj, _event):
     sync_actor(ball_actor, ball)
 
     # Updating the position and orientation of each individual brick.
-    for i, brick_row in enumerate(brick_actors):
-        for j, brick_actor in enumerate(brick_row):
-            sync_actor(brick_actor, brick_Ids[i][j])
+    for idx, brick in enumerate(bricks):
+        sync_actor(idx, brick)
+        utils.update_actor(brick_actor_single)
 
     # Simulate a step.
     p.stepSimulation()
