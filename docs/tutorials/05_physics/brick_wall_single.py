@@ -128,10 +128,16 @@ def update_orientation(object_index, orientation):
          brick_centers[object_index])@rot_mat + brick_centers[object_index]
 
 # Function for syncing actors with multibodies.
-def sync_actor(object_index, multibody):
+def _sync_actor(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
     update_position(object_index, pos)
     update_orientation(object_index, orn)
+
+def sync_actor(actor, multibody):
+    pos, orn = p.getBasePositionAndOrientation(multibody)
+    actor.SetPosition(*pos)
+    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
+    actor.SetOrientation(*orn_deg)
 
 fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
@@ -168,7 +174,7 @@ def timer_callback(_obj, _event):
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
-        sync_actor(idx, brick)
+        _sync_actor(idx, int(brick))
         utils.update_actor(brick_actor_single)
 
     # Simulate a step.
