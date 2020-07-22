@@ -21,11 +21,12 @@ The algorithm behind translation is to first identify the vertices of the object
 
 .. code-block:: python
 
-# Update vertices positions
-vertices[object_index * sec: object_index * sec + sec] = \
-    (vertices[object_index * sec: object_index * sec + sec] -
-     centers[object_index]) + transln_vector
+    # Update vertices positions
+    vertices[object_index * sec: object_index * sec + sec] = \
+        (vertices[object_index * sec: object_index * sec + sec] -
+        centers[object_index]) + transln_vector
 ​
+
 Rotation:
 ^^^^^^^^^
 
@@ -39,39 +40,41 @@ where gamma, beta and alpha corresponds to the angle of rotation along Z-axis, Y
 
 .. code-block:: python
 
-def get_R(gamma, beta, alpha):
-    """ Returns rotational matrix.
-    """
-    r = [
-        [np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma) - np.sin(alpha)*np.cos(gamma),
-        np.cos(alpha)*np.sin(beta)*np.cos(gamma) + np.sin(alpha)*np.sin(gamma)],
-        [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma) + np.cos(alpha)*np.cos(gamma),
-        np.sin(alpha)*np.sin(beta)*np.cos(gamma) - np.cos(alpha)*np.sin(gamma)],
-        [-np.sin(beta), np.cos(beta)*np.sin(gamma), np.cos(beta)*np.cos(gamma)]
-    ]
-    r = np.array(r)
-    return r
+    def get_R(gamma, beta, alpha):
+        """ Returns rotational matrix.
+        """
+        r = [
+            [np.cos(alpha)*np.cos(beta), np.cos(alpha)*np.sin(beta)*np.sin(gamma) - np.sin(alpha)*np.cos(gamma),
+            np.cos(alpha)*np.sin(beta)*np.cos(gamma) + np.sin(alpha)*np.sin(gamma)],
+            [np.sin(alpha)*np.cos(beta), np.sin(alpha)*np.sin(beta)*np.sin(gamma) + np.cos(alpha)*np.cos(gamma),
+            np.sin(alpha)*np.sin(beta)*np.cos(gamma) - np.cos(alpha)*np.sin(gamma)],
+            [-np.sin(beta), np.cos(beta)*np.sin(gamma), np.cos(beta)*np.cos(gamma)]
+        ]
+        r = np.array(r)
+        return r
 
-vertices[object_index * sec: object_index * sec + sec] = \
-    (vertices[object_index * sec: object_index * sec + sec] -
-     centers[object_index])@get_R(0, np.pi/4, np.pi/4) + centers[object_index]
+    vertices[object_index * sec: object_index * sec + sec] = \
+        (vertices[object_index * sec: object_index * sec + sec] -
+        centers[object_index])@get_R(0, np.pi/4, np.pi/4) + centers[object_index]
+
 
 Reposition:
 ^^^^^^^^^^^
+
 .. image:: https://user-images.githubusercontent.com/29832615/86536063-4ebbed00-bf02-11ea-8592-a695d7b91426.gif
 
 Repositioning is similar to that of translation, except in this case, while repositioning we update centers with the new position value.
 
 .. code-block:: python
 
-new_pos = np.array([1, 2, 3])
+    new_pos = np.array([1, 2, 3])
 
-# Update vertices positions
-vertices[object_index * sec: object_index * sec + sec] = \
-    (vertices[object_index * sec: object_index * sec + sec] -
-     centers[object_index]) + new_pos
+    # Update vertices positions
+    vertices[object_index * sec: object_index * sec + sec] = \
+        (vertices[object_index * sec: object_index * sec + sec] -
+        centers[object_index]) + new_pos
 
-centers[object_index] = new_pos
+    centers[object_index] = new_pos
 
 What is coming up next week?
 ----------------------------
