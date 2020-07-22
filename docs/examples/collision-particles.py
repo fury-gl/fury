@@ -97,7 +97,7 @@ dt = 0.05
 xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
                                             - 0.5) * 0.6
 vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
-colors = np.zeros((num_particles, 3)) + np.array([0, 0.5, 0.3])
+colors = np.zeros((num_particles, 3)) + np.array([1, 1, 1])
 radii = np.random.rand(num_particles) + 0.01
 
 ##############################################################################
