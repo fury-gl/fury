@@ -97,7 +97,7 @@ dt = 0.05
 xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
                                             - 0.5) * 0.6
 vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
-colors = np.random.rand(num_particles, 3)
+colors = np.zeros((num_particles, 3)) + np.array([0, 0.5, 0.3])
 radii = np.random.rand(num_particles) + 0.01
 
 ##############################################################################
@@ -132,7 +132,6 @@ vcolors = utils.colors_from_actor(sphere_actor, 'colors')
 no_vertices_per_sphere = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(xyz, no_vertices_per_sphere, axis=0)
-
 
 def timer_callback(_obj, _event):
     global xyz, dt, steps, num_particles, vcolors, vel
