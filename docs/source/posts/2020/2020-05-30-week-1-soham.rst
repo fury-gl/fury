@@ -1,4 +1,4 @@
-Weekly Check-in #1
+Welcome to my GSoC Blog!!!
 ==================
 
 .. post:: May 30 2020
@@ -6,8 +6,6 @@ Weekly Check-in #1
    :tags: google
    :category: gsoc
 
-Welcome to my GSoC Blog!!!
---------------------------
 Hello Everyone, this is **Soham Biswas** currently in 2nd year pursuing my Bachelor’s(B.Tech) degree in Computer Science & Engineering from Institute of Engineering & Management, Kolkata. I have been selected for GSoC' 20 at sub-org **FURY** under the umbrella organization of **Python Software Foundation**. I will be working on building sci-fi-like 2D and 3D interfaces and provide physics engine integration under project titled "Create new UI widgets & Physics Engine Integration".
 
 What did you do during the Community Bonding Period?
