@@ -6,7 +6,7 @@ ComboBox2D Progress!!
    :tags: google
    :category: gsoc
 
-Hello and welcome to my third weekly check-in, I will be sharing my progress with the project so far. In case you wondered, the sub-org that I am affiliated to is FURY. Make sure to check out the official repository `here <https://github.com/fury-gl/fury/>`.
+Hello and welcome to my third weekly check-in, I will be sharing my progress with the project so far. In case you wondered, the sub-org that I am affiliated to is FURY. Make sure to check out the official repository `here <https://github.com/fury-gl/fury/>`_.
 
 What did you do this week?
 --------------------------
