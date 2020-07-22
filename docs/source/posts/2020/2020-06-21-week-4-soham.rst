@@ -10,7 +10,7 @@ Hello and welcome to my 4th weekly check-in, I will be sharing my progress with 
 
 What did you do this week?
 --------------------------
-This week my objective was to work on the ``TextBlock2D`` resizing feature and also work on the scrollbar bug in ``ComboBox2D`` UI component. The ``TextBlock2D`` component makes use of ``vtkTextActor`` and its methods available in VTK for handling all Text related properties such as font size, color, background color etc. Now, going through the official `docs <https://vtk.org/doc/nightly/html/classvtkTextActor.html>` I figured out that the there were three different scaling modes for the said actor:
+This week my objective was to work on the ``TextBlock2D`` resizing feature and also work on the scrollbar bug in ``ComboBox2D`` UI component. The ``TextBlock2D`` component makes use of ``vtkTextActor`` and its methods available in VTK for handling all Text related properties such as font size, color, background color etc. Now, going through the official `docs <https://vtk.org/doc/nightly/html/classvtkTextActor.html>`_ I figured out that the there were three different scaling modes for the said actor:
 
 - TEXT_SCALE_MODE_NONE
 - TEXT_SCALE_MODE_PROP
