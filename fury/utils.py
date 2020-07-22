@@ -1081,3 +1081,21 @@ def get_bounds(actor):
 
     """
     return actor.GetMapper().GetInput().GetBounds()
+
+
+def opacity(actor, opacity_level=0.5):
+    """ Set global opacity of actor
+
+    Parameters
+    ----------
+    actor : actor
+    opacity_level : float
+        Should be in the range of 0 to 1 where
+        0 means transparent and 1 means opaque.
+
+    Returns
+    -------
+    None
+    """
+
+    actor.GetProperty().SetOpacity(opacity_level)

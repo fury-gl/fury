@@ -30,8 +30,6 @@ def boundary_conditions():
          #   vcolors[j * sec: j * sec + sec] += color_add
             xyz[i] = xyz[i] + vel[i] * dt
             xyz[j] = xyz[j] + vel[j] * dt
-            # vcolors[i * sec: i * sec + sec] -= color_add
-            # vcolors[j * sec: j * sec + sec] -= color_add
 
 
 
@@ -56,21 +54,18 @@ dt = 0.5
 
 xyz = (box_lz * 0.75) * (np.random.rand(num_particles, 3) - 0.5)
 vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
-colors = np.zeros((num_particles, 3)) + np.array([0, 0.5, 0.3])
+colors = np.zeros((num_particles, 3)) + np.array([1, 1, 1])
 radii = np.random.rand(num_particles) + 0.01
 
 scene = window.Scene()
 
 box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
-box_colors = np.array([[1, 1, 1, 0.2]])
+box_colors = np.array([[255, 255, 255]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
-                      size=(box_lx, box_ly, box_lz),
-                      heights=1, vertices=None, faces=None)
+                      scale=(box_lx, box_ly, box_lz))
 
-
-box_actor.GetProperty().SetLineWidth(1)
-box_actor.GetProperty().SetOpacity(1)
+utils.opacity(box_actor, 0.5)
 
 sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
