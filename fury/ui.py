@@ -4650,9 +4650,13 @@ class TabUI(UI):
 
         for _ in range(self.nb_tabs):
             content_panel = Panel2D(size=self.content_size)
-            # Implement later.
+            content_panel.set_visibility(False)
             tab_panel = TabPanel2D(content_panel=content_panel)
+            tab_panel.text_block.on_left_mouse_button_clicked = self.select_tab_callback
             self.tabs.append(tab_panel)
+
+        # Make first tab visible on startup
+        self.tabs[0].content_panel.set_visibility(True)
 
         self.update_tabs()
 
@@ -4686,11 +4690,11 @@ class TabUI(UI):
         """
 
         for tab_panel in self.tabs:
-            if tab_panel is not _tab_panel:
-                tab_panel.color = (0.1, 0.1, 0.1)
+            if tab_panel.text_block is not _tab_panel:
+                tab_panel.color = (0.5, 0.5, 0.5)
                 tab_panel.content_panel.set_visibility(False)
             else:
-                tab_panel.color = (0, 0, 0)
+                tab_panel.color = (1, 1, 1)
                 tab_panel.content_panel.set_visibility(True)
 
         iren.force_render()
