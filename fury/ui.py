@@ -4700,7 +4700,7 @@ class TabUI(UI):
         """ Update position, size and callbacks for tab panels.
         """
         self.tab_panel_size =\
-            (self.size // self.nb_tabs, int(0.2*self.size[1]))
+            (self.size[0] // self.nb_tabs, int(0.2*self.size[1]))
 
         tab_panel_pos = [0.0, 0.8]
         for tab_panel in self.tabs:
@@ -4739,12 +4739,12 @@ class TabPanel2D(UI):
         """
         self.panel = Panel2D(size=self.panel_size)
         self.text_block = TextBlock2D(text=self.text, size=self._text_size)
-        self.close_button = Button2D(
-            icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
-            size=self._button_size)
+        # self.close_button = Button2D(
+        #     icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
+        #     size=self._button_size)
 
         self.panel.add_element(self.text_block, (0, 0))
-        self.panel.add_element(self.close_button, (0.7, 0))
+        # self.panel.add_element(self.close_button, (0.7, 0))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4779,7 +4779,7 @@ class TabPanel2D(UI):
         self._button_size = (int(0.3 * size[0]), size[1])
         self.panel.resize(size)
         self.text_block.resize(self._text_size)
-        self.close_button.resize(self._button_size)
+        # self.close_button.resize(self._button_size)
 
     @property
     def color(self):
