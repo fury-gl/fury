@@ -4632,7 +4632,7 @@ class TabUI(UI):
         self.tabs = []
         self.nb_tabs = nb_tabs
         self.parent_size = size
-        self.content_size = (size[0], int(0.8 * size[1]))
+        self.content_size = (size[0], int(0.9 * size[1]))
 
         super(TabUI, self).__init__()
         self.position = position
@@ -4700,9 +4700,9 @@ class TabUI(UI):
         """ Update position, size and callbacks for tab panels.
         """
         self.tab_panel_size =\
-            (self.size[0] // self.nb_tabs, int(0.2*self.size[1]))
+            (self.size[0] // self.nb_tabs, int(0.1*self.size[1]))
 
-        tab_panel_pos = [0.0, 0.8]
+        tab_panel_pos = [0.0, 0.9]
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
             tab_panel.on_left_mouse_button_clicked = self.select_tab_callback
@@ -4710,7 +4710,7 @@ class TabUI(UI):
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
-            tab_panel_pos[0] += self.tab_panel_size[0]
+            tab_panel_pos[0] += 1/self.nb_tabs
 
 
 class TabPanel2D(UI):
@@ -4738,7 +4738,8 @@ class TabPanel2D(UI):
         Create Button to close tab.
         """
         self.panel = Panel2D(size=self.panel_size)
-        self.text_block = TextBlock2D(text=self.text, size=self._text_size)
+        self.text_block = TextBlock2D(text=self.text, size=self._text_size,
+                                      color=(0, 0, 0))
         # self.close_button = Button2D(
         #     icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
         #     size=self._button_size)
