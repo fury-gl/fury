@@ -21,7 +21,7 @@ Scaling:
 
 Rotation based on passed directions:
 
-..image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-8a.gif
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-8a.gif
 
 The code for the above render is available at the branch :
 <https://github.com/lenixlobo/fury/tree/SDF-Experiments>
