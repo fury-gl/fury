@@ -4811,6 +4811,23 @@ class TabPanel2D(UI):
     def color(self, color):
         self.panel.color = color
 
+    @property
+    def title(self):
+        return self.text_block.message
+
+    @title.setter
+    def title(self, text):
+        self.text_block.message = text
+
+    def add_element(self, element, coords, anchor="position"):
+        element.set_visibility(False)
+        self.content_panel.add_element(element, coords, anchor)
+
+    def remove_element(self, element):
+        self.content_panel.remove_element(element)
+
+    def update_element(self, element, coords, anchor="position"):
+        self.content_panel.update_element(element, coords, anchor="position")
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.
