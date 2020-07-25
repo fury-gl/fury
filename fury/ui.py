@@ -4676,6 +4676,9 @@ class TabUI(UI):
 
             tab_panel.text_block.on_left_mouse_button_clicked =\
                 self.select_tab_callback
+            tab_panel.panel.background.on_left_mouse_button_clicked =\
+                self.select_tab_callback
+
             self.tabs.append(tab_panel)
 
         # Make first tab visible on startup
@@ -4729,7 +4732,8 @@ class TabUI(UI):
         """ Handles events when a tab is clicked.
         """
         for tab_panel in self.tabs:
-            if tab_panel.text_block is not _tab_panel:
+            if tab_panel.text_block is not _tab_panel and\
+               tab_panel.panel.background is not _tab_panel:
                 tab_panel.color = (0.5, 0.5, 0.5)
                 tab_panel.content_panel.set_visibility(False)
             else:
