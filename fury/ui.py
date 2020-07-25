@@ -4614,7 +4614,7 @@ class ComboBox2D(UI):
 
         self.selection_box.message = self._selection
         clip_overflow(self.selection_box,
-                        self.selection_box.background.size[0])
+                      self.selection_box.background.size[0])
         self.drop_down_menu.set_visibility(False)
         self._menu_visibility = False
 
@@ -4662,6 +4662,7 @@ class TabUI(UI):
     """
 
     def __init__(self, position=(0, 0), size=(100, 100), nb_tabs=1,
+                 active_color=(1, 1, 1), inactive_color=(0.5, 0.5, 0.5),
                  draggable=False):
         """
         """
@@ -4670,6 +4671,8 @@ class TabUI(UI):
         self.parent_size = size
         self.content_size = (size[0], int(0.9 * size[1]))
         self.draggable = draggable
+        self.active_color = active_color
+        self.inactive_color = inactive_color
 
         super(TabUI, self).__init__()
         self.position = position
@@ -4755,10 +4758,10 @@ class TabUI(UI):
         for tab_panel in self.tabs:
             if tab_panel.text_block is not _tab_comp and\
                tab_panel.panel.background is not _tab_comp:
-                tab_panel.color = (0.5, 0.5, 0.5)
+                tab_panel.color = self.inactive_color
                 tab_panel.content_panel.set_visibility(False)
             else:
-                tab_panel.color = (1, 1, 1)
+                tab_panel.color = self.active_color
                 tab_panel.content_panel.set_visibility(True)
 
         iren.force_render()
@@ -4864,6 +4867,7 @@ class TabPanel2D(UI):
 
     def update_element(self, element, coords, anchor="position"):
         self.content_panel.update_element(element, coords, anchor="position")
+
 
 class GridUI(UI):
     """ Add actors in a grid and interact with them individually.

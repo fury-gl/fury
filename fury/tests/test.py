@@ -1,5 +1,5 @@
 from fury import ui, window
-tab = ui.TabUI(nb_tabs=10, size=(300, 300), position=(50, 50), draggable=True)
+tab = ui.TabUI(nb_tabs=4, size=(300, 300), position=(50, 50), draggable=True)
 tab.tabs[0].add_element(ui.Rectangle2D(size=(100, 100), color=(1, 0, 0)), (0.5, 0.5))
 tab.tabs[1].add_element(ui.Rectangle2D(size=(10, 10), color=(0, 1, 0)), (0.5, 0.5))
 tab.tabs[2].add_element(ui.Rectangle2D(size=(80, 100), color=(0, 0, 1)), (0.5, 0.5))
