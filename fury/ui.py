@@ -4673,6 +4673,7 @@ class TabUI(UI):
         self.draggable = draggable
         self.active_color = active_color
         self.inactive_color = inactive_color
+        self.active_tab_idx = None
 
         super(TabUI, self).__init__()
         self.position = position
@@ -4747,6 +4748,11 @@ class TabUI(UI):
             tab_panel.panel.background.on_left_mouse_button_clicked =\
                 self.select_tab_callback
 
+            tab_panel.text_block.on_right_mouse_button_clicked =\
+                self.collapse_tab_ui
+            tab_panel.panel.background.on_right_mouse_button_clicked =\
+                self.collapse_tab_ui
+
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
@@ -4755,7 +4761,7 @@ class TabUI(UI):
     def select_tab_callback(self, iren, _obj, _tab_comp):
         """ Handles events when a tab is clicked.
         """
-        for tab_panel in self.tabs:
+        for idx, tab_panel in enumerate(self.tabs):
             if tab_panel.text_block is not _tab_comp and\
                tab_panel.panel.background is not _tab_comp:
                 tab_panel.color = self.inactive_color
@@ -4763,7 +4769,15 @@ class TabUI(UI):
             else:
                 tab_panel.color = self.active_color
                 tab_panel.content_panel.set_visibility(True)
+                self.active_tab_idx = idx
 
+        iren.force_render()
+        iren.event.abort()
+
+    def collapse_tab_ui(self, iren, _obj, _tab_comp):
+        active_tab_panel = self.tabs[self.active_tab_idx]
+        active_tab_panel.color = self.inactive_color
+        active_tab_panel.content_panel.set_visibility(False)
         iren.force_render()
         iren.event.abort()
 
