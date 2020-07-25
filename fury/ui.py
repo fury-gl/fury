@@ -4633,6 +4633,7 @@ class TabUI(UI):
         self.nb_tabs = nb_tabs
         self.parent_size = size
         self.content_size = (size[0], int(0.9 * size[1]))
+        self.draggable = draggable
 
         super(TabUI, self).__init__()
         self.position = position
@@ -4652,10 +4653,27 @@ class TabUI(UI):
             content_panel = Panel2D(size=self.content_size)
             content_panel.set_visibility(False)
             tab_panel = TabPanel2D(content_panel=content_panel)
-            tab_panel.panel.background.on_left_mouse_button_dragged =\
-                lambda i_ren, _obj, _comp: i_ren.force_render
-            content_panel.background.on_left_mouse_button_dragged =\
-                lambda i_ren, _obj, _comp: i_ren.force_render
+
+            if self.draggable:
+                tab_panel.panel.background.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+                content_panel.background.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+                tab_panel.text_block.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+
+                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+                content_panel.background.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+                tab_panel.text_block.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+            else:
+                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                    lambda i_ren, _obj, _comp: i_ren.force_render
+                content_panel.background.on_left_mouse_button_dragged =\
+                    lambda i_ren, _obj, _comp: i_ren.force_render
+
             tab_panel.text_block.on_left_mouse_button_clicked =\
                 self.select_tab_callback
             self.tabs.append(tab_panel)
@@ -4694,7 +4712,6 @@ class TabUI(UI):
     def select_tab_callback(self, iren, _obj, _tab_panel):
         """ Handles events when a tab is clicked.
         """
-
         for tab_panel in self.tabs:
             if tab_panel.text_block is not _tab_panel:
                 tab_panel.color = (0.5, 0.5, 0.5)
