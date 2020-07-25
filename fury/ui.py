@@ -1224,7 +1224,7 @@ class TextBlock2D(UI):
             bg_size = self.background.size
             if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
                 warn("Font size exceeds background bounding box."
-                " Font Size will not be updated.", RuntimeWarning)
+                     " Font Size will not be updated.", RuntimeWarning)
                 self.actor.SetTextScaleModeToProp()
                 self.actor.SetPosition2(*bg_size)
 
@@ -1477,8 +1477,8 @@ class TextBlock2D(UI):
                 return size
             else:
                 warn("TextBlock2D must be added to the scene before "
-                "querying its size while TextScaleMode is set to None.", 
-                RuntimeWarning)
+                     "querying its size while TextScaleMode is set to None.",
+                     RuntimeWarning)
 
         return self.actor.GetPosition2()
 
@@ -4642,7 +4642,6 @@ class TabUI(UI):
         """ Setup this UI component.
         Create parent panel.
         Create tab panels.
-        Create add new tab button.
         """
         self.parent_panel = Panel2D(self.parent_size, opacity=0.0)
 
@@ -4650,34 +4649,7 @@ class TabUI(UI):
             content_panel = Panel2D(size=self.content_size)
             content_panel.set_visibility(False)
             tab_panel = TabPanel2D(content_panel=content_panel)
-
-            if self.draggable:
-                tab_panel.panel.background.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-                content_panel.background.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-                tab_panel.text_block.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-                content_panel.background.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-                tab_panel.text_block.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-            else:
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
-                    lambda i_ren, _obj, _comp: i_ren.force_render
-                content_panel.background.on_left_mouse_button_dragged =\
-                    lambda i_ren, _obj, _comp: i_ren.force_render
-
-            tab_panel.text_block.on_left_mouse_button_clicked =\
-                self.select_tab_callback
-            tab_panel.panel.background.on_left_mouse_button_clicked =\
-                self.select_tab_callback
-
             self.tabs.append(tab_panel)
-
         self.update_tabs()
 
     def _get_actors(self):
@@ -4708,19 +4680,45 @@ class TabUI(UI):
         tab_panel_pos = [0.0, 0.9]
         for tab_panel in self.tabs:
             tab_panel.resize(self.tab_panel_size)
-            tab_panel.on_left_mouse_button_clicked = self.select_tab_callback
             tab_panel.content_panel.position = self.position
+
+            content_panel = tab_panel.content_panel
+            if self.draggable:
+                tab_panel.panel.background.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+                content_panel.background.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+                tab_panel.text_block.on_left_mouse_button_pressed =\
+                    self.left_button_pressed
+
+                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+                content_panel.background.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+                tab_panel.text_block.on_left_mouse_button_dragged =\
+                    self.left_button_dragged
+            else:
+                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                    lambda i_ren, _obj, _comp: i_ren.force_render
+                content_panel.background.on_left_mouse_button_dragged =\
+                    lambda i_ren, _obj, _comp: i_ren.force_render
+
+            tab_panel.text_block.on_left_mouse_button_clicked =\
+                self.select_tab_callback
+            tab_panel.panel.background.on_left_mouse_button_clicked =\
+                self.select_tab_callback
+
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
             tab_panel_pos[0] += 1/self.nb_tabs
 
-    def select_tab_callback(self, iren, _obj, _tab_panel):
+    def select_tab_callback(self, iren, _obj, _tab_comp):
         """ Handles events when a tab is clicked.
         """
         for tab_panel in self.tabs:
-            if tab_panel.text_block is not _tab_panel and\
-               tab_panel.panel.background is not _tab_panel:
+            if tab_panel.text_block is not _tab_comp and\
+               tab_panel.panel.background is not _tab_comp:
                 tab_panel.color = (0.5, 0.5, 0.5)
                 tab_panel.content_panel.set_visibility(False)
             else:
@@ -4741,6 +4739,7 @@ class TabUI(UI):
         self.parent_panel.position += change
         self._click_position = click_position
         i_ren.force_render()
+
 
 class TabPanel2D(UI):
     """ The information contained within a Tab.
