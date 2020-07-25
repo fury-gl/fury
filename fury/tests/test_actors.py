@@ -10,7 +10,7 @@ from scipy.ndimage.measurements import center_of_mass
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
-from fury.decorators import skip_osx
+from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 
@@ -1355,3 +1355,27 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
+
+
+@pytest.mark.skipif(skip_win, reason="This test does not work on Windows"
+                                     " due to snapshot (memory access violation)"
+                                     " Check what is causing this issue with shader")
+def test_sdf_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((1, 1, 1))
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    scale = [1, 2, 3]
+    primitive = ['sphere', 'ellipsoid', 'torus']
+
+    sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scale)
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)

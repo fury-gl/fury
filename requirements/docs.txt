@@ -7,3 +7,4 @@ sphinx-gallery>=0.4.0
 pillow
 sphinx_rtd_theme
 networkx
+ablog >= 0.10.5

@@ -1,6 +1,6 @@
 """Function for recording and reporting deprecations.
 
-Note
+Notes
 -----
 this file is copied (with minor modifications) from the Nibabel.
 https://github.com/nipy/nibabel. See COPYING file distributed along with

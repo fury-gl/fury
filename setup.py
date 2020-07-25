@@ -9,7 +9,7 @@ import versioneer
 # and/or pip.
 if sys.version_info < (2, 7):
     error = """fury does not support Python {0}.{2}.
-               Python 2.7 and above is required.
+               Python 3.5 and above is required.
                Check your Python version like so:
 
                python3 --version
