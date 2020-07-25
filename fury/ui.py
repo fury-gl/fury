@@ -4709,20 +4709,6 @@ class TabUI(UI):
     # def new_tab_callback(self, iren, _obj, _new_button):
     #     pass
 
-    def select_tab_callback(self, iren, _obj, _tab_panel):
-        """ Handles events when a tab is clicked.
-        """
-        for tab_panel in self.tabs:
-            if tab_panel.text_block is not _tab_panel:
-                tab_panel.color = (0.5, 0.5, 0.5)
-                tab_panel.content_panel.set_visibility(False)
-            else:
-                tab_panel.color = (1, 1, 1)
-                tab_panel.content_panel.set_visibility(True)
-
-        iren.force_render()
-        iren.event.abort()
-
     def update_tabs(self):
         """ Update position, size and callbacks for tab panels.
         """
@@ -4738,6 +4724,20 @@ class TabUI(UI):
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
             tab_panel_pos[0] += 1/self.nb_tabs
+
+    def select_tab_callback(self, iren, _obj, _tab_panel):
+        """ Handles events when a tab is clicked.
+        """
+        for tab_panel in self.tabs:
+            if tab_panel.text_block is not _tab_panel:
+                tab_panel.color = (0.5, 0.5, 0.5)
+                tab_panel.content_panel.set_visibility(False)
+            else:
+                tab_panel.color = (1, 1, 1)
+                tab_panel.content_panel.set_visibility(True)
+
+        iren.force_render()
+        iren.event.abort()
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
