@@ -4652,11 +4652,17 @@ class TabUI(UI):
             content_panel = Panel2D(size=self.content_size)
             content_panel.set_visibility(False)
             tab_panel = TabPanel2D(content_panel=content_panel)
-            tab_panel.text_block.on_left_mouse_button_clicked = self.select_tab_callback
+            tab_panel.panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            content_panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            tab_panel.text_block.on_left_mouse_button_clicked =\
+                self.select_tab_callback
             self.tabs.append(tab_panel)
 
         # Make first tab visible on startup
         self.tabs[0].content_panel.set_visibility(True)
+        self.tabs[0].color = (1, 1, 1)
 
         self.update_tabs()
 
@@ -4716,13 +4722,24 @@ class TabUI(UI):
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
             tab_panel_pos[0] += 1/self.nb_tabs
 
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.parent_panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
 
 class TabPanel2D(UI):
     """ The information contained within a Tab.
     """
 
     def __init__(self, position=(0, 0), size=(100, 100),
-                 text="New Tab", color=(1, 1, 1), content_panel=None):
+                 text="New Tab", color=(0.5, 0.5, 0.5), content_panel=None):
         """
         """
         self.content_panel = content_panel
