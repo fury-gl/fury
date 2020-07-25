@@ -4645,9 +4645,6 @@ class TabUI(UI):
         Create add new tab button.
         """
         self.parent_panel = Panel2D(self.parent_size, opacity=0.0)
-        # self.new_tab_button = Button2D(
-        #     icon_fnames=("new_tab", read_viz_icons("plus.png"))
-        # )
 
         for _ in range(self.nb_tabs):
             content_panel = Panel2D(size=self.content_size)
@@ -4681,10 +4678,6 @@ class TabUI(UI):
 
             self.tabs.append(tab_panel)
 
-        # Make first tab visible on startup
-        self.tabs[0].content_panel.set_visibility(True)
-        self.tabs[0].color = (1, 1, 1)
-
         self.update_tabs()
 
     def _get_actors(self):
@@ -4705,12 +4698,6 @@ class TabUI(UI):
 
     def _get_size(self):
         return self.parent_panel.size
-
-    # def close_tab_callback(self, iren, _obj, _close_button):
-    #     pass
-
-    # def new_tab_callback(self, iren, _obj, _new_button):
-    #     pass
 
     def update_tabs(self):
         """ Update position, size and callbacks for tab panels.
@@ -4766,8 +4753,7 @@ class TabPanel2D(UI):
         self.content_panel = content_panel
         self.text = text
         self.panel_size = size
-        self._text_size = (int(0.7 * size[0]), size[1])
-        self._button_size = (int(0.3 * size[0]), size[1])
+        self._text_size = (int(1.0 * size[0]), size[1])
 
         super(TabPanel2D, self).__init__()
         self.panel.position = position
@@ -4782,12 +4768,7 @@ class TabPanel2D(UI):
         self.panel = Panel2D(size=self.panel_size)
         self.text_block = TextBlock2D(text=self.text, size=self._text_size,
                                       color=(0, 0, 0))
-        # self.close_button = Button2D(
-        #     icon_fnames=("close_tab", read_viz_icons(fname='cross.png')),
-        #     size=self._button_size)
-
         self.panel.add_element(self.text_block, (0, 0))
-        # self.panel.add_element(self.close_button, (0.7, 0))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4822,7 +4803,6 @@ class TabPanel2D(UI):
         self._button_size = (int(0.3 * size[0]), size[1])
         self.panel.resize(size)
         self.text_block.resize(self._text_size)
-        # self.close_button.resize(self._button_size)
 
     @property
     def color(self):
