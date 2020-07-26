@@ -47,21 +47,25 @@ cube = actor.box(centers=np.array([[10, 0, 0]]),
 cube_x = 0
 cube_y = 0
 
+
 def rotate_cube(slider):
     angle = slider.value
     previous_angle = slider.previous_value
     rotation_angle = angle - previous_angle
     cube.RotateX(rotation_angle)
 
+
 def translate_cube_x(slider):
     global cube_x, cube_y
     cube_x = slider.value
     cube.SetPosition(cube_x, cube_y, 0)
 
+
 def translate_cube_y(slider):
     global cube_x, cube_y
     cube_y = slider.value
     cube.SetPosition(cube_x, cube_y, 0)
+
 
 ring_slider.on_change = rotate_cube
 line_slider_x.on_change = translate_cube_x
@@ -92,9 +96,11 @@ sphere = actor.sphere(centers=np.array([[5, 0, 0]]),
 figure_dict = {'cylinder': cylinder, 'sphere': sphere}
 checkbox = ui.Checkbox(labels=["cylinder", "sphere"])
 
+
 # Get difference between two lists.
 def sym_diff(l1, l2):
     return list(set(l1).symmetric_difference(set(l2)))
+
 
 # Set Visiblity of the figures
 def set_figure_visiblity(checkboxes):
@@ -106,6 +112,7 @@ def set_figure_visiblity(checkboxes):
 
     for invisible in unchecked:
         figure_dict[invisible].SetVisibility(False)
+
 
 checkbox.on_change = set_figure_visiblity
 
@@ -141,8 +148,10 @@ color_combobox = ui.ComboBox2D(items=list(colors.keys()),
                                placeholder="Choose Text Color",
                                size=(250, 150), draggable=True)
 
+
 def change_color(combobox):
     label.color = colors[combobox.selected_text]
+
 
 color_combobox.on_change = change_color
 
@@ -155,6 +164,7 @@ tab_ui.tabs[2].add_element(color_combobox, (0.1, 0.3))
 ###############################################################################
 # Define on_change & on_collapsed methods for tab ui to perform certain tasks
 # while active tab is changed or when the tab is collapsed.
+
 
 def hide_actors(tab_ui):
     if tab_ui.tabs[tab_ui.active_tab_idx].title == "Sliders":
@@ -174,12 +184,14 @@ def hide_actors(tab_ui):
         sphere.SetVisibility(False)
         label.set_visibility(True)
 
+
 def collapse(tab_ui):
     if tab_ui.collapsed:
         cube.SetVisibility(False)
         cylinder.SetVisibility(False)
         sphere.SetVisibility(False)
         label.set_visibility(False)
+
 
 tab_ui.on_change = hide_actors
 tab_ui.on_collapse = collapse
