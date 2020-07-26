@@ -4674,6 +4674,7 @@ class TabUI(UI):
         self.active_color = active_color
         self.inactive_color = inactive_color
         self.active_tab_idx = None
+        self.collapsed = True
 
         super(TabUI, self).__init__()
         self.position = position
@@ -4684,6 +4685,10 @@ class TabUI(UI):
         Create tab panels.
         """
         self.parent_panel = Panel2D(self.parent_size, opacity=0.0)
+
+        # Offer some standard hooks to the user.
+        self.on_change = lambda ui: None
+        self.on_collapse = lambda ui: None
 
         for _ in range(self.nb_tabs):
             content_panel = Panel2D(size=self.content_size)
@@ -4771,13 +4776,19 @@ class TabUI(UI):
                 tab_panel.content_panel.set_visibility(True)
                 self.active_tab_idx = idx
 
+        self.collapsed = False
+        self.on_change(self)
         iren.force_render()
         iren.event.abort()
 
     def collapse_tab_ui(self, iren, _obj, _tab_comp):
-        active_tab_panel = self.tabs[self.active_tab_idx]
-        active_tab_panel.color = self.inactive_color
-        active_tab_panel.content_panel.set_visibility(False)
+        if self.active_tab_idx is not None:
+            active_tab_panel = self.tabs[self.active_tab_idx]
+            active_tab_panel.color = self.inactive_color
+            active_tab_panel.content_panel.set_visibility(False)
+        self.active_tab_idx = None
+        self.collapsed = True
+        self.on_collapse(self)
         iren.force_render()
         iren.event.abort()
 
