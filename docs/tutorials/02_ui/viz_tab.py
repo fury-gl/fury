@@ -18,7 +18,8 @@ import numpy as np
 ###############################################################################
 # First, we create the Tab UI.
 
-tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3)
+tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3,
+                  draggable=True)
 
 ###############################################################################
 # Slider Controls for a Cube
@@ -84,11 +85,11 @@ cylinder = actor.cylinder(centers=np.array([[0, 0, 0]]),
                           directions=np.array([[0, 1, 0]]),
                           colors=np.array([[0, 1, 1]]))
 
-sphere = actor.sphere(centers=np.array([[0, 0, 0]]),
+sphere = actor.sphere(centers=np.array([[5, 0, 0]]),
                       colors=(1, 1, 0))
 
 figure_dict = {'cylinder': cylinder, 'sphere': sphere}
-checkbox = ui.Checkbox(labels=["Cylinder", "Sphere"])
+checkbox = ui.Checkbox(labels=["cylinder", "sphere"])
 
 # Get difference between two lists.
 def sym_diff(l1, l2):
@@ -105,7 +106,7 @@ def set_figure_visiblity(checkboxes):
     for invisible in unchecked:
         figure_dict[invisible].SetVisibility(False)
 
-check_box.on_change = set_figure_visiblity
+checkbox.on_change = set_figure_visiblity
 
 ###############################################################################
 # After defining content, we define properties for the tab.
@@ -114,11 +115,37 @@ tab_ui.tabs[1].title = "Checkbox"
 tab_ui.tabs[1].add_element(checkbox, (0.2, 0.2))
 
 ###############################################################################
+# Define on_change & on_collapsed methods for tab ui to perform certain tasks
+# while active tab is changed or when the tab is collapsed.
+
+def hide_actors(tab_ui):
+    if tab_ui.tabs[tab_ui.active_tab_idx].title == "Sliders":
+        cube.SetVisibility(True)
+        cylinder.SetVisibility(False)
+        sphere.SetVisibility(False)
+
+    elif tab_ui.tabs[tab_ui.active_tab_idx].title == "Checkbox":
+        cube.SetVisibility(False)
+        set_figure_visiblity(checkbox)
+
+    else:
+        pass
+
+def collapse(tab_ui):
+    if tab_ui.collapsed:
+        cube.SetVisibility(False)
+        cylinder.SetVisibility(False)
+        sphere.SetVisibility(False)
+
+tab_ui.on_change = hide_actors
+tab_ui.on_collapse = collapse
+
+
+###############################################################################
 # Next we prepare the scene and render it with the help of show manager.
 
 sm = window.ShowManager(size=(800, 500), title="Viz Tab")
-sm.scene.add(tab_ui)
-sm.scene.add(cube)
+sm.scene.add(tab_ui, cube, cylinder, sphere)
 
 # To interact with the ui set interactive = True
 interactive = True
@@ -126,7 +153,4 @@ interactive = True
 if interactive:
     sm.start()
 
-print(sm.scene.get_camera())
-print(tab_ui.position)
-print(sm.scene.size())
 window.record(sm.scene, size=(500, 500), out_path="viz_tab.png")
