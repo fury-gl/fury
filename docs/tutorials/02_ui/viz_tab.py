@@ -77,7 +77,7 @@ tab_ui.tabs[0].add_element(line_slider_y, (0.0, 0.1))
 
 ###############################################################################
 # CheckBoxes For Cylinder and Sphere
-# ==============================
+# ==================================
 #
 # Now we prepare content for second tab.
 
@@ -115,6 +115,43 @@ tab_ui.tabs[1].title = "Checkbox"
 tab_ui.tabs[1].add_element(checkbox, (0.2, 0.2))
 
 ###############################################################################
+# Color Combobox for Fury
+# =======================
+#
+# Now we prepare content for third tab.
+
+label = ui.TextBlock2D(
+    position=(200, 300), font_size=40, color=(1, 0.5, 0),
+    justification="center", vertical_justification="top",
+    text="FURY rocks!!!"
+)
+
+colors = {
+    "Violet": (0.6, 0, 0.8),
+    "Indigo": (0.3, 0, 0.5),
+    "Blue": (0, 0, 1),
+    "Green": (0, 1, 0),
+    "Yellow": (1, 1, 0),
+    "Orange": (1, 0.5, 0),
+    "Red": (1, 0, 0)
+}
+
+color_combobox = ui.ComboBox2D(items=list(colors.keys()),
+                               placeholder="Choose Text Color",
+                               size=(250, 150))
+
+def change_color(combobox):
+    label.color = colors[combobox.selected_text]
+
+color_combobox.on_change = change_color
+
+###############################################################################
+# After defining content, we define properties for the tab.
+
+tab_ui.tab[2].title = "Colors"
+tab_ui.tab[2].add_element(color_combobox, (0.3, 0.3))
+
+###############################################################################
 # Define on_change & on_collapsed methods for tab ui to perform certain tasks
 # while active tab is changed or when the tab is collapsed.
 
@@ -123,19 +160,25 @@ def hide_actors(tab_ui):
         cube.SetVisibility(True)
         cylinder.SetVisibility(False)
         sphere.SetVisibility(False)
+        label.set_visibility(False)
 
     elif tab_ui.tabs[tab_ui.active_tab_idx].title == "Checkbox":
         cube.SetVisibility(False)
         set_figure_visiblity(checkbox)
+        label.set_visibility(False)
 
     else:
-        pass
+        cube.SetVisibility(False)
+        cylinder.SetVisibility(False)
+        sphere.SetVisibility(False)
+        label.set_visibility(True)
 
 def collapse(tab_ui):
     if tab_ui.collapsed:
         cube.SetVisibility(False)
         cylinder.SetVisibility(False)
         sphere.SetVisibility(False)
+        label.set_visibility(False)
 
 tab_ui.on_change = hide_actors
 tab_ui.on_collapse = collapse
@@ -145,7 +188,7 @@ tab_ui.on_collapse = collapse
 # Next we prepare the scene and render it with the help of show manager.
 
 sm = window.ShowManager(size=(800, 500), title="Viz Tab")
-sm.scene.add(tab_ui, cube, cylinder, sphere)
+sm.scene.add(tab_ui, cube, cylinder, sphere, label)
 
 # To interact with the ui set interactive = True
 interactive = True
