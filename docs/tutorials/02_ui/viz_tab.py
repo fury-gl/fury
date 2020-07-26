@@ -82,8 +82,9 @@ tab_ui.tabs[0].add_element(line_slider_y, (0.0, 0.1))
 # Now we prepare content for second tab.
 
 cylinder = actor.cylinder(centers=np.array([[0, 0, 0]]),
-                          directions=np.array([[0, 1, 0]]),
-                          colors=np.array([[0, 1, 1]]))
+                          directions=np.array([[1, 1, 0]]),
+                          colors=np.array([[0, 1, 1]]),
+                          radius=1.0)
 
 sphere = actor.sphere(centers=np.array([[5, 0, 0]]),
                       colors=(1, 1, 0))
@@ -121,7 +122,7 @@ tab_ui.tabs[1].add_element(checkbox, (0.2, 0.2))
 # Now we prepare content for third tab.
 
 label = ui.TextBlock2D(
-    position=(200, 300), font_size=40, color=(1, 0.5, 0),
+    position=(600, 300), font_size=40, color=(1, 0.5, 0),
     justification="center", vertical_justification="top",
     text="FURY rocks!!!"
 )
@@ -138,7 +139,7 @@ colors = {
 
 color_combobox = ui.ComboBox2D(items=list(colors.keys()),
                                placeholder="Choose Text Color",
-                               size=(250, 150))
+                               size=(250, 150), draggable=True)
 
 def change_color(combobox):
     label.color = colors[combobox.selected_text]
@@ -148,8 +149,8 @@ color_combobox.on_change = change_color
 ###############################################################################
 # After defining content, we define properties for the tab.
 
-tab_ui.tab[2].title = "Colors"
-tab_ui.tab[2].add_element(color_combobox, (0.3, 0.3))
+tab_ui.tabs[2].title = "Colors"
+tab_ui.tabs[2].add_element(color_combobox, (0.1, 0.3))
 
 ###############################################################################
 # Define on_change & on_collapsed methods for tab ui to perform certain tasks
