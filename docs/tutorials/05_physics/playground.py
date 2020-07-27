@@ -5,28 +5,28 @@ import pybullet as p
 from scipy.spatial.transform import Rotation as R
 
 # Instantiate Pybullet client.
-client = p.connect(p.DIRECT)
+client = p.connect(p.GUI)
 # Apply gravity to the scene.
-p.setGravity(0, 0, -10, physicsClientId=client)
+# p.setGravity(0, 0, -10, physicsClientId=client)
 
-###### Creating BALL
-# Ball actor
-ball_actor = actor.sphere(centers = np.array([[0, 0, 0]]),
-                    colors=np.array([1,0,0]),
-                    radii=0.3)
+# ###### Creating BALL
+# # Ball actor
+# ball_actor = actor.sphere(centers = np.array([[0, 0, 0]]),
+#                     colors=np.array([1,0,0]),
+#                     radii=0.3)
 
-# Collision shape for the ball.
-ball_coll = p.createCollisionShape(p.GEOM_SPHERE,
-                                    radius=0.3)
+# # Collision shape for the ball.
+# ball_coll = p.createCollisionShape(p.GEOM_SPHERE,
+#                                     radius=0.3)
 
-# Creating a Multibody which will be tracked by pybullet.
-ball = p.createMultiBody(baseMass=3,
-                          baseCollisionShapeIndex=ball_coll,
-                          basePosition=[2, 0, 1.5],
-                          baseOrientation=[ 0, 0, 0, 1 ])
+# # Creating a Multibody which will be tracked by pybullet.
+# ball = p.createMultiBody(baseMass=3,
+#                           baseCollisionShapeIndex=ball_coll,
+#                           basePosition=[2, 0, 1.5],
+#                           baseOrientation=[ 0, 0, 0, 1 ])
 
-# Change the dynamics of the ball by adding friction and restitution.
-p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
+# # Change the dynamics of the ball by adding friction and restitution.
+# p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 
 ###### Creating BASE Plane
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
@@ -42,8 +42,8 @@ base = p.createMultiBody(
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
 # defining the height and width of the wall.
-wall_height = 10
-wall_width = 10
+wall_height = 1
+wall_width = 1
 
 # Lists for keeping track of bricks.
 brick_Ids = []
@@ -52,7 +52,7 @@ brick_actors = []
 # Add the actors to the scene.
 scene = window.Scene()
 scene.add(actor.axes())
-scene.add(ball_actor)
+# scene.add(ball_actor)
 scene.add(base_actor)
 
 # Generate bricks.
@@ -111,17 +111,33 @@ num_vertices = vertices.shape[0]
 num_objects = brick_centers.shape[0]
 sec = np.int(num_vertices / num_objects)
 
+_, prev_orn = p.getBasePositionAndOrientation(bricks[0])
+
 # Function for syncing actors with multibodies.
 def _sync_actor(object_index, multibody):
+    global prev_orn
     pos, orn = p.getBasePositionAndOrientation(multibody)
 
-    rot_mat = R.from_euler("zxy", p.getEulerFromQuaternion(orn), degrees=True).as_matrix()
+    # rot_mat = R.from_quat(orn).as_matrix()
+
+    # rot_mat = np.reshape(p.getMatrixFromQuaternion(orn), (3, 3))
+
+    # rot_mat = R.from_euler("xyz", p.getEulerFromQuaternion(orn), degrees=False).as_matrix()
+
+    # xyz, w = p.getAxisAngleFromQuaternion(orn)
+    # rot_mat = R.from_quat(np.array([xyz[0], xyz[1], xyz[2], w])).as_matrix()
+
+    rot_mat = np.reshape(p.getMatrixFromQuaternion(p.getDifferenceQuaternion(orn, prev_orn)), (3, 3))
+    prev_orn = orn
+    # print(rot_mat, orn)
+
     vertices[object_index * sec: object_index * sec + sec] = \
         (vertices[object_index * sec: object_index * sec + sec] -
          brick_centers[object_index])@rot_mat + pos
 
     brick_centers[object_index] = pos
-    # p.resetBasePositionAndOrientation(multibody, pos, orn)
+    p.resetBasePositionAndOrientation(multibody, pos, orn)
+
 
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -149,18 +165,18 @@ def timer_callback(_obj, _event):
             "\nSim Steps: " + str(cnt)
 
     # Get the position and orientation of the ball.
-    ball_pos, ball_orn = p.getBasePositionAndOrientation(ball)
+    # ball_pos, ball_orn = p.getBasePositionAndOrientation(ball)
     # Apply force for 5 times for the first step of simulation.
-    if apply_force:
-        # Apply the force.
-        p.applyExternalForce(ball, -1,
-                                forceObj=[-10000, 0, 0],
-                                posObj=ball_pos,
-                                flags=p.WORLD_FRAME)
-        apply_force = False
+    # if apply_force:
+    #     # Apply the force.
+    #     p.applyExternalForce(ball, -1,
+    #                             forceObj=[-10000, 0, 0],
+    #                             posObj=ball_pos,
+    #                             flags=p.WORLD_FRAME)
+    #     apply_force = False
 
     # Set position and orientation of the ball.
-    sync_actor(ball_actor, ball)
+    # sync_actor(ball_actor, ball)
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
@@ -171,12 +187,12 @@ def timer_callback(_obj, _event):
     p.stepSimulation()
 
     # Exit after 2000 steps of simulation.
-    if cnt == 2000:
-        showm.exit()
+    # if cnt == 2000:
+    #     showm.exit()
 
 # Add the timer callback to showmanager.
 # Increasing the duration value will slow down the simulation.
-showm.add_timer_callback(True, 10, timer_callback)
+showm.add_timer_callback(True, 100, timer_callback)
 
 interactive = True
 
