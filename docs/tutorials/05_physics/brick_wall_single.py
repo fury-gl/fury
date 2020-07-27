@@ -183,7 +183,7 @@ def timer_callback(_obj, _event):
 
 # Add the timer callback to showmanager.
 # Increasing the duration value will slow down the simulation.
-showm.add_timer_callback(True, 10, timer_callback)
+showm.add_timer_callback(True, 1, timer_callback)
 
 interactive = True
 
