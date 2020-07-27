@@ -2,7 +2,6 @@ import numpy as np
 from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
-from scipy.spatial.transform import Rotation as R
 
 # Instantiate Pybullet client.
 client = p.connect(p.DIRECT)
@@ -62,6 +61,8 @@ brick_centers = np.zeros((nb_bricks, 3))
 brick_directions = np.zeros((nb_bricks, 3))
 brick_directions[:] = np.array([1.57, 0, 0])
 
+brick_orns = np.zeros((nb_bricks, 4))
+
 brick_sizes = np.zeros((nb_bricks, 3))
 brick_sizes[:] = np.array([0.2, 0.4, 0.2])
 
@@ -76,10 +77,11 @@ for k in range(wall_height):
     for j in range(wall_width):
         center_pos = np.array([-1, (j*0.4)-1.8, (0.2*k)+0.1])
         brick_centers[i] = center_pos
+        brick_orns[i] = np.array([0, 0, 0, 1])
         bricks[i] = p.createMultiBody(baseMass=0.5,
                                    baseCollisionShapeIndex=brick_coll,
                                    basePosition=center_pos,
-                                   baseOrientation=[ 0, 0, 0, 1 ])
+                                   baseOrientation=brick_orns[i])
         i += 1
 
 brick_actor_single = actor.box(centers=brick_centers,
@@ -115,12 +117,17 @@ sec = np.int(num_vertices / num_objects)
 def _sync_actor(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
 
-    rot_mat = R.from_euler("zxy", p.getEulerFromQuaternion(orn), degrees=True).as_matrix()
+    rot_mat = np.reshape(
+        p.getMatrixFromQuaternion(
+            p.getDifferenceQuaternion(orn, brick_orns[object_index])),
+        (3, 3))
+
     vertices[object_index * sec: object_index * sec + sec] = \
         (vertices[object_index * sec: object_index * sec + sec] -
          brick_centers[object_index])@rot_mat + pos
 
     brick_centers[object_index] = pos
+    brick_orns[object_index] = orn
     # p.resetBasePositionAndOrientation(multibody, pos, orn)
 
 def sync_actor(actor, multibody):
