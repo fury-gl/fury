@@ -82,6 +82,7 @@ for k in range(wall_height):
                                    baseCollisionShapeIndex=brick_coll,
                                    basePosition=center_pos,
                                    baseOrientation=brick_orns[i])
+        p.changeDynamics(bricks[i], -1, lateralFriction=0.1, restitution=0.1)
         i += 1
 
 brick_actor_single = actor.box(centers=brick_centers,
