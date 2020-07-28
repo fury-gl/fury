@@ -114,7 +114,7 @@ num_objects = brick_centers.shape[0]
 sec = np.int(num_vertices / num_objects)
 
 # Function for syncing actors with multibodies.
-def _sync_actor(object_index, multibody):
+def sync_brick(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
 
     rot_mat = np.reshape(
@@ -171,8 +171,8 @@ def timer_callback(_obj, _event):
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
-        _sync_actor(idx, brick)
-        utils.update_actor(brick_actor_single)
+        sync_brick(idx, brick)
+    utils.update_actor(brick_actor_single)
 
     # Simulate a step.
     p.stepSimulation()
