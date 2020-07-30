@@ -1263,13 +1263,14 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((90, 90), combobox.drop_button_size)
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
+
 def test_ui_tab_ui(interactive=False):
     filename = "test_ui_tab_ui"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3,
-                  draggable=True)
+                      draggable=True)
 
     tab_ui.tabs[0].title = "Tab 1"
     tab_ui.tabs[1].title = "Tab 2"
@@ -1319,6 +1320,7 @@ def test_ui_tab_ui(interactive=False):
     npt.assert_equal(0, tab_ui.active_tab_idx)
     npt.assert_equal(11, next(changes))
     npt.assert_equal(5, next(collapses))
+
 
 def test_grid_ui(interactive=False):
     vol1 = np.zeros((100, 100, 100))
