@@ -4659,12 +4659,33 @@ class ComboBox2D(UI):
 
 class TabUI(UI):
     """ UI element to add multiple panels within a single window.
+
+    Attributes
+    ----------
+    tabs: :class: List of 'TabPanel2D'
+        Stores all the instances of 'TabPanel2D' that renderes the contents.
     """
 
     def __init__(self, position=(0, 0), size=(100, 100), nb_tabs=1,
                  active_color=(1, 1, 1), inactive_color=(0.5, 0.5, 0.5),
                  draggable=False):
         """
+
+        Parameters
+        ----------
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (int, int)
+            Width and height in pixels of this UI component.
+        nb_tabs : int
+            Number of tabs to be renders.
+        active_color : tuple of 3 floats.
+            Background color of active tab panel.
+        inactive_color : tuple of 3 floats.
+            Background color of inactive tab panels.
+        draggable : {True, False}
+            Whether the UI element is draggable or not.
         """
         self.tabs = []
         self.nb_tabs = nb_tabs
@@ -4698,6 +4719,8 @@ class TabUI(UI):
         self.update_tabs()
 
     def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
         actors = []
         actors += self.parent_panel.actors
         for tab_panel in self.tabs:
@@ -4706,11 +4729,24 @@ class TabUI(UI):
         return actors
 
     def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
         self.parent_panel.add_to_scene(_scene)
         for tab_panel in self.tabs:
             tab_panel.add_to_scene(_scene)
 
     def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
         self.parent_panel.position = _coords
 
     def _get_size(self):
@@ -4764,7 +4800,7 @@ class TabUI(UI):
             tab_panel_pos[0] += 1/self.nb_tabs
 
     def select_tab_callback(self, iren, _obj, _tab_comp):
-        """ Handles events when a tab is clicked.
+        """ Handles events when a tab is selected.
         """
         for idx, tab_panel in enumerate(self.tabs):
             if tab_panel.text_block is not _tab_comp and\
@@ -4782,6 +4818,8 @@ class TabUI(UI):
         iren.event.abort()
 
     def collapse_tab_ui(self, iren, _obj, _tab_comp):
+        """ Handles events when Tab UI is collapsed.
+        """
         if self.active_tab_idx is not None:
             active_tab_panel = self.tabs[self.active_tab_idx]
             active_tab_panel.color = self.inactive_color
@@ -4806,19 +4844,40 @@ class TabUI(UI):
 
 
 class TabPanel2D(UI):
-    """ The information contained within a Tab.
+    """ Renders content within a Tab.
+
+    Attributes
+    ----------
+    content_panel: :class: 'Panel2D'
+        Holds all the content UI components.
+    text_block: :class: 'TextBlock2D'
+        Renders the title of the tab.
     """
 
     def __init__(self, position=(0, 0), size=(100, 100),
-                 text="New Tab", color=(0.5, 0.5, 0.5), content_panel=None):
+                 title="New Tab", color=(0.5, 0.5, 0.5), content_panel=None):
         """
+
+        Parameters
+        ----------
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int)
+            Width and height of the pixels of this UI component.
+        title : str
+            Renders the title for Tab panel.
+        color : list of 3 floats
+            Background color of tab panel.
+        content_panel : Panel2D
+            Panel consisting of the content UI elements.
         """
         self.content_panel = content_panel
-        self.text = text
         self.panel_size = size
         self._text_size = (int(1.0 * size[0]), size[1])
 
         super(TabPanel2D, self).__init__()
+        self.title = title
         self.panel.position = position
         self.color = color
 
@@ -4829,7 +4888,7 @@ class TabPanel2D(UI):
         Create Button to close tab.
         """
         self.panel = Panel2D(size=self.panel_size)
-        self.text_block = TextBlock2D(text=self.text, size=self._text_size,
+        self.text_block = TextBlock2D(size=self._text_size,
                                       color=(0, 0, 0))
         self.panel.add_element(self.text_block, (0, 0))
 
@@ -4862,6 +4921,13 @@ class TabPanel2D(UI):
         self.panel.size
 
     def resize(self, size):
+        """ Resizes Tab panel.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
         self._text_size = (int(0.7 * size[0]), size[1])
         self._button_size = (int(0.3 * size[0]), size[1])
         self.panel.resize(size)
@@ -4869,28 +4935,80 @@ class TabPanel2D(UI):
 
     @property
     def color(self):
+        """ Returns the background color of tab panel.
+        """
         return self.panel.color
 
     @color.setter
     def color(self, color):
+        """ Sets background color of tab panel.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
         self.panel.color = color
 
     @property
     def title(self):
+        """ Returns the title of tab panel.
+        """
         return self.text_block.message
 
     @title.setter
     def title(self, text):
+        """ Sets the title of tab panel.
+
+        Parameters
+        ----------
+        text : str
+            New title for tab panel.
+        """
         self.text_block.message = text
 
     def add_element(self, element, coords, anchor="position"):
+        """ Adds a UI component to the content panel.
+
+        The coordinates represent an offset from the lower left corner of the
+        panel.
+
+        Parameters
+        ----------
+        element : UI
+            The UI item to be added.
+        coords : (float, float) or (int, int)
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            panel's size.
+        """
         element.set_visibility(False)
         self.content_panel.add_element(element, coords, anchor)
 
     def remove_element(self, element):
+        """ Removes a UI component from the content panel.
+
+        Parameters
+        ----------
+        element : UI
+            The UI item to be removed.
+        """
         self.content_panel.remove_element(element)
 
     def update_element(self, element, coords, anchor="position"):
+        """ Updates the position of a UI component in the content panel.
+
+        Parameters
+        ----------
+        element : UI
+            The UI item to be updated.
+        coords : (float, float) or (int, int)
+            New coordinates.
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            panel's size.
+        """
         self.content_panel.update_element(element, coords, anchor="position")
 
 
