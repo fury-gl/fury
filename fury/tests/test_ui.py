@@ -1150,7 +1150,7 @@ def test_ui_file_menu_2d(interactive=False):
         selected_files.append(list(filemenu.listbox.selected))
 
     # Set up a callback when selection changes.
-    filemenu.listbox.on_change = _on_change
+    filemenu.on_change = _on_change
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
