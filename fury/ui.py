@@ -3618,51 +3618,43 @@ class ScrollBar(UI):
         Callback function for when the viewed items have changed.
     """
 
-    def __init__(self, nb_values, nb_slots, slot_height, Panel2D,
-                 list_position=(0, 0), panel_size=(100, 300),
+    def __init__(self, length, view_length, track_color=(1, 1, 1),
                  reverse_scrolling=False, active_color=(0.6, 0.2, 0.2),
-                 inactive_color=(0.9, 0.0, 0.0), opacity=1.):
+                 inactive_color=(0.9, 0.0, 0.0), orientation="vertical",
+                 track_opacity=1., position=(0, 0)):
 
         """
         Parameters
         ----------
-        nb_slots: (int)
-            Number of slots in the list.
-        list_slot_height:(int)
-            Height of each slot in the list.
-        nb_values: (int)
-            Number of values in the list.
-        reverse_scrolling: {True, False}
+        length : int
+            Length of the scrollbar.
+        view_length : int
+            Length of the content to be viewed at a time.
+        track_color : tuple of 3 floats
+            Color of the scrollbar track.
+        reverse_scrolling : {True, False}
             If True, scrolling up will move the list of files down.
-        list_position: (int,int)
-            Coordinates of the list.
-        panel_size: (int,int)
-            Size of the panel (width*length).
-        bar_active_color : tuple of 3 floats
-        bar_inactive_color : tuple of 3 floats
+        active_color : tuple of 3 floats
+            Color of the scrollbar when in use.
+        inactive_color : tuple of 3 floats
+            Color of the scrollbar when not in use.
+        orientation : {"vertical", "horizontal"}
+            The orientation of the scrollbar.
         opacity : float
+            Opacity of scrollbar.
+        position : (int, int, int)
+            Lower-left position of the UI component.
         """
-        self.panel = Panel2D
-        self.panel_size = panel_size
+        self.length = length
+        self.view_length = view_length
+        self.orientation = orientation
         self.reverse_scrolling = reverse_scrolling
-        self.slot_height = slot_height
-        self.nb_slots = nb_slots
-        self.nb_values = nb_values
-        denom = self.nb_values - self.nb_slots
-        if not denom:
-            denom += 1
-        self.margin = 10
-        self.view_offset = 0
-        super(ScrollBar, self).__init__()
-        self.step_size = (self.slot_height *
-                          self.nb_slots -
-                          self.bar.height) / denom
-        self.bar.active_color = active_color
-        self.bar.inactive_color = inactive_color
-        self.bar.color = inactive_color
-        self.bar.opacity = opacity
-        self.init_position = 0
-        self.on_change = lambda: None
+        super(ScrollBar, self).__init__(position)
+
+        self.track_color = track_color
+        self.active_color = active_color
+        self.inactive_color = inactive_color
+        self.track_opacity = track_opacity
 
     def _setup(self):
         bar_height = self.nb_slots * (
@@ -3804,6 +3796,30 @@ class ScrollBar(UI):
             Absolute pixel coordinates (x, y).
         """
         self.list_position = coords
+
+    @property
+    def track_color(self):
+        return self.track.color
+
+    @track_color.setter
+    def track_color(self, color):
+        self.track.color = color
+
+    @property
+    def active_color(self):
+        return self.pellet.color
+
+    @active_color.setter
+    def active_color(self, color):
+        self.pellet.color = color
+
+    @property
+    def track_opacity(self):
+        return self.track.opacity
+
+    @track_opacity.setter
+    def track_opacity(self):
+        self.track.opacity = opacity
 
 
 class ListBox2D(UI):
