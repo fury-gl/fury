@@ -3618,7 +3618,7 @@ class ScrollBar(UI):
         Callback function for when the viewed items have changed.
     """
 
-    def __init__(self, length, view_length, track_color=(1, 1, 1),
+    def __init__(self, length, width, scroll_ratio, track_color=(1, 1, 1),
                  reverse_scrolling=False, active_color=(0.6, 0.2, 0.2),
                  inactive_color=(0.9, 0.0, 0.0), orientation="vertical",
                  track_opacity=1., position=(0, 0)):
@@ -3628,8 +3628,10 @@ class ScrollBar(UI):
         ----------
         length : int
             Length of the scrollbar.
-        view_length : int
+        width : int
             Length of the content to be viewed at a time.
+        scroll_ratio : float
+            Scroll ratio = (viewable content size)//(entire content size)
         track_color : tuple of 3 floats
             Color of the scrollbar track.
         reverse_scrolling : {True, False}
@@ -3646,8 +3648,10 @@ class ScrollBar(UI):
             Lower-left position of the UI component.
         """
         self.length = length
+        self.width = width
+        self.scroll_ratio = scroll_ratio
         self.view_length = view_length
-        self.orientation = orientation
+        self.orientation = orientation.lower()
         self.reverse_scrolling = reverse_scrolling
         super(ScrollBar, self).__init__(position)
 
@@ -3655,27 +3659,16 @@ class ScrollBar(UI):
         self.active_color = active_color
         self.inactive_color = inactive_color
         self.track_opacity = track_opacity
+        if orientation == "vertical":
+            self.size = (self.length, self.width)
+        elif orientation == "horizontal":
+            self.size = (self.width, self.length)
+        else:
+            raise ValueError("Unknown orientation")
 
     def _setup(self):
-        bar_height = self.nb_slots * (
-            self.panel_size[1] - 2 * self.margin) \
-            / self.nb_values
-        self.bar = Rectangle2D(size=(int(self.panel_size[0]/20), bar_height))
-
-        # Setting view of the list for current scroll bar position.
-        if self.nb_values <= self.nb_slots:
-            self.bar.set_visibility(False)
-
-        # Adding callbacks for scrolling of bar on click drag and realease.
-        self.panel.add_element(
-            self.bar, self.panel_size -
-            self.bar.size - self.margin)
-        self.bar.on_left_mouse_button_pressed = \
-            self.click_callback
-        self.bar.on_left_mouse_button_released = \
-            self.release_callback
-        self.bar.on_left_mouse_button_dragged = \
-            self.drag_callback
+        self.track = Rectangle2D()
+        self.bar = Rectangle2D()
 
     def click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
@@ -3773,7 +3766,7 @@ class ScrollBar(UI):
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        return self.panel.actors
+        return self.track.actors + self.bar.actors
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -3782,10 +3775,10 @@ class ScrollBar(UI):
         ----------
         scene : scene
         """
-        self.panel.add_to_scene(scene)
+        scene.add(self.track, self.bar)
 
     def _get_size(self):
-        return self.panel.size
+        return self.track.size
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -3795,7 +3788,11 @@ class ScrollBar(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.list_position = coords
+        self.track.position = coords
+        if self.orientation == "vertical":
+            self.bar.position = coords + self.track.size - self.bar.size
+        else:
+            self.bar.position = coords
 
     @property
     def track_color(self):
@@ -3807,11 +3804,11 @@ class ScrollBar(UI):
 
     @property
     def active_color(self):
-        return self.pellet.color
+        return self.bar.color
 
     @active_color.setter
     def active_color(self, color):
-        self.pellet.color = color
+        self.bar.color = color
 
     @property
     def track_opacity(self):
