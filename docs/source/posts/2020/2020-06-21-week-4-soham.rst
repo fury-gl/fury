@@ -1,0 +1,35 @@
+TextBlock2D Progress!!
+======================
+
+.. post:: June 21 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 4th weekly check-in, I will be sharing my progress with TextBlock2D UI component. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week my objective was to work on the ``TextBlock2D`` resizing feature and also work on the scrollbar bug in ``ComboBox2D`` UI component. The ``TextBlock2D`` component makes use of ``vtkTextActor`` and its methods available in VTK for handling all Text related properties such as font size, color, background color etc. Now, going through the official `docs <https://vtk.org/doc/nightly/html/classvtkTextActor.html>`_ I figured out that the there were three different scaling modes for the said actor:
+
+- TEXT_SCALE_MODE_NONE
+- TEXT_SCALE_MODE_PROP
+- TEXT_SCALE_MODE_VIEWPORT
+
+The first scaling mode was currently implemented in FURY's ``TextBlock2D`` code base. This was done mainly because the only way for the user to create a text block was by providing the font size as parameter. We couldn't use the third option as the FURY API tries to maintain abstraction by not exposing ``vtkViewport`` parameter. Now in order to allow size as a parameter I had to use the second scaling option which is ``TEXT_SCALE_MODE_PROP``. With  this mode one can set the ``Position2`` parameter to the desired value of height and width. But the problem is I cannot use this for the combobox element as the background size will be inconsistent with respect to font size and text length.
+
+.. image:: https://user-images.githubusercontent.com/29832615/85226809-12af6500-b3f7-11ea-8a75-7e86d40701d1.png
+
+.. image:: https://user-images.githubusercontent.com/29832615/85226812-14792880-b3f7-11ea-8edd-1df25382a48f.png
+
+Therefore, as a solution we agreed to add a separate Rectangle2D UI component as the background for Text Block along with vtkTextActor. With this implementation one can easily manipulate the background irrespective of the text properties. But this had another issue, the user now had 2 different ways of initializing a TextBlock2D. Therefore, when the user uses size a constructor parameter, then everything works in sync, but the same is not true for the font size parameter. This is mainly because we do not have a specific way of determining the size of the actor based on font size. My mentors have agreed to look into this problem and advised me to focus on something else instead.
+
+What is coming up next week?
+----------------------------
+Next week I am planning to start with Physics engine integration of FURY with pyBullet. My main focus would be to create simple simulations first before initiating the integration process. If the size issue is solved before I move into Physics engine then I would complete the ComboBox UI and start with Tab UI instead. I have also fixed the scrollbar bug.
+
+Did you get stuck anywhere?
+---------------------------
+The main problem that I faced so far was regarding the variable background size of the Text Block component. Also the ``GetPosition2`` method of ``vtkTextActor`` would always return the same value irrespective of the font size parameter passed as a constructor argument. Therefore, it was not possible for me to determine the actual size or bounding box of the said text actor.
+
+``Thank you for reading, see you next week!!``

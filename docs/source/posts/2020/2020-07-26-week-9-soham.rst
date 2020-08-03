@@ -1,0 +1,37 @@
+Tab UI, TabPanel2D, Tab UI Tutorial.
+====================================
+
+.. post:: July 26 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 9th weekly check-in. I will be sharing my progress with ``TabUI`` and its corresponding tutorial. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I finished the basic implementation of ``TabUI``. Apart from that I was also able to finish the tutorial which showcases different features of this said UI. With the help of this UI one can have multiple panels containing different UI elements within them. The basic implementation can be demonstrated as follows:
+
+.. image:: https://user-images.githubusercontent.com/29832615/88484746-87456880-cf8e-11ea-9e96-9cba111b90d3.gif
+
+After finishing with the basic implementation I moved on to create its tutorial. For that, I decided to combine 3 of the existing UI tutorials to be rendered with the help of Tab UI. I implemented the following in individual tabs:
+
+- Controlling a cube with the help of ``LineSlider2D`` and ``RingSlider2D``.
+- Using a ``CheckBox`` to render a cylinder or a sphere or both.
+- Using ``ComboBox`` to set the color of a label.
+
+The above tutorial can be demonstrated as follows:
+
+.. image:: https://user-images.githubusercontent.com/29832615/88481324-6a9e3600-cf78-11ea-8c5b-e26bf158388a.gif
+
+What is coming up next week?
+----------------------------
+Next week I will continue working on the Physics engine integration. Previously we were facing a problem regarding the uncontrollable spinning of objects rendered by a single actor. There must be an issue with mismatching axes alignment of FURY and pyBullet. The spinning problem is as following:
+
+.. image:: https://user-images.githubusercontent.com/29832615/88485303-87476780-cf92-11ea-850c-cc63e1376ef8.gif
+
+Did you get stuck anywhere?
+---------------------------
+I did get stuck with the collapsing functionality of Tab UI and the uncontrollable spinning of the bricks in the Physics simulation. Apart from that I did not face any major issues.
+
+``Thank you for reading, see you next week!!``
