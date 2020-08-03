@@ -4684,7 +4684,7 @@ class TabUI(UI):
             Background color of active tab panel.
         inactive_color : tuple of 3 floats.
             Background color of inactive tab panels.
-        draggable : {True, False}
+        draggable : bool
             Whether the UI element is draggable or not.
         """
         self.tabs = []
@@ -4829,6 +4829,33 @@ class TabUI(UI):
         self.on_collapse(self)
         iren.force_render()
         iren.event.abort()
+
+    def add_element(self, tab_idx, element, coords, anchor="position"):
+        """ Adds element to content panel after checking its existence.
+        """
+        if tab_idx < self.nb_tabs and tab_idx >= 0:
+            self.tabs[tab_idx].add_element(element, coords, anchor)
+        else:
+            raise IndexError(
+        "Tab with index {} does not exist".format(tab_idx))
+
+    def remove_element(self, tab_idx, element):
+        """ Removes element from content panel after checking its existence.
+        """
+        if tab_idx < self.nb_tabs and tab_idx >= 0:
+            self.tabs[tab_idx].remove_element(element)
+        else:
+            raise IndexError(
+        "Tab with index {} does not exist".format(tab_idx))
+
+    def update_element(self, element, coords, anchor="position"):
+        """ Updates element on content panel after checking its existence.
+        """
+        if tab_idx < self.nb_tabs and tab_idx >= 0:
+            self.tabs[tab_idx].update_element(element, coords, anchor)
+        else:
+            raise IndexError(
+        "Tab with index {} does not exist".format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
