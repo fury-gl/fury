@@ -75,9 +75,9 @@ line_slider_y.on_change = translate_cube_y
 # After defining content, we define properties for the tab.
 
 tab_ui.tabs[0].title = "Sliders"
-tab_ui.tabs[0].add_element(ring_slider, (0.3, 0.3))
-tab_ui.tabs[0].add_element(line_slider_x, (0.0, 0.0))
-tab_ui.tabs[0].add_element(line_slider_y, (0.0, 0.1))
+tab_ui.add_element(0, ring_slider, (0.3, 0.3))
+tab_ui.add_element(0, line_slider_x, (0.0, 0.0))
+tab_ui.add_element(0, line_slider_y, (0.0, 0.1))
 
 ###############################################################################
 # CheckBoxes For Cylinder and Sphere for Tab Index 1
@@ -120,7 +120,7 @@ checkbox.on_change = set_figure_visiblity
 # After defining content, we define properties for the tab.
 
 tab_ui.tabs[1].title = "Checkbox"
-tab_ui.tabs[1].add_element(checkbox, (0.2, 0.2))
+tab_ui.add_element(1, checkbox, (0.2, 0.2))
 
 ###############################################################################
 # Color Combobox for Fury for Tab Index 2
@@ -159,7 +159,7 @@ color_combobox.on_change = change_color
 # After defining content, we define properties for the tab.
 
 tab_ui.tabs[2].title = "Colors"
-tab_ui.tabs[2].add_element(color_combobox, (0.1, 0.3))
+tab_ui.add_element(2, color_combobox, (0.1, 0.3))
 
 ###############################################################################
 # Define on_change & on_collapsed methods for tab ui to perform certain tasks
