@@ -1,0 +1,50 @@
+Single Actor, Physics, Scrollbars.
+====================================
+
+.. post:: August 02 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 10th weekly check-in. Second evaluation ended this week and now we move on to our 3rd and final coding period. In today's check-in I will be sharing my progress with the single actor physics simulation that I facing some issues with and I will also be discussing my future plans regarding UI components. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I was able to figure out the uncontrollable spinning problem that I was facing while rendering physics simulations. Specifically the simulation where a brick wall was rendered by a single actor. The spinning problem was as follows:
+
+.. image:: https://user-images.githubusercontent.com/29832615/88485303-87476780-cf92-11ea-850c-cc63e1376ef8.gif
+
+Here's how the fixed simulation looks like:
+
+.. image:: https://user-images.githubusercontent.com/29832615/89126963-946ed400-d507-11ea-93cd-aad3a9f59ab0.gif
+
+I was facing this particular issue because I was directly syncing the orientation of the objects in pyBullet world to the objects in the Fury world. So I decided to apply the change in orientation instead and it worked. In order to achieve this I had to keep track of the bricks' orientation at each step of the simulation, sync the change and then update the tracked orientation. Thankfully, pybullet had convenient tools to achieve this. Here's a snippet on how to update individual objects rendered by a single actor:
+
+.. code-block:: python
+
+    def sync_brick(object_index, multibody):
+        pos, orn = p.getBasePositionAndOrientation(multibody)
+
+        rot_mat = np.reshape(
+            p.getMatrixFromQuaternion(
+                p.getDifferenceQuaternion(orn, brick_orns[object_index])),
+            (3, 3))
+
+        vertices[object_index * sec: object_index * sec + sec] = \
+            (vertices[object_index * sec: object_index * sec + sec] -
+            brick_centers[object_index])@rot_mat + pos
+
+        brick_centers[object_index] = pos
+        brick_orns[object_index] = orn
+
+All the necessary information is updated `here <https://docs.google.com/document/d/1XJcG1TL5ZRJZDyi8V76leYZt_maxGp0kOB7OZIxKsTA/edit?usp=sharing>`_.
+
+What is coming up next week?
+----------------------------
+Currently, the scrollbars are native to ``ListBox2D`` only. We are planning to separate scrollbars from ``ListBox2D`` to create a standalone UI component. This was in progress previously but was later discontinued, so I was given the responsibility to complete it. After this we plan to improve File Dialog capabilities later on.
+
+Did you get stuck anywhere?
+---------------------------
+I did not face any major issues but it took me some time to understand and evaluate the existing discontinued `PR <https://github.com/fury-gl/fury/pull/222>`_ regarding scrollbar separation.
+
+``Thank you for reading, see you next week!!``

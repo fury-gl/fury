@@ -120,13 +120,13 @@ def test_deprecate_with_version():
         warnings.simplefilter('always')
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
-    func = dec('foo', until='0.6')(func_no_doc)
+    func = dec('foo', until='10.6')(func_no_doc)
     with clear_and_catch_warnings(modules=[my_mod]) as w:
         warnings.simplefilter('always')
         npt.assert_equal(func(), None)
         npt.assert_equal(len(w), 1)
     npt.assert_equal(func.__doc__,
-                     'foo\n\n* Will raise {} as of version: 0.6\n'
+                     'foo\n\n* Will raise {} as of version: 10.6\n'
                      .format(ExpiredDeprecationError))
     func = dec('foo', until='0.3')(func_no_doc)
     npt.assert_raises(ExpiredDeprecationError, func)

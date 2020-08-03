@@ -1,0 +1,27 @@
+First week of coding!!
+======================
+
+.. post:: June 7 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my second weekly check-in, I will be sharing my progress for the first week of coding.
+
+What did you do this week?
+--------------------------
+This week my objective was to create the skeleton model for ComboBox2D UI element along with its required sub-components and their respective default callbacks. So far, I have successfully been able to implement them. Apart from some issues that I was facing regarding the sizing and position of the sub-components.
+
+What is coming up next week?
+----------------------------
+Next week, my main focus will be on fixing the sizing issue and I will also be working on respective default and specialized class methods required by the component and its sub-components for proper functioning. I will also create tests for the same.
+
+Did you get stuck anywhere?
+---------------------------
+The main problem that I faced while coding the UI element was regarding the sizing and positioning of the sub-components. The sub-components appeared flipped and the TextBlock2D element had no option to resize based on a particular width & height definition.
+
+.. image:: https://user-images.githubusercontent.com/29832615/82089691-b713fc80-9711-11ea-8d72-efaeaac1044c.png
+
+As you can see, the ComboBox UI element doesn't look the way its supposed to. Along with this issue the scrollbars callback doesn't work either. Hopefully, I will be able to get these issues fixed by next week.
+
+``Thank you for reading, see you next week!!``
