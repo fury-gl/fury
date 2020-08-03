@@ -2,7 +2,6 @@
 =======================
 Solar System Animation
 =======================
-
 In this tutorial, we will create an animation of the solar system
 using textured spheres. We will also show how to manipulate the
 position of these sphere actors in a timer_callback function
@@ -35,12 +34,10 @@ fetch_viz_textures()
 
 def init_planet(filename):
     """Initialize a planet actor.
-
     Parameters
     ----------
     filename : str
         The filename for the corresponding planet texture.
-
     Returns
     -------
     planet_actor: actor
@@ -80,11 +77,7 @@ utils.rotate(jupiter_actor, (90, 1, 0, 0))
 # of this tutorial, planet sizes and positions will not be completely
 # accurate.
 
-<<<<<<< HEAD
 sun_actor.SetScale(5, 5, 5)
-=======
-sun_actor.SetScale(10, 10, 10)
->>>>>>> 42769024b6fd0b5e2d0e2091ec57b658585e0b69
 mercury_actor.SetScale(0.4, 0.4, 0.4)
 venus_actor.SetScale(0.6, 0.6, 0.6)
 earth_actor.SetScale(0.4, 0.4, 0.4)
