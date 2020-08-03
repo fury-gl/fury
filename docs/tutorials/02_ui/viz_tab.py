@@ -22,8 +22,8 @@ tab_ui = ui.TabUI(position=(49, 94), size=(300, 300), nb_tabs=3,
                   draggable=True)
 
 ###############################################################################
-# Slider Controls for a Cube
-# ==========================
+# Slider Controls for a Cube for Tab Index 0
+# ==========================================
 #
 # Now we prepare content for the first tab.
 
@@ -80,8 +80,8 @@ tab_ui.tabs[0].add_element(line_slider_x, (0.0, 0.0))
 tab_ui.tabs[0].add_element(line_slider_y, (0.0, 0.1))
 
 ###############################################################################
-# CheckBoxes For Cylinder and Sphere
-# ==================================
+# CheckBoxes For Cylinder and Sphere for Tab Index 1
+# ==================================================
 #
 # Now we prepare content for second tab.
 
@@ -123,8 +123,8 @@ tab_ui.tabs[1].title = "Checkbox"
 tab_ui.tabs[1].add_element(checkbox, (0.2, 0.2))
 
 ###############################################################################
-# Color Combobox for Fury
-# =======================
+# Color Combobox for Fury for Tab Index 2
+# =======================================
 #
 # Now we prepare content for third tab.
 
@@ -164,6 +164,7 @@ tab_ui.tabs[2].add_element(color_combobox, (0.1, 0.3))
 ###############################################################################
 # Define on_change & on_collapsed methods for tab ui to perform certain tasks
 # while active tab is changed or when the tab is collapsed.
+# Note: Tab UI can be collapsed by right clicking on it.
 
 
 def hide_actors(tab_ui):
@@ -204,7 +205,7 @@ sm = window.ShowManager(size=(800, 500), title="Viz Tab")
 sm.scene.add(tab_ui, cube, cylinder, sphere, label)
 
 # To interact with the ui set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     sm.start()
