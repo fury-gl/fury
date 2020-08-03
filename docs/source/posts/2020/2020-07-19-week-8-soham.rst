@@ -1,0 +1,39 @@
+ComboBox2D, TextBlock2D, Clipping Overflow.
+===========================================
+
+.. post:: July 19 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 8th weekly check-in. I will be sharing my progress with ``ComboBox2D`` and ``TextBlock2D`` UI components. After solving ``TextBlock2D`` sizing issue, I was finally able to complete the implementation of combo box. I also faced some problems while refactoring ``TextBlock2D``. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I finished the implementation of ``TextBlock2D`` and ``ComboBox2D``. I also added necessary tests and tutorials to aid the implementation. It still needs some color design, which will be decided later on. Here's an overview of the tutorial:
+
+.. image:: https://user-images.githubusercontent.com/29832615/87884567-a8f19d80-ca2c-11ea-8fd2-e7e37b30602f.gif
+
+Its a simple tutorial where I change the color of the label based on the option selected on the combo box.
+
+Now while refactoring TextBlock2D, I noticed that the Text Overflow workaround on ListBox2D broke and started acting weird. This was mainly because the size implementation was changed and the code that I wrote a few months back wasn't relevant anymore. So I removed the previous code and had to re-implement the same. I later found out that I would be needing such an implementation for most of my UI components so I decided to create a separate method for clipping overflowing texts.
+
+I had to figure out a specific algorithm to achieve this as the height and width of each characters were different and the combined width of multiple characters were not equal to the sum of their widths. I decided to go for a binary search implementation as it was faster compared to a simple linear checking algorithm. The said algorithm works as expected and is more effective compared to its previous implementation. I tweaked the previous combo box example to showcase this algorithm.
+
+.. image:: https://user-images.githubusercontent.com/29832615/87884568-aabb6100-ca2c-11ea-9ab8-b05bdb8b0631.gif
+
+The extremely long text is now clipped correctly.
+
+What is coming up next week?
+----------------------------
+Next week, I have a couple of things to work on. Firstly, the single actor wall brick simulation is yet to be completed. Once I am done with that I will continue working on Tab UI and try to finish its skeletal implementation.
+
+Did you get stuck anywhere?
+---------------------------
+I did get stuck regarding the previous implementation of Text Overflow in ListBox2D. Before the current implementation it looked something like this:
+
+.. image:: https://user-images.githubusercontent.com/29832615/87430848-6b8fa900-c603-11ea-87b8-327f6e7f2ee0.png
+
+Apart from that, I did not face any major issues.
+
+``Thank you for reading, see you next week!!``
