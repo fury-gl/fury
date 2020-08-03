@@ -1,5 +1,5 @@
-from _warnings import warn
 from collections import OrderedDict
+from warnings import warn
 
 import numpy as np
 import vtk
@@ -1081,11 +1081,13 @@ class TextBlock2D(UI):
         Makes text italicised.
     shadow : bool
         Adds text shadow.
+    size : (int, int)
+        Size (width, height) in pixels of the text bounding box.
     """
 
     def __init__(self, text="Text Block", font_size=18, font_family='Arial',
                  justification='left', vertical_justification="bottom",
-                 bold=False, italic=False, shadow=False,
+                 bold=False, italic=False, shadow=False, size=None,
                  color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """
         Parameters
@@ -1112,11 +1114,18 @@ class TextBlock2D(UI):
             Makes text italicised.
         shadow : bool
             Adds text shadow.
+        size : (int, int)
+            Size (width, height) in pixels of the text bounding box.
         """
         super(TextBlock2D, self).__init__(position=position)
+        self.scene = None
+        self.have_bg = bool(bg_color)
+        if size is not None:
+            self.resize(size)
+        else:
+            self.font_size = font_size
         self.color = color
         self.background_color = bg_color
-        self.font_size = font_size
         self.font_family = font_family
         self.justification = justification
         self.bold = bold
@@ -1127,16 +1136,27 @@ class TextBlock2D(UI):
 
     def _setup(self):
         self.actor = vtk.vtkTextActor()
-        self._background = None  # For VTK < 7
+        self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
+        self.background = Rectangle2D()
         self.handle_events(self.actor)
+
+    def resize(self, size):
+        """Resize TextBlock2D.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Text bounding box size(width, height) in pixels.
+        """
+        if self.have_bg:
+            self.background.resize(size)
+        self.actor.SetTextScaleModeToProp()
+        self.actor.SetPosition2(*size)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        if self._background is not None:
-            return [self.actor, self._background]
-
-        return [self.actor]
+        return [self.actor] + self.background.actors
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -1145,10 +1165,12 @@ class TextBlock2D(UI):
         ----------
         scene : scene
         """
-        if self._background is not None:
-            scene.add(self._background)
-
-        scene.add(self.actor)
+        self.scene = scene
+        if self.have_bg and not self.actor.GetTextScaleMode():
+            size = np.zeros(2)
+            self.actor.GetSize(scene, size)
+            self.background.resize(size)
+        scene.add(self.background, self.actor)
 
     @property
     def message(self):
@@ -1192,7 +1214,18 @@ class TextBlock2D(UI):
         size : int
             Text font size.
         """
+        self.actor.SetTextScaleModeToNone()
         self.actor.GetTextProperty().SetFontSize(size)
+
+        if self.scene is not None and self.have_bg:
+            bb_size = np.zeros(2)
+            self.actor.GetSize(self.scene, bb_size)
+            bg_size = self.background.size
+            if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
+                warn("Font size exceeds background bounding box."
+                " Font Size will not be updated.", RuntimeWarning)
+                self.actor.SetTextScaleModeToProp()
+                self.actor.SetPosition2(*bg_size)
 
     @property
     def font_family(self):
@@ -1396,10 +1429,10 @@ class TextBlock2D(UI):
             If None, there no background color.
             Otherwise, background color in RGB.
         """
-        if self.actor.GetTextProperty().GetBackgroundOpacity() == 0:
+        if not self.have_bg:
             return None
 
-        return self.actor.GetTextProperty().GetBackgroundColor()
+        return self.background.color
 
     @background_color.setter
     def background_color(self, color):
@@ -1411,14 +1444,15 @@ class TextBlock2D(UI):
             If None, remove background.
             Otherwise, RGB values (must be between 0-1).
         """
-
         if color is None:
             # Remove background.
-            self.actor.GetTextProperty().SetBackgroundOpacity(0.)
+            self.have_bg = False
+            self.background.set_visibility(False)
 
         else:
-            self.actor.GetTextProperty().SetBackgroundColor(*color)
-            self.actor.GetTextProperty().SetBackgroundOpacity(1.)
+            self.have_bg = True
+            self.background.set_visibility(True)
+            self.background.color = color
 
     def _set_position(self, position):
         """ Set text actor position.
@@ -1429,13 +1463,23 @@ class TextBlock2D(UI):
             The new position. (x, y) in pixels.
         """
         self.actor.SetPosition(*position)
-        if self._background is not None:
-            self._background.SetPosition(*self.actor.GetPosition())
+        self.background.position = position
 
     def _get_size(self):
-        if self._background is not None:
-            return self._background.size
-        return self.font_size * 1.2, self.font_size * 1.2
+        if self.have_bg:
+            return self.background.size
+
+        if not self.actor.GetTextScaleMode():
+            if self.scene is not None:
+                size = np.zeros(2)
+                self.actor.GetSize(self.scene, size)
+                return size
+            else:
+                warn("TextBlock2D must be added to the scene before "
+                "querying its size while TextScaleMode is set to None.", 
+                RuntimeWarning)
+
+        return self.actor.GetPosition2()
 
 
 class TextBox2D(UI):
@@ -3844,7 +3888,7 @@ class ListBox2D(UI):
             total_chars = len(str(choice))
             if total_chars > permissible_chars:
                 excess_chars = total_chars - permissible_chars
-                wrapped_choice = choice[:(-excess_chars) + 3] + "..."
+                wrapped_choice = str(choice)[:(-excess_chars) + 3] + "..."
                 slot.element = choice
                 slot.textblock.message = wrapped_choice
             else:

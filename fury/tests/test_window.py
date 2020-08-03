@@ -5,7 +5,7 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from fury import actor, window, io
-from fury.testing import captured_output, assert_less_equal
+from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
 
 
@@ -125,8 +125,8 @@ def test_deprecated():
         report = window.analyze_renderer(scene)
         npt.assert_equal(report.actors, 0)
         deprecated_warns = [w for w in l_warn
-                            if issubclass(w.category,
-                                          DeprecationWarning)]
+                            if issubclass(w.category, DeprecationWarning)
+                            if "deprecated from version" in str(w.message)]
         npt.assert_equal(len(deprecated_warns), 7)
         npt.assert_(issubclass(l_warn[-1].category, DeprecationWarning))
 
@@ -241,11 +241,11 @@ def test_order_transparent():
 
     red_cube = actor.cube(centers=np.array([[0., 0., 2]]),
                           directions=np.array([[0, 1., 0]]),
-                          colors=np.array([[1, 0., 0]]))
+                          colors=np.array([[255, 0., 0]]))
 
     green_cube = actor.cube(centers=np.array([[0., 0., -2]]),
                             directions=np.array([[0, 1., 0]]),
-                            colors=np.array([[0, 1., 0]]))
+                            colors=np.array([[0, 255., 0]]))
 
     red_cube.GetProperty().SetOpacity(0.2)
     green_cube.GetProperty().SetOpacity(0.2)
@@ -275,7 +275,7 @@ def test_order_transparent():
     # when order transparency is True green should be weaker
     green_weaker = arr[150, 150, 1]
 
-    npt.assert_equal(green_stronger > green_weaker, True)
+    assert_greater(green_stronger, green_weaker)
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."

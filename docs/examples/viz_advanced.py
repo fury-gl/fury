@@ -205,7 +205,7 @@ def build_label(text):
     label.bold = False
     label.italic = False
     label.shadow = False
-    label.background = (0, 0, 0)
+    label.background_color = (0, 0, 0)
     label.color = (1, 1, 1)
 
     return label

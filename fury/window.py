@@ -11,6 +11,7 @@ from vtk.util import numpy_support, colors
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
+from fury.decorators import is_osx
 from fury.deprecator import deprecate_with_version
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
@@ -465,8 +466,10 @@ class ShowManager(object):
         self.window.SetSize(size[0], size[1])
 
         if self.order_transparent:
+            occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples, max_peels, occlusion_ratio)
+                         multi_samples=0, max_peels=max_peels,
+                         occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
             self.style = vtk.vtkInteractorStyleImage()
@@ -657,10 +660,13 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        if self.timers:
+        if is_osx and self.timers:
+            # OSX seems to not destroy correctly timers
+            # segfault 11 appears sometimes if we do not do it manually.
             self.destroy_timers()
         self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
+        self.timers.clear()
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,

@@ -11,8 +11,7 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx
-from fury.primitive import prim_sphere, prim_square, repeat_primitive
-from fury.utils import shallow_copy, rotate, get_actor_from_primitive
+from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -971,15 +970,41 @@ def test_frustum_vertices_faces(interactive=False):
     scene.clear()
 
 
-def test_geometry_actor(interactive=False):
+def test_basic_geometry_actor(interactive=False):
+    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    directions = np.array([[1, 1, 0]])
+    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
+                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
 
+    actor_list = [[actor.cube, {}],
+                  [actor.box, {}],
+                  [actor.square, {}],
+                  [actor.rectangle, {}]]
+
+    for act_func, extra_args in actor_list:
+        for scale in scale_list:
+            scene = window.Scene()
+            g_actor = act_func(centers=centers, colors=colors,
+                               directions=directions, scale=scale,
+                               **extra_args)
+
+            scene.add(g_actor)
+            if interactive:
+                window.show(scene)
+
+            arr = window.snapshot(scene)
+            report = window.analyze_snapshot(arr, colors=colors)
+            msg = 'Failed with {}, scale={}'.format(act_func.__name__, scale)
+            npt.assert_equal(report.objects, 3, err_msg=msg)
+
+
+def test_advanced_geometry_actor(interactive=False):
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
 
     actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
                   [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.box, {'directions': dirs, 'size': (1, 3, 2)}],
-                  [actor.cube, {'directions': dirs}],
                   [actor.cylinder, {'directions': dirs}]]
 
     scene = window.Scene()
@@ -1184,22 +1209,6 @@ def test_grid(_interactive=False):
     npt.assert_equal(report.objects > 6, True)
 
 
-def _sphere(scale=1):
-
-    vertices, faces = prim_sphere('symmetric362')
-
-    from fury.utils import set_polydata_vertices, set_polydata_triangles, vtk
-    polydata = vtk.vtkPolyData()
-
-    set_polydata_vertices(polydata, scale * vertices)
-    set_polydata_triangles(polydata, faces)
-    from fury.utils import set_polydata_normals, normals_from_v_f
-
-    normals = normals_from_v_f(scale * vertices, faces)
-    set_polydata_normals(polydata, normals)
-    return polydata, scale * vertices, normals
-
-
 def test_direct_sphere_mapping():
 
     arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
@@ -1315,25 +1324,6 @@ def test_superquadric_actor(interactive=False):
     res = window.analyze_snapshot(arr, colors=colors.astype(np.uint8),
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True, True])
-
-
-def test_square_actor(interactive=False):
-    scene = window.Scene()
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
-    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    scale = [1, 2, 3]
-
-    verts, faces = prim_square()
-    res = repeat_primitive(verts, faces, centers=centers, colors=colors,
-                           scale=scale)
-
-    big_verts, big_faces, big_colors, _ = res
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    sq_actor.GetProperty().BackfaceCullingOff()
-    scene.add(sq_actor)
-    scene.add(actor.axes())
-    if interactive:
-        window.show(scene)
 
 
 def test_billboard_actor(interactive=False):

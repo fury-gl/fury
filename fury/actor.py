@@ -8,6 +8,7 @@ from vtk.util import numpy_support
 import fury.shaders as fs
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
+from fury.deprecator import deprecated_params
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         numpy_to_vtk_matrix, shallow_copy, rgb_to_vtk,
@@ -1521,27 +1522,94 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
     return actor
 
 
-def box(centers, directions, colors, size=(1, 2, 3), heights=1,
-        vertices=None, faces=None):
-    """Visualize one or many Box with different features.
+def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
+    """Visualize one or many squares with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Square positions
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the square.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Square size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> sq_actor = actor.square(centers, dirs)
+    >>> scene.add(sq_actor)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
+
+    big_verts, big_faces, big_colors, _ = res
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetProperty().BackfaceCullingOff()
+    return sq_actor
+
+
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+              scale=(1, 2, 0)):
+    """Visualize one or many rectangles with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Rectangle positions
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the rectangle.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Rectangle size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> rect_actor = actor.rectangle(centers, dirs)
+    >>> scene.add(rect_actor)
+    >>> # window.show(scene)
+
+    """
+    return square(centers=centers, directions=directions, colors=colors,
+                  scale=scale)
+
+
+@deprecated_params(['size', 'heights'], ['scale', 'scale'],
+                   since='0.6', until='0.8')
+def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
+    """Visualize one or many boxes with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
         Box positions
-    directions : ndarray, shape (N, 3)
+    directions : ndarray, shape (N, 3), optional
         The orientation vector of the box.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    size : tuple (3,)
-        Box lengths on each direction (x, y, z), default(1, 2, 3)
-    heights : ndarray, shape (N)
-        The height of the arrow.
-    vertices : ndarray, shape (N, 3)
-        The point cloud defining the sphere.
-    faces : ndarray, shape (M, 3)
-        If faces is None then a sphere is created based on theta and phi angles
-        If not then a sphere is created with the provided vertices and faces.
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Box size on each direction (x, y), default(1)
 
     Returns
     -------
@@ -1553,46 +1621,34 @@ def box(centers, directions, colors, size=(1, 2, 3), heights=1,
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> heights = np.random.rand(5)
-    >>> box_actor = actor.box(centers, dirs, (1, 1, 1), heights=heights)
+    >>> box_actor = actor.box(centers, dirs, (1, 1, 1))
     >>> scene.add(box_actor)
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkCubeSource() if faces is None else None
+    verts, faces = fp.prim_box()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scale=scale)
 
-    if src is not None:
-        src.SetXLength(size[0])
-        src.SetYLength(size[1])
-        src.SetZLength(size[2])
-
-    actor = repeat_sources(centers=centers, colors=colors,
-                           directions=directions,
-                           active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
-
-    return actor
+    big_verts, big_faces, big_colors, _ = res
+    box_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return box_actor
 
 
-def cube(centers, directions, colors, heights=1,
-         vertices=None, faces=None):
-    """Visualize one or many cube with different features.
+@deprecated_params('heights', 'scale', since='0.6', until='0.8')
+def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
+    """Visualize one or many cubes with different features.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
         Cube positions
-    directions : ndarray, shape (N, 3)
+    directions : ndarray, shape (N, 3), optional
         The orientation vector of the cube.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    heights : ndarray, shape (N)
-        The height of the arrow.
-    vertices : ndarray, shape (N, 3)
-        The point cloud defining the sphere.
-    faces : ndarray, shape (M, 3)
-        If faces is None then a sphere is created based on theta and phi angles
-        If not then a sphere is created with the provided vertices and faces.
+    scale : int or ndarray (N,3) or tuple (3,), optional
+        Cube size, default=1
 
     Returns
     -------
@@ -1604,20 +1660,19 @@ def cube(centers, directions, colors, heights=1,
     >>> scene = window.Scene()
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
-    >>> heights = np.random.rand(5)
-    >>> cube_actor = actor.cube(centers, dirs, (1, 1, 1), heights=heights)
+    >>> cube_actor = actor.cube(centers, dirs)
     >>> scene.add(cube_actor)
     >>> # window.show(scene)
 
     """
     return box(centers=centers, directions=directions, colors=colors,
-               size=(1, 1, 1), heights=heights, vertices=vertices, faces=faces)
+               scale=scale)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,
           tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
           vertices=None, faces=None):
-    """Visualize one or many arrow with differents features.
+    """Visualize one or many arrows with differents features.
 
     Parameters
     ----------
