@@ -4848,7 +4848,7 @@ class TabUI(UI):
             raise IndexError(
         "Tab with index {} does not exist".format(tab_idx))
 
-    def update_element(self, element, coords, anchor="position"):
+    def update_element(self, tab_idx, element, coords, anchor="position"):
         """ Updates element on content panel after checking its existence.
         """
         if tab_idx < self.nb_tabs and tab_idx >= 0:

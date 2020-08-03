@@ -1276,10 +1276,18 @@ def test_ui_tab_ui(interactive=False):
     tab_ui.tabs[1].title = "Tab 2"
     tab_ui.tabs[2].title = "Tab 3"
 
-    tab_ui.tabs[0].add_element(
-        ui.Checkbox(["Option 1", "Option 2"]), (0.5, 0.5))
-    tab_ui.tabs[1].add_element(ui.LineSlider2D(), (0.0, 0.5))
-    tab_ui.tabs[2].add_element(ui.TextBlock2D(), (0.5, 0.5))
+    tab_ui.add_element(0, ui.Checkbox(["Option 1", "Option 2"]), (0.5, 0.5))
+    tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
+    tab_ui.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
+
+    with npt.assert_raises(IndexError):
+        tab_ui.add_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
+
+    with npt.assert_raises(IndexError):
+        tab_ui.remove_element(3, ui.TextBlock2D())
+
+    with npt.assert_raises(IndexError):
+        tab_ui.update_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
 
     npt.assert_equal("Tab 1", tab_ui.tabs[0].title)
     npt.assert_equal("Tab 2", tab_ui.tabs[1].title)
