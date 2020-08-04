@@ -16,7 +16,7 @@ After working on the code, the final image rendered is given below.
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-2.png
 
-I created a PR for the fur texture which is available at <https://github.com/lenixlobo/fury/blob/Dynamic-Texture/docs/experimental/viz_dynamictex.py>
+I created a PR for the fur texture which is available `here <https://github.com/lenixlobo/fury/blob/Dynamic-Texture/docs/experimental/viz_dynamictex.py>`_
 
 
 What is coming up next week?
