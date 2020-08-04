@@ -1,0 +1,37 @@
+May the Force be with you!!
+===========================
+
+.. post:: June 28 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 5th weekly check-in, I will be sharing my progress of pyBullet Physics Engine Integration with FURY. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+Last week due to the ``vtkTextActor`` sizing issue I was not able to continue my work with ``ComboBox2D`` UI element. Thus, I decided to work on the "Physics Engine Integration" part of my project. It took me quite a while to understand the terminology of various methods and algorithms used for detection and physics simulation. Nevertheless, I was able to create a couple of rigid body examples to showcase the integration procedure. For physics calculations we used pyBullet and for rendering we used FURY. In other words, pyBullet will handle the backend part of the simulation and FURY will handle the frontend. I have documented the entire integration process `here <https://docs.google.com/document/d/1XJcG1TL5ZRJZDyi8V76leYZt_maxGp0kOB7OZIxKsTA/edit?usp=sharing>`_ in detail.
+
+Ball Collision Simulation:
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: https://user-images.githubusercontent.com/29832615/85949638-988e5b80-b975-11ea-85ba-16c1f78dec89.gif
+
+For the first example, I created a simple collision between two balls in which two spheres were created both in FURY and pyBullet world and then both the worlds are connected by syncing the position and orientation of the said bodies. Timer callback is created to update the positions and to simulate Physics for each step.
+
+Brick Wall Simulation:
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. image:: https://raw.githubusercontent.com/Nibba2018/testing-fury/master/2020-06-26_21-15-47.gif
+
+For the second example I tried to increase the complexity of the simulations by increasing the number of dynamic objects. Here a brick-wall is created using 100 bricks and then a ball is thrown at it. The rest of it is simulated. The same concepts from the first example is used to render the second one. Timer callback is created to update position of all the objects and to simulate Physics for each step.
+
+What is coming up next week?
+----------------------------
+In the above examples I used a separate actor for each object which is highly un-optimized. Thus, my mentor suggested me to render all the bricks using a single actor, so that the simulation is more optimized. I am not very confident in changing the position and orientation of different objects rendered by a single actor. Therefore, I will have to research a bit more about it. Apart from that I will also try to work on Constraint based simulation examples if possible.
+
+Did you get stuck anywhere?
+---------------------------
+The pyBullet documentation isn't well written for cross rendering, hence it was a bit of a challenge for me to implement the integration. I also faced a problem regarding the offset of actors between the FURY world and pyBullet world. Both use different coordinate systems for rendering and simulation because of which I had a constant offset between the objects during simulations. I was able to fix it by converting one coordinate system to the other. Apart from this I did not have any major issues.
+
+``Thank you for reading, see you next week!!``
