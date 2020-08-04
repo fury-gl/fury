@@ -6,7 +6,7 @@ Improvements in SDF primitives.
    :tags: google
    :category: gsoc
 
-Make sure to check out Project FURY : <https://github.com/fury-gl/fury>
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
 Hey Everyone! 
 This week, Improvements in SDF primitives.
@@ -23,8 +23,7 @@ Rotation based on passed directions:
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-8a.gif
 
-The code for the above render is available at the branch :
-<https://github.com/lenixlobo/fury/tree/SDF-Experiments>
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
 
 What is coming up next week?
 ----------------------------

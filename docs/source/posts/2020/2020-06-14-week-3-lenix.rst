@@ -6,7 +6,7 @@ Raymarching!!
    :tags: google
    :category: gsoc
 
-Make sure to check out Project FURY : <https://github.com/fury-gl/fury>
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
 Hey ! 
 This week, Raymarching!
@@ -17,7 +17,7 @@ This was an exciting week as i got to learn and implement the ray marching algor
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-3.gif
 
-The code for the above render is available at the branch : <https://github.com/lenixlobo/fury/tree/SDF-Experiments>  
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
 
 What is coming up next week?
 ----------------------------

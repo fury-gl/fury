@@ -6,7 +6,7 @@ Merging SDF primitives.
    :tags: google
    :category: gsoc
 
-Make sure to check out Project FURY : <https://github.com/fury-gl/fury>
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
 Hey Everyone! 
 This week, Merging SDF primitives.
@@ -24,9 +24,7 @@ Despite using 100,000 torus the FPS is higher than 60 :
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-9b.gif
 
-I also made a tutorial for new users to get started with 
-
-<https://fury.gl/latest/auto_tutorials/04_shaders/viz_sdfactor.html#sphx-glr-auto-tutorials-04-shaders-viz-sdfactor-py>
+I also made a tutorial for new users to get started `here <https://fury.gl/latest/auto_tutorials/04_shaders/viz_sdfactor.html#sphx-glr-auto-tutorials-04-shaders-viz-sdfactor-py>`_
 
 What is coming up next week?
 ----------------------------

@@ -6,7 +6,7 @@ Spherical harmonics, Continued.
    :tags: google
    :category: gsoc
 
-Make sure to check out Project FURY : https://github.com/fury-gl/fury
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
 Hey ! 
 Spherical harmonics, Continued!
@@ -19,8 +19,7 @@ The output of the implementation is shown below :
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-6.gif
 
 While , i was able to complete the task the frame rate for the generated output was quite lower than expected. 
-The code for the above render is available at the branch :
-<https://github.com/lenixlobo/fury/tree/Spherical-Harmonics>
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/Spherical-Harmonics>`_
 
 What is coming up next week?
 ----------------------------

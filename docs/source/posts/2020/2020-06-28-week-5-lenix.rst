@@ -6,7 +6,7 @@ Spherical harmonics
    :tags: google
    :category: gsoc
 
-Make sure to check out Project FURY : <https://github.com/fury-gl/fury>
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
 Hey ! 
 This week, Spherical harmonics!
