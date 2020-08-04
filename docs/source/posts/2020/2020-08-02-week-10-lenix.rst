@@ -17,8 +17,8 @@ After merging the SDF actor last week , the mentors and I decided to work on ano
 
 
 The output for the same is given below:
-.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-10a.gif
 
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-10a.gif
 
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-10b.gif
