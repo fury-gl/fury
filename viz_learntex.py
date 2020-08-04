@@ -11,7 +11,7 @@ dragon = utils.get_actor_from_polymapper(dragon)
 
 tex = vtk.vtkTexture()
 imgReader = vtk.vtkJPEGReader()
-imgReader.SetFileName('sugar.jpg')
+imgReader.SetFileName('starry.jpg')
 tex.SetInputConnection(imgReader.GetOutputPort())
 dragon.SetTexture(tex)
 
@@ -33,11 +33,12 @@ mapper.AddShaderReplacement(
     "//VTK::PositionVC::Impl",  # replace the normal block
     True,  # before the standard replacements
     """
+    
     //VTK::PositionVC::Impl  // we still want the default
     vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
-    TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
+    //TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
     //TexCoords.xyz = normalMC;
-    //TexCoords.xyz = vertexMC.xyz;
+    TexCoords.xyz = vertexMC.xyz;
     """,
     False  # only do it once
 )
@@ -49,8 +50,22 @@ mapper.SetFragmentShaderCode(
     in vec3 TexCoords;
     uniform sampler2D texture_0;
     uniform vec2 tcoordMC;
+    
+    const float offset = 1.0 / 64.0;
+
     void main() {
-        gl_FragData[0] = texture(texture_0, TexCoords.xy);
+    	vec4 col = texture(texture_0, TexCoords.xy);
+    	if(col.a > 0.5)
+    		gl_FragData[0] = col;
+    	else
+    	{
+    		float a = texture(texture_0, vec2(TexCoords.x + offset, TexCoords.y) ).a + texture(texture_0, vec2(TexCoords.x, TexCoords.y - offset) ).a + texture(texture_0, vec2(TexCoords.x - offset, TexCoords.y) ).a + texture(texture_0, vec2(TexCoords.x, TexCoords.y + offset) ).a;
+    		if(col.a < 1.0 && a > 0.0)
+    			gl_FragData[0] = vec4(0.0, 0.0, 0.0, 0.8);
+    		else
+    			gl_FragData[0] = col;
+    	}
+        //gl_FragData[0] = texture(texture_0, TexCoords.xy);
         //gl_FragData[0] = texture(texture_0, tcoordMC.xy);
     }
     """
