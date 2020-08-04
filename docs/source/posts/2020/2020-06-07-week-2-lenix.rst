@@ -1,0 +1,30 @@
+First week of coding!!
+==================
+
+.. post:: June 7 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Hey everyone!
+This week : Geometry Shaders!
+
+What did you do this week?
+--------------------------
+To get a better understanding of the working of the shader pipeline, the mentors assigned me a challenging task of implementing a Dynamic Texture. The basic idea is to create a 'volumetric' texture by stacking layer of textures. Such an example is an ideal use case for a geometry shader. Since i had not much prior experience with Geometry shaders before, i spent the initial days going through existing implementations of similar ideas in OpenGL/DirectX.  
+After working on the code, the final image rendered is given below. 
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-2.png
+
+I created a PR for the fur texture which is available `here <https://github.com/lenixlobo/fury/blob/Dynamic-Texture/docs/experimental/viz_dynamictex.py>`_
+
+
+What is coming up next week?
+----------------------------
+The current PR has some minor bugs which need to be fixed. The next step would be to review the code and find the solutions for the bugs. Also we are looking into ideas on optimization for faster rendering time.
+
+The next week will be spent looking into ray marching algorithms and adding them to the current code base as possible alternatives for FURY Actor primitives.
+
+Did you get stuck anywhere?
+---------------------------
+Nothing major.

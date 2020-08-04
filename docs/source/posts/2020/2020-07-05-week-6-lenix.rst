@@ -1,0 +1,30 @@
+Spherical harmonics, Continued.
+==================================
+
+.. post:: July 5 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+Spherical harmonics, Continued!
+
+What did you do this week?
+--------------------------
+Last week I added a basic implementation of Spherical harmonics based actors. However, the implementation was quite restricted and we needed to add support for more accurate generation of spherical harmonics. So the task assigned this week was to implement the spherical harmonics function within the shader rather than passing variables as uniforms. This was quite an challenging task as it involved understanding of mathematical formulae and implementing them using existing GLSL functions.
+The output of the implementation is shown below :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-6.gif
+
+While , i was able to complete the task the frame rate for the generated output was quite lower than expected. 
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/Spherical-Harmonics>`_
+
+What is coming up next week?
+----------------------------
+The next task is to discuss possible performance improvements with the mentors and also look into alternative ideas to add spherical harmonics as actors in FURY.
+
+Did you get stuck anywhere?
+---------------------------
+Spherical harmonics involve a lot of complicated math behind the hood as a result the generated output has a very poor frame rate. Currently, we are looking into improving this.

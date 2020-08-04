@@ -1,0 +1,23 @@
+Weekly Check-in #1
+==================
+
+.. post:: May 30 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Welcome to my GSoC Blog!!!
+--------------------------
+Hey everyone!
+This is my blog for this summer’s GSoC @ PSF
+I am Lenix Lobo, an undergraduate student from India, and this summer I will be working with project Fury under the umbrella of the Python Software foundation.  I will be working on improving the current shader framework.
+
+What did you do during the Community Bonding Period?
+----------------------------------------------------
+Since most of the places including my university are closed due to the pandemic outbreak, I decided to get a head start and start with the project early. During the community bonding period, I had video conference meetings with my mentors scheduled every week on Wednesday. During these meetings i interacted with the mentors to have a coherent understanding of how the project design and implementation will be managed over the course of the entire period. 
+
+Since my project involves a lot of theoretical understanding of concepts such as ray marching, I spent the period going through the theory of each topic.This week also involved going through the documentation for shaders used in VTK. 
+
+What is coming up next week?
+----------------------------
+The next task assigned to me is to go through the theory of geometry shaders and to create a example using the same. 
