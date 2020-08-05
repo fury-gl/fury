@@ -12,76 +12,6 @@ First, some imports.
 from fury import actor, ui, window
 import numpy as np
 
-########################################################################
-# Add an arrow to the scene.
-# =========================
-
-
-def arrow_maker(color=(1, 1, 1), start_point=(0, 25, 0),
-                end_point=(40, 25, 0), shaft_resolution=50,
-                tip_resolution=50):
-
-    # Create an arrow.
-    arrow = window.vtk.vtkArrowSource()
-    arrow.SetShaftResolution(shaft_resolution)
-    arrow.SetTipResolution(tip_resolution)
-
-    # Compute a basis
-    normalizedX = [0 for i in range(3)]
-    normalizedY = [0 for i in range(3)]
-    normalizedZ = [0 for i in range(3)]
-
-    # The X axis is a vector from start to end
-    math = window.vtk.vtkMath()
-    math.Subtract(end_point, start_point, normalizedX)
-    length = math.Norm(normalizedX)
-    math.Normalize(normalizedX)
-
-    # The Z axis is an arbitrary vector cross X
-    arbitrary = [60, 10, 0]
-    math.Cross(normalizedX, arbitrary, normalizedZ)
-    math.Normalize(normalizedZ)
-
-    # The Y axis is Z cross X
-    math.Cross(normalizedZ, normalizedX, normalizedY)
-    matrix = window.vtk.vtkMatrix4x4()
-
-    # Create the direction cosine matrix
-    matrix.Identity()
-    for i in range(3):
-        matrix.SetElement(i, 0, normalizedX[i])
-        matrix.SetElement(i, 1, normalizedY[i])
-        matrix.SetElement(i, 2, normalizedZ[i])
-
-    # Apply the transforms
-    transform = window.vtk.vtkTransform()
-    transform.Translate(start_point)
-    transform.Concatenate(matrix)
-    transform.Scale(length, length, length)
-
-    # Transform the polydata
-    transformPD = window.vtk.vtkTransformPolyDataFilter()
-    transformPD.SetTransform(transform)
-    transformPD.SetInputConnection(arrow.GetOutputPort())
-
-    # Create a mapper and actor for the arrow
-    arrow_mapper = window.vtk.vtkPolyDataMapper()
-    arrow_actor = window.vtk.vtkActor()
-    arrow_actor.SetUserMatrix(transform.GetMatrix())
-
-    if window.vtk.VTK_MAJOR_VERSION <= 5:
-        arrow_mapper.SetInput(arrow.GetOutput())
-    else:
-        arrow_mapper.SetInputConnection(arrow.GetOutputPort())
-
-    if color is not None:
-        arrow_actor.GetProperty().SetColor(color)
-
-    arrow_actor.SetMapper(arrow_mapper)
-
-    return arrow_actor
-
-
 # Get difference between two lists.
 def sym_diff(l1, l2):
     return list(set(l1).symmetric_difference(set(l2)))
@@ -120,9 +50,10 @@ cone = actor.cone(centers=np.array([[-20, -0.5, 0]]),
                   colors=np.array([[0, 0, 1]]),
                   heights=20, resolution=100)
 
-arrow = arrow_maker(color=(0, 0, 1), start_point=(0, 25, 0),
-                    end_point=(40, 25, 0), shaft_resolution=50,
-                    tip_resolution=50)
+arrow = actor.arrow(centers=np.array([[0, 25, 0]]),
+                    colors=np.array([[0, 0, 1]]),
+                    directions=np.array([[1, 0, 0]]),
+                    heights=40, resolution=100)
 
 
 figure_dict = {'cube': cube, 'sphere': sphere, 'cone': cone, 'arrow': arrow}
@@ -151,7 +82,7 @@ current_size = (1000, 1000)
 show_manager = window.ShowManager(size=current_size,
                                   title="FURY Checkbox Example")
 
-show_manager.scene.add(cube)
+show_manager.scene.add(cube, actor.axes())
 show_manager.scene.add(sphere)
 show_manager.scene.add(cone)
 show_manager.scene.add(arrow)
