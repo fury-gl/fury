@@ -10,13 +10,13 @@ using checkboxes.
 First, some imports.
 """
 
-from fury import actor, ui, window
+from fury import actor, ui, window, utils
 import numpy as np
 
 ###############################################################################
 # We create the corresponding object actors for cube, sphere, cone and arrow.
 
-cube = actor.box(centers=np.array([[15, 0, 0]]),
+cube = actor.cube(centers=np.array([[15, 0, 0]]),
                  colors=np.array([[0, 0, 255]]),
                  scale=np.array([[20, 20, 20]]),
                  directions=np.array([[0, 0, 1]]))
@@ -36,8 +36,8 @@ arrow = actor.arrow(centers=np.array([[0, 25, 0]]),
                     heights=40, resolution=100)
 
 ###############################################################################
-# We perform symmetric difference to determine which objects to be rendered.
-# We also define a couple of methods to render visibility and color.
+# We perform symmetric difference to determine the unchecked options.
+# We also define methods to render visibility and color.
 
 # Get difference between two lists.
 def sym_diff(l1, l2):
@@ -55,19 +55,45 @@ def set_figure_visiblity(checkboxes):
         figure_dict[invisible].SetVisibility(False)
 
 
+def update_colors(color_array):
+    for name, figure in figure_dict.items():
+        vcolors = utils.colors_from_actor(figure)
+        if vcolors is not None: vcolors[:] = color_array
+        else:
+            print(name)
+        utils.update_actor(figure)
+
 # Toggle colors of the figures
-def toggle_color(radio):
-    color = options[radio.checked_labels[0]]
-    for _, figure in figure_dict.items():
-        figure.GetProperty().SetColor(*color)
+def toggle_color(checkboxes):
+    colors = checkboxes.checked_labels
+
+    color_array = np.array([0, 0, 0])
+
+    for col in colors:
+        if col == "Red":
+            color_array[0] = 255
+        elif col == "Green":
+            color_array[1] = 255
+        else:
+            color_array[2] = 255
+
+    update_colors(color_array)
+
+
+###############################################################################
+# We define a dictionary to store the actors with thier names as keys.
+# A checkbox is created with actor names as it's options.
 
 figure_dict = {'cube': cube, 'sphere': sphere, 'cone': cone, 'arrow': arrow}
 check_box = ui.Checkbox(list(figure_dict), list(figure_dict),
                         padding=1, font_size=18, font_family='Arial',
                         position=(400, 85))
 
+###############################################################################
+# A similar checkbox is created for changing colors.
+
 options = {'Blue': (0, 0, 1), 'Red': (1, 0, 0), 'Green': (0, 1, 0)}
-color_toggler = ui.RadioButton(list(options), checked_labels=['Blue'],
+color_toggler = ui.Checkbox(list(options), checked_labels=['Blue'],
                                padding=1, font_size=16,
                                font_family='Arial', position=(600, 120))
 
