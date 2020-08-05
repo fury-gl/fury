@@ -13,33 +13,6 @@ from fury import actor, ui, window
 import numpy as np
 
 ########################################################################
-# Add a sphere to the scene.
-# =========================
-
-
-def sphere_maker(color=(1, 1, 1), radius=5.0, center=(0, 0, 0),
-                 theta_resolution=360, phi_resolution=360):
-    sphere = window.vtk.vtkSphereSource()
-    sphere.SetCenter(*center)
-    sphere.SetRadius(radius)
-    sphere.SetThetaResolution(theta_resolution)
-    sphere.SetPhiResolution(phi_resolution)
-
-    sphere_mapper = window.vtk.vtkPolyDataMapper()
-    if window.vtk.VTK_MAJOR_VERSION <= 5:
-        sphere_mapper.SetInput(sphere.GetOutput())
-    else:
-        sphere_mapper.SetInputConnection(sphere.GetOutputPort())
-
-    sphere_actor = window.vtk.vtkActor()
-    sphere_actor.SetMapper(sphere_mapper)
-    if color is not None:
-        sphere_actor.GetProperty().SetColor(color)
-
-    return sphere_actor
-
-
-########################################################################
 # Add a cone to the scene.
 # =======================
 
@@ -166,8 +139,10 @@ cube = actor.box(centers=np.array([[15, 0, 0]]),
                  scale=np.array([[20, 20, 20]]),
                  directions=np.array([[0, 0, 1]]))
 
-sphere = sphere_maker(color=(0, 0, 1), radius=11.0, center=(50, 0, 0),
-                      theta_resolution=360, phi_resolution=360)
+sphere = actor.sphere(centers=np.array([[50, 0, 0]]),
+                      colors=np.array([[0, 0, 1]]),
+                      radii=11.0, theta=360, phi=360)
+
 cone = cone_maker(color=(0, 0, 1), radius=10.0, center=(-20, -0.5, 0),
                   height=20)
 arrow = arrow_maker(color=(0, 0, 1), start_point=(0, 25, 0),
