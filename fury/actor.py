@@ -599,7 +599,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("Colors")
+    poly_mapper.SelectColorArray("colors")
     poly_mapper.Update()
 
     # Color Scale with a lookup table
@@ -711,7 +711,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("Colors")
+    poly_mapper.SelectColorArray("colors")
     poly_mapper.Update()
 
     if depth_cue:
