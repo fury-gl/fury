@@ -3,15 +3,26 @@ from fury import window, actor, ui, io, utils
 from fury.data.fetcher import fetch_viz_models, read_viz_models
 import vtk
 
+scene = window.Scene()
+
 #model = read_viz_models('utah.obj')
 dragon = io.load_polydata('dragon.obj')
 dragon = utils.get_polymapper_from_polydata(dragon)
 dragon = utils.get_actor_from_polymapper(dragon)
 
+dragon.SetScale(6.0, 6.0, 6.0)
+dragon.GetProperty().SetSpecular(0.8);
+dragon.GetProperty().SetSpecularPower(20);
+dragon.GetProperty().SetDiffuse(0.1);
+dragon.GetProperty().SetAmbient(0.1);
+dragon.GetProperty().SetDiffuseColor(1.0, 0.0, 0.4);
+dragon.GetProperty().SetAmbientColor(0.4, 0.0, 1.0);
+
+scene.add(dragon)
 
 tex = vtk.vtkTexture()
 imgReader = vtk.vtkJPEGReader()
-imgReader.SetFileName('starry.jpg')
+imgReader.SetFileName('cloudsb.jpg')
 tex.SetInputConnection(imgReader.GetOutputPort())
 dragon.SetTexture(tex)
 
@@ -36,44 +47,48 @@ mapper.AddShaderReplacement(
     
     //VTK::PositionVC::Impl  // we still want the default
     vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
-    //TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
+    TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
     //TexCoords.xyz = normalMC;
-    TexCoords.xyz = vertexMC.xyz;
+    //TexCoords.xyz = vertexMC.xyz;
     """,
     False  # only do it once
 )
 
-mapper.SetFragmentShaderCode(
+mapper.AddShaderReplacement(
+    vtk.vtkShader.Fragment,
+    "//VTK::Light::Dec",
+    True,
     """
-    //VTK::System::Dec  // always start with this line
-    //VTK::Output::Dec  // always have this line in your FS
-    in vec3 TexCoords;
-    uniform sampler2D texture_0;
-    uniform vec2 tcoordMC;
-    
-    const float offset = 1.0 / 64.0;
+    //VTK::Light::Dec
 
-    void main() {
-    	vec4 col = texture(texture_0, TexCoords.xy);
-    	if(col.a > 0.5)
-    		gl_FragData[0] = col;
-    	else
-    	{
-    		float a = texture(texture_0, vec2(TexCoords.x + offset, TexCoords.y) ).a + texture(texture_0, vec2(TexCoords.x, TexCoords.y - offset) ).a + texture(texture_0, vec2(TexCoords.x - offset, TexCoords.y) ).a + texture(texture_0, vec2(TexCoords.x, TexCoords.y + offset) ).a;
-    		if(col.a < 1.0 && a > 0.0)
-    			gl_FragData[0] = vec4(0.0, 0.0, 0.0, 0.8);
-    		else
-    			gl_FragData[0] = col;
-    	}
-        //gl_FragData[0] = texture(texture_0, TexCoords.xy);
-        //gl_FragData[0] = texture(texture_0, tcoordMC.xy);
-    }
+    uniform sampler2D texture_0;
+    in vec3 TexCoords;
+    """,
+    False
+    )
+
+
+mapper.AddShaderReplacement(
+    vtk.vtkShader.Fragment,
+    "//VTK::Light::Impl",
+    True,
     """
+    //VTK::Light::Impl
+    float phix = length(vec2(TexCoords.x, TexCoords.z));
+    vec3 skyColor = texture(texture_0, vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927 + 0.5, atan(TexCoords.y,phix)/3.1415927 + 0.5)).xyz;
+
+    gl_FragData[0] = vec4(ambientColor + diffuse + specular + specularColor*skyColor, opacity);
+    
+    """,
+    False
 )
 
+world = vtk.vtkSkybox()
+world.SetProjectionToSphere()
+world.SetTexture(tex)
+scene.add(world)
 
-scene = window.Scene()
-scene.background((1.0, 0.8, 0.8))
-scene.add(dragon)
+showm = window.ShowManager(scene)
 
-window.show(scene)
+showm.initialize()
+showm.start()
