@@ -17,9 +17,9 @@ import numpy as np
 # We create the corresponding object actors for cube, sphere, cone and arrow.
 
 cube = actor.cube(centers=np.array([[15, 0, 0]]),
-                 colors=np.array([[0, 0, 255]]),
-                 scale=np.array([[20, 20, 20]]),
-                 directions=np.array([[0, 0, 1]]))
+                  colors=np.array([[0, 0, 255]]),
+                  scale=np.array([[20, 20, 20]]),
+                  directions=np.array([[0, 0, 1]]))
 
 sphere = actor.sphere(centers=np.array([[50, 0, 0]]),
                       colors=np.array([[0, 0, 1]]),
@@ -60,7 +60,8 @@ def update_colors(color_array):
         vcolors = utils.colors_from_actor(figure)
         if vcolors is not None: vcolors[:] = color_array
         else:
-            print(name)
+            print("Not able to update cube due to bug.")
+
         utils.update_actor(figure)
 
 # Toggle colors of the figures
@@ -134,7 +135,7 @@ show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 150))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
