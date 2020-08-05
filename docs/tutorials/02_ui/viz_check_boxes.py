@@ -125,13 +125,6 @@ show_manager.scene.add(arrow)
 show_manager.scene.add(check_box)
 show_manager.scene.add(color_toggler)
 
-cube.SetVisibility(True)
-sphere.SetVisibility(True)
-cone.SetVisibility(True)
-arrow.SetVisibility(True)
-check_box.set_visibility(True)
-color_toggler.set_visibility(True)
-
 ###############################################################################
 # Set camera for better visualization
 
