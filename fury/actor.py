@@ -1001,7 +1001,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         deep=True,
         array_type=vtk.VTK_UNSIGNED_CHAR)
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
@@ -1195,7 +1195,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         deep=True,
         array_type=vtk.VTK_UNSIGNED_CHAR)
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
