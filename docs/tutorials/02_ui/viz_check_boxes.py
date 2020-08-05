@@ -9,32 +9,8 @@ create a cube and control its color using radio buttons.
 First, some imports.
 """
 
-from fury import ui, window
-
-########################################################################
-# Add a cube to the scene.
-# =======================
-
-
-def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
-    cube = window.vtk.vtkCubeSource()
-    cube.SetXLength(size[0])
-    cube.SetYLength(size[1])
-    cube.SetZLength(size[2])
-
-    if center is not None:
-        cube.SetCenter(*center)
-
-    cube_mapper = window.vtk.vtkPolyDataMapper()
-    cube_mapper.SetInputConnection(cube.GetOutputPort())
-    cube_actor = window.vtk.vtkActor()
-    cube_actor.SetMapper(cube_mapper)
-
-    if color is not None:
-        cube_actor.GetProperty().SetColor(color)
-
-    return cube_actor
-
+from fury import actor, ui, window
+import numpy as np
 
 ########################################################################
 # Add a sphere to the scene.
@@ -185,7 +161,11 @@ def toggle_color(radio):
         figure.GetProperty().SetColor(*color)
 
 
-cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
+cube = actor.box(centers=np.array([[15, 0, 0]]),
+                 colors=np.array([[0, 0, 255]]),
+                 scale=np.array([[20, 20, 20]]),
+                 directions=np.array([[0, 0, 1]]))
+
 sphere = sphere_maker(color=(0, 0, 1), radius=11.0, center=(50, 0, 0),
                       theta_resolution=360, phi_resolution=360)
 cone = cone_maker(color=(0, 0, 1), radius=10.0, center=(-20, -0.5, 0),
@@ -242,7 +222,7 @@ show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 150))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
-interactive = False
+interactive = True
 
 if interactive:
     show_manager.start()
