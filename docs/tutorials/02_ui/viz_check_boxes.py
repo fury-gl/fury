@@ -3,8 +3,9 @@
 Figure and Color Control using Check boxes and Radio Buttons
 ============================================================
 
-This example shows how to use the UI API. We will demonstrate how to
-create a cube and control its color using radio buttons.
+This example shows how to use the CheckBox UI API. We will demonstrate how to
+create a cube, sphere, cone and arrow and control its color and visibility
+using checkboxes.
 
 First, some imports.
 """
@@ -12,29 +13,8 @@ First, some imports.
 from fury import actor, ui, window
 import numpy as np
 
-# Get difference between two lists.
-def sym_diff(l1, l2):
-    return list(set(l1).symmetric_difference(set(l2)))
-
-
-# Set Visiblity of the figures
-def set_figure_visiblity(checkboxes):
-    checked = checkboxes.checked_labels
-    unchecked = sym_diff(list(figure_dict), checked)
-
-    for visible in checked:
-        figure_dict[visible].SetVisibility(True)
-
-    for invisible in unchecked:
-        figure_dict[invisible].SetVisibility(False)
-
-
-# Toggle colors of the figures
-def toggle_color(radio):
-    color = options[radio.checked_labels[0]]
-    for _, figure in figure_dict.items():
-        figure.GetProperty().SetColor(*color)
-
+###############################################################################
+# We create the corresponding object actors for cube, sphere, cone and arrow.
 
 cube = actor.box(centers=np.array([[15, 0, 0]]),
                  colors=np.array([[0, 0, 255]]),
@@ -55,6 +35,31 @@ arrow = actor.arrow(centers=np.array([[0, 25, 0]]),
                     directions=np.array([[1, 0, 0]]),
                     heights=40, resolution=100)
 
+###############################################################################
+# We perform symmetric difference to determine which objects to be rendered.
+# We also define a couple of methods to render visibility and color.
+
+# Get difference between two lists.
+def sym_diff(l1, l2):
+    return list(set(l1).symmetric_difference(set(l2)))
+
+# Set Visiblity of the figures
+def set_figure_visiblity(checkboxes):
+    checked = checkboxes.checked_labels
+    unchecked = sym_diff(list(figure_dict), checked)
+
+    for visible in checked:
+        figure_dict[visible].SetVisibility(True)
+
+    for invisible in unchecked:
+        figure_dict[invisible].SetVisibility(False)
+
+
+# Toggle colors of the figures
+def toggle_color(radio):
+    color = options[radio.checked_labels[0]]
+    for _, figure in figure_dict.items():
+        figure.GetProperty().SetColor(*color)
 
 figure_dict = {'cube': cube, 'sphere': sphere, 'cone': cone, 'arrow': arrow}
 check_box = ui.Checkbox(list(figure_dict), list(figure_dict),
@@ -82,7 +87,7 @@ current_size = (1000, 1000)
 show_manager = window.ShowManager(size=current_size,
                                   title="FURY Checkbox Example")
 
-show_manager.scene.add(cube, actor.axes())
+show_manager.scene.add(cube)
 show_manager.scene.add(sphere)
 show_manager.scene.add(cone)
 show_manager.scene.add(arrow)
