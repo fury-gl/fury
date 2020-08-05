@@ -13,34 +13,6 @@ from fury import actor, ui, window
 import numpy as np
 
 ########################################################################
-# Add a cone to the scene.
-# =======================
-
-
-def cone_maker(color=(1, 1, 1), radius=5.0, center=(0, 0, 0),
-               height=15, resolution=100, direction=(0, 5, 0)):
-    cone = window.vtk.vtkConeSource()
-    cone.SetResolution(resolution)
-    cone.SetCenter(*center)
-    cone.SetRadius(radius)
-    cone.SetHeight(height)
-
-    cone.SetDirection(*direction)
-    cone_mapper = window.vtk.vtkPolyDataMapper()
-    if window.vtk.VTK_MAJOR_VERSION <= 5:
-        cone_mapper.SetInput(cone.GetOutput())
-    else:
-        cone_mapper.SetInputConnection(cone.GetOutputPort())
-
-    cone_actor = window.vtk.vtkActor()
-    cone_actor.SetMapper(cone_mapper)
-
-    if color is not None:
-        cone_actor.GetProperty().SetColor(color)
-    return cone_actor
-
-
-########################################################################
 # Add an arrow to the scene.
 # =========================
 
@@ -143,8 +115,11 @@ sphere = actor.sphere(centers=np.array([[50, 0, 0]]),
                       colors=np.array([[0, 0, 1]]),
                       radii=11.0, theta=360, phi=360)
 
-cone = cone_maker(color=(0, 0, 1), radius=10.0, center=(-20, -0.5, 0),
-                  height=20)
+cone = actor.cone(centers=np.array([[-20, -0.5, 0]]),
+                  directions=np.array([[0, 1, 0]]),
+                  colors=np.array([[0, 0, 1]]),
+                  heights=20, resolution=100)
+
 arrow = arrow_maker(color=(0, 0, 1), start_point=(0, 25, 0),
                     end_point=(40, 25, 0), shaft_resolution=50,
                     tip_resolution=50)
