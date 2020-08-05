@@ -560,8 +560,8 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
     if isinstance(colors, np.ndarray):
-        set_polydata_colors(pd, colors)
-    if isinstance(normals, np.ndarray, array_name="colors"):
+        set_polydata_colors(pd, colors, array_name="colors")
+    if isinstance(normals, np.ndarray):
         set_polydata_normals(pd, normals)
 
     current_actor = get_actor_from_polydata(pd)
