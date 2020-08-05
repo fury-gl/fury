@@ -39,9 +39,11 @@ arrow = actor.arrow(centers=np.array([[0, 25, 0]]),
 # We perform symmetric difference to determine the unchecked options.
 # We also define methods to render visibility and color.
 
+
 # Get difference between two lists.
 def sym_diff(l1, l2):
     return list(set(l1).symmetric_difference(set(l2)))
+
 
 # Set Visiblity of the figures
 def set_figure_visiblity(checkboxes):
@@ -58,11 +60,13 @@ def set_figure_visiblity(checkboxes):
 def update_colors(color_array):
     for name, figure in figure_dict.items():
         vcolors = utils.colors_from_actor(figure)
-        if vcolors is not None: vcolors[:] = color_array
+        if vcolors is not None:
+            vcolors[:] = color_array
         else:
             print("Not able to update cube due to bug.")
 
         utils.update_actor(figure)
+
 
 # Toggle colors of the figures
 def toggle_color(checkboxes):
@@ -95,8 +99,8 @@ check_box = ui.Checkbox(list(figure_dict), list(figure_dict),
 
 options = {'Blue': (0, 0, 1), 'Red': (1, 0, 0), 'Green': (0, 1, 0)}
 color_toggler = ui.Checkbox(list(options), checked_labels=['Blue'],
-                               padding=1, font_size=16,
-                               font_family='Arial', position=(600, 120))
+                            padding=1, font_size=16,
+                            font_family='Arial', position=(600, 120))
 
 
 check_box.on_change = set_figure_visiblity

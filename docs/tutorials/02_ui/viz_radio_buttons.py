@@ -29,12 +29,14 @@ color_toggler = ui.RadioButton(list(options), checked_labels=['Blue'],
                                padding=1, font_size=16,
                                font_family='Arial', position=(200, 200))
 
+
 # A callback which will set the values for the box
 def toggle_color(radio):
     vcolors = utils.colors_from_actor(sphere)
     color = options[radio.checked_labels[0]]
     vcolors[:] = np.array(color)
     utils.update_actor(sphere)
+
 
 color_toggler.on_change = toggle_color
 
