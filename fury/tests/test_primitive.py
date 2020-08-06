@@ -10,7 +10,8 @@ def test_vertices_primitives():
                     (fp.prim_box, (8, 3), -.5, .5, 0),
                     (fp.prim_tetrahedron, (4, 3), -.5, .5, 0),
                     (fp.prim_star, (10, 3), -3, 3, -0.0666666666),
-                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0)]
+                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0),
+                    (fp.prim_frustum, (8, 3), -0.5, 0.5, 0)]
 
     for func, shape, e_min, e_max, e_mean in l_primitives:
         vertices, _ = func()
@@ -40,20 +41,12 @@ def test_vertices_primitives_octagonalprism():
     # Testing the default vertices of the primitive octagonal prism.
     vertices, _ = fp.prim_octagonalprism()
     shape = (16, 3)
+    two = (1 + float('{:.7f}'.format(math.sqrt(2)))) / 4
+
     npt.assert_equal(vertices.shape, shape)
     npt.assert_equal(np.mean(vertices), 0)
-    npt.assert_equal(vertices.min(), -(1+float('{:.7f}'.format(math.sqrt(2)))))
-    npt.assert_equal(vertices.max(), (1+float('{:.7f}'.format(math.sqrt(2)))))
-
-
-def test_vertices_primitives_frustum():
-    # Testing the default vertices of the primitive frustum sqaure pyramid.
-    vertices, _ = fp.prim_frustum()
-    shape = (8, 3)
-    npt.assert_equal(vertices.shape, shape)
-    npt.assert_equal(np.mean(vertices), 0)
-    npt.assert_equal(vertices.min(), -1)
-    npt.assert_equal(vertices.max(), 1)
+    npt.assert_equal(vertices.min(), -two)
+    npt.assert_equal(vertices.max(), two)
 
 
 def test_triangles_primitives():

@@ -46,7 +46,7 @@ def faces_from_sphere_vertices(vertices):
 
 
 def repeat_primitive_function(func, centers, func_args=[],
-                              directions=(1, 0, 0), colors=(255, 0, 0),
+                              directions=(1, 0, 0), colors=(1, 0, 0),
                               scale=1):
     """Repeat Vertices and triangles of a specific primitive function.
 
@@ -93,7 +93,7 @@ def repeat_primitive_function(func, centers, func_args=[],
 
 
 def repeat_primitive(vertices, faces, centers, directions=None,
-                     colors=(255, 0, 0), scale=1, have_tiled_verts=False):
+                     colors=(1, 0, 0), scale=1, have_tiled_verts=False):
     """Repeat Vertices and triangles of a specific primitive shape.
 
     It could be seen as a glyph.
@@ -158,8 +158,9 @@ def repeat_primitive(vertices, faces, centers, directions=None,
                                                 1))
 
     def normalize_input(arr, arr_name=''):
-        if isinstance(arr, (tuple, list, np.ndarray)) and len(arr) == 3 and \
-                not all(isinstance(i, (list, tuple, np.ndarray)) for i in arr):
+        if isinstance(arr, (tuple, list, np.ndarray)) and len(arr) in [3, 4] \
+                and not all(isinstance(i, (list, tuple, np.ndarray))
+                            for i in arr):
             return np.array([arr] * centers.shape[0])
         elif isinstance(arr, np.ndarray) and len(arr) == 1:
             return np.repeat(arr, centers.shape[0], axis=0)
@@ -175,6 +176,7 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     # update colors
     colors = normalize_input(colors, 'colors')
     big_colors = np.repeat(colors, unit_verts_size, axis=0)
+    big_colors *= 255
 
     # update orientations
     directions = normalize_input(directions, 'directions')
@@ -651,6 +653,7 @@ def prim_octagonalprism():
                           [9, 10, 11],
                           [10, 13, 14],
                           [13, 10, 9]], dtype='u8')
+    vertices /= 4
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
 
@@ -686,5 +689,6 @@ def prim_frustum():
                          [1, 6, 5],
                          [5, 0, 1],
                          [0, 5, 4]], dtype='u8')
+    vertices /= 2
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
