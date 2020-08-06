@@ -446,7 +446,8 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
     """
     vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
                                             array_type=vtk.VTK_UNSIGNED_CHAR)
-    vtk_colors.SetNumberOfComponents(3)
+    nb_components = colors.shape[1]
+    vtk_colors.SetNumberOfComponents(nb_components)
     vtk_colors.SetName(array_name)
     polydata.GetPointData().SetScalars(vtk_colors)
     return polydata
