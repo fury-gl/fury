@@ -540,9 +540,9 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         XYZ coordinates of the object
     triangles: (Nx3) ndarray
         Indices into vertices; forms triangular faces.
-    colors: (Nx3) ndarray
-        N is equal to the number of lines. Every line is coloured with a
-        different RGB color.
+    colors: (Mx3) or (Mx4) ndarray
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        M is equal to the number of vertices.
     normals: (Nx3) ndarray
         normals, represented as 2D ndarrays (Nx3) (one per vertex)
     backface_culling: bool
@@ -561,6 +561,13 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
     if isinstance(colors, np.ndarray):
+        if len(colors) != len(vertices):
+            msg = "Vertices and Colors should have the same size."
+            msg += " Please, update your color array or use the function "
+            msg += "``fury.primitive.repeat_primitives`` to normalize your "
+            msg += "color array before calling this function. e.g."
+            raise ValueError(msg)
+
         set_polydata_colors(pd, colors, array_name="colors")
     if isinstance(normals, np.ndarray):
         set_polydata_normals(pd, normals)

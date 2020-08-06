@@ -338,6 +338,13 @@ def test_vertices_from_actor(interactive=False):
     npt.assert_array_almost_equal(expected, res_vertices)
 
 
+def test_get_actor_from_primitive():
+    vertices, triangles = fp.prim_frustum()
+    colors = np.array([1, 0, 0])
+    npt.assert_raises(ValueError, get_actor_from_primitive, vertices,
+                      triangles, colors=colors)
+
+
 def test_compute_bounds():
     size = (15, 15)
     test_bounds = [0.0, 15,
