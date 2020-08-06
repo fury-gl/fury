@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import vtk
 from vtk.util import numpy_support
@@ -1011,7 +1010,7 @@ def fix_winding_order(vertices, triangles, clockwise=False):
 
 
 def vertices_from_actor(actor):
-    """ Access to vertices from actor.
+    """Access to vertices from actor.
 
     Parameters
     ----------
@@ -1027,7 +1026,7 @@ def vertices_from_actor(actor):
 
 
 def colors_from_actor(actor, array_name='colors'):
-    """ Access colors from actor which uses polydata
+    """Access colors from actor which uses polydata.
 
     Parameters
     ----------
@@ -1037,6 +1036,7 @@ def colors_from_actor(actor, array_name='colors'):
     -------
     output : array (N, 3)
         Colors
+
     """
     vtk_colors = \
         actor.GetMapper().GetInput().GetPointData().GetArray(array_name)

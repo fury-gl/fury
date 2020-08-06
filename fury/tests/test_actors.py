@@ -199,7 +199,7 @@ def test_surface():
                 npt.assert_equal(report.objects, 1)
 
 
-def test_contour_from_roi():
+def test_contour_from_roi(interactive=False):
 
     # Render volume
     scene = window.Scene()
@@ -214,7 +214,8 @@ def test_contour_from_roi():
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    # window.show(scene)
+    if interactive:
+        window.show(scene)
 
     # Test Errors
     npt.assert_raises(ValueError, actor.contour_from_roi, np.ones(50))
@@ -232,7 +233,8 @@ def test_contour_from_roi():
 
     scene2.reset_camera()
     scene2.reset_clipping_range()
-    # window.show(scene2)
+    if interactive:
+        window.show(scene2)
 
     arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
     arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
