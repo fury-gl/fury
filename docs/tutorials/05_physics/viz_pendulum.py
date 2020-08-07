@@ -12,13 +12,20 @@ p.setGravity(0, 0, -10, physicsClientId=client)
 ceil_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=[0,0,0],
                          size=(5, 5, 0.2) ,
-                         colors=(1, 1, 1))
+                         colors=(255, 255, 255))
 ceil_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
 ceil = p.createMultiBody(baseMass=0,
                           baseCollisionShapeIndex=ceil_coll,
-                          basePosition=[0, 0, 5.0],
+                          basePosition=[0, 0, 0],
                           baseOrientation=[ 0, 0, 0, 1 ])
+
+def sync_actor(actor, multibody):
+    pos, orn = p.getBasePositionAndOrientation(multibody)
+    actor.SetPosition(*pos)
+    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
+    actor.SetOrientation(*orn_deg)
+    # actor.RotateWXYZ(*orn)
 
 ############ Creating String
 sphereRadius = 0.25
@@ -42,32 +49,39 @@ pendulum_actors = []
 mass = 1
 visualShapeId = -1
 
-link_Masses = []
-linkCollisionShapeIndices = []
-linkVisualShapeIndices = []
-linkPositions = []
-linkOrientations = []
-linkInertialFramePositions = []
-linkInertialFrameOrientations = []
-indices = []
-jointTypes = []
-axis = []
+link_Masses = np.zeros(7)
+linkCollisionShapeIndices = np.zeros(7)
+linkCollisionShapeIndices[:] = np.array(colBoxId)
+linkVisualShapeIndices = -1 * np.ones(7)
+linkPositions = np.zeros((7, 3))
+linkPositions[:] = np.array([0, 0, segment_size[2] * 2.0 + 0.01])
+linkOrientations = np.zeros((7, 4))
+linkOrientations[:] = np.array([0, 0, 0, 1])
+linkInertialFramePositions = np.array([0, 0, 0])
+linkInertialFramePositions[:] = np.zeros(3)
+linkInertialFrameOrientations = np.zeros((7, 4))
+linkInertialFrameOrientations[:] = np.array([0, 0, 0, 1])
+indices = np.arange(7)
+jointTypes = np.zeros(7)
+jointTypes[:] = np.array(p.JOINT_FIXED)
+axis = np.zeros((7, 3))
+axis[:] = np.array([0, 0, 1])
 
 for i in range(7):
-  link_Masses.append(0)
-  linkCollisionShapeIndices.append(colBoxId)
-  linkVisualShapeIndices.append(-1)
-  linkPositions.append([0, 0, segment_size[2] * 2.0 + 0.01])
-  linkOrientations.append([0, 0, 0, 1])
-  linkInertialFramePositions.append([0, 0, 0])
-  linkInertialFrameOrientations.append([0, 0, 0, 1])
-  indices.append(i)
-  jointTypes.append(p.JOINT_FIXED)
-  axis.append([0, 0, 1])
+#   link_Masses.append(0)
+#   linkCollisionShapeIndices.append(colBoxId)
+#   linkVisualShapeIndices.append(-1)
+#   linkPositions.append([0, 0, segment_size[2] * 2.0 + 0.01])
+#   linkOrientations.append([0, 0, 0, 1])
+#   linkInertialFramePositions.append([0, 0, 0])
+#   linkInertialFrameOrientations.append([0, 0, 0, 1])
+#   indices.append(i)
+#   jointTypes.append(p.JOINT_FIXED)
+#   axis.append([0, 0, 1])
   segment_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=np.array([1.57, 0,0]),
                          size=(segment_size[0]*2, segment_size[1]*2, segment_size[2]*2),
-                         colors=np.random.rand(1,3))
+                         colors=np.random.rand(1,3)*255)
   pendulum_actors.append(segment_actor)
 
 basePosition = [0, 0, 1]
