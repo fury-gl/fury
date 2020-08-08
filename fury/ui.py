@@ -3649,7 +3649,7 @@ class ScrollBar(UI):
         """
         self.length = length
         self.width = width
-        self.scroll_ratio = scroll_ratio
+        self._scroll_ratio = _scroll_ratio
         self.view_length = view_length
         self.orientation = orientation.lower()
         self.reverse_scrolling = reverse_scrolling
@@ -3660,15 +3660,17 @@ class ScrollBar(UI):
         self.inactive_color = inactive_color
         self.track_opacity = track_opacity
         if orientation == "vertical":
-            self.size = (self.length, self.width)
+            self.track_size = (self.length, self.width)
         elif orientation == "horizontal":
-            self.size = (self.width, self.length)
+            self.track_size = (self.width, self.length)
         else:
             raise ValueError("Unknown orientation")
 
     def _setup(self):
         self.track = Rectangle2D()
         self.bar = Rectangle2D()
+        self.track.resize(self.track_size)
+        self.bar.resize(self._scroll_ratio*self.track_size)
 
     def click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
@@ -3744,27 +3746,11 @@ class ScrollBar(UI):
         i_ren.force_render()
         i_ren.event.abort()
 
-    def update_scrollbar(self):
-        """ Change the scroll-bar height when the values
-            in the listbox change
+    def resize(self, size):
+        """ Resize scrollbar.
         """
-        self.bar.set_visibility(True)
-
-        self.bar.height = self.nb_slots * \
-            (self.panel_size[1] - 2 *
-             self.margin) / self.nb_values
-
-        self.step_size = (self.slot_height *
-                          self.nb_slots -
-                          self.bar.height) \
-            / (self.nb_values - self.nb_slots)
-
-        self.panel.update_element(
-            self.bar, self.panel_size - self.bar.size -
-            self.margin)
-
-        if self.nb_values <= self.nb_slots:
-            self.bar.set_visibility(False)
+        self.track.resize(size)
+        self.bar.resize(self._scroll_ratio*size)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -3796,6 +3782,15 @@ class ScrollBar(UI):
             self.bar.position = coords + self.track.size - self.bar.size
         else:
             self.bar.position = coords
+
+    @property
+    def scroll_ratio(self):
+        return self._scroll_ratio
+
+    @scroll_ratio
+    def scroll_ratio(self, ratio):
+        self._scroll_ratio = ratio
+        self.bar.resize(ratio*self.size)
 
     @property
     def track_color(self):
