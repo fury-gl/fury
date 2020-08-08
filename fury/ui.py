@@ -3682,7 +3682,8 @@ class ScrollBar(UI):
 
         """
         self.bar.color = self.bar.active_color
-        self.init_position = i_ren.event.position[1]
+        self.click_position = np.array(i_ren.event.position)
+
         i_ren.force_render()
         i_ren.event.abort()
 
@@ -3711,33 +3712,35 @@ class ScrollBar(UI):
         rect_obj: :class:`Rectangle2D`
 
         """
-        position = i_ren.event.position
-        offset = int((position[1] - self.init_position) /
-                     self.step_size)
-        if offset > 0 and self.view_offset > 0:
-            offset = min(offset, self.view_offset)
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self.click_position
 
-        elif offset < 0 and (
-                self.view_offset +
-                self.nb_slots < self.nb_values):
-            offset = min(-offset,
-                         self.nb_values -
-                         self.nb_slots - self.view_offset)
-            offset = - offset
+        if self.orientation == "vertical":
+            self.bar.position[1] += change[1]
+            self.bar.position[1] = min(self.bar.position[1] +
+                                       self.bar.size[1],
+                                       self.track.position[1] +
+                                       self.track.size[1])
+
+            self.bar.position[1] = max(self.bar.position[1] +
+                                       self.bar.size[1],
+                                       self.track.position[1])
+
+            self.bar.position[0] = self.track.position[0]
+
         else:
-            return
+            self.bar.position[0] += change[0]
+            self.bar.position[0] = min(self.bar.position[0] +
+                                       self.bar.size[0],
+                                       self.track.position[0] +
+                                       self.track.size[0])
 
-        self.view_offset -= offset
-        self.on_change()
-        scroll_bar_idx = self.panel._elements.index(self.bar)
-        self.bar.center = (self.bar.center[0],
-                           self.bar.center[1] +
-                           offset * self.step_size)
+            self.bar.position[0] = max(self.bar.position[0] +
+                                       self.bar.size[0],
+                                       self.track.position[0])
 
-        self.init_position += offset * self.step_size
-        self.panel.element_offsets[scroll_bar_idx] = (
-                self.bar, (self.bar.position -
-                           self.panel.position))
+            self.bar.position[1] = self.track.position[1]
+
         i_ren.force_render()
         i_ren.event.abort()
 
