@@ -110,6 +110,18 @@ pendulum = p.createMultiBody(mass,
                               linkJointAxis=axis)
                             #   useMaximalCoordinates=useMaximalCoordinates)
 
+# remove stiffness in motors, add friction force
+
+friction_vec = [0.0005]*3   # same all axis
+control_mode = p.POSITION_CONTROL   # set pos control mode
+for j in range(p.getNumJoints(pendulum)):
+    p.setJointMotorControlMultiDof(pendulum,j,control_mode,
+                                    targetPosition=[0,0,0,1],
+                                    targetVelocity=[0,0,0],
+                                    positionGain=0,
+                                    velocityGain=1,
+                                    force=friction_vec)
+
 scene = window.Scene()
 scene.add(actor.axes())
 scene.add(segment_actor)
