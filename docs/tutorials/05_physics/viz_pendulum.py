@@ -1,5 +1,5 @@
 import numpy as np
-from fury import window, actor, ui
+from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
 
@@ -17,7 +17,7 @@ ceil_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
 ceil = p.createMultiBody(baseMass=0,
                           baseCollisionShapeIndex=ceil_coll,
-                          basePosition=[0, 0, 0],
+                          basePosition=[0, 0, -0.2],
                           baseOrientation=[ 0, 0, 0, 1 ])
 
 def sync_actor(actor, multibody):
@@ -57,8 +57,7 @@ linkPositions = np.zeros((7, 3))
 linkPositions[:] = np.array([0, 0, segment_size[2] * 2.0 + 0.01])
 linkOrientations = np.zeros((7, 4))
 linkOrientations[:] = np.array([0, 0, 0, 1])
-linkInertialFramePositions = np.array([0, 0, 0])
-linkInertialFramePositions[:] = np.zeros(3)
+linkInertialFramePositions = np.zeros((7, 3))
 linkInertialFrameOrientations = np.zeros((7, 4))
 linkInertialFrameOrientations[:] = np.array([0, 0, 0, 1])
 indices = np.arange(7)
@@ -67,22 +66,28 @@ jointTypes[:] = np.array(p.JOINT_FIXED)
 axis = np.zeros((7, 3))
 axis[:] = np.array([0, 0, 1])
 
-for i in range(7):
-#   link_Masses.append(0)
-#   linkCollisionShapeIndices.append(colBoxId)
-#   linkVisualShapeIndices.append(-1)
-#   linkPositions.append([0, 0, segment_size[2] * 2.0 + 0.01])
-#   linkOrientations.append([0, 0, 0, 1])
-#   linkInertialFramePositions.append([0, 0, 0])
-#   linkInertialFrameOrientations.append([0, 0, 0, 1])
-#   indices.append(i)
-#   jointTypes.append(p.JOINT_FIXED)
-#   axis.append([0, 0, 1])
-  segment_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                         directions=np.array([1.57, 0,0]),
-                         size=(segment_size[0]*2, segment_size[1]*2, segment_size[2]*2),
-                         colors=np.random.rand(1,3)*255)
-  pendulum_actors.append(segment_actor)
+linkDirections = np.zeros((7, 3))
+linkDirections[:] = np.array([1.57, 0, 0])
+
+linkSizes = np.zeros((7, 3))
+linkSizes[:] = np.array(segment_size)*2
+
+segment_actor = actor.box(centers=linkPositions,
+                          directions=linkDirections,
+                          colors=np.random.rand(7, 3)*255,
+                          scale=linkSizes)
+
+# print(link_Masses.shape)
+# print(linkCollisionShapeIndices.shape)
+# print(linkVisualShapeIndices.shape)
+# print(linkPositions.shape)
+# print(linkOrientations.shape)
+# print(linkInertialFrameOrientations.shape)
+# print(linkInertialFramePositions.shape)
+# print(indices.shape)
+# print(jointTypes.shape)
+# print(axis.shape)
+# print()
 
 basePosition = [0, 0, 1]
 baseOrientation = [0, 0, 0, 1]
@@ -100,12 +105,12 @@ pendulum = p.createMultiBody(mass,
                               linkInertialFrameOrientations=linkInertialFrameOrientations,
                               linkParentIndices=indices,
                               linkJointTypes=jointTypes,
-                              linkJointAxis=axis,
-                              useMaximalCoordinates=useMaximalCoordinates)
+                              linkJointAxis=axis)
+                            #   useMaximalCoordinates=useMaximalCoordinates)
 
 scene = window.Scene()
 scene.add(actor.axes())
-scene.add(*pendulum_actors)
+scene.add(segment_actor)
 scene.add(ball_actor)
 scene.add(ceil_actor)
 
@@ -127,22 +132,34 @@ def sync_actor(actor, multibody):
     actor.SetPosition(*pos)
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
-    actor.RotateWXYZ(*orn)
+    # actor.RotateWXYZ(*orn)
 
 sync_actor(ceil_actor, ceil)
 
-print(pendulum_actors)
-for joint in range(p.getNumJoints(pendulum)):
-    print(p.getJointInfo(pendulum, joint))
+# print(pendulum_actors)
+# for joint in range(p.getNumJoints(pendulum)):
+#     print(p.getJointInfo(pendulum, joint))
+
+vertices = utils.vertices_from_actor(segment_actor)
+num_vertices = vertices.shape[0]
+num_objects = linkPositions.shape[0]
+sec = np.int(num_vertices / num_objects)
 
 def sync_joints(actor_list, multibody):
     for joint in range(p.getNumJoints(multibody)):
         pos, orn = p.getLinkState(multibody, joint)[4:6]
-        actor = actor_list[joint]
-        actor.SetPosition(*pos)
-        orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
-        actor.SetOrientation(*orn_deg)
-        actor.RotateWXYZ(*orn)
+
+        rot_mat = np.reshape(
+            p.getMatrixFromQuaternion(
+                p.getDifferenceQuaternion(orn, linkOrientations[joint])),
+            (3, 3))
+
+        vertices[joint * sec: joint * sec + sec] = \
+            (vertices[joint * sec: joint * sec + sec] -
+            linkPositions[joint])@rot_mat + pos
+
+        linkPositions[joint] = pos
+        linkOrientations[joint] = orn
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
@@ -153,6 +170,7 @@ def timer_callback(_obj, _event):
     for i in range(p.getNumJoints(pendulum)):
         sync_actor(ball_actor, sphere)
         sync_joints(pendulum_actors, pendulum)
+        utils.update_actor(segment_actor)
 
     # Simulate a step.
     p.stepSimulation()
