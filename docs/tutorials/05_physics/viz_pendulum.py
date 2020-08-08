@@ -50,6 +50,8 @@ mass = 1
 visualShapeId = -1
 
 link_Masses = np.zeros(7)
+link_Masses[:] = 0.5
+
 linkCollisionShapeIndices = np.zeros(7)
 linkCollisionShapeIndices[:] = np.array(colBoxId)
 linkVisualShapeIndices = -1 * np.ones(7)
@@ -62,7 +64,7 @@ linkInertialFrameOrientations = np.zeros((7, 4))
 linkInertialFrameOrientations[:] = np.array([0, 0, 0, 1])
 indices = np.arange(7)
 jointTypes = np.zeros(7)
-jointTypes[:] = np.array(p.JOINT_FIXED)
+jointTypes[:] = np.array(p.JOINT_SPHERICAL)
 axis = np.zeros((7, 3))
 axis[:] = np.array([0, 0, 1])
 
