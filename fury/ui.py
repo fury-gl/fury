@@ -3619,8 +3619,8 @@ class ScrollBar(UI):
     """
 
     def __init__(self, length, width, scroll_ratio, track_color=(1, 1, 1),
-                 reverse_scrolling=False, active_color=(0.6, 0.2, 0.2),
-                 inactive_color=(0.9, 0.0, 0.0), orientation="vertical",
+                 reverse_scrolling=False, active_color=(0.9, 0.2, 0.2),
+                 inactive_color=(0.6, 0.0, 0.0), orientation="vertical",
                  track_opacity=1., position=(0, 0)):
 
         """
@@ -3649,28 +3649,40 @@ class ScrollBar(UI):
         """
         self.length = length
         self.width = width
-        self._scroll_ratio = _scroll_ratio
-        self.view_length = view_length
+        self._scroll_ratio = scroll_ratio
         self.orientation = orientation.lower()
         self.reverse_scrolling = reverse_scrolling
+
+        if orientation == "vertical":
+            self.track_size = (self.width, self.length)
+        elif orientation == "horizontal":
+            self.track_size = (self.length, self.width)
+        else:
+            raise ValueError("Unknown orientation")
+
         super(ScrollBar, self).__init__(position)
 
         self.track_color = track_color
         self.active_color = active_color
         self.inactive_color = inactive_color
         self.track_opacity = track_opacity
-        if orientation == "vertical":
-            self.track_size = (self.length, self.width)
-        elif orientation == "horizontal":
-            self.track_size = (self.width, self.length)
-        else:
-            raise ValueError("Unknown orientation")
 
     def _setup(self):
         self.track = Rectangle2D()
         self.bar = Rectangle2D()
         self.track.resize(self.track_size)
-        self.bar.resize(self._scroll_ratio*self.track_size)
+        if self.orientation == "vertical":
+            bar_size = np.array((self.track_size[0],
+                                self._scroll_ratio*self.track_size[1]))
+            self.bar.resize(bar_size)
+        else:
+            bar_size = np.array((self._scroll_ratio*self.track_size[0],
+                                 self.track_size[1]))
+            self.bar.resize(bar_size)
+
+        self.bar.on_left_mouse_button_pressed = self.click_callback
+        self.bar.on_left_mouse_button_released = self.release_callback
+        self.bar.on_left_mouse_button_dragged = self.drag_callback
 
     def click_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
@@ -3683,7 +3695,7 @@ class ScrollBar(UI):
         _rect_obj: :class:`Rectangle2D`
 
         """
-        self.bar.color = self.bar.active_color
+        self.bar.color = self.active_color
         self.click_position = np.array(i_ren.event.position)
 
         i_ren.force_render()
@@ -3700,7 +3712,7 @@ class ScrollBar(UI):
         rect_obj: :class:`Rectangle2D`
 
         """
-        self.bar.color = self.bar.inactive_color
+        self.bar.color = self.inactive_color
         i_ren.force_render()
 
     def drag_callback(self, i_ren, _obj, _rect_obj):
@@ -3783,14 +3795,14 @@ class ScrollBar(UI):
         else:
             self.bar.position = coords
 
-    @property
-    def scroll_ratio(self):
-        return self._scroll_ratio
+    # @property
+    # def scroll_ratio(self):
+    #     return self._scroll_ratio
 
-    @scroll_ratio
-    def scroll_ratio(self, ratio):
-        self._scroll_ratio = ratio
-        self.bar.resize(ratio*self.size)
+    # @scroll_ratio
+    # def scroll_ratio(self, ratio):
+    #     self._scroll_ratio = ratio
+    #     self.bar.resize(ratio*self.size)
 
     @property
     def track_color(self):
@@ -3813,7 +3825,7 @@ class ScrollBar(UI):
         return self.track.opacity
 
     @track_opacity.setter
-    def track_opacity(self):
+    def track_opacity(self, opacity):
         self.track.opacity = opacity
 
 
