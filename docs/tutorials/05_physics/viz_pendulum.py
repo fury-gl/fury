@@ -126,6 +126,7 @@ base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        colors=np.array([[255, 255, 255]]))
 
 scene = window.Scene()
+scene.background((1, 1, 1))
 scene.add(actor.axes(scale=(0.1, 0.1, 0.1)))
 scene.add(rope_actor)
 scene.add(base_actor)
