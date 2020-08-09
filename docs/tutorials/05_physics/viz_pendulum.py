@@ -23,11 +23,11 @@ p.setGravity(0, 0, -10, physicsClientId=client)
 ############ Creating String
 
 # Parameters
-n_links = 30
-dx_link = 0.01       #Size of segments
-link_mass = 0.005
+n_links = 20
+dx_link = 0.1       #Size of segments
+link_mass = 0.5
 base_mass = 0.1
-radii = 0.05
+radii = 0.5
 
 joint_friction = 0.0005
 
@@ -123,10 +123,11 @@ Damping = 0.001
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=np.array([[0, 0, 0]]),
                        scale=(0.02, 0.02, 0.02),
-                       colors=np.array([[255, 255, 255]]))
+                       colors=np.array([[255, 0, 0]]))
 
 scene = window.Scene()
 scene.background((1, 1, 1))
+scene.set_camera((2.2, -3.0, 3.0), (-0.3, 0.6, 0.7), (-0.2, 0.2, 1.0))
 scene.add(actor.axes(scale=(0.1, 0.1, 0.1)))
 scene.add(rope_actor)
 scene.add(base_actor)
@@ -171,21 +172,31 @@ def sync_joints(actor_list, multibody):
         linkOrientations[joint] = orn
 
 
+fpss = np.array([])
+tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
+scene.add(tb)
+
 t = 0.0
 freq_sim = 240
 def timer_callback(_obj, _event):
     cnt = next(counter)
-    global t
+    global t, fpss
     showm.render()
 
     t += 1./freq_sim
+
+    if cnt % 1 == 0:
+        fps = scene.frame_rate
+        fpss = np.append(fpss, fps)
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
+            "\nSim Steps: " + str(cnt)
 
     # some trajectory
     ux = amplitude_x*np.sin(2*np.pi*freq*t)
     uy = amplitude_y*np.cos(2*np.pi*freq*t)
 
     # move base arround
-    pivot = [ux, uy, 2]
+    pivot = [3*ux, uy, 2]
     orn = p.getQuaternionFromEuler([0, 0, 0])
     p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn, maxForce=500)
 
