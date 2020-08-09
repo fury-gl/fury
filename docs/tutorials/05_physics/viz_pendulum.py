@@ -4,30 +4,30 @@ import itertools
 import pybullet as p
 
 # Instantiate Pybullet client.
-client = p.connect(p.GUI)
+client = p.connect(p.DIRECT)
 # Apply gravity to the scene.
 p.setGravity(0, 0, -10, physicsClientId=client)
 
-###### Creating ceiling Plane
-ceil_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                         directions=[0,0,0],
-                         scale=(5, 5, 0.2) ,
-                         colors=(255, 255, 255))
-ceil_coll = p.createCollisionShape(p.GEOM_BOX,
-                                   halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
-ceil = p.createMultiBody(baseMass=0,
-                          baseCollisionShapeIndex=ceil_coll,
-                          basePosition=[0, 0, -0.2],
-                          baseOrientation=[ 0, 0, 0, 1 ])
+# ###### Creating ceiling Plane
+# ceil_actor = actor.box(centers=np.array([[0, 0, 0]]),
+#                          directions=[0,0,0],
+#                          scale=(5, 5, 0.2) ,
+#                          colors=(255, 255, 255))
+# ceil_coll = p.createCollisionShape(p.GEOM_BOX,
+#                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
+# ceil = p.createMultiBody(baseMass=0,
+#                           baseCollisionShapeIndex=ceil_coll,
+#                           basePosition=[0, 0, -0.2],
+#                           baseOrientation=[ 0, 0, 0, 1 ])
 
 ############ Creating String
 
 # Parameters
 n_links = 30
-dx_link = 0.02
+dx_link = 0.01       #Size of segments
 link_mass = 0.005
 base_mass = 0.1
-radii = 0.005
+radii = 0.05
 
 joint_friction = 0.0005
 
@@ -123,13 +123,11 @@ Damping = 0.001
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=np.array([[0, 0, 0]]),
                        scale=(0.02, 0.02, 0.02),
-                       colors=np.array([[1, 0, 0]]))
+                       colors=np.array([[255, 255, 255]]))
 
 scene = window.Scene()
-scene.background((1, 1, 1))
-scene.add(actor.axes())
+scene.add(actor.axes(scale=(0.1, 0.1, 0.1)))
 scene.add(rope_actor)
-scene.add(ceil_actor)
 scene.add(base_actor)
 
 
@@ -149,8 +147,6 @@ def sync_actor(actor, multibody):
     actor.SetPosition(*pos)
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
-
-sync_actor(ceil_actor, ceil)
 
 vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = vertices.shape[0]
