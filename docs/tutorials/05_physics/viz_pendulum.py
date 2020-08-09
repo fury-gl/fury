@@ -73,7 +73,7 @@ rope_actor = actor.cylinder(centers=linkPositions,
                             directions=linkDirections,
                             colors=np.random.rand(n_links, 3),
                             radius=radii,
-                            heights=link_heights)
+                            heights=link_heights, capped=True)
 
 basePosition = [0, 0, 2]
 baseOrientation = [0, 0, 0, 1]
