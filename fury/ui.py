@@ -3730,7 +3730,7 @@ class ScrollBar(UI):
         change = click_position - self.click_position
 
         if self.orientation == "vertical":
-            self.bar.position[1] += change[1]
+            self.bar.position += change
             self.bar.position[1] = min(self.bar.position[1] +
                                        self.bar.size[1],
                                        self.track.position[1] +
@@ -3743,7 +3743,7 @@ class ScrollBar(UI):
             self.bar.position[0] = self.track.position[0]
 
         else:
-            self.bar.position[0] += change[0]
+            self.bar.position += change
             self.bar.position[0] = min(self.bar.position[0] +
                                        self.bar.size[0],
                                        self.track.position[0] +
