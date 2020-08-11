@@ -1099,7 +1099,7 @@ class TextBlock2D(UI):
     ----------
     actor : :class:`vtkTextActor`
         The text actor.
-    message : strslac
+    message : str
         The initial text while building the actor.
     position : (float, float)
         (x, y) in pixels.
@@ -3684,6 +3684,10 @@ class ScrollBar(UI):
                                  self.track_size[1]))
             self.bar.resize(bar_size)
 
+        self.track.on_left_mouse_button_pressed = self.track_click_callback
+        self.track.on_left_mouse_button_dragged = self.scrolling_callback
+        self.track.on_left_mouse_button_released = self.release_callback
+
         self.bar.on_left_mouse_button_dragged = self.scrolling_callback
         self.bar.on_left_mouse_button_released = self.release_callback
 
@@ -3734,6 +3738,12 @@ class ScrollBar(UI):
         """
         self.bar.color = self.inactive_color
         i_ren.force_render()
+
+    def track_click_callback(self, i_ren, _obj, _rec_obj):
+        position = i_ren.event.position
+        self.set_position(position)
+        i_ren.force_render()
+        i_ren.event.abort()
 
     def resize(self, size):
         """ Resize scrollbar.
