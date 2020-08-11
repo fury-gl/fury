@@ -3782,14 +3782,14 @@ class ScrollBar(UI):
         else:
             self.bar.position = coords
 
-    # @property
-    # def scroll_ratio(self):
-    #     return self._scroll_ratio
+    @property
+    def scroll_ratio(self):
+        return self._scroll_ratio
 
-    # @scroll_ratio
-    # def scroll_ratio(self, ratio):
-    #     self._scroll_ratio = ratio
-    #     self.bar.resize(ratio*self.size)
+    @scroll_ratio.setter
+    def scroll_ratio(self, ratio):
+        self._scroll_ratio = ratio
+        self.bar.resize(ratio*self.size)
 
     @property
     def track_color(self):
