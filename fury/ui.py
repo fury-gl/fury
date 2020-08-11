@@ -3666,6 +3666,7 @@ class ScrollBar(UI):
         self.active_color = active_color
         self.inactive_color = inactive_color
         self.track_opacity = track_opacity
+        self.bar.color = self.inactive_color
 
     def _setup(self):
         self.track = Rectangle2D()
@@ -3680,11 +3681,22 @@ class ScrollBar(UI):
                                  self.track_size[1]))
             self.bar.resize(bar_size)
 
-        self.bar.on_left_mouse_button_pressed = self.click_callback
+        self.bar.on_left_mouse_button_dragged = self.scrolling_callback
         self.bar.on_left_mouse_button_released = self.release_callback
-        self.bar.on_left_mouse_button_dragged = self.drag_callback
 
-    def click_callback(self, i_ren, _obj, _rect_obj):
+    def set_position(self, position):
+        if self.orientation == "horizontal":
+            x_position = position[0]
+            x_position = max(x_position, self.track.position[0] + self.bar.size[0]//2)
+            x_position = min(x_position, self.track.position[0] + self.track.size[0] - self.bar.size[0]//2)
+            self.bar.center = (x_position, self.track.center[1])
+        else:
+            y_position = position[1]
+            y_position = max(y_position, self.track.position[1] + self.bar.size[1]//2)
+            y_position = min(y_position, self.track.position[1] + self.track.size[1] - self.bar.size[1]//2)
+            self.bar.center = (self.track.center[0], y_position)
+
+    def scrolling_callback(self, i_ren, _obj, _rect_obj):
         """ Callback to change the color of the bar when it is clicked.
 
         Parameters
@@ -3696,8 +3708,8 @@ class ScrollBar(UI):
 
         """
         self.bar.color = self.active_color
-        self.click_position = np.array(i_ren.event.position)
-
+        position = i_ren.event.position
+        self.set_position(position)
         i_ren.force_render()
         i_ren.event.abort()
 
@@ -3714,49 +3726,6 @@ class ScrollBar(UI):
         """
         self.bar.color = self.inactive_color
         i_ren.force_render()
-
-    def drag_callback(self, i_ren, _obj, _rect_obj):
-        """ Dragging scroll bar in the combo box.
-
-        Parameters
-        ----------
-        i_ren: :class:`CustomInteractorStyle`
-        obj: :class:`vtkActor`
-            The picked actor
-        rect_obj: :class:`Rectangle2D`
-
-        """
-        click_position = np.array(i_ren.event.position)
-        change = click_position - self.click_position
-
-        if self.orientation == "vertical":
-            self.bar.position += change
-            self.bar.position[1] = min(self.bar.position[1] +
-                                       self.bar.size[1],
-                                       self.track.position[1] +
-                                       self.track.size[1])
-
-            self.bar.position[1] = max(self.bar.position[1] +
-                                       self.bar.size[1],
-                                       self.track.position[1])
-
-            self.bar.position[0] = self.track.position[0]
-
-        else:
-            self.bar.position += change
-            self.bar.position[0] = min(self.bar.position[0] +
-                                       self.bar.size[0],
-                                       self.track.position[0] +
-                                       self.track.size[0])
-
-            self.bar.position[0] = max(self.bar.position[0] +
-                                       self.bar.size[0],
-                                       self.track.position[0])
-
-            self.bar.position[1] = self.track.position[1]
-
-        i_ren.force_render()
-        i_ren.event.abort()
 
     def resize(self, size):
         """ Resize scrollbar.
@@ -3811,14 +3780,6 @@ class ScrollBar(UI):
     @track_color.setter
     def track_color(self, color):
         self.track.color = color
-
-    @property
-    def active_color(self):
-        return self.bar.color
-
-    @active_color.setter
-    def active_color(self, color):
-        self.bar.color = color
 
     @property
     def track_opacity(self):
