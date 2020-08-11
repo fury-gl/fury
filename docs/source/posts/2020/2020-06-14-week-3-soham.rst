@@ -1,0 +1,25 @@
+ComboBox2D Progress!!
+=====================
+
+.. post:: June 14 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my third weekly check-in, I will be sharing my progress with the project so far. In case you wondered, the sub-org that I am affiliated to is FURY. Make sure to check out the official repository `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week my objective was to work on the sizing and positioning issue regarding the sub-components of the ComboBox2D UI element. After countless debugging sessions and my mentor's support, I was successfully able to fix the issue. I also developed helpful methods and callbacks for this element to allow users to interact with them in a user friendly manner. I also wrote tests for the same. So far the said progress can be summarized via this gif:
+
+.. image:: https://user-images.githubusercontent.com/29832615/84592637-cc8d5b00-ae64-11ea-9ff3-c1ce2095f7f2.gif
+
+What is coming up next week?
+----------------------------
+Unfortunately, one of the sub-components ``TextBlock2D``, didn't have a resizing feature that I could make use of for this new UI component. Thus, I need to add that feature on a different PR. This feature will also be required while building other UI elements therefore adding this feature is currently my top priority. There's also a bug regarding the scrollbar that needs to be fixed. The scrollbar overshoots the specified combobox area after new items are appended to the combobox's list of items during runtime. Hopefully I will be able to get them done by next week.
+
+Did you get stuck anywhere?
+---------------------------
+I was really confused with the coordinate system of Panel2D that was the main reason why components were misplaced. I also faced some issues regarding the scrollbar callback as it wasn't scrolling the elements properly, the items were stuck in place. So far I was able to fix them. Apart from these, I didn't face any major issues.
+
+``Thank you for reading, see you next week!!``

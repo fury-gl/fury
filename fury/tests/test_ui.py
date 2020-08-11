@@ -1264,6 +1264,72 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+def test_ui_tab_ui(interactive=False):
+    filename = "test_ui_tab_ui"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3,
+                      draggable=True)
+
+    tab_ui.tabs[0].title = "Tab 1"
+    tab_ui.tabs[1].title = "Tab 2"
+    tab_ui.tabs[2].title = "Tab 3"
+
+    tab_ui.add_element(0, ui.Checkbox(["Option 1", "Option 2"]), (0.5, 0.5))
+    tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
+    tab_ui.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
+
+    with npt.assert_raises(IndexError):
+        tab_ui.add_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
+
+    with npt.assert_raises(IndexError):
+        tab_ui.remove_element(3, ui.TextBlock2D())
+
+    with npt.assert_raises(IndexError):
+        tab_ui.update_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
+
+    npt.assert_equal("Tab 1", tab_ui.tabs[0].title)
+    npt.assert_equal("Tab 2", tab_ui.tabs[1].title)
+    npt.assert_equal("Tab 3", tab_ui.tabs[2].title)
+
+    npt.assert_equal(3, tab_ui.nb_tabs)
+
+    collapses = itertools.count()
+    changes = itertools.count()
+
+    def collapse(tab_ui):
+        if tab_ui.collapsed:
+            next(collapses)
+
+    def tab_change(tab_ui):
+        next(changes)
+
+    tab_ui.on_change = tab_change
+    tab_ui.on_collapse = collapse
+
+    event_counter = EventCounter()
+    event_counter.monitor(tab_ui)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Tab UI Test")
+    show_manager.scene.add(tab_ui)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    npt.assert_equal(0, tab_ui.active_tab_idx)
+    npt.assert_equal(11, next(changes))
+    npt.assert_equal(5, next(collapses))
+
+
 def test_grid_ui(interactive=False):
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100

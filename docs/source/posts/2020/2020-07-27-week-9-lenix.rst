@@ -1,0 +1,35 @@
+Merging SDF primitives.
+===========================================
+
+.. post:: July 27 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey Everyone! 
+This week, Merging SDF primitives.
+
+What did you do this week?
+--------------------------
+Since GSoC started I have been working on adding support for raymarching based SDF actors as primitives in the FURY codebase. This week with the release of FURY 0.6.0 , the task assigned to me was to complete the remaining parts of the SDF actor including tests and tutorial. THe SDF actor is now part of the FURY actor and can be accessed using sdf_actor.
+Currently we support , ellipsoids, spheres and torus as primitive options. As expected, SDF based actors have shown tremendous performance improvements over traditional polygon based actor.
+
+Despite using 100,000 torus the FPS is higher than 60 :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-9.gif
+
+10,000 actors :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-9b.gif
+
+I also made a tutorial for new users to get started `here <https://fury.gl/latest/auto_tutorials/04_shaders/viz_sdfactor.html#sphx-glr-auto-tutorials-04-shaders-viz-sdfactor-py>`_
+
+What is coming up next week?
+----------------------------
+Now that the SDF actor is merged , the next step is to focus on spherical harmonics and i will also be working on creating shader visualization to showcase the features of FURY
+
+Did you get stuck anywhere?
+---------------------------
+This week involved alot of work , including making tests, tutorial and looking for bugs but everything went smoothly .

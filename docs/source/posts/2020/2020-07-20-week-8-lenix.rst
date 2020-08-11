@@ -1,0 +1,34 @@
+Improvements in SDF primitives.
+===========================================
+
+.. post:: July 20 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey Everyone! 
+This week, Improvements in SDF primitives.
+
+What did you do this week?
+--------------------------
+Over the past few weeks i have been working on adding SDF based actors in FURY. The task for this week was to complete the remaining features such as support for scaling and rotation based on user direction for the actors. The main objective is to complete the SDF actor and make it ready to merge into the FURY codebase. Below are the outputs after added the improvements to the SDF primitives.
+
+Scaling:
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-8b.gif
+
+Rotation based on passed directions:
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-8a.gif
+
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
+
+What is coming up next week?
+----------------------------
+Since the features are almost done the task for next week is clean the code and test for bugs. And then to eventually merge the  sdf_actor into the fury codebase.
+
+Did you get stuck anywhere?
+---------------------------
+No major issues this week.
