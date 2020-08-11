@@ -3668,6 +3668,9 @@ class ScrollBar(UI):
         self.track_opacity = track_opacity
         self.bar.color = self.inactive_color
 
+        # Hooks for user to update content.
+        self.on_scroll = lambda ui: None
+
     def _setup(self):
         self.track = Rectangle2D()
         self.bar = Rectangle2D()
@@ -3687,13 +3690,17 @@ class ScrollBar(UI):
     def set_position(self, position):
         if self.orientation == "horizontal":
             x_position = position[0]
-            x_position = max(x_position, self.track.position[0] + self.bar.size[0]//2)
-            x_position = min(x_position, self.track.position[0] + self.track.size[0] - self.bar.size[0]//2)
+            x_position = max(x_position, self.track.position[0]
+                             + self.bar.size[0]//2)
+            x_position = min(x_position, self.track.position[0]
+                             + self.track.size[0] - self.bar.size[0]//2)
             self.bar.center = (x_position, self.track.center[1])
         else:
             y_position = position[1]
-            y_position = max(y_position, self.track.position[1] + self.bar.size[1]//2)
-            y_position = min(y_position, self.track.position[1] + self.track.size[1] - self.bar.size[1]//2)
+            y_position = max(y_position, self.track.position[1]
+                             + self.bar.size[1]//2)
+            y_position = min(y_position, self.track.position[1]
+                             + self.track.size[1] - self.bar.size[1]//2)
             self.bar.center = (self.track.center[0], y_position)
 
     def scrolling_callback(self, i_ren, _obj, _rect_obj):
@@ -3710,6 +3717,7 @@ class ScrollBar(UI):
         self.bar.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
+        self.on_scroll(self)
         i_ren.force_render()
         i_ren.event.abort()
 
@@ -4668,7 +4676,7 @@ class ComboBox2D(UI):
 
         self.selection_box.message = self._selection
         clip_overflow(self.selection_box,
-                        self.selection_box.background.size[0])
+                     self.selection_box.background.size[0])
         self.drop_down_menu.set_visibility(False)
         self._menu_visibility = False
 
