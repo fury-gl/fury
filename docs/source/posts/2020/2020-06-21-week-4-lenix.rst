@@ -1,0 +1,38 @@
+Raymarching continued
+======================
+
+.. post:: June 21 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+Raymarching continued
+
+What did you do this week?
+--------------------------
+As you read in my last blog post, while the SDF primitives were working , there was slight deformation in the render. So the main focus for this week was working on solving the deformation bug. Initially the suspect was possibly the coordinate space in which the ray marching algorithm was being computed, however after testing multiple combination of transformations the issue wasn't solved. To avoid getting stuck too long on a single bug, I decided to simultaneously work on any alternatives to the current approach. So i started working on the 2nd approach. The idea was to render multiple primitives in a single cube rather than one SDF per cube. This turned out to be highly beneficial as while implementing this , i realized what was causing the deformation .
+
+I have added the GIFs for both the renders below. I also worked on a lambertian lighting model to create a more realistic render.
+
+
+
+Multiple Primitives within a single cube:
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-4a.gif
+
+Solved deformation with added lambertian Lighting: 
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-4b.gif
+
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
+
+What is coming up next week?
+----------------------------
+The next task assigned is to add support for spherical harmonics as primitives.
+
+Did you get stuck anywhere?
+---------------------------
+I was stuck on the deformation issue for most of the week, but was eventually able to solve that.

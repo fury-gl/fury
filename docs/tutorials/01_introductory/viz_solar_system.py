@@ -80,7 +80,7 @@ utils.rotate(jupiter_actor, (90, 1, 0, 0))
 # of this tutorial, planet sizes and positions will not be completely
 # accurate.
 
-sun_actor.SetScale(10, 10, 10)
+sun_actor.SetScale(5, 5, 5)
 mercury_actor.SetScale(0.4, 0.4, 0.4)
 venus_actor.SetScale(0.6, 0.6, 0.6)
 earth_actor.SetScale(0.4, 0.4, 0.4)
