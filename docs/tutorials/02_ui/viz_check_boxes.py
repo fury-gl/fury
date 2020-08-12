@@ -17,7 +17,7 @@ import numpy as np
 # We create the corresponding object actors for cube, sphere, cone and arrow.
 
 cube = actor.cube(centers=np.array([[15, 0, 0]]),
-                  colors=np.array([[0, 0, 255]]),
+                  colors=np.array([[0, 0, 1]]),
                   scale=np.array([[20, 20, 20]]),
                   directions=np.array([[0, 0, 1]]))
 
@@ -58,7 +58,7 @@ def set_figure_visiblity(checkboxes):
 
 
 def update_colors(color_array):
-    for name, figure in figure_dict.items():
+    for _, figure in figure_dict.items():
         vcolors = utils.colors_from_actor(figure)
         vcolors[:] = color_array
         utils.update_actor(figure)
