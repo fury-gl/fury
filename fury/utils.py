@@ -539,9 +539,9 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         XYZ coordinates of the object
     triangles: (Nx3) ndarray
         Indices into vertices; forms triangular faces.
-    colors: (Mx3) or (Mx4) ndarray
+    colors: (Nx3) or (Nx4) ndarray
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-        M is equal to the number of vertices.
+        N is equal to the number of vertices.
     normals: (Nx3) ndarray
         normals, represented as 2D ndarrays (Nx3) (one per vertex)
     backface_culling: bool
