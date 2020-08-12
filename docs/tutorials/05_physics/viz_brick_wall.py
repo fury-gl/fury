@@ -31,7 +31,7 @@ p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=[0,0,0],
                          scale=(5, 5, 0.2),
-                         colors=(255, 255, 255))
+                         colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
 base = p.createMultiBody(
@@ -65,7 +65,7 @@ for i in range(wall_height):
         brick_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=np.array([1.57, 0,0]),
                          scale=(0.2, 0.4, 0.2) ,
-                         colors=np.random.rand(1,3)*255)
+                         colors=np.random.rand(1,3))
         brick_coll = p.createCollisionShape(p.GEOM_BOX,
                                             halfExtents=[0.1, 0.2, 0.1])
         brick = p.createMultiBody(baseMass=0.5,
@@ -117,7 +117,6 @@ def sync_actor(actor, multibody):
     actor.SetPosition(*pos)
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
-    # actor.RotateWXYZ(*orn)
 
 fpss = np.array([])
 tb = ui.TextBlock2D(text="",

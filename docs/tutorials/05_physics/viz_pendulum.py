@@ -123,7 +123,7 @@ Damping = 0.001
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=np.array([[0, 0, 0]]),
                        scale=(0.02, 0.02, 0.02),
-                       colors=np.array([[255, 0, 0]]))
+                       colors=np.array([[1, 0, 0]]))
 
 scene = window.Scene()
 scene.background((1, 1, 1))

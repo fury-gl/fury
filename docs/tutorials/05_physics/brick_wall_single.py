@@ -31,7 +31,7 @@ p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=[0,0,0],
                          scale=(5, 5, 0.2),
-                         colors=(255, 255, 255))
+                         colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
 base = p.createMultiBody(
@@ -88,7 +88,7 @@ for k in range(wall_height):
 brick_actor_single = actor.box(centers=brick_centers,
                          directions=brick_directions,
                          scale=brick_sizes,
-                         colors=brick_colors * 255)
+                         colors=brick_colors)
 
 scene.add(brick_actor_single)
 

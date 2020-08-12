@@ -24,7 +24,7 @@ joint_friction = 0.0005
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                          directions=[0,0,0],
                          scale=(10, 10, 0.2),
-                         colors=(255, 255, 255))
+                         colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[5, 5, 0.1]) # half of the actual size.
 base = p.createMultiBody(
@@ -71,7 +71,7 @@ for i in range(wall_length):
 brick_actor = actor.box(centers=brick_centers,
                          directions=brick_directions,
                          scale=brick_sizes,
-                         colors=brick_colors * 255)
+                         colors=brick_colors)
 
 scene = window.Scene()
 scene.add(actor.axes(), base_actor, brick_actor)
