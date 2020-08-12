@@ -1,0 +1,41 @@
+Chain Simulation, Scrollbar Refactor, Tutorial Update.
+======================================================
+
+.. post:: August 09 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 11th weekly check-in. In this blog I will be discussing my progress with multiple topics related to physics and ui components. I was actively working on a couple of things, specifically Joint simulations in pyBullet and scrollbar UI component. I also took up the responsibility to complete an incomplete Pull Request which was pending for quite a while. The official repository of my sub-org can be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+The first thing that I did this week was to figure out joint simulations in pybullet. Due to lack of proper documentation I was not aware that Joints are kept stiff by default, hence I had no idea what was wrong with my simulations. Thankfully, while I was browsing pybullet forums, I found this `post <https://pybullet.org/Bullet/phpBB3/viewtopic.php?f=24&t=13035>`_ regarding rope simulations when I realized that I had to explicitly set the friction force to prevent stiffness among the Joints. Keeping this point in mind I was able to simulate the following Chain of hexagonal prisms:
+
+.. image:: https://user-images.githubusercontent.com/29832615/89737601-b7613100-da8f-11ea-947f-a96c66caefae.gif
+
+This week I was mainly supposed to  work on refactoring scrollbars as a standalone component. I have made some progress for now. I am able to render the scrollbars properly, with proper size, orientation and color but I am having some issues regarding its scrolling callbacks. I need to look further into it. Here's a brief glimpse:
+
+.. image:: https://user-images.githubusercontent.com/29832615/89738159-28a2e300-da94-11ea-9167-e825f82edf98.png
+
+This particular `PR <https://github.com/fury-gl/fury/pull/208>`_ by a fellow contributor was pending for quite a while, so I decided to look into it and complete it. The objective of the PR was to add examples for the ``CheckBox`` and ``RadioButton`` UI components, but the problem was that the objects were not rendered using FURY API in the tutorial, so I decided to complete that. It was already a well made tutorial. I only had to replace the appropriate functions with FURY's API calls.
+
+The ``CheckBox`` tutorial:
+
+.. image:: https://user-images.githubusercontent.com/29832615/89438967-20326b80-d767-11ea-8f47-e7711e900c9f.gif
+
+There's still some internal issues while updating the colors of the cube which is currently being worked on by my mentors.
+
+The ``RadioButton`` tutorial:
+
+.. image:: https://user-images.githubusercontent.com/29832615/89438999-2e808780-d767-11ea-8b08-2a36a05294bc.gif
+
+What is coming up next week?
+----------------------------
+Next week I will continue working on the scrollbar component and try to fix the issues that I am having with its callbacks. I will also try to work on the wrecking ball simulation.
+
+Did you get stuck anywhere?
+---------------------------
+Apart from the scrollbar callbacks and stiff joints, I did not face any major issues.
+
+``Thank you for reading, see you next week!!``
