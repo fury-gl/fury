@@ -267,7 +267,7 @@ def lines_to_vtk_polydata(lines, colors=None):
                 vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                 color_is_scalar = True
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
     poly_data.GetPointData().SetScalars(vtk_colors)
     return poly_data, color_is_scalar
 
@@ -434,7 +434,7 @@ def set_polydata_normals(polydata, normals):
     return polydata
 
 
-def set_polydata_colors(polydata, colors):
+def set_polydata_colors(polydata, colors, array_name="colors"):
     """Set polydata colors with a numpy array (ndarrays Nx3 int).
 
     Parameters
@@ -447,7 +447,7 @@ def set_polydata_colors(polydata, colors):
     vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
                                             array_type=vtk.VTK_UNSIGNED_CHAR)
     vtk_colors.SetNumberOfComponents(3)
-    vtk_colors.SetName("RGB")
+    vtk_colors.SetName(array_name)
     polydata.GetPointData().SetScalars(vtk_colors)
     return polydata
 
@@ -560,7 +560,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
     if isinstance(colors, np.ndarray):
-        set_polydata_colors(pd, colors)
+        set_polydata_colors(pd, colors, array_name="colors")
     if isinstance(normals, np.ndarray):
         set_polydata_normals(pd, normals)
 
