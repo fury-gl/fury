@@ -191,11 +191,11 @@ def test_order_transparent():
 
     red_cube = actor.cube(centers=np.array([[0., 0., 2]]),
                           directions=np.array([[0, 1., 0]]),
-                          colors=np.array([[255, 0., 0]]))
+                          colors=np.array([[1, 0., 0]]))
 
     green_cube = actor.cube(centers=np.array([[0., 0., -2]]),
                             directions=np.array([[0, 1., 0]]),
-                            colors=np.array([[0, 255., 0]]))
+                            colors=np.array([[0, 1., 0]]))
 
     red_cube.GetProperty().SetOpacity(0.2)
     green_cube.GetProperty().SetOpacity(0.2)
