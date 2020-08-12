@@ -1066,6 +1066,13 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         labels = None
         colors_found = False
 
+        def __str__(self):
+            msg = "Report:\n-------\n"
+            msg += "objects: {}\n".format(self.objects)
+            msg += "labels: \n{}\n".format(self.labels)
+            msg += "colors_found: {}\n".format(self.colors_found)
+            return msg
+
     report = ReportSnapshot()
 
     if colors is not None:
