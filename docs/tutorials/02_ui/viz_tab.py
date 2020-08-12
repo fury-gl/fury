@@ -42,7 +42,7 @@ line_slider_y = ui.LineSlider2D(initial_value=0,
 
 cube = actor.box(centers=np.array([[10, 0, 0]]),
                  directions=np.array([[0, 1, 0]]),
-                 colors=np.array([[0, 0, 255]]),
+                 colors=np.array([[0, 0, 1]]),
                  scale=np.array([[1, 1, 1]]))
 cube_x = 0
 cube_y = 0
