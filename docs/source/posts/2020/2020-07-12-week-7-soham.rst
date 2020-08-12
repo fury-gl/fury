@@ -1,0 +1,27 @@
+Orientation, Sizing, Tab UI.
+============================
+
+.. post:: July 12 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 7th weekly check-in. I will be sharing my progress with single actor physics simulation and ``TextBlock2D`` sizing issue which was pending for quite a while now. I will also be sharing my thoughts regarding the ``TAB UI`` component. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I was working with the orientation problem I mentioned in my previous check-in. I did have some problems regarding it, but thanks to my mentor I was able to figure it out and implement it with the help of scipy's Quaternion to Rotation Matrix `method <https://github.com/scipy/scipy/blob/v1.5.1/scipy/spatial/transform/rotation.py#L174-L1978>`_. After understanding the orientation implementation, I spent some time regarding the design of the TAB UI component. I expect the design to be something similar as follows:
+
+.. image:: https://user-images.githubusercontent.com/29832615/87254337-906b0b80-c49f-11ea-93f3-3af0f2d8de10.png
+
+Fortunately, we have good news this week. The ``TextBlock2D`` sizing issue that we were facing for quite a while has now been fixed. We simply have to keep track of the ``scene`` parameter in the ``_add_to_scene`` method of each UI component. This scene parameter inherits ``vtkViewport``, hence it allows us to determine the necessary details about the environment of the 3D objects.
+
+What is coming up next week?
+----------------------------
+As the sizing issue regarding ``TextBlock2D`` has been fixed, I am very much eager to finish the remaining work left. ``ComboBox2D`` and ``TextBlock2D`` were left incomplete because of the issue. Therefore, my main objective next week would be to finish them first. Once I am done with it, I will move on to ``Tab UI``. If not, I will continue with the physics simulation.
+
+Did you get stuck anywhere?
+---------------------------
+Apart from the orientation and sizing problem, I did not face any major issues.
+
+``Thank you for reading, see you next week!!``

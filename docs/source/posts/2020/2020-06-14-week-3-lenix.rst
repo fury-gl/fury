@@ -1,0 +1,29 @@
+Raymarching!!
+=====================
+
+.. post:: June 14 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+This week, Raymarching!
+
+What did you do this week?
+--------------------------
+This was an exciting week as i got to learn and implement the ray marching algorithm in the FURY repo. In the weekly meeting, the mentors suggested adding support for SDF modelled actors as an alternative to the existing FURY actors. After going through a few implementations of ray marching in GLSL, i proceeded with the implementation in VTK. After being able to render a torus , the next logical step was to add support for multiple actors in the same window. The below render shows support for multiple SDF actors :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-3.gif
+
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
+
+What is coming up next week?
+----------------------------
+In the above output, there is some deformation in some of the cubes, The next step is to get rid of this deformation .
+Also i will be working on adding lighting within the shaders for a slightly more realistic experience.
+
+Did you get stuck anywhere?
+---------------------------
+Going through and understanding theVTK documentation was quite a challenging task, however whenever i was confused the doubts were immediately cleared by the mentors

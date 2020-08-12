@@ -388,10 +388,10 @@ def github_stats(**kwargs):
         f = open(fpath, 'w')
         orig_stdout = sys.stdout
         sys.stdout = f
-        print(".. _{}".format(fname))
+        print(".. _{}".format(fname.replace('.rst', ':')))
         print()
         print(("==============================\n"
-               " Release notes version {}\n"
+               " Release notes v{}\n  ()"
                "==============================").format(version))
 
     # By default, search one month back

@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 import vtk
 from vtk.util import numpy_support
@@ -267,7 +266,7 @@ def lines_to_vtk_polydata(lines, colors=None):
                 vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                 color_is_scalar = True
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
     poly_data.GetPointData().SetScalars(vtk_colors)
     return poly_data, color_is_scalar
 
@@ -434,7 +433,7 @@ def set_polydata_normals(polydata, normals):
     return polydata
 
 
-def set_polydata_colors(polydata, colors):
+def set_polydata_colors(polydata, colors, array_name="colors"):
     """Set polydata colors with a numpy array (ndarrays Nx3 int).
 
     Parameters
@@ -446,8 +445,9 @@ def set_polydata_colors(polydata, colors):
     """
     vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
                                             array_type=vtk.VTK_UNSIGNED_CHAR)
-    vtk_colors.SetNumberOfComponents(3)
-    vtk_colors.SetName("RGB")
+    nb_components = colors.shape[1]
+    vtk_colors.SetNumberOfComponents(nb_components)
+    vtk_colors.SetName(array_name)
     polydata.GetPointData().SetScalars(vtk_colors)
     return polydata
 
@@ -539,9 +539,9 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         XYZ coordinates of the object
     triangles: (Nx3) ndarray
         Indices into vertices; forms triangular faces.
-    colors: (Nx3) ndarray
-        N is equal to the number of lines. Every line is coloured with a
-        different RGB color.
+    colors: (Nx3) or (Nx4) ndarray
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        N is equal to the number of vertices.
     normals: (Nx3) ndarray
         normals, represented as 2D ndarrays (Nx3) (one per vertex)
     backface_culling: bool
@@ -560,7 +560,14 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
     if isinstance(colors, np.ndarray):
-        set_polydata_colors(pd, colors)
+        if len(colors) != len(vertices):
+            msg = "Vertices and Colors should have the same size."
+            msg += " Please, update your color array or use the function "
+            msg += "``fury.primitive.repeat_primitives`` to normalize your "
+            msg += "color array before calling this function. e.g."
+            raise ValueError(msg)
+
+        set_polydata_colors(pd, colors, array_name="colors")
     if isinstance(normals, np.ndarray):
         set_polydata_normals(pd, normals)
 
@@ -1003,7 +1010,7 @@ def fix_winding_order(vertices, triangles, clockwise=False):
 
 
 def vertices_from_actor(actor):
-    """ Access to vertices from actor.
+    """Access to vertices from actor.
 
     Parameters
     ----------
@@ -1019,7 +1026,7 @@ def vertices_from_actor(actor):
 
 
 def colors_from_actor(actor, array_name='colors'):
-    """ Access colors from actor which uses polydata
+    """Access colors from actor which uses polydata.
 
     Parameters
     ----------
@@ -1029,6 +1036,7 @@ def colors_from_actor(actor, array_name='colors'):
     -------
     output : array (N, 3)
         Colors
+
     """
     vtk_colors = \
         actor.GetMapper().GetInput().GetPointData().GetArray(array_name)

@@ -8,6 +8,7 @@ test
 
    introduction
    License <symlink/license.rst>
+   blog
 
 .. toctree::
    :maxdepth: 2

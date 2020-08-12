@@ -1,0 +1,29 @@
+Multiple SDF primitives.
+============================
+
+.. post:: July 13 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey Everyone! 
+This week, multiple SDF primitives.
+
+What did you do this week?
+--------------------------
+The objective of this week was to understand the capabilities of the multiple SDF primitives within the same cube project. To get a clearer understanding of what we can achieve with this approach, i added support for real time rotating primitives. The output of 2 cubes with rotating SDFs is shown below.
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-7.gif
+
+
+The code for the above render is available at the `branch <https://github.com/lenixlobo/fury/tree/SDF-Experiments>`_
+
+What is coming up next week?
+----------------------------
+The task for next week is to implement features in the SDF actor and also to fix minor bugs within the shaders. Once everything is done as planned, the PR will be merged for users to access the features.
+
+Did you get stuck anywhere?
+---------------------------
+No issues this week

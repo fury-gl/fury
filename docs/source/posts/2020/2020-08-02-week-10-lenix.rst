@@ -1,0 +1,34 @@
+More Shaders!!
+=====================
+
+.. post:: August 02 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+This week, More Shaders!
+
+What did you do this week?
+--------------------------
+After merging the SDF actor last week , the mentors and I decided to work on another project idea which was discussed prior to GSoC . So the next step assigned to me was to look into the current shader framework and create immersive visualizations using shaders. Being interested in volumetric rendering I looked into volumetric cloud rendering algorithms and created a basic shader-based render in FURY.
+
+
+The output for the same is given below:
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-10a.gif
+
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-10b.gif
+
+The shader demos are available `here <https://github.com/lenixlobo/fury/tree/shader-demos>`_
+
+What is coming up next week?
+----------------------------
+The main focus now is to discuss and work on shader demos which an demonstrate the capabilities of FURY 
+
+Did you get stuck anywhere?
+---------------------------
+No issues were faced this week

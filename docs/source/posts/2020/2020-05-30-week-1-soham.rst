@@ -1,0 +1,23 @@
+Welcome to my GSoC Blog!!!
+==========================
+
+.. post:: May 30 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello Everyone, this is **Soham Biswas** currently in 2nd year pursuing my Bachelor’s(B.Tech) degree in Computer Science & Engineering from Institute of Engineering & Management, Kolkata. I have been selected for GSoC' 20 at sub-org **FURY** under the umbrella organization of **Python Software Foundation**. I will be working on building sci-fi-like 2D and 3D interfaces and provide physics engine integration under project titled "Create new UI widgets & Physics Engine Integration".
+
+What did you do during the Community Bonding Period?
+----------------------------------------------------
+Due to the pandemic outbreak and the country wide lockdown in India, many places including my university were closed and therefore I decided to get a head start and start with the project early. During the community bonding period, we had video conference meetings with our mentors and the project's core team. We interacted with each other and discussed the implementation details and their respective deadlines for the entire event period. We will be having such meetings every week on Wednesday in order to update ourselves about the progress of our respective tasks.
+
+I completed the remaining Pull Requests that I had pending before the GSoC students announcement. I also reviewed other issues and pull requests to make sure everything remains up-to-date.
+
+What is coming up next week?
+----------------------------
+Currently, I am focusing on building the ComboBox2D UI element. I will try to get the skeleton model, required sub-components and their respective default callbacks done by next week.
+
+While working with my previous PR related to *Double Click* callbacks, I faced an issue where I was unable to create and implement User Events properly in VTK. Thankfully, my mentors helped me out I was able to implement double click callbacks for all three mouse buttons successfully.
+
+``See you next week, cheers!!``

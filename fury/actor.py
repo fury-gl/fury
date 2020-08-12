@@ -599,7 +599,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("Colors")
+    poly_mapper.SelectColorArray("colors")
     poly_mapper.Update()
 
     # Color Scale with a lookup table
@@ -711,7 +711,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("Colors")
+    poly_mapper.SelectColorArray("colors")
     poly_mapper.Update()
 
     if depth_cue:
@@ -1001,7 +1001,7 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         deep=True,
         array_type=vtk.VTK_UNSIGNED_CHAR)
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
@@ -1195,7 +1195,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         deep=True,
         array_type=vtk.VTK_UNSIGNED_CHAR)
 
-    vtk_colors.SetName("Colors")
+    vtk_colors.SetName("colors")
 
     polydata = vtk.vtkPolyData()
     polydata.SetPoints(points)
@@ -1780,7 +1780,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
+def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                    scale=1):
     """Visualize one or many octagonal prisms with different features.
 
@@ -1805,7 +1805,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3)
     >>> dirs = np.random.rand(3, 3)
-    >>> colors = np.random.rand(3, 3)*255
+    >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
     >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
@@ -1821,7 +1821,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(255, 0, 0),
     return oct_actor
 
 
-def frustum(centers, directions=(1, 0, 0), colors=(0, 255, 0), scale=1):
+def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scale=1):
     """Visualize one or many frustum pyramids with different features.
 
     Parameters
@@ -1844,7 +1844,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 255, 0), scale=1):
     >>> scene = window.Scene()
     >>> centers = np.random.rand(4, 3)
     >>> dirs = np.random.rand(4, 3)
-    >>> colors = np.random.rand(4, 3)*255
+    >>> colors = np.random.rand(4, 3)
     >>> scales = np.random.rand(4, 1)
     >>> actor = actor.frustum(centers, dirs, colors, scales)
     >>> scene.add(actor)
@@ -1861,7 +1861,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 255, 0), scale=1):
 
 
 def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
-                 colors=(255, 0, 0), scale=1):
+                 colors=(1, 0, 0), scale=1):
     """Visualize one or many superquadrics with different features.
 
     Parameters
@@ -1919,7 +1919,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return actor
 
 
-def billboard(centers, colors=(0, 255, 0), scale=1, vs_dec=None, vs_impl=None,
+def billboard(centers, colors=(0, 1, 0), scale=1, vs_dec=None, vs_impl=None,
               fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
     """Create a billboard actor.
 
@@ -2555,7 +2555,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(255, 0, 0), primitives='torus',
+def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         scale=1):
     """Create a SDF primitive based actor
 
