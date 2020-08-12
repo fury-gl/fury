@@ -68,4 +68,4 @@ if interactive:
     show_manager.start()
 
 window.record(show_manager.scene,
-              size=current_size, out_path="radio_button.png")
+              size=current_size, out_path="viz_radio_buttons.png")

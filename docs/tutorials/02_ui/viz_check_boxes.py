@@ -60,11 +60,7 @@ def set_figure_visiblity(checkboxes):
 def update_colors(color_array):
     for name, figure in figure_dict.items():
         vcolors = utils.colors_from_actor(figure)
-        if vcolors is not None:
-            vcolors[:] = color_array
-        else:
-            print("Not able to update cube due to bug.")
-
+        vcolors[:] = color_array
         utils.update_actor(figure)
 
 
@@ -138,4 +134,4 @@ if interactive:
     show_manager.start()
 
 window.record(show_manager.scene,
-              size=current_size, out_path="viz_slider.png")
+              size=current_size, out_path="viz_checkbox.png")
