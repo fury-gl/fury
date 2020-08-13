@@ -8,7 +8,7 @@ particles in a box using FURY.
 
 ##############################################################################
 # In this example, the particles collide with each other and with the walls
-# of the container. When the the collision happens between two particles,
+# of the container. When the collision happens between two particles,
 # the particle with less velocity changes its color and gets the same color
 # as the particle with higher velocity. For simplicity, in this demo we
 # do not apply forces.
@@ -58,7 +58,7 @@ def collision():
         distance = np.linalg.norm(xyz[i] - xyz[j])
         vel_mag_i = np.linalg.norm(vel[i])
         vel_mag_j = np.linalg.norm(vel[j])
-        # Collision happens if the distance between the centars of two
+        # Collision happens if the distance between the centers of two
         # particles is less or equal to the sum of their radii
         if (distance <= (radii[i] + radii[j])):
             vel[i] = -vel[i]
@@ -154,4 +154,6 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 showm.add_timer_callback(True, 50, timer_callback)
-showm.start()
+interactive = False
+if interactive:
+    showm.start()
