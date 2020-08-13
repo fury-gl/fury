@@ -97,7 +97,7 @@ dt = 0.05
 xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
                                             - 0.5) * 0.6
 vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
-colors = np.zeros((num_particles, 3)) + np.array([1, 1, 1])
+colors = np.random.rand(num_particles, 3)
 radii = np.random.rand(num_particles) + 0.01
 
 ##############################################################################
@@ -107,15 +107,19 @@ radii = np.random.rand(num_particles) + 0.01
 scene = window.Scene()
 box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
-box_colors = np.array([[255, 255, 255]])
+box_colors = np.array([[1, 1, 1, 0.2]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
                       scale=(box_lx, box_ly, box_lz))
-utils.opacity(box_actor, 0.2)
 scene.add(box_actor)
 
 lines = box_edges(box_lx, box_ly, box_lz)
 line_actor = actor.streamtube(lines, colors=(1, 0.5, 0), linewidth=0.1)
 scene.add(line_actor)
+
+sphere_actor = actor.sphere(centers=xyz,
+                            colors=colors,
+                            radii=radii)
+scene.add(sphere_actor)
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=True,
@@ -123,6 +127,7 @@ showm = window.ShowManager(scene,
 showm.initialize()
 tb = ui.TextBlock2D(bold=True)
 scene.zoom(0.8)
+scene.azimuth(30)
 
 # use itertools to avoid global variables
 counter = itertools.count()
@@ -132,6 +137,7 @@ vcolors = utils.colors_from_actor(sphere_actor, 'colors')
 no_vertices_per_sphere = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(xyz, no_vertices_per_sphere, axis=0)
+
 
 def timer_callback(_obj, _event):
     global xyz
@@ -145,7 +151,6 @@ def timer_callback(_obj, _event):
     utils.update_actor(sphere_actor)
 
     scene.reset_clipping_range()
-    # scene.azimuth(0.1)
     showm.render()
 
     if cnt == steps:
@@ -154,6 +159,9 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 showm.add_timer_callback(True, 50, timer_callback)
-interactive = False
+
+interactive = True
 if interactive:
     showm.start()
+
+window.record(showm.scene, size=(900, 768), out_path="simple_collisions.png")
