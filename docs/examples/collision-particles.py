@@ -160,7 +160,7 @@ def timer_callback(_obj, _event):
 scene.add(tb)
 showm.add_timer_callback(True, 50, timer_callback)
 
-interactive = True
+interactive = False
 if interactive:
     showm.start()
 
