@@ -1,3 +1,5 @@
+# Beads rendered in Pybullet
+
 import pybullet as p
 import time
 import math

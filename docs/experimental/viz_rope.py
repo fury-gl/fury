@@ -1,3 +1,5 @@
+# rope render in pybullet
+
 import pybullet as p
 import time
 import numpy as np

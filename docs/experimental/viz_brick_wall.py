@@ -1,3 +1,5 @@
+# To be removed, 1 brick = 1 actor, inefficient.
+
 import numpy as np
 from fury import window, actor, ui
 import itertools
