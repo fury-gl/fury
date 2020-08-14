@@ -16,9 +16,11 @@ chain_segments = 10
 segment_length = 0.1
 segment_radius = 0.5
 segment_mass = 0.1
+segment_color = np.array([1, 0, 0])
 
 ball_mass = 10
-ball_radius = 5
+ball_radius = 0.5
+ball_color = np.array([[1, 0, 0]])
 
 joint_friction = 0.0005
 
@@ -77,11 +79,89 @@ brick_actor = actor.box(centers=brick_centers,
                         colors=brick_colors)
 
 
+# Generate wrecking ball
+link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
+                                    radius=segment_radius,
+                                    height=segment_length)
 
+ball_shape = p.createCollisionShape(p.GEOM_SPHERE,
+                                    radius=ball_radius)
 
+visualShapeId = -1
+
+link_masses = np.zeros(chain_segments)
+link_masses[:] = segment_mass
+
+linkCollisionShapeIndices = np.zeros(chain_segments)
+linkCollisionShapeIndices[:] = np.array(link_shape)
+linkVisualShapeIndices = -1 * np.ones(chain_segments)
+linkPositions = np.zeros((chain_segments, 3))
+linkPositions[:] = np.array([segment_length, 0, 0])
+linkOrientations = np.zeros((chain_segments, 4))
+linkOrientations[:] = np.array([0, 0, 0, 1])
+linkInertialFramePos = np.zeros((chain_segments, 3))
+linkInertialFrameOrns = np.zeros((chain_segments, 4))
+linkInertialFrameOrns[:] = np.array([0, 0, 0, 1])
+indices = np.arange(chain_segments)
+jointTypes = np.zeros(chain_segments)
+jointTypes[:] = np.array(p.JOINT_SPHERICAL)
+axis = np.zeros((chain_segments, 3))
+axis[:] = np.array([1, 0, 0])
+
+linkDirections = np.zeros((chain_segments, 3))
+linkDirections[:] = np.array([0, 0, 1])
+
+link_radii = np.zeros(chain_segments)
+link_radii[:] = segment_radius
+
+link_heights = np.zeros(chain_segments)
+link_heights[:] = segment_length
+
+link_colors = np.zeros((chain_segments, 3))
+link_colors[:] = segment_color
+
+chain_actor = actor.cylinder(centers=linkPositions,
+                             directions=linkDirections,
+                             colors=link_colors,
+                             radius=segment_radius,
+                             heights=link_heights, capped=True)
+
+basePosition = [0, 0, 0]
+baseOrientation = [0, 0, 0, 1]
+chain = p.createMultiBody(ball_mass, ball_shape, visualShapeId,
+                          basePosition, baseOrientation,
+                          linkMasses=link_masses,
+                          linkCollisionShapeIndices=linkCollisionShapeIndices,
+                          linkVisualShapeIndices=linkVisualShapeIndices,
+                          linkPositions=linkPositions,
+                          linkOrientations=linkOrientations,
+                          linkInertialFramePositions=linkInertialFramePos,
+                          linkInertialFrameOrientations=linkInertialFrameOrns,
+                          linkParentIndices=indices,
+                          linkJointTypes=jointTypes,
+                          linkJointAxis=axis)
+
+friction_vec = [joint_friction]*3   # same all axis
+control_mode = p.POSITION_CONTROL   # set pos control mode
+for j in range(p.getNumJoints(chain)):
+    p.setJointMotorControlMultiDof(chain, j, control_mode,
+                                   targetPosition=[0, 0, 0, 1],
+                                   targetVelocity=[0, 0, 0],
+                                   positionGain=0,
+                                   velocityGain=1,
+                                   force=friction_vec)
+
+root_hinge = p.createConstraint(chain, indices[-1], -1, -1,
+                                p.JOINT_FIXED, [0, 0, 0],
+                                [0, 0, 0], [0, 0, 2])
+
+ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
+                          radii=ball_radius,
+                          colors=ball_color)
 
 scene = window.Scene()
 scene.add(actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
+scene.add(chain_actor, ball_actor)
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
@@ -92,11 +172,15 @@ showm.initialize()
 base_pos, base_orn = p.getBasePositionAndOrientation(base)
 base_actor.SetPosition(*base_pos)
 
-vertices = utils.vertices_from_actor(brick_actor)
-num_vertices = vertices.shape[0]
+brick_vertices = utils.vertices_from_actor(brick_actor)
+num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
-sec = np.int(num_vertices / num_objects)
+brick_sec = np.int(num_vertices / num_objects)
 
+chain_vertices = utils.vertices_from_actor(chain_actor)
+num_vertices = chain_vertices.shape[0]
+num_objects = brick_centers.shape[0]
+chain_sec = np.int(num_vertices / num_objects)
 
 # Function for syncing actors with multibodies.
 def sync_brick(object_index, multibody):
@@ -107,12 +191,35 @@ def sync_brick(object_index, multibody):
             p.getDifferenceQuaternion(orn, brick_orns[object_index])),
         (3, 3))
 
-    vertices[object_index * sec: object_index * sec + sec] = \
-        (vertices[object_index * sec: object_index * sec + sec] -
+    sec = brick_sec
+
+    brick_vertices[object_index * sec: object_index * sec + sec] = \
+        (brick_vertices[object_index * sec: object_index * sec + sec] -
          brick_centers[object_index])@rot_mat + pos
 
     brick_centers[object_index] = pos
     brick_orns[object_index] = orn
+
+def sync_chain(actor_list, multibody):
+    for joint in range(p.getNumJoints(multibody)):
+        # `p.getLinkState` offers various information about the joints
+        # as a list and the values in 4th and 5th index refer to the joint's
+        # position and orientation respectively.
+        pos, orn = p.getLinkState(multibody, joint)[4:6]
+
+        rot_mat = np.reshape(
+            p.getMatrixFromQuaternion(
+                p.getDifferenceQuaternion(orn, linkOrientations[joint])),
+            (3, 3))
+
+        sec = brick_sec
+
+        chain_vertices[joint * sec: joint * sec + sec] =\
+            (chain_vertices[joint * sec: joint * sec + sec] -
+             linkPositions[joint])@rot_mat + pos
+
+        linkPositions[joint] = pos
+        linkOrientations[joint] = orn
 
 
 # Create timer callback which will execute at each step of simulation.
@@ -122,7 +229,12 @@ def timer_callback(_obj, _event):
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
         sync_brick(idx, brick)
+
+    pos, _ = p.getBasePositionAndOrientation(chain)
+    ball_actor.SetPosition(*pos)
+    sync_chain(chain_actor, chain)
     utils.update_actor(brick_actor)
+    utils.update_actor(chain_actor)
 
     # Simulate a step.
     p.stepSimulation()
