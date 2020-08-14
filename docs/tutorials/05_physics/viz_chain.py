@@ -1,26 +1,28 @@
+"""
+=====================
+Chain Simulation
+=====================
+
+This example simulation shows how to use pybullet to render physics simulations
+in fury. In this example we specifically render a Chain oscillating to and fro.
+
+First some imports.
+"""
 import numpy as np
 from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
 
-# Instantiate Pybullet client.
-client = p.connect(p.DIRECT)
+###############################################################################
+# Setup pybullet and add gravity.
+
+p.connect(p.DIRECT)
+
 # Apply gravity to the scene.
-p.setGravity(0, 0, -10, physicsClientId=client)
+p.setGravity(0, 0, -10)
 
-# ###### Creating ceiling Plane
-# ceil_actor = actor.box(centers=np.array([[0, 0, 0]]),
-#                          directions=[0,0,0],
-#                          scale=(5, 5, 0.2) ,
-#                          colors=(255, 255, 255))
-# ceil_coll = p.createCollisionShape(p.GEOM_BOX,
-#                                    halfExtents=[2.5, 2.5, 0.1])
-# ceil = p.createMultiBody(baseMass=0,
-#                           baseCollisionShapeIndex=ceil_coll,
-#                           basePosition=[0, 0, -0.2],
-#                           baseOrientation=[ 0, 0, 0, 1 ])
-
-# Creating String
+###############################################################################
+# Now we render the Chain using the following parameters and definations.
 
 # Parameters
 n_links = 20
@@ -29,7 +31,7 @@ link_mass = 0.5
 base_mass = 0.1
 radii = 0.5
 
-joint_friction = 0.0005
+joint_friction = 0.0005 # rotational joint friction [N/(rad/s)]
 
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
                                     radius=radii,
@@ -92,9 +94,9 @@ rope = p.createMultiBody(base_mass,
                          linkParentIndices=indices,
                          linkJointTypes=jointTypes,
                          linkJointAxis=axis)
-# useMaximalCoordinates=useMaximalCoordinates)
 
-# remove stiffness in motors, add friction force
+###############################################################################
+# We remove stiffness among the joints by adding friction to them.
 
 friction_vec = [joint_friction]*3   # same all axis
 control_mode = p.POSITION_CONTROL   # set pos control mode
@@ -106,7 +108,11 @@ for j in range(p.getNumJoints(rope)):
                                    velocityGain=1,
                                    force=friction_vec)
 
-# fixed constrain to keep root cube in place
+
+###############################################################################
+# Next, we define a constraint base that will help us in the oscillation of the
+# chain.
+
 root_robe_c = p.createConstraint(rope, -1, -1, -1,
                                  p.JOINT_FIXED, [0, 0, 0],
                                  [0, 0, 0], [0, 0, 2])
@@ -116,14 +122,13 @@ amplitude_x = 0.3
 amplitude_y = 0.0
 freq = 0.6
 
-# manually simulate joint damping
-Damping = 0.001
-
-
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=np.array([[0, 0, 0]]),
                        scale=(0.02, 0.02, 0.02),
                        colors=np.array([[1, 0, 0]]))
+
+###############################################################################
+# We add the necessary actors to the scene.
 
 scene = window.Scene()
 scene.background((1, 1, 1))
@@ -131,7 +136,6 @@ scene.set_camera((2.2, -3.0, 3.0), (-0.3, 0.6, 0.7), (-0.2, 0.2, 1.0))
 scene.add(actor.axes(scale=(0.1, 0.1, 0.1)))
 scene.add(rope_actor)
 scene.add(base_actor)
-
 
 # Create show manager.
 showm = window.ShowManager(scene,
@@ -143,6 +147,9 @@ showm.initialize()
 # Counter interator for tracking simulation steps.
 counter = itertools.count()
 
+
+###############################################################################
+# We define a couple of syncing methods for the base and chain.
 
 # Function for syncing actors with multibodies.
 def sync_actor(actor, multibody):
@@ -160,6 +167,9 @@ sec = np.int(num_vertices / num_objects)
 
 def sync_joints(actor_list, multibody):
     for joint in range(p.getNumJoints(multibody)):
+        # `p.getLinkState` offers various information about the joints
+        # as a list and the values in 4th and 5th index refer to the joint's
+        # position and orientation respectively.
         pos, orn = p.getLinkState(multibody, joint)[4:6]
 
         rot_mat = np.reshape(
@@ -174,14 +184,19 @@ def sync_joints(actor_list, multibody):
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
 
+###############################################################################
+# We define a TextBlock to display the Avg. FPS and Simulation steps.
 
 fpss = np.array([])
-tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0))
+tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0),
+                    text="Avg. FPS: \nSim Steps: ")
 scene.add(tb)
 
 t = 0.0
 freq_sim = 240
 
+###############################################################################
+# Timer callback to sync objects, simulate steps and oscillate the base.
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
@@ -206,28 +221,27 @@ def timer_callback(_obj, _event):
     p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn,
                        maxForce=500)
 
-    # Set position and orientation of the ball.
-    # sync_actor(ceil_actor, ceil)
-    for i in range(p.getNumJoints(rope)):
-        # sync_actor(ball_actor, sphere)
-        sync_actor(base_actor, rope)
-        sync_joints(rope_actor, rope)
-        utils.update_actor(rope_actor)
+    # Sync base and chain.
+    sync_actor(base_actor, rope)
+    sync_joints(rope_actor, rope)
+    utils.update_actor(rope_actor)
 
     # Simulate a step.
     p.stepSimulation()
 
     # Exit after 2000 steps of simulation.
-    # if cnt == 2000:
-    #     showm.exit()
+    if cnt == 2000:
+        showm.exit()
 
 
 # Add the timer callback to showmanager.
 # Increasing the duration value will slow down the simulation.
 showm.add_timer_callback(True, 1, timer_callback)
 
-interactive = True
+interactive = False
 
 # start simulation
 if interactive:
     showm.start()
+
+window.record(scene, size=(900, 768), out_path="viz_chain.png")
