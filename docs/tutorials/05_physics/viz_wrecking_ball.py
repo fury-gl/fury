@@ -10,6 +10,8 @@ wall_length = 5
 wall_breadth = 5
 wall_height = 5
 
+brick_size = np.array([0.2, 0.4, 0.2])
+
 chain_segments = 10
 segment_length = 0.1
 segment_radius = 0.5
@@ -23,10 +25,10 @@ joint_friction = 0.0005
 # Base
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=[0, 0, 0],
-                       scale=(10, 10, 0.2),
+                       scale=(5, 5, 0.2),
                        colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
-                                   halfExtents=[5, 5, 0.1])
+                                   halfExtents=[2.5, 2.5, 0.1])
 base = p.createMultiBody(
                           baseCollisionShapeIndex=base_coll,
                           basePosition=[0, 0, -0.1],
@@ -44,12 +46,12 @@ brick_directions[:] = np.array([1.57, 0, 0])
 brick_orns = np.zeros((nb_bricks, 4))
 
 brick_sizes = np.zeros((nb_bricks, 3))
-brick_sizes[:] = np.array([0.2, 0.4, 0.2])
+brick_sizes[:] = brick_size
 
 brick_colors = np.random.rand(nb_bricks, 3)
 
 brick_coll = p.createCollisionShape(p.GEOM_BOX,
-                                    halfExtents=[0.1, 0.2, 0.1])
+                                    halfExtents=brick_size/2)
 
 bricks = np.zeros(nb_bricks, dtype=np.int16)
 
@@ -58,7 +60,7 @@ idx = 0
 for i in range(wall_length):
     for k in range(wall_height):
         for j in range(wall_breadth):
-            center_pos = np.array([(i*0.2), (j*0.4)-1.8, (0.2*k)+0.1])
+            center_pos = np.array([(i*0.2)-1.8, (j*0.4)-0.9, (0.2*k)+0.1])
             brick_centers[idx] = center_pos
             brick_orns[idx] = np.array([0, 0, 0, 1])
             bricks[idx] = p.createMultiBody(baseMass=0.5,
@@ -74,20 +76,13 @@ brick_actor = actor.box(centers=brick_centers,
                         scale=brick_sizes,
                         colors=brick_colors)
 
+
+
+
+
 scene = window.Scene()
-scene.add(actor.axes(), base_actor, brick_actor)
+scene.add(actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
 
-# # Creating wrecking ball
-# segment_shape = p.createCollisionShape(p.GEOM_CYLINDER,
-#                                        radius=segment_radius,
-#                                        height=segment_length)
-
-# ball_shape = p.createCollisionShape(p.GEOM_SPHERE,
-#                                     radius=ball_radius)
-
-# visualShapeId = -1
-
-# Create show manager.
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
