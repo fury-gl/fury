@@ -9,33 +9,31 @@ red_radius = 0.5
 blue_radius = 0.5
 duration = 50
 
-#### Red Ball
+# Red Ball
 red_ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
-                            colors=np.array([[1, 0, 0]]),
-                            radii=red_radius)
+                              colors=np.array([[1, 0, 0]]),
+                              radii=red_radius)
 
-red_ball_coll = p.createCollisionShape(
-    p.GEOM_SPHERE,
-    radius=red_radius)
+red_ball_coll = p.createCollisionShape(p.GEOM_SPHERE, radius=red_radius)
 
 red_ball = p.createMultiBody(baseMass=0.5,
-                        baseCollisionShapeIndex=red_ball_coll,
-                        basePosition=[10, 0, 0],
-                        baseOrientation=[0, 0, 0, 1])
+                             baseCollisionShapeIndex=red_ball_coll,
+                             basePosition=[10, 0, 0],
+                             baseOrientation=[0, 0, 0, 1])
 
-### Blue ball
+# Blue ball
 blue_ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
-                            colors=np.array([[0, 0, 1]]),
-                            radii=blue_radius)
+                               colors=np.array([[0, 0, 1]]),
+                               radii=blue_radius)
 
 blue_ball_coll = p.createCollisionShape(
     p.GEOM_SPHERE,
     radius=blue_radius)
 
 blue_ball = p.createMultiBody(baseMass=0.5,
-                        baseCollisionShapeIndex=blue_ball_coll,
-                        basePosition=[-10, 0, 0],
-                        baseOrientation=[0, 0, 0, 1])
+                              baseCollisionShapeIndex=blue_ball_coll,
+                              basePosition=[-10, 0, 0],
+                              baseOrientation=[0, 0, 0, 1])
 
 p.changeDynamics(red_ball, -1, restitution=0.6)
 p.changeDynamics(blue_ball, -1, restitution=0.6)
@@ -52,6 +50,7 @@ showm = window.ShowManager(scene,
 showm.initialize()
 counter = itertools.count()
 
+
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
     actor.SetPosition(*pos)
@@ -59,12 +58,15 @@ def sync_actor(actor, multibody):
     actor.SetOrientation(*orn_deg)
     actor.RotateWXYZ(*orn)
 
+
 apply_force = True
-tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0), text="")
+tb = ui.TextBlock2D(position=(0, 600), font_size=30, color=(1, 0.5, 0),
+                    text="")
 scene.add(tb)
 scene.set_camera(position=(0.30, -18.78, 0.89),
                  focal_point=(0.15, 0.25, 0.40),
                  view_up=(0, 0, 1.00))
+
 
 def timer_callback(_obj, _event):
     global apply_force
@@ -75,14 +77,14 @@ def timer_callback(_obj, _event):
 
     if apply_force:
         p.applyExternalForce(red_ball, -1,
-                                forceObj=[-40000, 0, 0],
-                                posObj=red_pos,
-                                flags=p.WORLD_FRAME)
+                             forceObj=[-40000, 0, 0],
+                             posObj=red_pos,
+                             flags=p.WORLD_FRAME)
 
         p.applyExternalForce(blue_ball, -1,
-                                forceObj=[40000, 0, 0],
-                                posObj=blue_pos,
-                                flags=p.WORLD_FRAME)
+                             forceObj=[40000, 0, 0],
+                             posObj=blue_pos,
+                             flags=p.WORLD_FRAME)
 
         apply_force = 0
 

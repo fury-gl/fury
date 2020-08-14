@@ -51,7 +51,7 @@ brick_size = np.array([0.2, 0.4, 0.2])
 # Now we define the required parameters to render the Ball.
 
 # Ball actor
-ball_actor = actor.sphere(centers = np.array([[0, 0, 0]]),
+ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
                           colors=ball_color,
                           radii=ball_radius)
 
@@ -72,13 +72,13 @@ p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 # Render a base plane to support the bricks.
 
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                         directions=[0,0,0],
-                         scale=base_size,
-                         colors=base_color)
+                       directions=[0, 0, 0],
+                       scale=base_size,
+                       colors=base_color)
 
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=base_size/2)
-                                   # half of the actual size.
+# half of the actual size.
 
 base = p.createMultiBody(
                           baseCollisionShapeIndex=base_coll,
@@ -119,16 +119,16 @@ for k in range(wall_height):
         brick_centers[i] = center_pos
         brick_orns[i] = np.array([0, 0, 0, 1])
         bricks[i] = p.createMultiBody(baseMass=brick_mass,
-                                   baseCollisionShapeIndex=brick_coll,
-                                   basePosition=center_pos,
-                                   baseOrientation=brick_orns[i])
+                                      baseCollisionShapeIndex=brick_coll,
+                                      basePosition=center_pos,
+                                      baseOrientation=brick_orns[i])
         p.changeDynamics(bricks[i], -1, lateralFriction=0.1, restitution=0.1)
         i += 1
 
 brick_actor = actor.box(centers=brick_centers,
-                         directions=brick_directions,
-                         scale=brick_sizes,
-                         colors=brick_colors)
+                        directions=brick_directions,
+                        scale=brick_sizes,
+                        colors=brick_colors)
 
 ###############################################################################
 # Now, we define a scene and add actors to it.
@@ -183,6 +183,7 @@ sec = np.int(num_vertices / num_objects)
 # * Perform calculations to get the required position and orientation.
 # * Update the position and orientation.
 
+
 def sync_brick(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
 
@@ -202,11 +203,13 @@ def sync_brick(object_index, multibody):
 # A simpler but inaccurate approach is used here to update the position and
 # orientation.
 
+
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
     actor.SetPosition(*pos)
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
+
 
 ###############################################################################
 # Here, we define a textblock to display the Avg. FPS and simulation steps.
@@ -226,6 +229,7 @@ scene.set_camera(position=(10.46, -8.13, 6.18),
 ###############################################################################
 # Timer callback is created which is responsible for calling the sync and
 # simulation methods.
+
 
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
@@ -266,6 +270,7 @@ def timer_callback(_obj, _event):
     if cnt == 2000:
         showm.exit()
 
+
 # Add the timer callback to showmanager.
 # Increasing the duration value will slow down the simulation.
 showm.add_timer_callback(True, 1, timer_callback)
@@ -273,6 +278,7 @@ showm.add_timer_callback(True, 1, timer_callback)
 interactive = False
 
 # start simulation
-if interactive: showm.start()
+if interactive:
+    showm.start()
 
 window.record(scene, out_path="viz_brick_wall.png", size=(900, 768))

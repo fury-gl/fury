@@ -14,17 +14,17 @@ p.setGravity(0, 0, -10, physicsClientId=client)
 #                          scale=(5, 5, 0.2) ,
 #                          colors=(255, 255, 255))
 # ceil_coll = p.createCollisionShape(p.GEOM_BOX,
-#                                    halfExtents=[2.5, 2.5, 0.1]) # half of the actual size.
+#                                    halfExtents=[2.5, 2.5, 0.1])
 # ceil = p.createMultiBody(baseMass=0,
 #                           baseCollisionShapeIndex=ceil_coll,
 #                           basePosition=[0, 0, -0.2],
 #                           baseOrientation=[ 0, 0, 0, 1 ])
 
-############ Creating String
+# Creating String
 
 # Parameters
 n_links = 20
-dx_link = 0.1       #Size of segments
+dx_link = 0.1       # Size of segments
 link_mass = 0.5
 base_mass = 0.1
 radii = 0.5
@@ -52,8 +52,8 @@ linkPositions[:] = np.array([0, 0, -dx_link])
 linkOrientations = np.zeros((n_links, 4))
 linkOrientations[:] = np.array([0, 0, 0, 1])
 linkInertialFramePositions = np.zeros((n_links, 3))
-linkInertialFrameOrientations = np.zeros((n_links, 4))
-linkInertialFrameOrientations[:] = np.array([0, 0, 0, 1])
+linkInertialFrameOrns = np.zeros((n_links, 4))
+linkInertialFrameOrns[:] = np.array([0, 0, 0, 1])
 indices = np.arange(n_links)
 jointTypes = np.zeros(n_links)
 jointTypes[:] = np.array(p.JOINT_SPHERICAL)
@@ -78,33 +78,33 @@ rope_actor = actor.cylinder(centers=linkPositions,
 basePosition = [0, 0, 2]
 baseOrientation = [0, 0, 0, 1]
 rope = p.createMultiBody(base_mass,
-                              base_shape,
-                              visualShapeId,
-                              basePosition,
-                              baseOrientation,
-                              linkMasses=link_Masses,
-                              linkCollisionShapeIndices=linkCollisionShapeIndices,
-                              linkVisualShapeIndices=linkVisualShapeIndices,
-                              linkPositions=linkPositions,
-                              linkOrientations=linkOrientations,
-                              linkInertialFramePositions=linkInertialFramePositions,
-                              linkInertialFrameOrientations=linkInertialFrameOrientations,
-                              linkParentIndices=indices,
-                              linkJointTypes=jointTypes,
-                              linkJointAxis=axis)
-                            #   useMaximalCoordinates=useMaximalCoordinates)
+                         base_shape,
+                         visualShapeId,
+                         basePosition,
+                         baseOrientation,
+                         linkMasses=link_Masses,
+                         linkCollisionShapeIndices=linkCollisionShapeIndices,
+                         linkVisualShapeIndices=linkVisualShapeIndices,
+                         linkPositions=linkPositions,
+                         linkOrientations=linkOrientations,
+                         linkInertialFramePositions=linkInertialFramePositions,
+                         linkInertialFrameOrientations=linkInertialFrameOrns,
+                         linkParentIndices=indices,
+                         linkJointTypes=jointTypes,
+                         linkJointAxis=axis)
+# useMaximalCoordinates=useMaximalCoordinates)
 
 # remove stiffness in motors, add friction force
 
 friction_vec = [joint_friction]*3   # same all axis
 control_mode = p.POSITION_CONTROL   # set pos control mode
 for j in range(p.getNumJoints(rope)):
-    p.setJointMotorControlMultiDof(rope,j,control_mode,
-                                    targetPosition=[0,0,0,1],
-                                    targetVelocity=[0,0,0],
-                                    positionGain=0,
-                                    velocityGain=1,
-                                    force=friction_vec)
+    p.setJointMotorControlMultiDof(rope, j, control_mode,
+                                   targetPosition=[0, 0, 0, 1],
+                                   targetVelocity=[0, 0, 0],
+                                   positionGain=0,
+                                   velocityGain=1,
+                                   force=friction_vec)
 
 # fixed constrain to keep root cube in place
 root_robe_c = p.createConstraint(rope, -1, -1, -1,
@@ -143,6 +143,7 @@ showm.initialize()
 # Counter interator for tracking simulation steps.
 counter = itertools.count()
 
+
 # Function for syncing actors with multibodies.
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -150,10 +151,12 @@ def sync_actor(actor, multibody):
     orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
     actor.SetOrientation(*orn_deg)
 
+
 vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = vertices.shape[0]
 num_objects = linkPositions.shape[0]
 sec = np.int(num_vertices / num_objects)
+
 
 def sync_joints(actor_list, multibody):
     for joint in range(p.getNumJoints(multibody)):
@@ -164,9 +167,9 @@ def sync_joints(actor_list, multibody):
                 p.getDifferenceQuaternion(orn, linkOrientations[joint])),
             (3, 3))
 
-        vertices[joint * sec: joint * sec + sec] = \
+        vertices[joint * sec: joint * sec + sec] =\
             (vertices[joint * sec: joint * sec + sec] -
-            linkPositions[joint])@rot_mat + pos
+             linkPositions[joint])@rot_mat + pos
 
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
@@ -178,6 +181,8 @@ scene.add(tb)
 
 t = 0.0
 freq_sim = 240
+
+
 def timer_callback(_obj, _event):
     cnt = next(counter)
     global t, fpss
@@ -198,8 +203,8 @@ def timer_callback(_obj, _event):
     # move base arround
     pivot = [3*ux, uy, 2]
     orn = p.getQuaternionFromEuler([0, 0, 0])
-    p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn, maxForce=500)
-
+    p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn,
+                       maxForce=500)
 
     # Set position and orientation of the ball.
     # sync_actor(ceil_actor, ceil)
@@ -216,6 +221,7 @@ def timer_callback(_obj, _event):
     # if cnt == 2000:
     #     showm.exit()
 
+
 # Add the timer callback to showmanager.
 # Increasing the duration value will slow down the simulation.
 showm.add_timer_callback(True, 1, timer_callback)
@@ -223,4 +229,5 @@ showm.add_timer_callback(True, 1, timer_callback)
 interactive = True
 
 # start simulation
-if interactive: showm.start()
+if interactive:
+    showm.start()

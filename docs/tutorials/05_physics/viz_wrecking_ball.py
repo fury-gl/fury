@@ -22,15 +22,15 @@ joint_friction = 0.0005
 
 # Base
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                         directions=[0,0,0],
-                         scale=(10, 10, 0.2),
-                         colors=(1, 1, 1))
+                       directions=[0, 0, 0],
+                       scale=(10, 10, 0.2),
+                       colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
-                                   halfExtents=[5, 5, 0.1]) # half of the actual size.
+                                   halfExtents=[5, 5, 0.1])
 base = p.createMultiBody(
                           baseCollisionShapeIndex=base_coll,
                           basePosition=[0, 0, -0.1],
-                          baseOrientation=[ 0, 0, 0, 1 ])
+                          baseOrientation=[0, 0, 0, 1])
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
 
@@ -53,7 +53,7 @@ brick_coll = p.createCollisionShape(p.GEOM_BOX,
 
 bricks = np.zeros(nb_bricks, dtype=np.int16)
 
-idx=0
+idx = 0
 # Setting up wall
 for i in range(wall_length):
     for k in range(wall_height):
@@ -62,16 +62,17 @@ for i in range(wall_length):
             brick_centers[idx] = center_pos
             brick_orns[idx] = np.array([0, 0, 0, 1])
             bricks[idx] = p.createMultiBody(baseMass=0.5,
-                                    baseCollisionShapeIndex=brick_coll,
-                                    basePosition=center_pos,
-                                    baseOrientation=brick_orns[i])
-            p.changeDynamics(bricks[idx], -1, lateralFriction=0.1, restitution=0.1)
+                                            baseCollisionShapeIndex=brick_coll,
+                                            basePosition=center_pos,
+                                            baseOrientation=brick_orns[i])
+            p.changeDynamics(bricks[idx], -1, lateralFriction=0.1,
+                             restitution=0.1)
             idx += 1
 
 brick_actor = actor.box(centers=brick_centers,
-                         directions=brick_directions,
-                         scale=brick_sizes,
-                         colors=brick_colors)
+                        directions=brick_directions,
+                        scale=brick_sizes,
+                        colors=brick_colors)
 
 scene = window.Scene()
 scene.add(actor.axes(), base_actor, brick_actor)
@@ -101,6 +102,7 @@ num_vertices = vertices.shape[0]
 num_objects = brick_centers.shape[0]
 sec = np.int(num_vertices / num_objects)
 
+
 # Function for syncing actors with multibodies.
 def sync_brick(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -116,6 +118,7 @@ def sync_brick(object_index, multibody):
 
     brick_centers[object_index] = pos
     brick_orns[object_index] = orn
+
 
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
@@ -137,4 +140,5 @@ showm.add_timer_callback(True, 1, timer_callback)
 interactive = True
 
 # start simulation
-if interactive: showm.start()
+if interactive:
+    showm.start()
