@@ -2,7 +2,7 @@ from fury import actor, window, utils
 import numpy as np
 import pybullet as p
 
-client = p.connect(p.DIRECT)
+p.connect(p.GUI)
 p.setGravity(0, 0, -10)
 
 # Parameters
@@ -82,7 +82,9 @@ brick_actor = actor.box(centers=brick_centers,
 # Generate wrecking ball
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
                                     radius=segment_radius,
-                                    height=segment_length)
+                                    height=segment_length,
+                                    collisionFramePosition=[0, 0,
+                                                            -segment_length/2])
 
 ball_shape = p.createCollisionShape(p.GEOM_SPHERE,
                                     radius=ball_radius)
@@ -96,7 +98,7 @@ linkCollisionShapeIndices = np.zeros(chain_segments)
 linkCollisionShapeIndices[:] = np.array(link_shape)
 linkVisualShapeIndices = -1 * np.ones(chain_segments)
 linkPositions = np.zeros((chain_segments, 3))
-linkPositions[:] = np.array([segment_length, 0, 0])
+linkPositions[:] = np.array([0, 0, segment_length])
 linkOrientations = np.zeros((chain_segments, 4))
 linkOrientations[:] = np.array([0, 0, 0, 1])
 linkInertialFramePos = np.zeros((chain_segments, 3))
@@ -109,7 +111,7 @@ axis = np.zeros((chain_segments, 3))
 axis[:] = np.array([1, 0, 0])
 
 linkDirections = np.zeros((chain_segments, 3))
-linkDirections[:] = np.array([0, 0, 1])
+linkDirections[:] = np.array([1, 1, 1])
 
 link_radii = np.zeros(chain_segments)
 link_radii[:] = segment_radius
@@ -126,7 +128,7 @@ chain_actor = actor.cylinder(centers=linkPositions,
                              radius=segment_radius,
                              heights=link_heights, capped=True)
 
-basePosition = [0, 0, 0]
+basePosition = [0, 0, 2]
 baseOrientation = [0, 0, 0, 1]
 chain = p.createMultiBody(ball_mass, ball_shape, visualShapeId,
                           basePosition, baseOrientation,
@@ -212,7 +214,7 @@ def sync_chain(actor_list, multibody):
                 p.getDifferenceQuaternion(orn, linkOrientations[joint])),
             (3, 3))
 
-        sec = brick_sec
+        sec = chain_sec
 
         chain_vertices[joint * sec: joint * sec + sec] =\
             (chain_vertices[joint * sec: joint * sec + sec] -
