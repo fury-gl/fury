@@ -1,8 +1,9 @@
-from fury import actor, window, utils
+from fury import actor, window, utils, ui
 import numpy as np
 import pybullet as p
+import itertools
 
-p.connect(p.GUI)
+p.connect(p.DIRECT)
 p.setGravity(0, 0, -10)
 
 # Parameters
@@ -12,11 +13,11 @@ wall_height = 5
 
 brick_size = np.array([0.2, 0.4, 0.2])
 
-chain_segments = 10
-segment_length = 0.1
-segment_radius = 0.5
-segment_mass = 0.1
-segment_color = np.array([1, 0, 0])
+n_links = 15
+dx_link = 0.1       # Size of segments
+link_mass = 0.5
+base_mass = 0.1
+radii = 0.1
 
 ball_mass = 10
 ball_radius = 0.5
@@ -81,89 +82,98 @@ brick_actor = actor.box(centers=brick_centers,
 
 # Generate wrecking ball
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
-                                    radius=segment_radius,
-                                    height=segment_length,
-                                    collisionFramePosition=[0, 0,
-                                                            -segment_length/2])
+                                    radius=radii,
+                                    height=dx_link,
+                                    collisionFramePosition=[0, 0, -dx_link/2])
 
+base_shape = p.createCollisionShape(p.GEOM_BOX,
+                                    halfExtents=[0.01, 0.01, 0.01])
 ball_shape = p.createCollisionShape(p.GEOM_SPHERE,
-                                    radius=ball_radius)
+                                    radius=0.2)
+
 
 visualShapeId = -1
 
-link_masses = np.zeros(chain_segments)
-link_masses[:] = segment_mass
-
-linkCollisionShapeIndices = np.zeros(chain_segments)
+link_Masses = np.zeros(n_links)
+link_Masses[:] = link_mass
+link_Masses[-1] = 5
+linkCollisionShapeIndices = np.zeros(n_links)
 linkCollisionShapeIndices[:] = np.array(link_shape)
-linkVisualShapeIndices = -1 * np.ones(chain_segments)
-linkPositions = np.zeros((chain_segments, 3))
-linkPositions[:] = np.array([0, 0, segment_length])
-linkOrientations = np.zeros((chain_segments, 4))
+linkCollisionShapeIndices[-1] = ball_shape
+linkVisualShapeIndices = -1 * np.ones(n_links)
+linkPositions = np.zeros((n_links, 3))
+linkPositions[:] = np.array([0, 0, -dx_link])
+linkOrientations = np.zeros((n_links, 4))
 linkOrientations[:] = np.array([0, 0, 0, 1])
-linkInertialFramePos = np.zeros((chain_segments, 3))
-linkInertialFrameOrns = np.zeros((chain_segments, 4))
+linkInertialFramePositions = np.zeros((n_links, 3))
+linkInertialFrameOrns = np.zeros((n_links, 4))
 linkInertialFrameOrns[:] = np.array([0, 0, 0, 1])
-indices = np.arange(chain_segments)
-jointTypes = np.zeros(chain_segments)
+indices = np.arange(n_links)
+jointTypes = np.zeros(n_links)
 jointTypes[:] = np.array(p.JOINT_SPHERICAL)
-axis = np.zeros((chain_segments, 3))
+axis = np.zeros((n_links, 3))
 axis[:] = np.array([1, 0, 0])
 
-linkDirections = np.zeros((chain_segments, 3))
+linkDirections = np.zeros((n_links, 3))
 linkDirections[:] = np.array([1, 1, 1])
 
-link_radii = np.zeros(chain_segments)
-link_radii[:] = segment_radius
+link_radii = np.zeros(n_links)
+link_radii[:] = radii
 
-link_heights = np.zeros(chain_segments)
-link_heights[:] = segment_length
+link_heights = np.zeros(n_links)
+link_heights[:] = dx_link
 
-link_colors = np.zeros((chain_segments, 3))
-link_colors[:] = segment_color
-
-chain_actor = actor.cylinder(centers=linkPositions,
-                             directions=linkDirections,
-                             colors=link_colors,
-                             radius=segment_radius,
-                             heights=link_heights, capped=True)
+rope_actor = actor.cylinder(centers=linkPositions,
+                            directions=linkDirections,
+                            colors=np.random.rand(n_links, 3),
+                            radius=radii,
+                            heights=link_heights, capped=True)
 
 basePosition = [0, 0, 2]
 baseOrientation = [0, 0, 0, 1]
-chain = p.createMultiBody(ball_mass, ball_shape, visualShapeId,
-                          basePosition, baseOrientation,
-                          linkMasses=link_masses,
-                          linkCollisionShapeIndices=linkCollisionShapeIndices,
-                          linkVisualShapeIndices=linkVisualShapeIndices,
-                          linkPositions=linkPositions,
-                          linkOrientations=linkOrientations,
-                          linkInertialFramePositions=linkInertialFramePos,
-                          linkInertialFrameOrientations=linkInertialFrameOrns,
-                          linkParentIndices=indices,
-                          linkJointTypes=jointTypes,
-                          linkJointAxis=axis)
+rope = p.createMultiBody(base_mass,
+                         base_shape,
+                         visualShapeId,
+                         basePosition,
+                         baseOrientation,
+                         linkMasses=link_Masses,
+                         linkCollisionShapeIndices=linkCollisionShapeIndices,
+                         linkVisualShapeIndices=linkVisualShapeIndices,
+                         linkPositions=linkPositions,
+                         linkOrientations=linkOrientations,
+                         linkInertialFramePositions=linkInertialFramePositions,
+                         linkInertialFrameOrientations=linkInertialFrameOrns,
+                         linkParentIndices=indices,
+                         linkJointTypes=jointTypes,
+                         linkJointAxis=axis)
 
 friction_vec = [joint_friction]*3   # same all axis
 control_mode = p.POSITION_CONTROL   # set pos control mode
-for j in range(p.getNumJoints(chain)):
-    p.setJointMotorControlMultiDof(chain, j, control_mode,
+for j in range(p.getNumJoints(rope)):
+    p.setJointMotorControlMultiDof(rope, j, control_mode,
                                    targetPosition=[0, 0, 0, 1],
                                    targetVelocity=[0, 0, 0],
                                    positionGain=0,
                                    velocityGain=1,
                                    force=friction_vec)
 
-root_hinge = p.createConstraint(chain, indices[-1], -1, -1,
-                                p.JOINT_FIXED, [0, 0, 0],
-                                [0, 0, 0], [0, 0, 2])
+root_robe_c = p.createConstraint(rope, -1, -1, -1,
+                                 p.JOINT_FIXED, [0, 0, 0],
+                                 [0, 0, 0], [0, 0, 2])
+
+box_actor = actor.box(centers=np.array([[0, 0, 0]]),
+                      directions=np.array([[0, 0, 0]]),
+                      scale=(0.02, 0.02, 0.02),
+                      colors=np.array([[1, 0, 0]]))
 
 ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
-                          radii=ball_radius,
-                          colors=ball_color)
+                          radii=0.2,
+                          colors=np.array([1, 0, 1]))
 
 scene = window.Scene()
+scene.set_camera((10.28, -7.10, 6.39), (0.0, 0.0, 0.4), (-0.35, 0.26, 1.0))
 scene.add(actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
-scene.add(chain_actor, ball_actor)
+scene.add(rope_actor, box_actor, ball_actor)
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
@@ -179,7 +189,7 @@ num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 brick_sec = np.int(num_vertices / num_objects)
 
-chain_vertices = utils.vertices_from_actor(chain_actor)
+chain_vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = chain_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 chain_sec = np.int(num_vertices / num_objects)
@@ -223,23 +233,50 @@ def sync_chain(actor_list, multibody):
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
 
+counter = itertools.count()
+fpss = np.array([])
+tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0),
+                    text="Avg. FPS: \nSim Steps: ")
+scene.add(tb)
 
+
+apply_force = True
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
+    global apply_force, fpss
+    cnt = next(counter)
     showm.render()
+
+    if cnt % 1 == 0:
+        fps = scene.frame_rate
+        fpss = np.append(fpss, fps)
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
+            "\nSim Steps: " + str(cnt)
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
         sync_brick(idx, brick)
 
-    pos, _ = p.getBasePositionAndOrientation(chain)
+    pos, _ = p.getBasePositionAndOrientation(rope)
+
+    if apply_force:
+        p.applyExternalForce(rope, -1,
+                             forceObj=[-500, 0, 0],
+                             posObj=pos,
+                             flags=p.WORLD_FRAME)
+        apply_force = False
+
+    pos = p.getLinkState(rope, p.getNumJoints(rope)-1)[4]
     ball_actor.SetPosition(*pos)
-    sync_chain(chain_actor, chain)
+    sync_chain(rope_actor, rope)
     utils.update_actor(brick_actor)
-    utils.update_actor(chain_actor)
+    utils.update_actor(rope_actor)
 
     # Simulate a step.
     p.stepSimulation()
+
+    if cnt == 1500:
+        showm.exit()
 
 
 # Add the timer callback to showmanager.
@@ -251,3 +288,5 @@ interactive = True
 # start simulation
 if interactive:
     showm.start()
+
+window.record(scene, size=(900, 768), out_path="viz_wrecking_ball.png")
