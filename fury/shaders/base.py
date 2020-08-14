@@ -19,9 +19,9 @@ SHADERS_BLOCK = {
 }
 
 
-def add_shader_code_to_actor(actor, shader_type, impl_code, decl_code=None,
-                             block="", replace_first=True, replace_all=False,
-                             debug=False):
+def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
+                        block="", replace_first=True, replace_all=False,
+                        debug=False):
     """Apply your own substitutions to the shader creation process.
 
     A bunch of string replacements is applied to a shader template. Using this

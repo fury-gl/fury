@@ -1,6 +1,7 @@
 """Read shader files."""
 
 from os.path import join as pjoin, dirname
+from fury.shaders.base import add_shader_to_actor
 
 SHADERS_DIR = pjoin(dirname(__file__))
 
@@ -10,4 +11,4 @@ def load(filename):
         return shader_file.read()
 
 
-__all__ = ['SHADERS_DIR', 'load']
+__all__ = ['SHADERS_DIR', 'load', 'add_shader_to_actor']
