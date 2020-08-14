@@ -31,7 +31,7 @@ link_mass = 0.5
 base_mass = 0.1
 radii = 0.5
 
-joint_friction = 0.0005 # rotational joint friction [N/(rad/s)]
+joint_friction = 0.0005  # rotational joint friction [N/(rad/s)]
 
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
                                     radius=radii,
@@ -184,6 +184,7 @@ def sync_joints(actor_list, multibody):
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
 
+
 ###############################################################################
 # We define a TextBlock to display the Avg. FPS and Simulation steps.
 
@@ -197,6 +198,7 @@ freq_sim = 240
 
 ###############################################################################
 # Timer callback to sync objects, simulate steps and oscillate the base.
+
 
 def timer_callback(_obj, _event):
     cnt = next(counter)

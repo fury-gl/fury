@@ -1,10 +1,27 @@
+"""
+========================
+Wrecking Ball Simulation
+========================
+
+This example simulation shows how to use pybullet to render physics simulations
+in fury. In this example we specifically render a brick wall beign destroyed by
+a wrecking ball.
+
+First some imports.
+"""
 from fury import actor, window, utils, ui
 import numpy as np
 import pybullet as p
 import itertools
 
+###############################################################################
+# Initiate pybullet and enable gravity.
+
 p.connect(p.DIRECT)
 p.setGravity(0, 0, -10)
+
+###############################################################################
+# Define some handy parameters to customize simulation.
 
 # Parameters
 wall_length = 5
@@ -25,6 +42,9 @@ ball_color = np.array([[1, 0, 0]])
 
 joint_friction = 0.0005
 
+###############################################################################
+# Creating the base plane actor.
+
 # Base
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=[0, 0, 0],
@@ -38,6 +58,8 @@ base = p.createMultiBody(
                           baseOrientation=[0, 0, 0, 1])
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
+###############################################################################
+# The following definations are made to render a NxNxN brick wall.
 
 # Generate bricks.
 nb_bricks = wall_length*wall_breadth*wall_height
@@ -57,6 +79,10 @@ brick_coll = p.createCollisionShape(p.GEOM_BOX,
                                     halfExtents=brick_size/2)
 
 bricks = np.zeros(nb_bricks, dtype=np.int16)
+
+###############################################################################
+# The following is the logic to position the bricks in our desired location and
+# generate the actor.
 
 idx = 0
 # Setting up wall
@@ -79,6 +105,8 @@ brick_actor = actor.box(centers=brick_centers,
                         scale=brick_sizes,
                         colors=brick_colors)
 
+###############################################################################
+# Now we render the wrecking ball consisting of a fixed hinge, a ball and rope.
 
 # Generate wrecking ball
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
@@ -147,6 +175,9 @@ rope = p.createMultiBody(base_mass,
                          linkJointTypes=jointTypes,
                          linkJointAxis=axis)
 
+###############################################################################
+# Next we define the frictional force between the joints of wrecking ball.
+
 friction_vec = [joint_friction]*3   # same all axis
 control_mode = p.POSITION_CONTROL   # set pos control mode
 for j in range(p.getNumJoints(rope)):
@@ -156,6 +187,9 @@ for j in range(p.getNumJoints(rope)):
                                    positionGain=0,
                                    velocityGain=1,
                                    force=friction_vec)
+
+###############################################################################
+# We add the following constraint to keep the cubical hinge fixed.
 
 root_robe_c = p.createConstraint(rope, -1, -1, -1,
                                  p.JOINT_FIXED, [0, 0, 0],
@@ -170,6 +204,10 @@ ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
                           radii=0.2,
                           colors=np.array([1, 0, 1]))
 
+###############################################################################
+# Now we add the necessary actors to the scene and set the camera for better
+# visualization.
+
 scene = window.Scene()
 scene.set_camera((10.28, -7.10, 6.39), (0.0, 0.0, 0.4), (-0.35, 0.26, 1.0))
 scene.add(actor.axes(scale=(0.5, 0.5, 0.5)), base_actor, brick_actor)
@@ -181,18 +219,31 @@ showm = window.ShowManager(scene,
 
 showm.initialize()
 
+###############################################################################
+# Position the base correctly.
+
 base_pos, base_orn = p.getBasePositionAndOrientation(base)
 base_actor.SetPosition(*base_pos)
+
+###############################################################################
+# Calculate the vertices of the bricks.
 
 brick_vertices = utils.vertices_from_actor(brick_actor)
 num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 brick_sec = np.int(num_vertices / num_objects)
 
+###############################################################################
+# Calculate the vertices of the wrecking ball.
+
 chain_vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = chain_vertices.shape[0]
 num_objects = brick_centers.shape[0]
 chain_sec = np.int(num_vertices / num_objects)
+
+
+###############################################################################
+# We define methods to sync bricks and wrecking ball.
 
 # Function for syncing actors with multibodies.
 def sync_brick(object_index, multibody):
@@ -211,6 +262,7 @@ def sync_brick(object_index, multibody):
 
     brick_centers[object_index] = pos
     brick_orns[object_index] = orn
+
 
 def sync_chain(actor_list, multibody):
     for joint in range(p.getNumJoints(multibody)):
@@ -233,14 +285,22 @@ def sync_chain(actor_list, multibody):
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
 
+
+###############################################################################
+# Some helper tools to keep track of avg. FPS and simulation steps.
+
 counter = itertools.count()
 fpss = np.array([])
 tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0),
                     text="Avg. FPS: \nSim Steps: ")
 scene.add(tb)
 
+###############################################################################
+# Timer callback to sync objects, simulate steps and apply force.
 
 apply_force = True
+
+
 # Create timer callback which will execute at each step of simulation.
 def timer_callback(_obj, _event):
     global apply_force, fpss
