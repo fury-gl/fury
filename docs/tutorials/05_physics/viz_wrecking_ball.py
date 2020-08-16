@@ -343,7 +343,7 @@ def timer_callback(_obj, _event):
 # Increasing the duration value will slow down the simulation.
 showm.add_timer_callback(True, 1, timer_callback)
 
-interactive = True
+interactive = False
 
 # start simulation
 if interactive:
