@@ -1,4 +1,5 @@
 import vtk
+from vtk.util import numpy_support
 
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
@@ -20,8 +21,8 @@ SHADERS_BLOCK = {
 
 
 def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
-                        block="", replace_first=True, replace_all=False,
-                        debug=False):
+                        block="", keep_default=True, replace_first=True,
+                        replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
 
     A bunch of string replacements is applied to a shader template. Using this
@@ -41,6 +42,9 @@ def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
         by default None
     block : str, optional
         section name to be replaced, by default
+    keep_default : bool, optional
+        keep the default block tag to let VTK replace it with its default
+        behavior. By default True
     replace_first : bool, optional
         If True, apply this change before the standard VTK replacements
         by default True
@@ -68,6 +72,10 @@ def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
     block_dec = block + "::Dec"
     block_impl = block + "::Impl"
 
+    if keep_default:
+        decl_code = block_dec + "\n" + decl_code
+        impl_code = block_impl + "\n" + impl_code
+
     if debug:
         error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
@@ -81,9 +89,49 @@ def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
                             impl_code, replace_all)
 
 
-# def add_shader_callback(actor, ):
-#     pass
+def add_shader_callback(actor, callback):
+    """Add a shader callback to the actor.
+
+    Parameters
+    ----------
+    actor : vtkActor
+        Rendered Object
+    callback : callable
+        function or class that contains 3 parameters: caller, event, calldata.
+        This callback will be trigger at each `UpdateShaderEvent` event.
+
+    """
+    @vtk.calldata_type(vtk.VTK_OBJECT)
+    def cbk(caller, event, calldata=None):
+        callback(caller, event, calldata)
+
+    mapper = actor.GetMapper()
+    mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk)
 
 
-# def add_vertex_attributes(actor):
-#     pass
+def add_array_as_vertex_attribute(actor, arr, arr_name, attr_name, deep=True):
+    """Link a numpy array with vertex attribute.
+
+    Parameters
+    ----------
+    actor : vtkActor
+        Rendered Object
+    arr : ndarray
+        array to link to vertices
+    arr_name : str
+        data array name
+    attr_name : str
+        vertex attribute name
+    deep : bool, optional
+        If True a deep copy is applied. Otherwise a shallow copy is applied,
+        by default True
+
+    """
+    nb_components = arr.shape[1]
+    vtk_array = numpy_support.numpy_to_vtk(arr, deep=deep)
+    vtk_array.SetNumberOfComponents(nb_components)
+    vtk_array.SetName(arr_name)
+    actor.GetMapper().GetInput().GetPointData().AddArray(vtk_array)
+    mapper = actor.GetMapper()
+    mapper.MapDataArrayToVertexAttribute(
+        arr_name, attr_name, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)

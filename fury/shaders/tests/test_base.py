@@ -1,8 +1,9 @@
-import vtk
 import numpy as np
+import numpy.testing as npt
 
 from fury import actor, window
-from fury.shaders import add_shader_to_actor
+from fury.shaders import (add_shader_to_actor, add_shader_callback,
+                          delete_shader_callback)
 
 
 vertex_dec = \
@@ -79,17 +80,60 @@ frag_impl = \
     """
 
 
-def test_add_shader_to_actor(interactive=False):
-
+def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
     add_shader_to_actor(cube, "vertex", impl_code=vertex_impl,
                         decl_code=vertex_dec, block="valuepass")
     add_shader_to_actor(cube, "fragment", impl_code=frag_impl,
                         decl_code=frag_dec, block="light")
+    return cube
+
+
+def test_add_shader_to_actor(interactive=False):
+    cube = generate_cube_with_effect()
+
+    scene = window.Scene()
+    scene.add(cube)
     if interactive:
-        scene = window.Scene()
-        scene.add(cube, actor.axes())
+        scene.add(actor.axes())
         window.show(scene)
 
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
-# test_add_shader_to_actor(True)
+
+def test_add_shader_callback():
+    cube = generate_cube_with_effect()
+    showm = window.ShowManager()
+    showm.scene.add(cube)
+    timer = 0
+
+    def timer_callback(obj, event):
+        nonlocal timer, showm
+        timer += 1.0
+        showm.render()
+        if timer > 9:
+            showm.exit()
+
+    def my_cbk(_caller, _event, calldata=None):
+        program = calldata
+        nonlocal timer
+        if program is not None:
+            try:
+                program.SetUniformf("time", timer)
+            except ValueError:
+                pass
+
+    add_shader_callback(cube, my_cbk)
+    showm.initialize()
+    showm.add_timer_callback(True, 100, timer_callback)
+    showm.start()
+
+    arr = window.snapshot(showm.scene, offscreen=True)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
+
+
+def test_add_array_as_vertex_attribute():
+    pass
