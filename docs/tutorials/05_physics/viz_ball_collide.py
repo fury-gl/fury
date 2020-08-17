@@ -124,7 +124,7 @@ def timer_callback(_obj, _event):
 
     p.stepSimulation()
 
-    if cnt == 1200:
+    if cnt == 50:
         showm.exit()
 
 

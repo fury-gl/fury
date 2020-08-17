@@ -335,7 +335,7 @@ def timer_callback(_obj, _event):
     # Simulate a step.
     p.stepSimulation()
 
-    if cnt == 1500:
+    if cnt == 130:
         showm.exit()
 
 

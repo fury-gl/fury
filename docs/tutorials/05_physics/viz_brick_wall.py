@@ -267,7 +267,7 @@ def timer_callback(_obj, _event):
     p.stepSimulation()
 
     # Exit after 2000 steps of simulation.
-    if cnt == 2000:
+    if cnt == 130:
         showm.exit()
 
 
