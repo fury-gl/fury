@@ -2,8 +2,7 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
-from fury.shaders import (add_shader_to_actor, add_shader_callback,
-                          delete_shader_callback)
+from fury.shaders import (add_shader_to_actor, add_shader_callback)
 
 
 vertex_dec = \
