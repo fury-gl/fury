@@ -20,7 +20,7 @@ SHADERS_BLOCK = {
 }
 
 
-def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
+def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
                         block="", keep_default=True, replace_first=True,
                         replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
@@ -35,7 +35,7 @@ def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
         Object where you want to add the shader code.
     shader_type : str
         Shader type: vertex, geometry, fragment
-    impl_code : str
+    impl_code : str, optional
         shader implementation code, should be a string or filename
     decl_code : str, optional
         shader declaration code, should be a string or filename
@@ -82,9 +82,8 @@ def add_shader_to_actor(actor, shader_type, impl_code, decl_code=None,
 
     sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
 
-    if decl_code is not None:
-        sp.AddShaderReplacement(shader_type, block_dec, replace_first,
-                                decl_code, replace_all)
+    sp.AddShaderReplacement(shader_type, block_dec, replace_first,
+                            decl_code, replace_all)
     sp.AddShaderReplacement(shader_type, block_impl, replace_first,
                             impl_code, replace_all)
 

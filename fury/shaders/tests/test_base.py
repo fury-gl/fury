@@ -1,8 +1,10 @@
+from vtk.util import numpy_support
 import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
-from fury.shaders import (add_shader_to_actor, add_shader_callback)
+from fury.shaders import (add_shader_to_actor, add_shader_callback,
+                          add_array_as_vertex_attribute)
 
 
 vertex_dec = \
@@ -101,6 +103,12 @@ def test_add_shader_to_actor(interactive=False):
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
 
+    # test errors
+    npt.assert_raises(ValueError, add_shader_to_actor, cube, "error",
+                      vertex_impl)
+    npt.assert_raises(ValueError, add_shader_to_actor, cube, "vertex",
+                      vertex_impl, block="error")
+
 
 def test_add_shader_callback():
     cube = generate_cube_with_effect()
@@ -135,4 +143,10 @@ def test_add_shader_callback():
 
 
 def test_add_array_as_vertex_attribute():
-    pass
+    cube = generate_cube_with_effect()
+    test_arr = np.arange(24).reshape((8, 3))
+
+    add_array_as_vertex_attribute(cube, test_arr, 'test_arr', 'test_arr')
+
+    arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
+    npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))
