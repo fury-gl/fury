@@ -949,7 +949,7 @@ def test_basic_geometry_actor(interactive=False):
         for scale in scale_list:
             scene = window.Scene()
             g_actor = act_func(centers=centers, colors=colors,
-                               directions=directions, scale=scale,
+                               directions=directions, scales=scale,
                                **extra_args)
 
             scene.add(g_actor)

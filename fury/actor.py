@@ -1553,7 +1553,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+                              centers=centers, colors=colors, scale=scales)
 
     big_verts, big_faces, big_colors, _ = res
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1781,7 +1781,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
 
 
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                   scale=1):
+                   scales=1):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -1792,7 +1792,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
         The orientation vector of the octagonal prism.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Octagonal prism size on each direction (x, y), default(1)
 
     Returns
@@ -1814,14 +1814,14 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     """
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scale)
+                              centers=centers, colors=colors, scale=scales)
 
     big_verts, big_faces, big_colors, _ = res
     oct_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return oct_actor
 
 
-def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scale=1):
+def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     """Visualize one or many frustum pyramids with different features.
 
     Parameters
@@ -1832,7 +1832,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scale=1):
         The orientation vector of the frustum pyramid.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    heights : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Frustum pyramid size on each direction (x, y), default(1)
     Returns
     -------
@@ -1853,7 +1853,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scale=1):
     """
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scale)
+                              centers=centers, colors=colors, scale=scales)
 
     big_verts, big_faces, big_colors, _ = res
     frustum_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
