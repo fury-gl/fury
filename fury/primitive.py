@@ -47,7 +47,7 @@ def faces_from_sphere_vertices(vertices):
 
 def repeat_primitive_function(func, centers, func_args=[],
                               directions=(1, 0, 0), colors=(1, 0, 0),
-                              scale=1):
+                              scales=1):
     """Repeat Vertices and triangles of a specific primitive function.
 
     It could be seen as a glyph. The primitive function should generate and
@@ -65,7 +65,7 @@ def repeat_primitive_function(func, centers, func_args=[],
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : ndarray, shape (N) or (N,3) or float or int, optional
+    scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
 
     Returns
@@ -88,12 +88,12 @@ def repeat_primitive_function(func, centers, func_args=[],
 
     vertices = np.concatenate([func(i)[0] for i in func_args])
     return repeat_primitive(vertices=vertices, faces=faces, centers=centers,
-                            directions=directions, colors=colors, scale=scale,
+                            directions=directions, colors=colors, scales=scales,
                             have_tiled_verts=True)
 
 
 def repeat_primitive(vertices, faces, centers, directions=None,
-                     colors=(1, 0, 0), scale=1, have_tiled_verts=False):
+                     colors=(1, 0, 0), scales=1, have_tiled_verts=False):
     """Repeat Vertices and triangles of a specific primitive shape.
 
     It could be seen as a glyph.
@@ -110,7 +110,7 @@ def repeat_primitive(vertices, faces, centers, directions=None,
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : ndarray, shape (N) or (N,3) or float or int, optional
+    scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
     have_tiled_verts : bool
         option to control if we need to duplicate vertices of a shape or not
@@ -136,15 +136,15 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     unit_triangles_size = faces.shape[0]
 
     # scale them
-    if not isinstance(scale, np.ndarray):
-        scale = np.array(scale)
-    if scale.ndim == 1:
-        if scale.size == centers.shape[0]:
-            scale = np.repeat(scale, unit_verts_size, axis=0)
-            scale = scale.reshape((big_vertices.shape[0], 1))
-    elif scale.ndim == 2:
-        scale = np.repeat(scale, unit_verts_size, axis=0)
-    big_vertices *= scale
+    if not isinstance(scales, np.ndarray):
+        scales = np.array(scales)
+    if scales.ndim == 1:
+        if scales.size == centers.shape[0]:
+            scales = np.repeat(scales, unit_verts_size, axis=0)
+            scales = scales.reshape((big_vertices.shape[0], 1))
+    elif scales.ndim == 2:
+        scales = np.repeat(scales, unit_verts_size, axis=0)
+    big_vertices *= scales
 
     # update triangles
     big_triangles = np.array(np.tile(faces,

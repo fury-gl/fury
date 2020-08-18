@@ -1553,7 +1553,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scales)
+                              centers=centers, colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1628,7 +1628,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scales)
+                              centers=centers, colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     box_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1814,7 +1814,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     """
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scales)
+                              centers=centers, colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     oct_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1853,7 +1853,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     """
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scales)
+                              centers=centers, colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     frustum_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1861,7 +1861,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
 
 
 def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
-                 colors=(1, 0, 0), scale=1):
+                 colors=(1, 0, 0), scales=1):
     """Visualize one or many superquadrics with different features.
 
     Parameters
@@ -1874,7 +1874,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
         The orientation vector of the cone.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : ndarray, shape (N) or (N,3) or float or int, optional
+    scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
 
     Returns
@@ -1887,11 +1887,11 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3) * 10
     >>> directions = np.random.rand(3, 3)
-    >>> scale = np.random.rand(5)
+    >>> scales = np.random.rand(5)
     >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
     >>> sq_actor = actor.superquadric(centers, roundness=roundness,
     ...                               directions=directions,
-    ...                               colors=colors, scale=scale)
+    ...                               colors=colors, scales=scales)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
 
@@ -1912,14 +1912,14 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                                        centers=centers,
                                        func_args=roundness,
                                        directions=directions,
-                                       colors=colors, scale=scale)
+                                       colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return actor
 
 
-def billboard(centers, colors=(0, 1, 0), scale=1, vs_dec=None, vs_impl=None,
+def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
               fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
     """Create a billboard actor.
 
@@ -1932,7 +1932,7 @@ def billboard(centers, colors=(0, 1, 0), scale=1, vs_dec=None, vs_impl=None,
         Superquadrics positions
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : ndarray, shape (N) or (N,3) or float or int, optional
+    scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
     vs_dec : str or list of str, optional
         vertex shaders code that contains all variable/function delarations
@@ -1956,7 +1956,7 @@ def billboard(centers, colors=(0, 1, 0), scale=1, vs_dec=None, vs_impl=None,
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scale=scale)
+                              scales=scales)
 
     big_verts, big_faces, big_colors, big_centers = res
 
@@ -2556,7 +2556,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
 
 def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
-        scale=1):
+        scales=1):
     """Create a SDF primitive based actor
 
     Parameters
@@ -2570,9 +2570,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     primitives : str
         The primitive of choice to be rendered.
         Options are sphere and torus. Default is torus
-    scale : float
+    scales : float
         The size of the SDF primitive
-
 
     Returns
     -------
@@ -2584,7 +2583,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
                                    colors=colors, directions=directions,
-                                   scale=scale)
+                                   scales=scales)
 
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
@@ -2605,10 +2604,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     vtk_primitive.SetName("primitive")
     box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_primitive)
 
-    if isinstance(scale, (list, tuple, np.ndarray)):
-        rep_scales = np.repeat(scale, verts.shape[0])
+    if isinstance(scales, (list, tuple, np.ndarray)):
+        rep_scales = np.repeat(scales, verts.shape[0])
     else:
-        rep_scales = np.repeat(scale, rep_centers.shape[0], axis=0)
+        rep_scales = np.repeat(scales, rep_centers.shape[0], axis=0)
 
     vtk_scale = numpy_support.numpy_to_vtk(rep_scales, deep=True)
     vtk_scale.SetNumberOfComponents(1)
