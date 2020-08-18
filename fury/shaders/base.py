@@ -21,7 +21,7 @@ SHADERS_BLOCK = {
 
 
 def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
-                        block="", keep_default=True, replace_first=True,
+                        block="valuepass", keep_default=True, replace_first=True,
                         replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
 
@@ -41,7 +41,12 @@ def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
         shader declaration code, should be a string or filename
         by default None
     block : str, optional
-        section name to be replaced, by default
+        section name to be replaced. vtk use of heavy string replacments to
+        to insert shader and make it flexible. Each section of the shader
+        template have a specific name. For more informations:
+        https://vtk.org/Wiki/Shaders_In_VTK. The possible values are:
+        position, normal, light, tcoord, color, clip, camera, prim_id,
+        valuepass. by default valuepass
     keep_default : bool, optional
         keep the default block tag to let VTK replace it with its default
         behavior. By default True
