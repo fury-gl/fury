@@ -1,0 +1,38 @@
+Wrecking Ball Simulation, Scrollbars Update, Physics Tutorials.
+===============================================================
+
+.. post:: August 16 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my 12th weekly check-in. In this blog I will be discussing my progress with the wrecking ball simulation and my scrollbar separation work. Apart from this I have also finalized the physics simulation tutorials and have created a Pull Request to finally get it merged with the official repository. The official repository of my sub-org can be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I was mainly focusing on the wrecking ball simulation. This simulation is basically the combination of chain simulation and brick wall simulation. A sphere attached to a chain smashes a "NxNxN" brick wall. The simulation is as follows:
+
+.. image :: https://user-images.githubusercontent.com/29832615/90336291-84232280-dff8-11ea-869b-21a99b203c31.gif
+
+There's a rendering bug with the cylinders because of which the chain segments look weird. My mentors confirmed that this bug originated from VTK's `cylinder source` method and they are currently working on it to fix it. The simulation will render correctly once that bug is fixed.
+
+Regarding the scrollbar separation task, I was able to fix those callback issues that I was facing. The mouse callbacks on the scrollbar now work correctly:
+
+.. image :: https://user-images.githubusercontent.com/29832615/90337280-1af2dd80-dfff-11ea-94c4-508121307583.gif
+
+I have also created a pull request to add the following physics simulations with proper documentation to the main repository:
+
+- Brick Wall Simulation
+- Ball Collision Simulation
+- Chain Simulation
+- Wrecking Ball Simulation
+
+What is coming up next week?
+----------------------------
+Currently I am a bit confused with the implementation of scrollbars with UI components. I had a meeting with my mentor and he decided to help me out with this. So most probably I will be working with the scrollbar component and its implementation. Next week will also be the final week for GSoC 2020 before the evaluations start so I would work on getting the final documentation and formalities ready.
+
+Did you get stuck anywhere?
+---------------------------
+Apart from the scrollbar implementation idea, I did not face any major issues.
+
+``Thank you for reading, see you next week!!``
