@@ -108,7 +108,7 @@ def add_shader_callback(actor, callback):
     mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk)
 
 
-def add_array_as_vertex_attribute(actor, arr, arr_name, attr_name, deep=True):
+def add_array_as_vertex_attribute(actor, arr, attr_name, deep=True):
     """Link a numpy array with vertex attribute.
 
     Parameters
@@ -117,10 +117,9 @@ def add_array_as_vertex_attribute(actor, arr, arr_name, attr_name, deep=True):
         Rendered Object
     arr : ndarray
         array to link to vertices
-    arr_name : str
-        data array name
     attr_name : str
-        vertex attribute name
+        vertex attribute name. the vtk array will take the same name as the
+        attribute.
     deep : bool, optional
         If True a deep copy is applied. Otherwise a shallow copy is applied,
         by default True
@@ -129,8 +128,8 @@ def add_array_as_vertex_attribute(actor, arr, arr_name, attr_name, deep=True):
     nb_components = arr.shape[1]
     vtk_array = numpy_support.numpy_to_vtk(arr, deep=deep)
     vtk_array.SetNumberOfComponents(nb_components)
-    vtk_array.SetName(arr_name)
+    vtk_array.SetName(attr_name)
     actor.GetMapper().GetInput().GetPointData().AddArray(vtk_array)
     mapper = actor.GetMapper()
     mapper.MapDataArrayToVertexAttribute(
-        arr_name, attr_name, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        attr_name, attr_name, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)

@@ -146,7 +146,7 @@ def test_add_array_as_vertex_attribute():
     cube = generate_cube_with_effect()
     test_arr = np.arange(24).reshape((8, 3))
 
-    add_array_as_vertex_attribute(cube, test_arr, 'test_arr', 'test_arr')
+    add_array_as_vertex_attribute(cube, test_arr, 'test_arr')
 
     arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
     npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))
