@@ -264,7 +264,7 @@ show_m.initialize()
 # Finally, please set the following variable to ``True`` to interact with the
 # datasets in 3D.
 
-interactive = True
+interactive = False
 
 scene.zoom(1.5)
 scene.reset_clipping_range()
