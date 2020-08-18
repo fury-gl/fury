@@ -1329,11 +1329,11 @@ def test_sdf_actor(interactive=False):
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scale = [1, 2, 3]
+    scales = [1, 2, 3]
     primitive = ['sphere', 'ellipsoid', 'torus']
 
     sdf_actor = actor.sdf(centers, directions,
-                          colors, primitive, scale)
+                          colors, primitive, scales)
     scene.add(sdf_actor)
     scene.add(actor.axes())
     if interactive:
