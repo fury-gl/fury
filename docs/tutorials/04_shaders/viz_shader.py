@@ -11,8 +11,7 @@ First, a bunch of imports.
 
 """
 
-from fury import window, ui, io, utils
-import vtk
+from fury import window, ui, io, utils, shaders as fs
 
 ###############################################################################
 # Let's download  and load the model
@@ -38,57 +37,35 @@ mapper = utah.GetMapper()
 # To change the default shader we add a shader replacement.
 # Specify vertex shader using vtkShader.Vertex
 # Specify fragment shader using vtkShader.Fragment
-
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Vertex,
-    "//VTK::ValuePass::Dec",
-    True,
+vertex_shader_code_decl = \
     """
-    //VTK::ValuePass::Dec
     out vec4 myVertexVC;
-    """,
-    False
-)
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Vertex,
-    "//VTK::ValuePass::Impl",
-    True,
     """
-    //VTK::ValuePass::Impl
+
+vertex_shader_code_impl = \
+    """
     myVertexVC = vertexMC;
-    """,
-    False
-)
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Fragment,
-    "//VTK::Light::Dec",
-    True,
     """
-    //VTK::Light::Dec
+
+fragment_shader_code_decl = \
+    """
     uniform float time;
-    varying vec4 myVertexVC;
-    """,
-    False
-)
-
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Fragment,
-    '//VTK::Light::Impl',
-    True,
+    out vec4 myVertexVC;
     """
-    //VTK::Light::Impl
+
+fragment_shader_code_impl = \
+    """
     vec2 iResolution = vec2(1024,720);
     vec2 uv = myVertexVC.xy/iResolution;
     vec3 col = 0.5 + 0.5 * cos((time/30) + uv.xyx + vec3(0, 2, 4));
     fragOutput0 = vec4(col, 1.0);
-    """,
-    False
-)
+    """
 
+fs.add_shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
+                       decl_code=vertex_shader_code_decl)
+fs.add_shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
+fs.add_shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl,
+                       block="light")
 
 ###############################################################################
 # Let's create a scene.
@@ -114,7 +91,7 @@ def timer_callback(obj, event):
 
 
 @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
-def vtk_shader_callback(caller, event, calldata=None):
+def vtk_shader_callback(_caller, _event, calldata=None):
     program = calldata
     global timer
     if program is not None:
