@@ -109,7 +109,7 @@ box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
 box_colors = np.array([[1, 1, 1, 0.2]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
-                      scale=(box_lx, box_ly, box_lz))
+                      scales=(box_lx, box_ly, box_lz))
 scene.add(box_actor)
 
 lines = box_edges(box_lx, box_ly, box_lz)

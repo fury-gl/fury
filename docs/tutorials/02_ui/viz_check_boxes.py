@@ -18,7 +18,7 @@ import numpy as np
 
 cube = actor.cube(centers=np.array([[15, 0, 0]]),
                   colors=np.array([[0, 0, 1]]),
-                  scale=np.array([[20, 20, 20]]),
+                  scales=np.array([[20, 20, 20]]),
                   directions=np.array([[0, 0, 1]]))
 
 sphere = actor.sphere(centers=np.array([[50, 0, 0]]),

@@ -61,8 +61,8 @@ def vtk_shader_callback(caller, event, calldata=None):
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
+# mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
+#                    vtk_shader_callback)
 
 
 mapper.AddShaderReplacement(
@@ -176,7 +176,7 @@ mapper.AddShaderReplacement(
 )
 
 showm.initialize()
-showm.add_timer_callback(True, 100, timer_callback)
+# showm.add_timer_callback(True, 100, timer_callback)
 
 showm.initialize()
 showm.start()

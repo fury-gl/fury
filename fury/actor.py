@@ -1522,7 +1522,7 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
     return actor
 
 
-def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
+def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many squares with different features.
 
     Parameters
@@ -1533,7 +1533,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
         The orientation vector of the square.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Square size on each direction (x, y), default(1)
 
     Returns
@@ -1553,7 +1553,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scale)
+                              centers=centers, colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
@@ -1562,7 +1562,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
 
 
 def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-              scale=(1, 2, 0)):
+              scales=(1, 2, 0)):
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -1573,7 +1573,7 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
         The orientation vector of the rectangle.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Rectangle size on each direction (x, y), default(1)
 
     Returns
@@ -1592,12 +1592,12 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     """
     return square(centers=centers, directions=directions, colors=colors,
-                  scale=scale)
+                  scales=scales)
 
 
-@deprecated_params(['size', 'heights'], ['scale', 'scale'],
+@deprecated_params(['size', 'heights'], ['scales', 'scales'],
                    since='0.6', until='0.8')
-def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
+def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
     Parameters
@@ -1608,7 +1608,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
         The orientation vector of the box.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Box size on each direction (x, y), default(1)
 
     Returns
@@ -1628,15 +1628,15 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=(1, 2, 3)):
     """
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scale=scale)
+                              centers=centers, colors=colors, scale=scales)
 
     big_verts, big_faces, big_colors, _ = res
     box_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return box_actor
 
 
-@deprecated_params('heights', 'scale', since='0.6', until='0.8')
-def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
+@deprecated_params('heights', 'scales', since='0.6', until='0.8')
+def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many cubes with different features.
 
     Parameters
@@ -1647,7 +1647,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
         The orientation vector of the cube.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scale : int or ndarray (N,3) or tuple (3,), optional
+    scales : int or ndarray (N,3) or tuple (3,), optional
         Cube size, default=1
 
     Returns
@@ -1666,7 +1666,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scale=1):
 
     """
     return box(centers=centers, directions=directions, colors=colors,
-               scale=scale)
+               scales=scales)
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,

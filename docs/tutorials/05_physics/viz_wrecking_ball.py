@@ -48,7 +48,7 @@ joint_friction = 0.0005
 # Base
 base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        directions=[0, 0, 0],
-                       scale=(5, 5, 0.2),
+                       scales=(5, 5, 0.2),
                        colors=(1, 1, 1))
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1])
@@ -102,7 +102,7 @@ for i in range(wall_length):
 
 brick_actor = actor.box(centers=brick_centers,
                         directions=brick_directions,
-                        scale=brick_sizes,
+                        scales=brick_sizes,
                         colors=brick_colors)
 
 ###############################################################################
@@ -197,7 +197,7 @@ root_robe_c = p.createConstraint(rope, -1, -1, -1,
 
 box_actor = actor.box(centers=np.array([[0, 0, 0]]),
                       directions=np.array([[0, 0, 0]]),
-                      scale=(0.02, 0.02, 0.02),
+                      scales=(0.02, 0.02, 0.02),
                       colors=np.array([[1, 0, 0]]))
 
 ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
