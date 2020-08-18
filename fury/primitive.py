@@ -88,8 +88,8 @@ def repeat_primitive_function(func, centers, func_args=[],
 
     vertices = np.concatenate([func(i)[0] for i in func_args])
     return repeat_primitive(vertices=vertices, faces=faces, centers=centers,
-                            directions=directions, colors=colors, scales=scales,
-                            have_tiled_verts=True)
+                            directions=directions, colors=colors,
+                            scales=scales, have_tiled_verts=True)
 
 
 def repeat_primitive(vertices, faces, centers, directions=None,
