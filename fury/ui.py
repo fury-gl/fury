@@ -4125,6 +4125,80 @@ class ListBoxItem2D(UI):
         i_ren.force_render()
 
 
+class FileDialog2D(UI):
+    """ UI element to choose a file from the file system.
+    """
+    def __init__(self, directory_path, extentions=None, position=(0, 0),
+                 size=(100, 100), multiselection=True, reverse_scrolling=False,
+                 font_size=20, line_spacing=1.4):
+        """
+
+        Parameters
+        ----------
+        extensions: list(string)
+            List of extensions to be shown as files.
+        directory_path: string
+            Path of the directory where this dialog should open.
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (int, int)
+            Width and height in pixels of this UI component.
+        multiselection: {True, False}
+            Whether multiple values can be selected at once.
+        reverse_scrolling: {True, False}
+            If True, scrolling up will move the list of files down.
+        font_size: int
+            The font size of directory path in pixels.
+        line_spacing: float
+            Distance between listbox's items in pixels.
+        """
+        self.font_size = font_size
+        self.multiselection = multiselection
+        self.reverse_scrolling = reverse_scrolling
+        self.line_spacing = line_spacing
+        self.extensions = extensions or ["*"]
+        self.current_directory = directory_path
+        self.dialog_size = size
+        self.directory_contents = []
+
+        super(FileDialog, self).__init__()
+        self.position = position
+
+    def _setup(self):
+        pass
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.listbox.actors
+
+    def resize(self, size):
+        pass
+
+    def _set_position(self, coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.listbox.position = coords
+
+    def _add_to_scene(self, scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.listbox.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.listbox.size
+
+
 class FileMenu2D(UI):
     """ A menu to select files in the current folder.
     Can go to new folder, previous folder and select multiple files.
