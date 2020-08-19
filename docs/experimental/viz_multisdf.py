@@ -9,7 +9,7 @@ import vtk
 verts, faces = fp.prim_box()
 
 centers = np.array([[0, 0, 0], [8, 0, 0]])
-repeated = fp.repeat_primitive(verts, faces, centers=centers, scale=5)
+repeated = fp.repeat_primitive(verts, faces, centers=centers, scales=5)
 
 rep_verts, rep_faces, rep_colors, rep_centers = repeated
 sdfactor = get_actor_from_primitive(rep_verts, rep_faces)

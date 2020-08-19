@@ -319,10 +319,10 @@ def test_vertices_from_actor(interactive=False):
                          [0.5, -0.5, 0]])
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    scale = [1, 2, 1]
+    scales = [1, 2, 1]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scale=scale)
+                              scales=scales)
 
     big_verts = res[0]
     big_faces = res[1]

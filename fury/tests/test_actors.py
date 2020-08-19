@@ -949,7 +949,7 @@ def test_basic_geometry_actor(interactive=False):
         for scale in scale_list:
             scene = window.Scene()
             g_actor = act_func(centers=centers, colors=colors,
-                               directions=directions, scale=scale,
+                               directions=directions, scales=scale,
                                **extra_args)
 
             scene.add(g_actor)
@@ -1271,13 +1271,13 @@ def test_superquadric_actor(interactive=False):
     centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     directions = np.random.rand(3, 3)
-    scale = [1, 2, 3]
+    scales = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
     sq_actor = actor.superquadric(centers, roundness=roundness,
                                   directions=directions,
                                   colors=colors.astype(np.uint8),
-                                  scale=scale)
+                                  scales=scales)
     scene.add(sq_actor)
     if interactive:
         window.show(scene)
@@ -1294,7 +1294,7 @@ def test_billboard_actor(interactive=False):
     scene.background((1, 1, 1))
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    scale = [1, 2, 1]
+    scales = [1, 2, 1]
 
     fake_sphere = \
     """
@@ -1312,7 +1312,7 @@ def test_billboard_actor(interactive=False):
 
     billboard_actor = actor.billboard(centers,
                                       colors=colors.astype(np.uint8),
-                                      scale=scale,
+                                      scales=scales,
                                       fs_impl=fake_sphere)
     scene.add(billboard_actor)
     scene.add(actor.axes())
@@ -1329,11 +1329,11 @@ def test_sdf_actor(interactive=False):
     centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scale = [1, 2, 3]
+    scales = [1, 2, 3]
     primitive = ['sphere', 'ellipsoid', 'torus']
 
     sdf_actor = actor.sdf(centers, directions,
-                          colors, primitive, scale)
+                          colors, primitive, scales)
     scene.add(sdf_actor)
     scene.add(actor.axes())
     if interactive:

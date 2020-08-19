@@ -24,7 +24,7 @@ from fury import window, actor
 dirs = np.random.rand(3, 3)
 colors = np.random.rand(3, 3) * 255
 centers = np.array([[1, 0, 0], [0, 0, 0], [-1, 0, 0]])
-scale = np.random.rand(3, 1)
+scales = np.random.rand(3, 1)
 
 
 ###############################################################################
@@ -32,7 +32,7 @@ scale = np.random.rand(3, 1)
 
 sdfactor = actor.sdf(centers=centers, directions=dirs, colors=colors,
                      primitives=['sphere', 'torus', 'ellipsoid'],
-                     scale=scale)
+                     scales=scales)
 
 ##############################################################################
 # Create a scene
