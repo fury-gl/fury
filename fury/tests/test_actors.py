@@ -1305,9 +1305,9 @@ def test_billboard_actor(interactive=False):
 
         vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
         vec3 direction = normalize(vec3(1., 1., 1.));
-        float df = max(0, dot(direction, normalizedPoint));
-        float sf = pow(df, 24);
-        fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
+        float df_1 = max(0, dot(direction, normalizedPoint));
+        float sf_1 = pow(df_1, 24);
+        fragOutput0 = vec4(max(df_1 * color, sf_1 * vec3(1)), 1);
         """
 
     billboard_actor = actor.billboard(centers,
