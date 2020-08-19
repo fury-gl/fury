@@ -1297,18 +1297,18 @@ def test_billboard_actor(interactive=False):
     scales = [1, 2, 1]
 
     fake_sphere = \
-    """
-    float len = length(point);
-    float radius = 1.;
-    if(len > radius)
-        {discard;}
+        """
+        float len = length(point);
+        float radius = 1.;
+        if(len > radius)
+            {discard;}
 
-    vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
-    vec3 direction = normalize(vec3(1., 1., 1.));
-    float df = max(0, dot(direction, normalizedPoint));
-    float sf = pow(df, 24);
-    fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
-    """
+        vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
+        vec3 direction = normalize(vec3(1., 1., 1.));
+        float df = max(0, dot(direction, normalizedPoint));
+        float sf = pow(df, 24);
+        fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
+        """
 
     billboard_actor = actor.billboard(centers,
                                       colors=colors.astype(np.uint8),
@@ -1321,8 +1321,9 @@ def test_billboard_actor(interactive=False):
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows"
-                                     " due to snapshot (memory access violation)"
-                                     " Check what is causing this issue with shader")
+                                     " due to snapshot (memory access"
+                                     " violation). Check what is causing this"
+                                     " issue with shader")
 def test_sdf_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
