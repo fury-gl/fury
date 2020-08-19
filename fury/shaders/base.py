@@ -17,6 +17,7 @@ SHADERS_BLOCK = {
     "camera": "//VTK::Camera",  # camera and actor matrix values
     "prim_id": "//VTK::PrimID",   # Apple Bug
     "valuepass": "//VTK::ValuePass",  # Value raster
+    "output": "//VTK::Output",  # only for geometry shader
 }
 
 
@@ -71,7 +72,7 @@ def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
     block = SHADERS_BLOCK.get(block, None)
     if block is None:
         msg = "Invalid Shader Type. Please choose between "
-        msg += ', '.join(SHADERS_TYPE.keys())
+        msg += ', '.join(SHADERS_BLOCK.keys())
         raise ValueError(msg)
 
     block_dec = block + "::Dec"
@@ -130,7 +131,7 @@ def add_array_as_vertex_attribute(actor, arr, attr_name, deep=True):
         by default True
 
     """
-    nb_components = arr.shape[1]
+    nb_components = arr.shape[1] if arr.ndim > 1 else arr.ndim
     vtk_array = numpy_support.numpy_to_vtk(arr, deep=deep)
     vtk_array.SetNumberOfComponents(nb_components)
     vtk_array.SetName(attr_name)
