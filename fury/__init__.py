@@ -52,34 +52,34 @@ def get_info(verbose=False):
     return info
 
 
-def enable_warnings(warning_origins=None):
+def enable_warnings(warnings_origin=None):
     """Enable global warnings.
 
     Parameters
     ----------
-    warning_origins : list
+    warnings_origin : list
         list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
 
     """
-    warning_origins = warning_origins or ('all',)
+    warnings_origin = warnings_origin or ('all',)
 
-    if 'all' in warning_origins or 'vtk' in warning_origins:
+    if 'all' in warnings_origin or 'vtk' in warnings_origin:
         import vtk
         vtk.vtkObject.GlobalWarningDisplayOn()
 
 
-def disable_warnings(warning_origins=None):
+def disable_warnings(warnings_origin=None):
     """Disable global warnings.
 
     Parameters
     ----------
-    warning_origins : list
+    warnings_origin : list
         list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
 
     """
-    warning_origins = warning_origins or ('all',)
+    warnings_origin = warnings_origin or ('all',)
 
-    if 'all' in warning_origins or 'vtk' in warning_origins:
+    if 'all' in warnings_origin or 'vtk' in warnings_origin:
         import vtk
         vtk.vtkObject.GlobalWarningDisplayOff()
 
