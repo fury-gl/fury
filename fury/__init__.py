@@ -52,6 +52,42 @@ def get_info(verbose=False):
     return info
 
 
+def enable_warnings(warnings_origin=None):
+    """Enable global warnings.
+
+    Parameters
+    ----------
+    warnings_origin : list
+        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
+
+    """
+    warnings_origin = warnings_origin or ('all',)
+
+    if 'all' in warnings_origin or 'vtk' in warnings_origin:
+        import vtk
+        vtk.vtkObject.GlobalWarningDisplayOn()
+
+
+def disable_warnings(warnings_origin=None):
+    """Disable global warnings.
+
+    Parameters
+    ----------
+    warnings_origin : list
+        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
+
+    """
+    warnings_origin = warnings_origin or ('all',)
+
+    if 'all' in warnings_origin or 'vtk' in warnings_origin:
+        import vtk
+        vtk.vtkObject.GlobalWarningDisplayOff()
+
+
+# We switch off the warning display during the release
+if not ('post' in __version__) and not ('dev' in __version__):
+    disable_warnings()
+
 # Ignore this specific warning below from vtk < 8.2.
 # FutureWarning: Conversion of the second argument of issubdtype from
 # `complex` to `np.complexfloating` is deprecated. In future, it will be
