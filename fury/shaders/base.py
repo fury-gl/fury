@@ -1,5 +1,6 @@
 import vtk
 from vtk.util import numpy_support
+from fury import enable_warnings
 
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
@@ -83,6 +84,7 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
         impl_code = block_impl + "\n" + impl_code
 
     if debug:
+        enable_warnings()
         error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
 
