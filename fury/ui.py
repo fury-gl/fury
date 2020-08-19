@@ -3618,7 +3618,7 @@ class ScrollBar(UI):
         Callback function for when the viewed items have changed.
     """
 
-    def __init__(self, length, width, scroll_ratio, track_color=(1, 1, 1),
+    def __init__(self, size, content_size, view_size, track_color=(1, 1, 1),
                  reverse_scrolling=False, active_color=(0.9, 0.2, 0.2),
                  inactive_color=(0.6, 0.0, 0.0), orientation="vertical",
                  track_opacity=1., position=(0, 0)):
@@ -3626,10 +3626,8 @@ class ScrollBar(UI):
         """
         Parameters
         ----------
-        length : int
-            Length of the scrollbar.
-        width : int
-            Length of the content to be viewed at a time.
+        size : (int, int)
+            Size of the scrollbar in height & width.
         scroll_ratio : float
             Scroll ratio = (viewable content size)//(entire content size)
         track_color : tuple of 3 floats
@@ -3647,18 +3645,11 @@ class ScrollBar(UI):
         position : (int, int, int)
             Lower-left position of the UI component.
         """
-        self.length = length
-        self.width = width
         self._scroll_ratio = scroll_ratio
         self.orientation = orientation.lower()
         self.reverse_scrolling = reverse_scrolling
 
-        if orientation == "vertical":
-            self.track_size = (self.width, self.length)
-        elif orientation == "horizontal":
-            self.track_size = (self.length, self.width)
-        else:
-            raise ValueError("Unknown orientation")
+        self.track_size = size
 
         super(ScrollBar, self).__init__(position)
 
