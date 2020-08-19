@@ -12,7 +12,7 @@ First, a bunch of imports.
 """
 
 from fury import window, ui, io, utils
-from fury.shaders import add_shader_to_actor, add_shader_callback
+from fury.shaders import shader_to_actor, add_shader_callback
 
 ###############################################################################
 # Let's download  and load the model
@@ -62,11 +62,11 @@ fragment_shader_code_impl = \
     fragOutput0 = vec4(col, 1.0);
     """
 
-add_shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
-                    decl_code=vertex_shader_code_decl)
-add_shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
-add_shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl,
-                    block="light")
+shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
+                decl_code=vertex_shader_code_decl)
+shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
+shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl,
+                block="light")
 
 ###############################################################################
 # Let's create a scene.

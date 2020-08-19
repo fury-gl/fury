@@ -3,9 +3,8 @@ import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
-from fury.shaders import (add_shader_to_actor, add_shader_callback,
-                          add_array_as_vertex_attribute,
-                          replace_shader_in_actor)
+from fury.shaders import (shader_to_actor, add_shader_callback,
+                          attribute_to_actor, replace_shader_in_actor)
 
 
 vertex_dec = \
@@ -90,14 +89,14 @@ frag_impl = \
 
 def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
-    add_shader_to_actor(cube, "vertex", impl_code=vertex_impl,
-                        decl_code=vertex_dec, block="valuepass")
-    add_shader_to_actor(cube, "fragment", impl_code=frag_impl,
-                        decl_code=frag_dec, block="light")
+    shader_to_actor(cube, "vertex", impl_code=vertex_impl,
+                    decl_code=vertex_dec, block="valuepass")
+    shader_to_actor(cube, "fragment", impl_code=frag_impl,
+                    decl_code=frag_dec, block="light")
     return cube
 
 
-def test_add_shader_to_actor(interactive=False):
+def test_shader_to_actor(interactive=False):
     cube = generate_cube_with_effect()
 
     scene = window.Scene()
@@ -111,9 +110,9 @@ def test_add_shader_to_actor(interactive=False):
     npt.assert_equal(report.objects, 1)
 
     # test errors
-    npt.assert_raises(ValueError, add_shader_to_actor, cube, "error",
+    npt.assert_raises(ValueError, shader_to_actor, cube, "error",
                       vertex_impl)
-    npt.assert_raises(ValueError, add_shader_to_actor, cube, "vertex",
+    npt.assert_raises(ValueError, shader_to_actor, cube, "vertex",
                       vertex_impl, block="error")
     npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
                       vertex_impl)
@@ -151,11 +150,11 @@ def test_add_shader_callback():
     npt.assert_equal(report.objects, 1)
 
 
-def test_add_array_as_vertex_attribute():
+def test_attribute_to_actor():
     cube = generate_cube_with_effect()
     test_arr = np.arange(24).reshape((8, 3))
 
-    add_array_as_vertex_attribute(cube, test_arr, 'test_arr')
+    attribute_to_actor(cube, test_arr, 'test_arr')
 
     arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
     npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))

@@ -21,9 +21,9 @@ SHADERS_BLOCK = {
 }
 
 
-def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
-                        block="valuepass", keep_default=True,
-                        replace_first=True, replace_all=False, debug=False):
+def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
+                    block="valuepass", keep_default=True,
+                    replace_first=True, replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
 
     A bunch of string replacements is applied to a shader template. Using this
@@ -143,7 +143,7 @@ def add_shader_callback(actor, callback):
     mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk)
 
 
-def add_array_as_vertex_attribute(actor, arr, attr_name, deep=True):
+def attribute_to_actor(actor, arr, attr_name, deep=True):
     """Link a numpy array with vertex attribute.
 
     Parameters

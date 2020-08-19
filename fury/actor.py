@@ -5,7 +5,8 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
-import fury.shaders as fs
+from fury.shaders import (load, shader_to_actor, attribute_to_actor,
+                          add_shader_callback, replace_shader_in_actor)
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.deprecator import deprecated_params
@@ -742,8 +743,8 @@ def line(lines, colors=None, opacity=1, linewidth=1,
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
 
-        fs.replace_shader_in_actor(actor, "geometry", fs.load("line.geom"))
-        fs.add_shader_callback(actor, callback)
+        replace_shader_in_actor(actor, "geometry", load("line.geom"))
+        add_shader_callback(actor, callback)
 
     if fake_tube:
         actor.GetProperty().SetRenderLinesAsTubes(True)
@@ -1960,7 +1961,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
     sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     sq_actor.GetProperty().BackfaceCullingOff()
-    fs.add_array_as_vertex_attribute(sq_actor, big_centers, 'center')
+    attribute_to_actor(sq_actor, big_centers, 'center')
 
     def get_code(glsl_code):
         code = ""
@@ -1973,28 +1974,28 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
         if isinstance(glsl_code, str):
             code += "\n"
-            code += fs.load(glsl_code) if op.isfile(glsl_code) else glsl_code
+            code += load(glsl_code) if op.isfile(glsl_code) else glsl_code
             return code
 
         for content in glsl_code:
             code += "\n"
-            code += fs.load(content) if op.isfile(content) else content
+            code += load(content) if op.isfile(content) else content
         return code
 
-    vs_dec_code = get_code(vs_dec) + "\n" + fs.load("billboard_dec.vert")
-    vs_impl_code = get_code(vs_impl) + "\n" + fs.load("billboard_impl.vert")
-    fs_dec_code = get_code(fs_dec) + "\n" + fs.load("billboard_dec.frag")
-    fs_impl_code = fs.load("billboard_impl.frag") + "\n" + get_code(fs_impl)
+    vs_dec_code = get_code(vs_dec) + "\n" + load("billboard_dec.vert")
+    vs_impl_code = get_code(vs_impl) + "\n" + load("billboard_impl.vert")
+    fs_dec_code = get_code(fs_dec) + "\n" + load("billboard_dec.frag")
+    fs_impl_code = load("billboard_impl.frag") + "\n" + get_code(fs_impl)
     gs_dec_code = get_code(gs_dec)
     gs_impl_code = get_code(gs_impl)
 
-    fs.add_shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
-                           decl_code=vs_dec_code)
-    fs.add_shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
-    fs.add_shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
-                           block="light")
-    fs.add_shader_to_actor(sq_actor, "geometry", impl_code=gs_impl_code,
-                           decl_code=gs_dec_code, block="output")
+    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
+    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
+                    block="light")
+    shader_to_actor(sq_actor, "geometry", impl_code=gs_impl_code,
+                    decl_code=gs_dec_code, block="output")
 
     return sq_actor
 
@@ -2580,19 +2581,19 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     else:
         rep_directions = np.repeat(directions, verts.shape[0], axis=0)
 
-    fs.add_array_as_vertex_attribute(box_actor, rep_centers, 'center')
-    fs.add_array_as_vertex_attribute(box_actor, rep_prims, 'primitive')
-    fs.add_array_as_vertex_attribute(box_actor, rep_scales, 'scale')
-    fs.add_array_as_vertex_attribute(box_actor, rep_directions, 'direction')
+    attribute_to_actor(box_actor, rep_centers, 'center')
+    attribute_to_actor(box_actor, rep_prims, 'primitive')
+    attribute_to_actor(box_actor, rep_scales, 'scale')
+    attribute_to_actor(box_actor, rep_directions, 'direction')
 
-    vs_dec_code = fs.load("sdf_dec.vert")
-    vs_impl_code = fs.load("sdf_impl.vert")
-    fs_dec_code = fs.load("sdf_dec.frag")
-    fs_impl_code = fs.load("sdf_impl.frag")
+    vs_dec_code = load("sdf_dec.vert")
+    vs_impl_code = load("sdf_impl.vert")
+    fs_dec_code = load("sdf_dec.frag")
+    fs_impl_code = load("sdf_impl.frag")
 
-    fs.add_shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
-                           decl_code=vs_dec_code)
-    fs.add_shader_to_actor(box_actor, "fragment", decl_code=fs_dec_code)
-    fs.add_shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
-                           block="light")
+    shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
+    shader_to_actor(box_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
+                    block="light")
     return box_actor
