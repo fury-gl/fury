@@ -52,23 +52,41 @@ def get_info(verbose=False):
     return info
 
 
-def set_vtk_warning_display(value):
-    """Set On or Off the global warning display.
+def enable_warning(warning_origin=None):
+    """Enable global warning.
 
     Parameters
     ----------
-    value : bool
-        True = ON, False = OFF. By default, it is "OFF" for the
-        release and "ON" for the dev version
+    warning_origin : list
+        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
 
     """
-    import vtk
-    vtk.vtkObject.SetGlobalWarningDisplay(value)
+    warning_origin = warning_origin or ('all',)
+
+    if 'all' in warning_origin or 'vtk' in warning_origin:
+        import vtk
+        vtk.vtkObject.GlobalWarningDisplayOn()
+
+
+def disable_warning(warning_origin=None):
+    """Disable global warning display.
+
+    Parameters
+    ----------
+    warning_origin : list
+        list origin ['all', 'fury', 'vtk', 'matplotlib', ...]
+
+    """
+    warning_origin = warning_origin or ('all',)
+
+    if 'all' in warning_origin or 'vtk' in warning_origin:
+        import vtk
+        vtk.vtkObject.GlobalWarningDisplayOff()
 
 
 # We switch off the warning display during the release
 if not ('post' in __version__) and not ('dev' in __version__):
-    set_vtk_warning_display(False)
+    disable_warning()
 
 # Ignore this specific warning below from vtk < 8.2.
 # FutureWarning: Conversion of the second argument of issubdtype from
