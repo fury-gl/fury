@@ -3906,18 +3906,6 @@ class ListBox2D(UI):
             self.slots.append(item)
             self.panel.add_element(item, (x, y + self.margin))
 
-        # Add a scroll bar
-        self.Scrollbar = ScrollBar(len(self.values), self.nb_slots,
-                                   self.slot_height,
-                                   self.panel, self.position,
-                                   self.panel_size, self.reverse_scrolling,
-                                   self.scroll_bar_active_color,
-                                   self.scroll_bar_inactive_color,
-                                   self.background_opacity)
-
-        # Adding update to the hook of ScrollBar
-        self.Scrollbar.on_change = self.update
-
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
         down_event = "MouseWheelBackwardEvent"
@@ -3983,18 +3971,6 @@ class ListBox2D(UI):
         _list_box: :class:`ListBox2D`
 
         """
-        if self.Scrollbar.view_offset > 0:
-            self.Scrollbar.view_offset -= 1
-            self.update()
-            scroll_bar_idx = self.panel._elements.index(
-                                                        self.Scrollbar.bar)
-            self.Scrollbar.bar.center = (
-                                      self.Scrollbar.bar.center[0],
-                                      self.Scrollbar.bar.center[1] +
-                                      self.Scrollbar.step_size)
-            self.panel.element_offsets[scroll_bar_idx] = (
-                self.Scrollbar.bar,
-                (self.Scrollbar.bar.position - self.panel.position))
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
@@ -4010,26 +3986,12 @@ class ListBox2D(UI):
         _list_box: :class:`ListBox2D`
 
         """
-        view_end = self.Scrollbar.view_offset + self.nb_slots
-        if view_end < len(self.values):
-            self.Scrollbar.view_offset += 1
-            self.update()
-            scroll_bar_idx = self.panel._elements.index(
-                                                    self.Scrollbar.bar)
-            self.Scrollbar.bar.center = (
-                                      self.Scrollbar.bar.center[0],
-                                      self.Scrollbar.bar.center[1] -
-                                      self.Scrollbar.step_size)
-            self.panel.element_offsets[scroll_bar_idx] = (
-                self.Scrollbar.bar,
-                (self.Scrollbar.bar.position - self.panel.position))
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
     def update(self):
         """ Refresh listbox's content. """
-        view_start = self.Scrollbar.view_offset
         view_end = view_start + self.nb_slots
         values_to_show = self.values[view_start:view_end]
 
