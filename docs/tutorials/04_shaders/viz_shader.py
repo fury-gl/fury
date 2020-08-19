@@ -11,7 +11,8 @@ First, a bunch of imports.
 
 """
 
-from fury import window, ui, io, utils, shaders as fs
+from fury import window, ui, io, utils
+from fury.shaders import add_shader_to_actor, add_shader_callback
 
 ###############################################################################
 # Let's download  and load the model
@@ -61,11 +62,11 @@ fragment_shader_code_impl = \
     fragOutput0 = vec4(col, 1.0);
     """
 
-fs.add_shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
-                       decl_code=vertex_shader_code_decl)
-fs.add_shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
-fs.add_shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl,
-                       block="light")
+add_shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
+                    decl_code=vertex_shader_code_decl)
+add_shader_to_actor(utah, "fragment", decl_code=fragment_shader_code_decl)
+add_shader_to_actor(utah, "fragment", impl_code=fragment_shader_code_impl,
+                    block="light")
 
 ###############################################################################
 # Let's create a scene.
@@ -87,11 +88,10 @@ def timer_callback(obj, event):
 
 
 ###############################################################################
-# We can use a decorator to callback to the shader.
+# The shader callback will update the color of our utah pot via the update of
+# the timer variable.
 
-
-@window.vtk.calldata_type(window.vtk.VTK_OBJECT)
-def vtk_shader_callback(_caller, _event, calldata=None):
+def shader_callback(_caller, _event, calldata=None):
     program = calldata
     global timer
     if program is not None:
@@ -101,6 +101,7 @@ def vtk_shader_callback(_caller, _event, calldata=None):
             pass
 
 
+add_shader_callback(utah, shader_callback)
 ###############################################################################
 # Let's add a textblock to the scene with a custom message
 
@@ -111,13 +112,6 @@ tb.message = "Hello Shaders"
 # Change the property of the actor
 
 utah.GetProperty().SetOpacity(0.5)
-
-###############################################################################
-# Invoke callbacks to any VTK object
-
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
-
 
 ###############################################################################
 # Show Manager
