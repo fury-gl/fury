@@ -695,6 +695,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     >>> c = actor.line(lines, colors)
     >>> scene.add(c)
     >>> #window.show(scene)
+
     """
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
@@ -736,14 +737,12 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     actor.GetProperty().SetOpacity(opacity)
 
     if depth_cue:
-        # fs.replace_shader_from_actor(actor, "geometry", fs.load("line.geom"))
-        poly_mapper.SetGeometryShaderCode(fs.load("line.geom"))
-
         def callback(_caller, _event, calldata=None):
             program = calldata
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
 
+        fs.replace_shader_in_actor(actor, "geometry", fs.load("line.geom"))
         fs.add_shader_callback(actor, callback)
 
     if fake_tube:

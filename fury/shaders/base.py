@@ -22,8 +22,8 @@ SHADERS_BLOCK = {
 
 
 def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
-                        block="valuepass", keep_default=True, replace_first=True,
-                        replace_all=False, debug=False):
+                        block="valuepass", keep_default=True,
+                        replace_first=True, replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
 
     A bunch of string replacements is applied to a shader template. Using this
@@ -92,6 +92,35 @@ def add_shader_to_actor(actor, shader_type, impl_code="", decl_code="",
                             decl_code, replace_all)
     sp.AddShaderReplacement(shader_type, block_impl, replace_first,
                             impl_code, replace_all)
+
+
+def replace_shader_in_actor(actor, shader_type, code):
+    """Set and Replace the shader template with a new one.
+
+    Parameters
+    ----------
+    actor : vtkActor
+        Object where you want to set the shader code.
+    shader_type : str
+        Shader type: vertex, geometry, fragment
+    code : str
+        new shader template code
+
+    """
+    function_name = {
+        "vertex": "SetVertexShaderCode",
+        "fragment": "SetFragmentShaderCode",
+        "geometry": "SetGeometryShaderCode"
+    }
+    shader_type = shader_type.lower()
+    function = function_name.get(shader_type, None)
+    if function is None:
+        msg = "Invalid Shader Type. Please choose between "
+        msg += ', '.join(function_name.keys())
+        raise ValueError(msg)
+
+    sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
+    getattr(sp, function)(code)
 
 
 def add_shader_callback(actor, callback):

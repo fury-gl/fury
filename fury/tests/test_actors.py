@@ -422,7 +422,9 @@ def test_streamtube_and_line_actors():
 
     c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
 
-    mapper_code = c3.GetMapper().GetGeometryShaderCode()
+    VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
+    shader_obj =  c3.GetShaderProperty() if VTK_9_PLUS else c3.GetMapper()
+    mapper_code = shader_obj.GetGeometryShaderCode()
     file_code = shaders.load("line.geom")
     npt.assert_equal(mapper_code, file_code)
 

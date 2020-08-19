@@ -4,7 +4,8 @@ import numpy.testing as npt
 
 from fury import actor, window
 from fury.shaders import (add_shader_to_actor, add_shader_callback,
-                          add_array_as_vertex_attribute)
+                          add_array_as_vertex_attribute,
+                          replace_shader_in_actor)
 
 
 vertex_dec = \
@@ -108,6 +109,8 @@ def test_add_shader_to_actor(interactive=False):
                       vertex_impl)
     npt.assert_raises(ValueError, add_shader_to_actor, cube, "vertex",
                       vertex_impl, block="error")
+    npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
+                      vertex_impl)
 
 
 def test_add_shader_callback():
