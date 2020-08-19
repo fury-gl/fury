@@ -1,5 +1,6 @@
 import numpy as np
 from os.path import join as pjoin
+import os
 
 from fury import actor, window, ui
 
@@ -18,7 +19,7 @@ out_dir.message = "Output directory"
 from pathlib import Path
 home = str(Path.home())
 
-file_menu = ui.FileMenu2D(home, size=(1200, 400))
+file_menu = ui.FileMenu2D(os.getcwd(), size=(1200, 400))
 
 panel = ui.Panel2D(size=(1800, 420))
 

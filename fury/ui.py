@@ -4128,7 +4128,7 @@ class ListBoxItem2D(UI):
 class FileDialog2D(UI):
     """ UI element to choose a file from the file system.
     """
-    def __init__(self, directory_path, extentions=None, position=(0, 0),
+    def __init__(self, directory_path, extensions=None, position=(0, 0),
                  size=(100, 100), multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4):
         """
@@ -4162,16 +4162,28 @@ class FileDialog2D(UI):
         self.dialog_size = size
         self.directory_contents = []
 
-        super(FileDialog, self).__init__()
+        self.file_menu_size = (size[0], int(0.05*size[1]))
+        self.dir_block_size = (size[0], int(0.9*size[1]))
+
+        super(FileDialog2D, self).__init__()
         self.position = position
 
     def _setup(self):
-        pass
+        self.file_menu = FileMenu2D(self.current_directory, self.extensions,
+                                    size=self.file_menu_size,
+                                    multiselection=self.multiselection,
+                                    reverse_scrolling=self.reverse_scrolling,
+                                    line_spacing=self.line_spacing)
+        self.dir_block = TextBlock(text="Hola", size=self.dir_block_size)
+
+        self.parent_panel = Panel2D(size=self.dialog_size)
+        self.parent_panel.add_element(self.dir_block, (0.0, 0.95))
+        self.parent_panel.add_element(self.file_menu, (0.0, 0.05))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        return self.listbox.actors
+        return self.parent_panel.actors
 
     def resize(self, size):
         pass
@@ -4184,7 +4196,7 @@ class FileDialog2D(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.listbox.position = coords
+        self.parent_panel.position = coords
 
     def _add_to_scene(self, scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -4193,10 +4205,10 @@ class FileDialog2D(UI):
         ----------
         scene : scene
         """
-        self.listbox.add_to_scene(scene)
+        self.parent_panel.add_to_scene(scene)
 
     def _get_size(self):
-        return self.listbox.size
+        return self.parent_panel.size
 
 
 class FileMenu2D(UI):
