@@ -4162,23 +4162,24 @@ class FileDialog2D(UI):
         self.dialog_size = size
         self.directory_contents = []
 
-        self.file_menu_size = (size[0], int(0.05*size[1]))
-        self.dir_block_size = (size[0], int(0.9*size[1]))
+        self.file_menu_size = (size[0], int(0.7*size[1]))
+        self.dir_block_size = (size[0], int(0.1*size[1]))
 
         super(FileDialog2D, self).__init__()
         self.position = position
 
     def _setup(self):
-        self.file_menu = FileMenu2D(self.current_directory, self.extensions,
+        self.file_menu = FileMenu2D(directory_path=self.current_directory,
+                                    extensions=self.extensions,
                                     size=self.file_menu_size,
                                     multiselection=self.multiselection,
                                     reverse_scrolling=self.reverse_scrolling,
                                     line_spacing=self.line_spacing)
-        self.dir_block = TextBlock(text="Hola", size=self.dir_block_size)
+        self.dir_block = TextBlock2D(text="", size=self.dir_block_size)
 
         self.parent_panel = Panel2D(size=self.dialog_size)
-        self.parent_panel.add_element(self.dir_block, (0.0, 0.95))
-        self.parent_panel.add_element(self.file_menu, (0.0, 0.05))
+        self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
+        self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
