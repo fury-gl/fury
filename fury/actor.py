@@ -5,7 +5,8 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
-import fury.shaders as fs
+from fury.shaders import (load, shader_to_actor, attribute_to_actor,
+                          add_shader_callback, replace_shader_in_actor)
 from fury import layout
 from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
 from fury.deprecator import deprecated_params
@@ -630,7 +631,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 def line(lines, colors=None, opacity=1, linewidth=1,
          spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
          lookup_colormap=None, depth_cue=False, fake_tube=False):
-    """ Create an actor for one or more lines.
+    """Create an actor for one or more lines.
 
     Parameters
     ------------
@@ -695,6 +696,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     >>> c = actor.line(lines, colors)
     >>> scene.add(c)
     >>> #window.show(scene)
+
     """
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
@@ -713,18 +715,6 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray("colors")
     poly_mapper.Update()
-
-    if depth_cue:
-        poly_mapper.SetGeometryShaderCode(fs.load("line.geom"))
-
-        @vtk.calldata_type(vtk.VTK_OBJECT)
-        def vtkShaderCallback(_caller, _event, calldata=None):
-            program = calldata
-            if program is not None:
-                program.SetUniformf("linewidth", linewidth)
-
-        poly_mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent,
-                                vtkShaderCallback)
 
     # Color Scale with a lookup table
     if color_is_scalar:
@@ -746,6 +736,15 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     actor.SetMapper(poly_mapper)
     actor.GetProperty().SetLineWidth(linewidth)
     actor.GetProperty().SetOpacity(opacity)
+
+    if depth_cue:
+        def callback(_caller, _event, calldata=None):
+            program = calldata
+            if program is not None:
+                program.SetUniformf("linewidth", linewidth)
+
+        replace_shader_in_actor(actor, "geometry", load("line.geom"))
+        add_shader_callback(actor, callback)
 
     if fake_tube:
         actor.GetProperty().SetRenderLinesAsTubes(True)
@@ -1960,12 +1959,9 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
     big_verts, big_faces, big_colors, big_centers = res
 
-    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    actor.GetProperty().BackfaceCullingOff()
-    vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
-    vtk_centers.SetNumberOfComponents(3)
-    vtk_centers.SetName("center")
-    actor.GetMapper().GetInput().GetPointData().AddArray(vtk_centers)
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetProperty().BackfaceCullingOff()
+    attribute_to_actor(sq_actor, big_centers, 'center')
 
     def get_code(glsl_code):
         code = ""
@@ -1978,50 +1974,30 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
         if isinstance(glsl_code, str):
             code += "\n"
-            code += fs.load(glsl_code) if op.isfile(glsl_code) else glsl_code
+            code += load(glsl_code) if op.isfile(glsl_code) else glsl_code
             return code
 
         for content in glsl_code:
             code += "\n"
-            code += fs.load(content) if op.isfile(content) else content
+            code += load(content) if op.isfile(content) else content
         return code
 
-    vs_dec_code = get_code(vs_dec) + "\n" + fs.load("billboard_dec.vert")
-    vs_impl_code = get_code(vs_impl) + "\n" + fs.load("billboard_impl.vert")
-    fs_dec_code = get_code(fs_dec) + "\n" + fs.load("billboard_dec.frag")
-    fs_impl_code = fs.load("billboard_impl.frag") + "\n" + get_code(fs_impl)
+    vs_dec_code = get_code(vs_dec) + "\n" + load("billboard_dec.vert")
+    vs_impl_code = get_code(vs_impl) + "\n" + load("billboard_impl.vert")
+    fs_dec_code = get_code(fs_dec) + "\n" + load("billboard_dec.frag")
+    fs_impl_code = load("billboard_impl.frag") + "\n" + get_code(fs_impl)
     gs_dec_code = get_code(gs_dec)
     gs_impl_code = get_code(gs_impl)
 
-    mapper = actor.GetMapper()
-    mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
+    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
+                    block="light")
+    shader_to_actor(sq_actor, "geometry", impl_code=gs_impl_code,
+                    decl_code=gs_dec_code, block="output")
 
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
-        vs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
-        vs_impl_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
-        fs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
-        fs_impl_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Geometry, "//VTK::Output::Dec", True,
-        gs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Geometry, "//VTK::Output::Impl", True,
-        gs_impl_code, False)
-
-    return actor
+    return sq_actor
 
 
 def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
@@ -2588,31 +2564,16 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
 
-    vtk_center = numpy_support.numpy_to_vtk(rep_centers, deep=True)
-    vtk_center.SetNumberOfComponents(3)
-    vtk_center.SetName("center")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_center)
-
     if isinstance(primitives,  (list, tuple, np.ndarray)):
         primlist = [prims[prim] for prim in primitives]
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
         rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)
 
-    vtk_primitive = numpy_support.numpy_to_vtk(rep_prims, deep=True)
-    vtk_primitive.SetNumberOfComponents(1)
-    vtk_primitive.SetName("primitive")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_primitive)
-
     if isinstance(scales, (list, tuple, np.ndarray)):
         rep_scales = np.repeat(scales, verts.shape[0])
     else:
         rep_scales = np.repeat(scales, rep_centers.shape[0], axis=0)
-
-    vtk_scale = numpy_support.numpy_to_vtk(rep_scales, deep=True)
-    vtk_scale.SetNumberOfComponents(1)
-    vtk_scale.SetName("scale")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_scale)
 
     if isinstance(directions, (list, tuple, np.ndarray)) and \
             len(directions) == 3:
@@ -2620,45 +2581,19 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     else:
         rep_directions = np.repeat(directions, verts.shape[0], axis=0)
 
-    vtk_direction = numpy_support.numpy_to_vtk(rep_directions, deep=True)
-    vtk_direction.SetNumberOfComponents(3)
-    vtk_direction.SetName("direction")
-    box_actor.GetMapper().GetInput().GetPointData().AddArray(vtk_direction)
+    attribute_to_actor(box_actor, rep_centers, 'center')
+    attribute_to_actor(box_actor, rep_prims, 'primitive')
+    attribute_to_actor(box_actor, rep_scales, 'scale')
+    attribute_to_actor(box_actor, rep_directions, 'direction')
 
-    vs_dec_code = fs.load("sdf_dec.vert")
-    vs_impl_code = fs.load("sdf_impl.vert")
-    fs_dec_code = fs.load("sdf_dec.frag")
-    fs_impl_code = fs.load("sdf_impl.frag")
+    vs_dec_code = load("sdf_dec.vert")
+    vs_impl_code = load("sdf_impl.vert")
+    fs_dec_code = load("sdf_dec.frag")
+    fs_impl_code = load("sdf_impl.frag")
 
-    mapper = box_actor.GetMapper()
-    mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
-
-    mapper.MapDataArrayToVertexAttribute(
-        "primitive", "primitive", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
-        -1)
-
-    mapper.MapDataArrayToVertexAttribute(
-        "scale", "scale", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
-
-    mapper.MapDataArrayToVertexAttribute(
-        "direction", "direction", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS,
-        -1)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Dec", True,
-        vs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Vertex, "//VTK::ValuePass::Impl", True,
-        vs_impl_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::ValuePass::Dec", True,
-        fs_dec_code, False)
-
-    mapper.AddShaderReplacement(
-        vtk.vtkShader.Fragment, "//VTK::Light::Impl", True,
-        fs_impl_code, False)
-
+    shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
+    shader_to_actor(box_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
+                    block="light")
     return box_actor

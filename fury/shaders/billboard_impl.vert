@@ -1,7 +1,4 @@
 /* Billboard  vertex shader implementation */
-//VTK::ValuePass::Impl
-
-
 centeredVertexMC = vertexMC.xyz - center;
 scalingFactor = 1. / abs(centeredVertexMC.x);
 centeredVertexMC *= scalingFactor;
