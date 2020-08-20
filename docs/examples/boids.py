@@ -85,31 +85,33 @@ def vec2vec_rotmat(u, v):
 
     return Rp
 
-global xyz, directions
-num_particles = 3
+global centers, center_leader
+num_particles = 2
+num_leaders = 1
 steps = 1000
 dt = 0.05
-# centers = 0 * np.array([[0, 0, 0.]])
-# colors = np.array([[0.5, 0.5, 0.5]])
-# directions = np.array([[0, 1, 0]])
-
+vel = np.random.rand(2, 3)
 colors = np.array([[0.5, 0.5, 0.5],
-                    [0, 1, 0.],
-                    [0.5, 0.5, 0.5]])
+                   [0.5, 0, 0.5]])
 centers = 0 * np.array([[10, 0, 0.],
-                    [10 + 3, 0 , 0.],
-                    [13 + 3, 0, 0.]])
-
-directions = np.array([[0, 1, 0],
-                       [0, 1, 0],
-                       [0, 1, 0.]])
-
+                        [13 + 3, 0, 0.]])
+directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
 scene = window.Scene()
 arrow_actor = actor.arrow(centers=centers,
                           directions=directions, colors=colors, heights=3,
                           resolution=10, vertices=None, faces=None)
-
 scene.add(arrow_actor)
+
+color_leader = np.array([[0, 1, 0.]])
+center_leader = 0 * np.array([[10 + 3, 0 , 0.]])
+direction_leader = np.array([[0, 1., 0]])
+arrow_actor_leader = actor.arrow(centers=center_leader,
+                          directions=direction_leader, colors=color_leader, heights=3,
+                          resolution=10, vertices=None, faces=None)
+
+
+scene.add(arrow_actor_leader)
 axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
@@ -123,50 +125,56 @@ vertices = utils.vertices_from_actor(arrow_actor)
 no_vertices_per_arrow = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(centers, no_vertices_per_arrow, axis=0)
-vertices = utils.vertices_from_actor(arrow_actor)
+vertices_leader = utils.vertices_from_actor(arrow_actor_leader)
+initial_vertices_leader = vertices_leader.copy() - \
+    np.repeat(center_leader, no_vertices_per_arrow, axis=0)
 
 
 scene.zoom(0.8)
 
 def timer_callback(_obj, _event):
-    global centers, directions
+    global centers, center_leader
     turnfraction = 0.01
     cnt = next(counter)
     dst = 5
     angle = 2 * np.pi * turnfraction * cnt
-    x1 = dst * np.cos(angle)
+    x1 = dst #* np.cos(angle)
     x2 = (dst + 5) * np.cos(angle)
-    x3 = (dst + 10) * np.cos(angle)
-    y1 = dst * np.sin(angle)
+    x3 = (dst + 10) #* np.cos(angle)
+    y1 = dst #* np.sin(angle)
     y2 = (dst + 5) * np.sin(angle)
-    y3 = (dst + 10) * np.sin(angle)
+    y3 = (dst + 10) #* np.sin(angle)
 
     angle_1 = 2 * np.pi * turnfraction * (cnt+1)
-    x1_1 = dst * np.cos(angle_1)
+    x1_1 = dst #* np.cos(angle_1)
     x2_1 = (dst + 5) * np.cos(angle_1)
-    x3_1 = (dst + 10) * np.cos(angle_1)
-    y1_1 = dst * np.sin(angle_1)
+    x3_1 = (dst + 10) #* np.cos(angle_1)
+    y1_1 = dst #* np.sin(angle_1)
     y2_1 = (dst + 5) * np.sin(angle_1)
-    y3_1 = (dst + 10) * np.sin(angle_1)
+    y3_1 = (dst + 10) #* np.sin(angle_1)
 
     xyz = np.array([[x1, y1, 0.],
-                [x2, y2, 0.],
-                [x3, y3,0. ]])
+                   [x3, y3, 0.]])
     xyz_1 = np.array([[x1_1, y1_1, 0.],
-            [x2_1, y2_1, 0.],
-            [x3_1, y3_1, 0.]])
+                     [x3_1, y3_1, 0.]])
 
-    # xyz_1 = np.array([[x_1, y_1, 0.]])
-    # xyz = np.array([[x, y, 0.]])
+    xyz_leader = np.array([[x2, y2, 0.]])
+    xyz_1_leader = np.array([[x2_1, y2_1, 0.]])
+
     tb.message = "Let's count up to 1000 and exit :" + str(cnt)
-    R = vec2vec_rotmat(np.array((xyz_1[0,:] - xyz[0,:])/np.linalg.norm(xyz_1[0,:] - xyz[0,:])), np.array([0, 1., 0]))
+    R = vec2vec_rotmat(np.array((xyz_1_leader[0,:] - xyz_leader[0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:])), np.array([0, 1., 0]))
+    xyz = xyz + vel * cnt
 
-    vertices[:] = np.dot(initial_vertices, R) + \
+    vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_arrow, axis=0)
     utils.update_actor(arrow_actor)
+
+    vertices_leader[:] = np.dot(initial_vertices_leader, R) + \
+        np.repeat(xyz_leader, no_vertices_per_arrow, axis=0)
+    utils.update_actor(arrow_actor_leader)
     scene.reset_clipping_range()
     showm.render()
-    if cnt == steps-1:
+    if cnt == steps:
         showm.exit()
 
 scene.add(tb)
