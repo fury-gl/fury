@@ -4175,11 +4175,18 @@ class FileDialog2D(UI):
                                     multiselection=self.multiselection,
                                     reverse_scrolling=self.reverse_scrolling,
                                     line_spacing=self.line_spacing)
-        self.dir_block = TextBlock2D(text="", size=self.dir_block_size)
+        self.dir_block = TextBlock2D(text=self.current_directory,
+                                     size=self.dir_block_size)
 
         self.parent_panel = Panel2D(size=self.dialog_size)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
         self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
+
+        for slot in self.file_menu.listbox.slots:
+            slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
+                              self.dir_click_callback)
+            slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
+                              self.dir_click_callback)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4210,6 +4217,11 @@ class FileDialog2D(UI):
 
     def _get_size(self):
         return self.parent_panel.size
+
+    def dir_click_callback(self, i_ren, _obj, listboxitem):
+        self.dir_block.message = self.file_menu.current_directory
+        i_ren.force_render()
+        i_ren.event.abort()
 
 
 class FileMenu2D(UI):
@@ -4431,8 +4443,9 @@ class FileMenu2D(UI):
         listboxitem: :class:`ListBoxItem2D`
         """
         if (listboxitem.element, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory,
-                                              listboxitem.element)
+            new_directory_path =\
+                os.path.normpath(os.path.join(self.current_directory,
+                                              listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
