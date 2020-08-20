@@ -1,56 +1,52 @@
 from fury import ui, window, io, utils
 import vtk
-from fury.data.fetcher import fetch_viz_models, read_viz_models
+from fury.data.fetcher import fetch_viz_models, read_viz_models,\
+                              fetch_viz_textures, read_viz_textures
 
-# fetch_viz_models()
-# dragon = read_viz_models('utah.obj')
-# dragon = io.load_polydata(dragon)
-dragon = io.load_polydata('dragon.obj')
+fetch_viz_models()
+dragon = read_viz_models('dragon.obj')
+dragon = io.load_polydata(dragon)
 dragon = utils.get_polymapper_from_polydata(dragon)
 dragon = utils.get_actor_from_polymapper(dragon)
 
-tex = vtk.vtkTexture()
-imgReader = vtk.vtkJPEGReader()
-imgReader.SetFileName('cloudsb.jpg')
-tex.SetInputConnection(imgReader.GetOutputPort())
-dragon.SetTexture(tex)
+fetch_viz_textures()
+sphmap_filename = read_viz_textures("clouds.jpg")
 
 
 def set_toon(act):
     act.GetProperty().SetDiffuse(0.7)
     mapper = act.GetMapper()
     mapper.AddShaderReplacement(
-		vtk.vtkShader.Fragment,
-    	'//VTK::Light::Impl',
-    	True,
-    	"""
-    	//VTK::Light::Impl
+        vtk.vtkShader.Fragment,
+        '//VTK::Light::Impl',
+        True,
+        """
+        //VTK::Light::Impl
 
-    	vec4 color;
+        vec4 color;
+        float ll = length(diffuse);
+        if (ll > 0.95)
+            color = vec4(1.0,0.5,0.5,1.0);
+        else if (ll > 0.5)
+            color = vec4(0.6,0.3,0.3,1.0);
+        else if (ll > 0.25)
+            color = vec4(0.4,0.2,0.2,1.0);
+        else
+            color = vec4(0.2,0.1,0.1,1.0);
 
-    	float ll = length(diffuse);
-    	if (ll > 0.95)
-    	    color = vec4(1.0,0.5,0.5,1.0);
-    	else if (ll > 0.5)
-    	    color = vec4(0.6,0.3,0.3,1.0);
-    	else if (ll > 0.25)
-    	    color = vec4(0.4,0.2,0.2,1.0);
-    	else
-    	    color = vec4(0.2,0.1,0.1,1.0);    
+        fragOutput0 = color;
+        """,
+        False
+    )
 
-    	fragOutput0 = color;
-    	""",
-    	False
-	)
 
 def set_reflect(act):
     act.GetProperty().SetDiffuse(0.1)
     act.GetProperty().SetSpecular(0.8)
     act.GetProperty().SetSpecularPower(20)
-    
     tex = vtk.vtkTexture()
     imgReader = vtk.vtkJPEGReader()
-    imgReader.SetFileName('cloudsb.jpg')
+    imgReader.SetFileName(sphmap_filename)
     tex.SetInputConnection(imgReader.GetOutputPort())
     act.SetTexture(tex)
 
@@ -68,46 +64,46 @@ def set_reflect(act):
         )
 
     mapper.AddShaderReplacement(
-	    vtk.vtkShader.Vertex,
-	    "//VTK::PositionVC::Impl",  # replace the normal block
-	    True,  # before the standard replacements
-	    """
-	    
-	    //VTK::PositionVC::Impl  // we still want the default
-	    vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
-	    TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
-	    //TexCoords.xyz = normalMC;
-	    //TexCoords.xyz = vertexMC.xyz;
-	    """,
-	    False  # only do it once
-        )
+        vtk.vtkShader.Vertex,
+        "//VTK::PositionVC::Impl",
+        True,
+        """
+
+        //VTK::PositionVC::Impl  // we still want the default
+        vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
+        TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
+        """,
+        False
+    )
 
     mapper.AddShaderReplacement(
-	    vtk.vtkShader.Fragment,
-	    "//VTK::Light::Dec",
-	    True,
-	    """
-	    //VTK::Light::Dec
+        vtk.vtkShader.Fragment,
+        "//VTK::Light::Dec",
+        True,
+        """
+        //VTK::Light::Dec
 
-    	uniform sampler2D texture_0;
-    	in vec3 TexCoords;
-    	""",
-    	False
-    	)
+        uniform sampler2D texture_0;
+        in vec3 TexCoords;
+        """,
+        False
+    )
 
     mapper.AddShaderReplacement(
-	    vtk.vtkShader.Fragment,
-	    "//VTK::Light::Impl",
-	    True,
-	    """
-	    //VTK::Light::Impl
-	    float phix = length(vec2(TexCoords.x, TexCoords.z));
-	    vec3 skyColor = texture(texture_0, vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927 + 0.5, atan(TexCoords.y,phix)/3.1415927 + 0.5)).xyz;
+        vtk.vtkShader.Fragment,
+        "//VTK::Light::Impl",
+        True,
+        """
+        //VTK::Light::Impl
+        float phix = length(vec2(TexCoords.x, TexCoords.z));
+        vec3 skyColor = texture(texture_0,
+                        vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927+
+                        0.5, atan(TexCoords.y,phix)/3.1415927 + 0.5)).xyz;
+        gl_FragData[0] = vec4(ambientColor + diffuse + specular +
+                         specularColor*skyColor, opacity);
 
-    	gl_FragData[0] = vec4(ambientColor + diffuse + specular + specularColor*skyColor, opacity);
-    	
-    	""",
-    	False
+        """,
+        False
     )
 
 
@@ -142,7 +138,7 @@ def set_gooch(act):
         //VTK::Light::Impl
 
         vec3 kcool    = min(CoolColor + DiffuseCool * SurfaceColor, 1.0);
-        vec3 kwarm    = min(WarmColor + DiffuseWarm * SurfaceColor, 1.0); 
+        vec3 kwarm    = min(WarmColor + DiffuseWarm * SurfaceColor, 1.0);
         vec3 kfinal   = mix(kcool, kwarm, diffuse);
         fragOutput0 = vec4(min(kfinal + specular, 1.0), 1.0);
         """,
@@ -155,6 +151,7 @@ values = ["Toon", "Reflect", "Gooch"]
 listbox = ui.ListBox2D(
     values=values, position=(10, 300), size=(200, 200), multiselection=False
 )
+
 
 def shade_element():
     element = exx[values.index(listbox.selected[0])]

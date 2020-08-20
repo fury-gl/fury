@@ -1,28 +1,28 @@
 import numpy as np
 from fury import window, actor, ui, io, utils
-from fury.data.fetcher import fetch_viz_models, read_viz_models
+from fury.data.fetcher import fetch_viz_models, read_viz_models,\
+                              fetch_viz_textures, read_viz_textures
 import vtk
 
 scene = window.Scene()
 
-#model = read_viz_models('utah.obj')
-dragon = io.load_polydata('dragon.obj')
+dragon = read_viz_models('dragon.obj')
+dragon = io.load_polydata(dragon)
 dragon = utils.get_polymapper_from_polydata(dragon)
 dragon = utils.get_actor_from_polymapper(dragon)
 
-dragon.SetScale(6.0, 6.0, 6.0)
-dragon.GetProperty().SetSpecular(0.8);
-dragon.GetProperty().SetSpecularPower(20);
-dragon.GetProperty().SetDiffuse(0.1);
-dragon.GetProperty().SetAmbient(0.1);
-dragon.GetProperty().SetDiffuseColor(1.0, 0.0, 0.4);
-dragon.GetProperty().SetAmbientColor(0.4, 0.0, 1.0);
+dragon.GetProperty().SetSpecular(0.8)
+dragon.GetProperty().SetSpecularPower(20)
+dragon.GetProperty().SetDiffuse(0.1)
 
 scene.add(dragon)
 
+fetch_viz_textures()
+sphmap_filename = read_viz_textures("clouds.jpg")
+
 tex = vtk.vtkTexture()
 imgReader = vtk.vtkJPEGReader()
-imgReader.SetFileName('cloudsb.jpg')
+imgReader.SetFileName(sphmap_filename)
 tex.SetInputConnection(imgReader.GetOutputPort())
 dragon.SetTexture(tex)
 
@@ -33,7 +33,7 @@ mapper.AddShaderReplacement(
     "//VTK::PositionVC::Dec",  # replace the normal block
     True,  # before the standard replacements
     """
-    //VTK::PositionVC::Dec  // we still want the default
+    //VTK::PositionVC::Dec
     out vec3 TexCoords;
     """,
     False  # only do it once
@@ -44,8 +44,7 @@ mapper.AddShaderReplacement(
     "//VTK::PositionVC::Impl",  # replace the normal block
     True,  # before the standard replacements
     """
-    
-    //VTK::PositionVC::Impl  // we still want the default
+    //VTK::PositionVC::Impl
     vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
     TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
     //TexCoords.xyz = normalMC;
@@ -75,10 +74,12 @@ mapper.AddShaderReplacement(
     """
     //VTK::Light::Impl
     float phix = length(vec2(TexCoords.x, TexCoords.z));
-    vec3 skyColor = texture(texture_0, vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927 + 0.5, atan(TexCoords.y,phix)/3.1415927 + 0.5)).xyz;
+    vec3 skyColor = texture(texture_0,
+                    vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927
+                    + 0.5, atan(TexCoords.y,phix)/3.1415927 + 0.5)).xyz;
 
-    gl_FragData[0] = vec4(ambientColor + diffuse + specular + specularColor*skyColor, opacity);
-    
+    gl_FragData[0] = vec4(ambientColor + diffuse + specular +
+                     specularColor*skyColor, opacity);
     """,
     False
 )
