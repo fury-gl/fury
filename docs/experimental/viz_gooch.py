@@ -3,6 +3,7 @@ from fury import window, actor, ui, io, utils
 from fury.data.fetcher import fetch_viz_models, read_viz_models
 import vtk
 
+fetch_viz_models()
 dragon = read_viz_models('dragon.obj')
 dragon = io.load_polydata(dragon)
 dragon = utils.get_polymapper_from_polydata(dragon)
@@ -26,7 +27,7 @@ mapper.AddShaderReplacement(
     float DiffuseWarm = 0.25;
     vec3 LightPosition = vec3(0, 10, 4);
     vec3 SurfaceColor = vec3(1, 0.75, 0.75);
-    vec3 WarmColor = vec3(1.0, 1.0, 0)
+    vec3 WarmColor = vec3(1.0, 1.0, 0);
 
     """,
     False

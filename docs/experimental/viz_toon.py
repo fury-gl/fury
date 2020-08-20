@@ -3,10 +3,13 @@ from fury import window, actor, ui, io, utils
 from fury.data.fetcher import fetch_viz_models, read_viz_models
 import vtk
 
+fetch_viz_models()
 dragon = read_viz_models('dragon.obj')
 dragon = io.load_polydata(dragon)
 dragon = utils.get_polymapper_from_polydata(dragon)
 dragon = utils.get_actor_from_polymapper(dragon)
+
+dragon.GetProperty().SetDiffuse(0.7)
 
 mapper = dragon.GetMapper()
 

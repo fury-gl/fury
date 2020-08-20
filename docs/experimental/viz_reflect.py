@@ -6,6 +6,7 @@ import vtk
 
 scene = window.Scene()
 
+fetch_viz_models()
 dragon = read_viz_models('dragon.obj')
 dragon = io.load_polydata(dragon)
 dragon = utils.get_polymapper_from_polydata(dragon)
