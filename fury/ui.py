@@ -4164,6 +4164,8 @@ class FileDialog2D(UI):
 
         self.file_menu_size = (size[0], int(0.7*size[1]))
         self.dir_block_size = (size[0], int(0.1*size[1]))
+        self.accept_button_size = (int(0.2*size[0]), int(0.1*size[1]))
+        self.reject_button_size = (int(0.2*size[0]), int(0.1*size[1]))
 
         super(FileDialog2D, self).__init__()
         self.position = position
@@ -4177,16 +4179,29 @@ class FileDialog2D(UI):
                                     line_spacing=self.line_spacing)
         self.dir_block = TextBlock2D(text=self.current_directory,
                                      size=self.dir_block_size)
+        self.accept_button = TextBlock2D(size=self.accept_button_size,
+                                         text="Save",
+                                         color=(1, 1, 1))
+        self.reject_button = TextBlock2D(size=self.reject_button_size,
+                                         text="Cancel",
+                                         color=(1, 1, 1))
 
         self.parent_panel = Panel2D(size=self.dialog_size)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
         self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
+        self.parent_panel.add_element(self.accept_button, (0.5, 0.05))
+        self.parent_panel.add_element(self.reject_button, (0.75, 0.05))
 
         for slot in self.file_menu.listbox.slots:
             slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
                               self.dir_click_callback)
             slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
                               self.dir_click_callback)
+
+        self.accept_button.on_left_mouse_button_clicked =\
+            self.accept_click_callback
+        self.reject_button.on_left_mouse_button_clicked =\
+            self.reject_click_callback
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4219,7 +4234,18 @@ class FileDialog2D(UI):
         return self.parent_panel.size
 
     def dir_click_callback(self, i_ren, _obj, listboxitem):
-        self.dir_block.message = self.file_menu.current_directory
+        self.current_directory = self.file_menu.current_directory
+        self.dir_block.message = self.current_directory
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def accept_click_callback(self, i_ren, _obj, textblock):
+        print("Saving...", self.current_directory)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def reject_click_callback(self, i_ren, _obj, textblock):
+        print("Exiting....")
         i_ren.force_render()
         i_ren.event.abort()
 
