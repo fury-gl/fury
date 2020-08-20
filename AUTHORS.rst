@@ -16,13 +16,15 @@ Contributors
 ------------
 
 * Javier Guaje
+* Soham Biswas
+* Lenix Lobo
+* Nasim Anousheh
 * Ariel Rokem, University of Washington, WA, USA
 * Matthew Brett, Birmingham University, Birmingham, UK
 * Yaroslav Halchenko
 * Kesshi jordan
 * Prashil
 * Matthew Brett
-* kesshijordan
 * Kevin Sitek
 * Bago Amirbekian
 * Omar Ocegueda
@@ -44,8 +46,6 @@ Contributors
 * Gauvin Alexandre
 * Ian Nimmo-Smith
 * Yaroslav Halchenko
-* Soham Biswas
-* Lenix Lobo
 * Vivek Choudhary
 * Saransh Jain
 * Shreyas Bhujbal
@@ -54,7 +54,6 @@ Contributors
 * Melina Raglin
 * Tushar
 * Naman Bansal
-* Nasim Anousheh
 * Gottipati Gautam
 * Liam Donohue
 * Devanshu Modi

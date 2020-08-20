@@ -1,7 +1,7 @@
 """
-======================================
+========================================
 Sphere Color Control using Radio Buttons
-======================================
+========================================
 
 This example shows how to use the UI API. We will demonstrate how to
 create a Sphere and control its color using radio buttons.
@@ -14,7 +14,7 @@ import numpy as np
 
 ########################################################################
 # Sphere and Radio Buttons
-# ======================
+# ========================
 #
 # Add a Sphere to the scene.
 

@@ -6,7 +6,7 @@ Single Actor, Physics, Scrollbars.
    :tags: google
    :category: gsoc
 
-Hello and welcome to my 10th weekly check-in. Second evaluation ended this week and now we move on to our 3rd and final coding period. In today's check-in I will be sharing my progress with the single actor physics simulation that I facing some issues with and I will also be discussing my future plans regarding UI components. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`_.
+Hello and welcome to my 10th weekly check-in. Second evaluation ended this week and now we move on to our 3rd and final coding period. In today's check-in I will be sharing my progress with the single actor physics simulation that I facing some issues with and I will also be discussing my future plans regarding UI components. The official repository of my sub-org, FURY can always be found `here <https://github.com/fury-gl/fury/>`__.
 
 What did you do this week?
 --------------------------

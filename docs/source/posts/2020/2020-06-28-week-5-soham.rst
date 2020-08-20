@@ -10,7 +10,7 @@ Hello and welcome to my 5th weekly check-in, I will be sharing my progress of py
 
 What did you do this week?
 --------------------------
-Last week due to the ``vtkTextActor`` sizing issue I was not able to continue my work with ``ComboBox2D`` UI element. Thus, I decided to work on the "Physics Engine Integration" part of my project. It took me quite a while to understand the terminology of various methods and algorithms used for detection and physics simulation. Nevertheless, I was able to create a couple of rigid body examples to showcase the integration procedure. For physics calculations we used pyBullet and for rendering we used FURY. In other words, pyBullet will handle the backend part of the simulation and FURY will handle the frontend. I have documented the entire integration process `here <https://docs.google.com/document/d/1XJcG1TL5ZRJZDyi8V76leYZt_maxGp0kOB7OZIxKsTA/edit?usp=sharing>`_ in detail.
+Last week due to the ``vtkTextActor`` sizing issue I was not able to continue my work with ``ComboBox2D`` UI element. Thus, I decided to work on the "Physics Engine Integration" part of my project. It took me quite a while to understand the terminology of various methods and algorithms used for detection and physics simulation. Nevertheless, I was able to create a couple of rigid body examples to showcase the integration procedure. For physics calculations we used pyBullet and for rendering we used FURY. In other words, pyBullet will handle the backend part of the simulation and FURY will handle the frontend. I have documented the entire integration process `here <https://docs.google.com/document/d/1XJcG1TL5ZRJZDyi8V76leYZt_maxGp0kOB7OZIxKsTA/edit?usp=sharing>`__ in detail.
 
 Ball Collision Simulation:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
