@@ -216,7 +216,7 @@ def deprecated_params(old_name, new_name=None, since='', until='',
     ----------
     old_name : str or list/tuple thereof
         The old name of the argument.
-    new_name : str or list/tuple thereof or `None`, optional
+    new_name : str or list/tuple thereof or ``None``, optional
         The new name of the argument. Set this to `None` to remove the
         argument ``old_name`` instead of renaming it.
     since : str or number or list/tuple thereof, optional
@@ -227,9 +227,9 @@ def deprecated_params(old_name, new_name=None, since='', until='',
         error.
     version_comparator : callable
         Callable accepting string as argument, and return 1 if string
-        represents a higher version than encoded in the `version_comparator`, 0
-        if the version is equal, and -1 if the version is lower.  For example,
-        the `version_comparator` may compare the input version string to the
+        represents a higher version than encoded in the ``version_comparator``,
+        0 if the version is equal, and -1 if the version is lower. For example,
+        the ``version_comparator`` may compare the input version string to the
         current package version string.
     arg_in_kwargs : bool or list/tuple thereof, optional
         If the argument is not a named argument (for example it
@@ -267,36 +267,36 @@ def deprecated_params(old_name, new_name=None, since='', until='',
     --------
     The deprecation warnings are not shown in the following examples.
     To deprecate a positional or keyword argument::
-        >>> from fury.deprecator import deprecated_params
-        >>> @deprecated_params('sig', 'sigma', '0.3')
-        ... def test(sigma):
-        ...     return sigma
-        >>> test(2)
-        2
-        >>> test(sigma=2)
-        2
-        >>> test(sig=2)  # doctest: +SKIP
-        2
+    >>> from fury.deprecator import deprecated_params
+    >>> @deprecated_params('sig', 'sigma', '0.3')
+    ... def test(sigma):
+    ...     return sigma
+    >>> test(2)
+    2
+    >>> test(sigma=2)
+    2
+    >>> test(sig=2)  # doctest: +SKIP
+    2
     To deprecate an argument caught inside the ``**kwargs`` the
     ``arg_in_kwargs`` has to be set::
-        >>> @deprecated_params('sig', 'sigma', '1.0',
-        ...                    arg_in_kwargs=True)
-        ... def test(**kwargs):
-        ...     return kwargs['sigma']
-        >>> test(sigma=2)
-        2
-        >>> test(sig=2)  # doctest: +SKIP
-        2
+    >>> @deprecated_params('sig', 'sigma', '1.0',
+    ...                    arg_in_kwargs=True)
+    ... def test(**kwargs):
+    ...     return kwargs['sigma']
+    >>> test(sigma=2)
+    2
+    >>> test(sig=2)  # doctest: +SKIP
+    2
 
     It is also possible to replace multiple arguments. The ``old_name``,
     ``new_name`` and ``since`` have to be `tuple` or `list` and contain the
     same number of entries::
-        >>> @deprecated_params(['a', 'b'], ['alpha', 'beta'],
-        ...                    ['0.2', 0.4])
-        ... def test(alpha, beta):
-        ...     return alpha, beta
-        >>> test(a=2, b=3)  # doctest: +SKIP
-        (2, 3)
+    >>> @deprecated_params(['a', 'b'], ['alpha', 'beta'],
+    ...                    ['0.2', 0.4])
+    ... def test(alpha, beta):
+    ...     return alpha, beta
+    >>> test(a=2, b=3)  # doctest: +SKIP
+    (2, 3)
 
     """
     if isinstance(old_name, (list, tuple)):
