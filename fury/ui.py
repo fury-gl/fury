@@ -4130,7 +4130,8 @@ class FileDialog2D(UI):
     """
     def __init__(self, directory_path, dialog_type="open", extensions=None,
                  position=(0, 0), size=(100, 100), multiselection=True,
-                 reverse_scrolling=False, font_size=20, line_spacing=1.4):
+                 reverse_scrolling=False, font_size=20, line_spacing=1.4,
+                 draggable=True):
         """
 
         Parameters
@@ -4156,6 +4157,7 @@ class FileDialog2D(UI):
             Distance between listbox's items in pixels.
         """
         self.dialog_type = dialog_type.lower()
+        self.draggable = draggable
         self.font_size = font_size
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
@@ -4209,6 +4211,30 @@ class FileDialog2D(UI):
         self.reject_button.on_left_mouse_button_clicked =\
             self.reject_click_callback
 
+        if self.draggable:
+            self.dir_block.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.file_menu.listbox.panel.background.on_left_mouse_button_dragged\
+                = self.left_button_dragged
+            self.accept_button.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.reject_button.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+
+            self.dir_block.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.file_menu.listbox.panel.background.on_left_mouse_button_pressed\
+                = self.left_button_pressed
+            self.accept_button.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+            self.reject_button.on_left_mouse_button_pressed =\
+                self.left_button_pressed
+        else:
+            self.parent_panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            self.file_menu.listbox.panel.background.on_left_mouse_button_dragged\
+                = lambda i_ren, _obj, _comp: i_ren.force_render
+
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
@@ -4254,6 +4280,18 @@ class FileDialog2D(UI):
         self.on_reject(self)
         i_ren.force_render()
         i_ren.event.abort()
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.parent_panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
 
 
 class FileMenu2D(UI):
