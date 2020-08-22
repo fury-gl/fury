@@ -4163,7 +4163,7 @@ class FileDialog2D(UI):
         self.reverse_scrolling = reverse_scrolling
         self.line_spacing = line_spacing
         self.extensions = extensions or ["*"]
-        self.current_directory = directory_path
+        self.origin_directory = directory_path
         self.dialog_size = size
         self.directory_contents = []
 
@@ -4176,7 +4176,7 @@ class FileDialog2D(UI):
         self.position = position
 
     def _setup(self):
-        self.file_menu = FileMenu2D(directory_path=self.current_directory,
+        self.file_menu = FileMenu2D(directory_path=self.origin_directory,
                                     extensions=self.extensions,
                                     size=self.file_menu_size,
                                     multiselection=self.multiselection,
@@ -4266,7 +4266,6 @@ class FileDialog2D(UI):
         return self.parent_panel.size
 
     def dir_click_callback(self, i_ren, _obj, listboxitem):
-        self.current_directory = self.file_menu.current_directory
         self.dir_block.message = self.current_directory
         i_ren.force_render()
         i_ren.event.abort()
@@ -4293,6 +4292,13 @@ class FileDialog2D(UI):
         self._click_position = click_position
         i_ren.force_render()
 
+    @property
+    def current_directory(self):
+        return self.file_menu.current_directory
+
+    @property
+    def current_file(self):
+        return self.file_menu.current_file
 
 class FileMenu2D(UI):
     """ A menu to select files in the current folder.
@@ -4517,6 +4523,7 @@ class FileMenu2D(UI):
                 os.path.normpath(os.path.join(self.current_directory,
                                               listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
+                self.current_file = ""
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
                 content_names = [x[0] for x in self.directory_contents]
@@ -4526,6 +4533,12 @@ class FileMenu2D(UI):
                 self.listbox.update()
                 self.listbox.update_scrollbar()
                 self.set_slot_colors()
+        else:
+            new_file_path = os.path.normpath(os.path.join(self.current_directory,
+                                                     listboxitem.element))
+            if os.access(new_file_path, os.R_OK):
+                self.current_file = new_file_path
+
         i_ren.force_render()
         i_ren.event.abort()
 
