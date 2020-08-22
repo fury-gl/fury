@@ -51,7 +51,7 @@ vertex_shader_code_impl = \
 fragment_shader_code_decl = \
     """
     uniform float time;
-    out vec4 myVertexVC;
+    varying vec4 myVertexVC;
     """
 
 fragment_shader_code_impl = \
@@ -59,7 +59,7 @@ fragment_shader_code_impl = \
     vec2 iResolution = vec2(1024,720);
     vec2 uv = myVertexVC.xy/iResolution;
     vec3 col = 0.5 + 0.5 * cos((time/30) + uv.xyx + vec3(0, 2, 4));
-    fragOutput0 = vec4(col, 1.0);
+    fragOutput0 = vec4(col, fragOutput0.a);
     """
 
 shader_to_actor(utah, "vertex", impl_code=vertex_shader_code_impl,
@@ -107,11 +107,6 @@ add_shader_callback(utah, shader_callback)
 
 tb = ui.TextBlock2D()
 tb.message = "Hello Shaders"
-
-###############################################################################
-# Change the property of the actor
-
-utah.GetProperty().SetOpacity(0.5)
 
 ###############################################################################
 # Show Manager
