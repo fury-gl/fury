@@ -4128,17 +4128,19 @@ class ListBoxItem2D(UI):
 class FileDialog2D(UI):
     """ UI element to choose a file from the file system.
     """
-    def __init__(self, directory_path, extensions=None, position=(0, 0),
-                 size=(100, 100), multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4):
+    def __init__(self, directory_path, dialog_type="open", extensions=None,
+                 position=(0, 0), size=(100, 100), multiselection=True,
+                 reverse_scrolling=False, font_size=20, line_spacing=1.4):
         """
 
         Parameters
         ----------
-        extensions: list(string)
-            List of extensions to be shown as files.
         directory_path: string
             Path of the directory where this dialog should open.
+        dialog_type: {"open", "save"}
+            Determines the type of file dialog to render.
+        extensions: list(string)
+            List of extensions to be shown as files.
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
@@ -4153,6 +4155,7 @@ class FileDialog2D(UI):
         line_spacing: float
             Distance between listbox's items in pixels.
         """
+        self.dialog_type = dialog_type.lower()
         self.font_size = font_size
         self.multiselection = multiselection
         self.reverse_scrolling = reverse_scrolling
@@ -4180,11 +4183,14 @@ class FileDialog2D(UI):
         self.dir_block = TextBlock2D(text=self.current_directory,
                                      size=self.dir_block_size)
         self.accept_button = TextBlock2D(size=self.accept_button_size,
-                                         text="Save",
+                                         text=self.dialog_type.title(),
                                          color=(1, 1, 1))
         self.reject_button = TextBlock2D(size=self.reject_button_size,
                                          text="Cancel",
                                          color=(1, 1, 1))
+
+        self.on_accept = lambda ui: None
+        self.on_reject = lambda ui: None
 
         self.parent_panel = Panel2D(size=self.dialog_size)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
@@ -4240,12 +4246,12 @@ class FileDialog2D(UI):
         i_ren.event.abort()
 
     def accept_click_callback(self, i_ren, _obj, textblock):
-        print("Saving...", self.current_directory)
+        self.on_accept(self)
         i_ren.force_render()
         i_ren.event.abort()
 
     def reject_click_callback(self, i_ren, _obj, textblock):
-        print("Exiting....")
+        self.on_reject(self)
         i_ren.force_render()
         i_ren.event.abort()
 
