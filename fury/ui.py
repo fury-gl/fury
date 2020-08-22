@@ -4200,6 +4200,10 @@ class FileDialog2D(UI):
         self.parent_panel.add_element(self.accept_button, (0.5, 0.05))
         self.parent_panel.add_element(self.reject_button, (0.75, 0.05))
 
+        if self.dialog_type == "save":
+            self.save_box = TextBox2D(8, 1, text="Enter filename")
+            self.parent_panel.add_element(self.save_box, (0.01, 0.05))
+
         for slot in self.file_menu.listbox.slots:
             slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
                               self.dir_click_callback)
@@ -4300,6 +4304,11 @@ class FileDialog2D(UI):
     def current_file(self):
         return self.file_menu.current_file
 
+    @property
+    def save_filename(self):
+        return self.save_box.message
+
+
 class FileMenu2D(UI):
     """ A menu to select files in the current folder.
     Can go to new folder, previous folder and select multiple files.
@@ -4345,6 +4354,7 @@ class FileMenu2D(UI):
         self.line_spacing = line_spacing
         self.extensions = extensions or ["*"]
         self.current_directory = directory_path
+        self.current_file = ""
         self.menu_size = size
         self.directory_contents = []
 
