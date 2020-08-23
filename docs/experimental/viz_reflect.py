@@ -1,5 +1,6 @@
 import numpy as np
 from fury import window, actor, ui, io, utils
+from fury.shaders import shader_to_actor
 from fury.data.fetcher import fetch_viz_models, read_viz_models,\
                               fetch_viz_textures, read_viz_textures
 import vtk
@@ -27,53 +28,20 @@ imgReader.SetFileName(sphmap_filename)
 tex.SetInputConnection(imgReader.GetOutputPort())
 dragon.SetTexture(tex)
 
-mapper = dragon.GetMapper()
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Vertex,
-    "//VTK::PositionVC::Dec",  # replace the normal block
-    True,  # before the standard replacements
+vertex_dec = "out vec3 TexCoords;"
+vertex_impl = \
     """
-    //VTK::PositionVC::Dec
-    out vec3 TexCoords;
-    """,
-    False  # only do it once
-)
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Vertex,
-    "//VTK::PositionVC::Impl",  # replace the normal block
-    True,  # before the standard replacements
-    """
-    //VTK::PositionVC::Impl
     vec3 camPos = -MCVCMatrix[3].xyz * mat3(MCVCMatrix);
     TexCoords.xyz = reflect(vertexMC.xyz - camPos, normalize(normalMC));
-    //TexCoords.xyz = normalMC;
-    //TexCoords.xyz = vertexMC.xyz;
-    """,
-    False  # only do it once
-)
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Fragment,
-    "//VTK::Light::Dec",
-    True,
     """
-    //VTK::Light::Dec
-
+fragment_dec = \
+    """
     uniform sampler2D texture_0;
     in vec3 TexCoords;
-    """,
-    False
-    )
-
-
-mapper.AddShaderReplacement(
-    vtk.vtkShader.Fragment,
-    "//VTK::Light::Impl",
-    True,
     """
-    //VTK::Light::Impl
+
+fragment_impl = \
+    """
     float phix = length(vec2(TexCoords.x, TexCoords.z));
     vec3 skyColor = texture(texture_0,
                     vec2(0.5*atan(TexCoords.z, TexCoords.x)/3.1415927
@@ -81,9 +49,12 @@ mapper.AddShaderReplacement(
 
     gl_FragData[0] = vec4(ambientColor + diffuse + specular +
                      specularColor*skyColor, opacity);
-    """,
-    False
-)
+    """
+
+shader_to_actor(dragon, "vertex", block="position", impl_code=vertex_impl,
+                decl_code=vertex_dec)
+shader_to_actor(dragon, "fragment", block="light", impl_code=fragment_impl,
+                decl_code=fragment_dec)
 
 world = vtk.vtkSkybox()
 world.SetProjectionToSphere()
