@@ -4306,6 +4306,8 @@ class FileDialog2D(UI):
 
     @property
     def save_filename(self):
+        if self.dialog_type == "open":
+            return ""
         return self.save_box.message
 
 
