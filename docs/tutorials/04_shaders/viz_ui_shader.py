@@ -160,6 +160,7 @@ def set_gooch(act):
         False
         )
 
+
 exx = [set_toon, set_reflect, set_gooch]
 
 ###############################################################################
@@ -178,6 +179,7 @@ def shade_element():
     element = exx[values.index(listbox.selected[0])]
     element(dragon)
 
+
 listbox.on_change = shade_element
 
 ###############################################################################
@@ -193,7 +195,7 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(listbox)
 show_manager.scene.add(dragon)
 
-interactive = False
+interactive = True
 
 if interactive:
     show_manager.start()
