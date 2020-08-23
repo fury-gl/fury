@@ -17,7 +17,7 @@ import pybullet as p
 client = p.connect(p.DIRECT)
 
 ###############################################################################
-# Parameters and defination of red and blue balls.
+# Parameters and definition of red and blue balls.
 
 red_radius = 0.5
 blue_radius = 0.5
