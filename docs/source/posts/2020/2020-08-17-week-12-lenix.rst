@@ -16,7 +16,7 @@ What did you do this week?
 We needed a Outline feature in FURY to indicate which model we choose in the scene. So the task assigned was to find options to achieve this. There were two ways to do this, 1. Using shader and 2. Using Vtk PolyData Silhouette. Despite trying multiple implementation methods the shader approach was not working . I also tried using VTKs inbuilt function , but there is a bug when i use some models. When i choose a model, it renders outline for every polygon , which is not what we want to achieve. The bug is shown below:
 
 
-Below are the outputs of the techniques i worked on ::
+Below are the outputs of the techniques i worked on :
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-12.gif
 

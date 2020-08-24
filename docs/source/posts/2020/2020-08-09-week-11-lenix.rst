@@ -16,7 +16,7 @@ What did you do this week?
 The task assigned for this week was to explore more shader techniques which could be implemented using FURY and which would demonstrate the capability of FURY shader system. So i decided to work on implementing shading examples such as Gooch shading and reflection shader using textures.
 
 
-Below are the outputs of the techniques i worked on ::
+Below are the outputs of the techniques i worked on :
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-11a.gif
 
