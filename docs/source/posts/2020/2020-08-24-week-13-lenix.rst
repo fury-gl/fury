@@ -1,7 +1,7 @@
 Outline Picker
 =====================
 
-.. post:: August 17 2020
+.. post:: August 24 2020
    :author: Lenix Lobo
    :tags: google
    :category: gsoc
