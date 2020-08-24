@@ -1,0 +1,35 @@
+Part of the Journey is the end unless its Open Source!
+======================================================
+
+.. post:: August 23 2020
+   :author: Soham Biswas
+   :tags: google
+   :category: gsoc
+
+Hello and welcome to my final weekly check-in. Today officially marks the end of  the coding period for GSoC 2020. I enjoyed every bit of it. This was a life-changing experience for me and now I observe and interpret everything from a different perspective altogether. I have grown into a better developer and a person since GSoC. I would like to thank all my mentors and especially Serge for his immense support and mentorship. I would love to contribute to fury even after GSoC is over but unfortunately my semester break is over so I wont be as active as I was during the summer.
+
+Now, regarding work I will be sharing my progress with the File Dialog UI component. The official repository of my sub-org can be found `here <https://github.com/fury-gl/fury/>`_.
+
+What did you do this week?
+--------------------------
+This week I worked on the File Dialog UI component. Fury previously had a FileMenu component which could browse through the file system but we needed a dialog like implementation for it so that its easier for the users to read and write files during runtime. I tried implementing a simple design for it. It specifically has two modes, one for saving files and the other for writing files. The implementation can be demonstrated as follows:
+
+Open Dialog:
+^^^^^^^^^^^^
+
+.. image :: https://user-images.githubusercontent.com/29832615/90978632-df12c780-e56c-11ea-8517-6243ea06bdd2.gif
+
+Save Dialog:
+^^^^^^^^^^^^
+
+.. image :: https://user-images.githubusercontent.com/29832615/90978638-eafe8980-e56c-11ea-835a-3a82ccee2973.gif
+
+What is coming up next week?
+----------------------------
+Next week I will start with my final GSoC documentation and code submission. I will also try to implement the tests and tutorials for File Dialog or any further changes requested by my mentors. If I am not able to finish it within the next week, I will get it done after GSoC.
+
+Did you get stuck anywhere?
+---------------------------
+I did not face any major issues this week.
+
+``Thank you all for your love and support. ❤️😄``
