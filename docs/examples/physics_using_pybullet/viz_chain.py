@@ -22,11 +22,11 @@ p.connect(p.DIRECT)
 p.setGravity(0, 0, -10)
 
 ###############################################################################
-# Now we render the Chain using the following parameters and definations.
+# Now we render the Chain using the following parameters and definitions.
 
 # Parameters
 n_links = 20
-dx_link = 0.1       # Size of segments
+dx_link = 0.1  # Size of segments
 link_mass = 0.5
 base_mass = 0.1
 radii = 0.5
@@ -36,7 +36,7 @@ joint_friction = 0.0005  # rotational joint friction [N/(rad/s)]
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
                                     radius=radii,
                                     height=dx_link,
-                                    collisionFramePosition=[0, 0, -dx_link/2])
+                                    collisionFramePosition=[0, 0, -dx_link / 2])
 
 base_shape = p.createCollisionShape(p.GEOM_BOX,
                                     halfExtents=[0.01, 0.01, 0.01])
@@ -98,8 +98,8 @@ rope = p.createMultiBody(base_mass,
 ###############################################################################
 # We remove stiffness among the joints by adding friction to them.
 
-friction_vec = [joint_friction]*3   # same all axis
-control_mode = p.POSITION_CONTROL   # set pos control mode
+friction_vec = [joint_friction] * 3  # same all axis
+control_mode = p.POSITION_CONTROL  # set pos control mode
 for j in range(p.getNumJoints(rope)):
     p.setJointMotorControlMultiDof(rope, j, control_mode,
                                    targetPosition=[0, 0, 0, 1],
@@ -107,7 +107,6 @@ for j in range(p.getNumJoints(rope)):
                                    positionGain=0,
                                    velocityGain=1,
                                    force=friction_vec)
-
 
 ###############################################################################
 # Next, we define a constraint base that will help us in the oscillation of the
@@ -151,7 +150,7 @@ counter = itertools.count()
 ###############################################################################
 # We define a couple of syncing methods for the base and chain.
 
-# Function for syncing actors with multibodies.
+# Function for syncing actors with multi-bodies.
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
     actor.SetPosition(*pos)
@@ -177,9 +176,9 @@ def sync_joints(actor_list, multibody):
                 p.getDifferenceQuaternion(orn, linkOrientations[joint])),
             (3, 3))
 
-        vertices[joint * sec: joint * sec + sec] =\
+        vertices[joint * sec: joint * sec + sec] = \
             (vertices[joint * sec: joint * sec + sec] -
-             linkPositions[joint])@rot_mat + pos
+             linkPositions[joint]) @ rot_mat + pos
 
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
@@ -196,6 +195,7 @@ scene.add(tb)
 t = 0.0
 freq_sim = 240
 
+
 ###############################################################################
 # Timer callback to sync objects, simulate steps and oscillate the base.
 
@@ -205,20 +205,20 @@ def timer_callback(_obj, _event):
     global t, fpss
     showm.render()
 
-    t += 1./freq_sim
+    t += 1. / freq_sim
 
     if cnt % 1 == 0:
         fps = scene.frame_rate
         fpss = np.append(fpss, fps)
-        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
-            "\nSim Steps: " + str(cnt)
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
+                     "\nSim Steps: " + str(cnt)
 
     # some trajectory
-    ux = amplitude_x*np.sin(2*np.pi*freq*t)
-    uy = amplitude_y*np.cos(2*np.pi*freq*t)
+    ux = amplitude_x * np.sin(2 * np.pi * freq * t)
+    uy = amplitude_y * np.cos(2 * np.pi * freq * t)
 
-    # move base arround
-    pivot = [3*ux, uy, 2]
+    # move base around
+    pivot = [3 * ux, uy, 2]
     orn = p.getQuaternionFromEuler([0, 0, 0])
     p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn,
                        maxForce=500)
