@@ -3621,6 +3621,7 @@ class ListBox2D(UI):
     def __init__(self, values, position=(0, 0), size=(100, 300),
                  multiselection=True, reverse_scrolling=False,
                  font_size=20, line_spacing=1.4,
+                 bg_color=(1, 1, 1),
                  text_color=(0.2, 0.2, 0.2),
                  selected_color=(0.9, 0.6, 0.6),
                  unselected_color=(0.6, 0.6, 0.6),
@@ -3663,6 +3664,7 @@ class ListBox2D(UI):
         self.line_spacing = line_spacing
         self.slot_height = int(self.font_size * self.line_spacing)
 
+        self.bg_color = bg_color
         self.text_color = text_color
         self.selected_color = selected_color
         self.unselected_color = unselected_color
@@ -3705,7 +3707,7 @@ class ListBox2D(UI):
         self.nb_slots = int((size[1] - 2 * self.margin) // self.slot_height)
 
         # This panel facilitates adding slots at the right position.
-        self.panel = Panel2D(size=size, color=(1, 1, 1))
+        self.panel = Panel2D(size=size, color=self.bg_color)
 
         # Add a scroll bar
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
@@ -4131,6 +4133,13 @@ class FileDialog2D(UI):
     def __init__(self, directory_path, dialog_type="open", extensions=None,
                  position=(0, 0), size=(100, 100), multiselection=True,
                  reverse_scrolling=False, font_size=20, line_spacing=1.4,
+                 bg_color=(1, 1, 1),
+                 text_color=(0.2, 0.2, 0.2),
+                 selected_color=(0.9, 0.6, 0.6),
+                 unselected_color=(0.6, 0.6, 0.6),
+                 scroll_bar_active_color=(0.6, 0.2, 0.2),
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+                 background_opacity=1.,
                  draggable=True):
         """
 
@@ -4167,6 +4176,14 @@ class FileDialog2D(UI):
         self.dialog_size = size
         self.directory_contents = []
 
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.background_opacity=background_opacity
+
         self.file_menu_size = (size[0], int(0.7*size[1]))
         self.dir_block_size = (size[0], int(0.1*size[1]))
         self.accept_button_size = (int(0.15*size[0]), int(0.1*size[1]))
@@ -4181,7 +4198,15 @@ class FileDialog2D(UI):
                                     size=self.file_menu_size,
                                     multiselection=self.multiselection,
                                     reverse_scrolling=self.reverse_scrolling,
-                                    line_spacing=self.line_spacing)
+                                    line_spacing=self.line_spacing,
+                                    bg_color=self.bg_color,
+                                    selected_color=self.selected_color,
+                                    unselected_color=self.unselected_color,
+                                    scroll_bar_active_color=
+                                    self.scroll_bar_active_color,
+                                    scroll_bar_inactive_color=
+                                    self.scroll_bar_inactive_color,
+                                    background_opacity=self.background_opacity)
         self.dir_block = TextBlock2D(text=self.current_directory,
                                      size=self.dir_block_size)
         self.accept_button = TextBlock2D(size=self.accept_button_size,
@@ -4194,7 +4219,7 @@ class FileDialog2D(UI):
         self.on_accept = lambda ui: None
         self.on_reject = lambda ui: None
 
-        self.parent_panel = Panel2D(size=self.dialog_size)
+        self.parent_panel = Panel2D(size=self.dialog_size, color=self.bg_color)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
         self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
         self.parent_panel.add_element(self.accept_button, (0.55, 0.05))
@@ -4328,7 +4353,14 @@ class FileMenu2D(UI):
 
     def __init__(self, directory_path, extensions=None, position=(0, 0),
                  size=(100, 300), multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4):
+                 font_size=20, line_spacing=1.4,
+                 bg_color=(1, 1, 1),
+                 text_color=(0.2, 0.2, 0.2),
+                 selected_color=(0.9, 0.6, 0.6),
+                 unselected_color=(0.6, 0.6, 0.6),
+                 scroll_bar_active_color=(0.6, 0.2, 0.2),
+                 scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+                 background_opacity=1.):
         """
 
         Parameters
@@ -4361,6 +4393,14 @@ class FileMenu2D(UI):
         self.menu_size = size
         self.directory_contents = []
 
+        self.bg_color = bg_color
+        self.text_color = text_color
+        self.selected_color = selected_color
+        self.unselected_color = unselected_color
+        self.scroll_bar_active_color = scroll_bar_active_color
+        self.scroll_bar_inactive_color = scroll_bar_inactive_color
+        self.background_opacity=background_opacity
+
         super(FileMenu2D, self).__init__()
         self.position = position
         self.set_slot_colors()
@@ -4374,7 +4414,13 @@ class FileMenu2D(UI):
         self.listbox = ListBox2D(
             values=content_names, multiselection=self.multiselection,
             font_size=self.font_size, line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
+            reverse_scrolling=self.reverse_scrolling, size=self.menu_size,
+            bg_color=self.bg_color, text_color=self.text_color,
+            selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_bar_active_color,
+            scroll_bar_inactive_color=self.scroll_bar_inactive_color,
+            background_opacity=self.background_opacity)
 
         self.add_callback(self.listbox.scroll_bar.actor, "MouseMoveEvent",
                           self.scroll_callback)
