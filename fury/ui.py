@@ -4169,7 +4169,7 @@ class FileDialog2D(UI):
 
         self.file_menu_size = (size[0], int(0.7*size[1]))
         self.dir_block_size = (size[0], int(0.1*size[1]))
-        self.accept_button_size = (int(0.2*size[0]), int(0.1*size[1]))
+        self.accept_button_size = (int(0.15*size[0]), int(0.1*size[1]))
         self.reject_button_size = (int(0.2*size[0]), int(0.1*size[1]))
 
         super(FileDialog2D, self).__init__()
@@ -4197,11 +4197,11 @@ class FileDialog2D(UI):
         self.parent_panel = Panel2D(size=self.dialog_size)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
         self.parent_panel.add_element(self.dir_block, (0.0, 0.89))
-        self.parent_panel.add_element(self.accept_button, (0.5, 0.05))
+        self.parent_panel.add_element(self.accept_button, (0.55, 0.05))
         self.parent_panel.add_element(self.reject_button, (0.75, 0.05))
 
         if self.dialog_type == "save":
-            self.save_box = TextBox2D(8, 1, text="Enter filename")
+            self.save_box = TextBox2D(15, 1, text="Enter filename")
             self.parent_panel.add_element(self.save_box, (0.01, 0.05))
 
         for slot in self.file_menu.listbox.slots:
@@ -4281,6 +4281,7 @@ class FileDialog2D(UI):
 
     def reject_click_callback(self, i_ren, _obj, textblock):
         self.on_reject(self)
+        self.set_visibility(False)
         i_ren.force_render()
         i_ren.event.abort()
 
