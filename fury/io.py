@@ -198,7 +198,7 @@ def load_polydata(file_name):
     file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {"vtk": vtk.vtkPolyDataReader,
-                   "vtp": vtk.vtkXMLPolyDataWriter,
+                   "vtp": vtk.vtkXMLPolyDataReader,
                    "fib": vtk.vtkPolyDataReader,
                    "ply": vtk.vtkPLYReader,
                    "stl": vtk.vtkSTLReader,
