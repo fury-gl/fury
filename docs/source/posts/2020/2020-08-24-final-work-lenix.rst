@@ -21,8 +21,7 @@ Google Summer of Code 2020 Final Work Product
 -  **Name:** Lenix Lobo
 -  **Organisation:** Python Software Foundation
 -  **Sub-Organisation:** FURY
--  **Project:** `FURY - Improve Shader Framework
- <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2020>`__
+-  **Project:** `FURY - Improve Shader Framework <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2020>`__
 Introduction
 ------------
 The current shader framework for FURY is based on VTK and lacks documentation to get started which can be overwhelming for new users . The objective of this project is to enable users to be easily able to understand and use the shader framework to render stunning visual representations of data. The project involves programming vertex and fragment shaders to generate effects for more immersive visualization.
