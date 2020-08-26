@@ -22,8 +22,8 @@ Google Summer of Code Final Work Product
 -  **Name:** Soham Biswas
 -  **Organisation:** Python Software Foundation
 -  **Sub-Organisation:** FURY
--  **Project:** FURY - Create new UI Widgets & Physics Engine
-   Integration
+-  **Project:** `FURY - Create new UI Widgets & Physics Engine
+   Integration <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2020>`_
 
 Proposed Objectives
 -------------------
