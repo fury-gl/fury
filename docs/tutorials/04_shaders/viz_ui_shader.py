@@ -19,10 +19,26 @@ from fury.data.fetcher import fetch_viz_models, read_viz_models,\
 # currently supported formats include OBJ, VKT, FIB, PLY, STL and XML
 
 fetch_viz_models()
-dragon = read_viz_models('dragon.obj')
-dragon = io.load_polydata(dragon)
-dragon = utils.get_polymapper_from_polydata(dragon)
-dragon = utils.get_actor_from_polymapper(dragon)
+
+
+def get_actor_from_obj(filename):
+    obj = read_viz_models(filename)
+    obj = io.load_polydata(obj)
+
+    norms = utils.get_polydata_normals(obj)
+    obj = utils.set_polydata_normals(obj, norms)
+
+    obj = utils.get_polymapper_from_polydata(obj)
+    objactor = utils.get_actor_from_polymapper(obj)
+    return objactor
+
+
+dragon_actor = get_actor_from_obj("dragon.obj")
+suzanne_actor = get_actor_from_obj("suzanne.obj")
+satellite_actor = get_actor_from_obj("satellite_obj.obj")
+
+satellite_actor.SetScale(0.05, 0.05, 0.05)
+actor = dragon_actor
 
 fetch_viz_textures()
 sphmap_filename = read_viz_textures("clouds.jpg")
@@ -30,6 +46,7 @@ sphmap_filename = read_viz_textures("clouds.jpg")
 
 def set_toon(act):
     act.GetProperty().SetDiffuse(0.7)
+    act.SetTexture(None)
     mapper = act.GetMapper()
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment,
@@ -124,6 +141,7 @@ def set_reflect(act):
 
 def set_gooch(act):
     act.GetProperty().SetDiffuse(1.0)
+    act.SetTexture(None)
     mapper = act.GetMapper()
 
     mapper.AddShaderReplacement(
@@ -162,25 +180,69 @@ def set_gooch(act):
 
 
 exx = [set_toon, set_reflect, set_gooch]
+exm = [dragon_actor, suzanne_actor, satellite_actor]
 
 ###############################################################################
 # Create ListBox with the values as parameter.
 
-values = ["Toon", "Reflect", "Gooch"]
-listbox = ui.ListBox2D(
-    values=values, position=(10, 300), size=(200, 200), multiselection=False
-)
+models_values = ["Dragon", "Suzanne", "Satellite"]
+shaders_values = ["Toon", "Reflect", "Gooch"]
+
+panel = ui.Panel2D(size=(300, 450), color=(1, 1, 1), align="right")
+panel.center = (150, 400)
+
+combo_box = ui.ComboBox2D(items=shaders_values,
+                          placeholder="Choose Shader", size=(250, 150))
+
+listbox = ui.ListBox2D(values=models_values, size=(200, 150),
+                       multiselection=False)
+
+diff_tb = ui.TextBlock2D(text="Diffuse Value")
+diffuse_slider = ui.LineSlider2D(center=(400, 230), initial_value=1.0,
+                                 orientation='horizontal',
+                                 min_value=0.0, max_value=1.0,
+                                 text_alignment='top')
+
+
+panel.add_element(listbox, (30, 290))
+panel.add_element(combo_box, (30, 100))
+panel.add_element(diff_tb, (30, 100))
+panel.add_element(diffuse_slider, (30, 50))
+###############################################################################
+# Hide these text blocks for now
+
+
+def hide_all_examples():
+    for element in exm:
+        element.SetVisibility(False)
+
+hide_all_examples()
 
 ###############################################################################
 # Function to render selected shader.
 
 
-def shade_element():
-    element = exx[values.index(listbox.selected[0])]
-    element(dragon)
+def shade_element(combobox):
+    element = exx[shaders_values.index(combobox.selected_text)]
+    element(actor)
 
 
-listbox.on_change = shade_element
+def set_actor():
+    global actor
+    hide_all_examples()
+    actor = exm[models_values.index(listbox.selected[0])]
+    actor.SetVisibility(1)
+    print(actor)
+
+
+def set_diffuse(slider):
+    value = slider.value
+    actor.GetProperty().SetDiffuse(value)
+
+
+combo_box.on_change = shade_element
+listbox.on_change = set_actor
+diffuse_slider.on_change = set_diffuse
 
 ###############################################################################
 # Show Manager
@@ -192,8 +254,12 @@ current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size,
                                   title="Shader Examples using UI")
 
-show_manager.scene.add(listbox)
-show_manager.scene.add(dragon)
+
+show_manager.scene.add(dragon_actor)
+show_manager.scene.add(suzanne_actor)
+show_manager.scene.add(satellite_actor)
+show_manager.scene.add(panel)
+
 
 interactive = True
 
