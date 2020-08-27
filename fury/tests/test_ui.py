@@ -1204,6 +1204,14 @@ def test_ui_file_dialog_2d(interactive=False):
 
     ui.FileDialog2D(os.getcwd())
 
+    # Create temporary directory and files
+    test_dir_path = os.path.join(os.getcwd(), "testdir")
+    os.mkdir(test_dir_path)
+    os.mkdir(os.path.join(test_dir_path, "tempdir"))
+    for i in range(3):
+        open(os.path.join(test_dir_path, "tempdir", "test" + str(i) + ".txt"),
+             'wt').close()
+
     file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
                                   position=(50, 50), dialog_type="Save")
     show_tb = ui.TextBlock2D(text="Click to Show", position=(100, 300))
@@ -1251,15 +1259,20 @@ def test_ui_file_dialog_2d(interactive=False):
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
 
-    exp_dirs = ['fury', '.github', 'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE',
-                'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE']
-    exp_files = ['', '', '', 'feature_request.md', 'generic-issue-template.md',
-                 'gsoc-request.md', 'generic-issue-template.md']
-    exp_saves = ['tttttt', 'tttttt', 'tttttt', 'tttttt', 'tttttt', 'tttttt',
-                 'tttttt']
+    exp_dirs = ['testdir', 'testdir', 'tempdir', 'tempdir', 'tempdir',
+                'testdir']
+    exp_files = ['', '', 'test1.txt', 'test1.txt', 'test0.txt', '']
+    exp_saves = ['Enter filename', 'ttt', 'ttt', 'tttyyy', 'tttyyy', 'tttyyy']
 
-    npt.assert_equal(7, next(accepts))
-    npt.assert_equal(2, next(rejects))
+    # Remove temporary directory and files
+    for i in range(3):
+        os.remove(os.path.join(test_dir_path, "tempdir",
+                               "test" + str(i) + ".txt"))
+    os.rmdir(os.path.join(test_dir_path, "tempdir"))
+    os.rmdir(test_dir_path)
+
+    npt.assert_equal(6, next(accepts))
+    npt.assert_equal(3, next(rejects))
     npt.assert_array_equal(exp_dirs, current_dirs)
     npt.assert_array_equal(exp_files, current_files)
     npt.assert_array_equal(exp_saves, save_files)
