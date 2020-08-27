@@ -11,6 +11,12 @@ First, a bunch of imports.
 """
 
 from fury import ui, window
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in DIPY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Let's draw some simple shapes. First, a rectangle.
