@@ -1202,15 +1202,6 @@ def test_ui_file_dialog_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    # Create temporary directory and files
-    test_dir_path = os.path.join(os.getcwd(), "testdir")
-    os.mkdir(test_dir_path)
-    os.mkdir(os.path.join(test_dir_path, "tempdir"))
-    for i in range(10):
-        open(os.path.join(test_dir_path, "tempdir", "test" + str(i) + ".txt"),
-             'wt').close()
-    open("testfile.txt", 'wt').close()
-
     ui.FileDialog2D(os.getcwd())
 
     file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
@@ -1258,26 +1249,18 @@ def test_ui_file_dialog_2d(interactive=False):
     else:
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
-        # event_counter.check_counts(expected)
+        event_counter.check_counts(expected)
 
-    # Remove temporary directory and files
-    os.remove("testfile.txt")
-    for i in range(10):
-        os.remove(os.path.join(test_dir_path, "tempdir",
-                               "test" + str(i) + ".txt"))
-    os.rmdir(os.path.join(test_dir_path, "tempdir"))
-    os.rmdir(test_dir_path)
+    exp_dirs = ['fury', '.github', 'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE',
+                'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE', 'ISSUE_TEMPLATE']
+    exp_files = ['', '', '', 'feature_request.md', 'generic-issue-template.md',
+                 'gsoc-request.md', 'generic-issue-template.md']
+    exp_saves = ['tttttt', 'tttttt', 'tttttt', 'tttttt', 'tttttt', 'tttttt',
+                 'tttttt']
 
-    exp_dirs = ['tempdir', 'tempdir', 'tempdir', 'testdir', 'tests', 'tests',
-                'tests', 'tests']
-    exp_files = ['test0.txt', 'test1.txt', 'test2.txt', '', '', '', '', '']
-    exp_saves = ['Enter filename', 'Enter filename', 'Enter filename',
-                 'Enter filename', 'Enter filename', 'helolo', 'helolo',
-                 'test']
-
-    npt.assert_equal(8, next(accepts))
+    npt.assert_equal(7, next(accepts))
     npt.assert_equal(2, next(rejects))
-    npt.assert_arrays_equal(exp_dirs, current_dirs)
+    npt.assert_array_equal(exp_dirs, current_dirs)
     npt.assert_array_equal(exp_files, current_files)
     npt.assert_array_equal(exp_saves, save_files)
 
