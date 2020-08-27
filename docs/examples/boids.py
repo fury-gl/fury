@@ -73,8 +73,11 @@ def vec2vec_rotmat(u, v):
     # (u vp w) is an orthonormal basis
     P = np.array([u, vp, w])
     Pt = P.T
-    cosa = np.dot(u, v)
+    cosa = np.clip(np.dot(u, v), -1, 1)
+
     sina = np.sqrt(1 - cosa ** 2)
+    if (cosa > 1):
+        print("cosa is greater than 1!!")
     R = np.array([[cosa, -sina, 0], [sina, cosa, 0], [0, 0, 1]])
     Rp = np.dot(Pt, np.dot(R, P))
 
@@ -85,26 +88,29 @@ def vec2vec_rotmat(u, v):
 
     return Rp
 
-global centers, center_leader
+global xyz, center_leader, vel
 num_particles = 2
 num_leaders = 1
 steps = 1000
 dt = 0.05
-vel = np.random.rand(2, 3)
+vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
+directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
 colors = np.array([[0.5, 0.5, 0.5],
                    [0.5, 0, 0.5]])
-centers = 0 * np.array([[10, 0, 0.],
-                        [13 + 3, 0, 0.]])
+xyz = np.array([[10, 0, 0.],
+                        [10, 0, 0.]])
 directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
 scene = window.Scene()
-arrow_actor = actor.arrow(centers=centers,
+arrow_actor = actor.arrow(centers=xyz,
                           directions=directions, colors=colors, heights=3,
                           resolution=10, vertices=None, faces=None)
 scene.add(arrow_actor)
 
 color_leader = np.array([[0, 1, 0.]])
-center_leader = 0 * np.array([[10 + 3, 0 , 0.]])
+center_leader = np.array([[10, 0 , 0.]])
 direction_leader = np.array([[0, 1., 0]])
 arrow_actor_leader = actor.arrow(centers=center_leader,
                           directions=direction_leader, colors=color_leader, heights=3,
@@ -115,7 +121,7 @@ scene.add(arrow_actor_leader)
 axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=True,
+                           size=(1200, 1000), reset_camera=True,
                            order_transparent=True)
 showm.initialize()
 
@@ -124,50 +130,52 @@ counter = itertools.count()
 vertices = utils.vertices_from_actor(arrow_actor)
 no_vertices_per_arrow = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
-    np.repeat(centers, no_vertices_per_arrow, axis=0)
+    np.repeat(xyz, no_vertices_per_arrow, axis=0)
 vertices_leader = utils.vertices_from_actor(arrow_actor_leader)
 initial_vertices_leader = vertices_leader.copy() - \
     np.repeat(center_leader, no_vertices_per_arrow, axis=0)
 
 
-scene.zoom(0.8)
+scene.zoom(0.4)
 
 def timer_callback(_obj, _event):
-    global centers, center_leader
+    global xyz, center_leader, vel
+    alpha = 0.5
+
     turnfraction = 0.01
     cnt = next(counter)
     dst = 5
     angle = 2 * np.pi * turnfraction * cnt
-    x1 = dst #* np.cos(angle)
     x2 = (dst + 5) * np.cos(angle)
-    x3 = (dst + 10) #* np.cos(angle)
-    y1 = dst #* np.sin(angle)
     y2 = (dst + 5) * np.sin(angle)
-    y3 = (dst + 10) #* np.sin(angle)
 
     angle_1 = 2 * np.pi * turnfraction * (cnt+1)
-    x1_1 = dst #* np.cos(angle_1)
     x2_1 = (dst + 5) * np.cos(angle_1)
-    x3_1 = (dst + 10) #* np.cos(angle_1)
-    y1_1 = dst #* np.sin(angle_1)
     y2_1 = (dst + 5) * np.sin(angle_1)
-    y3_1 = (dst + 10) #* np.sin(angle_1)
-
-    xyz = np.array([[x1, y1, 0.],
-                   [x3, y3, 0.]])
-    xyz_1 = np.array([[x1_1, y1_1, 0.],
-                     [x3_1, y3_1, 0.]])
 
     xyz_leader = np.array([[x2, y2, 0.]])
     xyz_1_leader = np.array([[x2_1, y2_1, 0.]])
 
     tb.message = "Let's count up to 1000 and exit :" + str(cnt)
-    R = vec2vec_rotmat(np.array((xyz_1_leader[0,:] - xyz_leader[0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:])), np.array([0, 1., 0]))
-    xyz = xyz + vel * cnt
+    mag_vel_leader = np.linalg.norm(xyz_1_leader - xyz_leader)
 
-    vertices[:] = initial_vertices + \
-        np.repeat(xyz, no_vertices_per_arrow, axis=0)
-    utils.update_actor(arrow_actor)
+    vel_leader = np.array((xyz_1_leader[ 0,:] - xyz_leader[ 0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:]))
+    R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
+
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((2, 1))
+    vel = alpha * vel + (1 - alpha) * vel_leader
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((2, 1))
+    xyz = xyz + vel * mag_vel_leader
+
+    # It rotates arrow at origin and then shifts to position;
+    num_vertices = vertices.shape[0]
+    sec = np.int(num_vertices / num_particles)
+
+    for i in range(num_particles):
+        R_followers = vec2vec_rotmat(vel[i], directions[i])
+        vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
+            np.repeat(xyz[i: i+1], no_vertices_per_arrow, axis=0)
+        utils.update_actor(arrow_actor)
 
     vertices_leader[:] = np.dot(initial_vertices_leader, R) + \
         np.repeat(xyz_leader, no_vertices_per_arrow, axis=0)
