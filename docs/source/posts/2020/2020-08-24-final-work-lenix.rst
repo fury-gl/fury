@@ -24,7 +24,7 @@ Google Summer of Code 2020 Final Work Product
 -  **Project:** `FURY - Improve Shader Framework <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2020>`__
 Introduction
 ------------
-The current shader framework for FURY is based on VTK and lacks documentation to get started which can be overwhelming for new users . The objective of this project is to enable users to be easily able to understand and use the shader framework to render stunning visual representations of data. The project involves programming vertex and fragment shaders to generate effects for more immersive visualization.
+The current shader framework for FURY is based on VTK and lacks documentation to get started which can be overwhelming for new users. The objective of this project is to enable users to be easily able to understand and use the shader framework to render stunning visual representations of data. The project involves programming vertex and fragment shaders to generate effects for more immersive visualization.
 
 Proposed Objectives
 -------------------
@@ -39,13 +39,13 @@ Unsubmitted Functionalities
 ---------------------------
 **Spherical Harmonics using Shaders.**
 
-The spherical harmonics algorithm is used to generate spherical surfaces using biases and coefficients computed . The general approach to achieve this is computationally expensive. The idea propsed was to leverage the GPU hardware using shaders to provide a faster more efficient alternative to the current implementations. The second month of the coding period was devoted to the same task but unfortunately the observed performance was quite unsatisfactory than the expected performance. Morover the output shape of the geometry was distorted .It was then decided to continue the work after the GSoC period and prioritize the task at hand.
+The spherical harmonics algorithm is used to generate spherical surfaces using biases and coefficients computed. The general approach to achieve this is computationally expensive. The idea proposed was to leverage the GPU hardware using shaders to provide a faster more efficient alternative to the current implementations. The second month of the coding period was devoted to the same task but unfortunately, the observed performance was quite unsatisfactory than the expected performance. Moreover, the output shape of the geometry was distorted. It was then decided to continue the work after the GSoC period and prioritize the task at hand.
 
 The Work in Progress can be accessed here. https://github.com/lenixlobo/fury/tree/Spherical-Harmonics
 
 **Dynamic Texture using Geometry Shader**
 
-Geometry Shaders provide alot of flexibility to users to create custom geometry behaviours such as instancing. The idea was to create a dynamic Fur/Hair effect on top of a FURY actor. Unfortunately due to missing documentation on VTK geometry shaders and lack of resources, the project was not completed during the GSoC period. However, I will continue to try to solve the issue.
+Geometry Shaders provide a lot of flexibility to users to create custom geometry behaviors such as instancing. The idea was to create a dynamic Fur/Hair effect on top of a FURY actor. Unfortunately due to missing documentation on VTK geometry shaders and lack of resources, the project was not completed during the GSoC period. However, I will continue to try to solve the issue.
 
 The source code for the current progress can be accessed here. https://github.com/lenixlobo/fury/tree/Dynamic-Texture
 
@@ -54,21 +54,21 @@ Objectives Completed
 --------------------
 **SDF based Actor**
 
-  The objective here was to provide a alternative approach to users to use SDF modelled actors in the scene. This actor is modelled using the raymarching algorithm which provides a much better performance than conventional polygon based actors. Currently the shapes supported include ellipsoid, sphere and torus
+  The objective here was to provide an alternative approach to users to use SDF modeled actors in the scene. This actor is modeled using the raymarching algorithm which provides much better performance than conventional polygon-based actors. Currently, the shapes supported include ellipsoid, sphere and torus
 
   *Pull Requests:*
   **SDF Actor method:** https://github.com/fury-gl/fury/pull/250
 
 **Multiple SDF Actor**
 
-  The objective was to create a method through which multiple SDF primitves are rendered within a single cube. This task helped us explore the limitations of the shader system and also benchmarking the performance.
+  The objective was to create a method through which multiple SDF primitives are rendered within a single cube. This task helped us explore the limitations of the shader system and also benchmarking the performance.
 
   *Pull Requests:*
   **MultiSDF Shader:** https://github.com/fury-gl/fury/blob/master/docs/experimental/viz_multisdf.py
 
 **Shader Demos**
 
-  The task here was to create a pull request showcasing the capabiliies of the FURY shader system and to also provide examples or new users to get started with integrating custom shaders into the scenes.
+  The task here was to create a pull request showcasing the capabilities of the FURY shader system and to also provide examples or new users to get started with integrating custom shaders into the scenes.
 
   *Pull Requests:*
   **Shader Demos:** https://github.com/fury-gl/fury/pull/296
