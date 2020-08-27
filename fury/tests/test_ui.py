@@ -1197,6 +1197,91 @@ def test_ui_file_menu_2d(interactive=False):
         show_manager.start()
 
 
+def test_ui_file_dialog_2d(interactive=False):
+    filename = "test_ui_file_dialog_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    # Create temporary directory and files
+    test_dir_path = os.path.join(os.getcwd(), "testdir")
+    os.mkdir(test_dir_path)
+    os.mkdir(os.path.join(test_dir_path, "tempdir"))
+    for i in range(10):
+        open(os.path.join(test_dir_path, "tempdir", "test" + str(i) + ".txt"),
+             'wt').close()
+    open("testfile.txt", 'wt').close()
+
+    ui.FileDialog2D(os.getcwd())
+
+    file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
+                                  position=(50, 50), dialog_type="Save")
+    show_tb = ui.TextBlock2D(text="Click to Show", position=(100, 300))
+
+    def show_dialog(i_ren, _obj, _comp):
+        file_dialog.set_visibility(True)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    show_tb.on_left_mouse_button_clicked = show_dialog
+
+    accepts = itertools.count()
+    rejects = itertools.count()
+    current_dirs = []
+    current_files = []
+    save_files = []
+
+    def accept_(file_dialog):
+        next(accepts)
+        current_dirs.append(file_dialog.current_directory.split(os.sep)[-1])
+        current_files.append(file_dialog.current_file.split(os.sep)[-1])
+        save_files.append(file_dialog.save_filename.split(os.sep)[-1])
+
+    def reject_(file_dialog):
+        next(rejects)
+
+    file_dialog.on_accept = accept_
+    file_dialog.on_reject = reject_
+
+    event_counter = EventCounter()
+    event_counter.monitor(file_dialog)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="File Dialog Test")
+    show_manager.scene.add(file_dialog, show_tb)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        # event_counter.check_counts(expected)
+
+    # Remove temporary directory and files
+    os.remove("testfile.txt")
+    for i in range(10):
+        os.remove(os.path.join(test_dir_path, "tempdir",
+                               "test" + str(i) + ".txt"))
+    os.rmdir(os.path.join(test_dir_path, "tempdir"))
+    os.rmdir(test_dir_path)
+
+    exp_dirs = ['tempdir', 'tempdir', 'tempdir', 'testdir', 'tests', 'tests',
+                'tests', 'tests']
+    exp_files = ['test0.txt', 'test1.txt', 'test2.txt', '', '', '', '', '']
+    exp_saves = ['Enter filename', 'Enter filename', 'Enter filename',
+                 'Enter filename', 'Enter filename', 'helolo', 'helolo',
+                 'test']
+
+    npt.assert_equal(8, next(accepts))
+    npt.assert_equal(2, next(rejects))
+    npt.assert_arrays_equal(exp_dirs, current_dirs)
+    npt.assert_array_equal(exp_files, current_files)
+    npt.assert_array_equal(exp_saves, save_files)
+
+
 def test_ui_combobox_2d(interactive=False):
     filename = "test_ui_combobox_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
