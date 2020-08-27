@@ -4182,7 +4182,7 @@ class FileDialog2D(UI):
         self.unselected_color = unselected_color
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
-        self.background_opacity=background_opacity
+        self.background_opacity = background_opacity
 
         self.file_menu_size = (size[0], int(0.7*size[1]))
         self.dir_block_size = (size[0], int(0.1*size[1]))
@@ -4193,20 +4193,19 @@ class FileDialog2D(UI):
         self.position = position
 
     def _setup(self):
-        self.file_menu = FileMenu2D(directory_path=self.origin_directory,
-                                    extensions=self.extensions,
-                                    size=self.file_menu_size,
-                                    multiselection=self.multiselection,
-                                    reverse_scrolling=self.reverse_scrolling,
-                                    line_spacing=self.line_spacing,
-                                    bg_color=self.bg_color,
-                                    selected_color=self.selected_color,
-                                    unselected_color=self.unselected_color,
-                                    scroll_bar_active_color=
-                                    self.scroll_bar_active_color,
-                                    scroll_bar_inactive_color=
-                                    self.scroll_bar_inactive_color,
-                                    background_opacity=self.background_opacity)
+        self.file_menu = FileMenu2D(
+            directory_path=self.origin_directory,
+            extensions=self.extensions,
+            size=self.file_menu_size,
+            multiselection=self.multiselection,
+            reverse_scrolling=self.reverse_scrolling,
+            line_spacing=self.line_spacing,
+            bg_color=self.bg_color,
+            selected_color=self.selected_color,
+            unselected_color=self.unselected_color,
+            scroll_bar_active_color=self.scroll_bar_active_color,
+            scroll_bar_inactive_color=self.scroll_bar_inactive_color,
+            background_opacity=self.background_opacity)
         self.dir_block = TextBlock2D(text=self.current_directory,
                                      size=self.dir_block_size)
         self.accept_button = TextBlock2D(size=self.accept_button_size,
@@ -4243,8 +4242,8 @@ class FileDialog2D(UI):
         if self.draggable:
             self.dir_block.on_left_mouse_button_dragged =\
                 self.left_button_dragged
-            self.file_menu.listbox.panel.background.on_left_mouse_button_dragged\
-                = self.left_button_dragged
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_dragged = self.left_button_dragged
             self.accept_button.on_left_mouse_button_dragged =\
                 self.left_button_dragged
             self.reject_button.on_left_mouse_button_dragged =\
@@ -4252,8 +4251,8 @@ class FileDialog2D(UI):
 
             self.dir_block.on_left_mouse_button_pressed =\
                 self.left_button_pressed
-            self.file_menu.listbox.panel.background.on_left_mouse_button_pressed\
-                = self.left_button_pressed
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_pressed = self.left_button_pressed
             self.accept_button.on_left_mouse_button_pressed =\
                 self.left_button_pressed
             self.reject_button.on_left_mouse_button_pressed =\
@@ -4261,8 +4260,9 @@ class FileDialog2D(UI):
         else:
             self.parent_panel.background.on_left_mouse_button_dragged =\
                 lambda i_ren, _obj, _comp: i_ren.force_render
-            self.file_menu.listbox.panel.background.on_left_mouse_button_dragged\
-                = lambda i_ren, _obj, _comp: i_ren.force_render
+            self.file_menu.listbox.panel.background.\
+                on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4399,7 +4399,7 @@ class FileMenu2D(UI):
         self.unselected_color = unselected_color
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
-        self.background_opacity=background_opacity
+        self.background_opacity = background_opacity
 
         super(FileMenu2D, self).__init__()
         self.position = position
@@ -4593,8 +4593,9 @@ class FileMenu2D(UI):
                 self.listbox.update_scrollbar()
                 self.set_slot_colors()
         else:
-            new_file_path = os.path.normpath(os.path.join(self.current_directory,
-                                                     listboxitem.element))
+            new_file_path = os.path.normpath(os.path.join(
+                                             self.current_directory,
+                                             listboxitem.element))
             if os.access(new_file_path, os.R_OK):
                 self.current_file = new_file_path
 
@@ -5079,7 +5080,7 @@ class TabUI(UI):
             self.tabs[tab_idx].add_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                            "Tab with index {} does not exist".format(tab_idx))
 
     def remove_element(self, tab_idx, element):
         """ Removes element from content panel after checking its existence.
@@ -5088,7 +5089,7 @@ class TabUI(UI):
             self.tabs[tab_idx].remove_element(element)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                            "Tab with index {} does not exist".format(tab_idx))
 
     def update_element(self, tab_idx, element, coords, anchor="position"):
         """ Updates element on content panel after checking its existence.
@@ -5097,7 +5098,7 @@ class TabUI(UI):
             self.tabs[tab_idx].update_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                            "Tab with index {} does not exist".format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
