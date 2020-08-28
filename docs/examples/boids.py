@@ -88,21 +88,80 @@ def vec2vec_rotmat(u, v):
 
     return Rp
 
+def box_edges(box_lx, box_ly, box_lz):
+
+    edge1 = 0.5 * np.array([[box_lx, box_ly, box_lz],
+                            [box_lx, box_ly, -box_lz],
+                            [-box_lx, box_ly, -box_lz],
+                            [-box_lx, box_ly, box_lz],
+                            [box_lx, box_ly, box_lz]])
+    edge2 = 0.5 * np.array([[box_lx, box_ly, box_lz],
+                            [box_lx, -box_ly, box_lz]])
+    edge3 = 0.5 * np.array([[box_lx, box_ly, -box_lz],
+                            [box_lx, -box_ly, -box_lz]])
+    edge4 = 0.5 * np.array([[-box_lx, box_ly, -box_lz],
+                            [-box_lx, -box_ly, -box_lz]])
+    edge5 = 0.5 * np.array([[-box_lx, box_ly, box_lz],
+                            [-box_lx, -box_ly, box_lz]])
+    lines = [edge1, -edge1, edge2, edge3, edge4, edge5]
+    return lines
+
+
+##############################################################################
+# Here we define collision between walls-particles and particle-particle.
+# When collision happens, the particle with lower velocity gets the
+# color of the particle with higher velocity
+
+def collision():
+    global xyz, center_leader, vel
+    num_vertices = vertices.shape[0]
+    sec = np.int(num_vertices / num_particles)
+
+    for i, j in np.ndindex(num_particles, num_particles):
+
+        if (i == j):
+            continue
+        distance = np.linalg.norm(xyz[i] - xyz[j])
+        vel_mag_i = np.linalg.norm(vel[i])
+        vel_mag_j = np.linalg.norm(vel[j])
+        # Collision happens if the distance between the centars of two
+        # particles is less or equal to the sum of their radii
+        if (distance <= (radii[i] + radii[j])):
+            vel[i] = -vel[i]
+            vel[j] = -vel[j]
+            if vel_mag_j > vel_mag_i:
+                vcolors[i * sec: i * sec + sec] = \
+                    vcolors[j * sec: j * sec + sec]
+            if vel_mag_i > vel_mag_j:
+                vcolors[j * sec: j * sec + sec] = \
+                    vcolors[i * sec: i * sec + sec]
+            xyz[i] = xyz[i] + vel[i] * dt
+            xyz[j] = xyz[j] + vel[j] * dt
+    # Collision between particles-walls;
+    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + radii[:]) |
+                          (xyz[:, 0] >= (0.5 * box_lx - radii[:]))),
+                         - vel[:, 0], vel[:, 0])
+    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + radii[:]) |
+                          (xyz[:, 1] >= (0.5 * box_ly - radii[:]))),
+                         - vel[:, 1], vel[:, 1])
+    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + radii[:]) |
+                          (xyz[:, 2] >= (0.5 * box_lz - radii[:]))),
+                         - vel[:, 2], vel[:, 2])
+
+
 global xyz, center_leader, vel
-num_particles = 2
+num_particles = 20
 num_leaders = 1
 steps = 1000
 dt = 0.05
-vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
-directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
-colors = np.array([[0.5, 0.5, 0.5],
-                   [0.5, 0, 0.5]])
-xyz = np.array([[10, 0, 0.],
-                        [10, 0, 0.]])
-directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0.]])
+box_lx = 50
+box_ly = 50
+box_lz = 50
+vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
+colors = np.random.rand(num_particles, 3)
+xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
+                                            - 0.5) * 0.6
+directions = np.random.rand(num_particles, 3)
 scene = window.Scene()
 arrow_actor = actor.arrow(centers=xyz,
                           directions=directions, colors=colors, heights=3,
@@ -162,9 +221,9 @@ def timer_callback(_obj, _event):
     vel_leader = np.array((xyz_1_leader[ 0,:] - xyz_leader[ 0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:]))
     R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
 
-    vel = vel / np.linalg.norm(vel, axis=1).reshape((2, 1))
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     vel = alpha * vel + (1 - alpha) * vel_leader
-    vel = vel / np.linalg.norm(vel, axis=1).reshape((2, 1))
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     xyz = xyz + vel * mag_vel_leader
 
     # It rotates arrow at origin and then shifts to position;
