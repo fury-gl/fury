@@ -1202,7 +1202,8 @@ def test_ui_file_dialog_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    ui.FileDialog2D(os.getcwd())
+    file_dialog_open = ui.FileDialog2D(os.getcwd(), draggable=False,
+                                       dialog_type="Open")
 
     # Create temporary directory and files
     os.mkdir(os.path.join(os.getcwd(), "testdir"))
@@ -1268,6 +1269,9 @@ def test_ui_file_dialog_2d(interactive=False):
     os.chdir("..")
     # Remove this line when re-recording test.
     os.rmdir("testdir")
+
+    npt.assert_array_equal((100, 100), file_dialog_open.size)
+    npt.assert_equal("", file_dialog_open.save_filename)
 
     npt.assert_equal(8, next(accepts))
     npt.assert_equal(1, next(rejects))
