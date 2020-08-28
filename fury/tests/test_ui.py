@@ -1269,7 +1269,6 @@ def test_ui_file_dialog_2d(interactive=False):
     # Remove this line when re-recording test.
     os.rmdir("testdir")
 
-
     npt.assert_equal(8, next(accepts))
     npt.assert_equal(1, next(rejects))
     npt.assert_array_equal(exp_dirs, current_dirs)
@@ -1666,6 +1665,3 @@ def test_clip_overflow():
     text.message = "A very very long message to clip text overflow"
     ui.clip_overflow(text, rectangle.size[0])
     npt.assert_equal("A very ve...", text.message)
-
-if __name__ == "__main__":
-    test_ui_file_dialog_2d(True)
