@@ -1205,23 +1205,16 @@ def test_ui_file_dialog_2d(interactive=False):
     ui.FileDialog2D(os.getcwd())
 
     # Create temporary directory and files
-    test_dir_path = os.path.join(os.getcwd(), "testdir")
-    os.mkdir(test_dir_path)
-    os.mkdir(os.path.join(test_dir_path, "tempdir"))
-    for i in range(3):
-        open(os.path.join(test_dir_path, "tempdir", "test" + str(i) + ".txt"),
+    os.mkdir(os.path.join(os.getcwd(), "testdir"))
+    os.chdir("testdir")
+    os.mkdir(os.path.join(os.getcwd(), "tempdir"))
+    for i in range(5):
+        open(os.path.join(os.getcwd(), "tempdir", "test" + str(i) + ".txt"),
              'wt').close()
+    open("testfile.txt", 'wt').close()
 
     file_dialog = ui.FileDialog2D(os.getcwd(), size=(300, 200),
                                   position=(50, 50), dialog_type="Save")
-    show_tb = ui.TextBlock2D(text="Click to Show", position=(100, 300))
-
-    def show_dialog(i_ren, _obj, _comp):
-        file_dialog.set_visibility(True)
-        i_ren.force_render()
-        i_ren.event.abort()
-
-    show_tb.on_left_mouse_button_clicked = show_dialog
 
     accepts = itertools.count()
     rejects = itertools.count()
@@ -1247,7 +1240,7 @@ def test_ui_file_dialog_2d(interactive=False):
     current_size = (800, 800)
     show_manager = window.ShowManager(
         size=current_size, title="File Dialog Test")
-    show_manager.scene.add(file_dialog, show_tb)
+    show_manager.scene.add(file_dialog)
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)
@@ -1259,20 +1252,26 @@ def test_ui_file_dialog_2d(interactive=False):
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
 
-    exp_dirs = ['testdir', 'testdir', 'tempdir', 'tempdir', 'tempdir',
-                'testdir']
-    exp_files = ['', '', 'test1.txt', 'test1.txt', 'test0.txt', '']
-    exp_saves = ['Enter filename', 'ttt', 'ttt', 'tttyyy', 'tttyyy', 'tttyyy']
+    exp_dirs = ['testdir', 'testdir', 'testdir', 'testdir', 'tempdir',
+                'tempdir', 'tempdir', 'tempdir']
+    exp_files = ['', 'testfile.txt', 'testfile.txt', 'testfile.txt',
+                 'test1.txt', 'test2.txt', 'test2.txt', 'test0.txt']
+    exp_saves = ['Enter filename', 'Enter filename', 'ttt', 'tttyyy',
+                 'tttyyy', 'tttyyy', 'tttyyytt', 'tttyyytt']
 
     # Remove temporary directory and files
-    for i in range(3):
-        os.remove(os.path.join(test_dir_path, "tempdir",
+    os.remove("testfile.txt")
+    for i in range(5):
+        os.remove(os.path.join(os.getcwd(), "tempdir",
                                "test" + str(i) + ".txt"))
-    os.rmdir(os.path.join(test_dir_path, "tempdir"))
-    os.rmdir(test_dir_path)
+    os.rmdir(os.path.join(os.getcwd(), "tempdir"))
+    os.chdir("..")
+    # Remove this line when re-recording test.
+    os.rmdir("testdir")
 
-    npt.assert_equal(6, next(accepts))
-    npt.assert_equal(3, next(rejects))
+
+    npt.assert_equal(8, next(accepts))
+    npt.assert_equal(1, next(rejects))
     npt.assert_array_equal(exp_dirs, current_dirs)
     npt.assert_array_equal(exp_files, current_files)
     npt.assert_array_equal(exp_saves, save_files)
@@ -1667,3 +1666,6 @@ def test_clip_overflow():
     text.message = "A very very long message to clip text overflow"
     ui.clip_overflow(text, rectangle.size[0])
     npt.assert_equal("A very ve...", text.message)
+
+if __name__ == "__main__":
+    test_ui_file_dialog_2d(True)
