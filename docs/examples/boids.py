@@ -126,7 +126,7 @@ def collision():
         vel_mag_j = np.linalg.norm(vel[j])
         # Collision happens if the distance between the centars of two
         # particles is less or equal to the sum of their radii
-        if (distance <= (radii[i] + radii[j])):
+        if (distance <= 1): #(radii[i] + radii[j])):
             vel[i] = -vel[i]
             vel[j] = -vel[j]
             if vel_mag_j > vel_mag_i:
@@ -138,14 +138,14 @@ def collision():
             xyz[i] = xyz[i] + vel[i] * dt
             xyz[j] = xyz[j] + vel[j] * dt
     # Collision between particles-walls;
-    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + radii[:]) |
-                          (xyz[:, 0] >= (0.5 * box_lx - radii[:]))),
+    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + 2) |
+                          (xyz[:, 0] >= (0.5 * box_lx - 2))),
                          - vel[:, 0], vel[:, 0])
-    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + radii[:]) |
-                          (xyz[:, 1] >= (0.5 * box_ly - radii[:]))),
+    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + 2) |
+                          (xyz[:, 1] >= (0.5 * box_ly - 2))),
                          - vel[:, 1], vel[:, 1])
-    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + radii[:]) |
-                          (xyz[:, 2] >= (0.5 * box_lz - radii[:]))),
+    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + 2) |
+                          (xyz[:, 2] >= (0.5 * box_lz - 2))),
                          - vel[:, 2], vel[:, 2])
 
 
@@ -163,6 +163,17 @@ xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
                                             - 0.5) * 0.6
 directions = np.random.rand(num_particles, 3)
 scene = window.Scene()
+box_centers = np.array([[0, 0, 0]])
+box_directions = np.array([[0, 1, 0]])
+box_colors = np.array([[255, 255, 255]])
+box_actor = actor.box(box_centers, box_directions, box_colors,
+                      scale=(box_lx, box_ly, box_lz))
+utils.opacity(box_actor, 0.2)
+scene.add(box_actor)
+
+lines = box_edges(box_lx, box_ly, box_lz)
+line_actor = actor.streamtube(lines, colors=(1, 0.5, 0), linewidth=0.1)
+scene.add(line_actor)
 arrow_actor = actor.arrow(centers=xyz,
                           directions=directions, colors=colors, heights=3,
                           resolution=10, vertices=None, faces=None)
@@ -225,6 +236,7 @@ def timer_callback(_obj, _event):
     vel = alpha * vel + (1 - alpha) * vel_leader
     vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     xyz = xyz + vel * mag_vel_leader
+    collision()
 
     # It rotates arrow at origin and then shifts to position;
     num_vertices = vertices.shape[0]
@@ -246,5 +258,5 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 
-showm.add_timer_callback(True, 50, timer_callback)
+showm.add_timer_callback(True, 100, timer_callback)
 showm.start()
