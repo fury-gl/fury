@@ -122,41 +122,33 @@ def collision():
         if (i == j):
             continue
         distance = np.linalg.norm(xyz[i] - xyz[j])
-        vel_mag_i = np.linalg.norm(vel[i])
-        vel_mag_j = np.linalg.norm(vel[j])
         # Collision happens if the distance between the centars of two
         # particles is less or equal to the sum of their radii
-        if (distance <= 1): #(radii[i] + radii[j])):
+        if (distance <= 3): #(radii[i] + radii[j])):
             vel[i] = -vel[i]
             vel[j] = -vel[j]
-            if vel_mag_j > vel_mag_i:
-                vcolors[i * sec: i * sec + sec] = \
-                    vcolors[j * sec: j * sec + sec]
-            if vel_mag_i > vel_mag_j:
-                vcolors[j * sec: j * sec + sec] = \
-                    vcolors[i * sec: i * sec + sec]
             xyz[i] = xyz[i] + vel[i] * dt
             xyz[j] = xyz[j] + vel[j] * dt
     # Collision between particles-walls;
-    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + 2) |
-                          (xyz[:, 0] >= (0.5 * box_lx - 2))),
+    vel[:, 0] = np.where(((xyz[:, 0] <= - 0.5 * box_lx + 3) |
+                          (xyz[:, 0] >= (0.5 * box_lx - 3))),
                          - vel[:, 0], vel[:, 0])
-    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + 2) |
-                          (xyz[:, 1] >= (0.5 * box_ly - 2))),
+    vel[:, 1] = np.where(((xyz[:, 1] <= - 0.5 * box_ly + 3) |
+                          (xyz[:, 1] >= (0.5 * box_ly - 3))),
                          - vel[:, 1], vel[:, 1])
-    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + 2) |
-                          (xyz[:, 2] >= (0.5 * box_lz - 2))),
+    vel[:, 2] = np.where(((xyz[:, 2] <= -0.5 * box_lz + 3) |
+                          (xyz[:, 2] >= (0.5 * box_lz - 3))),
                          - vel[:, 2], vel[:, 2])
 
 
 global xyz, center_leader, vel
-num_particles = 20
+num_particles = 200
 num_leaders = 1
 steps = 1000
 dt = 0.05
-box_lx = 50
-box_ly = 50
-box_lz = 50
+box_lx = 100
+box_ly = 100
+box_lz = 100
 vel = 4 * (np.random.rand(num_particles, 3) - 0.5)
 colors = np.random.rand(num_particles, 3)
 xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
@@ -174,20 +166,20 @@ scene.add(box_actor)
 lines = box_edges(box_lx, box_ly, box_lz)
 line_actor = actor.streamtube(lines, colors=(1, 0.5, 0), linewidth=0.1)
 scene.add(line_actor)
-arrow_actor = actor.arrow(centers=xyz,
+cone_actor = actor.cone(centers=xyz,
                           directions=directions, colors=colors, heights=3,
                           resolution=10, vertices=None, faces=None)
-scene.add(arrow_actor)
+scene.add(cone_actor)
 
 color_leader = np.array([[0, 1, 0.]])
 center_leader = np.array([[10, 0 , 0.]])
 direction_leader = np.array([[0, 1., 0]])
-arrow_actor_leader = actor.arrow(centers=center_leader,
+cone_actor_leader = actor.cone(centers=center_leader,
                           directions=direction_leader, colors=color_leader, heights=3,
                           resolution=10, vertices=None, faces=None)
 
 
-scene.add(arrow_actor_leader)
+scene.add(cone_actor_leader)
 axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
@@ -197,13 +189,13 @@ showm.initialize()
 
 tb = ui.TextBlock2D(bold=True)
 counter = itertools.count()
-vertices = utils.vertices_from_actor(arrow_actor)
-no_vertices_per_arrow = len(vertices)/num_particles
+vertices = utils.vertices_from_actor(cone_actor)
+no_vertices_per_cone = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
-    np.repeat(xyz, no_vertices_per_arrow, axis=0)
-vertices_leader = utils.vertices_from_actor(arrow_actor_leader)
+    np.repeat(xyz, no_vertices_per_cone, axis=0)
+vertices_leader = utils.vertices_from_actor(cone_actor_leader)
 initial_vertices_leader = vertices_leader.copy() - \
-    np.repeat(center_leader, no_vertices_per_arrow, axis=0)
+    np.repeat(center_leader, no_vertices_per_cone, axis=0)
 
 
 scene.zoom(0.4)
@@ -228,29 +220,62 @@ def timer_callback(_obj, _event):
 
     tb.message = "Let's count up to 1000 and exit :" + str(cnt)
     mag_vel_leader = np.linalg.norm(xyz_1_leader - xyz_leader)
-
     vel_leader = np.array((xyz_1_leader[ 0,:] - xyz_leader[ 0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:]))
-    R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
+    # R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
 
+    # Alignment: Alignment is a behavior that causes a particular agent(leader) to line up with agents(followers) close by.
+    # Cohesion: Cohesion is a behavior that causes agents(followers) to steer towards the "center of mass" - that is, the average position of the agents(followers) within a certain radius.
+
+    for i in range(num_particles):
+        neighborCount = 0
+        vel_in_sphere = np.array([0, 0, 0.])
+        center_mass_in_sphere = np.array([0, 0, 0.])
+        separation = np.array([0, 0, 0.])
+        for j in range(num_particles):
+            if (i == j):
+                continue
+            distance = np.linalg.norm(xyz[i] - xyz[j])
+            if (distance <= 10):
+                vel_in_sphere += (vel[i] + vel[j])  # Alignment
+                center_mass_in_sphere += (xyz[i] + xyz[j])  # Cohesion
+                separation += (xyz[i] - xyz[j])
+                neighborCount = neighborCount + 1 # number of neighbors in sphere
+
+        if (neighborCount > 0):
+            vel_in_sphere = (vel_in_sphere / neighborCount) # Alignment
+            center_mass_in_sphere = xyz[i] - center_mass_in_sphere / neighborCount # Cohesion
+            separation = -1 * (separation / neighborCount)
+            vel_in_sphere = vel_in_sphere / np.linalg.norm(vel_in_sphere)
+            center_mass_in_sphere = center_mass_in_sphere / np.linalg.norm(center_mass_in_sphere)
+            separation = separation / np.linalg.norm(separation)
+
+            # print('before', np.linalg.norm(vel[i]))
+            vel[i] += 0.333 * vel_in_sphere +  0.0 * center_mass_in_sphere  +  0.666 * separation
+            # print('after', np.linalg.norm(vel[i]))
+            vel[i] = vel[i] / np.linalg.norm(vel[i])
+            #print(np.linalg.norm(vel[i]), np.linalg.norm(vel_in_sphere), np.linalg.norm(center_mass_in_sphere), np.linalg.norm(separation))
+            #xyz[i] = xyz[i] + vel[i] / np.linalg.norm(vel[i]) # equation of motion
+        #else:
+            #xyz[i] = xyz[i] + vel[i] / np.linalg.norm(vel[i])
+
+    R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
+    # vel = alpha * vel + (1 - alpha) * vel_leader
     vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
-    vel = alpha * vel + (1 - alpha) * vel_leader
-    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
-    xyz = xyz + vel * mag_vel_leader
+    xyz = xyz + vel
     collision()
 
     # It rotates arrow at origin and then shifts to position;
     num_vertices = vertices.shape[0]
     sec = np.int(num_vertices / num_particles)
-
     for i in range(num_particles):
         R_followers = vec2vec_rotmat(vel[i], directions[i])
         vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
-            np.repeat(xyz[i: i+1], no_vertices_per_arrow, axis=0)
-        utils.update_actor(arrow_actor)
+            np.repeat(xyz[i: i+1], no_vertices_per_cone, axis=0)
+        utils.update_actor(cone_actor)
 
     vertices_leader[:] = np.dot(initial_vertices_leader, R) + \
-        np.repeat(xyz_leader, no_vertices_per_arrow, axis=0)
-    utils.update_actor(arrow_actor_leader)
+        np.repeat(xyz_leader, no_vertices_per_cone, axis=0)
+    utils.update_actor(cone_actor_leader)
     scene.reset_clipping_range()
     showm.render()
     if cnt == steps:
@@ -258,5 +283,5 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 
-showm.add_timer_callback(True, 100, timer_callback)
+showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
