@@ -11,8 +11,10 @@ This is an example of boids in a box using FURY.
 
 import numpy as np
 import math
-from fury import window, actor, ui, utils, primitive
+from fury import window, actor, ui, utils, primitive, disable_warnings
 import itertools
+
+disable_warnings()
 
 
 def vec2vec_rotmat(u, v):
@@ -167,7 +169,7 @@ box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
 box_colors = np.array([[255, 255, 255]])
 box_actor = actor.box(box_centers, box_directions, box_colors,
-                      scale=(box_lx, box_ly, box_lz))
+                      scales=(box_lx, box_ly, box_lz))
 utils.opacity(box_actor, 0.)
 scene.add(box_actor)
 
@@ -195,7 +197,7 @@ sphere_actor = actor.sphere(centers=box_centers,
 axes_actor = actor.axes(scale=(50, 50, 50), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
-                           size=(1200, 1000), reset_camera=True,
+                           size=(3000, 2000), reset_camera=True,
                            order_transparent=True)
 showm.initialize()
 
@@ -216,7 +218,7 @@ initial_vertices_obstacle = vertices_obstacle.copy() - \
     np.repeat(box_centers, no_vertices_per_sphere, axis=0)
 
 
-scene.zoom(0.4)
+scene.zoom(1.2)
 
 def timer_callback(_obj, _event):
     global xyz, center_leader, vel, box_centers
