@@ -109,13 +109,18 @@ def box_edges(box_lx, box_ly, box_lz):
     return lines
 
 
+def normalize_all_vels(num_particles):
+    global vel
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
+
+
 ##############################################################################
 # Here we define collision between walls-particles and particle-particle.
 # When collision happens, the particle with lower velocity gets the
 # color of the particle with higher velocity
 
 def collision(particle_size=4):
-    global xyz, box_centers
+    global xyz, box_centers, vel
 
     num_vertices = vertices.shape[0]
     sec = np.int(num_vertices / num_particles)
@@ -149,21 +154,58 @@ def collision(particle_size=4):
 
 
 
+def cohesion_alignment_separation():
+    global xyz, vel
+    particle_size = 5
+    for i in range(num_particles):
+        neighborCount = 0
 
+        # center_mass_in_sphere = np.array([0, 0, 0.])
+        separation = np.array([0, 0, 0.])
+        vel_in_sphere = vel[i]
+        for j in range(num_particles):
+            if (i == j):
+                continue
 
-global xyz, box_centers
-num_particles = 200
+            distance = np.linalg.norm(xyz[i] - xyz[j])
+            if (distance <= 2 ):
+                vel_in_sphere += vel[j]  # Alignment
+                # center_mass_in_sphere += xyz[j]  # Cohesion
+                # separation += distance #(xyz[i] - xyz[j])
+                neighborCount += 1 # number of neighbors in sphere
+        if (neighborCount > 0):
+            vel_in_sphere = (vel_in_sphere / neighborCount) # Alignment
+            # center_mass_in_sphere = vel[i] - (center_mass_in_sphere / neighborCount) # Cohesion
+            # separation = -1 * (separation / neighborCount)
+            vel_in_sphere = vel_in_sphere / np.linalg.norm(vel_in_sphere)
+            # center_mass_in_sphere = center_mass_in_sphere / np.linalg.norm(center_mass_in_sphere)
+            # separation = separation / np.linalg.norm(separation)
+            vel[i] += vel_in_sphere # 0.333 * vel_in_sphere + 0.333 * center_mass_in_sphere + 0.333 * separation
+            # vel[i] = vel[i] / np.linalg.norm(vel[i])
+
+    # return vel
+
+global xyz, vel
+num_particles = 3
 num_leaders = 1
-steps = 1000
+steps = 10000
 dt = 0.05
-box_lx = 100
-box_ly = 100
-box_lz = 100
-vel = (np.random.rand(num_particles, 3))
+box_lx = 50
+box_ly = 50
+box_lz = 50
+# vel = (np.random.rand(num_particles, 3))
+# xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3) - 0.5) * 0.6
+# directions = np.random.rand(num_particles, 3)
+# normalize_all_vels(vel, num_particles)
+
 colors = np.random.rand(num_particles, 3)
-xyz = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3)
-                                            - 0.5) * 0.6
-directions = np.random.rand(num_particles, 3)
+vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
+xyz = np.array([[-5, 0., 0], [0, 0., 0], [5, 0., 0]])
+
+directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
+
+
+
 scene = window.Scene()
 box_centers = np.array([[0, 0, 0]])
 box_directions = np.array([[0, 1, 0]])
@@ -194,7 +236,7 @@ sphere_actor = actor.sphere(centers=box_centers,
 
 
 # scene.add(cone_actor_leader)
-axes_actor = actor.axes(scale=(50, 50, 50), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
+axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
                            size=(3000, 2000), reset_camera=True,
@@ -221,7 +263,7 @@ initial_vertices_obstacle = vertices_obstacle.copy() - \
 scene.zoom(1.2)
 
 def timer_callback(_obj, _event):
-    global xyz, center_leader, vel, box_centers
+    global xyz, vel
     # alpha = 0.5
 
     # turnfraction = 0.01
@@ -240,52 +282,17 @@ def timer_callback(_obj, _event):
     # mag_vel_leader = np.linalg.norm(xyz_1_leader - xyz_leader)
     # vel_leader = np.array((xyz_1_leader[ 0,:] - xyz_leader[ 0,:])/np.linalg.norm(xyz_1_leader[0,:] - xyz_leader[0,:]))
     # R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
-
-    # Alignment: Alignment is a behavior that causes a particular agent(leader) to line up with agents(followers) close by.
-    # Cohesion: Cohesion is a behavior that causes agents(followers) to steer towards the "center of mass" - that is, the average position of the agents(followers) within a certain radius.
-
-    # for i in range(num_particles):
-    #     neighborCount = 0
-    #     vel_in_sphere = vel[i]  #np.array([0, 0, 0.])
-    #     center_mass_in_sphere = np.array([0, 0, 0.])
-    #     separation = np.array([0, 0, 0.])
-    #     for j in range(num_particles):
-    #         if (i == j):
-    #             continue
-    #         distance = np.linalg.norm(xyz[i] - xyz[j])
-    #         if (distance <= 10):
-    #             vel_in_sphere += vel[j]  # Alignment
-    #             center_mass_in_sphere += xyz[j]  # Cohesion
-    #             separation += distance #(xyz[i] - xyz[j])
-    #             neighborCount += 1 # number of neighbors in sphere
-
-    #     if (neighborCount > 0):
-    #         vel_in_sphere = (vel_in_sphere / neighborCount) # Alignment
-    #         center_mass_in_sphere = vel[i] - (center_mass_in_sphere / neighborCount) # Cohesion
-    #         separation = -1 * (separation / neighborCount)
-    #         vel_in_sphere = vel_in_sphere / np.linalg.norm(vel_in_sphere)
-    #         center_mass_in_sphere = center_mass_in_sphere / np.linalg.norm(center_mass_in_sphere)
-    #         separation = separation / np.linalg.norm(separation)
-    #         # vel[i] += 0.333 * vel_in_sphere + 0.333 * center_mass_in_sphere + 0.333 * separation
-    #         # vel[i] = vel[i] / np.linalg.norm(vel[i])
-    #         # xyz[i] = xyz[i] + vel[i] / np.linalg.norm(vel[i]) # equation of motion
-    #     else:
-    #         # xyz[i] = xyz[i] + vel[i] / np.linalg.norm(vel[i])
-    #         pass
-
-    # R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
     # vel = alpha * vel + (1 - alpha) * vel_leader
-    # angle = 2 * np.pi * 0.1
-    # x2 = (5) * np.cos(angle)
-    # for i in range(num_particles):
-    #     distance = np.linalg.norm(xyz[i] - box_centers)
-    #     if (distance < 12):  #(radii[i] + radii[j])):
-    #         vel[i] = -vel[i] * x2
+
+
     # velocity normalization
-    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
-    collision(1.5)
+    cohesion_alignment_separation()
+    normalize_all_vels(num_particles)
+    # vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
+    # collision(1.5)
 
     xyz = xyz + vel
+    collision(1.5)
 
 
     # It rotates arrow at origin and then shifts to position;
@@ -316,5 +323,5 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 
-showm.add_timer_callback(True, 10, timer_callback)
+showm.add_timer_callback(True, 100, timer_callback)
 showm.start()
