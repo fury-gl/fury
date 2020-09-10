@@ -10,6 +10,12 @@ some geometric shapes from DIPY UI elements.
 First, a bunch of imports.
 """
 from fury import ui, window
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in DIPY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Create some text blocks that will be showm when

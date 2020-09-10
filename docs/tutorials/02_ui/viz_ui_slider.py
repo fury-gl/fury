@@ -10,6 +10,12 @@ create a cube and control with sliders.
 First, some imports.
 """
 from fury import ui, window
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in DIPY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Cube and sliders

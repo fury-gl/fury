@@ -10,7 +10,12 @@ panel having buttons with callbacks.
 First, some imports.
 """
 from fury import ui, window
-from fury.data import read_viz_icons
+from fury.data import read_viz_icons, fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in DIPY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Let's create some buttons and text and put them in a panel.
@@ -49,6 +54,7 @@ second_button_example = ui.Button2D(icon_fnames=icon_files)
 
 panel.add_element(button_example, (0.25, 0.33))
 panel.add_element(second_button_example, (0.66, 0.33))
+
 
 ###############################################################################
 # We can add a callback to each button to perform some action.
