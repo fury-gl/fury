@@ -158,7 +158,7 @@ def keepWithinBounds():
 def cohesion_alignment_separation():
     global pos, vel
     centeringFactor = 1
-    minDistance = 3
+    minDistance = 2
     avoidFactor = 1
     speedLimit = 15
 
@@ -186,7 +186,7 @@ def cohesion_alignment_separation():
             aligment = (aligment - vel[i])
             cohesion = cohesion / neighborCount # Cohesion
             cohesion = (cohesion - pos[i])
-            # separation = separation / neighborCount
+            separation = separation / neighborCount
             # separation = separation / np.linalg.norm(separation)
             # aligment = aligment / np.linalg.norm(aligment)
             # cohesion = cohesion / np.linalg.norm(cohesion)
@@ -194,25 +194,27 @@ def cohesion_alignment_separation():
             # collision = collision / np.linalg.norm(collision)
 
             # if np.linalg.norm(separation) > 0:
-            vel[i] += 0.2 * separation + 0.6 * aligment  + 0.2 * cohesion #+ 0.0 * collision
+            vel[i] += 0.333 * separation + 0.333 * aligment  + 0.333 * cohesion #+ 0.0 * collision
             vel[i] = vel[i] / np.linalg.norm (vel[i])
         else:
             vel[i] = vel[i].copy() #np.array([0, 0, 0.])
             vel[i] = vel[i] / np.linalg.norm (vel[i])
             # velocity = np.linalg.norm(vel[i])
+
+
         # if velocity > speedLimit:
         #     vel[i] = (vel[i]/velocity) * speedLimit
 
 
 global pos, vel
-num_particles = 3
+num_particles = 50
 num_leaders = 1
 steps = 10000
 dt = 0.05
 box_lx = 100
 box_ly = 100
 box_lz = 100
-test_rules = True
+test_rules = False
 colors = np.random.rand(num_particles, 3)
 if test_rules == True:
     vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
@@ -303,19 +305,11 @@ def timer_callback(_obj, _event):
 
     # velocity normalization
     cohesion_alignment_separation()
-    keepWithinBounds()
 
     normalize_all_vels(num_particles)
-    # vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     pos = pos + vel
     keepWithinBounds()
     vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
-
-
-    # collision_walls(2)
-
-
-
 
     # It rotates arrow at origin and then shifts to position;
     num_vertices = vertices.shape[0]
