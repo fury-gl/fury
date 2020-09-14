@@ -117,33 +117,34 @@ def normalize_all_vels(num_particles):
 # When collision happens, the particle with lower velocity gets the
 # color of the particle with higher velocity
 
-# def collision_walls(particle_size):
-#     global pos, box_centers, vel
-#     periodic_boundary = False
-#     if periodic_boundary == True:
-#         pos[:, 0] = np.where((pos[:, 0] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 0])
-#         pos[:, 0] = np.where((pos[:, 0] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 0])
+def collision_walls(particle_size):
+    global pos, box_centers, vel
+    periodic_boundary = True
+    if periodic_boundary is True:
+        pos[:, 0] = np.where((pos[:, 0] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 0])
+        pos[:, 0] = np.where((pos[:, 0] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 0])
 
-#         pos[:, 1] = np.where((pos[:, 1] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 1])
-#         pos[:, 1] = np.where((pos[:, 1] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 1])
+        pos[:, 1] = np.where((pos[:, 1] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 1])
+        pos[:, 1] = np.where((pos[:, 1] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 1])
 
-#         pos[:, 2] = np.where((pos[:, 2] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 2])
-#         pos[:, 2] = np.where((pos[:, 2] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 2])
+        pos[:, 2] = np.where((pos[:, 2] < - 0.5 * box_lx), (0.5 * box_lx), pos[:, 2])
+        pos[:, 2] = np.where((pos[:, 2] > 0.5 * box_lx), (-0.5 * box_lx), pos[:, 2])
 
-#     else:
-#         vel[:, 0] = np.where(((pos[:, 0] <= - 0.5 * box_lx + particle_size) |
-#                             (pos[:, 0] >= 0.5 * box_lx - particle_size)),
-#                             - vel[:, 0], vel[:, 0])
-#         vel[:, 1] = np.where(((pos[:, 1] <= - 0.5 * box_ly + particle_size) |
-#                             (pos[:, 1] >= 0.5 * box_ly - particle_size)),
-#                             - vel[:, 1], vel[:, 1])
-#         vel[:, 2] = np.where(((pos[:, 2] <= -0.5 * box_lz + particle_size) |
-#                             (pos[:, 2] >= 0.5 * box_lz - particle_size)),
-#                             - vel[:, 2], vel[:, 2])
-#         pos = pos + vel
+    else:
+        vel[:, 0] = np.where(((pos[:, 0] <= - 0.5 * box_lx + particle_size) |
+                            (pos[:, 0] >= 0.5 * box_lx - particle_size)),
+                            - vel[:, 0], vel[:, 0])
+        vel[:, 1] = np.where(((pos[:, 1] <= - 0.5 * box_ly + particle_size) |
+                            (pos[:, 1] >= 0.5 * box_ly - particle_size)),
+                            - vel[:, 1], vel[:, 1])
+        vel[:, 2] = np.where(((pos[:, 2] <= -0.5 * box_lz + particle_size) |
+                            (pos[:, 2] >= 0.5 * box_lz - particle_size)),
+                            - vel[:, 2], vel[:, 2])
+        pos = pos + vel
 
 def keepWithinBounds():
-    particle_size = 2
+    global pos, vel
+    particle_size = 2.5
     turnfactor = 1
     vel[:, 0] = np.where((pos[:, 0] <= (-0.5 * box_lx + particle_size)), vel[:, 0] + turnfactor, vel[:, 0])
     vel[:, 0] = np.where((pos[:, 0] >= (0.5 * box_lx - particle_size)), vel[:, 0] - turnfactor, vel[:, 0])
@@ -154,6 +155,7 @@ def keepWithinBounds():
     vel[:, 2] = np.where((pos[:, 2] <= (-0.5 * box_lz + particle_size)), vel[:, 2] + turnfactor, vel[:, 2])
     vel[:, 2] = np.where((pos[:, 2] >= (0.5 * box_lz - particle_size)), vel[:, 2] - turnfactor, vel[:, 2])
 
+    vel = vel / np.linalg.norm(vel, axis=1).reshape((vel.shape[0], 1))
 
 def cohesion_alignment_separation():
     global pos, vel
@@ -168,62 +170,75 @@ def cohesion_alignment_separation():
 
         cohesion = np.array([0, 0, 0.])
         separation = np.array([0, 0, 0.])
-        aligment = vel[i].copy() #np.array([0, 0, 0.])
-        collision = np.array([0, 0, 0.])
+        alignment = vel[i].copy()
+        max_vel = np.array([0, 0, 0.])
+        avoid_collision = np.array([0, 0, 0.])
         for j in range(num_particles):
             if (i == j):
                 continue
             distance = np.linalg.norm(pos[i] - pos[j])
-            if (distance <= 7 ):
-                aligment += vel[j]  # Alignment
+            velocity = np.linalg.norm(vel[i] - vel[j])
+            if distance <= 2:
+                avoid_collision += pos[i] - pos[j]
+                # vel[i] = -vel[i]
+                # vel[j] = -vel[j]
+            if distance <= 5:
+                alignment += vel[j]  # Alignment
                 cohesion += pos[j]  # Cohesion
                 separation += pos[i] - pos[j]
                 neighborCount += 1 # number of neighbors in sphere
-                # print (neighborCount)
-
+            # if velocity > speedLimit:
+            #     vel[j] = (vel[j]/velocity) * speedLimit
         if neighborCount > 0:
-            aligment = (aligment / neighborCount) # Alignment
-            aligment = (aligment - vel[i])
-            cohesion = cohesion / neighborCount # Cohesion
+            cohesion = cohesion / neighborCount  # Cohesion
             cohesion = (cohesion - pos[i])
+            alignment = (alignment / (neighborCount + 1)) # Alignment
+            alignment = alignment - vel[i]
             separation = separation / neighborCount
             # separation = separation / np.linalg.norm(separation)
-            # aligment = aligment / np.linalg.norm(aligment)
+            # alignment = alignment / np.linalg.norm(alignment)
             # cohesion = cohesion / np.linalg.norm(cohesion)
-            # vel[i] += vel[i] * avoidFactor
-            # collision = collision / np.linalg.norm(collision)
 
             # if np.linalg.norm(separation) > 0:
-            vel[i] += 0.333 * separation + 0.333 * aligment  + 0.333 * cohesion #+ 0.0 * collision
-            vel[i] = vel[i] / np.linalg.norm (vel[i])
+            # vel[i] += avoid_collision + alignment
+            vel[i] += avoid_collision + separation + alignment  + cohesion
+            # vel[i] = vel[i] / np.linalg.norm (vel[i])
         else:
-            vel[i] = vel[i].copy() #np.array([0, 0, 0.])
-            vel[i] = vel[i] / np.linalg.norm (vel[i])
+            vel[i] += vel[i].copy() # np.array([0, 0, 0.])
+            # vel[i] = vel[i] / np.linalg.norm (vel[i])
             # velocity = np.linalg.norm(vel[i])
 
 
-        # if velocity > speedLimit:
-        #     vel[i] = (vel[i]/velocity) * speedLimit
-
 
 global pos, vel
-num_particles = 50
+num_particles = 5
 num_leaders = 1
 steps = 10000
-dt = 0.05
+dt = 0.7
 box_lx = 100
 box_ly = 100
 box_lz = 100
-test_rules = False
+tm_step = 10
+test_rules = True
+specify_rand = True
+
+if specify_rand:
+    np.random.seed(42)
+
 colors = np.random.rand(num_particles, 3)
-if test_rules == True:
-    vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
-    pos = np.array([[-5, 0., 0], [0, 0., 0], [5, 0., 0]])
-    directions = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
+if test_rules is True:
+    vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
+    # vel = np.array([[-1, 0, 0], [0, 1., 0], [1, 0, 0], [1, 0, 0], [1, 0, 0.]])
+    pos = .5 * np.array([[-5, 0., 0], [0, 0., 0], [5, 0., 0], [10, 0., 0], [15, 0., 0]])
+    directions = vel.copy()
 else:
     vel = (np.random.rand(num_particles, 3))
+    # vel = vel / np.linalg.norm(vel)
+
     pos = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3) - 0.5) * 0.6
-    directions = np.random.rand(num_particles, 3)
+    # pos[:, 2] = 0
+    # vel[:, 2] = 0
+    directions = vel.copy()
 
 
 scene = window.Scene()
@@ -258,8 +273,6 @@ sphere_actor = actor.sphere(centers=box_centers,
 # cone_actor_leader = actor.cone(centers=center_leader,
 #                           directions=direction_leader, colors=color_leader, heights=2,
 #                           resolution=10, vertices=None, faces=None)
-
-
 # scene.add(cone_actor_leader)
 axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
@@ -304,18 +317,23 @@ def timer_callback(_obj, _event):
 
 
     # velocity normalization
+
     cohesion_alignment_separation()
 
-    normalize_all_vels(num_particles)
-    pos = pos + vel
+    # cohesion_alignment_separation()
+    # vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     keepWithinBounds()
-    vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
 
+    pos = pos + vel * dt
+
+
+    # vel_leader = np.array((pos_1_leader[ 0,:] - pos_leader[ 0,:])/np.linalg.norm(pos_1_leader[0,:] - pos_leader[0,:]))
     # It rotates arrow at origin and then shifts to position;
     num_vertices = vertices.shape[0]
     sec = np.int(num_vertices / num_particles)
     for i in range(num_particles):
-        R_followers = vec2vec_rotmat(vel[i], directions[i])
+        R_followers = vec2vec_rotmat(vel[i], directions[i]) #directions[i])
+        # print(vel[i], directions[i])
         vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
             np.repeat(pos[i: i+1], no_vertices_per_cone, axis=0)
         utils.update_actor(cone_actor)
@@ -335,5 +353,5 @@ def timer_callback(_obj, _event):
 
 scene.add(tb)
 
-showm.add_timer_callback(True, 100, timer_callback)
+showm.add_timer_callback(True, tm_step, timer_callback)
 showm.start()
