@@ -1294,9 +1294,12 @@ def test_superquadric_actor(interactive=False):
 def test_billboard_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    scales = [1, 2, 1]
+    centers = np.array([[0, 0, 0], [5, -5, 5], [-7, 7, -7], [10, 10, 10],
+                        [11, 11, 10], [12, -12, -12], [-17, 17, 17],
+                        [-22, -22, 22]])
+    colors = np.array([[1, 1, 0], [0, 0, 0], [1, 0, 1], [0, 0, 1], [1, 1, 1],
+                       [1, 0, 0], [0, 1, 0], [0, 1, 1]])
+    scales = [6, .4, 1.2, 1, .2, .7, 3, 2]
 
     fake_sphere = \
         """
@@ -1312,9 +1315,7 @@ def test_billboard_actor(interactive=False):
         fragOutput0 = vec4(max(df_1 * color, sf_1 * vec3(1)), 1);
         """
 
-    billboard_actor = actor.billboard(centers,
-                                      colors=colors.astype(np.uint8),
-                                      scales=scales,
+    billboard_actor = actor.billboard(centers, colors=colors, scales=scales,
                                       fs_impl=fake_sphere)
     scene.add(billboard_actor)
     scene.add(actor.axes())
@@ -1329,7 +1330,7 @@ def test_billboard_actor(interactive=False):
 def test_sdf_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]])
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
     scales = [1, 2, 3]
