@@ -1295,7 +1295,7 @@ def test_billboard_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
     centers = np.array([[0, 0, 0], [5, -5, 5], [-7, 7, -7], [10, 10, 10],
-                        [11, 11, 10], [12, -12, -12], [-17, 17, 17],
+                        [10.5, 11.5, 11.5], [12, -12, -12], [-17, 17, 17],
                         [-22, -22, 22]])
     colors = np.array([[1, 1, 0], [0, 0, 0], [1, 0, 1], [0, 0, 1], [1, 1, 1],
                        [1, 0, 0], [0, 1, 0], [0, 1, 1]])
@@ -1321,6 +1321,10 @@ def test_billboard_actor(interactive=False):
     scene.add(actor.axes())
     if interactive:
         window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 8)
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows"
