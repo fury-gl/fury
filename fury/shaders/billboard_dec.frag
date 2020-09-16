@@ -1,2 +1,2 @@
 /* Billboard  fragment shader declaration */
-in vec3 normVertexMCVSOutput;
+in vec3 normalizedVertexMCVSOutput;
