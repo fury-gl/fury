@@ -64,7 +64,8 @@ def _add_dep_doc(old_doc, dep_doc):
     Returns
     -------
     new_doc : str
-        ``old_doc`` with ``dep_doc`` inserted after any first lines of docstring.
+        ``old_doc`` with ``dep_doc`` inserted after any first lines of
+        docstring.
 
     """
     dep_doc = _ensure_cr(dep_doc)
@@ -156,7 +157,7 @@ def deprecate_with_version(message, since='', until='',
         error.
     version_comparator : callable
         Callable accepting string as argument, and return 1 if string
-        represents a higher version than encoded in the ``version_comparator``, 0
+        represents a higher version than encoded in the version_comparator`, 0
         if the version is equal, and -1 if the version is lower.  For example,
         the ``version_comparator`` may compare the input version string to the
         current package version string.
