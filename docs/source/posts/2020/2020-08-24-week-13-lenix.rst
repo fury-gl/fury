@@ -1,4 +1,4 @@
-Outline Picker
+Shader Showcase
 =====================
 
 .. post:: August 24 2020

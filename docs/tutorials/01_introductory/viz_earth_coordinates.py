@@ -104,7 +104,7 @@ showm = window.ShowManager(scene,
                            order_transparent=True)
 
 ###############################################################################
-# Let's create a ``timer_callback function to add some animation to the Earth.
+# Let's create a ``timer_callback`` function to add some animation to the Earth.
 # Change the camera position and angle to fly over and zoom in on each new
 # location.
 
