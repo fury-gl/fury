@@ -132,32 +132,34 @@ def keepWithinBounds():
 
     vel = vel / np.linalg.norm(vel, axis=1).reshape((vel.shape[0], 1))
 
-def collision_obstacle():
-    global pos_obstacles, vel_obstacles, vel, pos, radii_obstacles, height_cones
+def collision_obstacle_leader_walls():
+    global vel, pos, radii_obstacles, height_cones, pos_obstacles, pos_leaders, vel_leaders, vel_obstacles
+# collosion between leader-leader, obstacle-obstacle, obstacle-walls and leader-walls:
+# obstacle-obstacle:
+    for i, j in np.ndindex(num_obstacles, num_obstacles):
+        if (i == j):
+            continue
+        distance_obstacles = np.linalg.norm(pos_obstacles - pos_obstacles)
+        if (distance_obstacles <= (radii_obstacles + radii_obstacles)):
+            vel_obstacles[i] = -vel_obstacles[i]
+            vel_obstacles[j] = -vel_obstacles[j]
+# leader-leader:
+    for i, j in np.ndindex(num_leaders, num_leaders):
+        if (i == j):
+            continue
+        distance_leaders = np.linalg.norm(pos_leaders - pos_leaders)
+        if (distance_leaders <= (radii_leaders + radii_leaders)):
+            vel_leaders[i] = -vel_leaders[i]
+            vel_leaders[j] = -vel_leaders[j]
 
-    # for i, j in np.ndindex(num_obstacles, num_obstacles):
-    #     if (i == j):
-    #         continue
-    #     distance = np.linalg.norm(pos_obstacles[i] - pos_obstacles[j])
-    #     if (distance <= (radii_obstacles + radii_obstacles)):
-    #         vel_obstacles[i] = -vel_obstacles[i]
-    #         vel_obstacles[j] = -vel_obstacles[j]
-    # angle = 2 * np.pi * 0.2
-    # for i in range(num_particles):
-    #     vel[i] = vel[i].copy()
-    #     for j in range(num_obstacles):
-    #         diff = pos[i] - pos_obstacles[j]
+# leader-obstacle:
+    for i, j in np.ndindex(num_leaders, num_obstacles):
+        distance_leader_obstacle = np.linalg.norm(pos_leaders[i] - pos_obstacles[j])
+        if (distance_leader_obstacle <= (radii_leaders + radii_obstacles)):
+            vel_leaders[i] = -vel_leaders[i]
+            # vel_obstacles[j] = -vel_obstacles[j]
 
-    #         distance_with_obstacle = np.linalg.norm(pos[i] - pos_obstacles[j])
-    #         if distance_with_obstacle <= (radii_obstacles + height_cones):
-    #         #     # inv_sqr_magnitude = 1 / ((distance_with_obstacle - height_cones) ** 2)
-    #         #     # vel[i] = vel[i] - inv_sqr_magnitude * diff
-    #         #     # vel[i] = vel[i] + pos_obstacles[j]
-
-    #             vel[i:, 0] = (radii_obstacles + height_cones) * np.cos(angle)
-    #             vel[i:, 1] = (radii_obstacles + height_cones) * np.sin(angle)
-
-    # # Collision between obstacle-walls;
+# obstacle-walls;
     vel_obstacles[:, 0] = np.where(((pos_obstacles[:, 0] <= - 0.5 * box_lx + radii_obstacles) |
                           (pos_obstacles[:, 0] >= (0.5 * box_lx - radii_obstacles))),
                          - vel_obstacles[:, 0], vel_obstacles[:, 0])
@@ -168,11 +170,22 @@ def collision_obstacle():
                           (pos_obstacles[:, 2] >= (0.5 * box_lz - radii_obstacles))),
                          - vel_obstacles[:, 2], vel_obstacles[:, 2])
 
+# leader-walls;
+    vel_leaders[:, 0] = np.where(((pos_leaders[:, 0] <= - 0.5 * box_lx + radii_leaders) |
+                          (pos_leaders[:, 0] >= (0.5 * box_lx - radii_leaders))),
+                         - vel_leaders[:, 0], vel_leaders[:, 0])
+    vel_leaders[:, 1] = np.where(((pos_leaders[:, 1] <= - 0.5 * box_ly + radii_leaders) |
+                          (pos_leaders[:, 1] >= (0.5 * box_ly - radii_leaders))),
+                         - vel_leaders[:, 1], vel_leaders[:, 1])
+    vel_leaders[:, 2] = np.where(((pos_leaders[:, 2] <= -0.5 * box_lz + radii_leaders) |
+                          (pos_leaders[:, 2] >= (0.5 * box_lz - radii_leaders))),
+                         - vel_leaders[:, 2], vel_leaders[:, 2])
+
 def cohesion_alignment_separation():
-    global pos, vel, radii_obstacles, height_cone, height_cones
+    global pos, vel, radii_obstacles, height_cone, height_cones, pos_obstacles, pos_leaders, vel_leaders, vel_obstacles, radii_leaders
     no_vertices_per_cone = vertices.shape[0]
     sec = np.int(no_vertices_per_cone / num_particles)
-    angle = 2 * np.pi * 0.1
+
     for i in range(num_particles):
         neighborCount = 0
         cohesion = np.array([0, 0, 0.])
@@ -180,21 +193,25 @@ def cohesion_alignment_separation():
         alignment = vel[i].copy()
         avoid_collision = np.array([0, 0, 0.])
         avoid_obstacles = np.array([0, 0, 0.])
-        distance_with_obstacle = np.linalg.norm(pos[i] - np.array([0, 0, 0]))
-        if distance_with_obstacle <= (radii_obstacles + height_cones):
-            diff = pos[i] - np.array([0, 0, 0])
-            inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) - (radii_obstacles + height_cones)) ** 2)
-            avoid_obstacles =  vel[i]  + ( 0.5  * inv_sqr_magnitude * diff)
+        follow_attractor = np.array([0, 0, 0.])
+        avoid_collision_1 = np.array([0, 0, 0.])
+        for a in range(num_obstacles):
+            distance_particle_obstacle = np.linalg.norm(pos[i] - pos_obstacles[a])
+            if distance_particle_obstacle <= (radii_obstacles + height_cones):
+                diff = pos[i] - pos_obstacles[k]
+                inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) - (radii_obstacles + height_cones)) ** 2)
+                avoid_obstacles =  vel[i]  + ( 0.5  * inv_sqr_magnitude * diff)
 
-            # avoid_obstacles[i:, 0]  = vel[i:, 0] + (radii_obstacles + height_cones) * np.cos(angle)
-            # avoid_obstacles[i:, 1]= vel[i:, 1] + (radii_obstacles + height_cones) * np.sin(angle)
+        for k in range(num_leaders):
+            follow_attractor = (pos_leaders[k]+ radii_leaders) - (pos[i] - height_cones)
+
         for j in range(num_particles):
             if (i == j):
                 continue
-            distance = np.linalg.norm(pos[i] - pos[j])
-            if distance <= 2:
+            distance_particle_particle = np.linalg.norm(pos[i] - pos[j])
+            if distance_particle_particle <= height_cones:
                 avoid_collision += pos[i] - pos[j]
-            if distance <= 7:
+            if distance_particle_particle <= 7:
                 vcolors[i * sec: i * sec + sec] = \
                     vcolors[j * sec: j * sec + sec]
                 alignment += vel[j]
@@ -207,26 +224,32 @@ def cohesion_alignment_separation():
             alignment = (alignment / (neighborCount + 1))
             alignment = alignment - vel[i]
             separation = separation / neighborCount
-            vel[i] += avoid_collision + separation + alignment  + cohesion + avoid_obstacles
+            vel[i] += avoid_collision + separation + alignment  + cohesion + avoid_obstacles + follow_attractor + avoid_collision_1
         else:
             vel[i] += vel[i].copy()
 
-global pos, vel, height_cone, pos_obstacles, vel_obstacles, radii_obstacles
-
-num_particles = 100
-num_leaders = 1
-height_cones = 1
-num_obstacles = 1
-radii_obstacles = 10.0
-vel_obstacles = np.array([[0, 0, 0]]) #np.random.rand(num_obstacles, 3)
-color_obstacles = np.array([[0, 1., 0, 0.5]]) #np.random.rand(num_obstacles, 3)
-pos_obstacles =  np.array([[0, 0, 0]]) #np.random.rand(num_obstacles, 3)
+global pos, vel, height_cone, pos_obstacles, vel_obstacles, radii_obstacles, pos_leaders, vel_leaders
 steps = 10000
 dt = 0.7
-box_lx = 100
-box_ly = 100
-box_lz = 100
+box_lx = 40
+box_ly = 40
+box_lz = 40
 tm_step = 10
+num_particles = 150
+height_cones = 1
+num_obstacles = 1
+radii_obstacles = 2.0
+vel_obstacles = np.random.rand(num_obstacles, 3)
+color_obstacles = np.random.rand(num_obstacles, 3) * 0.5
+pos_obstacles =  np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_obstacles, 3) - 0.5) * 0.6
+
+
+num_leaders = 1
+radii_leaders = 2.0
+vel_leaders = np.random.rand(num_leaders, 3)
+color_leaders = np.random.rand(num_leaders, 3)
+pos_leaders =  np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_leaders, 3) - 0.5) * 0.6
+
 test_rules = False
 specify_rand = True
 
@@ -234,7 +257,6 @@ if specify_rand:
     np.random.seed(42)
 
 colors = np.random.rand(num_particles, 3)
-# colors[:] = np.array([1, 0.2, 0.3])
 if test_rules is True:
     vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
     # vel = np.array([[-1, 0, 0], [0, 1., 0], [1, 0, 0], [1, 0, 0], [1, 0, 0.]])
@@ -242,14 +264,13 @@ if test_rules is True:
     directions = vel.copy()
 else:
     vel =  -0.5 + (np.random.rand(num_particles, 3))
-    # vel = np.ones((num_particles, 3)).astype('f8')
     # vel[:, 0] = 0.
     # vel[:, 2] = 0.
     #vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
 
     pos = np.array([box_lx, box_ly, box_lz]) * (np.random.rand(num_particles, 3) - 0.5) * 0.6
-    pos[:, 2] = 0
-    vel[:, 2] = 0
+    # pos[:, 2] = 0
+    # vel[:, 2] = 0
     directions = vel.copy()
 
 
@@ -270,19 +291,16 @@ obstacle_actor = actor.sphere(centers=pos_obstacles,
                             radii=radii_obstacles)
 scene.add(obstacle_actor)
 
+leader_actor = actor.sphere(centers=pos_leaders,
+                            colors=color_leaders,
+                            radii=radii_leaders)
+scene.add(leader_actor)
+
 cone_actor = actor.cone(centers=pos,
                         directions=directions, colors=colors, heights=height_cones,
                         resolution=10, vertices=None, faces=None)
 scene.add(cone_actor)
 
-# scene.add(sphere_actor)
-# color_leader = np.array([[0, 1, 0.]])
-# center_leader = np.array([[10, 0 , 0.]])
-# direction_leader = np.array([[0, 1., 0]])
-# cone_actor_leader = actor.cone(centers=center_leader,
-#                           directions=direction_leader, colors=color_leader, heights=2,
-#                           resolution=10, vertices=None, faces=None)
-# scene.add(cone_actor_leader)
 axes_actor = actor.axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1)
 scene.add(axes_actor)
 showm = window.ShowManager(scene,
@@ -298,6 +316,11 @@ no_vertices_per_cone = len(vertices)/num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(pos, no_vertices_per_cone, axis=0)
 
+vertices_leader = utils.vertices_from_actor(leader_actor)
+no_vertices_per_leader =  len(vertices_leader)/num_leaders
+initial_vertices_leader = vertices_leader.copy() - \
+    np.repeat(pos_leaders, no_vertices_per_leader, axis=0)
+
 vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
 no_vertices_per_obstacle =  len(vertices_obstacle)/num_obstacles
 initial_vertices_obstacle = vertices_obstacle.copy() - \
@@ -305,39 +328,23 @@ initial_vertices_obstacle = vertices_obstacle.copy() - \
 scene.zoom(1.2)
 
 def timer_callback(_obj, _event):
-    global pos, vel, pos_obstacles, vel_obstacles
+    global pos, vel, pos_obstacles, vel_obstacles, pos_leaders, vel_leaders
     # alpha = 0.5
 
     # turnfraction = 0.01
     cnt = next(counter)
-    # dst = 5
-    # angle = 2 * np.pi * turnfraction * cnt
-    # x2 = (dst + 5) * np.cos(angle)
-    # y2 = (dst + 5) * np.sin(angle)
-    # angle_1 = 2 * np.pi * turnfraction * (cnt+1)
-    # x2_1 = (dst + 5) * np.cos(angle_1)
-    # y2_1 = (dst + 5) * np.sin(angle_1)
-    # pos_leader = np.array([[x2, y2, 0.]])
-    # pos_1_leader = np.array([[x2_1, y2_1, 0.]])
-
     tb.message = "Let's count up to 1000 and exit :" + str(cnt)
-    # mag_vel_leader = np.linalg.norm(pos_1_leader - pos_leader)
-    # vel_leader = np.array((pos_1_leader[ 0,:] - pos_leader[ 0,:])/np.linalg.norm(pos_1_leader[0,:] - pos_leader[0,:]))
-    # R = vec2vec_rotmat(vel_leader, np.array([0, 1., 0]))
-    # vel = alpha * vel + (1 - alpha) * vel_leader
-    # velocity normalization
+
 
     cohesion_alignment_separation()
-    # vel = vel / np.linalg.norm(vel, axis=1).reshape((num_particles, 1))
     keepWithinBounds()
     pos = pos + vel
 
-
-    # vel_leader = np.array((pos_1_leader[ 0,:] - pos_leader[ 0,:])/np.linalg.norm(pos_1_leader[0,:] - pos_leader[0,:]))
     # It rotates arrow at origin and then shifts to position;
     num_vertices = vertices.shape[0]
     sec = np.int(num_vertices / num_particles)
     for i in range(num_particles):
+        # directions and velocities normalization
         dnorm = directions[i]/np.linalg.norm(directions[i])
         vnorm = vel[i]/np.linalg.norm(vel[i])
         R_followers = vec2vec_rotmat(vnorm, dnorm)
@@ -345,11 +352,19 @@ def timer_callback(_obj, _event):
             np.repeat(pos[i: i+1], no_vertices_per_cone, axis=0)
         utils.update_actor(cone_actor)
 
-    # pos_obstacles = pos_obstacles + vel_obstacles
-    collision_obstacle()
+    pos_leaders = pos_leaders + vel_leaders
+    pos_obstacles = pos_obstacles + vel_obstacles
+    collision_obstacle_leader_walls()
+
+    vertices_leader[:] = initial_vertices_leader + \
+        np.repeat(pos_leaders, no_vertices_per_leader, axis=0)
+    utils.update_actor(leader_actor)
+
+
     vertices_obstacle[:] = initial_vertices_obstacle + \
         np.repeat(pos_obstacles, no_vertices_per_obstacle, axis=0)
     utils.update_actor(obstacle_actor)
+
     scene.reset_clipping_range()
     showm.render()
     if cnt == steps:
