@@ -4,10 +4,10 @@
 
 .. image:: https://www.python.org/static/community_logos/python-logo.png
    :width: 40%
-   
+
 .. image:: https://python-gsoc.org/logos/FURY.png
    :height: 30
-   
+
 
 
 Google Summer of Code 2020 Final Work Product
@@ -22,6 +22,7 @@ Google Summer of Code 2020 Final Work Product
 -  **Organisation:** Python Software Foundation
 -  **Sub-Organisation:** FURY
 -  **Project:** `FURY - Improve Shader Framework <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2020>`__
+
 Introduction
 ------------
 The current shader framework for FURY is based on VTK and lacks documentation to get started which can be overwhelming for new users. The objective of this project is to enable users to be easily able to understand and use the shader framework to render stunning visual representations of data. The project involves programming vertex and fragment shaders to generate effects for more immersive visualization.
@@ -30,7 +31,7 @@ Proposed Objectives
 -------------------
 **Adding SDF actor to the API**
 
- This actor uses raymarching to model actors using SDF. The method provides several actors including `ellipsoid`, `sphere` and `torus`.
+This actor uses raymarching to model actors using SDF. The method provides several actors including `ellipsoid`, `sphere` and `torus`.
 **Shader demos**
 
  Use the FURY shader system to create and visualize different shading algorithms. Implementations include `SphereMap`, `Toon`, `Gooch` and `Vertex Noise`
@@ -80,27 +81,28 @@ Other Objectives
 - **Tutorials**
 
    Create Tutorials for new users to get familiar with the Shader System
-   
+
    *Pull Requests:*
    - **Shader UI Tutorial**
-   
+
    https://github.com/fury-gl/fury/pull/296
-   
+
    -**SDF Actor Tutorial**
-   
+
    https://github.com/fury-gl/fury/pull/267
-   
+
 - **GSoC weekly Blogs**
 
   Weekly blogs were added for FURY's Website.
 
   *Pull Requests:*
-  - **First & Second Evaluation:** 
-  
+  - **First & Second Evaluation:**
+
   https://github.com/fury-gl/fury/pull/250
   https://github.com/fury-gl/fury/pull/267
-  
-  - **Third Evaluation:** 
+
+  - **Third Evaluation:**
+
   https://github.com/fury-gl/fury/pull/296
 
 
