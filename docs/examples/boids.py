@@ -14,7 +14,7 @@ from fury import window, actor, ui, utils, disable_warnings, pick, swarm
 import itertools
 
 disable_warnings()
-gm = swarm.GlobalMemory()
+
 
 def left_click_callback(obj, event):
 
@@ -28,16 +28,22 @@ def left_click_callback(obj, event):
     # Calculate the objects index
     vertices = utils.vertices_from_actor(cone_actor)
     no_vertices_per_cone = vertices.shape[0]
+    # sec = np.int(no_vertices_per_cone / gm.num_particles)
     object_index = np.int(np.floor((vertex_index / no_vertices_per_cone) *
                           gm.num_particles))
 
     # Find how many vertices correspond to each object
+    # sec = np.int(num_vertices / num_objects)
     selected = np.zeros(gm.num_particles, dtype=np.bool)
 
     if not selected[object_index]:
         scale = 1
         color_add = np.array([30, 30, 30], dtype='uint8')
         selected[object_index] = True
+        # gm.num_attractors = 1
+        # gm.pos_attractors = gm.pos[object_index][None, :]
+        # gm.vel_attractors = gm.vel[object_index][None, :]
+        # gm.attractors_indices.append(object_index)
     else:
         scale = 1
         color_add = np.array([-30, -30, -30], dtype='uint8')
@@ -65,31 +71,36 @@ def left_click_callback(obj, event):
     text_block.message = text
     showm.render()
 
-# test_rules = False
-# specify_rand = True
-# if specify_rand:
-#     np.random.seed(42)
-# if test_rules is True:
-#     gm.vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0],
-#                       [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2,
-#                       np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
-#     gm.pos = .5 * np.array([[-5, 0., 0], [0, 0., 0], [5, 0., 0], [10, 0., 0],
-#                            [15, 0., 0]])
-#     directions = gm.vel.copy()
-# else:
-# gm.vel = -0.5 + (np.random.rand(gm.num_particles, 3))
-# vel[:, 0] = 0.
-# vel[:, 2] = 0.
-# vel = gm.vel / np.linalg.norm(vel, axis=1).reshape((gm.num_particles, 1))
 
-gm.pos = np.array([gm.box_lx, gm.box_ly, gm.box_lz]) * (np.random.rand(
-                    gm.num_particles, 3) - 0.5) * 0.6
-gm.vel = -0.5 + (np.random.rand(gm.num_particles, 3))
-gm.directions = gm.vel.copy()
+gm = swarm.GlobalMemory()
+test_rules = False
+specify_rand = True
+if specify_rand:
+    np.random.seed(42)
+if test_rules is True:
+    gm.vel = np.array([[-np.sqrt(2)/2, np.sqrt(2)/2, 0], [0, 1., 0],
+                      [np.sqrt(2)/2, np.sqrt(2)/2, 0], [np.sqrt(2)/2,
+                      np.sqrt(2)/2, 0], [np.sqrt(2)/2, np.sqrt(2)/2, 0]])
+    gm.pos = .5 * np.array([[-5, 0., 0], [0, 0., 0], [5, 0., 0], [10, 0., 0],
+                           [15, 0., 0]])
+    directions = gm.vel.copy()
+else:
+    gm.vel = -0.5 + (np.random.rand(gm.num_particles, 3))
+    # vel[:, 0] = 0.
+    # vel[:, 2] = 0.
+    # vel = gm.vel / np.linalg.norm(vel, axis=1).reshape((gm.num_particles, 1))
+
+    gm.pos = np.array([gm.box_lx, gm.box_ly, gm.box_lz]) * (np.random.rand(
+                      gm.num_particles, 3) - 0.5) * 0.6
+    # gm.pos[:, 2] = 0
+    # gm.vel[:, 2] = 0
+    directions = gm.vel.copy()
 
 scene = window.Scene()
-
-box_actor = actor.box(gm.box_centers, gm.box_directions, gm.box_colors,
+box_centers = np.array([[0, 0, 0]])
+box_directions = np.array([[0, 1, 0]])
+box_colors = np.array([[255, 255, 255]])
+box_actor = actor.box(box_centers, box_directions, box_colors,
                       scales=(gm.box_lx, gm.box_ly, gm.box_lz))
 utils.opacity(box_actor, 0.)
 scene.add(box_actor)
@@ -101,12 +112,21 @@ obstacle_actor = actor.sphere(centers=gm.pos_obstacles,
                               colors=gm.color_obstacles,
                               radii=gm.radii_obstacles)
 scene.add(obstacle_actor)
-leader_actor = actor.sphere(centers=gm.pos_leaders,
+leader_actor = False
+if leader_actor:
+    directions_leader = gm.vel_leaders.copy()
+    leader_actor = actor.cone(centers=gm.pos_leaders,
+                                directions=directions_leader, colors=gm.color_leaders,
+                                heights=gm.radii_leaders,
+                                resolution=10, vertices=None, faces=None)
+else:
+    leader_actor = actor.sphere(centers=gm.pos_leaders,
                             colors=gm.color_leaders,
                             radii=gm.radii_leaders)
 scene.add(leader_actor)
+
 cone_actor = actor.cone(centers=gm.pos,
-                        directions=gm.directions, colors=gm.colors,
+                        directions=directions, colors=gm.colors,
                         heights=gm.height_cones,
                         resolution=10, vertices=None, faces=None)
 scene.add(cone_actor)
@@ -131,6 +151,8 @@ if gm.num_leaders > 0:
     no_vertices_per_leader = len(vertices_leader)/gm.num_leaders
     initial_vertices_leader = vertices_leader.copy() - \
         np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
+    sec_leader =  np.int(no_vertices_per_leader / gm.num_leaders)
+
 
 if gm.num_obstacles > 0:
     vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
@@ -163,17 +185,35 @@ def timer_callback(_obj, _event):
     swarm.collision_obstacle_leader_walls(gm)
     for i in range(gm.num_particles):
         # directions and velocities normalization
-        dnorm = gm.directions[i]/np.linalg.norm(gm.directions[i])
+        dnorm = directions[i]/np.linalg.norm(directions[i])
         vnorm = gm.vel[i]/np.linalg.norm(gm.vel[i])
         R_followers = swarm.vec2vec_rotmat(vnorm, dnorm)
         vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i *
                                                   sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
         utils.update_actor(cone_actor)
-    if gm.num_leaders > 0:
-        vertices_leader[:] = initial_vertices_leader + \
-            np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
+
+    for i in range(gm.num_leaders):
+        if gm.num_leaders > 0:
+            if leader_actor is True:
+                dnorm_leaders = directions_leader[i]/np.linalg.norm(
+                                            directions_leader[i])
+                vnorm_leaders = gm.vel_leaders[i]/np.linalg.norm(gm.vel_leaders[i])
+                R_leaders = swarm.vec2vec_rotmat(vnorm_leaders, dnorm_leaders)
+                vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = np.dot(initial_vertices_leader[i * sec_leader: i *
+                                                        sec_leader + sec_leader], R_leaders) + \
+                    np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
+            else:
+                    vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = initial_vertices_leader[i * sec_leader: i *
+                                                            sec_leader + sec_leader] + \
+                        np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
+
         utils.update_actor(leader_actor)
+
+
+            # vertices_leader[:] = initial_vertices_leader + \
+            #     np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
+            # utils.update_actor(leader_actor)
 
     if gm.num_obstacles > 0:
         vertices_obstacle[:] = initial_vertices_obstacle + \
