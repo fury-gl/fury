@@ -23,7 +23,7 @@ class GlobalMemory(object):
         self.tm_step = 10
 
         # Initial parameters for particles
-        self.num_particles = 20
+        self.num_particles = 40
         self.height_cones = 1
         self.turnfactor = 1
         self.vel = np.array([0, 0, 0.])
@@ -48,7 +48,7 @@ class GlobalMemory(object):
         self.color_obstacles = np.random.rand(self.num_obstacles, 3) * 0.5
 
         # Initial parameters for attractors
-        self.num_leaders = 0
+        self.num_leaders = 1
         self.radii_leaders = 1
         self.pos_leaders = np.array([self.box_lx, self.box_ly, self.box_lz]) * (np.random.rand(self.num_leaders, 3) - 0.5) * 0.6
         self.vel_leaders = np.random.rand(self.num_leaders, 3)
@@ -218,13 +218,12 @@ def boids_rules(gm, vertices, vcolors):
             distance_particle_leader = np.linalg.norm(gm.pos[i] -
                                                        gm.pos_leaders[k])
             if distance_particle_leader < 3:
-                separation_test += gm.pos[i] - gm.pos_leaders[k]
+                separation_test += 3 #gm.pos[i] - gm.pos_leaders[k]
                 continue
 
             if distance_particle_leader < 7:
                 follow_attractor += (gm.pos_leaders[k] - gm.pos[i]) #/np.linalg.norm(gm.pos_leaders[k] - gm.pos[i])
                     # num_avoid_leaders += 1
-
         for j in range(gm.num_particles):
             if (i == j):
                 continue
