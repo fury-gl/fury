@@ -20,7 +20,7 @@ class GlobalMemory(object):
     def __init__(self):
         self.cnt = 0
         self.steps = 10000
-        self.tm_step = 10
+        self.tm_step = 100
 
         # Initial parameters for particles
         self.num_particles = 150
@@ -200,24 +200,35 @@ def boids_rules(gm, vertices, vcolors):
         avoid_collision = np.array([0, 0, 0.])
         follow_attractor = np.array([0, 0, 0.])
         distance_particle_leader = np.array([0, 0, 0.])
+        avoid_obstacles = np.array([0, 0, 0.])
+        num_leaders = 0
+        num_obstacles = 0
 
-        # for a in range(gm.num_obstacles):
-        #     distance_particle_obstacle = np.linalg.norm(gm.pos[i] -
-        #                                                 gm.pos_obstacles[a])
-        #     if distance_particle_obstacle <= (gm.radii_obstacles +
-        #                                       gm.height_cones):
-        #         diff = gm.pos[i] - gm.pos_obstacles[a]
-        #         inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) -
-        #                                  (gm.radii_obstacles +
-        #                                   gm.height_cones)) ** 2)
-        #         avoid_obstacles += gm.vel[i] + (0.5 * inv_sqr_magnitude * diff)
-        #         num_avoid_obstacles += 1
+        for a in range(gm.num_obstacles):
+            distance_particle_obstacle = np.linalg.norm(gm.pos[i] -
+                                                        gm.pos_obstacles[a])
+            if distance_particle_obstacle <= (gm.radii_obstacles +
+                                              gm.height_cones):
+                diff = gm.pos[i] - gm.pos_obstacles[a]
+                inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) -
+                                         (gm.radii_obstacles +
+                                          gm.height_cones)) ** 2)
+                avoid_obstacles += gm.vel[i] + (0.5 * inv_sqr_magnitude * diff)
+                num_obstacles += 1
+                if num_obstacles > 0:
+                    avoid_obstacles = avoid_obstacles/num_obstacles
+                    gm.vel[i] += avoid_obstacles
 
         for k in range(gm.num_leaders):
             distance_particle_leader = np.linalg.norm(gm.pos[i] -
                                                        gm.pos_leaders[k])
             if distance_particle_leader <= 40:
                 follow_attractor = (gm.pos_leaders[k] - gm.pos[i]) #/np.linalg.norm(gm.pos_leaders[k] - gm.pos[i])
+                num_leaders += 1
+                if num_leaders > 0:
+                    follow_attractor = follow_attractor/num_leaders
+                    gm.vel[i] += follow_attractor
+
 
         for j in range(gm.num_particles):
             if (i == j):
@@ -227,6 +238,7 @@ def boids_rules(gm, vertices, vcolors):
                 diff = gm.pos[i] - gm.pos[j]
                 inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) - gm.height_cones) ** 2)
                 avoid_collision = avoid_collision + (inv_sqr_magnitude * diff)
+
 
             if distance_particle_particle <= 7:
                 vcolors[i * sec: i * sec + sec] = \
@@ -243,18 +255,10 @@ def boids_rules(gm, vertices, vcolors):
             alignment = alignment - gm.vel[i]
             separation = separation / neighborCount
 
-            # if alignment > 20:
-            #     alignment = alignment / np.linalg.norm(alignment) *20
 
             gm.vel[i] += avoid_collision + separation + alignment + cohesion + follow_attractor
         else:
-            gm.vel[i] += gm.vel[i].copy() + avoid_collision + follow_attractor
-
-    # gm.vel[:, 0] = np.where((gm.vel[:, 0] >= gm.vel_leaders[:, 0]), (gm.vel[:, 0] / speed * max_speed), gm.vel[:, 0])
-    # gm.vel[:, 1] = np.where((gm.vel[:, 1] >= gm.vel_leaders[:, 1]), (gm.vel[:, 1] / speed * max_speed), gm.vel[:, 1])
-    # gm.vel[:, 2] = np.where((gm.vel[:, 2] >= gm.vel_leaders[:, 2]), (gm.vel[:, 2] / speed * max_speed), gm.vel[:, 2])
-
-
+            gm.vel[i] += gm.vel[i].copy() + avoid_collision
 
 
 def collision_obstacle_leader_walls(gm):

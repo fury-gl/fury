@@ -112,7 +112,7 @@ obstacle_actor = actor.sphere(centers=gm.pos_obstacles,
                               colors=gm.color_obstacles,
                               radii=gm.radii_obstacles)
 scene.add(obstacle_actor)
-leader_actor = False #True
+leader_actor = True
 gm.vel_leaders = np.random.rand(gm.num_leaders, 3) * 10
 directions_leader = gm.vel_leaders.copy()
 if leader_actor:
@@ -191,7 +191,7 @@ def timer_callback(_obj, _event):
     # gm.vel_leaders = np.array((gm.pos_leaders - xyz_leader)/np.linalg.norm(gm.pos_leaders- xyz_leader))
     ###############
     gm.pos_leaders = gm.pos_leaders + gm.vel_leaders
-    gm.pos_obstacles = gm.pos_obstacles + gm.vel_obstacles
+    # gm.pos_obstacles = gm.pos_obstacles + gm.vel_obstacles
 
     swarm.boids_rules(gm, vertices, vcolors)
     swarm.collision_particle_walls(gm, True)
@@ -236,6 +236,6 @@ def timer_callback(_obj, _event):
 
 
 scene.add(tb)
-showm.add_timer_callback(True, 1, timer_callback)
+showm.add_timer_callback(True, gm.tm_step, timer_callback)
 
 showm.start()
