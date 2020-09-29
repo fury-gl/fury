@@ -85,15 +85,15 @@ if test_rules is True:
                            [15, 0., 0]])
     directions = gm.vel.copy()
 else:
-    gm.vel = -0.5 + (np.random.rand(gm.num_particles, 3))
-    # vel[:, 0] = 0.
-    # vel[:, 2] = 0.
+    gm.vel = (-0.5 + (np.random.rand(gm.num_particles, 3)))*5
+    # gm.vel[:, 0] = 0.
+    # gm.vel[:, 2] = 0.
     # vel = gm.vel / np.linalg.norm(vel, axis=1).reshape((gm.num_particles, 1))
 
     gm.pos = np.array([gm.box_lx, gm.box_ly, gm.box_lz]) * (np.random.rand(
                       gm.num_particles, 3) - 0.5) * 0.6
+    # gm.pos[:, 0] = 0
     # gm.pos[:, 2] = 0
-    # gm.vel[:, 2] = 0
     directions = gm.vel.copy()
 
 scene = window.Scene()
@@ -112,9 +112,10 @@ obstacle_actor = actor.sphere(centers=gm.pos_obstacles,
                               colors=gm.color_obstacles,
                               radii=gm.radii_obstacles)
 scene.add(obstacle_actor)
-leader_actor = False
+leader_actor = False #True
+gm.vel_leaders = np.random.rand(gm.num_leaders, 3) * 10
+directions_leader = gm.vel_leaders.copy()
 if leader_actor:
-    directions_leader = gm.vel_leaders.copy()
     leader_actor = actor.cone(centers=gm.pos_leaders,
                                 directions=directions_leader, colors=gm.color_leaders,
                                 heights=gm.radii_leaders,
@@ -151,8 +152,7 @@ if gm.num_leaders > 0:
     no_vertices_per_leader = len(vertices_leader)/gm.num_leaders
     initial_vertices_leader = vertices_leader.copy() - \
         np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
-    sec_leader =  np.int(no_vertices_per_leader / gm.num_leaders)
-
+    sec_leader = np.int(no_vertices_per_leader / gm.num_leaders)
 
 if gm.num_obstacles > 0:
     vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
@@ -176,13 +176,28 @@ cone_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 def timer_callback(_obj, _event):
     gm.cnt += 1
     tb.message = "Let's count up to 1000 and exit :" + str(gm.cnt)
+    ################
+    turnfraction = 0.01
+    cnt = next(counter)
+    dst = 10
+    angle = 2 * np.pi * turnfraction * cnt
+    x2 = dst * np.cos(angle)
+    y2 = dst * np.sin(angle)
+    angle_1 = 2 * np.pi * turnfraction * (cnt+1)
+    x2_1 = dst * np.cos(angle_1)
+    y2_1 = dst * np.sin(angle_1)
+    # xyz_leader = np.array([[x2, y2, 0.]])
+    # gm.pos_leaders = np.array([[x2_1, y2_1, 0.]])
+    # gm.vel_leaders = np.array((gm.pos_leaders - xyz_leader)/np.linalg.norm(gm.pos_leaders- xyz_leader))
+    ###############
     gm.pos_leaders = gm.pos_leaders + gm.vel_leaders
     gm.pos_obstacles = gm.pos_obstacles + gm.vel_obstacles
 
     swarm.boids_rules(gm, vertices, vcolors)
     swarm.collision_particle_walls(gm, True)
-    gm.pos = gm.pos + gm.vel * 1
     swarm.collision_obstacle_leader_walls(gm)
+    gm.pos = gm.pos + gm.vel
+    # swarm.collision_obstacle_leader_walls(gm)
     for i in range(gm.num_particles):
         # directions and velocities normalization
         dnorm = directions[i]/np.linalg.norm(directions[i])
@@ -191,29 +206,23 @@ def timer_callback(_obj, _event):
         vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i *
                                                   sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
-        utils.update_actor(cone_actor)
+    utils.update_actor(cone_actor)
 
     for i in range(gm.num_leaders):
         if gm.num_leaders > 0:
-            if leader_actor is True:
-                dnorm_leaders = directions_leader[i]/np.linalg.norm(
-                                            directions_leader[i])
-                vnorm_leaders = gm.vel_leaders[i]/np.linalg.norm(gm.vel_leaders[i])
-                R_leaders = swarm.vec2vec_rotmat(vnorm_leaders, dnorm_leaders)
-                vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = np.dot(initial_vertices_leader[i * sec_leader: i *
-                                                        sec_leader + sec_leader], R_leaders) + \
-                    np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
-            else:
-                    vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = initial_vertices_leader[i * sec_leader: i *
-                                                            sec_leader + sec_leader] + \
-                        np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
+            # if leader_actor is True:
+            dnorm_leaders = directions_leader[i]/np.linalg.norm(directions_leader[i])
+            vnorm_leaders = gm.vel_leaders[i]/np.linalg.norm(gm.vel_leaders[i])
+            R_leaders = swarm.vec2vec_rotmat(vnorm_leaders, dnorm_leaders)
+            vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = np.dot(initial_vertices_leader[i * sec_leader: i *
+                                                    sec_leader + sec_leader], R_leaders) + \
+                np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
+            # else:
+            #         vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = initial_vertices_leader[i * sec_leader: i *
+            #                                                 sec_leader + sec_leader] + \
+            #             np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
 
-        utils.update_actor(leader_actor)
-
-
-            # vertices_leader[:] = initial_vertices_leader + \
-            #     np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
-            # utils.update_actor(leader_actor)
+    utils.update_actor(leader_actor)
 
     if gm.num_obstacles > 0:
         vertices_obstacle[:] = initial_vertices_obstacle + \
@@ -227,6 +236,6 @@ def timer_callback(_obj, _event):
 
 
 scene.add(tb)
-showm.add_timer_callback(True, gm.tm_step, timer_callback)
+showm.add_timer_callback(True, 1, timer_callback)
 
 showm.start()
