@@ -112,19 +112,19 @@ obstacle_actor = actor.sphere(centers=gm.pos_obstacles,
                               colors=gm.color_obstacles,
                               radii=gm.radii_obstacles)
 scene.add(obstacle_actor)
-leader_actor = True
-gm.vel_leaders = np.random.rand(gm.num_leaders, 3) * 10
-directions_leader = gm.vel_leaders.copy()
-if leader_actor:
-    leader_actor = actor.cone(centers=gm.pos_leaders,
-                                directions=directions_leader, colors=gm.color_leaders,
-                                heights=gm.radii_leaders,
+attractors_actor = True
+gm.vel_attractors = np.random.rand(gm.num_attractors, 3) * 10
+directions_attractors = gm.vel_attractors.copy()
+if attractors_actor:
+    attractors_actor = actor.cone(centers=gm.pos_attractors,
+                                directions=directions_attractors, colors=gm.color_attractors,
+                                heights=gm.radii_attractors,
                                 resolution=10, vertices=None, faces=None)
 else:
-    leader_actor = actor.sphere(centers=gm.pos_leaders,
-                            colors=gm.color_leaders,
-                            radii=gm.radii_leaders)
-scene.add(leader_actor)
+    attractors_actor = actor.sphere(centers=gm.pos_attractors,
+                            colors=gm.color_attractors,
+                            radii=gm.radii_attractors)
+scene.add(attractors_actor)
 
 cone_actor = actor.cone(centers=gm.pos,
                         directions=directions, colors=gm.colors,
@@ -147,12 +147,12 @@ no_vertices_per_cone = len(vertices)/gm.num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(gm.pos, no_vertices_per_cone, axis=0)
 
-if gm.num_leaders > 0:
-    vertices_leader = utils.vertices_from_actor(leader_actor)
-    no_vertices_per_leader = len(vertices_leader)/gm.num_leaders
-    initial_vertices_leader = vertices_leader.copy() - \
-        np.repeat(gm.pos_leaders, no_vertices_per_leader, axis=0)
-    sec_leader = np.int(no_vertices_per_leader / gm.num_leaders)
+if gm.num_attractors > 0:
+    vertices_attractors = utils.vertices_from_actor(attractors_actor)
+    no_vertices_per_attractors = len(vertices_attractors)/gm.num_attractors
+    initial_vertices_attractors = vertices_attractors.copy() - \
+        np.repeat(gm.pos_attractors, no_vertices_per_attractors, axis=0)
+    sec_attractors = np.int(no_vertices_per_attractors / gm.num_attractors)
 
 if gm.num_obstacles > 0:
     vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
@@ -186,18 +186,18 @@ def timer_callback(_obj, _event):
     angle_1 = 2 * np.pi * turnfraction * (cnt+1)
     x2_1 = dst * np.cos(angle_1)
     y2_1 = dst * np.sin(angle_1)
-    # xyz_leader = np.array([[x2, y2, 0.]])
-    # gm.pos_leaders = np.array([[x2_1, y2_1, 0.]])
-    # gm.vel_leaders = np.array((gm.pos_leaders - xyz_leader)/np.linalg.norm(gm.pos_leaders- xyz_leader))
+    # xyz_attractors = np.array([[x2, y2, 0.]])
+    # gm.pos_attractors = np.array([[x2_1, y2_1, 0.]])
+    # gm.vel_attractors = np.array((gm.pos_attractors - xyz_attractors)/np.linalg.norm(gm.pos_attractors- xyz_attractors))
     ###############
-    gm.pos_leaders = gm.pos_leaders + gm.vel_leaders
+    gm.pos_attractors = gm.pos_attractors + gm.vel_attractors
     # gm.pos_obstacles = gm.pos_obstacles + gm.vel_obstacles
 
     swarm.boids_rules(gm, vertices, vcolors)
     swarm.collision_particle_walls(gm, True)
-    swarm.collision_obstacle_leader_walls(gm)
+    swarm.collision_obstacle_attractors_walls(gm)
     gm.pos = gm.pos + gm.vel
-    # swarm.collision_obstacle_leader_walls(gm)
+    # swarm.collision_obstacle_attractors_walls(gm)
     for i in range(gm.num_particles):
         # directions and velocities normalization
         dnorm = directions[i]/np.linalg.norm(directions[i])
@@ -207,22 +207,22 @@ def timer_callback(_obj, _event):
                                                   sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
     utils.update_actor(cone_actor)
+    if gm.num_attractors > 0:
+        for i in range(gm.num_attractors):
 
-    for i in range(gm.num_leaders):
-        if gm.num_leaders > 0:
-            # if leader_actor is True:
-            dnorm_leaders = directions_leader[i]/np.linalg.norm(directions_leader[i])
-            vnorm_leaders = gm.vel_leaders[i]/np.linalg.norm(gm.vel_leaders[i])
-            R_leaders = swarm.vec2vec_rotmat(vnorm_leaders, dnorm_leaders)
-            vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = np.dot(initial_vertices_leader[i * sec_leader: i *
-                                                    sec_leader + sec_leader], R_leaders) + \
-                np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
-            # else:
-            #         vertices_leader[i * sec_leader: i * sec_leader + sec_leader] = initial_vertices_leader[i * sec_leader: i *
-            #                                                 sec_leader + sec_leader] + \
-            #             np.repeat(gm.pos_leaders[i: i+1], no_vertices_per_leader, axis=0)
+                # if attractors_actor is True:
+                dnorm_attractors = directions_attractors[i]/np.linalg.norm(directions_attractors[i])
+                vnorm_attractors = gm.vel_attractors[i]/np.linalg.norm(gm.vel_attractors[i])
+                R_attractors = swarm.vec2vec_rotmat(vnorm_attractors, dnorm_attractors)
+                vertices_attractors[i * sec_attractors: i * sec_attractors + sec_attractors] = np.dot(initial_vertices_attractors[i * sec_attractors: i *
+                                                        sec_attractors + sec_attractors], R_attractors) + \
+                    np.repeat(gm.pos_attractors[i: i+1], no_vertices_per_attractors, axis=0)
+                # else:
+                #         vertices_attractors[i * sec_attractors: i * sec_attractors + sec_attractors] = initial_vertices_attractors[i * sec_attractors: i *
+                #                                                 sec_attractors + sec_attractors] + \
+                #             np.repeat(gm.pos_attractors[i: i+1], no_vertices_per_attractors, axis=0)
 
-    utils.update_actor(leader_actor)
+        utils.update_actor(attractors_actor)
 
     if gm.num_obstacles > 0:
         vertices_obstacle[:] = initial_vertices_obstacle + \
