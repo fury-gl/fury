@@ -23,7 +23,7 @@ class GlobalMemory(object):
         self.tm_step = 100
 
         # Initial parameters for particles
-        self.num_particles = 150
+        self.num_particles = 100
         self.height_cones = 1
         self.turnfactor = 1
         self.vel = np.array([0, 0, 0.])
@@ -48,13 +48,13 @@ class GlobalMemory(object):
         self.color_obstacles = np.random.rand(self.num_obstacles, 3) * 0.5
 
         # Initial parameters for attractors
-        self.num_leaders = 1
-        self.radii_leaders = 2
-        self.pos_leaders = np.array([self.box_lx, self.box_ly, self.box_lz]) * (np.random.rand(self.num_leaders, 3) - 0.5) * 0.6
-        self.vel_leaders = np.array([[0, 0, 0]])
-        # self.vel_leaders = np.random.rand(self.num_leaders, 3)
-        self.color_leaders = np.random.rand(self.num_leaders, 3)
-        # self.directions_leader = self.vel_leaders.copy()
+        self.num_attractors = 0
+        self.radii_attractors = 2
+        self.pos_attractors = np.array([self.box_lx, self.box_ly, self.box_lz]) * (np.random.rand(self.num_attractors, 3) - 0.5) * 0.6
+        self.vel_attractors = np.array([[0, 0, 0]])
+        # self.vel_attractors = np.random.rand(self.num_attractors, 3)
+        self.color_attractors = np.random.rand(self.num_attractors, 3)
+        # self.directions_attractors = self.vel_attractors.copy()
 
 def vec2vec_rotmat(u, v):
     r""" rotation matrix from 2 unit vectors
@@ -199,9 +199,9 @@ def boids_rules(gm, vertices, vcolors):
         alignment = gm.vel[i].copy()
         avoid_collision = np.array([0, 0, 0.])
         follow_attractor = np.array([0, 0, 0.])
-        distance_particle_leader = np.array([0, 0, 0.])
+        distance_particle_attractors = np.array([0, 0, 0.])
         avoid_obstacles = np.array([0, 0, 0.])
-        num_leaders = 0
+        num_attractors = 0
         num_obstacles = 0
 
         for a in range(gm.num_obstacles):
@@ -219,14 +219,14 @@ def boids_rules(gm, vertices, vcolors):
                     avoid_obstacles = avoid_obstacles/num_obstacles
                     gm.vel[i] += avoid_obstacles
 
-        for k in range(gm.num_leaders):
-            distance_particle_leader = np.linalg.norm(gm.pos[i] -
-                                                       gm.pos_leaders[k])
-            if distance_particle_leader <= 40:
-                follow_attractor = (gm.pos_leaders[k] - gm.pos[i]) #/np.linalg.norm(gm.pos_leaders[k] - gm.pos[i])
-                num_leaders += 1
-                if num_leaders > 0:
-                    follow_attractor = follow_attractor/num_leaders
+        for k in range(gm.num_attractors):
+            distance_particle_attractors = np.linalg.norm(gm.pos[i] -
+                                                       gm.pos_attractors[k])
+            if distance_particle_attractors <= 40:
+                follow_attractor = (gm.pos_attractors[k] - gm.pos[i]) #/np.linalg.norm(gm.pos_attractors[k] - gm.pos[i])
+                num_attractors += 1
+                if num_attractors > 0:
+                    follow_attractor = follow_attractor/num_attractors
                     gm.vel[i] += follow_attractor
 
 
@@ -261,9 +261,9 @@ def boids_rules(gm, vertices, vcolors):
             gm.vel[i] += gm.vel[i].copy() + avoid_collision
 
 
-def collision_obstacle_leader_walls(gm):
-    # Collosion between leader-leader, obstacle-obstacle, obstacle-walls
-    # and leader-walls:
+def collision_obstacle_attractors_walls(gm):
+    # Collosion between attractors-attractors, obstacle-obstacle, obstacle-walls
+    # and attractors-walls:
     # Obstacle-obstacle:
     for i, j in np.ndindex(gm.num_obstacles, gm.num_obstacles):
         if (i == j):
@@ -273,21 +273,21 @@ def collision_obstacle_leader_walls(gm):
         if (distance_obstacles <= (gm.radii_obstacles + gm.radii_obstacles)):
             gm.vel_obstacles[i] = -gm.vel_obstacles[i]
             gm.vel_obstacles[j] = -gm.vel_obstacles[j]
-#  Leader-leader:
-    for i, j in np.ndindex(gm.num_leaders, gm.num_leaders):
+#  attractors-attractors:
+    for i, j in np.ndindex(gm.num_attractors, gm.num_attractors):
         if (i == j):
             continue
-        distance_leaders = np.linalg.norm(gm.pos_leaders - gm.pos_leaders)
-        if (distance_leaders <= (gm.radii_leaders + gm.radii_leaders)):
-            gm.vel_leaders[i] = -gm.vel_leaders[i]
-            gm.vel_leaders[j] = -gm.vel_leaders[j]
-#  Leader-obstacle:
-    for i, j in np.ndindex(gm.num_leaders, gm.num_obstacles):
-        distance_leader_obstacle = np.linalg.norm(gm.pos_leaders[i] -
+        distance_attractors = np.linalg.norm(gm.pos_attractors - gm.pos_attractors)
+        if (distance_attractors <= (gm.radii_attractors + gm.radii_attractors)):
+            gm.vel_attractors[i] = -gm.vel_attractors[i]
+            gm.vel_attractors[j] = -gm.vel_attractors[j]
+#  attractors-obstacle:
+    for i, j in np.ndindex(gm.num_attractors, gm.num_obstacles):
+        distance_attractors_obstacle = np.linalg.norm(gm.pos_attractors[i] -
                                                   gm.pos_obstacles[j])
-        if (distance_leader_obstacle <= (gm.radii_leaders +
+        if (distance_attractors_obstacle <= (gm.radii_attractors +
                                          gm.radii_obstacles)):
-            gm.vel_leaders[i] = -gm.vel_leaders[i]
+            gm.vel_attractors[i] = -gm.vel_attractors[i]
             gm.vel_obstacles[j] = -gm.vel_obstacles[j]
 #  Obstacle-walls;
     gm.vel_obstacles[:, 0] = np.where(((gm.pos_obstacles[:, 0] <= - 0.5 *
@@ -308,23 +308,23 @@ def collision_obstacle_leader_walls(gm):
                                        gm.box_lz - gm.radii_obstacles))), -
                                       gm.vel_obstacles[:, 2],
                                       gm.vel_obstacles[:, 2])
-# leader-walls;
-    gm.vel_leaders[:, 0] = np.where(((gm.pos_leaders[:, 0] <= - 0.5 *
-                                    gm.box_lx + gm.radii_leaders) |
-                                    (gm.pos_leaders[:, 0] >= (0.5 * gm.box_lx -
-                                     gm.radii_leaders))),
-                                    - gm.vel_leaders[:, 0], gm.vel_leaders[:,
+# attractors-walls;
+    gm.vel_attractors[:, 0] = np.where(((gm.pos_attractors[:, 0] <= - 0.5 *
+                                    gm.box_lx + gm.radii_attractors) |
+                                    (gm.pos_attractors[:, 0] >= (0.5 * gm.box_lx -
+                                     gm.radii_attractors))),
+                                    - gm.vel_attractors[:, 0], gm.vel_attractors[:,
                                     0])
-    gm.vel_leaders[:, 1] = np.where(((gm.pos_leaders[:, 1] <= - 0.5 *
-                                    gm.box_ly + gm.radii_leaders) |
-                                    (gm.pos_leaders[:, 1] >= (0.5 * gm.box_ly -
-                                     gm.radii_leaders))),
-                                    - gm.vel_leaders[:, 1], gm.vel_leaders[:,
+    gm.vel_attractors[:, 1] = np.where(((gm.pos_attractors[:, 1] <= - 0.5 *
+                                    gm.box_ly + gm.radii_attractors) |
+                                    (gm.pos_attractors[:, 1] >= (0.5 * gm.box_ly -
+                                     gm.radii_attractors))),
+                                    - gm.vel_attractors[:, 1], gm.vel_attractors[:,
                                     1])
-    gm.vel_leaders[:, 2] = np.where(((gm.pos_leaders[:, 2] <= -0.5 * gm.box_lz
-                                    + gm.radii_leaders) | (gm.pos_leaders[:, 2]
-                                    >= (0.5 * gm.box_lz - gm.radii_leaders))),
-                                    - gm.vel_leaders[:, 2], gm.vel_leaders[:,
+    gm.vel_attractors[:, 2] = np.where(((gm.pos_attractors[:, 2] <= -0.5 * gm.box_lz
+                                    + gm.radii_attractors) | (gm.pos_attractors[:, 2]
+                                    >= (0.5 * gm.box_lz - gm.radii_attractors))),
+                                    - gm.vel_attractors[:, 2], gm.vel_attractors[:,
                                     2])
 #  When collision happens, the particle with lower velocity gets the
 #  color of the particle with higher velocity
