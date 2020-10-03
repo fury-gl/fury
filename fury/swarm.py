@@ -10,19 +10,31 @@ This is an example of boids in a box using FURY.
 # Explanation:
 
 import numpy as np
-from fury import window, actor, ui, utils, disable_warnings, pick
-import itertools
+from fury import disable_warnings
 
 disable_warnings()
 
+# The GlobalMemory has the initial parameters of simulation time, box,
+# particles, attractors and abstacles
+
 
 class GlobalMemory(object):
+
     def __init__(self):
         self.cnt = 0
         self.steps = 10000
         self.tm_step = 100
 
-        # Initial parameters for particles
+        # Initial parameters for box
+        self.box_lx = 100
+        self.box_ly = 100
+        self.box_lz = 100
+        self.box_centers = np.array([[0, 0, 0]])
+        self.box_directions = np.array([[0, 1, 0]])
+        self.box_colors = np.array([[255, 255, 255]])
+        self.size_box = [self.box_lx, self.box_ly, self.box_lz]
+
+        # Initial parameters for particles. The particles are shown by cones
         self.num_particles = 100
         self.height_cones = 1
         self.turnfactor = 1
@@ -32,29 +44,24 @@ class GlobalMemory(object):
         self.colors = np.random.rand(self.num_particles, 3)
         self.vertices = None
 
-        # Initial parameters for box
-        self.box_lx = 100
-        self.box_ly = 100
-        self.box_lz = 100
-        self.box_centers = np.array([[0, 0, 0]])
-        self.box_directions = np.array([[0, 1, 0]])
-        self.box_colors = np.array([[255, 255, 255]])
-
-        # Initial parameters for obstacles
+        # Initial parameters for obstacles. The obstacles are shown by spheres
         self.num_obstacles = 0
         self.radii_obstacles = 2.0
-        self.pos_obstacles = np.array([self.box_lx, self.box_ly, self.box_lz]) * (np.random.rand(self.num_obstacles, 3) - 0.5) * 0.6
+        self.pos_obstacles = np.array(self.size_box) * \
+                                     (np.random.rand(self.num_obstacles, 3) -
+                                      0.5) * 0.6
         self.vel_obstacles = np.random.rand(self.num_obstacles, 3)
         self.color_obstacles = np.random.rand(self.num_obstacles, 3) * 0.5
 
-        # Initial parameters for attractors
+        # Initial parameters for attractors. The attractors are shown by cones
         self.num_attractors = 0
         self.radii_attractors = 2
-        self.pos_attractors = np.array([self.box_lx, self.box_ly, self.box_lz]) * (np.random.rand(self.num_attractors, 3) - 0.5) * 0.6
-        self.vel_attractors = np.array([[0, 0, 0]])
-        # self.vel_attractors = np.random.rand(self.num_attractors, 3)
+        self.pos_attractors = np.array(self.size_box) * \
+                                      (np.random.rand(self.num_attractors, 3) -
+                                       0.5) * 0.6
+        self.vel_attractors = np.random.rand(self.num_attractors, 3)
         self.color_attractors = np.random.rand(self.num_attractors, 3)
-        # self.directions_attractors = self.vel_attractors.copy()
+
 
 def vec2vec_rotmat(u, v):
     r""" rotation matrix from 2 unit vectors
@@ -179,18 +186,9 @@ def collision_particle_walls(gm, normalize=True):
 
 
 def boids_rules(gm, vertices, vcolors):
-    # cone_actor = actor.cone(centers=gm.pos,
-    #                     directions=gm.vel.copy(), colors=gm.colors,
-    #                     heights=gm.height_cones,
-    #                     resolution=10, vertices=None, faces=None)
 
     num_vertices = vertices.shape[0]
     sec = np.int(num_vertices / gm.num_particles)
-
-    # gm.vertices = utils.vertices_from_actor(cone_actor)
-    # no_vertices_per_cone = gm.vertices.shape[0]
-    # vcolors = utils.colors_from_actor(cone_actor, 'colors')
-    # sec = np.int(no_vertices_per_cone / gm.num_particles)
 
     for i in range(gm.num_particles):
         neighborCount = 0
@@ -201,46 +199,46 @@ def boids_rules(gm, vertices, vcolors):
         follow_attractor = np.array([0, 0, 0.])
         distance_particle_attractors = np.array([0, 0, 0.])
         avoid_obstacles = np.array([0, 0, 0.])
-        num_attractors = 0
-        num_obstacles = 0
+        count_attracts = 0
+        count_repuls = 0
 
         for a in range(gm.num_obstacles):
             distance_particle_obstacle = np.linalg.norm(gm.pos[i] -
                                                         gm.pos_obstacles[a])
-            if distance_particle_obstacle <= (gm.radii_obstacles +
-                                              gm.height_cones):
+            if (distance_particle_obstacle > 0.0) and (
+                distance_particle_obstacle <= (gm.radii_obstacles +
+                                               gm.height_cones)):
                 diff = gm.pos[i] - gm.pos_obstacles[a]
                 inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) -
                                          (gm.radii_obstacles +
                                           gm.height_cones)) ** 2)
-                avoid_obstacles += gm.vel[i] + (0.5 * inv_sqr_magnitude * diff)
-                num_obstacles += 1
-                if num_obstacles > 0:
-                    avoid_obstacles = avoid_obstacles/num_obstacles
-                    gm.vel[i] += avoid_obstacles
+                avoid_obstacles += gm.vel[i] + (inv_sqr_magnitude * diff)
+                count_repuls += 1
+        if count_repuls > 0:
+            avoid_obstacles = avoid_obstacles/count_repuls
 
         for k in range(gm.num_attractors):
             distance_particle_attractors = np.linalg.norm(gm.pos[i] -
-                                                       gm.pos_attractors[k])
-            if distance_particle_attractors <= 40:
-                follow_attractor = (gm.pos_attractors[k] - gm.pos[i]) #/np.linalg.norm(gm.pos_attractors[k] - gm.pos[i])
-                num_attractors += 1
-                if num_attractors > 0:
-                    follow_attractor = follow_attractor/num_attractors
-                    gm.vel[i] += follow_attractor
-
+                                                          gm.pos_attractors[k])
+            if ((distance_particle_attractors > 0.0) and
+                    (distance_particle_attractors <= gm.box_lx / 4)):
+                follow_attractor += (gm.pos_attractors[k] - gm.pos[i])
+                count_attracts += 1
+        if count_attracts > 0:
+            follow_attractor = follow_attractor/count_attracts
 
         for j in range(gm.num_particles):
             if (i == j):
                 continue
-            distance_particle_particle =  np.linalg.norm(gm.pos[i] - gm.pos[j])
+            distance_particle_particle = np.linalg.norm(gm.pos[i] - gm.pos[j])
             if distance_particle_particle <= (gm.height_cones * 2):
                 diff = gm.pos[i] - gm.pos[j]
-                inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) - gm.height_cones) ** 2)
+                inv_sqr_magnitude = 1 / ((np.linalg.norm(diff) -
+                                          gm.height_cones) ** 2)
                 avoid_collision = avoid_collision + (inv_sqr_magnitude * diff)
 
-
-            if distance_particle_particle <= 7:
+            if ((distance_particle_particle > 0.0) and
+                    (distance_particle_particle <= gm.box_lx / 8)):
                 vcolors[i * sec: i * sec + sec] = \
                     vcolors[j * sec: j * sec + sec]
                 alignment += gm.vel[j]
@@ -255,15 +253,13 @@ def boids_rules(gm, vertices, vcolors):
             alignment = alignment - gm.vel[i]
             separation = separation / neighborCount
 
-
-            gm.vel[i] += avoid_collision + separation + alignment + cohesion + follow_attractor
-        else:
-            gm.vel[i] += gm.vel[i].copy() + avoid_collision
+        gm.vel[i] += avoid_collision + separation + alignment + cohesion + \
+            follow_attractor + avoid_obstacles
 
 
 def collision_obstacle_attractors_walls(gm):
-    # Collosion between attractors-attractors, obstacle-obstacle, obstacle-walls
-    # and attractors-walls:
+    # Collosion between attractors-attractors, obstacle-obstacle,
+    # obstacle-walls and attractors-walls:
     # Obstacle-obstacle:
     for i, j in np.ndindex(gm.num_obstacles, gm.num_obstacles):
         if (i == j):
@@ -273,58 +269,46 @@ def collision_obstacle_attractors_walls(gm):
         if (distance_obstacles <= (gm.radii_obstacles + gm.radii_obstacles)):
             gm.vel_obstacles[i] = -gm.vel_obstacles[i]
             gm.vel_obstacles[j] = -gm.vel_obstacles[j]
-#  attractors-attractors:
+    # attractors-attractors:
     for i, j in np.ndindex(gm.num_attractors, gm.num_attractors):
         if (i == j):
             continue
-        distance_attractors = np.linalg.norm(gm.pos_attractors - gm.pos_attractors)
-        if (distance_attractors <= (gm.radii_attractors + gm.radii_attractors)):
+        distance_attractors = np.linalg.norm(gm.pos_attractors -
+                                             gm.pos_attractors)
+        if distance_attractors <= (gm.radii_attractors + gm.radii_attractors):
             gm.vel_attractors[i] = -gm.vel_attractors[i]
             gm.vel_attractors[j] = -gm.vel_attractors[j]
 #  attractors-obstacle:
     for i, j in np.ndindex(gm.num_attractors, gm.num_obstacles):
         distance_attractors_obstacle = np.linalg.norm(gm.pos_attractors[i] -
-                                                  gm.pos_obstacles[j])
+                                                      gm.pos_obstacles[j])
         if (distance_attractors_obstacle <= (gm.radii_attractors +
-                                         gm.radii_obstacles)):
+                                             gm.radii_obstacles)):
             gm.vel_attractors[i] = -gm.vel_attractors[i]
             gm.vel_obstacles[j] = -gm.vel_obstacles[j]
 #  Obstacle-walls;
-    gm.vel_obstacles[:, 0] = np.where(((gm.pos_obstacles[:, 0] <= - 0.5 *
-                                      gm.box_lx + gm.radii_obstacles) |
-                                      (gm.pos_obstacles[:, 0] >= (0.5 *
-                                       gm.box_lx - gm.radii_obstacles))),
-                                      - gm.vel_obstacles[:, 0],
-                                      gm.vel_obstacles[:, 0])
-    gm.vel_obstacles[:, 1] = np.where(((gm.pos_obstacles[:, 1] <= - 0.5 *
-                                      gm.box_ly + gm.radii_obstacles) |
-                                      (gm.pos_obstacles[:, 1] >= (0.5 *
-                                       gm.box_ly - gm.radii_obstacles))), -
-                                      gm.vel_obstacles[:, 1],
-                                      gm.vel_obstacles[:, 1])
-    gm.vel_obstacles[:, 2] = np.where(((gm.pos_obstacles[:, 2] <= -0.5 *
-                                      gm.box_lz + gm.radii_obstacles) |
-                                      (gm.pos_obstacles[:, 2] >= (0.5 *
-                                       gm.box_lz - gm.radii_obstacles))), -
-                                      gm.vel_obstacles[:, 2],
-                                      gm.vel_obstacles[:, 2])
+    gm.vel_obstacles[:, 0] = np.where(
+        ((gm.pos_obstacles[:, 0] <= - 0.5 * gm.box_lx + gm.radii_obstacles) |
+         (gm.pos_obstacles[:, 0] >= 0.5 * gm.box_lx - gm.radii_obstacles)), -
+        gm.vel_obstacles[:, 0], gm.vel_obstacles[:, 0])
+    gm.vel_obstacles[:, 1] = np.where(
+        ((gm.pos_obstacles[:, 1] <= - 0.5 * gm.box_ly + gm.radii_obstacles) |
+         (gm.pos_obstacles[:, 1] >= 0.5 * gm.box_ly - gm.radii_obstacles)), -
+        gm.vel_obstacles[:, 1], gm.vel_obstacles[:, 1])
+    gm.vel_obstacles[:, 2] = np.where(
+        ((gm.pos_obstacles[:, 2] <= -0.5 * gm.box_lz + gm.radii_obstacles) |
+         (gm.pos_obstacles[:, 2] >= 0.5 * gm.box_lz - gm.radii_obstacles)), -
+        gm.vel_obstacles[:, 2], gm.vel_obstacles[:, 2])
 # attractors-walls;
-    gm.vel_attractors[:, 0] = np.where(((gm.pos_attractors[:, 0] <= - 0.5 *
-                                    gm.box_lx + gm.radii_attractors) |
-                                    (gm.pos_attractors[:, 0] >= (0.5 * gm.box_lx -
-                                     gm.radii_attractors))),
-                                    - gm.vel_attractors[:, 0], gm.vel_attractors[:,
-                                    0])
-    gm.vel_attractors[:, 1] = np.where(((gm.pos_attractors[:, 1] <= - 0.5 *
-                                    gm.box_ly + gm.radii_attractors) |
-                                    (gm.pos_attractors[:, 1] >= (0.5 * gm.box_ly -
-                                     gm.radii_attractors))),
-                                    - gm.vel_attractors[:, 1], gm.vel_attractors[:,
-                                    1])
-    gm.vel_attractors[:, 2] = np.where(((gm.pos_attractors[:, 2] <= -0.5 * gm.box_lz
-                                    + gm.radii_attractors) | (gm.pos_attractors[:, 2]
-                                    >= (0.5 * gm.box_lz - gm.radii_attractors))),
-                                    - gm.vel_attractors[:, 2], gm.vel_attractors[:,
-                                    2])
-#  When collision happens, the particle with lower velocity gets the
-#  color of the particle with higher velocity
+    gm.vel_attractors[:, 0] = np.where(
+        ((gm.pos_attractors[:, 0] <= - 0.5 * gm.box_lx + gm.radii_attractors) |
+         (gm.pos_attractors[:, 0] >= 0.5 * gm.box_lx - gm.radii_attractors)), -
+        gm.vel_attractors[:, 0], gm.vel_attractors[:, 0])
+    gm.vel_attractors[:, 1] = np.where(
+        ((gm.pos_attractors[:, 1] <= - 0.5 * gm.box_ly + gm.radii_attractors) |
+         (gm.pos_attractors[:, 1] >= 0.5 * gm.box_ly - gm.radii_attractors)), -
+        gm.vel_attractors[:, 1], gm.vel_attractors[:, 1])
+    gm.vel_attractors[:, 2] = np.where(
+        ((gm.pos_attractors[:, 2] <= -0.5 * gm.box_lz + gm.radii_attractors) |
+         (gm.pos_attractors[:, 2] >= 0.5 * gm.box_lz - gm.radii_attractors)), -
+        gm.vel_attractors[:, 2], gm.vel_attractors[:, 2])
