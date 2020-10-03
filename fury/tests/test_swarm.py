@@ -8,21 +8,32 @@ def test_vec2vec_rotmat():
     u = np.array([1, 0, 0])
     v = np.array([0, 1, 0])
 
-    real_R = np.array([[0, -1, 0],
-                       [1, 0, 0],
-                       [0, 0, 1]], 'f8')
+    real_R_test1 = np.array([[0, -1, 0],
+                            [1, 0, 0],
+                            [0, 0, 1]], 'f8')
 
     R = swarm.vec2vec_rotmat(u, v)
-    npt.assert_array_almost_equal(R, real_R)
+    npt.assert_array_almost_equal(R, real_R_test1)
+
     u = np.array([1, 0, 0])
     v = np.array([1, 0, 0])
 
-    real_R_equal = np.array([[1., 0., 0.],
+    real_R_test2 = np.array([[1., 0., 0.],
                              [0., 1., 0.],
                              [0., 0., 1.]])
 
     R = swarm.vec2vec_rotmat(u, v)
-    npt.assert_array_almost_equal(R, real_R_equal)
+    npt.assert_array_almost_equal(R, real_R_test2)
+
+    u = np.array([0, 0, 0])
+    v = np.array([1, 1, 1])
+
+    real_R_test3 = np.array([[-1., 0., 0.],
+                             [0., -1., 0.],
+                             [0., 0., -1.]])
+
+    R = swarm.vec2vec_rotmat(u, v)
+    npt.assert_array_almost_equal(R, real_R_test3)
 
 
 def test_box_edges():
@@ -75,7 +86,7 @@ def test_boids_rules():
     gm.box_lx = gm.box_ly = gm.box_lz = 50
     gm.pos = np.array([[0, -27, 27.], [0, -25, 27.]])
     gm.vel = np.array([[0, 1, 0.], [0, 3, 0.]])
-    gm.pos_attractors = np.array([[0, 0, 0]])
+    gm.pos_attractors = np.array([[0, -20, 27]])
     gm.pos_obstacles = np.array([[0, -26, 27.]])
     cone_actor = actor.cone(centers=gm.pos,
                             directions=gm.vel.copy(), colors=gm.colors,
@@ -84,8 +95,7 @@ def test_boids_rules():
     gm.vertices = utils.vertices_from_actor(cone_actor)
     vcolors = utils.colors_from_actor(cone_actor, 'colors')
     swarm.boids_rules(gm, gm.vertices, vcolors)
-
-    expected_vel = np.array([[0., 0.75, 0], [0., 7.125, 0]])
+    expected_vel = np.array([[0., 7.75, 0], [0., 15.625, 0]])
     npt.assert_array_almost_equal(gm.vel, expected_vel)
 
 
