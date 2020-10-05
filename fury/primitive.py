@@ -11,7 +11,6 @@ import math
 
 SCIPY_1_4_PLUS = LooseVersion(short_version) >= LooseVersion('1.4.0')
 
-
 SPHERE_FILES = {
     'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
     'symmetric642': pjoin(DATA_DIR, 'evenly_distributed_sphere_642.npz'),
@@ -182,7 +181,7 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
         w = np.cos(0.5 * np.pi)
-        denom = np.linalg.norm(dirs/2.)
+        denom = np.linalg.norm(dirs / 2.)
         f = (np.sin(0.5 * np.pi) / denom) if denom else 0
         dirs = np.append((dirs / 2.) * f, w)
         rot = transform.Rotation.from_quat(dirs)
@@ -335,6 +334,7 @@ def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
     True
 
     """
+
     def _fexp(x, p):
         """Return a different kind of exponentiation."""
         return np.sign(x) * (np.abs(x) ** p)
@@ -609,22 +609,22 @@ def prim_octagonalprism():
     # to 7 decimal places
     two = float('{:.7f}'.format(math.sqrt(2)))
 
-    vertices = np.array([[-1, -(1+two), -1],
-                         [1, -(1+two), -1],
-                         [1, (1+two), -1],
-                         [-1, (1+two), -1],
-                         [-(1+two), -1, -1],
-                         [(1+two), -1, -1],
-                         [(1+two), 1, -1],
-                         [-(1+two), 1, -1],
-                         [-1, -(1+two), 1],
-                         [1, -(1+two), 1],
-                         [1, (1+two), 1],
-                         [-1, (1+two), 1],
-                         [-(1+two), -1, 1],
-                         [(1+two), -1, 1],
-                         [(1+two), 1, 1],
-                         [-(1+two), 1, 1]])
+    vertices = np.array([[-1, -(1 + two), -1],
+                         [1, -(1 + two), -1],
+                         [1, (1 + two), -1],
+                         [-1, (1 + two), -1],
+                         [-(1 + two), -1, -1],
+                         [(1 + two), -1, -1],
+                         [(1 + two), 1, -1],
+                         [-(1 + two), 1, -1],
+                         [-1, -(1 + two), 1],
+                         [1, -(1 + two), 1],
+                         [1, (1 + two), 1],
+                         [-1, (1 + two), 1],
+                         [-(1 + two), -1, 1],
+                         [(1 + two), -1, 1],
+                         [(1 + two), 1, 1],
+                         [-(1 + two), 1, 1]])
     triangles = np.array([[0, 8, 9],
                           [9, 1, 0],
                           [5, 13, 9],
@@ -670,25 +670,150 @@ def prim_frustum():
 
     """
     vertices = np.array([[-.5, -.5, .5],
-                        [.5, -.5, .5],
-                        [.5, .5, .5],
-                        [-.5, .5, .5],
-                        [-1, -1, -.5],
-                        [1, -1, -.5],
-                        [1, 1, -.5],
-                        [-1, 1, -.5]])
+                         [.5, -.5, .5],
+                         [.5, .5, .5],
+                         [-.5, .5, .5],
+                         [-1, -1, -.5],
+                         [1, -1, -.5],
+                         [1, 1, -.5],
+                         [-1, 1, -.5]])
     triangles = np.array([[4, 6, 5],
-                         [6, 4, 7],
-                         [0, 2, 1],
-                         [2, 0, 3],
-                         [4, 3, 0],
-                         [3, 4, 7],
-                         [7, 2, 3],
-                         [2, 7, 6],
-                         [6, 1, 2],
-                         [1, 6, 5],
-                         [5, 0, 1],
-                         [0, 5, 4]], dtype='u8')
+                          [6, 4, 7],
+                          [0, 2, 1],
+                          [2, 0, 3],
+                          [4, 3, 0],
+                          [3, 4, 7],
+                          [7, 2, 3],
+                          [2, 7, 6],
+                          [6, 1, 2],
+                          [1, 6, 5],
+                          [5, 0, 1],
+                          [0, 5, 4]], dtype='u8')
     vertices /= 2
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
+    return vertices, triangles
+
+
+def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
+    """Return vertices and triangle for a cylinder.
+
+    Parameters
+    ----------
+    radius: float
+        Radius of the cylinder
+    height: float
+        Height of the cylinder
+    sectors: int
+        Sectors in the cylinder
+    capped: bool
+        Whether the cylinder is capped at both ends or open
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our cylinder
+    triangles: ndarray
+        triangles that compose our cylinder
+    """
+
+    if not isinstance(sectors, int):
+        raise TypeError("Only integers are allowed for sectors parameter")
+    sector_step = 2 * math.pi / sectors
+    unit_circle_vertices = []
+
+    # generate a unit circle on XY plane
+    for i in range(sectors + 1):
+        sector_angle = i * sector_step
+        unit_circle_vertices.append(math.cos(sector_angle))
+        unit_circle_vertices.append(math.sin(sector_angle))
+        unit_circle_vertices.append(0)
+
+    vertices = []
+    # generate vertices for a cylinder
+    for i in range(2):
+        h = -height / 2 + i * height
+        k = 0
+        for j in range(sectors + 1):
+            ux = unit_circle_vertices[k]
+            uy = unit_circle_vertices[k + 1]
+            # position vector
+            vertices.append(ux * radius)
+            vertices.append(uy * radius)
+            vertices.append(h)
+            k += 3
+
+    # base and top circle vertices
+    base_center_index = None
+    top_center_index = None
+
+    if capped:
+        base_center_index = int(len(vertices) / 3)
+        top_center_index = base_center_index + sectors + 1
+
+        for i in range(2):
+            h = -height / 2 + i * height
+            vertices.append(0)
+            vertices.append(0)
+            vertices.append(h)
+            k = 0
+            for j in range(sectors):
+                ux = unit_circle_vertices[k]
+                uy = unit_circle_vertices[k + 1]
+                # position vector
+                vertices.append(ux * radius)
+                vertices.append(uy * radius)
+                vertices.append(h)
+                k += 3
+
+    if capped:
+        vertices = (np.array(vertices).reshape(2 * (sectors + 1) + 2 * sectors + 2, 3))
+    else:
+        vertices = (np.array(vertices).reshape(2 * (sectors + 1), 3))
+
+    triangles = []
+    k1 = 0
+    k2 = sectors + 1
+
+    # triangles for the side surface
+    for i in range(sectors):
+        triangles.append(k1)
+        triangles.append(k1 + 1)
+        triangles.append(k2)
+
+        triangles.append(k2)
+        triangles.append(k1 + 1)
+        triangles.append(k2 + 1)
+        k1 += 1
+        k2 += 1
+
+    if capped:
+        k = base_center_index + 1
+        for i in range(sectors):
+            if i < sectors - 1:
+                triangles.append(base_center_index)
+                triangles.append(k + 1)
+                triangles.append(k)
+            else:
+                triangles.append(base_center_index)
+                triangles.append(base_center_index + 1)
+                triangles.append(k)
+            k += 1
+
+        k = top_center_index + 1
+        for i in range(sectors):
+            if i < sectors - 1:
+                triangles.append(top_center_index)
+                triangles.append(k)
+                triangles.append(k + 1)
+            else:
+                triangles.append(top_center_index)
+                triangles.append(k)
+                triangles.append(top_center_index + 1)
+            k += 1
+
+    if capped:
+        triangles = (np.array(triangles).reshape(4 * sectors, 3))
+    else:
+        triangles = (np.array(triangles).reshape(2 * sectors, 3))
+
     return vertices, triangles
