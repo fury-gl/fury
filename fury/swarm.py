@@ -11,6 +11,7 @@ This is an example of boids in a box using FURY.
 
 import numpy as np
 from fury import disable_warnings
+from numpy.linalg import norm
 
 disable_warnings()
 
@@ -257,6 +258,14 @@ def boids_rules(gm, vertices, vcolors):
             follow_attractor + avoid_obstacles
 
 
+def boundary_check(pos, vel, coord, radii, box_edge):
+
+    vel[:, coord] = np.where(
+        ((pos[:, coord] <= - 0.5 * box_edge + radii) |
+         (pos[:, coord] >= 0.5 * box_edge - radii)), -
+        pos[:, 0], vel[:, 0])
+
+
 def collision_obstacle_attractors_walls(gm):
     # Collosion between attractors-attractors, obstacle-obstacle,
     # obstacle-walls and attractors-walls:
@@ -287,10 +296,14 @@ def collision_obstacle_attractors_walls(gm):
             gm.vel_attractors[i] = -gm.vel_attractors[i]
             gm.vel_obstacles[j] = -gm.vel_obstacles[j]
 #  Obstacle-walls;
-    gm.vel_obstacles[:, 0] = np.where(
-        ((gm.pos_obstacles[:, 0] <= - 0.5 * gm.box_lx + gm.radii_obstacles) |
-         (gm.pos_obstacles[:, 0] >= 0.5 * gm.box_lx - gm.radii_obstacles)), -
-        gm.vel_obstacles[:, 0], gm.vel_obstacles[:, 0])
+    # gm.vel_obstacles[:, 0] = np.where(
+    #     ((gm.pos_obstacles[:, 0] <= - 0.5 * gm.box_lx + gm.radii_obstacles) |
+    #      (gm.pos_obstacles[:, 0] >= 0.5 * gm.box_lx - gm.radii_obstacles)), -
+    #     gm.vel_obstacles[:, 0], gm.vel_obstacles[:, 0])
+
+    boundary_check(gm.pos_obstacles, gm.vel_obstacles, 0,
+                   gm.radii_obstacles, gm.box_lx)
+
     gm.vel_obstacles[:, 1] = np.where(
         ((gm.pos_obstacles[:, 1] <= - 0.5 * gm.box_ly + gm.radii_obstacles) |
          (gm.pos_obstacles[:, 1] >= 0.5 * gm.box_ly - gm.radii_obstacles)), -
