@@ -7,11 +7,12 @@ This is an example of boids in a box using FURY.
 """
 
 ##############################################################################
-# Explanation:
+# Explanation: TBA
 
 import numpy as np
 from fury import window, actor, ui, utils, disable_warnings, pick, swarm
 import itertools
+from numpy.linalg import norm
 
 disable_warnings()
 
@@ -145,6 +146,7 @@ if gm.num_obstacles > 0:
     no_vertices_per_obstacle = len(vertices_obstacle)/gm.num_obstacles
     initial_vertices_obstacle = vertices_obstacle.copy() - \
         np.repeat(gm.pos_obstacles, no_vertices_per_obstacle, axis=0)
+
 scene.zoom(1.2)
 pickm = pick.PickingManager()
 panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
@@ -177,7 +179,7 @@ def timer_callback(_obj, _event):
     # xyz_attractors = np.array([[x2, y2, 0.]])
     # gm.pos_attractors = np.array([[x2_1, y2_1, 0.]])
     # gm.vel_attractors = np.array((gm.pos_attractors - xyz_attractors)/
-    #                               np.linalg.norm(gm.pos_attractors-
+    #                               norm(gm.pos_attractors-
     #                                              xyz_attractors))
     ###############
     gm.pos_attractors = gm.pos_attractors + gm.vel_attractors
@@ -189,18 +191,18 @@ def timer_callback(_obj, _event):
     gm.pos = gm.pos + gm.vel
     for i in range(gm.num_particles):
         # directions and velocities normalization
-        dnorm = directions[i]/np.linalg.norm(directions[i])
-        vnorm = gm.vel[i]/np.linalg.norm(gm.vel[i])
+        dnorm = directions[i]/norm(directions[i])
+        vnorm = gm.vel[i]/norm(gm.vel[i])
         R_followers = swarm.vec2vec_rotmat(vnorm, dnorm)
-        vertices[i * sec: i * sec + sec] = np.dot(initial_vertices[i * sec: i *
-                                                  sec + sec], R_followers) + \
+        vertices[i * sec: i * sec + sec] = \
+            np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
     utils.update_actor(cone_actor)
     if gm.num_attractors > 0:
         for j in range(gm.num_attractors):
-            dnorm_attractors = directions_attractors[j]/np.linalg.norm(
+            dnorm_attractors = directions_attractors[j]/norm(
                 directions_attractors[j])
-            vnorm_attractors = gm.vel_attractors[j]/np.linalg.norm(
+            vnorm_attractors = gm.vel_attractors[j]/norm(
                 gm.vel_attractors[j])
             R_attractors = swarm.vec2vec_rotmat(vnorm_attractors,
                                                 dnorm_attractors)
