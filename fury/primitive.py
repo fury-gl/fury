@@ -694,8 +694,8 @@ def prim_frustum():
     return vertices, triangles
 
 
-def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
-    """Return vertices and triangle for a cylinder.
+def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
+    """Return vertices and triangles for a cylinder.
 
     Parameters
     ----------
@@ -716,8 +716,8 @@ def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
         triangles that compose our cylinder
     """
 
-    if not isinstance(sectors, int):
-        raise TypeError("Only integers are allowed for sectors parameter")
+    if not isinstance(sectors, int) or not sectors > 7:
+        raise TypeError("Only integers > 7 are allowed for sectors parameter")
     sector_step = 2 * math.pi / sectors
     unit_circle_vertices = []
 
@@ -725,8 +725,8 @@ def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
     for i in range(sectors + 1):
         sector_angle = i * sector_step
         unit_circle_vertices.append(math.cos(sector_angle))
-        unit_circle_vertices.append(math.sin(sector_angle))
         unit_circle_vertices.append(0)
+        unit_circle_vertices.append(math.sin(sector_angle))
 
     vertices = []
     # generate vertices for a cylinder
@@ -735,11 +735,11 @@ def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
         k = 0
         for j in range(sectors + 1):
             ux = unit_circle_vertices[k]
-            uy = unit_circle_vertices[k + 1]
+            uz = unit_circle_vertices[k + 2]
             # position vector
             vertices.append(ux * radius)
-            vertices.append(uy * radius)
             vertices.append(h)
+            vertices.append(uz * radius)
             k += 3
 
     # base and top circle vertices
@@ -753,16 +753,16 @@ def prim_cylinder(radius=1, height=3, sectors=36, capped=True):
         for i in range(2):
             h = -height / 2 + i * height
             vertices.append(0)
-            vertices.append(0)
             vertices.append(h)
+            vertices.append(0)
             k = 0
             for j in range(sectors):
                 ux = unit_circle_vertices[k]
-                uy = unit_circle_vertices[k + 1]
+                uz = unit_circle_vertices[k + 2]
                 # position vector
                 vertices.append(ux * radius)
-                vertices.append(uy * radius)
                 vertices.append(h)
+                vertices.append(uz * radius)
                 k += 3
 
     if capped:
