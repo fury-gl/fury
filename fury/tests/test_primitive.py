@@ -96,6 +96,19 @@ def test_superquadric_primitives():
     # TODO: We need to check some superquadrics shape
 
 
+def test_cylinder_primitive():
+    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10)
+    npt.assert_equal(verts.shape, (44, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+    npt.assert_equal(verts.min(), -.5)
+    npt.assert_equal(verts.max(), .5)
+
+    # basic tests for triangle
+    npt.assert_equal(faces.shape, (40, 3))
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
+
 def test_repeat_primitive():
     # init variables
     verts, faces = fp.prim_square()
