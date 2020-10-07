@@ -108,6 +108,15 @@ def test_cylinder_primitive():
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
 
+    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10, capped=False)
+    npt.assert_equal(verts.shape, (22, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+    npt.assert_equal(verts.min(), -.5)
+    npt.assert_equal(verts.max(), .5)
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
+
 
 def test_repeat_primitive():
     # init variables
