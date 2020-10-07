@@ -716,8 +716,10 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         triangles that compose our cylinder
     """
 
-    if not isinstance(sectors, int) or not sectors > 7:
-        raise TypeError("Only integers > 7 are allowed for sectors parameter")
+    if not isinstance(sectors, int):
+        raise TypeError("Only integers are allowed for sectors parameter")
+    if not sectors > 7:
+        raise ValueError("Sectors parameter should be greater than 7")
     sector_step = 2 * math.pi / sectors
     unit_circle_vertices = []
 
@@ -777,12 +779,12 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     # triangles for the side surface
     for i in range(sectors):
         triangles.append(k1)
-        triangles.append(k1 + 1)
         triangles.append(k2)
+        triangles.append(k1 + 1)
 
         triangles.append(k2)
-        triangles.append(k1 + 1)
         triangles.append(k2 + 1)
+        triangles.append(k1 + 1)
         k1 += 1
         k2 += 1
 
@@ -791,24 +793,24 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         for i in range(sectors):
             if i < sectors - 1:
                 triangles.append(base_center_index)
-                triangles.append(k + 1)
                 triangles.append(k)
+                triangles.append(k + 1)
             else:
                 triangles.append(base_center_index)
-                triangles.append(base_center_index + 1)
                 triangles.append(k)
+                triangles.append(base_center_index + 1)
             k += 1
 
         k = top_center_index + 1
         for i in range(sectors):
             if i < sectors - 1:
                 triangles.append(top_center_index)
-                triangles.append(k)
                 triangles.append(k + 1)
+                triangles.append(k)
             else:
                 triangles.append(top_center_index)
-                triangles.append(k)
                 triangles.append(top_center_index + 1)
+                triangles.append(k)
             k += 1
 
     if capped:
