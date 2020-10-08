@@ -233,6 +233,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
 
         plane_colors = vtk.vtkImageMapToColors()
+        plane_colors.SetOutputFormatToRGB()
         plane_colors.SetLookupTable(lut)
         plane_colors.SetInputConnection(image_resliced.GetOutputPort())
         plane_colors.Update()

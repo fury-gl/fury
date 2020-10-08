@@ -886,14 +886,15 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     ----------
     scene : Scene
     win : Window
-        Provided by Showmanager.window attribute.
+        Provided by ShowManager.window attribute.
     multi_samples : int
-        Number of samples for anti-aliazing (Default 8).
+        Number of samples for anti-aliasing (Default 8).
         For no anti-aliasing use 0.
     max_peels : int
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
-        Occlusion ration for depth peeling (Default 0 - exact image).
+        Occlusion ratio for depth peeling (Default 0 - exact image).
+
     """
     # Use a render window with alpha bits
     # as default is 0 (false))
