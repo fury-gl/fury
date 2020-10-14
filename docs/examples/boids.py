@@ -137,30 +137,6 @@ no_vertices_per_cone = len(vertices)/gm.num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(gm.pos, no_vertices_per_cone, axis=0)
 
-if gm.num_attractors > 0:
-    vertices_attractors = utils.vertices_from_actor(attractors_actor)
-    no_vertices_per_attractor = len(vertices_attractors)/gm.num_attractors
-    initial_vertices_attractors = vertices_attractors.copy() - \
-        np.repeat(gm.pos_attractors, no_vertices_per_attractor, axis=0)
-
-if gm.num_obstacles > 0:
-    vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
-    no_vertices_per_obstacle = len(vertices_obstacle)/gm.num_obstacles
-    initial_vertices_obstacle = vertices_obstacle.copy() - \
-        np.repeat(gm.pos_obstacles, no_vertices_per_obstacle, axis=0)
-
-scene.zoom(1.2)
-pickm = pick.PickingManager()
-panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
-panel.center = (150, 200)
-
-text_block = ui.TextBlock2D(text="Left click on object \n")
-panel.add_element(text_block, (0.3, 0.3))
-scene.add(panel)
-# It rotates arrow at origin and then shifts to position;
-num_vertices = vertices.shape[0]
-sec = np.int(num_vertices / gm.num_particles)
-
 # Mapper access
 cone_mapper = cone_actor.GetMapper()
 
@@ -170,7 +146,7 @@ cone_mapper.SetVBOShiftScaleMethod(False)
 # Memory access to passed variables
 cone_pnt_data = cone_mapper.GetInput().GetPointData()
 
-# Repeating the centers a.k.a. gm.pos and passing them to the VS
+# Repeating the centers and passing them to the VS
 mem_centers = np.repeat(gm.pos, no_vertices_per_cone, axis=0)
 attribute_to_actor(cone_actor, mem_centers, 'center')
 mem_centers = numpy_support.vtk_to_numpy(cone_pnt_data.GetArray('center'))
@@ -191,8 +167,67 @@ attribute_to_actor(cone_actor, initial_vertices, 'relativePosition')
 vs_dec = load('boids_dec.vert')
 vs_imp = load('boids_impl.vert')
 
-shader_to_actor(cone_actor, 'vertex', decl_code=vs_dec, impl_code=vs_imp,
-                debug=False)
+shader_to_actor(cone_actor, 'vertex', decl_code=vs_dec, impl_code=vs_imp)
+
+if gm.num_attractors > 0:
+    vertices_attractors = utils.vertices_from_actor(attractors_actor)
+    no_vertices_per_attractor = len(vertices_attractors)/gm.num_attractors
+    initial_vertices_attractors = vertices_attractors.copy() - \
+        np.repeat(gm.pos_attractors, no_vertices_per_attractor, axis=0)
+
+    # Mapper access
+    attractors_mapper = attractors_actor.GetMapper()
+
+    # Fixing scaling problem
+    attractors_mapper.SetVBOShiftScaleMethod(False)
+
+    # Memory access to passed variables
+    attractors_pnt_data = attractors_mapper.GetInput().GetPointData()
+
+    # Repeating the centers and passing them to the VS
+    mem_centers_attractors = np.repeat(gm.pos_attractors,
+                                       no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, mem_centers_attractors, 'center')
+    mem_centers_attractors = numpy_support.vtk_to_numpy(
+        attractors_pnt_data.GetArray('center'))
+
+    # Repeating the directions and passing them to the VS
+    big_directions_attractors = np.repeat(directions_attractors,
+                                          no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, big_directions_attractors,
+                       'direction')
+
+    # Repeating the velocities and passing them to the VS
+    mem_velocities_attractors = np.repeat(gm.vel_attractors,
+                                          no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, mem_velocities_attractors, 'velocity')
+    mem_velocities_attractors = numpy_support.vtk_to_numpy(
+        attractors_pnt_data.GetArray('velocity'))
+
+    # Passing relative positions to the VS
+    attribute_to_actor(attractors_actor, initial_vertices_attractors,
+                       'relativePosition')
+
+    shader_to_actor(attractors_actor, 'vertex', decl_code=vs_dec,
+                    impl_code=vs_imp)
+
+if gm.num_obstacles > 0:
+    vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
+    no_vertices_per_obstacle = len(vertices_obstacle)/gm.num_obstacles
+    initial_vertices_obstacle = vertices_obstacle.copy() - \
+        np.repeat(gm.pos_obstacles, no_vertices_per_obstacle, axis=0)
+
+scene.zoom(1.2)
+pickm = pick.PickingManager()
+panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
+panel.center = (150, 200)
+
+text_block = ui.TextBlock2D(text="Left click on object \n")
+panel.add_element(text_block, (0.3, 0.3))
+scene.add(panel)
+# It rotates arrow at origin and then shifts to position;
+num_vertices = vertices.shape[0]
+sec = np.int(num_vertices / gm.num_particles)
 
 cone_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
@@ -243,6 +278,7 @@ def timer_callback(_obj, _event):
     cone_pnt_data.GetArray('velocity').Modified()
     if gm.num_attractors > 0:
         for j in range(gm.num_attractors):
+            """
             dnorm_attractors = directions_attractors[j]/norm(
                 directions_attractors[j])
             vnorm_attractors = gm.vel_attractors[j]/norm(
@@ -253,7 +289,15 @@ def timer_callback(_obj, _event):
                 initial_vertices_attractors[j * sec: j * sec + sec],
                 R_attractors) + np.repeat(gm.pos_attractors[j: j+1],
                                           no_vertices_per_cone, axis=0)
-        utils.update_actor(attractors_actor)
+            """
+            # Repeat and update centers & velocities
+            mem_centers_attractors[j * sec: j * sec + sec] = np.repeat(
+                gm.pos_attractors[j: j + 1], no_vertices_per_attractor, axis=0)
+            mem_velocities_attractors[j * sec: j * sec + sec] = np.repeat(
+                gm.vel_attractors[j: j + 1], no_vertices_per_attractor, axis=0)
+        #utils.update_actor(attractors_actor)
+        attractors_pnt_data.GetArray('center').Modified()
+        attractors_pnt_data.GetArray('velocity').Modified()
 
     if gm.num_obstacles > 0:
         vertices_obstacle[:] = initial_vertices_obstacle + \
