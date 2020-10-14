@@ -11,7 +11,8 @@ This is an example of boids in a box using FURY.
 
 import numpy as np
 from fury import window, actor, ui, utils, disable_warnings, pick, swarm
-from fury.shaders import shader_to_actor
+from fury.shaders import attribute_to_actor, load, shader_to_actor
+from vtk.util import numpy_support
 import itertools
 from numpy.linalg import norm
 
@@ -160,61 +161,38 @@ scene.add(panel)
 num_vertices = vertices.shape[0]
 sec = np.int(num_vertices / gm.num_particles)
 
-vec2vec_rotmat_vs_dec = \
-    """
-    float clip(float a, float a_min, float a_max) {
-        if(a < a_min)
-            return a_min;
-        if(a > a_max)
-            return a_max;
-        return a;
-    }
+# Mapper access
+cone_mapper = cone_actor.GetMapper()
 
-    mat3 vecToVecRotMat(vec3 u, vec3 v) {
-        // Cross product is the first step to find R
-        vec3 w = cross(u, v);
-        float wn = length(w);
+# Fixing scaling problem
+cone_mapper.SetVBOShiftScaleMethod(False)
 
-        // Check that cross product is OK and vectors u, v are not collinear 
-        // (norm(w)>0.0)
-        if(isnan(wn) || wn < 0.0) {
-            float normUV = length(u - v);
-            // This is the case of two antipodal vectors:
-            // ** former checking assumed norm(u) == norm(v)
-            if(normUV > length(u))
-                return mat3(-1);
-            return mat3(1);
-        }
+# Memory access to passed variables
+cone_pnt_data = cone_mapper.GetInput().GetPointData()
 
-        // if everything ok, normalize w
-        w = w / wn;
+# Repeating the centers a.k.a. gm.pos and passing them to the VS
+mem_centers = np.repeat(gm.pos, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, mem_centers, 'center')
+mem_centers = numpy_support.vtk_to_numpy(cone_pnt_data.GetArray('center'))
 
-        // vp is in plane of u,v,  perpendicular to u
-        vec3 vp = (v - dot(u, v) * u);
-        vp = vp / length(vp);
+# Repeating the directions and passing them to the VS
+big_directions = np.repeat(directions, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, big_directions, 'direction')
 
-        // (u vp w) is an orthonormal basis
-        mat3 Pt = mat3(u, vp, w);
-        mat3 P = transpose(Pt);
+# Repeating the velocities and passing them to the VS
+mem_velocities = np.repeat(gm.vel, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, mem_velocities, 'velocity')
+mem_velocities = numpy_support.vtk_to_numpy(cone_pnt_data.GetArray('velocity'))
 
-        float cosa = clip(dot(u, v), -1, 1);
-        float sina = sqrt(1 - pow(cosa, 2));
+# Passing relative positions to the VS
+attribute_to_actor(cone_actor, initial_vertices, 'relativePosition')
 
-        mat3 R = mat3(mat2(cosa, sina, -sina, cosa));
-        mat3 Rp = Pt * (R * P);
+# Loading VS implementations
+vs_dec = load('boids_dec.vert')
+vs_imp = load('boids_impl.vert')
 
-        // make sure that you don't return any Nans
-        bool anyNanCheckRp0 = any(isnan(Rp[0]));
-        bool anyNanCheckRp1 = any(isnan(Rp[1]));
-        bool anyNanCheckRp2 = any(isnan(Rp[2]));
-        if(anyNanCheckRp0 || anyNanCheckRp1 || anyNanCheckRp2)
-            return mat3(1);
-
-        return Rp;
-    }
-    """
-
-shader_to_actor(cone_actor, 'vertex', decl_code=vec2vec_rotmat_vs_dec)
+shader_to_actor(cone_actor, 'vertex', decl_code=vs_dec, impl_code=vs_imp,
+                debug=False)
 
 cone_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
@@ -247,13 +225,22 @@ def timer_callback(_obj, _event):
     gm.pos = gm.pos + gm.vel
     for i in range(gm.num_particles):
         # directions and velocities normalization
+        """
         dnorm = directions[i]/norm(directions[i])
         vnorm = gm.vel[i]/norm(gm.vel[i])
         R_followers = swarm.vec2vec_rotmat(vnorm, dnorm)
         vertices[i * sec: i * sec + sec] = \
             np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
-    utils.update_actor(cone_actor)
+        """
+        # Repeat and update centers & velocities
+        mem_centers[i * sec: i * sec + sec] = np.repeat(
+            gm.pos[i: i + 1], no_vertices_per_cone, axis=0)
+        mem_velocities[i * sec: i * sec + sec] = np.repeat(
+            gm.vel[i: i + 1], no_vertices_per_cone, axis=0)
+    #utils.update_actor(cone_actor)
+    cone_pnt_data.GetArray('center').Modified()
+    cone_pnt_data.GetArray('velocity').Modified()
     if gm.num_attractors > 0:
         for j in range(gm.num_attractors):
             dnorm_attractors = directions_attractors[j]/norm(
