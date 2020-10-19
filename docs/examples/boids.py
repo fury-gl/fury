@@ -11,6 +11,8 @@ This is an example of boids in a box using FURY.
 
 import numpy as np
 from fury import window, actor, ui, utils, disable_warnings, pick, swarm
+from fury.shaders import attribute_to_actor, load, shader_to_actor
+from vtk.util import numpy_support
 import itertools
 from numpy.linalg import norm
 
@@ -135,11 +137,79 @@ no_vertices_per_cone = len(vertices)/gm.num_particles
 initial_vertices = vertices.copy() - \
     np.repeat(gm.pos, no_vertices_per_cone, axis=0)
 
+# Mapper access
+cone_mapper = cone_actor.GetMapper()
+
+# Fixing scaling problem
+cone_mapper.SetVBOShiftScaleMethod(False)
+
+# Memory access to passed variables
+cone_pnt_data = cone_mapper.GetInput().GetPointData()
+
+# Repeating the centers and passing them to the VS
+mem_centers = np.repeat(gm.pos, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, mem_centers, 'center')
+mem_centers = numpy_support.vtk_to_numpy(cone_pnt_data.GetArray('center'))
+
+# Repeating the directions and passing them to the VS
+big_directions = np.repeat(directions, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, big_directions, 'direction')
+
+# Repeating the velocities and passing them to the VS
+mem_velocities = np.repeat(gm.vel, no_vertices_per_cone, axis=0)
+attribute_to_actor(cone_actor, mem_velocities, 'velocity')
+mem_velocities = numpy_support.vtk_to_numpy(cone_pnt_data.GetArray('velocity'))
+
+# Passing relative positions to the VS
+attribute_to_actor(cone_actor, initial_vertices, 'relativePosition')
+
+# Loading VS implementations
+vs_dec = load('boids_dec.vert')
+vs_imp = load('boids_impl.vert')
+
+shader_to_actor(cone_actor, 'vertex', decl_code=vs_dec, impl_code=vs_imp)
+
 if gm.num_attractors > 0:
     vertices_attractors = utils.vertices_from_actor(attractors_actor)
     no_vertices_per_attractor = len(vertices_attractors)/gm.num_attractors
     initial_vertices_attractors = vertices_attractors.copy() - \
         np.repeat(gm.pos_attractors, no_vertices_per_attractor, axis=0)
+
+    # Mapper access
+    attractors_mapper = attractors_actor.GetMapper()
+
+    # Fixing scaling problem
+    attractors_mapper.SetVBOShiftScaleMethod(False)
+
+    # Memory access to passed variables
+    attractors_pnt_data = attractors_mapper.GetInput().GetPointData()
+
+    # Repeating the centers and passing them to the VS
+    mem_centers_attractors = np.repeat(gm.pos_attractors,
+                                       no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, mem_centers_attractors, 'center')
+    mem_centers_attractors = numpy_support.vtk_to_numpy(
+        attractors_pnt_data.GetArray('center'))
+
+    # Repeating the directions and passing them to the VS
+    big_directions_attractors = np.repeat(directions_attractors,
+                                          no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, big_directions_attractors,
+                       'direction')
+
+    # Repeating the velocities and passing them to the VS
+    mem_velocities_attractors = np.repeat(gm.vel_attractors,
+                                          no_vertices_per_attractor, axis=0)
+    attribute_to_actor(attractors_actor, mem_velocities_attractors, 'velocity')
+    mem_velocities_attractors = numpy_support.vtk_to_numpy(
+        attractors_pnt_data.GetArray('velocity'))
+
+    # Passing relative positions to the VS
+    attribute_to_actor(attractors_actor, initial_vertices_attractors,
+                       'relativePosition')
+
+    shader_to_actor(attractors_actor, 'vertex', decl_code=vs_dec,
+                    impl_code=vs_imp)
 
 if gm.num_obstacles > 0:
     vertices_obstacle = utils.vertices_from_actor(obstacle_actor)
@@ -158,7 +228,6 @@ scene.add(panel)
 # It rotates arrow at origin and then shifts to position;
 num_vertices = vertices.shape[0]
 sec = np.int(num_vertices / gm.num_particles)
-
 
 cone_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
@@ -191,15 +260,25 @@ def timer_callback(_obj, _event):
     gm.pos = gm.pos + gm.vel
     for i in range(gm.num_particles):
         # directions and velocities normalization
+        """
         dnorm = directions[i]/norm(directions[i])
         vnorm = gm.vel[i]/norm(gm.vel[i])
         R_followers = swarm.vec2vec_rotmat(vnorm, dnorm)
         vertices[i * sec: i * sec + sec] = \
             np.dot(initial_vertices[i * sec: i * sec + sec], R_followers) + \
             np.repeat(gm.pos[i: i+1], no_vertices_per_cone, axis=0)
-    utils.update_actor(cone_actor)
+        """
+        # Repeat and update centers & velocities
+        mem_centers[i * sec: i * sec + sec] = np.repeat(
+            gm.pos[i: i + 1], no_vertices_per_cone, axis=0)
+        mem_velocities[i * sec: i * sec + sec] = np.repeat(
+            gm.vel[i: i + 1], no_vertices_per_cone, axis=0)
+    #utils.update_actor(cone_actor)
+    cone_pnt_data.GetArray('center').Modified()
+    cone_pnt_data.GetArray('velocity').Modified()
     if gm.num_attractors > 0:
         for j in range(gm.num_attractors):
+            """
             dnorm_attractors = directions_attractors[j]/norm(
                 directions_attractors[j])
             vnorm_attractors = gm.vel_attractors[j]/norm(
@@ -210,7 +289,15 @@ def timer_callback(_obj, _event):
                 initial_vertices_attractors[j * sec: j * sec + sec],
                 R_attractors) + np.repeat(gm.pos_attractors[j: j+1],
                                           no_vertices_per_cone, axis=0)
-        utils.update_actor(attractors_actor)
+            """
+            # Repeat and update centers & velocities
+            mem_centers_attractors[j * sec: j * sec + sec] = np.repeat(
+                gm.pos_attractors[j: j + 1], no_vertices_per_attractor, axis=0)
+            mem_velocities_attractors[j * sec: j * sec + sec] = np.repeat(
+                gm.vel_attractors[j: j + 1], no_vertices_per_attractor, axis=0)
+        #utils.update_actor(attractors_actor)
+        attractors_pnt_data.GetArray('center').Modified()
+        attractors_pnt_data.GetArray('velocity').Modified()
 
     if gm.num_obstacles > 0:
         vertices_obstacle[:] = initial_vertices_obstacle + \
