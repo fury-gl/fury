@@ -13,7 +13,6 @@ gravity_y = 0
 gravity_z = -10
 p.setGravity(gravity_x, gravity_y, gravity_z, physicsClientId=client)
 
-
 # Base Plane Parameters
 base_size = np.array([15, 15, 0.2])
 base_color = np.array([1, 1, 1])
@@ -69,7 +68,7 @@ centers_list = np.zeros((n_dominoes, 3))
 
 # Adding the dominoes
 for i in range(n_dominoes):
-    center_pos = np.array([(i*0.99)-2.8,1,0])
+    center_pos = np.array([(i*0.99)-3.3,0.4,1.5])
     brick_centers[i] = center_pos
     brick_orns[i] = np.array([0, 0, 0, 1])
     bricks[i] = p.createMultiBody(baseMass=brick_mass,
@@ -103,7 +102,6 @@ counter = itertools.count()
 
 # Variable for tracking applied force.
 apply_force = True
-
 
 # Now, we define methods to sync objects between fury and Pybullet.
 
@@ -151,18 +149,6 @@ def sync_brick(object_index, multibody):
 
 
 ###############################################################################
-# A simpler but inaccurate approach is used here to update the position and
-# orientation.
-
-
-def sync_actor(actor, multibody):
-    pos, orn = p.getBasePositionAndOrientation(multibody)
-    actor.SetPosition(*pos)
-    orn_deg = np.degrees(p.getEulerFromQuaternion(orn))
-    actor.SetOrientation(*orn_deg)
-
-
-###############################################################################
 # Here, we define a textblock to display the Avg. FPS and simulation steps.
 
 fpss = np.array([])
@@ -207,11 +193,8 @@ def timer_callback(_obj, _event):
                              flags=p.WORLD_FRAME)
         apply_force = False
 
-    # Set position and orientation of the first Brick.
-    sync_actor(brick_actor, bricks[0])
-
-    # Updating the position and orientation of each individual brick exclusing first one.
-    for idx, brick in enumerate(bricks[1:]):
+    # Updating the position and orientation of individual bricks.
+    for idx, brick in enumerate(bricks):
         sync_brick(idx, brick)
     utils.update_actor(brick_actor)
 
