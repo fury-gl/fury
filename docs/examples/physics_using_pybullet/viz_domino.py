@@ -5,7 +5,7 @@ import itertools
 import pybullet as p
 
 # Instantiate Pybullet client.
-client = p.connect(p.DIRECT)
+client = p.connect(p.GUI)
 
 # Apply gravity to the scene.
 gravity_x = 0
@@ -40,7 +40,7 @@ p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
 # Brick Parameters
 brick_mass = 0.5
-brick_size = np.array([2,0.8, 0.2])
+brick_size = np.array([0.8,2, 0.2])
 
 nb_bricks = 10
 brick_centers = np.zeros((nb_bricks, 3))
@@ -68,9 +68,12 @@ centers_list = np.zeros((n_dominoes, 3))
 
 # Adding the dominoes
 for i in range(n_dominoes):
-    center_pos = np.array([(i*0.99)-3.3,0.4,1.5])
+    center_pos = np.array([(i*0.99)-5,0.4,1])
     brick_centers[i] = center_pos
-    brick_orns[i] = np.array([0, 0, 0, 1])
+    if i == 0 : 
+        brick_orns[0] = np.array([-0.6 , -0.6, 1, 1])
+    else:
+        brick_orns[i] = np.array([1 ,1, 1, 1])
     bricks[i] = p.createMultiBody(baseMass=brick_mass,
                                       baseCollisionShapeIndex=brick_coll,
                                       basePosition=center_pos,
@@ -183,12 +186,12 @@ def timer_callback(_obj, _event):
 
     # Get the position and orientation of the first brick.
     brick1_pos, brick1_orn = p.getBasePositionAndOrientation(bricks[0])
-
+    
     # Apply force for the first step of simulation.
     if apply_force:
         # Apply the force.
         p.applyExternalForce(bricks[0], -1,
-                             forceObj=[5, 0, 0],
+                             forceObj=[400, 0, 0],
                              posObj=brick1_pos,
                              flags=p.WORLD_FRAME)
         apply_force = False
