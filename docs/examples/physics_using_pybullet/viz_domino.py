@@ -5,7 +5,7 @@ import itertools
 import pybullet as p
 
 # Instantiate Pybullet client.
-client = p.connect(p.GUI)
+client = p.connect(p.DIRECT)
 
 # Apply gravity to the scene.
 gravity_x = 0
@@ -35,19 +35,19 @@ base = p.createMultiBody(
     basePosition=base_position,
     baseOrientation=base_orientation)
 
-p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
+p.changeDynamics(base, -1, lateralFriction=1, restitution=0.5)
 
 
 # Brick Parameters
 brick_mass = 0.5
-brick_size = np.array([0.8,2, 0.2])
+brick_size = np.array([0.1,1,2])
 
 nb_bricks = 10
 brick_centers = np.zeros((nb_bricks, 3))
 
 # Keep all the Bricks Parallel
 brick_directions = np.zeros((nb_bricks, 3))
-brick_directions[:] = np.array([1, 0, 1])
+brick_directions[:] = np.array([1.57, 0, 0])
 
 brick_orns = np.zeros((nb_bricks, 4))
 
@@ -68,17 +68,14 @@ centers_list = np.zeros((n_dominoes, 3))
 
 # Adding the dominoes
 for i in range(n_dominoes):
-    center_pos = np.array([(i*0.99)-5,0.4,1])
+    center_pos = np.array([(i*0.99)-5.5,0.4,1])
     brick_centers[i] = center_pos
-    if i == 0 : 
-        brick_orns[0] = np.array([-0.6 , -0.6, 1, 1])
-    else:
-        brick_orns[i] = np.array([1 ,1, 1, 1])
+    brick_orns[i] = np.array([0, 0, 0, 1]) 
     bricks[i] = p.createMultiBody(baseMass=brick_mass,
                                       baseCollisionShapeIndex=brick_coll,
                                       basePosition=center_pos,
                                       baseOrientation=brick_orns[i])
-    p.changeDynamics(bricks[i], -1, lateralFriction=0.1, restitution=0.1)
+    p.changeDynamics(bricks[i], -1, lateralFriction=0.2, restitution=0.1)
 
 
 brick_actor = actor.box(centers=brick_centers,
@@ -187,12 +184,12 @@ def timer_callback(_obj, _event):
     # Get the position and orientation of the first brick.
     brick1_pos, brick1_orn = p.getBasePositionAndOrientation(bricks[0])
     
-    # Apply force for the first step of simulation.
+    # Apply force on the First Domino (Brick) above the Center of Mass.
     if apply_force:
         # Apply the force.
         p.applyExternalForce(bricks[0], -1,
-                             forceObj=[400, 0, 0],
-                             posObj=brick1_pos,
+                             forceObj=[100, 0, 0],
+                             posObj=brick1_pos + np.array([0,0,1.7]),
                              flags=p.WORLD_FRAME)
         apply_force = False
 
@@ -213,12 +210,10 @@ def timer_callback(_obj, _event):
 # Increasing the duration value will slow down the simulation.
 showm.add_timer_callback(True, 1, timer_callback)
 
-interactive = True
+interactive = False
 
 # start simulation
 if interactive:
     showm.start()
 
 window.record(scene, out_path="domnio_simulation.png", size=(900, 768))
-
-
