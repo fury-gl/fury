@@ -15,7 +15,7 @@ from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
 
-# Next, we initialize a pybullet client to render the physics. 
+# Next, we initialize a pybullet client to render the physics.
 # We use `DIRECT` mode to initialize pybullet without a GUI.
 client = p.connect(p.DIRECT)
 
@@ -47,7 +47,7 @@ base = p.createMultiBody(
 p.changeDynamics(base, -1, lateralFriction=1, restitution=0.5)
 
 ###############################################################################
-# We define some global parameters of the Dominoes so that its easier for 
+# We define some global parameters of the Dominoes so that its easier for
 # us to tweak the simulation.
 
 domino_mass = 0.5
