@@ -4,7 +4,8 @@ Domino Physics Simulation
 =====================
 
 This example simulation shows how to use pybullet to render physics simulations
-in fury. In this example we specifically render a series of Dominoes which are under Domino Effect.
+in fury. In this example we specifically render a series of Dominoes which are
+under Domino Effect.
 
 """
 ###############################################################################
@@ -14,7 +15,8 @@ from fury import window, actor, ui, utils
 import itertools
 import pybullet as p
 
-# Next, we initialize a pybullet client to render the physics. We use `DIRECT` mode to initialize pybullet without a GUI.
+# Next, we initialize a pybullet client to render the physics. 
+# We use `DIRECT` mode to initialize pybullet without a GUI.
 client = p.connect(p.DIRECT)
 
 # Apply gravity to the scene.
@@ -45,10 +47,11 @@ base = p.createMultiBody(
 p.changeDynamics(base, -1, lateralFriction=1, restitution=0.5)
 
 ###############################################################################
-# We define some global parameters of the Dominoes so that its easier for us to tweak the simulation.
+# We define some global parameters of the Dominoes so that its easier for 
+# us to tweak the simulation.
 
 domino_mass = 0.5
-domino_size = np.array([0.1,1,2])
+domino_size = np.array([0.1, 1, 2])
 
 number_of_dominoes = 10
 domino_centers = np.zeros((number_of_dominoes, 3))
@@ -65,7 +68,7 @@ domino_sizes[:] = domino_size
 domino_colors = np.random.rand(number_of_dominoes, 3)
 
 domino_coll = p.createCollisionShape(p.GEOM_BOX,
-                                    halfExtents=domino_size / 2)
+                                     halfExtents=domino_size / 2)
 
 # We use this array to store the reference of domino objects in pybullet world.
 dominos = np.zeros(number_of_dominoes, dtype=np.int8)
@@ -74,20 +77,20 @@ centers_list = np.zeros((number_of_dominoes, 3))
 
 # Adding the dominoes
 for i in range(number_of_dominoes):
-    center_pos = np.array([(i*0.99)-5.5,0.4,1])
+    center_pos = np.array([(i*0.99)-5.5, 0.4, 1])
     domino_centers[i] = center_pos
-    domino_orns[i] = np.array([0, 0, 0, 1]) 
+    domino_orns[i] = np.array([0, 0, 0, 1])
     dominos[i] = p.createMultiBody(baseMass=domino_mass,
-                                      baseCollisionShapeIndex=domino_coll,
-                                      basePosition=center_pos,
-                                      baseOrientation=domino_orns[i])
+                                   baseCollisionShapeIndex=domino_coll,
+                                   basePosition=center_pos,
+                                   baseOrientation=domino_orns[i])
     p.changeDynamics(dominos[i], -1, lateralFriction=0.2, restitution=0.1)
 
 
 domino_actor = actor.box(centers=domino_centers,
-                        directions=domino_directions,
-                        scales=domino_sizes,
-                        colors=domino_colors)
+                         directions=domino_directions,
+                         scales=domino_sizes,
+                         colors=domino_colors)
 
 ###############################################################################
 # Now, we define a scene and add actors to it.
@@ -135,6 +138,7 @@ sec = np.int(num_vertices / num_objects)
 #   * Reshape it in a 3x3 matrix.
 # * Perform calculations to get the required position and orientation.
 # * Update the position and orientation.
+
 
 def sync_domino(object_index, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)
@@ -187,13 +191,13 @@ def timer_callback(_obj, _event):
 
     # Get the position and orientation of the first domino.
     domino1_pos, domino1_orn = p.getBasePositionAndOrientation(dominos[0])
-    
+
     # Apply force on the First Domino (domino) above the Center of Mass.
     if apply_force:
         # Apply the force.
         p.applyExternalForce(dominos[0], -1,
                              forceObj=[100, 0, 0],
-                             posObj=domino1_pos + np.array([0,0,1.7]),
+                             posObj=domino1_pos + np.array([0, 0, 1.7]),
                              flags=p.WORLD_FRAME)
         apply_force = False
 
