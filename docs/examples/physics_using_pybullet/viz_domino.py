@@ -1,15 +1,14 @@
 """
-=====================
+=========================
 Domino Physics Simulation
-=====================
+=========================
 
 This example simulation shows how to use pybullet to render physics simulations
 in fury. In this example we specifically render a series of Dominoes which are
 under Domino Effect.
 
+First some imports.
 """
-###############################################################################
-# The following imports are necessary for physics simulations
 import numpy as np
 from fury import window, actor, ui, utils
 import itertools
@@ -35,10 +34,10 @@ base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        scales=base_size,
                        colors=base_color)
 
+# half of the actual size.
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=base_size / 2)
 
-# half of the actual size.
 base = p.createMultiBody(
     baseCollisionShapeIndex=base_coll,
     basePosition=base_position,
@@ -209,8 +208,8 @@ def timer_callback(_obj, _event):
     # Simulate a step.
     p.stepSimulation()
 
-    # Exit after 2000 steps of simulation.
-    if cnt == 2000:
+    # Exit after 300 steps of simulation.
+    if cnt == 300:
         showm.exit()
 
 
@@ -224,5 +223,5 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path="domnio_simulation.png", size=(900, 768))
-###############################################################################
+window.record(scene, out_path="viz_domino.png", size=(900, 768))
+
