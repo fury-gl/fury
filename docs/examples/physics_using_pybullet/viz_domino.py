@@ -224,4 +224,3 @@ if interactive:
     showm.start()
 
 window.record(scene, out_path="viz_domino.png", size=(900, 768))
-
