@@ -35,6 +35,10 @@ def clip_overflow(textblock, width, side='right'):
     clipped text : str
         Clipped version of the text.
     """
+    side = side.lower()
+    if side not in ['left', 'right']:
+        raise ValueError("side can only take values 'left' or 'right'")
+
     original_str = textblock.message
     start_ptr = 0
     end_ptr = len(original_str)
