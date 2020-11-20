@@ -22,8 +22,11 @@ client = p.connect(p.DIRECT)
 p.setGravity(0, 0, -10, physicsClientId=client)
 
 ###############################################################################
+# Set the Number of Dominoes for Simulation.
+number_of_dominoes = 10
+
 # Base Plane Parameters
-base_size = np.array([15, 15, 0.2])
+base_size = np.array([number_of_dominoes*2, number_of_dominoes*2, 0.2])
 base_color = np.array([1, 1, 1])
 base_position = np.array([0, 0, -0.1])
 base_orientation = np.array([0, 0, 0, 1])
@@ -52,7 +55,6 @@ p.changeDynamics(base, -1, lateralFriction=1, restitution=0.5)
 domino_mass = 0.5
 domino_size = np.array([0.1, 1, 2])
 
-number_of_dominoes = 10
 domino_centers = np.zeros((number_of_dominoes, 3))
 
 # Keeping all the dominos Parallel
@@ -125,9 +127,9 @@ num_objects = domino_centers.shape[0]
 sec = np.int(num_vertices / num_objects)
 
 ###############################################################################
-# ==============
+# ================
 # Syncing Dominoes
-# ==============
+# ================
 #
 # Here, we perform three major steps to sync Dominoes accurately.
 # * Get the position and orientation of the Dominoes from pybullet.
