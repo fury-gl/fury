@@ -27,8 +27,8 @@ def clip_overflow(textblock, width, side='right'):
     width : int
         Required width of the clipped text.
     side : string
-        "right" : Clips the overflowing text from right. This is the default behaviour
-        "left" :  Clips the overflowing text from left.
+        Clips the overflowing text according to side.
+        It takes values "left" or "right".
 
     Returns
     -------
