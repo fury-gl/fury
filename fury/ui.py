@@ -26,7 +26,7 @@ def clip_overflow(textblock, width, side='right'):
         The textblock object whose text needs to be clipped.
     width : int
         Required width of the clipped text.
-    side : string
+    side : str, optional
         Clips the overflowing text according to side.
         It takes values "left" or "right".
 
