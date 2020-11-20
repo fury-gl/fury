@@ -17,7 +17,7 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
-def clip_overflow(textblock, width):
+def clip_overflow(textblock, width, side='right'):
     """Clips overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -26,6 +26,9 @@ def clip_overflow(textblock, width):
         The textblock object whose text needs to be clipped.
     width : int
         Required width of the clipped text.
+    side : string
+        "right" : Clips the overflowing text from right. This is the default behaviour
+        "left" :  Clips the overflowing text from left.
 
     Returns
     -------
@@ -42,6 +45,9 @@ def clip_overflow(textblock, width):
         textblock.have_bg = prev_bg
         return original_str
 
+    if side == 'left':
+        original_str = original_str[::-1]
+
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr)//2
         textblock.message = original_str[:mid_ptr] + "..."
@@ -53,6 +59,8 @@ def clip_overflow(textblock, width):
         if mid_ptr == (start_ptr + end_ptr)//2 or\
            textblock.size[0] == width:
             textblock.have_bg = prev_bg
+            if side == 'left':
+                textblock.message = textblock.message[::-1]
             return textblock.message
 
 
