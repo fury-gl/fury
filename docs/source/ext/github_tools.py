@@ -19,7 +19,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -34,7 +34,6 @@ rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 LAST_RELEASE = datetime(2015, 3, 18)
 CONTRIBUTORS_FILE = "contributors.json"
 GH_TOKEN = os.environ.get('GH_TOKEN', '')
-TOKEN_URL = "access_token={}".format(GH_TOKEN) if GH_TOKEN else ''
 
 
 # ----------------------------------------------------------------------------
@@ -43,17 +42,15 @@ TOKEN_URL = "access_token={}".format(GH_TOKEN) if GH_TOKEN else ''
 
 
 def fetch_url(url):
-    if TOKEN_URL:
-        if "?" in url:
-            url += "&{0}".format(TOKEN_URL)
-        else:
-            url += "?{0}".format(TOKEN_URL)
+    req = Request(url)
+    if GH_TOKEN:
+        req.add_header('Authorization', 'token {0}'.format(GH_TOKEN))
     try:
         print("fetching %s" % url, file=sys.stderr)
         # url = Request(url,
         #               headers={'Accept': 'application/vnd.github.v3+json',
         #                        'User-agent': 'Defined'})
-        f = urlopen(url)
+        f = urlopen(req)
     except Exception as e:
         print(e)
         print("return Empty data", file=sys.stderr)
