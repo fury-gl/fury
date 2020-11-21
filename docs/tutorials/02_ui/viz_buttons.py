@@ -13,7 +13,7 @@ from fury import ui, window
 from fury.data import read_viz_icons, fetch_viz_icons
 
 ##############################################################################
-# First we need to fetch some icons that are included in DIPY.
+# First we need to fetch some icons that are included in FURY.
 
 fetch_viz_icons()
 
@@ -79,7 +79,7 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 
 current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size,
-                                  title="DIPY Button Example")
+                                  title="FURY Button Example")
 
 show_manager.scene.add(panel)
 

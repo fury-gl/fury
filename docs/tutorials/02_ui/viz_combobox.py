@@ -12,7 +12,7 @@ from fury import ui, window
 from fury.data import fetch_viz_icons
 
 ##############################################################################
-# First we need to fetch some icons that are included in DIPY.
+# First we need to fetch some icons that are included in FURY.
 
 fetch_viz_icons()
 
