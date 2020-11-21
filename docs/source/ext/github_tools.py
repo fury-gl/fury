@@ -278,7 +278,7 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         plt.grid(True)
         plt.legend([mpatches.Patch(color='skyblue'), ],
                    ['Contributors', ], bbox_to_anchor=(0.5, 1.1),
-                    loc='upper center')
+                   loc='upper center')
         plt.savefig('fury_cumulative_contributors.png', dpi=150)
         plt.show()
 
