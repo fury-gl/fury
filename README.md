@@ -36,9 +36,9 @@
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ws_smaller.gif" alt="FURY Networks" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/swarming_simulation.gif" alt="swarming simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_horse.gif" alt="shaders horse" width="400px"></a> |
 | *Network Visualization*          | *Swarming/flocking simulation based on simple boids rules*  |  *Easy shader effect integration.*  |
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_sdf.gif" alt="sdf" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/collides_simulation.gif" alt="Collides simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_fast.gif" alt="Physics bricks" width="400px"></a> |
-| Ray Marching and Signed Distance Functions | Particle collisions | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
+| *Ray Marching and Signed Distance Functions* | *Particle collisions* | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_tab.gif" alt="UI Tabs" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_dragon_skybox.gif" alt="Shaders dragon skybox" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/picking_engine.gif" alt="Picking object" width="400px"></a> |
-| Custom *User Interfaces* |  Shaders and SkyBox integration  | Easy *picking manager* |
+| *Custom User Interfaces* |  *Shaders and SkyBox integration*  | *Easy picking manager* |
 
 
 # General Information
