@@ -4,7 +4,7 @@
 
 -   ``source``: Contains main *.rst files
 -   ``tutorials``: python script describe how to use the api
--   ``examples``: Fury app showcases 
+-   ``examples``: Fury app showcases
 -   ``build``: Contains the generated documentation
 
 ## Doc generation steps:
@@ -25,9 +25,21 @@ $ pip install -U -r requirements/docs.txt
 $ make -C . clean && make -C . html
 ```
 
+To generate the documentation without running the examples:
+
+```bash
+$ make -C . clean && make -C . html-no-examples
+```
 #### Under Windows
 
 ```bash
 $ ./make.bat clean
 $ ./make.bat html
+```
+
+To generate the documentation without running the examples:
+
+```bash
+$ ./make.bat clean
+$ ./make.bat html-no-examples
 ```

@@ -155,10 +155,19 @@ Building the documentation
 
     $ make -C . clean && make -C . html
 
+To generate the documentation without running the examples::
+
+    $ make -C . clean && make -C . html-no-examples
+
 or under Windows::
 
     $ ./make.bat clean
     $ ./make.bat html
+
+To generate the documentation without running the examples under Windows::
+
+    $ ./make.bat clean
+    $ ./make.bat html-no-examples
 
 
 **Step 3.** Congratulations! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
