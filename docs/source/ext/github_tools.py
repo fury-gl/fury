@@ -209,6 +209,79 @@ def fetch_contributor_stats(project="fury-gl/fury"):
     return contributor_stats
 
 
+def cumulative_contributors(project="fury-gl/fury", show=True):
+    """Calculate total contributors as new contributors join with time.
+
+    Parameters
+    ----------
+    contributors_list : list
+        List of contributors with weeks of contributions. Example:
+        [
+            {
+                'weeks': [
+                        {'w': 1254009600, 'a': 5, 'c': 2, 'd': 9},
+                    ],
+                .....
+            },
+        ]
+
+    """
+    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    r_json = get_json_from_url(url)
+    contributors_join_date = {}
+
+    for contributor in r_json:
+        for week in contributor["weeks"]:
+            if(week["c"] > 0):
+                join_date = week['w']
+        if join_date not in contributors_join_date:
+            contributors_join_date[join_date] = 0
+        contributors_join_date[join_date] += 1
+
+    cumulative_join_date = {}
+    cumulative = 0
+    for time in sorted(contributors_join_date):
+        cumulative += contributors_join_date[time]
+        cumulative_join_date[time] = cumulative
+
+    cumulative_list = list(cumulative_join_date.items())
+    cumulative_list.sort()
+
+    if show:
+        from datetime import datetime
+        import matplotlib.patches as mpatches
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        years, c_cum = zip(*cumulative_list)
+        years_ticks = np.linspace(min(years), max(years), 15)
+        years_labels = []
+        for y in years_ticks:
+            date = datetime.utcfromtimestamp(int(y))
+            date_str = "Q{} - ".format((date.month - 1) // 3 + 1)
+            date_str += date.strftime('%Y')
+            years_labels.append(date_str)
+        plt.fill_between(years, c_cum,
+                         color="skyblue", alpha=0.4)
+        plt.plot(years, c_cum, color="Slateblue",
+                 alpha=0.6, linewidth=2)
+
+        plt.tick_params(labelsize=12)
+        plt.xticks(years_ticks, years_labels, rotation=45, fontsize=8)
+        plt.yticks(fontsize=8)
+        plt.xlabel('Date', size=12)
+        plt.ylabel('Contributors', size=12)
+        plt.ylim(bottom=0)
+        plt.grid(True)
+        plt.legend([mpatches.Patch(color='skyblue'), ],
+                   ['Contributors', ], bbox_to_anchor=(0.5, 1.1),
+                   loc='upper center')
+        plt.savefig('fury_cumulative_contributors.png', dpi=150)
+        plt.show()
+
+    return cumulative_list
+
+
 def _parse_datetime(s):
     """Parse dates in the format returned by the Github API."""
     if s:
