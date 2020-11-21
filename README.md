@@ -37,6 +37,8 @@
 | *Network Visualization*          | *Swarming/flocking simulation based on simple boids rules*  |  *Easy shader effect integration.*  |
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_sdf.gif" alt="sdf" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/collides_simulation.gif" alt="Collides simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks.gif" alt="Physics bricks" width="400px"></a> |
 | Ray Marching and Signed Distance Functions |  *Advanced Nano simulation capablities.* | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
+| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_loader.gif" alt="UI Loader" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_tab.gif" alt="UI Tabs" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_sliders.gif" alt="Physics bricks" width="400px"></a> |
+| Custom *Loader UI* |  Custom *Tabs UI.* | Custom *Sliders UI.* and more... |
 
 
 # General Informations
@@ -67,8 +69,9 @@
 FURY requires:
 
 - Numpy (>=1.7.1)
-- Vtk (>=8.1.0)
-- Scipy (>=0.9)
+- Vtk (>=8.1.2)
+- Scipy (>=1.2.0)
+- Pillow>=5.4.1
 
 ## Releases
 
