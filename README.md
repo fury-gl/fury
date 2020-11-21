@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="#general-informations">General Informations</a> •
+  <a href="#general-information">General Information</a> •
   <a href="#key-features">Key Features</a> •
   <a href="#installation">Installation</a> •
   <a href="#how-to-use">How to use</a> •
@@ -35,13 +35,13 @@
 |:--------|:--------|:--------|
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ws_smaller.gif" alt="FURY Networks" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/swarming_simulation.gif" alt="swarming simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_horse.gif" alt="shaders horse" width="400px"></a> |
 | *Network Visualization*          | *Swarming/flocking simulation based on simple boids rules*  |  *Easy shader effect integration.*  |
-| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_sdf.gif" alt="sdf" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/collides_simulation.gif" alt="Collides simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks.gif" alt="Physics bricks" width="400px"></a> |
-| Ray Marching and Signed Distance Functions |  *Advanced Nano simulation capablities.* | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
+| <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/shaders_sdf.gif" alt="sdf" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/collides_simulation.gif" alt="Collides simulation" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_fast.gif" alt="Physics bricks" width="400px"></a> |
+| Ray Marching and Signed Distance Functions | Particle collisions | *Interoperability with the [pyBullet](https://pybullet.org/wordpress/) library.*  |
 | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_loader.gif" alt="UI Loader" width="400px"></a>  | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_tab.gif" alt="UI Tabs" width="400px"></a> | <a href="#"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/ui_sliders.gif" alt="Physics bricks" width="400px"></a> |
 | Custom *Loader UI* |  Custom *Tabs UI.* | Custom *Sliders UI.* and more... |
 
 
-# General Informations
+# General Information
 
 - **Website and Documentation:** https://fury.gl
 - **Tutorials:** https://fury.gl/latest/auto_tutorials/index.html
