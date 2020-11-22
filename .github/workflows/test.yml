@@ -52,6 +52,7 @@ jobs:
       LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
       GH_REF: github.com/fury-gl/fury-website.git
+      ENV_DIR: ${{ github.workspace }}/envs
 
     steps:
     - uses: actions/checkout@v2
@@ -79,7 +80,6 @@ jobs:
       run: |
         [ "macos-latest" == "${{ matrix.os }}" ] && echo "TRAVIS_OS_NAME="osx"" || echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV
         [ "schedule" == "${{ github.event_name }}" ] && echo "TRAVIS_EVENT_TYPE="cron"" || echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV
-        echo "ENV_DIR="~/envs"" >> $GITHUB_ENV
     - name: Print some Environment variables
       run: |
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
