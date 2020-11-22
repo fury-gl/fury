@@ -48,7 +48,6 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      ENV_DIR: ~/envs
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
@@ -78,12 +77,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Setup Environment variables
       run: |
-        echo "[ "macos-latest" == "${{ matrix.os }}" ] && TRAVIS_OS_NAME="osx" || TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV
-        echo "[ "schedule" == "${{ github.event_name }}" ] && TRAVIS_EVENT_TYPE="cron" || TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV
+        [ "macos-latest" == "${{ matrix.os }}" ] && echo TRAVIS_OS_NAME="osx" || echo TRAVIS_OS_NAME="${{ matrix.os }}" >> $GITHUB_ENV
+        [ "schedule" == "${{ github.event_name }}" ] && echo TRAVIS_EVENT_TYPE="cron" || echo TRAVIS_EVENT_TYPE="${{ github.event_name }}" >> $GITHUB_ENV
+        ENV_DIR="~/envs" >> $GITHUB_ENV
     - name: Print some Environment variables
       run: |
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
         echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
+        echo "ENV_DIR: ${ENV_DIR}"
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
