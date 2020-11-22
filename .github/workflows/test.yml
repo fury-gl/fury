@@ -48,7 +48,7 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      ENV_DIR: ${HOME}/envs
+      ENV_DIR: ~/envs
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
@@ -80,6 +80,10 @@ jobs:
       run: |
         echo "[ "macos-latest" == "${{ matrix.os }}" ] && TRAVIS_OS_NAME="osx" || TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV
         echo "[ "schedule" == "${{ github.event_name }}" ] && TRAVIS_EVENT_TYPE="cron" || TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV
+    - name: Print some Environment variables
+      run: |
+        echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
+        echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
