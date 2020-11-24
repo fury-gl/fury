@@ -48,6 +48,7 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
+      TRAVIS_OS_NAME: ${{ matrix.os }}
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
@@ -86,8 +87,9 @@ jobs:
         echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
         echo "ENV_DIR: ${ENV_DIR}"
     - name: Start Xvfb
+      if: startsWith(matrix.os,'ubuntu')
       run: |
-        sudo systemctl start xvfb
+        Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
         export DISPLAY=:99.0
     - name: Install dependencies
       run: |
