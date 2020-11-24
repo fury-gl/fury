@@ -50,7 +50,7 @@ jobs:
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
-      DISPLAY: :99
+      # DISPLAY: :99
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
 
