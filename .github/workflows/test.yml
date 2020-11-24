@@ -48,7 +48,6 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      TRAVIS_OS_NAME: ${{ matrix.os }}
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
@@ -79,8 +78,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Setup Environment variables
       run: |
-        [ "macos-latest" == "${{ matrix.os }}" ] && echo "TRAVIS_OS_NAME='osx'" || echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV
-        [ "schedule" == "${{ github.event_name }}" ] && echo "TRAVIS_EVENT_TYPE=cron" || echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV
+        if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
+        if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
     - name: Print some Environment variables
       run: |
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
@@ -95,10 +94,8 @@ jobs:
       run: |
         bash ci/travis/install.sh
     - name: Install and Test
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: |
-          bash ci/travis/script.sh
+      run: |
+        bash ci/travis/script.sh
     - name: Upload Coverage
       if: ${{ matrix.COVERAGE }} == 1
       run: |
