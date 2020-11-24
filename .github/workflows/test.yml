@@ -23,7 +23,7 @@ jobs:
         python-version: [3.7] #  [3.6, 3.7, 3.8]
         os: [ubuntu-latest, macos-latest]
         platform: [x64]
-        INSTALL_TYPE: [pip, conda]
+        install_type: [pip, conda]
         OPTIONAL_DEPS: [0, 1]
         include:
           - os: ubuntu-20.04
@@ -31,15 +31,15 @@ jobs:
             OPTIONAL_DEPS: 1
             BUILD_DOCS: 1
             DEPLOY_DOCS: 1
-            INSTALL_TYPE: pip
+            install_type: pip
           - os: ubuntu-20.04
             python-version: 3.8
-            INSTALL_TYPE: pip
+            install_type: pip
             OPTIONAL_DEPS: 1
             COVERAGE: 1
           - os: ubuntu-20.04
             python-version: 3.8
-            INSTALL_TYPE: pip
+            install_type: pip
             OPTIONAL_DEPS: 1
             USE_PRE: 1
     env:
@@ -50,9 +50,11 @@ jobs:
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
       MESA_GL_VERSION_OVERRIDE: 3.3
       LIBGL_ALWAYS_INDIRECT: y
-      # DISPLAY: :99
+      DISPLAY: :99
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
+      INSTALL_TYPE: ${{ matrix.install_type }}
+      OPTIONAL_DEPS: ${{ matrix.OPTIONAL_DEPS }}
 
     steps:
     - uses: actions/checkout@v2
@@ -85,10 +87,12 @@ jobs:
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
         echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
         echo "ENV_DIR: ${ENV_DIR}"
-    # - name: Start Xvfb
-    #   if: startsWith(matrix.os,'ubuntu')
-    #   run: |
-    #     Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
+    - name: Start Xvfb
+      if: startsWith(matrix.os,'ubuntu')
+      run: |
+        apt-get install libgl1-mesa-dev xvfb
+        which Xvfb
+        Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
     #     export DISPLAY=:99.0
     - name: Install dependencies
       run: |
