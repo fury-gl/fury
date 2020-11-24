@@ -25,6 +25,7 @@ jobs:
         platform: [x64]
         install_type: [pip, conda]
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
+        pip-flags: ['']
         include:
           - os: ubuntu-20.04
             python-version: 3.8
@@ -48,12 +49,12 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      # MESA_GL_VERSION_OVERRIDE: 3.3
-      # LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
       INSTALL_TYPE: ${{ matrix.install_type }}
+      PRE_PIP_FLAGS: '--pre --extra-index-url https://pypi.anaconda.org/scipy-wheels-nightly/simple'
+      EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
 
     steps:
     - uses: actions/checkout@v2
@@ -97,7 +98,7 @@ jobs:
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
-    - name: Install and Test
+    - name: Install FURY and Test it!
       run: |
         bash ci/travis/script.sh
     - name: Upload Coverage

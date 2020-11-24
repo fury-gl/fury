@@ -12,7 +12,9 @@ fi
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
-pip install .
+python3 setup.py install
+python3 -c "import fury; print(fury.__version__)"
+
 if [[ "${COVERAGE}" == "1" ]]; then
   coverage run -m pytest -svv fury  # Run the tests and check for test coverage.
   coverage report -m  # Generate test coverage report.
