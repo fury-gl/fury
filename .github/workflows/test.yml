@@ -24,7 +24,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         platform: [x64]
         install_type: [pip, conda]
-        depends: ['DEFAULT_DEPS', 'OPTIONAL_DEPS']
+        depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
         include:
           - os: ubuntu-20.04
             python-version: 3.8
@@ -48,8 +48,8 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      MESA_GL_VERSION_OVERRIDE: 3.3
-      LIBGL_ALWAYS_INDIRECT: y
+      # MESA_GL_VERSION_OVERRIDE: 3.3
+      # LIBGL_ALWAYS_INDIRECT: y
       DISPLAY: :99
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
@@ -81,7 +81,7 @@ jobs:
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
-        if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}"]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
+        if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}" ]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
     - name: Print some Environment variables
       run: |
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
