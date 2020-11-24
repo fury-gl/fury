@@ -90,7 +90,7 @@ jobs:
     - name: Start Xvfb
       if: startsWith(matrix.os,'ubuntu')
       run: |
-        apt-get install libgl1-mesa-dev xvfb
+        sudo apt-get install libgl1-mesa-dev xvfb
         which Xvfb
         Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
     #     export DISPLAY=:99.0

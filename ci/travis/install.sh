@@ -5,8 +5,6 @@ set -ev
 mkdir ${ENV_DIR}
 cd ${ENV_DIR}
 
-echo "$INSTALL_TYPE"
-
 if [ "$INSTALL_TYPE" == "pip" ]; then
     PIPI="pip install $EXTRA_PIP_FLAGS"
     if [ -n "$USE_PRE" ]; then
