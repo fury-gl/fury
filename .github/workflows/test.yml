@@ -85,11 +85,11 @@ jobs:
         echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
         echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
         echo "ENV_DIR: ${ENV_DIR}"
-    - name: Start Xvfb
-      if: startsWith(matrix.os,'ubuntu')
-      run: |
-        Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
-        export DISPLAY=:99.0
+    # - name: Start Xvfb
+    #   if: startsWith(matrix.os,'ubuntu')
+    #   run: |
+    #     Xvfb :99 -screen 0 1024x768x24 2>&1 >/dev/null &
+    #     export DISPLAY=:99.0
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
