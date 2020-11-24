@@ -13,18 +13,24 @@ fi
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
 python3 setup.py install
+# Change folder
+mkdir for_testing
+cd for_testing
 python3 -c "import fury; print(fury.__version__)"
 
 if [[ "${COVERAGE}" == "1" ]]; then
-  coverage run -m pytest -svv fury  # Run the tests and check for test coverage.
+  coverage run -m pytest -svv --pyargs fury  # Run the tests and check for test coverage.
   coverage report -m  # Generate test coverage report.
   codecov  # Upload the report to codecov.
 else
-    pytest -svv fury
+    pytest -svv --pyargs fury
 fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
   # Build the documentation.
   # xvfb-run --server-args="-screen 0, 1920x1080x24" \
+  cd ${TRAVIS_BUILD_DIR}
   make -C docs html
 fi
+
+set +ev
