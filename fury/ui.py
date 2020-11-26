@@ -3777,7 +3777,25 @@ class ListBox2D(UI):
                               self.down_button_callback)
 
     def resize(self, size):
-        pass
+        """
+            Resizes ListBox2D i.e resizes the UI components which renders ListBox2D, such as slots, scrollbar etc.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        
+        # Resizing the panel_size will resize the slots accordingly. 
+        self.panel.resize(size)
+
+        # Resizing the Scroll Bar.
+        self.scroll_bar.resize(size)
+
+        # Adjusting the Font Size & Line Spacing for "Testing" purpose.
+        self.font_size = self.font_size//2
+        self.line_spacing = self.line_spacing//2
+     
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
