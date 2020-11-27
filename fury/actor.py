@@ -1413,8 +1413,8 @@ def point(points, colors, point_radius=0.1, theta=8, phi=8, opacity=1.):
     >>> # window.show(scene)
 
     """
-    return sphere(centers=points, opacity=opacity, colors=colors, radii=point_radius,
-                  theta=theta, phi=phi, vertices=None, faces=None)
+    return sphere(centers=points, colors=colors, radii=point_radius,
+                  theta=theta, phi=phi, vertices=None, faces=None, opacity=opacity)
 
 
 def sphere(centers, colors, radii=1., theta=16, phi=16,
