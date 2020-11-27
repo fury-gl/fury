@@ -848,8 +848,9 @@ def test_dots(interactive=False):
 def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-
-    points_actor = actor.point(points, colors)
+    opacity = 0.5
+    
+    points_actor = actor.point(points, colors, opacity=opacity)
 
     scene = window.Scene()
     scene.add(points_actor)
@@ -860,6 +861,7 @@ def test_points(interactive=False):
         window.show(scene, reset_camera=False)
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(points_actor.GetProperty().GetOpacity(), opacity)
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
@@ -886,10 +888,11 @@ def test_spheres(interactive=False):
 
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+    opacity=0.5
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3])
+                                radii=xyzr[:, 3], opacity=opacity)
     scene.add(sphere_actor)
 
     if interactive:
@@ -899,6 +902,7 @@ def test_spheres(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
+    npt.assert_equal(sphere_actor.GetProperty().GetOpacity(), opacity)
 
     # test with an unique color for all centers
     scene.clear()
