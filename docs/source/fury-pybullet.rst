@@ -405,3 +405,152 @@ Lastly, we call this function in our timer callback to sync the objects correctl
 
 *NOTE: VTK has an in-built method to handle gimbal locks therefore using ``actor.SetOrientation`` may lead to unwanted spinning simulations each time a gimbal lock is experienced. Hence, it is always advisable to use vertices and its corresponding rotation matrix to set the orientation.*
 
+Rendering Joints
+----------------
+
+# Image goes Here
+
+A simulated robot as described in a URDF file has a base, and optionally links connected by joints. Each joint connects one parent link to a child link. At the root of the hierarchy there is a single root parent that we call base. The base can be either fully fixed, 0 degrees of freedom, or fully free, with 6 degrees of freedom. Since each link is connected to a parent with a single joint, the number of joints is equal to the number of links. Regular links have link indices in the range [0..getNumJoints()] Since the base is not a regular 'link', we use the convention of -1 as its link index. We use the convention that joint frames are expressed relative to the parent center of mass inertial frame, which is aligned with the principal axis of inertia. To know more how joints are implemented in pybullet refer the official docs here.
+
+We can create and sync joints in pybullet and fury by following a few simple steps:
+
+Firstly, in order to create objects with multiple joints we need to keep track of the following parameters:
+
+
++-----------------------------+--------------------+------------------------------------------+
+|     Vertices                |      Shape         |             Description                  |
++=============================+====================+==========================================+
+|     nb_links                |       1,1          |  Number of links to be rendered.         |
++-----------------------------+--------------------+------------------------------------------+
+|    link_masses              |     nb_links       |  Masses of the links.                    |
++-----------------------------+--------------------+------------------------------------------+
+|  linkCollisionShapeIndices  |     nb_links       |  Array tracking the collision shape IDs. |
++-----------------------------+--------------------+------------------------------------------+
+|  linkVisualShapeIndices     |     nb_links       |  Optional as we won't be using           |
+|                             |                    |  pybullet’s GUI render.                  |
++-----------------------------+--------------------+------------------------------------------+
+|  linkPositions              |     nb_links, 3    |  Position of the links in [x, y, z].     |
++-----------------------------+--------------------+------------------------------------------+
+|  linkOrientations           |     nb_links, 4    |  Orientation of the links in             |
+|                             |                    |  [x, y, z, w].                           |
++-----------------------------+--------------------+------------------------------------------+
+|  linkInertialFramePositions |     nb_links, 3    |  Position of the inertial frame of the   |
+|                             |                    |  links.                                  |
++-----------------------------+--------------------+------------------------------------------+
+|  linkInertialFrameOrns      |     nb_links, 4    |  Orientation of the inertial frame of    |
+|                             |                    |  the links.                              |
++-----------------------------+--------------------+------------------------------------------+
+|  indices                    |     nb_link        |  Link ID each corresponding link is      |
+|                             |                    |  supposed to attach at.                  |
++-----------------------------+--------------------+------------------------------------------+
+|  jointTypes                 |     nb_link        |  The type of joint between the links.    |
+|                             |                    |  Multiple joint types are available.     |
++-----------------------------+--------------------+------------------------------------------+
+|  axis                       |     nb_links, 3    |  The axis at which each link is supposed |
+|                             |                    |  to rotate.                              |
++-----------------------------+--------------------+------------------------------------------+
+|  linkDirections             |     nb_links, 3    |  Direction vector required to render     |
+|                             |                    |  links in fury.                          |
++-----------------------------+--------------------+------------------------------------------+
+
+Extra Arrays such as linkHeights, linkRadii etc may be required based on the link shape.
+**Base link** is rendered separately, hence the above parameters should not contain information about the base link.
+
+Now separately create definitions for the base link using the following parameters. Once we are ready with the required link parameters and definition, we can create a multibody to be rendered in the pybullet world. We can do so using ``p.createMultiBody``. Here’s a snippet:
+
+.. code-block:: python
+
+  rope = p.createMultiBody(base_mass,
+                     	   base_shape,
+                     	   visualShapeId,
+                     	   basePosition,
+                     	   baseOrientation,
+                     	   linkMasses=link_Masses,
+                          linkCollisionShapeIndices=linkCollisionShapeIndices,
+                     	   linkVisualShapeIndices=linkVisualShapeIndices,
+                     	   linkPositions=linkPositions,
+                     	   linkOrientations=linkOrientations,
+              	          linkInertialFramePositions=linkInertialFramePositions,
+                 	    linkInertialFrameOrientations=linkInertialFrameOrns,
+                     	   linkParentIndices=indices,
+                     	   linkJointTypes=jointTypes,
+                     	   linkJointAxis=axis)
+
+Once we are done with the multibody we can create the actor to render the links:
+
+.. code-block:: python
+
+  rope_actor = actor.cylinder(centers=linkPositions,
+                        directions=linkDirections,
+                        colors=np.random.rand(n_links, 3),
+                        radius=radii,
+                        heights=link_heights, capped=True)
+
+We can sync the joints using the following code snippet:
+
+.. code-block:: python
+
+  def sync_joints(actor_list, multibody):
+    for joint in range(p.getNumJoints(multibody)):
+        pos, orn = p.getLinkState(multibody, joint)[4:6]
+
+        rot_mat = np.reshape(
+        	p.getMatrixFromQuaternion(
+            	p.getDifferenceQuaternion(orn, linkOrientations[joint])),
+        	(3, 3))
+
+    	vertices[joint * sec: joint * sec + sec] =\
+        	(vertices[joint * sec: joint * sec + sec] -
+         	linkPositions[joint])@rot_mat + pos
+
+    	linkPositions[joint] = pos
+    	linkOrientations[joint] = orn
+
+Here, we determine the total number of joints using ``p.getNumJoints`` and run a loop to iterate through all the joints present within the object. Once we get access to a particular joint we use the ``p.getLinkState`` to get various information about a particular joint. Within the list of information we have access to positions and orientation of the joints at index 4 and 5. So we perform the query to get the position and orientation of the joints. After that the process of translation and rotation are the same as shown here.
+
+
+Examples
+********
+
+Brick Wall Simulation
+---------------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
+Ball Collision Simulation
+-------------------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
+Brick Wall Simulation(Single Actor)
+-----------------------------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
+Chain Simulation
+----------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
+Wrecking Ball Simulation
+------------------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
+Domino Simulation
+-----------------
+
+# adding gif
+
+The code for the above simulation can be found here.
+
