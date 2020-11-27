@@ -1386,7 +1386,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
-def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
+def point(points, colors, point_radius=0.1, theta=8, phi=8, opacity=1.):
     """Visualize points as sphere glyphs
 
     Parameters
@@ -1397,7 +1397,7 @@ def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
     theta : int
     phi : int
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque)
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
 
     Returns
     -------
@@ -1418,7 +1418,7 @@ def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
 
 
 def sphere(centers, colors, radii=1., theta=16, phi=16,
-           vertices=None, opacity=1, faces=None):
+           vertices=None, faces=None, opacity=1):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1436,6 +1436,9 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     faces : ndarray, shape (M, 3)
         If faces is None then a sphere is created based on theta and phi angles
         If not then a sphere is created with the provided vertices and faces.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+
 
     Returns
     -------
@@ -1461,7 +1464,9 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
+    
     actor.GetProperty().SetOpacity(opacity)
+    
     return actor
 
 
