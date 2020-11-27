@@ -1386,7 +1386,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
-def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
+def point(points, colors, opacity=1., point_radius=0.1, theta=8, phi=8):
     """Visualize points as sphere glyphs
 
     Parameters
@@ -1413,12 +1413,12 @@ def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     >>> # window.show(scene)
 
     """
-    return sphere(centers=points, colors=colors, radii=point_radius,
+    return sphere(centers=points, opacity=opacity, colors=colors, radii=point_radius,
                   theta=theta, phi=phi, vertices=None, faces=None)
 
 
 def sphere(centers, colors, radii=1., theta=16, phi=16,
-           vertices=None, faces=None):
+           vertices=None, opacity=1, faces=None):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1461,7 +1461,7 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
-
+    actor.GetProperty().SetOpacity(opacity)
     return actor
 
 
