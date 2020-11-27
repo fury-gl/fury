@@ -849,7 +849,7 @@ def test_points(interactive=False):
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     opacity = 0.5
-    
+
     points_actor = actor.point(points, colors, opacity=opacity)
 
     scene = window.Scene()
