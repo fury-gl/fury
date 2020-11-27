@@ -1464,9 +1464,9 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
-    
+
     actor.GetProperty().SetOpacity(opacity)
-    
+
     return actor
 
 
