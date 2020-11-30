@@ -1,5 +1,6 @@
 """Module that provide actors to render."""
 
+import warnings
 import os.path as op
 import numpy as np
 import vtk
@@ -2545,9 +2546,9 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     directions : ndarray, shape (N, 3)
         The orientation vector of the SDF primitive.
-    primitives : str
+    primitives : str, list, tuple, np.ndarray
         The primitive of choice to be rendered.
-        Options are sphere and torus. Default is torus
+        Options are sphere and torus. Default is torus.
     scales : float
         The size of the SDF primitive
 
@@ -2569,6 +2570,9 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
     if isinstance(primitives,  (list, tuple, np.ndarray)):
         primlist = [prims[prim] for prim in primitives]
+        if len(primitives) < len(centers):
+            primlist = primlist + [2] * (len(centers) - len(primitives))
+            warnings.warn("Not enough primitives provided, defaulting to torus")
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
         rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)
