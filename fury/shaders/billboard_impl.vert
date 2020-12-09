@@ -1,4 +1,5 @@
 /* Billboard  vertex shader implementation */
+centerVertexMCVSOutput = center;
 normalizedVertexMCVSOutput = vertexMC.xyz - center; // 1st Norm. [-scale, scale]
 float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
 float size = abs(normalizedVertexMCVSOutput.x) * 2;
