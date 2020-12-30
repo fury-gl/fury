@@ -20,7 +20,7 @@ Let us include the ``suzanne`` model used by Blender
 
 Set the opacity of the model::
 
-    modelsuzanne.GetProperty().SetOpacity(0.5)
+    suzanne.GetProperty().SetOpacity(0.5)
 
 Let's create some random variables for the cylinder parameters
 
