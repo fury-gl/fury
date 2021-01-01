@@ -1386,7 +1386,7 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
-def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
+def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
     """Visualize points as sphere glyphs
 
     Parameters
@@ -1394,10 +1394,10 @@ def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     points : ndarray, shape (N, 3)
     colors : ndarray (N,3) or tuple (3,)
     point_radius : float
-    theta : int
     phi : int
+    theta : int
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque)
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
 
     Returns
     -------
@@ -1413,12 +1413,12 @@ def point(points, colors, _opacity=1., point_radius=0.1, theta=8, phi=8):
     >>> # window.show(scene)
 
     """
-    return sphere(centers=points, colors=colors, radii=point_radius,
-                  theta=theta, phi=phi, vertices=None, faces=None)
+    return sphere(centers=points, colors=colors, radii=point_radius, phi=phi,
+                  theta=theta, vertices=None, faces=None, opacity=opacity)
 
 
-def sphere(centers, colors, radii=1., theta=16, phi=16,
-           vertices=None, faces=None):
+def sphere(centers, colors, radii=1., phi=16, theta=16,
+           vertices=None, faces=None, opacity=1):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1429,13 +1429,16 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     radii : float or ndarray, shape (N,)
         Sphere radius
-    theta : int
     phi : int
+    theta : int
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
         If faces is None then a sphere is created based on theta and phi angles
         If not then a sphere is created with the provided vertices and faces.
+    opacity : float, optional
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+
 
     Returns
     -------
@@ -1461,6 +1464,8 @@ def sphere(centers, colors, radii=1., theta=16, phi=16,
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
+
+    actor.GetProperty().SetOpacity(opacity)
 
     return actor
 
