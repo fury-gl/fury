@@ -1228,13 +1228,10 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     colors : tuple or None
         Default red color. If None then every peak gets an orientation color
         in similarity to a DEC map.
-
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque)
-
     linewidth : float, optional
         Line thickness. Default is 1.
-
     lod : bool
         Use vtkLODActor(level of detail) rather than vtkActor.
         Default is False. Level of detail actors do not render the full
@@ -1244,8 +1241,9 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     lod_points_size : int
         Size of points when lod is in effect. Default is 3.
     symmetric: bool, optional
-        If True, the input peaks directions are reflected relative to the
-        center of the voxel. Else, peaks directions are rendered as is.
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     Returns
     -------
