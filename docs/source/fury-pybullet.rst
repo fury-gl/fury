@@ -1,62 +1,67 @@
 Fury - pyBullet Integration Guide
 =================================
 
-* Simple Rigid body dynamics
+* :ref:`Simple Rigid body dynamics <simple_rigid_body_dynamics>`
 
-  * Necessary Imports
+  * :ref:`Necessary Imports <imports>`
 
-  * Connection Mode
+  * :ref:`Connection Mode <connection>`
 
-  * Disconnection
+  * :ref:`Disconnection <disconnection>`
 
-  * Setting Gravity
+  * :ref:`Setting Gravity <gravity>`
 
-  * Creating Objects
+  * :ref:`Creating Objects <objects>`
 
-  * Changing Object Dynamics
+  * :ref:`Changing Object Dynamics <change_dynamics>`
 
-  * Adding objects to the scene
+  * :ref:`Adding objects to the scene <add_to_scene>`
 
-  * Application of Force/Torque
+  * :ref:`Application of Force/Torque <apply_force_torque>`
 
-  * Enabling Collision
+  * :ref:`Enabling Collision <enable_collision>`
 
-  * Creation of Show Manager
+  * :ref:`Creation of Show Manager <show_manager>`
 
-  * Syncing properties of Actors
+  * :ref:`Syncing properties of Actors <sync_actors>`
 
-  * Creation of timer callback
+  * :ref:`Creation of timer callback <timer_callback>`
 
-  * Initiating the simulation
+  * :ref:`Initiating the simulation <init_simulation>`
 
-  * Rendering multiple objects by a single actor
+  * :ref:`Rendering multiple objects by a single actor <single_actor>`
 
-  * Rendering Joints
+  * :ref:`Rendering Joints <render_joints>`
 
 
-* Examples
+* :ref:`Examples <examples>`
 
-  * Brick Wall Simulation
+  * :ref:`Brick Wall Simulation <brick_wall_multi>`
 
-  * Ball Collision Simulation
+  * :ref:`Ball Collision Simulation <ball_collision>`
 
-  * Brick Wall Simulation(Single Actor)
+  * :ref:`Brick Wall Simulation(Single Actor) <brick_wall_single>`
 
-  * Chain Simulation
+  * :ref:`Chain Simulation <chain_simulation>`
 
-  * Wrecking Ball Simulation
+  * :ref:`Wrecking Ball Simulation <wrecking_ball_simulation>`
+
+  * :ref:`Domino Simulation <domino_simulation>`
 
 
 **Official docs:**
-  * FURY
+  * `FURY <https://fury.gl/latest/reference/index.html>`__
 
-  * pyBullet
+  * `pyBullet <https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#>`__
 
 **NOTE: All elements are in SI units.**
 
+.. _simple_rigid_body_dynamics:
 
 Simple Rigid Body Dynamics
 **************************
+
+.. _imports:
 
 Necessary Imports
 -----------------
@@ -82,6 +87,7 @@ The following imports are necessary for physics simulations:
   import itertools
   import pybullet as p
 
+.. _connection:
 
 Connection Mode
 ---------------
@@ -96,6 +102,7 @@ In our case we use **DIRECT** connection as the visualization will be handled by
 
 *Note: keeping track of physics client ID is optional unless multiple physics clients are used. In order to observe the same simulation in pybullet, replace p.DIRECT with p.GUI.*
 
+.. _disconnection:
 
 Disconnection
 -------------
@@ -105,6 +112,8 @@ PyBullet Physics client can be shutdown by the following command:
 .. code-block:: python
 
   p.disconnect()
+
+.. _gravity:
 
 Setting Gravity
 ---------------
@@ -118,6 +127,8 @@ Global Scene gravity can be set using the following command:
   gravity_y = 0
   gravity_z = -10
   p.setGravity(gravity_x, gravity_y, gravity_z)
+
+.. _objects:
 
 Creating Objects
 ----------------
@@ -156,6 +167,7 @@ The following is a snippet for creating a spherical ball of radius = 0.3
 
 *Note: Centers for the actor must be set to (0, 0, 0) or else the simulation will be offset by that particular value.*
 
+.. _change_dynamics:
 
 Changing Object Dynamics
 ------------------------
@@ -168,6 +180,8 @@ Object dynamics such as mass, lateral_friction, damping, inertial_pos, inertial_
 
 *Note: The second parameter is linkIndex which is for bodies having multiple links or joints. Passing -1 means applying changes to the base object.*
 
+.. _add_to_scene:
+
 Adding objects to the scene
 ---------------------------
 
@@ -177,6 +191,8 @@ Objects can be added simply by adding their respective actors to the scene.
 
   scene = window.Scene()
   scene.add(ball_actor)
+
+.. _apply_force_torque:
 
 Application of Force/Torque
 ---------------------------
@@ -190,13 +206,15 @@ External force or torque to a body can be applied using applyExternalForce and a
                        posObj=ball_pos,
                        flags=p.WORLD_FRAME)
 
-Here, the first argument refers to the object, the second one refers to the link, forceObj = force vector, posObj = Position Vector of the application of force[Not applicable for applyExternalTorque].
+Here, the first argument refers to the object, the second one refers to the link, ``forceObj`` = force vector, ``posObj`` = Position Vector of the application of force. [Not applicable for applyExternalTorque].
 
 .. code-block:: python
 
   p.applyExternalTorque(ball, -1,
                        forceObj=[-2000, 0, 0],
                        flags=p.WORLD_FRAME)
+
+.. _enable_collision:
 
 Enabling collision
 ------------------
@@ -209,6 +227,8 @@ By default, collision detection is enabled between different dynamic moving bodi
   p.setCollisionFilterPair(ball, brick, -1, -1, enableCol)
 
 Here, we enable the collision between a ball and a brick object.
+
+.. _show_manager:
 
 Creation of Show Manager
 ------------------------
@@ -225,6 +245,8 @@ A window.ShowManager and itertools.count instance must be created before definin
   # Counter iterator for tracking simulation steps.
   counter = itertools.count()
 
+.. _sync_actors:
+
 Syncing properties of actors
 ----------------------------
 
@@ -240,12 +262,14 @@ The position and orientation of the actors in FURY can be updated by the values 
   orn_deg = np.degrees(p.getEulerFromQuaternion(ball_orn))
   ball_actor.SetOrientation(*orn_deg)
 
-ball and ball_actor can be replaced by the appropriate object and actor.
+``ball`` and ``ball_actor`` can be replaced by the appropriate object and actor.
+
+.. _timer_callback:
 
 Creation of Timer Callback
 --------------------------
 
-To simulate physics we need to call p.stepSimulation() in order to simulate a single step of physics simulation. Therefore, in order to update actors and simulate steps at each interval, we need to create a timer callback. At this point one can perform any operation that they feel like during each step of the simulation. This is also the appropriate section for the user to define all syncing activities required by the actors and render the scene accordingly. The following can be an example snippet:
+To simulate physics we need to call ``p.stepSimulation()`` in order to simulate a single step of physics simulation. Therefore, in order to update actors and simulate steps at each interval, we need to create a timer callback. At this point one can perform any operation that they feel like during each step of the simulation. This is also the appropriate section for the user to define all syncing activities required by the actors and render the scene accordingly. The following can be an example snippet:
 
 .. code-block:: python
 
@@ -289,10 +313,14 @@ To simulate physics we need to call p.stepSimulation() in order to simulate a si
   # Increasing the duration value will slow down the simulation.
   showm.add_timer_callback(True, 10, timer_callback)
 
+.. _init_simulation:
+
 Initiating the simulation
 -------------------------
 
 Once everything is set up, one can execute ``showm.start()`` to start the simulation.
+
+.. _single_actor:
 
 Rendering multiple objects by a single actor
 --------------------------------------------
@@ -316,7 +344,7 @@ Firstly, we need to define the following parameters:
 |    object_collision     |     1, 1              |   Collision shape of the objects.                                       |
 +-------------------------+-----------------------+-------------------------------------------------------------------------+
 
-*NOTE: object_directions & object_orientations must be updated together or else orientation of objects in both the worlds may not be in sync.*
+*NOTE: ``object_directions`` & ``object_orientations`` must be updated together or else orientation of objects in both the worlds may not be in sync.*
 
 Once we are ready with the above variables and array, we can proceed further to render the objects both in the fury and pybullet world:
 
@@ -405,12 +433,14 @@ Lastly, we call this function in our timer callback to sync the objects correctl
 
 *NOTE: VTK has an in-built method to handle gimbal locks therefore using ``actor.SetOrientation`` may lead to unwanted spinning simulations each time a gimbal lock is experienced. Hence, it is always advisable to use vertices and its corresponding rotation matrix to set the orientation.*
 
+.. _render_joints:
+
 Rendering Joints
 ----------------
 
 # Image goes Here
 
-A simulated robot as described in a URDF file has a base, and optionally links connected by joints. Each joint connects one parent link to a child link. At the root of the hierarchy there is a single root parent that we call base. The base can be either fully fixed, 0 degrees of freedom, or fully free, with 6 degrees of freedom. Since each link is connected to a parent with a single joint, the number of joints is equal to the number of links. Regular links have link indices in the range [0..getNumJoints()] Since the base is not a regular 'link', we use the convention of -1 as its link index. We use the convention that joint frames are expressed relative to the parent center of mass inertial frame, which is aligned with the principal axis of inertia. To know more how joints are implemented in pybullet refer the official docs here.
+A simulated robot as described in a URDF file has a base, and optionally links connected by joints. Each joint connects one parent link to a child link. At the root of the hierarchy there is a single root parent that we call base. The base can be either fully fixed, 0 degrees of freedom, or fully free, with 6 degrees of freedom. Since each link is connected to a parent with a single joint, the number of joints is equal to the number of links. Regular links have link indices in the range ``[0..getNumJoints()]`` Since the base is not a regular 'link', we use the convention of -1 as its link index. We use the convention that joint frames are expressed relative to the parent center of mass inertial frame, which is aligned with the principal axis of inertia. To know more how joints are implemented in pybullet refer the official docs.
 
 We can create and sync joints in pybullet and fury by following a few simple steps:
 
@@ -453,7 +483,7 @@ Firstly, in order to create objects with multiple joints we need to keep track o
 |                             |                    |  links in fury.                          |
 +-----------------------------+--------------------+------------------------------------------+
 
-Extra Arrays such as linkHeights, linkRadii etc may be required based on the link shape.
+Extra Arrays such as ``linkHeights``, ``linkRadii`` etc may be required based on the link shape.
 **Base link** is rendered separately, hence the above parameters should not contain information about the base link.
 
 Now separately create definitions for the base link using the following parameters. Once we are ready with the required link parameters and definition, we can create a multibody to be rendered in the pybullet world. We can do so using ``p.createMultiBody``. Here’s a snippet:
@@ -508,9 +538,12 @@ We can sync the joints using the following code snippet:
 
 Here, we determine the total number of joints using ``p.getNumJoints`` and run a loop to iterate through all the joints present within the object. Once we get access to a particular joint we use the ``p.getLinkState`` to get various information about a particular joint. Within the list of information we have access to positions and orientation of the joints at index 4 and 5. So we perform the query to get the position and orientation of the joints. After that the process of translation and rotation are the same as shown here.
 
+.. _examples:
 
 Examples
 ********
+
+.. _brick_wall_multi:
 
 Brick Wall Simulation
 ---------------------
@@ -519,12 +552,16 @@ Brick Wall Simulation
 
 The code for the above simulation can be found here.
 
+.. _ball_collision:
+
 Ball Collision Simulation
 -------------------------
 
 # adding gif
 
 The code for the above simulation can be found here.
+
+.. _brick_wall_single:
 
 Brick Wall Simulation(Single Actor)
 -----------------------------------
@@ -533,6 +570,8 @@ Brick Wall Simulation(Single Actor)
 
 The code for the above simulation can be found here.
 
+.. _chain_simulation:
+
 Chain Simulation
 ----------------
 
@@ -540,12 +579,16 @@ Chain Simulation
 
 The code for the above simulation can be found here.
 
+.. _wrecking_ball_simulation:
+
 Wrecking Ball Simulation
 ------------------------
 
 # adding gif
 
 The code for the above simulation can be found here.
+
+.. _domino_simulation:
 
 Domino Simulation
 -----------------
