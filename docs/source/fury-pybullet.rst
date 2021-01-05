@@ -438,7 +438,8 @@ Lastly, we call this function in our timer callback to sync the objects correctl
 Rendering Joints
 ----------------
 
-# Image goes Here
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_joints.png
+    :align: center
 
 A simulated robot as described in a URDF file has a base, and optionally links connected by joints. Each joint connects one parent link to a child link. At the root of the hierarchy there is a single root parent that we call base. The base can be either fully fixed, 0 degrees of freedom, or fully free, with 6 degrees of freedom. Since each link is connected to a parent with a single joint, the number of joints is equal to the number of links. Regular links have link indices in the range ``[0..getNumJoints()]`` Since the base is not a regular 'link', we use the convention of -1 as its link index. We use the convention that joint frames are expressed relative to the parent center of mass inertial frame, which is aligned with the principal axis of inertia. To know more how joints are implemented in pybullet refer the official docs.
 
@@ -548,52 +549,58 @@ Examples
 Brick Wall Simulation
 ---------------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_multi_actor.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_brick_wall.py>`__.
 
 .. _ball_collision:
 
 Ball Collision Simulation
 -------------------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_collision.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_ball_collide.py>`__.
 
 .. _brick_wall_single:
 
 Brick Wall Simulation(Single Actor)
 -----------------------------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_fast.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_brick_wall.py>`__.
 
 .. _chain_simulation:
 
 Chain Simulation
 ----------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_chain.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_chain.py>`__.
 
 .. _wrecking_ball_simulation:
 
 Wrecking Ball Simulation
 ------------------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_wrecking_ball.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_wrecking_ball.py>`__.
 
 .. _domino_simulation:
 
 Domino Simulation
 -----------------
 
-# adding gif
+.. image:: https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_domino.gif
+    :align: center
 
-The code for the above simulation can be found here.
+The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_domino.py>`__.
 
