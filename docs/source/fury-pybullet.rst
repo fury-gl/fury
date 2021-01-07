@@ -1,4 +1,6 @@
-Fury - pyBullet Integration Guide
+.. _fury_pybullet:
+
+FURY - pyBullet Integration Guide
 =================================
 
 * :ref:`Simple Rigid body dynamics <simple_rigid_body_dynamics>`
@@ -72,7 +74,7 @@ The following imports are necessary for physics simulations:
 +=======================+===============================================================+
 |         Numpy         |  Creation of arrays and conversion of radians to degrees.     |
 +-----------------------+---------------------------------------------------------------+
-|         Fury          |  Window and Actor API is used to visualize the simulation.    |
+|         FURY          |  Window and Actor API is used to visualize the simulation.    |
 +-----------------------+---------------------------------------------------------------+
 |         pyBullet      |  Physics simulation.                                          |
 +-----------------------+---------------------------------------------------------------+
@@ -94,7 +96,7 @@ Connection Mode
 
 *“After importing the PyBullet module, the first thing to do is 'connecting' to the physics simulation. PyBullet is designed around a client-server driven API, with a client sending commands and a physics server returning the status. PyBullet has some built-in physics servers: DIRECT and GUI.”*
 
-In our case we use **DIRECT** connection as the visualization will be handled by Fury.
+In our case we use **DIRECT** connection as the visualization will be handled by FURY.
 
 .. code-block:: python
 
@@ -133,11 +135,11 @@ Global Scene gravity can be set using the following command:
 Creating Objects
 ----------------
 
-The following criterion must be fulfilled in order to create an object which is in sync with both Fury and pyBullet:
+The following criterion must be fulfilled in order to create an object which is in sync with both FURY and pyBullet:
 
 
 +-----------------------+----------------------------------------------------------------------+
-|       Object Actor    |         The actor which will be rendered by Fury                     |
+|       Object Actor    |         The actor which will be rendered by FURY                     |
 +-----------------------+----------------------------------------------------------------------+
 |      Collision Shape  |  The shape used by pybullet for collision simulations.               |
 |                       |  **Optional** if collision simulation is not required.               |
@@ -346,12 +348,12 @@ Firstly, we need to define the following parameters:
 
 *NOTE: ``object_directions`` & ``object_orientations`` must be updated together or else orientation of objects in both the worlds may not be in sync.*
 
-Once we are ready with the above variables and array, we can proceed further to render the objects both in the fury and pybullet world:
+Once we are ready with the above variables and array, we can proceed further to render the objects both in the FURY and pybullet world:
 
-Rendering objects in Fury:
+Rendering objects in FURY:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To render objects in the fury world we simply call the respective actors. For this example we call actor.box for rendering the bricks:
+To render objects in the FURY world we simply call the respective actors. For this example we call actor.box for rendering the bricks:
 
 .. code-block:: python
 
@@ -397,7 +399,7 @@ Now in order to calculate and the vertices we execute the following snippet:
 +-------------------+---------------------------------------------------------+
 
 
-Now the pybullet and fury objects can be synced together by the following snippet:
+Now the pybullet and FURY objects can be synced together by the following snippet:
 
 .. code-block:: python
 
@@ -443,7 +445,7 @@ Rendering Joints
 
 A simulated robot as described in a URDF file has a base, and optionally links connected by joints. Each joint connects one parent link to a child link. At the root of the hierarchy there is a single root parent that we call base. The base can be either fully fixed, 0 degrees of freedom, or fully free, with 6 degrees of freedom. Since each link is connected to a parent with a single joint, the number of joints is equal to the number of links. Regular links have link indices in the range ``[0..getNumJoints()]`` Since the base is not a regular 'link', we use the convention of -1 as its link index. We use the convention that joint frames are expressed relative to the parent center of mass inertial frame, which is aligned with the principal axis of inertia. To know more how joints are implemented in pybullet refer the official docs.
 
-We can create and sync joints in pybullet and fury by following a few simple steps:
+We can create and sync joints in pybullet and FURY by following a few simple steps:
 
 Firstly, in order to create objects with multiple joints we need to keep track of the following parameters:
 
@@ -481,7 +483,7 @@ Firstly, in order to create objects with multiple joints we need to keep track o
 |                             |                    |  to rotate.                              |
 +-----------------------------+--------------------+------------------------------------------+
 |  linkDirections             |     nb_links, 3    |  Direction vector required to render     |
-|                             |                    |  links in fury.                          |
+|                             |                    |  links in FURY.                          |
 +-----------------------------+--------------------+------------------------------------------+
 
 Extra Arrays such as ``linkHeights``, ``linkRadii`` etc may be required based on the link shape.
