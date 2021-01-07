@@ -56,7 +56,7 @@ FURY - pyBullet Integration Guide
 
   * `pyBullet <https://docs.google.com/document/d/10sXEhzFRSnvFcl3XxNGhnD4N2SedqwdAvK3dsihxVUA/edit#>`__
 
-**NOTE: All elements are in SI units.**
+.. note:: All elements are in SI units.
 
 .. _simple_rigid_body_dynamics:
 
@@ -102,7 +102,7 @@ In our case we use **DIRECT** connection as the visualization will be handled by
 
   client = p.connect(p.DIRECT)
 
-*Note: keeping track of physics client ID is optional unless multiple physics clients are used. In order to observe the same simulation in pybullet, replace p.DIRECT with p.GUI.*
+.. note:: Keeping track of physics client ID is optional unless multiple physics clients are used. In order to observe the same simulation in pybullet, replace ``p.DIRECT`` with ``p.GUI``.
 
 .. _disconnection:
 
@@ -167,7 +167,7 @@ The following is a snippet for creating a spherical ball of radius = 0.3
                            basePosition=[2, 0, 1.5],
                            baseOrientation=[ 0, 0, 0, 1 ])
 
-*Note: Centers for the actor must be set to (0, 0, 0) or else the simulation will be offset by that particular value.*
+.. warning:: Centers for the actor must be set to ``(0, 0, 0)`` or else the simulation will be offset by that particular value.
 
 .. _change_dynamics:
 
@@ -180,7 +180,7 @@ Object dynamics such as mass, lateral_friction, damping, inertial_pos, inertial_
 
   p.changeDynamics(ball, -1, lateralFriction=0.3, restitution=0.5)
 
-*Note: The second parameter is linkIndex which is for bodies having multiple links or joints. Passing -1 means applying changes to the base object.*
+.. note:: The second parameter is ``linkIndex`` which is for bodies having multiple links or joints. Passing -1 means applying changes to the base object.
 
 .. _add_to_scene:
 
@@ -208,7 +208,7 @@ External force or torque to a body can be applied using applyExternalForce and a
                        posObj=ball_pos,
                        flags=p.WORLD_FRAME)
 
-Here, the first argument refers to the object, the second one refers to the link, ``forceObj`` = force vector, ``posObj`` = Position Vector of the application of force. [Not applicable for applyExternalTorque].
+Here, the first argument refers to the object, the second one refers to the link, ``forceObj`` = force vector, ``posObj`` = Position Vector of the application of force. [Not applicable for ``applyExternalTorque``].
 
 .. code-block:: python
 
@@ -235,7 +235,7 @@ Here, we enable the collision between a ball and a brick object.
 Creation of Show Manager
 ------------------------
 
-A window.ShowManager and itertools.count instance must be created before defining the timer callback function and setting it to initialize.
+A ``window.ShowManager`` and ``itertools.count`` instance must be created before defining the timer callback function and setting it to initialize.
 
 .. code-block:: python
 
@@ -346,14 +346,14 @@ Firstly, we need to define the following parameters:
 |    object_collision     |     1, 1              |   Collision shape of the objects.                                       |
 +-------------------------+-----------------------+-------------------------------------------------------------------------+
 
-*NOTE: ``object_directions`` & ``object_orientations`` must be updated together or else orientation of objects in both the worlds may not be in sync.*
+.. warning:: ``object_directions`` & ``object_orientations`` must be updated together or else orientation of objects in both the worlds may not be in sync.
 
 Once we are ready with the above variables and array, we can proceed further to render the objects both in the FURY and pybullet world:
 
 Rendering objects in FURY:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To render objects in the FURY world we simply call the respective actors. For this example we call actor.box for rendering the bricks:
+To render objects in the FURY world we simply call the respective actors. For this example we call ``actor.box`` for rendering the bricks:
 
 .. code-block:: python
 
@@ -372,7 +372,7 @@ Now to render pybullet objects we simply create a list of multibodies:
 .. code-block:: python
 
   bricks[i] = p.createMultiBody(baseMass=0.5,
-                              baseCollisionShapeIndex=brick_coll,
+                                baseCollisionShapeIndex=brick_coll,
                                 basePosition=center_pos,
                                 baseOrientation=brick_orn)
 
@@ -433,7 +433,7 @@ In order to Sync correctly, we do the following:
 
 Lastly, we call this function in our timer callback to sync the objects correctly.
 
-*NOTE: VTK has an in-built method to handle gimbal locks therefore using ``actor.SetOrientation`` may lead to unwanted spinning simulations each time a gimbal lock is experienced. Hence, it is always advisable to use vertices and its corresponding rotation matrix to set the orientation.*
+.. note:: VTK has an in-built method to handle gimbal locks therefore using ``actor.SetOrientation`` may lead to unwanted spinning simulations each time a gimbal lock is experienced. Hence, it is always advisable to use vertices and its corresponding rotation matrix to set the orientation.
 
 .. _render_joints:
 
