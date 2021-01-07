@@ -1350,3 +1350,46 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 3)
+
+    scene.clear()
+    primitive = ['sphere']
+    with npt.assert_warns(UserWarning):
+        sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scales)
+
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+    scene.clear()
+    primitive = 'sphere'
+    sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scales)
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+    scene.clear()
+    primitive = ['sphere', 'ellipsoid']
+    with npt.assert_warns(UserWarning):
+        sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scales)
+
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)

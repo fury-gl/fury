@@ -2572,7 +2572,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         primlist = [prims[prim] for prim in primitives]
         if len(primitives) < len(centers):
             primlist = primlist + [2] * (len(centers) - len(primitives))
-            warnings.warn("Not enough primitives provided, defaulting to torus")
+            warnings.warn("Not enough primitives provided,\
+             defaulting to torus", category=UserWarning)
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
         rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)
