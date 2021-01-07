@@ -24,33 +24,33 @@ Installation with PyPi
 
 In a terminal, issue the following command::
 
-    $ pip install fury
+    pip install fury
 
 Installation with Conda
 -----------------------
 
 Our conda package is on the Conda-Forge channel. You will need to run the following command::
 
-    $ conda install -c conda-forge fury
+    conda install -c conda-forge fury
 
 Installation via Source
 -----------------------
 
 **Step 1.** Get the latest source by cloning this repo::
 
-    $ git clone https://github.com/fury-gl/fury.git
+    git clone https://github.com/fury-gl/fury.git
 
 **Step 2.** Install requirements::
 
-    $ pip install -r requirements/default.txt
+    pip install -r requirements/default.txt
 
 **Step 3.** Install fury via::
 
-    $ pip install .
+    pip install .
 
 or::
 
-    $ pip install -e .
+    pip install -e .
 
 **Step 4:** Enjoy!
 
@@ -59,7 +59,7 @@ Test the Installation
 
 You can check your installation via this command::
 
-    $ python -c "from fury import get_info; print(get_info())"
+    python -c "from fury import get_info; print(get_info())"
 
 This command will give you important information about FURY's installation. The next step will be to run a :doc:`tutorial <auto_tutorials/index>`.
 
@@ -68,8 +68,8 @@ Running the Tests
 
 Let's install all required packages for the running the test::
 
-    $ pip install -r requirements/default.txt
-    $ pip install -r requirements/test.txt
+    pip install -r requirements/default.txt
+    pip install -r requirements/test.txt
 
 There are two ways to run FURY tests:
 
@@ -97,14 +97,14 @@ Since Xvfb will require an X server (we also recommend to install XQuartz packag
 
 - First option::
 
-    $ export DISPLAY=:0
-    $ Xvfb :0 -screen 1920x1080x24 > /dev/null 2>1 &
-    $ pytest -svv fury
+    export DISPLAY=:0
+    Xvfb :0 -screen 1920x1080x24 > /dev/null 2>1 &
+    pytest -svv fury
 
 - Second option::
 
-    $ export DISPLAY=:0
-    $ xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
+    export DISPLAY=:0
+    xvfb-run --server-args="-screen 0 1920x1080x24" pytest -svv fury
 
 
 Populating our Documentation
@@ -147,27 +147,27 @@ Building the documentation
 
 **Step 1.** Install all required packages for the documentation generation::
 
-    $ pip install -U -r requirements/default.txt
-    $ pip install -U -r requirements/optional.txt
-    $ pip install -U -r requirements/docs.txt
+    pip install -U -r requirements/default.txt
+    pip install -U -r requirements/optional.txt
+    pip install -U -r requirements/docs.txt
 
 **Step 2.** Go to the ``docs`` folder and run the following command to generate it (Linux and macOS)::
 
-    $ make -C . clean && make -C . html
+    make -C . clean && make -C . html
 
 To generate the documentation without running the examples::
 
-    $ make -C . clean && make -C . html-no-examples
+    make -C . clean && make -C . html-no-examples
 
 or under Windows::
 
-    $ make clean
-    $ make html
+    make clean
+    make html
 
 To generate the documentation without running the examples under Windows::
 
-    $ make clean
-    $ make html-no-examples
+    make clean
+    make html-no-examples
 
 
 **Step 3.** Congratulations! the ``build`` folder has been generated! Go to ``build/html`` and open with browser ``index.html`` to see your generated documentation.
