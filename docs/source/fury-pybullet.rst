@@ -3,53 +3,9 @@
 FURY - pyBullet Integration Guide
 =================================
 
-* :ref:`Simple Rigid body dynamics <simple_rigid_body_dynamics>`
-
-  * :ref:`Necessary Imports <imports>`
-
-  * :ref:`Connection Mode <connection>`
-
-  * :ref:`Disconnection <disconnection>`
-
-  * :ref:`Setting Gravity <gravity>`
-
-  * :ref:`Creating Objects <objects>`
-
-  * :ref:`Changing Object Dynamics <change_dynamics>`
-
-  * :ref:`Adding objects to the scene <add_to_scene>`
-
-  * :ref:`Application of Force/Torque <apply_force_torque>`
-
-  * :ref:`Enabling Collision <enable_collision>`
-
-  * :ref:`Creation of Show Manager <show_manager>`
-
-  * :ref:`Syncing properties of Actors <sync_actors>`
-
-  * :ref:`Creation of timer callback <timer_callback>`
-
-  * :ref:`Initiating the simulation <init_simulation>`
-
-  * :ref:`Rendering multiple objects by a single actor <single_actor>`
-
-  * :ref:`Rendering Joints <render_joints>`
-
-
-* :ref:`Examples <examples>`
-
-  * :ref:`Brick Wall Simulation <brick_wall_multi>`
-
-  * :ref:`Ball Collision Simulation <ball_collision>`
-
-  * :ref:`Brick Wall Simulation(Single Actor) <brick_wall_single>`
-
-  * :ref:`Chain Simulation <chain_simulation>`
-
-  * :ref:`Wrecking Ball Simulation <wrecking_ball_simulation>`
-
-  * :ref:`Domino Simulation <domino_simulation>`
-
+.. contents::
+    :local:
+    :depth: 3
 
 **Official docs:**
   * `FURY <https://fury.gl/latest/reference/index.html>`__
@@ -58,12 +14,8 @@ FURY - pyBullet Integration Guide
 
 .. note:: All elements are in SI units.
 
-.. _simple_rigid_body_dynamics:
-
 Simple Rigid Body Dynamics
 **************************
-
-.. _imports:
 
 Necessary Imports
 -----------------
@@ -89,12 +41,10 @@ The following imports are necessary for physics simulations:
   import itertools
   import pybullet as p
 
-.. _connection:
-
 Connection Mode
 ---------------
 
-*“After importing the PyBullet module, the first thing to do is 'connecting' to the physics simulation. PyBullet is designed around a client-server driven API, with a client sending commands and a physics server returning the status. PyBullet has some built-in physics servers: DIRECT and GUI.”*
+*"After importing the PyBullet module, the first thing to do is 'connecting' to the physics simulation. PyBullet is designed around a client-server driven API, with a client sending commands and a physics server returning the status. PyBullet has some built-in physics servers: DIRECT and GUI."*
 
 In our case we use **DIRECT** connection as the visualization will be handled by FURY.
 
@@ -103,8 +53,6 @@ In our case we use **DIRECT** connection as the visualization will be handled by
   client = p.connect(p.DIRECT)
 
 .. note:: Keeping track of physics client ID is optional unless multiple physics clients are used. In order to observe the same simulation in pybullet, replace ``p.DIRECT`` with ``p.GUI``.
-
-.. _disconnection:
 
 Disconnection
 -------------
@@ -115,12 +63,10 @@ PyBullet Physics client can be shutdown by the following command:
 
   p.disconnect()
 
-.. _gravity:
-
 Setting Gravity
 ---------------
 
-Global Scene gravity can be set using the following command:
+Global :py:class:`.Scene()` gravity can be set using the following command:
 
 .. code-block:: python
 
@@ -129,8 +75,6 @@ Global Scene gravity can be set using the following command:
   gravity_y = 0
   gravity_z = -10
   p.setGravity(gravity_x, gravity_y, gravity_z)
-
-.. _objects:
 
 Creating Objects
 ----------------
@@ -169,8 +113,6 @@ The following is a snippet for creating a spherical ball of radius = 0.3
 
 .. warning:: Centers for the actor must be set to ``(0, 0, 0)`` or else the simulation will be offset by that particular value.
 
-.. _change_dynamics:
-
 Changing Object Dynamics
 ------------------------
 
@@ -182,8 +124,6 @@ Object dynamics such as mass, lateral_friction, damping, inertial_pos, inertial_
 
 .. note:: The second parameter is ``linkIndex`` which is for bodies having multiple links or joints. Passing -1 means applying changes to the base object.
 
-.. _add_to_scene:
-
 Adding objects to the scene
 ---------------------------
 
@@ -193,8 +133,6 @@ Objects can be added simply by adding their respective actors to the scene.
 
   scene = window.Scene()
   scene.add(ball_actor)
-
-.. _apply_force_torque:
 
 Application of Force/Torque
 ---------------------------
@@ -216,8 +154,6 @@ Here, the first argument refers to the object, the second one refers to the link
                        forceObj=[-2000, 0, 0],
                        flags=p.WORLD_FRAME)
 
-.. _enable_collision:
-
 Enabling collision
 ------------------
 
@@ -229,8 +165,6 @@ By default, collision detection is enabled between different dynamic moving bodi
   p.setCollisionFilterPair(ball, brick, -1, -1, enableCol)
 
 Here, we enable the collision between a ball and a brick object.
-
-.. _show_manager:
 
 Creation of Show Manager
 ------------------------
@@ -246,8 +180,6 @@ A ``window.ShowManager`` and ``itertools.count`` instance must be created before
   showm.initialize()
   # Counter iterator for tracking simulation steps.
   counter = itertools.count()
-
-.. _sync_actors:
 
 Syncing properties of actors
 ----------------------------
@@ -265,8 +197,6 @@ The position and orientation of the actors in FURY can be updated by the values 
   ball_actor.SetOrientation(*orn_deg)
 
 ``ball`` and ``ball_actor`` can be replaced by the appropriate object and actor.
-
-.. _timer_callback:
 
 Creation of Timer Callback
 --------------------------
@@ -315,14 +245,10 @@ To simulate physics we need to call ``p.stepSimulation()`` in order to simulate 
   # Increasing the duration value will slow down the simulation.
   showm.add_timer_callback(True, 10, timer_callback)
 
-.. _init_simulation:
-
 Initiating the simulation
 -------------------------
 
 Once everything is set up, one can execute ``showm.start()`` to start the simulation.
-
-.. _single_actor:
 
 Rendering multiple objects by a single actor
 --------------------------------------------
@@ -350,8 +276,8 @@ Firstly, we need to define the following parameters:
 
 Once we are ready with the above variables and array, we can proceed further to render the objects both in the FURY and pybullet world:
 
-Rendering objects in FURY:
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Rendering objects in FURY
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To render objects in the FURY world we simply call the respective actors. For this example we call ``actor.box`` for rendering the bricks:
 
@@ -364,8 +290,8 @@ To render objects in the FURY world we simply call the respective actors. For th
 
   scene.add(brick_actor_single)
 
-Render Pybullet Objects:
-~~~~~~~~~~~~~~~~~~~~~~~~
+Render Pybullet Objects
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Now to render pybullet objects we simply create a list of multibodies:
 
@@ -376,8 +302,8 @@ Now to render pybullet objects we simply create a list of multibodies:
                                 basePosition=center_pos,
                                 baseOrientation=brick_orn)
 
-Syncing objects:
-~~~~~~~~~~~~~~~~
+Syncing objects
+~~~~~~~~~~~~~~~
 
 Now in order to calculate and the vertices we execute the following snippet:
 
@@ -434,8 +360,6 @@ In order to Sync correctly, we do the following:
 Lastly, we call this function in our timer callback to sync the objects correctly.
 
 .. note:: VTK has an in-built method to handle gimbal locks therefore using ``actor.SetOrientation`` may lead to unwanted spinning simulations each time a gimbal lock is experienced. Hence, it is always advisable to use vertices and its corresponding rotation matrix to set the orientation.
-
-.. _render_joints:
 
 Rendering Joints
 ----------------
@@ -541,12 +465,10 @@ We can sync the joints using the following code snippet:
 
 Here, we determine the total number of joints using ``p.getNumJoints`` and run a loop to iterate through all the joints present within the object. Once we get access to a particular joint we use the ``p.getLinkState`` to get various information about a particular joint. Within the list of information we have access to positions and orientation of the joints at index 4 and 5. So we perform the query to get the position and orientation of the joints. After that the process of translation and rotation are the same as shown here.
 
-.. _examples:
+---------------------
 
 Examples
 ********
-
-.. _brick_wall_multi:
 
 Brick Wall Simulation
 ---------------------
@@ -556,8 +478,6 @@ Brick Wall Simulation
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_brick_wall.py>`__.
 
-.. _ball_collision:
-
 Ball Collision Simulation
 -------------------------
 
@@ -565,8 +485,6 @@ Ball Collision Simulation
     :align: center
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_ball_collide.py>`__.
-
-.. _brick_wall_single:
 
 Brick Wall Simulation(Single Actor)
 -----------------------------------
@@ -576,8 +494,6 @@ Brick Wall Simulation(Single Actor)
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_brick_wall.py>`__.
 
-.. _chain_simulation:
-
 Chain Simulation
 ----------------
 
@@ -585,8 +501,6 @@ Chain Simulation
     :align: center
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_chain.py>`__.
-
-.. _wrecking_ball_simulation:
 
 Wrecking Ball Simulation
 ------------------------
@@ -596,8 +510,6 @@ Wrecking Ball Simulation
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_wrecking_ball.py>`__.
 
-.. _domino_simulation:
-
 Domino Simulation
 -----------------
 
@@ -605,4 +517,3 @@ Domino Simulation
     :align: center
 
 The code for the above simulation can be found `here <https://github.com/fury-gl/fury/blob/master/docs/examples/physics_using_pybullet/viz_domino.py>`__.
-
