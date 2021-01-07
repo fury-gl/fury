@@ -1370,8 +1370,8 @@ def test_sdf_actor(interactive=False):
     scene.clear()
     primitive = ['sphere']
     with npt.assert_warns(UserWarning):
-        sdf_actor = actor.sdf(centers, directions,
-                          colors, primitive, scales)
+        sdf_actor = actor.sdf(centers, directions, colors,
+                              primitive, scales)
 
     scene.add(sdf_actor)
     scene.add(actor.axes())
@@ -1388,7 +1388,7 @@ def test_sdf_actor(interactive=False):
     primitive = ['sphere', 'ellipsoid']
     with npt.assert_warns(UserWarning):
         sdf_actor = actor.sdf(centers, directions,
-                          colors, primitive, scales)
+                              colors, primitive, scales)
 
     scene.add(sdf_actor)
     scene.add(actor.axes())
