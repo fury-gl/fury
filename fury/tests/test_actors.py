@@ -1354,3 +1354,51 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 3)
+
+    # Draw 3 spheres as the primitive type is str
+    scene.clear()
+    primitive = 'sphere'
+    sdf_actor = actor.sdf(centers, directions,
+                          colors, primitive, scales)
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+    # A sphere and default back to two torus
+    # as the primitive type is list
+    scene.clear()
+    primitive = ['sphere']
+    with npt.assert_warns(UserWarning):
+        sdf_actor = actor.sdf(centers, directions, colors,
+                              primitive, scales)
+
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+
+    # One sphere and ellipsoid each
+    # Default to torus
+    scene.clear()
+    primitive = ['sphere', 'ellipsoid']
+    with npt.assert_warns(UserWarning):
+        sdf_actor = actor.sdf(centers, directions,
+                              colors, primitive, scales)
+
+    scene.add(sdf_actor)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
