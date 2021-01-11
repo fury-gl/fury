@@ -11,7 +11,6 @@ from shutil import copyfileobj
 import tarfile
 import zipfile
 
-#from urllib.request import urlopen
 import urllib.request
 
 # Set a user-writeable file-system location to put files:
@@ -128,6 +127,8 @@ def check_sha(filename, stored_sha256=None):
             raise FetcherError(msg)
 
 url = urllib.request.Request('http://www.example.com')
+
+
 def _get_file_data(fname, url):
     with contextlib.closing(urlopen(url)) as opener:
         try:
