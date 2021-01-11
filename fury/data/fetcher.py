@@ -11,7 +11,8 @@ from shutil import copyfileobj
 import tarfile
 import zipfile
 
-from urllib.request import urlopen
+#from urllib.request import urlopen
+import urllib.request
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -126,7 +127,7 @@ def check_sha(filename, stored_sha256=None):
             Fury.""" % (filename, stored_sha256, computed_sha256)
             raise FetcherError(msg)
 
-
+url = urllib.request.Request('http://www.example.com')
 def _get_file_data(fname, url):
     with contextlib.closing(urlopen(url)) as opener:
         try:

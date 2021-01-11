@@ -19,7 +19,7 @@ import operator
 from datetime import datetime, timedelta
 from subprocess import check_output
 
-from urllib.request import urlopen, Request
+from urllib.request import Request
 
 # ----------------------------------------------------------------------------
 # Globals
@@ -40,6 +40,7 @@ GH_TOKEN = os.environ.get('GH_TOKEN', '')
 # Functions
 # ----------------------------------------------------------------------------
 
+req = urllib.request.Request('http://www.url.com')
 
 def fetch_url(url):
     req = Request(url)
