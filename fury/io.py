@@ -180,6 +180,44 @@ def save_image(arr, filename, compression_quality=75,
             writer.SetCompressionToDeflate()
 
     writer.Write()
+    
+def save_as_gif(filename, use_pillow=True):
+    """Saves the frames of an animated Image in gif format.
+
+    Parameters
+    ----------
+    filename : string
+        should be a gif file
+    use_pillow : bool, optional
+        Use imageio python library to save the files.
+
+    """
+    extension = os.path.splitext(os.path.basename(filename).lower())[1]
+
+    if extension.lower() != gif:
+        raise IOError(f"Impossible to save the file {filename} as gif.")
+    elif extension.lower() == gif:
+
+        def get_avg_fps(PIL_Image_object):
+            # Returns the average framerate of a PIL Image object
+            PIL_Image_object.seek(0)
+            frames = duration = 0
+            while True:
+                try:
+                    frames += 1
+                    duration += PIL_Image_object.info['duration']
+                    PIL_Image_object.seek(PIL_Image_object.tell() + 1)
+                except EOFError:
+                    return td = frames / duration * 1000
+            return None
+
+    if use_pillow:
+    # Saving the Series of Frames into a List
+    images = []
+    # Using `save` from PIL to convert the Series of Frames into a GIF Image.
+    images[0].save('filename', save_all=True, append_images=Images[1:],
+                   optimize=False, duration=td, loop=0)
+    return
 
 
 def load_polydata(file_name):
