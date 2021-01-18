@@ -1562,6 +1562,7 @@ class TextBox2D(UI):
     init : bool
         Flag which says whether the textbox has just been initialized.
     """
+
     def __init__(self, width, height, text="Enter Text", position=(100, 10),
                  color=(0, 0, 0), font_size=18, font_family='Arial',
                  justification='left', bold=False,
@@ -1896,6 +1897,7 @@ class LineSlider2D(UI):
     active_color : (float, float, float)
         Color of the handle when it is pressed.
     """
+
     def __init__(self, center=(0, 0),
                  initial_value=50, min_value=0, max_value=100,
                  length=200, line_width=5,
@@ -2244,6 +2246,7 @@ class LineDoubleSlider2D(UI):
         Color of the handles when they are pressed.
 
     """
+
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, center=(450, 300), length=200,
                  initial_values=(0, 100), min_value=0, max_value=100,
@@ -2779,6 +2782,7 @@ class RingSlider2D(UI):
     active_color : (float, float, float)
         Color of the handle when it is pressed.
     """
+
     def __init__(self, center=(0, 0),
                  initial_value=180, min_value=0, max_value=360,
                  slider_inner_radius=40, slider_outer_radius=44,
@@ -3038,6 +3042,7 @@ class RangeSlider(UI):
         The line slider which sets the value
 
     """
+
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, range_slider_center=(450, 400),
                  value_slider_center=(450, 300), length=200, min_value=0,
@@ -3371,9 +3376,9 @@ class Option(UI):
         # Option's button
         self.button_icons = []
         self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
+                                  read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
+                                  read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons,
                                size=self.button_size)
 
@@ -3723,7 +3728,7 @@ class ListBox2D(UI):
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+                                            scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
@@ -3778,24 +3783,29 @@ class ListBox2D(UI):
 
     def resize(self, size):
         """
-            Resizes ListBox2D i.e resizes the UI components which renders ListBox2D, such as slots, scrollbar etc.
+        Resizes ListBox2D i.e resizes the UI components which renders ListBox2D,
+        such as slots, scrollbar etc.
 
         Parameters
         ----------
         size : (int, int)
             New width and height in pixels.
         """
-        
-        # Resizing the panel_size will resize the slots accordingly. 
-        self.panel.resize(size)
+
+        new_font_size = (size[0] + size[1])//20
+
+        new_line_spacing = ((size[0]*size[1]*(10)**-4)//(2*len(self.values)))
+
+        resized_listbox = ListBox2D(self.values, position=self.position, size=size,
+                                    font_size=new_font_size, line_spacing=new_line_spacing)
+
+        # Resizing the panel_size will resize the slots accordingly.
+        resized_listbox.panel.resize(size)
 
         # Resizing the Scroll Bar.
-        self.scroll_bar.resize(size)
+        resized_listbox.scroll_bar.resize(size)
 
-        # Adjusting the Font Size & Line Spacing for "Testing" purpose.
-        self.font_size = self.font_size//2
-        self.line_spacing = self.line_spacing//2
-     
+        return resized_listbox
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4867,7 +4877,7 @@ class TabUI(UI):
             self.tabs[tab_idx].add_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def remove_element(self, tab_idx, element):
         """ Removes element from content panel after checking its existence.
@@ -4876,7 +4886,7 @@ class TabUI(UI):
             self.tabs[tab_idx].remove_element(element)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def update_element(self, tab_idx, element, coords, anchor="position"):
         """ Updates element on content panel after checking its existence.
@@ -4885,7 +4895,7 @@ class TabUI(UI):
             self.tabs[tab_idx].update_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
