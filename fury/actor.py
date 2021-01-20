@@ -785,8 +785,8 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
-         opacity=1):
+def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1):
+
     """ Create an actor with the coordinate's system axes where
     red = x, green = y, blue = z.
 
@@ -1025,8 +1025,8 @@ def _makeNd(array, ndim):
     return array.reshape(new_shape)
 
 
-def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
-                  norm=True, opacity=1., scalar_colors=None):
+def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2, norm=True, opacity=1., scalar_colors=None):
+
     """Slice many tensors as ellipsoids in native or world coordinates.
 
     Parameters
@@ -1110,8 +1110,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     return tensor_actor
 
 
-def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
-                          scale=2.2, norm=True, scalar_colors=None):
+def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2, norm=True, scalar_colors=None):
+
     """Helper function for slicing tensor fields
 
     Parameters
@@ -1418,8 +1418,8 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
                   theta=theta, vertices=None, faces=None, opacity=opacity)
 
 
-def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1):
+def sphere(centers, colors, radii=1., phi=16, theta=16, vertices=None, faces=None, opacity=1):
+
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1437,8 +1437,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     faces : ndarray, shape (M, 3)
         If faces is None then a sphere is created based on theta and phi angles
         If not then a sphere is created with the provided vertices and faces.
-    opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+    opacity : float or ndarray shape (N,)
+        Takes values from 0 (fully transparent) to 1 (opaque). Default is 1
 
 
     Returns
@@ -1462,17 +1462,37 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         src.SetThetaResolution(theta)
         src.SetPhiResolution(phi)
 
+    if type(colors) is tuple:
+        colors = np.asarray(colors)
+
+    if colors.reshape(-1,).shape==(3,) or colors.reshape(-1,).shape==(4,):
+        colors = colors.reshape(-1,)
+        colors = np.repeat(colors[np.newaxis, :], centers.shape[0], axis=0)
+
+    if isinstance(opacity, int) or isinstance(opacity, float):
+        if colors.shape[1]==3:
+            opacity = np.full((colors.shape[0],1),opacity)
+            colors = np.concatenate((colors, opacity), axis=1)
+        elif colors.shape[1]==4:
+            colors[:, 3] = opacity
+    else:
+        if colors.shape[1]==3:
+            colors = np.concatenate((colors, opacity.reshape(-1,1)), axis=1)
+        if colors.shape[1]==4:
+            colors[:, 3] = opacity.reshape(-1,)
+
+
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
 
-    actor.GetProperty().SetOpacity(opacity)
+
 
     return actor
 
 
-def cylinder(centers, directions, colors, radius=0.05, heights=1,
-             capped=False, resolution=6, vertices=None, faces=None):
+def cylinder(centers, directions, colors, radius=0.05, heights=1, capped=False, resolution=6, vertices=None, faces=None):
+
     """Visualize one or many cylinder with different features.
 
     Parameters
@@ -1567,8 +1587,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     return sq_actor
 
 
-def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-              scales=(1, 2, 0)):
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
+
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -1736,8 +1756,8 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def cone(centers, directions, colors, heights=1., resolution=10,
-         vertices=None, faces=None):
+def cone(centers, directions, colors, heights=1., resolution=10, vertices=None, faces=None):
+
     """Visualize one or many cones with different features.
 
     Parameters
@@ -1786,8 +1806,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                   scales=1):
+def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -1866,8 +1886,8 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     return frustum_actor
 
 
-def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
-                 colors=(1, 0, 0), scales=1):
+def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+
     """Visualize one or many superquadrics with different features.
 
     Parameters
@@ -1925,8 +1945,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return actor
 
 
-def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
-              fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None, fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+
     """Create a billboard actor.
 
     Billboards are 2D elements incrusted in a 3D world. It offers you the
@@ -2008,8 +2028,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return sq_actor
 
 
-def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-          color=(1, 1, 1)):
+def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2), color=(1, 1, 1)):
+
     """Create a label actor.
 
     This actor will always face the camera
@@ -2336,8 +2356,8 @@ class Container(object):
         return len(self._items)
 
 
-def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
-         cell_shape="rect", aspect_ratio=16/9., dim=None):
+def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0, cell_shape="rect", aspect_ratio=16/9., dim=None):
+
     """ Creates a grid of actors that lies in the xy-plane.
 
     Parameters
@@ -2539,8 +2559,8 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
-        scales=1):
+def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', scales=1):
+
     """Create a SDF primitive based actor
 
     Parameters
@@ -2553,7 +2573,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         The orientation vector of the SDF primitive.
     primitives : str, list, tuple, np.ndarray
         The primitive of choice to be rendered.
-        Options are sphere and torus. Default is torus.
+        Options are sphere, torus and ellipsoid. Default is torus.
     scales : float
         The size of the SDF primitive
 
@@ -2561,15 +2581,18 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     -------
     vtkActor
     """
-
+    print("the size of centres is ---", centers.shape)
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3}
 
     verts, faces = fp.prim_box()
+    print("The size of verts and faces is ---", verts.shape, faces.shape)
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
                                    colors=colors, directions=directions,
                                    scales=scales)
+   # print("Repeated is------", repeated)
 
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
+    print("The size of following is : rep_verts", rep_verts.shape, "rep_faces", rep_faces.shape, "rep_colors", rep_colors.shape, "rep_centers", rep_centers.shape)
     box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors)
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
 

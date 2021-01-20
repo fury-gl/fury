@@ -36,13 +36,16 @@ mat4 translate( float x, float y, float z )
 }
 
 
-float sdEllipsoid( vec3 p, vec3 r )
+float lll( vec3 p, vec3 r )
 {
   float k0 = length(p/r);
   float k1 = length(p/(r*r));
   return k0*(k0-1.0)/k1;
 }
 
+float sdEllipsoid( vec3 p, vec3 r ){
+	return 0.00;
+}
 
 float sdSphere( vec3 p, float s )
 {
@@ -56,29 +59,38 @@ float sdTorus( vec3 p, vec2 t )
     return length(q) - t.y;
 }
 
+float sdLaudalassan( vec3 p, vec2 t )
+{
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
 
 float map( in vec3 position )
 {
 
     mat4 rot = rotationAxisAngle( normalize(directionVSOutput), 90.0 );
     mat4 tra = translate( 0.0, 1.0, 0.0 );
-    mat4 txi = tra * rot; 
+    mat4 txi = tra * rot;
 
     vec3 pos = (txi*vec4(position  - centerWCVSOutput, 0.0)).xyz;
-	
+
     float d1;
-	
+
     if(primitiveVSOutput==1){
 		d1 = sdSphere((pos)/scaleVSOutput, 0.25)*scaleVSOutput;
     }
-    
+
     else if(primitiveVSOutput==2){
     	d1 = sdTorus((pos)/scaleVSOutput, vec2(0.4, 0.1))*scaleVSOutput;
     }
-    
+
     else if(primitiveVSOutput==3){
         d1 = sdEllipsoid((pos)/scaleVSOutput, vec3(0.1, 0.1, 0.3))*scaleVSOutput;
     }
+		else if(primitiveVSOutput==4){
+
+		}
     return d1;
 }
 
