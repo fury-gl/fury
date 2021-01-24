@@ -75,7 +75,7 @@ showm = window.ShowManager(scene,
 #          animation; (default = 100)
 
 time = 0
-dt = 0.12
+dt = 0.1
 lower_xbound = -1
 upper_xbound = 1
 lower_ybound = -1
