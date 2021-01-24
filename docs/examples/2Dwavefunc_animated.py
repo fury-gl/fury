@@ -37,7 +37,7 @@ def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
     X = X.reshape(-1)
     Y = Y.reshape(-1)
     # Z is the function F i.e. F(x, y, t)
-    Z = 0.34*np.sin(X*10)*np.cos(10*Y)*np.cos(t)
+    Z = 0.24*np.sin(X*10)*np.cos(10*Y)*np.cos(t)
     xyz = np.array([(a, b, c) for (a, b, c) in zip(X, Y, Z)])
     return xyz
 
