@@ -6,7 +6,7 @@ Animating a time-varying 2D wave function
 This is a simple demonstration of how one can visualize
 time-varying 2D wave functions using FURY.
 An example of a 2D time varying wave function-
-z = F(x, y, t) = 0.34*sin(10x)*cos(10x)*cos(t)
+z = F(x, y, t) = 0.24*sin(10x)*cos(10x)*cos(t)
 
 Other examples-
 #Z = (X**2 - Y**2)/(X**2 + Y**2)**0.5*np.cos(t)
@@ -29,7 +29,7 @@ import itertools
 # coordinate is being modified time as only the z coordinate is a function of
 # time.
 
-def coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
+def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
                 upper_ybound=1, npoints=100, t=0):
     x = np.linspace(lower_xbound, upper_xbound, npoints)
     y = np.linspace(lower_ybound, upper_ybound, npoints)
@@ -41,11 +41,10 @@ def coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
     return xyz
 
 ###############################################################################
-# Creating a scene object and configuring the camera's position
+# Creating a scene object and configuring the camera's position.
 
 scene = window.Scene()
 scene.zoom(9.5)
-steps = 500
 scene.set_camera(position=(60, 40, 30), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 1.0))
 showm = window.ShowManager(scene,
@@ -85,48 +84,54 @@ npoints = 100
 
 ###############################################################################
 # xyz are the coordinates of the points that'll be used to plot the function
-xyz = coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
+xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
                  npoints, t=time)
 
 
 ###############################################################################
 # colors and radius are used to manipulate the color and radius of the points
 # respectively (default radius = 0.05)
-# Ideally, radius should be kept somewhat low and npoints should be large
+# Ideally, radius should be kept somewhat low and npoints should be large.
 colors = window.colors.orange
 radius = 0.05
 
 ###############################################################################
-# initializing point and axes actors and adding them to the scene
+# Initializing point and axes actors and adding them to the scene.
 point_actor = actor.point(xyz, colors, point_radius=radius)
-axes_actor = actor.axes(scale=(2, 2, 2))
+axes_actor = actor.axes(scale=(1.5, 1.5, 1.5))
 scene.add(axes_actor)
 scene.add(point_actor)
 
 ###############################################################################
-# initializing text box to display the function
+# Initializing text box to display the function which is being plotted.
 tb = ui.TextBlock2D(bold=True, position=(150, 90))
-tb.message = "f(x, y, t) = 0.24*sin(x)*cos(y)*cos(t)"
+tb.message = "z = F(x, y, t) = 0.24*sin(x)*cos(y)*cos(t)"
+
 
 showm.initialize()
 counter = itertools.count()
 
-
+###############################################################################
+# will be used for storing the point_actor's attributes
 vertices = utils.vertices_from_actor(point_actor)
 vcolors = utils.colors_from_actor(point_actor, 'colors')
 no_vertices_per_point = len(vertices)/npoints**2
 initial_vertices = vertices.copy() - \
     np.repeat(xyz, no_vertices_per_point, axis=0)
 
+###############################################################################
+# end is used to decide when to end the animation
+end = 500
 
-
-
+###############################################################################
+# coordinates are changed everytime timer_callback is called by using the
+# update_coordinates function. The function is rendered here.
 def timer_callback(_obj, _event):
     global xyz
     global time
     time += dt
     cnt = next(counter)
-    xyz = coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
+    xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
                      npoints, t=time)
     vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_point, axis=0)
@@ -134,7 +139,7 @@ def timer_callback(_obj, _event):
     scene.reset_clipping_range()
     showm.render()
 
-    if cnt == steps:
+    if cnt == end:
         showm.exit()
 
 scene.add(tb)
