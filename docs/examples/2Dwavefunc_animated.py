@@ -64,15 +64,15 @@ showm = window.ShowManager(scene,
 #                (default = 1)
 # lower_ybound: lower bound of the y values in which the function is plotted
 #               (default = -1)
-# upper_xbound: Upper bound of the y values in which the function is plotted
+# upper_ybound: Upper bound of the y values in which the function is plotted
 #                (default = 1)
 # npoints: It's basically the number of equidistant values between lower
 #          and upper bounds that'll be used to plot the function.
 #          Alternatively, it can also be thought of as the square root of the
 #          total number of points that'll be used to plot the function.
-#          For higher quality graphing, keep the number higher but do note
-#          that higher values for n points significantly slows the output
-#          (default = 100)
+#          For higher quality graphing, keep the number high but do note
+#          that higher values for npoints significantly slows down the
+#          animation (default = 100)
 
 time = 0
 dt = 0.12
@@ -82,20 +82,32 @@ lower_ybound = -1
 upper_ybound = 1
 npoints = 100
 
+
+###############################################################################
+# xyz are the coordinates of the points that'll be used to plot the function
 xyz = coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
                  npoints, t=time)
 
 
-
+###############################################################################
+# colors and radius are used to manipulate the color and radius of the points
+# respectively (default radius = 0.05)
+# Ideally, radius should be kept somewhat low and npoints should be large
 colors = window.colors.orange
 radius = 0.05
 
+###############################################################################
+# initializing point and axes actors and adding them to the scene
 point_actor = actor.point(xyz, colors, point_radius=radius)
 axes_actor = actor.axes(scale=(2, 2, 2))
 scene.add(axes_actor)
 scene.add(point_actor)
 
+###############################################################################
+# initializing text box to display the function
 tb = ui.TextBlock2D(bold=True, position=(150, 90))
+tb.message = "f(x, y, t) = 0.24*sin(x)*cos(y)*cos(t)"
+
 showm.initialize()
 counter = itertools.count()
 
@@ -106,7 +118,7 @@ no_vertices_per_point = len(vertices)/npoints**2
 initial_vertices = vertices.copy() - \
     np.repeat(xyz, no_vertices_per_point, axis=0)
 
-tb.message = "f(x, y, t) = 0.24*sin(x)*cos(y)*cos(t)"
+
 
 
 def timer_callback(_obj, _event):
