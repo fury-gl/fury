@@ -29,8 +29,9 @@ import itertools
 # coordinate is being modified with time as only the z coordinate is a
 # function of time.
 
+
 def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
-                upper_ybound=1, npoints=100, t=0):
+                       upper_ybound=1, npoints=100, t=0):
     x = np.linspace(lower_xbound, upper_xbound, npoints)
     y = np.linspace(lower_ybound, upper_ybound, npoints)
     X, Y = np.meshgrid(x, y)
@@ -43,6 +44,7 @@ def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position.
+
 
 scene = window.Scene()
 scene.zoom(9.5)
@@ -85,8 +87,8 @@ npoints = 100
 
 ###############################################################################
 # xyz are the coordinates of the points that'll be used to plot the function
-xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
-                 npoints, t=time)
+xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound,
+                         upper_ybound, npoints, t=time)
 
 
 ###############################################################################
@@ -129,13 +131,15 @@ end = 500
 ###############################################################################
 # Coordinates to be plotted are changed everytime timer_callback is called by
 # using the update_coordinates function. The 2D function is rendered here.
+
+
 def timer_callback(_obj, _event):
     global xyz
     global time
     time += dt
     cnt = next(counter)
-    xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound, upper_ybound,
-                     npoints, t=time)
+    xyz = update_coordinates(lower_xbound, upper_xbound, lower_ybound,
+                             upper_ybound, npoints, t=time)
     vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_point, axis=0)
     utils.update_actor(point_actor)
@@ -148,6 +152,8 @@ def timer_callback(_obj, _event):
 
 ###############################################################################
 # Run every 50 milliseconds
+
+
 showm.add_timer_callback(True, 50, timer_callback)
 
 interactive = True
