@@ -104,13 +104,13 @@ scene.add(axes_actor)
 scene.add(point_actor)
 
 ###############################################################################
-# Initializing text box to display the function which is being plotted.
-tb = ui.TextBlock2D(bold=True, position=(150, 90))
+# Initializing text box to print the 2D function which is being rendered.
+tb = ui.TextBlock2D(bold=True, position=(150, 60))
 tb.message = "z = F(x, y, t) = 0.24*sin(x)*cos(y)*cos(t)"
 scene.add(tb)
 
 ###############################################################################
-# Initializing showm
+# Initializing showm and counter
 showm.initialize()
 counter = itertools.count()
 
@@ -127,7 +127,7 @@ initial_vertices = vertices.copy() - \
 end = 500
 
 ###############################################################################
-# coordinates to be plotted are changed everytime timer_callback is called by
+# Coordinates to be plotted are changed everytime timer_callback is called by
 # using the update_coordinates function. The 2D function is rendered here.
 def timer_callback(_obj, _event):
     global xyz
@@ -147,7 +147,7 @@ def timer_callback(_obj, _event):
         showm.exit()
 
 ###############################################################################
-# Adding the timer_callback to showm.
+# Run every 50 milliseconds
 showm.add_timer_callback(True, 50, timer_callback)
 
 interactive = True
