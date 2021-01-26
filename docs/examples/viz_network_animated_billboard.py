@@ -31,8 +31,6 @@ from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         vertices_from_actor, update_actor)
 
 
-
-
 ###############################################################################
 # Now, let's define some auxiliary functions
 
@@ -207,12 +205,13 @@ def new_layout_timer(showm, edges_list, vertices_count,
     else:
         positions[:] = view_size * \
             np.random.random((vertices_count, 3)) - view_size / 2.0
-    
+
     viscosity = 0.30
     a = 0.0005
     b = 1.0
-    
-    layout = helios.FRLayout(edgesArray,positions,velocities,a,b,viscosity)
+
+    layout = helios.FRLayout(edgesArray, positions,
+                             velocities, a, b, viscosity)
     layout.start()
     framesPerSecond = []
 
@@ -251,6 +250,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
 
 ###############################################################################
 # Defining interactions with hardware selector
+
 
 scene = window.Scene()
 camera = scene.camera()
@@ -344,4 +344,3 @@ window.record(showm.scene, size=(900, 768),
 
 if(layout):
     layout.stop()
-
