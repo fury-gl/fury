@@ -1944,6 +1944,7 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
 
     texta.GetProperty().SetColor(color)
     texta.SetPosition(pos)
+    texta.text = atext
 
     return texta
 
