@@ -3,9 +3,9 @@
 Visualize Networks using Billboard (Animated version)
 =======================================================
 
-The goal of this demo is to show how to visualize a 
-complex network using billboards and simple interaction 
-and use a force directed algorithm to layout the network. 
+The goal of this demo is to show how to visualize a
+complex network using billboards and simple interaction
+and use a force directed algorithm to layout the network.
 Hovering over nodes will show node index.
 
 """
@@ -142,9 +142,12 @@ fs_dec = \
 
 fake_sphere = \
     """
-vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]); // camera right
-vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]); //  camera up
-vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]); // camera direction
+// camera right
+vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
+//  camera up
+vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
+// camera direction
+vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]);
 vec3 ro = MCVCMatrix[3].xyz * mat3(MCVCMatrix);  // camera position
 
 // create view ray
