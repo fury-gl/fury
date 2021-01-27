@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from warnings import warn
 from numbers import Number
+from string import printable
 
 import numpy as np
 import vtk
@@ -1562,6 +1563,7 @@ class TextBox2D(UI):
     init : bool
         Flag which says whether the textbox has just been initialized.
     """
+
     def __init__(self, width, height, text="Enter Text", position=(100, 10),
                  color=(0, 0, 0), font_size=18, font_family='Arial',
                  justification='left', bold=False,
@@ -1687,26 +1689,28 @@ class TextBox2D(UI):
                 multi_line_text += "\n"
         return multi_line_text.rstrip("\n")
 
-    def handle_character(self, character):
+    def handle_character(self, key, key_char):
         """ Main driving function that handles button events.
 
         # TODO: Need to handle all kinds of characters like !, +, etc.
 
         Parameters
         ----------
+        keysym    : str
         character : str
         """
-        if character.lower() == "return":
+        if key_char in printable:
+            self.add_character(key_char)
+        elif key.lower() == "return":
             self.render_text(False)
             return True
-        if character.lower() == "backspace":
+        if key.lower() == "backspace":
             self.remove_character()
-        elif character.lower() == "left":
+        elif key.lower() == "left":
             self.move_left()
-        elif character.lower() == "right":
+        elif key.lower() == "right":
             self.move_right()
-        else:
-            self.add_character(character)
+
         self.render_text()
         return False
 
@@ -1864,7 +1868,9 @@ class TextBox2D(UI):
         _textbox_object: :class:`TextBox2D`
         """
         key = i_ren.event.key
-        is_done = self.handle_character(key)
+        key_char = i_ren.event.key_char
+
+        is_done = self.handle_character(key, key_char)
         if is_done:
             i_ren.remove_active_prop(self.text.actor)
 
@@ -1896,6 +1902,7 @@ class LineSlider2D(UI):
     active_color : (float, float, float)
         Color of the handle when it is pressed.
     """
+
     def __init__(self, center=(0, 0),
                  initial_value=50, min_value=0, max_value=100,
                  length=200, line_width=5,
@@ -2244,6 +2251,7 @@ class LineDoubleSlider2D(UI):
         Color of the handles when they are pressed.
 
     """
+
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, center=(450, 300), length=200,
                  initial_values=(0, 100), min_value=0, max_value=100,
@@ -2779,6 +2787,7 @@ class RingSlider2D(UI):
     active_color : (float, float, float)
         Color of the handle when it is pressed.
     """
+
     def __init__(self, center=(0, 0),
                  initial_value=180, min_value=0, max_value=360,
                  slider_inner_radius=40, slider_outer_radius=44,
@@ -3038,6 +3047,7 @@ class RangeSlider(UI):
         The line slider which sets the value
 
     """
+
     def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
                  handle_side=20, range_slider_center=(450, 400),
                  value_slider_center=(450, 300), length=200, min_value=0,
@@ -3371,9 +3381,9 @@ class Option(UI):
         # Option's button
         self.button_icons = []
         self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
+                                  read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
+                                  read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons,
                                size=self.button_size)
 
@@ -3723,7 +3733,7 @@ class ListBox2D(UI):
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+                                            scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
@@ -4849,7 +4859,7 @@ class TabUI(UI):
             self.tabs[tab_idx].add_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def remove_element(self, tab_idx, element):
         """ Removes element from content panel after checking its existence.
@@ -4858,7 +4868,7 @@ class TabUI(UI):
             self.tabs[tab_idx].remove_element(element)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def update_element(self, tab_idx, element, coords, anchor="position"):
         """ Updates element on content panel after checking its existence.
@@ -4867,7 +4877,7 @@ class TabUI(UI):
             self.tabs[tab_idx].update_element(element, coords, anchor)
         else:
             raise IndexError(
-        "Tab with index {} does not exist".format(tab_idx))
+                "Tab with index {} does not exist".format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
