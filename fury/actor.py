@@ -1462,6 +1462,15 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         src.SetThetaResolution(theta)
         src.SetPhiResolution(phi)
 
+    if isinstance(colors, (list, tuple)):
+        colors = (colors[0], colors[1], colors[2], opacity)
+    elif isinstance(colors, np.ndarray):
+        if colors.ndim==1 or colors.shape[1]==1:
+            colors.reshape(-1,)
+            colors = np.array([colors[0], colors[1], colors[2], opacity])
+        else:
+            colors = np.concatenate((colors[:, :3], np.full((colors.shape[0], 1), opacity)), axis=1)
+
     actor = repeat_sources(centers=centers, colors=colors,
                            active_scalars=radii, source=src,
                            vertices=vertices, faces=faces)
