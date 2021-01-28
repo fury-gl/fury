@@ -853,7 +853,6 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     actor : vtkActor
         Spheres
     """
-
     if mask is None:
         mask = np.ones(odfs.shape[:3], dtype=np.bool)
     else:
@@ -935,82 +934,39 @@ def _odf_slicer_mapper(odfs, affine=None, mask=None, sphere=None, scale=2.2,
         Spheres mapper
     """
     mask = np.ones(odfs.shape[:3]) if mask is None else mask
+    mask = np.bitwise_and(mask, np.abs(odfs).max(axis=-1) > 0.0)
 
-    ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
+    # indices of nonzero voxels
+    ijk = np.array(np.nonzero(mask)).T
 
     if len(ijk) == 0:
         return None
 
     if affine is not None:
-        ijk = np.ascontiguousarray(apply_affine(affine, ijk))
+        ijk = apply_affine(affine, ijk)
 
+    nb_odf = np.count_nonzero(mask)
     faces = np.asarray(sphere.faces, dtype=int)
     vertices = sphere.vertices
 
-    all_xyz = []
-    all_faces = []
-    all_ms = []
-    for (k, center) in enumerate(ijk):
+    all_ijk = np.repeat(ijk, len(vertices), axis=0)
 
-        m = odfs[tuple(center.astype(np.int))].copy()
+    all_x = np.tile(vertices[:, 0], nb_odf)
+    all_y = np.tile(vertices[:, 1], nb_odf)
+    all_z = np.tile(vertices[:, 2], nb_odf)
+    all_xyz = np.column_stack((all_x, all_y, all_z))
+    all_xyz += all_ijk
 
-        if norm:
-            m /= np.abs(m).max()
-
-        if radial_scale:
-            xyz = vertices * m[:, None]
-        else:
-            xyz = vertices.copy()
-
-        all_xyz.append(scale * xyz + center)
-        all_faces.append(faces + k * xyz.shape[0])
-        all_ms.append(m)
-
-    all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
-    all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
-
-    if global_cm:
-        all_ms = np.ascontiguousarray(
-            np.concatenate(all_ms), dtype='f4')
-
-    points = vtk.vtkPoints()
-    points.SetData(all_xyz_vtk)
-
-    all_faces = np.concatenate(all_faces)
-
-    if global_cm:
-        if colormap is None:
-            raise IOError("if global_cm=True, colormap must be defined")
-        else:
-            cols = create_colormap(all_ms.ravel(), colormap)
-    else:
-        cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
-                        dtype='f4')
-        for k in range(ijk.shape[0]):
-            if colormap is not None:
-                tmp = create_colormap(all_ms[k].ravel(), colormap)
-            else:
-                tmp = orient2rgb(sphere.vertices)
-            cols[k] = tmp.copy()
-
-        cols = np.ascontiguousarray(
-            np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                       cols.shape[2])), dtype='f4')
-
-    vtk_colors = numpy_support.numpy_to_vtk(
-        np.asarray(255 * cols),
-        deep=True,
-        array_type=vtk.VTK_UNSIGNED_CHAR)
-
-    vtk_colors.SetName("colors")
+    all_faces_i = np.tile(faces[:, 0], nb_odf)
+    all_faces_j = np.tile(faces[:, 1], nb_odf)
+    all_faces_k = np.tile(faces[:, 2], nb_odf)
+    all_faces = np.ascontiguousarray(np.column_stack((all_faces_i, all_faces_j, all_faces_k)))
 
     polydata = vtk.vtkPolyData()
-    polydata.SetPoints(points)
+    set_polydata_vertices(polydata, np.ascontiguousarray(all_xyz))
     set_polydata_triangles(polydata, all_faces)
 
-    polydata.GetPointData().SetScalars(vtk_colors)
-
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = vtk.vtkOpenGLPolyDataMapper()
     mapper.SetInputData(polydata)
 
     return mapper
