@@ -25,6 +25,8 @@ import itertools
 ###############################################################################
 # The following function is used to scale the Z values(height) between 0-1
 # which will then be mapped in RGB colors according to colormap
+
+
 def scale(arr):
     arr = np.array(arr)
     maxima = np.max(arr)
@@ -37,6 +39,7 @@ def scale(arr):
 # coordinate is being modified with time as only the z coordinate is a
 # function of time
 
+
 def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
                        upper_ybound=1, npoints=100, time=0, incre=0):
     x = np.linspace(lower_xbound, upper_xbound, npoints)
@@ -44,17 +47,18 @@ def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
     X, Y = np.meshgrid(x, y)
     X = X.reshape(-1)
     Y = Y.reshape(-1)
-    # user can manipulate rate to change the speed of the waves
-    rate = 0.03
+    # manipulate rate to change the speed of the waves; (default = 0.025)
+    rate = 0.025
     # Z is the function F i.e. F(x, y, t)
     Z = 0.34*np.sin(2*np.pi*(X))*np.cos(2*np.pi*(Y-rate*incre))*np.cos(time)
     v = scale(Z)
-    colors = colormap.create_colormap(v, name='PuBu') #PuBu, hot
+    colors = colormap.create_colormap(v, name='PuBu')
     xyz = np.array([(a, b, c) for (a, b, c) in zip(X, Y, Z)])
     return xyz, colors
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position
+
 
 scene = window.Scene()
 scene.zoom(10.5)
@@ -83,7 +87,7 @@ showm = window.ShowManager(scene,
 #          (default = 200)
 
 time = 0
-dt = 0
+dt = 0.1
 lower_xbound = -1
 upper_xbound = 1
 lower_ybound = -1
@@ -95,11 +99,11 @@ npoints = 200
 # xyz are the coordinates of the points that'll be used to plot the function
 # colors refers to the colormap that'll be used
 xyz, colors = update_coordinates(lower_xbound, upper_xbound, lower_ybound,
-                         upper_ybound, npoints, time=time)
+                                 upper_ybound, npoints, time=time)
 
 ###############################################################################
 # Initializing point and axes actors and adding them to the scene
-point_actor = actor.surface(xyz, colors= colors)
+point_actor = actor.surface(xyz, colors=colors)
 axes_actor = actor.axes(scale=(1.5, 1.5, 1.5))
 scene.add(axes_actor)
 scene.add(point_actor)
@@ -107,7 +111,7 @@ scene.add(point_actor)
 ###############################################################################
 # Initializing text box to print the 2D function which is being rendered
 tb = ui.TextBlock2D(bold=True, position=(150, 60))
-tb.message = "z = F(x, y, t) = 0.24*sin(x)*cos(y)"#*cos(t)"
+tb.message = "z = F(x, y, t) = 0.24*sin(x)*cos(y)"
 scene.add(tb)
 
 ###############################################################################
@@ -131,14 +135,14 @@ end = 2000
 # Coordinates to be plotted are changed everytime timer_callback is called by
 # using the update_coordinates function. The 2D function is rendered here
 
+
 def timer_callback(_obj, _event):
-    global xyz, time, lower_xbound, upper_xbound, lower_ybound, upper_ybound, colors
+    global xyz, time, colors
     time += dt
     cnt = next(counter)
-    #lower_ybound+=dz
-    #upper_ybound+=dz
-    xyz, colors[:] = update_coordinates(lower_xbound, upper_xbound, lower_ybound,
-                             upper_ybound, npoints, time=time, incre=cnt)
+    xyz, colors[:] = update_coordinates(lower_xbound, upper_xbound,
+                                        lower_ybound, upper_ybound,
+                                        npoints, time=time, incre=cnt)
     vertices[:] = initial_vertices + \
         np.repeat(xyz, no_vertices_per_point, axis=0)
     utils.update_actor(point_actor)
