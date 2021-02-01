@@ -109,7 +109,7 @@ scene.add(point_actor)
 ###############################################################################
 # Initializing text box to print the 2D function which is being rendered
 tb = ui.TextBlock2D(bold=True, position=(150, 60))
-tb.message = "z = F(x, y, t) = 0.34*sin(2*pi*x)*cos(2*p*y)*cos(t)"
+tb.message = "z = F(x, y, t) = 0.34*sin(2*pi*x)*cos(2*pi*y)*cos(t)"
 scene.add(tb)
 
 ###############################################################################
