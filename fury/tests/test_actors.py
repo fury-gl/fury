@@ -199,16 +199,14 @@ def test_surface():
                 npt.assert_equal(report.objects, 1)
 
 
-def test_contour_from_roi(interactive=False):
-
+def test_contour_from_roi(interactive=True):
     # Render volume
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
     data[20:30, 25, 25] = 1.
     data[25, 20:30, 25] = 1.
     affine = np.eye(4)
-    surface = actor.contour_from_roi(data, affine,
-                                     color=np.array([1, 0, 1]),
+    surface = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]),
                                      opacity=.5)
     scene.add(surface)
 
@@ -225,9 +223,7 @@ def test_contour_from_roi(interactive=False):
     data2 = np.zeros((50, 50, 50))
     data2[20:30, 25, 25] = 1.
     data2[35:40, 25, 25] = 1.
-    affine = np.eye(4)
-    surface2 = actor.contour_from_roi(data2, affine,
-                                      color=np.array([0, 1, 1]),
+    surface2 = actor.contour_from_roi(data2, affine, color=np.array([0, 1, 1]),
                                       opacity=.5)
     scene2.add(surface2)
 
@@ -236,14 +232,33 @@ def test_contour_from_roi(interactive=False):
     if interactive:
         window.show(scene2)
 
+    scene3 = window.Scene()
+    scene3.background((1, 1, 1))
+    surface3 = actor.contour_from_roi(data, affine=affine,
+                                      color=np.array([1, 0, 1]), pbr=True,
+                                      metallic=.8, roughness=.2)
+    surface4 = actor.contour_from_roi(data2, affine=affine,
+                                      color=np.array([0, 1, 1]), pbr=True,
+                                      metallic=.6, roughness=.4)
+    scene3.add(surface3)
+    scene3.add(surface4)
+
+    scene3.reset_camera()
+    scene3.reset_clipping_range()
+    if interactive:
+        window.show(scene3)
+
     arr = window.snapshot(scene, 'test_surface.png', offscreen=True)
     arr2 = window.snapshot(scene2, 'test_surface2.png', offscreen=True)
+    arr3 = window.snapshot(scene2, 'test_surface3.png', offscreen=True)
 
     report = window.analyze_snapshot(arr, find_objects=True)
     report2 = window.analyze_snapshot(arr2, find_objects=True)
+    report3 = window.analyze_snapshot(arr3, find_objects=True)
 
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(report2.objects, 2)
+    npt.assert_equal(report3.objects, 2)
 
     # test on real streamlines using tracking example
     if have_dipy:
@@ -298,11 +313,11 @@ def test_contour_from_roi(interactive=False):
         r = window.Scene()
         r2 = window.Scene()
         r.add(streamlines_actor)
-        arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
+        arr3 = window.snapshot(r, 'test_surface4.png', offscreen=True)
         report3 = window.analyze_snapshot(arr3, find_objects=True)
         r2.add(streamlines_actor)
         r2.add(seedroi_actor)
-        arr4 = window.snapshot(r2, 'test_surface4.png', offscreen=True)
+        arr4 = window.snapshot(r2, 'test_surface5.png', offscreen=True)
         report4 = window.analyze_snapshot(arr4, find_objects=True)
 
         # assert that the seed ROI rendering is not far

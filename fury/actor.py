@@ -331,8 +331,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     return surface_actor
 
 
-def contour_from_roi(data, affine=None,
-                     color=np.array([1, 0, 0]), opacity=1):
+def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1,
+                     pbr=False, metallic=1., roughness=.5):
     """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
@@ -418,7 +418,7 @@ def contour_from_roi(data, affine=None,
     skin_extractor.SetValue(0, 1)
     skin_normals = vtk.vtkPolyDataNormals()
     skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
-    skin_normals.SetFeatureAngle(60.0)
+    skin_normals.SetFeatureAngle(90.0)
 
     skin_mapper = vtk.vtkPolyDataMapper()
     skin_mapper.SetInputConnection(skin_normals.GetOutputPort())
@@ -429,6 +429,11 @@ def contour_from_roi(data, affine=None,
     skin_actor.SetMapper(skin_mapper)
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
     skin_actor.GetProperty().SetOpacity(opacity)
+
+    if pbr:
+        skin_actor.GetProperty().SetInterpolationToPBR()
+        skin_actor.GetProperty().SetMetallic(metallic)
+        skin_actor.GetProperty().SetRoughness(roughness)
 
     return skin_actor
 
