@@ -348,6 +348,15 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1,
         RGB values in [0,1].
     opacity : float
         Opacity of surface between 0 and 1.
+    pbr : bool, optional
+        Enables Physically Based Rendering interpolation. Default disabled
+        (False).
+    metallic : float, optional
+        Metallic or non-metallic (dielectric) shading computation value. Values
+        must be between 0.0 and 1.0.
+    roughness : float, optional
+        Parameter used to specify how glossy the actor should be. Values must
+        be between 0.0 and 1.0.
 
     Returns
     -------

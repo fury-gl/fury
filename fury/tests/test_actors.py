@@ -199,7 +199,7 @@ def test_surface():
                 npt.assert_equal(report.objects, 1)
 
 
-def test_contour_from_roi(interactive=True):
+def test_contour_from_roi(interactive=False):
     # Render volume
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
