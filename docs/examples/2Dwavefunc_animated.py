@@ -5,10 +5,8 @@ Animating a time-varying 2D wave function
 
 This is a simple demonstration of how one can visualize
 time-varying 2D wave functions using FURY.
-2D time varying wave function used in this animation-
-z = F(x, y, t) = 0.24*sin(10x)*cos(10y)*cos(t)
 
-Can also try plotting these in update_coordinates function-
+Can try plotting these in update_coordinates function-
 #Z = (X**2 - Y**2)/(X**2 + Y**2)**0.5*np.cos(np.pi*X-rate*incre)
 #Z = np.sin(X**2)*np.cos(Y**2-rate*incre)#*np.sin(rate*incre)
 #Z = np.sin(X**2-Y**2)*np.sin(time)
@@ -159,7 +157,7 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 50, timer_callback)
 
-interactive = False
+interactive = True
 if interactive:
     showm.start()
 
