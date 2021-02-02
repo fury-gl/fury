@@ -1563,7 +1563,6 @@ class TextBox2D(UI):
     init : bool
         Flag which says whether the textbox has just been initialized.
     """
-
     def __init__(self, width, height, text="Enter Text", position=(100, 10),
                  color=(0, 0, 0), font_size=18, font_family='Arial',
                  justification='left', bold=False,
@@ -4871,7 +4870,7 @@ class TabUI(UI):
             self.tabs[tab_idx].update_element(element, coords, anchor)
         else:
             raise IndexError(
-                "Tab with index {} does not exist".format(tab_idx))
+        "Tab with index {} does not exist".format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
