@@ -17,6 +17,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         numpy_to_vtk_matrix, repeat_sources,
                         set_polydata_colors, get_actor_from_primitive)
 from fury.io import load_image
+from fury.actors.odf_slicer import OdfSlicerActor
 import fury.primitive as fp
 
 
@@ -819,11 +820,12 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     return arrow(centers, dirs, colors, scales)
 
 
-def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
-               norm=True, radial_scale=True, opacity=1.,
-               colormap='blues', global_cm=False):
-    """ Slice spherical fields in native or world coordinates
-
+def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
+               norm=True, radial_scale=True, opacity=1.0, B_matrix=None,
+               colormap=None, global_cm=False, vox_indices=None):
+    """
+    Create an actor for rendering a grid of ODFs given an array of
+    spherical harmonics or spherical function coefficients.
     Parameters
     ----------
     odfs : ndarray
@@ -848,216 +850,20 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=2.2,
     global_cm : bool
         If True the colormap will be applied in all ODFs. If False
         it will be applied individually at each voxel (default False).
-
     Returns
     ---------
     actor : vtkActor
-        Spheres
+        Grid containing spherical functions
     """
-    if mask is None:
-        mask = np.ones(odfs.shape[:3], dtype=np.bool)
+    if vox_indices is not None:
+        return OdfSlicerActor(odfs, sphere, vox_indices, scale, norm,
+                              radial_scale, global_cm, colormap, opacity,
+                              affine=affine, mask=mask, B=B_matrix)
     else:
-        mask = mask.astype(np.bool)
-
-    szx, szy, szz = odfs.shape[:3]
-
-    class OdfSlicerActor(vtk.vtkOpenGLActor):
-        def __init__(self):
-            self.mapper = None
-            self.vertices = sphere.vertices
-            # TODO: add support for input mask
-            self.indices = np.nonzero(np.abs(odfs).max(axis=-1) > 0.0)
-            self.odfs = odfs[self.indices]
-            print(self.odfs.shape)
-            if norm:
-                self.odfs /= np.abs(self.odfs).max(axis=-1, keepdims=True)
-
-        def display_extent(self, x1, x2, y1, y2, z1, z2):
-            tmp_mask = np.zeros(odfs.shape[:3], dtype=np.bool)
-            tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
-            tmp_mask = np.bitwise_and(tmp_mask, mask)
-
-            self.mapper = _odf_slicer_mapper(odfs=self.odfs,
-                                             indices=self.indices,
-                                             affine=affine,
-                                             mask=tmp_mask,
-                                             sphere=sphere,
-                                             scale=scale,
-                                             norm=norm,
-                                             radial_scale=radial_scale,
-                                             colormap=colormap,
-                                             global_cm=global_cm)
-            self.SetMapper(self.mapper)
-
-        def display(self, x=None, y=None, z=None):
-            print('display')
-            if x is None and y is None and z is None:
-                self.display_extent(0, szx - 1, 0, szy - 1,
-                                    int(np.floor(szz/2)), int(np.floor(szz/2)))
-            if x is not None:
-                self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
-            if y is not None:
-                self.display_extent(0, szx - 1, y, y, 0, szz - 1)
-            if z is not None:
-                self.display_extent(0, szx - 1, 0, szy - 1, z, z)
-
-    odf_actor = OdfSlicerActor()
-    odf_actor.display_extent(0, szx - 1, 0, szy - 1,
-                             int(np.floor(szz/2)), int(np.floor(szz/2)))
-    odf_actor.GetProperty().SetOpacity(opacity)
-
-    return odf_actor
-
-
-class OdfQuickSlicer(vtk.vtkOpenGLActor):
-    def __init__(self, odfs, sphere, norm=True):
-        self.vertices = sphere.vertices
-        self.faces = sphere.faces
-        # self._reorder_faces()
-
-        self.indices = np.nonzero(np.abs(odfs).max(axis=-1) > 0.0)
-        self.odfs = odfs[self.indices]
-        # self.odfs[self.odfs < 0.0] = 0.0
-        if norm:
-            self.odfs /= np.abs(self.odfs).max(axis=-1, keepdims=True)
-        self.mask = np.zeros(odfs.shape[:3], dtype=np.bool)
-        self.mask[..., odfs.shape[-2]//2:odfs.shape[-2]//2+1] = True
-
-        self.mapper = vtk.vtkOpenGLPolyDataMapper()
-        self.update_mapper()
-        self.SetMapper(self.mapper)
-
-        # self.GetProperty().SetAmbientColor(1.0, 0.0, 1.0)
-        # self.GetProperty().SetAmbient(0.3)
-        # self.GetProperty().SetDiffuseColor(1.0, 0.0, 1.0)
-        # self.GetProperty().SetInterpolationToGouraud()
-        # self.GetProperty().SetBackfaceCulling(True)
-
-    def _reorder_faces(self):
-        for i in range(len(self.faces)):
-            verts = self.vertices[self.faces[i]]
-            u = verts[1] - verts[0]
-            v = verts[2] - verts[0]
-            triangle_normal = np.sum(verts, axis=0)
-            triangle_normal /= np.linalg.norm(triangle_normal)
-            if np.dot(triangle_normal, np.cross(u, v).reshape(3, 1)) < 0:
-                print(i)
-                self.faces[i][0], self.faces[i][1] =\
-                    self.faces[i][1], self.faces[i][0]
-
-    def update_mapper(self):
-        mask = self.mask
-        indices = self.indices
-
-        # indices of nonzero voxels
-        ijk = np.asarray(self.indices).T[mask[indices]]
-        if len(ijk) == 0:
-            return None
-
-        nb_odf = len(ijk)
-        vertices = self.vertices
-        faces = self.faces
-        odfs = self.odfs
-
-        all_vertices =\
-            np.tile(vertices, (nb_odf, 1)) * \
-            odfs[mask[indices]].reshape(-1, 1) + \
-            np.repeat(ijk, len(vertices), axis=0)
-
-        all_colors =\
-            (np.tile(np.abs(vertices), (nb_odf, 1)) * 255).astype(np.uint8)
-
-        all_faces =\
-            np.tile(faces, (nb_odf, 1)) + \
-            np.repeat(np.arange(nb_odf) * len(vertices),
-                      len(faces)).reshape(-1, 1)
-
-        all_normals =\
-            np.tile(vertices[faces.flatten(), :], (nb_odf, 1))
-
-        polydata = vtk.vtkPolyData()
-        set_polydata_triangles(polydata, all_faces)
-        set_polydata_vertices(polydata, all_vertices)
-        set_polydata_colors(polydata, all_colors)
-        # set_polydata_normals(polydata, all_normals)
-
-        self.mapper.SetInputData(polydata)
-        print('update_mapper done.')
-
-    def display_extent(self, x1, x2, y1, y2, z1, z2):
-        print('display_extent called.')
-        self.mask[:, :, :] = False
-        self.mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
-        self.update_mapper()
-
-
-def _odf_slicer_mapper(odfs, indices, affine=None, mask=None, sphere=None,
-                       scale=2.2, norm=True, radial_scale=True,
-                       colormap='plasma', global_cm=False):
-    """ Helper function for slicing spherical fields
-
-    Parameters
-    ----------
-    odfs : ndarray
-        4D array of spherical functions
-    affine : array
-        4x4 transformation array from native coordinates to world coordinates
-    mask : ndarray
-        3D mask
-    sphere : Sphere
-        a sphere
-    scale : float
-        Distance between spheres.
-    norm : bool
-        Normalize `sphere_values`.
-    radial_scale : bool
-        Scale sphere points according to odf values.
-    colormap : None or str
-        If None then sphere vertices are used to compute orientation-based
-        color. Otherwise the name of colormap is given. Matplotlib colormaps
-        are supported (e.g., 'inferno').
-    global_cm : bool
-        If True the colormap will be applied in all ODFs. If False
-        it will be applied individually at each voxel (default False).
-
-    Returns
-    ---------
-    mapper : vtkPolyDataMapper
-        Spheres mapper
-    """
-    mask = np.ones(odfs.shape[:3]) if mask is None else mask
-
-    # indices of nonzero voxels
-    ijk = np.asarray(indices).T[mask[indices]]
-
-    if len(ijk) == 0:
-        return None
-
-    if affine is not None:
-        ijk = apply_affine(affine, ijk)
-
-    nb_odf = len(ijk)
-    faces = np.asarray(sphere.faces, dtype=int)
-    vertices = sphere.vertices
-
-    all_vertices =\
-        np.tile(vertices, (nb_odf, 1)) * \
-        odfs[mask[indices]].reshape(-1, 1) + \
-        np.repeat(ijk, len(vertices), axis=0)
-
-    all_faces =\
-        np.tile(faces, (nb_odf, 1)) + \
-        np.repeat(np.arange(nb_odf) * len(vertices),
-                  len(faces)).reshape(-1, 1)
-
-    polydata = vtk.vtkPolyData()
-    set_polydata_vertices(polydata, all_vertices)
-    set_polydata_triangles(polydata, all_faces)
-
-    mapper = vtk.vtkOpenGLPolyDataMapper()
-    mapper.SetInputData(polydata)
-
-    return mapper
+        indices = np.nonzero(np.abs(odfs).max(axis=-1) > 0.)
+        return OdfSlicerActor(odfs[indices], sphere, indices, scale, norm,
+                              radial_scale, global_cm, colormap, opacity,
+                              affine=affine, mask=mask, B=B_matrix)
 
 
 def _makeNd(array, ndim):
