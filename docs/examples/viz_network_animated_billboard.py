@@ -19,55 +19,16 @@ import time
 from collections import Counter
 from os.path import join as pjoin
 import numpy as np
-import vtk
 import helios
-
+import vtk
 import vtk.util.numpy_support as VN
 from fury import actor, window, ui, colormap as cmap
 import fury.primitive as fp
 from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         set_polydata_triangles, set_polydata_vertices,
                         set_polydata_colors, colors_from_actor,
-                        vertices_from_actor, update_actor)
-
-
-###############################################################################
-# Now, let's define some auxiliary functions
-
-def vtk_vertices_from_actor(actor):
-    """Access to vtk vertices from actor.
-
-    Parameters
-    ----------
-    actor : actor
-
-    Returns
-    -------
-    vertices : vtkarray
-
-    """
-    return actor.GetMapper().GetInput().GetPoints().GetData()
-
-
-def vtk_array_from_actor(actor, array_name):
-    """Access vtk array from actor which uses polydata.
-
-    Parameters
-    ----------
-    actor : actor
-
-    Returns
-    -------
-    output : vtkarray
-
-    """
-    vtk_array = \
-        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
-    if vtk_array is None:
-        return None
-
-    return vtk_array
-
+                        vertices_from_actor, update_actor,
+                        vtk_vertices_from_actor,vtk_array_from_actor)
 
 ###############################################################################
 # Let's generate a Watts-Strogatz random network as an example
