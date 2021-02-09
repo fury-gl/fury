@@ -109,11 +109,9 @@ vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
 vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
 // camera direction
 vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]);
-vec3 ro = MCVCMatrix[3].xyz * mat3(MCVCMatrix);  // camera position
 
 // create view ray
 vec3 rd = normalize( point.x*-uu + point.y*-vv + 7*ww);
-vec3 col = vec3(0.0);
 
 float len = length(point);
 float radius = 1.;
