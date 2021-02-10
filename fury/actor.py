@@ -819,7 +819,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     return arrow(centers, dirs, colors, scales)
 
 
-def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
+def odf_slicer(odfs, sphere, affine=None, mask=None, scale=0.5,
                norm=True, radial_scale=True, opacity=1.0, colormap=None,
                global_cm=False, B_matrix=None):
     """
@@ -874,10 +874,11 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
     if mask is not None:
         valid_odf_mask = np.logical_and(valid_odf_mask, mask)
     indices = np.nonzero(valid_odf_mask)
+    shape = odfs.shape[:-1]
 
     # create and return an instance of OdfSlicerActor
     return OdfSlicerActor(odfs[indices], sphere, indices, scale, norm,
-                          radial_scale, global_cm, colormap, opacity,
+                          radial_scale, shape, global_cm, colormap, opacity,
                           affine, B_matrix)
 
 

@@ -46,7 +46,7 @@ class OdfSlicerActor(vtk.vtkActor):
         to be expressed in SF coefficients.
     """
     def __init__(self, odfs, sphere, indices, scale, norm, radial_scale,
-                 global_cm, colormap, opacity, affine=None, B=None):
+                 shape, global_cm, colormap, opacity, affine=None, B=None):
         self.vertices = sphere.vertices
         self.faces = self._reorder_faces(sphere.faces)
         self.odfs = odfs
@@ -54,6 +54,7 @@ class OdfSlicerActor(vtk.vtkActor):
         self.B = B
         self.radial_scale = radial_scale
         self.colormap = colormap
+        self.grid_shape = shape
         self.global_cm = global_cm
 
         # declare a mask to be instantiated in slice_along_axis
@@ -73,13 +74,9 @@ class OdfSlicerActor(vtk.vtkActor):
                 self.odfs /= np.abs(self.odfs).max(axis=-1, keepdims=True)
             self.odfs *= scale
 
-        # Set dimensions of 3D volume to dimensions of the smallest
-        # grid containing the maximum indices in `indices`
-        self.grid_shape = tuple(np.array(self.indices).max(axis=-1) + 1)
-
         # Compute world coordinates of an affine is supplied
-        self.is_world = affine is not None
-        if self.is_world:
+        self.affine = affine
+        if self.affine is not None:
             self.w_verts = self.vertices.dot(affine[:3, :3])
             self.w_pos = apply_affine(affine, np.asarray(self.indices).T)
 
@@ -150,6 +147,8 @@ class OdfSlicerActor(vtk.vtkActor):
             raise ValueError('Can\'t update sphere when'
                              ' using SF coefficients.')
         self.vertices = sphere.vertices
+        if self.affine is not None:
+            self.w_verts = self.vertices.dot(self.affine[:3, :3])
         self.faces = self._reorder_faces(sphere.faces)
         self.B = B
 
@@ -184,7 +183,7 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         Get the position of non-zero voxels inside `mask`.
         """
-        if self.is_world:
+        if self.affine is not None:
             return self.w_pos[mask[self.indices]]
         return np.asarray(self.indices).T[mask[self.indices]]
 
@@ -192,7 +191,7 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         Get the sphere directions onto which is projected the signal.
         """
-        if self.is_world:
+        if self.affine is not None:
             return self.w_verts
         return self.vertices
 
@@ -243,11 +242,12 @@ class OdfSlicerActor(vtk.vtkActor):
                 all_colors = create_colormap(sf.ravel(), self.colormap) * 255
         elif self.colormap is not None:
             if isinstance(self.colormap, str):
-                min_sf = sf.min(axis=-1, keepdims=True)
-                max_sf = sf.max(axis=-1, keepdims=True)
+                # Map ODFs values [min, max] to [0, 1] for each ODF
+                range_sf = sf.max(axis=-1) - sf.min(axis=-1)
+                rescaled = sf - sf.min(axis=-1, keepdims=True)
+                rescaled[range_sf > 0] /= range_sf[range_sf > 0][..., None]
                 all_colors =\
-                    create_colormap(((sf - min_sf) / (max_sf - min_sf))
-                                    .ravel(), self.colormap) * 255
+                    create_colormap(rescaled.ravel(), self.colormap) * 255
             else:
                 all_colors = np.tile(np.array(self.colormap).reshape(1, 3),
                                      (sf.shape[0]*sf.shape[1], 1))
