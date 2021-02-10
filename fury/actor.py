@@ -9,13 +9,12 @@ from vtk.util import numpy_support
 from fury.shaders import (load, shader_to_actor, attribute_to_actor,
                           add_shader_callback, replace_shader_in_actor)
 from fury import layout
-from fury.colormap import colormap_lookup_table, create_colormap, orient2rgb
+from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecated_params
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
-                        set_polydata_normals, shallow_copy, rgb_to_vtk,
-                        numpy_to_vtk_matrix, repeat_sources,
-                        set_polydata_colors, get_actor_from_primitive)
+                        shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
+                        repeat_sources, get_actor_from_primitive)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
 import fury.primitive as fp
@@ -822,7 +821,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
 
 def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
                norm=True, radial_scale=True, opacity=1.0, colormap=None,
-               global_cm=False, B_matrix=None, vox_indices=None):
+               global_cm=False, B_matrix=None):
     """
     Create an actor for rendering a grid of ODFs given an array of
     spherical function (SF) or spherical harmonics (SH) coefficients.
@@ -830,8 +829,8 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
     Parameters
     ----------
     odfs : ndarray
-        SF or SH coefficients array. The input array can be either
-        4D (X, Y, Z, n_coeffs) or 2D (N, n_coeffs) (see `vox_indices`)
+        4D ODFs array in SF or SH coefficients. If SH coefficients,
+        `B_matrix` must be supplied.
     sphere : dipy.core.sphere.Sphere
         The sphere used for SH to SF projection.
     affine : array
@@ -847,9 +846,10 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
         Scale sphere points by ODF values.
     opacity : float
         Takes values from 0 (fully transparent) to 1 (opaque).
-    colormap : None or str
+    colormap : None or str or tuple
         The name of the colormap to use. Matplotlib colormaps are supported
-        (e.g., 'inferno'). If None then a RGB colormap is used.
+        (e.g., 'inferno'). A plain color can be supplied as a RGB tuple in
+        range [0, 255]. If None then a RGB colormap is used.
     global_cm : bool
         If True the colormap will be applied in all ODFs. If False
         it will be applied individually at each voxel.
@@ -857,36 +857,28 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=2.2,
         Optional SH to SF matrix for projecting `odfs` given in SH
         coefficents on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
-    vox_indices: tuple
-        Optional voxel indices given in tuple(x_indices, y_indices, z_indices)
-        format for mapping 2D ODF array to 3D voxel grid. If None, then `odfs`
-        must be a 4D volume.
 
     Returns
     ---------
     actor : OdfSlicerActor
         vtkActor representing the ODF field.
     """
+    # first we check if the input array is 4D
+    n_dims = len(odfs.shape)
+    if n_dims != 4:
+        raise ValueError('Invalid number of dimensions for odfs. Expected 4 '
+                         'dimensions, got {0} dimensions.'.format(n_dims))
 
-    if vox_indices is None:
-        # first we check if the input array is 4D
-        if len(odfs.shape) != 4:
-            raise ValueError('Invalid number of dimensions for odfs. Valid '
-                             'number of dimension is 4 when vox_indices is '
-                             'None.')
-        # we generate indices for all nonzero voxels
-        indices = np.nonzero(np.abs(odfs).max(axis=-1) > 0.)
-    else:
-        if len(odfs.shape) != 2:
-            raise ValueError('Invalid number of dimensions for odfs. Valid '
-                             'number of dimension is 2 when vox_indices is '
-                             'specified.')
-        indices = vox_indices
+    # we generate indices for all nonzero voxels
+    valid_odf_mask = np.abs(odfs).max(axis=-1) > 0.
+    if mask is not None:
+        valid_odf_mask = np.logical_and(valid_odf_mask, mask)
+    indices = np.nonzero(valid_odf_mask)
 
     # create and return an instance of OdfSlicerActor
-    return OdfSlicerActor(odfs[indices] if vox_indices is None else odfs,
-                          sphere, indices, scale, norm, radial_scale,
-                          global_cm, colormap, opacity, affine, mask, B_matrix)
+    return OdfSlicerActor(odfs[indices], sphere, indices, scale, norm,
+                          radial_scale, global_cm, colormap, opacity,
+                          affine, B_matrix)
 
 
 def _makeNd(array, ndim):

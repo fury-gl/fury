@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import vtk
 
-from fury.deprecator import deprecate_with_version
 from fury.utils import (set_polydata_vertices, set_polydata_triangles,
-                        set_polydata_normals, set_polydata_colors)
+                        set_polydata_colors, apply_affine)
 from fury.colormap import create_colormap
 
 
@@ -46,15 +46,19 @@ class OdfSlicerActor(vtk.vtkActor):
         to be expressed in SF coefficients.
     """
     def __init__(self, odfs, sphere, indices, scale, norm, radial_scale,
-                 global_cm, colormap, opacity, affine=None, mask=None, B=None):
+                 global_cm, colormap, opacity, affine=None, B=None):
         self.vertices = sphere.vertices
-        self.faces = sphere.faces
+        self.faces = self._reorder_faces(sphere.faces)
         self.odfs = odfs
         self.indices = indices
         self.B = B
         self.radial_scale = radial_scale
         self.colormap = colormap
         self.global_cm = global_cm
+        print(self.odfs.shape)
+
+        # declare a mask to be instantiated in slice_along_axis
+        self.mask = None
 
         # If a B matrix is given, odfs are expected to
         # be in SH basis coefficients.
@@ -70,25 +74,15 @@ class OdfSlicerActor(vtk.vtkActor):
                 self.odfs /= np.abs(self.odfs).max(axis=-1, keepdims=True)
             self.odfs *= scale
 
-        # Set mask and dimensions of 3D volume.
-        if mask is not None:
-            # If a mask is given, we directly use its content and shape
-            self.grid_shape = mask.shape
-            self.mask = mask
-        else:
-            # If no mask is given, we create the smallest grid
-            # containing the maximum indices in `indices`
-            self.grid_shape = tuple(np.array(self.indices).max(axis=-1) + 1)
-            self.mask = np.ones(self.grid_shape, dtype=np.bool)
+        # Set dimensions of 3D volume to dimensions of the smallest
+        # grid containing the maximum indices in `indices`
+        self.grid_shape = tuple(np.array(self.indices).max(axis=-1) + 1)
 
         # Compute world coordinates of an affine is supplied
         self.is_world = affine is not None
         if self.is_world:
-            self.w_verts = self.vertices.dot(affine[:3, :3])
-            self.w_pos =\
-                np.append(np.asarray(self.indices).T,
-                          np.ones((len(self.odfs), 1)), axis=-1).dot(affine)
-            self.w_pos = self.w_pos[..., :-1]
+            self.w_verts = apply_affine(affine, self.vertices)
+            self.w_pos = apply_affine(affine, np.asarray(self.indices).T)
 
         # Initialize mapper and slice to the
         # middle of the volume along Z axis
@@ -109,11 +103,11 @@ class OdfSlicerActor(vtk.vtkActor):
         y1 (inclusive) to y2 (inclusive), z1 (inclusive) to z2
         (inclusive).
         """
-        mask = np.zeros_like(self.mask)
+        mask = np.zeros(self.grid_shape, dtype=np.bool)
         mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
-        mask = np.bitwise_and(mask, self.mask)
+        self.mask = mask
 
-        self._update_mapper(mask)
+        self._update_mapper()
 
     def slice_along_axis(self, slice_index, axis='zaxis'):
         """
@@ -136,6 +130,9 @@ class OdfSlicerActor(vtk.vtkActor):
             raise ValueError('Invalid axis name {0}.'.format(axis))
 
     def display(self, x=None, y=None, z=None):
+        """
+        Display a slice along x, y, or z axis.
+        """
         if x is None and y is None and z is None:
             self.slice_along_axis(self.grid_shape[2]//2)
         elif x is not None:
@@ -145,19 +142,34 @@ class OdfSlicerActor(vtk.vtkActor):
         elif z is not None:
             self.slice_along_axis(z, 'zaxis')
 
-    def _update_mapper(self, mask):
+    def update_sphere(self, sphere, B):
         """
-        Map vtkPolyData for ODFs inside `mask` to the actor.
+        Dynamically change the sphere
+        used for SH to SF projection.
+        """
+        if self.B is None:
+            raise ValueError('Can\'t update sphere when'
+                             ' using SF coefficients.')
+        self.vertices = sphere.vertices
+        self.faces = self._reorder_faces(sphere.faces)
+        self.B = B
+
+        # draw ODFs with new sphere
+        self._update_mapper()
+
+    def _update_mapper(self):
+        """
+        Map vtkPolyData to the actor.
         """
         polydata = vtk.vtkPolyData()
 
-        offsets = self._get_odf_offsets(mask)
+        offsets = self._get_odf_offsets(self.mask)
         if len(offsets) == 0:
             self.mapper.SetInputData(polydata)
             return None
 
         sph_dirs = self._get_sphere_directions()
-        sf = self._get_sf(mask)
+        sf = self._get_sf(self.mask)
 
         all_vertices = self._get_all_vertices(offsets, sph_dirs, sf)
         all_faces = self._get_all_faces(len(offsets), len(sph_dirs))
@@ -175,7 +187,7 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         if self.is_world:
             return self.w_pos[mask[self.indices]]
-        return np.asarray(self.indices).T
+        return np.asarray(self.indices).T[mask[self.indices]]
 
     def _get_sphere_directions(self):
         """
@@ -198,7 +210,7 @@ class OdfSlicerActor(vtk.vtkActor):
             return sf * self.scale
         # when odfs are in SF coefficients, the normalisation and scaling
         # are done during initialisation. We simply return them:
-        return self.odfs
+        return self.odfs[mask[self.indices]]
 
     def _get_all_vertices(self, offsets, sph_dirs, sf):
         """
@@ -227,21 +239,34 @@ class OdfSlicerActor(vtk.vtkActor):
         """
         if self.global_cm:
             if self.colormap is None:
-                raise IOError("if global_cm=True, colormap must be defined")
+                raise IOError("if global_cm=True, colormap must be defined.")
             else:
-                all_colors =\
-                    (create_colormap(sf.ravel(), self.colormap) * 255)\
-                    .astype(np.uint8)
+                all_colors = create_colormap(sf.ravel(), self.colormap) * 255
         elif self.colormap is not None:
-            all_colors =\
-                (create_colormap(
-                    ((sf - sf.min(axis=-1, keepdims=True))
-                     / (sf.max(axis=-1, keepdims=True)
-                     - sf.min(axis=-1, keepdims=True))).ravel(),
-                    self.colormap) * 255)\
-                .astype(np.uint8)
+            if isinstance(self.colormap, str):
+                min_sf = sf.min(axis=-1, keepdims=True)
+                max_sf = sf.max(axis=-1, keepdims=True)
+                all_colors =\
+                    create_colormap(((sf - min_sf) / (max_sf - min_sf))
+                                    .ravel(), self.colormap) * 255
+            else:
+                all_colors = np.tile(np.array(self.colormap).reshape(1, 3),
+                                     (sf.shape[0]*sf.shape[1], 1))
         else:
-            all_colors =\
-                np.tile(np.abs(self.vertices)*255, (len(sf), 1))\
-                .astype(np.uint8)
-        return all_colors
+            all_colors = np.tile(np.abs(self.vertices)*255, (len(sf), 1))
+        return all_colors.astype(np.uint8)
+
+    def _reorder_faces(self, faces):
+        """
+        Rearrange faces for vtk polydata normal generation.
+        """
+        reordered = faces
+        for i in range(len(faces)):
+            a, b, c = tuple(self.vertices[faces[i]])
+            ab = b - a
+            ac = c - a
+            n = a + b + c
+            n /= np.linalg.norm(n)
+            if np.cross(ab, ac).dot(n) < 0:
+                reordered[i] = [faces[i, 0], faces[i, 2], faces[i, 1]]
+        return reordered
