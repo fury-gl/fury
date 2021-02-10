@@ -55,7 +55,6 @@ class OdfSlicerActor(vtk.vtkActor):
         self.radial_scale = radial_scale
         self.colormap = colormap
         self.global_cm = global_cm
-        print(self.odfs.shape)
 
         # declare a mask to be instantiated in slice_along_axis
         self.mask = None
@@ -81,7 +80,7 @@ class OdfSlicerActor(vtk.vtkActor):
         # Compute world coordinates of an affine is supplied
         self.is_world = affine is not None
         if self.is_world:
-            self.w_verts = apply_affine(affine, self.vertices)
+            self.w_verts = self.vertices.dot(affine[:3, :3])
             self.w_pos = apply_affine(affine, np.asarray(self.indices).T)
 
         # Initialize mapper and slice to the
@@ -103,7 +102,7 @@ class OdfSlicerActor(vtk.vtkActor):
         y1 (inclusive) to y2 (inclusive), z1 (inclusive) to z2
         (inclusive).
         """
-        mask = np.zeros(self.grid_shape, dtype=np.bool)
+        mask = np.zeros(self.grid_shape, dtype=bool)
         mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
         self.mask = mask
 
