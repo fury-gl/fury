@@ -18,8 +18,8 @@ class OdfSlicerActor(vtk.vtkActor):
     vertices: ndarray
         The sphere vertices used for SH to SF projection.
     faces: ndarray
-        Indices of sphere vertices forming triangles. Ordered
-        clockwise. (see fury.utils.fix_winding_order)
+        Indices of sphere vertices forming triangles. Should be
+        ordered clockwise (see fury.utils.fix_winding_order).
     indices: tuple
         Indices given in tuple(x_indices, y_indices, z_indices)
         format for mapping 2D ODF array to 3D voxel grid.
@@ -255,18 +255,3 @@ class OdfSlicerActor(vtk.vtkActor):
         else:
             all_colors = np.tile(np.abs(self.vertices)*255, (len(sf), 1))
         return all_colors.astype(np.uint8)
-
-    def _reorder_faces(self, faces):
-        """
-        Rearrange faces for vtk polydata normal generation.
-        """
-        reordered = faces
-        for i in range(len(faces)):
-            a, b, c = tuple(self.vertices[faces[i]])
-            ab = b - a
-            ac = c - a
-            n = a + b + c
-            n /= np.linalg.norm(n)
-            if np.cross(ab, ac).dot(n) < 0:
-                reordered[i] = [faces[i, 0], faces[i, 2], faces[i, 1]]
-        return reordered
