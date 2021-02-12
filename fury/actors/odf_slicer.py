@@ -15,8 +15,11 @@ class OdfSlicerActor(vtk.vtkActor):
     ----------
     odfs : ndarray
         SF or SH coefficients 2-dimensional array.
-    sphere : dipy.core.sphere.Sphere
-        The sphere used for SH to SF projection.
+    vertices: ndarray
+        The sphere vertices used for SH to SF projection.
+    faces: ndarray
+        Indices of sphere vertices forming triangles. Ordered
+        clockwise. (see fury.utils.fix_winding_order)
     indices: tuple
         Indices given in tuple(x_indices, y_indices, z_indices)
         format for mapping 2D ODF array to 3D voxel grid.
@@ -38,17 +41,16 @@ class OdfSlicerActor(vtk.vtkActor):
     affine : array
         optional 4x4 transformation array from native
         coordinates to world coordinates.
-    mask : ndarray
-        Optional 3D mask to apply to ODF field.
     B : ndarray (n_coeffs, n_vertices)
         Optional SH to SF matrix for projecting `odfs` given in SH
         coefficents on the `sphere`. If None, then the input is assumed
         to be expressed in SF coefficients.
     """
-    def __init__(self, odfs, sphere, indices, scale, norm, radial_scale,
-                 shape, global_cm, colormap, opacity, affine=None, B=None):
-        self.vertices = sphere.vertices
-        self.faces = self._reorder_faces(sphere.faces)
+    def __init__(self, odfs, vertices, faces, indices, scale, norm,
+                 radial_scale, shape, global_cm, colormap, opacity,
+                 affine=None, B=None):
+        self.vertices = vertices
+        self.faces = faces
         self.odfs = odfs
         self.indices = indices
         self.B = B
@@ -138,18 +140,17 @@ class OdfSlicerActor(vtk.vtkActor):
         elif z is not None:
             self.slice_along_axis(z, 'zaxis')
 
-    def update_sphere(self, sphere, B):
+    def update_sphere(self, vertices, faces, B):
         """
-        Dynamically change the sphere
-        used for SH to SF projection.
+        Dynamically change the sphere used for SH to SF projection.
         """
         if self.B is None:
-            raise ValueError('Can\'t update sphere when'
-                             ' using SF coefficients.')
-        self.vertices = sphere.vertices
+            raise ValueError('Can\'t update sphere when using '
+                             'SF coefficients.')
+        self.vertices = vertices
         if self.affine is not None:
             self.w_verts = self.vertices.dot(self.affine[:3, :3])
-        self.faces = self._reorder_faces(sphere.faces)
+        self.faces = faces
         self.B = B
 
         # draw ODFs with new sphere

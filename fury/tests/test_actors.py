@@ -13,6 +13,7 @@ from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
+from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -520,7 +521,7 @@ def test_odf_slicer(interactive=False):
     mask[:4, :4, :4] = False
 
     # Test that affine and mask work
-    odf_actor = actor.odf_slicer(odfs, sphere, affine=affine, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, affine=affine, mask=mask,
                                  scale=.25, colormap='blues')
 
     k = 2
@@ -540,7 +541,7 @@ def test_odf_slicer(interactive=False):
     npt.assert_equal(report.objects, 11 * 11 - 16)
 
     # Test that global colormap works
-    odf_actor = actor.odf_slicer(odfs, sphere, mask=mask, scale=.25,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask, scale=.25,
                                  colormap='blues', norm=False, global_cm=True)
     scene.clear()
     scene.add(odf_actor)
@@ -550,7 +551,7 @@ def test_odf_slicer(interactive=False):
         window.show(scene)
 
     # Test that the most basic odf_slicer instanciation works
-    odf_actor = actor.odf_slicer(odfs, sphere)
+    odf_actor = actor.odf_slicer(odfs)
     scene.clear()
     scene.add(odf_actor)
     scene.reset_camera()
@@ -573,7 +574,7 @@ def test_odf_slicer(interactive=False):
 
     # With mask equal to zero everything should be black
     mask = np.zeros(odfs.shape[:3])
-    odf_actor = actor.odf_slicer(odfs, sphere, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask,
                                  scale=.25, colormap='blues',
                                  norm=False, global_cm=True)
     scene.clear()
@@ -584,11 +585,17 @@ def test_odf_slicer(interactive=False):
         window.show(scene)
 
     # global_cm=True with colormap=None should raise an error
-    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere, mask=None,
-                      scale=.25, colormap=None, norm=False, global_cm=True)
+    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere=sphere,
+                      mask=None, scale=.25, colormap=None, norm=False,
+                      global_cm=True)
+
+    # Dimension mismatch between sphere vertices and number
+    # of SF coefficients will raise an error.
+    npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
+                      sphere=get_sphere('repulsion200'), scale=.25)
 
     # colormap=None and global_cm=False results in directionally encoded colors
-    odf_actor = actor.odf_slicer(odfs, sphere, mask=None,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=None,
                                  scale=.25, colormap=None,
                                  norm=False, global_cm=False)
     scene.clear()
@@ -602,8 +609,8 @@ def test_odf_slicer(interactive=False):
     B = sh_to_sf_matrix(sphere, return_inv=False)
     odfs = np.zeros((11, 11, 11, B.shape[0]))
     odfs[..., 0] = 1.0
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B)
 
-    odf_actor = actor.odf_slicer(odfs, sphere, B_matrix=B)
     scene.clear()
     scene.add(odf_actor)
     scene.reset_camera()
@@ -611,10 +618,23 @@ def test_odf_slicer(interactive=False):
     if interactive:
         window.show(scene)
 
-    # Test that constant colormap color works. All ODFs should be white.
-    odf_actor = actor.odf_slicer(odfs, sphere, B_matrix=B,
-                                 colormap=(255, 255, 255))
+    # Dimension mismatch between sphere vertices and dimension of
+    # B matrix will raise an error.
+    npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
+                      sphere=get_sphere('repulsion200'))
+
+    # Test that constant colormap color works. Also test that sphere
+    # normals are oriented correctly. Will show purple spheres with
+    # a white contour.
+    odf_contour = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
+                                   colormap=(255, 255, 255))
+    odf_contour.GetProperty().SetAmbient(1.0)
+    odf_contour.GetProperty().SetFrontfaceCulling(True)
+
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
+                                 colormap=(255, 0, 255), scale=0.4)
     scene.clear()
+    scene.add(odf_contour)
     scene.add(odf_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
@@ -624,7 +644,7 @@ def test_odf_slicer(interactive=False):
     # Test that we can change the sphere on an active actor
     new_sphere = get_sphere('symmetric362')
     new_B = sh_to_sf_matrix(new_sphere, return_inv=False)
-    odf_actor.update_sphere(new_sphere, new_B)
+    odf_actor.update_sphere(new_sphere.vertices, new_sphere.faces, new_B)
     if interactive:
         window.show(scene)
 

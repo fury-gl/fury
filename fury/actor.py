@@ -14,7 +14,8 @@ from fury.deprecator import deprecated_params
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
-                        repeat_sources, get_actor_from_primitive)
+                        repeat_sources, get_actor_from_primitive,
+                        fix_winding_order)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
 import fury.primitive as fp
@@ -819,7 +820,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     return arrow(centers, dirs, colors, scales)
 
 
-def odf_slicer(odfs, sphere, affine=None, mask=None, scale=0.5,
+def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
                norm=True, radial_scale=True, opacity=1.0, colormap=None,
                global_cm=False, B_matrix=None):
     """
@@ -831,12 +832,13 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=0.5,
     odfs : ndarray
         4D ODFs array in SF or SH coefficients. If SH coefficients,
         `B_matrix` must be supplied.
-    sphere : dipy.core.sphere.Sphere
-        The sphere used for SH to SF projection.
     affine : array
         4x4 transformation array from native coordinates to world coordinates.
     mask : ndarray
         3D mask to apply to ODF field.
+    sphere : dipy Sphere
+        The sphere used for SH to SF projection. If None, a default sphere
+        of 100 vertices will be used.
     scale : float
         Multiplicative factor to apply to ODF amplitudes.
     norm : bool
@@ -876,8 +878,26 @@ def odf_slicer(odfs, sphere, affine=None, mask=None, scale=0.5,
     indices = np.nonzero(valid_odf_mask)
     shape = odfs.shape[:-1]
 
+    if sphere is None:
+        # Use a default sphere with 100 vertices
+        vertices, faces = fp.prim_sphere('repulsion100')
+    else:
+        vertices = sphere.vertices
+        faces = fix_winding_order(vertices, sphere.faces, clockwise=True)
+
+    if B_matrix is None:
+        if len(vertices) != odfs.shape[-1]:
+            raise ValueError('Invalid nunber of SF coefficients. '
+                             'Expected {0}, got {1}.'
+                             .format(len(vertices), odfs.shape[-1]))
+    else:
+        if len(vertices) != B_matrix.shape[1]:
+            raise ValueError('Invalid nunber of SH coefficients. '
+                             'Expected {0}, got {1}.'
+                             .format(len(vertices), B_matrix.shape[1]))
+
     # create and return an instance of OdfSlicerActor
-    return OdfSlicerActor(odfs[indices], sphere, indices, scale, norm,
+    return OdfSlicerActor(odfs[indices], vertices, faces, indices, scale, norm,
                           radial_scale, shape, global_cm, colormap, opacity,
                           affine, B_matrix)
 
