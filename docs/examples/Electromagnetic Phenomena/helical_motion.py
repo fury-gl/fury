@@ -31,12 +31,10 @@ import itertools
 # u: initial velocity of the particle
 #    (default = 0.09)
 # a: acceleration of the particle along +x (due to the electric field)
-# t: time
-#    (default = 0)
-# dt: value by whic
-# k: wavenumber = 2*pi/wavelength
-# t: time (default time i.e. time at beginning  = 0)
+#    (default = 0.004)
+# t: time (default time i.e. time at beginning of animation  = 0)
 # dt: value by which t is incremented for each call of timer_callback
+#     (default = 0.09)
 # w: angular frequency (default = 0.1)
 # d: phase angle (default = 0.002)
 
