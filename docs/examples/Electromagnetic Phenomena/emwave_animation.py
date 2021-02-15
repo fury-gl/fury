@@ -39,9 +39,9 @@ def update_coordinates(k, w, t, d):
 #          the radius_waves small but kindly note that higher values for
 #          npoints will slow down the rendering process
 #          (default = 800)
-# wavelength = wavelength of the wave (default = 2)
+# wavelength: wavelength of the wave (default = 2)
 # k: wavenumber = 2*pi/wavelength
-# t: time (default time i.e. time at beginning  = 0)
+# t: time (default time i.e. time at beginning of animation  = 0)
 # dt: value by which t is incremented for each call of timer_callback
 # w: angular frequency (default = 0.1)
 # d: phase angle (default = 0.002)
