@@ -1,9 +1,12 @@
 import os
 from os.path import join as pjoin
+import itertools
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 import pytest
+from PIL import Image, ImageDraw
+from fury import window, actor, ui
 
 from fury.decorators import skip_osx
 from fury.io import load_polydata, save_polydata, load_image, save_image
@@ -143,3 +146,70 @@ def test_pillow():
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
+
+def test_frames_to_gif():
+    xyz = 10 * np.random.rand(100, 3)
+    colors = np.random.rand(100, 4)
+    radii = np.random.rand(100) + 0.5
+    images = []
+    def execute_for_count_value(count_value):
+        scene = window.Scene()
+        sphere_actor = actor.sphere(centers=xyz,
+                                    colors=colors,
+                                    radii=radii)
+        scene.add(sphere_actor)
+        showm = window.ShowManager( scene,
+                                    size=(900, 768),
+                                    reset_camera=False,
+                                    order_transparent=True)
+
+        showm.initialize()
+
+    tb = ui.TextBlock2D(bold=True)
+    counter = itertools.count()
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        showm.scene.azimuth(0.05 * cnt)
+        sphere_actor.GetProperty().SetOpacity(cnt/100.)
+        showm.render()
+
+        if cnt == count_value:
+            showm.exit()
+
+    scene.add(tb)
+
+    # Run every 200 milliseconds
+    showm.add_timer_callback(True, 200, timer_callback)
+
+    showm.start()
+
+    # Save the image for each counter value
+    window.record(scene,
+                    out_path= str(count_value) + "img.png",
+                    size=(900, 768))
+
+    images.append(Image.open(str(count_value)+"img.png"))
+
+    for t in range(1, 101, 10):
+        execute_for_count_value(t)
+
+    # Using `save` from PIL to convert the Series of Frames into a GIF Image.
+    images[0].save('frames_to_gif.gif',
+                    save_all=True,
+                    append_images=images[1:],
+                    optimize=False,
+                    duration=0.005,
+                    loop=0)
+
+    gif = Image.open('Frames_to_gif.gif')
+    try:
+        gif.seek(1)
+    except EOFError:
+        isanimated = False
+    else:
+        isanimated = True
+
+    npt.assert_equal(isanimated,True,
+                    err_msg="Gif not created",
+                    verbose=True)
