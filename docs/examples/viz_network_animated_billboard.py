@@ -49,11 +49,11 @@ for i in range(vertices_count):
             edges_list.append((i, (i+k+1) % vertices_count))
         else:
             while(True):
-                randomFrom = random.randint(0, vertices_count)
-                randomTo = random.randint(0, vertices_count)
-                if(randomFrom != randomTo):
+                random_from = random.randint(0, vertices_count)
+                random_to = random.randint(0, vertices_count)
+                if(random_from != random_to):
                     break
-            edges_list.append((randomFrom, randomTo))
+            edges_list.append((random_from, random_to))
 edges = np.ascontiguousarray(edges_list, dtype=np.uint64)
 
 
@@ -111,15 +111,15 @@ nodes_actor = actor.billboard(centers,
 ###############################################################################
 # Preparing editable geometry for the nodes
 
-vtk_centers_geometry = vtk_array_from_actor(nodes_actor, array_name="center")
-centers_geometry = vtknp.vtk_to_numpy(vtk_centers_geometry)
-centers_geometryOrig = np.array(centers_geometry)
-centers_length = centers_geometry.shape[0] / positions.shape[0]
+vtk_centers_geo = vtk_array_from_actor(nodes_actor, array_name="center")
+centers_geo = vtknp.vtk_to_numpy(vtk_centers_geo)
+centers_geometry_orig = np.array(centers_geo)
+centers_length = centers_geo.shape[0] / positions.shape[0]
 
 
 vtk_verts_geometry = vtk_vertices_from_actor(nodes_actor)
 verts_geometry = vtknp.vtk_to_numpy(vtk_verts_geometry)
-verts_geometryOrig = np.array(verts_geometry)
+verts_geometry_orig = np.array(verts_geometry)
 verts_length = verts_geometry.shape[0] / positions.shape[0]
 
 
@@ -149,15 +149,15 @@ def new_layout_timer(showm, edges_list, vertices_count,
     layout = helios.FRLayout(edges_array, positions,
                              velocities, a, b, viscosity)
     layout.start()
-    framesPerSecond = []
+    frames_per_second = []
 
     def _timer(_obj, _event):
-        nonlocal counter, framesPerSecond
+        nonlocal counter, frames_per_second
         counter += 1
-        framesPerSecond.append(scene.frame_rate)
+        frames_per_second.append(scene.frame_rate)
 
-        centers_geometry[:] = np.repeat(positions, centers_length, axis=0)
-        verts_geometry[:] = verts_geometryOrig + centers_geometry
+        centers_geo[:] = np.repeat(positions, centers_length, axis=0)
+        verts_geometry[:] = verts_geometry_orig + centers_geo
 
         edges_positions = vtknp.vtk_to_numpy(
             lines_actor.GetMapper().GetInput().GetPoints().GetData())
@@ -167,7 +167,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
         lines_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
         lines_actor.GetMapper().GetInput().ComputeBounds()
         vtk_verts_geometry.Modified()
-        vtk_centers_geometry.Modified()
+        vtk_centers_geo.Modified()
         update_actor(nodes_actor)
 
         if(selected_node is not None):
@@ -208,8 +208,8 @@ def left_click_callback(obj, event):
                  event_pos[0]+picking_area, event_pos[1]+picking_area)
     res = hsel.Select()
 
-    numNodes = res.GetNumberOfNodes()
-    if (numNodes < 1):
+    num_nodes = res.GetNumberOfNodes()
+    if (num_nodes < 1):
         selected_node = None
     else:
         sel_node = res.GetNode(0)
