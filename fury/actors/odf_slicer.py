@@ -174,6 +174,8 @@ class OdfSlicerActor(vtk.vtkActor):
         all_faces = self._get_all_faces(len(offsets), len(sph_dirs))
         all_colors = self._generate_color_for_vertices(sf)
 
+        # TODO: There is a lot of deep copy here.
+        # Optimize (see viz_network.py example).
         set_polydata_triangles(polydata, all_faces)
         set_polydata_vertices(polydata, all_vertices)
         set_polydata_colors(polydata, all_colors)
