@@ -753,23 +753,21 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
     return actor
 
-def dashed_line(p_initial = [0.0, 0.0, 0.0], p_final = [0.0, 0.0, 0.0], point_size=10, num_points=10, point_color='Peacock'):
+
+def dashed_line(p_initial =[0.0, 0.0, 0.0], p_final=[0.0, 0.0, 0.0], 
+                point_size=10, num_points=10, point_color='Peacock'):
     """Create an actor for one or more dashed lines.
 
     Parameters
     ------------
     p_initial : list(1, 3)
         Takes start point. Default is [0.0, 0.0, 0.0]. 
-    
     p_final : list(1, 3)
         Takes end point. Default is [0.0, 0.0, 0.0]. 
-
     point_size : float  
         Takes size of point.
-
     num_points : int
         Takes number of points in the dashed line.
-
     point_color : string
         Takes color of point.
 
@@ -787,7 +785,8 @@ def dashed_line(p_initial = [0.0, 0.0, 0.0], p_final = [0.0, 0.0, 0.0], point_si
     >>> point_size  = 5
     >>> num_points  = 20
     >>> point_color = 'Peacock'
-    >>> c = actor.dashed_line(p_initial, p_final, point_size, num_points, point_color)
+    >>> c = actor.dashed_line(p_initial, p_final, 
+    >>> point_size, num_points, point_color)
     >>> scene.add(c)
     >>> #window.show(scene)
 
@@ -817,7 +816,7 @@ def dashed_line(p_initial = [0.0, 0.0, 0.0], p_final = [0.0, 0.0, 0.0], point_si
     # Create a polydata object
     point = vtk.vtkPolyData()
 
-    # Set the points and vertices we created as the geometry and topology of the polydata
+    # Set the points and vertices as the geometry/topology of the polydata
     point.SetPoints(points)
     point.SetVerts(vertices)
     mapper.SetInputData(point)
