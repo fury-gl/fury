@@ -21,36 +21,40 @@ from os.path import join as pjoin
 import numpy as np
 import helios
 import vtk
-import vtk.util.numpy_support as VN
+import vtk.util.numpy_support as vtknp
 from fury import actor, window, ui, colormap as cmap
+from fury.shaders import load as shader_load
 import fury.primitive as fp
 from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         set_polydata_triangles, set_polydata_vertices,
                         set_polydata_colors, colors_from_actor,
                         vertices_from_actor, update_actor,
-                        vtk_vertices_from_actor,vtk_array_from_actor)
+                        vtk_vertices_from_actor, vtk_array_from_actor)
 
 ###############################################################################
 # Let's generate a Watts-Strogatz random network as an example
+# The network initially is a 1D ring of `vertices_count` vertices
+# connected with their `ws_neighs` neighbors. Then the edges are
+# randomly rewired with probability `ws_rewiring`.
 
 vertices_count = 10000
 ws_neighs = 3
 ws_rewiring = 0.01
 view_size = 100
 
-edgesList = []
+edges_list = []
 for i in range(vertices_count):
     for k in range(ws_neighs):
         if(random.random() >= ws_rewiring):
-            edgesList.append((i, (i+k+1) % vertices_count))
+            edges_list.append((i, (i+k+1) % vertices_count))
         else:
             while(True):
                 randomFrom = random.randint(0, vertices_count)
                 randomTo = random.randint(0, vertices_count)
                 if(randomFrom != randomTo):
                     break
-            edgesList.append((randomFrom, randomTo))
-edges = np.ascontiguousarray(edgesList, dtype=np.uint64)
+            edges_list.append((randomFrom, randomTo))
+edges = np.ascontiguousarray(edges_list, dtype=np.uint64)
 
 
 ###############################################################################
@@ -91,60 +95,30 @@ lines_actor = actor.line(np.zeros((len(edges), 2, 3)),
 
 
 ###############################################################################
-# We use the impostor technique to render the spheres for nodes.
-# this is accomplished by instanciating a billboard actor
-# and setting the shader to draw a sphere.
+# We use a billboard actor to render the spheres for nodes
+# so that a shader is used to draw a sphere into each billboard.
 
-fs_dec = \
-    """
-    uniform mat4 MCDCMatrix;
-    uniform mat4 MCVCMatrix;
-    """
-
-fake_sphere = \
-    """
-// camera right
-vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]);
-//  camera up
-vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]);
-// camera direction
-vec3 ww = vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]);
-
-// create view ray
-vec3 rd = normalize( point.x*-uu + point.y*-vv + 7*ww);
-
-float len = length(point);
-float radius = 1.;
-if(len > radius){
-    discard;
-}
-
-vec3 normalizedPoint = normalize(vec3(point.xy, sqrt(1. - len)));
-vec3 direction = normalize(vec3(1., 1., 1.));
-float ddf = max(0, dot(direction, normalizedPoint));
-float ssf = pow(ddf, 24);
-fragOutput0 = vec4(max(color*0.5+ddf * color, ssf * vec3(1)), 1);
-"""
-
+billboard_sphere_dec = shader_load("billboard_spheres_dec.frag")
+billboard_sphere_impl = shader_load("billboard_spheres_impl.frag")
 
 nodes_actor = actor.billboard(centers,
                               colors=colors,
                               scales=1.0,
-                              fs_dec=fs_dec,
-                              fs_impl=fake_sphere
+                              fs_dec=billboard_sphere_dec,
+                              fs_impl=billboard_sphere_impl
                               )
 
 ###############################################################################
 # Preparing editable geometry for the nodes
 
 vtk_centers_geometry = vtk_array_from_actor(nodes_actor, array_name="center")
-centers_geometry = VN.vtk_to_numpy(vtk_centers_geometry)
+centers_geometry = vtknp.vtk_to_numpy(vtk_centers_geometry)
 centers_geometryOrig = np.array(centers_geometry)
 centers_length = centers_geometry.shape[0] / positions.shape[0]
 
 
 vtk_verts_geometry = vtk_vertices_from_actor(nodes_actor)
-verts_geometry = VN.vtk_to_numpy(vtk_verts_geometry)
+verts_geometry = vtknp.vtk_to_numpy(vtk_verts_geometry)
 verts_geometryOrig = np.array(verts_geometry)
 verts_length = verts_geometry.shape[0] / positions.shape[0]
 
@@ -154,7 +128,7 @@ verts_length = verts_geometry.shape[0] / positions.shape[0]
 # is used to dynamically layout the network
 
 velocities = np.zeros((vertices_count, 3), dtype=np.float32)
-edgesArray = np.ascontiguousarray(np.array(edges), dtype=np.uint64)
+edges_array = np.ascontiguousarray(np.array(edges), dtype=np.uint64)
 layout = None
 
 
@@ -172,7 +146,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
     a = 0.0005
     b = 1.0
 
-    layout = helios.FRLayout(edgesArray, positions,
+    layout = helios.FRLayout(edges_array, positions,
                              velocities, a, b, viscosity)
     layout.start()
     framesPerSecond = []
@@ -185,7 +159,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
         centers_geometry[:] = np.repeat(positions, centers_length, axis=0)
         verts_geometry[:] = verts_geometryOrig + centers_geometry
 
-        edges_positions = VN.vtk_to_numpy(
+        edges_positions = vtknp.vtk_to_numpy(
             lines_actor.GetMapper().GetInput().GetPoints().GetData())
         edges_positions[::2] = positions[edges_list[:, 0]]
         edges_positions[1::2] = positions[edges_list[:, 1]]
@@ -196,13 +170,13 @@ def new_layout_timer(showm, edges_list, vertices_count,
         vtk_centers_geometry.Modified()
         update_actor(nodes_actor)
 
-        if(selectedNode is not None):
-            selectedActor.SetPosition(positions[selectedNode])
+        if(selected_node is not None):
+            selected_actor.SetPosition(positions[selected_node])
 
         nodes_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
         nodes_actor.GetMapper().GetInput().ComputeBounds()
-        selectedActor.GetMapper().GetInput().ComputeBounds()
-        selectedActor.GetMapper().GetInput().GetPoints().GetData().Modified()
+        selected_actor.GetMapper().GetInput().ComputeBounds()
+        selected_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
         showm.scene.ResetCameraClippingRange()
         showm.render()
 
@@ -217,41 +191,41 @@ def new_layout_timer(showm, edges_list, vertices_count,
 scene = window.Scene()
 camera = scene.camera()
 
-selectedNode = None
-selectedActor = actor.label(
+selected_node = None
+selected_actor = actor.label(
     "Origin", pos=centers[0], color=(1, 1, 1), scale=(4, 4, 4),)
-selectedActor.PickableOff()
-selectedActor.SetCamera(scene.GetActiveCamera())
+selected_actor.PickableOff()
+selected_actor.SetCamera(scene.GetActiveCamera())
 lines_actor.PickableOff()
 
 
 def left_click_callback(obj, event):
-    global selectedNode
+    global selected_node
     event_pos = showm.iren.GetEventPosition()
-    pickingArea = 4
+    picking_area = 4
     res = hsel.Select()
-    hsel.SetArea(event_pos[0]-pickingArea, event_pos[1]-pickingArea,
-                 event_pos[0]+pickingArea, event_pos[1]+pickingArea)
+    hsel.SetArea(event_pos[0]-picking_area, event_pos[1]-picking_area,
+                 event_pos[0]+picking_area, event_pos[1]+picking_area)
     res = hsel.Select()
 
     numNodes = res.GetNumberOfNodes()
     if (numNodes < 1):
-        selectedNode = None
+        selected_node = None
     else:
         sel_node = res.GetNode(0)
-        selectedNodes = set(np.floor(VN.vtk_to_numpy(
+        selected_nodes = set(np.floor(vtknp.vtk_to_numpy(
             sel_node.GetSelectionList())/2).astype(int))
-        selectedNode = list(selectedNodes)[0]
+        selected_node = list(selected_nodes)[0]
 
-    if(selectedNode is not None):
+    if(selected_node is not None):
         if(labels is not None):
-            selectedActor.text.SetText(labels[selectedNode])
+            selected_actor.text.SetText(labels[selected_node])
         else:
-            selectedActor.text.SetText("#%d" % selectedNode)
-        selectedActor.SetPosition(positions[selectedNode])
+            selected_actor.text.SetText("#%d" % selected_node)
+        selected_actor.SetPosition(positions[selected_node])
 
     else:
-        selectedActor.text.SetText("")
+        selected_actor.text.SetText("")
     timer_callback(None, None)
 
 ###############################################################################
@@ -270,7 +244,7 @@ hsel.SetRenderer(scene)
 
 scene.add(lines_actor)
 scene.add(nodes_actor)
-scene.add(selectedActor)
+scene.add(selected_actor)
 
 
 ###############################################################################
