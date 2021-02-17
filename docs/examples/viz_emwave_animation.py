@@ -167,6 +167,7 @@ def timer_callback(_obj, _event):
 
 ###############################################################################
 # Run every 25 milliseconds
+
 showm.add_timer_callback(True, 25, timer_callback)
 
 interactive = False
