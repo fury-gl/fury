@@ -26,6 +26,7 @@ import itertools
 # Variable(s) and their description-
 # radius_particle: radius of the point that will represent the particle
 #                  (default = 0.08)
+<<<<<<< HEAD:docs/examples/viz_helical_motion.py
 # initial_velocity: initial velocity of the particle along +x (default = 0.09)
 # acc: acceleration of the particle along +x (due to the electric field)
 #      (default = 0.004)
@@ -34,6 +35,19 @@ import itertools
 #             timer_callback (default = 0.09)
 # angular_frq: angular frequency (default = 0.1)
 # phase_angle: phase angle (default = 0.002)
+=======
+# radius_path: radius of the points that will render the path of the particle
+#                  (default = 0.04)
+# u: initial velocity of the particle
+#    (default = 0.09)
+# a: acceleration of the particle along +x (due to the electric field)
+#    (default = 0.004)
+# t: time (default time i.e. time at beginning of animation  = 0)
+# dt: value by which t is incremented for each call of timer_callback
+#     (default = 0.09)
+# w: angular frequency (default = 0.1)
+# d: phase angle (default = 0.002)
+>>>>>>> 7a572769240e56179dd34f087fa1bccfd3bf0e33:docs/examples/Electromagnetic Phenomena/helical_motion.py
 
 radius_particle = 0.08
 initial_velocity = 0.09
