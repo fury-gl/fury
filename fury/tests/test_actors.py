@@ -869,6 +869,36 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
+def test_dashed_line(interactive=False):
+    p_initial   = [1.0, 0.0, 0.0]
+    p_final     = [0.0, 1.0, 0.0]
+    point_size  = 5
+    num_points  = 20
+    point_color = 'Peacock'
+    c = actor.dashed_line(p_initial, p_final, 
+    point_size, num_points, point_color)
+    
+    scene = window.Scene()
+    scene.add(c)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene, reset_camera=False)
+
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+    npt.assert_equal(c.GetProperty().GetColor(), 
+                    (0.2, 0.6313725490196078, 0.788235294117647))
+    npt.assert_equal(c.GetProperty().GetPointSize(), point_size)
+    
+    #color for Peacock in RGB form
+    colors = [[0.2, 0.6313725490196078, 0.788235294117647]] 
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=colors)
+    npt.assert_equal(report.objects, num_points)
+
+
 def test_labels(interactive=False):
 
     text_actor = actor.label("Hello")
