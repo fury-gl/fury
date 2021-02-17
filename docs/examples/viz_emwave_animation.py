@@ -38,7 +38,6 @@ def update_coordinates(wavenumber, ang_frq, time, phase_angle):
 #          the radius_waves small but kindly note that higher values for
 #          npoints will slow down the rendering process
 #          (default = 800)
-<<<<<<< HEAD:docs/examples/viz_emwave_animation.py
 # wavelength : wavelength of the wave (default = 2)
 # wavenumber : 2*pi/wavelength
 # time: time (default time i.e. time at beginning of the animation = 0)
@@ -46,14 +45,6 @@ def update_coordinates(wavenumber, ang_frq, time, phase_angle):
 #             timer_callback (default = 0.1)
 # angular_frq: angular frequency (default = 0.1)
 # phase_angle: phase angle (default = 0.002)
-=======
-# wavelength: wavelength of the wave (default = 2)
-# k: wavenumber = 2*pi/wavelength
-# t: time (default time i.e. time at beginning of animation  = 0)
-# dt: value by which t is incremented for each call of timer_callback
-# w: angular frequency (default = 0.1)
-# d: phase angle (default = 0.002)
->>>>>>> 7a572769240e56179dd34f087fa1bccfd3bf0e33:docs/examples/Electromagnetic Phenomena/emwave_animation.py
 
 
 radius_waves = 0.02
