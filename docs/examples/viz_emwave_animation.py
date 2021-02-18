@@ -32,12 +32,9 @@ def update_coordinates(wavenumber, ang_frq, time, phase_angle):
 
 ###############################################################################
 # Variable(s) and their description-
-# radius_waves: radius of the points that will be used to construct the waves
-#         (default = 0.02)
-# npoints: For high quality rendering, keep the number of npoints high and
-#          the radius_waves small but kindly note that higher values for
-#          npoints will slow down the rendering process
-#          (default = 800)
+# npoints: For high quality rendering, keep the number of npoints high
+#          but kindly note that higher values for npoints will slow down the
+#          rendering process (default = 800)
 # wavelength : wavelength of the wave (default = 2)
 # wavenumber : 2*pi/wavelength
 # time: time (default time i.e. time at beginning of the animation = 0)
@@ -47,7 +44,6 @@ def update_coordinates(wavenumber, ang_frq, time, phase_angle):
 # phase_angle: phase angle (default = 0.002)
 
 
-radius_waves = 0.02
 npoints = 800
 wavelength = 2
 wavenumber = 2*np.pi/wavelength
@@ -175,4 +171,4 @@ showm.add_timer_callback(True, 25, timer_callback)
 interactive = False
 if interactive:
     showm.start()
-window.record(showm.scene, size=(800, 600), out_path="viz_em_wave.png")
+window.record(showm.scene, size=(800, 600), out_path="viz_emwave_animation.png")
