@@ -88,8 +88,9 @@ y = np.sin(wavenumber*x - angular_frq*time + phase_angle)
 z = np.array([0 for i in range(npoints)])
 
 pts = np.array([(a, b, c) for (a, b, c) in zip(x, y, z)])
+pts = [pts]
 colors = window.colors.red
-wave_actor1 = actor.point(pts, colors, point_radius=radius_waves)
+wave_actor1 = actor.line(pts, colors, linewidth=3)
 scene.add(wave_actor1)
 
 vertices = utils.vertices_from_actor(wave_actor1)
@@ -107,8 +108,9 @@ yy = np.array([0 for i in range(npoints)])
 zz = np.sin(wavenumber*xx - angular_frq*time + phase_angle)
 
 pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
+pts2 = [pts2]
 colors2 = window.colors.blue
-wave_actor2 = actor.point(pts2, colors2, point_radius=radius_waves)
+wave_actor2 = actor.line(pts2, colors2, linewidth=3)
 scene.add(wave_actor2)
 
 vertices2 = utils.vertices_from_actor(wave_actor2)
@@ -154,7 +156,7 @@ def timer_callback(_obj, _event):
 
     xx, zz, yy = update_coordinates(wavenumber, angular_frq, phase_angle, time)
     pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
-    vertices2[:] = initial_vertices + \
+    vertices2[:] = initial_vertices2 + \
         np.repeat(pts2, no_vertices_per_point2, axis=0)
     utils.update_actor(wave_actor2)
 
