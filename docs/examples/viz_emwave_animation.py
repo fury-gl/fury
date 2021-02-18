@@ -60,7 +60,7 @@ phase_angle = 0.002
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.set_camera(position=(6, 5, 10), focal_point=(0.0, 0.0, 0.0),
+scene.set_camera(position=(-6, 5, -10), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
 showm = window.ShowManager(scene,
                            size=(800, 600), reset_camera=True,
@@ -71,8 +71,8 @@ showm.initialize()
 # Creating a yellow colored arrow to show the direction of propagation of
 # electromagnetic wave
 
-centers = np.array([[-3, 0, 0]])
-directions = np.array([[1, 0, 0]])
+centers = np.array([[3, 0, 0]])
+directions = np.array([[-1, 0, 0]])
 heights = np.array([6.4])
 arrow_actor = actor.arrow(centers, directions, window.colors.yellow, heights,
                           resolution=20, tip_length=0.06, tip_radius=0.012,
