@@ -171,4 +171,4 @@ showm.add_timer_callback(True, 25, timer_callback)
 interactive = False
 if interactive:
     showm.start()
-window.record(showm.scene, size=(800, 600), out_path="viz_emwave_animation.png")
+window.record(showm.scene, size=(800, 600), out_path="viz_emwave.png")
