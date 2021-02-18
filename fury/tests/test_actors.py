@@ -869,34 +869,83 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-def test_dashed_line(interactive=False):
-    p_initial   = [1.0, 0.0, 0.0]
-    p_final     = [0.0, 1.0, 0.0]
-    point_size  = 5
-    num_points  = 20
-    point_color = 'Peacock'
-    c = actor.dashed_line(p_initial, p_final, 
-    point_size, num_points, point_color)
-    
+def test_dotted_line(interactive=False):
+
+    start_pos=[1.0, 0.0, 0.0]
+    end_pos=[0.0, 1.0, 0.0]
+    point_radius=0.01
+    num_points=10
+    point_color=[1.0, 0.0, 0.0]
+    c = actor.dotted_line(start_pos, end_pos, 
+        num_points, point_color, point_radius)
+
     scene = window.Scene()
     scene.add(c)
-    scene.reset_camera()
-    scene.reset_clipping_range()
 
     if interactive:
-        window.show(scene, reset_camera=False)
+        window.show(scene, order_transparent=True)
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
-    npt.assert_equal(c.GetProperty().GetColor(), 
-                    (0.2, 0.6313725490196078, 0.788235294117647))
-    npt.assert_equal(c.GetProperty().GetPointSize(), point_size)
-    
-    #color for Peacock in RGB form
-    colors = [[0.2, 0.6313725490196078, 0.788235294117647]] 
+
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr,
-                                     colors=colors)
-    npt.assert_equal(report.objects, num_points)
+                                     colors=[point_color])
+    npt.assert_equal(report.objects, 10)
+
+    scene.add(c)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
+    npt.assert_equal(report.colors_found, [True])
+
+def test_dotted_line(interactive=False):
+    start_pos=[1.0, 0.0, 0.0]
+    end_pos=[0.0, 1.0, 0.0]
+    point_radius=0.01
+    num_points=10
+    point_color=[1.0, 0.0, 0.0]
+    c = actor.dotted_line(start_pos, end_pos, 
+        num_points, point_color, point_radius)
+
+    scene = window.Scene()
+    scene.add(c)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=[point_color])
+    npt.assert_equal(report.objects, 10)
+
+    scene.add(c)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
+    npt.assert_equal(report.colors_found, [True])
+
+
+def test_dashed_line(interactive=False):
+    start_pos=[1.0, 0.0, 0.0]
+    end_pos=[0.0, 1.0, 0.0]
+    line_fraction=0.5
+    num_lines=10
+    line_color=[1.0, 0.0, 0.0]
+    c = dashed_line(start_pos, end_pos, 
+        num_lines, line_color, line_fraction)
+
+    scene = window.Scene()
+    scene.add(c)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=[line_color])
+    npt.assert_equal(report.objects, 10)
 
 
 def test_labels(interactive=False):
