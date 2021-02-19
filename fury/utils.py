@@ -394,9 +394,8 @@ def set_polydata_triangles(polydata, triangles):
     else:
         isize = vtk.vtkIdTypeArray().GetDataTypeSize()
         req_dtype = np.int32 if isize == 4 else np.int64
-        all_triangles = np.hstack(
-            np.c_[np.ones(len(triangles), dtype=req_dtype) * 3,
-                  triangles.astype(req_dtype)])
+        all_triangles =\
+            np.insert(triangles, 0, 3, axis=1).astype(req_dtype).flatten()
         vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(all_triangles,
                                                               deep=True)
         vtk_cells.SetCells(len(triangles), vtk_triangles)

@@ -32,6 +32,9 @@ MODEL_DATA_URL = \
 TEXTURE_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
 
+DMRI_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/dmri/"
+
 
 class FetcherError(Exception):
     pass
@@ -304,6 +307,15 @@ fetch_viz_models = _make_fetcher(
     doc=" Download the models for shader tutorial"
     )
 
+fetch_viz_dmri = _make_fetcher(
+    "fetch_viz_dmri",
+    pjoin(fury_home, "dmri"),
+    DMRI_DATA_URL,
+    ['fodf.nii.gz'],
+    ['fodf.nii.gz'],
+    ['767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b']
+)
+
 fetch_viz_textures = _make_fetcher(
     "fetch_viz_textures",
     pjoin(fury_home, "textures"),
@@ -414,4 +426,23 @@ def read_viz_textures(fname):
 
     """
     folder = pjoin(fury_home, 'textures')
+    return pjoin(folder, fname)
+
+
+def read_viz_dmri(fname):
+    """Read specific dMRI image.
+
+    Parameters
+    ----------
+    fname: str
+        Filename of the texture.
+        This should be found in folder HOME/.fury/dmri/.
+
+    Returns
+    -------
+    path : str
+        Complete path of dMRI image.
+
+    """
+    folder = pjoin(fury_home, 'dmri')
     return pjoin(folder, fname)
