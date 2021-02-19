@@ -754,16 +754,18 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     return actor
 
 
-def dashed_line(start_pos, end_pos, num_lines=10, line_color=[1.0, 0.0, 0.0], line_fraction=0.5):
-     """Create an actor for one or more dashed lines.
+def dashed_line(start_pos, end_pos, num_lines=10,
+                line_color=[1.0, 0.0, 0.0], line_fraction=0.5):
+    """Create an actor for one or more dashed lines.
 
     Parameters
     ------------
     start_pos :  list (1, 3)
     end_pos :  list (1, 3)
-    num_lines :  integer
+    num_lines :  int, optional
     line_color :  list (1, 3)
-    line_fraction :  float (between 0 and 1)
+    line_fraction :  float
+         it should be between 0 and 1
 
     Returns
     ----------
@@ -779,10 +781,10 @@ def dashed_line(start_pos, end_pos, num_lines=10, line_color=[1.0, 0.0, 0.0], li
     >>> num_lines = 20
     >>> line_color = [0.0, 1.0, 0.0]
     >>> line_fraction = 0.5
-    >>> c = actor.dashed_line(start_pos, end_pos, num_lines, line_color,line_fraction)
+    >>> c = actor.dashed_line(start_pos, end_pos, num_lines,
+    >>>     line_color,line_fraction)
     >>> scene.add(c)
     >>> window.show(scene)
-
     """
     start_pos = np.array(start_pos)
     end_pos = np.array(end_pos)
@@ -791,25 +793,26 @@ def dashed_line(start_pos, end_pos, num_lines=10, line_color=[1.0, 0.0, 0.0], li
     p = start_pos.copy()
     line_lis = []
     count = 0
-    
+
     while count < num_lines:
         line_lis.append([list(p), list(p + (dp*line_fraction))])
         count = count + 1
         p = p + dp
     c = line(line_lis, line_color)
-
     return c
 
-def dotted_line(start_pos, end_pos, num_points=10, point_color=[1.0, 0.0, 0.0], point_radius=0.01):
-        """Create an actor for one or more dotted lines.
+
+def dotted_line(start_pos, end_pos, num_points=10,
+                point_color=[1.0, 0.0, 0.0], point_radius=0.01):
+    """Create an actor for one or more dotted lines.
 
     Parameters
     ------------
     start_pos :  list (1, 3)
     end_pos :  list (1, 3)
-    num_points :  integer
+    num_points :  int, optional
     point_color :  list (1, 3)
-    point_radius :  float 
+    point_radius :  float
 
     Returns
     ----------
@@ -825,7 +828,8 @@ def dotted_line(start_pos, end_pos, num_points=10, point_color=[1.0, 0.0, 0.0], 
     >>> num_points = 20
     >>> point_color = [1.0, 0.0, 0.0]
     >>> point_radius = 0.01
-    >>> c = actor.dotted_line(start_pos, end_pos, num_points, point_color,point_radius)
+    >>> c = actor.dotted_line(start_pos, end_pos,
+    >>> num_points, point_color,point_radius)
     >>> scene.add(c)
     >>> #window.show(scene)
     """
@@ -841,7 +845,7 @@ def dotted_line(start_pos, end_pos, num_points=10, point_color=[1.0, 0.0, 0.0], 
 
     p = point(point_lis, point_color, point_radius)
     return p
-   
+
 
 def scalar_bar(lookup_table=None, title=" "):
     """ Default scalar bar actor for a given colormap (colorbar)
