@@ -760,10 +760,10 @@ def dashed_line(start_pos, end_pos, num_lines=10,
 
     Parameters
     ------------
-    start_pos :  list (1, 3)
-    end_pos :  list (1, 3)
+    start_pos :  array (1, 3)
+    end_pos :  array (1, 3)
     num_lines :  int, optional
-    line_color :  list (1, 3)
+    line_color :  array (1, 3)
     line_fraction :  float
          it should be between 0 and 1
 
@@ -775,19 +775,18 @@ def dashed_line(start_pos, end_pos, num_lines=10,
     Examples
     ----------
     >>> from fury import window, actor
+    >>> import numpy as np
     >>> scene = window.Scene()
-    >>> start_pos = [.0, 0.0, 0.0]
-    >>> end_pos = [1.0, 1.0, 0.0]
+    >>> start_pos = np.array([.0, 0.0, 0.0])
+    >>> end_pos = np.array([1.0, 1.0, 0.0])
     >>> num_lines = 20
-    >>> line_color = [0.0, 1.0, 0.0]
+    >>> line_color = np.array([0.0, 1.0, 0.0])
     >>> line_fraction = 0.5
     >>> c = actor.dashed_line(start_pos, end_pos, num_lines,
     >>>     line_color,line_fraction)
     >>> scene.add(c)
     >>> window.show(scene)
     """
-    start_pos = np.array(start_pos)
-    end_pos = np.array(end_pos)
     dp = (end_pos - start_pos) / num_lines
 
     p = start_pos.copy()
@@ -808,10 +807,10 @@ def dotted_line(start_pos, end_pos, num_points=10,
 
     Parameters
     ------------
-    start_pos :  list (1, 3)
-    end_pos :  list (1, 3)
+    start_pos : array (1, 3)
+    end_pos :  array (1, 3)
     num_points :  int, optional
-    point_color :  list (1, 3)
+    point_color :  array (1, 3)
     point_radius :  float
 
     Returns
@@ -822,19 +821,18 @@ def dotted_line(start_pos, end_pos, num_points=10,
     Examples
     ----------
     >>> from fury import window, actor
+    >>> import numpy as np
     >>> scene = window.Scene()
-    >>> start_pos = [0.0, 0.0, 0.0]
-    >>> end_pos = [1.0, 1.0, 0.0]
+    >>> start_pos = np.array([0.0, 0.0, 0.0])
+    >>> end_pos = np.array([1.0, 1.0, 0.0])
     >>> num_points = 20
-    >>> point_color = [1.0, 0.0, 0.0]
+    >>> point_color = np.array([1.0, 0.0, 0.0])
     >>> point_radius = 0.01
     >>> c = actor.dotted_line(start_pos, end_pos,
     >>> num_points, point_color,point_radius)
     >>> scene.add(c)
     >>> #window.show(scene)
     """
-    start_pos = np.array(start_pos)
-    end_pos = np.array(end_pos)
     dp = (end_pos - start_pos) / num_points
     point_lis = []
     count = 0

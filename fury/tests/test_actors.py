@@ -870,11 +870,11 @@ def test_points(interactive=False):
 
 
 def test_dotted_line(interactive=False):
-    start_pos = [1.0, 0.0, 0.0]
-    end_pos = [0.0, 1.0, 0.0]
+    start_pos = np.array([1.0, 0.0, 0.0])
+    end_pos = np.array([0.0, 1.0, 0.0])
     point_radius = 0.01
     num_points = 10
-    point_color = [1.0, 0.0, 0.0]
+    point_color = np.array([1.0, 0.0, 0.0])
     c = actor.dotted_line(start_pos, end_pos,
                           num_points, point_color, point_radius)
 
@@ -898,11 +898,11 @@ def test_dotted_line(interactive=False):
 
 
 def test_dashed_line(interactive=False):
-    start_pos = [1.0, 0.0, 0.0]
-    end_pos = [0.0, 1.0, 0.0]
+    start_pos = np.array([1.0, 0.0, 0.0])
+    end_pos = np.array([0.0, 1.0, 0.0])
     line_fraction = 0.5
     num_lines = 10
-    line_color = [1.0, 0.0, 0.0]
+    line_color = np.array([1.0, 0.0, 0.0])
     c = actor.dashed_line(start_pos, end_pos,
                           num_lines, line_color, line_fraction)
 
