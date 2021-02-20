@@ -869,61 +869,6 @@ def test_points(interactive=False):
     npt.assert_equal(report.objects, 3)
 
 
-def test_dotted_line(interactive=False):
-    start_pos = np.array([1.0, 0.0, 0.0])
-    end_pos = np.array([0.0, 1.0, 0.0])
-    point_radius = 0.01
-    num_points = 10
-    point_color = np.array([1.0, 0.0, 0.0])
-    c = actor.dotted_line(start_pos, end_pos,
-                          num_points, point_color, point_radius)
-
-    scene = window.Scene()
-    scene.add(c)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
-
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=[point_color])
-    npt.assert_equal(report.objects, 10)
-
-    scene.add(c)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
-    # npt.assert_equal(report.colors_found, [True])
-
-
-def test_dashed_line(interactive=False):
-    start_pos = np.array([1.0, 0.0, 0.0])
-    end_pos = np.array([0.0, 1.0, 0.0])
-    line_fraction = 0.5
-    num_lines = 10
-    line_color = np.array([1.0, 0.0, 0.0])
-    c = actor.dashed_line(start_pos, end_pos,
-                          num_lines, line_color, line_fraction)
-
-    scene = window.Scene()
-    scene.add(c)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
-
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=[line_color])
-    npt.assert_equal(report.objects, 10)
-
-
 def test_labels(interactive=False):
 
     text_actor = actor.label("Hello")
@@ -1393,11 +1338,11 @@ def test_billboard_actor(interactive=False):
 def test_sdf_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scales = [1, 2, 3]
-    primitive = ['sphere', 'ellipsoid', 'torus']
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0], [2, 2, 0]]) * 11
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1], [1, 1, 0]])
+    scales = [1, 2, 3, 4]
+    primitive = ['sphere', 'ellipsoid', 'torus', 'capsule']
 
     sdf_actor = actor.sdf(centers, directions,
                           colors, primitive, scales)
@@ -1408,7 +1353,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # Draw 3 spheres as the primitive type is str
     scene.clear()
@@ -1422,7 +1367,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # A sphere and default back to two torus
     # as the primitive type is list
@@ -1439,7 +1384,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # One sphere and ellipsoid each
     # Default to torus
@@ -1456,4 +1401,4 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)

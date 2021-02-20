@@ -754,97 +754,6 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     return actor
 
 
-def dashed_line(start_pos, end_pos, num_lines=10,
-                line_color=[1.0, 0.0, 0.0], line_fraction=0.5):
-    """Create an actor for one or more dashed lines.
-
-    Parameters
-    ------------
-    start_pos :  array (1, 3)
-    end_pos :  array (1, 3)
-    num_lines :  int, optional
-    line_color :  array (1, 3)
-    line_fraction :  float
-         it should be between 0 and 1
-
-    Returns
-    ----------
-    v : vtkActor
-        Dashed Line.
-
-    Examples
-    ----------
-    >>> from fury import window, actor
-    >>> import numpy as np
-    >>> scene = window.Scene()
-    >>> start_pos = np.array([.0, 0.0, 0.0])
-    >>> end_pos = np.array([1.0, 1.0, 0.0])
-    >>> num_lines = 20
-    >>> line_color = np.array([0.0, 1.0, 0.0])
-    >>> line_fraction = 0.5
-    >>> c = actor.dashed_line(start_pos, end_pos, num_lines,
-    >>>     line_color,line_fraction)
-    >>> scene.add(c)
-    >>> window.show(scene)
-    """
-    dp = (end_pos - start_pos) / num_lines
-
-    p = start_pos.copy()
-    line_lis = []
-    count = 0
-
-    while count < num_lines:
-        line_lis.append([list(p), list(p + (dp*line_fraction))])
-        count = count + 1
-        p = p + dp
-    c = line(line_lis, line_color)
-    return c
-
-
-def dotted_line(start_pos, end_pos, num_points=10,
-                point_color=[1.0, 0.0, 0.0], point_radius=0.01):
-    """Create an actor for one or more dotted lines.
-
-    Parameters
-    ------------
-    start_pos : array (1, 3)
-    end_pos :  array (1, 3)
-    num_points :  int, optional
-    point_color :  array (1, 3)
-    point_radius :  float
-
-    Returns
-    ----------
-    v : vtkActor
-        Dotted Line.
-
-    Examples
-    ----------
-    >>> from fury import window, actor
-    >>> import numpy as np
-    >>> scene = window.Scene()
-    >>> start_pos = np.array([0.0, 0.0, 0.0])
-    >>> end_pos = np.array([1.0, 1.0, 0.0])
-    >>> num_points = 20
-    >>> point_color = np.array([1.0, 0.0, 0.0])
-    >>> point_radius = 0.01
-    >>> c = actor.dotted_line(start_pos, end_pos,
-    >>> num_points, point_color,point_radius)
-    >>> scene.add(c)
-    >>> #window.show(scene)
-    """
-    dp = (end_pos - start_pos) / num_points
-    point_lis = []
-    count = 0
-
-    while count < num_points:
-        point_lis.append(list(start_pos + (count * dp)))
-        count = count + 1
-
-    p = point(point_lis, point_color, point_radius)
-    return p
-
-
 def scalar_bar(lookup_table=None, title=" "):
     """ Default scalar bar actor for a given colormap (colorbar)
 
@@ -2653,7 +2562,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     vtkActor
     """
 
-    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3}
+    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
 
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
