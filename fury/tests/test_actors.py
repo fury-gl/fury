@@ -893,10 +893,6 @@ def test_dotted_line(interactive=False):
                                      colors=[point_color])
     npt.assert_equal(report.objects, 10)
 
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
-    npt.assert_equal(report.colors_found, [True])
-
 
 def test_dashed_line(interactive=False):
     start_pos = np.array([1.0, 0.0, 0.0])
@@ -921,10 +917,6 @@ def test_dashed_line(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=[line_color])
     npt.assert_equal(report.objects, 10)
-    
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=(1, 0, 0))
-    npt.assert_equal(report.colors_found, [True])
 
 
 def test_labels(interactive=False):
