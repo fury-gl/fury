@@ -52,7 +52,7 @@ current_size = (1024, 720)
 showm = window.ShowManager(scene, size=current_size,
                            title="Visualize SDF Actor")
 
-interactive = True
+interactive = False
 
 if interactive:
     showm.start()
