@@ -880,9 +880,11 @@ def test_dotted_line(interactive=False):
 
     scene = window.Scene()
     scene.add(c)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(scene, order_transparent=True)
+        window.show(scene, reset_camera=False)
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
@@ -895,6 +897,7 @@ def test_dotted_line(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
     npt.assert_equal(report.colors_found, [True])
+    window.record(scene, size=(900, 768), out_path="test_dotted_line.png")
 
 
 def test_dashed_line(interactive=False):
@@ -908,9 +911,11 @@ def test_dashed_line(interactive=False):
 
     scene = window.Scene()
     scene.add(c)
+    scene.reset_camera()
+    scene.reset_clipping_range()
 
     if interactive:
-        window.show(scene, order_transparent=True)
+        window.show(scene, reset_camera=False)
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
