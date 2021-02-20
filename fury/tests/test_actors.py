@@ -897,7 +897,6 @@ def test_dotted_line(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
     npt.assert_equal(report.colors_found, [True])
-    window.record(scene, size=(900, 768), out_path="test_dotted_line.png")
 
 
 def test_dashed_line(interactive=False):
