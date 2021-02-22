@@ -1351,7 +1351,7 @@ def test_sdf_actor(interactive=False):
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1], [1, 1, 0]])
     scales = [1, 2, 3, 4]
-    primitive = ['sphere', 'ellipsoid', 'torus', 'capsule']
+    primitive = ['sphere', 'ellipsoid', 'torus', 'superellipse']
 
     sdf_actor = actor.sdf(centers, directions,
                           colors, primitive, scales)
