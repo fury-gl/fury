@@ -114,15 +114,13 @@ float map( in vec3 position )
         d1 = sdEllipsoid((pos)/scaleVSOutput, vec3(0.1, 0.1, 0.3))*scaleVSOutput;
     }
 
-    else if(primitiveVSOutput==5){
+    else if(primitiveVSOutput==4){
         // vec2 exponent = vec2(1.0);
         // vec2 exponent = vec2(0.1);
         vec2 exponent = vec2(2.0);
         // vec2 exponent = vec2(1.5);
         
-        // d1 = sdSE((pos)/scaleVSOutput, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*scaleVSOutput;
-        d1 = sdSE((pos)/100.0, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*100.0;
-        // d1 = sdSE((pos)/2.0, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*2.0;
+        d1 = sdSE((pos)/scaleVSOutput, vec3(1.0, 1.0, 1.0), vec3(10.0 / 3.0, 10.0 / 3.0, 10.0 / 2.0), exponent)*scaleVSOutput;
     }
     return d1;
 }

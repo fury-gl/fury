@@ -2562,7 +2562,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     vtkActor
     """
 
-    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'superellipse': 5}
+    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'superellipse': 4}
 
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
