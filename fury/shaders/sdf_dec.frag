@@ -14,6 +14,40 @@ uniform mat4 WCVCMatrix;
 uniform mat4 WCMCMatrix;
 uniform mat4 VCMCMatrix;
 
+#define PI 3.14159265
+
+struct Superellipsoid
+{
+	vec3 Center;
+	vec3 Radius;
+    vec2 Exponent;
+};
+
+
+float sdSE( vec3 pos , vec3 center, vec3 radius, vec2 exponent)
+{
+    Superellipsoid se;
+    se.Center = center;
+    se.Radius = radius;
+    se.Exponent = exponent;
+
+    vec3 e = vec3(vec2(1.0) / se.Exponent.xy, se.Exponent.x / se.Exponent.y);
+    vec3 g = 2.0 * e; // prep exponents
+    vec3 invr = vec3(1.0) / se.Radius;
+    vec3 p = pos;
+    vec3 A = p * invr ; // coeff for x and y
+    vec3 B = pow(A * A, e.xxy); //prep x and y with exponents
+    float E = B.x + B.y;
+    float F = pow(E, e.z);
+    float P = F + B.z;
+
+    // float K = pow(P, se.Exponent.y) - 1.0;
+    float K = pow(P, se.Exponent.y) - 0.0;
+    return(K);
+
+}
+
+
 mat4 rotationAxisAngle( vec3 v, float angle )
 {
     float s = sin(angle);
@@ -78,6 +112,17 @@ float map( in vec3 position )
     
     else if(primitiveVSOutput==3){
         d1 = sdEllipsoid((pos)/scaleVSOutput, vec3(0.1, 0.1, 0.3))*scaleVSOutput;
+    }
+
+    else if(primitiveVSOutput==5){
+        // vec2 exponent = vec2(1.0);
+        // vec2 exponent = vec2(0.1);
+        vec2 exponent = vec2(2.0);
+        // vec2 exponent = vec2(1.5);
+        
+        // d1 = sdSE((pos)/scaleVSOutput, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*scaleVSOutput;
+        d1 = sdSE((pos)/100.0, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*100.0;
+        // d1 = sdSE((pos)/2.0, vec3(0.0), vec3(1.0 / 3.0, 1.0 / 3.0, 1.0 / 2.0), exponent)*2.0;
     }
     return d1;
 }
