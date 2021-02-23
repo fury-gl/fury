@@ -26,12 +26,15 @@ authors:
   - name: Geoffrey Fox
     orcid: 0000-0003-1017-1391
     affiliation: 1
-  - name: and FURY Contributors
+  - name: FURY Contributors
+    affiliation: 3
 affiliations:
  - name: Department of Intelligent Systems Engineering, Luddy School of Informatics, Computing and Engineering, Indiana University, Bloomington, IN, USA
    index: 1
  - name: Network Science Institute, Indiana University, Bloomington, IN, USA
    index: 2
+ - name: Anywhere in the Multiverse
+   index: 3
 date: 23 February 2021
 bibliography: paper.bib
 ---
