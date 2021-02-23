@@ -28,7 +28,7 @@ import fury.primitive as fp
 from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         set_polydata_triangles, set_polydata_vertices,
                         set_polydata_colors, colors_from_actor,
-                        vertices_from_actor, update_actor,
+                        vertices_from_actor, update_actor, compute_bounds,
                         vtk_vertices_from_actor, vtk_array_from_actor)
 
 ###############################################################################
@@ -113,14 +113,14 @@ nodes_actor = actor.billboard(centers,
 
 vtk_centers_geo = vtk_array_from_actor(nodes_actor, array_name="center")
 centers_geo = vtknp.vtk_to_numpy(vtk_centers_geo)
-centers_geometry_orig = np.array(centers_geo)
+centers_geo_orig = np.array(centers_geo)
 centers_length = centers_geo.shape[0] / positions.shape[0]
 
 
-vtk_verts_geometry = vtk_vertices_from_actor(nodes_actor)
-verts_geometry = vtknp.vtk_to_numpy(vtk_verts_geometry)
-verts_geometry_orig = np.array(verts_geometry)
-verts_length = verts_geometry.shape[0] / positions.shape[0]
+vtk_verts_geo = vtk_vertices_from_actor(nodes_actor)
+verts_geo = vtknp.vtk_to_numpy(vtk_verts_geo)
+verts_geo_orig = np.array(verts_geo)
+verts_length = verts_geo.shape[0] / positions.shape[0]
 
 
 ###############################################################################
@@ -157,27 +157,27 @@ def new_layout_timer(showm, edges_list, vertices_count,
         frames_per_second.append(scene.frame_rate)
 
         centers_geo[:] = np.repeat(positions, centers_length, axis=0)
-        verts_geometry[:] = verts_geometry_orig + centers_geo
+        verts_geo[:] = verts_geo_orig + centers_geo
 
         edges_positions = vtknp.vtk_to_numpy(
             lines_actor.GetMapper().GetInput().GetPoints().GetData())
         edges_positions[::2] = positions[edges_list[:, 0]]
         edges_positions[1::2] = positions[edges_list[:, 1]]
 
-        lines_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
-        lines_actor.GetMapper().GetInput().ComputeBounds()
-        vtk_verts_geometry.Modified()
+        update_actor(lines_actor)
+        compute_bounds(lines_actor)
+        vtk_verts_geo.Modified()
         vtk_centers_geo.Modified()
-        update_actor(nodes_actor)
 
         if(selected_node is not None):
             selected_actor.SetPosition(positions[selected_node])
 
-        nodes_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
-        nodes_actor.GetMapper().GetInput().ComputeBounds()
-        selected_actor.GetMapper().GetInput().ComputeBounds()
-        selected_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
-        showm.scene.ResetCameraClippingRange()
+        update_actor(nodes_actor)
+        compute_bounds(nodes_actor)
+
+        compute_bounds(selected_actor)
+        update_actor(selected_actor)
+        showm.scene.reset_clipping_range()
         showm.render()
 
         if counter >= max_iterations:
