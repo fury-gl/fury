@@ -1,54 +1,80 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: FURY, advanced scientific visualization
 tags:
   - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - scientific visualization
+  - 3D rendering
+  - Shaders
+  - GLSL
+  - Vulkan
 authors:
-  - name: Adrian M. Price-Whelan
-    orcid: 0000-0003-0872-7098
+  - name: Eleftherios Garyfallidis
+    orcid: 0000-0002-3991-2774
+    affiliation: 1
+  - name: Serge Koudoro
+    orcid: 0000-0002-3991-2774
+    affiliation: 1
+  - name: Javier Guaje
+    orcid: 0000-0003-3534-3794
+    affiliation: 1
+  - name: Nasim Anousheh
+    orcid: 0000-0002-5931-7753
+    affiliation: 1
+  - name: Filipi Silva
+    orcid: 0000-0002-9151-6517
+    affiliation: 2
+  - name: Geoffrey Fox
+    orcid: 0000-0003-1017-1391
     affiliation: 1
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University
+ - name: Department of Intelligent Systems Engineering, Luddy School of Informatics, Computing and Engineering, Indiana University, Bloomington, IN, USA
    index: 1
-date: 13 August 2017
+ - name: Network Science Institute, Indiana University, Bloomington, IN, USA
+   index: 2
+date: 23 February 2021
 bibliography: paper.bib
 ---
 
+
+
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+Free Unified Rendering in pYthon (FURY), is a community-driven, open-source, and high-performance scientific visualization library that harnesses the graphics processing unit (GPU) for improved speed, precise interactivity, and visual clarity. FURY provides an integrated API in Python that allows UI elements and 3D graphics to be programmed together. FURY is designed to be fully interoperable with most projects of the Pythonic ecosystem that use NumPy [@harris2020array] for processing numerical arrays. In addition, FURY uses core parts of VTK [@schroeder2004visualization] and enhances them using customized shaders. FURY provides access to the latest technologies such as raytracing, signed distance functionality, physically based rendering, and collision detection for direct use in research. More importantly, FURY enables students and researchers to script their own 3D animations in Python and simulate dynamic environments.
 
-``Gala`` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for ``Gala`` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. ``Gala`` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the ``Astropy`` package [@astropy] (``astropy.units`` and
-``astropy.coordinates``).
 
-``Gala`` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in ``Gala`` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike. The source code for ``Gala`` has been
-archived to Zenodo with the linked DOI: [@zenodo]
+# Statement of need
+
+The massive amount of data collected and analyzed by scientists in several disciplines requires powerful tools and techniques able to handle these whilst still managing efficiently the computational resources available. In some particular disciplines, these datasets not only are large but also encapsulate the dynamics of an environment, increasing the demand for resources. Although 3D visualization technologies are advancing quickly [@khronos2015vulkan; @sellers2016vulkan], their sophistication and focus on non-scientific domains makes it hard for researchers to use them.  In other words, most of the existing 3D visualization and computing APIs are low-level (close to the hardware) and made for professional specialist developers.  Because of these issues, there is a significant barrier to many scientists and these powerful technologies are rarely deployed to everyday research practices. 
+
+Therefore, FURY is created to address this necessity of high-performance 3D scientific visualization in an easy-to-use API fully compatible with the Pythonic ecosystem.
+
+# FURY Architecture
+
+
+![The FURY framework contains multiple interconnected engines to bring forward advanced visualization capabilities. Additionally, it contains an integrated user interface module and an extendable I/O module. One of the most important classes is the Scene Manager that connects the actors to the shaders, animations, and interactors for picking 3D objects. The actors are directly connected to NumPy arrays with vertices, triangles, and connectivity information that is provided by the core engine. These are then connected to the physics and networks  engines.\label{fig:architecture}](https://raw.githubusercontent.com/ivadomed/doc-figures/main/index/overview_title.png)
+
+FURY is built to be modular, scalable, and to respect software engineering principles including a well-documented codebase and unit integration testing. The framework runs in all major operating systems including multiple Linux distributions, Windows, and macOS. Also, it can be used on the desktop and the web. The framework contains multiple interconnected engines, modules, API managers as illustrated in \autoref{fig:architecture}.
+
+Rendering Engine: This engine includes managers like scene, animation, shader, and picking manager. The scene manager allows the visual objects to appear on a canvas. The picking manager allows selecting specific objects in the scene. The animation manager allows users to script their own 3D animations and videos with timelines. Objects appearing in specific time or frames. Indeed, few tools allow researchers to demonstrate their work in an easy way. OpenGL provides powerful tools which are not accessible easily to researchers: GLSL Shaders. Our shader manager makes it easier for the developers to connect new shader snippets to the existing shaders.
+Core Engine: This engine contains utilities for building actors from primitives and transforming them. A primitive is an object that describes its shape and connectivity with elements such as vertices and triangles.
+Physics Engine: This engine allows us to either build collision mechanisms as used in molecular dynamics or integrate well-established engines such as Bullet [@BulletRe79:online] and NVIDIA PhysX [@PhysXSDK48:online].
+Networks Engine:  This engine allows for the creation and use of graph systems and layouts.
+Integrated User Interfaces Module: FURY contains its own user interfaces. This module provides a range of UI 2D / 3D elements such as buttons, combo boxes, and file dialogues. Nevertheless, users can easily connect to other known GUIs such as Qt or IMGUI if necessary. 
+I/O module: FURY supports a range of file formats from the classic OBJ format to the more advanced GLTF format that can be used to describe a complete scene with many actors and animations.
+Interoperability: FURY can be used together with projects such as SciPy [@virtanen2020scipy], Matplotlib [@hunter2007matplotlib], pandas [@mckinney2010data], scikit-learn [@pedregosa2011scikit], NetworkX [@hagberg2008exploring], PyTorch [@paszke2019pytorch] and TensorFlow [@abadi2016tensorflow]. 
+
+FURY’s visualization API can be compared with VisPy [@campagnola2015vispy], glumpy [@rougier2015glumpy], Mayavi [@ramachandran2011mayavi], and others. VisPy and glumpy directly connect to OpenGL. FURY uses OpenGL through Python VTK which can be advantageous because it can use the large stack of visualization algorithms available in VTK. This is similar to Mayavi however FURY provides an easy and efficient way to ease interaction with 3D scientific data via integrated user interface elements and allows to reprogram the low-level shaders for the creation of stunning effects \autoref{fig:features} not available in VTK. Historically, FURY had also a different path than these libraries as it was originally created for heavy-duty medical visualization purposes for DIPY [@garyfallidis2014dipy]. As the project grew it spinned off as an independent project with applications across the domains of science and engineering including visualization of nanomaterials and robotics simulations. 
+
+
+
+
+![**Top**. Dynamic changes are shown as diffused waves on the surface of the horse visualized with FURY. Showing here 4 frames at 4 different time points (t1−t4). A vertex and fragment shader are used to calculate in real-time the mirroring texture and blend its colors with the blue-yellow wave. **Bottom**. In FURY we create actors that contain multiple visual objects controlled by NumPy arrays.  Here an actor is generating 5 superquadrics with different properties (e.g. colors, directions, metallicity) by injecting the information as NumPy arrays in a single call.  This is one of the important design choices that make FURY easier to use but also faster to render. Actors in FURY can contain many objects. The user can select any of the objects in the actor. Here the user selected the first object (spherical superquadric).\label{fig:features}](https://raw.githubusercontent.com/ivadomed/doc-figures/main/index/overview_title.png)
+
+
+
+# Acknowledgements
+FURY is partly funded through NSF #1720625 Network for Computational Nanotechnology - Engineered nanoBIO Node. 
+
 
 # Acknowledgements
 
