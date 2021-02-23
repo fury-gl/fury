@@ -1347,11 +1347,11 @@ def test_billboard_actor(interactive=False):
 def test_sdf_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scales = [1, 2, 3]
-    primitive = ['sphere', 'ellipsoid', 'torus']
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0], [2, 2, 0]]) * 11
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1], [1, 1, 0]])
+    scales = [1, 2, 3, 4]
+    primitive = ['sphere', 'ellipsoid', 'torus', 'capsule']
 
     sdf_actor = actor.sdf(centers, directions,
                           colors, primitive, scales)
@@ -1362,7 +1362,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # Draw 3 spheres as the primitive type is str
     scene.clear()
@@ -1376,7 +1376,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # A sphere and default back to two torus
     # as the primitive type is list
@@ -1393,7 +1393,7 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
 
     # One sphere and ellipsoid each
     # Default to torus
@@ -1410,4 +1410,4 @@ def test_sdf_actor(interactive=False):
 
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
