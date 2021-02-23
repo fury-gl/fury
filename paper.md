@@ -50,10 +50,10 @@ Therefore, FURY is created to address this necessity of high-performance 3D scie
 
 # FURY Architecture
 
+FURY is built to be modular, scalable, and to respect software engineering principles including a well-documented codebase and unit integration testing. The framework runs in all major operating systems including multiple Linux distributions, Windows, and macOS. Also, it can be used on the desktop and the web. The framework contains multiple interconnected engines, modules, API managers as illustrated in \autoref{fig:architecture}.
 
 ![The FURY framework contains multiple interconnected engines to bring forward advanced visualization capabilities. Additionally, it contains an integrated user interface module and an extendable I/O module. One of the most important classes is the Scene Manager that connects the actors to the shaders, animations, and interactors for picking 3D objects. The actors are directly connected to NumPy arrays with vertices, triangles, and connectivity information that is provided by the core engine. These are then connected to the physics and networks  engines.\label{fig:architecture}](https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/fury_paper/architecture.png)
 
-FURY is built to be modular, scalable, and to respect software engineering principles including a well-documented codebase and unit integration testing. The framework runs in all major operating systems including multiple Linux distributions, Windows, and macOS. Also, it can be used on the desktop and the web. The framework contains multiple interconnected engines, modules, API managers as illustrated in \autoref{fig:architecture}.
 
 **Rendering Engine**: This engine includes managers like scene, animation, shader, and picking manager. The scene manager allows the visual objects to appear on a canvas. The picking manager allows selecting specific objects in the scene. The animation manager allows users to script their own 3D animations and videos with timelines. Objects appearing in specific time or frames. Indeed, few tools allow researchers to demonstrate their work in an easy way. OpenGL provides powerful tools which are not accessible easily to researchers: GLSL Shaders. Our shader manager makes it easier for the developers to connect new shader snippets to the existing shaders.
 
