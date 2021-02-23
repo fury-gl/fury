@@ -82,9 +82,4 @@ FURY’s visualization API can be compared with VisPy [@campagnola2015vispy], gl
 FURY is partly funded through NSF #1720625 Network for Computational Nanotechnology - Engineered nanoBIO Node. 
 
 
-# Acknowledgements
-
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
-
 # References
