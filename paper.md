@@ -1,5 +1,5 @@
 ---
-title: FURY, advanced scientific visualization
+title: FURY for advanced scientific visualization
 tags:
   - Python
   - scientific visualization
@@ -26,6 +26,7 @@ authors:
   - name: Geoffrey Fox
     orcid: 0000-0003-1017-1391
     affiliation: 1
+  - name: and FURY Contributors
 affiliations:
  - name: Department of Intelligent Systems Engineering, Luddy School of Informatics, Computing and Engineering, Indiana University, Bloomington, IN, USA
    index: 1
