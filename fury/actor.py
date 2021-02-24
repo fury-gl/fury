@@ -331,8 +331,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     return surface_actor
 
 
-def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1,
-                     pbr=False, metallic=1., roughness=.5):
+def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
@@ -348,15 +347,6 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1,
         RGB values in [0,1].
     opacity : float
         Opacity of surface between 0 and 1.
-    pbr : bool, optional
-        Enables Physically Based Rendering interpolation. Default disabled
-        (False).
-    metallic : float, optional
-        Metallic or non-metallic (dielectric) shading computation value. Values
-        must be between 0.0 and 1.0.
-    roughness : float, optional
-        Parameter used to specify how glossy the actor should be. Values must
-        be between 0.0 and 1.0.
 
     Returns
     -------
@@ -438,11 +428,6 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1,
     skin_actor.SetMapper(skin_mapper)
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
     skin_actor.GetProperty().SetOpacity(opacity)
-
-    if pbr:
-        skin_actor.GetProperty().SetInterpolationToPBR()
-        skin_actor.GetProperty().SetMetallic(metallic)
-        skin_actor.GetProperty().SetRoughness(roughness)
 
     return skin_actor
 
