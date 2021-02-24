@@ -1014,6 +1014,8 @@ def vertices_from_actor(actor, as_vtk_type=False):
     Parameters
     ----------
     actor : actor
+    as_vtk_type: bool, optional
+        by default, numpy array is returned.
 
     Returns
     -------
@@ -1033,6 +1035,9 @@ def colors_from_actor(actor, array_name='colors', as_vtk_type=False):
     Parameters
     ----------
     actor : actor
+    array_name: str
+    as_vtk_type: bool, optional
+        by default, numpy array is returned.
 
     Returns
     -------
@@ -1044,12 +1049,15 @@ def colors_from_actor(actor, array_name='colors', as_vtk_type=False):
                             as_vtk_type=as_vtk_type)
 
 
-def array_from_actor(actor, array_name='colors', as_vtk_type=False):
+def array_from_actor(actor, array_name, as_vtk_type=False):
     """Access array from actor which uses polydata.
 
     Parameters
     ----------
     actor : actor
+    array_name: str
+    as_vtk_type: bool, optional
+        by default, numpy array is returned.
 
     Returns
     -------
@@ -1077,19 +1085,22 @@ def compute_bounds(actor):
     actor.GetMapper().GetInput().ComputeBounds()
 
 
-def update_actor(actor):
+def update_actor(actor, all_arrays=True):
     """Update actor.
 
     Parameters
     ----------
     actor : actor
+    all_arrays: bool, optional
+        if False, only vertices are updated
 
     """
     pd = actor.GetMapper().GetInput()
     pd.GetPoints().GetData().Modified()
-    nb_array = pd.GetPointData().GetNumberOfArrays()
-    for i in range(nb_array):
-        pd.GetPointData().GetArray(i).Modified()
+    if all_arrays:
+        nb_array = pd.GetPointData().GetNumberOfArrays()
+        for i in range(nb_array):
+            pd.GetPointData().GetArray(i).Modified()
 
 
 def get_bounds(actor):
