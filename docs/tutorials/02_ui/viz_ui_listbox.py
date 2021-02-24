@@ -5,11 +5,17 @@ ListBox
 =========
 
 This example shows how to use the UI API. We will create a list
-some geometric shapes from DIPY UI elements.
+some geometric shapes from FURY UI elements.
 
 First, a bunch of imports.
 """
 from fury import ui, window
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in FURY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Create some text blocks that will be showm when
@@ -59,7 +65,7 @@ listbox.on_change = display_element
 
 current_size = (800, 800)
 show_manager = window.ShowManager(size=current_size,
-                                  title="DIPY UI ListBox_Example")
+                                  title="FURY UI ListBox_Example")
 
 show_manager.scene.add(listbox)
 show_manager.scene.add(welcome_text)

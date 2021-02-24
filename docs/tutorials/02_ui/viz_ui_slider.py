@@ -9,7 +9,14 @@ create a cube and control with sliders.
 
 First, some imports.
 """
-from fury import ui, window
+from fury import ui, window, actor
+from fury.data import fetch_viz_icons
+import numpy as np
+
+##############################################################################
+# First we need to fetch some icons that are included in FURY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # Cube and sliders
@@ -17,24 +24,10 @@ from fury import ui, window
 #
 # Add a cube to the scene .
 
-
-def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
-    cube = window.vtk.vtkCubeSource()
-    cube.SetXLength(size[0])
-    cube.SetYLength(size[1])
-    cube.SetZLength(size[2])
-    if center is not None:
-        cube.SetCenter(*center)
-    cube_mapper = window.vtk.vtkPolyDataMapper()
-    cube_mapper.SetInputConnection(cube.GetOutputPort())
-    cube_actor = window.vtk.vtkActor()
-    cube_actor.SetMapper(cube_mapper)
-    if color is not None:
-        cube_actor.GetProperty().SetColor(color)
-    return cube_actor
-
-
-cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 0, 0))
+cube = actor.cube(centers=np.array([[15, 0, 0]]),
+                  colors=np.array([[0, 0, 1]]),
+                  scales=np.array([[20, 20, 20]]),
+                  directions=np.array([[0, 0, 1]]))
 
 ###############################################################################
 # Now we'll add five sliders: 1 circular and 4 linear sliders.
@@ -100,7 +93,7 @@ ver_line_slider_text_right.on_change = translate_cube
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="DIPY Cube Example")
+show_manager = window.ShowManager(size=current_size, title="FURY Cube Example")
 
 show_manager.scene.add(cube)
 show_manager.scene.add(ring_slider)

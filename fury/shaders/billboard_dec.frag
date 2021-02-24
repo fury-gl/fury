@@ -1,3 +1,3 @@
 /* Billboard  fragment shader declaration */
-in vec3 centeredVertexMC;
-in float scalingFactor;
+in vec3 centerVertexMCVSOutput;
+in vec3 normalizedVertexMCVSOutput;

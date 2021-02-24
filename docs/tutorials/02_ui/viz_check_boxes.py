@@ -12,6 +12,12 @@ First, some imports.
 
 from fury import actor, ui, window, utils
 import numpy as np
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in FURY.
+
+fetch_viz_icons()
 
 ###############################################################################
 # We create the corresponding object actors for cube, sphere, cone and arrow.

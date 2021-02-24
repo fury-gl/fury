@@ -1,0 +1,34 @@
+Shader Showcase
+=====================
+
+.. post:: August 24 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey Everyone!
+Today marked the official end of the coding period for Google Summer of Code 2020. On this day I would like to take the opportunity to thank all my mentors and Soham who have shown immense support during this time and helped me grow not only to be a better programmer but also to be a better team member. While the GSoC period ends, I will try my best to be active and contribute to the project and help it grow.
+Cheers!
+
+What did you do this week?
+--------------------------
+This being the final week of GSoC , my task was to create a PR which showcases not only the shader capabilities of the project but also to create a example which integrates both the UI and shader system of project FURY. This example can help new users to get familiar with both the UI and shaders.
+Apart from this i also worked on a Toon Shader.
+
+The output for the above task is given below :
+
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-13.gif
+
+
+The shader demos are available `here <https://github.com/lenixlobo/fury/tree/shader-demos>`_
+
+What is coming up next week?
+----------------------------
+The next week I will work on the final GSoC documentation which explains what I worked on throughout the GSoC period. In case of any changes are requested by the mentors I will also try to implement them.
+
+Did you get stuck anywhere?
+---------------------------
+With the help of Soham and the mentors this week went smoothly.

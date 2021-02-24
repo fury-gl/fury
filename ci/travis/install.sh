@@ -7,10 +7,13 @@ cd ${ENV_DIR}
 
 if [ "$INSTALL_TYPE" == "pip" ]; then
     PIPI="pip install $EXTRA_PIP_FLAGS"
-    if [ -n "$USE_PRE" ]; then
-        PIPI="$PIPI --find-links=$PRE_WHEELS --pre";
-    fi
+
     $PIPI --upgrade setuptools pip
+
+    if [ "$USE_PRE" == "1" ]; then
+        PIPI="$PIPI $PRE_PIP_FLAGS";
+    fi
+
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/default.txt
     $PIPI -r ${TRAVIS_BUILD_DIR}/requirements/test.txt
     if [[ "${OPTIONAL_DEPS}" == "1" ]]; then
@@ -51,3 +54,5 @@ else
         pip install -r  ${TRAVIS_BUILD_DIR}/requirements/docs.txt
     fi
 fi
+
+set +ev

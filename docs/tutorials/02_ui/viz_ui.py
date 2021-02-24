@@ -5,14 +5,14 @@ User Interfaces
 ===============
 
 This example shows how to use the UI API. We will demonstrate how to create
-several DIPY UI elements, then use a list box to toggle which element is shown.
+several FURY UI elements, then use a list box to toggle which element is shown.
 
 First, a bunch of imports.
 """
 
 from fury.data import read_viz_icons, fetch_viz_icons
-
-from fury import ui, window
+from fury import ui, window, actor
+import numpy as np
 
 ###############################################################################
 # Shapes
@@ -38,7 +38,7 @@ ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300),
 # =====
 #
 # Now let's display an image. First we need to fetch some icons that are
-# included in DIPY.
+# included in FURY.
 
 fetch_viz_icons()
 
@@ -112,23 +112,10 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 # Let's add a cube to the scene and control it with sliders.
 
 
-def cube_maker(color=(1, 1, 1), size=(0.2, 0.2, 0.2), center=(0, 0, 0)):
-    cube = window.vtk.vtkCubeSource()
-    cube.SetXLength(size[0])
-    cube.SetYLength(size[1])
-    cube.SetZLength(size[2])
-    if center is not None:
-        cube.SetCenter(*center)
-    cube_mapper = window.vtk.vtkPolyDataMapper()
-    cube_mapper.SetInputConnection(cube.GetOutputPort())
-    cube_actor = window.vtk.vtkActor()
-    cube_actor.SetMapper(cube_mapper)
-    if color is not None:
-        cube_actor.GetProperty().SetColor(color)
-    return cube_actor
-
-
-cube = cube_maker(color=(0, 0, 1), size=(20, 20, 20), center=(15, 5, 0))
+cube = actor.cube(centers=np.array([[15, 0, 0]]),
+                  colors=np.array([[0, 0, 1]]),
+                  scales=np.array([[20, 20, 20]]),
+                  directions=np.array([[0, 0, 1]]))
 
 ###############################################################################
 # Now we'll add three sliders: one circular and two linear.
@@ -262,7 +249,7 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="DIPY UI Example")
+show_manager = window.ShowManager(size=current_size, title="FURY UI Example")
 
 show_manager.scene.add(listbox)
 for example in examples:
