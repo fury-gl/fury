@@ -71,6 +71,44 @@ def test_picking_manager():
                                          axis=0))), 0)
 
 
+
+
+def test_selector_manager():
+    import vtk 
+    hsel = vtk.vtkHardwareSelector()
+    hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
+    hsel.SetRenderer(scene)
+
+    event_pos = showm.iren.GetEventPosition()
+    picking_area = 4
+    res = hsel.Select()
+    hsel.SetArea(event_pos[0]-picking_area, event_pos[1]-picking_area,
+                 event_pos[0]+picking_area, event_pos[1]+picking_area)
+    res = hsel.Select()
+
+    num_nodes = res.GetNumberOfNodes()
+    if (num_nodes < 1):
+        selected_node = None
+    else:
+        sel_node = res.GetNode(0)
+        selected_nodes = set(np.floor(vtknp.vtk_to_numpy(
+            sel_node.GetSelectionList())/2).astype(int))
+        selected_node = list(selected_nodes)[0]
+
+    if(selected_node is not None):
+        if(labels is not None):
+            selected_actor.text.SetText(labels[selected_node])
+        else:
+            selected_actor.text.SetText("#%d" % selected_node)
+        selected_actor.SetPosition(positions[selected_node])
+
+    else:
+        selected_actor.text.SetText("")
+
+
+    pass
+
+
 if __name__ == "__main__":
 
     test_picking_manager()
