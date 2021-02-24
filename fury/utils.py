@@ -1008,7 +1008,7 @@ def fix_winding_order(vertices, triangles, clockwise=False):
     return corrected_triangles
 
 
-def vertices_from_actor(actor):
+def vertices_from_actor(actor, as_vtk_type=False):
     """Access to vertices from actor.
 
     Parameters
@@ -1020,11 +1020,14 @@ def vertices_from_actor(actor):
     vertices : ndarray
 
     """
-    return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
-                                      GetPoints().GetData())
+    vtk_array = actor.GetMapper().GetInput().GetPoints().GetData()
+    if as_vtk_type:
+        return vtk_array
+
+    return numpy_support.vtk_to_numpy(vtk_array)
 
 
-def colors_from_actor(actor, array_name='colors'):
+def colors_from_actor(actor, array_name='colors', as_vtk_type=False):
     """Access colors from actor which uses polydata.
 
     Parameters
@@ -1037,12 +1040,30 @@ def colors_from_actor(actor, array_name='colors'):
         Colors
 
     """
-    vtk_colors = \
-        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
-    if vtk_colors is None:
-        return None
+    return array_from_actor(actor, array_name=array_name,
+                            as_vtk_type=as_vtk_type)
 
-    return numpy_support.vtk_to_numpy(vtk_colors)
+
+def array_from_actor(actor, array_name='colors', as_vtk_type=False):
+    """Access array from actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+
+    """
+    vtk_array = \
+        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
+    if vtk_array is None:
+        return None
+    if as_vtk_type:
+        return vtk_array
+
+    return numpy_support.vtk_to_numpy(vtk_array)
 
 
 def compute_bounds(actor):
@@ -1064,7 +1085,11 @@ def update_actor(actor):
     actor : actor
 
     """
-    actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+    pd = actor.GetMapper().GetInput()
+    pd.GetPoints().GetData().Modified()
+    nb_array = pd.GetPointData().GetNumberOfArrays()
+    for i in range(nb_array):
+        pd.GetPointData().GetArray(i).Modified()
 
 
 def get_bounds(actor):
