@@ -8,7 +8,7 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds, pbr)
+                        get_bounds, interpolate_as_pbr)
 from fury import actor, window, utils
 import fury.primitive as fp
 
@@ -459,22 +459,11 @@ def test_get_bounds():
     npt.assert_equal(get_bounds(actor), test_bounds)
 
 
-def test_pbr(interactive=True):
-    # Scene setup
-    scene = window.Scene()
+def test_interpolate_as_pbr(interactive=False):
+    scene = window.Scene()  # Scene setup
 
-    """
-    # NOTE: FAILS
-    # Setup slicer
-    data = (255 * np.random.rand(50, 50, 50))
-    affine = np.eye(4)
-    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
-    slicer.display(None, None, 25)
-    slicer = pbr(slicer)
-    scene.add(slicer)
-    """
+    scene.clear()  # Reset scene
 
-    # NOTE: Works
     # Setup surface
     import math
     import random
@@ -501,82 +490,59 @@ def test_pbr(interactive=True):
                 scene = window.Scene(background=(1, 1, 1))
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
-                surface_actor = pbr(surface_actor)
+                surface_actor = interpolate_as_pbr(surface_actor)
                 scene.add(surface_actor)
+                # window.show(scene, size=(600, 600), reset_camera=False)
+                arr = window.snapshot(scene)
+                report = window.analyze_snapshot(arr)
+                npt.assert_equal(report.objects, 1)
 
-    """
-    # NOTE: Works
+    scene.clear()  # Reset scene
+
     # Contour from roi setup
     data = np.zeros((50, 50, 50))
     data[20:30, 25, 25] = 1.
     data[25, 20:30, 25] = 1.
     affine = np.eye(4)
     surface = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]))
-    surface = pbr(surface)
+    surface = interpolate_as_pbr(surface)
     scene.add(surface)
-    """
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
-    """
-    # NOTE: FAILS
-    # Contour from label setup
-    data = np.zeros((50, 50, 50))
-    data[5:15, 1:10, 25] = 1.
-    data[25:35, 1:10, 25] = 2.
-    data[40:49, 1:10, 25] = 3.
-    color = np.array([[255, 0, 0, 0.6],
-                      [0, 255, 0, 0.5],
-                      [0, 0, 255, 1.0]])
-    surface = actor.contour_from_label(data, color=color)
-    surface = pbr(surface)
-    scene.add(surface)
-    """
+    scene.clear()  # Reset scene
 
-    """
-    # NOTE: Works
     # Streamtube setup
     data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
     data2 = data1 + np.array([0.5, 0., 0.])
     data = [data1, data2]
     colors = np.array([[1, 0, 0], [0, 0, 1.]])
     tubes = actor.streamtube(data, colors, linewidth=.1)
-    # TODO: Multiple metallic and roughness values
-    tubes = pbr(tubes)
+    tubes = interpolate_as_pbr(tubes)
     scene.add(tubes)
-    """
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 2)
 
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # Line setup
-    data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
-    data2 = data1 + np.array([0.5, 0., 0.])
-    data = [data1, data2]
-    colors = np.array([[1, 0, 0], [0, 0, 1.]])
-    lines = actor.line(data, colors, linewidth=5)
-    lines = pbr(lines)
-    scene.add(lines)
-    """
+    scene.clear()  # Reset scene
 
-    """
-    # NOTE: FAILS
-    # Scalar bar setup
-    lut = actor.colormap_lookup_table(
-        scale_range=(0., 100.), hue_range=(0., 0.1), saturation_range=(1, 1),
-        value_range=(1., 1))
-    sb_actor = actor.scalar_bar(lut, ' ')
-    sb_actor = pbr(sb_actor)
-    scene.add(sb_actor)
-    """
-
-    """
-    # NOTE: Works
     # Axes setup
     axes = actor.axes()
-    axes = pbr(axes)
+    axes = interpolate_as_pbr(axes)
     scene.add(axes)
-    """
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
-    """
-    # NOTE: Works
+    scene.clear()  # Reset scene
+
     # ODF slicer setup
     from fury.optpkg import optional_package
     from tempfile import mkstemp
@@ -594,12 +560,20 @@ def test_pbr(interactive=True):
         odfs[..., 0] = 1
         odf_actor = actor.odf_slicer(odfs, affine, mask=mask, sphere=sphere,
                                      scale=.25, colormap='blues')
-        odf_actor = pbr(odf_actor)
+        odf_actor = interpolate_as_pbr(odf_actor)
+        k = 5
+        I, J, _ = odfs.shape[:3]
+        odf_actor.display_extent(0, I, 0, J, k, k)
+        odf_actor.GetProperty().SetOpacity(1.0)
         scene.add(odf_actor)
-    """
+        scene.reset_camera()
+        scene.reset_clipping_range()
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr)
+        npt.assert_equal(report.objects, 11 * 11)
 
-    """
-    # NOTE: Works
+    scene.clear()  # Reset scene
+
     # Tensor slicer setup
     from fury.optpkg import optional_package
     dipy, have_dipy, _ = optional_package('dipy')
@@ -616,194 +590,250 @@ def test_pbr(interactive=True):
         scene = window.Scene()
         tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
                                            sphere=sphere, scale=.3)
-        tensor_actor = pbr(tensor_actor)
+        tensor_actor = interpolate_as_pbr(tensor_actor)
+        _, J, K = mevals.shape[:3]
+        tensor_actor.display_extent(0, 1, 0, J, 0, K)
         scene.add(tensor_actor)
-    """
+        scene.reset_camera()
+        scene.reset_clipping_range()
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr)
+        npt.assert_equal(report.objects, 4)
+        # TODO: Rotate to test
+        # npt.assert_equal(report.objects, 4 * 2 * 2)
 
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # Peak slicer setup
-    _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
-    # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape
-    peak_dirs = np.zeros((11, 11, 11, 3, 3))
-    peak_dirs[:, :, :] = _peak_dirs
-    peak_actor = actor.peak_slicer(peak_dirs)
-    peak_actor = pbr(peak_actor)
-    scene.add(peak_actor)
-    """
+    scene.clear()  # Reset scene
 
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # Dots setup
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    dots_actor = actor.dots(points, color=(0, 255, 0))
-    dots_actor = pbr(dots_actor)
-    scene.add(dots_actor)
-    """
-
-    """
-    # NOTE: Works
     # Point setup
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     opacity = 0.5
     points_actor = actor.point(points, colors, opacity=opacity)
-    points_actor = pbr(points_actor)
+    points_actor = interpolate_as_pbr(points_actor)
     scene.add(points_actor)
-    """
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 3)
 
-    """
-    # NOTE: Works
+    scene.clear()  # Reset scene
+
     # Sphere setup
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
     opacity = 0.5
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3], opacity=opacity)
-    sphere_actor = pbr(sphere_actor)
+    sphere_actor = interpolate_as_pbr(sphere_actor)
     scene.add(sphere_actor)
-    """
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 3)
 
-    """
-    # NOTE: Works
-    # Cylinder setup
+    scene.clear()  # Reset scene
+
+    # Advanced geometry actors setup (Arrow, cone, cylinder)
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
     heights = np.array([5, 7, 10])
-    cylinder_actor = actor.cylinder(xyz, dirs, colors, heights=heights)
-    cylinder_actor = pbr(cylinder_actor)
-    scene.add(cylinder_actor)
-    """
+    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
+                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
+                  [actor.cylinder, {'directions': dirs}]]
+    for act_func, extra_args in actor_list:
+        aga_actor = act_func(centers=xyz, colors=colors[:], heights=heights,
+                             **extra_args)
+        aga_actor = interpolate_as_pbr(aga_actor)
+        scene.add(aga_actor)
+        scene.reset_camera()
+        scene.reset_clipping_range()
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr)
+        npt.assert_equal(report.objects, 3)
+        scene.clear()
 
-    """
-    # NOTE: Works
-    # Square setup
+    scene.clear()  # Reset scene
+
+    # Basic geometry actors (Box, cube, frustum, octagonalprism, rectangle,
+    # square)
     centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
     directions = np.array([[1, 1, 0]])
     scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
                   np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    square_actor = actor.square(centers, directions=directions, colors=colors,
-                                scales=scale_list[3])
-    square_actor = pbr(square_actor)
-    scene.add(square_actor)
-    """
+    actor_list = [[actor.box, {}], [actor.cube, {}], [actor.frustum, {}],
+                  [actor.octagonalprism, {}], [actor.rectangle, {}],
+                  [actor.square, {}]]
+    for act_func, extra_args in actor_list:
+        for scale in scale_list:
+            scene = window.Scene()
+            bga_actor = act_func(centers=centers, directions=directions,
+                                 colors=colors, scales=scale, **extra_args)
+            bga_actor = interpolate_as_pbr(bga_actor)
+            scene.add(bga_actor)
+            arr = window.snapshot(scene)
+            report = window.analyze_snapshot(arr)
+            msg = 'Failed with {}, scale={}'.format(act_func.__name__, scale)
+            npt.assert_equal(report.objects, 3, err_msg=msg)
 
-    """
-    # NOTE: Works. Same as square. Remove from final test and make comment
-    # Rectangle setup
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    rectangle_actor = actor.rectangle(centers, directions=directions,
-                                      colors=colors, scales=scale_list[3])
-    rectangle_actor = pbr(rectangle_actor)
-    scene.add(rectangle_actor)
-    """
+    scene.clear()  # Reset scene
 
-    """
-    # NOTE: Works. Same as square. Remove from final test and make comment
-    # Box setup
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    box_actor = actor.box(centers, directions=directions, colors=colors,
-                          scales=scale_list[3])
-    box_actor = pbr(box_actor)
-    scene.add(box_actor)
-    """
-
-    """
-    # NOTE: Works. Same as square. Remove from final test and make comment
-    # Cube setup
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    cube_actor = actor.cube(centers, directions=directions, colors=colors,
-                            scales=scale_list[3])
-    cube_actor = pbr(cube_actor)
-    scene.add(cube_actor)
-    """
-
-    """
-    # NOTES: Works. Same as cylinder. Remove from final test and make comment
-    # Arrow setup
-    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
-    heights = np.array([5, 7, 10])
-    arrow_actor = actor.arrow(xyz, dirs, colors, heights=heights)
-    arrow_actor = pbr(arrow_actor)
-    scene.add(arrow_actor)
-    """
-
-    """
-    # NOTES: Works. Same as cylinder. Remove from final test and make comment
-    # Cone setup
-    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
-    heights = np.array([5, 7, 10])
-    cone_actor = actor.cone(xyz, dirs, colors, heights=heights)
-    cone_actor = pbr(cone_actor)
+    # Cone setup using vertices
+    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+    vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
+                         [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
+    faces = np.array([[0, 1, 3], [0, 1, 2]])
+    cone_actor = actor.cone(centers=centers, directions=directions,
+                            colors=colors[:], vertices=vertices, faces=faces)
+    cone_actor = interpolate_as_pbr(cone_actor)
     scene.add(cone_actor)
-    """
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 3)
 
-    """
-    # NOTE: Works. Same as square. Remove from final test and make comment
-    # Octagonalprism setup
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    octagonalprism_actor = actor.octagonalprism(centers, directions=directions,
-                                                colors=colors,
-                                                scales=scale_list[3])
-    octagonalprism_actor = pbr(octagonalprism_actor)
-    scene.add(octagonalprism_actor)
-    """
+    scene.clear()  # Reset scene
 
-    """
-    # NOTE: Works. Same as square. Remove from final test and make comment
-    # Frustum setup
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    frustum_actor = actor.frustum(centers, directions=directions,
-                                  colors=colors, scales=scale_list[3])
-    frustum_actor = pbr(frustum_actor)
-    scene.add(frustum_actor)
-    """
-
-    """
-    # NOTE: Works.
     # Superquadric setup
     centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     directions = np.random.rand(3, 3)
     scales = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
-
     sq_actor = actor.superquadric(centers, roundness=roundness,
                                   directions=directions,
                                   colors=colors.astype(np.uint8),
                                   scales=scales)
-    sq_actor = pbr(sq_actor)
+    sq_actor = interpolate_as_pbr(sq_actor)
     scene.add(sq_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 3)
+
+    scene.clear()  # Reset scene
+
+    # Label setup
+    text_actor = actor.label("Hello")
+    text_actor = interpolate_as_pbr(text_actor)
+    scene.add(text_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
+
+    # NOTE: From this point on, these actors don't have full support for PBR
+    # interpolation. This is, the test passes but there is no evidence of the
+    # desired effect.
+
+    """
+    # Line setup
+    data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
+    data2 = data1 + np.array([0.5, 0., 0.])
+    data = [data1, data2]
+    colors = np.array([[1, 0, 0], [0, 0, 1.]])
+    lines = actor.line(data, colors, linewidth=5)
+    lines = interpolate_as_pbr(lines)
+    scene.add(lines)
     """
 
     """
-    # NOTE: FAILS
+    # Peak slicer setup
+    _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
+    # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape
+    peak_dirs = np.zeros((11, 11, 11, 3, 3))
+    peak_dirs[:, :, :] = _peak_dirs
+    peak_actor = actor.peak_slicer(peak_dirs)
+    peak_actor = interpolate_as_pbr(peak_actor)
+    scene.add(peak_actor)
+    """
+
+    """
+    # Dots setup
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    dots_actor = actor.dots(points, color=(0, 255, 0))
+    dots_actor = interpolate_as_pbr(dots_actor)
+    scene.add(dots_actor)
+    """
+
+    """
+    # Texture setup
+    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
+    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
+    tp2 = actor.texture(arr)
+    tp2 = interpolate_as_pbr(tp2)
+    scene.add(tp2)
+    """
+
+    """
+    # Texture on sphere setup
+    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
+    rows, cols, _ = arr.shape
+    rs = rows // 2
+    cs = cols // 2
+    w = 150 // 2
+    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
+    tsa = actor.texture_on_sphere(arr)
+    tsa = interpolate_as_pbr(tsa)
+    scene.add(tsa)
+    """
+
+    """
+    # SDF setup
+    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
+    scales = [1, 2, 3]
+    primitive = ['sphere', 'ellipsoid', 'torus']
+
+    sdf_actor = actor.sdf(centers, directions=directions, colors=colors,
+                          primitives=primitive, scales=scales)
+    sdf_actor = interpolate_as_pbr(sdf_actor)
+    scene.add(sdf_actor)
+    """
+
+    # NOTE: For these last set of actors, there is not support for PBR
+    # interpolation at all.
+
+    """
+    # Setup slicer
+    data = (255 * np.random.rand(50, 50, 50))
+    affine = np.eye(4)
+    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
+    slicer.display(None, None, 25)
+    slicer = interpolate_as_pbr(slicer)
+    scene.add(slicer)
+    """
+
+    """
+    # Contour from label setup
+    data = np.zeros((50, 50, 50))
+    data[5:15, 1:10, 25] = 1.
+    data[25:35, 1:10, 25] = 2.
+    data[40:49, 1:10, 25] = 3.
+    color = np.array([[255, 0, 0, 0.6],
+                      [0, 255, 0, 0.5],
+                      [0, 0, 255, 1.0]])
+    surface = actor.contour_from_label(data, color=color)
+    surface = interpolate_as_pbr(surface)
+    scene.add(surface)
+    """
+
+    """
+    # Scalar bar setup
+    lut = actor.colormap_lookup_table(
+        scale_range=(0., 100.), hue_range=(0., 0.1), saturation_range=(1, 1),
+        value_range=(1., 1))
+    sb_actor = actor.scalar_bar(lut, ' ')
+    sb_actor = interpolate_as_pbr(sb_actor)
+    scene.add(sb_actor)
+    """
+
+    """
     # Billboard setup
     centers = np.array([[0, 0, 0], [5, -5, 5], [-7, 7, -7], [10, 10, 10],
                         [10.5, 11.5, 11.5], [12, -12, -12], [-17, 17, 17],
@@ -828,74 +858,25 @@ def test_pbr(interactive=True):
     """
     billboard_actor = actor.billboard(centers, colors=colors, scales=scales,
                                       fs_impl=fake_sphere)
-    billboard_actor = pbr(billboard_actor)
+    billboard_actor = interpolate_as_pbr(billboard_actor)
     scene.add(billboard_actor)
     """
 
     """
-    # NOTE: Works
-    # Label setup
-    text_actor = actor.label("Hello")
-    text_actor = pbr(text_actor)
-    scene.add(text_actor)
-    """
-
-    """
-    # NOTE: FAILS
     # Text3D setup
     msg = 'I \nlove\n FURY'
     txt_actor = actor.text_3d(msg)
-    txt_actor = pbr(txt_actor)
+    txt_actor = interpolate_as_pbr(txt_actor)
     scene.add(txt_actor)
     """
 
     """
-    # NOTE: FAILS
     # Figure setup
     arr = (255 * np.ones((512, 212, 4))).astype('uint8')
     arr[20:40, 20:40, 3] = 0
     tp = actor.figure(arr)
-    tp = pbr(tp)
+    tp = interpolate_as_pbr(tp)
     scene.add(tp)
-    """
-
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # Texture setup
-    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
-    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
-    tp2 = actor.texture(arr)
-    tp2 = pbr(tp2)
-    scene.add(tp2)
-    """
-
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # Texture on sphere setup
-    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
-    rows, cols, _ = arr.shape
-    rs = rows // 2
-    cs = cols // 2
-    w = 150 // 2
-    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
-    tsa = actor.texture_on_sphere(arr)
-    tsa = pbr(tsa)
-    scene.add(tsa)
-    """
-
-    """
-    # NOTE: Passes but doesn't seem to apply the effect
-    # SDF setup
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scales = [1, 2, 3]
-    primitive = ['sphere', 'ellipsoid', 'torus']
-
-    sdf_actor = actor.sdf(centers, directions=directions, colors=colors,
-                          primitives=primitive, scales=scales)
-    sdf_actor = pbr(sdf_actor)
-    scene.add(sdf_actor)
     """
 
     if interactive:

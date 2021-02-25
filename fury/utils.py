@@ -1083,7 +1083,7 @@ def get_bounds(actor):
     return actor.GetMapper().GetInput().GetBounds()
 
 
-def pbr(actor, metallic=1, roughness=.5):
+def interpolate_as_pbr(actor, metallic=1, roughness=.5):
     """
 
     Parameters
