@@ -755,15 +755,15 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
 
 def dashed_line(start_pos, end_pos, num_lines=10,
-                line_color=[1.0, 0.0, 0.0], line_fraction=0.5):
+                colors=[1.0, 0.0, 0.0], line_fraction=0.5):
     """Create an actor for one or more dashed lines.
 
     Parameters
     ------------
-    start_pos :  array (1, 3)
-    end_pos :  array (1, 3)
+    start_pos :  array (N, 3)
+    end_pos :  array (N, 3)
     num_lines :  int, optional
-    line_color :  array (1, 3)
+    colors :  array (N, 3)
     line_fraction :  float
          it should be between 0 and 1
 
@@ -777,41 +777,43 @@ def dashed_line(start_pos, end_pos, num_lines=10,
     >>> from fury import window, actor
     >>> import numpy as np
     >>> scene = window.Scene()
-    >>> start_pos = np.array([.0, 0.0, 0.0])
-    >>> end_pos = np.array([1.0, 1.0, 0.0])
+    >>> start_pos = np.random.rand(3, 3)
+    >>> end_pos = np.random.rand(3, 3)
     >>> num_lines = 20
-    >>> line_color = np.array([0.0, 1.0, 0.0])
+    >>> colors = np.random.rand(3, 3)
     >>> line_fraction = 0.5
     >>> c = actor.dashed_line(start_pos, end_pos, num_lines,
-    >>>     line_color,line_fraction)
+    >>>     colors,line_fraction)
     >>> scene.add(c)
-    >>> window.show(scene)
+    >>> #window.show(scene)
     """
-    dp = (end_pos - start_pos) / num_lines
+    N = start_pos.shape[0]
+    arr = np.empty((num_lines * N, 2, 3))
 
-    p = start_pos.copy()
-    line_lis = []
-    count = 0
-
-    while count < num_lines:
-        line_lis.append([list(p), list(p + (dp*line_fraction))])
-        count = count + 1
-        p = p + dp
-    c = line(line_lis, line_color)
+    for start_pos, end_pos, x in zip(start_pos, end_pos, range(0, N)):
+        dp = (end_pos - start_pos) / num_lines
+        p = start_pos.copy()
+        count = 0
+        while count < num_lines:
+            arr[x * num_lines + count] = \
+                np.array([p,  p + (dp * line_fraction)])
+            count = count + 1
+            p = p + dp
+    c = line(arr, np.repeat(colors, num_lines, axis=0))
     return c
 
 
 def dotted_line(start_pos, end_pos, num_points=10,
-                point_color=[1.0, 0.0, 0.0], point_radius=0.01):
+                colors=[1.0, 0.0, 0.0], radius=0.01):
     """Create an actor for one or more dotted lines.
 
     Parameters
     ------------
-    start_pos : array (1, 3)
-    end_pos :  array (1, 3)
+    start_pos : array (N, 3)
+    end_pos :  array (N, 3)
     num_points :  int, optional
-    point_color :  array (1, 3)
-    point_radius :  float
+    colors :  array (N, 3)
+    radius :  float
 
     Returns
     ----------
@@ -823,26 +825,30 @@ def dotted_line(start_pos, end_pos, num_points=10,
     >>> from fury import window, actor
     >>> import numpy as np
     >>> scene = window.Scene()
-    >>> start_pos = np.array([0.0, 0.0, 0.0])
-    >>> end_pos = np.array([1.0, 1.0, 0.0])
+    >>> start_pos = np.random.rand(3, 3)
+    >>> end_pos = np.random.rand(3, 3)
     >>> num_points = 20
-    >>> point_color = np.array([1.0, 0.0, 0.0])
-    >>> point_radius = 0.01
+    >>> colors = np.random.rand(3, 3)
+    >>> radius = 0.01
     >>> c = actor.dotted_line(start_pos, end_pos,
-    >>> num_points, point_color,point_radius)
+    >>> num_points, colors,radius)
     >>> scene.add(c)
     >>> #window.show(scene)
     """
-    dp = (end_pos - start_pos) / num_points
-    point_lis = []
-    count = 0
+    N = start_pos.shape[0]
+    arr = np.empty((num_points * N, 3))
 
-    while count < num_points:
-        point_lis.append(list(start_pos + (count * dp)))
-        count = count + 1
-
-    p = point(point_lis, point_color, point_radius)
-    return p
+    for start_pos, end_pos, x in zip(start_pos, end_pos, range(0, N)):
+        dp = (end_pos - start_pos) / num_points
+        p = start_pos.copy()
+        count = 0
+        while count < num_points:
+            arr[x * num_points + count] = np.array([p])
+            count = count + 1
+            p = p + dp
+    c = point(points=arr, colors=np.repeat(colors, num_points, axis=0),
+              point_radius=radius)
+    return c
 
 
 def scalar_bar(lookup_table=None, title=" "):
