@@ -1015,7 +1015,7 @@ def vertices_from_actor(actor, as_vtk_type=False):
     ----------
     actor : actor
     as_vtk_type: bool, optional
-        by default, numpy array is returned.
+        by default, ndarray is returned.
 
     Returns
     -------
@@ -1057,7 +1057,7 @@ def array_from_actor(actor, array_name, as_vtk_type=False):
     actor : actor
     array_name: str
     as_vtk_type: bool, optional
-        by default, numpy array is returned.
+        by default, ndarray is returned.
 
     Returns
     -------
