@@ -722,9 +722,11 @@ def test_interpolate_as_pbr(interactive=False):
     text_actor = actor.label("Hello")
     text_actor = interpolate_as_pbr(text_actor)
     scene.add(text_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
+    npt.assert_equal(report.objects, 5)
 
     # NOTE: From this point on, these actors don't have full support for PBR
     # interpolation. This is, the test passes but there is no evidence of the
