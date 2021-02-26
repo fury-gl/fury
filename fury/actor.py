@@ -754,8 +754,8 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     return actor
 
 
-def dashed_line(start_pos, end_pos, num_lines=10,
-                colors=[1.0, 0.0, 0.0], line_fraction=0.5):
+def dashed_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
+                num_lines=10, line_fraction=0.5):
     """Create an actor for one or more dashed lines.
 
     Parameters
@@ -782,8 +782,8 @@ def dashed_line(start_pos, end_pos, num_lines=10,
     >>> num_lines = 20
     >>> colors = np.random.rand(3, 3)
     >>> line_fraction = 0.5
-    >>> c = actor.dashed_line(start_pos, end_pos, num_lines,
-    >>>     colors,line_fraction)
+    >>> c = actor.dashed_line(start_pos, end_pos, colors,
+    >>> num_lines, line_fraction)
     >>> scene.add(c)
     >>> #window.show(scene)
     """
@@ -803,8 +803,8 @@ def dashed_line(start_pos, end_pos, num_lines=10,
     return c
 
 
-def dotted_line(start_pos, end_pos, num_points=10,
-                colors=[1.0, 0.0, 0.0], radius=0.01):
+def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
+                num_points=10, radius=0.01):
     """Create an actor for one or more dotted lines.
 
     Parameters
@@ -830,8 +830,8 @@ def dotted_line(start_pos, end_pos, num_points=10,
     >>> num_points = 20
     >>> colors = np.random.rand(3, 3)
     >>> radius = 0.01
-    >>> c = actor.dotted_line(start_pos, end_pos,
-    >>> num_points, colors,radius)
+    >>> c = actor.dotted_line(start_pos, end_pos, colors,
+    >>> num_points,radius)
     >>> scene.add(c)
     >>> #window.show(scene)
     """
