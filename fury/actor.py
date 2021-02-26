@@ -1779,7 +1779,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3) * 10
     >>> directions = np.random.rand(3, 3)
-    >>> scales = np.random.rand(5)
+    >>> scales = np.random.rand(3)
+    >>> colors = np.random.rand(3, 3)
     >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
     >>> sq_actor = actor.superquadric(centers, roundness=roundness,
     ...                               directions=directions,
