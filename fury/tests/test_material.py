@@ -6,10 +6,6 @@ import numpy.testing as npt
 
 
 def test_manifest_pbr(interactive=False):
-    scene = window.Scene()  # Scene setup
-
-    scene.clear()  # Reset scene
-
     # Setup surface
     import math
     import random
@@ -425,6 +421,58 @@ def test_manifest_pbr(interactive=False):
     tp = actor.figure(arr)
     material.manifest_pbr(tp)
     scene.add(tp)
+    """
+
+    if interactive:
+        window.show(scene)
+
+
+def test_manifest_standard(interactive=False):
+    # Setup surface
+    import math
+    import random
+    from scipy.spatial import Delaunay
+    size = 11
+    vertices = list()
+    for i in range(-size, size):
+        for j in range(-size, size):
+            fact1 = - math.sin(i) * math.cos(j)
+            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
+            z_coord = -abs(fact1 * fact2)
+            vertices.append([i, j, z_coord])
+    c_arr = np.random.rand(len(vertices), 3)
+    random.shuffle(vertices)
+    vertices = np.array(vertices)
+    tri = Delaunay(vertices[:, [0, 1]])
+    faces = tri.simplices
+    c_loop = [None, c_arr]
+    f_loop = [None, faces]
+    s_loop = [None, "butterfly", "loop"]
+    for smooth_type in s_loop:
+        for face in f_loop:
+            for color in c_loop:
+                scene = window.Scene(background=(1, 1, 1))
+                surface_actor = actor.surface(vertices, faces=face,
+                                              colors=color, smooth=smooth_type)
+                material.manifest_standard(surface_actor)
+                scene.add(surface_actor)
+                # window.show(scene, size=(600, 600), reset_camera=False)
+                arr = window.snapshot(scene)
+                report = window.analyze_snapshot(arr)
+                npt.assert_equal(report.objects, 1)
+    window.show(scene)
+
+    # NOTE: For these last set of actors, there is not support for PBR
+    # interpolation at all.
+
+    """
+    # Setup slicer
+    data = (255 * np.random.rand(50, 50, 50))
+    affine = np.eye(4)
+    slicer = actor.slicer(data, affine, value_range=[data.min(), data.max()])
+    slicer.display(None, None, 25)
+    material.manifest_standard(slicer)
+    scene.add(slicer)
     """
 
     if interactive:
