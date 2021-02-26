@@ -1008,28 +1008,36 @@ def fix_winding_order(vertices, triangles, clockwise=False):
     return corrected_triangles
 
 
-def vertices_from_actor(actor):
+def vertices_from_actor(actor, as_vtk=False):
     """Access to vertices from actor.
 
     Parameters
     ----------
     actor : actor
+    as_vtk: bool, optional
+        by default, ndarray is returned.
 
     Returns
     -------
     vertices : ndarray
 
     """
-    return numpy_support.vtk_to_numpy(actor.GetMapper().GetInput().
-                                      GetPoints().GetData())
+    vtk_array = actor.GetMapper().GetInput().GetPoints().GetData()
+    if as_vtk:
+        return vtk_array
+
+    return numpy_support.vtk_to_numpy(vtk_array)
 
 
-def colors_from_actor(actor, array_name='colors'):
+def colors_from_actor(actor, array_name='colors', as_vtk=False):
     """Access colors from actor which uses polydata.
 
     Parameters
     ----------
     actor : actor
+    array_name: str
+    as_vtk: bool, optional
+        by default, numpy array is returned.
 
     Returns
     -------
@@ -1037,12 +1045,33 @@ def colors_from_actor(actor, array_name='colors'):
         Colors
 
     """
-    vtk_colors = \
-        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
-    if vtk_colors is None:
-        return None
+    return array_from_actor(actor, array_name=array_name,
+                            as_vtk=as_vtk)
 
-    return numpy_support.vtk_to_numpy(vtk_colors)
+
+def array_from_actor(actor, array_name, as_vtk=False):
+    """Access array from actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+    array_name: str
+    as_vtk_type: bool, optional
+        by default, ndarray is returned.
+
+    Returns
+    -------
+    output : array (N, 3)
+
+    """
+    vtk_array = \
+        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
+    if vtk_array is None:
+        return None
+    if as_vtk:
+        return vtk_array
+
+    return numpy_support.vtk_to_numpy(vtk_array)
 
 
 def compute_bounds(actor):
@@ -1056,15 +1085,24 @@ def compute_bounds(actor):
     actor.GetMapper().GetInput().ComputeBounds()
 
 
-def update_actor(actor):
+def update_actor(actor, all_arrays=True):
     """Update actor.
 
     Parameters
     ----------
     actor : actor
+    all_arrays: bool, optional
+        if False, only vertices are updated
+        if True, all arrays associated to the actor are updated
+        Default: True
 
     """
-    actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+    pd = actor.GetMapper().GetInput()
+    pd.GetPoints().GetData().Modified()
+    if all_arrays:
+        nb_array = pd.GetPointData().GetNumberOfArrays()
+        for i in range(nb_array):
+            pd.GetPointData().GetArray(i).Modified()
 
 
 def get_bounds(actor):

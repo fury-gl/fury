@@ -335,7 +335,27 @@ def test_vertices_from_actor(interactive=False):
         scene.add(actr)
         window.show(scene)
     res_vertices = vertices_from_actor(actr)
+    res_vertices_vtk = vertices_from_actor(actr, as_vtk=True)
+
     npt.assert_array_almost_equal(expected, res_vertices)
+    npt.assert_equal(isinstance(res_vertices_vtk, vtk.vtkDoubleArray), True)
+
+    # test colors_from_actor:
+    l_colors = utils.colors_from_actor(actr)
+    l_colors_vtk = utils.colors_from_actor(actr, as_vtk=True)
+    l_colors_none = utils.colors_from_actor(actr, array_name='col')
+
+    npt.assert_equal(l_colors_none, None)
+    npt.assert_equal(isinstance(l_colors_vtk, vtk.vtkUnsignedCharArray), True)
+    npt.assert_equal(np.unique(l_colors, axis=0).shape, colors.shape)
+
+    l_array = utils.array_from_actor(actr, 'colors')
+    l_array_vtk = utils.array_from_actor(actr, 'colors', as_vtk=True)
+    l_array_none = utils.array_from_actor(actr, 'col')
+
+    npt.assert_array_equal(l_array, l_colors)
+    npt.assert_equal(l_array_none, None)
+    npt.assert_equal(isinstance(l_array_vtk, vtk.vtkUnsignedCharArray), True)
 
 
 def test_get_actor_from_primitive():
