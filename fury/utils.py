@@ -1081,26 +1081,3 @@ def get_bounds(actor):
 
     """
     return actor.GetMapper().GetInput().GetBounds()
-
-
-def interpolate_as_pbr(actor, metallic=1, roughness=.5):
-    """
-
-    Parameters
-    ----------
-    actor : actor
-    metallic : float, optional
-        Metallic or non-metallic (dielectric) shading computation value. Values
-        must be between 0.0 and 1.0.
-    roughness : float, optional
-        Parameter used to specify how glossy the actor should be. Values must
-        be between 0.0 and 1.0.
-
-    Returns
-    -------
-
-    """
-    actor.GetProperty().SetInterpolationToPBR()
-    actor.GetProperty().SetMetallic(metallic)
-    actor.GetProperty().SetRoughness(roughness)
-    return actor

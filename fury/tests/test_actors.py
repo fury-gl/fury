@@ -200,13 +200,15 @@ def test_surface():
 
 
 def test_contour_from_roi(interactive=False):
+
     # Render volume
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
     data[20:30, 25, 25] = 1.
     data[25, 20:30, 25] = 1.
     affine = np.eye(4)
-    surface = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]),
+    surface = actor.contour_from_roi(data, affine,
+                                     color=np.array([1, 0, 1]),
                                      opacity=.5)
     scene.add(surface)
 
@@ -223,7 +225,9 @@ def test_contour_from_roi(interactive=False):
     data2 = np.zeros((50, 50, 50))
     data2[20:30, 25, 25] = 1.
     data2[35:40, 25, 25] = 1.
-    surface2 = actor.contour_from_roi(data2, affine, color=np.array([0, 1, 1]),
+    affine = np.eye(4)
+    surface2 = actor.contour_from_roi(data2, affine,
+                                      color=np.array([0, 1, 1]),
                                       opacity=.5)
     scene2.add(surface2)
 
