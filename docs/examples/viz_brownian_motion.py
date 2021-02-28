@@ -59,6 +59,7 @@ def generatepath(point, delta, time_step):
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
+scene.background((1.0, 1.0, 1.0))
 scene.zoom(2.1)
 scene.set_camera(position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
@@ -72,14 +73,14 @@ showm.initialize()
 # Creating a container (cube actor) inside which the particle(s) move around
 
 center1 = np.array([[0, 0, 0]])
-container_actor = actor.cube(centers=center1, colors=(0, 0.8, 0.8, 0.1),
+container_actor = actor.cube(centers=center1, colors=(0.7, 0.7, 1.0, 0.3),
                              scales=6)
 scene.add(container_actor)
 
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(240, 540))
+tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
 
