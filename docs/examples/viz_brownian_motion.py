@@ -13,8 +13,9 @@ from fury import window, actor, ui
 import numpy as np
 from scipy.stats import norm
 
-np.random.seed(8)
-
+###############################################################################
+# initialize the random number generator
+np.random.seed(24)
 
 ###############################################################################
 # Variable(s) and their description-
@@ -27,28 +28,27 @@ np.random.seed(8)
 #        of the position has a normal distribution whose mean is the position
 #        at counter_step=0 and whose variance is delta**2*time_step.
 #        (default: 1.8)
-# num_particles: number of particles whose path will be plotted
-# common_origin: common origination point of the particles
-# coords: list of origination coordinates of the particles
-# colors: list of colors of the particles
+# num_particles: number of particles whose path will be plotted (default: 10)
+# coords: array which stores the coordinates of the particles
+#         Initial origin, common to all particles: [0, 0, 0]
+# colors: array which stores the colors of paths followed by the particles
+#         (randomly generated colors for each particle)
 
 total_time = 5
 num_total_steps = 300
 time_step = total_time/num_total_steps
 counter_step = 0
 delta = 1.8
-num_particles = 4
-common_origin = np.array([0, 0, 0])
-coords = [common_origin for i in range(num_particles)]
-colors = [window.colors.red, window.colors.blue, window.colors.yellow,
-          window.colors.green]
+num_particles = 10
+coords = np.zeros((num_particles, 3))
+colors = np.random.rand(num_particles, 3)
 
 ###############################################################################
 # Function that generates the path of the particles
 
 
-def generatepath(point, delta, time_step):
-    x, y, z = (point[i] for i in range(3))
+def generate_path(point, delta, time_step):
+    x, y, z = point
     x += norm.rvs(scale=delta**2*time_step)
     y += norm.rvs(scale=delta**2*time_step)
     z += norm.rvs(scale=delta**2*time_step)
@@ -60,7 +60,7 @@ def generatepath(point, delta, time_step):
 
 scene = window.Scene()
 scene.background((1.0, 1.0, 1.0))
-scene.zoom(2.1)
+scene.zoom(1.7)
 scene.set_camera(position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
 showm = window.ShowManager(scene,
@@ -72,9 +72,8 @@ showm.initialize()
 ###############################################################################
 # Creating a container (cube actor) inside which the particle(s) move around
 
-center1 = np.array([[0, 0, 0]])
-container_actor = actor.cube(centers=center1, colors=(0.7, 0.7, 1.0, 0.3),
-                             scales=6)
+container_actor = actor.box(centers=np.array([[0, 0, 0]]),
+                            colors=(0.7, 0.7, 1.0, 0.3), scales=6)
 scene.add(container_actor)
 
 ###############################################################################
@@ -92,14 +91,15 @@ def timer_callback(_obj, _event):
     global counter_step, num_particles, coords, delta, time_step, \
            num_total_steps
     counter_step += 1
+    all_particles_pos = []
 
     # Plotting the path followed by the particle(s)
     for i in range(num_particles):
-        coor_e = coords[i]
-        coords[i] = np.array(generatepath(coords[i], delta, time_step))
-        coordinates = np.array([[coords[i], coor_e]])
-        path_actor = actor.line(coordinates, colors[i], linewidth=3)
-        scene.add(path_actor)
+        coor_e = np.copy(coords[i])
+        coords[i] = generate_path(coords[i], delta, time_step)
+        all_particles_pos.append(np.array([coords[i], coor_e]))
+    path_actor = actor.line(all_particles_pos, colors, linewidth=3)
+    scene.add(path_actor)
     showm.render()
     scene.azimuth(2)
     if (counter_step == num_total_steps):
