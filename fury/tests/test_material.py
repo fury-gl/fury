@@ -34,7 +34,6 @@ def test_manifest_pbr(interactive=False):
                                               colors=color, smooth=smooth_type)
                 material.manifest_pbr(surface_actor)
                 scene.add(surface_actor)
-                # window.show(scene, size=(600, 600), reset_camera=False)
                 arr = window.snapshot(scene)
                 report = window.analyze_snapshot(arr)
                 npt.assert_equal(report.objects, 1)
@@ -453,7 +452,6 @@ def test_manifest_standard(interactive=False):
                 material.manifest_standard(surface_actor, ambient_level=.3,
                                            diffuse_level=.25)
                 scene.add(surface_actor)
-                # window.show(scene, size=(600, 600), reset_camera=False)
                 arr = window.snapshot(scene)
                 report = window.analyze_snapshot(arr)
                 npt.assert_equal(report.objects, 1)
@@ -744,6 +742,8 @@ def test_manifest_standard(interactive=False):
     material.manifest_standard(surface_actor, ambient_level=.3,
                                diffuse_level=.25)
     scene.add(tsa)
+    scene.reset_camera()
+    scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
