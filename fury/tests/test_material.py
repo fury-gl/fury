@@ -512,19 +512,6 @@ def test_manifest_standard(interactive=False):
 
     scene.clear()  # Reset scene
 
-    # Axes setup
-    axes = actor.axes()
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(axes)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
-
-    scene.clear()  # Reset scene
-
     # ODF slicer setup
     from fury.optpkg import optional_package
     from tempfile import mkstemp
@@ -784,6 +771,14 @@ def test_manifest_standard(interactive=False):
     material.manifest_standard(surface_actor, ambient_level=.3,
                                diffuse_level=.25)
     scene.add(sb_actor)
+    """
+
+    """
+    # Axes setup
+    axes = actor.axes()
+    material.manifest_standard(surface_actor, ambient_level=.3,
+                               diffuse_level=.25)
+    scene.add(axes)
     """
 
     """
