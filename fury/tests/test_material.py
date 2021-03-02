@@ -521,7 +521,7 @@ def test_manifest_standard(interactive=False):
     scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
+    npt.assert_equal(report.objects, 3)
 
     scene.clear()  # Reset scene
 
