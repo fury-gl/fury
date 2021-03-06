@@ -1,7 +1,7 @@
 include AUTHORS.rst
 include CONTRIBUTING.rst
 include LICENSE
-include README.rst
+include README.md
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

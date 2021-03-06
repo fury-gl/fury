@@ -27,7 +27,7 @@ if sys.version_info < (3, 4):
 
 here = path.abspath(path.dirname(__file__))
 
-with open(path.join(here, 'README.rst'), encoding='utf-8') as readme_file:
+with open(path.join(here, 'README.md'), encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 
@@ -37,6 +37,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description="Free Unified Rendering in Python",
     long_description=readme,
+    long_description_content_type='text/markdown',
     author="Eleftherios Garyfallidis",
     author_email='garyfallidis@gmail.com',
     url='https://github.com/fury-gl/fury',

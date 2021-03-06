@@ -46,6 +46,12 @@ if "%1" == "upload" (
 	exit /B
 )
 
+if "%1" == "html-no-examples" (
+	%SPHINXBUILD% -D plot_gallery=0 -b html %SPHINXOPTS% "%SOURCEDIR%" "%BUILDDIR%/html"
+	echo "Build finished. The HTML pages are in %BUILDDIR%"
+	exit /B
+)
+
 
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
 goto end

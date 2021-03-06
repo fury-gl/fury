@@ -1,0 +1,124 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: FURY Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 2 * * Mon'  # weekly
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.experimental }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-latest, macos-latest]
+        platform: [x64]
+        install_type: [pip, conda]
+        depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
+        pip-flags: ['']
+        option-flags: ['']
+        experimental: [false]
+        include:
+          - os: ubuntu-20.04
+            python-version: 3.8
+            depends: OPTIONAL_DEPS
+            option-flags: 'BUILD_DOCS DEPLOY_DOCS'
+            install_type: pip
+            experimental: true
+          - os: ubuntu-20.04
+            python-version: 3.8
+            install_type: pip
+            depends: OPTIONAL_DEPS
+            option-flags: 'COVERAGE'
+            experimental: false
+          - os: ubuntu-20.04
+            python-version: 3.8
+            install_type: pip
+            depends: OPTIONAL_DEPS
+            option-flags: 'USE_PRE'
+            experimental: true
+    env:
+      TRAVIS_PYTHON_VERSION: ${{ matrix.python-version }} # Keep backward compatibilty with Travis
+      TRAVIS_REPO_SLUG: ${{ github.repository }}          # Keep backward compatibilty with Travis
+      TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
+      TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
+      TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
+      DISPLAY: :99
+      GH_REF: github.com/fury-gl/fury-website.git
+      ENV_DIR: ${{ github.workspace }}/envs
+      INSTALL_TYPE: ${{ matrix.install_type }}
+      PRE_PIP_FLAGS: '--pre --extra-index-url https://pypi.anaconda.org/scipy-wheels-nightly/simple'
+      EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
+      OPTION_FLAGS: ${{ matrix.option-flags }}
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/cache@v2
+      if: startsWith(runner.os, 'Linux')
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.ccache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - uses: actions/cache@v2
+      if: startsWith(runner.os, 'macOS')
+      with:
+        path: ~/Library/Caches/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Setup Environment variables
+      run: |
+        if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
+        if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
+        if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}" ]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
+        python3 -c "import os; print(os.environ['OPTION_FLAGS'])"
+        echo "COVERAGE=$(python3 -c "import os; print(int('COVERAGE' in os.environ['OPTION_FLAGS'].split(' ')))")" >> $GITHUB_ENV;
+        echo "BUILD_DOCS=$(python3 -c "import os; print(int('BUILD_DOCS' in os.environ['OPTION_FLAGS'].split(' ')))")" >> $GITHUB_ENV;
+        echo "DEPLOY_DOCS=$(python3 -c "import os; print(int('DEPLOY_DOCS' in os.environ['OPTION_FLAGS'].split(' ')))")" >> $GITHUB_ENV;
+        echo "USE_PRE=$(python3 -c "import os; print(int('USE_PRE' in os.environ['OPTION_FLAGS'].split(' ')))")" >> $GITHUB_ENV;
+    - name: Print some Environment variables
+      run: |
+        echo "TRAVIS_OS_NAME: ${TRAVIS_OS_NAME}"
+        echo "TRAVIS_EVENT_TYPE: ${TRAVIS_EVENT_TYPE}"
+        echo "ENV_DIR: ${ENV_DIR}"
+        echo "OPTIONAL_DEPS: ${OPTIONAL_DEPS}"
+        echo "COVERAGE: ${COVERAGE}"
+        echo "BUILD_DOCS: ${BUILD_DOCS}"
+        echo "DEPLOY_DOCS: ${DEPLOY_DOCS}"
+        echo "USE_PRE: ${USE_PRE}"
+    - name: Start Xvfb
+      if: startsWith(matrix.os,'ubuntu')
+      run: |
+        sudo apt-get install libgl1-mesa-dev xvfb
+        Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
+    - name: Install dependencies
+      run: |
+        bash ci/travis/install.sh
+    - name: Install FURY and Test it!
+      run: |
+        bash ci/travis/script.sh
+    - name: Deploy docs
+      if: success() && github.ref == 'refs/heads/master'
+      run: |
+        bash ci/travis/deploy_docs.sh
