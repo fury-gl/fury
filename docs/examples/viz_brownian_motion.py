@@ -3,19 +3,15 @@
 Brownian motion
 ======================================================================
 Brownian motion, or pedesis, is the random motion of particles suspended in
-a medium. In this animation, path followed by 4 particles exhibiting brownian
+a medium. In this animation, path followed by 20 particles exhibiting brownian
 motion in 3D is plotted.
 
 Importing necessary modules
 """
 
-from fury import window, actor, ui
+from fury import window, actor, ui, utils
 import numpy as np
 from scipy.stats import norm
-
-###############################################################################
-# initialize the random number generator
-np.random.seed(24)
 
 ###############################################################################
 # Variable(s) and their description-
@@ -28,36 +24,51 @@ np.random.seed(24)
 #        of the position has a normal distribution whose mean is the position
 #        at counter_step=0 and whose variance is delta**2*time_step.
 #        (default: 1.8)
-# num_particles: number of particles whose path will be plotted (default: 10)
-# coords: array which stores the coordinates of the particles
-#         Initial origin, common to all particles: [0, 0, 0]
-# colors: array which stores the colors of paths followed by the particles
-#         (randomly generated colors for each particle)
+# num_particles: number of particles whose path will be plotted (default: 20)
 
 total_time = 5
 num_total_steps = 300
 time_step = total_time/num_total_steps
 counter_step = 0
 delta = 1.8
-num_particles = 10
-coords = np.zeros((num_particles, 3))
-colors = np.random.rand(num_particles, 3)
+num_particles = 20
 
 ###############################################################################
-# Function that generates the path of the particles
+# class particle is used to store and update coordinates of the particles (the
+# path of the particles)
 
 
-def generate_path(point, delta, time_step):
-    x, y, z = point
-    x += norm.rvs(scale=delta**2*time_step)
-    y += norm.rvs(scale=delta**2*time_step)
-    z += norm.rvs(scale=delta**2*time_step)
-    return x, y, z
+class particle:
+    def __init__(self, colors, num_total_steps=300, total_time=5, delta=1.8,
+                 thickness=3):
+        self.position = np.zeros((num_total_steps, 3))
+        self.colors = colors
+        self.delta = delta
+        self.num_total_steps = num_total_steps
+        self.time_step = total_time/num_total_steps
+        self.path_actor = actor.line([self.position], colors, linewidth=3)
+        self.vertices = utils.vertices_from_actor(self.path_actor)
+        self.vcolors = utils.colors_from_actor(self.path_actor, 'colors')
+        self.no_vertices_per_point = len(self.vertices)/num_total_steps
+        nvpp = self.no_vertices_per_point
+        self.initial_vertices = self.vertices.copy() - np.repeat(self.position,
+                                                                 nvpp, axis=0)
+
+    def update_path(self, counter_step):
+        if(counter_step < self.num_total_steps):
+            x, y, z = self.position[counter_step-1]
+            x += norm.rvs(scale=self.delta**2 * self.time_step)
+            y += norm.rvs(scale=self.delta**2 * self.time_step)
+            z += norm.rvs(scale=self.delta**2 * self.time_step)
+            self.position[counter_step] = [x, y, z]
+            self.position[counter_step+1:] = self.position[counter_step]
+            self.vertices[:] = self.initial_vertices + \
+                np.repeat(self.position, self.no_vertices_per_point, axis=0)
+            utils.update_actor(self.path_actor)
 
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position
-
 scene = window.Scene()
 scene.background((1.0, 1.0, 1.0))
 scene.zoom(1.7)
@@ -68,38 +79,36 @@ showm = window.ShowManager(scene,
                            order_transparent=True)
 showm.initialize()
 
+###############################################################################
+# Creating a list of particle objects
+list_particles = []
+for i in range(num_particles):
+    _particle = particle(colors=np.random.rand(1, 3),
+                         num_total_steps=num_total_steps,
+                         total_time=total_time)
+    list_particles.append(_particle)
+    scene.add(list_particles[i].path_actor)
 
 ###############################################################################
 # Creating a container (cube actor) inside which the particle(s) move around
-
 container_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                            colors=(0.7, 0.7, 1.0, 0.3), scales=6)
+                            colors=(0.5, 0.9, 0.7, 0.4), scales=6)
 scene.add(container_actor)
 
 ###############################################################################
 # Initializing text box to display the name of the animation
-
 tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
 
 
 ###############################################################################
-# The path of the particles exhibiting Brownian motion is plotted here.
-
+# The path of the particles exhibiting Brownian motion is plotted here
 def timer_callback(_obj, _event):
-    global counter_step, num_particles, coords, delta, time_step, \
-           num_total_steps
+    global counter_step, l_particles
     counter_step += 1
-    all_particles_pos = []
-
-    # Plotting the path followed by the particle(s)
-    for i in range(num_particles):
-        coor_e = np.copy(coords[i])
-        coords[i] = generate_path(coords[i], delta, time_step)
-        all_particles_pos.append(np.array([coords[i], coor_e]))
-    path_actor = actor.line(all_particles_pos, colors, linewidth=3)
-    scene.add(path_actor)
+    for _particle in list_particles:
+        _particle.update_path(counter_step=counter_step)
     showm.render()
     scene.azimuth(2)
     if (counter_step == num_total_steps):
@@ -110,8 +119,8 @@ def timer_callback(_obj, _event):
 
 
 showm.add_timer_callback(True, 30, timer_callback)
-
 interactive = False
 if interactive:
     showm.start()
+
 window.record(showm.scene, size=(600, 600), out_path="viz_brownian_motion.png")
