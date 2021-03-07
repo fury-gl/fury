@@ -105,7 +105,7 @@ scene.add(tb)
 ###############################################################################
 # The path of the particles exhibiting Brownian motion is plotted here
 def timer_callback(_obj, _event):
-    global counter_step, l_particles
+    global counter_step, list_particles
     counter_step += 1
     for _particle in list_particles:
         _particle.update_path(counter_step=counter_step)
