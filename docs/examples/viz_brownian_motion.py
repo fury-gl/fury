@@ -60,8 +60,7 @@ class particle:
             x += norm.rvs(scale=self.delta**2 * self.time_step)
             y += norm.rvs(scale=self.delta**2 * self.time_step)
             z += norm.rvs(scale=self.delta**2 * self.time_step)
-            self.position[counter_step] = [x, y, z]
-            self.position[counter_step+1:] = self.position[counter_step]
+            self.position[counter_step: ] = [x, y, z]
             self.vertices[:] = self.initial_vertices + \
                 np.repeat(self.position, self.no_vertices_per_point, axis=0)
             utils.update_actor(self.path_actor)
