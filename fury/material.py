@@ -1,3 +1,6 @@
+import warnings
+
+
 def manifest_pbr(actor, metallicity=1, roughness=.5):
     """ Applies the Physically Based Rendering properties to the selected
     actor.
@@ -50,3 +53,6 @@ def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
 
     if interpolation.lower() == 'phong':
         prop.SetInterpolationToPhong()
+    else:
+        warnings.warn('Unknown interpolation. Ignoring "{}" interpolation '
+                      'option.'.format(interpolation))
