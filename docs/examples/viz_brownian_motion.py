@@ -44,13 +44,13 @@ path_thickness = 3
 
 class particle:
     def __init__(self, colors, num_total_steps=300, total_time=5, delta=1.8,
-                 path_thickness=2):
+                 path_thickness=3):
         self.position = np.zeros((num_total_steps, 3))
         self.colors = colors
         self.delta = delta
         self.num_total_steps = num_total_steps
         self.time_step = total_time / num_total_steps
-        self.path_actor = actor.line([self.position], colors, 
+        self.path_actor = actor.line([self.position], colors,
                                      linewidth=path_thickness)
         self.vertices = utils.vertices_from_actor(self.path_actor)
         self.vcolors = utils.colors_from_actor(self.path_actor, 'colors')
