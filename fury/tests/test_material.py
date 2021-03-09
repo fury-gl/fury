@@ -1,15 +1,19 @@
 from fury import actor, material, window
+from fury.optpkg import optional_package
+from scipy.spatial import Delaunay
 
 
+import math
 import numpy as np
 import numpy.testing as npt
+import random
+
+
+dipy, have_dipy, _ = optional_package('dipy')
 
 
 def test_manifest_pbr(interactive=False):
     # Setup surface
-    import math
-    import random
-    from scipy.spatial import Delaunay
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -85,11 +89,9 @@ def test_manifest_pbr(interactive=False):
     scene.clear()  # Reset scene
 
     # ODF slicer setup
-    from fury.optpkg import optional_package
-    from tempfile import mkstemp
-    dipy, have_dipy, _ = optional_package('dipy')
     if have_dipy:
         from dipy.data import get_sphere
+        from tempfile import mkstemp
         sphere = get_sphere('symmetric362')
         shape = (11, 11, 11, sphere.vertices.shape[0])
         fid, fname = mkstemp(suffix='_odf_slicer.mmap')
@@ -116,8 +118,6 @@ def test_manifest_pbr(interactive=False):
     scene.clear()  # Reset scene
 
     # Tensor slicer setup
-    from fury.optpkg import optional_package
-    dipy, have_dipy, _ = optional_package('dipy')
     if have_dipy:
         from dipy.data import get_sphere
         sphere = get_sphere('symmetric724')
@@ -424,9 +424,6 @@ def test_manifest_pbr(interactive=False):
 
 def test_manifest_standard(interactive=False):
     # Setup surface
-    import math
-    import random
-    from scipy.spatial import Delaunay
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -513,11 +510,9 @@ def test_manifest_standard(interactive=False):
     scene.clear()  # Reset scene
 
     # ODF slicer setup
-    from fury.optpkg import optional_package
-    from tempfile import mkstemp
-    dipy, have_dipy, _ = optional_package('dipy')
     if have_dipy:
         from dipy.data import get_sphere
+        from tempfile import mkstemp
         sphere = get_sphere('symmetric362')
         shape = (11, 11, 11, sphere.vertices.shape[0])
         fid, fname = mkstemp(suffix='_odf_slicer.mmap')
@@ -545,8 +540,6 @@ def test_manifest_standard(interactive=False):
     scene.clear()  # Reset scene
 
     # Tensor slicer setup
-    from fury.optpkg import optional_package
-    dipy, have_dipy, _ = optional_package('dipy')
     if have_dipy:
         from dipy.data import get_sphere
         sphere = get_sphere('symmetric724')
