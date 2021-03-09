@@ -12,8 +12,7 @@ import random
 dipy, have_dipy, _ = optional_package('dipy')
 
 
-def test_manifest_pbr(interactive=False):
-    # Setup surface
+def _generate_surface():
     size = 11
     vertices = list()
     for i in range(-size, size):
@@ -33,14 +32,21 @@ def test_manifest_pbr(interactive=False):
     for smooth_type in s_loop:
         for face in f_loop:
             for color in c_loop:
-                scene = window.Scene(background=(1, 1, 1))
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
-                material.manifest_pbr(surface_actor)
-                scene.add(surface_actor)
-                arr = window.snapshot(scene)
-                report = window.analyze_snapshot(arr)
-                npt.assert_equal(report.objects, 1)
+    return surface_actor
+
+
+def test_manifest_pbr(interactive=False):
+    scene = window.Scene()  # Setup scene
+
+    # Setup surface
+    surface_actor = _generate_surface()
+    material.manifest_pbr(surface_actor)
+    scene.add(surface_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
     scene.clear()  # Reset scene
 
@@ -423,35 +429,16 @@ def test_manifest_pbr(interactive=False):
 
 
 def test_manifest_standard(interactive=False):
+    scene = window.Scene()  # Setup scene
+
     # Setup surface
-    size = 11
-    vertices = list()
-    for i in range(-size, size):
-        for j in range(-size, size):
-            fact1 = - math.sin(i) * math.cos(j)
-            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
-            z_coord = -abs(fact1 * fact2)
-            vertices.append([i, j, z_coord])
-    c_arr = np.random.rand(len(vertices), 3)
-    random.shuffle(vertices)
-    vertices = np.array(vertices)
-    tri = Delaunay(vertices[:, [0, 1]])
-    faces = tri.simplices
-    c_loop = [None, c_arr]
-    f_loop = [None, faces]
-    s_loop = [None, "butterfly", "loop"]
-    for smooth_type in s_loop:
-        for face in f_loop:
-            for color in c_loop:
-                scene = window.Scene(background=(1, 1, 1))
-                surface_actor = actor.surface(vertices, faces=face,
-                                              colors=color, smooth=smooth_type)
-                material.manifest_standard(surface_actor, ambient_level=.3,
-                                           diffuse_level=.25)
-                scene.add(surface_actor)
-                arr = window.snapshot(scene)
-                report = window.analyze_snapshot(arr)
-                npt.assert_equal(report.objects, 1)
+    surface_actor = _generate_surface()
+    material.manifest_standard(surface_actor, ambient_level=.3,
+                               diffuse_level=.25)
+    scene.add(surface_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
     scene.clear()  # Reset scene
 
