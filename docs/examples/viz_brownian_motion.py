@@ -36,7 +36,7 @@ total_time = 5
 num_total_steps = 300
 counter_step = 0
 delta = 1.8
-num_particles = 100
+num_particles = 20
 path_thickness = 3
 origin = [0, 0, 0]
 
