@@ -29,13 +29,16 @@ from scipy.stats import norm
 # num_particles: number of particles whose path will be plotted (default: 20)
 # path_thickness: thickness of line(s) that will be used to plot the path(s)
 #                 of the particle(s) (default: 3)
+# origin: coordinate from which the the particle(s) begin the motion
+#         (default: [0, 0, 0])
 
 total_time = 5
 num_total_steps = 300
 counter_step = 0
 delta = 1.8
-num_particles = 20
+num_particles = 100
 path_thickness = 3
+origin = [0, 0, 0]
 
 ###############################################################################
 # class particle is used to store and update coordinates of the particles (the
@@ -43,9 +46,10 @@ path_thickness = 3
 
 
 class particle:
-    def __init__(self, colors, num_total_steps=300, total_time=5, delta=1.8,
-                 path_thickness=3):
-        self.position = np.zeros((num_total_steps, 3))
+    def __init__(self, colors, origin=[0, 0, 0], num_total_steps=300,
+                 total_time=5, delta=1.8, path_thickness=3):
+        origin = np.asarray(origin, dtype=float)
+        self.position = np.tile(origin, (num_total_steps, 1))
         self.colors = colors
         self.delta = delta
         self.num_total_steps = num_total_steps
@@ -89,7 +93,7 @@ showm.initialize()
 
 list_particles = []
 for i in range(num_particles):
-    _particle = particle(colors=np.random.rand(1, 3),
+    _particle = particle(colors=np.random.rand(1, 3), origin=origin,
                          num_total_steps=num_total_steps,
                          total_time=total_time, path_thickness=path_thickness)
     list_particles.append(_particle)
