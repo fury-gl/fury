@@ -684,7 +684,7 @@ def test_peak_slicer(interactive=False):
 
     scene.rm_all()
 
-    peak_actor = actor.peak_slicer(
+    peak_actor_sym = actor.peak_slicer(
         peak_dirs,
         peak_values,
         mask=None,
@@ -696,13 +696,27 @@ def test_peak_slicer(interactive=False):
         lod_points=10 ** 4,
         lod_points_size=3)
 
-    scene.add(peak_actor)
+    peak_actor_asym = actor.peak_slicer(
+        peak_dirs,
+        peak_values,
+        mask=None,
+        affine=np.diag([3, 2, 1, 1]),
+        colors=None,
+        opacity=0.8,
+        linewidth=3,
+        lod=True,
+        lod_points=10 ** 4,
+        lod_points_size=3,
+        symmetric=False)
+
+    scene.add(peak_actor_sym)
+    scene.add(peak_actor_asym)
     scene.add(actor.axes((11, 11, 11)))
     if interactive:
         window.show(scene)
 
     report = window.analyze_scene(scene)
-    ex = ['vtkLODActor', 'vtkOpenGLActor']
+    ex = ['vtkLODActor', 'vtkLODActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
     # 6d data

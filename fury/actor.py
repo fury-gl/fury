@@ -1096,8 +1096,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 
 
 def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
-                colors=(1, 0, 0), opacity=1., linewidth=1,
-                lod=False, lod_points=10 ** 4, lod_points_size=3):
+                colors=(1, 0, 0), opacity=1., linewidth=1, lod=False,
+                lod_points=10 ** 4, lod_points_size=3, symmetric=True):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1115,13 +1115,10 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     colors : tuple or None
         Default red color. If None then every peak gets an orientation color
         in similarity to a DEC map.
-
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque)
-
     linewidth : float, optional
         Line thickness. Default is 1.
-
     lod : bool
         Use vtkLODActor(level of detail) rather than vtkActor.
         Default is False. Level of detail actors do not render the full
@@ -1130,6 +1127,10 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         Number of points to be used when LOD is in effect. Default is 10000.
     lod_points_size : int
         Size of points when lod is in effect. Default is 3.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     Returns
     -------
@@ -1183,9 +1184,14 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                         pv = peaks_values[tuple(center)][i]
                     else:
                         pv = 1.
-                    symm = np.vstack((-peaks_dirs[tuple(center)][i] * pv + xyz,
-                                      peaks_dirs[tuple(center)][i] * pv + xyz))
-                    list_dirs.append(symm)
+                    if symmetric:
+                        dirs = np.vstack(
+                            (-peaks_dirs[tuple(center)][i] * pv + xyz,
+                             peaks_dirs[tuple(center)][i] * pv + xyz))
+                    else:
+                        dirs = np.vstack(
+                            (xyz, peaks_dirs[tuple(center)][i] * pv + xyz))
+                    list_dirs.append(dirs)
 
             self.line = line(list_dirs, colors=colors,
                              opacity=opacity, linewidth=linewidth,
