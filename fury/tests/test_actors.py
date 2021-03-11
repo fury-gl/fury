@@ -1292,9 +1292,9 @@ def test_matplotlib_figure():
     display = window.snapshot(scene, 'test_mpl.png', order_transparent=False,
                               offscreen=True)
     res = window.analyze_snapshot(display, bg_color=(255, 255, 255.),
-                                  colors=[(31, 119, 180), (255, 0, 0)],
+                                  colors=[(31, 119, 180)],
                                   find_objects=False)
-    npt.assert_equal(res.colors_found, [True, True])
+    npt.assert_equal(res.colors_found, [True])
 
 
 def test_superquadric_actor(interactive=False):
@@ -1430,6 +1430,7 @@ def test_sdf_actor(interactive=False):
 
 
 if __name__ == '__main__':
-
+    
+    pass
     # test_matplotlib_figure()
-    test_grid()
+    # test_grid()
