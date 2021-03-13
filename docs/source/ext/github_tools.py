@@ -205,6 +205,11 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         # contributor_dict["weekly_commits"] = contributor["weeks"]
         contributor_stats["contributors"].insert(0, contributor_dict)
 
+    contributor_stats["contributors"] = sorted(
+        contributor_stats["contributors"],
+        key=lambda x: x.get('nb_commits'),
+        reverse=True)
+
     contributor_stats["total_commits"] = cumulative_commits
     return contributor_stats
 
