@@ -58,7 +58,8 @@ def particle(colors, origin=[0, 0, 0], num_total_steps=300,
     path_actor.num_total_steps = num_total_steps
     path_actor.time_step = total_time / num_total_steps
     path_actor.vertices = utils.vertices_from_actor(path_actor)
-    path_actor.no_vertices_per_point = len(path_actor.vertices) / num_total_steps
+    path_actor.no_vertices_per_point = \
+        len(path_actor.vertices) / num_total_steps
     path_actor.initial_vertices = path_actor.vertices.copy() - \
         np.repeat(position, path_actor.no_vertices_per_point, axis=0)
     return path_actor
