@@ -1,6 +1,6 @@
 import os
 import itertools
-from tempfile import mkstemp, TemporaryDirectory as InTemporaryDirectory
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import pytest
 import numpy as np
@@ -13,7 +13,6 @@ from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
-from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
@@ -322,7 +321,6 @@ def test_contour_from_roi(interactive=False):
                                      " vs Azure macOS and an issue with"
                                      " vtkAssembly + actor opacity.")
 def test_contour_from_label(interactive=False):
-
     # Render volumne
     scene = window.Scene()
     data = np.zeros((50, 50, 50))
@@ -654,7 +652,6 @@ def test_odf_slicer(interactive=False):
 
 
 def test_peak_slicer(interactive=False):
-
     _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
     # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape
 
@@ -894,7 +891,6 @@ def test_points(interactive=False):
 
 
 def test_labels(interactive=False):
-
     text_actor = actor.label("Hello")
 
     scene = window.Scene()
@@ -909,7 +905,6 @@ def test_labels(interactive=False):
 
 
 def test_spheres(interactive=False):
-
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
     opacity = 0.5
@@ -940,7 +935,6 @@ def test_spheres(interactive=False):
 
 
 def test_cones_vertices_faces(interactive=False):
-
     scene = window.Scene()
     centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
     directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
@@ -1106,7 +1100,6 @@ def test_container():
 
 
 def test_grid(_interactive=False):
-
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
     contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
@@ -1204,7 +1197,6 @@ def test_grid(_interactive=False):
 
 
 def test_direct_sphere_mapping():
-
     arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
     rows, cols, _ = arr.shape
 
@@ -1227,7 +1219,6 @@ def test_direct_sphere_mapping():
 
 
 def test_texture_mapping():
-
     arr = np.zeros((512, 212, 3), dtype='uint8')
     arr[:256, :] = np.array([255, 0, 0])
     arr[256:, :] = np.array([0, 255, 0])
@@ -1243,7 +1234,6 @@ def test_texture_mapping():
 
 
 def test_figure_vs_texture_actor():
-
     arr = (255 * np.ones((512, 212, 4))).astype('uint8')
 
     arr[20:40, 20:40, 3] = 0
@@ -1263,7 +1253,6 @@ def test_figure_vs_texture_actor():
 
 @pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
 def test_matplotlib_figure():
-
     names = ['group_a', 'group_b', 'group_c']
     values = [1, 10, 100]
 
@@ -1432,11 +1421,3 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 4)
-
-
-if __name__ == '__main__':
-
-    pass
-    # test_matplotlib_figure()
-    # test_grid()
-
