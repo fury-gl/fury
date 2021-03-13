@@ -4,11 +4,10 @@ Motion of a charged particle in a combined magnetic and electric field
 ======================================================================
 
 A charged particle follows a curved path in a magnetic field.
-In an electric field, the particle tends to accelerate in a direction parallel/
-antiparallel to the electric field depending on the nature of charge on the
-particle.
-In a combined electric and magnetic field, the particle moves along a helical
-path.
+In an electric field, the particle tends to accelerate in a direction
+parallel/antiparallel to the electric field depending on the nature of
+charge on the particle. In a combined electric and magnetic field,
+the particle moves along a helical path.
 
 In this animation, there's a magnetic and an electric field present in +x
 direction under whose influence the positively charged particle follows a
@@ -23,17 +22,20 @@ import itertools
 
 
 ###############################################################################
-# Variable(s) and their description-
-# radius_particle: radius of the point that will represent the particle
-#                  (default = 0.08)
-# initial_velocity: initial velocity of the particle along +x (default = 0.09)
-# acc: acceleration of the particle along +x (due to the electric field)
-#      (default = 0.004)
-# time: time (default time i.e. time at beginning of the animation = 0)
-# incre_time: value by which time is incremented for each call of
-#             timer_callback (default = 0.09)
-# angular_frq: angular frequency (default = 0.1)
-# phase_angle: phase angle (default = 0.002)
+# Let's define some variable and their description:
+#
+# * `radius_particle`: radius of the point that will represent the particle
+#   (default = 0.08)
+# * `initial_velocity`: initial velocity of the particle along +x
+#   (default = 0.09)
+# * `acc`: acceleration of the particle along +x (due to the electric field)
+#   (default = 0.004)
+# * `time`: time (default time i.e. time at beginning of the animation = 0)
+# * `incre_time`: value by which time is incremented for each call of
+#   timer_callback (default = 0.09)
+# * `angular_frq`: angular frequency (default = 0.1)
+# * `phase_angle`: phase angle (default = 0.002)
+#
 
 radius_particle = 0.08
 initial_velocity = 0.09
@@ -109,7 +111,7 @@ counter = itertools.count()
 ###############################################################################
 # end is used to decide when to end the animation
 
-end = 500
+end = 200
 
 ###############################################################################
 # This will be useful for plotting path of the particle
@@ -155,8 +157,5 @@ def timer_callback(_obj, _event):
 
 
 showm.add_timer_callback(True, 15, timer_callback)
-
-interactive = False
-if interactive:
-    showm.start()
+showm.start()
 window.record(showm.scene, size=(800, 600), out_path="viz_helical_motion.png")
