@@ -1160,6 +1160,7 @@ def test_grid(_interactive=False):
     show_m.initialize()
 
     def timer_callback(_obj, _event):
+        nonlocal counter
         cnt = next(counter)
         # show_m.scene.zoom(1)
         show_m.render()
