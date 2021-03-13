@@ -1089,8 +1089,8 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
     if find_objects is True:
         weights = [0.299, 0.587, 0.144]
         gray = np.dot(im[..., :3], weights)
-        bg_color = im[0, 0]
-        background = np.dot(bg_color, weights)
+        bg_color2 = im[0, 0]
+        background = np.dot(bg_color2, weights)
 
         if strel is None:
             strel = np.array([[1, 1, 1],
