@@ -144,24 +144,25 @@ def test_slicer(verbose=False):
     data = (255 * np.random.rand(50, 50, 50))
     affine = np.diag([1, 3, 2, 1])
 
-    from dipy.align.reslice import reslice
+    if have_dipy:
+        from dipy.align.reslice import reslice
 
-    data2, affine2 = reslice(data, affine, zooms=(1, 3, 2),
-                             new_zooms=(1, 1, 1))
+        data2, affine2 = reslice(data, affine, zooms=(1, 3, 2),
+                                 new_zooms=(1, 1, 1))
 
-    slicer = actor.slicer(data2, affine2, interpolation='linear')
-    slicer.display(None, None, 25)
+        slicer = actor.slicer(data2, affine2, interpolation='linear')
+        slicer.display(None, None, 25)
 
-    scene.add(slicer)
-    scene.reset_camera()
-    scene.reset_clipping_range()
+        scene.add(slicer)
+        scene.reset_camera()
+        scene.reset_clipping_range()
 
-    # window.show(scene, reset_camera=False)
-    arr = window.snapshot(scene, offscreen=True)
-    report = window.analyze_snapshot(arr, find_objects=True)
-    npt.assert_equal(report.objects, 1)
-    npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
-                           np.array(slicer.shape))
+        # window.show(scene, reset_camera=False)
+        arr = window.snapshot(scene, offscreen=True)
+        report = window.analyze_snapshot(arr, find_objects=True)
+        npt.assert_equal(report.objects, 1)
+        npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
+                               np.array(slicer.shape))
 
 
 def test_surface():
@@ -606,7 +607,7 @@ def test_odf_slicer(interactive=False):
         window.show(scene)
 
     # Test that SH coefficients input works
-    B = sh_to_sf_matrix(sphere, return_inv=False)
+    B = sh_to_sf_matrix(sphere, sh_order=4, return_inv=False)
     odfs = np.zeros((11, 11, 11, B.shape[0]))
     odfs[..., 0] = 1.0
     odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B)
@@ -643,7 +644,7 @@ def test_odf_slicer(interactive=False):
 
     # Test that we can change the sphere on an active actor
     new_sphere = get_sphere('symmetric362')
-    new_B = sh_to_sf_matrix(new_sphere, return_inv=False)
+    new_B = sh_to_sf_matrix(new_sphere, sh_order=4, return_inv=False)
     odf_actor.update_sphere(new_sphere.vertices, new_sphere.faces, new_B)
     if interactive:
         window.show(scene)
@@ -1434,7 +1435,7 @@ def test_sdf_actor(interactive=False):
 
 
 if __name__ == '__main__':
-    
+
     pass
     # test_matplotlib_figure()
     # test_grid()
