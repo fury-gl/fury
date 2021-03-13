@@ -1,24 +1,10 @@
 # from fury import actor, window
 from fury import window
-import numpy as np
 import vtk
-from fury.utils import lines_to_vtk_polydata, set_input
 
 
-def StippledLine(start_pos, end_pos, lineStipplePattern,
-                 lineStippleRepeat, colors):
-    lines = vtk.vtkLineSource()
-    lines.SetResolution(11)
-    lines.SetPoint1(start_pos)
-    lines.SetPoint2(end_pos)
-
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(lines.GetOutputPort())
-
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(colors)
-
+def StippledLine(act, lineStipplePattern,
+                 lineStippleRepeat):
     image = vtk.vtkImageData()
     texture = vtk.vtkTexture()
 
@@ -54,34 +40,27 @@ def StippledLine(start_pos, end_pos, lineStipplePattern,
     texture.InterpolateOff()
     texture.RepeatOn()
 
-    actor.SetTexture(texture)
-    return actor
+    act.SetTexture(texture)
+    return act
 
 
-lines = [np.random.rand(2, 3), np.random.rand(2, 3)]
-colors = None
-linewidth = 1
-lod_points = 10 ** 4
-lod_points_size = 3
+lines = vtk.vtkLineSource()
+lines.SetResolution(11)
+start_pos = [0, 0, 0]
+end_pos = [1, 1, 0]
+lines.SetPoint1(start_pos)
+lines.SetPoint2(end_pos)
 
+mapper = vtk.vtkPolyDataMapper()
+mapper.SetInputConnection(lines.GetOutputPort())
 
-poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
-next_input = poly_data
+line_actor = vtk.vtkActor()
+line_actor.SetMapper(mapper)
+line_actor.GetProperty().SetColor([1, 0, 0])
 
-poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
-poly_mapper.ScalarVisibilityOn()
-poly_mapper.SetScalarModeToUsePointFieldData()
-poly_mapper.SelectColorArray("colors")
-poly_mapper.Update()
-
-act = vtk.vtkLODActor()
-act.SetNumberOfCloudPoints(lod_points)
-act.GetProperty().SetPointSize(lod_points_size)
-
-act.SetMapper(poly_mapper)
-act.GetProperty().SetLineWidth(linewidth)
+StippledLine(line_actor, 0xAAAA, 2)
 
 
 scene = window.Scene()
-scene.add(act)
+scene.add(line_actor)
 window.show(scene)

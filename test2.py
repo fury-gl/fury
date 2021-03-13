@@ -5,20 +5,8 @@ import vtk
 from fury.utils import lines_to_vtk_polydata, set_input
 
 
-def StippledLine(start_pos, end_pos, lineStipplePattern,
-                 lineStippleRepeat, colors):
-    lines = vtk.vtkLineSource()
-    lines.SetResolution(11)
-    lines.SetPoint1(start_pos)
-    lines.SetPoint2(end_pos)
-
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(lines.GetOutputPort())
-
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetColor(colors)
-
+def StippledLine(act, lineStipplePattern,
+                 lineStippleRepeat):
     image = vtk.vtkImageData()
     texture = vtk.vtkTexture()
 
@@ -54,8 +42,10 @@ def StippledLine(start_pos, end_pos, lineStipplePattern,
     texture.InterpolateOff()
     texture.RepeatOn()
 
-    actor.SetTexture(texture)
-    return actor
+    # act.SetTexture(texture)
+    # print(act)
+    print(act.GetLODMappers())
+    return act
 
 
 lines = [np.random.rand(2, 3), np.random.rand(2, 3)]
@@ -64,24 +54,20 @@ linewidth = 1
 lod_points = 10 ** 4
 lod_points_size = 3
 
-
 poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
 next_input = poly_data
-
 poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
-poly_mapper.ScalarVisibilityOn()
-poly_mapper.SetScalarModeToUsePointFieldData()
-poly_mapper.SelectColorArray("colors")
-poly_mapper.Update()
 
 act = vtk.vtkLODActor()
 act.SetNumberOfCloudPoints(lod_points)
-act.GetProperty().SetPointSize(lod_points_size)
+act.GetProperty().SetPointSize(lod_points_size*2)
 
 act.SetMapper(poly_mapper)
 act.GetProperty().SetLineWidth(linewidth)
 
+StippledLine(act, 0xAAAA, 2)
+
 
 scene = window.Scene()
 scene.add(act)
-window.show(scene)
+# window.show(scene)
