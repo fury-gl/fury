@@ -1672,6 +1672,46 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
+def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+                    scales=1):
+    """Visualize one or many regular triangular prisms with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Triangular prism positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector(s) of the triangular prism(s)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        Triangular prism size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(3, 1)
+    >>> actor = actor.triangularprism(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_triangularprism()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    tri_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return tri_actor
+
+
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                    scales=1):
     """Visualize one or many octagonal prisms with different features.
