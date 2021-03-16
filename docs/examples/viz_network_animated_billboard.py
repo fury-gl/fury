@@ -30,6 +30,7 @@ from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         set_polydata_colors, colors_from_actor,
                         vertices_from_actor, update_actor, compute_bounds,
                         vtk_vertices_from_actor, vtk_array_from_actor)
+from fury.shaders import shader_to_actor
 
 ###############################################################################
 # Let's generate a Watts-Strogatz random network as an example
@@ -49,8 +50,8 @@ for i in range(vertices_count):
             edges_list.append((i, (i+k+1) % vertices_count))
         else:
             while(True):
-                random_from = random.randint(0, vertices_count)
-                random_to = random.randint(0, vertices_count)
+                random_from = random.randint(0, vertices_count-1)
+                random_to = random.randint(0, vertices_count-1)
                 if(random_from != random_to):
                     break
             edges_list.append((random_from, random_to))
@@ -170,13 +171,14 @@ def new_layout_timer(showm, edges_list, vertices_count,
         vtk_centers_geo.Modified()
 
         if(selected_node is not None):
-            selected_actor.SetPosition(positions[selected_node])
+            if(selected_node < len(positions)):  # Fix index mismatch bug
+                selected_actor_label.SetPosition(positions[selected_node])
 
         update_actor(nodes_actor)
         compute_bounds(nodes_actor)
 
-        compute_bounds(selected_actor)
-        update_actor(selected_actor)
+        compute_bounds(selected_actor_label)
+        update_actor(selected_actor_label)
         showm.scene.reset_clipping_range()
         showm.render()
 
@@ -192,14 +194,17 @@ scene = window.Scene()
 camera = scene.camera()
 
 selected_node = None
-selected_actor = actor.label(
+selected_actor_label = actor.label(
     "Origin", pos=centers[0], color=(1, 1, 1), scale=(4, 4, 4),)
-selected_actor.PickableOff()
-selected_actor.SetCamera(scene.GetActiveCamera())
+shader_to_actor(selected_actor_label, "fragment", "gl_FragDepth = 0;",
+                block="color", debug=True)
+selected_actor_label.PickableOff()
+selected_actor_label.SetCamera(scene.GetActiveCamera())
 lines_actor.PickableOff()
+# nodes_actor.PickableOff()
 
 
-def left_click_callback(obj, event):
+def hovering_callback(obj, event):
     global selected_node
     event_pos = showm.iren.GetEventPosition()
     picking_area = 4
@@ -219,20 +224,20 @@ def left_click_callback(obj, event):
 
     if(selected_node is not None):
         if(labels is not None):
-            selected_actor.text.SetText(labels[selected_node])
+            selected_actor_label.text.SetText(labels[selected_node])
         else:
-            selected_actor.text.SetText("#%d" % selected_node)
-        selected_actor.SetPosition(positions[selected_node])
+            selected_actor_label.text.SetText("#%d" % selected_node)
+
+        if(selected_node < len(positions)):  # Fix index mismatch bug
+            selected_actor_label.SetPosition(positions[selected_node])
 
     else:
-        selected_actor.text.SetText("")
+        selected_actor_label.text.SetText("")
     timer_callback(None, None)
 
 ###############################################################################
 # We add observers to pick the nodes and enable hardware selector
 
-
-nodes_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 
 hsel = vtk.vtkHardwareSelector()
 hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
@@ -244,7 +249,7 @@ hsel.SetRenderer(scene)
 
 scene.add(lines_actor)
 scene.add(nodes_actor)
-scene.add(selected_actor)
+scene.add(selected_actor_label)
 
 
 ###############################################################################
@@ -262,11 +267,11 @@ scene.set_camera(position=(0, 0, -750))
 
 timer_callback = new_layout_timer(
     showm, edges, vertices_count,
-    max_iterations=500,
+    max_iterations=50000,
     vertex_initial_positions=positions)
 
 
-showm.iren.AddObserver("MouseMoveEvent", left_click_callback)
+showm.iren.AddObserver("MouseMoveEvent", hovering_callback)
 
 # Run every 16 milliseconds
 showm.add_timer_callback(True, 16, timer_callback)
