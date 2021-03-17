@@ -42,9 +42,9 @@ def StippledLine(act, lineStipplePattern,
     texture.InterpolateOff()
     texture.RepeatOn()
 
-    # act.SetTexture(texture)
-    # print(act)
-    print(act.GetLODMappers())
+    act.SetTexture(texture)
+    # print(act.IsA('vtkActor'))
+    # print(act.GetLODMappers())
     return act
 
 
@@ -71,3 +71,4 @@ StippledLine(act, 0xAAAA, 2)
 scene = window.Scene()
 scene.add(act)
 # window.show(scene)
+
