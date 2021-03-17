@@ -132,7 +132,7 @@ miu = m_constant*g_constant
 
 
 def get_orbit_period(radius):
-    return np.sqrt(2*np.pi * np.power(radius, 3)/miu)
+    return 2*np.pi * np.sqrt(np.power(radius, 3)/miu)
 
 
 def get_orbital_position(radius, time):
