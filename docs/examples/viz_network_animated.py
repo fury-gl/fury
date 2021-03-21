@@ -47,7 +47,7 @@ if(mode == 1):
 if(mode == 1):
     positions = np.loadtxt(pjoin(folder, positions_file))
     categories = np.loadtxt(pjoin(folder, categories_file), dtype=str)
-    edges = np.loadtxt(pjoin(folder, edges_file), dtype=np.int)
+    edges = np.loadtxt(pjoin(folder, edges_file), dtype=int)
     vertices_count = len(positions)
 
 ###############################################################################

@@ -86,11 +86,11 @@ def left_click_callback(obj, event):
 
     # Calculate the objects index
 
-    object_index = np.int(np.floor((vertex_index / num_vertices) *
+    object_index = int(np.floor((vertex_index / num_vertices) *
                           num_objects))
 
     # Find how many vertices correspond to each object
-    sec = np.int(num_vertices / num_objects)
+    sec = int(num_vertices / num_objects)
 
     if not selected[object_index]:
         scale = 6/5
