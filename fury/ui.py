@@ -1025,7 +1025,7 @@ class Panel2D(UI):
         """
         coords = np.array(coords)
 
-        if np.issubdtype(coords.dtype, np.floating):
+        if np.issubdtype(coords.dtype, floating):
             if np.any(coords < 0) or np.any(coords > 1):
                 raise ValueError("Normalized coordinates must be in [0,1].")
 
