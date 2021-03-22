@@ -102,7 +102,7 @@ def test_manifest_pbr(interactive=False):
         sphere = get_sphere('symmetric362')
         shape = (11, 11, 11, sphere.vertices.shape[0])
         fid, fname = mkstemp(suffix='_odf_slicer.mmap')
-        odfs = np.memmap(fname, dtype=float64, mode='w+', shape=shape)
+        odfs = np.memmap(fname, dtype=float, mode='w+', shape=shape)
         odfs[:] = 1
         affine = np.eye(4)
         mask = np.ones(odfs.shape[:3])
@@ -504,7 +504,7 @@ def test_manifest_standard(interactive=False):
         sphere = get_sphere('symmetric362')
         shape = (11, 11, 11, sphere.vertices.shape[0])
         fid, fname = mkstemp(suffix='_odf_slicer.mmap')
-        odfs = np.memmap(fname, dtype=float64, mode='w+', shape=shape)
+        odfs = np.memmap(fname, dtype=float, mode='w+', shape=shape)
         odfs[:] = 1
         affine = np.eye(4)
         mask = np.ones(odfs.shape[:3])
