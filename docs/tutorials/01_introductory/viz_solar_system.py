@@ -116,7 +116,7 @@ r_saturn = 19
 r_uranus = 22
 r_neptune = 25
 
-g_exponent = float_power(10, -11)
+g_exponent = np.float_power(10, -11)
 g_constant = 6.673*g_exponent
 
 m_exponent = np.power(10, 30)
