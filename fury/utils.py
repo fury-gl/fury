@@ -94,7 +94,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
-    data = np.array(data,dtype="object")
+    data = np.array(data,dtype=object)
     nb_cells = len(data)
 
     # Get lines_array in vtk input format

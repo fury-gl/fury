@@ -2059,7 +2059,7 @@ class LineSlider2D(UI):
             track_position[0] += self.track.size[0] / 2.
 
         self.track.position = track_position
-        self.handle.position = self.handle.position.astype('float')
+        self.handle.position = self.handle.position.astype(float)
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
@@ -2415,8 +2415,8 @@ class LineDoubleSlider2D(UI):
             track_position[0] -= self.track.size[0] / 2.
         self.track.position = track_position
 
-        self.handles[0].position = self.handles[0].position.astype('float')
-        self.handles[1].position = self.handles[1].position.astype('float')
+        self.handles[0].position = self.handles[0].position.astype(float)
+        self.handles[1].position = self.handles[1].position.astype(float)
 
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
