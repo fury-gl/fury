@@ -138,40 +138,6 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
-def vtk_vertices_from_actor(actor):
-    """Access to vtk vertices from actor.
-
-    Parameters
-    ----------
-    actor : actor
-
-    Returns
-    -------
-    vertices : vtkarray
-
-    """
-    return actor.GetMapper().GetInput().GetPoints().GetData()
-
-
-def vtk_array_from_actor(actor, array_name):
-    """Access vtk array from actor which uses polydata.
-
-    Parameters
-    ----------
-    actor : actor
-
-    Returns
-    -------
-    output : vtkarray
-
-    """
-    vtk_array = \
-        actor.GetMapper().GetInput().GetPointData().GetArray(array_name)
-    if vtk_array is None:
-        return None
-    return vtk_array
-
-
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate the input_array data at the given indices
     using trilinear interpolation.

@@ -29,7 +29,7 @@ from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
                         set_polydata_triangles, set_polydata_vertices,
                         set_polydata_colors, colors_from_actor,
                         vertices_from_actor, update_actor, compute_bounds,
-                        vtk_vertices_from_actor, vtk_array_from_actor)
+                        vertices_from_actor, array_from_actor)
 from fury.shaders import shader_to_actor
 
 ###############################################################################
@@ -112,14 +112,12 @@ nodes_actor = actor.billboard(centers,
 ###############################################################################
 # Preparing editable geometry for the nodes
 
-vtk_centers_geo = vtk_array_from_actor(nodes_actor, array_name="center")
-centers_geo = vtknp.vtk_to_numpy(vtk_centers_geo)
+centers_geo = array_from_actor(nodes_actor, array_name="center")
 centers_geo_orig = np.array(centers_geo)
 centers_length = centers_geo.shape[0] / positions.shape[0]
 
 
-vtk_verts_geo = vtk_vertices_from_actor(nodes_actor)
-verts_geo = vtknp.vtk_to_numpy(vtk_verts_geo)
+verts_geo = vertices_from_actor(nodes_actor)
 verts_geo_orig = np.array(verts_geo)
 verts_length = verts_geo.shape[0] / positions.shape[0]
 
@@ -167,8 +165,6 @@ def new_layout_timer(showm, edges_list, vertices_count,
 
         update_actor(lines_actor)
         compute_bounds(lines_actor)
-        vtk_verts_geo.Modified()
-        vtk_centers_geo.Modified()
 
         if(selected_node is not None):
             if(selected_node < len(positions)):  # Fix index mismatch bug
