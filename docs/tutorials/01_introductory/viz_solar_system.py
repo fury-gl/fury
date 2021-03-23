@@ -243,9 +243,11 @@ def update_track(positions_planet, planet_track, planet_orbit_actor):
     positions_planet[:] = np.array(planet_track)
     utils.update_actor(planet_orbit_actor)
 
+
 def calculate_path(r_planet, planet_track, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
     planet_track.append([pos_planet[0], 0, pos_planet[1]])
+
 
 ##############################################################################
 # Calculating and updating the path/orbit before animation starts
