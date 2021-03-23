@@ -158,8 +158,7 @@ def new_layout_timer(showm, edges_list, vertices_count,
         centers_geo[:] = np.repeat(positions, centers_length, axis=0)
         verts_geo[:] = verts_geo_orig + centers_geo
 
-        edges_positions = vtknp.vtk_to_numpy(
-            lines_actor.GetMapper().GetInput().GetPoints().GetData())
+        edges_positions = vertices_from_actor(lines_actor)
         edges_positions[::2] = positions[edges_list[:, 0]]
         edges_positions[1::2] = positions[edges_list[:, 1]]
 
