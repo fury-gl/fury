@@ -13,23 +13,15 @@ Hovering over nodes will show node index.
 ###############################################################################
 # First, let's import some useful modules and functions
 
-import math
 import random
-import time
-from collections import Counter
-from os.path import join as pjoin
 import numpy as np
 import helios
 import vtk
 import vtk.util.numpy_support as vtknp
-from fury import actor, window, ui, colormap as cmap
+from fury import actor, window, colormap as cmap
 from fury.shaders import load as shader_load
-import fury.primitive as fp
-from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
-                        set_polydata_triangles, set_polydata_vertices,
-                        set_polydata_colors, colors_from_actor,
-                        vertices_from_actor, update_actor, compute_bounds,
-                        vertices_from_actor, array_from_actor)
+from fury.utils import (vertices_from_actor, array_from_actor, update_actor,
+                        compute_bounds, vertices_from_actor)
 from fury.shaders import shader_to_actor
 
 ###############################################################################
