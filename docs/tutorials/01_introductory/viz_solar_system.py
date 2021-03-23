@@ -183,7 +183,7 @@ def get_orbit_actor(orbit_points):
 # orbit actors into the scene. Also initialize the track variables for each
 # planet.
 
-orbit_points = np.zeros((2100, 3), dtype='f8')
+orbit_points = np.zeros((2001, 3), dtype='f8')
 
 mercury_orbit_actor = get_orbit_actor(orbit_points)
 scene.add(mercury_orbit_actor)
@@ -239,8 +239,8 @@ def update_planet_position(r_planet, planet_actor, planet_track, cnt):
     return pos_planet
 
 
-def update_track(positions_planet, planet_track, planet_orbit_actor):
-    positions_planet[:] = np.array(planet_track)
+def update_track(positions_planet, planet_track, planet_orbit_actor, cnt):
+    positions_planet[:cnt+1] = np.array(planet_track)
     utils.update_actor(planet_orbit_actor)
 
 
@@ -276,24 +276,23 @@ def timer_callback(_obj, _event):
 
     update_planet_position(r_neptune, neptune_actor, neptune_track, cnt)
 
-    if cnt == 999:
-        update_track(positions_mercury, mercury_track, mercury_orbit_actor)
+    update_track(positions_mercury, mercury_track, mercury_orbit_actor, cnt)
 
-        update_track(positions_venus, venus_track, venus_orbit_actor)
+    update_track(positions_venus, venus_track, venus_orbit_actor, cnt)
 
-        update_track(positions_earth, earth_track, earth_orbit_actor)
+    update_track(positions_earth, earth_track, earth_orbit_actor, cnt)
 
-        update_track(positions_mars, mars_track, mars_orbit_actor)
+    update_track(positions_mars, mars_track, mars_orbit_actor, cnt)
 
-        update_track(positions_jupiter, jupiter_track, jupiter_orbit_actor)
+    update_track(positions_jupiter, jupiter_track, jupiter_orbit_actor, cnt)
 
-        update_track(positions_saturn, saturn_track, saturn_orbit_actor)
+    update_track(positions_saturn, saturn_track, saturn_orbit_actor, cnt)
 
-        update_track(positions_uranus, uranus_track, uranus_orbit_actor)
+    update_track(positions_uranus, uranus_track, uranus_orbit_actor, cnt)
 
-        update_track(positions_neptune, neptune_track, neptune_orbit_actor)
+    update_track(positions_neptune, neptune_track, neptune_orbit_actor, cnt)
 
-    if cnt == 1500:
+    if cnt == 2000:
         showm.exit()
 
 
