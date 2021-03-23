@@ -475,10 +475,10 @@ def contour_from_label(data, affine=None, color=None):
         opacity = color[:, -1]
         color = color[:, :-1]
     else:
-        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
+        opacity = np.ones((nb_surfaces, 1)).astype(float)
 
     for i, roi_id in enumerate(unique_roi_id):
-        roi_data = np.isin(data, roi_id).astype(np.int)
+        roi_data = np.isin(data, roi_id).astype(int)
         roi_surface = contour_from_roi(roi_data, affine,
                                        color=color[i],
                                        opacity=opacity[i])
@@ -951,9 +951,9 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
             .format(evals.shape, evecs.shape))
 
     if mask is None:
-        mask = np.ones(evals.shape[:3], dtype=np.bool)
+        mask = np.ones(evals.shape[:3], dtype=bool)
     else:
-        mask = mask.astype(np.bool)
+        mask = mask.astype(bool)
 
     szx, szy, szz = evals.shape[:3]
 
@@ -962,7 +962,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
             self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
-            tmp_mask = np.zeros(evals.shape[:3], dtype=np.bool)
+            tmp_mask = np.zeros(evals.shape[:3], dtype=bool)
             tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 
@@ -1050,19 +1050,19 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_xyz = []
     all_faces = []
     for (k, center) in enumerate(ijk):
-        ea = evals[tuple(center.astype(np.int))]
+        ea = evals[tuple(center.astype(int))]
         if norm:
             ea /= ea.max()
         ea = np.diag(ea.copy())
 
-        ev = evecs[tuple(center.astype(np.int))].copy()
+        ev = evecs[tuple(center.astype(int))].copy()
         xyz = np.dot(ev, np.dot(ea, vertices.T))
 
         xyz = xyz.T
         all_xyz.append(scale * xyz + center)
         all_faces.append(faces + k * xyz.shape[0])
 
-        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))], [0, 1],
+        cols[k, ...] = np.interp(cfa[tuple(center.astype(int))], [0, 1],
                                  [0, 255]).astype('ubyte')
 
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
@@ -1152,7 +1152,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     grid_shape = np.array(peaks_dirs.shape[:3])
 
     if mask is None:
-        mask = np.ones(grid_shape).astype(np.bool)
+        mask = np.ones(grid_shape).astype(bool)
 
     class PeakSlicerActor(vtk.vtkLODActor):
         def __init__(self):
@@ -1160,7 +1160,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
 
-            tmp_mask = np.zeros(grid_shape, dtype=np.bool)
+            tmp_mask = np.zeros(grid_shape, dtype=bool)
             tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 

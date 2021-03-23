@@ -312,7 +312,7 @@ Now in order to calculate and the vertices we execute the following snippet:
   vertices = utils.vertices_from_actor(brick_actor_single)
   num_vertices = vertices.shape[0]
   num_objects = brick_centers.shape[0]
-  sec = np.int(num_vertices / num_objects)
+  sec = int(num_vertices / num_objects)
 
 +-------------------+---------------------------------------------------------+
 |      Vertices     |      Array storing vertices of all the objects.         |

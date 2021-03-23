@@ -19,7 +19,7 @@ centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
 radii = 0.1 * np.array([50, 100, 150.])
 
-selected = np.zeros(3, dtype=np.bool)
+selected = np.zeros(3, dtype=bool)
 
 ###############################################################################
 # Let's create a panel to show what is picked
@@ -86,11 +86,11 @@ def left_click_callback(obj, event):
 
     # Calculate the objects index
 
-    object_index = np.int(np.floor((vertex_index / num_vertices) *
+    object_index = int(np.floor((vertex_index / num_vertices) *
                           num_objects))
 
     # Find how many vertices correspond to each object
-    sec = np.int(num_vertices / num_objects)
+    sec = int(num_vertices / num_objects)
 
     if not selected[object_index]:
         scale = 6/5

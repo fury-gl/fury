@@ -94,7 +94,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
-    data = np.array(data)
+    data = np.array(data, dtype=object)
     nb_cells = len(data)
 
     # Get lines_array in vtk input format
@@ -233,7 +233,7 @@ def lines_to_vtk_polydata(lines, colors=None):
         vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
     else:
         cols_arr = np.asarray(colors)
-        if cols_arr.dtype == np.object:  # colors is a list of colors
+        if cols_arr.dtype == object:  # colors is a list of colors
             vtk_colors = numpy_to_vtk_colors(255 * np.vstack(colors))
         else:
             if len(cols_arr) == nb_points:

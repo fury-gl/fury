@@ -124,7 +124,7 @@ base_actor.SetPosition(*base_pos)
 vertices = utils.vertices_from_actor(domino_actor)
 num_vertices = vertices.shape[0]
 num_objects = domino_centers.shape[0]
-sec = np.int(num_vertices / num_objects)
+sec = int(num_vertices / num_objects)
 
 ###############################################################################
 # ================
