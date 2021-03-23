@@ -130,9 +130,9 @@ def trilinear_interp_numpy(input_array, indices):
     y_indices = indices[:, 1]
     z_indices = indices[:, 2]
 
-    x0 = x_indices.astype(np.int64)
-    y0 = y_indices.astype(np.int64)
-    z0 = z_indices.astype(np.int64)
+    x0 = x_indices.astype(int)
+    y0 = y_indices.astype(int)
+    z0 = z_indices.astype(int)
     x1 = x0 + 1
     y1 = y0 + 1
     z1 = z0 + 1

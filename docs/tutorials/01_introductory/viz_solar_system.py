@@ -276,7 +276,7 @@ def timer_callback(_obj, _event):
 
     update_planet_position(r_neptune, neptune_actor, neptune_track, cnt)
 
-    if cnt == 2099:
+    if cnt == 999:
         update_track(positions_mercury, mercury_track, mercury_orbit_actor)
 
         update_track(positions_venus, venus_track, venus_orbit_actor)
@@ -293,7 +293,7 @@ def timer_callback(_obj, _event):
 
         update_track(positions_neptune, neptune_track, neptune_orbit_actor)
 
-    if cnt == 3000:
+    if cnt == 1500:
         showm.exit()
 
 
