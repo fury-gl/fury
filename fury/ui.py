@@ -5243,3 +5243,157 @@ class GridUI(UI):
         pass
         # self.actor.SetPosition(*coords)
         # self.container.SetPosition(*coords)
+
+class Card2D(UI):
+
+    """Card element to show image and related text
+    """
+
+    def __init__(
+        self,
+        image_path,
+        body,
+        title,
+        padding=2,
+        position=(0, 0),
+        size=(400, 400),
+        image_scale=0.5,
+        text_color=(0., 0., 0.),
+        ):
+        """
+
+        Parameters
+        ----------
+        image_path: (str)
+            Path of the image 
+        body: (str)
+            Card body text
+        title: (str)
+            Card title text
+        padding: (int)
+            Padding between each element
+        image_scale: (int)
+            fraction of size taken by the image (between 0 , 1)
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int)
+            Width and height of the pixels of this UI component.
+        font_size: (int)
+            size of the font
+        text_color: (float , float , float)
+            color of the text
+        color: (float, float, float)
+            Background color of card
+        """
+
+        self.image_path = image_path
+        self.body = body
+        self.title = title
+        self.card_size = size
+        self.padding = padding
+        self.text_color = text_color
+        self.text_scale = np.clip(1 - image_scale, 0, 1)
+        self._image_size = (self.card_size[0], self.card_size[1]
+                            * np.clip(image_scale, 0, 1))
+
+        super(Card2D, self).__init__()
+        self.panel.position = position
+
+    def _setup(self):
+        """Setup this UI component
+        Create an image widget
+        Create a title and body TextBlock2D widget
+        Create a Panel2D widget
+        Add all widgets in Panel2D widget
+        """
+
+        (card_width, card_height) = self.card_size
+        (_, image_height) = self._image_size
+        _text_box_size = (card_width - 2 * self.padding, card_height
+                  * self.text_scale / 2 - 2 * self.padding)
+
+        self.image = ImageContainer2D(img_path=self.image_path,
+                size=self._image_size)
+
+        self.body_box = TextBlock2D(text=self.body,
+                                    size=_text_box_size,
+                                    color=self.text_color)
+
+        self.title_box = TextBlock2D(text=self.title, bold=True,
+                             size=_text_box_size, color=self.text_color)
+
+        _img_coords = (0, int(card_height - image_height - self.padding))
+        _title_coords = (self.padding, int(_img_coords[1] / 2) - self.padding)
+        _text_coords = (self.padding, int(_title_coords[1] / 2) - self.padding)
+
+        self.panel = Panel2D(size=self.card_size, color=(0.5, 0.5, 0.5))
+        self.panel.add_element(self.image, _img_coords)
+        self.panel.add_element(self.title_box, _title_coords)
+        self.panel.add_element(self.body_box, _text_coords)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+
+        return self.panel.actors + self.image.actors \
+            + self.title_box.actors + self.body_box.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+
+        self.panel.add_to_scene(_scene)
+        self.image.add_to_scene(_scene)
+        self.title_box.add_to_scene(_scene)
+        self.body_box.add_to_scene(_scene)
+
+    def _get_size(self):
+        return self.panel.size
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+
+        self.panel.position = _coords
+
+    @property
+    def color(self):
+        """ Returns the background color of card.
+        """
+
+        return self.panel.color
+
+    @color.setter
+    def color(self, color):
+        """ Sets background color of card.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+
+        self.panel.color = color
+
+    @property
+    def body_text(self):
+        """ Returns the body text of the card.
+        """
+
+        return self.body_box.message
+
+    @property
+    def title_text(self):
+        """ Returns the title text of the card
+        """
+
+        return self.title_box.message
