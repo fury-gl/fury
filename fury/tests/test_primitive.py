@@ -55,9 +55,9 @@ def test_vertices_primitives_triangularprism():
     shape = (6, 3)
     three = (float('{:.7f}'.format(math.sqrt(3))))
     npt.assert_equal(vertices.shape, shape)
-    npt.assert_almost_equal(np.mean(vertices), three/18)
+    npt.assert_equal(np.mean(vertices), 0)
     npt.assert_equal(vertices.min(), -0.5)
-    npt.assert_equal(vertices.max(), three/2)
+    npt.assert_equal(vertices.max(), 1/three)
 
 
 def test_triangles_primitives():
