@@ -4,9 +4,12 @@ import numpy.testing as npt
 from fury import convert
 from tempfile import TemporaryDirectory
 from fury.io import load_image
-import matplotlib.pyplot as plt
+# Optional packages
+from fury.optpkg import optional_package
+matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
 
+@pytest.mark.skipif(not have_matplotlib, reason="Requires MatplotLib")
 def test_convert():
     names = ['group_a', 'group_b', 'group_c']
     values = [1, 10, 100]
