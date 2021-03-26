@@ -1609,3 +1609,35 @@ def test_clip_overflow():
 
     npt.assert_raises(ValueError, ui.clip_overflow,
                       text, rectangle.size[0], 'middle')
+
+
+def test_card_ui(interactive=False):
+    fetch_viz_icons()
+    img_path = read_viz_icons(fname='home3.png')
+
+    card = ui.Card2D(image_path=img_path,
+                     title="Title", body="Body", image_scale=0.5)
+
+    npt.assert_equal(card._image_size[1], 200.0)
+    npt.assert_equal(card.title_text, "Title")
+    npt.assert_equal(card.body_text, "Body")
+    npt.assert_equal(card.color, (0.5, 0.5, 0.5))
+    npt.assert_equal(card.panel.position, (0, 0))
+
+    card.title_text = "Changed Title"
+    npt.assert_equal(card.title_text, "Changed Title")
+
+    card.body_text = "Changed Body"
+    npt.assert_equal(card.body_text, "Changed Body")
+
+    card.color = (1.0, 1.0, 1.0)
+    npt.assert_equal(card.color, (1.0, 1.0, 1.0))
+
+    card._set_position((100, 100))
+    npt.assert_equal(card.panel.position, (100, 100))
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size, title="FURY Card")
+    show_manager.scene.add(card)
+    if interactive:
+        show_manager.start()
