@@ -5310,8 +5310,8 @@ class Card2D(UI):
 
         (card_width, card_height) = self.card_size
         (_, image_height) = self._image_size
-        _text_box_size = (card_width - 2 * self.padding, card_height *
-                          self.text_scale / 2 - 2 * self.padding)
+        _text_box_size = (card_width - 2 * self.padding, (card_height *
+                          self.text_scale / 2) - (2 * self.padding))
 
         self.image = ImageContainer2D(img_path=self.image_path,
                                       size=self._image_size)
@@ -5324,9 +5324,11 @@ class Card2D(UI):
                                      size=_text_box_size,
                                      color=self.text_color)
 
-        _img_coords = (0, int(card_height - image_height - self.padding))
-        _title_coords = (self.padding, int(_img_coords[1] / 2) - self.padding)
-        _text_coords = (self.padding, int(_title_coords[1] / 2) - self.padding)
+        _img_coords = (0, int(card_height - image_height))
+        _rem_space = int(_img_coords[1] / 3)
+        _title_coords = (self.padding, _rem_space - self.padding)
+        _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
+                        self.padding)
 
         self.panel = Panel2D(size=self.card_size, color=(0.5, 0.5, 0.5))
         self.panel.add_element(self.image, _img_coords)
