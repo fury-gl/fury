@@ -5244,6 +5244,7 @@ class GridUI(UI):
         # self.actor.SetPosition(*coords)
         # self.container.SetPosition(*coords)
 
+
 class Card2D(UI):
 
     """Card element to show image and related text
@@ -5259,13 +5260,12 @@ class Card2D(UI):
         size=(400, 400),
         image_scale=0.5,
         text_color=(0., 0., 0.),
-        ):
+            ):
         """
-
         Parameters
         ----------
         image_path: (str)
-            Path of the image 
+            Path of the image
         body: (str)
             Card body text
         title: (str)
@@ -5294,8 +5294,8 @@ class Card2D(UI):
         self.padding = padding
         self.text_color = text_color
         self.text_scale = np.clip(1 - image_scale, 0, 1)
-        self._image_size = (self.card_size[0], self.card_size[1]
-                            * np.clip(image_scale, 0, 1))
+        self._image_size = (self.card_size[0], self.card_size[1] *
+                            np.clip(image_scale, 0, 1))
 
         super(Card2D, self).__init__()
         self.panel.position = position
@@ -5310,18 +5310,19 @@ class Card2D(UI):
 
         (card_width, card_height) = self.card_size
         (_, image_height) = self._image_size
-        _text_box_size = (card_width - 2 * self.padding, card_height
-                  * self.text_scale / 2 - 2 * self.padding)
+        _text_box_size = (card_width - 2 * self.padding, card_height *
+                          self.text_scale / 2 - 2 * self.padding)
 
         self.image = ImageContainer2D(img_path=self.image_path,
-                size=self._image_size)
+                                      size=self._image_size)
 
         self.body_box = TextBlock2D(text=self.body,
                                     size=_text_box_size,
                                     color=self.text_color)
 
         self.title_box = TextBlock2D(text=self.title, bold=True,
-                             size=_text_box_size, color=self.text_color)
+                                     size=_text_box_size,
+                                     color=self.text_color)
 
         _img_coords = (0, int(card_height - image_height - self.padding))
         _title_coords = (self.padding, int(_img_coords[1] / 2) - self.padding)
@@ -5341,7 +5342,6 @@ class Card2D(UI):
 
     def _add_to_scene(self, _scene):
         """ Add all subcomponents or VTK props that compose this UI component.
-
         Parameters
         ----------
         scene : scene
@@ -5357,7 +5357,6 @@ class Card2D(UI):
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
-
         Parameters
         ----------
         coords: (float, float)
@@ -5376,7 +5375,6 @@ class Card2D(UI):
     @color.setter
     def color(self, color):
         """ Sets background color of card.
-
         Parameters
         ----------
         color : list of 3 floats.
@@ -5391,9 +5389,17 @@ class Card2D(UI):
 
         return self.body_box.message
 
+    @body_text.setter
+    def body_text(self, text):
+        self.body_box.message = text
+
     @property
     def title_text(self):
         """ Returns the title text of the card
         """
 
         return self.title_box.message
+
+    @title_text.setter
+    def title_text(self, text):
+        self.title_box.message = text
