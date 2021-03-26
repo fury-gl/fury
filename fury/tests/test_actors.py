@@ -950,7 +950,7 @@ def test_cones_vertices_faces(interactive=False):
     if interactive:
         window.show(scene, order_transparent=True)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=[colors])
+    report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 3)
     scene.clear()
 
