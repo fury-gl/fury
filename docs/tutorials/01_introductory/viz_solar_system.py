@@ -183,39 +183,7 @@ def get_orbit_actor(orbit_points):
 # orbit actors into the scene. Also initialize the track variables for each
 # planet.
 
-orbit_points = np.zeros((2200, 3), dtype='f8')
-
-mercury_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(mercury_orbit_actor)
-positions_mercury = utils.vertices_from_actor(mercury_orbit_actor)
-
-venus_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(venus_orbit_actor)
-positions_venus = utils.vertices_from_actor(venus_orbit_actor)
-
-earth_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(earth_orbit_actor)
-positions_earth = utils.vertices_from_actor(earth_orbit_actor)
-
-mars_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(mars_orbit_actor)
-positions_mars = utils.vertices_from_actor(mars_orbit_actor)
-
-jupiter_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(jupiter_orbit_actor)
-positions_jupiter = utils.vertices_from_actor(jupiter_orbit_actor)
-
-saturn_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(saturn_orbit_actor)
-positions_saturn = utils.vertices_from_actor(saturn_orbit_actor)
-
-uranus_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(uranus_orbit_actor)
-positions_uranus = utils.vertices_from_actor(uranus_orbit_actor)
-
-neptune_orbit_actor = get_orbit_actor(orbit_points)
-scene.add(neptune_orbit_actor)
-positions_neptune = utils.vertices_from_actor(neptune_orbit_actor)
+orbit_points = np.zeros((2200, 3), dtype='float')
 
 mercury_track = []
 venus_track = []
@@ -232,10 +200,9 @@ neptune_track = []
 # ``update_planet_position``.
 
 
-def update_planet_position(r_planet, planet_actor, planet_track, cnt):
+def update_planet_position(r_planet, planet_actor, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
     planet_actor.SetPosition(pos_planet[0], 0, pos_planet[1])
-    planet_track.append([pos_planet[0], 0, pos_planet[1]])
     return pos_planet
 
 
@@ -273,23 +240,23 @@ def timer_callback(_obj, _event):
     global mercury_track, venus_track, earth_track, mars_track, jupiter_track
     global saturn_track, uranus_track, neptune_track
 
-    update_planet_position(r_mercury, mercury_actor, mercury_track, cnt)
+    update_planet_position(r_mercury, mercury_actor, cnt)
 
-    update_planet_position(r_venus, venus_actor, venus_track, cnt)
+    update_planet_position(r_venus, venus_actor, cnt)
 
-    update_planet_position(r_earth, earth_actor, earth_track, cnt)
+    update_planet_position(r_earth, earth_actor, cnt)
 
-    update_planet_position(r_mars, mars_actor, mars_track, cnt)
+    update_planet_position(r_mars, mars_actor, cnt)
 
-    update_planet_position(r_jupiter, jupiter_actor, jupiter_track, cnt)
+    update_planet_position(r_jupiter, jupiter_actor, cnt)
 
-    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track,
-                                        cnt)
+    pos_saturn = update_planet_position(r_saturn, saturn_actor, cnt)
+
     saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
 
-    update_planet_position(r_uranus, uranus_actor, uranus_track, cnt)
+    update_planet_position(r_uranus, uranus_actor, cnt)
 
-    update_planet_position(r_neptune, neptune_actor, neptune_track, cnt)
+    update_planet_position(r_neptune, neptune_actor, cnt)
 
     if cnt == 2000:
         showm.exit()
