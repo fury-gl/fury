@@ -179,9 +179,7 @@ def get_orbit_actor(orbit_points):
 ##############################################################################
 # All of the planets will have the same initial positions, so assign each of
 # those to the positions variables for each planet. These variables will be
-# updated within the ``timer_callback`` function. Initialize and add the
-# orbit actors into the scene. Also initialize the track variables for each
-# planet.
+# updated within the ``timer_callback`` function. 
 
 orbit_points = np.zeros((2200, 3), dtype='float')
 
@@ -220,6 +218,10 @@ planets_tracks = [mercury_track, venus_track, earth_track, mars_track, jupiter_t
 for i in range(2200):
     for r_planet, planets_track in zip(r_planets, planets_tracks):
         calculate_path(r_planet, planets_track, i)
+
+##############################################################################
+# This is for orbit visualization, We are using line actor for orbit.
+# And then add all of those to the scene.
 
 for planets_track in planets_tracks:
     orbit_actor = actor.line([planets_track], colors=(1,1,1), linewidth=0.1)
