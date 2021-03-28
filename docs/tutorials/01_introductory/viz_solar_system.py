@@ -217,7 +217,7 @@ for r_planet, planets_track in zip(r_planets, planets_tracks):
 # After creating an actor we add it to the scene.
 
 for planets_track in planets_tracks:
-    orbit_actor = actor.line([planets_track], colors=(1,1,1), linewidth=0.1)
+    orbit_actor = actor.line([planets_track], colors=(1, 1, 1), linewidth=0.1)
     scene.add(orbit_actor)
 
 
