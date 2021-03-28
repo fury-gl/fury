@@ -608,12 +608,12 @@ def prim_triangularprism():
     # Local variable to represent the square root of three rounded
     # to 7 decimal places
     three = float('{:.7f}'.format(math.sqrt(3)))
-    vertices = np.array([[0, 1/three, 1/2],
-                        [1/2, -1/2/three, 1/2],
-                        [-1/2, -1/2/three, 1/2],
-                        [1/2, -1/2/three, -1/2],
-                        [-1/2, -1/2/three, -1/2],
-                        [0, 1/three, -1/2]])
+    vertices = np.array([[0, -1/three, 1/2],
+                        [-1/2, 1/2/three, 1/2],
+                        [1/2, 1/2/three, 1/2],
+                        [-1/2, 1/2/three, -1/2],
+                        [1/2, 1/2/three, -1/2],
+                        [0, -1/three, -1/2]])
     triangles = np.array([[0, 1, 2],
                          [2, 1, 3],
                          [2, 3, 4],
