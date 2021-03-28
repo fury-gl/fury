@@ -163,23 +163,9 @@ showm = window.ShowManager(scene,
 counter = itertools.count()
 
 ##############################################################################
-# To track and visualize the orbital paths of the planets, we will create
-# several new variables to map each planet's orbits using ``actor.dots``.
-# It is important to define the track variable for each planet as global,
-# allowing it to be used within the ``timer_callback`` function. To do this,
-# create a function called ``get_orbit_actor``.
-
-
-def get_orbit_actor(orbit_points):
-    orbit_actor = actor.dots(orbit_points, color=(1, 1, 1),
-                             opacity=1, dot_size=1)
-    return orbit_actor
-
-
-##############################################################################
 # All of the planets will have the same initial positions, so assign each of
 # those to the positions variables for each planet. These variables will be
-# updated within the ``timer_callback`` function. 
+# updated within the ``timer_callback`` function.
 
 orbit_points = np.zeros((2200, 3), dtype='float')
 
@@ -193,10 +179,8 @@ uranus_track = []
 neptune_track = []
 
 ##############################################################################
-# Define two new functions to use in ``timer_callback`` to update the planet
-# positions and their tracks to visualize their orbit: ``update_track`` and
-# ``update_planet_position``.
-
+# Define one new functions to use in ``timer_callback`` to update the planet
+# positions ``update_planet_position``.
 
 def update_planet_position(r_planet, planet_actor, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
@@ -204,24 +188,32 @@ def update_planet_position(r_planet, planet_actor, cnt):
     return pos_planet
 
 
+##############################################################################
+# ``claculate_path`` function is for calculating the path/orbit
+# of every planet.
+
 def calculate_path(r_planet, planet_track, cnt):
-    pos_planet = get_orbital_position(r_planet, cnt)
-    planet_track.append([pos_planet[0], 0, pos_planet[1]])
+    for i in range(cnt):
+        pos_planet = get_orbital_position(r_planet, i)
+        planet_track.append([pos_planet[0], 0, pos_planet[1]])
 
 
 ##############################################################################
-# Calculating and updating the path/orbit before animation starts
+# First we are making two lists that will contain radiuses and track's lists.
+# and then we are calculating and updating the path/orbit
+# before animation starts.
 
-r_planets = [r_mercury, r_venus, r_earth, r_mars, r_jupiter, r_saturn, r_uranus, r_neptune]
-planets_tracks = [mercury_track, venus_track, earth_track, mars_track, jupiter_track, saturn_track, uranus_track, neptune_track]
+r_planets = [r_mercury, r_venus, r_earth, r_mars,
+                r_jupiter, r_saturn, r_uranus, r_neptune]
+planets_tracks = [mercury_track, venus_track, earth_track, mars_track,
+                jupiter_track, saturn_track, uranus_track, neptune_track]
 
-for i in range(2200):
-    for r_planet, planets_track in zip(r_planets, planets_tracks):
-        calculate_path(r_planet, planets_track, i)
+for r_planet, planets_track in zip(r_planets, planets_tracks):
+    calculate_path(r_planet, planets_track, 2200)
 
 ##############################################################################
-# This is for orbit visualization, We are using line actor for orbit.
-# And then add all of those to the scene.
+# This is for orbit visualization, We are using line actor for orbits.
+# After creating an actor we add it to the scene.
 
 for planets_track in planets_tracks:
     orbit_actor = actor.line([planets_track], colors=(1,1,1), linewidth=0.1)
@@ -230,17 +222,13 @@ for planets_track in planets_tracks:
 
 ##############################################################################
 # Define the ``timer_callback`` function, which controls what events happen
-# at certain times, using the counter. Redefine the position of each planet
-# actor using ``get_orbital_position,`` assigning the x and y values of
-# each planet's position with the newly calculated ones. Append each new
-# planet position to its corresponding track array.
+# at certain times, using the counter. Update the position of each planet
+# actor using ``update_planet_position,`` assigning the x and y values of
+# each planet's position with the newly calculated ones.
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
     showm.render()
-
-    global mercury_track, venus_track, earth_track, mars_track, jupiter_track
-    global saturn_track, uranus_track, neptune_track
 
     update_planet_position(r_mercury, mercury_actor, cnt)
 
