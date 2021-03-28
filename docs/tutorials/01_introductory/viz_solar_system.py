@@ -178,6 +178,7 @@ saturn_track = []
 uranus_track = []
 neptune_track = []
 
+
 ##############################################################################
 # Define one new functions to use in ``timer_callback`` to update the planet
 # positions ``update_planet_position``.
@@ -204,9 +205,9 @@ def calculate_path(r_planet, planet_track, cnt):
 # before animation starts.
 
 r_planets = [r_mercury, r_venus, r_earth, r_mars,
-                r_jupiter, r_saturn, r_uranus, r_neptune]
+             r_jupiter, r_saturn, r_uranus, r_neptune]
 planets_tracks = [mercury_track, venus_track, earth_track, mars_track,
-                jupiter_track, saturn_track, uranus_track, neptune_track]
+                  jupiter_track, saturn_track, uranus_track, neptune_track]
 
 for r_planet, planets_track in zip(r_planets, planets_tracks):
     calculate_path(r_planet, planets_track, 2200)
