@@ -5248,7 +5248,6 @@ class GridUI(UI):
 class Card2D(UI):
 
     """Card element to show image and related text
-
     Attributes
     ----------
     image: :class: 'ImageContainer2D'
@@ -5260,7 +5259,7 @@ class Card2D(UI):
     """
 
     def __init__(
-        self, image_path, body_text="Body",draggable=True,
+        self, image_path, body_text="Body", draggable=True,
         title_text="Title", padding=2, position=(0, 0),
         size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
         bg_opacity=1, title_color=(0., 0., 0.), body_color=(0., 0., 0.)
@@ -5307,10 +5306,12 @@ class Card2D(UI):
         self.bg_opacity = bg_opacity
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
-        self._image_size = (self.card_size[0], self.card_size[1] * self.image_scale)
+        self._image_size = (self.card_size[0], self.card_size[1] *
+                            self.image_scale)
 
         super(Card2D, self).__init__()
         self.position = position
+
     def _setup(self):
         """Setup this UI component
         Create an image widget
@@ -5341,7 +5342,8 @@ class Card2D(UI):
         _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
                         self.padding)
 
-        self.panel = Panel2D(self.card_size, color=self.bg_color, opacity=self.bg_opacity)
+        self.panel = Panel2D(self.card_size, color=self.bg_color,
+                             opacity=self.bg_opacity)
         self.panel.add_element(self.image, _img_coords)
         self.panel.add_element(self.title_box, _title_coords)
         self.panel.add_element(self.body_box, _text_coords)
@@ -5354,7 +5356,6 @@ class Card2D(UI):
         else:
             self.panel.background.on_left_mouse_button_dragged =\
                 lambda i_ren, _obj, _comp: i_ren.force_render
-
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -5374,13 +5375,13 @@ class Card2D(UI):
     def _get_size(self):
         return self.panel.size
 
-    def resize(self , size):
+    def resize(self, size):
         self.panel.resize(size)
 
         self._image_size = (size[0], int(self.image_scale*size[1]))
-        _text_box_size = (size[0] - 2 * self.padding, (size[1] *
-                          self.text_scale / 2) - (2 * self.padding))
-        
+        _text_box_size = (size[0] - 2 * self.padding, size[1] *
+                          self.text_scale / 2 - 2 * self.padding)
+
         _img_coords = (0, int(size[1] - self._image_size[1]))
         _rem_space = int(_img_coords[1] / 3)
         _title_coords = (self.padding, _rem_space - self.padding)
