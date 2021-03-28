@@ -5248,58 +5248,69 @@ class GridUI(UI):
 class Card2D(UI):
 
     """Card element to show image and related text
+
+    Attributes
+    ----------
+    image: :class: 'ImageContainer2D'
+        Renders the image on the card.
+    title_box: :class: 'TextBlock2D'
+        Displays the title on card.
+    body_box: :class: 'TextBLock2D'
+        Displays the body text.
     """
 
     def __init__(
-        self,
-        image_path,
-        body,
-        title,
-        padding=2,
-        position=(0, 0),
-        size=(400, 400),
-        image_scale=0.5,
-        text_color=(0., 0., 0.),
+        self, image_path, body_text="Body",draggable=True,
+        title_text="Title", padding=2, position=(0, 0),
+        size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
+        bg_opacity=1, title_color=(0., 0., 0.), body_color=(0., 0., 0.)
             ):
         """
         Parameters
         ----------
-        image_path: (str)
+        image_path: str
             Path of the image
-        body: (str)
+        body_text: str
             Card body text
-        title: (str)
+        draggable: Bool
+            If the card should be draggable
+        title_text: str
             Card title text
-        padding: (int)
+        padding: int
             Padding between each element
-        image_scale: (int)
-            fraction of size taken by the image (between 0 , 1)
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of the
             UI component
         size : (int, int)
             Width and height of the pixels of this UI component.
-        font_size: (int)
-            size of the font
-        text_color: (float , float , float)
-            color of the text
-        color: (float, float, float)
+        image_scale: int
+            fraction of size taken by the image (between 0 , 1)
+        bg_color: (float, float, float)
             Background color of card
+        bg_opacity: float
+            Background opacity
+        title_color: (float, float, float)
+            Title text color
+        body_color: (float, float, float)
+            Body text color
         """
 
         self.image_path = image_path
-        self.body = body
-        self.title = title
+        self.body_text = body_text
+        self.title_text = title_text
+        self.draggable = draggable
         self.card_size = size
         self.padding = padding
-        self.text_color = text_color
+        self.title_color = title_color
+        self.body_color = body_color
+        self.bg_color = bg_color
+        self.bg_opacity = bg_opacity
         self.text_scale = np.clip(1 - image_scale, 0, 1)
-        self._image_size = (self.card_size[0], self.card_size[1] *
-                            np.clip(image_scale, 0, 1))
+        self.image_scale = np.clip(image_scale, 0, 1)
+        self._image_size = (self.card_size[0], self.card_size[1] * self.image_scale)
 
         super(Card2D, self).__init__()
-        self.panel.position = position
-
+        self.position = position
     def _setup(self):
         """Setup this UI component
         Create an image widget
@@ -5316,13 +5327,13 @@ class Card2D(UI):
         self.image = ImageContainer2D(img_path=self.image_path,
                                       size=self._image_size)
 
-        self.body_box = TextBlock2D(text=self.body,
+        self.body_box = TextBlock2D(text=self.body_text,
                                     size=_text_box_size,
-                                    color=self.text_color)
+                                    color=self.body_color)
 
-        self.title_box = TextBlock2D(text=self.title, bold=True,
+        self.title_box = TextBlock2D(text=self.title_text, bold=True,
                                      size=_text_box_size,
-                                     color=self.text_color)
+                                     color=self.title_color)
 
         _img_coords = (0, int(card_height - image_height))
         _rem_space = int(_img_coords[1] / 3)
@@ -5330,17 +5341,26 @@ class Card2D(UI):
         _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
                         self.padding)
 
-        self.panel = Panel2D(size=self.card_size, color=(0.5, 0.5, 0.5))
+        self.panel = Panel2D(self.card_size, color=self.bg_color, opacity=self.bg_opacity)
         self.panel.add_element(self.image, _img_coords)
         self.panel.add_element(self.title_box, _title_coords)
         self.panel.add_element(self.body_box, _text_coords)
+
+        if self.draggable:
+            self.panel.background.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.panel.background.on_left_mouse_button_pressed\
+                = self.left_button_pressed
+        else:
+            self.panel.background.on_left_mouse_button_dragged =\
+                lambda i_ren, _obj, _comp: i_ren.force_render
+
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
 
-        return self.panel.actors + self.image.actors \
-            + self.title_box.actors + self.body_box.actors
+        return self.panel.actors
 
     def _add_to_scene(self, _scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -5350,12 +5370,30 @@ class Card2D(UI):
         """
 
         self.panel.add_to_scene(_scene)
-        self.image.add_to_scene(_scene)
-        self.title_box.add_to_scene(_scene)
-        self.body_box.add_to_scene(_scene)
 
     def _get_size(self):
         return self.panel.size
+
+    def resize(self , size):
+        self.panel.resize(size)
+
+        self._image_size = (size[0], int(self.image_scale*size[1]))
+        _text_box_size = (size[0] - 2 * self.padding, (size[1] *
+                          self.text_scale / 2) - (2 * self.padding))
+        
+        _img_coords = (0, int(size[1] - self._image_size[1]))
+        _rem_space = int(_img_coords[1] / 3)
+        _title_coords = (self.padding, _rem_space - self.padding)
+        _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
+                        self.padding)
+
+        self.panel.update_element(self.image, _img_coords)
+        self.panel.update_element(self.body_box, _text_coords)
+        self.panel.update_element(self.title_box, _title_coords)
+
+        self.image.resize(self._image_size)
+        self.body_box.resize(_text_box_size)
+        self.title_box.resize(_text_box_size)
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
@@ -5385,23 +5423,35 @@ class Card2D(UI):
         self.panel.color = color
 
     @property
-    def body_text(self):
+    def body(self):
         """ Returns the body text of the card.
         """
 
         return self.body_box.message
 
-    @body_text.setter
-    def body_text(self, text):
+    @body.setter
+    def body(self, text):
         self.body_box.message = text
 
     @property
-    def title_text(self):
+    def title(self):
         """ Returns the title text of the card
         """
 
         return self.title_box.message
 
-    @title_text.setter
-    def title_text(self, text):
+    @title.setter
+    def title(self, text):
         self.title_box.message = text
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
