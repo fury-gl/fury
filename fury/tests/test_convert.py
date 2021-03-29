@@ -25,11 +25,11 @@ def test_convert():
     # plt.subplot(133)
     # plt.plot(names, values)
     # plt.suptitle('Categorical Plotting')
-    arr2 = matplotlib_figure_to_numpy(fig, transparent=True)
+    arr2 = matplotlib_figure_to_numpy(fig, transparent=False)
 
     with TemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'tmp.png')
         dpi = 100
-        fig.savefig(fname, dpi=dpi, transparent=True)
+        fig.savefig(fname, dpi=dpi, transparent=False)
         arr1 = load_image(fname)
         npt.assert_array_equal(arr1, arr2)
