@@ -594,6 +594,38 @@ def prim_star(dim=2):
     return vert, triangles
 
 
+def prim_triangularprism():
+    """Return vertices and triangle for a regular triangular prism.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+    # Local variable to represent the square root of three rounded
+    # to 7 decimal places
+    three = float('{:.7f}'.format(math.sqrt(3)))
+    vertices = np.array([[0, -1/three, 1/2],
+                        [-1/2, 1/2/three, 1/2],
+                        [1/2, 1/2/three, 1/2],
+                        [-1/2, 1/2/three, -1/2],
+                        [1/2, 1/2/three, -1/2],
+                        [0, -1/three, -1/2]])
+    triangles = np.array([[0, 1, 2],
+                         [2, 1, 3],
+                         [2, 3, 4],
+                         [1, 0, 5],
+                         [1, 5, 3],
+                         [0, 2, 4],
+                         [0, 4, 5],
+                         [5, 4, 3]])
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
+    return vertices, triangles
+
+
 def prim_octagonalprism():
     """Return vertices and triangle for an octagonal prism.
 

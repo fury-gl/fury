@@ -967,7 +967,8 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.square, {}],
                   [actor.rectangle, {}],
                   [actor.frustum, {}],
-                  [actor.octagonalprism, {}]]
+                  [actor.octagonalprism, {}],
+                  [actor.triangularprism, {}]]
 
     for act_func, extra_args in actor_list:
         for scale in scale_list:
