@@ -180,7 +180,7 @@ neptune_track = []
 
 
 ##############################################################################
-# Define one new functions to use in ``timer_callback`` to update the planet
+# Define one new function to use in ``timer_callback`` to update the planet
 # positions ``update_planet_position``.
 
 def update_planet_position(r_planet, planet_actor, cnt):
@@ -190,7 +190,7 @@ def update_planet_position(r_planet, planet_actor, cnt):
 
 
 ##############################################################################
-# ``claculate_path`` function is for calculating the path/orbit
+# ``calculate_path`` function is for calculating the path/orbit
 # of every planet.
 
 def calculate_path(r_planet, planet_track, cnt):
