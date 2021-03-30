@@ -83,6 +83,7 @@ def test_selector_manager_tmp():
     pass
 
 import vtk
+from fury.utils import numpy_support as nps
 
 class SelectorManager(object):
 
@@ -104,19 +105,22 @@ class SelectorManager(object):
             selected_node = None
         else:
             sel_node = res.GetNode(0)
-            selected_nodes = set(np.floor(vtknp.vtk_to_numpy(
+            selected_nodes = set(np.floor(nps.vtk_to_numpy(
                 sel_node.GetSelectionList())/2).astype(int))
+
             selected_node = list(selected_nodes)[0]
 
-        if(selected_node is not None):
-            if(labels is not None):
-                selected_actor.text.SetText(labels[selected_node])
-            else:
-                selected_actor.text.SetText("#%d" % selected_node)
-            selected_actor.SetPosition(positions[selected_node])
+        print(selected_node)
+        # selected_actor.text.SetText(str(selected_node))
+        # if(selected_node is not None):
+        #     if(labels is not None):
+        #         selected_actor.text.SetText(labels[selected_node])
+        #     else:
+        #         selected_actor.text.SetText("#%d" % selected_node)
+        #     selected_actor.SetPosition(positions[selected_node])
 
-        else:
-            selected_actor.text.SetText("")
+        # else:
+        #     selected_actor.text.SetText("")
 
     def event_position(self, iren):
         """ Returns event display position from interactor
@@ -134,13 +138,22 @@ def test_selector_manager():
 
     xyz = 10 * np.random.rand(100, 3)
     colors = np.random.rand(100, 4)
-    radii = np.random.rand(100) + 0.5
+    radii = np.random.rand(100, 3) + 0.5
+
+    centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
+    colors2 = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
+    radii2 = 0.1 * np.array([50, 100, 150.])
 
     scene = window.Scene()
 
-    sphere_actor = actor.sphere(centers=xyz,
-                                colors=colors,
-                                radii=radii)
+    # sphere_actor = actor.sphere(centers=xyz,
+    #                             colors=colors,
+    #                             radii=radii)
+
+    directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
+                       [np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                       [0, np.sqrt(2)/2, np.sqrt(2)/2]])
+    sphere_actor = actor.cube(centers, directions, colors2, scales=radii2)
 
     scene.add(sphere_actor)
 
@@ -177,12 +190,21 @@ def test_selector_manager():
 
         showm.render()
         if cnt == 15:
-            showm.exit()
+            # showm.exit()
+            pass
+
+    def hover_callback(_obj, _event):
+        event_pos = pickm.event_position(showm.iren)
+        info = pickm.select(event_pos, showm.scene, 1)
+        print(info)
+        showm.render()
+        
 
     scene.add(tb)
 
     # Run every 200 milliseconds
-    showm.add_timer_callback(True, 200, timer_callback)
+    # showm.add_timer_callback(True, 200, timer_callback)
+    showm.add_iren_callback(hover_callback)
     showm.start()
 
     assert_greater(np.sum(np.array(record_indices['vertex_indices'])), 1)
