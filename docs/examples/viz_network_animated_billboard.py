@@ -3,10 +3,11 @@
 Visualize Networks using Billboard (Animated version)
 =======================================================
 
-The goal of this demo is to show how to visualize a
-complex network using billboards and simple interaction
-and use a force directed algorithm to layout the network.
-Hovering over nodes will show node index.
+The goal of this demo is to:
+ - show how to visualize a complex network using billboards
+ - animate the network using a force directed layout
+ algorithm
+ - display nodes index by hovering over them 
 
 """
 
@@ -21,7 +22,7 @@ import vtk.util.numpy_support as vtknp
 from fury import actor, window, colormap as cmap
 from fury.shaders import load as shader_load
 from fury.utils import (vertices_from_actor, array_from_actor, update_actor,
-                        compute_bounds, vertices_from_actor)
+                        compute_bounds)
 from fury.shaders import shader_to_actor
 
 ###############################################################################
@@ -183,12 +184,13 @@ camera = scene.camera()
 selected_node = None
 selected_actor_label = actor.label(
     "Origin", pos=centers[0], color=(1, 1, 1), scale=(4, 4, 4),)
+
 shader_to_actor(selected_actor_label, "fragment", "gl_FragDepth = 0;",
-                block="color", debug=True)
+                block="color", debug=False, internal_mapper=True)
+
 selected_actor_label.PickableOff()
 selected_actor_label.SetCamera(scene.GetActiveCamera())
-lines_actor.PickableOff()
-# nodes_actor.PickableOff()
+lines_actor.PickableOff() 
 
 
 def hovering_callback(obj, event):
@@ -241,7 +243,7 @@ scene.add(selected_actor_label)
 
 ###############################################################################
 # The final step ! Visualize the result of our creation! Also, we need to move
-# the camera a little bit farther from the network. you can increase the
+# the camera a little bit farther from the network center. You can increase the
 # parameter max_iteractions of the timer callback to let the animation run for
 # more time.
 
@@ -261,7 +263,7 @@ timer_callback = new_layout_timer(
 showm.iren.AddObserver("MouseMoveEvent", hovering_callback)
 
 # Run every 16 milliseconds
-showm.add_timer_callback(True, 16, timer_callback)
+showm.add_timer_callback(True, 20, timer_callback)
 showm.start()
 
 window.record(showm.scene, size=(900, 768),
