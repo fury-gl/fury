@@ -18,18 +18,20 @@ def test_convert():
     values = [1, 10, 100]
 
     fig = plt.figure(figsize=(9, 3))
-    # plt.subplot(131)
-    # plt.bar(names, values)
-    # plt.subplot(132)
-    # plt.scatter(names, values)
-    # plt.subplot(133)
-    # plt.plot(names, values)
-    # plt.suptitle('Categorical Plotting')
-    arr2 = matplotlib_figure_to_numpy(fig, transparent=False)
+    plt.subplot(131)
+    plt.bar(names, values)
+    plt.subplot(132)
+    plt.scatter(names, values)
+    plt.subplot(133)
+    plt.plot(names, values)
+    plt.suptitle('Categorical Plotting')
+    arr2 = matplotlib_figure_to_numpy(fig, transparent=False,
+                                      flip_up_down=False)
 
     with TemporaryDirectory() as tmpdir:
         fname = os.path.join(tmpdir, 'tmp.png')
         dpi = 100
-        fig.savefig(fname, dpi=dpi, transparent=False)
+        fig.savefig(fname, transparent=False, bbox_inches='tight',
+                    pad_inches=0)
         arr1 = load_image(fname)
         npt.assert_array_equal(arr1, arr2)
