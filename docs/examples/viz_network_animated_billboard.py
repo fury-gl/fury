@@ -190,7 +190,7 @@ shader_to_actor(selected_actor_label, "fragment", "gl_FragDepth = 0;",
 
 selected_actor_label.PickableOff()
 selected_actor_label.SetCamera(scene.GetActiveCamera())
-lines_actor.PickableOff() 
+lines_actor.PickableOff()
 
 
 def hovering_callback(obj, event):
