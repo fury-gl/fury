@@ -256,7 +256,7 @@ scene.set_camera(position=(0, 0, -750))
 
 timer_callback = new_layout_timer(
     showm, edges, vertices_count,
-    max_iterations=50000,
+    max_iterations=500,
     vertex_initial_positions=positions)
 
 
