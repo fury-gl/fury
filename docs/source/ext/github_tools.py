@@ -42,7 +42,10 @@ GH_TOKEN = os.environ.get('GH_TOKEN', '')
 
 
 def fetch_url(url):
-    """This was pointed out as a Security issue in bandit.
+    """
+    Notes
+    -----
+    This was pointed out as a Security issue in bandit.
     please look at issue #355,
     we fixed it, but the bandit warning might remain,
     need to suppress it manually (just ignore it)
