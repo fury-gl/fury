@@ -14,37 +14,21 @@ uniform mat4 WCVCMatrix;
 uniform mat4 WCMCMatrix;
 uniform mat4 VCMCMatrix;
 
-#define PI 3.14159265
 
-struct Superellipsoid
+float sdSE(vec3 pos , vec3 Center, vec3 Radius, vec2 Exponent)
 {
-	vec3 Center;
-	vec3 Radius;
-    vec2 Exponent;
-};
-
-
-float sdSE( vec3 pos , vec3 center, vec3 radius, vec2 exponent)
-{
-    Superellipsoid se;
-    se.Center = center;
-    se.Radius = radius;
-    se.Exponent = exponent;
-
-    vec3 e = vec3(vec2(1.0) / se.Exponent.xy, se.Exponent.x / se.Exponent.y);
-    vec3 g = 2.0 * e; // prep exponents
-    vec3 invr = vec3(1.0) / se.Radius;
+    vec3 e = vec3(vec2(1.0)/Exponent.xy, Exponent.x/Exponent.y);
+    vec3 g = 2.0*e; 
+    vec3 invr = vec3(1.0)/Radius;
     vec3 p = pos;
-    vec3 A = p * invr ; // coeff for x and y
-    vec3 B = pow(A * A, e.xxy); //prep x and y with exponents
+    vec3 A = p*invr ; 
+    vec3 B = pow(A*A, e.xxy); 
     float E = B.x + B.y;
     float F = pow(E, e.z);
     float P = F + B.z;
 
-    // float K = pow(P, se.Exponent.y) - 1.0;
-    float K = pow(P, se.Exponent.y) - 0.0;
+    float K = pow(P, Exponent.y) - 0.0;
     return(K);
-
 }
 
 
@@ -132,12 +116,7 @@ float map( in vec3 position )
     }
 
     else if(primitiveVSOutput==5){
-        // vec2 exponent = vec2(1.0);
-        // vec2 exponent = vec2(0.1);
-        vec2 exponent = vec2(2.0);
-        // vec2 exponent = vec2(1.5);
-        
-        d1 = sdSE((pos)/scaleVSOutput, vec3(1.0, 1.0, 1.0), vec3(10.0 / 3.0, 10.0 / 3.0, 10.0 / 2.0), exponent)*scaleVSOutput;
+        d1 = sdSE((pos)/scaleVSOutput, vec3(1.0, 1.0, 1.0), vec3(10.0 / 3.0, 10.0 / 3.0, 10.0 / 2.0), vec2(2.0))*scaleVSOutput;
     }
     return d1;
 }
