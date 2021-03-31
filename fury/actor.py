@@ -2563,7 +2563,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     """
 
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3,
-             'capsule': 4, 'superellipse': 5}
+             'capsule': 4, 'superellipsoid': 5}
 
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
