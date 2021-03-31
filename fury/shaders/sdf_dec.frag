@@ -117,8 +117,9 @@ float map( in vec3 position )
     }
     
     else if(primitiveVSOutput==5){
-        d1 = sdSE((pos)/scaleVSOutput, vec3(10.0 / 3.0, 10.0 / 3.0, 10.0 / 2.0), vec2(2.0))*scaleVSOutput;
+        d1 = sdSE((pos)/scaleVSOutput, vec3(50.0 / 3.0, 50.0 / 3.0, 50.0 / 2.0), vec2(2.0))*scaleVSOutput;
     }
+    
     return d1;
 }
 
