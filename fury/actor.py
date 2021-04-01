@@ -475,10 +475,10 @@ def contour_from_label(data, affine=None, color=None):
         opacity = color[:, -1]
         color = color[:, :-1]
     else:
-        opacity = np.ones((nb_surfaces, 1)).astype(float)
+        opacity = np.ones((nb_surfaces, 1)).astype(np.float)
 
     for i, roi_id in enumerate(unique_roi_id):
-        roi_data = np.isin(data, roi_id).astype(int)
+        roi_data = np.isin(data, roi_id).astype(np.int)
         roi_surface = contour_from_roi(roi_data, affine,
                                        color=color[i],
                                        opacity=opacity[i])
@@ -951,9 +951,9 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
             .format(evals.shape, evecs.shape))
 
     if mask is None:
-        mask = np.ones(evals.shape[:3], dtype=bool)
+        mask = np.ones(evals.shape[:3], dtype=np.bool)
     else:
-        mask = mask.astype(bool)
+        mask = mask.astype(np.bool)
 
     szx, szy, szz = evals.shape[:3]
 
@@ -962,7 +962,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
             self.mapper = None
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
-            tmp_mask = np.zeros(evals.shape[:3], dtype=bool)
+            tmp_mask = np.zeros(evals.shape[:3], dtype=np.bool)
             tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 
@@ -1050,19 +1050,19 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_xyz = []
     all_faces = []
     for (k, center) in enumerate(ijk):
-        ea = evals[tuple(center.astype(int))]
+        ea = evals[tuple(center.astype(np.int))]
         if norm:
             ea /= ea.max()
         ea = np.diag(ea.copy())
 
-        ev = evecs[tuple(center.astype(int))].copy()
+        ev = evecs[tuple(center.astype(np.int))].copy()
         xyz = np.dot(ev, np.dot(ea, vertices.T))
 
         xyz = xyz.T
         all_xyz.append(scale * xyz + center)
         all_faces.append(faces + k * xyz.shape[0])
 
-        cols[k, ...] = np.interp(cfa[tuple(center.astype(int))], [0, 1],
+        cols[k, ...] = np.interp(cfa[tuple(center.astype(np.int))], [0, 1],
                                  [0, 255]).astype('ubyte')
 
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
@@ -1096,8 +1096,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 
 
 def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
-                colors=(1, 0, 0), opacity=1., linewidth=1, lod=False,
-                lod_points=10 ** 4, lod_points_size=3, symmetric=True):
+                colors=(1, 0, 0), opacity=1., linewidth=1,
+                lod=False, lod_points=10 ** 4, lod_points_size=3):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1115,10 +1115,13 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     colors : tuple or None
         Default red color. If None then every peak gets an orientation color
         in similarity to a DEC map.
+
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque)
+
     linewidth : float, optional
         Line thickness. Default is 1.
+
     lod : bool
         Use vtkLODActor(level of detail) rather than vtkActor.
         Default is False. Level of detail actors do not render the full
@@ -1127,10 +1130,6 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         Number of points to be used when LOD is in effect. Default is 10000.
     lod_points_size : int
         Size of points when lod is in effect. Default is 3.
-    symmetric: bool, optional
-        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
-        peaks are only drawn for directions given by peaks_dirs. Default is
-        True.
 
     Returns
     -------
@@ -1152,7 +1151,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     grid_shape = np.array(peaks_dirs.shape[:3])
 
     if mask is None:
-        mask = np.ones(grid_shape).astype(bool)
+        mask = np.ones(grid_shape).astype(np.bool)
 
     class PeakSlicerActor(vtk.vtkLODActor):
         def __init__(self):
@@ -1160,7 +1159,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
 
-            tmp_mask = np.zeros(grid_shape, dtype=bool)
+            tmp_mask = np.zeros(grid_shape, dtype=np.bool)
             tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 
@@ -1184,14 +1183,9 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                         pv = peaks_values[tuple(center)][i]
                     else:
                         pv = 1.
-                    if symmetric:
-                        dirs = np.vstack(
-                            (-peaks_dirs[tuple(center)][i] * pv + xyz,
-                             peaks_dirs[tuple(center)][i] * pv + xyz))
-                    else:
-                        dirs = np.vstack(
-                            (xyz, peaks_dirs[tuple(center)][i] * pv + xyz))
-                    list_dirs.append(dirs)
+                    symm = np.vstack((-peaks_dirs[tuple(center)][i] * pv + xyz,
+                                      peaks_dirs[tuple(center)][i] * pv + xyz))
+                    list_dirs.append(symm)
 
             self.line = line(list_dirs, colors=colors,
                              opacity=opacity, linewidth=linewidth,
@@ -1678,46 +1672,6 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     return actor
 
 
-def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                    scales=1):
-    """Visualize one or many regular triangular prisms with different features.
-
-    Parameters
-    ----------
-    centers : ndarray, shape (N, 3)
-        Triangular prism positions
-    directions : ndarray, shape (N, 3)
-        The orientation vector(s) of the triangular prism(s)
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : int or ndarray (N,3) or tuple (3,), optional
-        Triangular prism size on each direction (x, y), default(1)
-
-    Returns
-    -------
-    vtkActor
-
-    Examples
-    --------
-    >>> from fury import window, actor
-    >>> scene = window.Scene()
-    >>> centers = np.random.rand(3, 3)
-    >>> dirs = np.random.rand(3, 3)
-    >>> colors = np.random.rand(3, 3)
-    >>> scales = np.random.rand(3, 1)
-    >>> actor = actor.triangularprism(centers, dirs, colors, scales)
-    >>> scene.add(actor)
-    >>> # window.show(scene)
-
-    """
-    verts, faces = fp.prim_triangularprism()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
-    big_verts, big_faces, big_colors, _ = res
-    tri_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    return tri_actor
-
-
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                    scales=1):
     """Visualize one or many octagonal prisms with different features.
@@ -1825,8 +1779,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3) * 10
     >>> directions = np.random.rand(3, 3)
-    >>> scales = np.random.rand(3)
-    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(5)
     >>> roundness = np.array([[1, 1], [1, 2], [2, 1]])
     >>> sq_actor = actor.superquadric(centers, roundness=roundness,
     ...                               directions=directions,
@@ -2495,7 +2448,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     vtkActor
     """
 
-    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
+    prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3}
 
     verts, faces = fp.prim_box()
     repeated = fp.repeat_primitive(verts, faces, centers=centers,
@@ -2543,3 +2496,60 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
     return box_actor
+
+
+def parametric_surface(centers, directions=(1, 0, 0), colors=(0, 1, 0),
+                       scales=1, name='mobius_strip'):
+    """Visualize one or many parametric surfaces with different features.
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Parametric surface positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the parametric surface.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        Parametric surface size in each direction (x, y), default(1)
+    name : str
+        The surface of choice to be rendered.
+        Options are Möbius strip, Klein bottle, Roman surface, Boy's surface,
+        Bohemian dome, Dini's surface and Plücker's conoid.
+        Default is Möbius strip.
+        When passing the name parameter, use the following abbreviations as per
+        the required surface-
+
+        Surface names       |        Abbreviations
+        --------------------|-----------------------
+        Möbius strip        |        mobius_strip
+        Klein bottle        |        klein_bottle
+        Roman surface       |        roman_surface
+        Boy's surface       |        boys_surface
+        Bohemian Dome       |        bohemian_dome
+        Dini's surface      |        dinis_surface
+        Plücker's conoid    |        pluckers_conoid
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(3, 1)
+    >>> actor = actor.parametric_surface(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+    """
+
+    verts, faces = getattr(fp, "prim_para_" + name)()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    para_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    para_actor.GetProperty().BackfaceCullingOff()
+    return para_actor
