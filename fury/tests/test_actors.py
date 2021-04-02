@@ -1423,3 +1423,29 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 4)
+
+
+def test_parametric_surface_actor(interactive=False):
+    centers = np.array([[0, -15, 3], [0, 0, 3], [0, 15, 3]])
+    colors = np.array([[1, 0, 0, 0.9], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
+    directions = np.array([[1, 0, 1]])
+    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
+                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
+    list_parametric_names = ["mobius_strip", "kleins_bottle", "roman_surface",
+                             "boys_surface", "bohemian_dome", "dinis_surface",
+                             "pluckers_conoid"]
+
+    for name in list_parametric_names:
+        for scale in scale_list:
+            scene = window.Scene()
+            g_actor = actor.parametric_surface(centers=centers, colors=colors,
+                                               directions=directions, scales=
+                                               scale, name=name)
+            scene.add(g_actor)
+            if interactive:
+                window.show(scene)
+
+            arr = window.snapshot(scene)
+            report = window.analyze_snapshot(arr, colors=colors)
+            msg = 'Failed with {}, scale={}'.format(name, scale)
+            npt.assert_equal(report.objects, 3, err_msg=msg)

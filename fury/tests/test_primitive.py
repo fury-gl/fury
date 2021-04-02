@@ -168,3 +168,25 @@ def test_repeat_primitive_function():
     # big_verts, big_faces, big_colors, big_centers = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
+
+
+def test_vertices_primitives_parametric_surfaces():
+    # Testing the default vertices of various parametric surfaces
+    list_names = ["mobius_strip", "kleins_bottle", "roman_surface",
+                  "boys_surface", "bohemian_dome", "dinis_surface",
+                  "pluckers_conoid"]
+    shape = (10000, 3)
+
+    list_vertices_mean = [0.0033333, 0.6596373, 0.0010503, 0.2970061,
+                          0.0066666, 0.1562547, 0.0016666]
+    list_vertices_min = [-1.3641747, -1.5170523, -0.4999371, -2.0728634,
+                         -1.9991818, -4.2983590, -0.99987412]
+    list_vertices_max = [1.5, 4.2059279, 0.4999371, 2.9979129, 1.9999371,
+                         2.4489939, 1.0]
+
+    for i, name in enumerate(list_names):
+        vertices, _ = getattr(fp, "prim_para_" + name)()
+        npt.assert_almost_equal(vertices.shape, shape)
+        npt.assert_almost_equal(np.mean(vertices), list_vertices_mean[i])
+        npt.assert_almost_equal(vertices.min(), list_vertices_min[i])
+        npt.assert_almost_equal(vertices.max(), list_vertices_max[i])
