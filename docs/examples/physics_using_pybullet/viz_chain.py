@@ -161,7 +161,7 @@ def sync_actor(actor, multibody):
 vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = vertices.shape[0]
 num_objects = linkPositions.shape[0]
-sec = np.int(num_vertices / num_objects)
+sec = int(num_vertices / num_objects)
 
 
 def sync_joints(actor_list, multibody):

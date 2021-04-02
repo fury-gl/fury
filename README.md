@@ -9,10 +9,7 @@
 </h4>
 
 <p align="center">
-  <a href="https://travis-ci.com/fury-gl/fury">
-    <img src="https://travis-ci.com/fury-gl/fury.svg?branch=master" alt="Fury Travis">
-  </a>
-  <a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
+<a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
 </a>
 <a href="https://pypi.python.org/pypi/fury"><img src="https://img.shields.io/pypi/v/fury.svg"></a>
 <a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg"></a>

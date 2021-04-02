@@ -21,17 +21,17 @@ from fury import window, actor
 ###############################################################################
 # Lets define variables for the SDF Actor
 
-dirs = np.random.rand(3, 3)
-colors = np.random.rand(3, 3) * 255
-centers = np.array([[1, 0, 0], [0, 0, 0], [-1, 0, 0]])
-scales = np.random.rand(3, 1)
+dirs = np.random.rand(4, 3)
+colors = np.random.rand(4, 3) * 255
+centers = np.array([[1, 0, 0], [0, 0, 0], [-1, 0, 0], [0, 1, 0]])
+scales = np.random.rand(4, 1)
 
 
 ###############################################################################
 # Create SDF Actor
 
 sdfactor = actor.sdf(centers=centers, directions=dirs, colors=colors,
-                     primitives=['sphere', 'torus', 'ellipsoid'],
+                     primitives=['sphere', 'torus', 'ellipsoid', 'capsule'],
                      scales=scales)
 
 ##############################################################################

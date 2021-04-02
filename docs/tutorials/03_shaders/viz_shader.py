@@ -26,7 +26,7 @@ model = read_viz_models('utah.obj')
 #
 # Let's start by loading the polydata of choice.
 # For this example we use the standard utah teapot model.
-# currently supported formats include OBJ, VKT, FIB, PLY, STL and XML
+# currently supported formats include OBJ, VTK, FIB, PLY, STL and XML
 
 utah = io.load_polydata(model)
 utah = utils.get_polymapper_from_polydata(utah)
