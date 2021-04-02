@@ -186,7 +186,7 @@ def test_vertices_primitives_parametric_surfaces():
 
     for i, name in enumerate(list_names):
         vertices, _ = getattr(fp, "prim_para_" + name)()
-        npt.assert_almost_equal(vertices.shape, shape)
+        npt.assert_equal(vertices.shape, shape)
         npt.assert_almost_equal(np.mean(vertices), list_vertices_mean[i])
         npt.assert_almost_equal(vertices.min(), list_vertices_min[i])
         npt.assert_almost_equal(vertices.max(), list_vertices_max[i])
