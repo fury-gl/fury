@@ -1613,22 +1613,32 @@ def test_clip_overflow():
 
 def test_card_ui(interactive=False):
     fetch_viz_icons()
+    filename = 'test_card_ui'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+
     img_path = read_viz_icons(fname='home3.png')
 
-    card = ui.Card2D(image_path=img_path,
-                     title_text="Title", body_text="Body", image_scale=0.5)
+    card = ui.Card2D(image_path=img_path, draggable=True,
+                     title_text='Title', body_text='Body',
+                     image_scale=0.5)
+
+    # Assign the counter callback to every possible event.
+
+    event_counter = EventCounter()
+    event_counter.monitor(card)
 
     npt.assert_equal(card._image_size[1], 200.0)
-    npt.assert_equal(card.title, "Title")
-    npt.assert_equal(card.body, "Body")
+    npt.assert_equal(card.title, 'Title')
+    npt.assert_equal(card.body, 'Body')
     npt.assert_equal(card.color, (0.5, 0.5, 0.5))
     npt.assert_equal(card.panel.position, (0, 0))
 
-    card.title = "Changed Title"
-    npt.assert_equal(card.title, "Changed Title")
+    card.title = 'Changed Title'
+    npt.assert_equal(card.title, 'Changed Title')
 
-    card.body = "Changed Body"
-    npt.assert_equal(card.body, "Changed Body")
+    card.body = 'Changed Body'
+    npt.assert_equal(card.body, 'Changed Body')
 
     card.color = (1.0, 1.0, 1.0)
     npt.assert_equal(card.color, (1.0, 1.0, 1.0))
@@ -1638,9 +1648,17 @@ def test_card_ui(interactive=False):
 
     card.resize((600, 600))
     npt.assert_equal(card._image_size[1], 300.0)
-    
+
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="FURY Card")
+    show_manager = window.ShowManager(size=current_size, title='FURY Card')
     show_manager.scene.add(card)
+
     if interactive:
-        show_manager.start()
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
