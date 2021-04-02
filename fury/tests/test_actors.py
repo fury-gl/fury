@@ -1439,8 +1439,8 @@ def test_parametric_surface_actor(interactive=False):
         for scale in scale_list:
             scene = window.Scene()
             g_actor = actor.parametric_surface(centers=centers, colors=colors,
-                                               directions=directions, scales=
-                                               scale, name=name)
+                                               directions=directions,
+                                               scales=scale, name=name)
             scene.add(g_actor)
             if interactive:
                 window.show(scene)
