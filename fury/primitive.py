@@ -851,3 +851,235 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         triangles = (np.array(triangles).reshape(2 * sectors, 3))
 
     return vertices, triangles
+
+
+def prim_para_mobius_strip():
+    """Return vertices and triangle for a Möbius strip
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Möbius strip
+    triangles: ndarray
+        triangles that compose our Möbius strip
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(0, 2*np.pi, npoints)
+    v = np.linspace(-1, 1, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    x = (1 + v/2 * cos(u/2)) * cos(u)
+    y = (1 + v/2 * cos(u/2)) * sin(u)
+    z = v/2 * sin(u/2)
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_kleins_bottle():
+    """Return vertices and triangle for Klein bottle
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Klein bottle
+    triangles: ndarray
+        triangles that compose our Klein bottle
+
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(0, np.pi, npoints)
+    v = np.linspace(0, 2*np.pi, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    x = -2/15*cos(u)*(3*cos(v) - 30*sin(u) + 90*cos(u)**4*sin(u) -
+                      60*cos(u)**6*sin(u) + 5*cos(u)*cos(v)*sin(u))
+    y = -1/15*sin(u)*(3*cos(v) - 3*cos(u)**2*cos(v) - 48*cos(u)**4*cos(v) +
+                      48*cos(u)**6*cos(v) - 60*sin(u) + 5*cos(u)*cos(v)*sin(u)
+                      - 5*cos(u)**3*cos(v)*sin(u) - 80*cos(u)**5*cos(v)*sin(u)
+                      + 80*cos(u)**7*cos(v)*sin(u))
+    z = 2/15*(3 + 5*cos(u)*sin(u))*sin(v)
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_roman_surface():
+    """Return vertices and triangle for Roman surface
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Roman surface
+    triangles: ndarray
+        triangles that compose our Roman surface
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(0, np.pi/2, npoints)
+    v = np.linspace(0, 2*np.pi, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    a = 1
+    x = a*cos(u)*sin(u)*sin(v)
+    y = a*cos(u)*sin(u)*cos(v)
+    z = a*cos(u)**2*cos(v)*sin(v)
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_boys_surface():
+    """Return vertices and triangle for Boy's surface
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Boy's surface
+    triangles: ndarray
+        triangles that compose our Boy's surface
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(-np.pi/2, np.pi/2, npoints)
+    v = np.linspace(0, np.pi, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    x = (2**0.5*cos(v)**2*cos(2*u) + cos(u)*sin(2*v)) / \
+        (2 - 2**0.5*sin(3*u)*sin(2*v))
+    y = (2**0.5*cos(v)**2*sin(2*u) - sin(u)*sin(2*v)) / \
+        (2 - 2**0.5*sin(3*u)*sin(2*v))
+    z = 3*cos(v)**2 / (2 - 2**0.5*sin(3*u)*sin(2*v))
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_bohemian_dome():
+    """Return vertices and triangle for Bohemian dome
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Bohemian dome
+    triangles: ndarray
+        triangles that compose our Bohemian dome
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(0, 2*np.pi, npoints)
+    v = np.linspace(0, 2*np.pi, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    a = 0.5
+    b = 1.5
+    c = 1
+    x = a*cos(u)
+    y = (b*cos(v) + a*sin(u))
+    z = c*sin(v)
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_dinis_surface():
+    """Return vertices and triangle for Dini's surface
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Dini's surface
+    triangles: ndarray
+        triangles that compose our Dini's surface
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    u = np.linspace(0, 4*np.pi, npoints)
+    v = np.linspace(0.01, 1, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    a = 1
+    b = 0.2
+    x = a*cos(u)*sin(v)
+    y = a*sin(u)*sin(v)
+    z = a*(cos(v) + np.log(np.tan(v/2))) + b*u
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles
+
+
+def prim_para_pluckers_conoid(num_folds=2):
+    """Return vertices and triangle for Plücker's conoid
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our Plücker's conoid
+    triangles: ndarray
+        triangles that compose our Plücker's conoid
+    """
+
+    npoints = 100
+    sin = np.sin
+    cos = np.cos
+    a = 1
+    u = np.linspace(0, 2*np.pi, npoints)
+    v = np.linspace(0, a, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    x = v*cos(u)
+    y = v*sin(u)
+    z = sin(num_folds*u)
+
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+    return vertices, triangles

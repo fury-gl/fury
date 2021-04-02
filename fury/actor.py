@@ -2543,3 +2543,60 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
     return box_actor
+
+
+def parametric_surface(centers, directions=(1, 0, 0), colors=(0, 1, 0),
+                       scales=1, name='mobius_strip'):
+    """Visualize one or many parametric surfaces with different features.
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Parametric surface positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the parametric surface.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        Parametric surface size in each direction (x, y), default(1)
+    name : str
+        The surface of choice to be rendered.
+        Options are Möbius strip, Klein bottle, Roman surface, Boy's surface,
+        Bohemian dome, Dini's surface and Plücker's conoid.
+        Default is Möbius strip.
+        When passing the name parameter, use the following abbreviations as per
+        the required surface-
+
+        Surface names       |        Abbreviations
+        --------------------|-----------------------
+        Möbius strip        |        mobius_strip
+        Klein bottle        |        klein_bottle
+        Roman surface       |        roman_surface
+        Boy's surface       |        boys_surface
+        Bohemian Dome       |        bohemian_dome
+        Dini's surface      |        dinis_surface
+        Plücker's conoid    |        pluckers_conoid
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(3, 1)
+    >>> actor = actor.parametric_surface(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+    """
+
+    verts, faces = getattr(fp, "prim_para_" + name)()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    para_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    para_actor.GetProperty().BackfaceCullingOff()
+    return para_actor
