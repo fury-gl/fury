@@ -5,7 +5,7 @@ import numpy as np
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
-from scipy.spatial import ConvexHull, transform
+from scipy.spatial import ConvexHull, transform, Delaunay
 from scipy.version import short_version
 import math
 
