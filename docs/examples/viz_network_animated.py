@@ -17,7 +17,6 @@ positions is also demoed.
 import math
 from os.path import join as pjoin
 import numpy as np
-import vtk
 from vtk.util import numpy_support
 from fury import actor, window, colormap as cmap
 
@@ -112,6 +111,7 @@ lines_actor = actor.line(np.zeros((len(edges), 2, 3)),
 
 ###############################################################################
 # Defining timer callback and layout iterator
+
 
 def new_layout_timer(showm, edges_list, vertices_count,
                      max_iterations=1000, vertex_initial_positions=None):
