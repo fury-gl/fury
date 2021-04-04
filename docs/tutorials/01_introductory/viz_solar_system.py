@@ -167,8 +167,6 @@ counter = itertools.count()
 # those to the positions variables for each planet. These variables will be
 # updated within the ``timer_callback`` function.
 
-orbit_points = np.zeros((2200, 3), dtype='float')
-
 mercury_track = []
 venus_track = []
 earth_track = []
@@ -200,7 +198,7 @@ def calculate_path(r_planet, planet_track, cnt):
 
 
 ##############################################################################
-# First we are making two lists that will contain radiuses and track's lists.
+# First we are making two lists that will contain radii and track's lists.
 # and then we are calculating and updating the path/orbit
 # before animation starts.
 
@@ -213,7 +211,7 @@ for r_planet, planets_track in zip(r_planets, planets_tracks):
     calculate_path(r_planet, planets_track, 2200)
 
 ##############################################################################
-# This is for orbit visualization, We are using line actor for orbits.
+# This is for orbit visualization. We are using line actor for orbits.
 # After creating an actor we add it to the scene.
 
 for planets_track in planets_tracks:
