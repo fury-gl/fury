@@ -800,7 +800,8 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
                 k += 3
 
     if capped:
-        vertices = (np.array(vertices).reshape(2 * (sectors + 1) + 2 * sectors + 2, 3))
+        vertices = (np.array(vertices).reshape(2 * (sectors + 1) +
+                    2 * sectors + 2, 3))
     else:
         vertices = (np.array(vertices).reshape(2 * (sectors + 1), 3))
 
@@ -853,7 +854,17 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     return vertices, triangles
 
 
-def prim_para_mobius_strip():
+def init_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
+                    v_upper_bound, npoints):
+    u = np.linspace(u_lower_bound, u_upper_bound, npoints)
+    v = np.linspace(v_lower_bound, v_upper_bound, npoints)
+    u, v = np.meshgrid(u, v)
+    u = u.reshape(-1)
+    v = v.reshape(-1)
+    return u, v, np.sin, np.cos, np.mean
+
+
+def prim_para_mobius_strip(npoints=100):
     """Return vertices and triangle for a Möbius strip
 
     Returns
@@ -864,14 +875,7 @@ def prim_para_mobius_strip():
         triangles that compose our Möbius strip
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(0, 2*np.pi, npoints)
-    v = np.linspace(-1, 1, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, -1, 1, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -879,12 +883,16 @@ def prim_para_mobius_strip():
     x = (1 + v/2 * cos(u/2)) * cos(u)
     y = (1 + v/2 * cos(u/2)) * sin(u)
     z = v/2 * sin(u/2)
+    # Centering the surface
+    x -= mean(x)
+    y -= mean(y)
+    z -= mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_kleins_bottle():
+def prim_para_kleins_bottle(npoints=100):
     """Return vertices and triangle for Klein bottle
 
     Returns
@@ -896,14 +904,7 @@ def prim_para_kleins_bottle():
 
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(0, np.pi, npoints)
-    v = np.linspace(0, 2*np.pi, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, np.pi, 0, 2*np.pi, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -915,12 +916,16 @@ def prim_para_kleins_bottle():
                       - 5*cos(u)**3*cos(v)*sin(u) - 80*cos(u)**5*cos(v)*sin(u)
                       + 80*cos(u)**7*cos(v)*sin(u))
     z = 2/15*(3 + 5*cos(u)*sin(u))*sin(v)
+    # Centering the surface
+    x -= mean(x)
+    y -= mean(y)
+    z -= mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_roman_surface():
+def prim_para_roman_surface(npoints=100):
     """Return vertices and triangle for Roman surface
 
     Returns
@@ -931,14 +936,7 @@ def prim_para_roman_surface():
         triangles that compose our Roman surface
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(0, np.pi/2, npoints)
-    v = np.linspace(0, 2*np.pi, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, np.pi/2, 0, 2*np.pi, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -947,12 +945,16 @@ def prim_para_roman_surface():
     x = a*cos(u)*sin(u)*sin(v)
     y = a*cos(u)*sin(u)*cos(v)
     z = a*cos(u)**2*cos(v)*sin(v)
+    # Centering the surface
+    x -= np.mean(x)
+    y -= np.mean(y)
+    z -= np.mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_boys_surface():
+def prim_para_boys_surface(npoints=100):
     """Return vertices and triangle for Boy's surface
 
     Returns
@@ -963,14 +965,8 @@ def prim_para_boys_surface():
         triangles that compose our Boy's surface
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(-np.pi/2, np.pi/2, npoints)
-    v = np.linspace(0, np.pi, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(-np.pi/2, np.pi/2, 0, np.pi,
+                                           npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -980,12 +976,16 @@ def prim_para_boys_surface():
     y = (2**0.5*cos(v)**2*sin(2*u) - sin(u)*sin(2*v)) / \
         (2 - 2**0.5*sin(3*u)*sin(2*v))
     z = 3*cos(v)**2 / (2 - 2**0.5*sin(3*u)*sin(2*v))
+    # Centering the surface
+    x -= np.mean(x)
+    y -= np.mean(y)
+    z -= np.mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_bohemian_dome():
+def prim_para_bohemian_dome(npoints=100):
     """Return vertices and triangle for Bohemian dome
 
     Returns
@@ -996,14 +996,7 @@ def prim_para_bohemian_dome():
         triangles that compose our Bohemian dome
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(0, 2*np.pi, npoints)
-    v = np.linspace(0, 2*np.pi, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, 0, 2*np.pi, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -1014,12 +1007,16 @@ def prim_para_bohemian_dome():
     x = a*cos(u)
     y = (b*cos(v) + a*sin(u))
     z = c*sin(v)
+    # Centering the surface
+    x -= mean(x)
+    y -= mean(y)
+    z -= mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_dinis_surface():
+def prim_para_dinis_surface(npoints=100):
     """Return vertices and triangle for Dini's surface
 
     Returns
@@ -1030,14 +1027,7 @@ def prim_para_dinis_surface():
         triangles that compose our Dini's surface
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
-    u = np.linspace(0, 4*np.pi, npoints)
-    v = np.linspace(0.01, 1, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, 4*np.pi, 0.01, 1, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
@@ -1047,12 +1037,15 @@ def prim_para_dinis_surface():
     x = a*cos(u)*sin(v)
     y = a*sin(u)*sin(v)
     z = a*(cos(v) + np.log(np.tan(v/2))) + b*u
+    x -= mean(x)
+    y -= mean(y)
+    z -= mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
 
 
-def prim_para_pluckers_conoid(num_folds=2):
+def prim_para_pluckers_conoid(num_folds=2, npoints=100):
     """Return vertices and triangle for Plücker's conoid
 
     Returns
@@ -1063,23 +1056,19 @@ def prim_para_pluckers_conoid(num_folds=2):
         triangles that compose our Plücker's conoid
     """
 
-    npoints = 100
-    sin = np.sin
-    cos = np.cos
     a = 1
-    u = np.linspace(0, 2*np.pi, npoints)
-    v = np.linspace(0, a, npoints)
-    u, v = np.meshgrid(u, v)
-    u = u.reshape(-1)
-    v = v.reshape(-1)
+    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, 0, a, npoints)
     points2D = np.vstack([u, v]).T
     tri = Delaunay(points2D)
     triangles = tri.simplices
 
     x = v*cos(u)
     y = v*sin(u)
-    z = sin(num_folds*u)
-
+    z = sin(2*u)
+    # Centering the surface
+    x -= mean(x)
+    y -= mean(y)
+    z -= mean(z)
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
     return vertices, triangles
