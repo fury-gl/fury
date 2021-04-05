@@ -2545,7 +2545,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     return box_actor
 
 
-def parametric_surface(centers, directions=(1, 0, 0), colors=(0, 1, 0),
+def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                        scales=1, name='mobius_strip'):
     """Visualize one or many parametric surfaces with different features.
     Parameters
