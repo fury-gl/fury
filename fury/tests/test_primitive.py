@@ -119,14 +119,14 @@ def test_cylinder_primitive():
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
 
-    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10, capped=False)
+    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10,
+                                    capped=False)
     npt.assert_equal(verts.shape, (22, 3))
     npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
     npt.assert_equal(verts.min(), -.5)
     npt.assert_equal(verts.max(), .5)
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
-
 
 
 def test_repeat_primitive():
@@ -170,6 +170,17 @@ def test_repeat_primitive_function():
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
 
 
+def test_init_parametric(npoints=10):
+    u, v, sin, cos, mean = fp.init_parametric(0, 1, 0, 1, npoints)
+    shape = (npoints**2, )
+    npt.assert_equal(u.shape, shape)
+    npt.assert_equal(v.shape, shape)
+    npt.assert_equal(np.mean(u), mean(u))
+    npt.assert_equal(np.mean(v), mean(v))
+    npt.assert_equal(np.sin(u), sin(u))
+    npt.assert_equal(np.cos(v), cos(v))
+
+
 def test_vertices_primitives_parametric_surfaces():
     # Testing the default vertices of various parametric surfaces
     list_names = ["mobius_strip", "kleins_bottle", "roman_surface",
@@ -177,12 +188,11 @@ def test_vertices_primitives_parametric_surfaces():
                   "pluckers_conoid"]
     shape = (10000, 3)
 
-    list_vertices_mean = [0.0033333, 0.6596373, 0.0010503, 0.2970061,
-                          0.0066666, 0.1562547, 0.0016666]
-    list_vertices_min = [-1.3641747, -1.5170523, -0.4999371, -2.0728634,
-                         -1.9991818, -4.2983590, -0.99987412]
-    list_vertices_max = [1.5, 4.2059279, 0.4999371, 2.9979129, 1.9999371,
-                         2.4489939, 1.0]
+    list_vertices_mean = [0, 0, 0, 0, 0, 0, 0]
+    list_vertices_min = [-1.3641747, -1.9803121, -0.5028364, -2.0757631,
+                         -2.0141818, -4.7624843, -1.0044965]
+    list_vertices_max = [1.49, 2.2256159, 0.4999371, 2.2088753, 1.9849371,
+                         1.9848687, 0.9998741]
 
     for i, name in enumerate(list_names):
         vertices, _ = getattr(fp, "prim_para_" + name)()
