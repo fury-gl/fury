@@ -87,30 +87,34 @@ from fury.utils import numpy_support as nps
 
 class SelectorManager(object):
 
-    def __init__(self):
+    def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()
-        self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
+        if select == 'faces' or select == 'edges':
+            self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
+        if select == 'points' or select == 'vertices':
+            self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
+        
 
     def select(self, disp_xy, sc, area=1):
         self.hsel.SetRenderer(sc)
         picking_area = area
-        res = self.hsel.Select()
-        event_pos = disp_xy
-        self.hsel.SetArea(event_pos[0]-picking_area, event_pos[1]-picking_area,
-                          event_pos[0]+picking_area, event_pos[1]+picking_area)
+        self.hsel.SetArea(disp_xy[0]-picking_area, disp_xy[1]-picking_area,
+                          disp_xy[0]+picking_area, disp_xy[1]+picking_area)
         res = self.hsel.Select()
 
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
-            selected_node = None
+            sel_node = None
         else:
             sel_node = res.GetNode(0)
-            selected_nodes = set(np.floor(nps.vtk_to_numpy(
-                sel_node.GetSelectionList())/2).astype(int))
+            if(sel_node is not None):
+                selected_nodes = set(np.floor(nps.vtk_to_numpy(
+                    sel_node.GetSelectionList())).astype(int))
 
-            selected_node = list(selected_nodes)[0]
-
-        print(selected_node)
+                # selected_node = list(selected_nodes)[0]
+                print(selected_nodes)
+                
+        
         # selected_actor.text.SetText(str(selected_node))
         # if(selected_node is not None):
         #     if(labels is not None):
@@ -154,8 +158,14 @@ def test_selector_manager():
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
     sphere_actor = actor.cube(centers, directions, colors2, scales=radii2)
+    # sphere_actor.GetProperty().SetRepresentationToWireframe()
+
+    pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.])
+    pts_actor = actor.dots(pts)
+
 
     scene.add(sphere_actor)
+    scene.add(pts_actor)
 
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
@@ -168,7 +178,7 @@ def test_selector_manager():
     # use itertools to avoid global variables
     counter = itertools.count()
 
-    pickm = SelectorManager()
+    selm = SelectorManager(select='points')
 
     record_indices = {'vertex_indices': [],
                       'face_indices': [],
@@ -182,7 +192,7 @@ def test_selector_manager():
         # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
             # pick at position
-            info = pickm.select((900//2, 768//2), scene, 1)
+            info = pickm.select((900//2, 768//2), scene, 3)
             record_indices['vertex_indices'].append(info['vertex'])
             record_indices['face_indices'].append(info['face'])
             record_indices['xyz'].append(info['xyz'])
@@ -194,9 +204,9 @@ def test_selector_manager():
             pass
 
     def hover_callback(_obj, _event):
-        event_pos = pickm.event_position(showm.iren)
-        info = pickm.select(event_pos, showm.scene, 1)
-        print(info)
+        event_pos = selm.event_position(showm.iren)
+        info = selm.select(event_pos, showm.scene, 30)
+        # print(info)
         showm.render()
         
 
