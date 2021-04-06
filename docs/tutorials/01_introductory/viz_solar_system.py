@@ -107,6 +107,15 @@ neptune_actor.SetPosition(25, 0, 0)
 # to calculate the orbital position, so multiply these two together to create
 # a new constant, which we will call miu.
 
+# calculation of miu is as below, But for different versions of numpy the
+# value of np.power is varying there for we are taking is constant.
+
+# g_exponent = np.float_power(10, -11)
+# g_constant = 6.673*g_exponent
+# m_exponent = np.power(10, 30)
+# m_constant = 1.989*m_exponent
+# miu = m_constant*g_constant
+
 r_mercury = 7
 r_venus = 9
 r_earth = 11
@@ -116,13 +125,7 @@ r_saturn = 19
 r_uranus = 22
 r_neptune = 25
 
-g_exponent = np.float_power(10, -11)
-g_constant = 6.673*g_exponent
-
-m_exponent = np.power(10, 30)
-m_constant = 1.989*m_exponent
-
-miu = m_constant*g_constant
+miu = 0.14251342511996928
 
 ##############################################################################
 # Let's define two functions that will help us calculate the position of each
@@ -208,7 +211,7 @@ planets_tracks = [mercury_track, venus_track, earth_track, mars_track,
                   jupiter_track, saturn_track, uranus_track, neptune_track]
 
 for r_planet, planets_track in zip(r_planets, planets_tracks):
-    calculate_path(r_planet, planets_track, 2200)
+    calculate_path(r_planet, planets_track, r_planet*85)
 
 ##############################################################################
 # This is for orbit visualization. We are using line actor for orbits.
