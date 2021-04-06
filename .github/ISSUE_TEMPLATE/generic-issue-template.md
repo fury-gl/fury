@@ -18,4 +18,4 @@ assignees: ''
 [If reporting a bug, please include the following important information:]
 - [ ] Code example
 - [ ] Relevant images (if any)
-- [ ] Operating system and versions (run `python -c "from fury import get_info; print(get_info()"`)
+- [ ] Operating system and versions (run `python -c "from fury import get_info; print(get_info())"`)
