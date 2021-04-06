@@ -89,31 +89,45 @@ class SelectorManager(object):
 
     def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()
+        self.selection_type(select)
+        # self.hsel.SetActorPassOnly(True)
+
+    def selection_type(self, select):        
         if select == 'faces' or select == 'edges':
             self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
         if select == 'points' or select == 'vertices':
             self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
-        
+       
+    def pick(self, disp_xy, sc):
+        self.select(disp_xy, sc, area=1)
 
     def select(self, disp_xy, sc, area=1):
         self.hsel.SetRenderer(sc)
         picking_area = area
-        self.hsel.SetArea(disp_xy[0]-picking_area, disp_xy[1]-picking_area,
-                          disp_xy[0]+picking_area, disp_xy[1]+picking_area)
+        self.hsel.SetArea(disp_xy[0] - picking_area, disp_xy[1] - picking_area,
+                          disp_xy[0] + picking_area, disp_xy[1] + picking_area)
         res = self.hsel.Select()
-
+        # print(res)
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
             sel_node = None
         else:
-            sel_node = res.GetNode(0)
-            if(sel_node is not None):
-                selected_nodes = set(np.floor(nps.vtk_to_numpy(
-                    sel_node.GetSelectionList())).astype(int))
-
-                # selected_node = list(selected_nodes)[0]
-                print(selected_nodes)
+            print('Number of Nodes ', num_nodes)
+            for i in range(num_nodes):
+                print('Node ', i)
+                sel_node = res.GetNode(i)
                 
+                if(sel_node is not None):
+                    selected_nodes = set(np.floor(nps.vtk_to_numpy(
+                        sel_node.GetSelectionList())).astype(int))
+                    
+                    print('#>>>>', id(sel_node.GetProperties().Get(sel_node.PROP())))
+
+                    # selected_node = list(selected_nodes)[0]
+                    print('Selected Nodes ', selected_nodes)
+                    # print('Prop ', sel_node.GetProperties())
+                    # print('Prop ID', sel_node.PROP_ID())
+                    # print('Prop ', sel_node.PROP())
         
         # selected_actor.text.SetText(str(selected_node))
         # if(selected_node is not None):
@@ -159,10 +173,11 @@ def test_selector_manager():
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
     sphere_actor = actor.cube(centers, directions, colors2, scales=radii2)
     # sphere_actor.GetProperty().SetRepresentationToWireframe()
+    print('Sphere actor', id(sphere_actor))
 
     pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.])
     pts_actor = actor.dots(pts)
-
+    print('Points actor', id(pts_actor))
 
     scene.add(sphere_actor)
     scene.add(pts_actor)
@@ -205,7 +220,7 @@ def test_selector_manager():
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
-        info = selm.select(event_pos, showm.scene, 30)
+        info = selm.select(event_pos, showm.scene, 1)
         # print(info)
         showm.render()
         
