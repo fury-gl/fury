@@ -1609,3 +1609,125 @@ def test_clip_overflow():
 
     npt.assert_raises(ValueError, ui.clip_overflow,
                       text, rectangle.size[0], 'middle')
+
+
+def test_bullet_point(interactive=False):
+    filename = 'test_bullet_point'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+
+    bulletpoint = ui.BulletPoint2D(node="I am a Bullet Point",
+                                   indent=20, bullet_radius=5,
+                                   position=(0, 300), draggable=True,
+                                   text_color=(1, 1, 1))
+
+    child_bullet = ui.BulletPoint2D(node="I am a Bullet Point",
+                                    indent=50, bullet_radius=5,
+                                    position=(0, 350), draggable=True,
+                                    text_color=(1, 1, 1))
+
+    npt.assert_equal(bulletpoint.indent, 30)
+    npt.assert_equal(bulletpoint.parent, None)
+    npt.assert_equal(len(bulletpoint.children), 0)
+
+    bulletpoint.color = (0.2, 0.4, 0.1)
+    npt.assert_equal(bulletpoint.color, (0.2, 0.4, 0.1))
+
+    bulletpoint.value = "I am an updated Bullet Point"
+    npt.assert_equal(bulletpoint.value, "I am an updated Bullet Point")
+
+    bulletpoint.add_node(node=child_bullet)
+    npt.assert_equal(bulletpoint.children[0].value, child_bullet.value)
+    npt.assert_equal(child_bullet.parent.value, bulletpoint.value)
+
+    with npt.assert_raises(TypeError):
+        bulletpoint.add_node(node=ui.TextBlock2D(text="Invalid"))
+
+    # Assign the counter callback to every possible event.
+
+    event_counter = EventCounter()
+    event_counter.monitor(bulletpoint)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title='FURY Bullet Point')
+    show_manager.scene.add(bulletpoint)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_bullet_list(interactive=False):
+    filename = 'test_bullet_list'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
+
+    points = ['n-1', 'n-2', 'n-3']
+
+    bullet_list = ui.BulletList2D(points=points, indent=10,
+                                  draggable=False)
+
+    npt.assert_array_equal([bullet.node for bullet in bullet_list.nodes],
+                           points)
+
+    nested_points = ['n-1', 'n-2', ['n-2.1', 'n-2.2'], 'n-3']
+    bullet_list = ui.BulletList2D(points=nested_points, indent=10,
+                                  draggable=False)
+
+    # Check if children n-2.1, n-2.2 were added to n-2 node
+    node = bullet_list.dict['n-2']
+    npt.assert_array_equal([child.node for child in node.children],
+                           ['n-2.1', 'n-2.2'])
+
+    bullet_list.nodes = []
+    bullet_list.dict = {}
+
+    # First element in the bullet list should not be a list
+    invalid_list = [['n-1'], 'n-2', 'n-3']
+    with npt.assert_raises(TypeError):
+        bullet_list.create_list(lst=invalid_list)
+
+    bullet_object_list = [ui.BulletPoint2D(node=point) for point in points]
+    bullet_list.nodes = bullet_object_list
+    bullet_list.create_dict()
+    npt.assert_array_equal(bullet_object_list,
+                           [node[1] for node in bullet_list.dict.items()])
+
+    # Check if child node is added to root node
+    bullet_list = ui.BulletList2D(points=points, draggable=True)
+    bullet_list.add_child_node('n-1', 'n-1.1')
+    root_node = bullet_list.dict['n-1']
+    child_node = bullet_list.dict['n-1.1']
+    npt.assert_equal(root_node.children[0], child_node)
+
+    bullet_list.get_last_child(root_node)
+    npt.assert_equal(bullet_list._last_child, child_node)
+
+    bullet_list.color = (1, 1, 1)
+    npt.assert_equal(bullet_list.color, (1, 1, 1))
+    # Assign the counter callback to every possible event.
+
+    event_counter = EventCounter()
+    event_counter.monitor(bullet_list)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title='FURY Bullet List')
+    show_manager.scene.add(bullet_list)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
