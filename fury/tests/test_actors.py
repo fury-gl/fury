@@ -1434,13 +1434,14 @@ def test_parametric_surface_actor(interactive=False):
     list_parametric_names = ["mobius_strip", "kleins_bottle", "roman_surface",
                              "boys_surface", "bohemian_dome", "dinis_surface",
                              "pluckers_conoid"]
-
+    npoints = 100
     for name in list_parametric_names:
         for scale in scale_list:
             scene = window.Scene()
             g_actor = actor.parametric_surface(centers=centers, colors=colors,
                                                directions=directions,
-                                               scales=scale, name=name)
+                                               scales=scale, name=name,
+                                               npoints=npoints)
             scene.add(g_actor)
             if interactive:
                 window.show(scene)

@@ -186,17 +186,16 @@ def test_vertices_primitives_parametric_surfaces():
     list_names = ["mobius_strip", "kleins_bottle", "roman_surface",
                   "boys_surface", "bohemian_dome", "dinis_surface",
                   "pluckers_conoid"]
-    shape = (10000, 3)
-
+    list_npoints = [4, 8, 16, 32, 64, 128, 256]
     list_vertices_mean = [0, 0, 0, 0, 0, 0, 0]
-    list_vertices_min = [-1.3641747, -1.9803121, -0.5028364, -2.0757631,
-                         -2.0141818, -4.7624843, -1.0044965]
-    list_vertices_max = [1.49, 2.2256159, 0.4999371, 2.2088753, 1.9849371,
-                         1.9848687, 0.9998741]
+    list_vertices_min = [-1.0825318, -1.7535424, -0.5049773, -2.0668169,
+                         -2.0214174, -4.7658657, -1.0018772]
+    list_vertices_max = [1.25, 2.2668278, 0.4972609, 2.2130613, 1.9764071,
+                         1.9814873, 0.9999810]
 
     for i, name in enumerate(list_names):
-        vertices, _ = getattr(fp, "prim_para_" + name)()
-        npt.assert_equal(vertices.shape, shape)
+        vertices, _ = getattr(fp, "prim_para_" + name)(npoints=list_npoints[i])
+        npt.assert_equal(vertices.shape, (list_npoints[i]**2, 3))
         npt.assert_almost_equal(np.mean(vertices), list_vertices_mean[i])
         npt.assert_almost_equal(vertices.min(), list_vertices_min[i])
         npt.assert_almost_equal(vertices.max(), list_vertices_max[i])
