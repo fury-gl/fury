@@ -2546,8 +2546,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 
 def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                       scales=1, name='mobius_strip'):
+                       scales=1, name='mobius_strip', npoints=100):
     """Visualize one or many parametric surfaces with different features.
+    Centered by default such that their centroids coincide with the origin i.e.
+    their centroids lie on [0, 0, 0].
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
@@ -2575,7 +2577,12 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
         Bohemian Dome       |        bohemian_dome
         Dini's surface      |        dinis_surface
         Plücker's conoid    |        pluckers_conoid
-
+    npoints : npoints^2 = number of points which will be used for generating
+              the triangles. The quality of the surface generated will be
+              better if npoints is high but this becomes computationally taxing
+              for large values of n.
+              default: 100 i,e. by default, 100^2 = 10,000 points are used to
+                       generate a parametric surface
     Returns
     -------
     vtkActor
@@ -2593,7 +2600,7 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> # window.show(scene)
     """
 
-    verts, faces = getattr(fp, "prim_para_" + name)()
+    verts, faces = getattr(fp, "prim_para_" + name)(npoints=npoints)
     res = fp.repeat_primitive(verts, faces, directions=directions,
                               centers=centers, colors=colors, scales=scales)
     big_verts, big_faces, big_colors, _ = res
