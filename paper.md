@@ -22,9 +22,9 @@ authors:
     affiliation: 3
   - name: Soham Biswas
     orcid: 0000-0002-8449-2107
-    affiliation: 4  
+    affiliation: 4
   - name: David Reagan
-    orcid: 0000-0002-8359-7580 
+    orcid: 0000-0002-8359-7580
     affiliation: 5
   - name: Nasim Anousheh
     orcid: 0000-0002-5931-7753
@@ -46,7 +46,7 @@ affiliations:
    index: 3
  - name: Department of Computer Science and Engineering, Institute of Engineering and Management, Kolkata, India
    index: 4
- - name: Pervasive Technology Institute, Indiana University, Bloomington, IN, USA
+ - name: Advanced Visualization Lab, University Information Technology Services, Indiana University, Bloomington, IN, USA
    index: 5
  - name: Anywhere in the Universe
    index: 6
@@ -64,7 +64,7 @@ Free Unified Rendering in pYthon (FURY), is a community-driven, open-source, and
 
 # Statement of need
 
-The massive amount of data collected and analyzed by scientists in several disciplines requires powerful tools and techniques able to handle these whilst still managing efficiently the computational resources available. In some particular disciplines, these datasets not only are large but also encapsulate the dynamics of their environment, increasing the demand for resources. Although 3D visualization technologies are advancing quickly [@sellers2016vulkan], their sophistication and focus on non-scientific domains makes it hard for researchers to use them.  In other words, most of the existing 3D visualization and computing APIs are low-level (close to the hardware) and made for professional specialist developers.  Because of these issues, there is a significant barrier to many scientists and these powerful technologies are rarely deployed to everyday research practices. 
+The massive amount of data collected and analyzed by scientists in several disciplines requires powerful tools and techniques able to handle these whilst still managing efficiently the computational resources available. In some particular disciplines, these datasets not only are large but also encapsulate the dynamics of their environment, increasing the demand for resources. Although 3D visualization technologies are advancing quickly [@sellers2016vulkan], their sophistication and focus on non-scientific domains makes it hard for researchers to use them.  In other words, most of the existing 3D visualization and computing APIs are low-level (close to the hardware) and made for professional specialist developers.  Because of these issues, there is a significant barrier to many scientists and these powerful technologies are rarely deployed to everyday research practices.
 
 Therefore, FURY is created to address this necessity of high-performance 3D scientific visualization in an easy-to-use API fully compatible with the Pythonic ecosystem.
 
@@ -83,13 +83,13 @@ FURY is built to be modular, scalable, and to respect software engineering princ
 
 **Networks Engine**:  This engine allows for the creation and use of graph systems and layouts.
 
-**Integrated User Interfaces Module**: FURY contains its own user interfaces. This module provides a range of UI 2D / 3D elements such as buttons, combo boxes, and file dialogues. Nevertheless, users can easily connect to other known GUIs such as Qt or IMGUI if necessary. 
+**Integrated User Interfaces Module**: FURY contains its own user interfaces. This module provides a range of UI 2D / 3D elements such as buttons, combo boxes, and file dialogues. Nevertheless, users can easily connect to other known GUIs such as Qt or IMGUI if necessary.
 
 **I/O module**: FURY supports a range of file formats from the classic OBJ format to the more advanced GLTF format that can be used to describe a complete scene with many actors and animations.
 
-**Interoperability**: FURY can be used together with projects such as SciPy [@virtanen2020scipy], Matplotlib [@hunter2007matplotlib], pandas [@mckinney2010data], scikit-learn [@pedregosa2011scikit], NetworkX [@hagberg2008exploring], PyTorch [@paszke2019pytorch] and TensorFlow [@abadi2016tensorflow]. 
+**Interoperability**: FURY can be used together with projects such as SciPy [@virtanen2020scipy], Matplotlib [@hunter2007matplotlib], pandas [@mckinney2010data], scikit-learn [@pedregosa2011scikit], NetworkX [@hagberg2008exploring], PyTorch [@paszke2019pytorch] and TensorFlow [@abadi2016tensorflow].
 
-FURY’s visualization API can be compared with VisPy [@campagnola2015vispy], glumpy [@rougier2015glumpy], Mayavi [@ramachandran2011mayavi], and others. VisPy and glumpy directly connect to OpenGL. FURY uses OpenGL through Python VTK which can be advantageous because it can use the large stack of visualization algorithms available in VTK. This is similar to Mayavi however FURY provides an easy and efficient way to ease interaction with 3D scientific data via integrated user interface elements and allows to reprogram the low-level shaders for the creation of stunning effects (see \autoref{fig:features}) not available in VTK. Historically, FURY had also a different path than these libraries as it was originally created for heavy-duty medical visualization purposes for DIPY [@garyfallidis2014dipy]. As the project grew it spinned off as an independent project with applications across the domains of science and engineering including visualization of nanomaterials and robotics simulations. 
+FURY’s visualization API can be compared with VisPy [@campagnola2015vispy], glumpy [@rougier2015glumpy], Mayavi [@ramachandran2011mayavi], and others. VisPy and glumpy directly connect to OpenGL. FURY uses OpenGL through Python VTK which can be advantageous because it can use the large stack of visualization algorithms available in VTK. This is similar to Mayavi however FURY provides an easy and efficient way to ease interaction with 3D scientific data via integrated user interface elements and allows to reprogram the low-level shaders for the creation of stunning effects (see \autoref{fig:features}) not available in VTK. Historically, FURY had also a different path than these libraries as it was originally created for heavy-duty medical visualization purposes for DIPY [@garyfallidis2014dipy]. As the project grew it spinned off as an independent project with applications across the domains of science and engineering including visualization of nanomaterials and robotics simulations.
 
 
 
@@ -99,7 +99,7 @@ FURY’s visualization API can be compared with VisPy [@campagnola2015vispy], gl
 
 
 # Acknowledgements
-FURY is partly funded through NSF #1720625 Network for Computational Nanotechnology - Engineered nanoBIO Node [@klimeck2008nanohub]. 
+FURY is partly funded through NSF #1720625 Network for Computational Nanotechnology - Engineered nanoBIO Node [@klimeck2008nanohub].
 
 
 # References
