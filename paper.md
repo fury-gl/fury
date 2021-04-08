@@ -17,6 +17,15 @@ authors:
   - name: Javier Guaje
     orcid: 0000-0003-3534-3794
     affiliation: 1
+  - name: Marc-Alex Côté
+    orcid: 0000-0002-5147-7859
+    affiliation: 3
+  - name: Soham Biswas
+    orcid: 0000-0002-8449-2107
+    affiliation: 4  
+  - name: David Reagan
+    orcid: 0000-0002-8359-7580 
+    affiliation: 5
   - name: Nasim Anousheh
     orcid: 0000-0002-5931-7753
     affiliation: 1
@@ -27,15 +36,22 @@ authors:
     orcid: 0000-0003-1017-1391
     affiliation: 1
   - name: FURY Contributors
-    affiliation: 3
+    affiliation: 6
 affiliations:
  - name: Department of Intelligent Systems Engineering, Luddy School of Informatics, Computing and Engineering, Indiana University, Bloomington, IN, USA
    index: 1
  - name: Network Science Institute, Indiana University, Bloomington, IN, USA
    index: 2
- - name: Anywhere in the Multiverse
+ - name: Microsoft Research, Montreal, Canada
    index: 3
-date: 23 February 2021
+ - name: Department of Computer Science and Engineering, Institute of Engineering and Management, Kolkata, India
+   index: 4
+ - name: Pervasive Technology Institute, Indiana University, Bloomington, IN, USA
+   index: 5
+ - name: Anywhere in the Universe
+   index: 6
+
+date: 8 April 2021
 bibliography: paper.bib
 ---
 
