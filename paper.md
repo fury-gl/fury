@@ -1,5 +1,5 @@
 ---
-title: FURY for advanced scientific visualization
+title: FURY: advanced scientific visualization
 tags:
   - Python
   - scientific visualization
