@@ -80,6 +80,15 @@ utils.rotate(jupiter_actor, (90, 1, 0, 0))
 # of this tutorial, planet sizes and positions will not be completely
 # accurate.
 
+r_mercury = 7
+r_venus = 9
+r_earth = 11
+r_mars = 13
+r_jupiter = 16
+r_saturn = 19
+r_uranus = 22
+r_neptune = 25
+
 sun_actor.SetScale(5, 5, 5)
 mercury_actor.SetScale(0.4, 0.4, 0.4)
 venus_actor.SetScale(0.6, 0.6, 0.6)
@@ -91,15 +100,15 @@ saturn_rings_actor.SetScale(3, 0.5, 3)
 uranus_actor.SetScale(1, 1, 1)
 neptune_actor.SetScale(1, 1, 1)
 
-mercury_actor.SetPosition(7, 0, 0)
-venus_actor.SetPosition(9, 0, 0)
-earth_actor.SetPosition(11, 0, 0)
-mars_actor.SetPosition(13, 0, 0)
-jupiter_actor.SetPosition(16, 0, 0)
-saturn_actor.SetPosition(19, 0, 0)
-saturn_rings_actor.SetPosition(19, 0, 0)
-uranus_actor.SetPosition(22, 0, 0)
-neptune_actor.SetPosition(25, 0, 0)
+mercury_actor.SetPosition(r_mercury, 0, 0)
+venus_actor.SetPosition(r_venus, 0, 0)
+earth_actor.SetPosition(r_earth, 0, 0)
+mars_actor.SetPosition(r_mars, 0, 0)
+jupiter_actor.SetPosition(r_jupiter, 0, 0)
+saturn_actor.SetPosition(r_saturn, 0, 0)
+saturn_rings_actor.SetPosition(r_saturn, 0, 0)
+uranus_actor.SetPosition(r_uranus, 0, 0)
+neptune_actor.SetPosition(r_neptune, 0, 0)
 
 ##############################################################################
 # Define the gravitational constant G, the orbital radii of each of the
@@ -115,15 +124,6 @@ neptune_actor.SetPosition(25, 0, 0)
 # m_exponent = np.power(10, 30)
 # m_constant = 1.989*m_exponent
 # miu = m_constant*g_constant
-
-r_mercury = 7
-r_venus = 9
-r_earth = 11
-r_mars = 13
-r_jupiter = 16
-r_saturn = 19
-r_uranus = 22
-r_neptune = 25
 
 miu = 0.14251342511996928
 
@@ -166,21 +166,6 @@ showm = window.ShowManager(scene,
 counter = itertools.count()
 
 ##############################################################################
-# All of the planets will have the same initial positions, so assign each of
-# those to the positions variables for each planet. These variables will be
-# updated within the ``timer_callback`` function.
-
-mercury_track = []
-venus_track = []
-earth_track = []
-mars_track = []
-jupiter_track = []
-saturn_track = []
-uranus_track = []
-neptune_track = []
-
-
-##############################################################################
 # Define one new function to use in ``timer_callback`` to update the planet
 # positions ``update_planet_position``.
 
@@ -207,17 +192,18 @@ def calculate_path(r_planet, planet_track, cnt):
 
 r_planets = [r_mercury, r_venus, r_earth, r_mars,
              r_jupiter, r_saturn, r_uranus, r_neptune]
-planets_tracks = [mercury_track, venus_track, earth_track, mars_track,
-                  jupiter_track, saturn_track, uranus_track, neptune_track]
+planet_tracks = [[], [], [], [], [], [], [], []]
+planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
+                jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
 
-for r_planet, planets_track in zip(r_planets, planets_tracks):
+for r_planet, planets_track in zip(r_planets, planet_tracks):
     calculate_path(r_planet, planets_track, r_planet*85)
 
 ##############################################################################
 # This is for orbit visualization. We are using line actor for orbits.
 # After creating an actor we add it to the scene.
 
-for planets_track in planets_tracks:
+for planets_track in planet_tracks:
     orbit_actor = actor.line([planets_track], colors=(1, 1, 1), linewidth=0.1)
     scene.add(orbit_actor)
 
@@ -232,23 +218,12 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
     showm.render()
 
-    update_planet_position(r_mercury, mercury_actor, cnt)
-
-    update_planet_position(r_venus, venus_actor, cnt)
-
-    update_planet_position(r_earth, earth_actor, cnt)
-
-    update_planet_position(r_mars, mars_actor, cnt)
-
-    update_planet_position(r_jupiter, jupiter_actor, cnt)
-
-    pos_saturn = update_planet_position(r_saturn, saturn_actor, cnt)
-
-    saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
-
-    update_planet_position(r_uranus, uranus_actor, cnt)
-
-    update_planet_position(r_neptune, neptune_actor, cnt)
+    for r_planet, planet_actor in zip(r_planets, planet_actors):
+        if r_planet == r_saturn:
+            pos_saturn = update_planet_position(r_saturn, saturn_actor, cnt)
+            saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
+        else:
+            update_planet_position(r_planet, planet_actor, cnt)
 
     if cnt == 2000:
         showm.exit()
