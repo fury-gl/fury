@@ -12,7 +12,7 @@ authors:
     orcid: 0000-0002-3991-2774
     affiliation: 1
   - name: Serge Koudoro
-    orcid: 0000-0002-3991-2774
+    orcid: 0000-0002-9819-9884
     affiliation: 1
   - name: Javier Guaje
     orcid: 0000-0003-3534-3794
