@@ -116,16 +116,13 @@ neptune_actor.SetPosition(r_neptune, 0, 0)
 # to calculate the orbital position, so multiply these two together to create
 # a new constant, which we will call miu.
 
-# calculation of miu is as below, But for different versions of numpy the
-# value of np.power is varying there for we are taking is constant.
+g_exponent = np.float_power(10, -11)
+g_constant = 6.673*g_exponent
 
-# g_exponent = np.float_power(10, -11)
-# g_constant = 6.673*g_exponent
-# m_exponent = np.power(10, 30)
-# m_constant = 1.989*m_exponent
-# miu = m_constant*g_constant
+m_exponent = 1073741824                                    # np.power(10, 30)
+m_constant = 1.989*m_exponent
 
-miu = 0.14251342511996928
+miu = m_constant*g_constant
 
 ##############################################################################
 # Let's define two functions that will help us calculate the position of each
@@ -135,7 +132,7 @@ miu = 0.14251342511996928
 
 
 def get_orbit_period(radius):
-    return 2*np.pi * np.sqrt(np.power(radius, 3)/miu)
+    return 2 * np.pi * np.sqrt(np.power(radius, 3)/miu)
 
 
 def get_orbital_position(radius, time):
@@ -169,6 +166,7 @@ counter = itertools.count()
 # Define one new function to use in ``timer_callback`` to update the planet
 # positions ``update_planet_position``.
 
+
 def update_planet_position(r_planet, planet_actor, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
     planet_actor.SetPosition(pos_planet[0], 0, pos_planet[1])
@@ -179,6 +177,7 @@ def update_planet_position(r_planet, planet_actor, cnt):
 # ``calculate_path`` function is for calculating the path/orbit
 # of every planet.
 
+
 def calculate_path(r_planet, planet_track, cnt):
     for i in range(cnt):
         pos_planet = get_orbital_position(r_planet, i)
@@ -187,32 +186,34 @@ def calculate_path(r_planet, planet_track, cnt):
 
 ##############################################################################
 # First we are making two lists that will contain radii and track's lists.
+# `planet_tracks` is list of 8 empty list for 8 different planets.
+# and `planet_actors` will contain all the planet actor.
 # and then we are calculating and updating the path/orbit
 # before animation starts.
 
 r_planets = [r_mercury, r_venus, r_earth, r_mars,
-             r_jupiter, r_saturn, r_uranus, r_neptune]
+                r_jupiter, r_saturn, r_uranus, r_neptune]
 planet_tracks = [[], [], [], [], [], [], [], []]
 planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
                 jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
 
-for r_planet, planets_track in zip(r_planets, planet_tracks):
-    calculate_path(r_planet, planets_track, r_planet*85)
+for r_planet, planet_track in zip(r_planets, planet_tracks):
+    calculate_path(r_planet, planet_track, r_planet * 85)
 
 ##############################################################################
 # This is for orbit visualization. We are using line actor for orbits.
 # After creating an actor we add it to the scene.
 
-for planets_track in planet_tracks:
-    orbit_actor = actor.line([planets_track], colors=(1, 1, 1), linewidth=0.1)
+for planet_track in planet_tracks:
+    orbit_actor = actor.line([planet_track], colors=(1, 1, 1), linewidth=0.1)
     scene.add(orbit_actor)
-
 
 ##############################################################################
 # Define the ``timer_callback`` function, which controls what events happen
 # at certain times, using the counter. Update the position of each planet
 # actor using ``update_planet_position,`` assigning the x and y values of
 # each planet's position with the newly calculated ones.
+
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
