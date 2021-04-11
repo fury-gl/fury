@@ -74,4 +74,5 @@ interactive = True
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, out_path="bullet_list_ui.png", size=(1000, 1000))
+window.record(show_manager.scene,
+              out_path="bullet_list_ui.png", size=(1000, 1000))

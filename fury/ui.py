@@ -5311,7 +5311,7 @@ class BulletList2D(UI):
         for node in self.dict.items():
             _bullet_point = node[1]
 
-            if(_bullet_point.parent):
+            if _bullet_point.parent:
                 _bullet_point.indent = _bullet_point.parent.indent + 30
 
             _bullet_point._resize((self.content_size[0] -
@@ -5360,9 +5360,9 @@ class BulletList2D(UI):
         """Create a flat list with all nodes ordered sequentially
         """
         for ele in lst:
-            if(isinstance(ele, list)):
+            if isinstance(ele, list):
 
-                if(not len(self.nodes)):
+                if not(len(self.nodes)):
                     raise TypeError(
                         f"First element should be str or str castable")
 
@@ -5374,7 +5374,7 @@ class BulletList2D(UI):
                                                     self.indent, 20),
                                     text_color=self.text_color,
                                     bg_color=self.bullet_bg_color)
-                if(head):
+                if head:
                     head.add_node(ele)
                     self.nodes = [head if ele.node == head.node else
                                   ele for ele in self.nodes]
@@ -5420,12 +5420,13 @@ class BulletList2D(UI):
         for node in self.nodes[_idx:]:
             self.panel.update_element(node, (node.indent,
                                              new_node.position[1] - _offsetY))
+
             _offsetY += 50
 
     def get_last_child(self, node):
         """Get the previous node to newly added node
         """
-        if(len(node.children) > 0):
+        if len(node.children) > 0:
             self.get_last_child(node.children[-1])
         else:
             self._last_child = node
@@ -5572,7 +5573,7 @@ class BulletPoint2D(UI):
     def add_node(self, node):
         """Add a child node in the current node
         """
-        if(not isinstance(node, type(self))):
+        if not(isinstance(node, type(self))):
             raise TypeError(
                 f'Node should be of type {type(self)}, passed {type(node)}')
         node.parent = self
