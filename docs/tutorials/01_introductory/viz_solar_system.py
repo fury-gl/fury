@@ -192,10 +192,10 @@ def calculate_path(r_planet, planet_track, cnt):
 # before animation starts.
 
 r_planets = [r_mercury, r_venus, r_earth, r_mars,
-                r_jupiter, r_saturn, r_uranus, r_neptune]
+             r_jupiter, r_saturn, r_uranus, r_neptune]
 planet_tracks = [[], [], [], [], [], [], [], []]
 planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
-                jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
+                 jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
 
 for r_planet, planet_track in zip(r_planets, planet_tracks):
     calculate_path(r_planet, planet_track, r_planet * 85)
