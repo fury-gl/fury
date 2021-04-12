@@ -1823,7 +1823,7 @@ class TextBox2D(UI):
         """Resizing Background.
         """
         size = np.zeros(2)
-        self.text.actor.GetSize(self.text.scene,size)
+        self.text.actor.GetSize(self.text.scene, size)
         if self.text.have_bg:
             self.text.background.resize(size)
 
