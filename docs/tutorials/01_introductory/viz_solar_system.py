@@ -26,16 +26,16 @@ scene = window.Scene()
 # position of the planet and rescale it. It will also add each actor to
 # the scene that has already been created.
 
-planet_filenames = {"8k_mercury.jpg" : [7, (0.4, 0.4, 0.4)],
-                    "8k_venus_surface.jpg" : [9, (0.6, 0.6, 0.6)],
+planet_filenames = {"8k_mercury.jpg": [7, (0.4, 0.4, 0.4)],
+                    "8k_venus_surface.jpg": [9, (0.6, 0.6, 0.6)],
                     "1_earth_8k.jpg": [11, (0.4, 0.4, 0.4)],
-                    "8k_mars.jpg" : [13, (0.8, 0.8, 0.8)],
-                    "jupiter.jpg" : [16, (2, 2, 2)],
-                    "8k_saturn.jpg" : [19, (2, 2, 2)],
-                    "8k_saturn_ring_alpha.png" : [19, (3, 0.5, 3)],
-                    "2k_uranus.jpg" : [22, (1, 1, 1)],
-                    "2k_neptune.jpg" : [25, (1, 1, 1)],
-                    "8k_sun.jpg" : [0, (5, 5, 5)]}
+                    "8k_mars.jpg": [13, (0.8, 0.8, 0.8)],
+                    "jupiter.jpg": [16, (2, 2, 2)],
+                    "8k_saturn.jpg": [19, (2, 2, 2)],
+                    "8k_saturn_ring_alpha.png": [19, (3, 0.5, 3)],
+                    "2k_uranus.jpg": [22, (1, 1, 1)],
+                    "2k_neptune.jpg": [25, (1, 1, 1)],
+                    "8k_sun.jpg": [0, (5, 5, 5)]}
 fetch_viz_textures()
 
 
@@ -157,13 +157,13 @@ def update_planet_position(r_planet, planet_actor, cnt):
 def calculate_path(r_planet, planet_track, cnt):
     [planet_track.append([get_orbital_position(r_planet, i)[0],
                          0, get_orbital_position(r_planet, i)[1]])
-                         for i in range(cnt)]
+     for i in range(cnt)]
 
 
 ##############################################################################
 # First we are making a list that will contain radii form `planet_filenames`.
 # `planet_tracks` is list of 8 empty list for 8 different planets.
-# and `planet_actors` will contain all the planet actor. And then we are 
+# and `planet_actors` will contain all the planet actor. And then we are
 # calculating and updating the path/orbit before animation starts.
 
 r_planets = list(set([planet_filenames[i][0] for i in planet_filenames]))
