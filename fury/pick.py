@@ -95,9 +95,9 @@ class SelectionManager(object):
             self.hsel.SetActorPassOnly()
        
     def pick(self, disp_xy, sc):
-        self.select(disp_xy, sc, area=1)
+        self.select(disp_xy, sc, area=0)
 
-    def select(self, disp_xy, sc, area=1):
+    def select(self, disp_xy, sc, area=0):
 
         info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
 
@@ -130,7 +130,7 @@ class SelectionManager(object):
                     info['node'] = sel_node
                     info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
                     if self.selected_type == 'faces':
-                        info['faces'] = list(selected_nodes)
+                        info['face'] = list(selected_nodes)
                     if self.selected_type == 'vertex':
                         info['vertex'] = list(selected_nodes)
         
@@ -155,3 +155,5 @@ class SelectionManager(object):
     def selectable_off(self, actors):
         for a in actors:
             a.PickableOff()
+
+    

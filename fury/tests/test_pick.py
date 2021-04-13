@@ -94,7 +94,7 @@ def test_selector_manager():
     print('Sphere actor', id(sphere_actor))
 
     pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.])
-    pts_actor = actor.dots(pts)
+    pts_actor = actor.dots(pts, dot_size=1)
     print('Points actor', id(pts_actor))
 
     scene.add(sphere_actor)
@@ -138,7 +138,7 @@ def test_selector_manager():
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
-        info = selm.select(event_pos, showm.scene, 1)
+        info = selm.select(event_pos, showm.scene, 0)
         print(info)
         showm.render()
         
