@@ -77,60 +77,64 @@ class PickingManager(object):
         return iren.GetEventPosition()
 
 
-class SelectorManager(object):
+class SelectionManager(object):
 
     def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()
-        self.selection_type(select)
-        # self.hsel.SetActorPassOnly(True)
+        self.update_selection_type(select)                
 
-    def selection_type(self, select):        
+    def update_selection_type(self, select):
+        self.selected_type = select
         if select == 'faces' or select == 'edges':
-            self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
+            self.hsel.SetFieldAssociation(
+                vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
         if select == 'points' or select == 'vertices':
-            self.hsel.SetFieldAssociation(vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
+            self.hsel.SetFieldAssociation(
+                vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
+        if select == 'actors':
+            self.hsel.SetActorPassOnly()
        
     def pick(self, disp_xy, sc):
         self.select(disp_xy, sc, area=1)
 
     def select(self, disp_xy, sc, area=1):
+
+        info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
+
         self.hsel.SetRenderer(sc)
         picking_area = area
-        self.hsel.SetArea(disp_xy[0] - picking_area, disp_xy[1] - picking_area,
-                          disp_xy[0] + picking_area, disp_xy[1] + picking_area)
-        res = self.hsel.Select()
+        
+        try:
+            self.hsel.SetArea(disp_xy[0] - picking_area, disp_xy[1] - picking_area,
+                              disp_xy[0] + picking_area, disp_xy[1] + picking_area)
+            res = self.hsel.Select()
+        
+        except OverflowError:
+            return info
+
         # print(res)
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
             sel_node = None
         else:
-            print('Number of Nodes ', num_nodes)
+            # print('Number of Nodes ', num_nodes)
+
             for i in range(num_nodes):
-                print('Node ', i)
+                # print('Node ', i)
                 sel_node = res.GetNode(i)
-                
+                                
                 if(sel_node is not None):
                     selected_nodes = set(np.floor(nps.vtk_to_numpy(
                         sel_node.GetSelectionList())).astype(int))
                     
-                    print('#>>>>', id(sel_node.GetProperties().Get(sel_node.PROP())))
-
-                    # selected_node = list(selected_nodes)[0]
-                    print('Selected Nodes ', selected_nodes)
-                    # print('Prop ', sel_node.GetProperties())
-                    # print('Prop ID', sel_node.PROP_ID())
-                    # print('Prop ', sel_node.PROP())
+                    info['node'] = sel_node
+                    info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
+                    if self.selected_type == 'faces':
+                        info['faces'] = list(selected_nodes)
+                    if self.selected_type == 'vertex':
+                        info['vertex'] = list(selected_nodes)
         
-        # selected_actor.text.SetText(str(selected_node))
-        # if(selected_node is not None):
-        #     if(labels is not None):
-        #         selected_actor.text.SetText(labels[selected_node])
-        #     else:
-        #         selected_actor.text.SetText("#%d" % selected_node)
-        #     selected_actor.SetPosition(positions[selected_node])
-
-        # else:
-        #     selected_actor.text.SetText("")
+        return info
 
     def event_position(self, iren):
         """ Returns event display position from interactor

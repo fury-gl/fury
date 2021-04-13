@@ -87,8 +87,8 @@ def test_selector_manager():
     #                             radii=radii)
 
     directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [0, np.sqrt(2)/2, np.sqrt(2)/2]])
+                          [np.sqrt(2)/2, np.sqrt(2)/2, 0],
+                          [0, np.sqrt(2)/2, np.sqrt(2)/2]])
     sphere_actor = actor.cube(centers, directions, colors2, scales=radii2)
     # sphere_actor.GetProperty().SetRepresentationToWireframe()
     print('Sphere actor', id(sphere_actor))
@@ -111,7 +111,7 @@ def test_selector_manager():
     # use itertools to avoid global variables
     counter = itertools.count()
 
-    selm = pick.SelectorManager(select='points')
+    selm = pick.SelectionManager(select='faces')
 
     record_indices = {'vertex_indices': [],
                       'face_indices': [],
@@ -125,7 +125,7 @@ def test_selector_manager():
         # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
             # pick at position
-            info = pickm.select((900//2, 768//2), scene, 3)
+            info = selm.select((900//2, 768//2), scene, 3)
             record_indices['vertex_indices'].append(info['vertex'])
             record_indices['face_indices'].append(info['face'])
             record_indices['xyz'].append(info['xyz'])
@@ -138,8 +138,8 @@ def test_selector_manager():
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
-        selm.select(event_pos, showm.scene, 1)
-        # print(info)
+        info = selm.select(event_pos, showm.scene, 1)
+        print(info)
         showm.render()
         
 
