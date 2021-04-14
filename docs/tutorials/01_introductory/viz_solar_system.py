@@ -20,45 +20,57 @@ from fury.data import read_viz_textures, fetch_viz_textures
 scene = window.Scene()
 
 ##############################################################################
-# Load in a texture for each of the actors. To do this, we will create
-# a function called ``init_planet``, which will initialize each planet actor
-# given its corresponding filename and actor name.It will also set the
-# position of the planet and rescale it. It will also add each actor to
-# the scene that has already been created.
+# Define information relevant for each planet actor including its
+# texture name, relative position, and scale.
 
-planet_filenames = {"8k_mercury.jpg": [7, (0.4, 0.4, 0.4)],
-                    "8k_venus_surface.jpg": [9, (0.6, 0.6, 0.6)],
-                    "1_earth_8k.jpg": [11, (0.4, 0.4, 0.4)],
-                    "8k_mars.jpg": [13, (0.8, 0.8, 0.8)],
-                    "jupiter.jpg": [16, (2, 2, 2)],
-                    "8k_saturn.jpg": [19, (2, 2, 2)],
-                    "8k_saturn_ring_alpha.png": [19, (3, 0.5, 3)],
-                    "2k_uranus.jpg": [22, (1, 1, 1)],
-                    "2k_neptune.jpg": [25, (1, 1, 1)],
-                    "8k_sun.jpg": [0, (5, 5, 5)]}
+planets_data = [{'filename': '8k_mercury.jpg', 'position': 7,
+                 'scale': (.4, .4, .4)},
+                {'filename': '8k_venus_surface.jpg', 'position': 9,
+                 'scale': (.6, .6, .6)},
+                {'filename': '1_earth_8k.jpg', 'position': 11,
+                 'scale': (.4, .4, .4)},
+                {'filename': '8k_mars.jpg', 'position': 13,
+                 'scale': (.8, .8, .8)},
+                {'filename': 'jupiter.jpg', 'position': 16,
+                 'scale': (2, 2, 2)},
+                {'filename': '8k_saturn.jpg', 'position': 19,
+                 'scale': (2, 2, 2)},
+                {'filename': '8k_saturn_ring_alpha.png', 'position': 19,
+                 'scale': (3, .5, 3)},
+                {'filename': '2k_uranus.jpg', 'position': 22,
+                 'scale': (1, 1, 1)},
+                {'filename': '2k_neptune.jpg', 'position': 25,
+                 'scale': (1, 1, 1)},
+                {'filename': '8k_sun.jpg', 'position': 0,
+                 'scale': (5, 5, 5)}]
 fetch_viz_textures()
 
+##############################################################################
+# To take advantage of the previously defined data structure we are going to
+# create an auxiliary function that will load and apply the respective
+# texture, set its respective properties (relative position and scale),
+# and add the actor to a previously created scene.
 
-def init_planet(filename):
+
+def init_planet(planet_data):
     """Initialize a planet actor.
 
     Parameters
     ----------
-    filename : dict
-        The filename is a dictionary, the key is the name of texture file
-        name and the value is the list of the radius of the orbit of planet
-        and the scale of the planet.
+    planet_data : dict
+        The planet_data is a dictionary, and the keys are filename(texture),
+        position and scale.
 
     Returns
     -------
     planet_actor: actor
         The corresponding sphere actor with texture applied.
     """
-    planet_file = read_viz_textures(filename)
+    planet_file = read_viz_textures(planet_data['filename'])
     planet_image = io.load_image(planet_file)
     planet_actor = actor.texture_on_sphere(planet_image)
-    planet_actor.SetPosition(planet_filenames[filename][0], 0, 0)
-    planet_actor.SetScale(planet_filenames[filename][1])
+    planet_actor.SetPosition(planet_data['position'], 0, 0)
+    planet_actor.SetScale(planet_data['scale'])
     scene.add(planet_actor)
     return planet_actor
 
@@ -68,7 +80,7 @@ def init_planet(filename):
 # in the ``planet_files`` list. Then, assign each actor to its corresponding
 # actor in the list.
 
-planet_actor_list = list(map(init_planet, planet_filenames))
+planet_actor_list = list(map(init_planet, planets_data))
 
 mercury_actor = planet_actor_list[0]
 venus_actor = planet_actor_list[1]
@@ -86,9 +98,7 @@ utils.rotate(jupiter_actor, (90, 1, 0, 0))
 
 ##############################################################################
 # Define the gravitational constant G, the orbital radii of each of the
-# planets, and the central mass of the sun(Because of some bug, for different
-# OS the value of `np.power(10, 30)` is different and that causes visual bug,
-# Therefore we are taking it constant for now). The gravity and mass will be
+# planets, and the central mass of the sun. The gravity and mass will be
 # used to calculate the orbital position, so multiply these two together to
 # create a new constant, which we will call miu.
 
@@ -115,7 +125,7 @@ def get_orbital_position(radius, time):
     orbit_period = get_orbit_period(radius)
     x = radius * np.cos((2*np.pi*time)/orbit_period)
     y = radius * np.sin((2*np.pi*time)/orbit_period)
-    return (x, y)
+    return x, y
 
 
 ##############################################################################
@@ -161,18 +171,21 @@ def calculate_path(r_planet, planet_track, cnt):
 
 
 ##############################################################################
-# First we are making a list that will contain radii form `planet_filenames`.
-# `planet_tracks` is list of 8 empty list for 8 different planets.
-# and `planet_actors` will contain all the planet actor. And then we are
-# calculating and updating the path/orbit before animation starts.
+# First we are making a list that will contain radius from `planets_data`.
+# `planet_tracks` is list of 8 empty lists for 8 different planets.
+# And `planet_actors` will contain all the planet actors.
 
-r_planets = list(set([planet_filenames[i][0] for i in planet_filenames]))
-r_planets.remove(0)         # This will remove radius of orbit of sun
+r_planets = list(set([planet_data['position']
+                      for planet_data in planets_data]))
+r_planets.remove(0)     # This will remove radius of orbit of sun
 
 planet_tracks = [[], [], [], [], [], [], [], []]
 
 planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
                  jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
+
+##############################################################################
+# Here we are calculating and updating the path/orbit before animation starts.
 
 for r_planet, planet_track in zip(r_planets, planet_tracks):
     calculate_path(r_planet, planet_track, r_planet * 85)
@@ -197,7 +210,7 @@ def timer_callback(_obj, _event):
 
     for r_planet, planet_actor in zip(r_planets, planet_actors):
         # if the planet is saturn then we also need to update the position
-        # of its rings too.
+        # of its rings.
         if planet_actor == saturn_actor:
             pos_saturn = update_planet_position(19, saturn_actor, cnt)
             saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
