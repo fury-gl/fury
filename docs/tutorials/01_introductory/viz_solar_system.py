@@ -164,22 +164,20 @@ def update_planet_position(r_planet, planet_actor, cnt):
 # of every planet.
 
 
-def calculate_path(r_planet, planet_track, cnt):
-    [planet_track.append([get_orbital_position(r_planet, i)[0],
-                         0, get_orbital_position(r_planet, i)[1]])
-     for i in range(cnt)]
+def calculate_path(r_planet, c):
+    planet_track = [[get_orbital_position(r_planet, i)[0], 0,
+                     get_orbital_position(r_planet, i)[1]] for i in range(c)]
+    return planet_track
 
 
 ##############################################################################
 # First we are making a list that will contain radius from `planets_data`.
-# `planet_tracks` is list of 8 empty lists for 8 different planets.
+# Here we are not taking the radius of orbit/path for sun and saturn ring.
 # And `planet_actors` will contain all the planet actors.
 
-r_planets = list(set([planet_data['position']
-                      for planet_data in planets_data]))
-r_planets.remove(0)     # This will remove radius of orbit of sun
-
-planet_tracks = [[], [], [], [], [], [], [], []]
+r_planets = [p_data['position'] for p_data in planets_data
+             if 'sun' not in p_data['filename']
+             if 'saturn_ring' not in p_data['filename']]
 
 planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
                  jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
@@ -187,8 +185,7 @@ planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
 ##############################################################################
 # Here we are calculating and updating the path/orbit before animation starts.
 
-for r_planet, planet_track in zip(r_planets, planet_tracks):
-    calculate_path(r_planet, planet_track, r_planet * 85)
+planet_tracks = [calculate_path(rplanet, rplanet*85) for rplanet in r_planets]
 
 ##############################################################################
 # This is for orbit visualization. We are using line actor for orbits.
