@@ -854,14 +854,26 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
     return vertices, triangles
 
 
-def init_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
-                    v_upper_bound, npoints):
+def build_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
+                     v_upper_bound, npoints, surface_equation):
     u = np.linspace(u_lower_bound, u_upper_bound, npoints)
     v = np.linspace(v_lower_bound, v_upper_bound, npoints)
     u, v = np.meshgrid(u, v)
     u = u.reshape(-1)
     v = v.reshape(-1)
-    return u, v, np.sin, np.cos, np.mean
+    points2D = np.vstack([u, v]).T
+    tri = Delaunay(points2D)
+    triangles = tri.simplices
+
+    x, y, z = surface_equation(u, v)
+    # Centering the surface
+    x -= np.mean(x)
+    y -= np.mean(y)
+    z -= np.mean(z)
+    xyz = np.vstack([x, y, z]).T
+    vertices = np.ascontiguousarray(xyz)
+
+    return vertices, triangles
 
 
 def prim_para_mobius_strip(npoints=100):
@@ -875,21 +887,15 @@ def prim_para_mobius_strip(npoints=100):
         triangles that compose our Möbius strip
     """
 
-    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, -1, 1, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def mobius_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        x = (1 + v/2 * cos(u/2)) * cos(u)
+        y = (1 + v/2 * cos(u/2)) * sin(u)
+        z = v/2 * sin(u/2)
+        return x, y, z
 
-    x = (1 + v/2 * cos(u/2)) * cos(u)
-    y = (1 + v/2 * cos(u/2)) * sin(u)
-    z = v/2 * sin(u/2)
-    # Centering the surface
-    x -= mean(x)
-    y -= mean(y)
-    z -= mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, 2*np.pi, -1, 1, npoints, mobius_equation)
 
 
 def prim_para_kleins_bottle(npoints=100):
@@ -904,25 +910,19 @@ def prim_para_kleins_bottle(npoints=100):
 
     """
 
-    u, v, sin, cos, mean = init_parametric(0, np.pi, 0, 2*np.pi, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def klein_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        x = -2/15*cos(u)*(3*cos(v) - 30*sin(u) + 90*cos(u)**4*sin(u) -
+                            60*cos(u)**6*sin(u) + 5*cos(u)*cos(v)*sin(u))
+        y = -1/15*sin(u)*(3*cos(v) - 3*cos(u)**2*cos(v) - 48*cos(u)**4*cos(v) +
+                            48*cos(u)**6*cos(v) - 60*sin(u) + 5*cos(u)*cos(v)*sin(u)
+                            - 5*cos(u)**3*cos(v)*sin(u) - 80*cos(u)**5*cos(v)*sin(u)
+                            + 80*cos(u)**7*cos(v)*sin(u))
+        z = 2/15*(3 + 5*cos(u)*sin(u))*sin(v)
+        return x, y, z
 
-    x = -2/15*cos(u)*(3*cos(v) - 30*sin(u) + 90*cos(u)**4*sin(u) -
-                      60*cos(u)**6*sin(u) + 5*cos(u)*cos(v)*sin(u))
-    y = -1/15*sin(u)*(3*cos(v) - 3*cos(u)**2*cos(v) - 48*cos(u)**4*cos(v) +
-                      48*cos(u)**6*cos(v) - 60*sin(u) + 5*cos(u)*cos(v)*sin(u)
-                      - 5*cos(u)**3*cos(v)*sin(u) - 80*cos(u)**5*cos(v)*sin(u)
-                      + 80*cos(u)**7*cos(v)*sin(u))
-    z = 2/15*(3 + 5*cos(u)*sin(u))*sin(v)
-    # Centering the surface
-    x -= mean(x)
-    y -= mean(y)
-    z -= mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, np.pi, 0, 2*np.pi, npoints, klein_equation)
 
 
 def prim_para_roman_surface(npoints=100):
@@ -936,22 +936,16 @@ def prim_para_roman_surface(npoints=100):
         triangles that compose our Roman surface
     """
 
-    u, v, sin, cos, mean = init_parametric(0, np.pi/2, 0, 2*np.pi, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def roman_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        a = 1
+        x = a*cos(u)*sin(u)*sin(v)
+        y = a*cos(u)*sin(u)*cos(v)
+        z = a*cos(u)**2*cos(v)*sin(v)
+        return x, y, z
 
-    a = 1
-    x = a*cos(u)*sin(u)*sin(v)
-    y = a*cos(u)*sin(u)*cos(v)
-    z = a*cos(u)**2*cos(v)*sin(v)
-    # Centering the surface
-    x -= np.mean(x)
-    y -= np.mean(y)
-    z -= np.mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, np.pi, 0, 2*np.pi, npoints, roman_equation)
 
 
 def prim_para_boys_surface(npoints=100):
@@ -965,24 +959,17 @@ def prim_para_boys_surface(npoints=100):
         triangles that compose our Boy's surface
     """
 
-    u, v, sin, cos, mean = init_parametric(-np.pi/2, np.pi/2, 0, np.pi,
-                                           npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def boys_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        x = (2**0.5*cos(v)**2*cos(2*u) + cos(u)*sin(2*v)) / \
+            (2 - 2**0.5*sin(3*u)*sin(2*v))
+        y = (2**0.5*cos(v)**2*sin(2*u) - sin(u)*sin(2*v)) / \
+            (2 - 2**0.5*sin(3*u)*sin(2*v))
+        z = 3*cos(v)**2 / (2 - 2**0.5*sin(3*u)*sin(2*v))
+        return x, y, z
 
-    x = (2**0.5*cos(v)**2*cos(2*u) + cos(u)*sin(2*v)) / \
-        (2 - 2**0.5*sin(3*u)*sin(2*v))
-    y = (2**0.5*cos(v)**2*sin(2*u) - sin(u)*sin(2*v)) / \
-        (2 - 2**0.5*sin(3*u)*sin(2*v))
-    z = 3*cos(v)**2 / (2 - 2**0.5*sin(3*u)*sin(2*v))
-    # Centering the surface
-    x -= np.mean(x)
-    y -= np.mean(y)
-    z -= np.mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(-np.pi/2, np.pi/2, 0, np.pi, npoints, boys_equation)
 
 
 def prim_para_bohemian_dome(npoints=100):
@@ -996,24 +983,18 @@ def prim_para_bohemian_dome(npoints=100):
         triangles that compose our Bohemian dome
     """
 
-    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, 0, 2*np.pi, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def dome_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        a = 0.5
+        b = 1.5
+        c = 1
+        x = a*cos(u)
+        y = (b*cos(v) + a*sin(u))
+        z = c*sin(v)
+        return x, y, z
 
-    a = 0.5
-    b = 1.5
-    c = 1
-    x = a*cos(u)
-    y = (b*cos(v) + a*sin(u))
-    z = c*sin(v)
-    # Centering the surface
-    x -= mean(x)
-    y -= mean(y)
-    z -= mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, 2*np.pi, 0, 2*np.pi, npoints, dome_equation)
 
 
 def prim_para_dinis_surface(npoints=100):
@@ -1027,26 +1008,21 @@ def prim_para_dinis_surface(npoints=100):
         triangles that compose our Dini's surface
     """
 
-    u, v, sin, cos, mean = init_parametric(0, 4*np.pi, 0.01, 1, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def dinis_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        a = 1
+        b = 0.2
+        x = a*cos(u)*sin(v)
+        y = a*sin(u)*sin(v)
+        z = a*(cos(v) + np.log(np.tan(v/2))) + b*u
+        return x, y, z
 
-    a = 1
-    b = 0.2
-    x = a*cos(u)*sin(v)
-    y = a*sin(u)*sin(v)
-    z = a*(cos(v) + np.log(np.tan(v/2))) + b*u
-    x -= mean(x)
-    y -= mean(y)
-    z -= mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, 4*np.pi, 0.01, 1, npoints, dinis_equation)
 
 
-def prim_para_pluckers_conoid(num_folds=2, npoints=100):
-    """Return vertices and triangle for Plücker's conoid
+def prim_para_pluckers_conoid(npoints=100):
+    """Return vertices and triangle for Plücker's conoid having 2 folds
 
     Returns
     -------
@@ -1056,19 +1032,12 @@ def prim_para_pluckers_conoid(num_folds=2, npoints=100):
         triangles that compose our Plücker's conoid
     """
 
-    a = 1
-    u, v, sin, cos, mean = init_parametric(0, 2*np.pi, 0, a, npoints)
-    points2D = np.vstack([u, v]).T
-    tri = Delaunay(points2D)
-    triangles = tri.simplices
+    def conoid_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        x = v*cos(u)
+        y = v*sin(u)
+        z = sin(2*u)
+        return x, y, z
 
-    x = v*cos(u)
-    y = v*sin(u)
-    z = sin(2*u)
-    # Centering the surface
-    x -= mean(x)
-    y -= mean(y)
-    z -= mean(z)
-    xyz = np.vstack([x, y, z]).T
-    vertices = np.ascontiguousarray(xyz)
-    return vertices, triangles
+    return build_parametric(0, 2*np.pi, 0, 1, npoints, conoid_equation)
