@@ -839,7 +839,7 @@ def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
     arr = np.empty((num_points * N, 3))
 
     for start_pos, end_pos, x in zip(start_pos, end_pos, range(0, N)):
-        dp = (end_pos - start_pos) / num_points
+        dp = (end_pos - start_pos) / (num_points-1)
         p = start_pos.copy()
         count = 0
         while count < num_points:
