@@ -866,10 +866,12 @@ def build_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
     triangles = tri.simplices
 
     x, y, z = surface_equation(u, v)
+
     # Centering the surface
     x -= np.mean(x)
     y -= np.mean(y)
     z -= np.mean(z)
+
     xyz = np.vstack([x, y, z]).T
     vertices = np.ascontiguousarray(xyz)
 
@@ -914,11 +916,12 @@ def prim_para_kleins_bottle(npoints=100):
         sin = np.sin
         cos = np.cos
         x = -2/15*cos(u)*(3*cos(v) - 30*sin(u) + 90*cos(u)**4*sin(u) -
-                            60*cos(u)**6*sin(u) + 5*cos(u)*cos(v)*sin(u))
+                          60*cos(u)**6*sin(u) + 5*cos(u)*cos(v)*sin(u))
         y = -1/15*sin(u)*(3*cos(v) - 3*cos(u)**2*cos(v) - 48*cos(u)**4*cos(v) +
-                            48*cos(u)**6*cos(v) - 60*sin(u) + 5*cos(u)*cos(v)*sin(u)
-                            - 5*cos(u)**3*cos(v)*sin(u) - 80*cos(u)**5*cos(v)*sin(u)
-                            + 80*cos(u)**7*cos(v)*sin(u))
+                          48*cos(u)**6*cos(v) - 60*sin(u) +
+                          5*cos(u)*cos(v)*sin(u) - 5*cos(u)**3*cos(v)*sin(u)
+                          - 80*cos(u)**5*cos(v)*sin(u) +
+                          80*cos(u)**7*cos(v)*sin(u))
         z = 2/15*(3 + 5*cos(u)*sin(u))*sin(v)
         return x, y, z
 
@@ -959,7 +962,7 @@ def prim_para_boys_surface(npoints=100):
         triangles that compose our Boy's surface
     """
 
-    def boys_equation(u, v):
+    def boy_equation(u, v):
         sin = np.sin
         cos = np.cos
         x = (2**0.5*cos(v)**2*cos(2*u) + cos(u)*sin(2*v)) / \
@@ -969,7 +972,7 @@ def prim_para_boys_surface(npoints=100):
         z = 3*cos(v)**2 / (2 - 2**0.5*sin(3*u)*sin(2*v))
         return x, y, z
 
-    return build_parametric(-np.pi/2, np.pi/2, 0, np.pi, npoints, boys_equation)
+    return build_parametric(-np.pi/2, np.pi/2, 0, np.pi, npoints, boy_equation)
 
 
 def prim_para_bohemian_dome(npoints=100):
