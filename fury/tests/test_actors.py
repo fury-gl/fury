@@ -1435,6 +1435,11 @@ def test_parametric_surface_actor(interactive=False):
                              "boys_surface", "bohemian_dome", "dinis_surface",
                              "pluckers_conoid"]
     npoints = 100
+
+    # test error(s)
+    npt.assert_raises(ValueError, actor.parametric_surface,
+                      centers=np.random.rand(1, 3), name="cube")
+
     for name in list_parametric_names:
         for scale in scale_list:
             scene = window.Scene()
