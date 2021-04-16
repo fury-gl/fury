@@ -2571,7 +2571,7 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
         Surface names       |        Abbreviations
         --------------------|-----------------------
         Möbius strip        |        mobius_strip
-        Klein bottle        |        klein_bottle
+        Klein bottle        |        kleins_bottle
         Roman surface       |        roman_surface
         Boy's surface       |        boys_surface
         Bohemian Dome       |        bohemian_dome
@@ -2599,6 +2599,15 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> scene.add(actor)
     >>> # window.show(scene)
     """
+
+    list_parametric_names = ["mobius_strip", "kleins_bottle", "roman_surface",
+                             "boys_surface", "bohemian_dome", "dinis_surface",
+                             "pluckers_conoid"]
+
+    if name not in list_parametric_names:
+        raise ValueError('Incorrect parametric function name. Choose one name '
+                         'from the following - {}.'
+                         .format(', '.join(list_parametric_names)))
 
     verts, faces = getattr(fp, "prim_para_" + name)(npoints=npoints)
     res = fp.repeat_primitive(verts, faces, directions=directions,
