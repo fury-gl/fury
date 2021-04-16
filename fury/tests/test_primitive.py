@@ -179,11 +179,13 @@ def test_build_parametric(npoints=10):
         y = (1 + v/2 * cos(u/2)) * sin(u)
         z = v/2 * sin(u/2)
         return x, y, z
-    vertices, triangles = fp.build_parametric(0, 1, 0, 1, npoints, surf_equation)
+    vertices, triangles = fp.build_parametric(0, 1, 0, 1, npoints,
+                                              surf_equation)
 
     # for npoints>1, following equations follow -
     # shape of vertices is of the form: (npoints**2, 3)
-    # shape of triangles is of the form: (2*(npoints**2) - 4*(npoints**2) + 2, 3)
+    # shape of triangles is of the form: (2*(npoints**2) - 4*(npoints**2) + 2,
+    #                                     3)
     # for npoints = 10, shape of vertices: (100, 3)
     # for npoints = 10, shape of triangles: (162, 3)
 
