@@ -170,15 +170,27 @@ def test_repeat_primitive_function():
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
 
 
-def test_init_parametric(npoints=10):
-    u, v, sin, cos, mean = fp.init_parametric(0, 1, 0, 1, npoints)
-    shape = (npoints**2, )
-    npt.assert_equal(u.shape, shape)
-    npt.assert_equal(v.shape, shape)
-    npt.assert_equal(np.mean(u), mean(u))
-    npt.assert_equal(np.mean(v), mean(v))
-    npt.assert_equal(np.sin(u), sin(u))
-    npt.assert_equal(np.cos(v), cos(v))
+def test_build_parametric(npoints=10):
+
+    def surf_equation(u, v):
+        sin = np.sin
+        cos = np.cos
+        x = (1 + v/2 * cos(u/2)) * cos(u)
+        y = (1 + v/2 * cos(u/2)) * sin(u)
+        z = v/2 * sin(u/2)
+        return x, y, z
+    vertices, triangles = fp.build_parametric(0, 1, 0, 1, npoints, surf_equation)
+
+    # for npoints>1, following equations follow -
+    # shape of vertices is of the form: (npoints**2, 3)
+    # shape of triangles is of the form: (2*(npoints**2) - 4*(npoints**2) + 2, 3)
+    # for npoints = 10, shape of vertices: (100, 3)
+    # for npoints = 10, shape of triangles: (162, 3)
+
+    vertices_shape = (100, 3)
+    triangles_shape = (162, 3)
+    npt.assert_equal(vertices.shape, vertices_shape)
+    npt.assert_equal(triangles.shape, triangles_shape)
 
 
 def test_vertices_primitives_parametric_surfaces():
@@ -188,7 +200,7 @@ def test_vertices_primitives_parametric_surfaces():
                   "pluckers_conoid"]
     list_npoints = [4, 8, 16, 32, 64, 128, 256]
     list_vertices_mean = [0, 0, 0, 0, 0, 0, 0]
-    list_vertices_min = [-1.0825318, -1.7535424, -0.5049773, -2.0668169,
+    list_vertices_min = [-1.0825318, -1.7535424, -0.4972609, -2.0668169,
                          -2.0214174, -4.7658657, -1.0018772]
     list_vertices_max = [1.25, 2.2668278, 0.4972609, 2.2130613, 1.9764071,
                          1.9814873, 0.9999810]
