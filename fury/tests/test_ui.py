@@ -1628,6 +1628,7 @@ def test_card_ui(interactive=False):
     event_counter = EventCounter()
     event_counter.monitor(card)
 
+    npt.assert_equal(card._get_size(), (400.0, 400.0))
     npt.assert_equal(card._image_size[1], 200.0)
     npt.assert_equal(card.title, 'Title')
     npt.assert_equal(card.body, 'Body')
