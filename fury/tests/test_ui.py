@@ -1648,7 +1648,6 @@ def test_card_ui(interactive=False):
 
     card.resize((600, 600))
     npt.assert_equal(card._image_size[1], 300.0)
-
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size, title='FURY Card')
     show_manager.scene.add(card)
