@@ -702,12 +702,12 @@ class Rectangle2D(UI):
         self.resize((self.width, height))
 
     def resize(self, size):
-        """ Sets the button size.
+        """ Sets the Rectangle2D size.
 
         Parameters
         ----------
         size : (float, float)
-            Button size (width, height) in pixels.
+            Rectangle2D size (width, height) in pixels.
         """
         self._points.SetPoint(0, 0, 0, 0.0)
         self._points.SetPoint(1, size[0], 0, 0.0)
@@ -3671,11 +3671,11 @@ class ListBox2D(UI):
             The font size in pixels.
         line_spacing: float
             Distance between listbox's items in pixels.
-        text_color : tuple of 3 floats
-        selected_color : tuple of 3 floats
-        unselected_color : tuple of 3 floats
-        scroll_bar_active_color : tuple of 3 floats
-        scroll_bar_inactive_color : tuple of 3 floats
+        text_color : (float, float, float)
+        selected_color : (float, float, float)
+        unselected_color : (float, float, float)
+        scroll_bar_active_color : (float, float, float)
+        scroll_bar_inactive_color : (float, float, float)
         background_opacity : float
         """
         self.view_offset = 0
@@ -3789,7 +3789,34 @@ class ListBox2D(UI):
                               self.down_button_callback)
 
     def resize(self, size):
-        pass
+        """ Resizes ListBox2D by resizing its various UI component.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        #Panel Resize
+        self.panel_size = size
+        self.panel.resize(self.panel_size)
+
+        #Scrollbar Resize
+        self.scroll_bar.height = (self.scroll_bar.height * size[1])//300
+        self.scroll_bar.width = (self.scroll_bar.width * size[0])//100
+        self.margin = (self.margin * size[0])//100
+        self.panel.update_element(self.scroll_bar,(size - self.scroll_bar.size - self.margin))
+
+        self.font_size = size[0]//5
+        self.slot_height = (self.slot_height * size[1])//300
+        self.slot_width = (self.slot_width * size[0])//100
+
+        x = self.margin
+        y = size[1] - self.margin
+        for item in self.slots:
+            y -= self.slot_height
+            item.background.resize((self.slot_width, self.slot_height))
+            item.textblock.font_size = self.font_size
+            self.panel.update_element(item, (x, y + self.margin))
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -4045,11 +4072,11 @@ class ListBoxItem2D(UI):
         ----------
         list_box : :class:`ListBox`
             The ListBox reference this text belongs to.
-        size : tuple of 2 ints
+        size : (int, int)
             The size of the listbox item.
-        text_color : tuple of 3 floats
-        unselected_color : tuple of 3 floats
-        selected_color : tuple of 3 floats
+        text_color : (float, float, float)
+        unselected_color : (float, float, float)
+        selected_color : (float, float, float)
         background_opacity : float
         """
         super(ListBoxItem2D, self).__init__()
@@ -4421,19 +4448,19 @@ class ComboBox2D(UI):
             Holds the default text to be displayed.
         draggable: {True, False}
             Whether the UI element is draggable or not.
-        selection_text_color : tuple of 3 floats
+        selection_text_color : (float, float, float)
             Color of the selected text to be displayed.
-        selection_bg_color : tuple of 3 floats
+        selection_bg_color : (float, float, float)
             Background color of the selection text.
-        menu_text_color : tuple of 3 floats.
+        menu_text_color : (float, float, float)
             Color of the options displayed in drop down menu.
-        selected_color : tuple of 3 floats.
+        selected_color : (float, float, float)
             Background color of the selected option in drop down menu.
-        unselected_color : tuple of 3 floats.
+        unselected_color : (float, float, float)
             Background color of the unselected option in drop down menu.
-        scroll_bar_active_color : tuple of 3 floats.
+        scroll_bar_active_color : (float, float, float)
             Color of the scrollbar when in active use.
-        scroll_bar_inactive_color : tuple of 3 floats.
+        scroll_bar_inactive_color : (float, float, float)
             Color of the scrollbar when inactive.
         reverse_scrolling: {True, False}
             If True, scrolling up will move the list of files down.
@@ -4704,9 +4731,9 @@ class TabUI(UI):
             Width and height in pixels of this UI component.
         nb_tabs : int
             Number of tabs to be renders.
-        active_color : tuple of 3 floats.
+        active_color : (float, float, float).
             Background color of active tab panel.
-        inactive_color : tuple of 3 floats.
+        inactive_color : (float, float, float).
             Background color of inactive tab panels.
         draggable : bool
             Whether the UI element is draggable or not.
