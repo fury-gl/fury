@@ -210,4 +210,4 @@ plt.figure(dpi=600)
 plt.imshow(arr)
 plt.show()
 
-# Your plot shold look like this: https://ibb.co/dDkC3f2
+# Your plot should look like this: https://ibb.co/dDkC3f2
