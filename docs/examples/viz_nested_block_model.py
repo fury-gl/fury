@@ -67,12 +67,12 @@ def getNestedInference(g):
     return cts, pos, labels
 
 
-# Now, we can peform the nested block model inference
+# Now, we can perform the nested block model inference
 cts, pos, labels = getNestedInference(g)
 
 
 ###############################################################################
-# Each diferent comunity obtained from the nested block model  algorithm will
+# Each different comunity obtained from the nested block model  algorithm will
 # have a different color
 
 comunityColors = cmap.distinguishable_colormap(
@@ -82,7 +82,7 @@ nodeColors = np.array([comunityColors[c] for c in labels])
 
 
 ###############################################################################
-# To plot the resuts of the inference we will need to draw curved lines 
+# To plot the resuts of the inference we will need to draw curved lines
 # in FURY. To do so, we  will use the BSpline interpolation with the  control's
 # points  obtained from the function  getNestedInference.
 
