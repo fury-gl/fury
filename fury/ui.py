@@ -1819,14 +1819,6 @@ class TextBox2D(UI):
         ret_text = ret_text[self.window_left:self.window_right + 1]
         return ret_text
 
-    def resize_background(self):
-        """Resizing Background.
-        """
-        size = np.zeros(2)
-        self.text.actor.GetSize(self.text.scene, size)
-        if self.text.have_bg:
-            self.text.background.resize(size)
-
     def render_text(self, show_caret=True):
         """ Renders text after processing.
 
@@ -1839,7 +1831,6 @@ class TextBox2D(UI):
         if text == "":
             text = "Enter Text"
         self.text.message = self.width_set_text(text)
-        self.resize_background()
 
     def edit_mode(self):
         """ Turns on edit mode.

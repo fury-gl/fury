@@ -293,15 +293,6 @@ def test_ui_textbox(recording=False):
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
 
-    # Resizing Background
-    show_manager.scene.add(another_textbox_test)
-    npt.assert_equal(another_textbox_test.size, (83, 17))
-
-    textbox_bg_test = ui.TextBox2D(text="FURY\nfury", width=10, height=10,
-                                        font_size=50)
-    show_manager.scene.add(textbox_bg_test)
-    npt.assert_equal(textbox_bg_test.size, (116, 99))
-
 def test_text_block_2d():
     text_block = ui.TextBlock2D()
 
