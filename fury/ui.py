@@ -3787,17 +3787,18 @@ class ListBox2D(UI):
         size : (int, int)
             New width and height in pixels.
         """
-        #Panel Resize
+        # Panel Resize
         self.panel_size = size
         self.panel.resize(self.panel_size)
 
-        #Scrollbar Resize
+        # Scrollbar Resize
         self.scroll_bar.height = int(size[1] * 0.5)
         self.scroll_bar.width = int(size[0] * 0.05)
         self.margin = int(size[0] * 0.1)
-        self.panel.update_element(self.scroll_bar,(size - self.scroll_bar.size - self.margin))
+        self.panel.update_element(self.scroll_bar, 
+                                        (size - self.scroll_bar.size - self.margin))
 
-        #Slots resize
+        # Slots resize
         self.font_size = int(size[0] * 0.2)
         self.slot_height = int(self.font_size * 1.4)
         self.slot_width = int(size[0] * 0.65)
