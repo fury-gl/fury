@@ -3792,22 +3792,34 @@ class ListBox2D(UI):
         self.panel.resize(self.panel_size)
 
         #Scrollbar Resize
-        self.scroll_bar.height = (self.scroll_bar.height * size[1])//300
-        self.scroll_bar.width = (self.scroll_bar.width * size[0])//100
-        self.margin = (self.margin * size[0])//100
+        self.scroll_bar.height = int(size[1] * 0.5)
+        self.scroll_bar.width = int(size[0] * 0.05)
+        self.margin = int(size[0] * 0.1)
         self.panel.update_element(self.scroll_bar,(size - self.scroll_bar.size - self.margin))
 
-        self.font_size = size[0]//5
-        self.slot_height = (self.slot_height * size[1])//300
-        self.slot_width = (self.slot_width * size[0])//100
+        #Slots resize
+        self.font_size = int(size[0] * 0.2)
+        self.slot_height = int(self.font_size * 1.4)
+        self.slot_width = int(size[0] * 0.65)
+        self.nb_slots = int((size[1] - (2 * self.margin)) // self.slot_height)
 
+        for item in self.slots:
+            self.panel.remove_element(item)
         x = self.margin
         y = size[1] - self.margin
-        for item in self.slots:
+        self.slots = []
+        for i in range(self.nb_slots):
             y -= self.slot_height
-            item.background.resize((self.slot_width, self.slot_height))
+            item = ListBoxItem2D(list_box=self,
+                                 size=(self.slot_width, self.slot_height),
+                                 text_color=self.text_color,
+                                 selected_color=self.selected_color,
+                                 unselected_color=self.unselected_color,
+                                 background_opacity=self.background_opacity)
             item.textblock.font_size = self.font_size
-            self.panel.update_element(item, (x, y + self.margin))
+            self.slots.append(item)
+            self.panel.add_element(item, (x, y + self.margin))
+        self.update()
 
     def _get_actors(self):
         """ Get the actors composing this UI component.

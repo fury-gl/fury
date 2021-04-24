@@ -1060,6 +1060,10 @@ Text Overflow of List Box 2D"]]
     npt.assert_equal(len(selected_values), len(expected))
     assert_arrays_equal(selected_values, expected)
 
+    listbox.resize((300,900))
+    npt.assert_equal(listbox.scroll_bar.width, 15.0)
+    npt.assert_equal(int(listbox.scroll_step_size), 11)
+    npt.assert_equal((listbox.slot_width,listbox.slot_height), (195,84))
 
 def test_ui_image_container_2d(interactive=False):
     fetch_viz_icons()
