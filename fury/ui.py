@@ -3795,8 +3795,8 @@ class ListBox2D(UI):
         self.scroll_bar.height = int(size[1] * 0.5)
         self.scroll_bar.width = int(size[0] * 0.05)
         self.margin = int(size[0] * 0.1)
-        self.panel.update_element(self.scroll_bar, 
-                                        (size - self.scroll_bar.size - self.margin))
+        self.panel.update_element(self.scroll_bar,(size - self.scroll_bar.size \
+                                        - self.margin))
 
         # Slots resize
         self.font_size = int(size[0] * 0.2)
