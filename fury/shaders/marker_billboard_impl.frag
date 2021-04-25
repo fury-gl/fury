@@ -9,17 +9,19 @@ fragOutput0 = vec4(color, 1.);
 float len = length(point);
 float radius = 1.;
 float s = 0.5;
-float sdf = 0.0;
-float minSdf = 0.5/2.0;
-vec2 ds = abs(point.xy) - vec2(s, s);
-sdf = -length(max(ds,0.0)) - min(max(ds.x,ds.y),0.0);
+
+
+vec3 result = getDistFunc(point.xy, s, vEdgeWidth);
+float sdf = result.x;
+float minSdf = result.y;
+float edgeWidth = result.z;
 
 if (sdf<0.0) discard;
 
 vec3 color2 = vEdgeColor;
 vec4 rgba = vec4(  color, 1 );
-if (vEdgeWidth > 0.0){
-   if (sdf < vEdgeWidth)  rgba  = vec4(color2, 0.5);
+if (edgeWidth > 0.0){
+   if (sdf < edgeWidth)  rgba  = vec4(color2, 0.5);
 }
    
 
