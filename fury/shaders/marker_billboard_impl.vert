@@ -13,3 +13,4 @@ gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
 
 vEdgeWidth = edgeWidth;
 vEdgeColor = edgeColor;
+vMarker = marker;

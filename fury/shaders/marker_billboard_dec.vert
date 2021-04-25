@@ -6,6 +6,8 @@ out vec3 normalizedVertexMCVSOutput;
 
 in float edgeWidth;
 in vec3 edgeColor;
+in float marker;
 
 out vec3 vEdgeColor;
 out float vEdgeWidth;
+out float vMarker;

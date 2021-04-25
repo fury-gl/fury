@@ -2547,6 +2547,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 def marker_billboard(
         centers, colors=(0, 1, 0), scales=1, 
+        marker=[],
         edgeWidth=.1, edgeColor=(255, 255, 255)):
     """Create a billboard actor.
 
@@ -2598,6 +2599,11 @@ def marker_billboard(
     attribute_to_actor(
         sq_actor, np.repeat(edgeWidth, big_centers.shape[0]), 'edgeWidth')
 
+    #marker = np.array([marker, marker]).T
+    marker = np.repeat(marker, 4).astype('float')
+    attribute_to_actor(
+        sq_actor,
+        marker, 'marker')
     vs_dec_code = load("marker_billboard_dec.vert")
     vs_impl_code = load("marker_billboard_impl.vert")
 

@@ -10,8 +10,8 @@ float len = length(point);
 float radius = 1.;
 float s = 0.5;
 
-
-vec3 result = getDistFunc(point.xy, s, vEdgeWidth);
+//float vMarker = 2.;
+vec3 result = getDistFunc(point.xy, s, vEdgeWidth, vMarker);
 float sdf = result.x;
 float minSdf = result.y;
 float edgeWidth = result.z;
