@@ -3,6 +3,7 @@
 import warnings
 import os.path as op
 import numpy as np
+from functools import partial
 import vtk
 from vtk.util import numpy_support
 
@@ -2547,8 +2548,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 def marker_billboard(
         centers, colors=(0, 1, 0), scales=1, 
-        marker=[],
-        edgeWidth=.1, edgeColor=(255, 255, 255)):
+        markers=[],
+        edgeWidth=.1, edgeColor=[255, 255, 255]):
     """Create a billboard actor.
 
     Billboards are 2D elements incrusted in a 3D world. It offers you the
@@ -2562,21 +2563,6 @@ def marker_billboard(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
-    vs_dec : str or list of str, optional
-        vertex shaders code that contains all variable/function delarations
-    vs_impl : str or list of str, optional
-        vertex shaders code that contains all variable/function implementation
-    fs_dec : str or list of str, optional
-        Fragment shaders code that contains all variable/function delarations
-    fs_impl : str or list of str, optional
-        Fragment shaders code that contains all variable/function
-        implementation
-    gs_dec : str or list of str, optional
-        Geometry shaders code that contains all variable/function delarations
-    gs_impl : str or list of str, optional
-        Geometry shaders code that contains all variable/function
-        mplementation
-
     Returns
     -------
     vtkActor
@@ -2593,17 +2579,38 @@ def marker_billboard(
     sq_actor.GetProperty().BackfaceCullingOff()
 
     attribute_to_actor(sq_actor, big_centers, 'center')
-    attribute_to_actor(
-        sq_actor,
-        np.repeat([edgeColor], big_centers.shape[0], axis=0), 'edgeColor')
-    attribute_to_actor(
-        sq_actor, np.repeat(edgeWidth, big_centers.shape[0]), 'edgeWidth')
 
-    #marker = np.array([marker, marker]).T
-    marker = np.repeat(marker, 4).astype('float')
+    # attribute_to_actor(
+    #     sq_actor,
+    #     np.repeat([edgeColor], big_centers.shape[0], axis=0), 'edgeColor')
+
+    # attribute_to_actor(
+    #     sq_actor, np.repeat(edgeWidth, big_centers.shape[0]), 'edgeWidth')
+
+    markers = np.repeat(markers, 4).astype('float')
     attribute_to_actor(
         sq_actor,
-        marker, 'marker')
+        markers, 'marker')
+
+    def callbackFloat(_caller, _event, calldata=None, attrName=None, value=None):
+        program = calldata
+        if program is not None:
+            program.SetUniformf(attrName, value)
+
+    def callbackVec(_caller, _event, calldata=None, attrName=None, value=None):
+        program = calldata
+        if program is not None:
+            program.SetUniform3f(attrName, value)
+
+    add_shader_callback(
+            sq_actor, partial(
+                callbackFloat, attrName='edgeWidth', value=edgeWidth))
+    add_shader_callback(
+        sq_actor,
+        partial(
+            callbackVec, attrName='edgeColor', 
+            value=edgeColor))
+
     vs_dec_code = load("marker_billboard_dec.vert")
     vs_impl_code = load("marker_billboard_impl.vert")
 

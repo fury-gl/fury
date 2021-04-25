@@ -4,8 +4,9 @@ in vec3 center;
 out vec3 centerVertexMCVSOutput;
 out vec3 normalizedVertexMCVSOutput;
 
-in float edgeWidth;
-in vec3 edgeColor;
+//in float edgeWidth;
+uniform float edgeWidth;
+uniform vec3 edgeColor;
 in float marker;
 
 out vec3 vEdgeColor;
