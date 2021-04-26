@@ -174,43 +174,49 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
 
 class Uniform:
     def __init__(self, name, type, value):
-        '''
-        Args:
-        -----
+        """
+        Parameters:
+        -----------
             name: str
             type: str
-            value: 
-        '''
+            value: float or ndarray
+        """
         self.name = name
         self.value = value
         self.type = type
         self.vtk_func_uniform = ''
         self.setType()
 
-    def setType(self, ):
+    def setType(self):
         validTypes = [
             '1fv', '1iv', '2f', '2fv', '2i', '3f', '3fv',
             '3uc', '4f', '4fv', '4uc', 'GroupUpdateTime', 'Matrix',
             'Matrix3x3', 'Matrix4x4', 'Matrix4x4v', 'f', 'i']
         if self.type not in validTypes:
             raise ValueError(
-                f"""Uniform type {self.type} not valid. 
+                f"""Uniform type { self.type} not valid. 
                 Choose one of this values: {validTypes}""")
 
         self.vtk_func_uniform = f'SetUniform{self.type}'
 
     def executeProgram(self, program):
-        '''
-        Args:
-        -----
+        """
+        Parameters:
+        -----------
             program: vtkmodules.vtkRenderingOpenGL2.vtkShaderProgram
-        '''
+        """
         program.__getattribute__(self.vtk_func_uniform)(
                 self.name, self.value)
 
 
 class Uniforms:
     def __init__(self, uniforms):
+        """
+
+        Parameters:
+        -----------
+            uniforms: list of Uniform
+        """
         self.uniforms = uniforms
         for obj in self.uniforms:
             setattr(self, obj.name, obj)
