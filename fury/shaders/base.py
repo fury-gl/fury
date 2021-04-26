@@ -231,6 +231,9 @@ class Uniforms:
         """
         self.uniforms = uniforms
         for obj in self.uniforms:
+            if isinstance(obj, Uniform) is False:
+                raise ValueError(f"""{obj} it's not an Uniform object""")
+
             setattr(self, obj.name, obj)
 
     def __call__(self, _caller, _event, calldata=None,):
