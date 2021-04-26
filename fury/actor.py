@@ -2549,8 +2549,9 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 def marker_billboard(
         centers, colors=(0, 1, 0),
         scales=1,
-        markers=[],
-        edgeWidth=.1, edgeColor=[255, 255, 255]):
+        marker='o',
+        markers=None,
+        edgeWidth=.0, edgeColor=[255, 255, 255]):
     """Create a billboard actor.
 
     Billboards are 2D elements incrusted in a 3D world. It offers you the
@@ -2564,8 +2565,11 @@ def marker_billboard(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
-    markers: ndarray, shape (N) of str or int
-        available markers are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
+    marker: str
+        This it's optional if "markers" arg are used
+        Available marker are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
+    markers: ndarray, shape (N) of str or int, optional
+        An array containing a marker for each center
     edgeWidth: int
     edgeColor: ndarray, shape (3)
     Returns
@@ -2573,7 +2577,7 @@ def marker_billboard(
     vtkActor
 
     """
-
+    numMarkers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
                               scales=scales)
@@ -2584,11 +2588,14 @@ def marker_billboard(
     sq_actor.GetProperty().BackfaceCullingOff()
 
     attribute_to_actor(sq_actor, big_centers, 'center')
-
-    if isinstance(markers[0], str):
-        marker2id = {
+    marker2id = {
             'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
             'h': 5, 's6': 6, 'x': 7, '+': 8}
+
+    if markers is None:
+        markers = np.ones(numMarkers)*marker2id[marker]
+
+    if isinstance(markers[0], str):
         markers = [marker2id[i] for i in markers]
 
     markers = np.repeat(markers, 4).astype('float')
