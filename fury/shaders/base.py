@@ -174,20 +174,23 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
 
 class Uniform:
     def __init__(self, name, uniform_type, value):
-        """
+        """This is used for Uniforms. It's responsible to
+        store the value of a given uniform variable and call
+        the related vtk_program
+
         Parameters:
         -----------
             name: str
                 name of the uniform variable
             uniform_type: str
-                Uniform variable type to be used inside the shader.
+                Uniform variable type which will be used inside the shader.
                 Any of this are valid: 1fv, 1iv, 2f, 2fv, 2i, 3f, 3fv,
                     3uc, 4f, 4fv, 4uc, GroupUpdateTime, Matrix,
                     Matrix3x3, Matrix4x4, Matrix4x4v, f, i
                     value: float or ndarray
             value: type(uniform_type)
                 should be a value which represent's the shader uniform
-                equivalent. For example, if uniform_type is 'f' then value
+                variable. For example, if uniform_type is 'f' then value
                 should be a float; if uniform_type is '3f' then value
                 should be a 1x3 array.
         """
@@ -208,8 +211,8 @@ class Uniform:
 
     def execute_program(self, program):
         """ Given a shader program, this method
-        updates the value of a given uniform variable during
-        a draw call
+        will update the value with the associated uniform variable
+        in a draw call
 
         Parameters:
         -----------
@@ -221,13 +224,26 @@ class Uniform:
 
 class Uniforms:
     def __init__(self, uniforms):
-        """This object creates a object which can store and
+        """This  creates an object which can store and
         execute all the changes in uniforms variables associated
         with a shader.
 
         Parameters:
         -----------
             uniforms: list of Uniform's
+
+        Example
+        ```python
+        uniforms = [
+            Uniform(name='edgeWidth', uniform_type='f', value=edgeWidth)...
+        ]
+        CustomUniforms = Uniforms(markerUniforms)
+        add_shader_callback(
+                sq_actor, CustomUniforms)
+        sq_actor.CustomUniforms = CustomUniforms
+        sq_actor.CustomUniforms.edgeWidth = 0.5
+        ```
+
         """
         self.uniforms = uniforms
         for obj in self.uniforms:
@@ -238,7 +254,7 @@ class Uniforms:
 
     def __call__(self, _caller, _event, calldata=None,):
         """
-        This method should be used during as a callback of a vtk Observer
+        This method should be used as a callback for a vtk Observer
         """
         program = calldata
         if program is None:
