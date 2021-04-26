@@ -173,34 +173,44 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
 
 
 class Uniform:
-    def __init__(self, name, type, value):
-        """
+    def __init__(self, name, uniform_type, value):
+        """ 
         Parameters:
         -----------
             name: str
-            type: str
-            value: float or ndarray
+                name of the uniform variable
+            uniform_type: str
+                Uniform variable type to be used inside the shader.
+                Any of this are valid: 1fv, 1iv, 2f, 2fv, 2i, 3f, 3fv,
+                    3uc, 4f, 4fv, 4uc, GroupUpdateTime, Matrix,
+                    Matrix3x3, Matrix4x4, Matrix4x4v, f, i
+                    value: float or ndarray
+            value: type(uniform_type)
+                should be a value which represent's the shader uniform
+                equivalent. For example, if uniform_type is 'f' then value
+                should be a float; if uniform_type is '3f' then value
+                should be a 1x3 array.
         """
         self.name = name
         self.value = value
-        self.type = type
-        self.vtk_func_uniform = ''
-        self.setType()
+        self.uniform_type = uniform_type
 
-    def setType(self):
-        validTypes = [
+        self.valid_types = [
             '1fv', '1iv', '2f', '2fv', '2i', '3f', '3fv',
             '3uc', '4f', '4fv', '4uc', 'GroupUpdateTime', 'Matrix',
             'Matrix3x3', 'Matrix4x4', 'Matrix4x4v', 'f', 'i']
-        if self.type not in validTypes:
+        if self.uniform_type not in self.validTypes:
             raise ValueError(
-                f"""Uniform type { self.type} not valid. 
-                Choose one of this values: {validTypes}""")
+                f"""Uniform type {self.uniform_type} not valid. 
+                Choose one of this values: {self.valid_types}""")
 
-        self.vtk_func_uniform = f'SetUniform{self.type}'
+        self.vtk_func_uniform = f'SetUniform{self.uniform_type}'
 
-    def executeProgram(self, program):
-        """
+    def execute_program(self, program):
+        """ Given a shader program, this method
+        updates the value of a given uniform variable during
+        a draw call
+
         Parameters:
         -----------
             program: vtkmodules.vtkRenderingOpenGL2.vtkShaderProgram
@@ -211,19 +221,25 @@ class Uniform:
 
 class Uniforms:
     def __init__(self, uniforms):
-        """
+        """This object creates a object which can store and
+        execute all the changes in uniforms variables associated
+        with a shader.
 
         Parameters:
         -----------
-            uniforms: list of Uniform
+            uniforms: list of Uniform's
         """
         self.uniforms = uniforms
         for obj in self.uniforms:
             setattr(self, obj.name, obj)
 
     def __call__(self, _caller, _event, calldata=None,):
+        """
+        This method should be used during as a callback of a vtk Observer
+        """
         program = calldata
         if program is None:
-            return
+            return None
+
         for uniform in self.uniforms:
-            uniform.executeProgram(program)
+            uniform.execute_program(program)
