@@ -2603,12 +2603,14 @@ def marker_billboard(
         sq_actor,
         markers, 'marker')
 
-    def callbackFloat(_caller, _event, calldata=None, attrName=None, value=None):
+    def callbackFloat(
+            _caller, _event, calldata=None, attrName=None, value=None):
         program = calldata
         if program is not None:
             program.SetUniformf(attrName, value)
 
-    def callbackVec(_caller, _event, calldata=None, attrName=None, value=None):
+    def callbackVec(
+            _caller, _event, calldata=None, attrName=None, value=None):
         program = calldata
         if program is not None:
             program.SetUniform3f(attrName, value)
@@ -2619,7 +2621,7 @@ def marker_billboard(
     add_shader_callback(
         sq_actor,
         partial(
-            callbackVec, attrName='edgeColor', 
+            callbackVec, attrName='edgeColor',
             value=edgeColor))
 
     vs_dec_code = load("marker_billboard_dec.vert")
