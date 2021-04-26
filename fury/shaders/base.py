@@ -174,7 +174,7 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
 
 class Uniform:
     def __init__(self, name, uniform_type, value):
-        """ 
+        """
         Parameters:
         -----------
             name: str
@@ -199,7 +199,7 @@ class Uniform:
             '1fv', '1iv', '2f', '2fv', '2i', '3f', '3fv',
             '3uc', '4f', '4fv', '4uc', 'GroupUpdateTime', 'Matrix',
             'Matrix3x3', 'Matrix4x4', 'Matrix4x4v', 'f', 'i']
-        if self.uniform_type not in self.validTypes:
+        if self.uniform_type not in self.valid_types:
             raise ValueError(
                 f"""Uniform type {self.uniform_type} not valid. 
                 Choose one of this values: {self.valid_types}""")
