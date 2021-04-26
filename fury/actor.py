@@ -2547,7 +2547,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 
 def marker_billboard(
-        centers, colors=(0, 1, 0), scales=1, 
+        centers, colors=(0, 1, 0),
+        scales=1,
         markers=[],
         edgeWidth=.1, edgeColor=[255, 255, 255]):
     """Create a billboard actor.
@@ -2563,6 +2564,10 @@ def marker_billboard(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
+    markers: ndarray, shape (N) of str or int
+        available markers are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
+    edgeWidth: int
+    edgeColor: ndarray, shape (3)
     Returns
     -------
     vtkActor
@@ -2580,12 +2585,11 @@ def marker_billboard(
 
     attribute_to_actor(sq_actor, big_centers, 'center')
 
-    # attribute_to_actor(
-    #     sq_actor,
-    #     np.repeat([edgeColor], big_centers.shape[0], axis=0), 'edgeColor')
-
-    # attribute_to_actor(
-    #     sq_actor, np.repeat(edgeWidth, big_centers.shape[0]), 'edgeWidth')
+    if isinstance(markers[0], str):
+        marker2id = {
+            'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
+            'h': 5, 's6': 6, 'x': 7, '+': 8}
+        markers = [marker2id[i] for i in markers]
 
     markers = np.repeat(markers, 4).astype('float')
     attribute_to_actor(
