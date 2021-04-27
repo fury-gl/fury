@@ -787,13 +787,73 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def cube_axis_actor(scene,bounds,label_X_color=[1,0,0], label_Y_color=[0,1,0], label_Z_color=[0,0,1],
-                    title_X="X-Axis",title_Y="Y-Axis",title_Z="Z-Axis",
-                    draw_grid_lines=True,minor_tick_visibility=False):
+def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0], label_Y_color=[0, 1, 0], label_Z_color=[0, 0, 1],
+                    title_X="X-Axis", title_Y="Y-Axis", title_Z="Z-Axis",
+                    draw_grid_lines=True, minor_tick_visibility=False):
+    """ Cube Axis Actor creates an actor with the coordinate's system axes,
+    This is intended for use where you would need a scale for reference, or a grid on reference planes.
+    Recommended with parallel (orthogonal) camera view.
+
+    Parameters
+    ----------
+    scene : vtkOpenGLRenderer Object
+        the Scene you wish to render this actor on.
+    bounds : array[6,] or tuple(6,)
+        the limits of your scales on axes,
+        Higher bound, then lower bound, for X,Y & Z.
+        e.g., [1, 0, 1, 0, 1, 0] or (1, 0, 1, 0, 1, 0)
+    label_X_color : array[3,] or tuple(3,), optional
+        This gives X-axis its color
+        Default is [1, 0, 0].
+    label_X_color : array[3,] or tuple(3,), optional
+        This gives Y-axis its color.
+        Default is [0, 1, 0].
+    label_Z_color : array[3,] or tuple(3,), optional
+        This gives Z-axis its color
+        Default is [0, 0, 1].
+    title_X : string, optional
+        Custom title for X-Axis.
+        Default is "X-Axis".
+    title_Y : string, optional
+        Custom title for Y-Axis.
+        Default is "Y-Axis".
+    title_Z : string, optional
+        Custom title for Z-Axis.
+        Default is "Z-Axis".
+    draw_grid_lines : boolean, optional
+        Draws gridlines on reference XY, YZ, ZX planes farthest from the camera.
+        Default is set to True.
+    minor_tick_visibility : boolean, optional
+        This turns on smaller sub division ticks on the axes.
+        Default is set to False
+
+    Returns
+    -------
+    cube_axis_actor : vtkCubeAxesActor
+
+    See Also
+    --------
+    :func:`fury.actor.axes`
+    :func:`fury.actor.point`
+
+    Examples
+    --------
+        >>> from fury import window, actor
+        >>> scene = window.Scene()
+        >>> bounds = (0, 5, 0, 5, 0, 5)
+        >>> data = np.random.randint(5, size=(25, 3))
+        >>> for point in data:
+        >>>     scene.AddActor(actor.point(data, color))
+        >>> cube_axes_actor = cube_axis_actor(scene=scene, bounds=bounds)
+        >>> scene.add(cube_axes_actor)
+        >>> # window.show(scene)
+
+    """
     cubeAxesActor = vtk.vtkCubeAxesActor()
     cubeAxesActor.SetBounds(bounds)
-    # cubeAxesActor.SetCamera(renderer.GetActiveCamera()) # this is the vtk 
+
     cubeAxesActor.SetCamera(scene.GetActiveCamera())
+
     cubeAxesActor.GetTitleTextProperty(0).SetColor(label_X_color)
     cubeAxesActor.GetLabelTextProperty(0).SetColor(label_X_color)
 
@@ -803,8 +863,8 @@ def cube_axis_actor(scene,bounds,label_X_color=[1,0,0], label_Y_color=[0,1,0], l
     cubeAxesActor.GetTitleTextProperty(2).SetColor(label_Z_color)
     cubeAxesActor.GetLabelTextProperty(2).SetColor(label_Z_color)
 
-    cubeAxesActor.SetXTitle(title_X)    
-    cubeAxesActor.SetYTitle(title_Y)    
+    cubeAxesActor.SetXTitle(title_X)
+    cubeAxesActor.SetYTitle(title_Y)
     cubeAxesActor.SetZTitle(title_Z)
 
     if draw_grid_lines:
@@ -817,7 +877,8 @@ def cube_axis_actor(scene,bounds,label_X_color=[1,0,0], label_Y_color=[0,1,0], l
         cubeAxesActor.DrawZGridlinesOff()
 
     if vtk.VTK_MAJOR_VERSION > 5:
-        cubeAxesActor.SetGridLineLocation(cubeAxesActor.VTK_GRID_LINES_FURTHEST)
+        cubeAxesActor.SetGridLineLocation(
+            cubeAxesActor.VTK_GRID_LINES_FURTHEST)
 
     if minor_tick_visibility:
         cubeAxesActor.XAxisMinorTickVisibilityOn()
@@ -830,7 +891,7 @@ def cube_axis_actor(scene,bounds,label_X_color=[1,0,0], label_Y_color=[0,1,0], l
 
     return cubeAxesActor
 
-    
+
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
          opacity=1):
     """ Create an actor with the coordinate's system axes where
@@ -2192,6 +2253,7 @@ class Container(object):
         Default: (0, 0, 0, 0, 0, 0)
 
     """
+
     def __init__(self, layout=layout.Layout()):
         """
         Parameters
