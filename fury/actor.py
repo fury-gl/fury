@@ -791,7 +791,8 @@ def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0], label_Y_color=[0, 1,
                     title_X="X-Axis", title_Y="Y-Axis", title_Z="Z-Axis",
                     draw_grid_lines=True, minor_tick_visibility=False):
     """ Cube Axis Actor creates an actor with the coordinate's system axes,
-    This is intended for use where you would need a scale for reference, or a grid on reference planes.
+    This is intended for use where you would need a scale for reference, 
+    or a grid on reference planes.
     Recommended with parallel (orthogonal) camera view.
 
     Parameters
@@ -821,7 +822,8 @@ def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0], label_Y_color=[0, 1,
         Custom title for Z-Axis.
         Default is "Z-Axis".
     draw_grid_lines : boolean, optional
-        Draws gridlines on reference XY, YZ, ZX planes farthest from the camera.
+        Draws gridlines on reference XY, YZ, ZX planes,
+        farthest from the camera.
         Default is set to True.
     minor_tick_visibility : boolean, optional
         This turns on smaller sub division ticks on the axes.
