@@ -787,11 +787,12 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0], label_Y_color=[0, 1, 0], label_Z_color=[0, 0, 1],
+def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0],
+                    label_Y_color=[0, 1, 0], label_Z_color=[0, 0, 1],
                     title_X="X-Axis", title_Y="Y-Axis", title_Z="Z-Axis",
                     draw_grid_lines=True, minor_tick_visibility=False):
     """ Cube Axis Actor creates an actor with the coordinate's system axes,
-    This is intended for use where you would need a scale for reference, 
+    This is intended for use where you would need a scale for reference,
     or a grid on reference planes.
     Recommended with parallel (orthogonal) camera view.
 
