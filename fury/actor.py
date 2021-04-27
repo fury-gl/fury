@@ -2551,7 +2551,7 @@ def marker_billboard(
         scales=1,
         marker='o',
         markers=None,
-        edgeWidth=.0, edgeColor=[255, 255, 255]):
+        edge_width=.0, edge_color=[255, 255, 255]):
     """Create a billboard actor.
 
     Billboards are 2D elements incrusted in a 3D world. It offers you the
@@ -2570,8 +2570,8 @@ def marker_billboard(
         Available marker are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
     markers: ndarray, shape (N) of str or int, optional
         An array containing a marker for each center
-    edgeWidth: int
-    edgeColor: ndarray, shape (3)
+    edge_width: int
+    edge_color: ndarray, shape (3)
     Returns
     -------
     vtkActor
@@ -2603,26 +2603,22 @@ def marker_billboard(
         sq_actor,
         markers, 'marker')
 
-    def callbackFloat(
-            _caller, _event, calldata=None, attrName=None, value=None):
+    def callback(
+        _caller, _event, calldata=None,
+            uniform_type='f', uniform_name=None, value=None):
         program = calldata
         if program is not None:
-            program.SetUniformf(attrName, value)
-
-    def callbackVec(
-            _caller, _event, calldata=None, attrName=None, value=None):
-        program = calldata
-        if program is not None:
-            program.SetUniform3f(attrName, value)
+            program.__getattribute__(f'SetUniform{uniform_type}')(
+                uniform_name, value)
 
     add_shader_callback(
             sq_actor, partial(
-                callbackFloat, attrName='edgeWidth', value=edgeWidth))
+                callback, uniform_type='f', uniform_name='edgeWidth',
+                value=edge_width))
     add_shader_callback(
-        sq_actor,
-        partial(
-            callbackVec, attrName='edgeColor',
-            value=edgeColor))
+            sq_actor, partial(
+                callback, uniform_type='3f', uniform_name='edge_color',
+                value=edge_color))
 
     vs_dec_code = load("marker_billboard_dec.vert")
     vs_impl_code = load("marker_billboard_impl.vert")
