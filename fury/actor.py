@@ -787,6 +787,50 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
+def cube_axis_actor(scene,bounds,label_X_color=[1,0,0], label_Y_color=[0,1,0], label_Z_color=[0,0,1],
+                    title_X="X-Axis",title_Y="Y-Axis",title_Z="Z-Axis",
+                    draw_grid_lines=True,minor_tick_visibility=False):
+    cubeAxesActor = vtk.vtkCubeAxesActor()
+    cubeAxesActor.SetBounds(bounds)
+    # cubeAxesActor.SetCamera(renderer.GetActiveCamera()) # this is the vtk 
+    cubeAxesActor.SetCamera(scene.GetActiveCamera())
+    cubeAxesActor.GetTitleTextProperty(0).SetColor(label_X_color)
+    cubeAxesActor.GetLabelTextProperty(0).SetColor(label_X_color)
+
+    cubeAxesActor.GetTitleTextProperty(1).SetColor(label_Y_color)
+    cubeAxesActor.GetLabelTextProperty(1).SetColor(label_Y_color)
+
+    cubeAxesActor.GetTitleTextProperty(2).SetColor(label_Z_color)
+    cubeAxesActor.GetLabelTextProperty(2).SetColor(label_Z_color)
+
+    cubeAxesActor.SetXTitle(title_X)    
+    cubeAxesActor.SetYTitle(title_Y)    
+    cubeAxesActor.SetZTitle(title_Z)
+
+    if draw_grid_lines:
+        cubeAxesActor.DrawXGridlinesOn()
+        cubeAxesActor.DrawYGridlinesOn()
+        cubeAxesActor.DrawZGridlinesOn()
+    else:
+        cubeAxesActor.DrawXGridlinesOff()
+        cubeAxesActor.DrawYGridlinesOff()
+        cubeAxesActor.DrawZGridlinesOff()
+
+    if vtk.VTK_MAJOR_VERSION > 5:
+        cubeAxesActor.SetGridLineLocation(cubeAxesActor.VTK_GRID_LINES_FURTHEST)
+
+    if minor_tick_visibility:
+        cubeAxesActor.XAxisMinorTickVisibilityOn()
+        cubeAxesActor.YAxisMinorTickVisibilityOn()
+        cubeAxesActor.ZAxisMinorTickVisibilityOn()
+    else:
+        cubeAxesActor.XAxisMinorTickVisibilityOff()
+        cubeAxesActor.YAxisMinorTickVisibilityOff()
+        cubeAxesActor.ZAxisMinorTickVisibilityOff()
+
+    return cubeAxesActor
+
+    
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
          opacity=1):
     """ Create an actor with the coordinate's system axes where
