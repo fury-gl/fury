@@ -136,7 +136,7 @@ def add_shader_callback(actor, callback, priority=0.):
         function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
     priority : float
-         Commands with a higher priority are called first.  
+         Commands with a higher priority are called first.
 
     Returns:
     --------
@@ -162,10 +162,12 @@ def add_shader_callback(actor, callback, priority=0.):
         # This avoid the strange error checking from vtk
         # mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk, '12')
         # TypeError: AddObserver argument 1: string or None required
-        raise TypeError('add_shader_callback priority argument shoud be a float or int')
+        raise TypeError("""
+            add_shader_callback priority argument shoud be a float/int""")
 
     mapper = actor.GetMapper()
-    id_observer = mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+    id_observer = mapper.AddObserver(
+        vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
 
     return id_observer
 

@@ -1,7 +1,7 @@
 import os
 
 import numpy.testing as npt
-import pytest 
+import pytest
 
 import fury.shaders as fs
 import vtk
@@ -39,7 +39,7 @@ def test_shader_callback():
     # print('\t...invalid priority type should create an exception')
     with pytest.raises(Exception):
         fs.add_shader_callback(actor, callback, priority='str')
-    
+
     mapper = actor.GetMapper()
     if id_observer is not None:
         mapper.RemoveObserver(id_observer)
