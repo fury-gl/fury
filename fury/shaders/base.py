@@ -136,14 +136,14 @@ def add_shader_callback(actor, callback, priority=0.):
         function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
     priority : float
-         Higher priority commands are called first.  A command may set an
-         abort flag to stop processing of the event.
+         Commands with a higher priority are called first.  
 
     Returns:
     --------
         id_observer : int
-            An unsigned long tag which can be used later to remove the event
-            or retrieve the command.
+            An unsigned Int tag which can be used later to remove the event
+            or retrieve the vtkCommand used in the observer.
+            See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
     Example
 
