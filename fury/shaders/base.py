@@ -125,7 +125,7 @@ def replace_shader_in_actor(actor, shader_type, code):
     getattr(sp, function)(code)
 
 
-def add_shader_callback(actor, callback):
+def add_shader_callback(actor, callback, priority=0.):
     """Add a shader callback to the actor.
 
     Parameters
@@ -135,14 +135,39 @@ def add_shader_callback(actor, callback):
     callback : callable
         function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
+    priority : float
+         Higher priority commands are called first.  A command may set an
+         abort flag to stop processing of the event.
+
+    Returns:
+    --------
+        id_observer : int
+            An unsigned long tag which can be used later to remove the event
+            or retrieve the command.
+
+    Example
+
+    ```python
+    add_shader_callback(actor, func_call1)
+    id_observer = add_shader_callback(actor, func_call2)
+    actor.GetMapper().RemoveObserver(id_observer)
+    ```
 
     """
     @vtk.calldata_type(vtk.VTK_OBJECT)
     def cbk(caller, event, calldata=None):
         callback(caller, event, calldata)
 
+    if isinstance(priority, (float, int)) is False:
+        # This avoid the strange error checking from vtk
+        # mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk, '12')
+        # TypeError: AddObserver argument 1: string or None required
+        raise TypeError('add_shader_callback priority argument shoud be a float or int')
+
     mapper = actor.GetMapper()
-    mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk)
+    id_observer = mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+
+    return id_observer
 
 
 def attribute_to_actor(actor, arr, attr_name, deep=True):
