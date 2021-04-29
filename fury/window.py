@@ -1011,15 +1011,37 @@ def enable_stereo(renwin, stereo_type):
 
 
 _GL = {
-    "SRC_ALPHA": 770,
-    "ONE": 1,
-    "ZERO": 0,
-    "BLEND": 3042,
-    "ONE_MINUS_SRC_ALPHA": 771,
-    "SRC_ALPHA": 770,
-    "DEPTH_TEST": 2929,
-    "DST_COLOR": 774,
-    "CULL_FACE": 2884,
-    "ALPHA_TEST": 3008,
+    "GL_SRC_ALPHA": 770,
+    "GL_ONE": 1,
+    "GL_ZERO": 0,
+    "GL_BLEND": 3042,
+    "GL_ONE_MINUS_SRC_ALPHA": 771,
+    "GL_SRC_ALPHA": 770,
+    "GL_DEPTH_TEST": 2929,
+    "GL_DST_COLOR": 774,
+    "GL_CULL_FACE": 2884,
+    "GL_ALPHA_TEST": 3008,
     "GL_CW": 2304,
+    " GL_CCW": 2305,
 }
+
+
+def gl_get_current_state(window):
+    glState = window.GetState()
+    for glName, glNumber in _GL.items():
+        print(f'{glName}: {glState.GetEnumState(glNumber)}')
+
+
+def gl_apply_all_opaque(window):
+    '''This it will disable any gl behavior which has no 
+    function for opaque objects. The aim it's to increasse the performance
+
+    See more
+    --------
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
+    '''
+    glState = window.GetState()
+    glState.vtkglDisable(_GL['GL_CULL_FACE'])
+    glState.vtkglDisable(_GL['GL_BLEND'])
+    glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
+
