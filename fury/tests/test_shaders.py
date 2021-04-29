@@ -3,6 +3,8 @@ import os
 import numpy.testing as npt
 import pytest
 
+from fury import window
+import numpy as np
 import fury.shaders as fs
 import vtk
 
@@ -28,18 +30,56 @@ def test_shader_callback():
     actor = vtk.vtkActor()
     actor.SetMapper(coneMapper)
 
-    def callback(_caller, _event, calldata=None):
+    test_values = []
+
+    def callbackLow(_caller, _event, calldata=None):
         program = calldata
         if program is not None:
-            pass
+            test_values.append(0)
 
     id_observer = fs.add_shader_callback(
-            actor, callback, 42)
+            actor, callbackLow, 0)
 
-    # print('\t...invalid priority type should create an exception')
     with pytest.raises(Exception):
-        fs.add_shader_callback(actor, callback, priority='str')
+        fs.add_shader_callback(actor, callbackLow, priority='str')
 
     mapper = actor.GetMapper()
-    if id_observer is not None:
-        mapper.RemoveObserver(id_observer)
+    mapper.RemoveObserver(id_observer)
+
+    scene = window.Scene()
+    scene.add(actor)
+
+    window.snapshot(scene)
+    assert len(test_values) == 0
+
+    test_values = []
+
+    def callbackHigh(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(999)
+
+    def callbackMedium(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(500)
+
+    fs.add_shader_callback(
+            actor, callbackHigh, 999)
+    fs.add_shader_callback(
+            actor, callbackLow, 0)
+    id_medium = fs.add_shader_callback(
+            actor, callbackMedium, 500)
+
+    # check the priority of each call
+    window.snapshot(scene)
+    assert np.abs([
+        test_values[0]-999, test_values[1]-500, test_values[2]-0]).sum() == 0
+
+    # check if the correct observer was removed
+    mapper.RemoveObserver(id_medium)
+    test_values = []
+    window.snapshot(scene)
+    assert np.abs([
+        test_values[0]-999, test_values[1]-0]).sum() == 0
+
