@@ -1008,3 +1008,18 @@ def enable_stereo(renwin, stereo_type):
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
+
+
+_GL = {
+    "SRC_ALPHA": 770,
+    "ONE": 1,
+    "ZERO": 0,
+    "BLEND": 3042,
+    "ONE_MINUS_SRC_ALPHA": 771,
+    "SRC_ALPHA": 770,
+    "DEPTH_TEST": 2929,
+    "DST_COLOR": 774,
+    "CULL_FACE": 2884,
+    "ALPHA_TEST": 3008,
+    "GL_CW": 2304,
+}
