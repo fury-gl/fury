@@ -82,4 +82,3 @@ def test_shader_callback():
     window.snapshot(scene)
     assert np.abs([
         test_values[0]-999, test_values[1]-0]).sum() == 0
-
