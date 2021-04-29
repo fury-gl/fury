@@ -1032,9 +1032,10 @@ def gl_get_current_state(window):
         print(f'{glName}: {glState.GetEnumState(glNumber)}')
 
 
-def gl_apply_all_opaque(window):
-    '''This it will disable any gl behavior which has no 
-    function for opaque objects. The aim it's to increasse the performance
+def gl_set_opaque(window):
+    '''This it will disable any gl behavior which has no
+    function for opaque objects. This has the benefit of
+    speeding up the rendering of the image.
 
     See more
     --------
@@ -1045,3 +1046,56 @@ def gl_apply_all_opaque(window):
     glState.vtkglDisable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
 
+
+def gl_set_additive_blending(window, dark_background=False):
+    glState = window.GetState()
+    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    glState.vtkglEnable(_GL['GL_BLEND'])
+    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+
+    if dark_background:
+        glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
+    else:
+        # glState.vtkglBlendFuncSeparate(
+        #     _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        #     _GL['GL_ONE'],  _GL['GL_ZERO'])
+        glState.vtkglBlendFuncSeparate(
+            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+            _GL['GL_ZERO'], _GL['GL_ONE'])
+
+
+def gl_set_multiplicative_blending(window, dark_background=False):
+    glState = window.GetState()
+    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    glState.vtkglEnable(_GL['GL_BLEND'])
+    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+    glState.vtkglBlendFunc(_GL['GL_DST_COLOR'], _GL['GL_ZERO'])
+
+
+def gl_set_subtractive_blending(window, dark_background=False):
+    glState = window.GetState()
+    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    glState.vtkglEnable(_GL['GL_BLEND'])
+    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+    glState.vtkglBlendEquation(_GL['GL_FUNC_SUBTRACT'])
+    glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+
+
+def gl_set_normal_blending(window, dark_background=False):
+    glState = window.GetState()
+    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    glState.vtkglEnable(_GL['GL_BLEND'])
+    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+    glState.vtkglBlendEquation(_GL['GL_FUNC_SUBTRACT'])
+    glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+    glState.vtkglBlendFuncSeparate(
+                _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+                _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
