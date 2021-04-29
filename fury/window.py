@@ -1019,10 +1019,13 @@ _GL = {
     "GL_SRC_ALPHA": 770,
     "GL_DEPTH_TEST": 2929,
     "GL_DST_COLOR": 774,
+    "GL_FUNC_SUBTRACT": 3277,
     "GL_CULL_FACE": 2884,
     "GL_ALPHA_TEST": 3008,
     "GL_CW": 2304,
-    " GL_CCW": 2305,
+    "GL_CCW": 2305,
+    "GL_ONE_MINUS_SRC_COLOR": 769,
+    "GL_SRC_COLOR": 768
 }
 
 
@@ -1042,59 +1045,53 @@ def gl_set_opaque(window):
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
     '''
     glState = window.GetState()
-    glState.vtkglDisable(_GL['GL_CULL_FACE'])
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+
+    #glState.vtkglDisable(_GL['GL_CULL_FACE'])
+    #glState.vtkglDisable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    #glState.vtkglDepthMask(False)
+    #glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
 
 
-def gl_set_additive_blending(window, dark_background=False):
+def gl_set_additive_blending(window, dark_background=True):
     glState = window.GetState()
-    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
     glState.vtkglEnable(_GL['GL_BLEND'])
-    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
 
     if dark_background:
         glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
     else:
+        glState.vtkglBlendFuncSeparate(
+             _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+             _GL['GL_ONE'],  _GL['GL_ZERO'])
         # glState.vtkglBlendFuncSeparate(
         #     _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        #     _GL['GL_ONE'],  _GL['GL_ZERO'])
-        glState.vtkglBlendFuncSeparate(
-            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-            _GL['GL_ZERO'], _GL['GL_ONE'])
+        #     _GL['GL_ZERO'], _GL['GL_ONE'])
 
 
 def gl_set_multiplicative_blending(window, dark_background=False):
     glState = window.GetState()
-    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
-    glState.vtkglBlendFunc(_GL['GL_DST_COLOR'], _GL['GL_ZERO'])
-
-
-def gl_set_subtractive_blending(window, dark_background=False):
-    glState = window.GetState()
-    glState.vtkglEnable(_GL['GL_CULL_FACE'])
-    glState.vtkglEnable(_GL['GL_BLEND'])
-    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
-    glState.ResetGLBlendEquationState()
-    glState.ResetGLBlendFuncState()
-    glState.vtkglBlendEquation(_GL['GL_FUNC_SUBTRACT'])
-    glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+    glState.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
 
 
 def gl_set_normal_blending(window, dark_background=False):
     glState = window.GetState()
-    glState.vtkglEnable(_GL['GL_CULL_FACE'])
+    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
-    glState.vtkglBlendEquation(_GL['GL_FUNC_SUBTRACT'])
     glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
     glState.vtkglBlendFuncSeparate(
                 _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
