@@ -81,8 +81,10 @@ def gl_disable_depth(window):
     fury.window.gl_disable_depth
     '''
     GL_DEPTH_TEST = 2929
+    GL_BLEND = 3042
     glState = window.GetState()
     glState.vtkglDisable(GL_DEPTH_TEST)
+    glState.vtkglDisable(GL_BLEND)
 
 ###############################################################################
 # Next, we write a standard callback function.
@@ -97,7 +99,7 @@ def callback(
 
 
 ###############################################################################
-# Then we use that callback function  as argument to the add_shader_callback 
+# Then we use that callback function  as argument to the add_shader_callback
 # method from FURY. The callback function will be called in every draw call
 id_observer_depth = add_shader_callback(
         actorNoDepthTest, partial(
