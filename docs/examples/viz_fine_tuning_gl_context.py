@@ -1,15 +1,14 @@
 """
 =======================================================
-Fine-tuning of OpenGL state using shader callbacks
+Fine-tuning the OpenGL state using shader callbacks
 =======================================================
 
-VTK it's very powerfully, but sometimes we need to get
-more control about how the things are rendered by OpenGL.
-For example, enforcing that deep-test keep disabled during
-the draw call of a specific actor. This can be usefully
-when you want to fine-tuning the performance or create
-specific visualizaton effects in order to understand a certain
-kind of data like  networks.
+VTK it’s powerfully, but sometimes we need to get more control about how
+OpenGL will render the actors.  For example, enforcing that deep-test keep
+disabled during the draw call of a specific actor.  This can be useful when
+we need to fine-tuning the performance or create specific visualization
+effects in order to understand a certain data, like to enhance the
+visualization of clusters in a network.
 """
 
 ###############################################################################
@@ -26,7 +25,7 @@ from functools import partial
 
 ###############################################################################
 # We just proceeds as usual: creating the actors and initializing a scene in
-# fury
+# FURY 
 
 centers = 1*np.array([
     [0, 0, 0],
@@ -45,7 +44,7 @@ colors = np.array([
 
 actors = actor.sdf(
     centers, primitives='sphere', colors=colors, scales=2)
-actorNoDeph = actor.sdf(
+actorNoDepthTest = actor.sdf(
     centers_no_depth_test, primitives='sphere', colors=colors, scales=2)
 actorAdd = actor.sdf(
     centers_additive, primitives='sphere', colors=colors, scales=2)
@@ -60,20 +59,20 @@ showm = window.ShowManager(scene,
                            order_transparent=True)
 
 ###############################################################################
-# All actors must be added  in a scene
+# All actors must be added  in the scene
 
 scene.add(actorAdd)
 scene.add(actors)
-scene.add(actorNoDeph)
+scene.add(actorNoDepthTest)
 
 ###############################################################################
-# Now we will enter in the topic of this example. First, we need to create
-# (or use one of the pre-built gl_function of fury) to
+# Now, we will enter in the topic of this example. First, we need to create
+# (or use one of the pre-built gl_function of FURY) to
 # change the OpenGL state of a given fury window instance (showm.window).
 #
-# The function bellow it's a simple example and can be used to change the
-# GL_DEPTH_STATE from the opengl context of a vtk instance. VTK allway's change
-#  this state to True before the draw call, therefore we need to set them
+# The function bellow it's a simple example and can be used to disable the
+# GL_DEPTH_STATE  of the opengl context used by FURY. VTK allway's change
+# this state to True before the draw call, therefore we need to set them
 # inside of a shader callback, even if you have just one actor.
 
 
@@ -86,9 +85,7 @@ def gl_disable_depth(window):
     glState.vtkglDisable(GL_DEPTH_TEST)
 
 ###############################################################################
-# Next, we write a standard callback function and uses that function in the
-# add_shader_callback method linking the actors which will be rendered with no
-# depth_test.
+# Next, we write a standard callback function.
 
 
 def callback(
@@ -99,16 +96,18 @@ def callback(
         gl_set_func(window_obj)
 
 
+###############################################################################
+# Then we use that callback function  as argument to the add_shader_callback 
+# method from FURY. The callback function will be called in every draw call
 id_observer_depth = add_shader_callback(
-        actorNoDeph, partial(
+        actorNoDepthTest, partial(
             callback,
             gl_set_func=gl_disable_depth, window_obj=showm.window))
 
 
 ###############################################################################
-# Here we're using the pre-build fury window functions which add specific
+# Here we're using the pre-build FURY window functions which add specific
 # behaviors to the OpenGL context
-
 
 id_observer_normal = add_shader_callback(
         actors, partial(
