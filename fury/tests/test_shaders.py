@@ -59,7 +59,7 @@ def test_shader_callback():
         if program is not None:
             test_values.append(999)
 
-    def callbackMedium(_caller, _event, calldata=None):
+    def callbackMean(_caller, _event, calldata=None):
         program = calldata
         if program is not None:
             test_values.append(500)
@@ -68,8 +68,8 @@ def test_shader_callback():
             actor, callbackHigh, 999)
     fs.add_shader_callback(
             actor, callbackLow, 0)
-    id_medium = fs.add_shader_callback(
-            actor, callbackMedium, 500)
+    id_mean = fs.add_shader_callback(
+            actor, callbackMean, 500)
 
     # check the priority of each call
     window.snapshot(scene)
@@ -77,7 +77,7 @@ def test_shader_callback():
         test_values[0]-999, test_values[1]-500, test_values[2]-0]).sum() == 0
 
     # check if the correct observer was removed
-    mapper.RemoveObserver(id_medium)
+    mapper.RemoveObserver(id_mean)
     test_values = []
     window.snapshot(scene)
     assert np.abs([

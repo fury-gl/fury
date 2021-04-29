@@ -167,7 +167,7 @@ def add_shader_callback(actor, callback, priority=0.):
         if program is not None:
             test_values.append(999)
 
-    def callbackMedium(_caller, _event, calldata=None):
+    def callbackMean(_caller, _event, calldata=None):
         program = calldata
         if program is not None:
             test_values.append(500)
@@ -176,8 +176,8 @@ def add_shader_callback(actor, callback, priority=0.):
             actor, callbackHigh, 999)
     fs.add_shader_callback(
             actor, callbackLow, 0)
-    id_medium = fs.add_shader_callback(
-            actor, callbackMedium, 500)
+    id_mean = fs.add_shader_callback(
+            actor, callbackMean, 500)
 
     showm.start()
     # test_values = [999, 500, 0, 999, 500, 0, ...]
