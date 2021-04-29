@@ -891,7 +891,7 @@ def build_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
         triangles that compose our parametric surface
     """
 
-    if npoints<=1:
+    if npoints <= 1:
         raise ValueError("Insufficient number of points to generate a surface."
                          " Kindly assign npoints a value greater than or equal"
                          " to 2")
