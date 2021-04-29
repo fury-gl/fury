@@ -1031,11 +1031,14 @@ _GL = {
 
 def gl_get_current_state(window):
     glState = window.GetState()
-    for glName, glNumber in _GL.items():
-        print(f'{glName}: {glState.GetEnumState(glNumber)}')
+    state_description = {
+        glName: glState.GetEnumState(glNumber)
+        for glName, glNumber in _GL.items()
+    }
+    return state_description
 
 
-def gl_set_opaque(window):
+def gl_disable_depth(window):
     '''This it will disable any gl behavior which has no
     function for opaque objects. This has the benefit of
     speeding up the rendering of the image.
@@ -1048,17 +1051,12 @@ def gl_set_opaque(window):
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
 
-    #glState.vtkglDisable(_GL['GL_CULL_FACE'])
-    #glState.vtkglDisable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    #glState.vtkglDepthMask(False)
-    #glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
 
 
 def gl_set_additive_blending(window, dark_background=True):
     glState = window.GetState()
-    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
     glState.ResetGLBlendEquationState()
@@ -1070,24 +1068,10 @@ def gl_set_additive_blending(window, dark_background=True):
         glState.vtkglBlendFuncSeparate(
              _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
              _GL['GL_ONE'],  _GL['GL_ZERO'])
-        # glState.vtkglBlendFuncSeparate(
-        #     _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        #     _GL['GL_ZERO'], _GL['GL_ONE'])
-
-
-def gl_set_multiplicative_blending(window, dark_background=False):
-    glState = window.GetState()
-    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
-    glState.vtkglEnable(_GL['GL_BLEND'])
-    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
-    glState.ResetGLBlendEquationState()
-    glState.ResetGLBlendFuncState()
-    glState.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
 
 
 def gl_set_normal_blending(window, dark_background=False):
     glState = window.GetState()
-    #glState.vtkglEnable(_GL['GL_CULL_FACE'])
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
     glState.ResetGLBlendEquationState()
