@@ -872,11 +872,34 @@ def test_points(interactive=False):
 def test_dotted_line(interactive=False):
     start_pos = np.array([[0, 0, 0]])
     end_pos = np.array([[1, 1, 1]])
+    colors = np.array([[1, 0, 0]])
+
     radius = 0.01
     num_points = 10
-    colors = np.array([[1, 0, 0]])
+
+    dot_size = 5
+    num_dots = 10
+
     c = actor.dotted_line(start_pos, end_pos,
-                          colors, num_points, radius)
+                          colors, num_points, radius, dots_actor=False)
+
+    scene = window.Scene()
+    scene.add(c)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene, reset_camera=False)
+
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=[colors])
+    npt.assert_equal(report.objects, 10)
+
+    c = actor.dotted_line(start_pos, end_pos,
+                          colors, num_dots, dot_size, dots_actor=True)
 
     scene = window.Scene()
     scene.add(c)
