@@ -804,7 +804,7 @@ def dashed_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
 
 
 def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
-                num_points=10, radius=0.01):
+                num_points=10, radius=0.01, dots_actor=False):
     """Create an actor for one or more dotted lines.
 
     Parameters
@@ -814,6 +814,7 @@ def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
     num_points :  int, optional
     colors :  array (N, 3)
     radius :  float
+    dots_actor :  bool
 
     Returns
     ----------
@@ -830,10 +831,14 @@ def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
     >>> num_points = 20
     >>> colors = np.random.rand(3, 3)
     >>> radius = 0.01
+    >>> dot_size = 5
     >>> c = actor.dotted_line(start_pos, end_pos, colors,
-    >>> num_points,radius)
-    >>> scene.add(c)
-    >>> #window.show(scene)
+    >>> num_points, dot_size, dots_actor=True)
+    >>> d = actor.dotted_line(start_pos, end_pos, colors,
+    >>> num_points, radius, dots_actor=False)
+    >>> # scene.add(c)
+    >>> scene.add(d)
+    >>> # window.show(scene)
     """
     N = start_pos.shape[0]
     arr = np.empty((num_points * N, 3))
@@ -846,8 +851,14 @@ def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
             arr[x * num_points + count] = np.array([p])
             count = count + 1
             p = p + dp
-    c = point(points=arr, colors=np.repeat(colors, num_points, axis=0),
-              point_radius=radius)
+    if dots_actor:
+        if colors.ndim != 1:
+            color = colors[0]
+            c = dots(points=arr, color=color, dot_size=radius)
+    else:
+        c = point(points=arr, colors=np.repeat(colors, num_points, axis=0),
+                  point_radius=radius)
+
     return c
 
 
