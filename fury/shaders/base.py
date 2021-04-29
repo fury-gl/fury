@@ -135,7 +135,7 @@ def add_shader_callback(actor, callback, priority=0.):
     callback : callable
         function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
-    priority : float
+    priority : float, optional
          Commands with a higher priority are called first.
 
     Returns:
@@ -145,7 +145,8 @@ def add_shader_callback(actor, callback, priority=0.):
             or retrieve the vtkCommand used in the observer.
             See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
-    Example
+    Examples
+    ---------
 
     ```python
     add_shader_callback(actor, func_call1)
@@ -153,15 +154,42 @@ def add_shader_callback(actor, callback, priority=0.):
     actor.GetMapper().RemoveObserver(id_observer)
     ```
 
+    Priority calls
+    ```python
+    test_values = []
+    def callbackLow(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(0)
+
+    def callbackHigh(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(999)
+
+    def callbackMedium(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(500)
+
+    fs.add_shader_callback(
+            actor, callbackHigh, 999)
+    fs.add_shader_callback(
+            actor, callbackLow, 0)
+    id_medium = fs.add_shader_callback(
+            actor, callbackMedium, 500)
+
+    showm.start()
+    # test_values = [999, 500, 0, 999, 500, 0, ...]
+
+    ```
+
     """
     @vtk.calldata_type(vtk.VTK_OBJECT)
     def cbk(caller, event, calldata=None):
         callback(caller, event, calldata)
 
-    if isinstance(priority, (float, int)) is False:
-        # This avoid the strange error checking from vtk
-        # mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk, '12')
-        # TypeError: AddObserver argument 1: string or None required
+    if not isinstance(priority, (float, int)):
         raise TypeError("""
             add_shader_callback priority argument shoud be a float/int""")
 
