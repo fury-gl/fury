@@ -2551,8 +2551,11 @@ def marker_billboard(
         scales=1,
         marker='o',
         markers=None,
-        marker_opacity=.5,
-        edge_width=.0, edge_color=[255, 255, 255]):
+        marker_opacity=.8,
+        edge_width=.0,
+        edge_color=[255, 255, 255],
+        edge_opacity=.8
+        ):
     """Create a billboard actor.
 
     Billboards are 2D elements incrusted in a 3D world. It offers you the
@@ -2621,6 +2624,10 @@ def marker_billboard(
             sq_actor, partial(
                 callback, uniform_type='f', uniform_name='markerOpacity',
                 value=marker_opacity))
+    add_shader_callback(
+            sq_actor, partial(
+                callback, uniform_type='f', uniform_name='edgeOpacity',
+                value=edge_opacity))
     add_shader_callback(
             sq_actor, partial(
                 callback, uniform_type='3f', uniform_name='edge_color',

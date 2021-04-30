@@ -9,10 +9,9 @@ float edgeWidthNew = result.z;
 
 if (sdf<0.0) discard;
 
-vec3 color2 = edgeColor;
 vec4 rgba = vec4(  color, markerOpacity );
 if (edgeWidthNew > 0.0){
-   if (sdf < edgeWidthNew)  rgba  = vec4(color2, 0.5);
+   if (sdf < edgeWidthNew)  rgba  = vec4(edgeColor, edgeOpacity);
 }
 
 fragOutput0 = rgba;

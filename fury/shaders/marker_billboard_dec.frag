@@ -1,5 +1,6 @@
 in float vMarker;
 uniform float markerOpacity;
+uniform float edgeOpacity;
 uniform float edgeWidth;
 uniform vec3 edgeColor;
 uniform mat4 MCDCMatrix;
