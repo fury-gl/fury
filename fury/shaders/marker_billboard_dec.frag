@@ -1,9 +1,7 @@
-/* We need both the ModelView and projection matrices */
-in vec3 centerVertexMCVSOutput;
-in vec3 normalizedVertexMCVSOutput;
-in float vEdgeWidth;
-in vec3 vEdgeColor;
 in float vMarker;
+uniform float markerOpacity;
+uniform float edgeWidth;
+uniform vec3 edgeColor;
 uniform mat4 MCDCMatrix;
 uniform mat4 MCVCMatrix;
 

@@ -2551,6 +2551,7 @@ def marker_billboard(
         scales=1,
         marker='o',
         markers=None,
+        marker_opacity=.5,
         edge_width=.0, edge_color=[255, 255, 255]):
     """Create a billboard actor.
 
@@ -2570,8 +2571,9 @@ def marker_billboard(
         Available marker are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
     markers: ndarray, shape (N) of str or int, optional
         An array containing a marker for each center
-    edge_width: int
-    edge_color: ndarray, shape (3)
+    marker_opacity: float, optional
+    edge_width: int, optional
+    edge_color: ndarray, shape (3), optional
     Returns
     -------
     vtkActor
@@ -2617,14 +2619,22 @@ def marker_billboard(
                 value=edge_width))
     add_shader_callback(
             sq_actor, partial(
+                callback, uniform_type='f', uniform_name='markerOpacity',
+                value=marker_opacity))
+    add_shader_callback(
+            sq_actor, partial(
                 callback, uniform_type='3f', uniform_name='edge_color',
                 value=edge_color))
 
-    vs_dec_code = load("marker_billboard_dec.vert")
-    vs_impl_code = load("marker_billboard_impl.vert")
+    vs_dec_code = load("billboard_dec.vert")
+    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
+    vs_impl_code = load("billboard_impl.vert")
+    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
 
-    fs_dec_code = load('marker_billboard_dec.frag')
-    fs_impl_code = load('marker_billboard_impl.frag')
+    fs_dec_code = load('billboard_dec.frag')
+    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
+    fs_impl_code = load('billboard_impl.frag')
+    fs_impl_code += f'{load("marker_billboard_impl.frag")}'
 
     shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
