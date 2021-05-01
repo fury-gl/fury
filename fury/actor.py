@@ -298,7 +298,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     if colors is not None:
         triangle_poly_data.GetPointData().\
-            SetScalars(numpy_support.numpy_to_vtk_colors(255 * colors))
+            SetScalars(numpy_to_vtk_colors(colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
