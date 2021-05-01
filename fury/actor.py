@@ -15,7 +15,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order)
+                        fix_winding_order, numpy_to_vtk_colors)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
 import fury.primitive as fp
@@ -298,7 +298,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     if colors is not None:
         triangle_poly_data.GetPointData().\
-            SetScalars(numpy_support.numpy_to_vtk(colors))
+            SetScalars(numpy_support.numpy_to_vtk_colors(colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
