@@ -879,9 +879,7 @@ def cube_axis_actor(scene, bounds, label_X_color=[1, 0, 0],
         cubeAxesActor.DrawYGridlinesOff()
         cubeAxesActor.DrawZGridlinesOff()
 
-    if vtk.VTK_MAJOR_VERSION > 5:
-        cubeAxesActor.SetGridLineLocation(
-            cubeAxesActor.VTK_GRID_LINES_FURTHEST)
+    cubeAxesActor.SetGridLineLocation(cubeAxesActor.VTK_GRID_LINES_FURTHEST)
 
     if minor_tick_visibility:
         cubeAxesActor.XAxisMinorTickVisibilityOn()
