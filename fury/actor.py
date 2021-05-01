@@ -271,7 +271,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
             It is an optional parameter, it is computed locally if None
         colors : (N, 3) array
             Specifies the colors associated with each vertex in the
-            vertices array.
+            vertices array. Range should be 0 to 1.
             Optional parameter, if not passed, all vertices
             are colored white
         smooth : string - "loop" or "butterfly"
@@ -298,7 +298,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     if colors is not None:
         triangle_poly_data.GetPointData().\
-            SetScalars(numpy_to_vtk_colors(colors))
+            SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
