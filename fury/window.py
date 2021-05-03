@@ -1029,8 +1029,31 @@ _GL = {
 }
 
 
-def gl_get_current_state(window):
-    glState = window.GetState()
+def test_and_extract_gl_state(func):
+    def wrapper(obj, *args, **kwargs):
+        '''
+        Arguments
+        ---------
+            obj:
+                'vtkOpenGLState' or FURY ShowManager 
+        '''
+        if isinstance(obj, ShowManager):
+            glState = obj.window.GetState()
+
+        elif not isinstance(obj, vtk.vtkOpenGLState):
+            glState = obj
+
+        else:
+            raise TypeError('''valid types are vtkOpenGLState
+             or FURY ShowManager''')
+
+        func(glState, *args, **kwargs)
+
+    return wrapper
+
+
+@test_and_extract_gl_state
+def gl_get_current_state(glState):
     state_description = {
         glName: glState.GetEnumState(glNumber)
         for glName, glNumber in _GL.items()
@@ -1038,29 +1061,46 @@ def gl_get_current_state(window):
     return state_description
 
 
-def gl_disable_depth(window):
-    '''This it will disable any gl behavior which has no
+@test_and_extract_gl_state
+def gl_resset_blend_func(glState):
+    glState.ResetGLBlendEquationState()
+    glState.ResetGLBlendFuncState()
+
+
+@test_and_extract_gl_state
+def gl_enable_depth(glState):
+    glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
+
+
+@test_and_extract_gl_state
+def gl_disable_depth(glState):
+    glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
+
+
+@test_and_extract_gl_state
+def gl_enable_blend(glState):
+    glState.vtkglEnable(_GL['GL_BLEND'])
+
+
+@test_and_extract_gl_state
+def gl_disable_blend(glState):
+    """This it will disable any gl behavior which has no
     function for opaque objects. This has the benefit of
     speeding up the rendering of the image.
 
     See more
     --------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
-    '''
-    glState = window.GetState()
-    glState.ResetGLBlendEquationState()
-    glState.ResetGLBlendFuncState()
+    """
 
+    glState.vtkglDisable(_GL['GL_CULL_FACE'])
     glState.vtkglDisable(_GL['GL_BLEND'])
-    glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
 
 
-def gl_set_additive_blending(window, dark_background=True):
-    glState = window.GetState()
+@test_and_extract_gl_state
+def gl_set_additive_blending(glState, dark_background=True):
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    glState.ResetGLBlendEquationState()
-    glState.ResetGLBlendFuncState()
 
     if dark_background:
         glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
@@ -1070,12 +1110,10 @@ def gl_set_additive_blending(window, dark_background=True):
              _GL['GL_ONE'],  _GL['GL_ZERO'])
 
 
-def gl_set_normal_blending(window, dark_background=False):
-    glState = window.GetState()
+@test_and_extract_gl_state
+def gl_set_normal_blending(glState, dark_background=False):
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
-    glState.ResetGLBlendEquationState()
-    glState.ResetGLBlendFuncState()
     glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
     glState.vtkglBlendFuncSeparate(
                 _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
