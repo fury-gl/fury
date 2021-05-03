@@ -1,6 +1,7 @@
 import vtk
 from vtk.util import numpy_support
 from fury import enable_warnings
+from functools import partial
 
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
@@ -196,6 +197,48 @@ def add_shader_callback(actor, callback, priority=0.):
     mapper = actor.GetMapper()
     id_observer = mapper.AddObserver(
         vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+
+    return id_observer
+
+
+def shader_apply_effects(glState, actor, effect=None, effects=None, priority=0):
+    """
+
+    Arguments:
+    ----------
+        glState:
+        actor: vtk actor
+        effect:  funtion
+            a function with a glState as argument
+        effects: a list of functions, optional
+        priority: float, optional
+            Related with the shader callback command.
+            Effects with a higher priority are applied first and
+            can be override by the others.
+
+    Returns:
+    --------
+        id_observer : int
+            An unsigned Int tag which can be used later to remove the event
+            or retrieve the vtkCommand used in the observer.
+            See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
+
+    """
+    if effects is None:
+        effects = [effect]
+
+    def callback(
+            _caller, _event, calldata=None,
+            effects=[], glState=None):
+        program = calldata
+        if program is not None:
+            for func in effects:
+                func(glState)
+
+    id_observer = add_shader_callback(
+        actor, partial(
+            callback,
+            effects=effects, glState=glState), priority)
 
     return id_observer
 
