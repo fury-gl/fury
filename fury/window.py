@@ -1035,7 +1035,7 @@ def test_and_extract_gl_state(func):
         Arguments
         ---------
             obj:
-                'vtkOpenGLState' or FURY ShowManager 
+                'vtkOpenGLState' or fury.window.ShowManager 
         '''
         if isinstance(obj, ShowManager):
             glState = obj.window.GetState()
@@ -1045,7 +1045,7 @@ def test_and_extract_gl_state(func):
 
         else:
             raise TypeError('''valid types are vtkOpenGLState
-             or FURY ShowManager''')
+             or fury.window.ShowManager''')
 
         func(glState, *args, **kwargs)
 
@@ -1054,6 +1054,9 @@ def test_and_extract_gl_state(func):
 
 @test_and_extract_gl_state
 def gl_get_current_state(glState):
+    """Returns a dict which describes the current state of the opengl
+    context
+    """
     state_description = {
         glName: glState.GetEnumState(glNumber)
         for glName, glNumber in _GL.items()
@@ -1062,7 +1065,17 @@ def gl_get_current_state(glState):
 
 
 @test_and_extract_gl_state
-def gl_resset_blend_func(glState):
+def gl_reset_blend(glState):
+    """Redefines the state of the OpenGL context related with how the RGBA
+    channels will be combined.
+
+    See more:
+    ---------
+    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
+    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
+    vtk specification
+    https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
+    """
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
 
@@ -1092,7 +1105,6 @@ def gl_disable_blend(glState):
     --------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
     """
-
     glState.vtkglDisable(_GL['GL_CULL_FACE'])
     glState.vtkglDisable(_GL['GL_BLEND'])
 

@@ -201,14 +201,16 @@ def add_shader_callback(actor, callback, priority=0.):
     return id_observer
 
 
-def shader_apply_effects(glState, actor, effect=None, effects=None, priority=0):
-    """
+def shader_apply_effects(
+        showm, actor, effect=None, effects=None, priority=0):
+    """This applies a specific opengl state (effect) or a list of effects just
+    before the actor's shader be executed.
 
     Arguments:
     ----------
-        glState:
+        showm: fury.window.ShowManager
         actor: vtk actor
-        effect:  funtion
+        effect:  function
             a function with a glState as argument
         effects: a list of functions, optional
         priority: float, optional
@@ -229,16 +231,16 @@ def shader_apply_effects(glState, actor, effect=None, effects=None, priority=0):
 
     def callback(
             _caller, _event, calldata=None,
-            effects=[], glState=None):
+            effects=[], showm=None):
         program = calldata
         if program is not None:
             for func in effects:
-                func(glState)
+                func(showm)
 
     id_observer = add_shader_callback(
         actor, partial(
             callback,
-            effects=effects, glState=glState), priority)
+            effects=effects, showm=showm), priority)
 
     return id_observer
 

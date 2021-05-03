@@ -132,14 +132,13 @@ shader_apply_effects(
     effect=window.gl_set_additive_blending)
 
 ###############################################################################
-# It's also possible to pass a list of effects which will applied in the
-# specific order. The final opengl state it'll be just the composition of the
-# effects
+# It's also possible to pass a list of effects. The final opengl state it'll 
+# be the composition of each effect that each function has in the opengl state
 
 shader_apply_effects(
     showm, actorNoDepthTest2,
     effects=[
-        window.gl_resset_blend_func, window.gl_disable_blend,
+        window.gl_reset_blend, window.gl_disable_blend,
         window.gl_disable_depth])
 
 
