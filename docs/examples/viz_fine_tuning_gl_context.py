@@ -15,7 +15,7 @@ visualization of clusters in a network.
 # First, let's import some functions
 import numpy as np
 
-from fury.shaders import add_shader_callback
+from fury.shaders import add_shader_callback, shader_apply_effects
 
 from fury import window, actor
 import itertools
@@ -34,25 +34,36 @@ centers = 1*np.array([
 ])
 centers_no_depth_test = centers - np.array([[0, -1, 0]])
 centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
-centers_mul = centers_additive - np.array([[0, -1, 0]])
-centers_sub = centers_mul - np.array([[0, -1, 0]])
+centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
 colors = np.array([
     [1, 0, 0],
     [0, 1, 0],
     [0, 0, 1]
 ])
 
-actors = actor.sdf(
-    centers, primitives='sphere', colors=colors, scales=2)
-actorNoDepthTest = actor.sdf(
-    centers_no_depth_test, primitives='sphere', colors=colors, scales=2)
-actorAdd = actor.sdf(
-    centers_additive, primitives='sphere', colors=colors, scales=2)
+
+useSDFActors = True
+if useSDFActors:
+    actors = actor.sdf(
+        centers, primitives='sphere', colors=colors, scales=2)
+    actorNoDepthTest = actor.sdf(
+        centers_no_depth_test, primitives='sphere', colors=colors, scales=2)
+    actorNoDepthTest2 = actor.sdf(
+        centers_no_depth_test2, primitives='sphere', colors=colors, scales=2)
+    actorAdd = actor.sdf(
+        centers_additive, primitives='sphere', colors=colors, scales=2)
+else:
+    actors = actor.sphere(
+        centers, opacity=.5, radii=.4, colors=colors)
+    actorNoDepthTest = actor.sphere(
+        centers_no_depth_test, opacity=.5, radii=.4, colors=colors)
+    actorNoDepthTest2 = actor.sphere(
+        centers_no_depth_test2, opacity=.5, radii=.4, colors=colors)
+    actorAdd = actor.sphere(
+        centers_additive, opacity=1, radii=.4, colors=colors)
 
 renderer = window.Scene()
 scene = window.Scene()
-interactive = True
-
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
@@ -61,10 +72,10 @@ showm = window.ShowManager(scene,
 ###############################################################################
 # All actors must be added  in the scene
 
-scene.add(actorAdd)
-scene.add(actors)
 scene.add(actorNoDepthTest)
-
+scene.add(actors)
+scene.add(actorAdd)
+scene.add(actorNoDepthTest2)
 ###############################################################################
 # Now, we will enter in the topic of this example. First, we need to create
 # (or use one of the pre-built gl_function of FURY) to
@@ -75,14 +86,15 @@ scene.add(actorNoDepthTest)
 # this state to True before the draw call, therefore we need to set them
 # inside of a shader callback, even if you have just one actor.
 
+glState = showm.window.GetState()
 
-def gl_disable_depth(window):
+
+def gl_disable_depth(glState):
     '''this functions it's allways accessible through
     fury.window.gl_disable_depth
     '''
     GL_DEPTH_TEST = 2929
     GL_BLEND = 3042
-    glState = window.GetState()
     glState.vtkglDisable(GL_DEPTH_TEST)
     glState.vtkglDisable(GL_BLEND)
 
@@ -92,10 +104,10 @@ def gl_disable_depth(window):
 
 def callback(
         _caller, _event, calldata=None,
-        gl_set_func=None, window_obj=None):
+        gl_set_func=None, glState=None):
     program = calldata
     if program is not None:
-        gl_set_func(window_obj)
+        gl_set_func(glState)
 
 
 ###############################################################################
@@ -104,36 +116,45 @@ def callback(
 id_observer_depth = add_shader_callback(
         actorNoDepthTest, partial(
             callback,
-            gl_set_func=gl_disable_depth, window_obj=showm.window))
+            gl_set_func=gl_disable_depth, glState=glState))
 
 
 ###############################################################################
-# Here we're using the pre-build FURY window functions which add specific
-# behaviors to the OpenGL context
+# Here we're using the pre-build FURY window functions which has already a 
+# set of  specific behaviors to  be applied in the OpenGL context
 
-id_observer_normal = add_shader_callback(
-        actors, partial(
-            callback, gl_set_func=window.gl_set_normal_blending,
-            window_obj=showm.window))
+id_observer_normal = shader_apply_effects(
+    showm, actors,
+    effect=window.gl_set_normal_blending)
 
+shader_apply_effects(
+    showm, actorAdd,
+    effect=window.gl_set_additive_blending)
 
-id_observer_additive = add_shader_callback(
-        actorAdd, partial(
-            callback, gl_set_func=window.gl_set_additive_blending,
-            window_obj=showm.window))
+###############################################################################
+# It's also possible to pass a list of effects which will applied in the
+# specific order. The final opengl state it'll be just the composition of the
+# effects
+
+shader_apply_effects(
+    showm, actorNoDepthTest2,
+    effects=[
+        window.gl_resset_blend_func, window.gl_disable_blend,
+        window.gl_disable_depth])
 
 
 ###############################################################################
 # Finaly, just render and see the results
 
 showm.initialize()
+# window.gl_set_additive_blending(showm.window)
 counter = itertools.count()
 
 
 def timer_callback(obj, event):
     cnt = next(counter)
     showm.render()
-    if cnt == 10000:
+    if cnt == 1000:
         showm.exit()
 
 
