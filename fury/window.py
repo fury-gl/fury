@@ -1009,6 +1009,9 @@ def enable_stereo(renwin, stereo_type):
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
 
+# See [1] for a more extensive list of OpenGL constants
+# [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
+
 
 _GL = {
     "GL_SRC_ALPHA": 770,
@@ -1031,12 +1034,12 @@ _GL = {
 
 def test_and_extract_gl_state(func):
     def wrapper(obj, *args, **kwargs):
-        '''
+        """
         Arguments
         ---------
             obj:
-                'vtkOpenGLState' or fury.window.ShowManager 
-        '''
+                'vtkOpenGLState' or fury.window.ShowManager
+        """
         if isinstance(obj, ShowManager):
             glState = obj.window.GetState()
 
@@ -1044,8 +1047,8 @@ def test_and_extract_gl_state(func):
             glState = obj
 
         else:
-            raise TypeError('''valid types are vtkOpenGLState
-             or fury.window.ShowManager''')
+            raise TypeError("""valid types are vtkOpenGLState
+             or fury.window.ShowManager """)
 
         func(glState, *args, **kwargs)
 
@@ -1071,11 +1074,11 @@ def gl_reset_blend(glState):
 
     See more:
     ---------
-    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
-    https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
-    vtk specification
-    https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
-    """
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
+    [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
+    vtk specification:
+    [3] https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
+    """  # noqa
     glState.ResetGLBlendEquationState()
     glState.ResetGLBlendFuncState()
 
@@ -1104,7 +1107,7 @@ def gl_disable_blend(glState):
     See more
     --------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
-    """
+    """ # noqa
     glState.vtkglDisable(_GL['GL_CULL_FACE'])
     glState.vtkglDisable(_GL['GL_BLEND'])
 

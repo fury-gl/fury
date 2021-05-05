@@ -25,7 +25,7 @@ from functools import partial
 
 ###############################################################################
 # We just proceeds as usual: creating the actors and initializing a scene in
-# FURY 
+# FURY
 
 centers = 1*np.array([
     [0, 0, 0],
@@ -42,22 +42,22 @@ colors = np.array([
 ])
 
 
-useSDFActors = True
-if useSDFActors:
+use_sdf_actors = True
+if use_sdf_actors:
     actors = actor.sdf(
         centers, primitives='sphere', colors=colors, scales=2)
-    actorNoDepthTest = actor.sdf(
+    actors_no_depth_test = actor.sdf(
         centers_no_depth_test, primitives='sphere', colors=colors, scales=2)
-    actorNoDepthTest2 = actor.sdf(
+    actors_no_depth_test2 = actor.sdf(
         centers_no_depth_test2, primitives='sphere', colors=colors, scales=2)
     actorAdd = actor.sdf(
         centers_additive, primitives='sphere', colors=colors, scales=2)
 else:
     actors = actor.sphere(
         centers, opacity=.5, radii=.4, colors=colors)
-    actorNoDepthTest = actor.sphere(
+    actors_no_depth_test = actor.sphere(
         centers_no_depth_test, opacity=.5, radii=.4, colors=colors)
-    actorNoDepthTest2 = actor.sphere(
+    actors_no_depth_test2 = actor.sphere(
         centers_no_depth_test2, opacity=.5, radii=.4, colors=colors)
     actorAdd = actor.sphere(
         centers_additive, opacity=1, radii=.4, colors=colors)
@@ -72,10 +72,10 @@ showm = window.ShowManager(scene,
 ###############################################################################
 # All actors must be added  in the scene
 
-scene.add(actorNoDepthTest)
+scene.add(actors_no_depth_test)
 scene.add(actors)
 scene.add(actorAdd)
-scene.add(actorNoDepthTest2)
+scene.add(actors_no_depth_test2)
 ###############################################################################
 # Now, we will enter in the topic of this example. First, we need to create
 # (or use one of the pre-built gl_function of FURY) to
@@ -114,13 +114,13 @@ def callback(
 # Then we use that callback function  as argument to the add_shader_callback
 # method from FURY. The callback function will be called in every draw call
 id_observer_depth = add_shader_callback(
-        actorNoDepthTest, partial(
+        actors_no_depth_test, partial(
             callback,
             gl_set_func=gl_disable_depth, glState=glState))
 
 
 ###############################################################################
-# Here we're using the pre-build FURY window functions which has already a 
+# Here we're using the pre-build FURY window functions which has already a
 # set of  specific behaviors to  be applied in the OpenGL context
 
 id_observer_normal = shader_apply_effects(
@@ -132,11 +132,10 @@ shader_apply_effects(
     effect=window.gl_set_additive_blending)
 
 ###############################################################################
-# It's also possible to pass a list of effects. The final opengl state it'll 
+# It's also possible to pass a list of effects. The final opengl state it'll
 # be the composition of each effect that each function has in the opengl state
-
 shader_apply_effects(
-    showm, actorNoDepthTest2,
+    showm, actors_no_depth_test2,
     effects=[
         window.gl_reset_blend, window.gl_disable_blend,
         window.gl_disable_depth])
