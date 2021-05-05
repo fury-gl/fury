@@ -95,7 +95,7 @@ class SelectionManager(object):
             self.hsel.SetActorPassOnly()
        
     def pick(self, disp_xy, sc):
-        self.select(disp_xy, sc, area=0)
+        return self.select(disp_xy, sc, area=0)
 
     def select(self, disp_xy, sc, area=0):
 
