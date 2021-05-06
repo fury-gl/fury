@@ -19,6 +19,8 @@ centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
 radii = 0.1 * np.array([50, 100, 150.])
 
+num_faces = 3 * 6 * 2  # every quad of the cubes has 2 triangles
+
 selected = np.zeros(3, dtype=bool)
 
 ###############################################################################
@@ -43,7 +45,7 @@ label_actor = actor.label(text='Test')
 directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
-fury_actor = actor.cube(centers, directions, colors, heights=radii)
+fury_actor = actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -69,7 +71,7 @@ scene.reset_camera()
 ###############################################################################
 # Create the Picking manager
 
-pickm = pick.SelectionManager()
+selm = pick.SelectionManager(select='faces')
 
 ###############################################################################
 # Time to make the callback which will be called when we pick an object
@@ -79,15 +81,16 @@ def left_click_callback(obj, event):
 
     # Get the event position on display and pick
 
-    event_pos = pickm.event_position(showm.iren)
-    picked_info = pickm.pick(event_pos, showm.scene)
+    event_pos = selm.event_position(showm.iren)
+    picked_info = selm.pick(event_pos, showm.scene)
 
-    vertex_index = picked_info['vertex']
+    print(picked_info)
+
+    face_index = picked_info['face'][0]
 
     # Calculate the objects index
 
-    object_index = int(np.floor((vertex_index / num_vertices) *
-                          num_objects))
+    object_index = int(np.floor((face_index / 6 * 2)))
 
     # Find how many vertices correspond to each object
     sec = int(num_vertices / num_objects)
@@ -118,7 +121,6 @@ def left_click_callback(obj, event):
     text = 'Object ' + str(object_index) + '\n'
     text += 'Vertex ID ' + str(vertex_index) + '\n'
     text += 'Face ID ' + str(face_index) + '\n'
-    text += 'World pos ' + str(np.round(picked_info['xyz'], 2)) + '\n'
     text += 'Actor ID ' + str(id(picked_info['actor']))
     text_block.message = text
     showm.render()
