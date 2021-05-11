@@ -1235,6 +1235,38 @@ def test_texture_mapping():
     npt.assert_equal(res.colors_found, [True, True])
 
 
+def test_texture_update():
+    arr = np.zeros((512, 212, 3), dtype='uint8')
+    arr[:256, :] = np.array([255, 0, 0])
+    arr[256:, :] = np.array([0, 255, 0])
+    # create a texture on plane
+    tp = actor.texture(arr, interp=True)
+    scene = window.Scene()
+    scene.add(tp)
+    display = window.snapshot(scene)
+    res1 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # update the texture
+    new_arr = np.zeros((512, 212, 3), dtype='uint8')
+    new_arr[:, :] = np.array([255, 255, 255])
+    actor.texture_update(tp, new_arr)
+    display = window.snapshot(scene)
+    res2 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # Test for original colors
+    npt.assert_equal(res1.colors_found, [False, True, True])
+    # Test for changed colors of the actor
+    npt.assert_equal(res2.colors_found, [True, False, False])
+
+
 def test_figure_vs_texture_actor():
     arr = (255 * np.ones((512, 212, 4))).astype('uint8')
 
