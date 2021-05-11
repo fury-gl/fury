@@ -19,7 +19,7 @@ centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
 radii = 0.1 * np.array([50, 100, 150.])
 
-num_faces = 3 * 6 * 2  # every quad of the cubes has 2 triangles
+num_faces = 3 * 6 * 2  # every quad of each cubes has 2 triangles
 
 selected = np.zeros(3, dtype=bool)
 
@@ -63,10 +63,22 @@ vcolors = utils.colors_from_actor(fury_actor, 'colors')
 # Adding an actor showing the axes of the world coordinates
 ax = actor.axes(scale=(10, 10, 10))
 
+rgb = np.random.rand(100, 200, 3)
+
+# texa = actor.texture(rgb)
+
+from fury.actor import simple_quad_2d
+
+rec_actor = simple_quad_2d(size=(100, 200))
+# rec_actor.GetProperty().SetRepresentationToWireframe()
+
 scene.add(fury_actor)
 scene.add(label_actor)
+scene.add(rec_actor)
 scene.add(ax)
+# scene.add(texa)
 scene.reset_camera()
+
 
 ###############################################################################
 # Create the Picking manager
@@ -126,16 +138,25 @@ def left_click_callback(obj, event):
     showm.render()
 
 
-###############################################################################
-# Bind the callback to the actor
+def hover_callback(_obj, _event):
+    event_pos = selm.event_position(showm.iren)
+    info = selm.select(event_pos, showm.scene, 0)
 
-fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
+    print(info)
+    showm.render()
+
 
 ###############################################################################
 # Make the window appear
 
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
 showm.initialize()
+
+
+###############################################################################
+# Bind the callback to the actor
+showm.add_iren_callback(hover_callback)
+
 scene.add(panel)
 
 ###############################################################################

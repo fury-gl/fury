@@ -2543,3 +2543,41 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
     return box_actor
+
+
+def simple_quad_2d(size):
+    """ TODO: this may need to be rewritten with primitives in mind """
+    pnts = vtk.vtkPoints()
+
+    sz0 = size[0]//2
+    sz1 = size[1]//2
+    pnts.InsertNextPoint(0, 0, 0)
+    pnts.InsertNextPoint(size[0], 0, 0)
+    pnts.InsertNextPoint(size[0], size[1], 0)
+    pnts.InsertNextPoint(0, size[1], 0)
+
+    # Create the polygon
+    poly = vtk.vtkPolygon()
+    poly.GetPointIds().SetNumberOfIds(4) # make a quad
+    poly.GetPointIds().SetId(0, 0)
+    poly.GetPointIds().SetId(1, 1)
+    poly.GetPointIds().SetId(2, 2)
+    poly.GetPointIds().SetId(3, 3)
+
+    # Add the polygon to a list of polygons
+    polyc = vtk.vtkCellArray()
+    polyc.InsertNextCell(poly)
+
+    # Create a PolyData
+    pd = vtk.vtkPolyData()
+    pd.SetPoints(pnts)
+    pd.SetPolys(polyc)
+
+    # Create a mapper and actor
+    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = set_input(mapper, pd)
+
+    act = vtk.vtkActor2D()
+    act.SetMapper(mapper)
+
+    return act
