@@ -81,7 +81,7 @@ class SelectionManager(object):
 
     def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()
-        self.update_selection_type(select)                
+        self.update_selection_type(select)
 
     def update_selection_type(self, select):
         self.selected_type = select
@@ -93,7 +93,7 @@ class SelectionManager(object):
                 vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
         if select == 'actors':
             self.hsel.SetActorPassOnly()
-       
+
     def pick(self, disp_xy, sc):
         return self.select(disp_xy, sc, area=0)
 
@@ -102,13 +102,18 @@ class SelectionManager(object):
         info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
 
         self.hsel.SetRenderer(sc)
-        picking_area = area
-        
+        if isinstance(area, int):
+            picking_area = area, area
+        else:
+            picking_area = area
+
         try:
-            self.hsel.SetArea(disp_xy[0] - picking_area, disp_xy[1] - picking_area,
-                              disp_xy[0] + picking_area, disp_xy[1] + picking_area)
+            self.hsel.SetArea(disp_xy[0] - picking_area[0],
+                              disp_xy[1] - picking_area[1],
+                              disp_xy[0] + picking_area[0],
+                              disp_xy[1] + picking_area[1])
             res = self.hsel.Select()
-        
+
         except OverflowError:
             return info
 
@@ -122,18 +127,18 @@ class SelectionManager(object):
             for i in range(num_nodes):
                 # print('Node ', i)
                 sel_node = res.GetNode(i)
-                                
+
                 if(sel_node is not None):
                     selected_nodes = set(np.floor(nps.vtk_to_numpy(
                         sel_node.GetSelectionList())).astype(int))
-                    
+
                     info['node'] = sel_node
                     info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
                     if self.selected_type == 'faces':
                         info['face'] = list(selected_nodes)
                     if self.selected_type == 'vertex':
                         info['vertex'] = list(selected_nodes)
-        
+
         return info
 
     def event_position(self, iren):
@@ -146,14 +151,13 @@ class SelectionManager(object):
             using providing ShowManager's iren attribute.
         """
         return iren.GetEventPosition()
-    
 
-    def selectable_on(self, actors):        
+
+    def selectable_on(self, actors):
         for a in actors:
             a.PickableOn()
-    
+
     def selectable_off(self, actors):
         for a in actors:
             a.PickableOff()
 
-    

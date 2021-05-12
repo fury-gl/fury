@@ -40,12 +40,9 @@ scene = window.Scene()
 label_actor = actor.label(text='Test')
 
 ###############################################################################
-# This actor is made with 3 cubes of different orientation
+# This actor is made with 3 cubes
 
-directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [0, np.sqrt(2)/2, np.sqrt(2)/2]])
-fury_actor = actor.cube(centers, directions, colors, scales=radii)
+fury_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -63,20 +60,15 @@ vcolors = utils.colors_from_actor(fury_actor, 'colors')
 # Adding an actor showing the axes of the world coordinates
 ax = actor.axes(scale=(10, 10, 10))
 
-rgb = np.random.rand(100, 200, 3)
+rgba = 255 * np.ones((100, 200, 4))
+rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
 
-# texa = actor.texture(rgb)
-
-from fury.actor import simple_quad_2d
-
-rec_actor = simple_quad_2d(size=(100, 200))
-# rec_actor.GetProperty().SetRepresentationToWireframe()
+texa = actor.texture(rgba.astype(np.uint8))
 
 scene.add(fury_actor)
 scene.add(label_actor)
-scene.add(rec_actor)
 scene.add(ax)
-# scene.add(texa)
+scene.add(texa)
 scene.reset_camera()
 
 
@@ -140,8 +132,7 @@ def left_click_callback(obj, event):
 
 def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
-    info = selm.select(event_pos, showm.scene, 0)
-
+    info = selm.select(event_pos, showm.scene, (10, 10))
     print(info)
     showm.render()
 
