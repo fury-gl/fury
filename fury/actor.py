@@ -18,6 +18,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         fix_winding_order)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
+from fury.actors.peak import PeakActor
 import fury.primitive as fp
 
 
@@ -1219,6 +1220,64 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                               int(np.floor(szz / 2)), int(np.floor(szz / 2)))
 
     return peak_actor
+
+
+def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
+         linewidth=1, lookup_colormap=None, symmetric=True):
+    """Visualize peak directions as given from ``peaks_from_model``.
+
+    Parameters
+    ----------
+    peaks_dirs : ndarray
+        Peak directions. The shape of the array can be (M, 3) or (X, M, 3) or
+        (X, Y, M, 3) or (X, Y, Z, M, 3)
+    peaks_values : ndarray
+        Peak values. The shape of the array can be (M, ) or (X, M) or
+        (X, Y, M) or (X, Y, Z, M)
+    affine : array
+        4x4 transformation array from native coordinates to world coordinates
+    mask : ndarray
+        3D mask
+    colors : tuple or None
+        Default None. If None then every peak gets an orientation color
+        in similarity to a DEC map.
+    lookup_colormap : vtkLookupTable, optional
+        Add a default lookup table to the colormap. Default is None which calls
+        :func:`fury.actor.colormap_lookup_table`.
+    linewidth : float, optional
+        Line thickness. Default is 1.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
+
+    Returns
+    -------
+    actor : PeakActor
+        vtkActor or vtkLODActor representing the peaks directions and/or
+        magnitudes.
+
+    Examples
+    ----------
+    >>> from fury import actor, window
+    >>> scene = window.Scene()
+    >>> peak_dirs = np.random.rand(3, 3, 3, 5, 3)
+    >>> c = actor.peak(peak_dirs)
+    >>> scene.add(c)
+    >>> #window.show(scene)
+
+    """
+    peaks_dirs = np.asarray(peaks_dirs)
+    if peaks_dirs.ndim > 5:
+        raise ValueError("Wrong shape")
+
+    valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
+    if mask is not None:
+        valid_mask = np.logical_and(valid_mask, mask)
+    indices = np.nonzero(valid_mask)
+
+    return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
+                     colors=colors, linewidth=linewidth)
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
