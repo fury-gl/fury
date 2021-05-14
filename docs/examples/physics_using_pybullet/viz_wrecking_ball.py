@@ -233,7 +233,7 @@ base_actor.SetPosition(*base_pos)
 brick_vertices = utils.vertices_from_actor(brick_actor)
 num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
-brick_sec = np.int(num_vertices / num_objects)
+brick_sec = int(num_vertices / num_objects)
 
 ###############################################################################
 # Calculate the vertices of the wrecking ball.
@@ -241,7 +241,7 @@ brick_sec = np.int(num_vertices / num_objects)
 chain_vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = chain_vertices.shape[0]
 num_objects = brick_centers.shape[0]
-chain_sec = np.int(num_vertices / num_objects)
+chain_sec = int(num_vertices / num_objects)
 
 
 ###############################################################################

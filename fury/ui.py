@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from warnings import warn
 from numbers import Number
+from string import printable
 
 import numpy as np
 import vtk
@@ -1687,7 +1688,7 @@ class TextBox2D(UI):
                 multi_line_text += "\n"
         return multi_line_text.rstrip("\n")
 
-    def handle_character(self, character):
+    def handle_character(self, key, key_char):
         """ Main driving function that handles button events.
 
         # TODO: Need to handle all kinds of characters like !, +, etc.
@@ -1696,17 +1697,18 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if character.lower() == "return":
+        if key_char != '' and key_char in printable:
+            self.add_character(key_char)
+        elif key.lower() == "return":
             self.render_text(False)
             return True
-        if character.lower() == "backspace":
+        if key.lower() == "backspace":
             self.remove_character()
-        elif character.lower() == "left":
+        elif key.lower() == "left":
             self.move_left()
-        elif character.lower() == "right":
+        elif key.lower() == "right":
             self.move_right()
-        else:
-            self.add_character(character)
+
         self.render_text()
         return False
 
@@ -1864,7 +1866,8 @@ class TextBox2D(UI):
         _textbox_object: :class:`TextBox2D`
         """
         key = i_ren.event.key
-        is_done = self.handle_character(key)
+        key_char = i_ren.event.key_char
+        is_done = self.handle_character(key, key_char)
         if is_done:
             i_ren.remove_active_prop(self.text.actor)
 
@@ -2059,7 +2062,7 @@ class LineSlider2D(UI):
             track_position[0] += self.track.size[0] / 2.
 
         self.track.position = track_position
-        self.handle.position = self.handle.position.astype('float64')
+        self.handle.position = self.handle.position.astype(float)
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
@@ -2415,8 +2418,8 @@ class LineDoubleSlider2D(UI):
             track_position[0] -= self.track.size[0] / 2.
         self.track.position = track_position
 
-        self.handles[0].position = self.handles[0].position.astype('float64')
-        self.handles[1].position = self.handles[1].position.astype('float64')
+        self.handles[0].position = self.handles[0].position.astype(float)
+        self.handles[1].position = self.handles[1].position.astype(float)
 
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position

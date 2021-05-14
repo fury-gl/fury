@@ -13,6 +13,7 @@ class Event(object):
         self.position = None
         self.name = None
         self.key = None
+        self.key_char = None
         self.alt_key = None
         self.shift_key = None
         self.ctrl_key = None
@@ -28,6 +29,7 @@ class Event(object):
         self.name = event_name
         self.position = np.asarray(interactor.GetEventPosition())
         self.key = interactor.GetKeySym()
+        self.key_char = interactor.GetKeyCode()
         self.alt_key = bool(interactor.GetAltKey())
         self.shift_key = bool(interactor.GetShiftKey())
         self.ctrl_key = bool(interactor.GetControlKey())

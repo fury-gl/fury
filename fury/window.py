@@ -1082,15 +1082,16 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         flags = [False] * len(colors)
         for (i, col) in enumerate(colors):
             # find if the current color exist in the array
-            flags[i] = np.any(np.any(np.all(im[..., :3] == col[:3], axis=-1)))
+            flags[i] = np.any(np.any(np.all(np.equal(im[..., :3], col[:3]),
+                                            axis=-1)))
 
         report.colors_found = flags
 
     if find_objects is True:
         weights = [0.299, 0.587, 0.144]
         gray = np.dot(im[..., :3], weights)
-        bg_color = im[0, 0]
-        background = np.dot(bg_color, weights)
+        bg_color2 = im[0, 0]
+        background = np.dot(bg_color2, weights)
 
         if strel is None:
             strel = np.array([[1, 1, 1],

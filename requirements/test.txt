@@ -4,5 +4,3 @@ codecov
 coverage
 flake8
 pytest
-# Temporary dependencies to run the tests
-dipy>=1.0.0

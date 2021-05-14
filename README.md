@@ -9,10 +9,7 @@
 </h4>
 
 <p align="center">
-  <a href="https://travis-ci.com/fury-gl/fury">
-    <img src="https://travis-ci.com/fury-gl/fury.svg?branch=master" alt="Fury Travis">
-  </a>
-  <a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
+<a href="https://dev.azure.com/fury-gl/fury/_build/latest?definitionId=1&branchName=master"><img src="https://dev.azure.com/fury-gl/fury/_apis/build/status/fury-gl.fury?branchName=master">
 </a>
 <a href="https://pypi.python.org/pypi/fury"><img src="https://img.shields.io/pypi/v/fury.svg"></a>
 <a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg"></a>
@@ -46,7 +43,7 @@
 - **Website and Documentation:** https://fury.gl
 - **Tutorials:** https://fury.gl/latest/auto_tutorials/index.html
 - **Demos:** https://fury.gl/latest/auto_examples/index.html
-- **Blog:**  https://fury.gl/dev/blog
+- **Blog:**  https://fury.gl/latest/blog.html
 - **Mailing list:** https://mail.python.org/mailman3/lists/fury.python.org
 - **Official source code repo:** https://github.com/fury-gl/fury.git
 - **Download releases:** https://pypi.org/project/fury/
@@ -103,7 +100,7 @@ Or as an ["editable" installation](https://pip.pypa.io/en/stable/reference/pip_i
 
 **Step 4:** Enjoy!
 
-For more information, see also [installation page on fury.gl](https://fury.gl/stable/installation.html)
+For more information, see also [installation page on fury.gl](https://fury.gl/latest/installation.html)
 
 ## Testing
 

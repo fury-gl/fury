@@ -21,6 +21,7 @@ Contributors
 * Nasim Anousheh
 * Ariel Rokem, University of Washington, WA, USA
 * Matthew Brett, Birmingham University, Birmingham, UK
+* Charles Poirier
 * Yaroslav Halchenko
 * Kesshi jordan
 * Prashil
@@ -57,3 +58,9 @@ Contributors
 * Gottipati Gautam
 * Liam Donohue
 * Devanshu Modi
+* Sanjay Marreddi
+* Sajag Swami
+* aju tamang
+* Aman Soni
+* Pietro Astolfi
+* Haran
