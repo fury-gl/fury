@@ -99,8 +99,6 @@ class SelectionManager(object):
 
     def select(self, disp_xy, sc, area=0):
 
-        info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
-
         self.hsel.SetRenderer(sc)
         if isinstance(area, int):
             picking_area = area, area
@@ -115,7 +113,7 @@ class SelectionManager(object):
             res = self.hsel.Select()
 
         except OverflowError:
-            return info
+            return {}
 
         # print(res)
         num_nodes = res.GetNumberOfNodes()
@@ -123,10 +121,11 @@ class SelectionManager(object):
             sel_node = None
         else:
             # print('Number of Nodes ', num_nodes)
-
+            info_plus = {}
             for i in range(num_nodes):
                 # print('Node ', i)
                 sel_node = res.GetNode(i)
+                info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
 
                 if(sel_node is not None):
                     selected_nodes = set(np.floor(nps.vtk_to_numpy(
@@ -138,8 +137,9 @@ class SelectionManager(object):
                         info['face'] = list(selected_nodes)
                     if self.selected_type == 'vertex':
                         info['vertex'] = list(selected_nodes)
+                info_plus[i] = info
 
-        return info
+        return info_plus
 
     def event_position(self, iren):
         """ Returns event display position from interactor
