@@ -70,6 +70,7 @@ def test_picking_manager():
     assert_greater(np.sum(np.abs(np.diff(np.array(record_indices['xyz']),
                                          axis=0))), 0)
 
+
 def test_selector_manager():
 
     centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
@@ -78,7 +79,7 @@ def test_selector_manager():
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 2), 
+    cube_actor = actor.cube(centers, directions=(1, 0, 2),
                             colors=colors, scales=radii)
     # sphere_actor.GetProperty().SetRepresentationToWireframe()
     print('Sphere actor', id(cube_actor))
@@ -112,8 +113,8 @@ def test_selector_manager():
             # select large area
             info_plus = selm.select((900//2, 768//2), scene, (30, 30))
             print(info_plus)
-            for info in info_plus:
-                if info['actor'] in [cube_actor, pts_actor]:
+            for info in info_plus.keys():
+                if info_plus[info]['actor'] in [cube_actor, pts_actor]:
                     npt.assert_(True)
                 else:
                     npt.assert_(False)
@@ -128,12 +129,12 @@ def test_selector_manager():
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
         #pick a single pixel
-        info_plus = selm.pick(event_pos, showm.scene)
-        print(info_plus)
+        info = selm.pick(event_pos, showm.scene)
+        print(info)
         # if info['face'] is not None:
         #     npt.assert_equal(len(info['face']), 1)
         showm.render()
-        
+
 
     scene.add(tb)
 

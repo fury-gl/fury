@@ -95,10 +95,10 @@ class SelectionManager(object):
             self.hsel.SetActorPassOnly()
 
     def pick(self, disp_xy, sc):
-        return self.select(disp_xy, sc, area=0)
+        return self.select(disp_xy, sc, area=0)[0]
 
     def select(self, disp_xy, sc, area=0):
-
+        info_plus = {}
         self.hsel.SetRenderer(sc)
         if isinstance(area, int):
             picking_area = area, area
@@ -113,15 +113,16 @@ class SelectionManager(object):
             res = self.hsel.Select()
 
         except OverflowError:
-            return {}
+            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
 
         # print(res)
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
             sel_node = None
+            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
         else:
             # print('Number of Nodes ', num_nodes)
-            info_plus = {}
+
             for i in range(num_nodes):
                 # print('Node ', i)
                 sel_node = res.GetNode(i)
