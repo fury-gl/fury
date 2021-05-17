@@ -1277,7 +1277,8 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
     indices = np.nonzero(valid_mask)
 
     return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
-                     colors=colors, linewidth=linewidth)
+                     colors=colors, lookup_colormap=lookup_colormap,
+                     linewidth=linewidth)
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):

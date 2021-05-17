@@ -1,3 +1,4 @@
+from fury import actor, window
 from fury.actors.peak import PeakActor
 from vtk.util import numpy_support
 
@@ -180,3 +181,37 @@ def test_display_extent():
     npt.assert_equal(peak_actor.is_range, True)
     npt.assert_equal(peak_actor.low_ranges, [0, 0, 0])
     npt.assert_equal(peak_actor.high_ranges, [0, 1, 2])
+
+
+def test_lookup_colormap(interactive=False):
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    scene = window.Scene()
+
+    colors = [.0, .1, .2, .5, .8, .9, 1]
+
+    hue = (0, 1)  # Red to blue
+    saturation = (0, 1)  # White to full saturation
+
+    lut_cmap = actor.colormap_lookup_table(
+        hue_range=hue, saturation_range=saturation)
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine, colors=colors,
+                           lookup_colormap=lut_cmap)
+
+    scene.add(peak_actor)
+
+    scene.azimuth(30)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 4)

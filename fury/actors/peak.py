@@ -1,4 +1,4 @@
-from fury.colormap import boys2rgb, orient2rgb
+from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
 from fury.shaders import attribute_to_actor, load, shader_to_actor
 from fury.utils import apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points
 from vtk.util import numpy_support
@@ -10,7 +10,7 @@ import vtk
 
 class PeakActor(vtk.vtkActor):
     def __init__(self, directions, indices, values=None, affine=None,
-                 colors=None, linewidth=1):
+                 colors=None, lookup_colormap=None, linewidth=1):
         if affine is not None:
             w_pos = apply_affine(affine, np.asarray(indices).T)
 
@@ -80,6 +80,15 @@ class PeakActor(vtk.vtkActor):
         shader_to_actor(self, 'fragment', decl_code=fs_dec_code)
         shader_to_actor(self, 'fragment', impl_code=fs_impl_code,
                         block='light')
+
+        # Color scale with a lookup table
+        if colors_are_scalars:
+            if lookup_colormap is None:
+                lookup_colormap = colormap_lookup_table()
+
+            self.__mapper.SetLookupTable(lookup_colormap)
+            self.__mapper.UseLookupTableScalarRangeOn()
+            self.__mapper.Update()
 
         self.__lw = linewidth
         self.GetProperty().SetLineWidth(self.__lw)
@@ -226,15 +235,15 @@ class PeakActor(vtk.vtkActor):
 
         if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
             """
-            Connectivity is an array that contains the indices of the points 
-            that need to be connected in the visualization. The indices start 
+            Connectivity is an array that contains the indices of the points
+            that need to be connected in the visualization. The indices start
             from 0.
             """
             connectivity = np.array(list(range(0, num_pnts)), dtype=int)
             """
-            Offset is an array that contains the indices of the first point of 
-            each line. The indices start from 0 and given the known geometry of 
-            this actor the creation of this array requires a 2 points padding 
+            Offset is an array that contains the indices of the first point of
+            each line. The indices start from 0 and given the known geometry of
+            this actor the creation of this array requires a 2 points padding
             between indices.
             """
             offset = np.array(list(range(0, num_pnts + 1, pnts_per_line)),
@@ -254,8 +263,8 @@ class PeakActor(vtk.vtkActor):
             while i_pos < num_pnts:
                 end_pos = i_pos + pnts_per_line
                 """
-                In old versions of VTK (<9.0) the connectivity array should 
-                include the length of each line and immediately after the 
+                In old versions of VTK (<9.0) the connectivity array should
+                include the length of each line and immediately after the
                 indices of the points in each line.
                 """
                 connectivity += [pnts_per_line]
