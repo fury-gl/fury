@@ -40,7 +40,6 @@ def test__orientation_colors():
     colors = PeakActor._orientation_colors(points, cmap='rgb_standard')
     expected = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
     npt.assert_array_equal(colors, expected)
-    # TODO: Add boys test
 
 
 def test__peaks_colors_from_points():

@@ -176,7 +176,6 @@ class PeakActor(vtk.vtkActor):
         global_opacity = 1
         if colors is None or colors == 'rgb_standard':
             # Automatic RGB colors
-            # TODO: Add boys support
             colors = np.asarray((0, 0, 0))
             color_array = numpy_to_vtk_colors(
                 np.tile(255 * colors, (num_pnts, 1)))

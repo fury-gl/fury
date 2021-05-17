@@ -722,6 +722,58 @@ def test_peak_slicer(interactive=False):
     npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
 
 
+def test_peak(interactive=False):
+    # 4D dirs data
+    dirs_data_4d = np.random.rand(3, 4, 5, 6)
+    npt.assert_raises(ValueError, actor.peak, dirs_data_4d)
+
+    # 6D dirs data
+    dirs_data_6d = np.random.rand(7, 8, 9, 10, 11, 12)
+    npt.assert_raises(ValueError, actor.peak, dirs_data_6d)
+
+    # 2D directions
+    dirs_2d = np.random.rand(3, 4, 5, 6, 2)
+    npt.assert_raises(ValueError, actor.peak, dirs_2d)
+
+    # 4D directions
+    dirs_4d = np.random.rand(3, 4, 5, 6, 4)
+    npt.assert_raises(ValueError, actor.peak, dirs_4d)
+
+    valid_dirs = np.random.rand(3, 4, 5, 6, 3)
+
+    # 3D vals data
+    vals_data_3d = np.random.rand(3, 4, 5)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_3d)
+
+    # 5D vals data
+    vals_data_5d = np.random.rand(6, 7, 8, 9, 10)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_5d)
+
+    # Diff vals data #1
+    vals_data_diff_1 = np.random.rand(3, 4, 5, 9)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_diff_1)
+
+    # Diff vals data #2
+    vals_data_diff_2 = np.random.rand(7, 8, 9, 10)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_diff_2)
+
+    # 2D mask
+    mask_2d = np.random.rand(2, 3)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=mask_2d)
+
+    # 4D mask
+    mask_4d = np.random.rand(4, 5, 6, 7)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=mask_4d)
+
+    # Diff mask
+    diff_mask = np.random.rand(6, 7, 8)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
+
+
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_tensor_slicer(interactive=False):
 

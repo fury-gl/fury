@@ -1223,17 +1223,15 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
 
 def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
-         linewidth=1, lookup_colormap=None, symmetric=True):
+         linewidth=1, lookup_colormap=None):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
     ----------
     peaks_dirs : ndarray
-        Peak directions. The shape of the array can be (M, 3) or (X, M, 3) or
-        (X, Y, M, 3) or (X, Y, Z, M, 3)
+        Peak directions. The shape of the array should be (X, Y, Z, D, 3).
     peaks_values : ndarray
-        Peak values. The shape of the array can be (M, ) or (X, M) or
-        (X, Y, M) or (X, Y, Z, M)
+        Peak values. The shape of the array should be (X, Y, Z, D)
     affine : array
         4x4 transformation array from native coordinates to world coordinates
     mask : ndarray
@@ -1246,10 +1244,6 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
-    symmetric: bool, optional
-        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
-        peaks are only drawn for directions given by peaks_dirs. Default is
-        True.
 
     Returns
     -------
@@ -1260,20 +1254,52 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
     Examples
     ----------
     >>> from fury import actor, window
+    >>> import numpy as np
     >>> scene = window.Scene()
-    >>> peak_dirs = np.random.rand(3, 3, 3, 5, 3)
+    >>> peak_dirs = np.random.rand(3, 3, 3, 3, 3)
     >>> c = actor.peak(peak_dirs)
     >>> scene.add(c)
     >>> #window.show(scene)
 
     """
     peaks_dirs = np.asarray(peaks_dirs)
-    if peaks_dirs.ndim > 5:
-        raise ValueError("Wrong shape")
+    if peaks_dirs.ndim != 5:
+        raise ValueError('Invalid peak directions. The shape of the structure '
+                         'must be (XxYxZxDx3). Your data has {} dimensions.'
+                         ''.format(peaks_dirs.ndim))
+    else:
+        if peaks_dirs.shape[4] != 3:
+            raise ValueError('Invalid peak directions. The shape of the last '
+                             'dimension must be 3. Your data has a last '
+                             'dimension of {}.'.format(peaks_dirs.shape[4]))
+
+    dirs_shape = peaks_dirs.shape
+
+    if peaks_values is not None:
+        if peaks_values.ndim != 4:
+            raise ValueError('Invalid peak values. The shape of the structure '
+                             'must be (XxYxZxD). Your data has {} dimensions.'
+                             ''.format(peaks_values.ndim))
+        else:
+            vals_shape = peaks_values.shape
+            if vals_shape != dirs_shape[:4]:
+                raise ValueError('Invalid peak values. The shape of the '
+                                 'values must coincide with the shape of the '
+                                 'directions.')
 
     valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
     if mask is not None:
-        valid_mask = np.logical_and(valid_mask, mask)
+        if mask.ndim != 3:
+            warnings.warn('Invalid mask. The mask must be a 3D array. The '
+                          'passed mask has {} dimensions. Ignoring passed '
+                          'mask.'.format(mask.ndim), UserWarning)
+        else:
+            if mask.shape != dirs_shape[:3]:
+                warnings.warn('Invalid mask. The shape of the mask must '
+                              'coincide with the shape of the directions. '
+                              'Ignoring passed mask.', UserWarning)
+            else:
+                valid_mask = np.logical_and(valid_mask, mask)
     indices = np.nonzero(valid_mask)
 
     return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
