@@ -39,7 +39,7 @@ def test_picking_manager():
 
     def timer_callback(_obj, _event):
         cnt = next(counter)
-        tb.message = "Let's count up to 100 and exit :" + str(cnt)
+        tb.message = "Let's count up to 15 and exit :" + str(cnt)
         showm.scene.azimuth(0.05 * cnt)
         # sphere_actor.GetProperty().SetOpacity(cnt/100.)
         if cnt % 10 == 0:
@@ -81,15 +81,17 @@ def test_selector_manager():
 
     cube_actor = actor.cube(centers, directions=(1, 0, 2),
                             colors=colors, scales=radii)
-    # sphere_actor.GetProperty().SetRepresentationToWireframe()
-    print('Sphere actor', id(cube_actor))
 
     pts = 100 * (np.random.rand(100, 3) - 0.5) + np.array([20, 0, 0.])
     pts_actor = actor.dots(pts, dot_size=10)
-    print('Points actor', id(pts_actor))
+
+    rgb = 255 * np.ones((400, 400, 3), dtype=np.uint8)
+    tex_actor = actor.texture(rgb)
 
     scene.add(cube_actor)
     scene.add(pts_actor)
+    scene.add(tex_actor)
+
 
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
@@ -104,46 +106,43 @@ def test_selector_manager():
 
     selm = pick.SelectionManager(select='faces')
 
+    selm.selectable_off([tex_actor])
+    selm.selectable_on([tex_actor])
+    selm.selectable_off([tex_actor])
+
+
     def timer_callback(_obj, _event):
         cnt = next(counter)
-        tb.message = "Let's count up to 100 and exit :" + str(cnt)
-        # showm.scene.azimuth(0.05 * cnt)
-        # sphere_actor.GetProperty().SetOpacity(cnt/100.)
+        tb.message = "Let's count up to 15 and exit :" + str(cnt)
         if cnt % 10 == 0:
             # select large area
             info_plus = selm.select((900//2, 768//2), scene, (30, 30))
-            print(info_plus)
             for info in info_plus.keys():
                 if info_plus[info]['actor'] in [cube_actor, pts_actor]:
                     npt.assert_(True)
                 else:
                     npt.assert_(False)
-            # print(id(info['actor']) == id(cube_actor))
-            # print(id(info['actor']) == id(pts_actor))
+    
+            # select single pixel
+            info_ = selm.pick((900//2, 768//2), scene)
+            if info_['actor'] in [cube_actor, pts_actor]:
+                npt.assert_(True)
+            else:
+                npt.assert_(False)
 
         showm.render()
         if cnt == 15:
-            # showm.exit()
+            showm.exit()
             pass
-
-    def hover_callback(_obj, _event):
-        event_pos = selm.event_position(showm.iren)
-        #pick a single pixel
-        info = selm.pick(event_pos, showm.scene)
-        print(info)
-        # if info['face'] is not None:
-        #     npt.assert_equal(len(info['face']), 1)
-        showm.render()
-
 
     scene.add(tb)
 
     # Run every 200 milliseconds
     showm.add_timer_callback(True, 200, timer_callback)
-    showm.add_iren_callback(hover_callback)
     showm.start()
+
 
 if __name__ == "__main__":
 
-    # test_picking_manager()
+    test_picking_manager()
     test_selector_manager()
