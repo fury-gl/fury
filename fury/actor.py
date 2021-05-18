@@ -1230,13 +1230,13 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
     ----------
     peaks_dirs : ndarray
         Peak directions. The shape of the array should be (X, Y, Z, D, 3).
-    peaks_values : ndarray
+    peaks_values : ndarray, optional
         Peak values. The shape of the array should be (X, Y, Z, D)
-    affine : array
+    affine : array, optional
         4x4 transformation array from native coordinates to world coordinates
-    mask : ndarray
+    mask : ndarray, optional
         3D mask
-    colors : tuple or None
+    colors : tuple or None, optional
         Default None. If None then every peak gets an orientation color
         in similarity to a DEC map.
     lookup_colormap : vtkLookupTable, optional
@@ -1262,16 +1262,14 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
     >>> #window.show(scene)
 
     """
-    peaks_dirs = np.asarray(peaks_dirs)
     if peaks_dirs.ndim != 5:
         raise ValueError('Invalid peak directions. The shape of the structure '
                          'must be (XxYxZxDx3). Your data has {} dimensions.'
                          ''.format(peaks_dirs.ndim))
-    else:
-        if peaks_dirs.shape[4] != 3:
-            raise ValueError('Invalid peak directions. The shape of the last '
-                             'dimension must be 3. Your data has a last '
-                             'dimension of {}.'.format(peaks_dirs.shape[4]))
+    if peaks_dirs.shape[4] != 3:
+        raise ValueError('Invalid peak directions. The shape of the last '
+                         'dimension must be 3. Your data has a last dimension '
+                         'of {}.'.format(peaks_dirs.shape[4]))
 
     dirs_shape = peaks_dirs.shape
 
