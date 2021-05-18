@@ -39,11 +39,15 @@ if __name__ == '__main__':
     surface_actor.GetProperty().SetInterpolationToPBR()
 
     # Lets use a rough metallic surface
-    metallic_coef = 1.
-    roughness_coef = 0.
+    metallic = 1.
+    roughness = 0.
+    color = (1, 1, 1)
+    opacity = 1.
 
-    surface_actor.GetProperty().SetMetallic(metallic_coef)
-    surface_actor.GetProperty().SetRoughness(roughness_coef)
+    surface_actor.GetProperty().SetMetallic(metallic)
+    surface_actor.GetProperty().SetRoughness(roughness)
+    surface_actor.GetProperty().SetColor(color)
+    surface_actor.GetProperty().SetOpacity(opacity)
 
     cubemap_fns = [read_viz_textures('skybox-px.jpg'),
                    read_viz_textures('skybox-nx.jpg'),
