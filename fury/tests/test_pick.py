@@ -174,7 +174,7 @@ def test_hover_selection_faces():
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
         info = selm.select(event_pos, showm.scene, (10, 10))
-        print(info)
+        print(info[0]['face'])
         showm.render()
 
     showm.add_iren_callback(hover_callback)
