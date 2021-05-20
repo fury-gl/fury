@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+from numpy.lib.arraysetops import isin
 import vtk
 import numpy as np
 from fury.utils import numpy_support as nps
@@ -155,10 +157,19 @@ class SelectionManager(object):
 
 
     def selectable_on(self, actors):
-        for a in actors:
-            a.PickableOn()
+
+        if isinstance(actors, Sequence):            
+            for a in actors:
+                a.PickableOn()
+        else:
+            actors.PickableOn()
+
 
     def selectable_off(self, actors):
-        for a in actors:
-            a.PickableOff()
+        
+        if isinstance(actors, Sequence):            
+            for a in actors:
+                a.PickableOff()
+        else:
+            actors.PickableOff()
 

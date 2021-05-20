@@ -72,11 +72,16 @@ def test_picking_manager():
                                          axis=0))), 0)
 
 
-def test_selector_manager():
-
+def _get_three_cubes():
     centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
     colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
     radii = 0.1 * np.array([50, 100, 150.])
+    return centers, colors, radii
+
+
+def test_selector_manager():
+
+    centers, colors, radii = _get_three_cubes()
 
     scene = window.Scene()
 
@@ -143,14 +148,13 @@ def test_selector_manager():
     showm.start()
 
 
-def test_hover_selection():
+def test_hover_selection_faces():
 
-    recording = False
+    recording = True
+
     recording_filename = 'selector.log.gz'
-
-    centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
-    colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-    radii = 0.1 * np.array([50, 100, 150.])
+    
+    centers, colors, radii = _get_three_cubes()
 
     scene = window.Scene()
 
@@ -190,4 +194,4 @@ if __name__ == "__main__":
 
     # test_picking_manager()
     # test_selector_manager()
-    test_hover_selection()
+    test_hover_selection_faces()
