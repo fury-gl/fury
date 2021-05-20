@@ -3,6 +3,7 @@ from fury import actor, window, ui, pick
 from fury.testing import assert_greater
 import numpy.testing as npt
 import itertools
+from fury.data import DATA_DIR
 
 
 def test_picking_manager():
@@ -142,7 +143,51 @@ def test_selector_manager():
     showm.start()
 
 
+def test_hover_selection():
+
+    recording = False
+    recording_filename = 'selector.log.gz'
+
+    centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
+    colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
+    radii = 0.1 * np.array([50, 100, 150.])
+
+    scene = window.Scene()
+
+    cube_actor = actor.cube(centers, directions=(1, 0, 2),
+                            colors=colors, scales=radii)
+
+    scene.add(cube_actor)
+
+    selm = pick.SelectionManager(select='faces')
+    
+    showm = window.ShowManager(scene,
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
+
+    showm.initialize()
+
+    def hover_callback(_obj, _event):
+        event_pos = selm.event_position(showm.iren)
+        info = selm.select(event_pos, showm.scene, (10, 10))
+        print(info)
+        showm.render()
+
+    showm.add_iren_callback(hover_callback)
+
+    if recording:
+        showm.record_events_to_file(recording_filename)
+
+    else:
+        showm.play_events_from_file(recording_filename)
+        
+
+
+
+
+
 if __name__ == "__main__":
 
-    test_picking_manager()
-    test_selector_manager()
+    # test_picking_manager()
+    # test_selector_manager()
+    test_hover_selection()
