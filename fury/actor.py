@@ -1231,9 +1231,9 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
     peaks_dirs : ndarray
         Peak directions. The shape of the array should be (X, Y, Z, D, 3).
     peaks_values : ndarray, optional
-        Peak values. The shape of the array should be (X, Y, Z, D)
+        Peak values. The shape of the array should be (X, Y, Z, D).
     affine : array, optional
-        4x4 transformation array from native coordinates to world coordinates
+        4x4 transformation array from native coordinates to world coordinates.
     mask : ndarray, optional
         3D mask
     colors : tuple or None, optional
