@@ -78,6 +78,22 @@ class PickingManager(object):
         """
         return iren.GetEventPosition()
 
+    def pickable_on(self, actors):
+
+        if isinstance(actors, Sequence):            
+            for a in actors:
+                a.PickableOn()
+        else:
+            actors.PickableOn()
+
+    def pickable_off(self, actors):
+        
+        if isinstance(actors, Sequence):            
+            for a in actors:
+                a.PickableOff()
+        else:
+            actors.PickableOff()
+
 
 class SelectionManager(object):
 
@@ -155,7 +171,6 @@ class SelectionManager(object):
         """
         return iren.GetEventPosition()
 
-
     def selectable_on(self, actors):
 
         if isinstance(actors, Sequence):            
@@ -163,7 +178,6 @@ class SelectionManager(object):
                 a.PickableOn()
         else:
             actors.PickableOn()
-
 
     def selectable_off(self, actors):
         
