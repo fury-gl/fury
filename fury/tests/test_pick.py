@@ -116,7 +116,6 @@ def test_selector_manager():
     selm.selectable_on([tex_actor])
     selm.selectable_off([tex_actor])
 
-
     def timer_callback(_obj, _event):
         cnt = next(counter)
         tb.message = "Let's count up to 15 and exit :" + str(cnt)
@@ -128,7 +127,6 @@ def test_selector_manager():
                     npt.assert_(True)
                 else:
                     npt.assert_(False)
-    
             # select single pixel
             info_ = selm.pick((900//2, 768//2), scene)
             if info_['actor'] in [cube_actor, pts_actor]:
@@ -153,18 +151,18 @@ def test_hover_selection_faces():
     recording = True
 
     recording_filename = 'selector.log.gz'
-    
+
     centers, colors, radii = _get_three_cubes()
 
     scene = window.Scene()
 
-    cube_actor = actor.cube(centers, directions=(1, 0, 2),
+    cube_actor = actor.cube(centers, directions=(1, 0, 0),
                             colors=colors, scales=radii)
 
     scene.add(cube_actor)
 
     selm = pick.SelectionManager(select='faces')
-    
+
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
@@ -174,7 +172,10 @@ def test_hover_selection_faces():
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
         info = selm.select(event_pos, showm.scene, (10, 10))
-        print(info[0]['face'])
+        selected_faces = info[0]['face']
+        if selected_faces is not None:
+            print(selected_faces[0]//12)
+            npt.assert_(selected_faces[0]//12 in [0, 1, 2])
         showm.render()
 
     showm.add_iren_callback(hover_callback)
@@ -184,7 +185,7 @@ def test_hover_selection_faces():
 
     else:
         showm.play_events_from_file(recording_filename)
-        
+
 
 
 
