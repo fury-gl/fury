@@ -150,7 +150,7 @@ def test_hover_selection_faces():
 
     recording = True
 
-    recording_filename = 'selector.log.gz'
+    recording_filename = 'selector_faces.log.gz'
 
     centers, colors, radii = _get_three_cubes()
 
@@ -169,13 +169,14 @@ def test_hover_selection_faces():
 
     showm.initialize()
 
+    track_objects = []
+
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
         info = selm.select(event_pos, showm.scene, (10, 10))
         selected_faces = info[0]['face']
         if selected_faces is not None:
-            print(selected_faces[0]//12)
-            npt.assert_(selected_faces[0]//12 in [0, 1, 2])
+            track_objects.append(selected_faces[0]//12)
         showm.render()
 
     showm.add_iren_callback(hover_callback)
@@ -186,7 +187,55 @@ def test_hover_selection_faces():
     else:
         showm.play_events_from_file(recording_filename)
 
+    track_objects = set(track_objects)
 
+    npt.assert_({0, 1, 2}.issubset(track_objects))
+
+
+def test_hover_selection_vertices():
+
+    recording = True
+
+    recording_filename = 'selector_vertices.log.gz'
+
+    centers, colors, radii = _get_three_cubes()
+
+    scene = window.Scene()
+
+    cube_actor = actor.cube(centers, directions=(1, 0, 0),
+                            colors=colors, scales=radii)
+
+    scene.add(cube_actor)
+
+    selm = pick.SelectionManager(select='faces')
+
+    showm = window.ShowManager(scene,
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
+
+    showm.initialize()
+
+    track_objects = []
+
+    def hover_callback(_obj, _event):
+        event_pos = selm.event_position(showm.iren)
+        info = selm.select(event_pos, showm.scene, (10, 10))
+        selected_triangles = info[0]['vertex']
+        if selected_triangles is not None:
+            track_objects.append(selected_triangles[0]//8)
+        showm.render()
+
+    showm.add_iren_callback(hover_callback)
+
+    if recording:
+        showm.record_events_to_file(recording_filename)
+
+    else:
+        showm.play_events_from_file(recording_filename)
+
+    track_objects = set(track_objects)
+
+    npt.assert_({0, 1, 2}.issubset(track_objects))
 
 
 
@@ -195,4 +244,6 @@ if __name__ == "__main__":
 
     # test_picking_manager()
     # test_selector_manager()
-    test_hover_selection_faces()
+    # test_hover_selection_faces()
+    test_hover_selection_vertices()
+    test_hover_selection_actors()
