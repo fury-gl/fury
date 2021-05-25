@@ -62,8 +62,9 @@ ax = actor.axes(scale=(10, 10, 10))
 
 rgba = 255 * np.ones((100, 200, 4))
 rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
+#rgba = np.round(255 * np.random.rand(100, 200, 4), 0)
 
-texa = actor.texture(rgba.astype(np.uint8))
+texa = actor.texture_2d(rgba.astype(np.uint8))
 
 scene.add(fury_actor)
 scene.add(label_actor)

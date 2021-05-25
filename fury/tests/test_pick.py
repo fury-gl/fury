@@ -98,7 +98,6 @@ def test_selector_manager():
     scene.add(pts_actor)
     scene.add(tex_actor)
 
-
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
@@ -146,9 +145,7 @@ def test_selector_manager():
     showm.start()
 
 
-def test_hover_selection_faces():
-
-    recording = True
+def test_hover_selection_faces(recording=False):
 
     recording_filename = 'selector_faces.log.gz'
 
@@ -192,9 +189,7 @@ def test_hover_selection_faces():
     npt.assert_({0, 1, 2}.issubset(track_objects))
 
 
-def test_hover_selection_vertices():
-
-    recording = True
+def test_hover_selection_vertices(recording=False):
 
     recording_filename = 'selector_vertices.log.gz'
 
@@ -235,15 +230,54 @@ def test_hover_selection_vertices():
 
     track_objects = set(track_objects)
 
-    npt.assert_({0, 1, 2}.issubset(track_objects))
+    npt.assert_(track_objects.issubset({0, 1, 2}))
 
 
+def test_hover_selection_actors_only(recording=False):
+
+    recording_filename = 'selector_actors.log.gz'
+
+    centers, colors, radii = _get_three_cubes()
+
+    scene = window.Scene()
+
+    cube_actor = actor.cube(centers, directions=(1, 0, 0),
+                            colors=colors, scales=radii)
+
+    scene.add(cube_actor)
+
+    selm = pick.SelectionManager(select='actors')
+
+    showm = window.ShowManager(scene,
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
+
+    showm.initialize()
+
+    def hover_callback(_obj, _event):
+        event_pos = selm.event_position(showm.iren)
+        info = selm.pick(event_pos, showm.scene)
+        selected_actor = info['actor']
+        # print(id(selected_actor), id(cube_actor))
+        if selected_actor is not None:
+            npt.assert_equal(id(cube_actor), id(selected_actor))
+        showm.render()
+
+    showm.add_iren_callback(hover_callback)
+
+    if recording:
+        showm.record_events_to_file(recording_filename)
+
+    else:
+        showm.play_events_from_file(recording_filename)
 
 
 if __name__ == "__main__":
 
     # test_picking_manager()
     # test_selector_manager()
-    # test_hover_selection_faces()
-    test_hover_selection_vertices()
-    test_hover_selection_actors()
+    # test_hover_selection_faces(True)
+    test_hover_selection_vertices(True)
+    # test_hover_selection_actors_only(True)
+    # npt.run_module_suite()
+

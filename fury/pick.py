@@ -80,15 +80,15 @@ class PickingManager(object):
 
     def pickable_on(self, actors):
 
-        if isinstance(actors, Sequence):            
+        if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOn()
         else:
             actors.PickableOn()
 
     def pickable_off(self, actors):
-        
-        if isinstance(actors, Sequence):            
+
+        if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOff()
         else:
@@ -110,7 +110,7 @@ class SelectionManager(object):
             self.hsel.SetFieldAssociation(
                 vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
         if select == 'actors':
-            self.hsel.SetActorPassOnly()
+            self.hsel.SetActorPassOnly(True)
 
     def pick(self, disp_xy, sc):
         return self.select(disp_xy, sc, area=0)[0]
@@ -173,15 +173,15 @@ class SelectionManager(object):
 
     def selectable_on(self, actors):
 
-        if isinstance(actors, Sequence):            
+        if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOn()
         else:
             actors.PickableOn()
 
     def selectable_off(self, actors):
-        
-        if isinstance(actors, Sequence):            
+
+        if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOff()
         else:
