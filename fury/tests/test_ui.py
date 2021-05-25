@@ -1616,12 +1616,12 @@ def test_bullet_point(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
     expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
-    bulletpoint = ui.BulletPoint2D(node="I am a Bullet Point",
+    bulletpoint = ui.BulletPoint2D(label="I am a Bullet Point",
                                    indent=20, bullet_radius=5,
                                    position=(0, 300), draggable=True,
                                    text_color=(1, 1, 1))
 
-    child_bullet = ui.BulletPoint2D(node="I am a Bullet Point",
+    child_bullet = ui.BulletPoint2D(label="I am a Bullet Point",
                                     indent=50, bullet_radius=5,
                                     position=(0, 350), draggable=True,
                                     text_color=(1, 1, 1))
@@ -1674,7 +1674,7 @@ def test_bullet_list(interactive=False):
     bullet_list = ui.BulletList2D(points=points, indent=10,
                                   draggable=False)
 
-    npt.assert_array_equal([bullet.node for bullet in bullet_list.nodes],
+    npt.assert_array_equal([bullet.label for bullet in bullet_list.nodes],
                            points)
 
     nested_points = ['n-1', 'n-2', ['n-2.1', 'n-2.2'], 'n-3']
@@ -1683,7 +1683,7 @@ def test_bullet_list(interactive=False):
 
     # Check if children n-2.1, n-2.2 were added to n-2 node
     node = bullet_list.dict['n-2']
-    npt.assert_array_equal([child.node for child in node.children],
+    npt.assert_array_equal([child.label for child in node.children],
                            ['n-2.1', 'n-2.2'])
 
     bullet_list.nodes = []
@@ -1694,7 +1694,7 @@ def test_bullet_list(interactive=False):
     with npt.assert_raises(TypeError):
         bullet_list.create_list(lst=invalid_list)
 
-    bullet_object_list = [ui.BulletPoint2D(node=point) for point in points]
+    bullet_object_list = [ui.BulletPoint2D(label=point) for point in points]
     bullet_list.nodes = bullet_object_list
     bullet_list.create_dict()
     npt.assert_array_equal(bullet_object_list,
