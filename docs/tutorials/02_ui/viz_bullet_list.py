@@ -69,7 +69,7 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(panel)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
