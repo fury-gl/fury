@@ -62,7 +62,7 @@ ax = actor.axes(scale=(10, 10, 10))
 
 rgba = 255 * np.ones((100, 200, 4))
 rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
-#rgba = np.round(255 * np.random.rand(100, 200, 4), 0)
+# rgba = np.round(255 * np.random.rand(100, 200, 4), 0)
 
 texa = actor.texture_2d(rgba.astype(np.uint8))
 
@@ -82,60 +82,22 @@ selm = pick.SelectionManager(select='faces')
 # Time to make the callback which will be called when we pick an object
 
 
-def left_click_callback(obj, event):
-
-    # Get the event position on display and pick
-
-    event_pos = selm.event_position(showm.iren)
-    picked_info = selm.pick(event_pos, showm.scene)
-
-    print(picked_info)
-
-    face_index = picked_info['face'][0]
-
-    # Calculate the objects index
-
-    object_index = int(np.floor((face_index / 6 * 2)))
-
-    # Find how many vertices correspond to each object
-    sec = int(num_vertices / num_objects)
-
-    if not selected[object_index]:
-        scale = 6/5
-        color_add = np.array([30, 30, 30], dtype='uint8')
-        selected[object_index] = True
-    else:
-        scale = 5/6
-        color_add = np.array([-30, -30, -30], dtype='uint8')
-        selected[object_index] = False
-
-    # Update vertices positions
-    vertices[object_index * sec: object_index * sec + sec] = scale * \
-        (vertices[object_index * sec: object_index * sec + sec] -
-         centers[object_index]) + centers[object_index]
-
-    # Update colors
-    vcolors[object_index * sec: object_index * sec + sec] += color_add
-
-    # Tell actor that memory is modified
-    utils.update_actor(fury_actor)
-
-    face_index = picked_info['face']
-
-    # Show some info
-    text = 'Object ' + str(object_index) + '\n'
-    text += 'Vertex ID ' + str(vertex_index) + '\n'
-    text += 'Face ID ' + str(face_index) + '\n'
-    text += 'Actor ID ' + str(id(picked_info['actor']))
-    text_block.message = text
-    showm.render()
-
-
 def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
-    info = selm.select(event_pos, showm.scene, (10, 10))
+    texa.SetPosition(event_pos[0] - 200//2,
+                     event_pos[1] - 100//2)
+    info = selm.select(event_pos, showm.scene, (200//2, 100//2))
     print(info)
-    showm.render()
+    if info[0]['face'] is not None:
+        face_index = info[0]['face']
+
+        object_index = int(np.floor((face_index / 6 * 2)))
+        sec = int(num_vertices / num_objects)
+
+        color_add = np.array([30, 30, 30], dtype='uint8')
+        vcolors[object_index * sec: object_index * sec + sec] += color_add
+        utils.update_actor(fury_actor)
+        showm.render()
 
 
 ###############################################################################
