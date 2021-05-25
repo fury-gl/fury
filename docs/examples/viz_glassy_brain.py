@@ -3,66 +3,12 @@ from fury import actor, ui, window
 from fury.data import read_viz_textures
 from fury.io import load_polydata
 from fury.utils import get_actor_from_polydata
-from fury.shaders import shader_to_actor
+from fury.shaders import add_shader_callback, load, shader_to_actor
 
 
 import numpy as np
 import os
 import vtk
-
-
-__FRAGMENT_DEC = \
-    """
-    float chiGGX(float v)
-    {
-        return v > 0 ? 1. : .0;
-    }
-    
-    vec3 FresnelSchlick(float HdV, vec3 F0)
-    {
-        return F0 + (1 - F0) * pow(1 - HdV, 5);
-    }
-    
-    float GGXDistribution(float NdH, float alpha)
-    {
-        float alpha2 = alpha * alpha;
-        float NdH2 = NdH * NdH;
-        float den = NdH2 * alpha2 + (1 - NdH2);
-        return (chiGGX(NdH) * alpha2) / (PI * den * den);
-    }
-    
-    float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
-    {
-        float cVdH = clamp(VdH, .0, 1.);
-        float chi = chiGGX(cVdH / clamp(VdN, .0, 1.));
-        float tan2 = (1 - cVdH) / cVdH;
-        return (chi * 2) / (1 + sqrt(1 + alpha * alpha * tan2));
-    }
-    """
-__FRAGMENT_IMPL = \
-    """
-    vec3 ior = vec3(2.4);
-    vec3 F0_t = abs((1. - ior) / (1. + ior));
-    F0_t *= F0_t;
-    F0_t = mix(F0_t, albedo, metallic);
-    
-    vec3 Lo_t = vec3(.0);
-    
-    vec3 F_t = F_Schlick(1., F0_t);
-    vec3 specular_t = D * Vis * F_t;
-    vec3 diffuse_t = (1. - metallic) * (1. - F_t) * DiffuseLambert(albedo);
-    Lo_t += (diffuse_t + specular_t) * lightColor0 * NdV;
-    
-    vec3 kS_t = F_SchlickRoughness(max(NdV, .0), F0_t, roughness);
-    vec3 kD_t = 1. - kS_t;
-    kD_t *= 1. - metallic;
-    vec3 ambient_t = (kD_t * irradiance * albedo + prefilteredColor * (kS_t * brdf.r + brdf.g));
-    vec3 color_t = ambient_t + Lo_t;
-    color_t = mix(color_t, color_t * ao, aoStrengthUniform);
-    color_t += emissiveColor;
-    color_t = pow(color_t, vec3(1. / 2.2));
-    fragOutput0 = vec4(color_t, opacity);
-    """
 
 
 def build_label(text, font_size=16, color=(1, 1, 1), bold=False, italic=False,
@@ -86,9 +32,29 @@ def change_slice_metallic(slider):
     obj_actor.GetProperty().SetMetallic(slider._value)
 
 
+def change_slice_specular(slider):
+    global obj_actor
+    obj_actor.GetProperty().SetSpecular(slider._value)
+
+
+def change_slice_specular_tint(slider):
+    global obj_actor
+    obj_actor.GetProperty().SetSpecularPower(slider._value)
+
+
 def change_slice_roughness(slider):
     global obj_actor
     obj_actor.GetProperty().SetRoughness(slider._value)
+
+
+def change_slice_sheen(slider):
+    global sheen
+    sheen = slider._value
+
+
+def change_slice_sheen_tint(slider):
+    global sheen_tint
+    sheen_tint = slider._value
 
 
 def get_cubemap(files_names):
@@ -125,6 +91,13 @@ def obj_spheres(radii=2, theta=32, phi=32):
     return actor.sphere(centers, colors, radii=radii, theta=theta, phi=phi)
 
 
+def uniforms_callback(_caller, _event, calldata=None):
+    global sheen, sheen_tint
+    if calldata is not None:
+        calldata.SetUniformf('sheen', sheen)
+        calldata.SetUniformf('sheenTint', sheen_tint)
+
+
 def win_callback(obj, event):
     global panel, size
     if size != obj.GetSize():
@@ -135,22 +108,36 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global panel, size
+    global panel, sheen, sheen_tint, size
 
     #obj_actor = obj_brain()
     obj_actor = obj_spheres()
 
-    metallic = 0
-    roughness = 0
+    metallic = .0
+    specular = .0
+    specular_tint = .0
+    roughness = .0
+    sheen = .0
+    sheen_tint = .0
+
+    specular_color = vtk.vtkNamedColors().GetColor3d('White')
 
     obj_actor.GetProperty().SetInterpolationToPBR()
     obj_actor.GetProperty().SetMetallic(metallic)
     obj_actor.GetProperty().SetRoughness(roughness)
+    obj_actor.GetProperty().SetSpecular(specular)
+    obj_actor.GetProperty().SetSpecularPower(specular_tint)
+    obj_actor.GetProperty().SetSpecularColor(specular_color)
+
+    add_shader_callback(obj_actor, uniforms_callback)
+
+    fs_dec_code = load('bxdf_dec.frag')
+    fs_impl_code = load('bxdf_impl.frag')
 
     #shader_to_actor(obj_actor, 'vertex', debug=True)
-    shader_to_actor(obj_actor, "fragment", decl_code=__FRAGMENT_DEC)
-    shader_to_actor(obj_actor, "fragment", impl_code=__FRAGMENT_IMPL,
-                    block="light", debug=False)
+    shader_to_actor(obj_actor, 'fragment', decl_code=fs_dec_code)
+    shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
+                    block='light', debug=False)
 
     cubemap_fns = [read_viz_textures('skybox-px.jpg'),
                    read_viz_textures('skybox-nx.jpg'),
@@ -225,10 +212,10 @@ if __name__ == '__main__':
         initial_value=metallic, max_value=1, length=length,
         text_template=text_template)
     slider_slice_specular = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=specular, max_value=1, length=length,
         text_template=text_template)
     slider_slice_specular_tint = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=specular_tint, max_value=1, length=length,
         text_template=text_template)
     slider_slice_roughness = ui.LineSlider2D(
         initial_value=roughness, max_value=1, length=length,
@@ -237,10 +224,10 @@ if __name__ == '__main__':
         initial_value=0, max_value=1, length=length,
         text_template=text_template)
     slider_slice_sheen = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=sheen, max_value=1, length=length,
         text_template=text_template)
     slider_slice_sheen_tint = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=sheen_tint, max_value=1, length=length,
         text_template=text_template)
     slider_slice_clearcoat = ui.LineSlider2D(
         initial_value=0, max_value=1, length=length,
@@ -250,7 +237,11 @@ if __name__ == '__main__':
         text_template=text_template)
 
     slider_slice_metallic.on_change = change_slice_metallic
+    slider_slice_specular.on_change = change_slice_specular
+    slider_slice_specular_tint.on_change = change_slice_specular_tint
     slider_slice_roughness.on_change = change_slice_roughness
+    slider_slice_sheen.on_change = change_slice_sheen
+    slider_slice_sheen_tint.on_change = change_slice_sheen_tint
 
     slice_pad_x = .42
 
