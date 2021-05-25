@@ -43,7 +43,7 @@
 - **Website and Documentation:** https://fury.gl
 - **Tutorials:** https://fury.gl/latest/auto_tutorials/index.html
 - **Demos:** https://fury.gl/latest/auto_examples/index.html
-- **Blog:**  https://fury.gl/dev/blog
+- **Blog:**  https://fury.gl/latest/blog.html
 - **Mailing list:** https://mail.python.org/mailman3/lists/fury.python.org
 - **Official source code repo:** https://github.com/fury-gl/fury.git
 - **Download releases:** https://pypi.org/project/fury/
@@ -100,7 +100,7 @@ Or as an ["editable" installation](https://pip.pypa.io/en/stable/reference/pip_i
 
 **Step 4:** Enjoy!
 
-For more information, see also [installation page on fury.gl](https://fury.gl/stable/installation.html)
+For more information, see also [installation page on fury.gl](https://fury.gl/latest/installation.html)
 
 ## Testing
 

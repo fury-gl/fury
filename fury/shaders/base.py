@@ -125,7 +125,7 @@ def replace_shader_in_actor(actor, shader_type, code):
     getattr(sp, function)(code)
 
 
-def add_shader_callback(actor, callback):
+def add_shader_callback(actor, callback, priority=0.):
     """Add a shader callback to the actor.
 
     Parameters
@@ -135,14 +135,69 @@ def add_shader_callback(actor, callback):
     callback : callable
         function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
+    priority : float, optional
+         Commands with a higher priority are called first.
+
+    Returns:
+    --------
+        id_observer : int
+            An unsigned Int tag which can be used later to remove the event
+            or retrieve the vtkCommand used in the observer.
+            See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
+
+    Examples
+    ---------
+
+    ```python
+    add_shader_callback(actor, func_call1)
+    id_observer = add_shader_callback(actor, func_call2)
+    actor.GetMapper().RemoveObserver(id_observer)
+    ```
+
+    Priority calls
+    ```python
+    test_values = []
+    def callbackLow(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(0)
+
+    def callbackHigh(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(999)
+
+    def callbackMean(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(500)
+
+    fs.add_shader_callback(
+            actor, callbackHigh, 999)
+    fs.add_shader_callback(
+            actor, callbackLow, 0)
+    id_mean = fs.add_shader_callback(
+            actor, callbackMean, 500)
+
+    showm.start()
+    # test_values = [999, 500, 0, 999, 500, 0, ...]
+
+    ```
 
     """
     @vtk.calldata_type(vtk.VTK_OBJECT)
     def cbk(caller, event, calldata=None):
         callback(caller, event, calldata)
 
+    if not isinstance(priority, (float, int)):
+        raise TypeError("""
+            add_shader_callback priority argument shoud be a float/int""")
+
     mapper = actor.GetMapper()
-    mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, cbk)
+    id_observer = mapper.AddObserver(
+        vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+
+    return id_observer
 
 
 def attribute_to_actor(actor, arr, attr_name, deep=True):
