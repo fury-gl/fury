@@ -1692,11 +1692,11 @@ def test_bullet_list(interactive=False):
     # First element in the bullet list should not be a list
     invalid_list = [['n-1'], 'n-2', 'n-3']
     with npt.assert_raises(TypeError):
-        bullet_list.create_list(lst=invalid_list)
+        bullet_list.create_nodes_list(lst=invalid_list)
 
     bullet_object_list = [ui.BulletPoint2D(label=point) for point in points]
     bullet_list.nodes = bullet_object_list
-    bullet_list.create_dict()
+    bullet_list.create_nodes_dict()
     npt.assert_array_equal(bullet_object_list,
                            [node[1] for node in bullet_list.dict.items()])
 
