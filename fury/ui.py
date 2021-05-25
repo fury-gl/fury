@@ -5269,7 +5269,7 @@ class BulletList2D(UI):
         indent: int
             Base indentation for the root node
         draggable: Bool
-            If the card should be draggable
+            If the UI should be draggable
         position : (float, float)
             Absolute coordinates (x, y) of the lower-left corner of the
             UI component
@@ -5281,18 +5281,18 @@ class BulletList2D(UI):
             Background opacity
         """
 
-        self.points = points
+        self.points = list(points)
         self.nodes = []
         self.dict = {}
         self.content_size = size
         self.indent = np.clip(indent, 10, int(self.content_size[0]/2))
         self._last_child = None
         self.draggable = draggable
-        self.bg_color = bg_color
-        self.bg_opacity = bg_opacity
         self.text_color = text_color
         self.bullet_bg_color = bullet_bg_color
         super(BulletList2D, self).__init__()
+        self.panel.color = bg_color
+        self.panel.opacity = bg_opacity
         self.position = position
 
     def _setup(self):
@@ -5303,9 +5303,9 @@ class BulletList2D(UI):
         Add the bullet point to the Panel2D
         """
 
-        self.panel = Panel2D(size=self.content_size,
-                             color=self.bg_color, opacity=self.bg_opacity)
-        self.create_list(self.points, head=None)
+        self.panel = Panel2D(size=self.content_size)
+
+        self.create_nodes_list(self.points, head=None)
         _offsetY = 50
 
         for node in self.dict.items():
@@ -5356,47 +5356,44 @@ class BulletList2D(UI):
     def _get_size(self):
         self.panel.size
 
-    def create_list(self, lst, head=None):
+    def create_nodes_list(self, lst, head=None):
         """Create a flat list with all nodes ordered sequentially
         """
-        for ele in lst:
-            if isinstance(ele, list):
+        for element in lst:
+            if isinstance(element, list):
 
                 if not(len(self.nodes)):
                     raise TypeError(
                         f"First element should be str or str castable")
 
                 head = self.nodes[-1]
-                self.create_list(ele, head)
+                self.create_nodes_list(element, head)
                 head = None
             else:
-                ele = BulletPoint2D(node=ele, size=(self.content_size[0] -
-                                                    self.indent, 20),
-                                    text_color=self.text_color,
-                                    bg_color=self.bullet_bg_color)
+                element = BulletPoint2D(label=element,
+                                        size=(self.content_size[0] -
+                                              self.indent, 20))
                 if head:
-                    head.add_node(ele)
-                    self.nodes = [head if ele.node == head.node else
-                                  ele for ele in self.nodes]
-                self.nodes.append(ele)
-        self.create_dict()
+                    head.add_node(element)
+                    self.nodes = [head if node.label == head.label else
+                                  node for node in self.nodes]
+                self.nodes.append(element)
+        self.create_nodes_dict()
 
-    def create_dict(self):
+    def create_nodes_dict(self):
         """Create a dictionary from the nodes list
         """
 
-        for bullet_node in self.nodes:
-            self.dict[bullet_node.node] = bullet_node
+        for node in self.nodes:
+            self.dict[node.label] = node
 
     def add_child_node(self, root_node, child_node):
         """Add a child node in a specific node
         """
         root_node = self.dict[root_node]
-        child_node = BulletPoint2D(node=child_node,
+        child_node = BulletPoint2D(label=child_node,
                                    size=(self.content_size[0] -
-                                         root_node.indent - 30, 20),
-                                   bg_color=self.bullet_bg_color,
-                                   text_color=self.text_color)
+                                         root_node.indent - 30, 20))
 
         child_node.indent = root_node.indent + 30
         self.get_last_child(root_node)
@@ -5404,7 +5401,7 @@ class BulletList2D(UI):
 
         # Add the new node in dictionary and list
         root_node.add_node(child_node)
-        self.dict[child_node.node] = child_node
+        self.dict[child_node.label] = child_node
         self.nodes.insert(last_idx + 1, child_node)
 
         self.panel.add_element(child_node, (child_node.indent,
@@ -5448,6 +5445,22 @@ class BulletList2D(UI):
 
         self.panel.color = color
 
+    @property
+    def opacity(self):
+        """ Returns the background opacity of the bullet point list
+        """
+        return self.panel.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """ Sets background opacity of the bullet point list
+        Parameters
+        ----------
+        opacity : float
+        """
+
+        self.panel.opacity = opacity
+
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
         self._click_position = click_pos
@@ -5473,7 +5486,7 @@ class BulletPoint2D(UI):
         Displays the node as text after the bullet.
     """
 
-    def __init__(self, node="", bullet_radius=5,
+    def __init__(self, label="", bullet_radius=5,
                  indent=5, draggable=False, size=(300, 20),
                  position=(0, 0), bg_color=(1, 1, 1),
                  bg_opacity=1, bullet_color=(0, 0, 0),
@@ -5481,14 +5494,14 @@ class BulletPoint2D(UI):
         """
         Parameters
         ----------
-        node: str
-            Text to display after the bullet
+        label: str
+            Text to be displayed
         bullet_radius: int
             Radius of the bullet
         indent: int
             Indentation of the bullet point
         draggable: Bool
-            If the card should be draggable
+            If the UI should be draggable
         size : (int, int)
             Width and height of the pixels of this UI component.
         position : (float, float)
@@ -5507,14 +5520,14 @@ class BulletPoint2D(UI):
         self.bullet_radius = bullet_radius
         self.indent = 2 * self.bullet_radius + indent
         self.draggable = draggable
-        self.bg_color = bg_color
-        self.bg_opacity = bg_opacity
-        self.bullet_color = bullet_color
-        self.text_color = text_color
-        self.node = node
+        self.label = label
         self.parent = None
         self.children = []
         super(BulletPoint2D, self).__init__()
+        self.panel.color = bg_color
+        self.panel.opacity = bg_opacity
+        self.bullet.color = bullet_color
+        self.bullet_textbox.color = text_color
         self.position = position
 
     def _setup(self):
@@ -5524,13 +5537,10 @@ class BulletPoint2D(UI):
         Create a TextBlock2D
         Add all widgets in Panel2D widget
         """
-        self.panel = Panel2D(size=self.content_size, color=self.bg_color,
-                             opacity=self.bg_opacity)
-        self.bullet = Disk2D(outer_radius=self.bullet_radius,
-                             color=self.bullet_color)
-        self.bullet_textbox = TextBlock2D(text=self.node,
-                                          color=self.text_color)
-        self.panel.add_element(self.bullet, (0, 0.25))
+        self.panel = Panel2D(size=self.content_size)
+        self.bullet = Disk2D(outer_radius=self.bullet_radius)
+        self.bullet_textbox = TextBlock2D(text=self.label)
+        self.panel.add_element(self.bullet, (0, 1))
         self.panel.add_element(self.bullet_textbox,
                                (self.indent, self.content_size[1] - 20))
 
@@ -5570,6 +5580,9 @@ class BulletPoint2D(UI):
     def _get_size(self):
         self.panel.size
 
+    def _resize(self, size):
+        self.panel.resize(size)
+
     def add_node(self, node):
         """Add a child node in the current node
         """
@@ -5598,6 +5611,57 @@ class BulletPoint2D(UI):
         """
 
         self.panel.color = color
+
+    @property
+    def opacity(self):
+        """ Returns the opacity of the bullet point
+        """
+
+        return self.panel.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """ Sets background opacity of the bullet point
+        Parameters
+        ----------
+        opacity : float
+        """
+
+        self.panel.opacity = opacity
+
+    @property
+    def bullet_color(self):
+        """ Returns the color of the bullet circle
+        """
+
+        return self.bullet.color
+
+    @bullet_color.setter
+    def bullet_color(self, color):
+        """ Sets the color of the bullet circle.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+
+        self.bullet.color = color
+
+    @property
+    def text_color(self):
+        """ Returns the color of the text
+        """
+
+        return self.bullet_textbox.color
+
+    @text_color.setter
+    def text_color(self, color):
+        """ Sets color of the text.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+
+        self.bullet_textbox.color = color
 
     @property
     def value(self):
