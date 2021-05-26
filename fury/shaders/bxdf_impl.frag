@@ -34,7 +34,12 @@ fragOutput0 = vec4(color_t, opacity);
 //fragOutput0 = vec4(albedo, opacity);
 
 // Disney's Principled BRDF
+// Sheen + Sheen Tint
 vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, NdV);
 //fragOutput0 = vec4(albedo + sheenV3, opacity);
 //fragOutput0 = vec4(ambient + sheenV3, opacity);
-fragOutput0 = vec4(color + sheenV3, opacity);
+//fragOutput0 = vec4(color + sheenV3, opacity);
+
+// Clearcoat + Clearcoat Gloss
+float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, NdV, NdV, NdV, NdV);
+fragOutput0 = vec4(color + sheenV3 + clearcoatF, opacity);

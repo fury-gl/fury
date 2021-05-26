@@ -60,6 +60,16 @@ def change_slice_sheen_tint(slider):
     sheen_tint = slider._value
 
 
+def change_slice_clearcoat(slider):
+    global clearcoat
+    clearcoat = slider._value
+
+
+def change_slice_clearcoat_gloss(slider):
+    global clearcoat_gloss
+    clearcoat_gloss = slider._value
+
+
 def get_cubemap(files_names):
     texture = vtk.vtkTexture()
     texture.CubeMapOn()
@@ -120,10 +130,12 @@ def obj_surface():
 
 
 def uniforms_callback(_caller, _event, calldata=None):
-    global sheen, sheen_tint
+    global clearcoat, clearcoat_gloss, sheen, sheen_tint
     if calldata is not None:
         calldata.SetUniformf('sheen', sheen)
         calldata.SetUniformf('sheenTint', sheen_tint)
+        calldata.SetUniformf('clearcoat', clearcoat)
+        calldata.SetUniformf('clearcoatGloss', clearcoat_gloss)
 
 
 def win_callback(obj, event):
@@ -136,7 +148,7 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global panel, sheen, sheen_tint, size
+    global clearcoat, clearcoat_gloss, panel, sheen, sheen_tint, size
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -148,6 +160,8 @@ if __name__ == '__main__':
     roughness = .0
     sheen = .0
     sheen_tint = .0
+    clearcoat = .0
+    clearcoat_gloss = .0
 
     specular_color = vtk.vtkNamedColors().GetColor3d('White')
 
@@ -259,10 +273,10 @@ if __name__ == '__main__':
         initial_value=sheen_tint, max_value=1, length=length,
         text_template=text_template)
     slider_slice_clearcoat = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=clearcoat, max_value=1, length=length,
         text_template=text_template)
     slider_slice_clearcoat_gloss = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=clearcoat_gloss, max_value=1, length=length,
         text_template=text_template)
 
     slider_slice_metallic.on_change = change_slice_metallic
@@ -271,6 +285,8 @@ if __name__ == '__main__':
     slider_slice_roughness.on_change = change_slice_roughness
     slider_slice_sheen.on_change = change_slice_sheen
     slider_slice_sheen_tint.on_change = change_slice_sheen_tint
+    slider_slice_clearcoat.on_change = change_slice_clearcoat
+    slider_slice_clearcoat_gloss.on_change = change_slice_clearcoat_gloss
 
     slice_pad_x = .42
 

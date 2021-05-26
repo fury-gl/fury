@@ -29,6 +29,8 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 
 uniform float sheen;
 uniform float sheenTint;
+uniform float clearcoat;
+uniform float clearcoatGloss;
 
 vec3 calculateTint(vec3 baseColor)
 {
@@ -60,10 +62,10 @@ float GTR1(float dotHN, float alpha)
     return (alpha2 - 1.) / (PI * log(alpha2) * t);
 }
 
-float separableSmithGGXG1(float absDotNV, float alpha)
+float separableSmithGGXG1(float dotNV, float alpha)
 {
     float alpha2 = alpha * alpha;
-    return 2. / (1 + sqrt(alpha2 + (1 - alpha2) * absDotNV * absDotNV));
+    return 2. / (1 + sqrt(alpha2 + (1 - alpha2) * dotNV * dotNV));
 }
 
 float smithGGGX(float dotNV, float alpha)
@@ -71,4 +73,18 @@ float smithGGGX(float dotNV, float alpha)
     float alpha2 = alpha * alpha;
     float b = dotNV * dotNV;
     return 1. / (abs(dotNV) + max(sqrt(alpha2 + b - alpha2 * b), EPSILON));
+}
+
+float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
+                        float dotHN, float dotLN, float dotNV)
+{
+    if(clearcoatF <= .0)
+        return .0;
+
+    float gloss = mix(.1, .001, clearcoatGlossF);
+    float dr = GTR1(abs(dotHN), gloss);
+    float fh = schlickWeight(dotHL);
+    float fr = mix(.04, 1., fh);
+    float gr = smithGGGX(dotLN, .25) * smithGGGX(dotNV, .25);
+    return 1. * clearcoatF * fr * gr * dr;
 }
