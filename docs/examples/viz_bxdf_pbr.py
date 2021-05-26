@@ -4,10 +4,13 @@ from fury.data import read_viz_textures
 from fury.io import load_polydata
 from fury.utils import get_actor_from_polydata
 from fury.shaders import add_shader_callback, load, shader_to_actor
+from scipy.spatial import Delaunay
 
 
+import math
 import numpy as np
 import os
+import random
 import vtk
 
 
@@ -91,6 +94,31 @@ def obj_spheres(radii=2, theta=32, phi=32):
     return actor.sphere(centers, colors, radii=radii, theta=theta, phi=phi)
 
 
+def obj_surface():
+    size = 11
+    vertices = list()
+    for i in range(-size, size):
+        for j in range(-size, size):
+            fact1 = - math.sin(i) * math.cos(j)
+            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
+            z_coord = -abs(fact1 * fact2)
+            vertices.append([i, j, z_coord])
+    c_arr = np.random.rand(len(vertices), 3)
+    random.shuffle(vertices)
+    vertices = np.array(vertices)
+    tri = Delaunay(vertices[:, [0, 1]])
+    faces = tri.simplices
+    c_loop = [None, c_arr]
+    f_loop = [None, faces]
+    s_loop = [None, "butterfly", "loop"]
+    for smooth_type in s_loop:
+        for face in f_loop:
+            for color in c_loop:
+                surface_actor = actor.surface(vertices, faces=face,
+                                              colors=color, smooth=smooth_type)
+    return surface_actor
+
+
 def uniforms_callback(_caller, _event, calldata=None):
     global sheen, sheen_tint
     if calldata is not None:
@@ -111,6 +139,7 @@ if __name__ == '__main__':
     global panel, sheen, sheen_tint, size
 
     #obj_actor = obj_brain()
+    #obj_actor = obj_surface()
     obj_actor = obj_spheres()
 
     metallic = .0
