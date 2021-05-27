@@ -8,9 +8,11 @@ import math
 import numpy as np
 import numpy.testing as npt
 import random
+import pytest
 
 
 dipy, have_dipy, _ = optional_package('dipy')
+VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
 def _generate_surface():
@@ -38,6 +40,7 @@ def _generate_surface():
     return surface_actor
 
 
+@pytest.mark.skipif(not VTK_9_PLUS, reason="Requires VTK >= 9.0.0")
 def test_manifest_pbr(interactive=False):
     scene = window.Scene()  # Setup scene
 
