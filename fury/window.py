@@ -1299,4 +1299,8 @@ class FuryStreamClient:
                 self._id_observer = id_observer
     
     def stop(self):
-        pass
+        if not self._id_timer is None:
+            self.showm.destroy_timer(self._id_timer)
+        
+        if not self._id_observer is None:
+            self.showm.iren.RemoveObserver(self._id_observer)
