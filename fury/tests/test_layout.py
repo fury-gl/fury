@@ -8,7 +8,7 @@ def get_default_cubes(centers=np.asarray([[[0, 0, 0]], [[5, 5, 5]]]),
                       directions=np.asarray([[[0, 0, 0]], [[0, 0, 0]]]),
                       colors=np.random.rand(2, 3), scales=[1, 1.5]):
     """Provides cube actors with default parameters
-    
+
     Parameters
     ----------
     centers: ndarray, shape (2, 3)
@@ -65,10 +65,13 @@ def test_grid_layout_get_cell_shape():
     grid = GridLayout()
     grid_square = GridLayout(cell_shape="square")
     grid_diagonal = GridLayout(cell_shape="diagonal")
+    invalid_gird = GridLayout(cell_shape="invalid")
 
     shape = grid.get_cells_shape([cube_first, cube_second])
     shape_square = grid_square.get_cells_shape([cube_first, cube_second])
     shape_diagonal = grid_diagonal.get_cells_shape([cube_first, cube_second])
+    with npt.assert_raises(ValueError):
+        shape_invalid = invalid_gird.get_cells_shape([cube_first, cube_second])
 
     npt.assert_array_equal(shape, [[1.5, 1.5], [1.5, 1.5]])
     npt.assert_array_equal(shape_square, [[1.5, 1.5], [1.5, 1.5]], 0)
