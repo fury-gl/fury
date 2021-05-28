@@ -1297,7 +1297,10 @@ def test_superquadric_actor(interactive=False):
     scene = window.Scene()
     centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.random.rand(3, 3)
+    directions = np.array([[0.27753247, 0.15332503, 0.63670953],
+                           [0.14138223, 0.76031677, 0.14669451],
+                           [0.23416946, 0.12816617, 0.92596145]])
+
     scales = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
