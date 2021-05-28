@@ -163,14 +163,17 @@ if __name__ == '__main__':
     clearcoat = .0
     clearcoat_gloss = .0
 
-    specular_color = vtk.vtkNamedColors().GetColor3d('White')
+    # TODO: Add opacity panel
+    obj_actor.GetProperty().SetOpacity(.5)
+
+    #specular_color = vtk.vtkNamedColors().GetColor3d('White')
 
     obj_actor.GetProperty().SetInterpolationToPBR()
     obj_actor.GetProperty().SetMetallic(metallic)
     obj_actor.GetProperty().SetRoughness(roughness)
-    obj_actor.GetProperty().SetSpecular(specular)
-    obj_actor.GetProperty().SetSpecularPower(specular_tint)
-    obj_actor.GetProperty().SetSpecularColor(specular_color)
+    #obj_actor.GetProperty().SetSpecular(specular)
+    #obj_actor.GetProperty().SetSpecularPower(specular_tint)
+    #obj_actor.GetProperty().SetSpecularColor(specular_color)
 
     add_shader_callback(obj_actor, uniforms_callback)
 

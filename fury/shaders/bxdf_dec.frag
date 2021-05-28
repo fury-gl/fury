@@ -3,11 +3,6 @@ float chiGGX(float v)
     return v > 0 ? 1. : .0;
 }
 
-vec3 FresnelSchlick(float HdV, vec3 F0)
-{
-    return F0 + (1 - F0) * pow(1 - HdV, 5);
-}
-
 float GGXDistribution(float NdH, float alpha)
 {
     float alpha2 = alpha * alpha;
@@ -27,10 +22,16 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 // Disney's Principled BRDF
 #define EPSILON .0001
 
+uniform float anisotropic;
 uniform float sheen;
 uniform float sheenTint;
 uniform float clearcoat;
 uniform float clearcoatGloss;
+
+float square(float x)
+{
+    return x * x;
+}
 
 vec3 calculateTint(vec3 baseColor)
 {
@@ -44,15 +45,6 @@ float schlickWeight(float cosTheta)
     return (m * m) * (m * m) * m;
 }
 
-vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
-{
-    if(sheenF <= .0)
-        return vec3(.0);
-    vec3 tint = calculateTint(baseColor);
-    float fh = schlickWeight(dotHL);
-    return sheenF * mix(vec3(1.), tint, sheenTintF) * fh;
-}
-
 float GTR1(float dotHN, float alpha)
 {
     if(alpha >= 1.)
@@ -62,10 +54,41 @@ float GTR1(float dotHN, float alpha)
     return (alpha2 - 1.) / (PI * log(alpha2) * t);
 }
 
+float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
+                      float ay)
+{
+    float dotHX2 = square(dotHX);
+    float dotHY2 = square(dotHY);
+    float ax2 = square(ax);
+    float ay2 = square(ay);
+    return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay + dotHN * dotHN));
+}
+
 float separableSmithGGXG1(float dotNV, float alpha)
 {
     float alpha2 = alpha * alpha;
     return 2. / (1 + sqrt(alpha2 + (1 - alpha2) * dotNV * dotNV));
+}
+
+float separableSmithGGXG1(float dotVX, float dotVY, float dotNV,
+                          float ax, float ay)
+{
+    float dotVX2 = square(dotVX);
+    float dotVY2 = square(dotVY);
+    float ax2 = square(ax);
+    float ay2 = square(ay);
+
+    float absTanTheta = abs(dotNV);
+    if(isinf(absTanTheta))
+        return .0;
+
+    // TODO: Check
+    float alpha2 = square(absTanTheta * sqrt(dotVX2 * ax2 + dotVY2 * ay2));
+
+    float lambda = .5 * (-1. + sqrt(1. + alpha2));
+    //float lambda = .5 * (-1. + sqrt(1. + 1. / alpha2));
+
+    return 1. / (1. + lambda);
 }
 
 float smithGGGX(float dotNV, float alpha)
@@ -73,6 +96,26 @@ float smithGGGX(float dotNV, float alpha)
     float alpha2 = alpha * alpha;
     float b = dotNV * dotNV;
     return 1. / (abs(dotNV) + max(sqrt(alpha2 + b - alpha2 * b), EPSILON));
+}
+
+float smithGGGXAnisotropic(float dotNV, float dotVX, float dotVY, float ax,
+                           float ay)
+{
+    float dotVX2 = square(dotVX);
+    float dotVY2 = square(dotVY);
+    float ax2 = square(ax);
+    float ay2 = square(ay);
+    return 1. / (dotNV + sqrt(dotVX2 * ax2 + dotVY2 * ay2 + square(dotNV)));
+}
+
+vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
+{
+    if(sheenF <= .0)
+        return vec3(.0);
+    vec3 tint = calculateTint(baseColor);
+    float fh = schlickWeight(dotHL);
+    vec3 tintMix = mix(vec3(1.), tint, sheenTintF);
+    return sheenF * tintMix * fh;
 }
 
 float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
@@ -87,4 +130,58 @@ float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
     float fr = mix(.04, 1., fh);
     float gr = smithGGGX(dotLN, .25) * smithGGGX(dotNV, .25);
     return 1. * clearcoatF * fr * gr * dr;
+
+    float gl = separableSmithGGXG1(abs(dotLN), .25);
+    float gv = separableSmithGGXG1(abs(dotNV), .25);
+    //float gl = separableSmithGGXG1(dotLN, .25);
+    //float gv = separableSmithGGXG1(dotNV, .25);
+    return .25 * clearcoatF * dr * fr * gl * gv;
+}
+
+vec3 evaluateBRDF(float anisotropicF, float roughnessF, float dotHN,
+                  float dotHX, float dotHY, float dotLN, float dotLX,
+                  float dotLY, float dotNV, float dotVX, float dotVY)
+{
+    if(dotLN <= .0 || dotNV <= .0)
+        return vec3(.0);
+
+    float aspect = sqrt(1. - anisotropicF * .9);
+
+    float ax = max(.001, square(roughnessF) / aspect);
+    float ay = max(.001, square(roughnessF) * aspect);
+
+    float d = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
+    float gl = separableSmithGGXG1(dotLX, dotLY, dotLN, ax, ay);
+    float gv = separableSmithGGXG1(dotVX, dotVY, dotNV, ax, ay);
+
+    return vec3(1.);
+}
+
+vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
+                                   float metallicF, float anisotropicF,
+                                   float roughnessF, vec3 baseColor,
+                                   float dotHL, float dotHN, float dotHX,
+                                   float dotHY, float dotLN, float dotLX,
+                                   float dotLY, float dotNV, float dotVX,
+                                   float dotVY)
+{
+    if(dotLN <= .0 || dotNV <= .0)
+        return vec3(.0);
+    vec3 tint = calculateTint(baseColor);
+    vec3 tintMix = mix(vec3(1.), tint, specularTintF);
+    vec3 spec = mix(specularF * .08 * tintMix, baseColor, metallicF);
+
+    float aspect = sqrt(1. - anisotropicF * .9);
+
+    float ax = max(.001, square(roughnessF) / aspect);
+    float ay = max(.001, square(roughnessF) * aspect);
+
+    float ds = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
+    float fh = schlickWeight(dotHL);
+    vec3 fs = mix(spec, vec3(1.), fh);
+
+    float gs = smithGGGXAnisotropic(dotLN, dotLX, dotLY, ax, ay);
+    gs *= smithGGGXAnisotropic(dotNV, dotVX, dotVY, ax, ay);
+
+    return gs * fs * ds;
 }
