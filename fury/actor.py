@@ -2579,12 +2579,12 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
         Dini's surface      |        dinis_surface
         Plücker's conoid    |        pluckers_conoid
     npoints : int
-              npoints^2 = number of points which will be used for generating
-              the triangles. The quality of the surface generated will be
-              better if npoints is high but this becomes computationally taxing
-              for large values of n.
-              default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                       generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
