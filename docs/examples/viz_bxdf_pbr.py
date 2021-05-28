@@ -77,6 +77,11 @@ def change_slice_clearcoat_gloss(slider):
     clearcoat_gloss = slider._value
 
 
+def change_slice_opacity(slider):
+    global obj_actor
+    obj_actor.GetProperty().SetOpacity(slider._value)
+
+
 def get_cubemap(files_names):
     texture = vtk.vtkTexture()
     texture.CubeMapOn()
@@ -150,17 +155,18 @@ def uniforms_callback(_caller, _event, calldata=None):
 
 
 def win_callback(obj, event):
-    global brdf_panel, size
+    global brdf_panel, control_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
         brdf_panel.re_align(size_change)
+        control_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global anisotropic, clearcoat, clearcoat_gloss, panel, sheen, sheen_tint, \
-        size, specular, specular_tint
+    global anisotropic, brdf_panel, clearcoat, clearcoat_gloss, \
+        control_panel, sheen, sheen_tint, size, specular, specular_tint
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -176,9 +182,6 @@ if __name__ == '__main__':
     clearcoat = .0
     clearcoat_gloss = .0
 
-    # TODO: Add opacity panel
-    obj_actor.GetProperty().SetOpacity(.5)
-
     obj_actor.GetProperty().SetInterpolationToPBR()
     obj_actor.GetProperty().SetMetallic(metallic)
     obj_actor.GetProperty().SetRoughness(roughness)
@@ -188,6 +191,9 @@ if __name__ == '__main__':
     #obj_actor.GetProperty().SetSpecular(specular)
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
     #obj_actor.GetProperty().SetSpecularColor(specular_color)
+
+    opacity = 1.
+    obj_actor.GetProperty().SetOpacity(opacity)
 
     add_shader_callback(obj_actor, uniforms_callback)
 
@@ -238,8 +244,8 @@ if __name__ == '__main__':
     brdf_panel = ui.Panel2D((320, 500), position=(-25, 5), color=(.25, .25, .25),
                        opacity=.75, align='right')
 
-    slider_label_principled_brdf = build_label('"Principled" BRDF',
-                                               font_size=18, bold=True)
+    panel_label_principled_brdf = build_label('"Principled" BRDF',
+                                              font_size=18, bold=True)
     slider_label_subsurface = build_label('Subsurface')
     slider_label_metallic = build_label('Metallic')
     slider_label_specular = build_label('Specular')
@@ -253,7 +259,7 @@ if __name__ == '__main__':
 
     label_pad_x = .06
 
-    brdf_panel.add_element(slider_label_principled_brdf, (.02, .95))
+    brdf_panel.add_element(panel_label_principled_brdf, (.02, .95))
     brdf_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
     brdf_panel.add_element(slider_label_metallic, (label_pad_x, .77))
     brdf_panel.add_element(slider_label_specular, (label_pad_x, .68))
@@ -323,6 +329,27 @@ if __name__ == '__main__':
     brdf_panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
 
     scene.add(brdf_panel)
+
+    control_panel = ui.Panel2D((320, 80), position=(-25, 510),
+                               color=(.25, .25, .25), opacity=.75,
+                               align='right')
+
+    panel_label_control = build_label('Control', font_size=18,
+                                               bold=True)
+    slider_label_opacity = build_label('Opacity')
+
+    control_panel.add_element(panel_label_control, (.02, .7))
+    control_panel.add_element(slider_label_opacity, (label_pad_x, .3))
+
+    slider_slice_opacity = ui.LineSlider2D(
+        initial_value=opacity, max_value=1, length=length,
+        text_template=text_template)
+
+    slider_slice_opacity.on_change = change_slice_opacity
+
+    control_panel.add_element(slider_slice_opacity, (slice_pad_x, .3))
+
+    scene.add(control_panel)
 
     size = scene.GetSize()
 
