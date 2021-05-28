@@ -11,8 +11,7 @@ from scipy import ndimage
 import vtk
 from vtk.util import numpy_support, colors
 from vtk.util.numpy_support import vtk_to_numpy
-
-imagezmq, have_zmq, _ = optional_package('imagezmq')
+import imagezmq
 
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 >>>>>>> fffbd39f (adds a simple FuryStreamClient)
@@ -1266,6 +1265,7 @@ class FuryStreamClient:
     def init(self, ms=16):
         if self.write_in_stdout:
             os.system('cls' if os.name == 'nt' else 'clear')
+
         window2image_filter = self.window2image_filter
 
         def callback(caller, timerevent):
@@ -1289,18 +1289,18 @@ class FuryStreamClient:
                     self.image_buffer[:] = np_arr
                 self._in_request = False
 
-            if ms > 0:
-                id_timer = self.showm.add_timer_callback(
-                    True, ms, callback)
-                self._id_timer = id_timer
-            else:
-                id_observer = self.showm.iren.AddObserver(
-                    'RenderEvent', callback)
-                self._id_observer = id_observer
+        if ms > 0:
+            id_timer = self.showm.add_timer_callback(
+                True, ms, callback)
+            self._id_timer = id_timer
+        else:
+            id_observer = self.showm.iren.AddObserver(
+                'RenderEvent', callback)
+            self._id_observer = id_observer
     
     def stop(self):
-        if not self._id_timer is None:
+        if self._id_timer is not None:
             self.showm.destroy_timer(self._id_timer)
         
-        if not self._id_observer is None:
+        if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
