@@ -2586,7 +2586,6 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
               default: 100 i.e. by default, 100^2 = 10,000 points are used to
                        generate a parametric surface
 
-
     Returns
     -------
     vtkActor
@@ -2602,6 +2601,7 @@ def parametric_surface(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> actor = actor.parametric_surface(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
+
     """
 
     list_parametric_names = ["mobius_strip", "kleins_bottle", "roman_surface",
