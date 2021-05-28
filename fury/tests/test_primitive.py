@@ -201,7 +201,7 @@ def test_build_parametric(npoints=10):
 
 
 def test_vertices_primitives_parametric_surfaces():
-    # Testing the default vertices of various parametric surfaces
+    # Tests the default vertices of various parametric surfaces
     list_names = ["mobius_strip", "kleins_bottle", "roman_surface",
                   "boys_surface", "bohemian_dome", "dinis_surface",
                   "pluckers_conoid"]

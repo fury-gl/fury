@@ -1,3 +1,9 @@
+npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 import os
 import itertools
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -1436,7 +1442,7 @@ def test_parametric_surface_actor(interactive=False):
                              "pluckers_conoid"]
     npoints = 100
 
-    # test error(s)
+    # Test Errors
     npt.assert_raises(ValueError, actor.parametric_surface,
                       centers=np.random.rand(1, 3), name="cube")
 
