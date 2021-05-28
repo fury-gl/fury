@@ -22,6 +22,8 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 // Disney's Principled BRDF
 #define EPSILON .0001
 
+uniform float specularValue;
+uniform float specularTint;
 uniform float anisotropic;
 uniform float sheen;
 uniform float sheenTint;
@@ -138,6 +140,19 @@ float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
     return .25 * clearcoatF * dr * fr * gl * gv;
 }
 
+vec3 fresnel(float specularTintF, vec3 baseColor, float dotHV)
+{
+    vec3 tint = calculateTint(baseColor);
+
+    /*
+    See section 3.1 and 3.2 of the 2015 PBR presentation + the Disney BRDF
+    explorer (which does their 2012 remapping rather than the
+    SchlickR0FromRelativeIOR seen here but they mentioned the switch in 3.2).
+    */
+    vec3 tintMix = mix(vec3(1.), tint, specularTintF);
+    return vec3(.0);
+}
+
 vec3 evaluateBRDF(float anisotropicF, float roughnessF, float dotHN,
                   float dotHX, float dotHY, float dotLN, float dotLX,
                   float dotLY, float dotNV, float dotVX, float dotVY)
@@ -154,7 +169,7 @@ vec3 evaluateBRDF(float anisotropicF, float roughnessF, float dotHN,
     float gl = separableSmithGGXG1(dotLX, dotLY, dotLN, ax, ay);
     float gv = separableSmithGGXG1(dotVX, dotVY, dotNV, ax, ay);
 
-    return vec3(1.);
+    return vec3(.0);
 }
 
 vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,

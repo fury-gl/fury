@@ -19,15 +19,14 @@ vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, NdV);
 
 // Clearcoat + Clearcoat Gloss
 float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, NdV, NdV, NdV, NdV);
-fragOutput0 = vec4(color + sheenV3 + clearcoatF, opacity);
+//fragOutput0 = vec4(color + sheenV3 + clearcoatF, opacity);
 
 // Anisotropic
 /*
 vec3 spec = evaluateBRDF(anisotropic, roughness, NdV, NdV, NdV, NdV, NdV, NdV,
         NdV, NdV, NdV);
 */
-/*
-vec3 glossy = evaluateMicrofacetAnisotropic(
-        specular, specularTint, metallic, anisotropic, roughness, albedo, NdV,
-        NdV, NdV, NdV, NdV, NdV, NdV, NdV, NdV, NdV);
-*/
+vec3 anisotropicV3 = evaluateMicrofacetAnisotropic(
+        specularValue, specularTint, metallic, anisotropic, roughness, albedo,
+        NdV, NdV, NdV, NdV, NdV, NdV, NdV, NdV, NdV, NdV);
+fragOutput0 = vec4(color + sheenV3 + anisotropicV3 + clearcoatF, opacity);

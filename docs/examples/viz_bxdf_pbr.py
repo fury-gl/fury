@@ -36,18 +36,25 @@ def change_slice_metallic(slider):
 
 
 def change_slice_specular(slider):
-    global obj_actor
-    obj_actor.GetProperty().SetSpecular(slider._value)
+    global obj_actor, specular
+    #obj_actor.GetProperty().SetSpecular(slider._value)
+    specular = slider._value
 
 
 def change_slice_specular_tint(slider):
-    global obj_actor
-    obj_actor.GetProperty().SetSpecularPower(slider._value)
+    global obj_actor, specular_tint
+    #obj_actor.GetProperty().SetSpecularPower(slider._value)
+    specular_tint = slider._value
 
 
 def change_slice_roughness(slider):
     global obj_actor
     obj_actor.GetProperty().SetRoughness(slider._value)
+
+
+def change_slice_anisotropic(slider):
+    global anisotropic
+    anisotropic = slider._value
 
 
 def change_slice_sheen(slider):
@@ -130,8 +137,12 @@ def obj_surface():
 
 
 def uniforms_callback(_caller, _event, calldata=None):
-    global clearcoat, clearcoat_gloss, sheen, sheen_tint
+    global anisotropic, clearcoat, clearcoat_gloss, sheen, sheen_tint, \
+        specular, specular_tint
     if calldata is not None:
+        calldata.SetUniformf('specularValue', specular)
+        calldata.SetUniformf('specularTint', specular_tint)
+        calldata.SetUniformf('anisotropic', anisotropic)
         calldata.SetUniformf('sheen', sheen)
         calldata.SetUniformf('sheenTint', sheen_tint)
         calldata.SetUniformf('clearcoat', clearcoat)
@@ -139,16 +150,17 @@ def uniforms_callback(_caller, _event, calldata=None):
 
 
 def win_callback(obj, event):
-    global panel, size
+    global brdf_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
-        panel.re_align(size_change)
+        brdf_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global clearcoat, clearcoat_gloss, panel, sheen, sheen_tint, size
+    global anisotropic, clearcoat, clearcoat_gloss, panel, sheen, sheen_tint, \
+        size, specular, specular_tint
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -158,6 +170,7 @@ if __name__ == '__main__':
     specular = .0
     specular_tint = .0
     roughness = .0
+    anisotropic = .0
     sheen = .0
     sheen_tint = .0
     clearcoat = .0
@@ -166,11 +179,12 @@ if __name__ == '__main__':
     # TODO: Add opacity panel
     obj_actor.GetProperty().SetOpacity(.5)
 
-    #specular_color = vtk.vtkNamedColors().GetColor3d('White')
-
     obj_actor.GetProperty().SetInterpolationToPBR()
     obj_actor.GetProperty().SetMetallic(metallic)
     obj_actor.GetProperty().SetRoughness(roughness)
+
+    # NOTE: Specular parameters don't seem to work
+    #specular_color = vtk.vtkNamedColors().GetColor3d('White')
     #obj_actor.GetProperty().SetSpecular(specular)
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
     #obj_actor.GetProperty().SetSpecularColor(specular_color)
@@ -221,9 +235,11 @@ if __name__ == '__main__':
                                 order_transparent=True)
     show_m.initialize()
 
-    panel = ui.Panel2D((320, 480), position=(-25, 5), color=(.25, .25, .25),
+    brdf_panel = ui.Panel2D((320, 500), position=(-25, 5), color=(.25, .25, .25),
                        opacity=.75, align='right')
 
+    slider_label_principled_brdf = build_label('"Principled" BRDF',
+                                               font_size=18, bold=True)
     slider_label_subsurface = build_label('Subsurface')
     slider_label_metallic = build_label('Metallic')
     slider_label_specular = build_label('Specular')
@@ -235,20 +251,21 @@ if __name__ == '__main__':
     slider_label_clearcoat = build_label('Clearcoat')
     slider_label_clearcoat_gloss = build_label('Clearcoat Gloss')
 
-    label_pad_x = .02
+    label_pad_x = .06
 
-    panel.add_element(slider_label_subsurface, (label_pad_x, .95))
-    panel.add_element(slider_label_metallic, (label_pad_x, .85))
-    panel.add_element(slider_label_specular, (label_pad_x, .75))
-    panel.add_element(slider_label_specular_tint, (label_pad_x, .65))
-    panel.add_element(slider_label_roughness, (label_pad_x, .55))
-    panel.add_element(slider_label_anisotropic, (label_pad_x, .45))
-    panel.add_element(slider_label_sheen, (label_pad_x, .35))
-    panel.add_element(slider_label_sheen_tint, (label_pad_x, .25))
-    panel.add_element(slider_label_clearcoat, (label_pad_x, .15))
-    panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
+    brdf_panel.add_element(slider_label_principled_brdf, (.02, .95))
+    brdf_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
+    brdf_panel.add_element(slider_label_metallic, (label_pad_x, .77))
+    brdf_panel.add_element(slider_label_specular, (label_pad_x, .68))
+    brdf_panel.add_element(slider_label_specular_tint, (label_pad_x, .59))
+    brdf_panel.add_element(slider_label_roughness, (label_pad_x, .5))
+    brdf_panel.add_element(slider_label_anisotropic, (label_pad_x, .41))
+    brdf_panel.add_element(slider_label_sheen, (label_pad_x, .32))
+    brdf_panel.add_element(slider_label_sheen_tint, (label_pad_x, .23))
+    brdf_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
+    brdf_panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
 
-    length = 160
+    length = 150
     text_template = '{value:.1f}'
 
     slider_slice_subsurface = ui.LineSlider2D(
@@ -267,7 +284,7 @@ if __name__ == '__main__':
         initial_value=roughness, max_value=1, length=length,
         text_template=text_template)
     slider_slice_anisotropic = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=anisotropic, max_value=1, length=length,
         text_template=text_template)
     slider_slice_sheen = ui.LineSlider2D(
         initial_value=sheen, max_value=1, length=length,
@@ -286,25 +303,26 @@ if __name__ == '__main__':
     slider_slice_specular.on_change = change_slice_specular
     slider_slice_specular_tint.on_change = change_slice_specular_tint
     slider_slice_roughness.on_change = change_slice_roughness
+    slider_slice_anisotropic.on_change = change_slice_anisotropic
     slider_slice_sheen.on_change = change_slice_sheen
     slider_slice_sheen_tint.on_change = change_slice_sheen_tint
     slider_slice_clearcoat.on_change = change_slice_clearcoat
     slider_slice_clearcoat_gloss.on_change = change_slice_clearcoat_gloss
 
-    slice_pad_x = .42
+    slice_pad_x = .46
 
-    panel.add_element(slider_slice_subsurface, (slice_pad_x, .95))
-    panel.add_element(slider_slice_metallic, (slice_pad_x, .85))
-    panel.add_element(slider_slice_specular, (slice_pad_x, .75))
-    panel.add_element(slider_slice_specular_tint, (slice_pad_x, .65))
-    panel.add_element(slider_slice_roughness, (slice_pad_x, .55))
-    panel.add_element(slider_slice_anisotropic, (slice_pad_x, .45))
-    panel.add_element(slider_slice_sheen, (slice_pad_x, .35))
-    panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .25))
-    panel.add_element(slider_slice_clearcoat, (slice_pad_x, .15))
-    panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
+    brdf_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
+    brdf_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
+    brdf_panel.add_element(slider_slice_specular, (slice_pad_x, .68))
+    brdf_panel.add_element(slider_slice_specular_tint, (slice_pad_x, .59))
+    brdf_panel.add_element(slider_slice_roughness, (slice_pad_x, .5))
+    brdf_panel.add_element(slider_slice_anisotropic, (slice_pad_x, .41))
+    brdf_panel.add_element(slider_slice_sheen, (slice_pad_x, .32))
+    brdf_panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .23))
+    brdf_panel.add_element(slider_slice_clearcoat, (slice_pad_x, .14))
+    brdf_panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
 
-    scene.add(panel)
+    scene.add(brdf_panel)
 
     size = scene.GetSize()
 
