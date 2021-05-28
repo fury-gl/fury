@@ -862,26 +862,26 @@ def build_parametric(u_lower_bound, u_upper_bound, v_lower_bound,
     Parameters
     ----------
 
-    u_lower_bound: int or float
-                   lower bound of the u parameter
-    u_upper_bound: int or float
-                   upper bound of the u parameter
-    v_lower_bound: int or float
-                   lower bound of the v parameter
-    v_upper_bound: int or float
-                   upper bound of the v parameter
+    u_lower_bound: float or int
+        lower bound of the u parameter
+    u_upper_bound: float or int
+        upper bound of the u parameter
+    v_lower_bound: float or int
+        lower bound of the v parameter
+    v_upper_bound: float or int
+        upper bound of the v parameter
     npoints: int
-             to select number of points between lower bound and upper bound of
-             u and v parameters
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        to select number of points between lower bound and upper bound of
+        u and v parameters
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
     surface_equation: function
-                      parametric equation to be rendered is passed which uses
-                      the parameters u, v to generate vertices
+        parametric equation to be rendered is passed which uses
+        the parameters u, v to generate vertices
 
     Returns
     -------
@@ -924,12 +924,12 @@ def prim_para_mobius_strip(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -956,12 +956,12 @@ def prim_para_kleins_bottle(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -994,12 +994,12 @@ def prim_para_roman_surface(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -1027,12 +1027,12 @@ def prim_para_boys_surface(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -1061,12 +1061,12 @@ def prim_para_bohemian_dome(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -1096,12 +1096,12 @@ def prim_para_dinis_surface(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
@@ -1130,12 +1130,12 @@ def prim_para_pluckers_conoid(npoints=100):
     Parameters
     ----------
     npoints: int
-             npoints^2 = number of points which will be used for generating
-             the triangles. The quality of the surface generated will be
-             better if npoints is high but this becomes computationally taxing
-             for large values of n.
-             default: 100 i.e. by default, 100^2 = 10,000 points are used to
-                      generate a parametric surface
+        npoints^2 = number of points which will be used for generating
+        the triangles. The quality of the surface generated will be
+        better if npoints is high but this becomes computationally taxing
+        for large values of n.
+        default: 100 i.e. by default, 100^2 = 10,000 points are used to
+                generate a parametric surface
 
     Returns
     -------
