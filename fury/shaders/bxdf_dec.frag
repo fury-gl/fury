@@ -41,10 +41,38 @@ vec3 calculateTint(vec3 baseColor)
     return luminance > .0 ? baseColor / luminance : vec3(1.);
 }
 
-float schlickWeight(float cosTheta)
+float dielectric(float cosThetaI, float ni, float nt)
 {
-    float m = clamp(1. - cosTheta, .0, 1.);
-    return (m * m) * (m * m) * m;
+    cosThetaI = clamp(cosThetaI, -1., 1.);
+
+    // Swap index of refraction if this is coming from inside the surface
+    if(cosThetaI < .0)
+    {
+        float temp = ni;
+        ni = nt;
+        nt = temp;
+
+        cosThetaI = -cosThetaI;
+    }
+
+    float sinThetaI = sqrt(max(.0, 1 - square(cosThetaI)));
+    float sinThetaT = ni / nt * sinThetaI;
+
+    // Check for total internal reflection
+    if(sinThetaT >= 1.)
+        return 1.;
+
+    float cosThetaT = sqrt(max(.0, 1. - square(sinThetaT)));
+
+    float rParallelNum = nt * cosThetaI - ni * cosThetaT;
+    float rParallelDen = nt * cosThetaI + nt * cosThetaT;
+    float rParallel = rParallelNum / rParallelDen;
+
+    float rPerpendicularNum = ni * cosThetaI - nt * cosThetaT;
+    float rPerpendicularDen = ni * cosThetaI + nt * cosThetaT;
+    float rPerpendicular = rPerpendicularNum / rPerpendicularDen;
+
+    return (square(rParallel) + square(rPerpendicular)) / 2;
 }
 
 float GTR1(float dotHN, float alpha)
@@ -64,6 +92,37 @@ float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
     float ax2 = square(ax);
     float ay2 = square(ay);
     return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay + dotHN * dotHN));
+}
+
+float schlickWeight(float cosTheta)
+{
+    float m = clamp(1. - cosTheta, .0, 1.);
+    return (m * m) * (m * m) * m;
+}
+
+float schlickR0FromRelativeIOR(float eta)
+{
+    return square(eta - 1.) / square(eta + 1.);
+}
+
+vec3 fresnel(float specularTintF, float IORF, float relativeIORF,
+             float metallicF, vec3 baseColor, float dotHL, float dotHV)
+{
+    vec3 tint = calculateTint(baseColor);
+
+    /*
+    See section 3.1 and 3.2 of the 2015 PBR presentation + the Disney BRDF
+    explorer (which does their 2012 remapping rather than the
+    SchlickR0FromRelativeIOR seen here but they mentioned the switch in 3.2).
+    */
+    vec3 tintMix = mix(vec3(1.), tint, specularTintF);
+    vec3 r0 = schlickR0FromRelativeIOR(relativeIORF) * tintMix;
+    r0 = mix(r0, baseColor, metallicF);
+
+    float dielectricFresnel = dielectric(dotHV, 1., IORF);
+    vec3 metallicFresnel = F_Schlick(dotHL, r0);
+
+    return mix(vec3(dielectricFresnel), metallicFresnel, metallicF);
 }
 
 float separableSmithGGXG1(float dotNV, float alpha)
@@ -110,14 +169,28 @@ float smithGGGXAnisotropic(float dotNV, float dotVX, float dotVY, float ax,
     return 1. / (dotNV + sqrt(dotVX2 * ax2 + dotVY2 * ay2 + square(dotNV)));
 }
 
-vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
+vec3 evaluateBRDF(float anisotropicF, float roughnessF, float specularTintF,
+                  float IORF, float relativeIORF, float metallicF,
+                  vec3 baseColor, float dotHL, float dotHN, float dotHV,
+                  float dotHX, float dotHY, float dotLN, float dotLX,
+                  float dotLY, float dotNV, float dotVX, float dotVY)
 {
-    if(sheenF <= .0)
+    if(dotLN <= .0 || dotNV <= .0)
         return vec3(.0);
-    vec3 tint = calculateTint(baseColor);
-    float fh = schlickWeight(dotHL);
-    vec3 tintMix = mix(vec3(1.), tint, sheenTintF);
-    return sheenF * tintMix * fh;
+
+    float aspect = sqrt(1. - anisotropicF * .9);
+
+    float ax = max(.001, square(roughnessF) / aspect);
+    float ay = max(.001, square(roughnessF) * aspect);
+
+    float d = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
+    float gl = separableSmithGGXG1(dotLX, dotLY, dotLN, ax, ay);
+    float gv = separableSmithGGXG1(dotVX, dotVY, dotNV, ax, ay);
+
+    vec3 f = fresnel(specularTintF, IORF, relativeIORF, metallicF, baseColor,
+        dotHL, dotHV);
+
+    return d * gl * gv * f / (4. * dotLN * dotNV);
 }
 
 float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
@@ -140,36 +213,15 @@ float evaluateClearcoat(float clearcoatF, float clearcoatGlossF, float dotHL,
     return .25 * clearcoatF * dr * fr * gl * gv;
 }
 
-vec3 fresnel(float specularTintF, vec3 baseColor, float dotHV)
+vec3 evaluateDiffuse(float roughnessF, vec3 baseColor, float dotHL,
+                     float dotLN, float dotNV)
 {
-    vec3 tint = calculateTint(baseColor);
+    float fl = schlickWeight(dotLN);
+    float fv = schlickWeight(dotNV);
 
-    /*
-    See section 3.1 and 3.2 of the 2015 PBR presentation + the Disney BRDF
-    explorer (which does their 2012 remapping rather than the
-    SchlickR0FromRelativeIOR seen here but they mentioned the switch in 3.2).
-    */
-    vec3 tintMix = mix(vec3(1.), tint, specularTintF);
-    return vec3(.0);
-}
-
-vec3 evaluateBRDF(float anisotropicF, float roughnessF, float dotHN,
-                  float dotHX, float dotHY, float dotLN, float dotLX,
-                  float dotLY, float dotNV, float dotVX, float dotVY)
-{
-    if(dotLN <= .0 || dotNV <= .0)
-        return vec3(.0);
-
-    float aspect = sqrt(1. - anisotropicF * .9);
-
-    float ax = max(.001, square(roughnessF) / aspect);
-    float ay = max(.001, square(roughnessF) * aspect);
-
-    float d = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
-    float gl = separableSmithGGXG1(dotLX, dotLY, dotLN, ax, ay);
-    float gv = separableSmithGGXG1(dotVX, dotVY, dotNV, ax, ay);
-
-    return vec3(.0);
+    float fd90 = .5 + 2. * square(dotHL) * roughnessF;
+    float fd = mix(1., fd90, fl) * mix(1., fd90, fv);
+    return (1. / PI) * fd * baseColor;
 }
 
 vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
@@ -199,4 +251,19 @@ vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
     gs *= smithGGGXAnisotropic(dotNV, dotVX, dotVY, ax, ay);
 
     return gs * fs * ds;
+}
+
+vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
+{
+    if(sheenF <= .0)
+        return vec3(.0);
+    vec3 tint = calculateTint(baseColor);
+    float fh = schlickWeight(dotHL);
+    vec3 tintMix = mix(vec3(1.), tint, sheenTintF);
+    return sheenF * tintMix * fh;
+}
+
+vec3 evaluateSubsurface()
+{
+    return vec3(.0);
 }
