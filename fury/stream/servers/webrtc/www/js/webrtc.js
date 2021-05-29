@@ -1,5 +1,6 @@
 var pc = null;
 var bandwidth = 5;
+
 function removeBandwidthRestriction(sdp) {
   return sdp.replace(/b=AS:.*\r\n/, "").replace(/b=TIAS:.*\r\n/, "");
 }
@@ -18,10 +19,10 @@ function setMediaBitrate(sdp, media, bitrate) {
     }
   }
   if (line === -1) {
-    console.debug("Could not find the m line for", media);
+    // console.debug("Could not find the m line for", media);
     return sdp;
   }
-  console.debug("Found the m line for", media, "at line", line);
+//   console.debug("Found the m line for", media, "at line", line);
 
   // Pass the m line
   line++;
@@ -33,13 +34,13 @@ function setMediaBitrate(sdp, media, bitrate) {
 
   // If we're on a b line, replace it
   if (lines[line].indexOf("b") === 0) {
-    console.debug("Replaced b line at line", line);
+    // console.debug("Replaced b line at line", line);
     lines[line] = "b=AS:" + bitrate;
     return lines.join("\n");
   }
 
   // Add a new b line
-  console.debug("Adding new b line before line", line);
+//   console.debug("Adding new b line before line", line);
   var newLines = lines.slice(0, line);
   newLines.push("b=AS:" + bitrate);
   newLines = newLines.concat(lines.slice(line, lines.length));
@@ -125,7 +126,7 @@ function negotiate() {
     });
 }
 
-function start() {
+export const startWebRTC = () => {
   var config = {
     // sdpSemantics: 'unified-plan'
   };
@@ -186,12 +187,3 @@ function stop() {
     pc.close();
   }, 500);
 }
-
-document.addEventListener("DOMContentLoaded", (event) => {
-  // start();
-});
-
-window.addEventListener('wheel', (event)=>
-{
-    console.log(event.deltaY)
-})

@@ -18,7 +18,8 @@ async def index(request, **kwargs):
 
 async def javascript(request, **kwargs):
     folder = kwargs['folder']
-    content = open(os.path.join(folder, "client.js"), "r").read()
+    js = kwargs['js']
+    content = open(os.path.join(folder, "js/%s" % js), "r").read()
     return web.Response(content_type="application/javascript", text=content)
 
 
@@ -73,6 +74,9 @@ def get_app(RTCServer, folder=None):
     app = web.Application()
     app.on_shutdown.append(on_shutdown)
     app.router.add_get("/", partial(index, folder=folder))
-    app.router.add_get("/client.js", partial(javascript, folder=folder))
+    js_files = ['main.js', 'webrtc.js']
+    for js in js_files:
+        app.router.add_get(
+            "/js/%s" % js, partial(javascript, folder=folder, js=js))
     app.router.add_post("/offer", partial(offer, video=RTCServer))
     return app
