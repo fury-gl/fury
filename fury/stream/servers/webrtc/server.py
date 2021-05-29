@@ -4,7 +4,7 @@ from aiortc import VideoStreamTrack
 
 import numpy as np
 
-from fury.stream.webrtc.async_app import get_app
+from fury.stream.servers.webrtc.async_app import get_app
 
 
 def webrtc_server(

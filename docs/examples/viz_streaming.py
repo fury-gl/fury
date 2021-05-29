@@ -8,7 +8,7 @@ import numpy as np
 from fury.data.fetcher import fetch_viz_wiki_nw
 
 import multiprocessing
-from fury.stream.webrtc.server import webrtc_server
+from fury.stream.servers.webrtc.server import webrtc_server
 
 if __name__ == '__main__':
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         # multi_samples=8
     )
 
-    from fury.window import FuryStreamClient
+    from fury.stream.client import FuryStreamClient
     showm.initialize()
     stream = FuryStreamClient(
         showm, False, image_buffer=image_buffer, info_buffer=info_buffer)
