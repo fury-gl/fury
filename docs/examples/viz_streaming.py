@@ -16,12 +16,12 @@ if __name__ == '__main__':
     ##############################################################################
     # First we will set the resolution which it'll be used by the streamer
 
-    window_size = (500, 500)
+    window_size = (200, 200)
     ##############################################################################
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
-    ms = 0
+    ms = 16
     ###############################################################################
     #
     arr = np.random.randint(
