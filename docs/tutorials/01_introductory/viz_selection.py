@@ -56,6 +56,7 @@ num_objects = centers.shape[0]
 
 vcolors = utils.colors_from_actor(fury_actor, 'colors')
 
+
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
 ax = actor.axes(scale=(10, 10, 10))
@@ -78,6 +79,8 @@ scene.reset_camera()
 
 selm = pick.SelectionManager(select='faces')
 
+
+selm.selectable_off([texa, ax])
 ###############################################################################
 # Time to make the callback which will be called when we pick an object
 
@@ -86,18 +89,23 @@ def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
     texa.SetPosition(event_pos[0] - 200//2,
                      event_pos[1] - 100//2)
+    # info = selm.select(event_pos, showm.scene, (200//2, 100//2))
     info = selm.select(event_pos, showm.scene, (200//2, 100//2))
-    print(info)
+    # print(info)
+    # print()
     if info[0]['face'] is not None:
-        face_index = info[0]['face']
+        if info[0]['actor'] is fury_actor:
+            face_index = info[0]['face'][0]
+            print('fi', face_index)
 
-        object_index = int(np.floor((face_index / 6 * 2)))
-        sec = int(num_vertices / num_objects)
+            object_index = face_index // 12
+            print('oi', object_index)
+            sec = int(num_vertices / num_objects)
 
-        color_add = np.array([30, 30, 30], dtype='uint8')
-        vcolors[object_index * sec: object_index * sec + sec] += color_add
-        utils.update_actor(fury_actor)
-        showm.render()
+            color_add = np.array([30, 30, 30], dtype='uint8')
+            vcolors[object_index * sec: object_index * sec + sec] += color_add
+            utils.update_actor(fury_actor)
+    showm.render()
 
 
 ###############################################################################

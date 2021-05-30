@@ -139,7 +139,7 @@ scene.add(panel)
 ###############################################################################
 # Change interactive to True to start interacting with the scene
 
-interactive = False
+interactive = True
 
 if interactive:
 
