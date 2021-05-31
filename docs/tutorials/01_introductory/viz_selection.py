@@ -15,13 +15,15 @@ When the objects will be picked they will change size and color.
 import numpy as np
 from fury import actor, window, ui, utils, pick
 
-centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
-colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-radii = 0.1 * np.array([50, 100, 150.])
+num_cubes = 50000
 
-num_faces = 3 * 6 * 2  # every quad of each cubes has 2 triangles
+centers = 10000 * (np.random.rand(num_cubes, 3) - 0.5)
+colors = np.random.rand(num_cubes, 4)
+radii = 100 * np.random.rand(num_cubes) + 0.1
 
-selected = np.zeros(3, dtype=bool)
+num_faces = num_cubes * 6 * 2  # every quad of each cubes has 2 triangles
+
+selected = np.zeros(num_cubes, dtype=bool)
 
 ###############################################################################
 # Let's create a panel to show what is picked
@@ -37,25 +39,22 @@ panel.add_element(text_block, (0.3, 0.3))
 
 scene = window.Scene()
 
-label_actor = actor.label(text='Test')
-
 ###############################################################################
-# This actor is made with 3 cubes
+# This actor is using many cubes
 
-fury_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
+cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
 
-vertices = utils.vertices_from_actor(fury_actor)
+vertices = utils.vertices_from_actor(cube_actor)
 num_vertices = vertices.shape[0]
 num_objects = centers.shape[0]
 
 ###############################################################################
 # Access the memory of the colors of all the cubes
 
-vcolors = utils.colors_from_actor(fury_actor, 'colors')
-
+vcolors = utils.colors_from_actor(cube_actor, 'colors')
 
 ###############################################################################
 # Adding an actor showing the axes of the world coordinates
@@ -67,12 +66,10 @@ rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
 
 texa = actor.texture_2d(rgba.astype(np.uint8))
 
-scene.add(fury_actor)
-scene.add(label_actor)
+scene.add(cube_actor)
 scene.add(ax)
 scene.add(texa)
 scene.reset_camera()
-
 
 ###############################################################################
 # Create the Picking manager
@@ -89,22 +86,16 @@ def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
     texa.SetPosition(event_pos[0] - 200//2,
                      event_pos[1] - 100//2)
-    # info = selm.select(event_pos, showm.scene, (200//2, 100//2))
     info = selm.select(event_pos, showm.scene, (200//2, 100//2))
-    # print(info)
-    # print()
-    if info[0]['face'] is not None:
-        if info[0]['actor'] is fury_actor:
-            face_index = info[0]['face'][0]
-            print('fi', face_index)
-
-            object_index = face_index // 12
-            print('oi', object_index)
-            sec = int(num_vertices / num_objects)
-
-            color_add = np.array([30, 30, 30], dtype='uint8')
-            vcolors[object_index * sec: object_index * sec + sec] += color_add
-            utils.update_actor(fury_actor)
+    for node in info.keys():
+        if info[node]['face'] is not None:
+            if info[node]['actor'] is cube_actor:
+                for face_index in info[node]['face']:
+                    object_index = face_index // 12
+                    sec = int(num_vertices / num_objects)
+                    color_add = np.array([50, 50, 50, 0], dtype='uint8')
+                    vcolors[object_index * sec: object_index * sec + sec] = color_add
+                utils.update_actor(cube_actor)
     showm.render()
 
 
@@ -118,8 +109,6 @@ showm.initialize()
 ###############################################################################
 # Bind the callback to the actor
 showm.add_iren_callback(hover_callback)
-
-scene.add(panel)
 
 ###############################################################################
 # Change interactive to True to start interacting with the scene
