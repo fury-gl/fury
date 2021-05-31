@@ -8,7 +8,9 @@ from fury.stream.servers.webrtc.async_app import get_app
 
 
 def webrtc_server(
-        image_buffer, info_buffer, circular_quequeue=None,
+        fury_stream_client,
+        # image_buffer, info_buffer, 
+        circular_quequeue=None,
         port=8000, host='localhost', flip_img=True,
         www_folder=None, use_vidgear=False):
 
@@ -17,19 +19,22 @@ def webrtc_server(
             super().__init__()
 
             # starts with a random image
-            image_info = np.frombuffer(info_buffer, 'uint32')
-            self.image = np.random.randint(
-                 0, 255, (image_info[1], image_info[0], 3),
-                 dtype='uint8')
-            #self.image = np.zeros(
-            #    (image_info[1], image_info[0], 3), dtype='uint8')
+            image_info = np.frombuffer(
+                fury_stream_client.info_buffer, 'uint32')
+            # self.image = np.random.randint(
+            #      0, 255, (image_info[1], image_info[0], 3),
+            #      dtype='uint8')
+            self.image = np.zeros(
+                (image_info[1], image_info[0], 3), dtype='uint8')
 
         async def recv(self):
             pts, time_base = await self.next_timestamp()
 
-            image_info = np.frombuffer(info_buffer, 'uint32')
+            image_info = np.frombuffer(
+                fury_stream_client.info_buffer, 'uint32')
 
-            self.image = np.frombuffer(image_buffer, 'uint8').reshape(
+            self.image = np.frombuffer(
+                fury_stream_client.image_buffer, 'uint8').reshape(
                 (image_info[1], image_info[0], 3))
 
             if flip_img:

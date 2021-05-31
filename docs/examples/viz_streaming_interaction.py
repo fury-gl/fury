@@ -17,35 +17,8 @@ if __name__ == '__main__':
     # First we will set the resolution which it'll be used by the streamer
 
     window_size = (400, 400)
-    ##############################################################################
-    # ms define the amount of mileseconds that will be used in the timer event.
-    # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
-    # render event
-    ms = 16
-    ###############################################################################
-    #
-    arr = np.random.randint(
-        0, 255, size=window_size[0]*window_size[1]*3).astype('uint8')
-    #
-    image_buffer = multiprocessing.RawArray('B', arr)
-    #
-    arr = np.array([window_size[0], window_size[1], 3])
-    info_buffer = multiprocessing.RawArray('I', arr)
-    #
-    # arr = np.zeros([50, 4], dtype='float64')
-    # interaction_buffer = multiprocessing.RawArray('B', arr)
-    # interaction_buffer = multiprocessing.RawArray('B', arr)
-    ###########################################################################
-    #
-    from fury.stream.tools import CircularQueue
-
-    circular_queue = CircularQueue(5, 4)
-    p = multiprocessing.Process(
-        target=webrtc_server,
-        args=(image_buffer, info_buffer, circular_queue))
-    p.start()
-
-    #
+    
+    
     files, folder = fetch_viz_wiki_nw()
     categories_file, edges_file, positions_file = sorted(files.keys())
     positions = np.loadtxt(pjoin(folder, positions_file))
@@ -97,12 +70,25 @@ if __name__ == '__main__':
     )
 
     from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+    from fury.stream.tools import CircularQueue
+
+    ##############################################################################
+    # ms define the amount of mileseconds that will be used in the timer event.
+    # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
+    # render event
+    ms = 16
+    circular_queue = CircularQueue(5, 4)
 
     stream_interaction = FuryStreamInteraction(showm, circular_queue)
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, False, image_buffer=image_buffer, info_buffer=info_buffer)
+        showm, window_size,)
+
+    p = multiprocessing.Process(
+        target=webrtc_server,
+        args=(stream, circular_queue))
+    p.start()
     stream_interaction.start()
     stream.init(ms,)
     showm.start()

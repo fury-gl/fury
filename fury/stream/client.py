@@ -1,13 +1,16 @@
 import os
 from vtk.util.numpy_support import vtk_to_numpy
 import vtk
+import multiprocessing
+import numpy as np
 # import imagezmq
 
 
 class FuryStreamClient:
     def __init__(
-        self, showm, write_in_stdout=True,
-            image_buffer=None, info_buffer=None,
+            self, showm,
+            window_size=(200, 200),
+            write_in_stdout=False,
             broker_url=None):
         '''
 
@@ -19,8 +22,13 @@ class FuryStreamClient:
         self.window2image_filter = vtk.vtkWindowToImageFilter()
         self.window2image_filter.SetInput(self.showm.window)
         self.write_in_stdout = write_in_stdout
-        self.image_buffer = image_buffer
-        self.info_buffer = info_buffer
+        self.image_buffer = multiprocessing.RawArray(
+            'B', np.random.randint(
+                0, 255, size=window_size[0]*window_size[1]*3).astype('uint8'))
+
+        self.info_buffer = multiprocessing.RawArray(
+            'I', np.array([window_size[0], window_size[1], 3]))
+
         self._id_timer = None
         self._id_observer = None
         self.sender = None
