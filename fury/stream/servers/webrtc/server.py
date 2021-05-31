@@ -8,7 +8,7 @@ from fury.stream.servers.webrtc.async_app import get_app
 
 
 def webrtc_server(
-        image_buffer, info_buffer,
+        image_buffer, info_buffer, circular_quequeue=None,
         port=8000, host='localhost', flip_img=True,
         www_folder=None, use_vidgear=False):
 
@@ -47,5 +47,6 @@ def webrtc_server(
             except AttributeError:
                 pass
 
-    app_fury = get_app(RTCServer())
-    web.run_app(app_fury, host=host, port=port, ssl_context=None)
+    app_fury = get_app(RTCServer(), circular_quequeue=circular_quequeue)
+    web.run_app(
+        app_fury, host=host, port=port, ssl_context=None)

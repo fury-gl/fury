@@ -29,15 +29,20 @@ if __name__ == '__main__':
     #
     image_buffer = multiprocessing.RawArray('B', arr)
     #
-    arr = None
-    #
     arr = np.array([window_size[0], window_size[1], 3])
     info_buffer = multiprocessing.RawArray('I', arr)
-    arr = None
+    #
+    # arr = np.zeros([50, 4], dtype='float64')
+    # interaction_buffer = multiprocessing.RawArray('B', arr)
+    # interaction_buffer = multiprocessing.RawArray('B', arr)
     ###########################################################################
     #
+    from fury.stream.tools import CircularQueue
+
+    circular_queue = CircularQueue(5, 4)
     p = multiprocessing.Process(
-        target=webrtc_server, args=(image_buffer, info_buffer))
+        target=webrtc_server,
+        args=(image_buffer, info_buffer, circular_queue))
     p.start()
 
     #
@@ -82,17 +87,44 @@ if __name__ == '__main__':
 
     interactive = False
 
-    scene.set_camera(position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0),
-                    view_up=(0.0, 0.0, 0.0))
-                    
+    scene.set_camera(
+        position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0),
+        view_up=(0.0, 0.0, 0.0))
+
     showm = window.ShowManager(scene, reset_camera=False, size=(
         window_size[0], window_size[1]), order_transparent=False,
         # multi_samples=8
     )
 
-    from fury.stream.client import FuryStreamClient
+    from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+
+    stream_interaction = FuryStreamInteraction(showm, circular_queue)
+    # def callback(caller, timerevent):
+    #     #pass
+    #     data = circular_quequeue.dequeue()
+    #     if data is not None:
+    #         if data[0] == 1:
+
+    #             #print(data)
+    #             # code extracted from vtk
+    #             zoomFactor = 1.0 - data[1] / 100.0
+
+    #             camera = showm.window.GetRenderers().GetFirstRenderer().GetActiveCamera()
+    #             fp = camera.GetFocalPoint()
+    #             pos = camera.GetPosition()
+    #             delta = [fp[i] - pos[i] for i in range(3)]
+    #             camera.Zoom(zoomFactor)
+
+    #             pos2 = camera.GetPosition()
+    #             camera.SetFocalPoint([pos2[i] + delta[i] for i in range(3)])
+    #             #showm.render.Modified()
+    #             showm.render()
+
     showm.initialize()
+
+    # showm.add_timer_callback(True, 16, callback)
     stream = FuryStreamClient(
         showm, False, image_buffer=image_buffer, info_buffer=info_buffer)
+    stream_interaction.start()
     stream.init(ms,)
     showm.start()

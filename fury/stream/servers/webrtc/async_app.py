@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import numpy as np
 from functools import partial
 
 from aiohttp import web
@@ -60,6 +61,20 @@ async def offer(request, **kwargs):
     )
 
 
+async def mouse_weel(request, **kwargs):
+
+    params = await request.json()
+    deltaY = float(params['deltaY'])
+    circular_quequeue = kwargs['circular_quequeue']
+    ok = circular_quequeue.enqueue(np.array([1, deltaY, 0, 0], dtype='float64'))
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(
+            {'was_inserted': ok}
+        ),
+    )
+
+
 async def on_shutdown(app):
     # close peer connections
     coros = [pc.close() for pc in pcs]
@@ -67,16 +82,22 @@ async def on_shutdown(app):
     pcs.clear()
 
 
-def get_app(RTCServer, folder=None):
+def get_app(RTCServer, folder=None, circular_quequeue=None):
     if folder is None:
         folder = f'{os.path.dirname(__file__)}/www/'
 
     app = web.Application()
     app.on_shutdown.append(on_shutdown)
     app.router.add_get("/", partial(index, folder=folder))
+
     js_files = ['main.js', 'webrtc.js']
     for js in js_files:
         app.router.add_get(
             "/js/%s" % js, partial(javascript, folder=folder, js=js))
     app.router.add_post("/offer", partial(offer, video=RTCServer))
+
+    if circular_quequeue is not None:
+        app.router.add_post("/mouse_weel", partial(
+            mouse_weel, circular_quequeue=circular_quequeue))
+
     return app
