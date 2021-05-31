@@ -99,30 +99,8 @@ if __name__ == '__main__':
     from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
     stream_interaction = FuryStreamInteraction(showm, circular_queue)
-    # def callback(caller, timerevent):
-    #     #pass
-    #     data = circular_quequeue.dequeue()
-    #     if data is not None:
-    #         if data[0] == 1:
-
-    #             #print(data)
-    #             # code extracted from vtk
-    #             zoomFactor = 1.0 - data[1] / 100.0
-
-    #             camera = showm.window.GetRenderers().GetFirstRenderer().GetActiveCamera()
-    #             fp = camera.GetFocalPoint()
-    #             pos = camera.GetPosition()
-    #             delta = [fp[i] - pos[i] for i in range(3)]
-    #             camera.Zoom(zoomFactor)
-
-    #             pos2 = camera.GetPosition()
-    #             camera.SetFocalPoint([pos2[i] + delta[i] for i in range(3)])
-    #             #showm.render.Modified()
-    #             showm.render()
-
     showm.initialize()
 
-    # showm.add_timer_callback(True, 16, callback)
     stream = FuryStreamClient(
         showm, False, image_buffer=image_buffer, info_buffer=info_buffer)
     stream_interaction.start()
