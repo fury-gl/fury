@@ -24,7 +24,8 @@ SHADERS_BLOCK = {
 
 def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
                     block="valuepass", keep_default=True,
-                    replace_first=True, replace_all=False, debug=False):
+                    replace_first=True, replace_all=False, debug=False,
+                    internal_mapper=False):
     """Apply your own substitutions to the shader creation process.
 
     A bunch of string replacements is applied to a shader template. Using this
@@ -60,6 +61,10 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
     debug : bool, optional
         introduce a small error to debug shader code.
         by default False
+    internal_mapper : bool, optional
+        uses the internal mapper, this may be needed for dynamic content
+        such as actors based on vtkAlgorithm.
+        by default False
 
     """
     shader_type = shader_type.lower()
@@ -88,8 +93,11 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
         error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
 
-    sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
-
+    if(internal_mapper):
+        sp = actor.GetMapper()
+    else:
+        sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
+    
     sp.AddShaderReplacement(shader_type, block_dec, replace_first,
                             decl_code, replace_all)
     sp.AddShaderReplacement(shader_type, block_impl, replace_first,
