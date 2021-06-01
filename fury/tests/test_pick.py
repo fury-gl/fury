@@ -147,6 +147,7 @@ def test_selector_manager():
 
 
 def test_hover_selection_faces(recording=False):
+    # simply hover going through blue, green, red
 
     recording_filename = join(DATA_DIR, 'selector_faces.log.gz')
 
@@ -191,6 +192,7 @@ def test_hover_selection_faces(recording=False):
 
 
 def test_hover_selection_vertices(recording=False):
+    # simply hover through blue, green, red
 
     recording_filename = join(DATA_DIR, 'selector_vertices.log.gz')
 
@@ -235,6 +237,7 @@ def test_hover_selection_vertices(recording=False):
 
 
 def test_hover_selection_actors_only(recording=False):
+    # simply hover going through blue, green, red
 
     recording_filename = join(DATA_DIR, 'selector_actors.log.gz')
 
@@ -275,10 +278,5 @@ def test_hover_selection_actors_only(recording=False):
 
 if __name__ == "__main__":
 
-    # test_picking_manager()
-    # test_selector_manager()
-    # test_hover_selection_faces(True)
-    # test_hover_selection_vertices(True)
-    # test_hover_selection_actors_only(True)
     npt.run_module_suite()
 
