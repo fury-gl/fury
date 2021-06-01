@@ -2472,7 +2472,20 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
-def texture_2d(rgb):
+def texture_2d(rgb, interp=False):
+    """ Create 2D texture from array
+
+    Parameters
+    ----------
+    rgb : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    interp : bool
+        Interpolate between grid centers. Default True.
+
+    Returns
+    -------
+    vtkTexturedActor
+    """
 
     arr = rgb
     Y, X = arr.shape[:2]
@@ -2519,10 +2532,10 @@ def texture_2d(rgb):
 
     tex = vtk.vtkTexture()
     tex.SetInputDataObject(grid)
+    if interp:
+        tex.InterpolateOn()
     tex.Update()
     act.SetTexture(tex)
-
-
     return act
 
 
