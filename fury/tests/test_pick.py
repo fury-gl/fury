@@ -1,3 +1,4 @@
+from os.path import join
 import numpy as np
 from fury import actor, window, ui, pick
 from fury.testing import assert_greater
@@ -147,7 +148,7 @@ def test_selector_manager():
 
 def test_hover_selection_faces(recording=False):
 
-    recording_filename = 'selector_faces.log.gz'
+    recording_filename = join(DATA_DIR, 'selector_faces.log.gz')
 
     centers, colors, radii = _get_three_cubes()
 
@@ -191,7 +192,7 @@ def test_hover_selection_faces(recording=False):
 
 def test_hover_selection_vertices(recording=False):
 
-    recording_filename = 'selector_vertices.log.gz'
+    recording_filename = join(DATA_DIR, 'selector_vertices.log.gz')
 
     centers, colors, radii = _get_three_cubes()
 
@@ -235,7 +236,7 @@ def test_hover_selection_vertices(recording=False):
 
 def test_hover_selection_actors_only(recording=False):
 
-    recording_filename = 'selector_actors.log.gz'
+    recording_filename = join(DATA_DIR, 'selector_actors.log.gz')
 
     centers, colors, radii = _get_three_cubes()
 
@@ -277,7 +278,7 @@ if __name__ == "__main__":
     # test_picking_manager()
     # test_selector_manager()
     # test_hover_selection_faces(True)
-    test_hover_selection_vertices(True)
+    # test_hover_selection_vertices(True)
     # test_hover_selection_actors_only(True)
-    # npt.run_module_suite()
+    npt.run_module_suite()
 

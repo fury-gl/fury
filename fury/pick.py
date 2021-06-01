@@ -5,7 +5,7 @@ import numpy as np
 from fury.utils import numpy_support as nps
 
 
-class PickingManager(object):
+class PickingManager():
     def __init__(self, vertices=True, faces=True, actors=True,
                  world_coords=True):
         """ Picking Manager helps with picking 3D objects
@@ -95,7 +95,7 @@ class PickingManager(object):
             actors.PickableOff()
 
 
-class SelectionManager(object):
+class SelectionManager():
 
     def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()

@@ -66,7 +66,7 @@ vcolors = utils.colors_from_actor(cube_actor, 'colors')
 # Create a rectangular 2d box as a texture
 
 rgba = 255 * np.ones((100, 200, 4))
-rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
+rgba[1:-1, 1:-1] = np.zeros((98, 198, 4)) + 100
 texa = actor.texture_2d(rgba.astype(np.uint8))
 
 scene.add(cube_actor)
