@@ -4,35 +4,40 @@
 Selecting multiple objects
 ==========================
 
-Here we present a tutorial showing how to interact with objects in the
+Here we show how to interact with objects in the
 3D world. All objects to be picked are part of a single actor.
-FURY likes to bundle objects in a few actors to reduce code and
-increase speed.
 
-When the objects will be picked they will change size and color.
+FURY likes to bundle objects in a few actors to reduce code and
+increase speed. Nonetheless the method works for multiple actors too.
+
+The difference with the picking tutorial is that here we will
+be able to select more than one object. In addition we can
+select interactively many vertices or faces.
+
+In summary, we will create an actor with thousands of cubes and
+then interactively we will be moving a rectangular box by
+hovering the mouse and making transparent everything that is
+behind that box.
+
 """
 
 import numpy as np
-from fury import actor, window, ui, utils, pick
+from fury import actor, window, utils, pick
+
+###############################################################################
+# Adding many cubes of different sizes and colors
 
 num_cubes = 50000
 
 centers = 10000 * (np.random.rand(num_cubes, 3) - 0.5)
 colors = np.random.rand(num_cubes, 4)
+colors[:, 3] = 1.0
 radii = 100 * np.random.rand(num_cubes) + 0.1
 
-num_faces = num_cubes * 6 * 2  # every quad of each cubes has 2 triangles
-
-selected = np.zeros(num_cubes, dtype=bool)
-
 ###############################################################################
-# Let's create a panel to show what is picked
+# Keep track of total number of faces
 
-panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
-panel.center = (150, 200)
-
-text_block = ui.TextBlock2D(text="Left click on object \n")
-panel.add_element(text_block, (0.3, 0.3))
+num_faces = num_cubes * 6 * 2  # every quad of each cubes has 2 triangles
 
 ###############################################################################
 # Build scene and add an actor with many objects.
@@ -40,9 +45,10 @@ panel.add_element(text_block, (0.3, 0.3))
 scene = window.Scene()
 
 ###############################################################################
-# This actor is using many cubes
+# Build the actor containing all the cubes
 
-cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
+cube_actor = actor.cube(centers, directions=(1, 0, 0),
+                        colors=colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -57,44 +63,51 @@ num_objects = centers.shape[0]
 vcolors = utils.colors_from_actor(cube_actor, 'colors')
 
 ###############################################################################
-# Adding an actor showing the axes of the world coordinates
-ax = actor.axes(scale=(10, 10, 10))
+# Create a rectangular 2d box as a texture
 
 rgba = 255 * np.ones((100, 200, 4))
 rgba[1:-1, 1:-1] = np.zeros((98, 198, 4))
-# rgba = np.round(255 * np.random.rand(100, 200, 4), 0)
-
 texa = actor.texture_2d(rgba.astype(np.uint8))
 
 scene.add(cube_actor)
-scene.add(ax)
 scene.add(texa)
 scene.reset_camera()
+scene.zoom(3.)
 
 ###############################################################################
-# Create the Picking manager
+# Create the Selection Manager
 
 selm = pick.SelectionManager(select='faces')
 
-
-selm.selectable_off([texa, ax])
 ###############################################################################
-# Time to make the callback which will be called when we pick an object
+# Tell Selection Manager to avoid selecting specific actors
+
+selm.selectable_off(texa)
+
+###############################################################################
+# Time to make the callback which will be called
+# when we hover the mouse
 
 
 def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
+    # updates rectangular box around mouse
     texa.SetPosition(event_pos[0] - 200//2,
                      event_pos[1] - 100//2)
+
+    # defines selection region and returns information from selected objects
     info = selm.select(event_pos, showm.scene, (200//2, 100//2))
     for node in info.keys():
         if info[node]['face'] is not None:
             if info[node]['actor'] is cube_actor:
                 for face_index in info[node]['face']:
+                    # generates an object_index to help with coloring
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
                     color_add = np.array([50, 50, 50, 0], dtype='uint8')
-                    vcolors[object_index * sec: object_index * sec + sec] = color_add
+                    vcolors[object_index * sec: object_index * sec + sec] \
+                        += color_add
+                    # switch += to = to erase the cubes (uncomment below)
                 utils.update_actor(cube_actor)
     showm.render()
 
@@ -102,9 +115,10 @@ def hover_callback(_obj, _event):
 ###############################################################################
 # Make the window appear
 
-showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
+showm = window.ShowManager(scene, size=(1024, 768),
+                           order_transparent=True,
+                           reset_camera=False)
 showm.initialize()
-
 
 ###############################################################################
 # Bind the callback to the actor
@@ -123,4 +137,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")
+window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")
