@@ -22,6 +22,7 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 // Disney's Principled BRDF
 #define EPSILON .0001
 
+uniform float subsurface;
 uniform float specularValue;
 uniform float specularTint;
 uniform float anisotropic;
@@ -87,11 +88,12 @@ float GTR1(float dotHN, float alpha)
 float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
                       float ay)
 {
+    float dotHN2 = square(dotHN);
     float dotHX2 = square(dotHX);
     float dotHY2 = square(dotHY);
     float ax2 = square(ax);
     float ay2 = square(ay);
-    return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay + dotHN * dotHN));
+    return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay + dotHN2));
 }
 
 float schlickWeight(float cosTheta)
@@ -263,7 +265,14 @@ vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
     return sheenF * tintMix * fh;
 }
 
-vec3 evaluateSubsurface()
+vec3 evaluateSubsurface(float roughnessF, vec3 baseColor, float dotLN,
+                        float dotNV, float dotHL)
 {
-    return vec3(.0);
+    float fl = schlickWeight(dotLN);
+    float fv = schlickWeight(dotNV);
+
+    float fss90 = square(dotHL) * roughnessF;
+    float fss = mix(1., fss90, fl) * mix(1., fss90, fv);
+    float ss = 1.25 * (fss * (1. / (dotLN + dotNV) - .5) + .5);
+    return (1 / PI) * ss * baseColor;
 }

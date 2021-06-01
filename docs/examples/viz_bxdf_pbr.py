@@ -30,6 +30,11 @@ def build_label(text, font_size=16, color=(1, 1, 1), bold=False, italic=False,
     return label
 
 
+def change_slice_subsurface(slider):
+    global subsurface
+    subsurface = slider._value
+
+
 def change_slice_metallic(slider):
     global obj_actor
     obj_actor.GetProperty().SetMetallic(slider._value)
@@ -143,8 +148,9 @@ def obj_surface():
 
 def uniforms_callback(_caller, _event, calldata=None):
     global anisotropic, clearcoat, clearcoat_gloss, sheen, sheen_tint, \
-        specular, specular_tint
+        specular, specular_tint, subsurface
     if calldata is not None:
+        calldata.SetUniformf('subsurface', subsurface)
         calldata.SetUniformf('specularValue', specular)
         calldata.SetUniformf('specularTint', specular_tint)
         calldata.SetUniformf('anisotropic', anisotropic)
@@ -166,14 +172,16 @@ def win_callback(obj, event):
 
 if __name__ == '__main__':
     global anisotropic, brdf_panel, clearcoat, clearcoat_gloss, \
-        control_panel, sheen, sheen_tint, size, specular, specular_tint
+        control_panel, sheen, sheen_tint, size, specular, specular_tint, \
+        subsurface
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
     obj_actor = obj_spheres()
 
+    subsurface = .0
     metallic = .0
-    specular = .0
+    specular = .5
     specular_tint = .0
     roughness = .0
     anisotropic = .0
@@ -275,7 +283,7 @@ if __name__ == '__main__':
     text_template = '{value:.1f}'
 
     slider_slice_subsurface = ui.LineSlider2D(
-        initial_value=0, max_value=1, length=length,
+        initial_value=subsurface, max_value=1, length=length,
         text_template=text_template)
     slider_slice_metallic = ui.LineSlider2D(
         initial_value=metallic, max_value=1, length=length,
@@ -305,6 +313,7 @@ if __name__ == '__main__':
         initial_value=clearcoat_gloss, max_value=1, length=length,
         text_template=text_template)
 
+    slider_slice_subsurface.on_change = change_slice_subsurface
     slider_slice_metallic.on_change = change_slice_metallic
     slider_slice_specular.on_change = change_slice_specular
     slider_slice_specular_tint.on_change = change_slice_specular_tint
