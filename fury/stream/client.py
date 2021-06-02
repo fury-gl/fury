@@ -118,7 +118,7 @@ class FuryStreamInteraction:
 
                     self.showm.iren.SetEventPosition(
                         int(self.showm.size[0]*data[2]),
-                        int(self.showm.size[1]*data[3])
+                        self.showm.size[1]-int(self.showm.size[1]*data[3])
                     )
 
                     self.showm.iren.MouseMoveEvent()
