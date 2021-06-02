@@ -73,7 +73,7 @@ if __name__ == '__main__':
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(
-            None, stream.image_buffer, stream.info_buffer,
+            None, stream.image_buffers, stream.info_buffer,
             None,
             stream_interaction.circular_queue.head_tail_buffer, 
             stream_interaction.circular_queue.buffers._buffers))

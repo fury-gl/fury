@@ -10,7 +10,7 @@ from fury.stream.tools import CircularQueue
 
 def webrtc_server(
         stream_client=None,
-        image_buffer=None, info_buffer=None,
+        image_buffers=None, info_buffer=None,
         circular_queue=None,
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
@@ -18,7 +18,7 @@ def webrtc_server(
         www_folder=None, use_vidgear=False):
 
     if stream_client is not None:
-        image_buffer = stream_client.image_buffer
+        image_buffers = stream_client.image_buffers
         info_buffer = stream_client.info_buffer
 
     class RTCServer(VideoStreamTrack):
@@ -42,7 +42,7 @@ def webrtc_server(
                 info_buffer, 'uint32')
 
             self.image = np.frombuffer(
-                image_buffer, 'uint8').reshape(
+                image_buffers[info_buffer[3]], 'uint8').reshape(
                 (image_info[1], image_info[0], 3))
 
             if flip_img:

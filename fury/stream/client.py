@@ -13,7 +13,9 @@ class FuryStreamClient:
             self, showm,
             window_size=(200, 200),
             write_in_stdout=False,
-            broker_url=None):
+            broker_url=None,
+            buffer_count=2):
+            
         '''
 
         Parameters
@@ -24,13 +26,14 @@ class FuryStreamClient:
         self.window2image_filter = vtk.vtkWindowToImageFilter()
         self.window2image_filter.SetInput(self.showm.window)
         self.write_in_stdout = write_in_stdout
-        self.image_buffer = multiprocessing.RawArray(
-            'B', np.random.randint(
-                0, 255, size=window_size[0]*window_size[1]*3).astype('uint8'))
-
+        self.image_buffers = []
+        self.buffer_count = buffer_count
         self.info_buffer = multiprocessing.RawArray(
-            'I', np.array([window_size[0], window_size[1], 3]))
-
+            'I', np.array([window_size[0], window_size[1], 3, 0]))
+        for _ in range(self.buffer_count):
+            self.image_buffers.append(multiprocessing.RawArray(
+            'B', np.random.randint(
+                0, 255, size=window_size[0]*window_size[1]*3).astype('uint8')))
         self._id_timer = None
         self._id_observer = None
         self.sender = None
@@ -57,13 +60,16 @@ class FuryStreamClient:
                 h, w, _ = vtk_image.GetDimensions()
                 num_components = vtk_array.GetNumberOfComponents()
 
-                if self.image_buffer is not None:
+                if self.image_buffers is not None:
                     if self.info_buffer is not None:
                         self.info_buffer[0] = h
                         self.info_buffer[1] = w
                         self.info_buffer[2] = num_components
                     np_arr = np_arr.flatten()
-                    self.image_buffer[:] = np_arr
+                    # N-Buffering
+                    next_buffer_index = (self.info_buffer[3]+1)%self.buffer_count
+                    self.image_buffers[next_buffer_index][:] = np_arr
+                    self.info_buffer[3] = next_buffer_index
                 self._in_request = False
 
         if ms > 0:
