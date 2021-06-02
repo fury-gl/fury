@@ -66,13 +66,64 @@ async def mouse_weel(request, **kwargs):
     params = await request.json()
     deltaY = float(params['deltaY'])
     circular_quequeue = kwargs['circular_quequeue']
-    ok = circular_quequeue.enqueue(np.array([1, deltaY, 0, 0], dtype='float64'))
+    ok = circular_quequeue.enqueue(
+        np.array([1, deltaY, 0, 0, 0, 0], dtype='float64'))
     return web.Response(
         content_type="application/json",
         text=json.dumps(
             {'was_inserted': ok}
         ),
     )
+
+
+async def mouse_move(request, **kwargs):
+
+    params = await request.json()
+    x = float(params['x'])
+    y = float(params['y'])
+    ctrl_key = int(params['ctrlKey'])
+    shift_key = int(params['shiftKey'])
+
+    circular_quequeue = kwargs['circular_quequeue']
+    ok = circular_quequeue.enqueue(
+        np.array([2, 0, x, y,  ctrl_key, shift_key], dtype='float64'))
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(
+            {'was_inserted': ok}
+        ),
+    )
+
+
+async def mouse_left_click(request, **kwargs):
+
+    circular_quequeue = kwargs['circular_quequeue']
+    params = await request.json()
+    circular_quequeue = kwargs['circular_quequeue']
+    event_id = 2 if params['on'] == 1 else 3
+
+    ok = circular_quequeue.enqueue(
+        np.array([event_id, 0, 0, 0, 0, 0], dtype='float64'))
+    return web.Response(
+        content_type="application/json",
+        text=json.dumps(
+            {'was_inserted': ok}
+        ),
+    )
+
+
+# async def ctrl_key(request, **kwargs):
+#     params = await request.json()
+#     circular_quequeue = kwargs['circular_quequeue']
+#     eventId = 4 if params['on'] == 1 else 5
+#     ok = circular_quequeue.enqueue(
+#         np.array([eventId, 0, 0, 0], dtype='float64'))
+#     return web.Response(
+#         content_type="application/json",
+#         text=json.dumps(
+#             {'was_inserted': ok}
+#         ),
+#     )
 
 
 async def on_shutdown(app):
@@ -90,7 +141,7 @@ def get_app(RTCServer, folder=None, circular_quequeue=None):
     app.on_shutdown.append(on_shutdown)
     app.router.add_get("/", partial(index, folder=folder))
 
-    js_files = ['main.js', 'webrtc.js']
+    js_files = ['main.js', 'webrtc.js', 'constants.js']
     for js in js_files:
         app.router.add_get(
             "/js/%s" % js, partial(javascript, folder=folder, js=js))
@@ -99,5 +150,12 @@ def get_app(RTCServer, folder=None, circular_quequeue=None):
     if circular_quequeue is not None:
         app.router.add_post("/mouse_weel", partial(
             mouse_weel, circular_quequeue=circular_quequeue))
+        app.router.add_post("/mouse_move", partial(
+            mouse_move, circular_quequeue=circular_quequeue))
+        app.router.add_post("/mouse_left_click", partial(
+            mouse_left_click, circular_quequeue=circular_quequeue))
+
+        # app.router.add_post("/ctrl_key", partial(
+        #     ctrl_key, circular_quequeue=circular_quequeue))
 
     return app

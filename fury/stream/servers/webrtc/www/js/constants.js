@@ -1,0 +1,1 @@
+export const millisecMouseMove = 80

@@ -1,5 +1,5 @@
 import os
-from vtk.util.numpy_support import vtk_to_numpy
+from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 import vtk
 import multiprocessing
 import numpy as np
@@ -84,6 +84,9 @@ class FuryStreamClient:
 class FuryStreamInteraction:
     def __init__(self, showm, circular_queue, max_size=5, dimension=4):
         self.showm = showm
+        self.recorder = vtk.vtkInteractorEventRecorder()
+        self.recorder.SetInteractor(self.showm.iren)
+
         self.circular_queue = circular_queue
         self._id_timer = None
 
@@ -104,11 +107,28 @@ class FuryStreamInteraction:
                     pos2 = camera.GetPosition()
                     camera.SetFocalPoint(
                         [pos2[i] + delta[i] for i in range(3)])
-                    # vtk uses modified
-                    # showm.render.Modified()
-                self.showm.render()
+                    self.showm.iren.LeftButtonPressEvent()
+                    self.showm.iren.LeftButtonReleaseEvent()
 
-        self._id_timer = self.showm.add_timer_callback(True, 16, callback)
+                elif data[0] == 2:
+                    # print(self.showm.iren.GetLastEventPosition())
+                    self.showm.iren.LeftButtonPressEvent()
+                    self.showm.iren.SetControlKey(int(data[4]))
+                    self.showm.iren.SetShiftKey(int(data[5]))
+
+                    self.showm.iren.SetEventPosition(
+                        int(self.showm.size[0]*data[2]),
+                        int(self.showm.size[1]*data[3])
+                    )
+
+                    self.showm.iren.MouseMoveEvent()
+
+                elif data[0] == 3:
+                    self.showm.iren.LeftButtonReleaseEvent()
+
+            self.showm.render()
+
+        self._id_timer = self.showm.add_timer_callback(True, ms, callback)
 
     def stop(self):
         if self._id_timer is not None:

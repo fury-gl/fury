@@ -5,7 +5,6 @@ import numpy as np
 ###############################################################################
 # Then let's download some available datasets.
 
-from fury.data.fetcher import fetch_viz_wiki_nw
 
 import multiprocessing
 from fury.stream.servers.webrtc.server import webrtc_server
@@ -15,54 +14,39 @@ if __name__ == '__main__':
 
     ##############################################################################
     # First we will set the resolution which it'll be used by the streamer
-
+    ms_interaction = 1
     window_size = (400, 400)
-    
-    
-    files, folder = fetch_viz_wiki_nw()
-    categories_file, edges_file, positions_file = sorted(files.keys())
-    positions = np.loadtxt(pjoin(folder, positions_file))
-    categories = np.loadtxt(pjoin(folder, categories_file), dtype=str)
-    edges = np.loadtxt(pjoin(folder, edges_file), dtype=int)
-    category2index = {category: i
-                    for i, category in enumerate(np.unique(categories))}
+    ms_stream = 0
+    centers = 1*np.array([
+    [0, 0, 0],
+    [-1, 0, 0],
+    [1, 0, 0]
+    ])
+    centers2 = centers - np.array([[0, -1, 0]])
+    # centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
+    # centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
+    colors = np.array([
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1]
+    ])
 
-    index2category = np.unique(categories)
+    actors = actor.sdf(
+        centers, primitives='sphere', colors=colors, scales=2)
 
-    categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
-
-    colors = np.array([categoryColors[category2index[category]]
-                    for category in categories])
-    radii = 1 + np.random.rand(len(positions))
-
-    edgesPositions = []
-    edgesColors = []
-    for source, target in edges:
-        edgesPositions.append(np.array([positions[source], positions[target]]))
-        edgesColors.append(np.array([colors[source], colors[target]]))
-
-    edgesPositions = np.array(edgesPositions)
-    edgesColors = np.average(np.array(edgesColors), axis=1)
-
-    sphere_actor = actor.sdf(
-        centers=positions,
-        colors=colors,
-        scales=radii*0.5,)
-
-    lines_actor = actor.line(edgesPositions,
-                            colors=edgesColors,
-                            opacity=0.1,
-                            )
+    actors2 = actor.sphere(
+        centers2, opacity=.5, radii=.4, colors=colors)
     scene = window.Scene()
 
-    scene.add(lines_actor)
-    scene.add(sphere_actor)
+    # scene.add(lines_actor)
+    scene.add(actors)
+    scene.add(actors2)
 
     interactive = False
 
-    scene.set_camera(
-        position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0),
-        view_up=(0.0, 0.0, 0.0))
+    # scene.set_camera(
+    #     position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0),
+    #     view_up=(0.0, 0.0, 0.0))
 
     showm = window.ShowManager(scene, reset_camera=False, size=(
         window_size[0], window_size[1]), order_transparent=False,
@@ -76,19 +60,20 @@ if __name__ == '__main__':
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
-    ms = 16
-    circular_queue = CircularQueue(5, 4)
+
+    circular_queue = CircularQueue(50, 6)
 
     stream_interaction = FuryStreamInteraction(showm, circular_queue)
     showm.initialize()
 
     stream = FuryStreamClient(
         showm, window_size,)
-
+    # osx, maybe windows  use this
+    # multiprocessing.set_start_method('fork')
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(stream, circular_queue))
     p.start()
-    stream_interaction.start()
-    stream.init(ms,)
+    stream_interaction.start(ms=ms_interaction)
+    stream.init(ms_stream,)
     showm.start()

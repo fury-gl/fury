@@ -68,6 +68,10 @@ class CircularQueue:
 
     def enqueue(self, data):
         if ((self.tail + 1) % self.max_size == self.head):
+            # self.head = 0
+            # self.tail = 0
+            # self.buffers[self.tail] = data
+            # return True
             return False
 
         elif (self.head == -1):

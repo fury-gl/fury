@@ -47,6 +47,7 @@ if __name__ == '__main__':
     sphere_actor = actor.sdf(
         centers=positions,
         colors=colors,
+        primitives='sphere',
         scales=radii*0.5,)
 
     lines_actor = actor.line(edgesPositions,
@@ -74,10 +75,13 @@ if __name__ == '__main__':
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
-    ms = 16
+    ms = 0
     showm.initialize()
     stream = FuryStreamClient(
         showm, window_size=window_size)
+    # osx, maybe windows  use this
+    # multiprocessing.set_start_method('fork')
+ 
     p = multiprocessing.Process(
         target=webrtc_server, args=(stream, ))
     p.start()
