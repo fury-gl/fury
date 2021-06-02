@@ -77,7 +77,6 @@ videoEl.addEventListener("mouseleave", (e) => {
 
 const mouseMoveCallback = ()=>{
     if (mouseLeftReleased || mouseOutVideo) return
-    console.log(ctrlKey, shiftKey)
     const data = {x:mouseX, y:mouseY, ctrlKey:ctrlKey, shiftKey:shiftKey}
     fetch("http://localhost:8000/mouse_move", {
     method: "POST", // or 'PUT'

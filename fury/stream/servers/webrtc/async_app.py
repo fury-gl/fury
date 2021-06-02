@@ -65,8 +65,8 @@ async def mouse_weel(request, **kwargs):
 
     params = await request.json()
     deltaY = float(params['deltaY'])
-    circular_quequeue = kwargs['circular_quequeue']
-    ok = circular_quequeue.enqueue(
+    circular_queue = kwargs['circular_queue']
+    ok = circular_queue.enqueue(
         np.array([1, deltaY, 0, 0, 0, 0], dtype='float64'))
     return web.Response(
         content_type="application/json",
@@ -84,8 +84,8 @@ async def mouse_move(request, **kwargs):
     ctrl_key = int(params['ctrlKey'])
     shift_key = int(params['shiftKey'])
 
-    circular_quequeue = kwargs['circular_quequeue']
-    ok = circular_quequeue.enqueue(
+    circular_queue = kwargs['circular_queue']
+    ok = circular_queue.enqueue(
         np.array([2, 0, x, y,  ctrl_key, shift_key], dtype='float64'))
     return web.Response(
         content_type="application/json",
@@ -97,12 +97,12 @@ async def mouse_move(request, **kwargs):
 
 async def mouse_left_click(request, **kwargs):
 
-    circular_quequeue = kwargs['circular_quequeue']
+    circular_queue = kwargs['circular_queue']
     params = await request.json()
-    circular_quequeue = kwargs['circular_quequeue']
+    circular_queue = kwargs['circular_queue']
     event_id = 2 if params['on'] == 1 else 3
 
-    ok = circular_quequeue.enqueue(
+    ok = circular_queue.enqueue(
         np.array([event_id, 0, 0, 0, 0, 0], dtype='float64'))
     return web.Response(
         content_type="application/json",
@@ -114,9 +114,9 @@ async def mouse_left_click(request, **kwargs):
 
 # async def ctrl_key(request, **kwargs):
 #     params = await request.json()
-#     circular_quequeue = kwargs['circular_quequeue']
+#     circular_queue = kwargs['circular_queue']
 #     eventId = 4 if params['on'] == 1 else 5
-#     ok = circular_quequeue.enqueue(
+#     ok = circular_queue.enqueue(
 #         np.array([eventId, 0, 0, 0], dtype='float64'))
 #     return web.Response(
 #         content_type="application/json",
@@ -133,7 +133,7 @@ async def on_shutdown(app):
     pcs.clear()
 
 
-def get_app(RTCServer, folder=None, circular_quequeue=None):
+def get_app(RTCServer, folder=None, circular_queue=None):
     if folder is None:
         folder = f'{os.path.dirname(__file__)}/www/'
 
@@ -147,15 +147,15 @@ def get_app(RTCServer, folder=None, circular_quequeue=None):
             "/js/%s" % js, partial(javascript, folder=folder, js=js))
     app.router.add_post("/offer", partial(offer, video=RTCServer))
 
-    if circular_quequeue is not None:
+    if circular_queue is not None:
         app.router.add_post("/mouse_weel", partial(
-            mouse_weel, circular_quequeue=circular_quequeue))
+            mouse_weel, circular_queue=circular_queue))
         app.router.add_post("/mouse_move", partial(
-            mouse_move, circular_quequeue=circular_quequeue))
+            mouse_move, circular_queue=circular_queue))
         app.router.add_post("/mouse_left_click", partial(
-            mouse_left_click, circular_quequeue=circular_quequeue))
+            mouse_left_click, circular_queue=circular_queue))
 
         # app.router.add_post("/ctrl_key", partial(
-        #     ctrl_key, circular_quequeue=circular_quequeue))
+        #     ctrl_key, circular_queue=circular_queue))
 
     return app

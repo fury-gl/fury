@@ -64,6 +64,6 @@ def webrtc_server(
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
 
-    app_fury = get_app(RTCServer(), circular_quequeue=circular_queue)
+    app_fury = get_app(RTCServer(), circular_queue=circular_queue)
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)
