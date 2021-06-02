@@ -68,11 +68,17 @@ if __name__ == '__main__':
 
     stream = FuryStreamClient(
         showm, window_size,)
-    # osx, maybe windows  use this
-    # multiprocessing.set_start_method('fork')
+    # linux
+    # p = multiprocessing.Process(
+    #     target=webrtc_server,
+    #     args=(stream, None, None, circular_queue))
+    # osx,
     p = multiprocessing.Process(
         target=webrtc_server,
-        args=(stream, circular_queue))
+        args=(
+            None, stream.image_buffer, stream.info_buffer,
+            None,
+            circular_queue.head_tail_buffer, circular_queue.buffers._buffers))
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)

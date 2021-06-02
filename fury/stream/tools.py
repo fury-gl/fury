@@ -3,13 +3,19 @@ import multiprocessing
 
 
 class MultiDimensionalBuffer:
-    def __init__(self, max_size=10, dimension=4):
+    def __init__(self, max_size=None, dimension=None, buffers_list=None):
 
-        self._buffers = [
-            multiprocessing.RawArray(
-                'd', np.zeros(max_size, dtype='float64'))
-            for i in range(dimension)
-        ]
+        if buffers_list is None:
+            buffers_list = [
+                multiprocessing.RawArray(
+                    'd', np.zeros(max_size, dtype='float64'))
+                for i in range(dimension)
+            ]
+        else:
+            dimension = len(buffers_list)
+            max_size = np.frombuffer(buffers_list[0], 'float64').shape[0]
+
+        self._buffers = buffers_list
         self.dimension = dimension
         self.max_size = max_size
 
@@ -34,14 +40,20 @@ class MultiDimensionalBuffer:
 
 class CircularQueue:
 
-    def __init__(self, max_size=50, dimension=4):
-        head_tail_buffer = multiprocessing.RawArray(
-            'i', np.array([-1, -1], dtype='int32'),
-        )
-        self.dimension = dimension
+    def __init__(
+        self, max_size=None, dimension=None,
+            head_tail_buffer=None,  buffers_list=None):
+
+        buffers = MultiDimensionalBuffer(max_size, dimension, buffers_list)
+        if head_tail_buffer is None or buffers_list is None:
+            head_tail_buffer = multiprocessing.RawArray(
+                'i', np.array([-1, -1], dtype='int32'),
+            )
+
+        self.dimension = buffers.dimension
         self.head_tail_buffer = head_tail_buffer
-        self.max_size = max_size
-        self.buffers = MultiDimensionalBuffer(max_size, dimension)
+        self.max_size = buffers.max_size
+        self.buffers = buffers
 
     @property
     def head(self):
