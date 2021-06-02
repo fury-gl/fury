@@ -16,19 +16,19 @@ if __name__ == '__main__':
     # First we will set the resolution which it'll be used by the streamer
     ms_interaction = 1
     window_size = (400, 400)
-    ms_stream = 0
+    ms_stream = 16
     centers = 1*np.array([
-    [0, 0, 0],
-    [-1, 0, 0],
-    [1, 0, 0]
+        [0, 0, 0],
+        [-1, 0, 0],
+        [1, 0, 0]
     ])
     centers2 = centers - np.array([[0, -1, 0]])
     # centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
     # centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
     colors = np.array([
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1]
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
     ])
 
     actors = actor.sdf(
@@ -54,16 +54,13 @@ if __name__ == '__main__':
     )
 
     from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-    from fury.stream.tools import CircularQueue
 
     ##############################################################################
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
 
-    circular_queue = CircularQueue(50, 6)
-
-    stream_interaction = FuryStreamInteraction(showm, circular_queue)
+    stream_interaction = FuryStreamInteraction(showm, max_queue_size=50)
     showm.initialize()
 
     stream = FuryStreamClient(
@@ -78,7 +75,8 @@ if __name__ == '__main__':
         args=(
             None, stream.image_buffer, stream.info_buffer,
             None,
-            circular_queue.head_tail_buffer, circular_queue.buffers._buffers))
+            stream_interaction.circular_queue.head_tail_buffer, 
+            stream_interaction.circular_queue.buffers._buffers))
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)

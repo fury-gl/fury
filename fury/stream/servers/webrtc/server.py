@@ -59,7 +59,7 @@ def webrtc_server(
                     self.stream = None
             except AttributeError:
                 pass
-    if circular_queue is None:
+    if circular_queue is None and queue_buffers_list is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)

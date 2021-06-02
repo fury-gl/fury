@@ -3,6 +3,8 @@ from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 import vtk
 import multiprocessing
 import numpy as np
+
+from fury.stream.tools import CircularQueue
 # import imagezmq
 
 
@@ -82,12 +84,12 @@ class FuryStreamClient:
 
 
 class FuryStreamInteraction:
-    def __init__(self, showm, circular_queue, max_size=5, dimension=4):
+    def __init__(self, showm, max_queue_size=50):
         self.showm = showm
         self.recorder = vtk.vtkInteractorEventRecorder()
         self.recorder.SetInteractor(self.showm.iren)
 
-        self.circular_queue = circular_queue
+        self.circular_queue = CircularQueue(max_size=max_queue_size, dimension=6)
         self._id_timer = None
 
     def start(self, ms=16):
