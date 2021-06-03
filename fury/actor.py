@@ -2546,20 +2546,17 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     return box_actor
 
 
-def marker_billboard(
+def markers(
         centers, colors=(0, 1, 0),
         scales=1,
         marker='o',
-        markers=None,
+        list_of_markers=None,
         marker_opacity=.8,
         edge_width=.0,
-        edge_color=[255, 255, 255],
+        edge_color=(255, 255, 255),
         edge_opacity=.8
         ):
-    """Create a billboard actor.
-
-    Billboards are 2D elements incrusted in a 3D world. It offers you the
-    possibility to draw differents shapes/elements at the shader level.
+    """Create a 2d billboard actor with different shapes.
 
     Parameters
     ----------
@@ -2572,11 +2569,12 @@ def marker_billboard(
     marker: str
         This it's optional if "markers" arg are used
         Available marker are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
-    markers: ndarray, shape (N) of str or int, optional
+    list_of_markers: ndarray, shape (N) of str or int, optional
         An array containing a marker for each center
     marker_opacity: float, optional
     edge_width: int, optional
     edge_color: ndarray, shape (3), optional
+
     Returns
     -------
     vtkActor
@@ -2597,16 +2595,16 @@ def marker_billboard(
             'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
             'h': 5, 's6': 6, 'x': 7, '+': 8}
 
-    if markers is None:
-        markers = np.ones(numMarkers)*marker2id[marker]
+    if list_of_markers is None:
+        list_of_markers = np.ones(numMarkers)*marker2id[marker]
 
-    if isinstance(markers[0], str):
-        markers = [marker2id[i] for i in markers]
+    if isinstance(list_of_markers[0], str):
+        list_of_markers = [marker2id[i] for i in list_of_markers]
 
-    markers = np.repeat(markers, 4).astype('float')
+    list_of_markers = np.repeat(list_of_markers, 4).astype('float')
     attribute_to_actor(
         sq_actor,
-        markers, 'marker')
+        list_of_markers, 'marker')
 
     def callback(
         _caller, _event, calldata=None,
@@ -2630,7 +2628,7 @@ def marker_billboard(
                 value=edge_opacity))
     add_shader_callback(
             sq_actor, partial(
-                callback, uniform_type='3f', uniform_name='edge_color',
+                callback, uniform_type='3f', uniform_name='edgeColor',
                 value=edge_color))
 
     vs_dec_code = load("billboard_dec.vert")
