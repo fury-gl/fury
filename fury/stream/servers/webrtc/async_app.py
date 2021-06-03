@@ -7,6 +7,7 @@ from functools import partial
 from aiohttp import web
 
 from aiortc import RTCPeerConnection, RTCSessionDescription
+from aiortc.contrib.media import MediaRelay
 
 pcs = set()
 
@@ -26,6 +27,9 @@ async def javascript(request, **kwargs):
 
 async def offer(request, **kwargs):
     video = kwargs['video']
+    if("broadcast" in kwargs and kwargs["broadcast"]):
+        video = MediaRelay().subscribe(video)
+    
     params = await request.json()
     #print(params["sdp"])
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
@@ -133,7 +137,8 @@ async def on_shutdown(app):
     pcs.clear()
 
 
-def get_app(RTCServer, folder=None, circular_queue=None):
+def get_app(RTCServer, folder=None, circular_queue=None,broadcast=True):
+    
     if folder is None:
         folder = f'{os.path.dirname(__file__)}/www/'
 
@@ -145,7 +150,8 @@ def get_app(RTCServer, folder=None, circular_queue=None):
     for js in js_files:
         app.router.add_get(
             "/js/%s" % js, partial(javascript, folder=folder, js=js))
-    app.router.add_post("/offer", partial(offer, video=RTCServer))
+
+    app.router.add_post("/offer", partial(offer, video=RTCServer,broadcast = broadcast))
 
     if circular_queue is not None:
         app.router.add_post("/mouse_weel", partial(
