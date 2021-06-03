@@ -103,7 +103,7 @@ class FuryStreamInteraction:
             data = self.circular_queue.dequeue()
             if data is not None:
                 if data[0] == 1:
-                    zoomFactor = 1.0 - data[1] / 100.0
+                    zoomFactor = 1.0 - data[1] / 1000.0
                     # camera = showm.window
                     # .GetRenderers().GetFirstRenderer().GetActiveCamera()
                     camera = self.showm.scene.GetActiveCamera()

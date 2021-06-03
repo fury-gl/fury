@@ -1,6 +1,7 @@
 import { startWebRTC } from "/js/webrtc.js";
 import { millisecMouseMove } from "/js/constants.js";
 
+let interactionInterval = 200; // for throttling
 let mouseLeftReleased = true;
 let mouseOutVideo = false;
 let mouseX = 0;
@@ -19,8 +20,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }/`
 })
 
+let enableCallWheel = true;
+let currentWheelEventTotalDeltaY = 0;
 videoEl.addEventListener("wheel", (event) => {
-  const data = { deltaY: event.deltaY };
+  currentWheelEventTotalDeltaY+=event.deltaY;
+  if (!enableCallWheel) return;
+  const data = { deltaY: currentWheelEventTotalDeltaY };
+  currentWheelEventTotalDeltaY=0;
 
   fetch(`${urlServer}mouse_weel`, {
     method: "POST", // or 'PUT'
@@ -29,13 +35,15 @@ videoEl.addEventListener("wheel", (event) => {
     },
     body: JSON.stringify(data),
   })
-    .then((response) => response.json())
-    .then((data) => {
-      // console.log("Success:", data)
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-    });
+    // .then((response) => response.json())
+    // .then((data) => {
+    //   // console.log("Success:", data)
+    // })
+    // .catch((error) => {
+    //   console.error("Error:", error);
+    // });
+  enableCallWheel = false;
+  setTimeout(() => enableCallWheel = true, interactionInterval);
 });
 
 videoEl.addEventListener("mousemove", (event) => {
