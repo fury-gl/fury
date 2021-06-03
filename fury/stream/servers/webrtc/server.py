@@ -14,8 +14,8 @@ def webrtc_server(
         circular_queue=None,
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
-        port=8000, host='localhost', flip_img=True,
-        www_folder=None, use_vidgear=False):
+        port=8000, host='localhost', flip_img=False,
+        www_folder=None):
 
     if stream_client is not None:
         image_buffers = stream_client.image_buffers
@@ -29,18 +29,15 @@ def webrtc_server(
 
             image_info = np.frombuffer(
                 info_buffer, 'uint32')
-            # self.image = np.random.randint(
-            #      0, 255, (image_info[1], image_info[0], 3),
-            #      dtype='uint8')
-            self.image = np.zeros(
-                (image_info[1], image_info[0], 3), dtype='uint8')
+            self.image = np.random.randint(
+                 0, 255, (image_info[1], image_info[0], 3),
+                 dtype='uint8')
 
         async def recv(self):
             pts, time_base = await self.next_timestamp()
 
             image_info = np.frombuffer(
                 info_buffer, 'uint32')
-
             self.image = np.frombuffer(
                 image_buffers[info_buffer[3]], 'uint8').reshape(
                 (image_info[1], image_info[0], 3))
@@ -64,6 +61,19 @@ def webrtc_server(
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
 
+    # if use_vidgear:
+    #     import uvicorn, asyncio, cv2
+    #     from vidgear.gears.asyncio import WebGear_RTC
+
+    #     web = WebGear_RTC(logging=True)
+    #     web.config["server"] = RTCServer()
+
+    #     # run this app on Uvicorn server at address http://localhost:8000/
+    #     uvicorn.run(web(), host="localhost", port=8000)
+
+    #     # close app safely
+    #     web.shutdown()
+    # else:
     app_fury = get_app(RTCServer(), circular_queue=circular_queue)
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)

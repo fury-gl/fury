@@ -14,8 +14,10 @@ class FuryStreamClient:
             window_size=(200, 200),
             write_in_stdout=False,
             broker_url=None,
-            buffer_count=2):
-            
+            buffer_count=2,
+            image_buffers=None,
+            info_buffer=None):
+
         '''
 
         Parameters
@@ -28,12 +30,18 @@ class FuryStreamClient:
         self.write_in_stdout = write_in_stdout
         self.image_buffers = []
         self.buffer_count = buffer_count
-        self.info_buffer = multiprocessing.RawArray(
-            'I', np.array([window_size[0], window_size[1], 3, 0]))
-        for _ in range(self.buffer_count):
-            self.image_buffers.append(multiprocessing.RawArray(
-            'B', np.random.randint(
-                0, 255, size=window_size[0]*window_size[1]*3).astype('uint8')))
+        if info_buffer is None or image_buffers is None:
+            self.info_buffer = multiprocessing.RawArray(
+                'I', np.array([window_size[0], window_size[1], 3, 0]))
+            for _ in range(self.buffer_count):
+                self.image_buffers.append(multiprocessing.RawArray(
+                    'B', np.random.randint(
+                        0, 255, 
+                        size=window_size[0]*window_size[1]*3).astype('uint8')))
+        else:
+            self.info_buffer = info_buffer
+            self.image_buffers = image_buffers
+
         self._id_timer = None
         self._id_observer = None
         self.sender = None
@@ -67,7 +75,8 @@ class FuryStreamClient:
                         self.info_buffer[2] = num_components
                     np_arr = np_arr.flatten()
                     # N-Buffering
-                    next_buffer_index = (self.info_buffer[3]+1)%self.buffer_count
+                    next_buffer_index = (self.info_buffer[3]+1) \
+                        % self.buffer_count
                     self.image_buffers[next_buffer_index][:] = np_arr
                     self.info_buffer[3] = next_buffer_index
                 self._in_request = False
@@ -90,16 +99,24 @@ class FuryStreamClient:
 
 
 class FuryStreamInteraction:
-    def __init__(self, showm, max_queue_size=50):
+    def __init__(
+            self, showm, max_queue_size=50,
+            queue_head_tail_buffer=None,
+            queue_buffers_list=None,):
+
         self.showm = showm
         self.recorder = vtk.vtkInteractorEventRecorder()
         self.recorder.SetInteractor(self.showm.iren)
 
-        self.circular_queue = CircularQueue(max_size=max_queue_size, dimension=6)
+        self.circular_queue = CircularQueue(
+            max_size=max_queue_size, dimension=6,
+            head_tail_buffer=queue_head_tail_buffer,
+            buffers_list=queue_buffers_list)
         self._id_timer = None
 
     def start(self, ms=16):
         def callback(caller, timerevent):
+            self.showm.scene.GetActiveCamera().Azimuth(2)
             data = self.circular_queue.dequeue()
             if data is not None:
                 if data[0] == 1:
