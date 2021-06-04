@@ -114,15 +114,22 @@ async def mouse_move(request, **kwargs):
     )
 
 
+def set_mouse_left(data, circular_queue):
+    event_id = 2 if data['on'] == 1 else 3
+    ctrl_key = int(data['ctrlKey'])
+    shift_key = int(data['shiftKey'])
+    ok = circular_queue.enqueue(
+        np.array([event_id, 0, 0, 0, ctrl_key, shift_key], dtype='float64'))
+
+    return ok
+
+
 async def mouse_left_click(request, **kwargs):
 
     circular_queue = kwargs['circular_queue']
     params = await request.json()
     circular_queue = kwargs['circular_queue']
-    event_id = 2 if params['on'] == 1 else 3
-
-    ok = circular_queue.enqueue(
-        np.array([event_id, 0, 0, 0, 0, 0], dtype='float64'))
+    ok = set_mouse_left(params, circular_queue)
     return web.Response(
         content_type="application/json",
         text=json.dumps(
@@ -168,8 +175,10 @@ async def websocket_handler(request, **kwargs):
                     set_weel(data, circular_queue)
                 elif data['type'] == 'mouseMove':
                     set_mouse(data, circular_queue)
-                #print(msg)
-                #await ws.send_str(msg.data + '/answer')
+                elif data['type'] == 'mouseLeftClick':
+                    set_mouse_left(data, circular_queue)
+                # await ws.send_str(msg.data + '/answer')
+
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print('ws connection closed with exception %s' %
                   ws.exception())
@@ -180,22 +189,23 @@ async def websocket_handler(request, **kwargs):
 
 
 def get_app(
-        RTCServer, folder=None, circular_queue=None, broadcast=True):
+        RTCServer=None, folder=None, circular_queue=None, broadcast=True):
 
     if folder is None:
         folder = f'{os.path.dirname(__file__)}/www/'
 
     app = web.Application()
     app.on_shutdown.append(on_shutdown)
-    app.router.add_get("/", partial(index, folder=folder))
 
-    js_files = ['main.js', 'webrtc.js', 'constants.js']
-    for js in js_files:
-        app.router.add_get(
-            "/js/%s" % js, partial(javascript, folder=folder, js=js))
+    if RTCServer is not None:
+        app.router.add_get("/", partial(index, folder=folder))
 
-    app.router.add_post("/offer", partial(
-        offer, video=RTCServer, broadcast=broadcast))
+        js_files = ['main.js', 'webrtc.js', 'constants.js']
+        for js in js_files:
+            app.router.add_get(
+                "/js/%s" % js, partial(javascript, folder=folder, js=js))
+            app.router.add_post("/offer", partial(
+                offer, video=RTCServer, broadcast=broadcast))
 
     if circular_queue is not None:
         app.add_routes([

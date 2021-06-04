@@ -7,10 +7,14 @@ import {
   urlParams,
 } from "/js/constants.js";
 
-const clientSocket = new WebSocket("ws://localhost:8000/ws");
-clientSocket.onopen = function (event) {
-  //clientSocket.send("Here's some text that the server is urgently awaiting!");
-};
+let addrInteraction =
+  urlParams.get("interaction_addr") === null
+    ? `${location.hostname}:${location.port}`
+    : urlParams.get("interaction_addr");
+
+const urlInteraction = `${location.protocol}://${addrInteraction}/`;
+const clientSocket = new WebSocket(`ws://${addrInteraction}/ws`);
+
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("startBtn").addEventListener("click", (e) => {
     startWebRTC();
@@ -18,12 +22,17 @@ document.addEventListener("DOMContentLoaded", (event) => {
   const interaction = urlParams.get("interaction");
   const runningOnIframe = urlParams.get("iframe");
   const backgroundColor = urlParams.get("background");
-  let websocket = urlParams.get("websocket");
-  websocket = websocket === null ? 0 : websocket;
+
+  const useWebsocket =
+    urlParams.get("websocket") === null
+      ? 1
+      : Boolean(urlParams.get("websocket"));
+  console.info('using a websokcet interaction',useWebsocket)
+  console.info('address interaction server', urlInteraction)
   if (interaction === null || interaction == 1)
-    addInteraction(videoEl, websocket);
+    addInteraction(videoEl, useWebsocket);
   const videoClass =
-    runningOnIframe == null || runningOnIframe == 1
+    runningOnIframe == null || runningOnIframe == 1 
       ? "videoIframeMode"
       : "videoNormalMode";
   videoEl.className = videoClass;
@@ -55,7 +64,7 @@ function addInteraction(videoEl, websocket) {
     if (websocket == 1) {
       clientSocket.send(dataJson);
     } else {
-      fetch(`${urlServer}mouse_weel`, {
+      fetch(`${urlInteraction}mouse_weel`, {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
@@ -124,20 +133,13 @@ function addInteraction(videoEl, websocket) {
     if (websocket == 1) {
       clientSocket.send(dataJson);
     } else {
-      fetch(`${urlServer}mouse_move`, {
+      fetch(`${urlInteraction}mouse_move`, {
         method: "POST", // or 'PUT'
         headers: {
           "Content-Type": "application/json",
         },
         body: dataJson,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          // console.log("Success:", data)
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+      });
     }
   };
   const timerMouseMove = setInterval(mouseMoveCallback, millisecMouseMove);
@@ -146,20 +148,27 @@ function addInteraction(videoEl, websocket) {
 
   window.addEventListener("mouseup", (e) => {
     mouseLeftReleased = true;
-    fetch(`${urlServer}mouse_left_click`, {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ on: 0 }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log("Success:", data)
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+    ctrlKey = e.ctrlKey ? 1 : 0;
+    shiftKey = e.shiftKey ? 1 : 0;
+    const data = {
+      type: "mouse_left_click",
+      on: 0,
+      ctrlKey: ctrlKey,
+      shiftKey: shiftKey,
+    };
+    const dataJson = JSON.stringify(data);
+
+    if (websocket == 1) {
+      clientSocket.send(dataJson);
+    } else {
+      fetch(`${urlInteraction}mouse_left_click`, {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ on: 0 }),
       });
+    }
   });
 
   // document.addEventListener("keydown", function (event) {

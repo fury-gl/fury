@@ -3,13 +3,13 @@ from fury import actor, window, colormap as cmap
 import numpy as np
 
 ###############################################################################
-# Then let's download some available datasets.
+# An example about how to use the streaming with the interaction running 
+# in another process
 
 
 import multiprocessing
-from fury.stream.servers.webrtc.server import webrtc_server
+from fury.stream.servers.webrtc.server import webrtc_server, interaction_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-
 if __name__ == '__main__':
 
     window_size = (400, 400)
@@ -19,15 +19,14 @@ if __name__ == '__main__':
     ms_stream = 0
     # max number of interactions to be stored inside the queue
     max_queue_size = 1000
-    ######################################################################
+    ##############################################################################
+
     centers = 1*np.array([
         [0, 0, 0],
         [-1, 0, 0],
         [1, 0, 0]
     ])
     centers2 = centers - np.array([[0, -1, 0]])
-    # centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
-    # centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
     colors = np.array([
         [1, 0, 0],
         [0, 1, 0],
@@ -77,12 +76,20 @@ if __name__ == '__main__':
         target=webrtc_server,
         args=(
             None, stream.image_buffers, stream.info_buffer,
-            None,
-            stream_interaction.circular_queue.head_tail_buffer, 
-            stream_interaction.circular_queue.buffers._buffers))
+            None,)
+    )
     p.start()
+    p2 = multiprocessing.Process(
+        target=interaction_server,
+        args=(
+            None,
+            stream_interaction.circular_queue.head_tail_buffer,
+            stream_interaction.circular_queue.buffers._buffers,
+            8080, 'localhost')
+    )
+    p2.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)
     showm.start()
     # open a browser using the following the url
-    # http://localhost:8000/
+    # http://localhost:8000?interaction_addr=localhost:8080

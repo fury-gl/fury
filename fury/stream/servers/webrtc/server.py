@@ -78,6 +78,26 @@ def webrtc_server(
     #     # close app safely
     #     web.shutdown()
     # else:
-    app_fury = get_app(RTCServer(), circular_queue=circular_queue)
+    app_fury = get_app(
+        RTCServer(), circular_queue=circular_queue,
+    )
+    web.run_app(
+        app_fury, host=host, port=port, ssl_context=None)
+
+
+def interaction_server(
+        circular_queue=None,
+        queue_head_tail_buffer=None,
+        queue_buffers_list=None,
+        port=8080, host='localhost',
+        www_folder=None):
+
+    if circular_queue is None and queue_buffers_list is not None:
+        circular_queue = CircularQueue(
+            head_tail_buffer=queue_head_tail_buffer,
+            buffers_list=queue_buffers_list)
+
+    app_fury = get_app(
+        None, circular_queue=circular_queue)
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)

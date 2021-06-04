@@ -136,10 +136,9 @@ class FuryStreamInteraction:
                     self.showm.iren.LeftButtonReleaseEvent()
 
                 elif data[0] == 2:
-                    # print(self.showm.iren.GetLastEventPosition())
-                    self.showm.iren.LeftButtonPressEvent()
                     self.showm.iren.SetControlKey(int(data[4]))
                     self.showm.iren.SetShiftKey(int(data[5]))
+                    self.showm.iren.LeftButtonPressEvent()
 
                     self.showm.iren.SetEventPosition(
                         int(self.showm.size[0]*data[2]),
@@ -150,6 +149,8 @@ class FuryStreamInteraction:
 
                 elif data[0] == 3:
                     self.showm.iren.LeftButtonReleaseEvent()
+                    self.showm.iren.SetControlKey(int(data[4]))
+                    self.showm.iren.SetShiftKey(int(data[5]))
 
             self.showm.render()
 
