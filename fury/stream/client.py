@@ -89,6 +89,8 @@ class FuryStreamClient:
             id_observer = self.showm.iren.AddObserver(
                 'RenderEvent', callback)
             self._id_observer = id_observer
+        self.showm.render()
+        callback(None, None)
 
     def stop(self):
         if self._id_timer is not None:
