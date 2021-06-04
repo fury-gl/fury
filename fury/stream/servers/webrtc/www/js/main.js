@@ -7,24 +7,31 @@ import {
   urlParams,
 } from "/js/constants.js";
 
+const clientSocket = new WebSocket("ws://localhost:8000/ws");
+clientSocket.onopen = function (event) {
+  //clientSocket.send("Here's some text that the server is urgently awaiting!");
+};
 document.addEventListener("DOMContentLoaded", (event) => {
   document.getElementById("startBtn").addEventListener("click", (e) => {
     startWebRTC();
   });
   const interaction = urlParams.get("interaction");
   const runningOnIframe = urlParams.get("iframe");
-  const backgroundColor = urlParams.get('background')
-  if (interaction === null || interaction == 1) addInteraction(videoEl);
+  const backgroundColor = urlParams.get("background");
+  let websocket = urlParams.get("websocket");
+  websocket = websocket === null ? 0 : websocket;
+  if (interaction === null || interaction == 1)
+    addInteraction(videoEl, websocket);
   const videoClass =
     runningOnIframe == null || runningOnIframe == 1
       ? "videoIframeMode"
       : "videoNormalMode";
-  videoEl.className = videoClass
+  videoEl.className = videoClass;
   if (backgroundColor != null)
     document.body.style.backgroundColor = backgroundColor;
 });
 
-function addInteraction(videoEl) {
+function addInteraction(videoEl, websocket) {
   let mouseLeftReleased = true;
   let mouseOutVideo = false;
   let mouseX = 0;
@@ -33,19 +40,29 @@ function addInteraction(videoEl) {
   let shiftKey = 0;
   let enableCallWheel = true;
   let currentWheelEventTotalDeltaY = 0;
+
   videoEl.addEventListener("wheel", (event) => {
     currentWheelEventTotalDeltaY += event.deltaY;
     if (!enableCallWheel) return;
-    const data = { deltaY: currentWheelEventTotalDeltaY };
+
+    const data = {
+      type: "weel",
+      deltaY: currentWheelEventTotalDeltaY,
+    };
+    const dataJson = JSON.stringify(data);
     currentWheelEventTotalDeltaY = 0;
 
-    fetch(`${urlServer}mouse_weel`, {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    if (websocket == 1) {
+      clientSocket.send(dataJson);
+    } else {
+      fetch(`${urlServer}mouse_weel`, {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: dataJson,
+      });
+    }
     // .then((response) => response.json())
     // .then((data) => {
     //   // console.log("Success:", data)
@@ -67,9 +84,7 @@ function addInteraction(videoEl) {
     mouseY = event.offsetY / height;
   });
 
-  videoEl.addEventListener("mouseleave", (e) => {
-    mouseOutVideo = false;
-  });
+  videoEl.addEventListener("mouseleave", (e) => (mouseOutVideo = false));
   // videoEl.addEventListener("mousemove", (e) => {
   //   if (mouseLeftReleased) return
   //   mouseX = e.offsetX
@@ -98,27 +113,36 @@ function addInteraction(videoEl) {
 
   const mouseMoveCallback = () => {
     if (mouseLeftReleased || mouseOutVideo) return;
-    const data = { x: mouseX, y: mouseY, ctrlKey: ctrlKey, shiftKey: shiftKey };
-    fetch(`${urlServer}mouse_move`, {
-      method: "POST", // or 'PUT'
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log("Success:", data)
+    const data = {
+      type: "mouseMove",
+      x: mouseX,
+      y: mouseY,
+      ctrlKey: ctrlKey,
+      shiftKey: shiftKey,
+    };
+    const dataJson = JSON.stringify(data);
+    if (websocket == 1) {
+      clientSocket.send(dataJson);
+    } else {
+      fetch(`${urlServer}mouse_move`, {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: dataJson,
       })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log("Success:", data)
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
   };
   const timerMouseMove = setInterval(mouseMoveCallback, millisecMouseMove);
 
-  videoEl.addEventListener("mousedown", (e) => {
-    mouseLeftReleased = false;
-  });
+  videoEl.addEventListener("mousedown", (e) => (mouseLeftReleased = false));
 
   window.addEventListener("mouseup", (e) => {
     mouseLeftReleased = true;

@@ -116,7 +116,7 @@ class FuryStreamInteraction:
 
     def start(self, ms=16):
         def callback(caller, timerevent):
-            self.showm.scene.GetActiveCamera().Azimuth(2)
+            # self.showm.scene.GetActiveCamera().Azimuth(2)
             data = self.circular_queue.dequeue()
             if data is not None:
                 if data[0] == 1:

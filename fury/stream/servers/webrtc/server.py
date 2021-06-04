@@ -1,3 +1,5 @@
+import time
+
 from aiohttp import web
 from av import VideoFrame
 from aiortc import VideoStreamTrack
@@ -14,7 +16,7 @@ def webrtc_server(
         circular_queue=None,
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
-        port=8000, host='localhost', flip_img=False,
+        port=8000, host='localhost', flip_img=True,
         www_folder=None):
 
     if stream_client is not None:
@@ -35,7 +37,7 @@ def webrtc_server(
 
         async def recv(self):
             pts, time_base = await self.next_timestamp()
-
+            #print(pts, time_base)
             image_info = np.frombuffer(
                 info_buffer, 'uint32')
             self.image = np.frombuffer(
@@ -47,6 +49,8 @@ def webrtc_server(
             av_frame = VideoFrame.from_ndarray(self.image)
             av_frame.pts = pts
             av_frame.time_base = time_base
+
+            #time.sleep(0.1)
             return av_frame
 
         def terminate(self):
