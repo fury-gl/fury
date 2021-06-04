@@ -27,12 +27,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
     urlParams.get("websocket") === null
       ? 1
       : Boolean(urlParams.get("websocket"));
-  console.info('using a websokcet interaction',useWebsocket)
-  console.info('address interaction server', urlInteraction)
+  console.info("using a websokcet interaction", useWebsocket);
+  console.info("address interaction server", urlInteraction);
   if (interaction === null || interaction == 1)
     addInteraction(videoEl, useWebsocket);
   const videoClass =
-    runningOnIframe == null || runningOnIframe == 1 
+    runningOnIframe == null || runningOnIframe == 1
       ? "videoIframeMode"
       : "videoNormalMode";
   videoEl.className = videoClass;
@@ -48,6 +48,7 @@ function addInteraction(videoEl, websocket) {
   let ctrlKey = 0;
   let shiftKey = 0;
   let enableCallWheel = true;
+  let enableCallMove = true;
   let currentWheelEventTotalDeltaY = 0;
 
   videoEl.addEventListener("wheel", (event) => {
@@ -84,6 +85,8 @@ function addInteraction(videoEl, websocket) {
   });
 
   videoEl.addEventListener("mousemove", (event) => {
+
+    if (!enableCallMove) return;
     mouseOutVideo = false;
     ctrlKey = event.ctrlKey ? 1 : 0;
     shiftKey = event.shiftKey ? 1 : 0;
@@ -91,6 +94,9 @@ function addInteraction(videoEl, websocket) {
     const height = videoEl.offsetHeight;
     mouseX = event.offsetX / width;
     mouseY = event.offsetY / height;
+    mouseMoveCallback()
+    enableCallMove = false;
+    setTimeout(() => (enableCallMove = true), mouseInterval);
   });
 
   videoEl.addEventListener("mouseleave", (e) => (mouseOutVideo = false));
@@ -142,7 +148,7 @@ function addInteraction(videoEl, websocket) {
       });
     }
   };
-  const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
+  // const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
 
   videoEl.addEventListener("mousedown", (e) => (mouseLeftReleased = false));
 
