@@ -278,6 +278,5 @@ def test_hover_selection_actors_only(recording=False):
 
 
 if __name__ == "__main__":
-    test_hover_selection_vertices(False)
-    # npt.run_module_suite()
+    npt.run_module_suite()
 
