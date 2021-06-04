@@ -1035,8 +1035,9 @@ _GL = {
 def test_and_extract_gl_state(func):
     def wrapper(obj, *args, **kwargs):
         """
-        Arguments
-        ---------
+
+        Parameters
+        ----------
             obj:
                 'vtkOpenGLState' or fury.window.ShowManager
         """

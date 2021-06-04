@@ -206,7 +206,7 @@ def shader_apply_effects(
     """This applies a specific opengl state (effect) or a list of effects just
     before the actor's shader be executed.
 
-    Arguments:
+    Parameters
     ----------
         showm: fury.window.ShowManager
         actor: vtk actor
@@ -218,8 +218,8 @@ def shader_apply_effects(
             Effects with a higher priority are applied first and
             can be override by the others.
 
-    Returns:
-    --------
+    Returns
+    -------
         id_observer : int
             An unsigned Int tag which can be used later to remove the event
             or retrieve the vtkCommand used in the observer.
