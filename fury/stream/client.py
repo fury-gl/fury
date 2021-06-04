@@ -102,14 +102,12 @@ class FuryStreamClient:
 
 class FuryStreamInteraction:
     def __init__(
-            self, showm, max_queue_size=50,
+            self, showm,  max_queue_size=50,
             queue_head_tail_buffer=None,
-            queue_buffers_list=None,):
+            queue_buffers_list=None, fury_client=None,):
 
         self.showm = showm
-        self.recorder = vtk.vtkInteractorEventRecorder()
-        self.recorder.SetInteractor(self.showm.iren)
-
+        self.fury_client = fury_client
         self.circular_queue = CircularQueue(
             max_size=max_queue_size, dimension=6,
             head_tail_buffer=queue_head_tail_buffer,
@@ -138,23 +136,30 @@ class FuryStreamInteraction:
                     self.showm.iren.LeftButtonReleaseEvent()
 
                 elif data[0] == 2:
-                    self.showm.iren.SetControlKey(int(data[4]))
-                    self.showm.iren.SetShiftKey(int(data[5]))
-                    self.showm.iren.LeftButtonPressEvent()
+                    new_ctrl_key = int(data[4])
+                    new_shift_key = int(data[5])
+                    
+                    self.showm.iren.SetControlKey(new_ctrl_key)
+                    self.showm.iren.SetShiftKey(new_shift_key)
 
+                    self.showm.iren.LeftButtonPressEvent()
+                    newX = int(self.showm.size[0]*data[2])
+                    newY = int(self.showm.size[1]*data[3])
+                    # if new_shift_key == 1:
+                    newY = self.showm.size[1] - newY
                     self.showm.iren.SetEventPosition(
-                        int(self.showm.size[0]*data[2]),
-                        self.showm.size[1]-int(self.showm.size[1]*data[3])
+                        newX, newY
                     )
 
                     self.showm.iren.MouseMoveEvent()
 
                 elif data[0] == 3:
                     self.showm.iren.LeftButtonReleaseEvent()
-                    self.showm.iren.SetControlKey(int(data[4]))
-                    self.showm.iren.SetShiftKey(int(data[5]))
-
-            self.showm.render()
+                
+                # maybe when the fury host rendering is disabled
+                # self.fury_client.window2image_filter.Update()
+                # self.fury_client.window2image_filter.Modified()
+            # self.showm.render()
 
         self._id_timer = self.showm.add_timer_callback(True, ms, callback)
 
