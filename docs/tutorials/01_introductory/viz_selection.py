@@ -104,7 +104,7 @@ def hover_callback(_obj, _event):
                     # generates an object_index to help with coloring
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
-                    color_add = np.array([50, 50, 50, 0], dtype='uint8')
+                    color_add = np.array([150, 150, 250, 0], dtype='uint8')
                     vcolors[object_index * sec: object_index * sec + sec] \
                         += color_add
                     # switch += to = to erase the cubes (uncomment below)
@@ -127,7 +127,7 @@ showm.add_iren_callback(hover_callback)
 ###############################################################################
 # Change interactive to True to start interacting with the scene
 
-interactive = False
+interactive = True
 
 if interactive:
 

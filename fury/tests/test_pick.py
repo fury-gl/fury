@@ -192,7 +192,8 @@ def test_hover_selection_faces(recording=False):
 
 
 def test_hover_selection_vertices(recording=False):
-    # simply hover through blue, green, red
+    # simply hover through blue, green, red cubes
+    # close to any vertices of each of the cube
 
     recording_filename = join(DATA_DIR, 'selector_vertices.log.gz')
 
@@ -205,7 +206,7 @@ def test_hover_selection_vertices(recording=False):
 
     scene.add(cube_actor)
 
-    selm = pick.SelectionManager(select='faces')
+    selm = pick.SelectionManager(select='vertices')
 
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
@@ -217,7 +218,7 @@ def test_hover_selection_vertices(recording=False):
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)
-        info = selm.select(event_pos, showm.scene, (10, 10))
+        info = selm.select(event_pos, showm.scene, (100, 100))
         selected_triangles = info[0]['vertex']
         if selected_triangles is not None:
             track_objects.append(selected_triangles[0]//8)
@@ -237,7 +238,7 @@ def test_hover_selection_vertices(recording=False):
 
 
 def test_hover_selection_actors_only(recording=False):
-    # simply hover going through blue, green, red
+    # simply hover going through blue, green, red cubes
 
     recording_filename = join(DATA_DIR, 'selector_actors.log.gz')
 
@@ -277,6 +278,6 @@ def test_hover_selection_actors_only(recording=False):
 
 
 if __name__ == "__main__":
-
-    npt.run_module_suite()
+    test_hover_selection_vertices(False)
+    # npt.run_module_suite()
 
