@@ -1,8 +1,8 @@
 import { startWebRTC } from "/js/webrtc.js";
 import {
-  millisecMouseMove,
   urlServer,
-  interactionInterval,
+  weelInterval,
+  mouseInterval,
   videoEl,
   urlParams,
 } from "/js/constants.js";
@@ -80,7 +80,7 @@ function addInteraction(videoEl, websocket) {
     //   console.error("Error:", error);
     // });
     enableCallWheel = false;
-    setTimeout(() => (enableCallWheel = true), interactionInterval);
+    setTimeout(() => (enableCallWheel = true), weelInterval);
   });
 
   videoEl.addEventListener("mousemove", (event) => {
@@ -142,7 +142,7 @@ function addInteraction(videoEl, websocket) {
       });
     }
   };
-  const timerMouseMove = setInterval(mouseMoveCallback, millisecMouseMove);
+  const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
 
   videoEl.addEventListener("mousedown", (e) => (mouseLeftReleased = false));
 

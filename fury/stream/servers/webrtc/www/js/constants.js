@@ -5,5 +5,13 @@ export const videoEl = document.getElementById("video");
 
 export const urlParams = new URLSearchParams(window.location.search);
 
-export const millisecMouseMove = 100;
-export const interactionInterval = 100;
+export const weelInterval =
+  urlParams.get("weel_interval") === null
+    ? 10
+    : parseFloat(urlParams.get("weel_interval"));
+
+export const mouseInterval =
+  urlParams.get("mouse_interval") === null
+    ? 80
+    : parseFloat(urlParams.get("mouse_interval"));
+
