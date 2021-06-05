@@ -2,6 +2,7 @@ from collections import OrderedDict
 from warnings import warn
 from numbers import Number
 from string import printable
+from PIL import UnidentifiedImageError
 
 import numpy as np
 import vtk
@@ -5248,6 +5249,7 @@ class GridUI(UI):
 class Card2D(UI):
 
     """Card element to show image and related text
+
     Attributes
     ----------
     image: :class: 'ImageContainer2D'
@@ -5260,49 +5262,56 @@ class Card2D(UI):
 
     def __init__(
         self, image_path, body_text="Body", draggable=True,
-        title_text="Title", padding=2, position=(0, 0),
+        title_text="Title", padding=10, position=(0, 0),
         size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
         bg_opacity=1, title_color=(0., 0., 0.), body_color=(0., 0., 0.)
             ):
         """
+
         Parameters
         ----------
         image_path: str
-            Path of the image
-        body_text: str
+            Path of the image, supports png and jpg/jpeg images
+        body_text: str, optional
             Card body text
-        draggable: Bool
+        draggable: Bool, optional
             If the card should be draggable
-        title_text: str
+        title_text: str, optional
             Card title text
-        padding: int
-            Padding between each element
-        position : (float, float)
+        padding: int, optional
+            Padding between image, title, body
+        position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of the
             UI component
-        size : (int, int)
+        size : (int, int), optional
             Width and height of the pixels of this UI component.
-        image_scale: int
+        image_scale: float, optional
             fraction of size taken by the image (between 0 , 1)
-        bg_color: (float, float, float)
+        bg_color: (float, float, float), optional
             Background color of card
-        bg_opacity: float
+        bg_opacity: float, optional
             Background opacity
-        title_color: (float, float, float)
+        title_color: (float, float, float), optional
             Title text color
-        body_color: (float, float, float)
+        body_color: (float, float, float), optional
             Body text color
         """
 
         self.image_path = image_path
+        self._basename = os.path.basename(self.image_path)
+        self._extension = self._basename.split('.')[-1]
+        if self._extension not in ['jpg', 'jpeg', 'png']:
+            raise UnidentifiedImageError(
+                f'Image extension {self._extension} not supported')
+
         self.body_text = body_text
         self.title_text = title_text
         self.draggable = draggable
         self.card_size = size
         self.padding = padding
-        self.title_color = title_color
-        self.body_color = body_color
-        self.bg_color = bg_color
+        self.title_color = [np.clip(value, 0, 1) for value in title_color]
+        self.body_color = [np.clip(value, 0, 1) for value in body_color]
+        self.bg_color = [np.clip(value, 0, 1) for value in bg_color]
         self.bg_opacity = bg_opacity
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
@@ -5313,37 +5322,41 @@ class Card2D(UI):
         self.position = position
 
     def _setup(self):
-        """Setup this UI component
-        Create an image widget
-        Create a title and body TextBlock2D widget
-        Create a Panel2D widget
-        Add all widgets in Panel2D widget
+        """ Setup this UI component
+        Create the image.
+        Create the title and body.
+        Create a Panel2D widget to hold image, title, body.
         """
 
-        (card_width, card_height) = self.card_size
-        (_, image_height) = self._image_size
-        _text_box_size = (card_width - 2 * self.padding, (card_height *
-                          self.text_scale / 2) - (2 * self.padding))
+        card_width, card_height = self.card_size
+        _, image_height = self._image_size
+        _title_box_size = (card_width - 2 * self.padding, card_height *
+                           0.34 * self.text_scale / 2)
+
+        _body_box_size = (card_width - 2 * self.padding, card_height *
+                          self.text_scale / 2)
 
         self.image = ImageContainer2D(img_path=self.image_path,
                                       size=self._image_size)
 
         self.body_box = TextBlock2D(text=self.body_text,
-                                    size=_text_box_size,
+                                    size=_body_box_size,
                                     color=self.body_color)
 
         self.title_box = TextBlock2D(text=self.title_text, bold=True,
-                                     size=_text_box_size,
+                                     size=_title_box_size,
                                      color=self.title_color)
 
         _img_coords = (0, int(card_height - image_height))
-        _rem_space = int(_img_coords[1] / 3)
-        _title_coords = (self.padding, _rem_space - self.padding)
-        _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
-                        self.padding)
+        _title_coords = (self.padding, int(_img_coords[1] -
+                                           _title_box_size[1] - self.padding))
+
+        _text_coords = (self.padding, int(_title_coords[1] -
+                                          _body_box_size[1] - self.padding))
 
         self.panel = Panel2D(self.card_size, color=self.bg_color,
                              opacity=self.bg_opacity)
+
         self.panel.add_element(self.image, _img_coords)
         self.panel.add_element(self.title_box, _title_coords)
         self.panel.add_element(self.body_box, _text_coords)
@@ -5353,6 +5366,10 @@ class Card2D(UI):
                 self.left_button_dragged
             self.panel.background.on_left_mouse_button_pressed\
                 = self.left_button_pressed
+            self.image.on_left_mouse_button_dragged =\
+                self.left_button_dragged
+            self.image.on_left_mouse_button_pressed =\
+                self.left_button_pressed
         else:
             self.panel.background.on_left_mouse_button_dragged =\
                 lambda i_ren, _obj, _comp: i_ren.force_render
@@ -5365,6 +5382,7 @@ class Card2D(UI):
 
     def _add_to_scene(self, _scene):
         """ Add all subcomponents or VTK props that compose this UI component.
+
         Parameters
         ----------
         scene : scene
