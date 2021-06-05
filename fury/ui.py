@@ -5309,12 +5309,12 @@ class Card2D(UI):
         self.draggable = draggable
         self.card_size = size
         self.padding = padding
-        
+
         self.title_color = [np.clip(value, 0, 1) for value in title_color]
         self.body_color = [np.clip(value, 0, 1) for value in body_color]
         self.bg_color = [np.clip(value, 0, 1) for value in bg_color]
         self.bg_opacity = bg_opacity
-        
+
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
         self._image_size = (self.card_size[0], self.card_size[1] *
@@ -5418,6 +5418,7 @@ class Card2D(UI):
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
+        
         Parameters
         ----------
         coords: (float, float)
@@ -5436,6 +5437,7 @@ class Card2D(UI):
     @color.setter
     def color(self, color):
         """ Sets background color of card.
+        
         Parameters
         ----------
         color : list of 3 floats.
