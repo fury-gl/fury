@@ -1235,6 +1235,38 @@ def test_texture_mapping():
     npt.assert_equal(res.colors_found, [True, True])
 
 
+def test_texture_update():
+    arr = np.zeros((512, 212, 3), dtype='uint8')
+    arr[:256, :] = np.array([255, 0, 0])
+    arr[256:, :] = np.array([0, 255, 0])
+    # create a texture on plane
+    tp = actor.texture(arr, interp=True)
+    scene = window.Scene()
+    scene.add(tp)
+    display = window.snapshot(scene)
+    res1 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # update the texture
+    new_arr = np.zeros((512, 212, 3), dtype='uint8')
+    new_arr[:, :] = np.array([255, 255, 255])
+    actor.texture_update(tp, new_arr)
+    display = window.snapshot(scene)
+    res2 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # Test for original colors
+    npt.assert_equal(res1.colors_found, [False, True, True])
+    # Test for changed colors of the actor
+    npt.assert_equal(res2.colors_found, [True, False, False])
+
+
 def test_figure_vs_texture_actor():
     arr = (255 * np.ones((512, 212, 4))).astype('uint8')
 
@@ -1297,7 +1329,10 @@ def test_superquadric_actor(interactive=False):
     scene = window.Scene()
     centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.random.rand(3, 3)
+    directions = np.array([[0.27753247, 0.15332503, 0.63670953],
+                           [0.14138223, 0.76031677, 0.14669451],
+                           [0.23416946, 0.12816617, 0.92596145]])
+
     scales = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 

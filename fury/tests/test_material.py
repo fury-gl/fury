@@ -8,9 +8,11 @@ import math
 import numpy as np
 import numpy.testing as npt
 import random
+import pytest
 
 
 dipy, have_dipy, _ = optional_package('dipy')
+VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
 def _generate_surface():
@@ -38,6 +40,7 @@ def _generate_surface():
     return surface_actor
 
 
+@pytest.mark.skipif(not VTK_9_PLUS, reason="Requires VTK >= 9.0.0")
 def test_manifest_pbr(interactive=False):
     scene = window.Scene()  # Setup scene
 
@@ -465,9 +468,9 @@ def test_manifest_standard(interactive=False):
     data[5:15, 1:10, 25] = 1.
     data[25:35, 1:10, 25] = 2.
     data[40:49, 1:10, 25] = 3.
-    color = np.array([[255, 0, 0, 0.6],
-                      [0, 255, 0, 0.5],
-                      [0, 0, 255, 1.0]])
+    color = np.array([[255, 0, 0],
+                      [0, 255, 0],
+                      [0, 0, 255]])
     surface = actor.contour_from_label(data, color=color)
     material.manifest_standard(surface_actor, ambient_level=.3,
                                diffuse_level=.25)

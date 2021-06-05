@@ -2445,6 +2445,32 @@ def texture(rgb, interp=True):
     return act
 
 
+def texture_update(texture_actor, arr):
+    """
+    Updates texture of an actor by updating the vtkImageData
+    assigned to the vtkTexture object.
+
+    Parameters
+    ----------
+    texture_actor: vtkActor
+        Actor whose texture is to be updated.
+    arr : ndarray
+        Input 2D image in the form of RGB or RGBA array.
+        This is the new image to be rendered on the actor.
+        Dtype should be uint8.
+
+    Implementation
+    --------------
+    Check docs/examples/viz_video_on_plane.py
+    """
+    grid = texture_actor.GetTexture().GetInput()
+    dim = arr.shape[-1]
+    img_data = np.flip(arr.swapaxes(0, 1), axis=1)\
+                 .reshape((-1, dim), order='F')
+    vtkarr = numpy_support.numpy_to_vtk(img_data, deep=False)
+    grid.GetPointData().SetScalars(vtkarr)
+
+
 def _textured_sphere_source(theta=60, phi=60):
     tss = vtk.vtkTexturedSphereSource()
     tss.SetThetaResolution(theta)
