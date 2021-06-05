@@ -157,8 +157,10 @@ function addInteraction(videoEl, websocket) {
     ctrlKey = e.ctrlKey ? 1 : 0;
     shiftKey = e.shiftKey ? 1 : 0;
     const data = {
-      type: "mouse_left_click",
+      type: "mouseLeftClick",
       on: 0,
+      x: mouseX,
+      y: mouseY,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
     };

@@ -46,6 +46,7 @@ class FuryStreamClient:
         self._id_observer = None
         self.sender = None
         self._in_request = False
+        self.update = True
         if broker_url is not None:
             pass
             # self.sender = imagezmq.ImageSender(connect_to=broker_url)
@@ -58,6 +59,8 @@ class FuryStreamClient:
 
         def callback(caller, timerevent):
             if not self._in_request:
+                if not self.update:
+                    return
                 self._in_request = True
                 self.window2image_filter.Update()
                 self.window2image_filter.Modified()
@@ -107,22 +110,27 @@ class FuryStreamInteraction:
             queue_buffers_list=None, fury_client=None,):
 
         self.showm = showm
+        self.iren = self.showm.iren
         self.fury_client = fury_client
         self.circular_queue = CircularQueue(
             max_size=max_queue_size, dimension=6,
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
         self._id_timer = None
+        self.last_pos = (0, 0)
+        self.first_click = True
+        self.left_click = False
+        self.i = 0
 
     def start(self, ms=16):
+
         def callback(caller, timerevent):
             # self.showm.scene.GetActiveCamera().Azimuth(2)
+
             data = self.circular_queue.dequeue()
             if data is not None:
                 if data[0] == 1:
                     zoomFactor = 1.0 - data[1] / 1000.0
-                    # camera = showm.window
-                    # .GetRenderers().GetFirstRenderer().GetActiveCamera()
                     camera = self.showm.scene.GetActiveCamera()
                     fp = camera.GetFocalPoint()
                     pos = camera.GetPosition()
@@ -132,30 +140,57 @@ class FuryStreamInteraction:
                     pos2 = camera.GetPosition()
                     camera.SetFocalPoint(
                         [pos2[i] + delta[i] for i in range(3)])
-                    self.showm.iren.LeftButtonPressEvent()
-                    self.showm.iren.LeftButtonReleaseEvent()
+                    if data[1] < 0:
+                        self.iren.MouseWheelForwardEvent()
+                    else:
+                        self.iren.MouseWheelBackwardEvent()
+
+                    self.showm.window.Modified()
 
                 elif data[0] == 2:
-                    new_ctrl_key = int(data[4])
-                    new_shift_key = int(data[5])
-                    
-                    self.showm.iren.SetControlKey(new_ctrl_key)
-                    self.showm.iren.SetShiftKey(new_shift_key)
-
-                    self.showm.iren.LeftButtonPressEvent()
                     newX = int(self.showm.size[0]*data[2])
                     newY = int(self.showm.size[1]*data[3])
-                    # if new_shift_key == 1:
                     newY = self.showm.size[1] - newY
-                    self.showm.iren.SetEventPosition(
-                        newX, newY
-                    )
+                    ctrl_key = int(data[4])
+                    shift_key = int(data[5])
 
-                    self.showm.iren.MouseMoveEvent()
+                    if self.first_click:
+                        # self.iren.SetLastEventPosition(newX, newY)
+                        self.iren.SetEventInformation(
+                            newX, newY, ctrl_key, shift_key,
+                            chr(0), 0, None)
+
+                        self.iren.LeftButtonPressEvent()
+
+                        # self.iren.SetLastEventPosition(newX, newY)
+                        self.first_click = False
+                        self.showm.window.Modified()
+                        return
+
+                    self.iren.SetEventInformation(
+                        newX, newY, ctrl_key, shift_key, chr(0), 0, None)
+
+                    self.iren.MouseMoveEvent()
+
+                    # self.iren.SetLastEventPosition(newX, newY)
+                    #self.showm.window.Modified()
 
                 elif data[0] == 3:
+                    newX = int(self.showm.size[0]*data[2])
+                    newY = int(self.showm.size[1]*data[3])
+                    ctrl_key = int(data[4])
+                    shift_key = int(data[5])
+                    newY = self.showm.size[1] - newY
+
+                    self.iren.SetEventInformation(
+                        newX, newY, ctrl_key, shift_key,
+                        chr(0), 0, None)
+
                     self.showm.iren.LeftButtonReleaseEvent()
-                
+
+                    # self.iren.SetLastEventPosition(newX, newY)
+                    self.first_click = True
+                    self.showm.window.Modified()
                 # maybe when the fury host rendering is disabled
                 # self.fury_client.window2image_filter.Update()
                 # self.fury_client.window2image_filter.Modified()

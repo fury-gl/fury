@@ -16,7 +16,7 @@ if __name__ == '__main__':
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
     ms_interaction = 1
-    ms_stream = 0
+    ms_stream = 16
     # max number of interactions to be stored inside the queue
     max_queue_size = 1000
     ##############################################################################
