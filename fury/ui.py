@@ -5309,10 +5309,12 @@ class Card2D(UI):
         self.draggable = draggable
         self.card_size = size
         self.padding = padding
+        
         self.title_color = [np.clip(value, 0, 1) for value in title_color]
         self.body_color = [np.clip(value, 0, 1) for value in body_color]
         self.bg_color = [np.clip(value, 0, 1) for value in bg_color]
         self.bg_opacity = bg_opacity
+        
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
         self._image_size = (self.card_size[0], self.card_size[1] *
