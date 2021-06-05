@@ -1,3 +1,4 @@
+from fury import window
 import os
 from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 import vtk
@@ -36,6 +37,9 @@ class FuryStreamClient:
             max_window_size = window_size
         self.max_size = max_window_size[0]*max_window_size[1]
         self.max_window_size = max_window_size
+        if self.max_size < window_size[0]*window_size[1]:
+            raise ValueError('max_window_size must be greater than window_size')
+
         if info_buffer is None or image_buffers is None:
             # 0 number of components
             # 1 id buffer
