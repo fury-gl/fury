@@ -85,7 +85,6 @@ function addInteraction(videoEl, websocket) {
   });
 
   videoEl.addEventListener("mousemove", (event) => {
-
     if (!enableCallMove) return;
     mouseOutVideo = false;
     ctrlKey = event.ctrlKey ? 1 : 0;
@@ -94,7 +93,7 @@ function addInteraction(videoEl, websocket) {
     const height = videoEl.offsetHeight;
     mouseX = event.offsetX / width;
     mouseY = event.offsetY / height;
-    mouseMoveCallback()
+    mouseMoveCallback();
     enableCallMove = false;
     setTimeout(() => (enableCallMove = true), mouseInterval);
   });
@@ -150,17 +149,47 @@ function addInteraction(videoEl, websocket) {
   };
   // const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
 
-  videoEl.addEventListener("mousedown", (e) => (mouseLeftReleased = false));
+  videoEl.addEventListener("mousedown", (e) => {
+    //e.preventDefault()
+    mouseLeftReleased = false;
+    ctrlKey = e.ctrlKey ? 1 : 0;
+    shiftKey = e.shiftKey ? 1 : 0;
+    const mouseButton = e.button
+    const data = {
+      type: "mouseLeftClick",
+      on: 1,
+      mouseButton: mouseButton,
+      x: mouseX,
+      y: mouseY,
+      ctrlKey: ctrlKey,
+      shiftKey: shiftKey,
+    };
+    const dataJson = JSON.stringify(data);
+
+    if (websocket == 1) {
+      clientSocket.send(dataJson);
+    } else {
+      fetch(`${urlInteraction}mouse_click`, {
+        method: "POST", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ on: 0 }),
+      });
+    }
+  });
 
   window.addEventListener("mouseup", (e) => {
     mouseLeftReleased = true;
     ctrlKey = e.ctrlKey ? 1 : 0;
     shiftKey = e.shiftKey ? 1 : 0;
+    const mouseButton = e.button
     const data = {
       type: "mouseLeftClick",
       on: 0,
       x: mouseX,
       y: mouseY,
+      mouseButton: mouseButton,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
     };

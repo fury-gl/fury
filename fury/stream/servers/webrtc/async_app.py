@@ -114,22 +114,37 @@ async def mouse_move(request, **kwargs):
     )
 
 
-def set_mouse_left(data, circular_queue):
-    event_id = 2 if data['on'] == 1 else 3
-    ctrl_key = int(data['ctrlKey'])
-    shift_key = int(data['shiftKey'])
+def set_mouse_click(data, circular_queue):
+    # mouse left click 3
+    # mouse left release 4
+    # mouse right click 7
+    # mouse right release 8
+    # mouse middle click 5
+    # mouse middle release 6
+    on = 0 if data['on'] == 1 else 1
+    ctrl = int(data['ctrlKey'])
+    shift = int(data['shiftKey'])
+    x = float(data['x'])
+    y = float(data['y'])
+    mouse_button = int(data['mouseButton'])
+    if mouse_button not in [0, 1, 2]:
+        return False
+    if ctrl not in [0, 1] or shift not in [0, 1]:
+        return False
+
+    event_id = (mouse_button + 1)*2 + on + 1
     ok = circular_queue.enqueue(
-        np.array([event_id, 0, 0, 0, ctrl_key, shift_key], dtype='float64'))
+        np.array([event_id, 0, x, y, ctrl, shift], dtype='float64'))
 
     return ok
 
 
-async def mouse_left_click(request, **kwargs):
+async def mouse_click(request, **kwargs):
 
     circular_queue = kwargs['circular_queue']
     params = await request.json()
     circular_queue = kwargs['circular_queue']
-    ok = set_mouse_left(params, circular_queue)
+    ok = set_mouse_click(params, circular_queue)
     return web.Response(
         content_type="application/json",
         text=json.dumps(
@@ -176,7 +191,7 @@ async def websocket_handler(request, **kwargs):
                 elif data['type'] == 'mouseMove':
                     set_mouse(data, circular_queue)
                 elif data['type'] == 'mouseLeftClick':
-                    set_mouse_left(data, circular_queue)
+                    set_mouse_click(data, circular_queue)
                 # await ws.send_str(msg.data + '/answer')
 
         elif msg.type == aiohttp.WSMsgType.ERROR:
@@ -219,8 +234,8 @@ def get_app(
             mouse_weel, circular_queue=circular_queue))
         app.router.add_post("/mouse_move", partial(
             mouse_move, circular_queue=circular_queue))
-        app.router.add_post("/mouse_left_click", partial(
-            mouse_left_click, circular_queue=circular_queue))
+        app.router.add_post("/mouse_click", partial(
+            mouse_click, circular_queue=circular_queue))
 
         # app.router.add_post("/ctrl_key", partial(
         #     ctrl_key, circular_queue=circular_queue))

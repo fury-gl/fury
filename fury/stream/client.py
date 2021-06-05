@@ -117,10 +117,6 @@ class FuryStreamInteraction:
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
         self._id_timer = None
-        self.last_pos = (0, 0)
-        self.first_click = True
-        self.left_click = False
-        self.i = 0
 
     def start(self, ms=16):
 
@@ -129,7 +125,13 @@ class FuryStreamInteraction:
 
             data = self.circular_queue.dequeue()
             if data is not None:
-                if data[0] == 1:
+                event_id = data[0]
+                newX = int(self.showm.size[0]*data[2])
+                newY = int(self.showm.size[1]*data[3])
+                ctrl_key = int(data[4])
+                shift_key = int(data[5])
+                newY = self.showm.size[1] - newY
+                if event_id == 1:
                     zoomFactor = 1.0 - data[1] / 1000.0
                     camera = self.showm.scene.GetActiveCamera()
                     fp = camera.GetFocalPoint()
@@ -147,49 +149,28 @@ class FuryStreamInteraction:
 
                     self.showm.window.Modified()
 
-                elif data[0] == 2:
-                    newX = int(self.showm.size[0]*data[2])
-                    newY = int(self.showm.size[1]*data[3])
-                    newY = self.showm.size[1] - newY
-                    ctrl_key = int(data[4])
-                    shift_key = int(data[5])
-
-                    if self.first_click:
-                        # self.iren.SetLastEventPosition(newX, newY)
-                        self.iren.SetEventInformation(
-                            newX, newY, ctrl_key, shift_key,
-                            chr(0), 0, None)
-
-                        self.iren.LeftButtonPressEvent()
-
-                        # self.iren.SetLastEventPosition(newX, newY)
-                        self.first_click = False
-                        self.showm.window.Modified()
-                        return
-
+                elif event_id == 2:
                     self.iren.SetEventInformation(
                         newX, newY, ctrl_key, shift_key, chr(0), 0, None)
 
                     self.iren.MouseMoveEvent()
 
-                    # self.iren.SetLastEventPosition(newX, newY)
-                    #self.showm.window.Modified()
-
-                elif data[0] == 3:
-                    newX = int(self.showm.size[0]*data[2])
-                    newY = int(self.showm.size[1]*data[3])
-                    ctrl_key = int(data[4])
-                    shift_key = int(data[5])
-                    newY = self.showm.size[1] - newY
-
+                elif event_id in [3, 4, 5, 6, 7, 8]:
                     self.iren.SetEventInformation(
                         newX, newY, ctrl_key, shift_key,
                         chr(0), 0, None)
-
-                    self.showm.iren.LeftButtonReleaseEvent()
+                    
+                    mouse_actions = {
+                        3: self.showm.iren.LeftButtonPressEvent,
+                        4: self.showm.iren.LeftButtonReleaseEvent,
+                        5: self.showm.iren.MiddleButtonPressEvent,
+                        6: self.showm.iren.MiddleButtonReleaseEvent,
+                        7: self.showm.iren.RightButtonPressEvent,
+                        8: self.showm.iren.RightButtonReleaseEvent,
+                    }
+                    mouse_actions[event_id]()
 
                     # self.iren.SetLastEventPosition(newX, newY)
-                    self.first_click = True
                     self.showm.window.Modified()
                 # maybe when the fury host rendering is disabled
                 # self.fury_client.window2image_filter.Update()
