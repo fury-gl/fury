@@ -580,7 +580,7 @@ def setup(app):
     - Adds extra jinja filters.
     """
     app.connect("builder-inited", add_jinja_filters)
-    app.add_stylesheet("css/custom_github.css")
+    app.add_css_file("css/custom_github.css")
 
 
 # ----------------------------------------------------------------------------
