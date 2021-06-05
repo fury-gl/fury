@@ -1,3 +1,7 @@
+# import os
+# os.environ['PYTHONASYNCIODEBUG'] = '1'
+# import logging
+# logging.basicConfig(level=logging.ERROR)
 import time
 
 from aiohttp import web
@@ -37,12 +41,18 @@ def webrtc_server(
 
         async def recv(self):
             pts, time_base = await self.next_timestamp()
-            #print(pts, time_base)
             image_info = np.frombuffer(
                 info_buffer, 'uint32')
+            buffer_index = image_info[1]
+            width = image_info[2+buffer_index*2]
+            height = image_info[2+buffer_index*2+1]
+
             self.image = np.frombuffer(
-                image_buffers[info_buffer[3]], 'uint8').reshape(
-                (image_info[1], image_info[0], 3))
+                image_buffers[buffer_index],
+                'uint8'
+            )[0:width*height*3].reshape(
+                        (width, height, 3)
+                    )
 
             if flip_img:
                 self.image = np.flipud(self.image)
@@ -50,7 +60,7 @@ def webrtc_server(
             av_frame.pts = pts
             av_frame.time_base = time_base
 
-            #time.sleep(0.1)
+            # time.sleep(0.1)
             return av_frame
 
         def terminate(self):

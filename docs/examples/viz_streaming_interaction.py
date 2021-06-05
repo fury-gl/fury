@@ -13,6 +13,7 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 if __name__ == '__main__':
 
     window_size = (400, 400)
+    max_window_size = (700, 700)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
     ms_interaction = 1
@@ -61,11 +62,12 @@ if __name__ == '__main__':
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
-
+    # showm.window.SetOffScreenRendering(1)
+    #showm.window.EnableRenderOff()
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size,)
+        showm, window_size, max_window_size=max_window_size)
     stream_interaction = FuryStreamInteraction(
         showm, max_queue_size=max_queue_size, fury_client=stream)
     # linux

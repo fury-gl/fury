@@ -12,8 +12,7 @@ class FuryStreamClient:
     def __init__(
             self, showm,
             window_size=(200, 200),
-            write_in_stdout=False,
-            broker_url=None,
+            max_window_size=None,
             buffer_count=2,
             image_buffers=None,
             info_buffer=None):
@@ -27,17 +26,30 @@ class FuryStreamClient:
         self.showm = showm
         self.window2image_filter = vtk.vtkWindowToImageFilter()
         self.window2image_filter.SetInput(self.showm.window)
-        self.write_in_stdout = write_in_stdout
+        # self.write_in_stdout = write_in_stdout
         self.image_buffers = []
         self.buffer_count = buffer_count
+        if max_window_size is None:
+            max_window_size = window_size
+        self.max_size = max_window_size[0]*max_window_size[1]
+        self.max_window_size = max_window_size
         if info_buffer is None or image_buffers is None:
+            # 0 number of components
+            # 1 id buffer
+            # 2, 3, width first buffer, height first buffer
+            # 4, 5, width second buffer , height second buffer
+            info_list = [3, 0]
+            for _ in range(self.buffer_count):
+                info_list += [self.max_window_size[0]]
+                info_list += [self.max_window_size[1]]
             self.info_buffer = multiprocessing.RawArray(
-                'I', np.array([window_size[0], window_size[1], 3, 0]))
+                    'I', info_list
+            )
             for _ in range(self.buffer_count):
                 self.image_buffers.append(multiprocessing.RawArray(
                     'B', np.random.randint(
-                        0, 255, 
-                        size=window_size[0]*window_size[1]*3).astype('uint8')))
+                        0, 255,
+                        size=max_window_size[0]*max_window_size[1]*3).astype('uint8')))
         else:
             self.info_buffer = info_buffer
             self.image_buffers = image_buffers
@@ -47,13 +59,13 @@ class FuryStreamClient:
         self.sender = None
         self._in_request = False
         self.update = True
-        if broker_url is not None:
-            pass
-            # self.sender = imagezmq.ImageSender(connect_to=broker_url)
+        # if broker_url is not None:
+        #    pass
+        # self.sender = imagezmq.ImageSender(connect_to=broker_url)
 
-    def init(self, ms=16):
-        if self.write_in_stdout:
-            os.system('cls' if os.name == 'nt' else 'clear')
+    def init(self, ms=16,):
+        # if self.write_in_stdout:
+        # os.system('cls' if os.name == 'nt' else 'clear')
 
         window2image_filter = self.window2image_filter
 
@@ -67,21 +79,34 @@ class FuryStreamClient:
                 vtk_image = window2image_filter.GetOutput()
                 vtk_array = vtk_image.GetPointData().GetScalars()
                 np_arr = vtk_to_numpy(vtk_array).astype('uint8')
-
                 h, w, _ = vtk_image.GetDimensions()
                 num_components = vtk_array.GetNumberOfComponents()
 
                 if self.image_buffers is not None:
-                    if self.info_buffer is not None:
-                        self.info_buffer[0] = h
-                        self.info_buffer[1] = w
-                        self.info_buffer[2] = num_components
+                    buffer_size = int(h*w)
+                    
+                    self.info_buffer[0] = num_components
                     np_arr = np_arr.flatten()
                     # N-Buffering
-                    next_buffer_index = (self.info_buffer[3]+1) \
+                    next_buffer_index = (self.info_buffer[1]+1) \
                         % self.buffer_count
-                    self.image_buffers[next_buffer_index][:] = np_arr
-                    self.info_buffer[3] = next_buffer_index
+                    # print(next_buffer_index)
+                    # 2, 4, 6
+                    
+                    if buffer_size == self.max_size:
+                        self.image_buffers[next_buffer_index][:] = np_arr
+                    elif buffer_size < self.max_size:
+                        self.image_buffers[next_buffer_index][0:buffer_size*3] = np_arr
+                    else:
+                        rand_img = np.random.randint(
+                            0, 255, size=self.max_size*3,
+                            dtype='uint8')
+                        self.image_buffers[next_buffer_index][:] = rand_img
+                        w = self.max_window_size[0]
+                        h = self.max_window_size[1]
+                    self.info_buffer[2+next_buffer_index*2] = w
+                    self.info_buffer[2+next_buffer_index*2+1] = h
+                    self.info_buffer[1] = next_buffer_index
                 self._in_request = False
 
         if ms > 0:
@@ -173,9 +198,9 @@ class FuryStreamInteraction:
                     # self.iren.SetLastEventPosition(newX, newY)
                     self.showm.window.Modified()
                 # maybe when the fury host rendering is disabled
-                # self.fury_client.window2image_filter.Update()
-                # self.fury_client.window2image_filter.Modified()
-            # self.showm.render()
+                #self.fury_client.window2image_filter.Update()
+                #self.fury_client.window2image_filter.Modified()
+                #self.showm.render()
 
         self._id_timer = self.showm.add_timer_callback(True, ms, callback)
 
