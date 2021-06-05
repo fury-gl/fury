@@ -5325,6 +5325,7 @@ class Card2D(UI):
 
     def _setup(self):
         """ Setup this UI component
+        
         Create the image.
         Create the title and body.
         Create a Panel2D widget to hold image, title, body.
@@ -5418,7 +5419,7 @@ class Card2D(UI):
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
-        
+
         Parameters
         ----------
         coords: (float, float)
@@ -5437,7 +5438,7 @@ class Card2D(UI):
     @color.setter
     def color(self, color):
         """ Sets background color of card.
-        
+
         Parameters
         ----------
         color : list of 3 floats.
