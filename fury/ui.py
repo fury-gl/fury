@@ -5325,7 +5325,7 @@ class Card2D(UI):
 
     def _setup(self):
         """ Setup this UI component
-        
+
         Create the image.
         Create the title and body.
         Create a Panel2D widget to hold image, title, body.
@@ -5397,25 +5397,30 @@ class Card2D(UI):
         return self.panel.size
 
     def resize(self, size):
+        _width, _height = size
         self.panel.resize(size)
 
         self._image_size = (size[0], int(self.image_scale*size[1]))
-        _text_box_size = (size[0] - 2 * self.padding, size[1] *
-                          self.text_scale / 2 - 2 * self.padding)
+        _title_box_size = (_width - 2 * self.padding, _height *
+                           0.34 * self.text_scale / 2)
+
+        _body_box_size = (_width - 2 * self.padding, _height *
+                          self.text_scale / 2)
 
         _img_coords = (0, int(size[1] - self._image_size[1]))
-        _rem_space = int(_img_coords[1] / 3)
-        _title_coords = (self.padding, _rem_space - self.padding)
-        _text_coords = (self.padding, int(_title_coords[1] - _rem_space) -
-                        self.padding)
+        _title_coords = (self.padding, int(_img_coords[1] -
+                                           _title_box_size[1] - self.padding))
+
+        _text_coords = (self.padding, int(_title_coords[1] -
+                                          _body_box_size[1] - self.padding))
 
         self.panel.update_element(self.image, _img_coords)
         self.panel.update_element(self.body_box, _text_coords)
         self.panel.update_element(self.title_box, _title_coords)
 
         self.image.resize(self._image_size)
-        self.body_box.resize(_text_box_size)
-        self.title_box.resize(_text_box_size)
+        self.body_box.resize(_body_box_size)
+        self.title_box.resize(_title_box_size)
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
