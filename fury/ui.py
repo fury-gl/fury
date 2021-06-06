@@ -2,6 +2,7 @@ from collections import OrderedDict
 from warnings import warn
 from numbers import Number
 from string import printable
+from functools import partial
 
 import numpy as np
 import vtk
@@ -317,7 +318,8 @@ class UI(object, metaclass=abc.ABCMeta):
                           self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
-        self.add_callback(actor, "WindowPropagatedEvent", self.window_propagate_callback)
+        self.add_callback(actor, "WindowPropagatedEvent",
+                          self.window_propagate_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
@@ -385,10 +387,14 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_key_press(i_ren, obj, self)
 
     @staticmethod
-    def window_event_propagate(self, evt):
-        # _iren = self.GetInteractor().GetInteractorStyle()
-        # _iren.propagate_event(evt, self)
-        print(self.GetClassName(), evt)
+    def window_event_propagate(window, evt, obj, i_ren):
+        
+        if not hasattr(obj, 'actor'):
+            raise AttributeError(
+                f'{obj} doesnt have an actor associated with it')
+
+        i_ren.propagate_event('WindowPropagatedEvent', obj.actor)
+        i_ren.event.abort()
     
     @staticmethod
     def window_propagate_callback(i_ren, obj, self):
@@ -959,10 +965,6 @@ class Panel2D(UI):
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
         self.background.on_window_propagate = self.window_resize
-    
-    def window_resize(self, i_ren, _obj, panel2d_object):
-        print('Window Resized')
-        i_ren.event.abort()
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -981,7 +983,12 @@ class Panel2D(UI):
         scene : scene
         """
         window = scene.GetRenderWindow()
-        window.AddObserver('WindowResizeEvent', self.window_event_propagate)
+        _iren = window.GetInteractor().GetInteractorStyle()
+
+        window.AddObserver('WindowResizeEvent',
+                           partial(self.window_event_propagate,
+                                   obj=self.background, i_ren=_iren))
+
         for element in self._elements:
             element.add_to_scene(scene)
 
@@ -1103,6 +1110,10 @@ class Panel2D(UI):
             new_position = click_position - self._drag_offset
             self.position = new_position
         i_ren.force_render()
+    
+    def window_resize(self, i_ren, _obj, panel2d_object):
+        # Logic to get new window size and update the panel accordingly
+        i_ren.event.abort() # Stop propagating the event
 
     def re_align(self, window_size_change):
         """ Re-organises the elements in case the window size is changed.
