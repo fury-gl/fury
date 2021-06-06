@@ -2,14 +2,13 @@ from os.path import join as pjoin
 from fury import actor, window, colormap as cmap
 import numpy as np
 import time
-###############################################################################
-# Then let's download some available datasets.
-
 
 import multiprocessing
 from fury.stream.servers.webrtc.server import webrtc_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
+# note, if python version is equal or higher than 3.8
+# uses shared memory approach
 if __name__ == '__main__':
     use_high_res = False
     if use_high_res:
@@ -17,7 +16,7 @@ if __name__ == '__main__':
         max_window_size = (1920, 1080)
     else:
         window_size = (500, 400)
-        window_size = (600, 600)
+        max_window_size = (600, 600)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
     ms_interaction = 10
@@ -67,7 +66,7 @@ if __name__ == '__main__':
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
     # showm.window.SetOffScreenRendering(1)
-    #showm.window.EnableRenderOff()
+    # showm.window.EnableRenderOff()
     showm.initialize()
 
     stream = FuryStreamClient(
@@ -79,13 +78,15 @@ if __name__ == '__main__':
     #     target=webrtc_server,
     #     args=(stream, None, None, circular_queue))
     # osx,
+
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(
+            None, stream.image_buffers,
             stream.image_buffer_names,
             stream.info_buffer,
             None,
-            stream_interaction.circular_queue.head_tail_buffer, 
+            stream_interaction.circular_queue.head_tail_buffer,
             stream_interaction.circular_queue.buffers._buffers))
     p.start()
     stream_interaction.start(ms=ms_interaction)

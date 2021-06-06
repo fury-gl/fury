@@ -67,7 +67,7 @@ if __name__ == '__main__':
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size,max_window_size=max_window_size)
+        showm, window_size, max_window_size=max_window_size)
     # linux
     # p = multiprocessing.Process(
     #     target=webrtc_server,
@@ -76,7 +76,9 @@ if __name__ == '__main__':
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(
-            None, stream.image_buffers, stream.info_buffer,
+            None, stream.image_buffers,
+            stream.image_buffer_names,
+            stream.info_buffer,
             None,)
     )
     p.start()
