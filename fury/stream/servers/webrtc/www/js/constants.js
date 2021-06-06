@@ -7,7 +7,7 @@ export const urlParams = new URLSearchParams(window.location.search);
 
 export const weelInterval =
   urlParams.get("weel_interval") === null
-    ? 10
+    ? 30
     : parseFloat(urlParams.get("weel_interval"));
 
 export const mouseInterval =
