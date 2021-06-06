@@ -12,7 +12,7 @@ markers = [
     np.random.choice(list(marker2id.keys()))
     for i in range(n)]
 
-centers = np.random.normal(size=(n, 3))
+centers = np.random.normal(size=(n, 3), scale=10)
 
 colors = np.random.uniform(size=(n, 3))
 nodes_actor = actor.markers(
@@ -23,12 +23,19 @@ nodes_actor = actor.markers(
     colors=colors,
     scales=.5,
 )
+nodes_3d_actor = actor.markers(
+    centers+np.ones_like(centers)*25,
+    marker='3d',
+    colors=colors,
+    scales=.5,
+)
 
 # this it's also possible 
 # nodes_actor = actor.marker_billboard(centers, marker='o', )
 scene = window.Scene()
 
 scene.add(nodes_actor)
+scene.add(nodes_3d_actor)
 
 interactive = True
 

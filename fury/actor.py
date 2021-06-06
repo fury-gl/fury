@@ -2547,16 +2547,16 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 
 def markers(
-        centers, colors=(0, 1, 0),
+        centers,
+        colors=(0, 1, 0),
         scales=1,
-        marker='o',
-        list_of_markers=None,
+        marker='3d',
         marker_opacity=.8,
         edge_width=.0,
         edge_color=(255, 255, 255),
         edge_opacity=.8
         ):
-    """Create a 2d billboard actor with different shapes.
+    """Create a marker actor with different shapes.
 
     Parameters
     ----------
@@ -2566,11 +2566,9 @@ def markers(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
-    marker: str
+    marker: str or a list
         This it's optional if "markers" arg are used
-        Available marker are: 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
-    list_of_markers: ndarray, shape (N) of str or int, optional
-        An array containing a marker for each center
+        Available marker are: '3d', o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
     marker_opacity: float, optional
     edge_width: int, optional
     edge_color: ndarray, shape (3), optional
@@ -2580,6 +2578,7 @@ def markers(
     vtkActor
 
     """
+
     numMarkers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
@@ -2595,16 +2594,28 @@ def markers(
             'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
             'h': 5, 's6': 6, 'x': 7, '+': 8}
 
-    if list_of_markers is None:
-        list_of_markers = np.ones(numMarkers)*marker2id[marker]
+    vs_dec_code = load("billboard_dec.vert")
+    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
+    vs_impl_code = load("billboard_impl.vert")
+    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
 
-    if isinstance(list_of_markers[0], str):
-        list_of_markers = [marker2id[i] for i in list_of_markers]
+    fs_dec_code = load('billboard_dec.frag')
+    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
+    fs_impl_code = load('billboard_impl.frag')
 
-    list_of_markers = np.repeat(list_of_markers, 4).astype('float')
-    attribute_to_actor(
-        sq_actor,
-        list_of_markers, 'marker')
+    if marker == '3d':
+        fs_impl_code += f'{load("billboard_spheres_impl.frag")}'
+    else:
+        fs_impl_code += f'{load("marker_billboard_impl.frag")}'
+        if not isinstance(marker, str):
+            list_of_markers = np.ones(numMarkers)*marker2id[marker]
+        else:
+            list_of_markers = [marker2id[i] for i in marker]
+
+        list_of_markers = np.repeat(list_of_markers, 4).astype('float')
+        attribute_to_actor(
+            sq_actor,
+            list_of_markers, 'marker')
 
     def callback(
         _caller, _event, calldata=None,
@@ -2630,16 +2641,6 @@ def markers(
             sq_actor, partial(
                 callback, uniform_type='3f', uniform_name='edgeColor',
                 value=edge_color))
-
-    vs_dec_code = load("billboard_dec.vert")
-    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
-    vs_impl_code = load("billboard_impl.vert")
-    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
-
-    fs_dec_code = load('billboard_dec.frag')
-    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
-    fs_impl_code = load('billboard_impl.frag')
-    fs_impl_code += f'{load("marker_billboard_impl.frag")}'
 
     shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
