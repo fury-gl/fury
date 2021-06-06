@@ -128,7 +128,7 @@ def webrtc_server(
     if circular_queue is None and queue_buffers_list is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffers_list)
+            buffers_list=queue_buffers_list, dimension=6)
 
     # if use_vidgear:
     #     import uvicorn, asyncio, cv2
@@ -160,7 +160,7 @@ def interaction_server(
     if circular_queue is None and queue_buffers_list is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffers_list)
+            buffers_list=queue_buffers_list, dimension=6)
 
     app_fury = get_app(
         None, circular_queue=circular_queue)

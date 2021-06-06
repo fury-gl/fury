@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
   if (interaction === null || interaction == 1)
     addInteraction(videoEl, useWebsocket);
   const videoClass =
-    runningOnIframe == null || runningOnIframe == 1
-      ? "videoIframeMode"
-      : "videoNormalMode";
+    runningOnIframe == null || runningOnIframe == 0 
+      ? "videoNormalMode"
+      : "videoIframeMode";
   videoEl.className = videoClass;
   if (backgroundColor != null)
     document.body.style.backgroundColor = backgroundColor;

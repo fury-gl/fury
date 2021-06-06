@@ -2,7 +2,7 @@ import numpy as np
 import multiprocessing
 
 
-class MultiDimensionalBuffer:
+class MultiDimensionalBufferList:
     def __init__(self, max_size=None, dimension=None, buffers_list=None):
 
         if buffers_list is None:
@@ -41,10 +41,48 @@ class MultiDimensionalBuffer:
             self._memory_views[i][idx] = data[i]
 
 
+class MultiDimensionalBuffer:
+    def __init__(self, max_size=None, dimension=None, buffers_list=None):
+
+        if dimension is not None and max_size is None:
+            max_size = np.frombuffer(
+                buffers_list, 'float64').shape[0]//dimension
+        print(dimension, max_size)
+        if buffers_list is None:
+            buffers_list = multiprocessing.RawArray(
+                    'd', np.zeros(max_size*dimension, dtype='float64'))
+
+        self._buffers = buffers_list
+        self._memory_views = np.ctypeslib.as_array(self._buffers)
+        self.dimension = dimension
+        self.max_size = max_size
+
+    @property
+    def buffers(self):
+        return self._buffers
+
+    @buffers.setter
+    def buffers(self, data):
+        self._memory_views[:] = data
+
+    def __getitem__(self, idx):
+        dim = self.dimension
+        start = idx*dim
+        end = dim*(idx+1)
+        itens = np.frombuffer(self._buffers, 'float64')[start:end]
+        return itens
+
+    def __setitem__(self, idx, data):
+        dim = self.dimension
+        start = idx*dim
+        end = dim*(idx+1)
+        self._memory_views[start:end] = data
+
+
 class CircularQueue:
 
     def __init__(
-        self, max_size=None, dimension=None,
+        self, max_size=10, dimension=6,
             head_tail_buffer=None,  buffers_list=None):
 
         buffers = MultiDimensionalBuffer(max_size, dimension, buffers_list)
@@ -76,12 +114,12 @@ class CircularQueue:
     def tail(self, value):
         self.head_tail_memview[1] = value
 
-    @property
-    def queue(self):
-        return [
-            np.frombuffer(self.buffers[i], 'float64')
-            for i in range(self.dimension)
-        ]
+    # @property
+    # def queue(self):
+    #     return [
+    #         np.frombuffer(self.buffers[i], 'float64')
+    #         for i in range(self.dimension)
+    #     ]
 
     def enqueue(self, data):
         if ((self.tail + 1) % self.max_size == self.head):
