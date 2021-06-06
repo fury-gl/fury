@@ -1,7 +1,7 @@
 from os.path import join as pjoin
 from fury import actor, window, colormap as cmap
 import numpy as np
-
+import time
 ###############################################################################
 # Then let's download some available datasets.
 
@@ -12,14 +12,14 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 if __name__ == '__main__':
 
-    window_size = (400, 400)
-    max_window_size = (700, 700)
+    window_size = (1280, 720)
+    max_window_size = (1920,1080)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
-    ms_interaction = 1
+    ms_interaction = 10
     ms_stream = 16
     # max number of interactions to be stored inside the queue
-    max_queue_size = 1000
+    max_queue_size = 10
     ######################################################################
     centers = 1*np.array([
         [0, 0, 0],
@@ -78,7 +78,8 @@ if __name__ == '__main__':
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(
-            None, stream.image_buffers, stream.info_buffer,
+            stream.image_buffer_names,
+            stream.info_buffer,
             None,
             stream_interaction.circular_queue.head_tail_buffer, 
             stream_interaction.circular_queue.buffers._buffers))
@@ -86,5 +87,8 @@ if __name__ == '__main__':
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)
     showm.start()
+    p.kill()
+    stream.cleanup()
+
     # open a browser using the following the url
     # http://localhost:8000/

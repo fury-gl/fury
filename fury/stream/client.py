@@ -2,6 +2,7 @@ import os
 from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 import vtk
 import multiprocessing
+from multiprocessing import shared_memory
 import numpy as np
 
 from fury.stream.tools import CircularQueue
@@ -28,6 +29,8 @@ class FuryStreamClient:
         self.window2image_filter.SetInput(self.showm.window)
         # self.write_in_stdout = write_in_stdout
         self.image_buffers = []
+        self.image_buffer_names = []
+        self.image_reprs = []
         self.buffer_count = buffer_count
         if max_window_size is None:
             max_window_size = window_size
@@ -46,13 +49,16 @@ class FuryStreamClient:
                     'I', info_list
             )
             for _ in range(self.buffer_count):
-                self.image_buffers.append(multiprocessing.RawArray(
-                    'B', np.random.randint(
-                        0, 255,
-                        size=max_window_size[0]*max_window_size[1]*3).astype('uint8')))
+                bufferSize = max_window_size[0]*max_window_size[1]*3
+                buffer = shared_memory.SharedMemory(create=True, size=bufferSize)
+                # buffer = multiprocessing.RawArray('B', max_window_size[0]*max_window_size[1]*3)
+                self.image_buffers.append(buffer)
+                self.image_reprs.append(np.ndarray(bufferSize, dtype=np.uint8, buffer=buffer.buf))
+                self.image_buffer_names.append(buffer.name)
         else:
             self.info_buffer = info_buffer
             self.image_buffers = image_buffers
+            #do not work anymore with shared memory
 
         self._id_timer = None
         self._id_observer = None
@@ -78,15 +84,15 @@ class FuryStreamClient:
                 self.window2image_filter.Modified()
                 vtk_image = window2image_filter.GetOutput()
                 vtk_array = vtk_image.GetPointData().GetScalars()
-                np_arr = vtk_to_numpy(vtk_array).astype('uint8')
-                h, w, _ = vtk_image.GetDimensions()
+                w, h, _ = vtk_image.GetDimensions()
                 num_components = vtk_array.GetNumberOfComponents()
-
+                np_arr = np.frombuffer(vtk_array, dtype=np.uint8)
+                
                 if self.image_buffers is not None:
                     buffer_size = int(h*w)
                     
                     self.info_buffer[0] = num_components
-                    np_arr = np_arr.flatten()
+                    
                     # N-Buffering
                     next_buffer_index = (self.info_buffer[1]+1) \
                         % self.buffer_count
@@ -94,14 +100,14 @@ class FuryStreamClient:
                     # 2, 4, 6
                     
                     if buffer_size == self.max_size:
-                        self.image_buffers[next_buffer_index][:] = np_arr
+                        self.image_reprs[next_buffer_index][:] = np_arr
                     elif buffer_size < self.max_size:
-                        self.image_buffers[next_buffer_index][0:buffer_size*3] = np_arr
+                        self.image_reprs[next_buffer_index][0:buffer_size*3] = np_arr
                     else:
                         rand_img = np.random.randint(
                             0, 255, size=self.max_size*3,
                             dtype='uint8')
-                        self.image_buffers[next_buffer_index][:] = rand_img
+                        self.image_reprs[next_buffer_index][:] = rand_img
                         w = self.max_window_size[0]
                         h = self.max_window_size[1]
                     self.info_buffer[2+next_buffer_index*2] = w
@@ -113,12 +119,17 @@ class FuryStreamClient:
             id_timer = self.showm.add_timer_callback(
                 True, ms, callback)
             self._id_timer = id_timer
-        else:
+        # else:
             id_observer = self.showm.iren.AddObserver(
                 'RenderEvent', callback)
             self._id_observer = id_observer
         self.showm.render()
         callback(None, None)
+
+    def cleanup(self):
+        for buffer in self.image_buffers:
+            buffer.close()
+            buffer.unlink()
 
     def stop(self):
         if self._id_timer is not None:
