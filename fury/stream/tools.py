@@ -47,7 +47,6 @@ class MultiDimensionalBuffer:
         if dimension is not None and max_size is None:
             max_size = np.frombuffer(
                 buffers_list, 'float64').shape[0]//dimension
-        print(dimension, max_size)
         if buffers_list is None:
             buffers_list = multiprocessing.RawArray(
                     'd', np.zeros(max_size*dimension, dtype='float64'))
@@ -114,12 +113,10 @@ class CircularQueue:
     def tail(self, value):
         self.head_tail_memview[1] = value
 
-    # @property
-    # def queue(self):
-    #     return [
-    #         np.frombuffer(self.buffers[i], 'float64')
-    #         for i in range(self.dimension)
-    #     ]
+    @property
+    def queue(self):
+        return np.frombuffer(
+            self.buffers._buffers, 'float64').reshape((self.max_size, self.dimension))
 
     def enqueue(self, data):
         if ((self.tail + 1) % self.max_size == self.head):
