@@ -162,7 +162,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
-        self.on_window_resize = lambda i_ren, obj, element: None
+        self.on_window_propagate = lambda i_ren, obj, element: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -317,7 +317,7 @@ class UI(object, metaclass=abc.ABCMeta):
                           self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
-        self.add_callback(actor, "WindowResizeEvent", self.window_resize_callback)
+        self.add_callback(actor, "WindowPropagatedEvent", self.window_propagate_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
@@ -385,13 +385,14 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_key_press(i_ren, obj, self)
 
     @staticmethod
-    def window_event_propogate(self, evt):
-        _iren = self.GetInteractor().GetInteractorStyle()
-        _iren.propagate_event(evt, self)
+    def window_event_propagate(self, evt):
+        # _iren = self.GetInteractor().GetInteractorStyle()
+        # _iren.propagate_event(evt, self)
+        print(self.GetClassName(), evt)
     
     @staticmethod
-    def window_resize_callback(i_ren, obj, self):
-        self.on_window_resize(i_ren, obj, self)
+    def window_propagate_callback(i_ren, obj, self):
+        self.on_window_propagate(i_ren, obj, self)
 
 class Button2D(UI):
     """A 2D overlay button and is of type vtkTexturedActor2D.
@@ -957,7 +958,7 @@ class Panel2D(UI):
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
-        self.background.on_window_resize = self.window_resize
+        self.background.on_window_propagate = self.window_resize
     
     def window_resize(self, i_ren, _obj, panel2d_object):
         print('Window Resized')
@@ -980,7 +981,7 @@ class Panel2D(UI):
         scene : scene
         """
         window = scene.GetRenderWindow()
-        window.AddObserver('WindowResizeEvent', self.window_event_propogate)
+        window.AddObserver('WindowResizeEvent', self.window_event_propagate)
         for element in self._elements:
             element.add_to_scene(scene)
 
