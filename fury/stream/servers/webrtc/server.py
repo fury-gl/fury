@@ -54,8 +54,8 @@ def webrtc_server(
                  0, 255, (image_info[1], image_info[0], 3),
                  dtype='uint8')
 
+            self.frame = None
             if not use_raw_array:
-                self.frame = None
                 self.image_buffers = []
                 self.image_reprs = []
                 self.image_buffer_names = image_buffer_names
@@ -72,34 +72,37 @@ def webrtc_server(
             width = image_info[2+buffer_index*2]
             height = image_info[2+buffer_index*2+1]
 
+            if self.frame is None \
+                or self.frame.planes[0].width != width \
+                    or self.frame.planes[0].height != height:
+                self.frame = FuryVideoFrame(width, height, "rgb24")
+
             if use_raw_array:
                 self.image = np.frombuffer(
                         image_buffers[buffer_index],
                         'uint8'
                     )[0:width*height*3].reshape((width, height, 3))
 
-                if flip_img:
-                    self.image = np.flipud(self.image)
-                av_frame = VideoFrame.from_ndarray(self.image)
-                av_frame.pts = pts
-                av_frame.time_base = time_base
-
-                return av_frame
-
-            else:
-                self.image = self.image_reprs[buffer_index]
-
-                if self.frame is None \
-                    or self.frame.planes[0].width != width \
-                        or self.frame.planes[0].height != height:
-                    self.frame = FuryVideoFrame(width, height, "rgb24")
-                # print(self.image[0:3])
+                #if flip_img:
+                    #self.image = np.flipud(self.image)
+                # av_frame = VideoFrame.from_ndarray(self.image)
+                # av_frame.pts = pts
+                # av_frame.time_base = time_base
+                # return av_frame
                 self.frame.update_from_ndarray(self.image)
                 self.frame.pts = pts
                 self.frame.time_base = time_base
 
+            else:
+                self.image = self.image_reprs[buffer_index]
+
+                # print(self.image[0:3])
+                self.frame.update_from_buffer(self.image)
+                self.frame.pts = pts
+                self.frame.time_base = time_base
+
                 # time.sleep(0.1)
-                return self.frame
+            return self.frame
 
         def terminate(self):
             try:

@@ -121,13 +121,14 @@ class FuryStreamClient:
                 vtk_image = window2image_filter.GetOutput()
                 vtk_array = vtk_image.GetPointData().GetScalars()
                 # num_components = vtk_array.GetNumberOfComponents()
+
+                w, h, _ = vtk_image.GetDimensions()
                 if self.use_raw_array:
-                    h, w, _ = vtk_image.GetDimensions()
+                    #h, w, _ = vtk_image.GetDimensions()
                     #np_arr = vtk_to_numpy(vtk_array).astype('uint8')
                     np_arr = np.frombuffer(vtk_array, dtype='uint8')
                     #np_arr = np_arr.flatten()
                 else:
-                    w, h, _ = vtk_image.GetDimensions()
                     np_arr = np.frombuffer(vtk_array, dtype=np.uint8)
 
                 if self.image_buffers is not None:
