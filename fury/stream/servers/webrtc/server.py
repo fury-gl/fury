@@ -78,18 +78,23 @@ def webrtc_server(
                 self.frame = FuryVideoFrame(width, height, "rgb24")
 
             if use_raw_array:
-                self.image = np.frombuffer(
-                        image_buffers[buffer_index],
-                        'uint8'
-                    )[0:width*height*3].reshape((width, height, 3))
-
+                if False: 
+                    self.image = np.frombuffer(
+                            image_buffers[buffer_index],
+                            'uint8'
+                        )[0:width*height*3].reshape((width, height, 3))
+                    self.frame.update_from_ndarray(self.image)
+                else:
+                    self.image = image_buffers[buffer_index]
+                    self.frame.update_from_buffer(self.image)
                 #if flip_img:
                     #self.image = np.flipud(self.image)
                 # av_frame = VideoFrame.from_ndarray(self.image)
                 # av_frame.pts = pts
                 # av_frame.time_base = time_base
                 # return av_frame
-                self.frame.update_from_ndarray(self.image)
+                #self.frame.update_from_ndarray(self.image)
+
                 self.frame.pts = pts
                 self.frame.time_base = time_base
 
