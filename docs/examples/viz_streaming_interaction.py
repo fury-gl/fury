@@ -11,9 +11,13 @@ from fury.stream.servers.webrtc.server import webrtc_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 if __name__ == '__main__':
-
-    window_size = (1280, 720)
-    max_window_size = (1920,1080)
+    use_high_res = False
+    if use_high_res:
+        window_size = (1280, 720)
+        max_window_size = (1920, 1080)
+    else:
+        window_size = (500, 400)
+        window_size = (600, 600)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
     ms_interaction = 10
