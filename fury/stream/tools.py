@@ -16,6 +16,9 @@ class MultiDimensionalBuffer:
             max_size = np.frombuffer(buffers_list[0], 'float64').shape[0]
 
         self._buffers = buffers_list
+        self._memory_views = [
+            np.ctypeslib.as_array(buffer)
+            for buffer in buffers_list]
         self.dimension = dimension
         self.max_size = max_size
 
@@ -25,7 +28,7 @@ class MultiDimensionalBuffer:
 
     @buffers.setter
     def buffers(self, data):
-        self._buffers[:] = data
+        self._memory_views[:] = data
 
     def __getitem__(self, idx):
         return [
@@ -35,7 +38,7 @@ class MultiDimensionalBuffer:
 
     def __setitem__(self, idx, data):
         for i in range(self.dimension):
-            self._buffers[i][idx] = data[i]
+            self._memory_views[i][idx] = data[i]
 
 
 class CircularQueue:
@@ -52,6 +55,8 @@ class CircularQueue:
 
         self.dimension = buffers.dimension
         self.head_tail_buffer = head_tail_buffer
+        self.head_tail_memview = np.ctypeslib.as_array(self.head_tail_buffer)
+
         self.max_size = buffers.max_size
         self.buffers = buffers
 
@@ -61,7 +66,7 @@ class CircularQueue:
 
     @head.setter
     def head(self, value):
-        self.head_tail_buffer[0] = value
+        self.head_tail_memview[0] = value
 
     @property
     def tail(self):
@@ -69,7 +74,7 @@ class CircularQueue:
 
     @tail.setter
     def tail(self, value):
-        self.head_tail_buffer[1] = value
+        self.head_tail_memview[1] = value
 
     @property
     def queue(self):

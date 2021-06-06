@@ -20,10 +20,10 @@ class FuryStreamClient:
             self, showm,
             window_size=(200, 200),
             max_window_size=None,
+            use_raw_array=None,
             buffer_count=2,
             image_buffers=None,
-            info_buffer=None,
-            use_raw_array=None):
+            info_buffer=None):
 
         '''
 
@@ -70,12 +70,16 @@ class FuryStreamClient:
         if use_raw_array:
             self.image_buffer_names = None
             if image_buffers is None:
+                self.image_memory_views = []
                 for _ in range(self.buffer_count):
-                    self.image_buffers.append(multiprocessing.RawArray(
+                    buffer = multiprocessing.RawArray(
                         'B', np.random.randint(
                             0, 255,
                             size=max_window_size[0]*max_window_size[1]*3)
-                        .astype('uint8')))
+                        .astype('uint8'))
+                    self.image_buffers.append(buffer)
+                    self.image_memory_views.append(
+                        np.ctypeslib.as_array(buffer))
             else:
                 self.info_buffer = info_buffer
                 self.image_buffers = image_buffers
@@ -116,11 +120,12 @@ class FuryStreamClient:
                 self.window2image_filter.Modified()
                 vtk_image = window2image_filter.GetOutput()
                 vtk_array = vtk_image.GetPointData().GetScalars()
-                num_components = vtk_array.GetNumberOfComponents()
+                # num_components = vtk_array.GetNumberOfComponents()
                 if self.use_raw_array:
                     h, w, _ = vtk_image.GetDimensions()
-                    np_arr = vtk_to_numpy(vtk_array).astype('uint8')
-                    np_arr = np_arr.flatten()
+                    #np_arr = vtk_to_numpy(vtk_array).astype('uint8')
+                    np_arr = np.frombuffer(vtk_array, dtype='uint8')
+                    #np_arr = np_arr.flatten()
                 else:
                     w, h, _ = vtk_image.GetDimensions()
                     np_arr = np.frombuffer(vtk_array, dtype=np.uint8)
@@ -128,7 +133,7 @@ class FuryStreamClient:
                 if self.image_buffers is not None:
                     buffer_size = int(h*w)
 
-                    self.info_buffer[0] = num_components
+                    # self.info_buffer[0] = num_components
 
                     # N-Buffering
                     next_buffer_index = (self.info_buffer[1]+1) \
@@ -137,13 +142,20 @@ class FuryStreamClient:
                     # 2, 4, 6
                     if buffer_size == self.max_size:
                         if self.use_raw_array:
-                            self.image_buffers[next_buffer_index][:] = np_arr
+                            # throws a type error due uint8
+                            # memoryview(
+                            #     self.image_buffers[next_buffer_index]
+                            # )[:] = np_arr
+                            self.image_memory_views[
+                                next_buffer_index][:] = np_arr
                         else:
                             self.image_reprs[next_buffer_index][:] = np_arr
                     elif buffer_size < self.max_size:
                         if self.use_raw_array:
-                            self.image_buffers[
-                                next_buffer_index][0:buffer_size*3] = np_arr
+                            self.image_memory_views[
+                               next_buffer_index][0:buffer_size*3] = np_arr
+                            # memoryview(self.image_buffers[
+                            #     next_buffer_index])[0:buffer_size*3] = np_arr
                         else:
                             self.image_reprs[
                                 next_buffer_index][0:buffer_size*3] = np_arr
@@ -152,7 +164,7 @@ class FuryStreamClient:
                             0, 255, size=self.max_size*3,
                             dtype='uint8')
                         if self.use_raw_array:
-                            self.image_buffers[
+                            self.image_memory_views[
                                 next_buffer_index][:] = rand_img
                         else:
                             self.image_reprs[
