@@ -1113,6 +1113,7 @@ class Panel2D(UI):
     
     def window_resize(self, i_ren, _obj, panel2d_object):
         # Logic to get new window size and update the panel accordingly
+        print(f'Window Resized, callback callee:-{self}')
         i_ren.event.abort() # Stop propagating the event
 
     def re_align(self, window_size_change):
