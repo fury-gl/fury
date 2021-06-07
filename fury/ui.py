@@ -982,8 +982,12 @@ class Panel2D(UI):
         ----------
         scene : scene
         """
-        window = scene.GetRenderWindow()
+        window = scene.GetRenderWindow() # Get the current window
         _iren = window.GetInteractor().GetInteractorStyle()
+
+        _window_size = window.GetSize()
+        _panel_size = self._get_size()
+        self.size_ratio = _panel_size / _window_size
 
         window.AddObserver('WindowResizeEvent',
                            partial(self.window_event_propagate,
@@ -1112,8 +1116,9 @@ class Panel2D(UI):
         i_ren.force_render()
     
     def window_resize(self, i_ren, _obj, panel2d_object):
-        # Logic to get new window size and update the panel accordingly
-        print(f'Window Resized, callback callee:-{self}')
+        _window_size = i_ren.GetInteractor().GetSize()
+        _new_size = self.size_ratio * _window_size
+        self.resize(_new_size)
         i_ren.event.abort() # Stop propagating the event
 
     def re_align(self, window_size_change):
