@@ -181,7 +181,7 @@ if __name__ == '__main__':
 
     subsurface = .0
     metallic = .0
-    specular = .5
+    specular = .0
     specular_tint = .0
     roughness = .0
     anisotropic = .0

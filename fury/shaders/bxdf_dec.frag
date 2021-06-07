@@ -42,6 +42,15 @@ vec3 calculateTint(vec3 baseColor)
     return luminance > .0 ? baseColor / luminance : vec3(1.);
 }
 
+void createBasis(vec3 normal, out vec3 tangent, out vec3 binormal)
+{
+    if(abs(normal.x) > abs(normal.y))
+        tangent = normalize(vec3(.0, normal.z, -normal.y));
+    else
+        tangent = normalize(vec3(-normal.z, .0, normal.x));
+    binormal = cross(normal, tangent);
+}
+
 float dielectric(float cosThetaI, float ni, float nt)
 {
     cosThetaI = clamp(cosThetaI, -1., 1.);
@@ -76,13 +85,29 @@ float dielectric(float cosThetaI, float ni, float nt)
     return (square(rParallel) + square(rPerpendicular)) / 2;
 }
 
+void directionOfAnisotropicity(vec3 normal, out vec3 tangent, out vec3 binormal)
+{
+    tangent = cross(normal, vec3(1., .0, 1.));
+    binormal = normalize(cross(normal, tangent));
+    tangent = normalize(cross(normal, binormal));
+}
+
 float GTR1(float dotHN, float alpha)
 {
     if(alpha >= 1.)
         return 1. / PI;
-    float alpha2 = alpha * alpha;
-    float t = 1. + (alpha2 - 1.) * dotHN * dotHN;
+    float alpha2 = square(alpha);
+    float dotHN2 = square(dotHN);
+    float t = 1. + (alpha2 - 1.) * dotHN2;
     return (alpha2 - 1.) / (PI * log(alpha2) * t);
+}
+
+float GTR2(float dotHN, float alpha)
+{
+    float alpha2 = square(alpha);
+    float dotHN2 = square(dotHN);
+    float t = 1. + (alpha2 - 1.) * dotHN2;
+    return alpha2 / (PI * square(t));
 }
 
 float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
@@ -99,7 +124,7 @@ float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
 float schlickWeight(float cosTheta)
 {
     float m = clamp(1. - cosTheta, .0, 1.);
-    return (m * m) * (m * m) * m;
+    return m * m * m * m * m;
 }
 
 float schlickR0FromRelativeIOR(float eta)
@@ -129,7 +154,7 @@ vec3 fresnel(float specularTintF, float IORF, float relativeIORF,
 
 float separableSmithGGXG1(float dotNV, float alpha)
 {
-    float alpha2 = alpha * alpha;
+    float alpha2 = square(alpha);
     return 2. / (1 + sqrt(alpha2 + (1 - alpha2) * dotNV * dotNV));
 }
 
@@ -156,8 +181,8 @@ float separableSmithGGXG1(float dotVX, float dotVY, float dotNV,
 
 float smithGGGX(float dotNV, float alpha)
 {
-    float alpha2 = alpha * alpha;
-    float b = dotNV * dotNV;
+    float alpha2 = square(alpha);
+    float b = square(dotNV);
     return 1. / (abs(dotNV) + max(sqrt(alpha2 + b - alpha2 * b), EPSILON));
 }
 
@@ -252,6 +277,29 @@ vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
     float gs = smithGGGXAnisotropic(dotLN, dotLX, dotLY, ax, ay);
     gs *= smithGGGXAnisotropic(dotNV, dotVX, dotVY, ax, ay);
 
+    return gs * fs * ds;
+}
+
+vec3 evaluateMicrofacetIsotropic(float specularF, float specularTintF,
+                                 float metallicF, float roughnessF,
+                                 vec3 baseColor, float dotHN, float dotHL,
+                                 float dotLN, float dotNV)
+{
+    if(specularF <= 0)
+        return vec3(.0);
+    if(dotLN <= .0 || dotNV <= .0)
+        return vec3(.0);
+    vec3 tint = calculateTint(baseColor);
+    vec3 tintMix = mix(vec3(1.), tint, specularTintF);
+    vec3 spec = mix(specularF * .08 * tintMix, baseColor, metallicF);
+
+    float a = max(.001, square(roughnessF));
+
+    float ds = GTR2(dotHN, a);
+    float fh = schlickWeight(dotHL);
+    vec3 fs = mix(spec, vec3(1.), fh);
+    float gs = smithGGGX(dotLN, a);
+    gs *= smithGGGX(dotNV, a);
     return gs * fs * ds;
 }
 
