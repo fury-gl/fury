@@ -167,10 +167,11 @@ def test_hover_selection_faces(recording=False):
                                order_transparent=True)
 
     showm.initialize()
-
+    global track_objects
     track_objects = []
 
     def hover_callback(_obj, _event):
+        global track_objects
         event_pos = selm.event_position(showm.iren)
         info = selm.select(event_pos, showm.scene, (10, 10))
         selected_faces = info[0]['face']
@@ -189,6 +190,7 @@ def test_hover_selection_faces(recording=False):
     track_objects = set(track_objects)
 
     npt.assert_({0, 1, 2}.issubset(track_objects))
+    del track_objects
 
 
 def test_hover_selection_vertices(recording=False):
@@ -214,14 +216,16 @@ def test_hover_selection_vertices(recording=False):
 
     showm.initialize()
 
-    track_objects = []
+    global track_objects2
+    track_objects2 = []
 
     def hover_callback(_obj, _event):
+        global track_objects2
         event_pos = selm.event_position(showm.iren)
         info = selm.select(event_pos, showm.scene, (100, 100))
         selected_triangles = info[0]['vertex']
         if selected_triangles is not None:
-            track_objects.append(selected_triangles[0]//8)
+            track_objects2.append(selected_triangles[0]//8)
         showm.render()
 
     showm.add_iren_callback(hover_callback)
@@ -232,9 +236,10 @@ def test_hover_selection_vertices(recording=False):
     else:
         showm.play_events_from_file(recording_filename)
 
-    track_objects = set(track_objects)
+    track_obj = set(track_objects2)
 
-    npt.assert_(track_objects.issubset({0, 1, 2}))
+    npt.assert_(track_obj.issubset({0, 1, 2}))
+    del track_objects2
 
 
 def test_hover_selection_actors_only(recording=False):
