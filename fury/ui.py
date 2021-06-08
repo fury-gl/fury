@@ -945,6 +945,7 @@ class Panel2D(UI):
         """
         super(Panel2D, self).__init__(position)
         self.resize(size)
+        self.max_size = size
         self.alignment = align
         self.color = color
         self.opacity = opacity
@@ -1118,7 +1119,7 @@ class Panel2D(UI):
     def window_resize(self, i_ren, _obj, panel2d_object):
         _window_size = i_ren.GetInteractor().GetSize()
         _new_size = self.size_ratio * _window_size
-        self.resize(_new_size)
+        self.resize(np.clip(_new_size, 0, self.max_size))
         i_ren.event.abort() # Stop propagating the event
 
     def re_align(self, window_size_change):
