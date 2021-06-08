@@ -9,6 +9,10 @@ from aiohttp import web
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaRelay
 
+import logging
+import time
+
+logging.basicConfig(level=logging.INFO)
 pcs = set()
 
 
@@ -70,10 +74,11 @@ async def offer(request, **kwargs):
 
 def set_weel(data, circular_queue):
     deltaY = float(data['deltaY'])
-
+    user_envent_ms = float(data['timestampInMs'])
     ok = circular_queue.enqueue(
-        np.array([1, deltaY, 0, 0, 0, 0], dtype='float64'))
-
+        np.array([1, deltaY, 0, 0, 0, 0, user_envent_ms, 0], dtype='float64'))
+    ts = time.time()*1000
+    logging.info(f'WEEL Time until enqueue {ts-user_envent_ms:.2f} ms')
     return ok
 
 
@@ -95,9 +100,10 @@ def set_mouse(data, circular_queue):
     ctrl_key = int(data['ctrlKey'])
     shift_key = int(data['shiftKey'])
 
+    user_envent_ms = float(data['timestampInMs'])
     circular_queue = circular_queue
     ok = circular_queue.enqueue(
-        np.array([2, 0, x, y,  ctrl_key, shift_key], dtype='float64'))
+        np.array([2, 0, x, y,  ctrl_key, shift_key, user_envent_ms, 0], dtype='float64'))
 
     return ok
 
@@ -124,6 +130,7 @@ def set_mouse_click(data, circular_queue):
     on = 0 if data['on'] == 1 else 1
     ctrl = int(data['ctrlKey'])
     shift = int(data['shiftKey'])
+    user_envent_ms = float(data['timestampInMs'])
     x = float(data['x'])
     y = float(data['y'])
     mouse_button = int(data['mouseButton'])
@@ -134,7 +141,7 @@ def set_mouse_click(data, circular_queue):
 
     event_id = (mouse_button + 1)*2 + on + 1
     ok = circular_queue.enqueue(
-        np.array([event_id, 0, x, y, ctrl, shift], dtype='float64'))
+        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0], dtype='float64'))
 
     return ok
 
@@ -187,6 +194,11 @@ async def websocket_handler(request, **kwargs):
             else:
                 data = json.loads(msg.data)
                 if data['type'] == 'weel':
+                    ts = time.time()*1000
+                    interval = ts-data['timestampInMs']
+                    logging.info(
+                        'WEEL request time approx ' +
+                        f'{interval:.2f} ms')
                     set_weel(data, circular_queue)
                 elif data['type'] == 'mouseMove':
                     set_mouse(data, circular_queue)

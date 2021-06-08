@@ -58,6 +58,7 @@ function addInteraction(videoEl, websocket) {
     const data = {
       type: "weel",
       deltaY: currentWheelEventTotalDeltaY,
+      timestampInMs: Date.now()
     };
     const dataJson = JSON.stringify(data);
     currentWheelEventTotalDeltaY = 0;
@@ -133,6 +134,7 @@ function addInteraction(videoEl, websocket) {
       y: mouseY,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
+      timestampInMs: Date.now()
     };
     const dataJson = JSON.stringify(data);
     if (websocket == 1) {
@@ -163,6 +165,7 @@ function addInteraction(videoEl, websocket) {
       y: mouseY,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
+      timestampInMs: Date.now()
     };
     const dataJson = JSON.stringify(data);
 
@@ -192,6 +195,7 @@ function addInteraction(videoEl, websocket) {
       mouseButton: mouseButton,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
+      timestampInMs: Date.now()
     };
     const dataJson = JSON.stringify(data);
 

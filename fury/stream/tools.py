@@ -42,7 +42,7 @@ class MultiDimensionalBufferList:
 
 
 class MultiDimensionalBuffer:
-    def __init__(self, max_size=None, dimension=None, buffers_list=None):
+    def __init__(self, max_size=None, dimension=7, buffers_list=None):
 
         if dimension is not None and max_size is None:
             max_size = np.frombuffer(
@@ -81,7 +81,7 @@ class MultiDimensionalBuffer:
 class CircularQueue:
 
     def __init__(
-        self, max_size=10, dimension=6,
+        self, max_size=10, dimension=8,
             head_tail_buffer=None,  buffers_list=None):
 
         buffers = MultiDimensionalBuffer(max_size, dimension, buffers_list)

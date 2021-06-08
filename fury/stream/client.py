@@ -12,7 +12,11 @@ else:
 import numpy as np
 
 from fury.stream.tools import CircularQueue
-# import imagezmq
+
+import logging
+import time
+
+logging.basicConfig(level=logging.INFO)
 
 
 class FuryStreamClient:
@@ -212,19 +216,24 @@ class FuryStreamInteraction:
         self.iren = self.showm.iren
         self.fury_client = fury_client
         self.circular_queue = CircularQueue(
-            max_size=max_queue_size, dimension=6,
+            max_size=max_queue_size, dimension=8,
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
         self._id_timer = None
 
     def start(self, ms=16):
-
         def callback(caller, timerevent):
             # self.showm.scene.GetActiveCamera().Azimuth(2)
-
+            ts = time.time()*1000
             data = self.circular_queue.dequeue()
             if data is not None:
                 event_id = data[0]
+                user_timestamp = data[6]
+                logging.info(
+                    'Interaction: time to dequeue ' +
+                    f'{ts-user_timestamp:.2f} ms')
+
+                ts = time.time()*1000
                 newX = int(self.showm.size[0]*data[2])
                 newY = int(self.showm.size[1]*data[3])
                 ctrl_key = int(data[4])
@@ -271,6 +280,10 @@ class FuryStreamInteraction:
 
                     # self.iren.SetLastEventPosition(newX, newY)
                     self.showm.window.Modified()
+                logging.info(
+                    'Interaction: time to peform event ' +
+                    f'{ts-user_timestamp:.2f} ms')
+
                 # maybe when the fury host rendering is disabled
                 # self.fury_client.window2image_filter.Update()
                 # self.fury_client.window2image_filter.Modified()
