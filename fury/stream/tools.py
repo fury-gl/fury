@@ -6,45 +6,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-class MultiDimensionalBufferList:
-    def __init__(self, max_size=None, dimension=None, buffers_list=None):
-
-        if buffers_list is None:
-            buffers_list = [
-                multiprocessing.RawArray(
-                    'd', np.zeros(max_size, dtype='float64'))
-                for i in range(dimension)
-            ]
-        else:
-            dimension = len(buffers_list)
-            max_size = np.frombuffer(buffers_list[0], 'float64').shape[0]
-
-        self._buffers = buffers_list
-        self._memory_views = [
-            np.ctypeslib.as_array(buffer)
-            for buffer in buffers_list]
-        self.dimension = dimension
-        self.max_size = max_size
-
-    @property
-    def buffers(self):
-        return self._buffers
-
-    @buffers.setter
-    def buffers(self, data):
-        self._memory_views[:] = data
-
-    def __getitem__(self, idx):
-        return [
-            np.frombuffer(self._buffers[i], 'float64')[idx]
-            for i in range(self.dimension)
-        ]
-
-    def __setitem__(self, idx, data):
-        for i in range(self.dimension):
-            self._memory_views[i][idx] = data[i]
-
-
 class MultiDimensionalBuffer:
     def __init__(self, max_size=None, dimension=7, buffers_list=None):
 
@@ -58,7 +19,6 @@ class MultiDimensionalBuffer:
 
         self._buffers = buffers_list
         self._memory_views = np.ctypeslib.as_array(self._buffers)
-        # self._memory_views = self._buffers
         self.dimension = dimension
         self.max_size = max_size
         self.full_size = int(max_size*dimension)
@@ -134,10 +94,10 @@ class CircularQueue:
     @property
     def queue(self):
         return np.frombuffer(
-            self.buffers._buffers.get_obj(), 'float64').reshape((self.max_size, self.dimension))
+            self.buffers._buffers.get_obj(), 'float64').reshape(
+                (self.max_size, self.dimension))
 
     def enqueue(self, data):
-        # with self.buffers._memory_views.get_lock():
         with self.head_tail_buffer.get_lock():
             if ((self.tail + 1) % self.max_size == self.head):
                 # self.head = 0
