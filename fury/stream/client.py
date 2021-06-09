@@ -283,7 +283,6 @@ class FuryStreamInteraction:
                 logging.info(
                     'Interaction: time to peform event ' +
                     f'{ts-user_timestamp:.2f} ms')
-
                 # maybe when the fury host rendering is disabled
                 # self.fury_client.window2image_filter.Update()
                 # self.fury_client.window2image_filter.Modified()

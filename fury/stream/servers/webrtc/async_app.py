@@ -193,6 +193,7 @@ async def websocket_handler(request, **kwargs):
                 await ws.close()
             else:
                 data = json.loads(msg.data)
+                logging.info(f'\n\nuser event time {data["timestampInMs"]}')
                 if data['type'] == 'weel':
                     ts = time.time()*1000
                     interval = ts-data['timestampInMs']
