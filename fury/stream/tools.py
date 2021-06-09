@@ -56,28 +56,27 @@ class MultiDimensionalBuffer:
             buffers_list = multiprocessing.RawArray(
                     'd', np.zeros(dimension*(max_size+1), dtype='float64'))
 
-            #max_size = 10
         self._buffers = buffers_list
         self._memory_views = np.ctypeslib.as_array(self._buffers)
         # self._memory_views = self._buffers
         self.dimension = dimension
         self.max_size = max_size
         self.full_size = int(max_size*dimension)
-    
+
     @property
     def buffers(self):
         return self._buffers
 
     @buffers.setter
     def buffers(self, data):
-        if isinstance(data, (np.ndarray, np.generic) ):
+        if isinstance(data, (np.ndarray, np.generic)):
             if data.dtype == 'float64':
                 self._memory_views[:] = data
 
     def get_start_end(self, idx):
         dim = self.dimension
-        start = idx*dim #% self.full_size
-        end = dim*(idx+1) #% self.full_size
+        start = idx*dim
+        end = dim*(idx+1)
         return start, end
 
     def __getitem__(self, idx):
@@ -91,12 +90,12 @@ class MultiDimensionalBuffer:
 
     def __setitem__(self, idx, data):
         start, end = self.get_start_end(idx)
-        if isinstance(data, (np.ndarray, np.generic) ):
+        if isinstance(data, (np.ndarray, np.generic)):
             if data.dtype == 'float64':
                 self._memory_views[start:end] = data
 
-class CircularQueue:
 
+class CircularQueue:
     def __init__(
         self, max_size=10, dimension=8,
             head_tail_buffer=None,  buffers_list=None):
@@ -109,8 +108,6 @@ class CircularQueue:
 
         self.dimension = buffers.dimension
         self.head_tail_buffer = head_tail_buffer
-        # self.head_tail_memview = np.ctypeslib.as_array(self.head_tail_buffer)
-        self.head_tail_memview = self.head_tail_buffer
 
         self.max_size = buffers.max_size
         self.buffers = buffers
@@ -121,7 +118,7 @@ class CircularQueue:
 
     @head.setter
     def head(self, value):
-        self.head_tail_memview[0] = value
+        self.head_tail_buffer[0] = value
 
     @property
     def tail(self):
@@ -129,11 +126,11 @@ class CircularQueue:
 
     @tail.setter
     def tail(self, value):
-        self.head_tail_memview[1] = value
-    
+        self.head_tail_buffer[1] = value
+
     def set_head_tail(self, head, tail):
-        self.head_tail_memview[:] = np.array([head, tail]).astype('int64')
-    
+        self.head_tail_buffer[:] = np.array([head, tail]).astype('int64')
+
     @property
     def queue(self):
         return np.frombuffer(
@@ -141,7 +138,7 @@ class CircularQueue:
 
     def enqueue(self, data):
         # with self.buffers._memory_views.get_lock():
-        with self.head_tail_memview.get_lock():
+        with self.head_tail_buffer.get_lock():
             if ((self.tail + 1) % self.max_size == self.head):
                 # self.head = 0
                 # self.tail = 0
@@ -163,9 +160,8 @@ class CircularQueue:
             return True
 
     def dequeue(self):
-
         # with self.buffers._memory_views.get_lock():
-        with self.head_tail_memview.get_lock():
+        with self.head_tail_buffer.get_lock():
             if self.head == -1:
                 return None
 
