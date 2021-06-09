@@ -87,7 +87,7 @@ float dielectric(float cosThetaI, float ni, float nt)
 
 void directionOfAnisotropicity(vec3 normal, out vec3 tangent, out vec3 binormal)
 {
-    tangent = cross(normal, vec3(1., .0, 1.));
+    tangent = cross(normal, vec3(.5, .5, 1.));
     binormal = normalize(cross(normal, tangent));
     tangent = normalize(cross(normal, binormal));
 }
@@ -282,7 +282,7 @@ vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
 
 vec3 evaluateMicrofacetIsotropic(float specularF, float specularTintF,
                                  float metallicF, float roughnessF,
-                                 vec3 baseColor, float dotHN, float dotHL,
+                                 vec3 baseColor, float dotHL, float dotHN,
                                  float dotLN, float dotNV)
 {
     if(specularF <= 0)

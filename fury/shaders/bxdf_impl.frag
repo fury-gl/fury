@@ -10,6 +10,8 @@
 // Texture reflection + roughness (1 = irradiance, 0 fully reflective)
 //fragOutput0 = vec4(prefilteredColor, opacity);
 
+//fragOutput0 = vec4(brdf, 0, opacity);
+
 //fragOutput0 = vec4(specular, opacity);
 
 // White + Normal (Black edge)
@@ -44,7 +46,7 @@ LoV3 += diffuseV3 * lightColor0 * NdV;
 
 // Isotropic BRDF
 vec3 specularV3 = evaluateMicrofacetIsotropic(specularValue, specularTint,
-        metallic, roughness, albedo, NdV, NdV, NdV, NdV);
+        metallic, roughness, albedo, max(NdV, .0), NdV, NdV, NdV);
 //fragOutput0 = vec4(specularV3, opacity);
 
 //LoV3 += (diffuseV3 + specularV3) * lightColor0 * NdV;
@@ -58,12 +60,19 @@ vec3 tangent = vec3(.0);
 vec3 binormal = vec3(.0);
 directionOfAnisotropicity(N, tangent, binormal);
 //createBasis(N, tangent, binormal);
-float NdX = clamp(dot(N, tangent), 1e-5, 1.);
-float NdY = clamp(dot(N, binormal), 1e-5, 1.);
+//fragOutput0 = vec4(N, opacity);
+//fragOutput0 = vec4(tangent, opacity);
+//fragOutput0 = vec4(binormal, opacity);
+
+float HdX = clamp(dot(V, tangent), 1e-5, 1.);
+float HdY = clamp(dot(V, binormal), 1e-5, 1.);
+//fragOutput0 = vec4(vec3(HdX, .0, .0), opacity);
+//fragOutput0 = vec4(vec3(.0, .0, HdY), opacity);
+
 vec3 anisotropicV3 = evaluateMicrofacetAnisotropic(
         specularValue, specularTint, metallic, anisotropic, roughness, albedo,
-        NdV, NdV, NdX, NdY, NdV, NdX, NdY, NdV, NdX, NdY);
-//fragOutput0 = vec4(anisotropicV3, opacity);
+        1., NdV, HdX, HdY, NdV, HdX, HdY, NdV, HdX, HdY);
+fragOutput0 = vec4(anisotropicV3, opacity);
 
 //LoV3 += (diffuseV3 + anisotropicV3) * lightColor0 * NdV;
 
@@ -86,7 +95,8 @@ LoV3 *= (1. - metallic);
 LoV3 += specularV3;
 
 // Clearcoat + Clearcoat Gloss
-float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, NdV, NdV, NdV, NdV);
+float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, max(NdV, .0),
+        NdV, NdV, NdV);
 //fragOutput0 = vec4(vec3(clearcoatF), opacity);
 
 LoV3 += clearcoatF;
