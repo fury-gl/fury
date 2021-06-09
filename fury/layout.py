@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
 
@@ -9,11 +9,18 @@ class Layout(object):
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
+        from fury.ui import UI
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
-            anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
-            a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
+            if isinstance(a, UI):
+                anchor = (*a.position, 0)
+
+                _new_position = pos + anchor
+                a._set_position((_new_position[0], _new_position[1]))
+            else:
+                anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
+                a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
 
     def compute_positions(self, _actors):
         """Compute the 3D coordinates of some actors."""
@@ -75,6 +82,8 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
+        from fury.ui import UI # to avoid circular import
+
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
                     list(map(get_bounding_box_sizes, actors)))
@@ -88,7 +97,16 @@ class GridLayout(Layout):
         elif self.cell_shape == "diagonal":
             # Size of every cell corresponds to the diagonal
             # of the largest bounding box.
-            longest_diagonal = np.max([a.GetLength() for a in actors])
+            diagonals = []
+            for a in actors:
+                if isinstance(a, UI):
+                    width, height = a._get_size()
+                    diagonal = math.sqrt(width**2 + height**2)
+                    diagonals.append(diagonal)
+                else:
+                    diagonals.append(a.GetLength())
+                
+            longest_diagonal = np.max(diagonals)
             shapes = [(longest_diagonal, longest_diagonal)] * len(actors)
         else:
             raise ValueError("Unknown cell shape: '{0}'"
