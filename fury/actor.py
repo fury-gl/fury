@@ -2569,3 +2569,79 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
     return box_actor
+
+
+def space_filling_model(atom_coords, elem_sym_list,
+                        return_unique_elements=False):
+    """Generate a space-filling molecular model from an array of atomic
+    coordinates and an array of corresponding element names
+
+    Parameters
+    ----------
+    atom_coords: ndarray, shape (N, 3)
+        Coordinates of the atoms composing the molecule
+    elem_sym_list: array of N strings
+        Contains the names of elements corresponding to each atom
+    return_unique_elements: bool
+        Return list having names and colors of the unique elements composing
+        the molecule
+        Default: False
+
+    Returns
+    -------
+    sf_model: vtkActor
+        A vtkActor visualizing the space-filling molecular model is returned
+    """
+    # first, we find the number of atoms to be rendered
+    no_atoms = len(atom_coords)
+    colors = np.ones((no_atoms, 3))
+    radii = np.ones((no_atoms, 1))
+    unique_elem_types = np.unique(elem_sym_list)
+
+    # cpk coloring scheme for coloring the atoms
+    # kindly note that the fourth entry in each element's list corresponds to
+    # to the its Van der Waals radius (in angstroms)
+    cpkr = {'H': [255/255, 255/255, 255/255, 1.2],
+            'C': [144/255, 144/255, 144/255, 1.7],
+            'N': [48/255, 80/255, 248/255, 1.55],
+            'O': [255/255, 13/255, 13/255, 1.52],
+            'NA': [171/255, 92/255, 242/255, 2.27],
+            'MG': [138/255, 255/255, 0, 1.73],
+            'P': [255/255, 128/255, 0, 1.8],
+            'S': [255/255, 255/255, 48/255, 1.8],
+            'CL': [31/255, 240/255, 31/255, 1.75],
+            'K': [143/255, 64/255, 212/255, 2.75],
+            'CA': [61/255, 255/255, 0, 2.31],
+            'FE': [224/255, 102/255, 51/255, 1.16],
+            'CO': [240/255, 144/255, 160/255, 2.4],
+            'NI': [80/255, 208/255, 80/255, 1.63],
+            'ZN': [125/255, 128/255, 176/255, 1.39],
+            'CD': [255/255, 217/255, 143/255, 1.58]
+            }
+
+    # store names of unique elements rendered in the model and their colors
+    if return_unique_elements:
+        elements = []
+
+    # assigning the appropriate colors and radii to the atoms
+    for i, typ in enumerate(unique_elem_types):
+        colors[elem_sym_list == typ] = cpkr[typ][:3]
+        radii[elem_sym_list == typ] = cpkr[typ][-1]
+        if return_unique_elements:
+            elements.append([typ, cpkr[typ][:3]])
+
+    # using shaders for faster rendering as models can sometimes contain many
+    # atoms (~300,000)
+    billboard_sphere_dec = load("billboard_spheres_dec.frag")
+    billboard_sphere_impl = load("billboard_spheres_impl.frag")
+    sf_model = billboard(atom_coords,
+                         colors=colors,
+                         scales=radii,
+                         fs_dec=billboard_sphere_dec,
+                         fs_impl=billboard_sphere_impl
+                         )
+
+    if return_unique_elements:
+        return sf_model, elements
+    else:
+        return sf_model
