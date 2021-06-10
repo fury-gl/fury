@@ -2561,17 +2561,16 @@ def markers(
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Superquadrics positions
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
-        The height of the cone.
-    marker: str or a list
+    marker : str or a list
         This it's optional if "markers" arg are used
-        Available marker are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
-    marker_opacity: float, optional
-    edge_width: int, optional
-    edge_color: ndarray, shape (3), optional
+        Available marker are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
+        'x', '+'
+    marker_opacity : float, optional
+    edge_width : int, optional
+    edge_color : ndarray, shape (3), optional
 
     Returns
     -------
