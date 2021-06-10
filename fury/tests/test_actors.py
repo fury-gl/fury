@@ -1458,3 +1458,21 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 4)
+
+
+def test_space_filling_model(interactive=False):
+    atom_coords = np.array([[3.875,   0.678,  -8.417],
+                            [3.800,   1.690,  -8.076],
+                            [4.907,   0.410,  -8.516],
+                            [3.406,   0.026,  -7.711],
+                            [3.389,   0.583,  -9.366]], dtype=float)
+    elem_sym_list = np.array(['C', 'H', 'H', 'H', 'H'])
+    sf_model = actor.space_filling_model(atom_coords, elem_sym_list)
+    scene = window.Scene()
+    scene.add(sf_model)
+    scene.add(actor.axes())
+    if interactive:
+        window.show(scene)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 2)
