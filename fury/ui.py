@@ -3203,8 +3203,6 @@ class ImageContainer2D(UI):
         ----------
         img_path : string
             Path of the image
-        is_url: bool, optional
-            Is the image path a URL
         position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of the image.
         size : (int, int), optional

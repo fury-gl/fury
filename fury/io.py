@@ -14,8 +14,6 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     ----------
     filename: str
         should be png, bmp, jpeg or jpg files
-    is_url: bool, optional
-        Is the filename a URL
     as_vtktype: bool, optional
         if True, return vtk output otherwise an ndarray. Default False.
     use_pillow: bool, optional
