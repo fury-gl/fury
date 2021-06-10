@@ -1,20 +1,30 @@
+"""
+======================================================================
+Fury Markers
+======================================================================
+
+This it's a example which shows how to use the marker actor.
+"""
 import numpy as np
 import vtk
 import vtk.util.numpy_support as vtknp
 from fury import actor, window, colormap as cmap
-
 n = 10000
 
-marker2id = {
-            'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
-            'h': 5, 's6': 6, 'x': 7, '+': 8}
+"""
+The are nine types 2d markers: circle, square, diamond,
+triangle, pentagon, hexagon, heptagon, cross and plus.
+"""
+marker_symbols = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']
 markers = [
-    np.random.choice(list(marker2id.keys()))
+    np.random.choice(marker_symbols)
     for i in range(n)]
 
 centers = np.random.normal(size=(n, 3), scale=10)
 
 colors = np.random.uniform(size=(n, 3))
+# In addition, as similar to networkx,  you can control the
+# edge color and edge width for each marker
 nodes_actor = actor.markers(
     centers,
     marker=markers,
@@ -23,6 +33,7 @@ nodes_actor = actor.markers(
     colors=colors,
     scales=.5,
 )
+# In addtion, the 3d impostor sphere it's also a valid type of marker
 nodes_3d_actor = actor.markers(
     centers+np.ones_like(centers)*25,
     marker='3d',
@@ -30,8 +41,6 @@ nodes_3d_actor = actor.markers(
     scales=.5,
 )
 
-# this it's also possible 
-# nodes_actor = actor.marker_billboard(centers, marker='o', )
 scene = window.Scene()
 
 scene.add(nodes_actor)
