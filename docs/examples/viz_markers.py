@@ -17,7 +17,7 @@ centers = np.random.normal(size=(n, 3), scale=10)
 colors = np.random.uniform(size=(n, 3))
 nodes_actor = actor.markers(
     centers,
-    list_of_markers=markers,
+    marker=markers,
     edge_width=.1,
     edge_color=[255, 255, 0],
     colors=colors,

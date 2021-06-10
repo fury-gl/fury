@@ -2568,7 +2568,7 @@ def markers(
         The height of the cone.
     marker: str or a list
         This it's optional if "markers" arg are used
-        Available marker are: '3d', o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
+        Available marker are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+'
     marker_opacity: float, optional
     edge_width: int, optional
     edge_color: ndarray, shape (3), optional
@@ -2607,7 +2607,7 @@ def markers(
         fs_impl_code += f'{load("billboard_spheres_impl.frag")}'
     else:
         fs_impl_code += f'{load("marker_billboard_impl.frag")}'
-        if not isinstance(marker, str):
+        if isinstance(marker, str):
             list_of_markers = np.ones(numMarkers)*marker2id[marker]
         else:
             list_of_markers = [marker2id[i] for i in marker]
