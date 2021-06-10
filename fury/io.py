@@ -4,15 +4,17 @@ import numpy as np
 from PIL import Image
 from vtk.util import numpy_support
 from fury.utils import set_input
+from urllib.request import urlretrieve
 
-
-def load_image(filename, as_vtktype=False, use_pillow=True):
+def load_image(filename, is_url=False, as_vtktype=False, use_pillow=True):
     """Load an image.
 
     Parameters
     ----------
     filename: str
         should be png, bmp, jpeg or jpg files
+    is_url: bool, optional
+        Is the filename a URL
     as_vtktype: bool, optional
         if True, return vtk output otherwise an ndarray. Default False.
     use_pillow: bool, optional
@@ -24,6 +26,11 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
+    if is_url:
+        image_name = os.path.basename(filename)
+        urlretrieve(filename, image_name)
+        filename = image_name
+
     if use_pillow:
         with Image.open(filename) as pil_image:
             if pil_image.mode in ['RGBA', 'RGB', 'L']:
@@ -64,6 +71,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             vtk_image.GetPointData().SetScalars(uchar_array)
             image = vtk_image
 
+        os.remove(filename)
         return image
 
     d_reader = {".png": vtk.vtkPNGReader,
@@ -92,6 +100,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
         image = np.flipud(image)
 
+    os.remove(filename)
     return reader.GetOutput() if as_vtktype else image
 
 
