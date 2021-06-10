@@ -1423,3 +1423,35 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 4)
+
+
+def test_marker_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((1, 1, 1))
+    centers_3do = np.array([[4, 0, 0], [4, 4, 0], [4, 8, 0]])
+    markers_2d = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']
+    center_markers_2d = np.array(
+        [[0, i*2, 0] for i in range(len(markers_2d))])
+    fake_spheres = actor.markers(
+        centers_3do,
+        colors=(0, 1, 0),
+        scales=1,
+        marker='3d'
+    )
+    markers_2d = actor.markers(
+        center_markers_2d,
+        colors=(0, 1, 0),
+        scales=1,
+        marker=markers_2d
+    )
+    scene.add(fake_spheres)
+    scene.add(markers_2d)
+
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+
+    colors = np.array([[0, 1, 0] for i in range(12)])
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 12)
