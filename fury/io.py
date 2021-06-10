@@ -6,6 +6,7 @@ from vtk.util import numpy_support
 from fury.utils import set_input
 from urllib.request import urlretrieve
 
+
 def load_image(filename, is_url=False, as_vtktype=False, use_pillow=True):
     """Load an image.
 
