@@ -3197,8 +3197,7 @@ class ImageContainer2D(UI):
 
     """
 
-    def __init__(self, img_path, is_url=False, position=(0, 0),
-                 size=(100, 100)):
+    def __init__(self, img_path, position=(0, 0), size=(100, 100)):
         """
         Parameters
         ----------
@@ -3212,7 +3211,7 @@ class ImageContainer2D(UI):
             Width and height in pixels of the image.
         """
         super(ImageContainer2D, self).__init__(position)
-        self.img = load_image(img_path, is_url, as_vtktype=True)
+        self.img = load_image(img_path, as_vtktype=True)
         self.set_img(self.img)
         self.resize(size)
 
