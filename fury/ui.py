@@ -1006,13 +1006,13 @@ class Panel2D(UI):
 
         self.borders['left'].resize((self.border_width,
                                      size[1]+self.border_width))
-                                     
+
         self.borders['right'].resize((self.border_width,
                                       size[1]+self.border_width))
-                                      
+
         self.borders['top'].resize((self.size[0]+self.border_width,
                                     self.border_width))
-                                    
+
         self.borders['bottom'].resize((self.size[0]+self.border_width,
                                        self.border_width))
 
