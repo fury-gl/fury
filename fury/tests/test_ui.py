@@ -242,6 +242,25 @@ def test_ui_button_panel(recording=False):
     npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
                       (-0.5, 0.5))
 
+    labels = ['left', 'right', 'top', 'bottom']
+
+    for label in labels:
+        npt.assert_equal(panel.get_border_width(label), 0.0)
+        npt.assert_equal(panel.get_border_color(label), (1, 1, 1))
+
+    panel.set_border_width('bottom', 10.0)
+    npt.assert_equal(panel.get_border_width('bottom'), 10.0)
+
+    with npt.assert_raises(ValueError):
+        panel.set_border_width('invalid_label', 10.0)
+
+    panel.set_border_color('bottom', (0.4, 0.5, 0.6))
+    npt.assert_equal(panel.get_border_color('bottom'), (0.4, 0.5, 0.6))
+
+    new_size = (400, 400)
+    panel.resize(new_size)
+    npt.assert_equal(panel.borders['bottom'].width, 400.0)
+
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(button_test)
