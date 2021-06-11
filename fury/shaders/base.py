@@ -208,22 +208,22 @@ def shader_apply_effects(
 
     Parameters
     ----------
-        showm: fury.window.ShowManager
-        actor: vtk actor
-        effect:  function
-            a function with a glState as argument
-        effects: a list of functions, optional
-        priority: float, optional
-            Related with the shader callback command.
-            Effects with a higher priority are applied first and
-            can be override by the others.
+    showm : fury.window.ShowManager
+    actor : vtk actor
+    effect :  function
+        a function with a glState as argument
+    effects : a list of functions, optional
+    priority : float, optional
+        Related with the shader callback command.
+        Effects with a higher priority are applied first and
+        can be override by the others.
 
     Returns
     -------
-        id_observer : int
-            An unsigned Int tag which can be used later to remove the event
-            or retrieve the vtkCommand used in the observer.
-            See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
+    id_observer : int
+        An unsigned Int tag which can be used later to remove the event
+        or retrieve the vtkCommand used in the observer.
+        See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
     """
     if effects is None:

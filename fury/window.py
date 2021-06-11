@@ -1038,7 +1038,7 @@ def test_and_extract_gl_state(func):
 
         Parameters
         ----------
-            obj:
+        obj :
                 'vtkOpenGLState' or fury.window.ShowManager
         """
         if isinstance(obj, ShowManager):
@@ -1073,7 +1073,7 @@ def gl_reset_blend(glState):
     """Redefines the state of the OpenGL context related with how the RGBA
     channels will be combined.
 
-    See more:
+    See more
     ---------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
     [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
@@ -1127,7 +1127,7 @@ def gl_set_additive_blending(glState, dark_background=True):
 
 
 @test_and_extract_gl_state
-def gl_set_normal_blending(glState, dark_background=False):
+def gl_set_normal_blending(glState):
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
     glState.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
