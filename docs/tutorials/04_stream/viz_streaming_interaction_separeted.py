@@ -79,6 +79,7 @@ if __name__ == '__main__':
             None, stream.image_buffers,
             stream.image_buffer_names,
             stream.info_buffer,
+            stream.info_buffer_name,
             None,)
     )
     p.start()

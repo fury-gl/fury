@@ -1,10 +1,9 @@
-from vtk.util.numpy_support import vtk_to_numpy, numpy_to_vtk
 import vtk
 import multiprocessing
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
-    PY_VERSION_8 = False
+    PY_VERSION_8 = True
 else:
     shared_memory = None
     PY_VERSION_8 = False
@@ -16,15 +15,13 @@ from fury.stream.tools import CircularQueue
 import logging
 import time
 
-logging.basicConfig(level=logging.ERROR)
-
 
 class FuryStreamClient:
     def __init__(
             self, showm,
             window_size=(200, 200),
             max_window_size=None,
-            use_raw_array=None,
+            use_raw_array=True,
             buffer_count=2,
             image_buffers=None,
             info_buffer=None):
@@ -40,6 +37,7 @@ class FuryStreamClient:
         self.window2image_filter.SetInput(self.showm.window)
         self.image_buffers = []
         self.image_buffer_names = []
+        self.info_buffer_name = None
         self.image_reprs = []
         self.buffer_count = buffer_count
         if max_window_size is None:
@@ -48,11 +46,6 @@ class FuryStreamClient:
         self.max_window_size = max_window_size
         if self.max_size < window_size[0]*window_size[1]:
             raise ValueError('max_window_size must be greater than window_size')
-
-        # se use_raw_array não é setado escolhe a abordagem
-        # automaticamente
-        if use_raw_array is None:
-            use_raw_array = not PY_VERSION_8
 
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError("""
@@ -67,13 +60,26 @@ class FuryStreamClient:
             for _ in range(self.buffer_count):
                 info_list += [self.max_window_size[0]]
                 info_list += [self.max_window_size[1]]
-            self.info_buffer = multiprocessing.RawArray(
-                    'I', info_list
+            info_list = np.array(
+               info_list, dtype='uint64'
             )
+            if use_raw_array:
+                self.info_buffer = multiprocessing.RawArray(
+                        'I', info_list
+                )
+                self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
+            else:
+                self.info_buffer = shared_memory.SharedMemory(
+                    create=True, size=info_list.nbytes)
+                self.info_buffer_repr = np.ndarray(
+                        info_list.shape[0],
+                        dtype='uint64', buffer=self.info_buffer.buf)
+                self.info_buffer_name = self.info_buffer.name
+
         if use_raw_array:
             self.image_buffer_names = None
             if image_buffers is None:
-                self.image_memory_views = []
+                self.image_reprs = []
                 for _ in range(self.buffer_count):
                     buffer = multiprocessing.RawArray(
                         'B', np.random.randint(
@@ -81,13 +87,14 @@ class FuryStreamClient:
                             size=max_window_size[0]*max_window_size[1]*3)
                         .astype('uint8'))
                     self.image_buffers.append(buffer)
-                    self.image_memory_views.append(
+                    self.image_reprs.append(
                         np.ctypeslib.as_array(buffer))
             else:
                 self.info_buffer = info_buffer
                 self.image_buffers = image_buffers
                 # do not work anymore with shared memory
         else:
+            logging.info('Using the shared memory approach')
             for _ in range(self.buffer_count):
                 bufferSize = max_window_size[0]*max_window_size[1]*3
                 buffer = shared_memory.SharedMemory(
@@ -97,7 +104,6 @@ class FuryStreamClient:
                     np.ndarray(
                         bufferSize, dtype=np.uint8, buffer=buffer.buf))
                 self.image_buffer_names.append(buffer.name)
-
         self._id_timer = None
         self._id_observer = None
         self.sender = None
@@ -133,41 +139,32 @@ class FuryStreamClient:
                     # self.info_buffer[0] = num_components
 
                     # N-Buffering
-                    next_buffer_index = (self.info_buffer[1]+1) \
-                        % self.buffer_count
-
+                    next_buffer_index = int((self.info_buffer_repr[1]+1) \
+                        % self.buffer_count)
                     if buffer_size == self.max_size:
-                        if self.use_raw_array:
-                            # throws a type error due uint8
-                            # memoryview(
-                            #     self.image_buffers[next_buffer_index]
-                            # )[:] = np_arr
-                            self.image_memory_views[
-                                next_buffer_index][:] = np_arr
-                        else:
-                            self.image_reprs[next_buffer_index][:] = np_arr
+                        #if self.use_raw_array:
+                        # throws a type error due uint8
+                        # memoryview(
+                        #     self.image_buffers[next_buffer_index]
+                        # )[:] = np_arr
+                        self.image_reprs[
+                            next_buffer_index][:] = np_arr
                     elif buffer_size < self.max_size:
-                        if self.use_raw_array:
-                            self.image_memory_views[
-                               next_buffer_index][0:buffer_size*3] = np_arr
-                        else:
-                            self.image_reprs[
+                        self.image_reprs[
                                 next_buffer_index][0:buffer_size*3] = np_arr
                     else:
                         rand_img = np.random.randint(
                             0, 255, size=self.max_size*3,
                             dtype='uint8')
-                        if self.use_raw_array:
-                            self.image_memory_views[
-                                next_buffer_index][:] = rand_img
-                        else:
-                            self.image_reprs[
-                                next_buffer_index][:] = rand_img
+      
+                        self.image_reprs[
+                            next_buffer_index][:] = rand_img
+
                         w = self.max_window_size[0]
                         h = self.max_window_size[1]
-                    self.info_buffer[2+next_buffer_index*2] = w
-                    self.info_buffer[2+next_buffer_index*2+1] = h
-                    self.info_buffer[1] = next_buffer_index
+                    self.info_buffer_repr[2+next_buffer_index*2] = w
+                    self.info_buffer_repr[2+next_buffer_index*2+1] = h
+                    self.info_buffer_repr[1] = next_buffer_index
                 self._in_request = False
 
         if ms > 0:
@@ -181,18 +178,23 @@ class FuryStreamClient:
         self.showm.render()
         callback(None, None)
 
-    def cleanup(self):
-        if self.image_buffer_names is not None:
-            for buffer in self.image_buffers:
-                buffer.close()
-                buffer.unlink()
-
     def stop(self):
+        logging.info('stop timers')
         if self._id_timer is not None:
             self.showm.destroy_timer(self._id_timer)
 
         if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
+
+    def cleanup(self):
+        self.stop()
+        if not self.use_raw_array:
+            logging.info('release shared memory buffers')
+            self.info_buffer.close()
+            self.info_buffer.unlink()
+            for buffer in self.image_buffers:
+                buffer.close()
+                buffer.unlink()
 
 
 class FuryStreamInteraction:
@@ -274,8 +276,10 @@ class FuryStreamInteraction:
                 # self.fury_client.window2image_filter.Modified()
                 # self.showm.render()
 
-        self._id_timer = self.showm.add_timer_callback(True, ms, callback)
+        self._id_timer = self.showm.add_timer_callback(
+            True, ms, callback)
 
     def stop(self):
         if self._id_timer is not None:
-            self.showm.destroy_timer(self._id_timer)
+            self.showm.destroy_timer(
+                self._id_timer)

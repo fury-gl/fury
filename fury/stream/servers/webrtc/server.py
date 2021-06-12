@@ -1,12 +1,10 @@
 # import os
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
-# import logging
-# logging.basicConfig(level=logging.ERROR)
-
+import logging
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
-    PY_VERSION_8 = False
+    PY_VERSION_8 = True
 else:
     shared_memory = None
     PY_VERSION_8 = False
@@ -33,6 +31,7 @@ def webrtc_server(
         image_buffers=None,
         image_buffer_names=None,
         info_buffer=None,
+        info_buffer_name=None,
         circular_queue=None,
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
@@ -43,39 +42,51 @@ def webrtc_server(
         image_buffers = stream_client.image_buffers
         info_buffer = stream_client.info_buffer
 
-    use_raw_array = image_buffer_names is None
+    use_raw_array = image_buffer_names is None and info_buffer_name is None
 
     class RTCServer(VideoStreamTrack):
-        def __init__(self,):
+        def __init__(
+                self, use_raw_array=True,
+                info_buffer=None, image_buffers=None,
+                info_buffer_name=None, image_buffer_names=None):
             super().__init__()
 
-            # starts with a random image
-
-            image_info = np.frombuffer(
-                info_buffer, 'uint32')
-            self.image = np.random.randint(
-                 0, 255, (image_info[1], image_info[0], 3),
-                 dtype='uint8')
-
             self.frame = None
-            self.image_buffers = image_buffers
+            self.use_raw_array = use_raw_array
             if not use_raw_array:
+                self.info_buffer = shared_memory.SharedMemory(info_buffer_name)
+                self.info_buffer_repr = np.ndarray(
+                        6,
+                        dtype='uint64',
+                        buffer=self.info_buffer.buf)
                 self.image_buffers = []
                 self.image_reprs = []
                 self.image_buffer_names = image_buffer_names
                 for buffer_name in self.image_buffer_names:
                     buffer = shared_memory.SharedMemory(buffer_name)
                     self.image_buffers.append(buffer)
-                    self.image_reprs.append(np.ndarray(len(buffer.buf), dtype=np.uint8, buffer=buffer.buf))
+                    self.image_reprs.append(np.ndarray(
+                        len(buffer.buf),
+                        dtype=np.uint8,
+                        buffer=buffer.buf))
+            else:
+                self.info_buffer = np.frombuffer(
+                    info_buffer, 'uint64')
+                self.info_buffer_repr = np.ctypeslib.as_array(
+                    self.info_buffer)
+                self.image_buffers = image_buffers
 
         async def recv(self):
             pts, time_base = await self.next_timestamp()
-            image_info = np.frombuffer(
-                info_buffer, 'uint32')
-            buffer_index = image_info[1]
-            width = image_info[2+buffer_index*2]
-            height = image_info[2+buffer_index*2+1]
+            if self.use_raw_array:
+                image_info = np.frombuffer(
+                    self.info_buffer, 'uint32')
+            else:
+                image_info = self.info_buffer_repr
 
+            buffer_index = int(image_info[1])
+            width = int(image_info[2+buffer_index*2])
+            height = int(image_info[2+buffer_index*2+1])
             if self.frame is None \
                 or self.frame.planes[0].width != width \
                     or self.frame.planes[0].height != height:
@@ -106,7 +117,9 @@ def webrtc_server(
 
             return self.frame
 
-        def terminate(self):
+        def release(self):
+
+            logging.info("Release Server")
             try:
                 if not (self.stream is None):
                     self.stream.release()
@@ -114,24 +127,32 @@ def webrtc_server(
             except AttributeError:
                 pass
 
-        def __del__(self):
-            if not use_raw_array:
+        def cleanup(self):
+            logging.info("Freeing buffer from RTC Server")
+            self.release()
+            if not self.use_raw_array:
                 for buffer in self.image_buffers:
                     buffer.close()
                     buffer.unlink()
-            print("Freeing buffer from RTC Server")
-            super().__del__()
+                self.info_buffer.close()
+                self.info_buffer.unlink()
 
     if circular_queue is None and queue_buffers_list is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
 
+    rtc_server = RTCServer(
+        use_raw_array,
+        info_buffer, image_buffers,
+        info_buffer_name, image_buffer_names)
+
     app_fury = get_app(
-        RTCServer(), circular_queue=circular_queue,
+       rtc_server, circular_queue=circular_queue,
     )
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)
+    rtc_server.cleanup()
 
 
 def interaction_server(

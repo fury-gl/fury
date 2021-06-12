@@ -7,13 +7,13 @@ import multiprocessing
 from fury.stream.servers.webrtc.server import webrtc_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
+import logging
+import time
+
+
 # note, if python version is equal or higher than 3.8
 # uses shared memory approach
 if __name__ == '__main__':
-    # se estiver usando python 3.8 e quiser testar o 
-    # raw_array sete use_raw_array=False. 
-    # se estiver usando pytho n3.8 por default escolhe shared memory
-    use_raw_array = None
     use_high_res = False
     if use_high_res:
         window_size = (1280, 720)
@@ -74,8 +74,7 @@ if __name__ == '__main__':
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size, max_window_size=max_window_size,
-        use_raw_array=use_raw_array)
+        showm, window_size, max_window_size=max_window_size,)
     stream_interaction = FuryStreamInteraction(
         showm, max_queue_size=max_queue_size, fury_client=stream)
     # linux
@@ -90,6 +89,7 @@ if __name__ == '__main__':
             None, stream.image_buffers,
             stream.image_buffer_names,
             stream.info_buffer,
+            stream.info_buffer_name,
             None,
             stream_interaction.circular_queue.head_tail_buffer,
             stream_interaction.circular_queue.buffers._buffers))
