@@ -25,10 +25,15 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
-    is_url = filename.startswith('http://') or filename.startswith('https://')
+    is_url = filename.lower().startswith('http://') \
+        or filename.lower().startswith('https://')
 
     if is_url:
         image_name = os.path.basename(filename)
+
+        if len(image_name.split('.')) < 2:
+            raise IOError(f'{filename} is not a valid image URL')
+
         urlretrieve(filename, image_name)
         filename = image_name
 
