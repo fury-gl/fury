@@ -12,7 +12,7 @@ from aiortc.contrib.media import MediaRelay
 import logging
 import time
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 pcs = set()
 
 

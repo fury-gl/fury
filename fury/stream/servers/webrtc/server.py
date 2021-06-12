@@ -19,9 +19,13 @@ import numpy as np
 from fury.stream.servers.webrtc.async_app import get_app
 from fury.stream.tools import CircularQueue
 
-import pyximport
-pyximport.install()
-from .FuryVideoFrame import FuryVideoFrame
+try:
+    import pyximport
+    pyximport.install()
+    from fury.stream.servers.webrtc.FuryVideoFrame import FuryVideoFrame
+    CYTHON_AVAILABLE = True
+except ImportError:
+    CYTHON_AVAILABLE = False
 
 
 def webrtc_server(
@@ -54,6 +58,7 @@ def webrtc_server(
                  dtype='uint8')
 
             self.frame = None
+            self.image_buffers = image_buffers
             if not use_raw_array:
                 self.image_buffers = []
                 self.image_reprs = []
@@ -74,24 +79,31 @@ def webrtc_server(
             if self.frame is None \
                 or self.frame.planes[0].width != width \
                     or self.frame.planes[0].height != height:
-                self.frame = FuryVideoFrame(width, height, "rgb24")
-
+                if CYTHON_AVAILABLE:
+                    self.frame = FuryVideoFrame(width, height, "rgb24")
+                # else:
+                #    self.frame = VideoFrame(width, height, "rgb24")
             if use_raw_array:
-                self.image = image_buffers[buffer_index]
-                self.frame.update_from_buffer(self.image)
-
-                self.frame.pts = pts
-                self.frame.time_base = time_base
-
+                self.image = self.image_buffers[buffer_index]
             else:
                 self.image = self.image_reprs[buffer_index]
 
-                # print(self.image[0:3])
+            if not CYTHON_AVAILABLE:
+                # if the buffer it's already flipped
+                # self.frame.planes[0].update(self.image)
+                self.image = np.frombuffer(
+                         self.image,
+                         'uint8'
+                     )[0:width*height*3].reshape((height, width, 3))
+                self.image = np.flipud(self.image)
+     
+                self.frame = VideoFrame.from_ndarray(self.image)
+            else:
                 self.frame.update_from_buffer(self.image)
-                self.frame.pts = pts
-                self.frame.time_base = time_base
 
-                # time.sleep(0.1)
+            self.frame.pts = pts
+            self.frame.time_base = time_base
+
             return self.frame
 
         def terminate(self):
