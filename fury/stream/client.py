@@ -201,7 +201,8 @@ class FuryStreamInteraction:
     def __init__(
             self, showm,  max_queue_size=50,
             queue_head_tail_buffer=None,
-            queue_buffers_list=None, fury_client=None,):
+            queue_buffers_list=None, fury_client=None,
+            use_raw_array=True):
 
         self.showm = showm
         self.iren = self.showm.iren
@@ -209,7 +210,7 @@ class FuryStreamInteraction:
         self.circular_queue = CircularQueue(
             max_size=max_queue_size, dimension=8,
             head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffers_list)
+            buffers_list=queue_buffers_list, use_raw_array=use_raw_array)
         self._id_timer = None
 
     def start(self, ms=16):

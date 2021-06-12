@@ -26,7 +26,7 @@ if __name__ == '__main__':
     ms_interaction = 10
     ms_stream = 16
     # max number of interactions to be stored inside the queue
-    max_queue_size = 10
+    max_queue_size =  17 
     ######################################################################
     centers = 1*np.array([
         [0, 0, 0],
@@ -82,17 +82,24 @@ if __name__ == '__main__':
     #     target=webrtc_server,
     #     args=(stream, None, None, circular_queue))
     # osx,
-
+    
     p = multiprocessing.Process(
         target=webrtc_server,
         args=(
-            None, stream.image_buffers,
+            None, 
+            stream.image_buffers,
             stream.image_buffer_names,
             stream.info_buffer,
             stream.info_buffer_name,
             None,
             stream_interaction.circular_queue.head_tail_buffer,
-            stream_interaction.circular_queue.buffers._buffers))
+            stream_interaction.circular_queue.buffers._buffers,
+            None,
+            None,
+            #stream_interaction.circular_queue.head_tail_buffer_name,
+            #stream_interaction.circular_queue.buffers.buffer_name
+            )
+            )
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)
