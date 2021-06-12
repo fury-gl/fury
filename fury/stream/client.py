@@ -16,7 +16,7 @@ from fury.stream.tools import CircularQueue
 import logging
 import time
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 
 
 class FuryStreamClient:
@@ -38,7 +38,6 @@ class FuryStreamClient:
         self.showm = showm
         self.window2image_filter = vtk.vtkWindowToImageFilter()
         self.window2image_filter.SetInput(self.showm.window)
-        # self.write_in_stdout = write_in_stdout
         self.image_buffers = []
         self.image_buffer_names = []
         self.image_reprs = []
@@ -127,24 +126,16 @@ class FuryStreamClient:
                 # num_components = vtk_array.GetNumberOfComponents()
 
                 w, h, _ = vtk_image.GetDimensions()
-                if self.use_raw_array:
-                    #h, w, _ = vtk_image.GetDimensions()
-                    #np_arr = vtk_to_numpy(vtk_array).astype('uint8')
-                    np_arr = np.frombuffer(vtk_array, dtype='uint8')
-                    #np_arr = np_arr.flatten()
-                else:
-                    np_arr = np.frombuffer(vtk_array, dtype=np.uint8)
+                np_arr = np.frombuffer(vtk_array, dtype='uint8')
 
                 if self.image_buffers is not None:
                     buffer_size = int(h*w)
-
                     # self.info_buffer[0] = num_components
 
                     # N-Buffering
                     next_buffer_index = (self.info_buffer[1]+1) \
                         % self.buffer_count
-                    # print(next_buffer_index)
-                    # 2, 4, 6
+
                     if buffer_size == self.max_size:
                         if self.use_raw_array:
                             # throws a type error due uint8
@@ -159,8 +150,6 @@ class FuryStreamClient:
                         if self.use_raw_array:
                             self.image_memory_views[
                                next_buffer_index][0:buffer_size*3] = np_arr
-                            # memoryview(self.image_buffers[
-                            #     next_buffer_index])[0:buffer_size*3] = np_arr
                         else:
                             self.image_reprs[
                                 next_buffer_index][0:buffer_size*3] = np_arr
@@ -223,7 +212,6 @@ class FuryStreamInteraction:
 
     def start(self, ms=16):
         def callback(caller, timerevent):
-            # self.showm.scene.GetActiveCamera().Azimuth(2)
             ts = time.time()*1000
             data = self.circular_queue.dequeue()
             if data is not None:
@@ -277,8 +265,6 @@ class FuryStreamInteraction:
                         8: self.showm.iren.RightButtonReleaseEvent,
                     }
                     mouse_actions[event_id]()
-
-                    # self.iren.SetLastEventPosition(newX, newY)
                     self.showm.window.Modified()
                 logging.info(
                     'Interaction: time to peform event ' +

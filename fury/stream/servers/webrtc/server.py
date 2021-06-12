@@ -2,7 +2,7 @@
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # import logging
 # logging.basicConfig(level=logging.ERROR)
-import time
+
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
@@ -14,14 +14,14 @@ else:
 from aiohttp import web
 from av import VideoFrame
 from aiortc import VideoStreamTrack
-import pyximport; pyximport.install()
-from .FuryVideoFrame import FuryVideoFrame
-
-
 import numpy as np
 
 from fury.stream.servers.webrtc.async_app import get_app
 from fury.stream.tools import CircularQueue
+
+import pyximport
+pyximport.install()
+from .FuryVideoFrame import FuryVideoFrame
 
 
 def webrtc_server(
@@ -33,8 +33,7 @@ def webrtc_server(
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
         port=8000, host='localhost',
-        flip_img=True,
-        www_folder=None):
+        ):
 
     if stream_client is not None:
         image_buffers = stream_client.image_buffers
@@ -78,22 +77,8 @@ def webrtc_server(
                 self.frame = FuryVideoFrame(width, height, "rgb24")
 
             if use_raw_array:
-                if False: 
-                    self.image = np.frombuffer(
-                            image_buffers[buffer_index],
-                            'uint8'
-                        )[0:width*height*3].reshape((width, height, 3))
-                    self.frame.update_from_ndarray(self.image)
-                else:
-                    self.image = image_buffers[buffer_index]
-                    self.frame.update_from_buffer(self.image)
-                #if flip_img:
-                    #self.image = np.flipud(self.image)
-                # av_frame = VideoFrame.from_ndarray(self.image)
-                # av_frame.pts = pts
-                # av_frame.time_base = time_base
-                # return av_frame
-                #self.frame.update_from_ndarray(self.image)
+                self.image = image_buffers[buffer_index]
+                self.frame.update_from_buffer(self.image)
 
                 self.frame.pts = pts
                 self.frame.time_base = time_base
@@ -130,19 +115,6 @@ def webrtc_server(
             head_tail_buffer=queue_head_tail_buffer,
             buffers_list=queue_buffers_list)
 
-    # if use_vidgear:
-    #     import uvicorn, asyncio, cv2
-    #     from vidgear.gears.asyncio import WebGear_RTC
-
-    #     web = WebGear_RTC(logging=True)
-    #     web.config["server"] = RTCServer()
-
-    #     # run this app on Uvicorn server at address http://localhost:8000/
-    #     uvicorn.run(web(), host="localhost", port=8000)
-
-    #     # close app safely
-    #     web.shutdown()
-    # else:
     app_fury = get_app(
         RTCServer(), circular_queue=circular_queue,
     )
@@ -155,7 +127,7 @@ def interaction_server(
         queue_head_tail_buffer=None,
         queue_buffers_list=None,
         port=8080, host='localhost',
-        www_folder=None):
+        ):
 
     if circular_queue is None and queue_buffers_list is not None:
         circular_queue = CircularQueue(

@@ -3,7 +3,7 @@ import multiprocessing
 import time
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.ERROR)
 
 
 class MultiDimensionalBuffer:
@@ -100,22 +100,14 @@ class CircularQueue:
     def enqueue(self, data):
         with self.head_tail_buffer.get_lock():
             if ((self.tail + 1) % self.max_size == self.head):
-                # self.head = 0
-                # self.tail = 0
-                # self.buffers[self.tail] = data
-                # return True
                 return False
 
             elif (self.head == -1):
-                # self.head = 0
-                # self.tail = 0
                 self.set_head_tail(0, 0)
                 self.buffers[self.tail] = data
                 return True
             else:
                 self.tail = (self.tail + 1) % self.max_size
-                # head = self.head
-                # self.set_head_tail(head, tail)
             self.buffers[self.tail] = data
             return True
 
@@ -127,9 +119,7 @@ class CircularQueue:
 
             if self.head != self.tail:
                 interactions = self.buffers[self.head]
-                # tail = self.tail
                 self.head = (self.head + 1) % self.max_size
-                # self.set_head_tail(head, tail)
             else:
                 interactions = self.buffers[self.head]
                 self.set_head_tail(-1, -1)
