@@ -34,7 +34,9 @@ def webrtc_server(
         info_buffer_name=None,
         circular_queue=None,
         queue_head_tail_buffer=None,
-        queue_buffers_list=None,
+        queue_buffer=None,
+        queue_head_tail_buffer_name=None,
+        queue_buffer_name=None,
         port=8000, host='localhost',
         ):
 
@@ -137,10 +139,12 @@ def webrtc_server(
                 self.info_buffer.close()
                 self.info_buffer.unlink()
 
-    if circular_queue is None and queue_buffers_list is not None:
-        circular_queue = CircularQueue(
-            head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffers_list)
+    # if circular_queue is None and queue_buffers_list is not None:
+    circular_queue = CircularQueue(
+        head_tail_buffer=queue_head_tail_buffer,
+        buffer=queue_buffer,
+        buffer_name=queue_buffer_name,
+        head_tail_buffer_name=queue_head_tail_buffer_name)
 
     rtc_server = RTCServer(
         use_raw_array,
@@ -158,14 +162,14 @@ def webrtc_server(
 def interaction_server(
         circular_queue=None,
         queue_head_tail_buffer=None,
-        queue_buffers_list=None,
+        queue_buffer=None,
         port=8080, host='localhost',
         ):
 
-    if circular_queue is None and queue_buffers_list is not None:
+    if circular_queue is None and queue_buffer is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffers_list)
+            buffers_list=queue_buffer)
 
     app_fury = get_app(
         None, circular_queue=circular_queue)

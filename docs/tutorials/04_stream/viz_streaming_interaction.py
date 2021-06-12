@@ -93,11 +93,11 @@ if __name__ == '__main__':
             stream.info_buffer_name,
             None,
             stream_interaction.circular_queue.head_tail_buffer,
-            stream_interaction.circular_queue.buffers._buffers,
+            stream_interaction.circular_queue.buffer._buffer,
             None,
             None,
             #stream_interaction.circular_queue.head_tail_buffer_name,
-            #stream_interaction.circular_queue.buffers.buffer_name
+            #stream_interaction.circular_queue.buffer.buffer_name
             )
             )
     p.start()

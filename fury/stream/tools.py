@@ -13,49 +13,49 @@ else:
 
 class MultiDimensionalBuffer:
     def __init__(
-            self, max_size=None, dimension=8, buffers_list=None,
+            self, max_size=None, dimension=8, buffer=None,
             buffer_name=None,
             use_raw_array=True):
-        
+
         use_raw_array = use_raw_array and buffer_name is None
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError("""
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
 
-        if buffers_list is None and buffer_name is None:
+        if buffer is None and buffer_name is None:
             buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
             if use_raw_array:
-                buffers_list = multiprocessing.RawArray(
+                buffer = multiprocessing.RawArray(
                         'd', buffer_arr)
-                self._buffers = buffers_list
-                self._buffer_repr = np.ctypeslib.as_array(self._buffers)
+                self._buffer = buffer 
+                self._buffer_repr = np.ctypeslib.as_array(self._buffer)
             else:
-                buffers_list = shared_memory.SharedMemory(
+                buffer = shared_memory.SharedMemory(
                     create=True, size=buffer_arr.nbytes)
                 self._buffer_repr = np.ndarray(
                         buffer_arr.shape[0],
-                        dtype='float64', buffer=buffers_list.buf)
-                self._buffers = buffers_list
-                buffer_name = buffers_list.name
+                        dtype='float64', buffer=buffer.buf)
+                self._buffer = buffer 
+                buffer_name = buffer.name
         else:
             if buffer_name is None:
-                max_size = int(len(buffers_list)//dimension)
+                max_size = int(len(buffer)//dimension)
                 max_size -= 1
                 
-                self._buffers = buffers_list
-                self._buffer_repr = np.ctypeslib.as_array(self._buffers)
+                self._buffer = buffer 
+                self._buffer_repr = np.ctypeslib.as_array(self._buffer)
             else:
                 buffer = shared_memory.SharedMemory(buffer_name)
                 # 8 represents 8 bytes of float64
                 max_size = int(len(buffer.buf)//dimension/8)
                 max_size -= 1
 
-                self._buffers = buffer
+                self._buffer = buffer
                 self._buffer_repr = np.ndarray(
                         len(buffer.buf)//8,
                         dtype='float64', buffer=buffer.buf)
-                self._buffers = buffer
+                self._buffer = buffer
 
         self.buffer_name = buffer_name
         self.dimension = dimension
@@ -63,11 +63,11 @@ class MultiDimensionalBuffer:
         self.use_raw_array = use_raw_array
 
     @property
-    def buffers(self):
-        return self._buffers
+    def buffer(self):
+        return self._buffer
 
-    @buffers.setter
-    def buffers(self, data):
+    @buffer.setter
+    def buffer(self, data):
         if isinstance(data, (np.ndarray, np.generic)):
             if data.dtype == 'float64':
                 self._buffer_repr[:] = data
@@ -83,7 +83,7 @@ class MultiDimensionalBuffer:
         logging.info(f'dequeue start {int(time.time()*1000)}')
         ts = time.time()*1000
         if self.use_raw_array:
-            itens = np.frombuffer(self._buffers, 'float64')[start:end]
+            itens = np.frombuffer(self._buffer, 'float64')[start:end]
         else:
             itens = self._buffer_repr[start:end]
         te = time.time()*1000
@@ -101,7 +101,7 @@ class MultiDimensionalBuffer:
 class CircularQueue:
     def __init__(
         self, max_size=10, dimension=8,
-            head_tail_buffer=None,  buffers_list=None,
+            head_tail_buffer=None,  buffer=None,
             head_tail_buffer_name=None, buffer_name=None,
             use_raw_array=True):
 
@@ -110,8 +110,8 @@ class CircularQueue:
             raise ValueError("""
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
-        buffers = MultiDimensionalBuffer(
-            max_size, dimension, buffers_list,
+        buffer = MultiDimensionalBuffer(
+            max_size, dimension, buffer,
             buffer_name, use_raw_array
         )
 
@@ -133,11 +133,11 @@ class CircularQueue:
                     head_tail_buffer_name)
 
         self.use_raw_array = use_raw_array
-        self.dimension = buffers.dimension
+        self.dimension = buffer.dimension
         self.head_tail_buffer = head_tail_buffer
         self.head_tail_buffer_name = head_tail_buffer_name
-        self.max_size = buffers.max_size
-        self.buffers = buffers
+        self.max_size = buffer.max_size
+        self.buffer = buffer
 
         if use_raw_array:
             self.head_tail_buffer_repr = self.head_tail_buffer
@@ -174,10 +174,10 @@ class CircularQueue:
     def queue(self):
         if self.use_raw_array:
             return np.frombuffer(
-                self.buffers._buffers.get_obj(), 'float64').reshape(
+                self.buffer._buffer.get_obj(), 'float64').reshape(
                     (self.max_size, self.dimension))
         else:
-            return self.buffers._buffer_repr
+            return self.buffer._buffer_repr
 
     def enqueue(self, data):
         # with self.head_tail_buffer.get_lock():
@@ -189,7 +189,7 @@ class CircularQueue:
         else:
             self.tail = (self.tail + 1) % self.max_size
 
-        self.buffers[self.tail] = data
+        self.buffer[self.tail] = data
         return True
 
     def dequeue(self):
@@ -199,10 +199,10 @@ class CircularQueue:
             return None
 
         if self.head != self.tail:
-            interactions = self.buffers[self.head]
+            interactions = self.buffer[self.head]
             self.head = (self.head + 1) % self.max_size
         else:
-            interactions = self.buffers[self.head]
+            interactions = self.buffer[self.head]
             self.set_head_tail(-1, -1)
 
         return interactions
