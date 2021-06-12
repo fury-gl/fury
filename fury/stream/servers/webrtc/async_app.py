@@ -82,18 +82,6 @@ def set_weel(data, circular_queue):
     return ok
 
 
-async def mouse_weel(request, **kwargs):
-
-    params = await request.json()
-    ok = set_weel(params, kwargs['circular_queue'])
-    return web.Response(
-        content_type="application/json",
-        text=json.dumps(
-            {'was_inserted': ok}
-        ),
-    )
-
-
 def set_mouse(data, circular_queue):
     x = float(data['x'])
     y = float(data['y'])
@@ -106,18 +94,6 @@ def set_mouse(data, circular_queue):
         np.array([2, 0, x, y,  ctrl_key, shift_key, user_envent_ms, 0], dtype='float64'))
 
     return ok
-
-
-async def mouse_move(request, **kwargs):
-
-    params = await request.json()
-    ok = set_mouse(params, kwargs['circular_queue'])
-    return web.Response(
-        content_type="application/json",
-        text=json.dumps(
-            {'was_inserted': ok}
-        ),
-    )
 
 
 def set_mouse_click(data, circular_queue):
@@ -144,34 +120,6 @@ def set_mouse_click(data, circular_queue):
         np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0], dtype='float64'))
 
     return ok
-
-
-async def mouse_click(request, **kwargs):
-
-    circular_queue = kwargs['circular_queue']
-    params = await request.json()
-    circular_queue = kwargs['circular_queue']
-    ok = set_mouse_click(params, circular_queue)
-    return web.Response(
-        content_type="application/json",
-        text=json.dumps(
-            {'was_inserted': ok}
-        ),
-    )
-
-
-# async def ctrl_key(request, **kwargs):
-#     params = await request.json()
-#     circular_queue = kwargs['circular_queue']
-#     eventId = 4 if params['on'] == 1 else 5
-#     ok = circular_queue.enqueue(
-#         np.array([eventId, 0, 0, 0], dtype='float64'))
-#     return web.Response(
-#         content_type="application/json",
-#         text=json.dumps(
-#             {'was_inserted': ok}
-#         ),
-#     )
 
 
 async def on_shutdown(app):
@@ -242,15 +190,5 @@ def get_app(
                 partial(websocket_handler, circular_queue=circular_queue)
             )
         ])
-
-        app.router.add_post("/mouse_weel", partial(
-            mouse_weel, circular_queue=circular_queue))
-        app.router.add_post("/mouse_move", partial(
-            mouse_move, circular_queue=circular_queue))
-        app.router.add_post("/mouse_click", partial(
-            mouse_click, circular_queue=circular_queue))
-
-        # app.router.add_post("/ctrl_key", partial(
-        #     ctrl_key, circular_queue=circular_queue))
 
     return app

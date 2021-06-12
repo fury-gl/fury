@@ -23,16 +23,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
   const runningOnIframe = urlParams.get("iframe");
   const backgroundColor = urlParams.get("background");
 
-  const useWebsocket =
-    urlParams.get("websocket") === null
-      ? 1
-      : Boolean(urlParams.get("websocket"));
-  console.info("using a websokcet interaction", useWebsocket);
   console.info("address interaction server", urlInteraction);
   if (interaction === null || interaction == 1)
-    addInteraction(videoEl, useWebsocket);
+    addInteraction(videoEl);
   const videoClass =
-    runningOnIframe == null || runningOnIframe == 0 
+    runningOnIframe == null || runningOnIframe == 0
       ? "videoNormalMode"
       : "videoIframeMode";
   videoEl.className = videoClass;
@@ -40,7 +35,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     document.body.style.backgroundColor = backgroundColor;
 });
 
-function addInteraction(videoEl, websocket) {
+function addInteraction(videoEl) {
   let mouseLeftReleased = true;
   let mouseOutVideo = false;
   let mouseX = 0;
@@ -52,28 +47,18 @@ function addInteraction(videoEl, websocket) {
   let currentWheelEventTotalDeltaY = 0;
 
   videoEl.addEventListener("wheel", (event) => {
+    event.preventDefault(); 
     currentWheelEventTotalDeltaY += event.deltaY;
     if (!enableCallWheel) return;
 
     const data = {
       type: "weel",
       deltaY: currentWheelEventTotalDeltaY,
-      timestampInMs: Date.now()
+      timestampInMs: Date.now(),
     };
     const dataJson = JSON.stringify(data);
     currentWheelEventTotalDeltaY = 0;
-
-    if (websocket == 1) {
-      clientSocket.send(dataJson);
-    } else {
-      fetch(`${urlInteraction}mouse_weel`, {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: dataJson,
-      });
-    }
+    clientSocket.send(dataJson);
     // .then((response) => response.json())
     // .then((data) => {
     //   // console.log("Success:", data)
@@ -134,20 +119,10 @@ function addInteraction(videoEl, websocket) {
       y: mouseY,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
-      timestampInMs: Date.now()
+      timestampInMs: Date.now(),
     };
     const dataJson = JSON.stringify(data);
-    if (websocket == 1) {
-      clientSocket.send(dataJson);
-    } else {
-      fetch(`${urlInteraction}mouse_move`, {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: dataJson,
-      });
-    }
+    clientSocket.send(dataJson);
   };
   // const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
 
@@ -156,7 +131,7 @@ function addInteraction(videoEl, websocket) {
     mouseLeftReleased = false;
     ctrlKey = e.ctrlKey ? 1 : 0;
     shiftKey = e.shiftKey ? 1 : 0;
-    const mouseButton = e.button
+    const mouseButton = e.button;
     const data = {
       type: "mouseLeftClick",
       on: 1,
@@ -165,28 +140,18 @@ function addInteraction(videoEl, websocket) {
       y: mouseY,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
-      timestampInMs: Date.now()
+      timestampInMs: Date.now(),
     };
     const dataJson = JSON.stringify(data);
 
-    if (websocket == 1) {
-      clientSocket.send(dataJson);
-    } else {
-      fetch(`${urlInteraction}mouse_click`, {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ on: 0 }),
-      });
-    }
+    clientSocket.send(dataJson);
   });
 
   window.addEventListener("mouseup", (e) => {
     mouseLeftReleased = true;
     ctrlKey = e.ctrlKey ? 1 : 0;
     shiftKey = e.shiftKey ? 1 : 0;
-    const mouseButton = e.button
+    const mouseButton = e.button;
     const data = {
       type: "mouseLeftClick",
       on: 0,
@@ -195,21 +160,11 @@ function addInteraction(videoEl, websocket) {
       mouseButton: mouseButton,
       ctrlKey: ctrlKey,
       shiftKey: shiftKey,
-      timestampInMs: Date.now()
+      timestampInMs: Date.now(),
     };
     const dataJson = JSON.stringify(data);
 
-    if (websocket == 1) {
-      clientSocket.send(dataJson);
-    } else {
-      fetch(`${urlInteraction}mouse_left_click`, {
-        method: "POST", // or 'PUT'
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ on: 0 }),
-      });
-    }
+    clientSocket.send(dataJson);
   });
 
   // document.addEventListener("keydown", function (event) {
