@@ -81,7 +81,7 @@ def test_save_load_image():
     l_ext = ["png", "jpeg", "jpg", "bmp", "tiff"]
     fury_logo_link = 'https://raw.githubusercontent.com/fury-gl/'\
                      'fury-communication-assets/main/fury-logo.png'
-                     
+         
     invalid_link = 'https://picsum.photos/200'
     fname = "temp-io"
 
