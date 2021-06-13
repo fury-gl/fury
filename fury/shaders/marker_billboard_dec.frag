@@ -9,6 +9,11 @@ uniform mat4 MCVCMatrix;
 float ndot(vec2 a, vec2 b ) {
     return a.x*b.x - a.y*b.y;
 };
+/* Refs for sdf functions 
+   https://github.com/rougier/python-opengl
+   https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html
+   https://andrewhungblog.wordpress.com/2018/07/28/shader-art-tutorial-hexagonal-grids/
+*/
 vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
     float  sdf = 0;
     float minSdf = 0;
@@ -43,6 +48,7 @@ vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
         edgeWidth = edgeWidth/4.;
         minSdf = 0.5/2.0;
         float r = s/2.0;
+       /*https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html*/
         const vec3 k = vec3(0.809016994,0.587785252,0.726542528);
         p.x = abs(p.x);
         p -= 2.0*min(dot(vec2(-k.x,k.y),p),0.0)*vec2(-k.x,k.y);
@@ -53,6 +59,7 @@ vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
         edgeWidth = edgeWidth/4.;
         minSdf = 0.5/2.0;
         float r = s/2.0;
+       /*https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html*/
         const vec3 k = vec3(-0.866025404,0.5,0.577350269);
         p = abs(p);
         p -= 2.0*min(dot(k.xy,p),0.0)*k.xy;
@@ -62,6 +69,7 @@ vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
         minSdf = 0.5/2.0;
         edgeWidth = edgeWidth/4.;
         float r = s/2.0;
+       /*https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html*/
         const vec4 k = vec4(-0.5,0.8660254038,0.5773502692,1.7320508076);
         p = abs(p);
         p -= 2.0*min(dot(k.xy,p),0.0)*k.xy;
