@@ -46,7 +46,7 @@ scene = window.Scene()
 scene.add(nodes_actor)
 scene.add(nodes_3d_actor)
 
-interactive = True
+interactive = False 
 
 if interactive:
     window.show(scene, size=(600, 600))
