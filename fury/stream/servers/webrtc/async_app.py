@@ -134,9 +134,6 @@ async def on_shutdown(app):
         await ws.close(code=WSCloseCode.GOING_AWAY,
                        message='Server shutdown')
 
-    await app.shutdown()
-    await app.cleanup()
-
 
 async def websocket_handler(request, **kwargs):
 
