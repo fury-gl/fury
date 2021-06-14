@@ -1,6 +1,6 @@
 
 ## TODO
-- [] Create a buffer manager object
+- [x] Create a buffer manager object
   - For using DRY principle when multiple encondings became availbale
 - [] Widget object compatibility with python versions lower than 3.8
   - memory socket communication  
