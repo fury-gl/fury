@@ -2,6 +2,8 @@ import numpy as np
 import multiprocessing
 import time
 import logging
+from threading import Timer
+
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
@@ -28,7 +30,7 @@ class MultiDimensionalBuffer:
             if use_raw_array:
                 buffer = multiprocessing.RawArray(
                         'd', buffer_arr)
-                self._buffer = buffer 
+                self._buffer = buffer
                 self._buffer_repr = np.ctypeslib.as_array(self._buffer)
             else:
                 buffer = shared_memory.SharedMemory(
@@ -36,21 +38,19 @@ class MultiDimensionalBuffer:
                 self._buffer_repr = np.ndarray(
                         buffer_arr.shape[0],
                         dtype='float64', buffer=buffer.buf)
-                self._buffer = buffer 
+                self._buffer = buffer
                 buffer_name = buffer.name
         else:
             if buffer_name is None:
                 max_size = int(len(buffer)//dimension)
                 max_size -= 1
-                
-                self._buffer = buffer 
+                self._buffer = buffer
                 self._buffer_repr = np.ctypeslib.as_array(self._buffer)
             else:
                 buffer = shared_memory.SharedMemory(buffer_name)
                 # 8 represents 8 bytes of float64
                 max_size = int(len(buffer.buf)//dimension/8)
                 max_size -= 1
-
                 self._buffer = buffer
                 self._buffer_repr = np.ndarray(
                         len(buffer.buf)//8,
@@ -97,6 +97,12 @@ class MultiDimensionalBuffer:
                 # if end - start == self.dimension and start >= 0 and end >= 0:
                 self._buffer_repr[start:end] = data
 
+    def cleanup(self):
+        if not self.use_raw_array:
+            self._buffer.close()
+            self._buffer.unlink()
+
+
 
 class CircularQueue:
     def __init__(
@@ -125,7 +131,7 @@ class CircularQueue:
             else:
                 head_tail_buffer = shared_memory.SharedMemory(
                     create=True, size=head_tail_arr.nbytes)
-                
+        
                 head_tail_buffer_name = head_tail_buffer.name
         else:
             if not use_raw_array:
@@ -145,6 +151,7 @@ class CircularQueue:
             self.head_tail_buffer_repr = np.ndarray(
                 head_tail_arr.shape[0],
                 dtype='int64', buffer=self.head_tail_buffer.buf)
+
     @property
     def head(self):
         if self.use_raw_array:
@@ -206,3 +213,41 @@ class CircularQueue:
             self.set_head_tail(-1, -1)
 
         return interactions
+
+    def cleanup(self):
+        if not self.use_raw_array:
+            self.head_tail_buffer.close()
+            self.head_tail_buffer.unlink()
+            self.buffer.cleanup()
+
+
+class IntervalTimer(object):
+    def __init__(self, interval, function, *args, **kwargs):
+        """
+        Implements a object with the same behavior of setInterval from Js
+        I got this from
+        https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
+        """
+        self._timer = None
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
+        self.is_running = False
+        self.start()
+
+    def _run(self):
+        self.is_running = False
+        self.start()
+        self.function(*self.args, **self.kwargs)
+
+    def start(self):
+        if not self.is_running:
+            self._timer = Timer(self.interval, self._run)
+            self._timer.daemon = True
+            self._timer.start()
+            self.is_running = True
+
+    def stop(self):
+        self._timer.cancel()
+        self.is_running = False
