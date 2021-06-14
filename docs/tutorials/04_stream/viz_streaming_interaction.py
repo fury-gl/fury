@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 import multiprocessing
-from fury.stream.servers.webrtc.server import webrtc_server
+from fury.stream.server import web_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 import logging
@@ -24,7 +24,8 @@ if __name__ == '__main__':
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
     ms_interaction = 10
-    ms_stream = 16
+    ms_stream = 0 
+
     # max number of interactions to be stored inside the queue
     max_queue_size =  17 
     ######################################################################
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     # osx,
     
     p = multiprocessing.Process(
-        target=webrtc_server,
+        target=web_server,
         args=(
             None, 
             stream.image_buffers,
@@ -106,6 +107,6 @@ if __name__ == '__main__':
     showm.start()
     p.kill()
     stream.cleanup()
-
+    stream_interaction.cleanup()
     # open a browser using the following the url
     # http://localhost:8000/

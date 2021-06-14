@@ -53,7 +53,7 @@ class Widget:
 
         self.showm.window.SetOffScreenRendering(1)
         self.showm.iren.EnableRenderOff()
-        self.showm.initialize()
+        # self.showm.initialize()
         self.stream = FuryStreamClient(
             self.showm, self.window_size,
             max_window_size=self.max_window_size,

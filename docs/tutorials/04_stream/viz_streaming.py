@@ -8,7 +8,7 @@ import numpy as np
 from fury.data.fetcher import fetch_viz_wiki_nw
 
 import multiprocessing
-from fury.stream.servers.webrtc.server import webrtc_server
+from fury.stream.server import web_server
 
 if __name__ == '__main__':
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # multiprocessing.set_start_method('fork')
  
     p = multiprocessing.Process(
-        target=webrtc_server, args=(stream, ))
+        target=web_server, args=(stream, ))
     p.start()
 
     stream.init(ms,)
