@@ -6,15 +6,13 @@ Fury Markers
 This it's a example which shows how to use the marker actor.
 """
 import numpy as np
-import vtk
-import vtk.util.numpy_support as vtknp
-from fury import actor, window, colormap as cmap
+from fury import actor, window
 n = 10000
 
-"""
-The are nine types 2d markers: circle, square, diamond,
-triangle, pentagon, hexagon, heptagon, cross and plus.
-"""
+###############################################################################
+# The are nine types 2d markers: circle, square, diamond, triangle, pentagon, 
+# hexagon, heptagon, cross and plus.
+
 marker_symbols = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']
 markers = [
     np.random.choice(marker_symbols)
@@ -23,8 +21,10 @@ markers = [
 centers = np.random.normal(size=(n, 3), scale=10)
 
 colors = np.random.uniform(size=(n, 3))
-# In addition, as similar to networkx,  you can control the
-# edge color and edge width for each marker
+
+############################################################################
+# You can control the edge color and edge width for each marke
+
 nodes_actor = actor.markers(
     centers,
     marker=markers,
@@ -33,7 +33,10 @@ nodes_actor = actor.markers(
     colors=colors,
     scales=.5,
 )
+
+############################################################################
 # In addtion, the 3d impostor sphere it's also a valid type of marker
+
 nodes_3d_actor = actor.markers(
     centers+np.ones_like(centers)*25,
     marker='3d',
@@ -50,3 +53,5 @@ interactive = False
 
 if interactive:
     window.show(scene, size=(600, 600))
+
+window.record(scene, out_path='viz_markers.png', size=(600, 600))

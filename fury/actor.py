@@ -2567,7 +2567,7 @@ def markers(
     marker : str or a list
         This it's optional if "markers" arg are used
         Available marker are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
-        'x', '+'
+        'x', '+', optional
     marker_opacity : float, optional
     edge_width : int, optional
     edge_color : ndarray, shape (3), optional
@@ -2578,7 +2578,7 @@ def markers(
 
     """
 
-    numMarkers = centers.shape[0]
+    n_markers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
                               scales=scales)
@@ -2607,7 +2607,7 @@ def markers(
     else:
         fs_impl_code += f'{load("marker_billboard_impl.frag")}'
         if isinstance(marker, str):
-            list_of_markers = np.ones(numMarkers)*marker2id[marker]
+            list_of_markers = np.ones(n_markers)*marker2id[marker]
         else:
             list_of_markers = [marker2id[i] for i in marker]
 
