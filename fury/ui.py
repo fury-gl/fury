@@ -926,17 +926,16 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
-        border_color: (float, float, float)
+        border_color: (float, float, float), optional
             Must take values in [0, 1].
-        border_width: float
+        border_width: float, optional
             width of the border
         """
-        self.border_color = border_color
-        self.border_width = border_width
+        self.border_colors = border_color
+        self.border_widths = border_width
         super(Panel2D, self).__init__(position)
         self.resize(size)
 
-        self.set_border_coords()
         self.alignment = align
         self.color = color
         self.opacity = opacity
@@ -965,7 +964,7 @@ class Panel2D(UI):
         self.add_element(self.background, (0, 0))
 
         for key in self.borders.keys():
-            self.borders[key].color = self.border_color
+            self.borders[key].color = self.border_colors
             self.add_element(self.borders[key], self.border_coords[key])
 
         # Add default events listener for this UI component.
@@ -1004,19 +1003,19 @@ class Panel2D(UI):
         """
         self.background.resize(size)
 
-        self.borders['left'].resize((self.border_width,
-                                     size[1]+self.border_width))
+        self.borders['left'].resize((self.border_widths,
+                                     size[1]+self.border_widths))
 
-        self.borders['right'].resize((self.border_width,
-                                      size[1]+self.border_width))
+        self.borders['right'].resize((self.border_widths,
+                                      size[1]+self.border_widths))
 
-        self.borders['top'].resize((self.size[0]+self.border_width,
-                                    self.border_width))
+        self.borders['top'].resize((self.size[0]+self.border_widths,
+                                    self.border_widths))
 
-        self.borders['bottom'].resize((self.size[0]+self.border_width,
-                                       self.border_width))
+        self.borders['bottom'].resize((self.size[0]+self.border_widths,
+                                       self.border_widths))
 
-        self.set_border_coords()
+        self.update_border_coords()
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -1140,7 +1139,7 @@ class Panel2D(UI):
             msg = "You can only left-align or right-align objects in a panel."
             raise ValueError(msg)
 
-    def set_border_coords(self):
+    def update_border_coords(self):
         """Update the coordinates of the borders
         """
         self.border_coords = {'left': (0., 0.),
@@ -1151,76 +1150,58 @@ class Panel2D(UI):
         for key in self.borders.keys():
             self.update_element(self.borders[key], self.border_coords[key])
 
-    def set_border_color(self, label, color):
+    @property
+    def border_color(self):
+        labels = ['left', 'right', 'top', 'bottom']
+        return [self.borders[label].color for label in labels]
+
+    @border_color.setter
+    def border_color(self, label_color):
         """Set the color of a specific border
 
         Parameters
         ----------
-        label: str
-            The label of the border
-        color: (float, float, float)
-            RGB: Values must be between 0-1.
+        label_color: Iterable
+            Iterable to pack label, color values
         """
-        if label not in ['left', 'right', 'top', 'bottom']:
+        label, color = label_color
+
+        if label.lower() not in ['left', 'right', 'top', 'bottom']:
             raise ValueError(
                 f'{label} not a valid border label')
 
         self.borders[label].color = color
 
-    def get_border_color(self, label):
-        """Gets color of the specific label.
+    @property
+    def border_width(self):
+        labels = ['left', 'right', 'top', 'bottom']
+        widths = []
 
-        Parameters
-        ----------
-        label: str
-            The label of the border
+        for label in labels:
+            if label in ['left', 'right']:
+                widths.append(self.borders[label].width)
+            elif label in ['top', 'bottom']:
+                widths.append(self.borders[label].height)
+            else:
+                raise ValueError(
+                    f'{label} not a valid border label')
+        return widths
 
-        Returns
-        ----------
-        (float, float, float)
-            Border color
-        """
-        if label not in ['left', 'right', 'top', 'bottom']:
-            raise ValueError(
-                f'{label} not a valid border label')
-
-        return self.borders[label].color
-
-    def set_border_width(self, label, border_width):
+    @border_width.setter
+    def border_width(self, label_width):
         """Set the border width of a specific border
 
         Parameters
         ----------
-        label: str
-            The label of the border
-        border_width: float
-            New width of the border
+        label_width: Iterable
+            Iterable to pack label, width values
         """
-        if label in ['left', 'right']:
+        label, border_width = label_width
+
+        if label.lower() in ['left', 'right']:
             self.borders[label].width = border_width
-        elif label in ['top', 'bottom']:
+        elif label.lower() in ['top', 'bottom']:
             self.borders[label].height = border_width
-        else:
-            raise ValueError(
-                f'{label} not a valid border label')
-
-    def get_border_width(self, label):
-        """Gets the border width of a specific border
-
-        Parameters
-        ----------
-        label: str
-            The label of the border
-
-        Returns
-        ----------
-        float
-            Width of the specific border
-        """
-        if label in ['left', 'right']:
-            return self.borders[label].width
-        elif label in ['top', 'bottom']:
-            return self.borders[label].height
         else:
             raise ValueError(
                 f'{label} not a valid border label')
