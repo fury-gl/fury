@@ -12,6 +12,7 @@
   - setting multiprocessing.set_start_method('spawn')
 - [] Implement all the interactions: double-click, touch etc
 - []  Widget object: OFF-ScreenRendering should be optional 
+- [] MJPEG and H264 allows to reduce the image resolution streaming
 - [] Fix cleanup on stream client
   - line 201
    ```

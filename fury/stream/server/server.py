@@ -108,6 +108,7 @@ class ImageBufferManager:
         image = np.flipud(image)
        
         image_encoded = cv2.imencode('.jpg', image)[1]
+        # this will avoid a huge bandwidth consumption
         await asyncio.sleep(1 / 25)
         return image_encoded.tobytes()
 

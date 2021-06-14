@@ -18,6 +18,7 @@ const clientSocket = new WebSocket(`ws://${addrInteraction}/ws`);
 
 document.addEventListener("DOMContentLoaded", (event) => {
   if (encoding === "webrtc") {
+    document.getElementById("startBtn").className = ''
     document.getElementById("startBtn").addEventListener(
       "click", (e) => 
         startWebRTC()
