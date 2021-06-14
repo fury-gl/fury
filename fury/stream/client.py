@@ -10,7 +10,7 @@ else:
 
 import numpy as np
 
-from fury.stream.tools import CircularQueue
+from fury.stream.tools import CircularQueue, IntervalTimer
 
 import logging
 import time
@@ -24,14 +24,17 @@ class FuryStreamClient:
             use_raw_array=True,
             buffer_count=2,
             image_buffers=None,
-            info_buffer=None):
-
+            info_buffer=None,
+            whithout_iren_start=False,
+    ):
         '''
 
         Parameters
         ----------
             showm: fury showm manager
         '''
+
+        self._whithout_iren_start = whithout_iren_start
         self.showm = showm
         self.window2image_filter = vtk.vtkWindowToImageFilter()
         self.window2image_filter.SetInput(self.showm.window)
@@ -168,10 +171,21 @@ class FuryStreamClient:
                 self._in_request = False
 
         if ms > 0:
-            id_timer = self.showm.add_timer_callback(
-                True, ms, callback)
-            self._id_timer = id_timer
+            if self._whithout_iren_start:
+                self._interval_timer = IntervalTimer(
+                    ms/1000,
+                    callback,
+                    None,
+                    None)
+            else:
+                id_timer = self.showm.add_timer_callback(
+                    True, ms, callback)
+                # self.showm.window.AddObserver("TimerEvent", callback)
+                # id_timer = self.showm.window.CreateRepeatingTimer(ms)
+                self._id_timer = id_timer
+          
         else:
+            # id_observer = self.showm.iren.AddObserver(
             id_observer = self.showm.iren.AddObserver(
                 'RenderEvent', callback)
             self._id_observer = id_observer
@@ -181,8 +195,8 @@ class FuryStreamClient:
     def stop(self):
         logging.info('stop timers')
         if self._id_timer is not None:
-            self.showm.destroy_timer(self._id_timer)
-
+            # self.showm.destroy_timer(self._id_timer)
+            self.showm.iren.DestroyTimer(self._id_timer)
         if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
 
@@ -197,12 +211,80 @@ class FuryStreamClient:
                 buffer.unlink()
 
 
+def interaction_callback(
+        circular_queue, showm, iren, render_after=False):
+    ts = time.time()*1000
+    data = circular_queue.dequeue()
+    if data is not None:
+        event_id = data[0]
+        user_timestamp = data[6]
+        logging.info(
+            'Interaction: time to dequeue ' +
+            f'{ts-user_timestamp:.2f} ms')
+
+        ts = time.time()*1000
+        newX = int(showm.size[0]*data[2])
+        newY = int(showm.size[1]*data[3])
+        ctrl_key = int(data[4])
+        shift_key = int(data[5])
+        newY = showm.size[1] - newY
+        if event_id == 1:
+            zoomFactor = 1.0 - data[1] / 1000.0
+            camera = showm.scene.GetActiveCamera()
+            fp = camera.GetFocalPoint()
+            pos = camera.GetPosition()
+            delta = [fp[i] - pos[i] for i in range(3)]
+            camera.Zoom(zoomFactor)
+
+            pos2 = camera.GetPosition()
+            camera.SetFocalPoint(
+                [pos2[i] + delta[i] for i in range(3)])
+            if data[1] < 0:
+                iren.MouseWheelForwardEvent()
+            else:
+                iren.MouseWheelBackwardEvent()
+
+            showm.window.Modified()
+
+        elif event_id == 2:
+            iren.SetEventInformation(
+                newX, newY, ctrl_key, shift_key, chr(0), 0, None)
+
+            iren.MouseMoveEvent()
+
+        elif event_id in [3, 4, 5, 6, 7, 8]:
+            iren.SetEventInformation(
+                newX, newY, ctrl_key, shift_key,
+                chr(0), 0, None)
+
+            mouse_actions = {
+                3: showm.iren.LeftButtonPressEvent,
+                4: showm.iren.LeftButtonReleaseEvent,
+                5: showm.iren.MiddleButtonPressEvent,
+                6: showm.iren.MiddleButtonReleaseEvent,
+                7: showm.iren.RightButtonPressEvent,
+                8: showm.iren.RightButtonReleaseEvent,
+            }
+            mouse_actions[event_id]()
+            showm.window.Modified()
+        logging.info(
+            'Interaction: time to peform event ' +
+            f'{ts-user_timestamp:.2f} ms')
+        # maybe when the fury host rendering is disabled
+        # fury_client.window2image_filter.Update()
+        # fury_client.window2image_filter.Modified()
+        # this should be called if we are using
+        # renderevent attached to a vtkwindow instance
+        if render_after:
+            showm.render()
+
+
 class FuryStreamInteraction:
     def __init__(
             self, showm,  max_queue_size=50,
             queue_head_tail_buffer=None,
             queue_buffer=None, fury_client=None,
-            use_raw_array=True):
+            use_raw_array=True, whithout_iren_start=False):
 
         self.showm = showm
         self.iren = self.showm.iren
@@ -212,75 +294,37 @@ class FuryStreamInteraction:
             head_tail_buffer=queue_head_tail_buffer,
             buffer=queue_buffer, use_raw_array=use_raw_array)
         self._id_timer = None
+        self._id_observer = None
+        self._interval_timer = None
+        self._whithout_iren_start = whithout_iren_start
 
     def start(self, ms=16):
         def callback(caller, timerevent):
-            ts = time.time()*1000
-            data = self.circular_queue.dequeue()
-            if data is not None:
-                event_id = data[0]
-                user_timestamp = data[6]
-                logging.info(
-                    'Interaction: time to dequeue ' +
-                    f'{ts-user_timestamp:.2f} ms')
+            interaction_callback(
+                self.circular_queue, self.showm, self.iren, False)
 
-                ts = time.time()*1000
-                newX = int(self.showm.size[0]*data[2])
-                newY = int(self.showm.size[1]*data[3])
-                ctrl_key = int(data[4])
-                shift_key = int(data[5])
-                newY = self.showm.size[1] - newY
-                if event_id == 1:
-                    zoomFactor = 1.0 - data[1] / 1000.0
-                    camera = self.showm.scene.GetActiveCamera()
-                    fp = camera.GetFocalPoint()
-                    pos = camera.GetPosition()
-                    delta = [fp[i] - pos[i] for i in range(3)]
-                    camera.Zoom(zoomFactor)
-
-                    pos2 = camera.GetPosition()
-                    camera.SetFocalPoint(
-                        [pos2[i] + delta[i] for i in range(3)])
-                    if data[1] < 0:
-                        self.iren.MouseWheelForwardEvent()
-                    else:
-                        self.iren.MouseWheelBackwardEvent()
-
-                    self.showm.window.Modified()
-
-                elif event_id == 2:
-                    self.iren.SetEventInformation(
-                        newX, newY, ctrl_key, shift_key, chr(0), 0, None)
-
-                    self.iren.MouseMoveEvent()
-
-                elif event_id in [3, 4, 5, 6, 7, 8]:
-                    self.iren.SetEventInformation(
-                        newX, newY, ctrl_key, shift_key,
-                        chr(0), 0, None)
-
-                    mouse_actions = {
-                        3: self.showm.iren.LeftButtonPressEvent,
-                        4: self.showm.iren.LeftButtonReleaseEvent,
-                        5: self.showm.iren.MiddleButtonPressEvent,
-                        6: self.showm.iren.MiddleButtonReleaseEvent,
-                        7: self.showm.iren.RightButtonPressEvent,
-                        8: self.showm.iren.RightButtonReleaseEvent,
-                    }
-                    mouse_actions[event_id]()
-                    self.showm.window.Modified()
-                logging.info(
-                    'Interaction: time to peform event ' +
-                    f'{ts-user_timestamp:.2f} ms')
-                # maybe when the fury host rendering is disabled
-                # self.fury_client.window2image_filter.Update()
-                # self.fury_client.window2image_filter.Modified()
-                # self.showm.render()
-
-        self._id_timer = self.showm.add_timer_callback(
-            True, ms, callback)
+        if self._whithout_iren_start:
+            self._interval_timer = IntervalTimer(
+                ms/1000,
+                interaction_callback,
+                self.circular_queue,
+                self.showm,
+                self.iren,
+                True
+            )
+        else:
+            self._id_observer = self.showm.iren.AddObserver(
+                "TimerEvent", callback)
+            self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
 
     def stop(self):
         if self._id_timer is not None:
-            self.showm.destroy_timer(
-                self._id_timer)
+            self.showm.window.DestroyTimer(self._id_timer)
+        else:
+            self._interval_timer.stop()
+            del self._interval_timer
+            self._interval_timer = None
+
+    def cleanup(self):
+        self.stop()
+        self.circular_queue.cleanup()
