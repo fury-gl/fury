@@ -218,19 +218,20 @@ def get_app(
     #         rtc_server=rtc_server,
     #     )
     # )
+    app.router.add_get("/", partial(index, folder=folder))
+    js_files = ['main.js', 'webrtc.js', 'constants.js']
+    for js in js_files:
+        app.router.add_get(
+            "/js/%s" % js, partial(javascript, folder=folder, js=js))
+
     if image_buffer_manager is not None:
         app['image_buffer_manager'] = image_buffer_manager
         app.router.add_get("/video/mjpeg", mjpeg_handler)
 
+    
     if rtc_server is not None:
-        app.router.add_get("/", partial(index, folder=folder))
-
-        js_files = ['main.js', 'webrtc.js', 'constants.js']
-        for js in js_files:
-            app.router.add_get(
-                "/js/%s" % js, partial(javascript, folder=folder, js=js))
-            app.router.add_post("/offer", partial(
-                offer, video=rtc_server, broadcast=broadcast))
+        app.router.add_post("/offer", partial(
+            offer, video=rtc_server, broadcast=broadcast))
 
     if circular_queue is not None:
         app.add_routes([

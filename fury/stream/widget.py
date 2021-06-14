@@ -43,7 +43,7 @@ class Widget:
         s += f"{self.stream_interaction.circular_queue.buffer.buffer_name}'"
         if self.encoding == 'mjpeg':
             s += ",provides_mjpeg=True"
-            s += ",provides_webrtc=True"
+            s += ",provides_webrtc=False"
         s += f",port={self.port},host='{self.domain}')"
         return s
 
