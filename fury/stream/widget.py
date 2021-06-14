@@ -12,7 +12,8 @@ import sys
 class Widget:
     def __init__(
             self, showm, max_window_size=None, ms_stream=0,
-            domain='localhost', port=None, ms_interaction=20, queue_size=20):
+            domain='localhost', port=None, ms_interaction=20, queue_size=20,
+            encoding='mjpeg'):
         self.showm = showm
         self.window_size = self.showm.size
         if max_window_size is None:
@@ -30,16 +31,19 @@ class Widget:
         self.queue_size = queue_size
         self._server_started = False
         self.pserver = None
-
+        self.encoding = encoding
     @property
     def command_string(self):
-        s = 'from fury.stream.servers.webrtc.server import webrtc_server;'
-        s += f"webrtc_server(image_buffer_names={self.stream.image_buffer_names}"
+        s = 'from fury.stream.server import web_server;'
+        s += f"web_server(image_buffer_names={self.stream.image_buffer_names}"
         s += f",info_buffer_name='{self.stream.info_buffer_name}',"
         s += "queue_head_tail_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.head_tail_buffer_name}'"
         s += f",queue_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.buffer.buffer_name}'"
+        if self.encoding == 'mjpeg':
+            s += ",provides_mjpeg=True"
+            s += ",provides_webrtc=True"
         s += f",port={self.port},host='{self.domain}')"
         return s
 
@@ -84,7 +88,7 @@ class Widget:
     #     # self.showm.iren.Start()
     def return_iframe(self, height=200):
         display(IFrame(
-            f'http://{self.domain}:{self.port}?iframe=1',
+            f'http://{self.domain}:{self.port}?iframe=1&encoding={self.encoding}',
             '100%', f'{int(height)}px')
         )
     def display(self, height=150):

@@ -219,7 +219,6 @@ def get_app(
     #     )
     # )
     if image_buffer_manager is not None:
-        print('add manager')
         app['image_buffer_manager'] = image_buffer_manager
         app.router.add_get("/video/mjpeg", mjpeg_handler)
 

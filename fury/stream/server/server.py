@@ -15,13 +15,13 @@ from av import VideoFrame
 from aiortc import VideoStreamTrack
 import numpy as np
 
-from fury.stream.servers.webrtc.async_app import get_app
+from fury.stream.server.async_app import get_app
 from fury.stream.tools import CircularQueue
 
 try:
     import pyximport
     pyximport.install()
-    from fury.stream.servers.webrtc.FuryVideoFrame import FuryVideoFrame
+    from fury.stream.server.FuryVideoFrame import FuryVideoFrame
     CYTHON_AVAILABLE = True
 except ImportError:
     CYTHON_AVAILABLE = False
@@ -177,7 +177,7 @@ class RTCServer(VideoStreamTrack):
         self.buffer_manager.cleanup()
  
 
-def webrtc_server(
+def web_server(
         stream_client=None,
         image_buffers=None,
         image_buffer_names=None,
