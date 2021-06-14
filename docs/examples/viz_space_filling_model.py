@@ -91,7 +91,7 @@ ini = 30
 ###############################################################################
 # Arranging the elements in reverse alphabetic order (will come in handy when
 # labelling the visual)
-elements = np.array(elements)
+elements = np.array(elements, dtype=object)
 elements = elements[elements[:, 0].argsort()[::-1]]
 
 
