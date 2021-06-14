@@ -12,7 +12,8 @@ Importing necessary modules
 """
 
 import numpy as np
-import urllib, os
+import urllib
+import os
 from fury import window, actor, ui
 from Bio.PDB import PDBParser
 
@@ -24,13 +25,13 @@ pdb_code = '1fdh'
 downloadurl = "https://files.rcsb.org/download/"
 pdbfn = pdb_code + ".pdb"
 flag = 0
-if  not os.path.isfile(pdbfn):
+if not os.path.isfile(pdbfn):
     flag = 1
     url = downloadurl + pdbfn
     outfnm = os.path.join(pdbfn)
     try:
         urllib.request.urlretrieve(url, outfnm)
-    except Exception as err:
+    except Exception:
         print("Error in downloading the file!")
 
 ###############################################################################
@@ -46,9 +47,9 @@ pdbxfile = open(pdbfn, 'r')
 for model in structure_pdb:
     for chain in model:
         for residue in chain:
-           for atom in residue:
-               atom_coords.append(atom.coord)
-               elem_sym_list.append(atom.element)
+            for atom in residue:
+                atom_coords.append(atom.coord)
+                elem_sym_list.append(atom.element)
 
 elem_sym_list = np.array(elem_sym_list)
 atom_coords = np.array(atom_coords)
@@ -65,7 +66,7 @@ atom_coords = np.array(atom_coords)
 # 4. Generating and adding the space-filling model to the scene
 scene = window.Scene()
 scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
-                        view_up=(0, 1, 0))
+                 view_up=(0, 1, 0))
 axes_actor = actor.axes()
 scene.add(axes_actor)
 sf_model, elements = actor.space_filling_model(atom_coords, elem_sym_list,
@@ -88,22 +89,26 @@ elements = elements[elements[:, 0].argsort()[::-1]]
 ###############################################################################
 # creating a ShowManager object
 showm = window.ShowManager(scene,
-                           size=(screen_x_dim, screen_y_dim), reset_camera=True
-                           , order_transparent=True)
+                           size=(screen_x_dim, screen_y_dim),
+                           reset_camera=True, order_transparent=True)
 
 ###############################################################################
 # Key of elements (with the respective colors)
 for i, element in enumerate(elements):
-    tb = ui.TextBlock2D(text='  ' + element[0], position=(screen_x_dim-60, ini)
-                        , font_size=20, color=(1, 1, 1))
+    tb = ui.TextBlock2D(text='  ' + element[0],
+                        position=(screen_x_dim-60, ini), font_size=20,
+                        color=(1, 1, 1))
     scene.add(tb)
     tb = ui.TextBlock2D(text='  ', position=(screen_x_dim-70, ini+3),
                         font_size=20, bg_color=element[1], color=(0, 0, 0))
     scene.add(tb)
-    ini+=30
-tb = ui.TextBlock2D(text='Elements', position=(screen_x_dim-100, ini), font_size=20, color=(1, 1, 1))
+    ini += 30
+tb = ui.TextBlock2D(text='Elements', position=(screen_x_dim-100, ini),
+                    font_size=20, color=(1, 1, 1))
 scene.add(tb)
-tb = ui.TextBlock2D(text=pdb_code, position=(screen_x_dim/2-40, screen_y_dim/12), font_size=30, color=(1, 1, 1))
+tb = ui.TextBlock2D(text=pdb_code,
+                    position=(screen_x_dim/2-40, screen_y_dim/12),
+                    font_size=30, color=(1, 1, 1))
 scene.add(tb)
 
 ###############################################################################
