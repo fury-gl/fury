@@ -193,6 +193,8 @@ class FuryStreamClient:
 
     def stop(self):
         logging.info('stop timers')
+        if self._interval_timer is not None:
+            self._interval_timer.stop()
         if self._id_timer is not None:
             # self.showm.destroy_timer(self._id_timer)
             self.showm.iren.DestroyTimer(self._id_timer)
@@ -202,7 +204,6 @@ class FuryStreamClient:
             self._id_observer = None
 
     def cleanup(self):
-        self.stop()
         if not self.use_raw_array:
             logging.info('release shared memory buffers')
             self.info_buffer.close()
@@ -327,5 +328,4 @@ class FuryStreamInteraction:
             self._interval_timer = None
 
     def cleanup(self):
-        self.stop()
         self.circular_queue.cleanup()
