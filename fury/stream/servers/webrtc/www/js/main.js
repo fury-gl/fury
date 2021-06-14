@@ -5,6 +5,7 @@ import {
   mouseInterval,
   videoEl,
   urlParams,
+  encoding,
 } from "/js/constants.js";
 
 let addrInteraction =
@@ -16,16 +17,21 @@ const urlInteraction = `${location.protocol}://${addrInteraction}/`;
 const clientSocket = new WebSocket(`ws://${addrInteraction}/ws`);
 
 document.addEventListener("DOMContentLoaded", (event) => {
-  document.getElementById("startBtn").addEventListener("click", (e) => {
-    startWebRTC();
-  });
+  if (encoding === "webrtc") {
+    document.getElementById("startBtn").addEventListener(
+      "click", (e) => 
+        startWebRTC()
+    )
+  } else if (encoding === 'mjpeg') {
+    document.getElementById("startBtn").className = 'hidden'
+    videoEl.src = '/video/mjpeg'
+  }
   const interaction = urlParams.get("interaction");
   const runningOnIframe = urlParams.get("iframe");
   const backgroundColor = urlParams.get("background");
 
   console.info("address interaction server", urlInteraction);
-  if (interaction === null || interaction == 1)
-    addInteraction(videoEl);
+  if (interaction === null || interaction == 1) addInteraction(videoEl);
   const videoClass =
     runningOnIframe == null || runningOnIframe == 0
       ? "videoNormalMode"
@@ -47,7 +53,7 @@ function addInteraction(videoEl) {
   let currentWheelEventTotalDeltaY = 0;
 
   videoEl.addEventListener("wheel", (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
     currentWheelEventTotalDeltaY += event.deltaY;
     if (!enableCallWheel) return;
 
@@ -127,7 +133,7 @@ function addInteraction(videoEl) {
   // const timerMouseMove = setInterval(mouseMoveCallback, mouseInterval);
 
   videoEl.addEventListener("mousedown", (e) => {
-    //e.preventDefault()
+    e.preventDefault();
     mouseLeftReleased = false;
     ctrlKey = e.ctrlKey ? 1 : 0;
     shiftKey = e.shiftKey ? 1 : 0;

@@ -17,7 +17,6 @@
 
     .videoNormalMode {
         height: 100%;
-        width:100%;
         overflow: hidden;
         /* example padding, font-size, background, etc */
         padding: 10px;
@@ -36,6 +35,9 @@
     #media {
         max-width: 1280px;
     }
+    .hidden {
+        display: none;
+    }
     </style>
 </head>
 <body>
@@ -50,9 +52,14 @@
 <div id="media">
 
     <audio id="audio" autoplay="true"></audio>
-    <video 
+    <video
+    class='hidden'
     oncontextmenu="return false;"
     id="video" autoplay="true" playsinline="true"></video>
+    <img
+    oncontextmenu="return false;"
+    class='hidden'
+    src='' id='videoMJPEG'/>
 </div>
 
 <script src="//webrtc.github.io/adapter/adapter-latest.js"></script>

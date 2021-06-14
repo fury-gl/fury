@@ -5,6 +5,7 @@ import sys
 import numpy as np
 from functools import partial
 import aiohttp
+from aiohttp import MultipartWriter
 from aiohttp import WSCloseCode
 from aiohttp import web
 import weakref
@@ -30,6 +31,32 @@ async def javascript(request, **kwargs):
     js = kwargs['js']
     content = open(os.path.join(folder, "js/%s" % js), "r").read()
     return web.Response(content_type="application/javascript", text=content)
+
+
+async def mjpeg_handler(request):
+    my_boundary = 'image-boundary'
+    response = web.StreamResponse(
+        status=200,
+        reason='OK',
+        headers={
+                'Content-Type': 
+                    'multipart/x-mixed-replace;boundary={}'.format(my_boundary)
+            }
+    )
+    await response.prepare(request)
+    image_buffer_manager = request.app['image_buffer_manager']
+    while True:
+        jpeg_bytes = await image_buffer_manager.get_image()
+        with MultipartWriter('image/jpeg', boundary=my_boundary) as mpwriter:
+            mpwriter.append(jpeg_bytes, {
+                'Content-Type': 'image/jpeg'
+            })
+            try:
+                await mpwriter.write(response, close_boundary=False)
+            except ConnectionResetError :
+                logging.info("Client connection closed")
+                break
+        await response.write(b"\r\n")
 
 
 async def offer(request, **kwargs):
@@ -172,7 +199,9 @@ async def websocket_handler(request, **kwargs):
 
 
 def get_app(
-        rtc_server=None, folder=None, circular_queue=None, broadcast=True):
+        rtc_server=None, folder=None, circular_queue=None,
+        image_buffer_manager=None,
+        broadcast=True):
 
     if folder is None:
         folder = f'{os.path.dirname(__file__)}/www/'
@@ -189,6 +218,11 @@ def get_app(
     #         rtc_server=rtc_server,
     #     )
     # )
+    if image_buffer_manager is not None:
+        print('add manager')
+        app['image_buffer_manager'] = image_buffer_manager
+        app.router.add_get("/video/mjpeg", mjpeg_handler)
+
     if rtc_server is not None:
         app.router.add_get("/", partial(index, folder=folder))
 

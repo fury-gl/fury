@@ -9,6 +9,7 @@ else:
     shared_memory = None
     PY_VERSION_8 = False
 
+import asyncio
 from aiohttp import web
 from av import VideoFrame
 from aiortc import VideoStreamTrack
@@ -24,6 +25,13 @@ try:
     CYTHON_AVAILABLE = True
 except ImportError:
     CYTHON_AVAILABLE = False
+
+try:
+    import cv2 
+    OPENCV_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    OPENCV_AVAILABLE = False
 
 
 class ImageBufferManager:
@@ -78,6 +86,32 @@ class ImageBufferManager:
 
         return self.width, self.height, self.image
 
+    async def get_image(self):
+        if self.use_raw_array:
+            image_info = np.frombuffer(
+                self.info_buffer, 'uint32')
+        else:
+            image_info = self.info_buffer_repr
+
+        buffer_index = int(image_info[1])
+
+        width = int(image_info[2+buffer_index*2])
+        height = int(image_info[2+buffer_index*2+1])
+        if self.use_raw_array:
+            image = self.image_buffers[buffer_index]
+        else:
+            image = self.image_reprs[buffer_index]
+
+        image = np.frombuffer(image,
+                        'uint8'
+                    )[0:width*height*3].reshape((height, width, 3))
+        image = np.flipud(image)
+       
+        image_encoded = cv2.imencode('.jpg', image)[1]
+        await asyncio.sleep(1 / 25)
+        return image_encoded.tobytes()
+
+
     def cleanup(self):
         logging.info("Freeing buffer")
         if not self.use_raw_array:
@@ -89,8 +123,7 @@ class ImageBufferManager:
 class RTCServer(VideoStreamTrack):
     def __init__(
             self, image_buffer_manager, use_raw_array=True,
-            info_buffer=None, image_buffers=None,
-            info_buffer_name=None, image_buffer_names=None):
+        ):
         super().__init__()
 
         self.frame = None
@@ -156,7 +189,9 @@ def webrtc_server(
         queue_head_tail_buffer_name=None,
         queue_buffer_name=None,
         port=8000, host='localhost',
-        ):
+        provides_mjpeg=True,
+        provides_webrtc=True
+    ):
 
     if stream_client is not None:
         image_buffers = stream_client.image_buffers
@@ -167,9 +202,15 @@ def webrtc_server(
     image_buffer_manager = ImageBufferManager(
             use_raw_array, info_buffer, image_buffers, 
             info_buffer_name, image_buffer_names)
-
-    rtc_server = RTCServer(
-        image_buffer_manager, use_raw_array)
+    
+    if provides_webrtc:
+        rtc_server = RTCServer(
+            image_buffer_manager, use_raw_array)
+    else:
+        rtc_server = None
+    
+    if not provides_mjpeg:
+        image_buffer_manager = None
 
     if queue_buffer is not  None or queue_buffer_name is not None:
         circular_queue = CircularQueue(
@@ -177,9 +218,10 @@ def webrtc_server(
             buffer=queue_buffer,
             buffer_name=queue_buffer_name,
             head_tail_buffer_name=queue_head_tail_buffer_name)
- 
+    
     app_fury = get_app(
        rtc_server, circular_queue=circular_queue,
+       image_buffer_manager=image_buffer_manager
     )
 
     web.run_app(
