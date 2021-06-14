@@ -1,33 +1,40 @@
-from os.path import join as pjoin
-from fury import actor, window, colormap as cmap
+# if this example it's not working for you and you're using MacOs 
+# uncoment the following line
+# multiprocessing.set_start_method('spawn')
+from fury import actor, window
 import numpy as np
 
-###############################################################################
-# An example about how to use the streaming with the interaction running 
-# in another process
-
-
 import multiprocessing
-from fury.stream.servers.webrtc.server import webrtc_server, interaction_server
+from fury.stream.server import web_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-if __name__ == '__main__':
 
-    window_size = (400, 400)
-    max_window_size = (700, 700)
+
+# note, if python version is equal or higher than 3.8
+# uses shared memory approach
+if __name__ == '__main__':
+    use_high_res = False
+    if use_high_res:
+        window_size = (1280, 720)
+        max_window_size = (1920, 1080)
+    else:
+        window_size = (720, 500)
+        max_window_size = (600, 600)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
-    ms_interaction = 1
-    ms_stream = 16
-    # max number of interactions to be stored inside the queue
-    max_queue_size = 1000
-    ##############################################################################
+    ms_interaction = 10
+    ms_stream = 0 
 
+    # max number of interactions to be stored inside the queue
+    max_queue_size =  17 
+    ######################################################################
     centers = 1*np.array([
         [0, 0, 0],
         [-1, 0, 0],
         [1, 0, 0]
     ])
     centers2 = centers - np.array([[0, -1, 0]])
+    # centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
+    # centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
     colors = np.array([
         [1, 0, 0],
         [0, 1, 0],
@@ -61,43 +68,43 @@ if __name__ == '__main__':
     # ms define the amount of mileseconds that will be used in the timer event.
     # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
     # render event
-
-    stream_interaction = FuryStreamInteraction(
-        showm, max_queue_size=max_queue_size)
+    # showm.window.SetOffScreenRendering(1)
+    # showm.window.EnableRenderOff()
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size, max_window_size=max_window_size)
+        showm, window_size, max_window_size=max_window_size,)
+    stream_interaction = FuryStreamInteraction(
+        showm, max_queue_size=max_queue_size, fury_client=stream)
     # linux
     # p = multiprocessing.Process(
     #     target=webrtc_server,
     #     args=(stream, None, None, circular_queue))
     # osx,
+    
     p = multiprocessing.Process(
-        target=webrtc_server,
+        target=web_server,
         args=(
-            None, stream.image_buffers,
+            None, 
+            stream.image_buffers,
             stream.image_buffer_names,
             stream.info_buffer,
             stream.info_buffer_name,
-            None,)
-    )
-    p.start()
-    p2 = multiprocessing.Process(
-        target=interaction_server,
-        args=(
             None,
             stream_interaction.circular_queue.head_tail_buffer,
-            stream_interaction.circular_queue.buffers._buffers,
-            8080, 'localhost')
-    )
-    p2.start()
+            stream_interaction.circular_queue.buffer._buffer,
+            None,
+            None,
+            #stream_interaction.circular_queue.head_tail_buffer_name,
+            #stream_interaction.circular_queue.buffer.buffer_name
+            )
+            )
+    p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)
     showm.start()
     p.kill()
-    p2.kill()
     stream.cleanup()
-
+    stream_interaction.cleanup()
     # open a browser using the following the url
-    # http://localhost:8000?interaction_addr=localhost:8080
+    # http://localhost:8000/

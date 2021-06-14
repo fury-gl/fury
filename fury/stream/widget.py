@@ -86,11 +86,20 @@ class Widget:
     #     self.showm.render()
     #     # this blocks
     #     # self.showm.iren.Start()
+    @property
+    def url(self):
+        return f'http://{self.domain}:{self.port}?iframe=1&encoding={self.encoding}'
+
     def return_iframe(self, height=200):
         display(IFrame(
-            f'http://{self.domain}:{self.port}?iframe=1&encoding={self.encoding}',
+            self.url,
             '100%', f'{int(height)}px')
         )
+    
+    def start(self):
+        self.start_server()
+        self.run_command()
+        print(f'url: {self.url}')
     def display(self, height=150):
         self.start_server()
         self.run_command()

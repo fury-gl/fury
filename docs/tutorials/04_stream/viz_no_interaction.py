@@ -1,3 +1,7 @@
+import multiprocessing
+# if this example it's not working for you and you're using MacOs 
+# uncoment the following line
+# multiprocessing.set_start_method('spawn')
 from os.path import join as pjoin
 from fury import actor, window, colormap as cmap
 import numpy as np
@@ -7,7 +11,7 @@ import numpy as np
 
 from fury.data.fetcher import fetch_viz_wiki_nw
 
-import multiprocessing
+
 from fury.stream.server import web_server
 
 if __name__ == '__main__':
