@@ -40,6 +40,7 @@ class MultiDimensionalBuffer:
                         dtype='float64', buffer=buffer.buf)
                 self._buffer = buffer
                 buffer_name = buffer.name
+                self._unlink_shared_mem = True
         else:
             if buffer_name is None:
                 max_size = int(len(buffer)//dimension)
@@ -56,6 +57,7 @@ class MultiDimensionalBuffer:
                         len(buffer.buf)//8,
                         dtype='float64', buffer=buffer.buf)
                 self._buffer = buffer
+                self._unlink_shared_mem = False 
 
         self.buffer_name = buffer_name
         self.dimension = dimension
@@ -99,8 +101,9 @@ class MultiDimensionalBuffer:
 
     def cleanup(self):
         if not self.use_raw_array:
-            self._buffer.close()
-            self._buffer.unlink()
+            if self._unlink_shared_mem:
+                self._buffer.close()
+                self._buffer.unlink()
 
 
 
@@ -133,10 +136,12 @@ class CircularQueue:
                     create=True, size=head_tail_arr.nbytes)
         
                 head_tail_buffer_name = head_tail_buffer.name
+                self._unlink_shared_mem = True 
         else:
             if not use_raw_array:
                 head_tail_buffer = shared_memory.SharedMemory(
                     head_tail_buffer_name)
+                self._unlink_shared_mem = False 
 
         self.use_raw_array = use_raw_array
         self.dimension = buffer.dimension
@@ -216,8 +221,9 @@ class CircularQueue:
 
     def cleanup(self):
         if not self.use_raw_array:
-            self.head_tail_buffer.close()
-            self.head_tail_buffer.unlink()
+            if self._unlink_shared_mem:
+                self.head_tail_buffer.close()
+                self.head_tail_buffer.unlink()
             self.buffer.cleanup()
 
 

@@ -78,7 +78,6 @@ class FuryStreamClient:
                         info_list.shape[0],
                         dtype='uint64', buffer=self.info_buffer.buf)
                 self.info_buffer_name = self.info_buffer.name
-
         if use_raw_array:
             self.image_buffer_names = None
             if image_buffers is None:
@@ -197,8 +196,10 @@ class FuryStreamClient:
         if self._id_timer is not None:
             # self.showm.destroy_timer(self._id_timer)
             self.showm.iren.DestroyTimer(self._id_timer)
+            self._id_timer = None
         if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
+            self._id_observer = None
 
     def cleanup(self):
         self.stop()
