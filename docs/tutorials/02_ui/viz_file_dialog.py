@@ -4,7 +4,8 @@ File Dialog
 ===========
 
 This example shows how to use the File Dialog UI. We will demonstrate how to
-create File Dialogs for browsing the file system and to get the desired file path.
+create File Dialogs for browsing the file system and to get the desired file
+path.
 
 First, some imports.
 """
@@ -13,16 +14,19 @@ import os
 
 from fury import ui, window
 
-##############################################################################################
+########################################################################
 # File Dialog
 # ================
 #
-# We create a couple of File Dialogs, one for saving a file and the other for opening a file.
+# We create a couple of File Dialogs, one for saving a file and,
+# the other for opening a file.
 # We also create a TextBlock to display the filenames.
 
-file_dialog_save = ui.FileDialog2D(os.getcwd(), position=(25, 25), size=(300, 200),
+file_dialog_save = ui.FileDialog2D(os.getcwd(), position=(25, 25),
+                                   size=(300, 200),
                                    dialog_type="Save")
-file_dialog_open = ui.FileDialog2D(os.getcwd(), position=(180, 250), size=(300, 200),
+file_dialog_open = ui.FileDialog2D(os.getcwd(), position=(180, 250),
+                                   size=(300, 200),
                                    dialog_type="Open")
 
 tb = ui.TextBlock2D(text="", position=(100, 300))
@@ -32,7 +36,8 @@ tb = ui.TextBlock2D(text="", position=(100, 300))
 # Callbacks
 # ==================================
 #
-# Now we create a callback which triggers when a specific action like, open, save or close is performed.
+# Now we create a callback which triggers when a specific action like,
+# open, save or close is performed.
 
 def open_(file_dialog):
     tb.message = "File:" + file_dialog.current_file
