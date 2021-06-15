@@ -87,7 +87,15 @@ if __name__ == '__main__':
     # multiprocessing.set_start_method('fork')
  
     p = multiprocessing.Process(
-        target=web_server, args=(stream, ))
+        target=web_server,
+        args=(
+            None, 
+            stream.image_buffers,
+            stream.image_buffer_names,
+            stream.info_buffer,
+            stream.info_buffer_name,
+        )
+    )
     p.start()
 
     stream.init(ms,)
