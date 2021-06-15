@@ -3,7 +3,7 @@
 Fury Markers
 ======================================================================
 
-This is a example which shows how to use the marker actor.
+This example shows how to use the marker actor.
 """
 import numpy as np
 from fury import actor, window
@@ -23,7 +23,7 @@ centers = np.random.normal(size=(n, 3), scale=10)
 colors = np.random.uniform(size=(n, 3))
 
 ############################################################################
-# You can control the edge color and edge width for each marke
+# You can control the edge color and edge width for each marker
 
 nodes_actor = actor.markers(
     centers,
