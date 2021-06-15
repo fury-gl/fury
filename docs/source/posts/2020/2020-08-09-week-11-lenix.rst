@@ -1,0 +1,37 @@
+More Shaders!!
+=====================
+
+.. post:: August 09 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+This week, More Shaders!
+
+What did you do this week?
+--------------------------
+The task assigned for this week was to explore more shader techniques which could be implemented using FURY and which would demonstrate the capability of FURY shader system. So i decided to work on implementing shading examples such as Gooch shading and reflection shader using textures.
+
+
+Below are the outputs of the techniques i worked on :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-11a.gif
+
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-11b.gif
+
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-11c.gif
+
+The shader demos are available `here <https://github.com/lenixlobo/fury/tree/shader-demos>`_
+
+What is coming up next week?
+----------------------------
+The next week will involve working on more such demos which can demonstrate the capabilities of FURY 
+
+Did you get stuck anywhere?
+---------------------------
+No issues were faced this week

@@ -79,17 +79,28 @@ def test_save_and_load_options():
 
 def test_save_load_image():
     l_ext = ["png", "jpeg", "jpg", "bmp", "tiff"]
+    fury_logo_link = 'https://raw.githubusercontent.com/fury-gl/'\
+                     'fury-communication-assets/main/fury-logo.png'
+         
+    invalid_link = 'https://picsum.photos/200'
     fname = "temp-io"
 
     for ext in l_ext:
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3), dtype=np.uint8)
+            url_image = load_image(fury_logo_link)
+
+            url_fname_path = pjoin(odir, f'fury_logo.{ext}')
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
 
             save_image(data, fname_path, compression_quality=100)
+            save_image(url_image, url_fname_path, compression_quality=100)
 
             npt.assert_equal(os.path.isfile(fname_path), True)
+            npt.assert_equal(os.path.isfile(url_fname_path), True)
+
             assert_greater(os.stat(fname_path).st_size, 0)
+            assert_greater(os.stat(url_fname_path).st_size, 0)
 
             out_image = load_image(fname_path)
             if ext not in ["jpeg", "jpg", "tiff"]:
@@ -99,6 +110,7 @@ def test_save_load_image():
                 npt.assert_array_almost_equal(data[..., 0], out_image[..., 0],
                                               decimal=0)
 
+    npt.assert_raises(IOError, load_image, invalid_link)
     npt.assert_raises(IOError, load_image, "test.vtk")
     npt.assert_raises(IOError, load_image, "test.vtk", use_pillow=False)
     npt.assert_raises(IOError, save_image,

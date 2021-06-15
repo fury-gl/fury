@@ -49,7 +49,7 @@ def box_edges(box_lx, box_ly, box_lz):
 def collision():
     global xyz
     num_vertices = vertices.shape[0]
-    sec = np.int(num_vertices / num_particles)
+    sec = int(num_vertices / num_particles)
 
     for i, j in np.ndindex(num_particles, num_particles):
 

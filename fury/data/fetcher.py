@@ -32,6 +32,9 @@ MODEL_DATA_URL = \
 TEXTURE_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/textures/"
 
+DMRI_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/dmri/"
+
 
 class FetcherError(Exception):
     pass
@@ -295,13 +298,23 @@ fetch_viz_models = _make_fetcher(
     "fetch_viz_models",
     pjoin(fury_home, "models"),
     MODEL_DATA_URL,
-    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj'],
-    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj'],
+    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj', 'dragon.obj'],
+    ['utah.obj', 'suzanne.obj', 'satellite_obj.obj', 'dragon.obj'],
     ['0B50F12CEDCDC27377AC702B1EE331223BECEC59593B3F00A9E06B57A9C1B7C3',
      'BB4FF4E65D65D71D53000E06D2DC7BF89B702223657C1F64748811A3A6C8D621',
-     '90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74'],
+     '90213FAC81D89BBB59FA541643304E0D95C2D446157ACE044D46F259454C0E74',
+     'A775D6160D04EAB9A4E90180104F148927CEFCCAF9F0BCD748265CB8EE86F41B'],
     doc=" Download the models for shader tutorial"
     )
+
+fetch_viz_dmri = _make_fetcher(
+    "fetch_viz_dmri",
+    pjoin(fury_home, "dmri"),
+    DMRI_DATA_URL,
+    ['fodf.nii.gz'],
+    ['fodf.nii.gz'],
+    ['767ca3e4cd296e78421d83c32201b30be2d859c332210812140caac1b93d492b']
+)
 
 fetch_viz_textures = _make_fetcher(
     "fetch_viz_textures",
@@ -317,7 +330,8 @@ fetch_viz_textures = _make_fetcher(
      '8k_mars.jpg', '8k_saturn.jpg',
      '8k_saturn_ring_alpha.png',
      '2k_uranus.jpg', '2k_neptune.jpg',
-     '8k_sun.jpg', '1_earth_16k.jpg'],
+     '8k_sun.jpg', '1_earth_16k.jpg',
+     'clouds.jpg'],
     ['1_earth_8k.jpg', '2_no_clouds_8k.jpg',
      '5_night_8k.jpg', 'earth.ppm',
      'jupiter.jpg', 'masonry.bmp',
@@ -328,7 +342,8 @@ fetch_viz_textures = _make_fetcher(
      '8k_mars.jpg', '8k_saturn.jpg',
      '8k_saturn_ring_alpha.png',
      '2k_uranus.jpg', '2k_neptune.jpg',
-     '8k_sun.jpg', '1_earth_16k.jpg'],
+     '8k_sun.jpg', '1_earth_16k.jpg',
+     'clouds.jpg'],
     ['0D66DC62768C43D763D3288CE67128AAED27715B11B0529162DC4117F710E26F',
      '5CF740C72287AF7B3ACCF080C3951944ADCB1617083B918537D08CBD9F2C5465',
      'DF443F3E20C7724803690A350D9F6FDB36AD8EBC011B0345FB519A8B321F680A',
@@ -349,7 +364,8 @@ fetch_viz_textures = _make_fetcher(
      'D15239D46F82D3EA13D2B260B5B29B2A382F42F2916DAE0694D0387B1204A09D',
      'CB42EA82709741D28B0AF44D8B283CBC6DBD0C521A7F0E1E1E010ADE00977DF6',
      'F22B1CFB306DDCE72A7E3B628668A0175B745038CE6268557CB2F7F1BDF98B9D',
-     '7DD1DAC926101B5D7B7F2E952E53ACF209421B5CCE57C03168BCE0AAD675998A'],
+     '7DD1DAC926101B5D7B7F2E952E53ACF209421B5CCE57C03168BCE0AAD675998A',
+     '85043336E023C4C9394CFD6D48D257A5564B4F895BFCEC01C70E4898CC77F003'],
     doc="Download textures for fury"
     )
 
@@ -410,4 +426,23 @@ def read_viz_textures(fname):
 
     """
     folder = pjoin(fury_home, 'textures')
+    return pjoin(folder, fname)
+
+
+def read_viz_dmri(fname):
+    """Read specific dMRI image.
+
+    Parameters
+    ----------
+    fname: str
+        Filename of the texture.
+        This should be found in folder HOME/.fury/dmri/.
+
+    Returns
+    -------
+    path : str
+        Complete path of dMRI image.
+
+    """
+    folder = pjoin(fury_home, 'dmri')
     return pjoin(folder, fname)

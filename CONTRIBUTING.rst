@@ -38,6 +38,11 @@ Write Documentation
 FURY could always use more documentation, whether
 as part of the official FURY docs, in docstrings,
 or even on the web in blog posts, articles, and such.
+FURY uses [Sphinx](http://www.sphinx-doc.org/en/stable/index.html) to generate documentation.
+Please follow the [numpy coding style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard) - and of course - [PEP8](https://www.python.org/dev/peps/pep-0008/)
+for docstring documentation.
+
+
 
 Submit Feedback
 ~~~~~~~~~~~~~~~
@@ -105,9 +110,9 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.7, 3.4, 3.5, 3.6, 3.7 and for PyPy. Check
-   https://travis-ci.org/fury-gl/fury/pull_requests
+   feature to the list in README.md.
+3. The pull request should work for Python 3.6, 3.7, 3.8, 3.9 and for PyPy. Check
+   https://github.com/fury-gl/fury/actions
    and make sure that the tests pass for all supported Python versions.
 
 Publishing Releases

@@ -49,6 +49,17 @@ def test_vertices_primitives_octagonalprism():
     npt.assert_equal(vertices.max(), two)
 
 
+def test_vertices_primitives_triangularprism():
+    # Testing the default vertices of the primitive triangular prism.
+    vertices, _ = fp.prim_triangularprism()
+    shape = (6, 3)
+    three = (float('{:.7f}'.format(math.sqrt(3))))
+    npt.assert_equal(vertices.shape, shape)
+    npt.assert_equal(np.mean(vertices), 0)
+    npt.assert_equal(vertices.min(), -1/three)
+    npt.assert_equal(vertices.max(), 1/2)
+
+
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
                     (fp.prim_box, (12, 3)),
@@ -94,6 +105,28 @@ def test_superquadric_primitives():
     npt.assert_equal(sq_faces.shape, s_faces.shape)
 
     # TODO: We need to check some superquadrics shape
+
+
+def test_cylinder_primitive():
+    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10)
+    npt.assert_equal(verts.shape, (44, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+    npt.assert_equal(verts.min(), -.5)
+    npt.assert_equal(verts.max(), .5)
+
+    # basic tests for triangle
+    npt.assert_equal(faces.shape, (40, 3))
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
+    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10, capped=False)
+    npt.assert_equal(verts.shape, (22, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+    npt.assert_equal(verts.min(), -.5)
+    npt.assert_equal(verts.max(), .5)
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
 
 
 def test_repeat_primitive():

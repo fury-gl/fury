@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from warnings import warn
 from numbers import Number
+from string import printable
 
 import numpy as np
 import vtk
@@ -17,7 +18,7 @@ from fury.actor import grid
 TWO_PI = 2 * np.pi
 
 
-def clip_overflow(textblock, width):
+def clip_overflow(textblock, width, side='right'):
     """Clips overflowing text of TextBlock2D with respect to width.
 
     Parameters
@@ -26,12 +27,19 @@ def clip_overflow(textblock, width):
         The textblock object whose text needs to be clipped.
     width : int
         Required width of the clipped text.
+    side : str, optional
+        Clips the overflowing text according to side.
+        It takes values "left" or "right".
 
     Returns
     -------
     clipped text : str
         Clipped version of the text.
     """
+    side = side.lower()
+    if side not in ['left', 'right']:
+        raise ValueError("side can only take values 'left' or 'right'")
+
     original_str = textblock.message
     start_ptr = 0
     end_ptr = len(original_str)
@@ -41,6 +49,9 @@ def clip_overflow(textblock, width):
     if textblock.size[0] == width or textblock.size[0] <= width:
         textblock.have_bg = prev_bg
         return original_str
+
+    if side == 'left':
+        original_str = original_str[::-1]
 
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr)//2
@@ -53,6 +64,8 @@ def clip_overflow(textblock, width):
         if mid_ptr == (start_ptr + end_ptr)//2 or\
            textblock.size[0] == width:
             textblock.have_bg = prev_bg
+            if side == 'left':
+                textblock.message = textblock.message[::-1]
             return textblock.message
 
 
@@ -1675,7 +1688,7 @@ class TextBox2D(UI):
                 multi_line_text += "\n"
         return multi_line_text.rstrip("\n")
 
-    def handle_character(self, character):
+    def handle_character(self, key, key_char):
         """ Main driving function that handles button events.
 
         # TODO: Need to handle all kinds of characters like !, +, etc.
@@ -1684,17 +1697,18 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if character.lower() == "return":
+        if key_char != '' and key_char in printable:
+            self.add_character(key_char)
+        elif key.lower() == "return":
             self.render_text(False)
             return True
-        if character.lower() == "backspace":
+        if key.lower() == "backspace":
             self.remove_character()
-        elif character.lower() == "left":
+        elif key.lower() == "left":
             self.move_left()
-        elif character.lower() == "right":
+        elif key.lower() == "right":
             self.move_right()
-        else:
-            self.add_character(character)
+
         self.render_text()
         return False
 
@@ -1852,7 +1866,8 @@ class TextBox2D(UI):
         _textbox_object: :class:`TextBox2D`
         """
         key = i_ren.event.key
-        is_done = self.handle_character(key)
+        key_char = i_ren.event.key_char
+        is_done = self.handle_character(key, key_char)
         if is_done:
             i_ren.remove_active_prop(self.text.actor)
 
@@ -2047,7 +2062,7 @@ class LineSlider2D(UI):
             track_position[0] += self.track.size[0] / 2.
 
         self.track.position = track_position
-        self.handle.position = self.handle.position.astype('float64')
+        self.handle.position = self.handle.position.astype(float)
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
@@ -2403,8 +2418,8 @@ class LineDoubleSlider2D(UI):
             track_position[0] -= self.track.size[0] / 2.
         self.track.position = track_position
 
-        self.handles[0].position = self.handles[0].position.astype('float64')
-        self.handles[1].position = self.handles[1].position.astype('float64')
+        self.handles[0].position = self.handles[0].position.astype(float)
+        self.handles[1].position = self.handles[1].position.astype(float)
 
         self.handles[0].position += coords - self.position
         self.handles[1].position += coords - self.position
@@ -3187,7 +3202,7 @@ class ImageContainer2D(UI):
         Parameters
         ----------
         img_path : string
-            Path of the image
+            URL or local path of the image
         position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of the image.
         size : (int, int), optional

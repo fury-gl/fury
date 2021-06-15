@@ -59,7 +59,7 @@ ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
 ball_coll = p.createCollisionShape(p.GEOM_SPHERE,
                                    radius=ball_radius)
 
-# Creating a Multibody which will be tracked by pybullet.
+# Creating a multi-body which will be tracked by pybullet.
 ball = p.createMultiBody(baseMass=3,
                          baseCollisionShapeIndex=ball_coll,
                          basePosition=ball_position,
@@ -77,13 +77,13 @@ base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        colors=base_color)
 
 base_coll = p.createCollisionShape(p.GEOM_BOX,
-                                   halfExtents=base_size/2)
+                                   halfExtents=base_size / 2)
 # half of the actual size.
 
 base = p.createMultiBody(
-                          baseCollisionShapeIndex=base_coll,
-                          basePosition=base_position,
-                          baseOrientation=base_orientation)
+    baseCollisionShapeIndex=base_coll,
+    basePosition=base_position,
+    baseOrientation=base_orientation)
 
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
@@ -91,7 +91,7 @@ p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 # Now we render the bricks. All the bricks are rendered by a single actor for
 # better performance.
 
-nb_bricks = wall_height*wall_width
+nb_bricks = wall_height * wall_width
 
 brick_centers = np.zeros((nb_bricks, 3))
 
@@ -106,7 +106,7 @@ brick_sizes[:] = brick_size
 brick_colors = np.random.rand(nb_bricks, 3)
 
 brick_coll = p.createCollisionShape(p.GEOM_BOX,
-                                    halfExtents=brick_size/2)
+                                    halfExtents=brick_size / 2)
 
 # We use this array to store the reference of brick objects in pybullet world.
 bricks = np.zeros(nb_bricks, dtype=np.int8)
@@ -115,7 +115,7 @@ bricks = np.zeros(nb_bricks, dtype=np.int8)
 i = 0
 for k in range(wall_height):
     for j in range(wall_width):
-        center_pos = np.array([-1, (j*0.4)-1.8, (0.2*k)+0.1])
+        center_pos = np.array([-1, (j * 0.4) - 1.8, (0.2 * k) + 0.1])
         brick_centers[i] = center_pos
         brick_orns[i] = np.array([0, 0, 0, 1])
         bricks[i] = p.createMultiBody(baseMass=brick_mass,
@@ -146,7 +146,7 @@ showm = window.ShowManager(scene,
 
 showm.initialize()
 
-# Counter interator for tracking simulation steps.
+# Counter iterator for tracking simulation steps.
 counter = itertools.count()
 
 # Variable for tracking applied force.
@@ -167,7 +167,8 @@ ball_actor.SetPosition(*ball_pos)
 vertices = utils.vertices_from_actor(brick_actor)
 num_vertices = vertices.shape[0]
 num_objects = brick_centers.shape[0]
-sec = np.int(num_vertices / num_objects)
+sec = int(num_vertices / num_objects)
+
 
 ###############################################################################
 # ==============
@@ -177,9 +178,9 @@ sec = np.int(num_vertices / num_objects)
 # Here, we perform three major steps to sync bricks accurately.
 # * Get the position and orientation of the bricks from pybullet.
 # * Calculate the Rotation Matrix.
-#   * Get the difference in orientations (Quaternion).
-#   * Generate the corresponding rotation matrix according to that difference.
-#   * Reshape it in a 3x3 matrix.
+#   - Get the difference in orientations (Quaternion).
+#   - Generate the corresponding rotation matrix according to that difference.
+#   - Reshape it in a 3x3 matrix.
 # * Perform calculations to get the required position and orientation.
 # * Update the position and orientation.
 
@@ -194,10 +195,11 @@ def sync_brick(object_index, multibody):
 
     vertices[object_index * sec: object_index * sec + sec] = \
         (vertices[object_index * sec: object_index * sec + sec] -
-         brick_centers[object_index])@rot_mat + pos
+         brick_centers[object_index]) @ rot_mat + pos
 
     brick_centers[object_index] = pos
     brick_orns[object_index] = orn
+
 
 ###############################################################################
 # A simpler but inaccurate approach is used here to update the position and
@@ -226,6 +228,7 @@ scene.set_camera(position=(10.46, -8.13, 6.18),
                  focal_point=(0.0, 0.0, 0.79),
                  view_up=(-0.27, 0.26, 0.90))
 
+
 ###############################################################################
 # Timer callback is created which is responsible for calling the sync and
 # simulation methods.
@@ -240,7 +243,7 @@ def timer_callback(_obj, _event):
     if cnt % 1 == 0:
         fps = scene.frame_rate
         fpss = np.append(fpss, fps)
-        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
                      "\nSim Steps: " + str(cnt)
 
     # Get the position and orientation of the ball.

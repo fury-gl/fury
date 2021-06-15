@@ -4,7 +4,7 @@ Wrecking Ball Simulation
 ========================
 
 This example simulation shows how to use pybullet to render physics simulations
-in fury. In this example we specifically render a brick wall beign destroyed by
+in fury. In this example we specifically render a brick wall being destroyed by
 a wrecking ball.
 
 First some imports.
@@ -31,12 +31,15 @@ wall_height = 5
 brick_size = np.array([0.2, 0.4, 0.2])
 
 n_links = 15
-dx_link = 0.1       # Size of segments
+# Size of segments
+dx_link = 0.1
 link_mass = 0.5
 base_mass = 0.1
+# radius of the cylindrical links or the rope
 radii = 0.1
 
 ball_mass = 10
+# radius of the wrecking ball
 ball_radius = 0.5
 ball_color = np.array([[1, 0, 0]])
 
@@ -53,16 +56,16 @@ base_actor = actor.box(centers=np.array([[0, 0, 0]]),
 base_coll = p.createCollisionShape(p.GEOM_BOX,
                                    halfExtents=[2.5, 2.5, 0.1])
 base = p.createMultiBody(
-                          baseCollisionShapeIndex=base_coll,
-                          basePosition=[0, 0, -0.1],
-                          baseOrientation=[0, 0, 0, 1])
+    baseCollisionShapeIndex=base_coll,
+    basePosition=[0, 0, -0.1],
+    baseOrientation=[0, 0, 0, 1])
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
 ###############################################################################
-# The following definations are made to render a NxNxN brick wall.
+# The following definitions are made to render a NxNxN brick wall.
 
 # Generate bricks.
-nb_bricks = wall_length*wall_breadth*wall_height
+nb_bricks = wall_length * wall_breadth * wall_height
 brick_centers = np.zeros((nb_bricks, 3))
 
 brick_directions = np.zeros((nb_bricks, 3))
@@ -76,7 +79,7 @@ brick_sizes[:] = brick_size
 brick_colors = np.random.rand(nb_bricks, 3)
 
 brick_coll = p.createCollisionShape(p.GEOM_BOX,
-                                    halfExtents=brick_size/2)
+                                    halfExtents=brick_size / 2)
 
 bricks = np.zeros(nb_bricks, dtype=np.int16)
 
@@ -89,7 +92,7 @@ idx = 0
 for i in range(wall_length):
     for k in range(wall_height):
         for j in range(wall_breadth):
-            center_pos = np.array([(i*0.2)-1.8, (j*0.4)-0.9, (0.2*k)+0.1])
+            center_pos = np.array([(i * 0.2) - 1.8, (j * 0.4) - 0.9, (0.2 * k) + 0.1])
             brick_centers[idx] = center_pos
             brick_orns[idx] = np.array([0, 0, 0, 1])
             bricks[idx] = p.createMultiBody(baseMass=0.5,
@@ -112,13 +115,12 @@ brick_actor = actor.box(centers=brick_centers,
 link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
                                     radius=radii,
                                     height=dx_link,
-                                    collisionFramePosition=[0, 0, -dx_link/2])
+                                    collisionFramePosition=[0, 0, -dx_link / 2])
 
 base_shape = p.createCollisionShape(p.GEOM_BOX,
                                     halfExtents=[0.01, 0.01, 0.01])
 ball_shape = p.createCollisionShape(p.GEOM_SPHERE,
-                                    radius=0.2)
-
+                                    radius=ball_radius)
 
 visualShapeId = -1
 
@@ -178,8 +180,8 @@ rope = p.createMultiBody(base_mass,
 ###############################################################################
 # Next we define the frictional force between the joints of wrecking ball.
 
-friction_vec = [joint_friction]*3   # same all axis
-control_mode = p.POSITION_CONTROL   # set pos control mode
+friction_vec = [joint_friction] * 3  # same all axis
+control_mode = p.POSITION_CONTROL  # set pos control mode
 for j in range(p.getNumJoints(rope)):
     p.setJointMotorControlMultiDof(rope, j, control_mode,
                                    targetPosition=[0, 0, 0, 1],
@@ -201,7 +203,7 @@ box_actor = actor.box(centers=np.array([[0, 0, 0]]),
                       colors=np.array([[1, 0, 0]]))
 
 ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
-                          radii=0.2,
+                          radii=ball_radius,
                           colors=np.array([1, 0, 1]))
 
 ###############################################################################
@@ -231,7 +233,7 @@ base_actor.SetPosition(*base_pos)
 brick_vertices = utils.vertices_from_actor(brick_actor)
 num_vertices = brick_vertices.shape[0]
 num_objects = brick_centers.shape[0]
-brick_sec = np.int(num_vertices / num_objects)
+brick_sec = int(num_vertices / num_objects)
 
 ###############################################################################
 # Calculate the vertices of the wrecking ball.
@@ -239,7 +241,7 @@ brick_sec = np.int(num_vertices / num_objects)
 chain_vertices = utils.vertices_from_actor(rope_actor)
 num_vertices = chain_vertices.shape[0]
 num_objects = brick_centers.shape[0]
-chain_sec = np.int(num_vertices / num_objects)
+chain_sec = int(num_vertices / num_objects)
 
 
 ###############################################################################
@@ -258,7 +260,7 @@ def sync_brick(object_index, multibody):
 
     brick_vertices[object_index * sec: object_index * sec + sec] = \
         (brick_vertices[object_index * sec: object_index * sec + sec] -
-         brick_centers[object_index])@rot_mat + pos
+         brick_centers[object_index]) @ rot_mat + pos
 
     brick_centers[object_index] = pos
     brick_orns[object_index] = orn
@@ -278,9 +280,9 @@ def sync_chain(actor_list, multibody):
 
         sec = chain_sec
 
-        chain_vertices[joint * sec: joint * sec + sec] =\
+        chain_vertices[joint * sec: joint * sec + sec] = \
             (chain_vertices[joint * sec: joint * sec + sec] -
-             linkPositions[joint])@rot_mat + pos
+             linkPositions[joint]) @ rot_mat + pos
 
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
@@ -310,8 +312,8 @@ def timer_callback(_obj, _event):
     if cnt % 1 == 0:
         fps = scene.frame_rate
         fpss = np.append(fpss, fps)
-        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) +\
-            "\nSim Steps: " + str(cnt)
+        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
+                     "\nSim Steps: " + str(cnt)
 
     # Updating the position and orientation of each individual brick.
     for idx, brick in enumerate(bricks):
@@ -326,7 +328,7 @@ def timer_callback(_obj, _event):
                              flags=p.WORLD_FRAME)
         apply_force = False
 
-    pos = p.getLinkState(rope, p.getNumJoints(rope)-1)[4]
+    pos = p.getLinkState(rope, p.getNumJoints(rope) - 1)[4]
     ball_actor.SetPosition(*pos)
     sync_chain(rope_actor, rope)
     utils.update_actor(brick_actor)

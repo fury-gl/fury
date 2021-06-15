@@ -1,0 +1,32 @@
+Outline Picker
+=====================
+
+.. post:: August 17 2020
+   :author: Lenix Lobo
+   :tags: google
+   :category: gsoc
+
+Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
+
+Hey ! 
+This week, Picking Outline!
+
+What did you do this week?
+--------------------------
+We needed a Outline feature in FURY to indicate which model we choose in the scene. So the task assigned was to find options to achieve this. There were two ways to do this, 1. Using shader and 2. Using Vtk PolyData Silhouette. Despite trying multiple implementation methods the shader approach was not working . I also tried using VTKs inbuilt function , but there is a bug when i use some models. When i choose a model, it renders outline for every polygon , which is not what we want to achieve. The bug is shown below:
+
+
+Below are the outputs of the techniques i worked on :
+
+.. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-12.gif
+
+
+The shader demos are available `here <https://github.com/lenixlobo/fury/tree/shader-demos>`_
+
+What is coming up next week?
+----------------------------
+With the end of GSoC approaching soon, the next task is to create a PR which can help new users to test different shaders using UI to get started. 
+
+Did you get stuck anywhere?
+---------------------------
+I still was not able to figure out how we can achieve the outline effect. Am currently looking into other approaches we could use

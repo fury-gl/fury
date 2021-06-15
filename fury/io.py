@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from vtk.util import numpy_support
 from fury.utils import set_input
+from urllib.request import urlretrieve
 
 
 def load_image(filename, as_vtktype=False, use_pillow=True):
@@ -24,6 +25,18 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         desired image array
 
     """
+    is_url = filename.lower().startswith('http://') \
+        or filename.lower().startswith('https://')
+
+    if is_url:
+        image_name = os.path.basename(filename)
+
+        if len(image_name.split('.')) < 2:
+            raise IOError(f'{filename} is not a valid image URL')
+
+        urlretrieve(filename, image_name)
+        filename = image_name
+
     if use_pillow:
         with Image.open(filename) as pil_image:
             if pil_image.mode in ['RGBA', 'RGB', 'L']:
@@ -64,6 +77,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             vtk_image.GetPointData().SetScalars(uchar_array)
             image = vtk_image
 
+        if is_url:
+            os.remove(filename)
         return image
 
     d_reader = {".png": vtk.vtkPNGReader,
@@ -92,6 +107,8 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
         image = np.flipud(image)
 
+    if is_url:
+        os.remove(filename)
     return reader.GetOutput() if as_vtktype else image
 
 
@@ -198,7 +215,7 @@ def load_polydata(file_name):
     file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {"vtk": vtk.vtkPolyDataReader,
-                   "vtp": vtk.vtkXMLPolyDataWriter,
+                   "vtp": vtk.vtkXMLPolyDataReader,
                    "fib": vtk.vtkPolyDataReader,
                    "ply": vtk.vtkPLYReader,
                    "stl": vtk.vtkSTLReader,

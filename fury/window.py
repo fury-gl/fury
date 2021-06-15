@@ -886,14 +886,15 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     ----------
     scene : Scene
     win : Window
-        Provided by Showmanager.window attribute.
+        Provided by ShowManager.window attribute.
     multi_samples : int
-        Number of samples for anti-aliazing (Default 8).
+        Number of samples for anti-aliasing (Default 8).
         For no anti-aliasing use 0.
     max_peels : int
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
-        Occlusion ration for depth peeling (Default 0 - exact image).
+        Occlusion ratio for depth peeling (Default 0 - exact image).
+
     """
     # Use a render window with alpha bits
     # as default is 0 (false))
@@ -1081,15 +1082,16 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         flags = [False] * len(colors)
         for (i, col) in enumerate(colors):
             # find if the current color exist in the array
-            flags[i] = np.any(np.any(np.all(im[..., :3] == col[:3], axis=-1)))
+            flags[i] = np.any(np.any(np.all(np.equal(im[..., :3], col[:3]),
+                                            axis=-1)))
 
         report.colors_found = flags
 
     if find_objects is True:
         weights = [0.299, 0.587, 0.144]
         gray = np.dot(im[..., :3], weights)
-        bg_color = im[0, 0]
-        background = np.dot(bg_color, weights)
+        bg_color2 = im[0, 0]
+        background = np.dot(bg_color2, weights)
 
         if strel is None:
             strel = np.array([[1, 1, 1],

@@ -46,13 +46,13 @@ class ArgsDeprecationWarning(DeprecationWarning):
 def _ensure_cr(text):
     """Remove trailing whitespace and add carriage return.
 
-    Ensures that `text` always ends with a carriage return
+    Ensures that ``text`` always ends with a carriage return
     """
     return text.rstrip() + '\n'
 
 
 def _add_dep_doc(old_doc, dep_doc):
-    """Add deprecation message `dep_doc` to docstring in `old_doc`.
+    """Add deprecation message ``dep_doc`` to docstring in ``old_doc``.
 
     Parameters
     ----------
@@ -64,7 +64,8 @@ def _add_dep_doc(old_doc, dep_doc):
     Returns
     -------
     new_doc : str
-        `old_doc` with `dep_doc` inserted after any first lines of docstring.
+        ``old_doc`` with ``dep_doc`` inserted after any first lines of
+        docstring.
 
     """
     dep_doc = _ensure_cr(dep_doc)
@@ -88,7 +89,7 @@ def _add_dep_doc(old_doc, dep_doc):
 
 
 def cmp_pkg_version(version_str, pkg_version_str=__version__):
-    """Compare `version_str` to current package version.
+    """Compare ``version_str`` to current package version.
 
     Parameters
     ----------
@@ -96,11 +97,13 @@ def cmp_pkg_version(version_str, pkg_version_str=__version__):
         Version string to compare to current package version
     pkg_version_str : str, optional
         Version of our package.  Optional, set fom ``__version__`` by default.
+
     Returns
     -------
     version_cmp : int
-        1 if `version_str` is a later version than `pkg_version_str`, 0 if
+        1 if ``version_str`` is a later version than ``pkg_version_str``, 0 if
         same, -1 if earlier.
+
     Examples
     --------
     >>> cmp_pkg_version('1.2.1', '1.2.0')
@@ -136,10 +139,10 @@ def deprecate_with_version(message, since='', until='',
 
     The decorated function / method will:
 
-    * Raise the given `warning_class` warning when the function / method gets
+    * Raise the given ``warning_class`` warning when the function / method gets
       called, up to (and including) version `until` (if specified);
-    * Raise the given `error_class` error when the function / method gets
-      called, when the package version is greater than version `until` (if
+    * Raise the given ``error_class`` error when the function / method gets
+      called, when the package version is greater than version ``until`` (if
       specified).
 
     Parameters
@@ -154,14 +157,14 @@ def deprecate_with_version(message, since='', until='',
         error.
     version_comparator : callable
         Callable accepting string as argument, and return 1 if string
-        represents a higher version than encoded in the `version_comparator`, 0
+        represents a higher version than encoded in the version_comparator`, 0
         if the version is equal, and -1 if the version is lower.  For example,
-        the `version_comparator` may compare the input version string to the
+        the ``version_comparator`` may compare the input version string to the
         current package version string.
     warn_class : class, optional
         Class of warning to generate for deprecation.
     error_class : class, optional
-        Class of error to generate when `version_comparator` returns 1 for a
+        Class of error to generate when ``version_comparator`` returns 1 for a
         given argument of ``until``.
 
     Returns
@@ -204,7 +207,7 @@ def deprecated_params(old_name, new_name=None, since='', until='',
                       warn_class=ArgsDeprecationWarning,
                       error_class=ExpiredDeprecationError,
                       alternative=''):
-    """Deprecate a _renamed_ or _removed_ function argument.
+    """Deprecate a *renamed* or *removed* function argument.
 
     The decorator assumes that the argument with the ``old_name`` was removed
     from the function signature and the ``new_name`` replaced it at the
@@ -216,7 +219,7 @@ def deprecated_params(old_name, new_name=None, since='', until='',
     ----------
     old_name : str or list/tuple thereof
         The old name of the argument.
-    new_name : str or list/tuple thereof or `None`, optional
+    new_name : str or list/tuple thereof or ``None``, optional
         The new name of the argument. Set this to `None` to remove the
         argument ``old_name`` instead of renaming it.
     since : str or number or list/tuple thereof, optional
@@ -227,9 +230,9 @@ def deprecated_params(old_name, new_name=None, since='', until='',
         error.
     version_comparator : callable
         Callable accepting string as argument, and return 1 if string
-        represents a higher version than encoded in the `version_comparator`, 0
-        if the version is equal, and -1 if the version is lower.  For example,
-        the `version_comparator` may compare the input version string to the
+        represents a higher version than encoded in the ``version_comparator``,
+        0 if the version is equal, and -1 if the version is lower. For example,
+        the ``version_comparator`` may compare the input version string to the
         current package version string.
     arg_in_kwargs : bool or list/tuple thereof, optional
         If the argument is not a named argument (for example it
@@ -267,36 +270,26 @@ def deprecated_params(old_name, new_name=None, since='', until='',
     --------
     The deprecation warnings are not shown in the following examples.
     To deprecate a positional or keyword argument::
-        >>> from fury.deprecator import deprecated_params
-        >>> @deprecated_params('sig', 'sigma', '0.3')
-        ... def test(sigma):
-        ...     return sigma
-        >>> test(2)
-        2
-        >>> test(sigma=2)
-        2
-        >>> test(sig=2)  # doctest: +SKIP
-        2
-    To deprecate an argument caught inside the ``**kwargs`` the
-    ``arg_in_kwargs`` has to be set::
-        >>> @deprecated_params('sig', 'sigma', '1.0',
-        ...                    arg_in_kwargs=True)
-        ... def test(**kwargs):
-        ...     return kwargs['sigma']
-        >>> test(sigma=2)
-        2
-        >>> test(sig=2)  # doctest: +SKIP
-        2
+    >>> from fury.deprecator import deprecated_params
+    >>> @deprecated_params('sig', 'sigma', '0.3')
+    ... def test(sigma):
+    ...     return sigma
+    >>> test(2)
+    2
+    >>> test(sigma=2)
+    2
+    >>> test(sig=2)  # doctest: +SKIP
+    2
 
     It is also possible to replace multiple arguments. The ``old_name``,
     ``new_name`` and ``since`` have to be `tuple` or `list` and contain the
     same number of entries::
-        >>> @deprecated_params(['a', 'b'], ['alpha', 'beta'],
-        ...                    ['0.2', 0.4])
-        ... def test(alpha, beta):
-        ...     return alpha, beta
-        >>> test(a=2, b=3)  # doctest: +SKIP
-        (2, 3)
+    >>> @deprecated_params(['a', 'b'], ['alpha', 'beta'],
+    ...                    ['0.2', 0.4])
+    ... def test(alpha, beta):
+    ...     return alpha, beta
+    >>> test(a=2, b=3)  # doctest: +SKIP
+    (2, 3)
 
     """
     if isinstance(old_name, (list, tuple)):

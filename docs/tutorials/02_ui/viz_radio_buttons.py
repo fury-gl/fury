@@ -1,7 +1,7 @@
 """
-======================================
+========================================
 Sphere Color Control using Radio Buttons
-======================================
+========================================
 
 This example shows how to use the UI API. We will demonstrate how to
 create a Sphere and control its color using radio buttons.
@@ -11,10 +11,16 @@ First, some imports.
 
 from fury import ui, window, actor, utils
 import numpy as np
+from fury.data import fetch_viz_icons
+
+##############################################################################
+# First we need to fetch some icons that are included in FURY.
+
+fetch_viz_icons()
 
 ########################################################################
 # Sphere and Radio Buttons
-# ======================
+# ========================
 #
 # Add a Sphere to the scene.
 

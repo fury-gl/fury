@@ -1,5 +1,5 @@
 /* Billboard  vertex shader declaration */
-//VTK::ValuePass::Dec
 in vec3 center;
-out vec3 centeredVertexMC;
-out float scalingFactor;
+
+out vec3 centerVertexMCVSOutput;
+out vec3 normalizedVertexMCVSOutput;
