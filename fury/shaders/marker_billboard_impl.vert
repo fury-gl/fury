@@ -1,2 +1,1 @@
 vMarker = marker;
-// vMarkerOpacity = markerOpacity;

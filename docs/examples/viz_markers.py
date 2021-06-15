@@ -3,14 +3,14 @@
 Fury Markers
 ======================================================================
 
-This it's a example which shows how to use the marker actor.
+This is a example which shows how to use the marker actor.
 """
 import numpy as np
 from fury import actor, window
 n = 10000
 
 ###############################################################################
-# The are nine types 2d markers: circle, square, diamond, triangle, pentagon, 
+# There are nine types 2d markers: circle, square, diamond, triangle, pentagon, 
 # hexagon, heptagon, cross and plus.
 
 marker_symbols = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']

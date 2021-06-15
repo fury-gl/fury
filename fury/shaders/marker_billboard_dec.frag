@@ -8,7 +8,7 @@ uniform mat4 MCVCMatrix;
 
 float ndot(vec2 a, vec2 b ) {
     return a.x*b.x - a.y*b.y;
-};
+}
 /* Refs for sdf functions 
    https://github.com/rougier/python-opengl
    https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html
@@ -97,4 +97,4 @@ vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
       }
     vec3 result = vec3(sdf, minSdf, edgeWidth);
     return result ;
-};
+}
