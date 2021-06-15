@@ -101,9 +101,16 @@ class MultiDimensionalBuffer:
 
     def cleanup(self):
         if not self.use_raw_array:
+            self._buffer.close()
             if self._unlink_shared_mem:
-                self._buffer.close()
-                self._buffer.unlink()
+                # this it's due the python core issues
+                # https://bugs.python.org/issue38119
+                # https://bugs.python.org/issue39959
+                # https://github.com/luizalabs/shared-memory-dict/issues/13
+                try:
+                    self._buffer.unlink()
+                except FileNotFoundError:
+                    print(f'Shared Memory {self.buffer_name}(queue_event_buffer) File not found')
 
 
 
@@ -221,10 +228,17 @@ class CircularQueue:
 
     def cleanup(self):
         if not self.use_raw_array:
-            if self._unlink_shared_mem:
-                self.head_tail_buffer.close()
-                self.head_tail_buffer.unlink()
             self.buffer.cleanup()
+            self.head_tail_buffer.close()
+            if self._unlink_shared_mem:
+                # this it's due the python core issues
+                # https://bugs.python.org/issue38119
+                # https://bugs.python.org/issue39959
+                # https://github.com/luizalabs/shared-memory-dict/issues/13
+                try:
+                    self.head_tail_buffer.unlink()
+                except FileNotFoundError:
+                    print(f'Shared Memory {self.head_tail_buffer_name}(head_tail) File not found')
 
 
 class IntervalTimer(object):
@@ -240,6 +254,7 @@ class IntervalTimer(object):
         self.args = args
         self.kwargs = kwargs
         self.is_running = False
+        # self.next_call = time.time()
         self.start()
 
     def _run(self):
@@ -250,6 +265,9 @@ class IntervalTimer(object):
     def start(self):
         if not self.is_running:
             self._timer = Timer(self.interval, self._run)
+
+            # self.next_call += self.interval
+            # self._timer = Timer(self.next_call - time.time(), self._run)
             self._timer.daemon = True
             self._timer.start()
             self.is_running = True
@@ -257,3 +275,4 @@ class IntervalTimer(object):
     def stop(self):
         self._timer.cancel()
         self.is_running = False
+        # self._timer.join()

@@ -207,10 +207,20 @@ class FuryStreamClient:
         if not self.use_raw_array:
             logging.info('release shared memory buffers')
             self.info_buffer.close()
-            self.info_buffer.unlink()
-            for buffer in self.image_buffers:
+            # this it's due the python core issues
+            # https://bugs.python.org/issue38119
+            # https://bugs.python.org/issue39959
+            # https://github.com/luizalabs/shared-memory-dict/issues/13
+            try:
+                self.info_buffer.unlink()
+            except FileNotFoundError:
+                print(f'Shared Memory {self.info_buffer_name}(info_buffer) File not found')
+            for buffer, name in zip(self.image_buffers, self.image_buffer_names):
                 buffer.close()
-                buffer.unlink()
+                try:
+                    buffer.unlink()
+                except FileNotFoundError:
+                    print(f'Shared Memory {name}(buffer image) File not found')
 
 
 def interaction_callback(

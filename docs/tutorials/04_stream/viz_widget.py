@@ -26,4 +26,6 @@ widget = Widget(showm, port=7777)
 widget.start()
 # open  your default  browser with the following url
 # localhost:7777?encoding=mjpeg
-time.sleep(10000)
+time.sleep(100)
+widget.stop()
+widget.cleanup()

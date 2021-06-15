@@ -108,6 +108,8 @@ class Widget:
         # self.showm_start()
 
     def stop(self):
+        self.stream.stop()
+        self.stream_interaction.stop()
         if self.pserver is not None:
             #x = requests.get(f'http://{self.domain}:{self.port}/shutdown')
             self.pserver.kill()
@@ -118,6 +120,11 @@ class Widget:
             #self.stream.cleanup()
             #self.stream_interaction.cleanup()
 
+    def cleanup(self):
+        self.stream.cleanup()
+        self.stream_interaction.cleanup()
+
     def __del__(self):
         self.stop()
+        self.cleanup()
 

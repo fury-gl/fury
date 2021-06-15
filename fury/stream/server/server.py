@@ -67,7 +67,6 @@ class ImageBufferManager:
             self.image_buffers = image_buffers
 
     def get_infos(self):
-       
         if self.use_raw_array:
             self.image_info = np.frombuffer(
                 self.info_buffer, 'uint32')
@@ -112,14 +111,13 @@ class ImageBufferManager:
         await asyncio.sleep(1 / 25)
         return image_encoded.tobytes()
 
-
     def cleanup(self):
-        logging.info("Freeing buffer")
+        logging.info("buffer release")
         if not self.use_raw_array:
+            self.info_buffer.close()
             for buffer in self.image_buffers:
-                #buffer.close()
-                ...
-            #self.info_buffer.close()
+                buffer.close()
+
 
 class RTCServer(VideoStreamTrack):
     def __init__(
@@ -175,7 +173,6 @@ class RTCServer(VideoStreamTrack):
     def cleanup(self):
         logging.info("Freeing buffer from RTC Server")
         self.release()
-        self.buffer_manager.cleanup()
  
 
 def web_server(
@@ -227,9 +224,10 @@ def web_server(
 
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)
-    rtc_server.cleanup()
     if circular_queue is not None:
         circular_queue.cleanup()
+    print('\n\n \t cleanup image_buffer_manager\n\n')
+    image_buffer_manager.cleanup()
 
 def interaction_server(
         circular_queue=None,
