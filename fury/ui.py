@@ -4162,22 +4162,25 @@ class FileDialog2D(UI):
         ----------
         directory_path: string
             Path of the directory where this dialog should open.
-        dialog_type: {"open", "save"}
+        dialog_type: str, optional
+            {"open", "save"}
             Determines the type of file dialog to render.
-        extensions: list(string)
+        extensions: list(string), optional
             List of extensions to be shown as files.
-        position : (float, float)
+        position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
-        size : (int, int)
+        size : (int, int), optional
             Width and height in pixels of this UI component.
-        multiselection: {True, False}
+        multiselection: bool, optional
+            {True, False}
             Whether multiple values can be selected at once.
-        reverse_scrolling: {True, False}
+        reverse_scrolling: bool
+            {True, False}
             If True, scrolling up will move the list of files down.
-        font_size: int
+        font_size: int, optional
             The font size of directory path in pixels.
-        line_spacing: float
+        line_spacing: float, optional
             Distance between listbox's items in pixels.
         """
         self.dialog_type = dialog_type.lower()
@@ -4206,6 +4209,8 @@ class FileDialog2D(UI):
 
         super(FileDialog2D, self).__init__()
         self.position = position
+        self.on_accept = lambda ui: None
+        self.on_reject = lambda ui: None
 
     def _setup(self):
         self.file_menu = FileMenu2D(
@@ -4229,9 +4234,6 @@ class FileDialog2D(UI):
         self.reject_button = TextBlock2D(size=self.reject_button_size,
                                          text="Cancel",
                                          color=(1, 1, 1))
-
-        self.on_accept = lambda ui: None
-        self.on_reject = lambda ui: None
 
         self.parent_panel = Panel2D(size=self.dialog_size, color=self.bg_color)
         self.parent_panel.add_element(self.file_menu, (0.0, 0.2))
