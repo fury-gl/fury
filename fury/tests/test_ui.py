@@ -1609,3 +1609,24 @@ def test_clip_overflow():
 
     npt.assert_raises(ValueError, ui.clip_overflow,
                       text, rectangle.size[0], 'middle')
+
+
+def test_wrap_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "Hello"
+    ui.wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hell\no", text.message)
+
+    text.message = "Hello wassup"
+    ui.wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello wassu\np", text.message)
+
+    text.message = "A very very long message to clip text overflow"
+    ui.wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("A very very\n long mess\nage to cli\np text ove\nrflow",
+                     text.message)
