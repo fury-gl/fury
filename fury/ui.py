@@ -69,6 +69,45 @@ def clip_overflow(textblock, width, side='right'):
             return textblock.message
 
 
+def wrap_overflow(textblock, wrap_width):
+    """Wraps overflowing text of TextBlock2D with respect to width.
+
+    Parameters
+    ----------
+    textblock : TextBlock2D
+        The textblock object whose text needs to be clipped.
+    wrap_width : int
+        Required width of the clipped text.
+
+    Returns
+    -------
+    wrapped text : str
+        Wrapped version of the text.
+    """
+    original_str = textblock.message
+    start_ptr = 0
+    end_ptr = len(original_str)
+
+    while start_ptr < end_ptr:
+        mid_ptr = (start_ptr + end_ptr)//2
+        textblock.message = original_str[:mid_ptr]
+        if textblock.size[0] < wrap_width:
+            start_ptr = mid_ptr
+        elif textblock.size[0] > wrap_width:
+            end_ptr = mid_ptr
+
+        if mid_ptr == (start_ptr + end_ptr)//2 or\
+           textblock.size[0] == wrap_width:
+
+            for idx, _ in enumerate(original_str):
+                if idx % mid_ptr == 0 and idx != 0:
+                    original_str = original_str[:idx]\
+                     + '\n' + original_str[idx:]
+
+            textblock.message = original_str
+            return textblock.message
+
+
 class UI(object, metaclass=abc.ABCMeta):
     """An umbrella class for all UI elements.
 
