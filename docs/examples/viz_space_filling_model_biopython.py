@@ -69,7 +69,7 @@ scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
                  view_up=(0, 1, 0))
 axes_actor = actor.axes()
 scene.add(axes_actor)
-sf_model, elements = actor.space_filling_model(atom_coords, elem_sym_list,
+sf_model, elements = actor.molecular_sf(atom_coords, elem_sym_list,
                                                return_unique_elements=True)
 scene.add(sf_model)
 
