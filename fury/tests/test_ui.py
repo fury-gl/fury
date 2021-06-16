@@ -1620,7 +1620,7 @@ def test_wrap_overflow():
 
     text.message = "Hello"
     ui.wrap_overflow(text, rectangle.size[0])
-    npt.assert_equal("Hell\no", text.message)
+    npt.assert_equal("Hello", text.message)
 
     text.message = "Hello wassup"
     ui.wrap_overflow(text, rectangle.size[0])
@@ -1630,3 +1630,6 @@ def test_wrap_overflow():
     ui.wrap_overflow(text, rectangle.size[0])
     npt.assert_equal("A very very\n long mess\nage to cli\np text ove\nrflow",
                      text.message)
+    
+    with npt.assert_raises(ValueError):
+        ui.wrap_overflow(text, 0)
