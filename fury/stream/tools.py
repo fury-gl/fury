@@ -26,13 +26,15 @@ class MultiDimensionalBuffer:
                 you should have to use python 3.8 or higher""")
 
         if buffer is None and buffer_name is None:
-            buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
             if use_raw_array:
+
+                buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
                 buffer = multiprocessing.RawArray(
                         'd', buffer_arr)
                 self._buffer = buffer
                 self._buffer_repr = np.ctypeslib.as_array(self._buffer)
             else:
+                buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
                 buffer = shared_memory.SharedMemory(
                     create=True, size=buffer_arr.nbytes)
                 self._buffer_repr = np.ndarray(
@@ -41,6 +43,7 @@ class MultiDimensionalBuffer:
                 self._buffer = buffer
                 buffer_name = buffer.name
                 self._unlink_shared_mem = True
+                print('created', max_size, dimension,  len(buffer.buf))
         else:
             if buffer_name is None:
                 max_size = int(len(buffer)//dimension)
@@ -58,6 +61,7 @@ class MultiDimensionalBuffer:
                         dtype='float64', buffer=buffer.buf)
                 self._buffer = buffer
                 self._unlink_shared_mem = False 
+                print('read', max_size, dimension,  len(buffer.buf))
 
         self.buffer_name = buffer_name
         self.dimension = dimension
@@ -131,7 +135,7 @@ class CircularQueue:
             buffer_name, use_raw_array
         )
 
-        head_tail_arr = np.array([-1, -1], dtype='int64')
+        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
         if head_tail_buffer is None and head_tail_buffer_name is None:
             if use_raw_array:
                 head_tail_buffer = multiprocessing.Array(
@@ -186,8 +190,17 @@ class CircularQueue:
     def tail(self, value):
         self.head_tail_buffer_repr[1] = value
 
-    def set_head_tail(self, head, tail):
-        self.head_tail_buffer_repr[:] = np.array([head, tail]).astype('int64')
+    def set_head_tail(self, head, tail, lock=1):
+        self.head_tail_buffer_repr[:] = np.array([head, tail, lock]).astype('int64')
+
+    def is_unlocked(self):
+        return self.head_tail_buffer_repr[2] == 0
+
+    def lock(self):
+        self.head_tail_buffer_repr[2] = 1
+
+    def unlock(self):
+        self.head_tail_buffer_repr[2] = 0
 
     @property
     def queue(self):
@@ -200,31 +213,39 @@ class CircularQueue:
 
     def enqueue(self, data):
         # with self.head_tail_buffer.get_lock():
-        if ((self.tail + 1) % self.max_size == self.head):
-            return False
+        ok = False
+        if self.is_unlocked():
+            self.lock()
+            if ((self.tail + 1) % self.max_size == self.head):
+                ok = False
+            else:
+                if (self.head == -1):
+                    self.set_head_tail(0, 0, 1)
+                else:
+                    self.tail = (self.tail + 1) % self.max_size
+                self.buffer[self.tail] = data
 
-        elif (self.head == -1):
-            self.set_head_tail(0, 0)
-        else:
-            self.tail = (self.tail + 1) % self.max_size
-
-        self.buffer[self.tail] = data
-        return True
+                ok = True
+            self.unlock()
+        return ok
 
     def dequeue(self):
         # with self.buffers._buffer_repr.get_lock():
         # with self.head_tail_buffer.get_lock():
-        if self.head == -1:
-            return None
+        if self.is_unlocked():
+            self.lock()
+            if self.head == -1:
+                interactions = None
+            else:
+                if self.head != self.tail:
+                    interactions = self.buffer[self.head]
+                    self.head = (self.head + 1) % self.max_size
+                else:
+                    interactions = self.buffer[self.head]
+                    self.set_head_tail(-1, -1, 1)
 
-        if self.head != self.tail:
-            interactions = self.buffer[self.head]
-            self.head = (self.head + 1) % self.max_size
-        else:
-            interactions = self.buffer[self.head]
-            self.set_head_tail(-1, -1)
-
-        return interactions
+            self.unlock()
+            return interactions
 
     def cleanup(self):
         if not self.use_raw_array:

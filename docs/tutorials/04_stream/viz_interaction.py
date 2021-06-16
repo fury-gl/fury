@@ -7,8 +7,9 @@ import numpy as np
 import multiprocessing
 from fury.stream.server import web_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-
-
+import logging
+logging.root.setLevel(logging.INFO)
+logging.basicConfig( level=logging.INFO)
 # note, if python version is equal or higher than 3.8
 # uses shared memory approach
 if __name__ == '__main__':
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     # right after the rendering
     ms_interaction = 10
     ms_stream = 0 
-
+    use_raw_array = False
     # max number of interactions to be stored inside the queue
     max_queue_size =  17 
     ######################################################################
@@ -73,32 +74,48 @@ if __name__ == '__main__':
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size, max_window_size=max_window_size,)
+        showm, window_size, max_window_size=max_window_size, use_raw_array=use_raw_array)
     stream_interaction = FuryStreamInteraction(
-        showm, max_queue_size=max_queue_size, fury_client=stream)
+        showm, max_queue_size=max_queue_size, fury_client=stream, use_raw_array=use_raw_array)
     # linux
     # p = multiprocessing.Process(
     #     target=webrtc_server,
     #     args=(stream, None, None, circular_queue))
     # osx,
-    
-    p = multiprocessing.Process(
-        target=web_server,
-        args=(
-            None, 
-            stream.image_buffers,
-            stream.image_buffer_names,
-            stream.info_buffer,
-            stream.info_buffer_name,
-            None,
-            stream_interaction.circular_queue.head_tail_buffer,
-            stream_interaction.circular_queue.buffer._buffer,
-            None,
-            None,
-            #stream_interaction.circular_queue.head_tail_buffer_name,
-            #stream_interaction.circular_queue.buffer.buffer_name
+    if use_raw_array:
+        print('use raw array')
+        p = multiprocessing.Process(
+            target=web_server,
+            args=(
+                None, 
+                stream.image_buffers,
+                stream.image_buffer_names,
+                stream.info_buffer,
+                stream.info_buffer_name,
+                None,
+                stream_interaction.circular_queue.head_tail_buffer,
+                stream_interaction.circular_queue.buffer._buffer,
+                None,
+                None,
             )
+        )
+         
+    else:
+        p = multiprocessing.Process(
+            target=web_server,
+            args=(
+                None, 
+                stream.image_buffers,
+                stream.image_buffer_names,
+                stream.info_buffer,
+                stream.info_buffer_name,
+                None,
+                None,
+                None,
+                stream_interaction.circular_queue.head_tail_buffer_name,
+                stream_interaction.circular_queue.buffer.buffer_name
             )
+        )
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.init(ms_stream,)
