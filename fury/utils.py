@@ -756,7 +756,7 @@ def get_bounding_box_sizes(actor):
     from fury.ui import UI # to avoid circular import
 
     if isinstance(actor, UI):
-        width, height = actor._get_size()
+        width, height = actor.size
         return (width, height, 0)
         
     X1, X2, Y1, Y2, Z1, Z2 = actor.GetBounds()

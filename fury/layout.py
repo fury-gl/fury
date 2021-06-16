@@ -15,9 +15,8 @@ class Layout(object):
         for a, pos in zip(actors, positions):
             if isinstance(a, UI):
                 anchor = (*a.position, 0)
-
-                _new_position = pos + anchor
-                a._set_position((_new_position[0], _new_position[1]))
+                _new_pos = pos + anchor
+                a.position = (_new_pos[0], _new_pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
                 a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
@@ -100,7 +99,7 @@ class GridLayout(Layout):
             diagonals = []
             for a in actors:
                 if isinstance(a, UI):
-                    width, height = a._get_size()
+                    width, height = a.size
                     diagonal = math.sqrt(width**2 + height**2)
                     diagonals.append(diagonal)
                 else:
