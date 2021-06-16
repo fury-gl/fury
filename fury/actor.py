@@ -2573,7 +2573,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
 
 def molecular_sf(atom_coords, elem_sym_list,
-                        return_unique_elements=False):
+                 return_unique_elements=False):
     """Generate a space-filling molecular model from an array of atomic
     coordinates and an array of corresponding element names
 
@@ -2613,7 +2613,7 @@ def molecular_sf(atom_coords, elem_sym_list,
         colors[elem_sym_list == typ] = cpkr[typ][:3]
         radii[elem_sym_list == typ] = cpkr[typ][-1]
         if return_unique_elements:
-            elements.append([typ, cpkr[typ][:3]])
+            elements += [[typ, cpkr[typ][:3]]]
 
     # using shaders for faster rendering as models can sometimes contain many
     # atoms (~300,000)
