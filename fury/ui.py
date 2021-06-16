@@ -75,9 +75,9 @@ def wrap_overflow(textblock, wrap_width):
     Parameters
     ----------
     textblock : TextBlock2D
-        The textblock object whose text needs to be clipped.
+        The textblock object whose text needs to be wrapped.
     wrap_width : int
-        Required width of the clipped text.
+        Required width of the wrapped text.
 
     Returns
     -------
@@ -87,6 +87,14 @@ def wrap_overflow(textblock, wrap_width):
     original_str = textblock.message
     start_ptr = 0
     end_ptr = len(original_str)
+
+    if wrap_width <= 0:
+        raise ValueError(
+            f'Value of wrap_width cannot be less that or equal to 0'
+        )
+
+    if textblock.size[0] <= wrap_width:
+        return original_str
 
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr)//2
