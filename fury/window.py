@@ -11,7 +11,6 @@ from scipy import ndimage
 import vtk
 from vtk.util import numpy_support, colors
 from vtk.util.numpy_support import vtk_to_numpy
-import imagezmq
 
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 >>>>>>> fffbd39f (adds a simple FuryStreamClient)
