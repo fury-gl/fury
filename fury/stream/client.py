@@ -333,9 +333,10 @@ class FuryStreamInteraction:
         if self._id_timer is not None:
             self.showm.window.DestroyTimer(self._id_timer)
         else:
-            self._interval_timer.stop()
-            del self._interval_timer
-            self._interval_timer = None
+            if self._interval_timer is not None:
+                self._interval_timer.stop()
+                del self._interval_timer
+                self._interval_timer = None
 
     def cleanup(self):
         self.circular_queue.cleanup()
