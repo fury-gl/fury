@@ -4,6 +4,7 @@ import logging
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
+    from fury.stream.tools import remove_shm_from_resource_tracker
     PY_VERSION_8 = True
 else:
     shared_memory = None
@@ -32,7 +33,6 @@ try:
 except ImportError:
     cv2 = None
     OPENCV_AVAILABLE = False
-
 
 class ImageBufferManager:
     def __init__(
@@ -169,10 +169,6 @@ class RTCServer(VideoStreamTrack):
                 self.stream = None
         except AttributeError:
             pass
-
-    def cleanup(self):
-        logging.info("Freeing buffer from RTC Server")
-        self.release()
  
 
 def web_server(
@@ -187,8 +183,9 @@ def web_server(
         queue_head_tail_buffer_name=None,
         queue_buffer_name=None,
         port=8000, host='localhost',
-        provides_mjpeg=True,
-        provides_webrtc=True
+        provides_mjpeg=False,
+        provides_webrtc=True,
+        avoid_unlink_shared_mem=False
     ):
 
     if stream_client is not None:
@@ -196,6 +193,9 @@ def web_server(
         info_buffer = stream_client.info_buffer
 
     use_raw_array = image_buffer_names is None and info_buffer_name is None
+
+    if avoid_unlink_shared_mem and PY_VERSION_8 and not use_raw_array:
+        remove_shm_from_resource_tracker()
 
     image_buffer_manager = ImageBufferManager(
             use_raw_array, info_buffer, image_buffers, 
@@ -224,10 +224,16 @@ def web_server(
 
     web.run_app(
         app_fury, host=host, port=port, ssl_context=None)
+
     if circular_queue is not None:
         circular_queue.cleanup()
-    print('\n\n \t cleanup image_buffer_manager\n\n')
+
+    if rtc_server is not None:
+        rtc_server.release()
+
     image_buffer_manager.cleanup()
+
+    
 
 def interaction_server(
         circular_queue=None,

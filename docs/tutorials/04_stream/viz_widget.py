@@ -28,4 +28,3 @@ widget.start()
 # localhost:7777?encoding=mjpeg
 time.sleep(100)
 widget.stop()
-widget.cleanup()

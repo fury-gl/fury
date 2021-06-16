@@ -15,7 +15,6 @@ from fury.stream.tools import CircularQueue, IntervalTimer
 import logging
 import time
 
-
 class FuryStreamClient:
     def __init__(
             self, showm,

@@ -16,7 +16,7 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 class Widget:
     def __init__(
             self, showm, max_window_size=None, ms_stream=0,
-            domain='localhost', port=None, ms_interaction=1, queue_size=20,
+            domain='localhost', port=None, ms_interaction=10, queue_size=20,
             encoding='mjpeg'):
         if not PY_VERSION_8:
             raise ImportError('Python 3.8 or greater is required to use the\
@@ -42,6 +42,8 @@ class Widget:
     @property
     def command_string(self):
         s = 'from fury.stream.server import web_server;'
+        #s += 'from fury.stream.tools import remove_shm_from_resource_tracker;'
+        #s += 'remove_shm_from_resource_tracker();'
         s += f"web_server(image_buffer_names={self.stream.image_buffer_names}"
         s += f",info_buffer_name='{self.stream.info_buffer_name}',"
         s += "queue_head_tail_buffer_name='"
@@ -51,7 +53,9 @@ class Widget:
         if self.encoding == 'mjpeg':
             s += ",provides_mjpeg=True"
             s += ",provides_webrtc=False"
-        s += f",port={self.port},host='{self.domain}')"
+        s += f",port={self.port},host='{self.domain}',"
+        s += "avoid_unlink_shared_mem=True"
+        s += ")"
         return s
 
     def start_server(self):
