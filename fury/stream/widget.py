@@ -1,19 +1,26 @@
 import subprocess
 import numpy as np
+import sys
+if sys.version_info.minor >= 8:
+    PY_VERSION_8 = True
+else:
+    PY_VERSION_8 = False
+
 from IPython.display import IFrame
 from IPython.core.display import display
 
 import time
 
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-import sys
-
 
 class Widget:
     def __init__(
             self, showm, max_window_size=None, ms_stream=0,
-            domain='localhost', port=None, ms_interaction=20, queue_size=20,
+            domain='localhost', port=None, ms_interaction=1, queue_size=20,
             encoding='mjpeg'):
+        if not PY_VERSION_8:
+            raise ImportError('Python 3.8 or greater is required to use the\
+                widget class')
         self.showm = showm
         self.window_size = self.showm.size
         if max_window_size is None:
@@ -52,7 +59,7 @@ class Widget:
             return
 
         self.showm.window.SetOffScreenRendering(1)
-        self.showm.iren.EnableRenderOff()
+        #self.showm.iren.EnableRenderOff()
         # self.showm.initialize()
         self.stream = FuryStreamClient(
             self.showm, self.window_size,
@@ -72,7 +79,6 @@ class Widget:
 
        
     def run_command(self):
-        #asyncio.run(run_server(self.command_string))
         if self._server_started:
             args = [
                 sys.executable, '-c',  
@@ -80,12 +86,9 @@ class Widget:
             ]
             self.pserver = subprocess.Popen(
                 args,
+                #f'python -c "{self.command_string}"',
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
-    # def showm_start(self):
-    #     self.showm.render()
-    #     # this blocks
-    #     # self.showm.iren.Start()
     @property
     def url(self):
         return f'http://{self.domain}:{self.port}?iframe=1&encoding={self.encoding}'
@@ -100,12 +103,12 @@ class Widget:
         self.start_server()
         self.run_command()
         print(f'url: {self.url}')
+
     def display(self, height=150):
         self.start_server()
         self.run_command()
         time.sleep(1)
         self.return_iframe(height) 
-        # self.showm_start()
 
     def stop(self):
         self.stream.stop()
@@ -116,9 +119,9 @@ class Widget:
             self.pserver.wait()
             self._server_started = False
             self.pserver = None
-            #time.sleep(5)
-            #self.stream.cleanup()
-            #self.stream_interaction.cleanup()
+            self.cleanup()
+            # del self.stream
+            # del self.stream_interaction
 
     def cleanup(self):
         self.stream.cleanup()
@@ -126,5 +129,4 @@ class Widget:
 
     def __del__(self):
         self.stop()
-        self.cleanup()
 
