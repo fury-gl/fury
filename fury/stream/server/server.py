@@ -28,11 +28,12 @@ except ImportError:
     CYTHON_AVAILABLE = False
 
 try:
-    import cv2 
+    import cv2
     OPENCV_AVAILABLE = True
 except ImportError:
     cv2 = None
     OPENCV_AVAILABLE = False
+
 
 class ImageBufferManager:
     def __init__(
@@ -101,11 +102,11 @@ class ImageBufferManager:
         else:
             image = self.image_reprs[buffer_index]
 
-        image = np.frombuffer(image,
-                        'uint8'
-                    )[0:width*height*3].reshape((height, width, 3))
+        image = np.frombuffer(
+            image, 'uint8')[0:width*height*3].reshape(
+                (height, width, 3))
         image = np.flipud(image)
-       
+
         image_encoded = cv2.imencode('.jpg', image)[1]
         # this will avoid a huge bandwidth consumption
         await asyncio.sleep(1 / 25)
@@ -122,7 +123,7 @@ class ImageBufferManager:
 class RTCServer(VideoStreamTrack):
     def __init__(
             self, image_buffer_manager, use_raw_array=True,
-        ):
+    ):
         super().__init__()
 
         self.frame = None
@@ -133,7 +134,7 @@ class RTCServer(VideoStreamTrack):
         pts, time_base = await self.next_timestamp()
 
         width, height, image = self.buffer_manager.get_infos()
-        
+
         if self.frame is None \
             or self.frame.planes[0].width != width \
                 or self.frame.planes[0].height != height:
@@ -151,7 +152,6 @@ class RTCServer(VideoStreamTrack):
                         'uint8'
                     )[0:width*height*3].reshape((height, width, 3))
             self.image = np.flipud(self.image)
-    
             self.frame = VideoFrame.from_ndarray(self.image)
         else:
             self.frame.update_from_buffer(self.image)
@@ -169,7 +169,7 @@ class RTCServer(VideoStreamTrack):
                 self.stream = None
         except AttributeError:
             pass
- 
+
 
 def web_server(
         stream_client=None,
@@ -185,8 +185,7 @@ def web_server(
         port=8000, host='localhost',
         provides_mjpeg=False,
         provides_webrtc=True,
-        avoid_unlink_shared_mem=False
-    ):
+        avoid_unlink_shared_mem=False):
 
     if stream_client is not None:
         image_buffers = stream_client.image_buffers
@@ -198,25 +197,25 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = ImageBufferManager(
-            use_raw_array, info_buffer, image_buffers, 
+            use_raw_array, info_buffer, image_buffers,
             info_buffer_name, image_buffer_names)
-    
+
     if provides_webrtc:
         rtc_server = RTCServer(
             image_buffer_manager, use_raw_array)
     else:
         rtc_server = None
-    
+
     if not provides_mjpeg:
         image_buffer_manager = None
 
-    if queue_buffer is not  None or queue_buffer_name is not None:
+    if queue_buffer is not None or queue_buffer_name is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
             buffer=queue_buffer,
             buffer_name=queue_buffer_name,
             head_tail_buffer_name=queue_head_tail_buffer_name)
-    
+
     app_fury = get_app(
        rtc_server, circular_queue=circular_queue,
        image_buffer_manager=image_buffer_manager
@@ -233,14 +232,12 @@ def web_server(
 
     image_buffer_manager.cleanup()
 
-    
 
 def interaction_server(
         circular_queue=None,
         queue_head_tail_buffer=None,
         queue_buffer=None,
-        port=8080, host='localhost',
-        ):
+        port=8080, host='localhost'):
 
     if circular_queue is None and queue_buffer is not None:
         circular_queue = CircularQueue(

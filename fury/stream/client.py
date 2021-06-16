@@ -15,6 +15,7 @@ from fury.stream.tools import CircularQueue, IntervalTimer
 import logging
 import time
 
+
 class FuryStreamClient:
     def __init__(
             self, showm,
@@ -47,7 +48,8 @@ class FuryStreamClient:
         self.max_size = max_window_size[0]*max_window_size[1]
         self.max_window_size = max_window_size
         if self.max_size < window_size[0]*window_size[1]:
-            raise ValueError('max_window_size must be greater than window_size')
+            raise ValueError(
+                'max_window_size must be greater than window_size')
 
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError("""
@@ -140,10 +142,10 @@ class FuryStreamClient:
                     # self.info_buffer[0] = num_components
 
                     # N-Buffering
-                    next_buffer_index = int((self.info_buffer_repr[1]+1) \
-                        % self.buffer_count)
+                    next_buffer_index = int(
+                        (self.info_buffer_repr[1]+1) % self.buffer_count)
                     if buffer_size == self.max_size:
-                        #if self.use_raw_array:
+                        # if self.use_raw_array:
                         # throws a type error due uint8
                         # memoryview(
                         #     self.image_buffers[next_buffer_index]
@@ -157,7 +159,7 @@ class FuryStreamClient:
                         rand_img = np.random.randint(
                             0, 255, size=self.max_size*3,
                             dtype='uint8')
-      
+
                         self.image_reprs[
                             next_buffer_index][:] = rand_img
 
@@ -181,7 +183,7 @@ class FuryStreamClient:
                 # self.showm.window.AddObserver("TimerEvent", callback)
                 # id_timer = self.showm.window.CreateRepeatingTimer(ms)
                 self._id_timer = id_timer
-          
+
         else:
             # id_observer = self.showm.iren.AddObserver(
             id_observer = self.showm.iren.AddObserver(
@@ -213,8 +215,10 @@ class FuryStreamClient:
             try:
                 self.info_buffer.unlink()
             except FileNotFoundError:
-                print(f'Shared Memory {self.info_buffer_name}(info_buffer) File not found')
-            for buffer, name in zip(self.image_buffers, self.image_buffer_names):
+                print(f'Shared Memory {self.info_buffer_name}\
+                        (info_buffer) File not found')
+            for buffer, name in zip(
+                    self.image_buffers, self.image_buffer_names):
                 buffer.close()
                 try:
                     buffer.unlink()

@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import sys
 import numpy as np
 from functools import partial
 import aiohttp
@@ -39,8 +38,8 @@ async def mjpeg_handler(request):
         status=200,
         reason='OK',
         headers={
-                'Content-Type': 
-                    'multipart/x-mixed-replace;boundary={}'.format(my_boundary)
+                'Content-Type':
+                'multipart/x-mixed-replace;boundary={}'.format(my_boundary)
             }
     )
     await response.prepare(request)
@@ -53,7 +52,7 @@ async def mjpeg_handler(request):
             })
             try:
                 await mpwriter.write(response, close_boundary=False)
-            except ConnectionResetError :
+            except ConnectionResetError:
                 logging.info("Client connection closed")
                 break
         await response.write(b"\r\n")
@@ -121,7 +120,11 @@ def set_mouse(data, circular_queue):
     user_envent_ms = float(data['timestampInMs'])
     circular_queue = circular_queue
     ok = circular_queue.enqueue(
-        np.array([2, 0, x, y,  ctrl_key, shift_key, user_envent_ms, 0], dtype='float64'))
+        np.array(
+            [2, 0, x, y,  ctrl_key, shift_key, user_envent_ms, 0],
+            dtype='float64'
+        )
+    )
 
     return ok
 
@@ -147,7 +150,11 @@ def set_mouse_click(data, circular_queue):
 
     event_id = (mouse_button + 1)*2 + on + 1
     ok = circular_queue.enqueue(
-        np.array([event_id, 0, x, y, ctrl, shift, user_envent_ms, 0], dtype='float64'))
+        np.array(
+                [event_id, 0, x, y, ctrl, shift, user_envent_ms, 0],
+                dtype='float64'
+            )
+    )
 
     return ok
 
@@ -175,7 +182,7 @@ async def websocket_handler(request, **kwargs):
                     await ws.close()
                 else:
                     data = json.loads(msg.data)
-                    logging.info(f'\n\nuser event time {data["timestampInMs"]}')
+                    logging.info(f'\nuser event time {data["timestampInMs"]}')
                     if data['type'] == 'weel':
                         ts = time.time()*1000
                         interval = ts-data['timestampInMs']
@@ -190,7 +197,8 @@ async def websocket_handler(request, **kwargs):
                     # await ws.send_str(msg.data + '/answer')
 
             elif msg.type == aiohttp.WSMsgType.ERROR:
-                print('ws connection closed with exception %s' %
+                print(
+                    'ws connection closed with exception %s' %
                     ws.exception())
     finally:
         request.app['websockets'].discard(ws)
@@ -228,7 +236,6 @@ def get_app(
         app['image_buffer_manager'] = image_buffer_manager
         app.router.add_get("/video/mjpeg", mjpeg_handler)
 
-    
     if rtc_server is not None:
         app.router.add_post("/offer", partial(
             offer, video=rtc_server, broadcast=broadcast))

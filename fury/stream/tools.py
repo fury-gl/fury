@@ -16,8 +16,8 @@ else:
 
 
 def remove_shm_from_resource_tracker():
-    """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't be tracked
-
+    """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't 
+    be tracked
     More details at: https://bugs.python.org/issue38119
     """
 
@@ -84,7 +84,7 @@ class MultiDimensionalBuffer:
                         len(buffer.buf)//8,
                         dtype='float64', buffer=buffer.buf)
                 self._buffer = buffer
-                self._unlink_shared_mem = False 
+                self._unlink_shared_mem = False
                 print('read', max_size, dimension,  len(buffer.buf))
 
         self.buffer_name = buffer_name
@@ -138,8 +138,9 @@ class MultiDimensionalBuffer:
                 try:
                     self._buffer.unlink()
                 except FileNotFoundError:
-                    print(f'Shared Memory {self.buffer_name}(queue_event_buffer) File not found')
-
+                    print(
+                        f'Shared Memory {self.buffer_name}(queue_event_buffer)\
+                        File not found')
 
 
 class CircularQueue:
@@ -169,14 +170,14 @@ class CircularQueue:
             else:
                 head_tail_buffer = shared_memory.SharedMemory(
                     create=True, size=head_tail_arr.nbytes)
-        
+
                 head_tail_buffer_name = head_tail_buffer.name
-                self._unlink_shared_mem = True 
+                self._unlink_shared_mem = True
         else:
             if not use_raw_array:
                 head_tail_buffer = shared_memory.SharedMemory(
                     head_tail_buffer_name)
-                self._unlink_shared_mem = False 
+                self._unlink_shared_mem = False
 
         self.use_raw_array = use_raw_array
         self.dimension = buffer.dimension
@@ -215,7 +216,8 @@ class CircularQueue:
         self.head_tail_buffer_repr[1] = value
 
     def set_head_tail(self, head, tail, lock=1):
-        self.head_tail_buffer_repr[:] = np.array([head, tail, lock]).astype('int64')
+        self.head_tail_buffer_repr[:] = np.array(
+            [head, tail, lock]).astype('int64')
 
     def is_unlocked(self):
         return self.head_tail_buffer_repr[2] == 0
@@ -283,7 +285,9 @@ class CircularQueue:
                 try:
                     self.head_tail_buffer.unlink()
                 except FileNotFoundError:
-                    print(f'Shared Memory {self.head_tail_buffer_name}(head_tail) File not found')
+                    print(
+                        f'Shared Memory {self.head_tail_buffer_name}(head_tail)\
+                         File not found')
 
 
 class IntervalTimer(object):
