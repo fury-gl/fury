@@ -22,6 +22,26 @@ SHADERS_BLOCK = {
     "output": "//VTK::Output",  # only for geometry shader
 }
 
+# See [1] for a more extensive list of OpenGL constants
+# [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
+GL_NUMBERS = {
+    "GL_SRC_ALPHA": 769,
+    "GL_ONE": 0,
+    "GL_ZERO": -1,
+    "GL_BLEND": 3041,
+    "GL_ONE_MINUS_SRC_ALPHA": 770,
+    "GL_SRC_ALPHA": 769,
+    "GL_DEPTH_TEST": 2928,
+    "GL_DST_COLOR": 773,
+    "GL_FUNC_SUBTRACT": 3276,
+    "GL_CULL_FACE": 2883,
+    "GL_ALPHA_TEST": 3007,
+    "GL_CW": 2303,
+    "GL_CCW": 2304,
+    "GL_ONE_MINUS_SRC_COLOR": 768,
+    "GL_SRC_COLOR": 767
+}
+
 
 def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
                     block="valuepass", keep_default=True,

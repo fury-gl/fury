@@ -15,7 +15,7 @@ from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.utils import asbytes
-
+from fury.shaders.base import GL_NUMBERS as _GL
 try:
     basestring
 except NameError:
@@ -1008,28 +1008,6 @@ def enable_stereo(renwin, stereo_type):
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
-
-# See [1] for a more extensive list of OpenGL constants
-# [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
-
-
-_GL = {
-    "GL_SRC_ALPHA": 770,
-    "GL_ONE": 1,
-    "GL_ZERO": 0,
-    "GL_BLEND": 3042,
-    "GL_ONE_MINUS_SRC_ALPHA": 771,
-    "GL_SRC_ALPHA": 770,
-    "GL_DEPTH_TEST": 2929,
-    "GL_DST_COLOR": 774,
-    "GL_FUNC_SUBTRACT": 3277,
-    "GL_CULL_FACE": 2884,
-    "GL_ALPHA_TEST": 3008,
-    "GL_CW": 2304,
-    "GL_CCW": 2305,
-    "GL_ONE_MINUS_SRC_COLOR": 769,
-    "GL_SRC_COLOR": 768
-}
 
 
 def test_and_extract_gl_state(func):
