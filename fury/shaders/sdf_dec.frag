@@ -14,6 +14,24 @@ uniform mat4 WCVCMatrix;
 uniform mat4 WCMCMatrix;
 uniform mat4 VCMCMatrix;
 
+
+float sdSE( vec3 pos, vec3 radius, vec2 exponent )
+{
+    vec3 e = vec3(vec2(1.0)/exponent.xy, exponent.x/exponent.y);
+    vec3 g = 2.0*e; 
+    vec3 invr = vec3(1.0)/radius;
+    vec3 p = pos;
+    vec3 A = p*invr ; 
+    vec3 B = pow(A*A, e.xxy); 
+    float E = B.x + B.y;
+    float F = pow(E, e.z);
+    float P = F + B.z;
+
+    float K = pow(P, exponent.y) - 0.0;
+    return(K);
+}
+
+
 mat4 rotationAxisAngle( vec3 v, float angle )
 {
     float s = sin(angle);
@@ -61,6 +79,7 @@ float sdCapsule(vec3 p, vec3 a, vec3 b, float r) {
 	vec3 ab = vec3(b-a);
     vec3 ap = vec3(p-a);
     
+    
     float t = dot(ab, ap) / dot(ab, ab);
     t = clamp(t, 0., 1.);
     
@@ -92,10 +111,15 @@ float map( in vec3 position )
     else if(primitiveVSOutput==3){
         d1 = sdEllipsoid((pos)/scaleVSOutput, vec3(0.1, 0.1, 0.3))*scaleVSOutput;
     }
-
+    
     else if(primitiveVSOutput==4){
         d1 = sdCapsule((pos)/scaleVSOutput, vec3(0.0, -0.3, 0.2), vec3(0.0, -0.1, 0.2), 0.2)*scaleVSOutput;
     }
+    
+    else if(primitiveVSOutput==5){
+        d1 = sdSE((pos)/scaleVSOutput, vec3(50.0 / 3.0, 50.0 / 3.0, 50.0 / 2.0), vec2(2.0))*scaleVSOutput;
+    }
+    
     return d1;
 }
 
