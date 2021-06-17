@@ -99,6 +99,7 @@ def ball_and_stick(atom_coords, elem_names, bond_type):
     indexes_done = []
     i = 0
     c = 0
+    #print(len(bond_data['bonds']))
     for index, (bonds,ename) in enumerate(zip(bond_data['bonds'], elem_names)):
         for bond in bonds:
             if bond not in indexes_done:
@@ -110,23 +111,22 @@ def ball_and_stick(atom_coords, elem_names, bond_type):
                     bond_coords.append([atom_coords[index], mid])
                     bond_coords.append([mid, atom_coords[bond]])
                 else:
-                    if(bond_type[i] == 1):
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_coords.append([atom_coords[index], atom_coords[bond]])
-                    elif bond_type[i] == 2:
-                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords, atom_coords[index], atom_coords[bond], bond_type[i])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_coords.append([c1_l, c2_l])
-                        bond_coords.append([c1_u, c2_u])
-                    elif bond_type[i] == 3:
-                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords, atom_coords[index], atom_coords[bond], bond_type[i])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_coords.append([c1_l, c2_l])
-                        bond_coords.append([c1_u, c2_u])
+                    if bond_data['bond_lengths'][index][i] < 1.22:
+                        bond_type = 3
+                    elif bond_data['bond_lengths'][index][i] < 1.36:
+                        bond_type = 2
+                    else:
+                        bond_type = 1
+                    if bond_type == 1 or bond_type == 3:
                         bond_coords.append([atom_coords[bond], atom_coords[index]])
+                        bond_colors.append(cpkr[ename][:3])
+                    if bond_type == 2 or bond_type == 3:
+                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords, atom_coords[index], atom_coords[bond], bond_type)
+                        bond_colors.append(cpkr[ename][:3])
+                        bond_colors.append(cpkr[ename][:3])
+                        bond_coords.append([c1_l, c2_l])
+                        bond_coords.append([c1_u, c2_u])
+
             i += 1
         indexes_done += [index]
 
