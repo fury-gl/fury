@@ -1,7 +1,7 @@
 import numpy as np
 from fury import window, actor
 
-def ball_and_stick(atom_coords, elem_names, bond_type):
+def ball_and_stick(atom_coords, elem_names):
     atomic_radius = {'H':0.38, 'C':0.77}
     error_factor = 0.05
     atomic_radius = {k:v + error_factor for k,v in atomic_radius.items()}
@@ -77,12 +77,10 @@ def ball_and_stick(atom_coords, elem_names, bond_type):
         c1 = c1_coord
         c2 = c2_coord
         dir_vector = c2_coord - c1_coord
-        offset = 0.12
+        offset = bond_type * 0.04
         if planar:
             sol = np.cross(dir_vector, eq)
             sol = sol / np.linalg.norm(sol)     # coverting into unit vector
-            if bond_type == 2:
-                offset = 0.08
             if bond_type==2 or bond_type==3:
                 c1_l = c1 - sol*offset
                 c1_u = c1 + sol*offset
@@ -158,9 +156,8 @@ atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
                         [0.7788135127E+01, 0.6150201159E+01, 0.5277430519E+01],
                         [0.6632858893E+01, 0.6740709254E+01, 0.4090898288E+01]], dtype=float)
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'])
-bond_type = np.array([1 ,1 ,1 ,1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]) # ethane
 
-sticks, balls = ball_and_stick(atom_coords, elem_names, bond_type)
+sticks, balls = ball_and_stick(atom_coords, elem_names)
 scene.add(sticks, balls)
 
 # ethene (double bonds)
@@ -171,9 +168,8 @@ atom_coords = np.array([[0.5449769880E+01, 0.5680940296E+01, 0.5519555369E+01],
                         [0.6275632424E+01, 0.7323831630E+01, 0.6534741329E+01],
                         [0.7193811558E+01, 0.5736436394E+01, 0.6691459388E+01]], dtype=float)
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H'])
-bond_type = np.array([2, 1, 1, 2, 1, 1, 1, 1, 1, 1]) # ethene
 
-sticks, balls = ball_and_stick(atom_coords+[0, 0, 5], elem_names, bond_type)
+sticks, balls = ball_and_stick(atom_coords+[0, 0, 5], elem_names)
 scene.add(sticks, balls)
 
 
@@ -184,7 +180,7 @@ atom_coords = np.array([[0.5899518696E+01, 0.5868718390E+01, 0.5737443048E+01],
                         [0.7173348068E+01, 0.7204870233E+01, 0.7035206023E+01]], dtype=float)
 elem_names = np.array(['C', 'C', 'H', 'H'])
 bond_type = np.array([3, 1, 3, 1, 1, 1]) # ethyne
-sticks, balls = ball_and_stick(atom_coords+[0, 0, 10], elem_names, bond_type)
+sticks, balls = ball_and_stick(atom_coords+[0, 0, 10], elem_names)
 scene.add(sticks, balls)
 
 
