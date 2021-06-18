@@ -159,7 +159,7 @@ def ball_and_stick(atom_coords, elem_names):
                         bond_type = 1
                     if bond_type == 1 or bond_type == 3:
                         bond_coords += [[atom_coords[bond],
-                                            atom_coords[index]]]
+                                         atom_coords[index]]]
                         bond_colors += [cpkr[ename][:3]]
                     if bond_type == 2 or bond_type == 3:
                         c1_l, c1_u, c2_l, c2_u = offsets(atom_coords,
