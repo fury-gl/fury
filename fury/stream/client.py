@@ -109,6 +109,7 @@ class FuryStreamClient:
                 self.image_buffer_names.append(buffer.name)
         self._id_timer = None
         self._id_observer = None
+        self._interval_timer = None
         self.sender = None
         self._in_request = False
         self.update = True
