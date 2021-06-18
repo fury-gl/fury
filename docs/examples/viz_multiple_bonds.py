@@ -136,7 +136,7 @@ def ball_and_stick(atom_coords, elem_names):
     # actor which will be representative of bonds
     for index, (bonds, ename) in enumerate(zip(bond_data['bonds'],
                                            elem_names)):
-        for bond in bonds:
+        for i, bond in enumerate(bonds):
             if bond not in indexes_done:
                 # if the two atoms are not of same element, we color the
                 # streamtube in two colors (representative of the two elements)
@@ -170,7 +170,6 @@ def ball_and_stick(atom_coords, elem_names):
                         bond_colors += [cpkr[ename][:3]]
                         bond_coords += [[c1_l, c2_l]]
                         bond_coords += [[c1_u, c2_u]]
-            i += 1
         indexes_done += [index]
 
     # Setting colors, radii to the spheres representative of atoms
