@@ -141,11 +141,11 @@ def ball_and_stick(atom_coords, elem_names):
                 # if the two atoms are not of same element, we color the
                 # streamtube in two colors (representative of the two elements)
                 if elem_names[bond] != ename:
-                    bond_colors.append(cpkr[ename][:3])
-                    bond_colors.append(cpkr[elem_names[bond]][:3])
+                    bond_colors += [cpkr[ename][:3]]
+                    bond_colors += [cpkr[elem_names[bond]][:3]]
                     mid = (atom_coords[index] + atom_coords[bond])/2
-                    bond_coords.append([atom_coords[index], mid])
-                    bond_coords.append([mid, atom_coords[bond]])
+                    bond_coords += [[atom_coords[index], mid]]
+                    bond_coords += [[mid, atom_coords[bond]]]
                 # if the atoms are of same element, we determine the type of
                 # bond (single, double or triple) from interatomic distance
                 # between the two atoms and assign coordinates, colors to
@@ -158,18 +158,18 @@ def ball_and_stick(atom_coords, elem_names):
                     else:
                         bond_type = 1
                     if bond_type == 1 or bond_type == 3:
-                        bond_coords.append([atom_coords[bond],
-                                            atom_coords[index]])
-                        bond_colors.append(cpkr[ename][:3])
+                        bond_coords += [[atom_coords[bond],
+                                            atom_coords[index]]]
+                        bond_colors += [cpkr[ename][:3]]
                     if bond_type == 2 or bond_type == 3:
                         c1_l, c1_u, c2_l, c2_u = offsets(atom_coords,
                                                          atom_coords[index],
                                                          atom_coords[bond],
                                                          bond_type)
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_colors.append(cpkr[ename][:3])
-                        bond_coords.append([c1_l, c2_l])
-                        bond_coords.append([c1_u, c2_u])
+                        bond_colors += [cpkr[ename][:3]]
+                        bond_colors += [cpkr[ename][:3]]
+                        bond_coords += [[c1_l, c2_l]]
+                        bond_coords += [[c1_u, c2_u]]
             i += 1
         indexes_done += [index]
 
