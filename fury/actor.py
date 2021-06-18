@@ -2481,7 +2481,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     ----------
     centers : ndarray, shape (N, 3)
         SDF primitive positions
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     directions : ndarray, shape (N, 3)
         The orientation vector of the SDF primitive.
@@ -2565,8 +2565,7 @@ def markers(
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
     marker : str or a list
-        This it's optional if "markers" arg are used
-        Available marker are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
+        Available markers are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
         'x', '+', optional
     marker_opacity : float, optional
     edge_width : int, optional
@@ -2591,7 +2590,7 @@ def markers(
     attribute_to_actor(sq_actor, big_centers, 'center')
     marker2id = {
             'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
-            'h': 5, 's6': 6, 'x': 7, '+': 8}
+            'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
 
     vs_dec_code = load("billboard_dec.vert")
     vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'

@@ -35,7 +35,7 @@ nodes_actor = actor.markers(
 )
 
 ############################################################################
-# In addtion, the 3d impostor sphere it's also a valid type of marker
+# In addition, an 3D sphere it's also a valid type of marker
 
 nodes_3d_actor = actor.markers(
     centers+np.ones_like(centers)*25,
