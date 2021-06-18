@@ -13,8 +13,21 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 import time
+import socket, errno
 
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+
+
+def test_port(domain, port):
+    available = True
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((domain, port))
+    except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+            available = False
+    s.close()
+    return available
 
 
 class Widget:
@@ -43,6 +56,8 @@ class Widget:
         self._server_started = False
         self.pserver = None
         self.encoding = encoding
+        self.showm.window.SetOffScreenRendering(1)
+        self.showm.iren.EnableRenderOff()
 
     @property
     def command_string(self):
@@ -65,8 +80,6 @@ class Widget:
         if self._server_started:
             return
 
-        self.showm.window.SetOffScreenRendering(1)
-        # self.showm.iren.EnableRenderOff()
         # self.showm.initialize()
         self.stream = FuryStreamClient(
             self.showm, self.window_size,
@@ -85,6 +98,16 @@ class Widget:
         self._server_started = True
 
     def run_command(self):
+        i = 0
+
+        available = test_port(self.domain, self.port)
+        while not available and i < 50:
+            self.port = np.random.randint(7000, 8888)
+            available = test_port(self.domain, self.port)
+            i += 1
+        if not available:
+            return False
+
         if self._server_started:
             args = [
                 sys.executable, '-c',
@@ -94,6 +117,7 @@ class Widget:
                 args,
                 # f'python -c "{self.command_string}"',
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+        return True
 
     @property
     def url(self):
@@ -109,13 +133,19 @@ class Widget:
 
     def start(self):
         self.start_server()
-        self.run_command()
+        ok = self.run_command()
+        if not ok:
+            self.stop()
+            return False
         print(f'url: {self.url}')
 
     def display(self, height=150):
         self.start_server()
-        self.run_command()
-        time.sleep(1)
+        ok = self.run_command()
+        if not ok:
+            self.stop()
+            return False
+        time.sleep(2)
         self.return_iframe(height)
 
     def stop(self):
