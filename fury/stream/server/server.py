@@ -99,15 +99,18 @@ class ImageBufferManager:
         height = int(image_info[2+buffer_index*2+1])
         if self.use_raw_array:
             image = self.image_buffers[buffer_index]
+            image = np.frombuffer(
+                image, 'uint8')
         else:
             image = self.image_reprs[buffer_index]
 
-        image = np.frombuffer(
-            image, 'uint8')[0:width*height*3].reshape(
+        image = image[0:width*height*3].reshape(
                 (height, width, 3))
         image = np.flipud(image)
 
         image_encoded = cv2.imencode('.jpg', image)[1]
+        # image_encoded = cv2.cvtColor(image_encoded,  cv2.COLOR_BGR2RGB)
+
         # this will avoid a huge bandwidth consumption
         await asyncio.sleep(1 / 25)
         return image_encoded.tobytes()
