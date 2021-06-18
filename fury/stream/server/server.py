@@ -183,7 +183,7 @@ def web_server(
         queue_head_tail_buffer_name=None,
         queue_buffer_name=None,
         port=8000, host='localhost',
-        provides_mjpeg=False,
+        provides_mjpeg=True,
         provides_webrtc=True,
         avoid_unlink_shared_mem=False):
 
@@ -206,9 +206,6 @@ def web_server(
     else:
         rtc_server = None
 
-    if not provides_mjpeg:
-        image_buffer_manager = None
-
     if queue_buffer is not None or queue_buffer_name is not None:
         circular_queue = CircularQueue(
             head_tail_buffer=queue_head_tail_buffer,
@@ -218,7 +215,8 @@ def web_server(
 
     app_fury = get_app(
        rtc_server, circular_queue=circular_queue,
-       image_buffer_manager=image_buffer_manager
+       image_buffer_manager=image_buffer_manager,
+       provides_mjpeg=provides_mjpeg
     )
 
     web.run_app(

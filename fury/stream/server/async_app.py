@@ -208,7 +208,7 @@ async def websocket_handler(request, **kwargs):
 
 def get_app(
         rtc_server=None, folder=None, circular_queue=None,
-        image_buffer_manager=None,
+        image_buffer_manager=None, provides_mjpeg=False,
         broadcast=True):
 
     if folder is None:
@@ -232,8 +232,8 @@ def get_app(
         app.router.add_get(
             "/js/%s" % js, partial(javascript, folder=folder, js=js))
 
-    if image_buffer_manager is not None:
-        app['image_buffer_manager'] = image_buffer_manager
+    app['image_buffer_manager'] = image_buffer_manager
+    if provides_mjpeg:
         app.router.add_get("/video/mjpeg", mjpeg_handler)
 
     if rtc_server is not None:
