@@ -11,7 +11,14 @@ import numpy as np
 
 from fury.data.fetcher import fetch_viz_wiki_nw
 
+try:
+    import cv2 
+    OPENCV_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    OPENCV_AVAILABLE = False
 
+print("\n\nOPENCV ", OPENCV_AVAILABLE,"\n\n")
 from fury.stream.server import web_server
 
 if __name__ == '__main__':

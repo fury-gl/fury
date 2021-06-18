@@ -97,6 +97,11 @@ if __name__ == '__main__':
                 stream_interaction.circular_queue.buffer._buffer,
                 None,
                 None,
+                8000,
+                'localhost',
+                True,
+                True,
+                True
             )
         )
          
@@ -113,7 +118,12 @@ if __name__ == '__main__':
                 None,
                 None,
                 stream_interaction.circular_queue.head_tail_buffer_name,
-                stream_interaction.circular_queue.buffer.buffer_name
+                stream_interaction.circular_queue.buffer.buffer_name,
+                8000,
+                'localhost',
+                True,
+                True,
+                True
             )
         )
     p.start()
@@ -121,6 +131,8 @@ if __name__ == '__main__':
     stream.init(ms_stream,)
     showm.start()
     p.kill()
+    stream.stop()
+    stream_interaction.stop()
     stream.cleanup()
     stream_interaction.cleanup()
     # open a browser using the following the url
