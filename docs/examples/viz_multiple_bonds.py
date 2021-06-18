@@ -5,7 +5,7 @@ Multiple bonds visualization
 
 This example demonstrate how to create ball and stick model for different
 molecules from their atomic coordinates. It also shows how to visualize
-double and triple bonds
+double and triple bonds.
 """
 
 ###############################################################################
@@ -14,8 +14,8 @@ import numpy as np
 from fury import window, actor
 
 ###############################################################################
-
-# Offsets for double and triple bonds
+# Offsets for double and triple bonds (cgenerate oordinates of the streamtubes
+# which will represent bonds)
 def offsets(atom_coords, c1_coord, c2_coord, bond_type):
     # Initial assumption that the molecule is planar in nature
     planar = 1
@@ -53,7 +53,7 @@ def offsets(atom_coords, c1_coord, c2_coord, bond_type):
 # Here, we define the function which will create the ball and stick model
 # It takes in two numpy arrays as input-
 # atom_coords: array of atomic coordinates
-# elem_names: corresponding array of names of elements
+# elem_names: array of names of elements corresponding to atom_coords
 def ball_and_stick(atom_coords, elem_names):
 
     # atomic radius of elements (will be used to generate bonding)
@@ -77,8 +77,7 @@ def ball_and_stick(atom_coords, elem_names):
     bonds = np.zeros((len(elem_names)+1, max_atoms+1), dtype=np.int8)
     bond_dists = np.zeros((len(elem_names)+1, max_atoms+1), dtype=np.float32)
 
-    # Algorithm to generate bonding that is, set connections between different
-    # atoms.
+    # Algorithm to generate bonding (obtain connections between various atoms)
     for i in range(max_atoms-1):
         p_compare = np.roll(p_compare, -1, axis=0)
         #m_compare = np.roll(m_compare, -1, axis=0)
@@ -89,48 +88,67 @@ def ball_and_stick(atom_coords, elem_names):
         bond = np.where(np.logical_and(dists > 0.0001, dists < r_bond), 1, 0)
 
         source_row = source_row
-        target_row = source_row + i + 1 # Will be out of bounds of bonds array for some values of i
+        # target_row will be out of bounds of bonds array for some values of i
+        target_row = source_row + i + 1
+        # If invalid target, write to dummy row
         target_row = np.where(np.logical_or(target_row>len(elem_names),
                                             mask==1), len(elem_names),
-                                            target_row) #If invalid target, write to dummy row
+                                            target_row)
 
         source_atom = i_atom
-        target_atom = i_atom + i + 1 # Will be out of bounds of bonds array for some values of i
+        # target_atom will be out of bounds of bonds array for some values of i
+        target_atom = i_atom + i + 1
+        # If invalid target, write to dummy col
         target_atom = np.where(np.logical_or(target_atom>max_atoms, mask==1),
-                               max_atoms, target_atom) #If invalid target, write to dummy col
+                               max_atoms, target_atom)
 
         bonds[(source_row, target_atom)] = bond
         bonds[(target_row, source_atom)] = bond
         bond_dists[(source_row, target_atom)] = dists
         bond_dists[(target_row, source_atom)] = dists
 
-    bonds = np.delete(bonds, axis=0, obj=-1) #Delete dummy row
-    bonds = np.delete(bonds, axis=1, obj=-1) #Delete dummy col
-    bond_dists = np.delete(bond_dists, axis=0, obj=-1) #Delete dummy row
-    bond_dists = np.delete(bond_dists, axis=1, obj=-1) #Delete dummy col
+    bonds = np.delete(bonds, axis=0, obj=-1) # Delete dummy row
+    bonds = np.delete(bonds, axis=1, obj=-1) # Delete dummy col
+    bond_dists = np.delete(bond_dists, axis=0, obj=-1) # Delete dummy row
+    bond_dists = np.delete(bond_dists, axis=1, obj=-1) # Delete dummy col
 
     bonds_numeric = [[i for i,x in enumerate(row) if x] for row in (bonds)]
-    bond_lengths = [[dist for i,dist in enumerate(row) if i in bonds_numeric[j]] for j,row in enumerate((bond_dists))]
+    bond_lengths = [[dist for i,dist in enumerate(row) if i in
+                     bonds_numeric[j]] for j,row in enumerate((bond_dists))]
     n_bonds = [len(x) for x in bonds_numeric]
-    bond_data = {'bonds':bonds_numeric, 'n_bonds':n_bonds, 'bond_lengths':bond_lengths}
 
-    # generate bonds
+    # Store the bond data (connectivity, number of bonds an atom makes and bond
+    # lengths)
+    bond_data = {'bonds':bonds_numeric, 'n_bonds':n_bonds,
+                 'bond_lengths':bond_lengths}
+
+    # generate coordinates for bonds
     bond_coords = []
     bond_colors = []
     cpkr = {'H': [1, 1, 1, 1.2], 'C': [144/255, 144/255, 144/255, 1.7]}
+
+    # indexes_done checks if the bond has been made between two atoms or not
+    # and skips the iteration if the bond has been made
     indexes_done = []
     i = 0
-    c = 0
-    #print(len(bond_data['bonds']))
+
+    # Here, we generate coordinates and colors to be passed to the streamtube
+    # actor which will be representative of bonds
     for index, (bonds,ename) in enumerate(zip(bond_data['bonds'], elem_names)):
         for bond in bonds:
             if bond not in indexes_done:
+                # if the two atoms are not of same element, we color the
+                # streamtube in two colors (representative of the two elements)
                 if(elem_names[bond]!= ename):
                     bond_colors.append(cpkr[ename][:3])
                     bond_colors.append(cpkr[elem_names[bond]][:3])
                     mid = (atom_coords[index] + atom_coords[bond])/2
                     bond_coords.append([atom_coords[index], mid])
                     bond_coords.append([mid, atom_coords[bond]])
+                # if the atoms are of same element, we determine the type of
+                # bond (single, double or triple) from interatomic distance
+                # between the two atoms and assign coordinates, colors to
+                # the streamtubes accordingly
                 else:
                     if bond_data['bond_lengths'][index][i] < 1.22:
                         bond_type = 3
@@ -142,7 +160,10 @@ def ball_and_stick(atom_coords, elem_names):
                         bond_coords.append([atom_coords[bond], atom_coords[index]])
                         bond_colors.append(cpkr[ename][:3])
                     if bond_type == 2 or bond_type == 3:
-                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords, atom_coords[index], atom_coords[bond], bond_type)
+                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords,
+                                                         atom_coords[index],
+                                                         atom_coords[bond],
+                                                         bond_type)
                         bond_colors.append(cpkr[ename][:3])
                         bond_colors.append(cpkr[ename][:3])
                         bond_coords.append([c1_l, c2_l])
@@ -150,6 +171,7 @@ def ball_and_stick(atom_coords, elem_names):
             i += 1
         indexes_done += [index]
 
+    # Setting colors, radii to the spheres representative of atoms
     unique_elem_types = np.unique(elem_names)
     atom_colors = np.ones((len(atom_coords), 3))
     radii = np.ones((len(atom_coords), 3))
@@ -157,20 +179,21 @@ def ball_and_stick(atom_coords, elem_names):
         atom_colors[elem_names == typ] = cpkr[typ][:3]
         radii[elem_names == typ] = cpkr[typ][-1]/4
 
+    # generating the streamtubes (indicative of bonds) and spheres (indicative
+    # of atoms)
     sticks = actor.streamtube(bond_coords, colors=bond_colors, linewidth=0.05)
-    balls = actor.sphere(atom_coords, colors=atom_colors, radii=radii, phi=32, theta=32)
+    balls = actor.sphere(atom_coords, colors=atom_colors, radii=radii, phi=32,
+                         theta=32)
     return sticks, balls
 
-
 scene = window.Scene()
-#scene.add(ball, sticks)
 scene.background((1, 1, 1))
 position = (-9.7857, 15.54, 24)
 focal_point = (6.80, 6.065, 11.39)
 scene.set_camera(position=position, focal_point=focal_point,
                  view_up=(0.49, 0.87, -0.007))
 
-# ethane (single bonds)
+# Atomic data of ethane (single bonds)
 atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
                         [0.6840181327E+01, 0.6678078649E+01, 0.5159998484E+01],
                         [0.4774278044E+01, 0.6499436628E+01, 0.5782310182E+01],
@@ -178,32 +201,35 @@ atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
                         [0.5926818174E+01, 0.5907771848E+01, 0.6968386044E+01],
                         [0.6985130929E+01, 0.7695511362E+01, 0.5526416671E+01],
                         [0.7788135127E+01, 0.6150201159E+01, 0.5277430519E+01],
-                        [0.6632858893E+01, 0.6740709254E+01, 0.4090898288E+01]], dtype=float)
+                        [0.6632858893E+01, 0.6740709254E+01, 0.4090898288E+01]]
+                      )
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'])
 sticks, balls = ball_and_stick(atom_coords+[0, 0, -6], elem_names)
 scene.add(sticks, balls)
 
-# ethene (double bonds)
+# Atomic data of ethene (double bonds)
 atom_coords = np.array([[0.5449769880E+01, 0.5680940296E+01, 0.5519555369E+01],
                         [0.6346918574E+01, 0.6272796762E+01, 0.6280955432E+01],
                         [0.4603843481E+01, 0.6218164558E+01, 0.5109232482E+01],
                         [0.5522586159E+01, 0.4630394155E+01, 0.5265590478E+01],
                         [0.6275632424E+01, 0.7323831630E+01, 0.6534741329E+01],
-                        [0.7193811558E+01, 0.5736436394E+01, 0.6691459388E+01]], dtype=float)
+                        [0.7193811558E+01, 0.5736436394E+01, 0.6691459388E+01]]
+                      )
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H'])
 sticks, balls = ball_and_stick(atom_coords, elem_names)
 scene.add(sticks, balls)
 
-# ethyne (triple bonds)
+# Atomic data of ethyne (triple bonds)
 atom_coords = np.array([[0.5899518696E+01, 0.5868718390E+01, 0.5737443048E+01],
                         [0.6573681090E+01, 0.6576391430E+01, 0.6424519094E+01],
                         [0.5300877605E+01, 0.5237561906E+01, 0.5127884913E+01],
-                        [0.7173348068E+01, 0.7204870233E+01, 0.7035206023E+01]], dtype=float)
+                        [0.7173348068E+01, 0.7204870233E+01, 0.7035206023E+01]]
+                      )
 elem_names = np.array(['C', 'C', 'H', 'H'])
 sticks, balls = ball_and_stick(atom_coords+[0, 0, 4], elem_names)
 scene.add(sticks, balls)
 
-#scene.add(actor.axes())
-
-window.show(scene, size=(600, 600))
-#print(scene.get_camera())
+interactive = True
+if interactive:
+    window.show(scene, size=(600, 600))
+window.record(scene, size=(600, 600), out_path="viz_multiple_bonds.png")
