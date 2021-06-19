@@ -2201,7 +2201,7 @@ class Container(object):
         self._need_update = False
 
     def add_to_scene(self, ren):
-        """ Adds the items of this container to a given renderer. """
+        """ Adds the items of this container to a given scene. """
         for item in self.items:
             if isinstance(item, Container):
                 item.add_to_scene(ren)
