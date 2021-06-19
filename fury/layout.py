@@ -80,7 +80,7 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        from fury.ui import UI # to avoid circular import
+        from fury.ui import UI  # to avoid circular import
 
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
@@ -103,7 +103,7 @@ class GridLayout(Layout):
                     diagonals.append(diagonal)
                 else:
                     diagonals.append(a.GetLength())
-                
+
             longest_diagonal = np.max(diagonals)
             shapes = [(longest_diagonal, longest_diagonal)] * len(actors)
         else:
@@ -135,6 +135,6 @@ class GridLayout(Layout):
         positions = get_grid_cells_position(shapes,
                                             self.aspect_ratio,
                                             self.dim)
-        
+
         positions += self.position_offset
         return positions

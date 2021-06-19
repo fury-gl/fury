@@ -10,14 +10,20 @@ from fury import actor
 #
 # First, we create some panels with different sizes/positions
 
-panel_1 = ui.Panel2D(size=(200, 200), color=(0.4, 0.6, 0.3), position=(100, 100))
-panel_2 = ui.Panel2D(size=(250, 250), color=(0.8, 0.3, 0.5), position=(150, 150))
+panel_1 = ui.Panel2D(size=(200, 200), color=(0.4, 0.6, 0.3),
+                     position=(100, 100))
+
+panel_2 = ui.Panel2D(size=(250, 250), color=(0.8, 0.3, 0.5),
+                     position=(150, 150))
 
 ###############################################################################
 # Now we create two listboxes
 
-listbox_1 = ui.ListBox2D(size=(150, 150), values=['First', 'Second', 'Third'])
-listbox_2 = ui.ListBox2D(size=(250, 250), values=['First', 'Second', 'Third'])
+listbox_1 = ui.ListBox2D(size=(150, 150),
+                         values=['First', 'Second', 'Third'])
+
+listbox_2 = ui.ListBox2D(size=(250, 250),
+                         values=['First', 'Second', 'Third'])
 
 ###############################################################################
 # Now we create two diffrent UI i.e. a slider and a listbox
