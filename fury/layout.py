@@ -14,9 +14,7 @@ class Layout(object):
 
         for a, pos in zip(actors, positions):
             if isinstance(a, UI):
-                anchor = (*a.position, 0)
-                _new_pos = pos + anchor
-                a.position = (_new_pos[0], _new_pos[1])
+                a.position = (pos[0], pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
                 a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
@@ -35,7 +33,7 @@ class GridLayout(Layout):
     """
 
     def __init__(self, cell_padding=0, cell_shape="rect",
-                 aspect_ratio=16/9., dim=None):
+                 aspect_ratio=16/9., dim=None, position_offset=(0, 0, 0)):
         """
 
         Parameters
@@ -61,6 +59,7 @@ class GridLayout(Layout):
         self.cell_shape = cell_shape
         self.aspect_ratio = aspect_ratio
         self.dim = dim
+        self.position_offset = position_offset
         if isinstance(cell_padding, int):
             self.cell_padding = (cell_padding, cell_padding)
         else:
@@ -136,4 +135,6 @@ class GridLayout(Layout):
         positions = get_grid_cells_position(shapes,
                                             self.aspect_ratio,
                                             self.dim)
+        
+        positions += self.position_offset
         return positions
