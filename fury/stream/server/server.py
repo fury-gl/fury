@@ -31,6 +31,7 @@ try:
     import cv2
     OPENCV_AVAILABLE = True
 except ImportError:
+    from PIL import Image
     cv2 = None
     OPENCV_AVAILABLE = False
 
@@ -107,8 +108,12 @@ class ImageBufferManager:
         image = image[0:width*height*3].reshape(
                 (height, width, 3))
         image = np.flipud(image)
-
-        image_encoded = cv2.imencode('.jpg', image)[1]
+        # preserve width and height, flip B->R
+        image = image[:, :, ::-1]
+        if OPENCV_AVAILABLE:
+            image_encoded = cv2.imencode('.jpg', image)[1]
+        else:
+            image_encoded = Image.fromarray(image)
         # image_encoded = cv2.cvtColor(image_encoded,  cv2.COLOR_BGR2RGB)
 
         # this will avoid a huge bandwidth consumption
