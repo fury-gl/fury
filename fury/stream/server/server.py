@@ -40,11 +40,13 @@ class ImageBufferManager:
     def __init__(
             self, use_raw_array=True,
             info_buffer=None, image_buffers=None,
-            info_buffer_name=None, image_buffer_names=None):
+            info_buffer_name=None, image_buffer_names=None,
+            ms_jpeg=33):
         super().__init__()
 
         self.use_raw_array = use_raw_array
         self.image = None
+        self.ms_jpeg = ms_jpeg
         if not use_raw_array:
             self.info_buffer = shared_memory.SharedMemory(info_buffer_name)
             self.info_buffer_repr = np.ndarray(
@@ -117,7 +119,7 @@ class ImageBufferManager:
         # image_encoded = cv2.cvtColor(image_encoded,  cv2.COLOR_BGR2RGB)
 
         # this will avoid a huge bandwidth consumption
-        await asyncio.sleep(1 / 25)
+        await asyncio.sleep(self.ms_jpeg/1000)
         return image_encoded.tobytes()
 
     def cleanup(self):
@@ -193,7 +195,8 @@ def web_server(
         port=8000, host='localhost',
         provides_mjpeg=True,
         provides_webrtc=True,
-        avoid_unlink_shared_mem=False):
+        avoid_unlink_shared_mem=False,
+        ms_jpeg=16):
 
     if stream_client is not None:
         image_buffers = stream_client.image_buffers
@@ -206,7 +209,7 @@ def web_server(
 
     image_buffer_manager = ImageBufferManager(
             use_raw_array, info_buffer, image_buffers,
-            info_buffer_name, image_buffer_names)
+            info_buffer_name, image_buffer_names, ms_jpeg=ms_jpeg)
 
     if provides_webrtc:
         rtc_server = RTCServer(

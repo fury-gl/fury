@@ -1,3 +1,5 @@
 aiohttp
 aiortc
-opencv-python
+# opencv-python
+Pillow
+Cython

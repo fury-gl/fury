@@ -34,7 +34,7 @@ class Widget:
     def __init__(
             self, showm, max_window_size=None, ms_stream=0,
             domain='localhost', port=None, ms_interaction=10, queue_size=20,
-            encoding='mjpeg'):
+            encoding='mjpeg', ms_jpeg=33):
         if not PY_VERSION_8:
             raise ImportError('Python 3.8 or greater is required to use the\
                 widget class')
@@ -48,6 +48,7 @@ class Widget:
         self.max_window_size = max_window_size
         self.ms_stream = ms_stream
         self.ms_interaction = ms_interaction
+        self.ms_jpeg = ms_jpeg
         self.domain = domain
         if port is None:
             port = np.random.randint(7000, 8888)
@@ -70,6 +71,7 @@ class Widget:
         s += f"{self.stream_interaction.circular_queue.buffer.buffer_name}'"
         if self.encoding == 'mjpeg':
             s += ",provides_mjpeg=True"
+            s += f",ms_jpeg={self.ms_jpeg}"
             s += ",provides_webrtc=False"
         s += f",port={self.port},host='{self.domain}',"
         s += "avoid_unlink_shared_mem=True"
