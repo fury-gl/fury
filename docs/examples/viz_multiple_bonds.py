@@ -1,3 +1,4 @@
+
 """
 ====================================
 Multiple bonds visualization
@@ -11,7 +12,9 @@ double and triple bonds.
 ###############################################################################
 # First, we import some useful modules and methods.
 import numpy as np
-from fury import window, actor
+from fury import disable_warnings, window, actor
+import vtk
+disable_warnings()
 
 ###############################################################################
 # Offsets for double and triple bonds (generate coordinates of the streamtubes
@@ -33,7 +36,10 @@ def offsets(atom_coords, c1_coord, c2_coord, bond_type):
     c1 = c1_coord
     c2 = c2_coord
     dir_vector = c2_coord - c1_coord
-    offset = bond_type * 0.045
+    if bond_type == 2:
+        offset = 0.09
+    else:
+        offset = 0.10
 
     # generating direction vectors of the bonds to be constructed
     if planar:
@@ -125,12 +131,15 @@ def ball_and_stick(atom_coords, elem_names):
     # generate coordinates for bonds
     bond_coords = []
     bond_colors = []
+    doublebond_coords = []
+    doublebond_colors = []
+    triplebond_coords = []
+    triplebond_colors = []
     cpkr = {'H': [1, 1, 1, 1.2], 'C': [144/255, 144/255, 144/255, 1.7]}
 
     # indexes_done checks if the bond has been made between two atoms or not
     # and skips the iteration if the bond has been made
     indexes_done = []
-    i = 0
 
     # Here, we generate coordinates and colors to be passed to the streamtube
     # actor which will be representative of bonds
@@ -152,24 +161,31 @@ def ball_and_stick(atom_coords, elem_names):
                 # the streamtubes accordingly
                 else:
                     if bond_data['bond_lengths'][index][i] < 1.22:
-                        bond_type = 3
-                    elif bond_data['bond_lengths'][index][i] < 1.36:
-                        bond_type = 2
-                    else:
-                        bond_type = 1
-                    if bond_type == 1 or bond_type == 3:
-                        bond_coords += [[atom_coords[bond],
-                                         atom_coords[index]]]
-                        bond_colors += [cpkr[ename][:3]]
-                    if bond_type == 2 or bond_type == 3:
                         c1_l, c1_u, c2_l, c2_u = offsets(atom_coords,
                                                          atom_coords[index],
                                                          atom_coords[bond],
-                                                         bond_type)
+                                                         3)
+                        triplebond_colors += [cpkr[ename][:3]]
+                        triplebond_colors += [cpkr[ename][:3]]
+                        triplebond_coords += [[c1_l, c2_l]]
+                        triplebond_coords += [[c1_u, c2_u]]
+                        triplebond_coords += [[atom_coords[bond],
+                                               atom_coords[index]]]
+                        triplebond_colors += [cpkr[ename][:3]]
+                    elif bond_data['bond_lengths'][index][i] < 1.36:
+                        c1_l, c1_u, c2_l, c2_u = offsets(atom_coords,
+                                                         atom_coords[index],
+                                                         atom_coords[bond],
+                                                         2)
+                        doublebond_colors += [cpkr[ename][:3]]
+                        doublebond_colors += [cpkr[ename][:3]]
+                        doublebond_coords += [[c1_l, c2_l]]
+                        doublebond_coords += [[c1_u, c2_u]]
+                    else:
+                        bond_coords += [[atom_coords[bond],
+                                         atom_coords[index]]]
                         bond_colors += [cpkr[ename][:3]]
-                        bond_colors += [cpkr[ename][:3]]
-                        bond_coords += [[c1_l, c2_l]]
-                        bond_coords += [[c1_u, c2_u]]
+
         indexes_done += [index]
 
     # Setting colors, radii to the spheres representative of atoms
@@ -182,10 +198,25 @@ def ball_and_stick(atom_coords, elem_names):
 
     # generating the streamtubes (indicative of bonds) and spheres (indicative
     # of atoms)
-    sticks = actor.streamtube(bond_coords, colors=bond_colors, linewidth=0.05)
+    bs_actor = vtk.vtkAssembly()
+    print(triplebond_coords, doublebond_coords)
+    single_bonds = actor.streamtube(bond_coords, colors=bond_colors,
+                                    linewidth=0.15)
+    bs_actor.AddPart(single_bonds)
+    if doublebond_coords:
+        double_bonds = actor.streamtube(doublebond_coords,
+                                        colors=doublebond_colors,
+                                        linewidth=0.06)
+        bs_actor.AddPart(double_bonds)
+    if triplebond_coords:
+        triple_bonds = actor.streamtube(triplebond_coords,
+                                        colors=triplebond_colors,
+                                        linewidth=0.04)
+        bs_actor.AddPart(triple_bonds)
     balls = actor.sphere(atom_coords, colors=atom_colors, radii=radii, phi=32,
                          theta=32)
-    return sticks, balls
+    bs_actor.AddPart(balls)
+    return bs_actor
 
 ###############################################################################
 # Next, we initialize a ''Scene'' object and add actors to the rendering.
@@ -198,7 +229,7 @@ focal_point = (6.80, 6.065, 11.39)
 scene.set_camera(position=position, focal_point=focal_point,
                  view_up=(0.49, 0.87, -0.007))
 
-# Atomic data of ethane (single bonds)
+# # Atomic data of ethane (single bonds)
 atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
                         [0.6840181327E+01, 0.6678078649E+01, 0.5159998484E+01],
                         [0.4774278044E+01, 0.6499436628E+01, 0.5782310182E+01],
@@ -209,8 +240,8 @@ atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
                         [0.6632858893E+01, 0.6740709254E+01, 0.4090898288E+01]]
                        )
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H', 'H', 'H'])
-sticks, balls = ball_and_stick(atom_coords+[0, 0, -6], elem_names)
-scene.add(sticks, balls)
+ethane = ball_and_stick(atom_coords+[0, 0, -6], elem_names)
+scene.add(ethane)
 
 # Atomic data of ethene (double bonds)
 atom_coords = np.array([[0.5449769880E+01, 0.5680940296E+01, 0.5519555369E+01],
@@ -221,8 +252,8 @@ atom_coords = np.array([[0.5449769880E+01, 0.5680940296E+01, 0.5519555369E+01],
                         [0.7193811558E+01, 0.5736436394E+01, 0.6691459388E+01]]
                        )
 elem_names = np.array(['C', 'C', 'H', 'H', 'H', 'H'])
-sticks, balls = ball_and_stick(atom_coords, elem_names)
-scene.add(sticks, balls)
+ethene = ball_and_stick(atom_coords, elem_names)
+scene.add(ethene)
 
 # Atomic data of ethyne (triple bonds)
 atom_coords = np.array([[0.5899518696E+01, 0.5868718390E+01, 0.5737443048E+01],
@@ -231,8 +262,8 @@ atom_coords = np.array([[0.5899518696E+01, 0.5868718390E+01, 0.5737443048E+01],
                         [0.7173348068E+01, 0.7204870233E+01, 0.7035206023E+01]]
                        )
 elem_names = np.array(['C', 'C', 'H', 'H'])
-sticks, balls = ball_and_stick(atom_coords+[0, 0, 4], elem_names)
-scene.add(sticks, balls)
+ethyne = ball_and_stick(atom_coords+[0, 0, 4], elem_names)
+scene.add(ethyne)
 
 interactive = False
 if interactive:
