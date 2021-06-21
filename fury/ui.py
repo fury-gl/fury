@@ -987,7 +987,7 @@ class Panel2D(UI):
         _iren = window.GetInteractor().GetInteractorStyle()
 
         _window_size = window.GetSize()
-        _panel_size = self._get_size()
+        _panel_size = self.size
         self.size_ratio = _panel_size / _window_size
 
         window.AddObserver('WindowResizeEvent',
