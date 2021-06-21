@@ -25,7 +25,7 @@ import itertools
 # We just proceeds as usual: creating the actors and initializing a scene in
 # FURY
 
-centers = 1*np.array([
+centers = np.array([
     [0, 0, 0],
     [-1, 0, 0],
     [1, 0, 0]
@@ -58,6 +58,7 @@ showm = window.ShowManager(scene,
 scene.add(actors)
 scene.add(actor_normal_blending)
 scene.add(actors_no_depth_test)
+
 ###############################################################################
 # Now, we will enter in the topic of this example. First, we need to create
 # (or use one of the pre-built gl_function of FURY) to
@@ -72,7 +73,7 @@ shader_apply_effects(
 
 id_observer = shader_apply_effects(
     showm, actor_normal_blending,
-    effect=window.gl_set_normal_blending)
+    effects=window.gl_set_normal_blending)
 
 ###############################################################################
 # It's also possible to pass a list of effects. The final opengl state it'll
@@ -106,4 +107,12 @@ def timer_callback(obj, event):
 
 
 showm.add_timer_callback(True, 5, timer_callback)
-showm.start()
+
+interactive = False
+
+if interactive:
+    showm.start()
+
+window.record(
+    scene, out_path='viz_fine_tuning_gl_context.png', size=(600, 600))
+

@@ -222,7 +222,7 @@ def add_shader_callback(actor, callback, priority=0.):
 
 
 def shader_apply_effects(
-        showm, actor, effect=None, effects=None, priority=0):
+        showm, actor, effects=None, priority=0):
     """This applies a specific opengl state (effect) or a list of effects just
     before the actor's shader be executed.
 
@@ -230,9 +230,7 @@ def shader_apply_effects(
     ----------
     showm : fury.window.ShowManager
     actor : vtk actor
-    effect :  function
-        a function with a glState as argument
-    effects : a list of functions, optional
+    effects : a function or a list of functions
     priority : float, optional
         Related with the shader callback command.
         Effects with a higher priority are applied first and
@@ -246,12 +244,12 @@ def shader_apply_effects(
         See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
 
     """
-    if effects is None:
-        effects = [effect]
+    if not isinstance(effects, list):
+        effects = [effects]
 
     def callback(
             _caller, _event, calldata=None,
-            effects=[], showm=None):
+            effects=None, showm=None):
         program = calldata
         if program is not None:
             for func in effects:
