@@ -13,6 +13,7 @@ visualization of clusters in a network.
 
 ###############################################################################
 # First, let's import some functions
+
 import numpy as np
 
 from fury.shaders import shader_apply_effects
@@ -27,23 +28,39 @@ import itertools
 
 centers = np.array([
     [0, 0, 0],
-    [-1, 0, 0],
-    [1, 0, 0]
+    [-.1, 0, 0],
+    [.1, 0, 0]
 ])
-centers_no_depth_test = centers - np.array([[0, -1, 0]])
-centers_normal_blending = centers_no_depth_test - np.array([[0, -1, 0]])
+centers_no_depth_test = centers
+centers_normal_blending = centers_no_depth_test - np.array([[0, -.5, 0]])
+centers_add_blending = centers_normal_blending - np.array([[0, -.5, 0]])
 colors = np.array([
     [1, 0, 0],
     [0, 1, 0],
     [0, 0, 1]
 ])
 
-actors = actor.sphere(
-    centers, opacity=.8, radii=.4, colors=colors)
-actors_no_depth_test = actor.sphere(
-    centers_no_depth_test, opacity=.8, radii=.4, colors=colors)
-actor_normal_blending = actor.sphere(
-    centers_normal_blending, opacity=.8, radii=.4, colors=colors)
+actor_no_depth_test = actor.markers(
+    centers_no_depth_test,
+    marker='s',
+    colors=colors,
+    marker_opacity=.5,
+    scales=.2,
+)
+actor_normal_blending = actor.markers(
+    centers_normal_blending,
+    marker='s',
+    colors=colors,
+    marker_opacity=.5,
+    scales=.2,
+)
+actor_add_blending = actor.markers(
+    centers_add_blending,
+    marker='s',
+    colors=colors,
+    marker_opacity=.5,
+    scales=.2,
+)
 
 renderer = window.Scene()
 scene = window.Scene()
@@ -55,9 +72,9 @@ showm = window.ShowManager(scene,
 ###############################################################################
 # All actors must be added  in the scene
 
-scene.add(actors)
+scene.add(actor_no_depth_test)
 scene.add(actor_normal_blending)
-scene.add(actors_no_depth_test)
+scene.add(actor_add_blending)
 
 ###############################################################################
 # Now, we will enter in the topic of this example. First, we need to create
@@ -68,51 +85,54 @@ scene.add(actors_no_depth_test)
 # set of  specific behaviors to  be applied in the OpenGL context
 
 shader_apply_effects(
-    showm, actors,
-    effects=[window.gl_enable_blend, window.gl_enable_depth])
-
-id_observer = shader_apply_effects(
-    showm, actor_normal_blending,
+    showm.window, actor_normal_blending,
     effects=window.gl_set_normal_blending)
 
-###############################################################################
-# It's also possible to pass a list of effects. The final opengl state it'll
-# be the composition of each effect that each function has in the opengl state
-shader_apply_effects(
-    showm, actors_no_depth_test,
+# ###############################################################################
+# # It's also possible to pass a list of effects. The final opengl state it'll
+# # be the composition of each effect that each function has in the opengl state
+
+id_observer = shader_apply_effects(
+    showm.window, actor_no_depth_test,
     effects=[
         window.gl_reset_blend, window.gl_disable_blend,
-        window.gl_disable_depth, window.gl_set_additive_blending])
+        window.gl_disable_depth])
+
+shader_apply_effects(
+    showm.window, actor_add_blending,
+    effects=[
+        window.gl_reset_blend,
+        window.gl_enable_depth, window.gl_set_additive_blending])
 
 
 ###############################################################################
 # Finaly, just render and see the results
 
 showm.initialize()
-# window.gl_set_additive_blending(showm.window)
 counter = itertools.count()
 
-# After one hundred of steps we will remove the additive blending effect
-# from actor_normal_blending object
+# After some steps we will remove no_depth_test effect
 
 
 def timer_callback(obj, event):
     cnt = next(counter)
     showm.render()
     showm.scene.GetActiveCamera().Azimuth(1)
-    if cnt == 100:
-        actor_normal_blending.GetMapper().RemoveObserver(id_observer)
+    if cnt == 400:
+        actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
+        shader_apply_effects(
+             showm.window, actor_no_depth_test,
+             effects=window.gl_set_additive_blending)
     if cnt == 1000:
         showm.exit()
 
 
 showm.add_timer_callback(True, 5, timer_callback)
 
-interactive = False
+interactive = True
 
 if interactive:
     showm.start()
 
 window.record(
     scene, out_path='viz_fine_tuning_gl_context.png', size=(600, 600))
-

@@ -1010,31 +1010,6 @@ def enable_stereo(renwin, stereo_type):
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
 
 
-def test_and_extract_gl_state(func):
-    def wrapper(obj, *args, **kwargs):
-        """
-
-        Parameters
-        ----------
-        obj :
-                'vtkOpenGLState' or fury.window.ShowManager
-        """
-        if isinstance(obj, ShowManager):
-            glState = obj.window.GetState()
-
-        elif not isinstance(obj, vtk.vtkOpenGLState):
-            glState = obj
-
-        else:
-            raise TypeError("""valid types are vtkOpenGLState
-             or fury.window.ShowManager """)
-
-        func(glState, *args, **kwargs)
-
-    return wrapper
-
-
-@test_and_extract_gl_state
 def gl_get_current_state(glState):
     """Returns a dict which describes the current state of the opengl
     context
@@ -1046,7 +1021,6 @@ def gl_get_current_state(glState):
     return state_description
 
 
-@test_and_extract_gl_state
 def gl_reset_blend(glState):
     """Redefines the state of the OpenGL context related with how the RGBA
     channels will be combined.
@@ -1062,22 +1036,18 @@ def gl_reset_blend(glState):
     glState.ResetGLBlendFuncState()
 
 
-@test_and_extract_gl_state
 def gl_enable_depth(glState):
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
 
 
-@test_and_extract_gl_state
 def gl_disable_depth(glState):
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
 
 
-@test_and_extract_gl_state
 def gl_enable_blend(glState):
     glState.vtkglEnable(_GL['GL_BLEND'])
 
 
-@test_and_extract_gl_state
 def gl_disable_blend(glState):
     """This it will disable any gl behavior which has no
     function for opaque objects. This has the benefit of
@@ -1091,11 +1061,10 @@ def gl_disable_blend(glState):
     glState.vtkglDisable(_GL['GL_BLEND'])
 
 
-@test_and_extract_gl_state
 def gl_set_additive_blending(glState, dark_background=True):
+    gl_reset_blend(glState)
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
-
     if dark_background:
         glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
     else:
@@ -1104,7 +1073,6 @@ def gl_set_additive_blending(glState, dark_background=True):
              _GL['GL_ONE'],  _GL['GL_ZERO'])
 
 
-@test_and_extract_gl_state
 def gl_set_normal_blending(glState):
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglEnable(_GL['GL_DEPTH_TEST'])
@@ -1112,3 +1080,13 @@ def gl_set_normal_blending(glState):
     glState.vtkglBlendFuncSeparate(
                 _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
                 _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
+
+
+def gl_set_multiplicative_blending(glState):
+    gl_reset_blend(glState)
+    glState.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
+
+
+def gl_set_subtractive_blending(glState):
+    gl_reset_blend(glState)
+    glState.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])

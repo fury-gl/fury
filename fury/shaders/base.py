@@ -25,21 +25,21 @@ SHADERS_BLOCK = {
 # See [1] for a more extensive list of OpenGL constants
 # [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
 GL_NUMBERS = {
-    "GL_SRC_ALPHA": 769,
-    "GL_ONE": 0,
-    "GL_ZERO": -1,
-    "GL_BLEND": 3041,
-    "GL_ONE_MINUS_SRC_ALPHA": 770,
-    "GL_SRC_ALPHA": 769,
-    "GL_DEPTH_TEST": 2928,
-    "GL_DST_COLOR": 773,
-    "GL_FUNC_SUBTRACT": 3276,
-    "GL_CULL_FACE": 2883,
-    "GL_ALPHA_TEST": 3007,
-    "GL_CW": 2303,
-    "GL_CCW": 2304,
-    "GL_ONE_MINUS_SRC_COLOR": 768,
-    "GL_SRC_COLOR": 767
+    "GL_SRC_ALPHA": 770,
+    "GL_ONE": 1,
+    "GL_ZERO": 0,
+    "GL_BLEND": 3042,
+    "GL_ONE_MINUS_SRC_ALPHA": 771,
+    "GL_SRC_ALPHA": 770,
+    "GL_DEPTH_TEST": 2929,
+    "GL_DST_COLOR": 774,
+    "GL_FUNC_SUBTRACT": 3277,
+    "GL_CULL_FACE": 2884,
+    "GL_ALPHA_TEST": 3008,
+    "GL_CW": 2304,
+    "GL_CCW": 2305,
+    "GL_ONE_MINUS_SRC_COLOR": 769,
+    "GL_SRC_COLOR": 768
 }
 
 
@@ -222,13 +222,13 @@ def add_shader_callback(actor, callback, priority=0.):
 
 
 def shader_apply_effects(
-        showm, actor, effects=None, priority=0):
+        window, actor, effects, priority=0):
     """This applies a specific opengl state (effect) or a list of effects just
     before the actor's shader be executed.
 
     Parameters
     ----------
-    showm : fury.window.ShowManager
+    window : vtk.vtkRenderWindow
     actor : vtk actor
     effects : a function or a list of functions
     priority : float, optional
@@ -249,16 +249,17 @@ def shader_apply_effects(
 
     def callback(
             _caller, _event, calldata=None,
-            effects=None, showm=None):
+            effects=None, window=None):
         program = calldata
+        glState = window.GetState()
         if program is not None:
             for func in effects:
-                func(showm)
+                func(glState)
 
     id_observer = add_shader_callback(
         actor, partial(
             callback,
-            effects=effects, showm=showm), priority)
+            effects=effects, window=window), priority)
 
     return id_observer
 
