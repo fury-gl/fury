@@ -388,17 +388,18 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @staticmethod
     def window_event_propagate(window, evt, obj, i_ren):
-        
+
         if not hasattr(obj, 'actor'):
             raise AttributeError(
                 f'{obj} doesnt have an actor associated with it')
 
         i_ren.propagate_event('WindowPropagatedEvent', obj.actor)
         i_ren.event.abort()
-    
+
     @staticmethod
     def window_propagate_callback(i_ren, obj, self):
         self.on_window_propagate(i_ren, obj, self)
+
 
 class Button2D(UI):
     """A 2D overlay button and is of type vtkTexturedActor2D.
@@ -983,7 +984,7 @@ class Panel2D(UI):
         ----------
         scene : scene
         """
-        window = scene.GetRenderWindow() # Get the current window
+        window = scene.GetRenderWindow()  # Get the current window
         i_ren = window.GetInteractor().GetInteractorStyle()
 
         _window_size = window.GetSize()
@@ -1115,7 +1116,7 @@ class Panel2D(UI):
             new_position = click_position - self._drag_offset
             self.position = new_position
         i_ren.force_render()
-    
+
     def window_resize(self, i_ren, _obj, panel2d_object):
         _window_size = i_ren.GetInteractor().GetSize()
         _new_size = self.size_ratio * _window_size
