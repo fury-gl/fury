@@ -31,9 +31,6 @@ centers = np.array([
     [-.1, 0, 0],
     [.1, 0, 0]
 ])
-centers_no_depth_test = centers
-centers_normal_blending = centers_no_depth_test - np.array([[0, -.5, 0]])
-centers_add_blending = centers_normal_blending - np.array([[0, -.5, 0]])
 colors = np.array([
     [1, 0, 0],
     [0, 1, 0],
@@ -41,30 +38,47 @@ colors = np.array([
 ])
 
 actor_no_depth_test = actor.markers(
-    centers_no_depth_test,
+    centers,
     marker='s',
     colors=colors,
     marker_opacity=.5,
     scales=.2,
 )
 actor_normal_blending = actor.markers(
-    centers_normal_blending,
+    centers - np.array([[0, -.5, 0]]),
     marker='s',
     colors=colors,
     marker_opacity=.5,
     scales=.2,
 )
 actor_add_blending = actor.markers(
-    centers_add_blending,
+    centers - np.array([[0, -1, 0]]),
     marker='s',
     colors=colors,
     marker_opacity=.5,
     scales=.2,
 )
 
-renderer = window.Scene()
+actor_sub_blending = actor.markers(
+    centers - np.array([[0, -1.5, 0]]),
+    marker='s',
+    colors=colors,
+    marker_opacity=.5,
+    scales=.2,
+)
+actor_mul_blending = actor.markers(
+    centers - np.array([[0, -2, 0]]),
+    marker='s',
+    colors=colors,
+    marker_opacity=.5,
+    scales=.2,
+)
+
+
 scene = window.Scene()
 
+
+scene.background((.5, .5, .5))
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=False)
@@ -75,7 +89,8 @@ showm = window.ShowManager(scene,
 scene.add(actor_no_depth_test)
 scene.add(actor_normal_blending)
 scene.add(actor_add_blending)
-
+scene.add(actor_sub_blending)
+scene.add(actor_mul_blending)
 ###############################################################################
 # Now, we will enter in the topic of this example. First, we need to create
 # (or use one of the pre-built gl_function of FURY) to
@@ -104,6 +119,13 @@ shader_apply_effects(
         window.gl_reset_blend,
         window.gl_enable_depth, window.gl_set_additive_blending])
 
+shader_apply_effects(
+    showm.window, actor_sub_blending,
+    effects=window.gl_set_subtractive_blending)
+
+shader_apply_effects(
+    showm.window, actor_mul_blending,
+    effects=window.gl_set_multiplicative_blending)
 
 ###############################################################################
 # Finaly, just render and see the results
