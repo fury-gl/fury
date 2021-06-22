@@ -1056,7 +1056,8 @@ def gl_disable_blend(glState):
     See more
     --------
     [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
-    """ # noqa
+    """  # noqa
+
     glState.vtkglDisable(_GL['GL_CULL_FACE'])
     glState.vtkglDisable(_GL['GL_BLEND'])
 

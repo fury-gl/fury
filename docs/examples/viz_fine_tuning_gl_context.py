@@ -104,8 +104,8 @@ shader_apply_effects(
     effects=window.gl_set_normal_blending)
 
 # ###############################################################################
-# # It's also possible to pass a list of effects. The final opengl state it'll
-# # be the composition of each effect that each function has in the opengl state
+#  It's also possible use a list of effects. The final opengl state it'll
+#  be the composition of each effect that each function has in the opengl state
 
 id_observer = shader_apply_effects(
     showm.window, actor_no_depth_test,
@@ -133,7 +133,7 @@ shader_apply_effects(
 showm.initialize()
 counter = itertools.count()
 
-# After some steps we will remove no_depth_test effect
+# After some steps we will remove the no_depth_test effect
 
 
 def timer_callback(obj, event):
