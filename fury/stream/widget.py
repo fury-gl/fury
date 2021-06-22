@@ -80,7 +80,7 @@ class Widget:
 
     def start_server(self):
         if self._server_started:
-            return
+            self.stop()
 
         # self.showm.initialize()
         self.stream = FuryStreamClient(
@@ -95,12 +95,15 @@ class Widget:
             use_raw_array=False)
 
         self.stream_interaction.start(ms=self.ms_interaction)
-        self.stream.init(16)
+        self.stream.start(16)
         self._server_started = True
+        self.pserver = None
 
     def run_command(self):
-        i = 0
+        if self.pserver is not None:
+            self.kill_server()
 
+        i = 0
         available = test_port(self.domain, self.port)
         while not available and i < 50:
             self.port = np.random.randint(7000, 8888)
@@ -150,18 +153,27 @@ class Widget:
         self.return_iframe(height)
 
     def stop(self):
-        self.stream.stop()
-        self.stream_interaction.stop()
+        if self._server_started:
+            self.stream.stop()
+            self.stream_interaction.stop()
+
         if self.pserver is not None:
-            self.pserver.kill()
-            self.pserver.wait()
-            self._server_started = False
-            self.pserver = None
-            self.cleanup()
+            self.kill_server()
+
+        self.cleanup()
+        self._server_started = False
+
+    def kill_server(self):
+        self.pserver.kill()
+        self.pserver.wait()
+        self.pserver = None
 
     def cleanup(self):
-        self.stream.cleanup()
-        self.stream_interaction.cleanup()
+        if self.stream is not None:
+            self.stream.cleanup()
+
+        if self.stream_interaction is not None:
+            self.stream_interaction.cleanup()
 
     def __del__(self):
         self.stop()

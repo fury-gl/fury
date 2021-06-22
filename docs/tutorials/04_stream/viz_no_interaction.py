@@ -95,5 +95,5 @@ if __name__ == '__main__':
     )
     p.start()
 
-    stream.init(ms,)
+    stream.start(ms,)
     showm.start()

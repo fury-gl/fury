@@ -9,7 +9,7 @@ from fury.stream.server import web_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 import logging
 logging.root.setLevel(logging.INFO)
-logging.basicConfig( level=logging.INFO)
+logging.basicConfig(level=logging.INFO)
 # note, if python version is equal or higher than 3.8
 # uses shared memory approach
 if __name__ == '__main__':
@@ -121,7 +121,7 @@ if __name__ == '__main__':
         )
     p.start()
     stream_interaction.start(ms=ms_interaction)
-    stream.init(ms_stream,)
+    stream.start(ms_stream,)
     showm.start()
     p.kill()
     stream.stop()

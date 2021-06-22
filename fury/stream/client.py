@@ -108,8 +108,12 @@ class FuryStreamClient:
         self._in_request = False
         self.update = True
         self.use_raw_array = use_raw_array
+        self._started = False
 
-    def init(self, ms=16,):
+    def start(self, ms=16,):
+        if self._started:
+            self.stop()
+
         window2image_filter = self.window2image_filter
 
         def callback(caller, timerevent):
@@ -179,10 +183,13 @@ class FuryStreamClient:
                 'RenderEvent', callback)
             self._id_observer = id_observer
         self.showm.render()
+        self._started = True
         callback(None, None)
 
     def stop(self):
-        logging.info('stop timers')
+        if not self._started:
+            return
+
         if self._interval_timer is not None:
             self._interval_timer.stop()
         if self._id_timer is not None:
@@ -193,9 +200,10 @@ class FuryStreamClient:
             self.showm.iren.RemoveObserver(self._id_observer)
             self._id_observer = None
 
+        self._started = False
+
     def cleanup(self):
         if not self.use_raw_array:
-            logging.info('release shared memory buffers')
             self.info_buffer.close()
             # this it's due the python core issues
             # https://bugs.python.org/issue38119
@@ -297,8 +305,12 @@ class FuryStreamInteraction:
         self._id_observer = None
         self._interval_timer = None
         self._whithout_iren_start = whithout_iren_start
+        self._started = False
 
     def start(self, ms=16):
+        if self._started:
+            self.stop()
+
         def callback(caller, timerevent):
             interaction_callback(
                 self.circular_queue, self.showm, self.iren, False)
@@ -317,7 +329,12 @@ class FuryStreamInteraction:
                 "TimerEvent", callback)
             self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
 
+        self._started = True
+
     def stop(self):
+        if not self._started:
+            return
+
         if self._id_timer is not None:
             self.showm.window.DestroyTimer(self._id_timer)
         else:
@@ -325,6 +342,8 @@ class FuryStreamInteraction:
                 self._interval_timer.stop()
                 del self._interval_timer
                 self._interval_timer = None
+
+        self._started = False
 
     def cleanup(self):
         self.circular_queue.cleanup()
