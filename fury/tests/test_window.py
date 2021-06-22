@@ -7,6 +7,7 @@ import pytest
 from fury import actor, window, io
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
+from fury import shaders
 
 
 def test_scene():
@@ -332,3 +333,92 @@ def test_record():
 
             assert_less_equal(arr.shape[0], 5000)
             assert_less_equal(arr.shape[1], 5000)
+
+
+def test_opengl_state():
+    scene = window.Scene()
+    centers = np.array([
+        [0, 0, 0],
+        [-.1, 0, 0],
+        [.1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+    actor_no_depth_test = actor.markers(
+        centers,
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    actor_normal_blending = actor.markers(
+        centers - np.array([[0, -.5, 0]]),
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    actor_add_blending = actor.markers(
+        centers - np.array([[0, -1, 0]]),
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+
+    actor_sub_blending = actor.markers(
+        centers - np.array([[0, -1.5, 0]]),
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    actor_mul_blending = actor.markers(
+        centers - np.array([[0, -2, 0]]),
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    showm = window.ShowManager(
+        scene,
+        size=(900, 768), reset_camera=False,
+        order_transparent=False)
+
+    scene.add(actor_no_depth_test)
+    scene.add(actor_normal_blending)
+    scene.add(actor_add_blending)
+    scene.add(actor_sub_blending)
+    scene.add(actor_mul_blending)
+    # single effect
+    shaders.shader_apply_effects(
+        showm.window, actor_normal_blending,
+        effects=window.gl_set_normal_blending)
+
+    # list of effects
+    id_observer = shaders.shader_apply_effects(
+        showm.window, actor_no_depth_test,
+        effects=[
+            window.gl_reset_blend, window.gl_disable_blend,
+            window.gl_disable_depth])
+
+    shaders.shader_apply_effects(
+        showm.window, actor_add_blending,
+        effects=[
+            window.gl_reset_blend,
+            window.gl_enable_depth, window.gl_set_additive_blending])
+
+    shaders.shader_apply_effects(
+        showm.window, actor_sub_blending,
+        effects=window.gl_set_subtractive_blending)
+
+    shaders.shader_apply_effects(
+        showm.window, actor_mul_blending,
+        effects=window.gl_set_multiplicative_blending)
+
+    # removes the no_depth_test effect
+    actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
