@@ -21,11 +21,9 @@ class FuryStreamClient:
             self, showm,
             window_size=(200, 200),
             max_window_size=None,
+            whithout_iren_start=False,
             use_raw_array=True,
             buffer_count=2,
-            image_buffers=None,
-            info_buffer=None,
-            whithout_iren_start=False,
     ):
         '''
 
@@ -45,6 +43,7 @@ class FuryStreamClient:
         self.buffer_count = buffer_count
         if max_window_size is None:
             max_window_size = window_size
+
         self.max_size = max_window_size[0]*max_window_size[1]
         self.max_window_size = max_window_size
         if self.max_size < window_size[0]*window_size[1]:
@@ -55,49 +54,44 @@ class FuryStreamClient:
             raise ValueError("""
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
-        if info_buffer is None:
-            # 0 number of components
-            # 1 id buffer
-            # 2, 3, width first buffer, height first buffer
-            # 4, 5, width second buffer , height second buffer
-            info_list = [3, 0]
-            for _ in range(self.buffer_count):
-                info_list += [self.max_window_size[0]]
-                info_list += [self.max_window_size[1]]
-            info_list = np.array(
-               info_list, dtype='uint64'
+
+        # 0 number of components
+        # 1 id buffer
+        # 2, 3, width first buffer, height first buffer
+        # 4, 5, width second buffer , height second buffer
+        info_list = [3, 0]
+        for _ in range(self.buffer_count):
+            info_list += [self.max_window_size[0]]
+            info_list += [self.max_window_size[1]]
+        info_list = np.array(
+            info_list, dtype='uint64'
+        )
+        if use_raw_array:
+            self.info_buffer = multiprocessing.RawArray(
+                    'I', info_list
             )
-            if use_raw_array:
-                self.info_buffer = multiprocessing.RawArray(
-                        'I', info_list
-                )
-                self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
-            else:
-                self.info_buffer = shared_memory.SharedMemory(
-                    create=True, size=info_list.nbytes)
-                self.info_buffer_repr = np.ndarray(
-                        info_list.shape[0],
-                        dtype='uint64', buffer=self.info_buffer.buf)
-                self.info_buffer_name = self.info_buffer.name
+            self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
+        else:
+            self.info_buffer = shared_memory.SharedMemory(
+                create=True, size=info_list.nbytes)
+            self.info_buffer_repr = np.ndarray(
+                    info_list.shape[0],
+                    dtype='uint64', buffer=self.info_buffer.buf)
+            self.info_buffer_name = self.info_buffer.name
         if use_raw_array:
             self.image_buffer_names = None
-            if image_buffers is None:
-                self.image_reprs = []
-                for _ in range(self.buffer_count):
-                    buffer = multiprocessing.RawArray(
-                        'B', np.random.randint(
-                            0, 255,
-                            size=max_window_size[0]*max_window_size[1]*3)
-                        .astype('uint8'))
-                    self.image_buffers.append(buffer)
-                    self.image_reprs.append(
-                        np.ctypeslib.as_array(buffer))
-            else:
-                self.info_buffer = info_buffer
-                self.image_buffers = image_buffers
-                # do not work anymore with shared memory
+
+            self.image_reprs = []
+            for _ in range(self.buffer_count):
+                buffer = multiprocessing.RawArray(
+                    'B', np.random.randint(
+                        0, 255,
+                        size=max_window_size[0]*max_window_size[1]*3)
+                    .astype('uint8'))
+                self.image_buffers.append(buffer)
+                self.image_reprs.append(
+                    np.ctypeslib.as_array(buffer))
         else:
-            logging.info('Using the shared memory approach')
             for _ in range(self.buffer_count):
                 bufferSize = max_window_size[0]*max_window_size[1]*3
                 buffer = shared_memory.SharedMemory(
@@ -107,21 +101,15 @@ class FuryStreamClient:
                     np.ndarray(
                         bufferSize, dtype=np.uint8, buffer=buffer.buf))
                 self.image_buffer_names.append(buffer.name)
+
         self._id_timer = None
         self._id_observer = None
         self._interval_timer = None
-        self.sender = None
         self._in_request = False
         self.update = True
         self.use_raw_array = use_raw_array
-        # if broker_url is not None:
-        #    pass
-        # self.sender = imagezmq.ImageSender(connect_to=broker_url)
 
     def init(self, ms=16,):
-        # if self.write_in_stdout:
-        # os.system('cls' if os.name == 'nt' else 'clear')
-
         window2image_filter = self.window2image_filter
 
         def callback(caller, timerevent):
@@ -298,17 +286,13 @@ def interaction_callback(
 class FuryStreamInteraction:
     def __init__(
             self, showm,  max_queue_size=50,
-            queue_head_tail_buffer=None,
-            queue_buffer=None, fury_client=None,
             use_raw_array=True, whithout_iren_start=False):
 
         self.showm = showm
         self.iren = self.showm.iren
-        self.fury_client = fury_client
         self.circular_queue = CircularQueue(
             max_size=max_queue_size, dimension=8,
-            head_tail_buffer=queue_head_tail_buffer,
-            buffer=queue_buffer, use_raw_array=use_raw_array)
+            use_raw_array=use_raw_array)
         self._id_timer = None
         self._id_observer = None
         self._interval_timer = None

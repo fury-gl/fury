@@ -6,17 +6,17 @@
   - memory socket communication  
 - [x] MJPEG econding
 - [x] Allows the user to set the encoding inside the widget object
-- [ ] Fix memory release issues with the shared_manager in python >=3.8 inside the Widget object
+- [x] Fix memory release issues with the shared_manager in python >=3.8 inside the Widget object
 - [x] Create a tutorial about shared_memory and widget object
-- [ ] update the examples with multiprocessing to be compatible with MacOs
+- [x] update the examples with multiprocessing to be compatible with MacOs
   - setting multiprocessing.set_start_method('spawn')
 - [ ] Implement all the interactions: double-click, touch etc
+- [x] Remove useless behavior
+  - [x] FuryStreamClient/Interaction reading shared memory blocks
+  - [x] Separated interaction server
+  - [x] Pass circularqueue objects instead of buffer or buffer_names
 - [ ]  Widget object: OFF-ScreenRendering should be optional 
 - [ ] MJPEG and H264 enconding:  allows to decreasse the image resolution of  streaming
-- [ ] Widget object: test the if the drawn port is avilable
+- [x] Widget object: test the if the drawn port is avilable
+- [ ] Fix MJPEG  on ngrok
 - [ ] Fix cleanup on stream client
-  - line 201
-   ```
-   self.showm.iren.RemoveObserver(self._id_observer)
-   AttributeError: 'ShowManager' object has no attribute 'iren
-   ```

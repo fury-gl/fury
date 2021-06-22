@@ -91,7 +91,6 @@ class Widget:
         )
         self.stream_interaction = FuryStreamInteraction(
             self.showm, max_queue_size=self.queue_size,
-            fury_client=self.stream,
             whithout_iren_start=True,
             use_raw_array=False)
 

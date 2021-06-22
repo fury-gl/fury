@@ -182,25 +182,19 @@ class RTCServer(VideoStreamTrack):
 
 
 def web_server(
-        stream_client=None,
         image_buffers=None,
         image_buffer_names=None,
         info_buffer=None,
         info_buffer_name=None,
-        circular_queue=None,
         queue_head_tail_buffer=None,
-        queue_buffer=None,
         queue_head_tail_buffer_name=None,
+        queue_buffer=None,
         queue_buffer_name=None,
         port=8000, host='localhost',
         provides_mjpeg=True,
         provides_webrtc=True,
         avoid_unlink_shared_mem=False,
         ms_jpeg=16):
-
-    if stream_client is not None:
-        image_buffers = stream_client.image_buffers
-        info_buffer = stream_client.info_buffer
 
     use_raw_array = image_buffer_names is None and info_buffer_name is None
 
@@ -223,6 +217,8 @@ def web_server(
             buffer=queue_buffer,
             buffer_name=queue_buffer_name,
             head_tail_buffer_name=queue_head_tail_buffer_name)
+    else:
+        circular_queue = None
 
     app_fury = get_app(
        rtc_server, circular_queue=circular_queue,
@@ -240,21 +236,3 @@ def web_server(
         rtc_server.release()
 
     image_buffer_manager.cleanup()
-
-
-def interaction_server(
-        circular_queue=None,
-        queue_head_tail_buffer=None,
-        queue_buffer=None,
-        port=8080, host='localhost'):
-
-    if circular_queue is None and queue_buffer is not None:
-        circular_queue = CircularQueue(
-            head_tail_buffer=queue_head_tail_buffer,
-            buffers_list=queue_buffer)
-
-    app_fury = get_app(
-        None, circular_queue=circular_queue)
-
-    web.run_app(
-        app_fury, host=host, port=port, ssl_context=None)
