@@ -231,6 +231,7 @@ class CircularQueue:
         # head_tail_arr[2] 0 or 1; if this memory resource it's busy or not
         head_tail_arr = np.array([-1, -1, 0], dtype='int64')
         if head_tail_buffer is None and head_tail_buffer_name is None:
+            self._created_shared_mem = True
             if use_raw_array:
                 head_tail_buffer = multiprocessing.Array(
                     'l', head_tail_arr,
@@ -243,6 +244,7 @@ class CircularQueue:
                 head_tail_buffer_name = head_tail_buffer.name
                 self._unlink_shared_mem = True
         else:
+            self._created_shared_mem = False
             if not use_raw_array:
                 head_tail_buffer = shared_memory.SharedMemory(
                     head_tail_buffer_name)
@@ -261,6 +263,8 @@ class CircularQueue:
             self.head_tail_buffer_repr = np.ndarray(
                 head_tail_arr.shape[0],
                 dtype='int64', buffer=self.head_tail_buffer.buf)
+        if self._created_shared_mem:
+            self.set_head_tail(-1, -1, 0)
 
     @property
     def head(self):
