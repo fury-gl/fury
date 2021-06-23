@@ -50,7 +50,6 @@ def test_client_and_buffer_manager():
         showm.render()
         stream.start(ms_stream)
         showm.render()
-        time.sleep(3)
         # arr = window.snapshot(scene, size=showm.size)
         width, height, frame = img_buffer_manager.get_infos()
         assert width == width_0 and height == height_0
@@ -69,9 +68,12 @@ def test_client_and_buffer_manager():
         img_buffer_manager.cleanup()
         stream.stop()
         stream.cleanup()
-    test(True)
+
+    test(True, 16)
+    test(True, 0)
     if PY_VERSION_8:
-        test(False)
+        test(False, 0)
+        test(False, 16)
 
 
 def test_time_interval():
