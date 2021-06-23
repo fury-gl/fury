@@ -291,15 +291,41 @@ class CircularQueue:
 
 
 class IntervalTimer(object):
-    def __init__(self, interval, function, *args, **kwargs):
-        """
-        Implements a object with the same behavior of setInterval from Js
+    def __init__(self, seconds, callback, *args, **kwargs):
+        """Implements a object with the same behavior of setInterval from Js
+
+        Parameters
+        ----------
+        seconds : float
+            A postive float number. Represents the total amount of
+            seconds between each call
+        callback : function
+            The function to be called
+        *args : args
+            args to be passed to callback
+        **kwargs : kwargs
+            kwargs to be passed to callback
+
+        Examples
+        -------
+        >>> def callback(arr):
+        >>>    arr += [len(arr)]
+        >>> arr = []
+        >>> interval_timer = tools.IntervalTimer(1, callback, arr)
+        >>> interval_timer.start()
+        >>> time.sleep(5)
+        >>> interval_timer.stop()
+        >>> # len(arr) == 5
+
+        Refs
+        ----
         I got this from
         https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
+
         """
         self._timer = None
-        self.interval = interval
-        self.function = function
+        self.seconds = seconds
+        self.callback = callback
         self.args = args
         self.kwargs = kwargs
         self.is_running = False
@@ -309,13 +335,13 @@ class IntervalTimer(object):
     def _run(self):
         self.is_running = False
         self.start()
-        self.function(*self.args, **self.kwargs)
+        self.callback(*self.args, **self.kwargs)
 
     def start(self):
         if not self.is_running:
-            self._timer = Timer(self.interval, self._run)
+            self._timer = Timer(self.seconds, self._run)
 
-            # self.next_call += self.interval
+            # self.next_call += selfseconds.
             # self._timer = Timer(self.next_call - time.time(), self._run)
             self._timer.daemon = True
             self._timer.start()
