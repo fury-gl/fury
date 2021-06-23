@@ -282,8 +282,9 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = ImageBufferManager(
-            info_buffer, image_buffers,
-            info_buffer_name, image_buffer_names, ms_jpeg=ms_jpeg)
+            info_buffer=info_buffer, image_buffers=image_buffers,
+            info_buffer_name=info_buffer_name,
+            image_buffer_names=image_buffer_names, ms_jpeg=ms_jpeg)
 
     if provides_webrtc:
         rtc_server = RTCServer(
