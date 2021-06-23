@@ -84,7 +84,7 @@ class Widget:
 
         # self.showm.initialize()
         self.stream = FuryStreamClient(
-            self.showm, self.window_size,
+            self.showm,
             max_window_size=self.max_window_size,
             use_raw_array=False,
             whithout_iren_start=True

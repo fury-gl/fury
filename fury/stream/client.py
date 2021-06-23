@@ -19,17 +19,18 @@ import time
 class FuryStreamClient:
     def __init__(
             self, showm,
-            window_size=(200, 200),
             max_window_size=None,
             whithout_iren_start=False,
             use_raw_array=True,
             buffer_count=2,
     ):
-        '''
-
+        '''This obj it's responsible to create a StreamClient.
+        A StreamClient which extracts a framebuffer from vtl GL context
+        and writes into it a shared memory resource.
         Parameters
         ----------
-            showm: fury showm manager
+            showm : fury showm manager
+            window_size:
         '''
 
         self._whithout_iren_start = whithout_iren_start
@@ -42,11 +43,11 @@ class FuryStreamClient:
         self.image_reprs = []
         self.buffer_count = buffer_count
         if max_window_size is None:
-            max_window_size = window_size
+            max_window_size = self.showm.size
 
         self.max_size = max_window_size[0]*max_window_size[1]
         self.max_window_size = max_window_size
-        if self.max_size < window_size[0]*window_size[1]:
+        if self.max_size < self.showm.size[0]*self.showm.size[1]:
             raise ValueError(
                 'max_window_size must be greater than window_size')
 
@@ -114,8 +115,6 @@ class FuryStreamClient:
         if self._started:
             self.stop()
 
-        window2image_filter = self.window2image_filter
-
         def callback(caller, timerevent):
             if not self._in_request:
                 if not self.update:
@@ -123,7 +122,7 @@ class FuryStreamClient:
                 self._in_request = True
                 self.window2image_filter.Update()
                 self.window2image_filter.Modified()
-                vtk_image = window2image_filter.GetOutput()
+                vtk_image = self.window2image_filter.GetOutput()
                 vtk_array = vtk_image.GetPointData().GetScalars()
                 # num_components = vtk_array.GetNumberOfComponents()
 
@@ -171,17 +170,16 @@ class FuryStreamClient:
                     None,
                     None)
             else:
-                id_timer = self.showm.add_timer_callback(
-                    True, ms, callback)
+                self._id_observer = self.showm.iren.AddObserver(
+                    "TimerEvent", callback)
+                self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
                 # self.showm.window.AddObserver("TimerEvent", callback)
                 # id_timer = self.showm.window.CreateRepeatingTimer(ms)
-                self._id_timer = id_timer
 
         else:
             # id_observer = self.showm.iren.AddObserver(
-            id_observer = self.showm.iren.AddObserver(
+            self._id_observer = self.showm.iren.AddObserver(
                 'RenderEvent', callback)
-            self._id_observer = id_observer
         self.showm.render()
         self._started = True
         callback(None, None)

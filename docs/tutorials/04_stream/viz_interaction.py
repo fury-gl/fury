@@ -22,8 +22,9 @@ if __name__ == '__main__':
         max_window_size = (600, 600)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
-    ms_interaction = 10
-    ms_stream = 0 
+
+    ms_interaction = 1
+    ms_stream =1 
     use_raw_array = False
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
@@ -68,7 +69,7 @@ if __name__ == '__main__':
     showm.initialize()
 
     stream = FuryStreamClient(
-        showm, window_size, max_window_size=max_window_size,
+        showm, max_window_size=max_window_size,
         use_raw_array=use_raw_array)
     stream_interaction = FuryStreamInteraction(
         showm, max_queue_size=max_queue_size,

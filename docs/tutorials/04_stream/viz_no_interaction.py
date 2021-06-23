@@ -80,7 +80,7 @@ if __name__ == '__main__':
     ms = 0
     showm.initialize()
     stream = FuryStreamClient(
-        showm, window_size=window_size)
+        showm )
     # osx, maybe windows  use this
     # multiprocessing.set_start_method('fork')
  
