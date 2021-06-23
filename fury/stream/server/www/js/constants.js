@@ -1,7 +1,3 @@
-export const urlServer = `${location.protocol}//${location.hostname}${
-  location.port ? ":" + location.port : ""
-}/`;
-
 export const urlParams = new URLSearchParams(window.location.search);
 
 export const weelInterval =
@@ -13,7 +9,7 @@ export const encoding =
   urlParams.get("encoding") === null
     ? "webrtc"
     : urlParams.get("encoding");
-console.log('enconding', encoding)
+
 function getVideoDOMEL(encoding) {
   let videoElId;
   switch (encoding) {
@@ -33,3 +29,12 @@ export const mouseInterval =
   urlParams.get("mouse_interval") === null
     ? 80
     : parseFloat(urlParams.get("mouse_interval"));
+
+
+const socketProtocol =
+  location.protocol === 'https:'
+    ? 'wss'
+    : 'ws';
+
+export const socketAddr = `${socketProtocol}://${location.hostname}:${location.port}/ws`
+export const httpURL = `${location.protocol}://${location.hostname}:${location.port}/`

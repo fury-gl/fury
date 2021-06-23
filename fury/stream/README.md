@@ -18,7 +18,9 @@
 - [ ] Widget object: OFF-ScreenRendering should be optional 
 - [ ] MJPEG and H264 enconding:  allows to decreasse the image resolution of  streaming
 - [x] Widget object: test the if the drawn port is avilable
-- [ ] Fix MJPEG  on ngrok
+- [x] Fix MJPEG  on ngrok
+- [ ] MJPEG Async should be separated from get_image
+  - Get image can be used inside of webrtc streaming if the user request a "print"
 - [x] Fix cleanup on stream client
 - [ ] Monkey-patch solution to the shared_memory issue should be optional in the circular_queue
 - [ ] Tests
@@ -31,6 +33,6 @@
   - [ ] Widget
   - [ ] web_server
   - [ ] aiohttp endpoints
-- [ ] Imrpoves the js/html code
+- [ ] Improves the js/html code
   - [ ] Iframe/No-iframe mode 
   - [ ] js documentation

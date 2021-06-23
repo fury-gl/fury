@@ -1,20 +1,16 @@
 import { startWebRTC } from "/js/webrtc.js";
 import {
-  urlServer,
   weelInterval,
   mouseInterval,
   videoEl,
   urlParams,
   encoding,
+  socketAddr,
+  httpURL
 } from "/js/constants.js";
 
-let addrInteraction =
-  urlParams.get("interaction_addr") === null
-    ? `${location.hostname}:${location.port}`
-    : urlParams.get("interaction_addr");
-
-const urlInteraction = `${location.protocol}://${addrInteraction}/`;
-const clientSocket = new WebSocket(`ws://${addrInteraction}/ws`);
+const clientSocket = new WebSocket(
+  socketAddr);
 
 document.addEventListener("DOMContentLoaded", (event) => {
   if (encoding === "webrtc") {
@@ -25,13 +21,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
     )
   } else if (encoding === 'mjpeg') {
     document.getElementById("startBtn").className = 'hidden'
-    videoEl.src = '/video/mjpeg'
+    videoEl.src = `/video/mjpeg`
   }
   const interaction = urlParams.get("interaction");
   const runningOnIframe = urlParams.get("iframe");
   const backgroundColor = urlParams.get("background");
 
-  console.info("address interaction server", urlInteraction);
   if (interaction === null || interaction == 1) addInteraction(videoEl);
   const videoClass =
     runningOnIframe == null || runningOnIframe == 0
