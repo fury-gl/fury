@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from hashlib import new
 from warnings import warn
 from numbers import Number
 from string import printable
