@@ -20,17 +20,31 @@ class FuryStreamClient:
     def __init__(
             self, showm,
             max_window_size=None,
-            whithout_iren_start=False,
             use_raw_array=True,
-            buffer_count=2,
+            whithout_iren_start=False,
+            num_buffers=2,
     ):
         '''This obj it's responsible to create a StreamClient.
         A StreamClient which extracts a framebuffer from vtl GL context
         and writes into it a shared memory resource.
+
         Parameters
         ----------
             showm : fury showm manager
-            window_size:
+            max_window_size : tuple of ints, optional
+                This will allow resize events inside the FURY window instance
+                Should be greater than window size.
+            use_raw_array : bool, optional
+                If False then FuryStreamClient will use SharedMemory
+                instead of RawArrays. Notice that Python >=3.8 it's necessary
+                to use SharedMemory)
+            whithout_iren_start : bool, optional
+                Sometimes you can't initiate the vtkInteractor instance. For
+                example, inside of a jupyter enviroment.
+            num_buffers : int, optional
+                This set's the number of buffers to be used in the n-buffering
+                techinique.
+
         '''
 
         self._whithout_iren_start = whithout_iren_start
@@ -41,7 +55,7 @@ class FuryStreamClient:
         self.image_buffer_names = []
         self.info_buffer_name = None
         self.image_reprs = []
-        self.buffer_count = buffer_count
+        self.num_buffers = num_buffers
         if max_window_size is None:
             max_window_size = self.showm.size
 
@@ -61,7 +75,7 @@ class FuryStreamClient:
         # 2, 3, width first buffer, height first buffer
         # 4, 5, width second buffer , height second buffer
         info_list = [3, 0]
-        for _ in range(self.buffer_count):
+        for _ in range(self.num_buffers):
             info_list += [self.max_window_size[0]]
             info_list += [self.max_window_size[1]]
         info_list = np.array(
@@ -83,7 +97,7 @@ class FuryStreamClient:
             self.image_buffer_names = None
 
             self.image_reprs = []
-            for _ in range(self.buffer_count):
+            for _ in range(self.num_buffers):
                 buffer = multiprocessing.RawArray(
                     'B', np.random.randint(
                         0, 255,
@@ -93,7 +107,7 @@ class FuryStreamClient:
                 self.image_reprs.append(
                     np.ctypeslib.as_array(buffer))
         else:
-            for _ in range(self.buffer_count):
+            for _ in range(self.num_buffers):
                 bufferSize = max_window_size[0]*max_window_size[1]*3
                 buffer = shared_memory.SharedMemory(
                     create=True, size=bufferSize)
@@ -135,7 +149,7 @@ class FuryStreamClient:
 
                     # N-Buffering
                     next_buffer_index = int(
-                        (self.info_buffer_repr[1]+1) % self.buffer_count)
+                        (self.info_buffer_repr[1]+1) % self.num_buffers)
                     if buffer_size == self.max_size:
                         # if self.use_raw_array:
                         # throws a type error due uint8
@@ -223,6 +237,18 @@ class FuryStreamClient:
 
 def interaction_callback(
         circular_queue, showm, iren, render_after=False):
+    """This callback it's used to invoke vtk interaction events
+    reading those events from a given circular_queue instance
+
+    Parameters:
+    ----------
+        circular_queue : CircularQueue
+        showm : ShowmManager
+        iren : vtkInteractor
+        render_after : bool, optional
+            If render should be called after an
+            dequeue of the circular queue.
+    """
     ts = time.time()*1000
     data = circular_queue.dequeue()
     if data is not None:
@@ -293,6 +319,21 @@ class FuryStreamInteraction:
     def __init__(
             self, showm,  max_queue_size=50,
             use_raw_array=True, whithout_iren_start=False):
+        """
+
+        Parameters
+        ----------
+            showm : ShowmManager
+            max_queue_size : int, optional
+                maximum number of events to be stored.
+            use_raw_array : bool, optional
+                If False then a CircularQueue will be created using
+                SharedMemory instead of RawArrays. Notice that
+                Python >=3.8 it's necessary to use SharedMemory.
+            whithout_iren_start : bool, optional
+                Sometimes you can't initiate the vtkInteractor instance. For
+                example, inside of a jupyter enviroment.
+        """
 
         self.showm = showm
         self.iren = self.showm.iren
