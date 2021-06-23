@@ -2,7 +2,7 @@
 ## TODO
 - [x] Create a buffer manager object
   - For using DRY principle when multiple encondings became availbale
-- [] Widget object compatibility with python versions lower than 3.8
+- [ ] Widget object compatibility with python versions lower than 3.8
   - memory socket communication  
 - [x] MJPEG econding
 - [x] Allows the user to set the encoding inside the widget object
@@ -15,8 +15,22 @@
   - [x] FuryStreamClient/Interaction reading shared memory blocks
   - [x] Separated interaction server
   - [x] Pass circularqueue objects instead of buffer or buffer_names
-- [ ]  Widget object: OFF-ScreenRendering should be optional 
+- [ ] Widget object: OFF-ScreenRendering should be optional 
 - [ ] MJPEG and H264 enconding:  allows to decreasse the image resolution of  streaming
 - [x] Widget object: test the if the drawn port is avilable
 - [ ] Fix MJPEG  on ngrok
-- [ ] Fix cleanup on stream client
+- [x] Fix cleanup on stream client
+- [ ] Monkey-patch solution to the shared_memory issue should be optional in the circular_queue
+- [ ] Tests
+  - [x] StreamClient
+  - [ ] StreamInteraction
+  - [x] IntervalTimer
+  - [x] CircularQueue
+  - [x] Multidimensional Buffer
+  - [x] ImageBufferManager
+  - [ ] Widget
+  - [ ] web_server
+  - [ ] aiohttp endpoints
+- [ ] Imrpoves the js/html code
+  - [ ] Iframe/No-iframe mode 
+  - [ ] js documentation

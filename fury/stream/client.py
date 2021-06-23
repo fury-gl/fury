@@ -70,6 +70,8 @@ class FuryStreamClient:
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
 
+        # info_list stores the information about the n frame buffers
+        # as well the respectives sizes.
         # 0 number of components
         # 1 id buffer
         # 2, 3, width first buffer, height first buffer
@@ -93,6 +95,9 @@ class FuryStreamClient:
                     info_list.shape[0],
                     dtype='uint64', buffer=self.info_buffer.buf)
             self.info_buffer_name = self.info_buffer.name
+
+        # creates the shared memory resources to store the
+        # image buffers
         if use_raw_array:
             self.image_buffer_names = None
 
@@ -248,6 +253,33 @@ def interaction_callback(
         render_after : bool, optional
             If render should be called after an
             dequeue of the circular queue.
+
+    Notes
+    ------
+    The first element of each list stored in the multidimensional buffer
+    from the circular_queue gives the id of the associated vtkEvent.
+
+    id| Event
+    1 | MouseWeelEvent
+    2 | MouseMoveEvent
+    3 | LeftButtonPressEvent
+    4 | LeftButtonReleaseEvent
+    5 | MiddleButtonPressEvent
+    6 | MiddleButtonReleaseEvent
+    7 | RightButtonPressEvent
+    8 | RightButtonReleaseEvent
+
+    In each circular_queue element we have the following informations
+
+    index info
+    0 | event_id
+    1 | weel value
+    2 | X position
+    3 | Y position
+    4 | crtl_key state (1 pressed 0 otherwise)
+    5 | shift_key state (1 pressed 0 otherwise)
+    6 | js event timestamp in mileseconds
+
     """
     ts = time.time()*1000
     data = circular_queue.dequeue()
@@ -292,7 +324,6 @@ def interaction_callback(
             iren.SetEventInformation(
                 newX, newY, ctrl_key, shift_key,
                 chr(0), 0, None)
-
             mouse_actions = {
                 3: showm.iren.LeftButtonPressEvent,
                 4: showm.iren.LeftButtonReleaseEvent,
