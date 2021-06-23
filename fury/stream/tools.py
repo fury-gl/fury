@@ -42,7 +42,32 @@ class MultiDimensionalBuffer:
             self, max_size=None, dimension=8, buffer=None,
             buffer_name=None,
             use_raw_array=True):
+        """This implements a generic multidimensional buffer.
+        This buffer can work with RawArrays or SharedMemory.
+        Stream system uses that to implemenet the CircularQueue
+        with shared memory resources.
 
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory
+        dimension : int, default 8
+        buffer : optional
+            If buffer and buffer name is not passed to __init__
+            then the multidimensional buffer obj will create a new
+            RawArray or SharedMemory object to store the data
+            If buffer is passed than this Obj will read a
+            a already created RawArray
+        buffer_name : optional, default True
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory
+        use_raw_array : bool
+            if use_raw_array is False(True) and both buffer and buffer_name
+            are None, then this Obj will create a float64
+            SharedMemory(RawArray) with dim = dimension*max_size
+
+        """
         use_raw_array = use_raw_array and buffer_name is None
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError("""
@@ -67,7 +92,7 @@ class MultiDimensionalBuffer:
                 self._buffer = buffer
                 buffer_name = buffer.name
                 self._unlink_shared_mem = True
-                print('created', max_size, dimension,  len(buffer.buf))
+                # print('created', max_size, dimension,  len(buffer.buf))
         else:
             if buffer_name is None:
                 max_size = int(len(buffer)//dimension)
@@ -85,7 +110,7 @@ class MultiDimensionalBuffer:
                         dtype='float64', buffer=buffer.buf)
                 self._buffer = buffer
                 self._unlink_shared_mem = False
-                print('read', max_size, dimension,  len(buffer.buf))
+                # print('read', max_size, dimension,  len(buffer.buf))
 
         self.buffer_name = buffer_name
         self.dimension = dimension
@@ -128,6 +153,10 @@ class MultiDimensionalBuffer:
                 self._buffer_repr[start:end] = data
 
     def cleanup(self):
+        """This should be called when SharedMemory (use_raw_array==False)
+        approach is choosed. The aim of that method it's to release
+        the memory resources.
+        """
         if not self.use_raw_array:
             self._buffer.close()
             if self._unlink_shared_mem:
@@ -146,9 +175,47 @@ class MultiDimensionalBuffer:
 class CircularQueue:
     def __init__(
         self, max_size=10, dimension=8,
-            head_tail_buffer=None,  buffer=None,
-            head_tail_buffer_name=None, buffer_name=None,
-            use_raw_array=True):
+            head_tail_buffer=None,
+            head_tail_buffer_name=None,  buffer=None,
+            buffer_name=None, use_raw_array=True):
+        """This implements a MultiDimensional Queue which works with
+        shared memory resources.
+        This can work with RawArrays or SharedMemory.
+        Stream system uses that to implemenet user interactions
+
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory. This will be used to construct the
+            multidimensional buffer
+        dimension : int, default 8
+            This will be used to construct the multidimensional buffer
+        head_tail_buffer : optional
+            If buffer and buffer name is not passed to __init__
+            then this obj will create a new
+            RawArray or SharedMemory object to store head and tail position.
+            If buffer is passed than this Obj will read a
+            a already created RawArray
+        head_tail_buffer_name : optional, default True
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory with the head and tail
+            informations
+        buffer : optional
+            If buffer and buffer name is not passed to __init__
+            then the multidimensional buffer obj will create a new
+            RawArray or SharedMemory object to store the data
+            If buffer is passed than this Obj will read a
+            a already created RawArray
+        buffer_name : optional, default True
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory
+        use_raw_array : bool
+            if use_raw_array is False(True) and both buffer and buffer_name
+            are None, then this Obj will create a int64
+            SharedMemory(RawArray) with dim = dimension*max_size
+
+        """
 
         use_raw_array = use_raw_array and buffer_name is None
         if not PY_VERSION_8 and not use_raw_array:
@@ -156,10 +223,12 @@ class CircularQueue:
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
         buffer = MultiDimensionalBuffer(
-            max_size, dimension, buffer,
-            buffer_name, use_raw_array
+            max_size=max_size, dimension=dimension, buffer=buffer,
+            buffer_name=buffer_name, use_raw_array=use_raw_array
         )
-
+        # head_tail_arr[0] int; head position
+        # head_tail_arr[1] int; tail position
+        # head_tail_arr[2] 0 or 1; if this memory resource it's busy or not
         head_tail_arr = np.array([-1, -1, 0], dtype='int64')
         if head_tail_buffer is None and head_tail_buffer_name is None:
             if use_raw_array:
