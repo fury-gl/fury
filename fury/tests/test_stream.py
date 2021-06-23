@@ -7,7 +7,71 @@ if sys.version_info.minor >= 8:
 else:
     PY_VERSION_8 = False
 
+from fury import actor, window
 from fury.stream import tools
+from fury.stream.server import ImageBufferManager
+from fury.stream.client import FuryStreamClient
+
+
+def test_client_and_buffer_manager():
+    def test(use_raw_array, ms_stream=16):
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=False)
+        img_buffer_manager = ImageBufferManager(
+            stream.info_buffer, stream.info_buffer_name,
+            stream.image_buffers, stream.image_buffer_names
+        )
+        showm.render()
+        stream.start(ms_stream)
+        showm.render()
+        time.sleep(3)
+        # arr = window.snapshot(scene, size=showm.size)
+        width, height, frame = img_buffer_manager.get_infos()
+        assert width == width_0 and height == height_0
+        image = np.frombuffer(
+                    frame,
+                    'uint8')[0:width*height*3].reshape((height, width, 3))
+        # image = np.flipud(image)
+
+        # image = image[:, :, ::-1]
+        # import matplotlib.pyplot as plt
+        # plt.imshow(image)
+        # plt.show()
+        # npt.assert_allclose(arr, image)
+        report = window.analyze_snapshot(image, find_objects=True)
+        npt.assert_equal(report.objects, 3)
+        img_buffer_manager.cleanup()
+        stream.stop()
+        stream.cleanup()
+    test(True)
+    if PY_VERSION_8:
+        test(False)
 
 
 def test_time_interval():
