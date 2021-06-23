@@ -952,6 +952,7 @@ class Panel2D(UI):
         self.opacity = opacity
         self.position = position
         self._drag_offset = None
+        self.on_panel_resize = lambda ui:None
 
     def _setup(self):
         """ Setup this UI component.
@@ -961,7 +962,9 @@ class Panel2D(UI):
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D()
-        self.resize_button = Button2D(icon_fnames=[('resize_icon', 'https://i.imgur.com/RQF9wLB.png')])
+        self.resize_button = Button2D(icon_fnames=[('resize_icon',
+                                                    'https://i.imgur.com/RQF9wLB.png')])
+
         self.add_element(self.background, (0, 0))
         self.add_element(self.resize_button, (0, 0))
 
@@ -971,6 +974,7 @@ class Panel2D(UI):
         self.background.on_window_propagate = self.window_resize
         self.resize_button.on_left_mouse_button_pressed = self.left_button_pressed
         self.resize_button.on_left_mouse_button_dragged = self.corner_resize
+        self.resize_button.on_left_mouse_button_clicked = self.panel_resize_callback
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -1139,6 +1143,11 @@ class Panel2D(UI):
             self.max_size = new_size
             self.resize(np.clip(new_size, 0, None))
         i_ren.force_render()
+    
+    def panel_resize_callback(self, i_ren, panel2d_object):
+        self.on_panel_resize(self)
+        i_ren.forcer_render()
+        i_ren.event.abort()
 
     def re_align(self, window_size_change):
         """ Re-organises the elements in case the window size is changed.
