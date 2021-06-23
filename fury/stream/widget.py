@@ -18,11 +18,21 @@ import socket, errno
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 
-def test_port(domain, port):
+def test_port(host, port):
+    """Check if a given port it's available
+    Parameters
+    ----------
+        host : str
+        port : int
+
+    Returns
+    -------
+        available : bool
+    """
     available = True
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        s.bind((domain, port))
+        s.bind((host, port))
     except socket.error as e:
         if e.errno == errno.EADDRINUSE:
             available = False
@@ -32,24 +42,44 @@ def test_port(domain, port):
 
 class Widget:
     def __init__(
-            self, showm, max_window_size=None, ms_stream=0,
-            domain='localhost', port=None, ms_interaction=10, queue_size=20,
+            self, showm, ms_stream=33,
+            ms_interaction=33, queue_size=20,
+            host='localhost', port=None,
             encoding='mjpeg', ms_jpeg=33):
+        """Thi Obj it's able to run the fury streaming system using the SharedMemory
+        from python multiprocessing.
+
+        showm : ShowmManager
+        ms_stream : float, optional
+            time in mileseconds between each frame buffer update.
+        ms_interaction : float, optional
+            time in mileseconds between each user interaction update.
+        queue_size : int, optional
+            maximum number of user interactions to be stored
+        host : str, optional
+        port : int, optional
+        encoding : str, optional
+            If should use MJPEG streaming or WebRTC
+        ms_jpeg : float, optional
+            This it's used  only if the MJPEG will be used. The
+            ms_jpeg represents the amount of miliseconds between to
+            consecutive calls of the jpeg enconding.
+
+        """
         if not PY_VERSION_8:
             raise ImportError('Python 3.8 or greater is required to use the\
                 widget class')
         self.showm = showm
         self.window_size = self.showm.size
-        if max_window_size is None:
-            max_window_size = (
-                int(self.window_size[0]*(1+0.25)),
-                int(self.window_size[1]*(1+0.25))
-            )
+        max_window_size = (
+            int(self.window_size[0]*(1+0.1)),
+            int(self.window_size[1]*(1+0.1))
+        )
         self.max_window_size = max_window_size
         self.ms_stream = ms_stream
         self.ms_interaction = ms_interaction
         self.ms_jpeg = ms_jpeg
-        self.domain = domain
+        self.host = host
         if port is None:
             port = np.random.randint(7000, 8888)
         self.port = port
@@ -73,7 +103,7 @@ class Widget:
             s += ",provides_mjpeg=True"
             s += f",ms_jpeg={self.ms_jpeg}"
             s += ",provides_webrtc=False"
-        s += f",port={self.port},host='{self.domain}',"
+        s += f",port={self.port},host='{self.host}',"
         s += "avoid_unlink_shared_mem=True"
         s += ")"
         return s
@@ -95,7 +125,7 @@ class Widget:
             use_raw_array=False)
 
         self.stream_interaction.start(ms=self.ms_interaction)
-        self.stream.start(16)
+        self.stream.start(self.ms_stream)
         self._server_started = True
         self.pserver = None
 
@@ -104,10 +134,10 @@ class Widget:
             self.kill_server()
 
         i = 0
-        available = test_port(self.domain, self.port)
+        available = test_port(self.host, self.port)
         while not available and i < 50:
             self.port = np.random.randint(7000, 8888)
-            available = test_port(self.domain, self.port)
+            available = test_port(self.host, self.port)
             i += 1
         if not available:
             return False
@@ -125,7 +155,7 @@ class Widget:
 
     @property
     def url(self):
-        url = f'http://{self.domain}:{self.port}'
+        url = f'http://{self.host}:{self.port}'
         url += f'?iframe=1&encoding={self.encoding}'
         return url
 
