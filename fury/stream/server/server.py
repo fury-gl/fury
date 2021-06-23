@@ -38,12 +38,35 @@ except ImportError:
 
 class ImageBufferManager:
     def __init__(
-            self, use_raw_array=True,
-            info_buffer=None, image_buffers=None,
-            info_buffer_name=None, image_buffer_names=None,
+            self,
+            info_buffer=None, info_buffer_name=None,
+            image_buffers=None, image_buffer_names=None,
             ms_jpeg=33):
-        super().__init__()
+        """This it's responsible to deal with the buffers
+        created by the FuryStreamClient. Extracting a frame
+        or encoding a JPEG image
 
+        Parameters
+        ----------
+        info_buffer : buffer, optional
+            A buffer with the information about the current
+            frame to be streamed and the respective sizes
+            If info_buffer was not passed then it's mandatory
+            pass an info_buffer_name.
+        info_buffer_name : str, optional
+        image_buffers : list of buffers, optional
+            A list of buffers with each one containing a frame.
+            If image_buffers was not passed then it's mandatory
+            pass an image_buffer_names.
+        image_buffer_names : list of str, optional
+        ms_jpeg : float, optional
+            This it's used  only if the MJPEG will be used. The
+            ms_jpeg represents the amount of miliseconds between to
+            consecutive calls of the jpeg enconding.
+
+        """
+
+        use_raw_array = info_buffer_name is None or image_buffer_names is None
         self.use_raw_array = use_raw_array
         self.image = None
         self.ms_jpeg = ms_jpeg
@@ -132,12 +155,19 @@ class ImageBufferManager:
 
 class RTCServer(VideoStreamTrack):
     def __init__(
-            self, image_buffer_manager, use_raw_array=True,
+            self, image_buffer_manager,
     ):
+        """This Obj it's responsible to create the VideoStream for
+        the WebRTCServer
+
+        Parameters:
+        -----------
+        image_buffer_manager : ImageBufferManager
+        """
         super().__init__()
 
         self.frame = None
-        self.use_raw_array = use_raw_array
+        self.use_raw_array = image_buffer_manager.use_raw_array
         self.buffer_manager = image_buffer_manager
 
     async def recv(self):
@@ -195,6 +225,56 @@ def web_server(
         provides_webrtc=True,
         avoid_unlink_shared_mem=False,
         ms_jpeg=16):
+    """
+
+        Parameters
+        ----------
+        image_buffers : list of buffers, optional
+            A list of buffers with each one containing a frame.
+            If image_buffers was not passed then it's mandatory
+            pass the image_buffer_names argument.
+        image_buffer_names : list of str, optional
+        info_buffer : buffer, optional
+            A buffer with the information about the current
+            frame to be streamed and the respective sizes
+            If info_buffer was not passed then it's mandatory
+            pass the info_buffer_name argument.
+        info_buffer_name : str, optional
+        queue_head_tail_buffer : buffer, optional
+            If buffer is passed than this Obj will read a
+            a already created RawArray.
+            You must pass queue_head_tail_buffer or
+            queue_head_tail_buffer_name.
+        queue_head_tail_buffer_name : str, optional
+        queue_buffer : buffer, optional
+            If queue_buffer is passed than this Obj will read a
+            a already created RawArray containing the user interactions
+            events stored in the queue_buffer.
+            You must pass queue_buffer or a queue_buffer_name.
+        buffer_name : str, optional
+        port : int, optional
+            Port to be used by the aiohttp server
+        host : str, optional, default localhost
+            host to be used by the aiohttp server
+        provides_mjpeg : bool, default True
+            If a MJPEG streaming should be available.
+            If True you can consume that through
+            host:port/video/mjpeg
+            or if you want to interact you can consume that
+            through your browser
+            http://host:port?encoding=mjpeg
+        provides_webrtc : bool, default True
+            If a WebRTC streaming should be available.
+            http://host:port
+        avoid_unlink_shared_mem : bool, default False
+            If True, then this will apply a monkey-patch solution to
+            a python>=3.8 core bug
+        ms_jpeg : float, optional
+            This it's used  only if the MJPEG will be used. The
+            ms_jpeg represents the amount of miliseconds between to
+            consecutive calls of the jpeg enconding.
+
+        """
 
     use_raw_array = image_buffer_names is None and info_buffer_name is None
 
@@ -202,12 +282,12 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = ImageBufferManager(
-            use_raw_array, info_buffer, image_buffers,
+            info_buffer, image_buffers,
             info_buffer_name, image_buffer_names, ms_jpeg=ms_jpeg)
 
     if provides_webrtc:
         rtc_server = RTCServer(
-            image_buffer_manager, use_raw_array)
+            image_buffer_manager)
     else:
         rtc_server = None
 

@@ -53,13 +53,13 @@ class MultiDimensionalBuffer:
             If buffer_name or buffer was not passed then max_size
             it's mandatory
         dimension : int, default 8
-        buffer : optional
+        buffer : buffer, optional
             If buffer and buffer name is not passed to __init__
             then the multidimensional buffer obj will create a new
             RawArray or SharedMemory object to store the data
             If buffer is passed than this Obj will read a
             a already created RawArray
-        buffer_name : optional, default True
+        buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory
         use_raw_array : bool
@@ -191,23 +191,23 @@ class CircularQueue:
             multidimensional buffer
         dimension : int, default 8
             This will be used to construct the multidimensional buffer
-        head_tail_buffer : optional
+        head_tail_buffer : buffer, optional
             If buffer and buffer name is not passed to __init__
             then this obj will create a new
             RawArray or SharedMemory object to store head and tail position.
             If buffer is passed than this Obj will read a
             a already created RawArray
-        head_tail_buffer_name : optional, default True
+        head_tail_buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory with the head and tail
             informations
-        buffer : optional
+        buffer : buffer, optional
             If buffer and buffer name is not passed to __init__
             then the multidimensional buffer obj will create a new
             RawArray or SharedMemory object to store the data
             If buffer is passed than this Obj will read a
             a already created RawArray
-        buffer_name : optional, default True
+        buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory
         use_raw_array : bool
