@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from hashlib import new
 from warnings import warn
 from numbers import Number
 from string import printable
@@ -961,12 +962,16 @@ class Panel2D(UI):
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D()
+        self.resize_button = Button2D(icon_fnames=[('resize_icon', 'https://i.imgur.com/RQF9wLB.png')])
         self.add_element(self.background, (0, 0))
+        self.add_element(self.resize_button, (0, 0))
 
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
         self.background.on_window_propagate = self.window_resize
+        self.resize_button.on_left_mouse_button_pressed = self.left_button_pressed
+        self.resize_button.on_left_mouse_button_dragged = self.corner_resize
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -987,9 +992,9 @@ class Panel2D(UI):
         window = scene.GetRenderWindow()  # Get the current window
         i_ren = window.GetInteractor().GetInteractorStyle()
 
-        _window_size = window.GetSize()
-        _panel_size = self.size
-        self.size_ratio = _panel_size / _window_size
+        window_size = window.GetSize()
+        panel_size = self.size
+        self.size_ratio = panel_size / window_size
 
         window.AddObserver('WindowResizeEvent',
                            partial(self.window_event_propagate,
@@ -1010,6 +1015,8 @@ class Panel2D(UI):
             Panel size (width, height) in pixels.
         """
         self.background.resize(size)
+        button_coords = (int(size[0] - self.resize_button.size[0]), 0)
+        self.update_element(self.resize_button, button_coords)
 
     def _set_position(self, coords):
         """ Position the lower-left corner of this UI component.
@@ -1122,6 +1129,17 @@ class Panel2D(UI):
         _new_size = self.size_ratio * _window_size
         self.resize(np.clip(_new_size, 0, self.max_size))
         i_ren.force_render()
+    
+    def corner_resize(self, i_ren, _obj, panel2d_object):
+        if self._drag_offset is not None:
+            click_position = np.array(i_ren.event.position)
+            new_position = click_position - self._drag_offset
+            delta_x = new_position[0] - panel2d_object.position[0] + self.background.size[0]
+            delta_y = new_position[1] - panel2d_object.position[1]
+            new_size = (delta_x, delta_y)
+            self.max_size = new_size
+            self.resize(np.clip(new_size, 0, None))
+        i_ren.force_render()
 
     def re_align(self, window_size_change):
         """ Re-organises the elements in case the window size is changed.
@@ -1129,7 +1147,7 @@ class Panel2D(UI):
         Parameters
         ----------
         window_size_change : (int, int)
-            New window size (width, height) in pixels.
+            New window size (width, height) in pixels. 
         """
         if self.alignment == "left":
             pass
