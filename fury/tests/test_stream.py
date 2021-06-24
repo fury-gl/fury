@@ -11,6 +11,8 @@ from fury import actor, window
 from fury.stream import tools
 from fury.stream.server import ImageBufferManager
 from fury.stream.client import FuryStreamClient
+from fury.stream.constants import _CQUEUE
+from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
 
 
 def test_client_and_buffer_manager():
@@ -165,11 +167,6 @@ def test_circular_queue():
         arr = np.array([1.0, 2, 3, 4])
         ok = queue.enqueue(arr)
         assert ok
-        # check correct multidimensional buffer size 
-        # and queue method
-        # arr_queue = np.zeros((max_size+1)*dimension)
-        # arr_queue[0:dimension] = arr
-        # npt.assert_equal(queue.queue, arr_queue)
         ok = queue.enqueue(arr+1)
         ok = queue.enqueue(arr+2)
         assert ok
@@ -217,4 +214,53 @@ def test_circular_queue():
     if PY_VERSION_8:
         test(False)
         test_comm(False)
+
+
+def test_webserver_and_queue():
+    """This it's to check if the correct
+    envent ids and the data are stored in the
+    correct positions
+    """
+    max_size = 3
+    dimension = _CQUEUE.dimension
+    use_raw_array = True
+
+    # if the weel info it has been stored correctly in the circular queue
+    queue = tools.CircularQueue(
+        max_size, dimension, use_raw_array=use_raw_array)
+    set_weel({'deltaY': .2, 'timestampInMs': 123}, queue)
+    arr_queue = queue.dequeue()
+    arr = np.zeros(dimension)
+    arr[0] = _CQUEUE.event_ids.mouse_weel
+    arr[_CQUEUE.index_info.weel] = 0.2
+    arr[_CQUEUE.index_info.user_timestamp] = 123
+    npt.assert_equal(arr, arr_queue)
+
+    # if the mouse position it has been stored correctly in the circular queue
+    data = {
+        'x': -3, 'y': 2., 'ctrlKey': 1, 'shiftKey': 0, 'timestampInMs': 123}
+    set_mouse(data, queue)
+    arr_queue = queue.dequeue()
+    arr = np.zeros(dimension)
+    arr[0] = _CQUEUE.event_ids.mouse_move
+    arr[_CQUEUE.index_info.x] = data['x']
+    arr[_CQUEUE.index_info.y] = data['y']
+    arr[_CQUEUE.index_info.ctrl] = data['ctrlKey']
+    arr[_CQUEUE.index_info.shift] = data['shiftKey']
+    arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
+    npt.assert_equal(arr, arr_queue)
+
+    data = {
+        'mouseButton': 0, 'on': 1, 'x': -3, 'y': 2., 'ctrlKey': 1,
+        'shiftKey': 0, 'timestampInMs': 123}
+    set_mouse_click(data, queue)
+    arr_queue = queue.dequeue()
+    arr = np.zeros(dimension)
+    arr[0] = _CQUEUE.event_ids.left_btn_press
+    arr[_CQUEUE.index_info.x] = data['x']
+    arr[_CQUEUE.index_info.y] = data['y']
+    arr[_CQUEUE.index_info.ctrl] = data['ctrlKey']
+    arr[_CQUEUE.index_info.shift] = data['shiftKey']
+    arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
+    npt.assert_equal(arr, arr_queue)
 
