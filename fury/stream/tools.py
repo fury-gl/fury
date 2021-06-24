@@ -301,14 +301,9 @@ class CircularQueue:
     def unlock(self):
         self.head_tail_buffer_repr[2] = 0
 
-    @property
-    def queue(self):
-        if self.use_raw_array:
-            return np.frombuffer(
-                self.buffer._buffer.get_obj(), 'float64').reshape(
-                    (self.max_size, self.dimension))
-        else:
-            return self.buffer._buffer_repr
+    # @property
+    # def queue(self):
+    #     return self.buffer._buffer_repr
 
     def enqueue(self, data):
         # with self.head_tail_buffer.get_lock():
