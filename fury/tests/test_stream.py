@@ -87,6 +87,7 @@ def test_time_interval():
     old_len = len(arr)
     assert len(arr) > 0
     interval_timer.stop()
+    time.sleep(1)
     old_len = len(arr)
     time.sleep(2)
     # check if the stop method worked
@@ -164,6 +165,11 @@ def test_circular_queue():
         arr = np.array([1.0, 2, 3, 4])
         ok = queue.enqueue(arr)
         assert ok
+        # check correct multidimensional buffer size 
+        # and queue method
+        # arr_queue = np.zeros((max_size+1)*dimension)
+        # arr_queue[0:dimension] = arr
+        # npt.assert_equal(queue.queue, arr_queue)
         ok = queue.enqueue(arr+1)
         ok = queue.enqueue(arr+2)
         assert ok
@@ -185,7 +191,30 @@ def test_circular_queue():
         arr_recovered = queue.dequeue()
         assert arr_recovered is None
         queue.cleanup()
+
+    def test_comm(use_raw_array=True):
+        max_size = 3
+        dimension = 4
+        queue = tools.CircularQueue(
+            max_size, dimension, use_raw_array=use_raw_array)
+        queue_sh = tools.CircularQueue(
+            dimension=dimension, use_raw_array=use_raw_array,
+            head_tail_buffer=queue.head_tail_buffer,
+            head_tail_buffer_name=queue.head_tail_buffer_name,
+            buffer=queue.buffer.buffer,
+            buffer_name=queue.buffer.buffer_name,)
+        # init as empty queue
+        assert queue_sh.max_size == max_size
+        assert queue.head == -1 and queue.tail == -1
+        assert queue.dequeue() is None
+        arr = np.array([1.0, 2, 3, 4])
+        ok = queue.enqueue(arr)
+        assert ok
+        queue_sh.cleanup()
+        queue.cleanup()
     test(True)
+    test_comm(True)
     if PY_VERSION_8:
         test(False)
+        test_comm(False)
 
