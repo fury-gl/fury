@@ -11,6 +11,7 @@ else:
 import numpy as np
 
 from fury.stream.tools import CircularQueue, IntervalTimer
+from fury.stream.constants import _CQUEUE
 
 import logging
 import time
@@ -276,7 +277,7 @@ def interaction_callback(
     1 | weel value
     2 | X position
     3 | Y position
-    4 | crtl_key state (1 pressed 0 otherwise)
+    4 | ctrl_key state (1 pressed 0 otherwise)
     5 | shift_key state (1 pressed 0 otherwise)
     6 | js event timestamp in mileseconds
 
@@ -284,20 +285,21 @@ def interaction_callback(
     ts = time.time()*1000
     data = circular_queue.dequeue()
     if data is not None:
-        event_id = data[0]
-        user_timestamp = data[6]
+        user_event_id = data[0]
+        user_timestamp = data[_CQUEUE.index_info.user_timestamp]
         logging.info(
             'Interaction: time to dequeue ' +
             f'{ts-user_timestamp:.2f} ms')
 
         ts = time.time()*1000
-        newX = int(showm.size[0]*data[2])
-        newY = int(showm.size[1]*data[3])
-        ctrl_key = int(data[4])
-        shift_key = int(data[5])
+        newX = int(showm.size[0]*data[_CQUEUE.index_info.x])
+        newY = int(showm.size[1]*data[_CQUEUE.index_info.y])
+        ctrl_key = int(data[_CQUEUE.index_info.ctrl])
+        shift_key = int(data[_CQUEUE.index_info.shift])
         newY = showm.size[1] - newY
-        if event_id == 1:
-            zoomFactor = 1.0 - data[1] / 1000.0
+        event_ids = _CQUEUE.event_ids
+        if user_event_id == event_ids.mouse_weel:
+            zoomFactor = 1.0 - data[_CQUEUE.index_info.weel] / 1000.0
             camera = showm.scene.GetActiveCamera()
             fp = camera.GetFocalPoint()
             pos = camera.GetPosition()
@@ -314,25 +316,25 @@ def interaction_callback(
 
             showm.window.Modified()
 
-        elif event_id == 2:
+        elif user_event_id == event_ids.mouse_move:
             iren.SetEventInformation(
                 newX, newY, ctrl_key, shift_key, chr(0), 0, None)
 
             iren.MouseMoveEvent()
 
-        elif event_id in [3, 4, 5, 6, 7, 8]:
+        elif event_ids.mouse_ids:
             iren.SetEventInformation(
                 newX, newY, ctrl_key, shift_key,
                 chr(0), 0, None)
             mouse_actions = {
-                3: showm.iren.LeftButtonPressEvent,
-                4: showm.iren.LeftButtonReleaseEvent,
-                5: showm.iren.MiddleButtonPressEvent,
-                6: showm.iren.MiddleButtonReleaseEvent,
-                7: showm.iren.RightButtonPressEvent,
-                8: showm.iren.RightButtonReleaseEvent,
+                event_ids.left_btn_press: iren.LeftButtonPressEvent,
+                event_ids.left_btn_release: iren.LeftButtonReleaseEvent,
+                event_ids.middle_btn_press: iren.MiddleButtonPressEvent,
+                event_ids.middle_btn_release: iren.MiddleButtonReleaseEvent,
+                event_ids.right_btn_press: iren.RightButtonPressEvent,
+                event_ids.right_btn_release: iren.RightButtonReleaseEvent,
             }
-            mouse_actions[event_id]()
+            mouse_actions[user_event_id]()
             showm.window.Modified()
         logging.info(
             'Interaction: time to peform event ' +
@@ -369,7 +371,7 @@ class FuryStreamInteraction:
         self.showm = showm
         self.iren = self.showm.iren
         self.circular_queue = CircularQueue(
-            max_size=max_queue_size, dimension=8,
+            max_size=max_queue_size, dimension=_CQUEUE.dimension,
             use_raw_array=use_raw_array)
         self._id_timer = None
         self._id_observer = None

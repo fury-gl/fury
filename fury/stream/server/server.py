@@ -18,6 +18,7 @@ import numpy as np
 
 from fury.stream.server.async_app import get_app
 from fury.stream.tools import CircularQueue
+from fury.stream.constants import _CQUEUE
 
 try:
     import pyximport
@@ -294,6 +295,7 @@ def web_server(
 
     if queue_buffer is not None or queue_buffer_name is not None:
         circular_queue = CircularQueue(
+            dimension=_CQUEUE.dimension,
             head_tail_buffer=queue_head_tail_buffer,
             buffer=queue_buffer,
             buffer_name=queue_buffer_name,

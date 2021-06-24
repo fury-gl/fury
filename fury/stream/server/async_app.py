@@ -15,6 +15,7 @@ from aiortc.contrib.media import MediaRelay
 import logging
 import time
 
+from fury.stream.constants import _CQUEUE_EVENT_IDs as EVENT_IDs
 logging.basicConfig(level=logging.ERROR)
 pcs = set()
 
@@ -33,6 +34,13 @@ async def javascript(request, **kwargs):
 
 
 async def mjpeg_handler(request):
+    """This async function it's responsible
+    to create the MJPEG streaming.
+
+    Notes:
+    ------
+    endpoint : /video/mjpeg
+    """
     my_boundary = 'image-boundary'
     response = web.StreamResponse(
         status=200,
@@ -105,7 +113,11 @@ def set_weel(data, circular_queue):
     deltaY = float(data['deltaY'])
     user_envent_ms = float(data['timestampInMs'])
     ok = circular_queue.enqueue(
-        np.array([1, deltaY, 0, 0, 0, 0, user_envent_ms, 0], dtype='float64'))
+        np.array(
+            [
+                EVENT_IDs.mouse_weel,
+                deltaY, 0, 0, 0, 0, user_envent_ms, 0
+            ], dtype='float64'))
     ts = time.time()*1000
     logging.info(f'WEEL Time until enqueue {ts-user_envent_ms:.2f} ms')
     return ok
@@ -121,7 +133,10 @@ def set_mouse(data, circular_queue):
     circular_queue = circular_queue
     ok = circular_queue.enqueue(
         np.array(
-            [2, 0, x, y,  ctrl_key, shift_key, user_envent_ms, 0],
+            [
+                EVENT_IDs.mouse_move,
+                0, x, y,  ctrl_key, shift_key, user_envent_ms, 0
+            ],
             dtype='float64'
         )
     )
@@ -130,12 +145,14 @@ def set_mouse(data, circular_queue):
 
 
 def set_mouse_click(data, circular_queue):
-    # mouse left click 3
-    # mouse left release 4
-    # mouse right click 7
-    # mouse right release 8
-    # mouse middle click 5
-    # mouse middle release 6
+    """
+    3 | LeftButtonPressEvent
+    4 | LeftButtonReleaseEvent
+    5 | MiddleButtonPressEvent
+    6 | MiddleButtonReleaseEvent
+    7 | RightButtonPressEvent
+    8 | RightButtonReleaseEvent
+    """
     on = 0 if data['on'] == 1 else 1
     ctrl = int(data['ctrlKey'])
     shift = int(data['shiftKey'])

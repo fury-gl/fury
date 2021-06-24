@@ -174,7 +174,7 @@ class MultiDimensionalBuffer:
 
 class CircularQueue:
     def __init__(
-        self, max_size=10, dimension=8,
+        self, max_size=10, dimension=6,
             head_tail_buffer=None,
             head_tail_buffer_name=None,  buffer=None,
             buffer_name=None, use_raw_array=True):
