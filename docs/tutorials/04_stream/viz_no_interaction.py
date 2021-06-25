@@ -1,5 +1,5 @@
 import multiprocessing
-# if this example it's not working for you and you're using MacOs 
+# if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
 from os.path import join as pjoin
@@ -14,27 +14,28 @@ from fury.stream.server import web_server
 
 if __name__ == '__main__':
 
-
-    ##############################################################################
+    ###########################################################################
     # First we will set the resolution which it'll be used by the streamer
 
     window_size = (400, 400)
 
-  
     files, folder = fetch_viz_wiki_nw()
     categories_file, edges_file, positions_file = sorted(files.keys())
     positions = np.loadtxt(pjoin(folder, positions_file))
     categories = np.loadtxt(pjoin(folder, categories_file), dtype=str)
     edges = np.loadtxt(pjoin(folder, edges_file), dtype=int)
-    category2index = {category: i
-                    for i, category in enumerate(np.unique(categories))}
+    category2index = {
+            category: i
+            for i, category in enumerate(np.unique(categories))}
 
     index2category = np.unique(categories)
 
-    categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
+    categoryColors = cmap.distinguishable_colormap(
+        nb_colors=len(index2category))
 
-    colors = np.array([categoryColors[category2index[category]]
-                    for category in categories])
+    colors = np.array([
+        categoryColors[category2index[category]]
+        for category in categories])
     radii = 1 + np.random.rand(len(positions))
 
     edgesPositions = []
@@ -52,10 +53,11 @@ if __name__ == '__main__':
         primitives='sphere',
         scales=radii*0.5,)
 
-    lines_actor = actor.line(edgesPositions,
-                            colors=edgesColors,
-                            opacity=0.1,
-                            )
+    lines_actor = actor.line(
+        edgesPositions,
+        colors=edgesColors,
+        opacity=0.1,
+    )
     scene = window.Scene()
 
     scene.add(lines_actor)
@@ -73,17 +75,14 @@ if __name__ == '__main__':
     )
 
     from fury.stream.client import FuryStreamClient
-    ##############################################################################
+    ###########################################################################
     # ms define the amount of mileseconds that will be used in the timer event.
-    # Otherwise, if ms it's equal to zero the shared memory it's updated in each 
-    # render event
+
     ms = 0
     showm.initialize()
     stream = FuryStreamClient(
-        showm )
-    # osx, maybe windows  use this
-    # multiprocessing.set_start_method('fork')
- 
+        showm, use_raw_array=True)
+
     p = multiprocessing.Process(
         target=web_server,
         args=(

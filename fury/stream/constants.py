@@ -31,7 +31,9 @@ _CQUEUE_EVENT_IDs = namedtuple(
 )(**_event_ids)
 
 # In each circular_queue element we have the following informations
+# ----------
 # index info
+# -----| ----
 # 0 | event_id (int)
 # 1 | weel value (float)
 # 2 | X position (float)

@@ -1,4 +1,4 @@
-# if this example it's not working for you and you're using MacOs 
+# if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
 from fury import actor, window
@@ -10,8 +10,7 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 import logging
 logging.root.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO)
-# note, if python version is equal or higher than 3.8
-# uses shared memory approach
+
 if __name__ == '__main__':
     use_high_res = False
     if use_high_res:
@@ -24,8 +23,8 @@ if __name__ == '__main__':
     # right after the rendering
 
     ms_interaction = 1
-    ms_stream =1 
-    use_raw_array = False
+    ms_stream = 0
+    use_raw_array = True
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
     ######################################################################
@@ -50,7 +49,6 @@ if __name__ == '__main__':
         centers2, opacity=.5, radii=.4, colors=colors)
     scene = window.Scene()
 
-    # scene.add(lines_actor)
     scene.add(actors)
     scene.add(actors2)
 
@@ -74,24 +72,18 @@ if __name__ == '__main__':
     stream_interaction = FuryStreamInteraction(
         showm, max_queue_size=max_queue_size,
         use_raw_array=use_raw_array)
-    # linux
-    # p = multiprocessing.Process(
-    #     target=webrtc_server,
-    #     args=(stream, None, None, circular_queue))
-    # osx,
+
     if use_raw_array:
-        print('use raw array')
         p = multiprocessing.Process(
             target=web_server,
             args=(
                 stream.image_buffers,
-                stream.image_buffer_names,
+                None,
                 stream.info_buffer,
-                stream.info_buffer_name,
+                None,
                 stream_interaction.circular_queue.head_tail_buffer,
                 None,
                 stream_interaction.circular_queue.buffer._buffer,
-                None,
                 None,
                 8000,
                 'localhost',
@@ -105,9 +97,9 @@ if __name__ == '__main__':
         p = multiprocessing.Process(
             target=web_server,
             args=(
-                stream.image_buffers,
+                None,
                 stream.image_buffer_names,
-                stream.info_buffer,
+                None,
                 stream.info_buffer_name,
                 None,
                 stream_interaction.circular_queue.head_tail_buffer_name,

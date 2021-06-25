@@ -25,25 +25,25 @@ class FuryStreamClient:
             whithout_iren_start=False,
             num_buffers=2,
     ):
-        '''This obj it's responsible to create a StreamClient.
-        A StreamClient which extracts a framebuffer from vtl GL context
-        and writes into it a shared memory resource.
+        '''This obj is responsible to create a StreamClient.
+        A StreamClient extracts a framebuffer from the OpenGL context
+        and writes into a shared memory resource.
 
         Parameters
         ----------
-            showm : fury showm manager
+            showm : FuryShowmManager
             max_window_size : tuple of ints, optional
-                This will allow resize events inside the FURY window instance
-                Should be greater than window size.
+                This allows resize events inside of the FURY window instance.
+                Should be greater than the window size.
             use_raw_array : bool, optional
                 If False then FuryStreamClient will use SharedMemory
-                instead of RawArrays. Notice that Python >=3.8 it's necessary
+                instead of RawArrays. Notice that Python >=3.8 it's a 
+                requirement
                 to use SharedMemory)
             whithout_iren_start : bool, optional
-                Sometimes you can't initiate the vtkInteractor instance. For
-                example, inside of a jupyter enviroment.
+                Sometimes you can't initiate the vtkInteractor instance.
             num_buffers : int, optional
-                This set's the number of buffers to be used in the n-buffering
+                Number of buffers to be used in the n-buffering
                 techinique.
 
         '''
@@ -68,8 +68,7 @@ class FuryStreamClient:
 
         if not PY_VERSION_8 and not use_raw_array:
             raise ValueError("""
-                In order to use the SharedMemory approach
-                you should have to use python 3.8 or higher""")
+               SharedMemory works only in python 3.8 or higher""")
 
         # info_list stores the information about the n frame buffers
         # as well the respectives sizes.
@@ -243,8 +242,8 @@ class FuryStreamClient:
 
 def interaction_callback(
         circular_queue, showm, iren, render_after=False):
-    """This callback it's used to invoke vtk interaction events
-    reading those events from a given circular_queue instance
+    """This callback is used to invoke vtk interaction events
+    reading those events from the provided circular_queue instance
 
     Parameters:
     ----------
@@ -252,35 +251,8 @@ def interaction_callback(
         showm : ShowmManager
         iren : vtkInteractor
         render_after : bool, optional
-            If render should be called after an
-            dequeue of the circular queue.
-
-    Notes
-    ------
-    The first element of each list stored in the multidimensional buffer
-    from the circular_queue gives the id of the associated vtkEvent.
-
-    id| Event
-    1 | MouseWeelEvent
-    2 | MouseMoveEvent
-    3 | LeftButtonPressEvent
-    4 | LeftButtonReleaseEvent
-    5 | MiddleButtonPressEvent
-    6 | MiddleButtonReleaseEvent
-    7 | RightButtonPressEvent
-    8 | RightButtonReleaseEvent
-
-    In each circular_queue element we have the following informations
-
-    index info
-    0 | event_id
-    1 | weel value
-    2 | X position
-    3 | Y position
-    4 | ctrl_key state (1 pressed 0 otherwise)
-    5 | shift_key state (1 pressed 0 otherwise)
-    6 | js event timestamp in mileseconds
-
+            If the render method should be called after an
+            dequeue
     """
     ts = time.time()*1000
     data = circular_queue.dequeue()
@@ -362,10 +334,9 @@ class FuryStreamInteraction:
             use_raw_array : bool, optional
                 If False then a CircularQueue will be created using
                 SharedMemory instead of RawArrays. Notice that
-                Python >=3.8 it's necessary to use SharedMemory.
+                Python >=3.8 it's requirement to use SharedMemory.
             whithout_iren_start : bool, optional
-                Sometimes you can't initiate the vtkInteractor instance. For
-                example, inside of a jupyter enviroment.
+                Set that to True if you can't initiate the vtkInteractor instance.
         """
 
         self.showm = showm

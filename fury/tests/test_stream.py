@@ -105,23 +105,17 @@ def test_multidimensional_buffer():
             max_size, dimension, use_raw_array=use_raw_array)
         m_buffer[1] = np.array([.2, .3, .4, .5])
 
-        # check if the dimension it's correct
         assert len(m_buffer[0]) == dimension
-        # check if the max_size it's correct
         assert len(m_buffer[max_size]) == 4 and len(m_buffer[max_size+1]) == 0
-        # check values
         npt.assert_equal(np.array([.2, .3, .4, .5]), m_buffer[1])
-        # cleanup
         m_buffer.cleanup()
 
-    # rawarray
     test(True)
     if PY_VERSION_8:
         test(False)
 
-    # test if the communication it's ok
     def test_comm(use_raw_array=True):
-        # creates a raw_array
+        # test the communication between two MultiDimensionalBuffers
         max_size = 3
         dimension = 4
         m_buffer_org = tools.MultiDimensionalBuffer(
@@ -135,21 +129,17 @@ def test_multidimensional_buffer():
 
         m_buffer_0[1] = np.array([.2, .3, .4, .5])
 
-        # check if the dimension it's correct
         assert len(m_buffer_org[0]) == len(m_buffer_0[0])
-        # check if the max_size it's correct
         assert len(m_buffer_org[max_size]) == 4 and\
             len(m_buffer_org[max_size+1]) == 0
         # check values
         npt.assert_equal(np.array([.2, .3, .4, .5]), m_buffer_org[1])
-        # check it the correct max_size was recovered
+        # check if the correct max_size was recovered
         assert m_buffer_org.max_size == m_buffer_0.max_size
         assert m_buffer_org.dimension == m_buffer_0.dimension
-        # cleanup
         m_buffer_0.cleanup()
         m_buffer_org.cleanup()
 
-    # rawarray
     test_comm(True)
     if PY_VERSION_8:
         test(False)
@@ -173,7 +163,6 @@ def test_circular_queue():
         # the ciruclar queue must be full (size 3)
         ok = queue.enqueue(arr+3)
         assert not ok
-        # remember, python arrays starts at 0
         assert queue.head == 0 and queue.tail == 2
         arr_recovered = queue.dequeue()
         # it's a FIFO
@@ -225,7 +214,7 @@ def test_webserver_and_queue():
     dimension = _CQUEUE.dimension
     use_raw_array = True
 
-    # if the weel info it has been stored correctly in the circular queue
+    # if the weel info has been stored correctly in the circular queue
     queue = tools.CircularQueue(
         max_size, dimension, use_raw_array=use_raw_array)
     set_weel({'deltaY': .2, 'timestampInMs': 123}, queue)
@@ -236,7 +225,7 @@ def test_webserver_and_queue():
     arr[_CQUEUE.index_info.user_timestamp] = 123
     npt.assert_equal(arr, arr_queue)
 
-    # if the mouse position it has been stored correctly in the circular queue
+    # if the mouse position has been stored correctly in the circular queue
     data = {
         'x': -3, 'y': 2., 'ctrlKey': 1, 'shiftKey': 0, 'timestampInMs': 123}
     set_mouse(data, queue)
@@ -263,4 +252,5 @@ def test_webserver_and_queue():
     arr[_CQUEUE.index_info.shift] = data['shiftKey']
     arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
     npt.assert_equal(arr, arr_queue)
+    queue.cleanup()
 
