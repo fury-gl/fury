@@ -2,6 +2,9 @@ import time
 import numpy as np
 import numpy.testing as npt
 import sys
+import asyncio
+import pytest
+
 if sys.version_info.minor >= 8:
     PY_VERSION_8 = True
 else:
@@ -9,9 +12,82 @@ else:
 
 from fury import actor, window
 from fury.stream import tools
-from fury.stream.client import FuryStreamClient
+from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
+from fury.stream.server.server import RTCServer
+from fury.stream.widget import Widget
+
+
+@pytest.fixture
+def loop():
+    """
+    Refs
+    ----
+     https://promity.com/2020/06/03/testing-asynchronous-code-in-python/
+    """
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
+
+
+def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
+    def test(use_raw_array, ms_stream=16):
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=False)
+        if use_raw_array:
+            img_buffer_manager = tools.RawArrayImageBufferManager(
+                info_buffer=stream.img_manager.info_buffer,
+                image_buffers=stream.img_manager.image_buffers
+            )
+        else:
+            img_buffer_manager = tools.SharedMemImageBufferManager(
+                info_buffer_name=stream.img_manager.info_buffer_name,
+                image_buffer_names=stream.img_manager.image_buffer_names
+            )
+
+        rtc_server = RTCServer(img_buffer_manager)
+        showm.render()
+        stream.start(ms_stream)
+        showm.render()
+        frame = loop.run_until_complete(rtc_server.recv())
+        assert frame.width == width_0 and frame.height == height_0
+        rtc_server.release()
+        img_buffer_manager.cleanup()
+        stream.stop()
+        stream.cleanup()
+
+    test(True, 16)
+    test(True, 0)
+    if PY_VERSION_8:
+        test(False, 0)
+        test(False, 16)
 
 
 def test_client_and_buffer_manager():
@@ -54,10 +130,12 @@ def test_client_and_buffer_manager():
                 info_buffer_name=stream.img_manager.info_buffer_name,
                 image_buffer_names=stream.img_manager.image_buffer_names
             )
+
         showm.render()
         stream.start(ms_stream)
         showm.render()
-        # arr = window.snapshot(scene, size=showm.size)
+        # test jpeg method
+        img_buffer_manager.get_jpeg()
         width, height, frame = img_buffer_manager.get_current_frame()
         assert width == width_0 and height == height_0
         image = np.frombuffer(
@@ -81,6 +159,104 @@ def test_client_and_buffer_manager():
     if PY_VERSION_8:
         test(False, 0)
         test(False, 16)
+
+
+def test_interaction():
+    def test(use_raw_array, ms_stream=16):
+        width_0 = 300
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=True)
+        stream_interaction = FuryStreamInteraction(
+            max_queue_size=500,
+            showm=showm, use_raw_array=use_raw_array, whithout_iren_start=True)
+
+        showm.render()
+        # test jpeg method
+        for _ in range(10):
+            stream_interaction.circular_queue.enqueue(
+                np.array(
+                        [_CQUEUE.event_ids.mouse_weel, 1, 0, 0, 0, 0, .1, 0],
+                        dtype='float64'
+                )
+            )
+        for _ in range(10):
+            stream_interaction.circular_queue.enqueue(
+                np.array(
+                        [_CQUEUE.event_ids.mouse_weel, -1, 0, 0, 0, 0, .1, 0],
+                        dtype='float64'
+                )
+            )
+        dxs = []
+        for shift, ctrl in ((0, 1), (1, 0), (0, 0)):
+            x = width_0/2
+            y = height_0/2
+            stream_interaction.circular_queue.enqueue(
+                np.array(
+                        [_CQUEUE.event_ids.left_btn_press, 0,
+                            x, y, ctrl, shift, .1, 0],
+                        dtype='float64'
+                )
+            )
+            for i in range(50):
+                if ctrl == 1:
+                    x = x+i/50*width_0/4
+                else:
+                    if i < 25:
+                        dx = +i/50
+                        dxs.append(dx)
+                        x = x - dx
+                    else:
+                        x = x + dxs[::-1][i-25]
+                stream_interaction.circular_queue.enqueue(
+                    np.array(
+                            [_CQUEUE.event_ids.mouse_move, 0,
+                                x, y, ctrl, shift, .1, 0],
+                            dtype='float64'
+                    )
+                )
+            stream_interaction.circular_queue.enqueue(
+                np.array(
+                        [_CQUEUE.event_ids.left_btn_release, 0,
+                            x, y, ctrl, shift, .1, 0],
+                        dtype='float64'
+                )
+            )
+
+        stream_interaction.start(ms_stream)
+        while stream_interaction.circular_queue.head != -1:
+            showm.render()
+            time.sleep(.01)
+        stream_interaction.stop()
+        stream.stop()
+        stream.cleanup()
+        stream_interaction.cleanup()
+
+    test(True, 8)
 
 
 def test_time_interval():
@@ -135,7 +311,7 @@ def test_multidimensional_buffer():
             )
             m_buffer_0 = tools.RawArrayMultiDimensionalBuffer(
                 max_size, dimension, buffer=m_buffer_org.buffer)
-        else: 
+        else:
             m_buffer_org = tools.SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension
             )
@@ -292,3 +468,34 @@ def test_webserver_and_queue():
     npt.assert_equal(arr, arr_queue)
     queue.cleanup()
 
+
+def test_widget():
+    if not PY_VERSION_8:
+        return
+    width_0 = 100
+    height_0 = 200
+
+    centers = np.array([
+        [0, 0, 0],
+        [-1, 0, 0],
+        [1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+    actors = actor.sdf(
+        centers, primitives='sphere', colors=colors, scales=2)
+
+    scene = window.Scene()
+    scene.add(actors)
+    showm = window.ShowManager(scene, reset_camera=False, size=(
+        width_0, height_0), order_transparent=False,
+    )
+    widget = Widget(showm)
+    widget.start()
+    time.sleep(2)
+    widget.return_iframe()
+    widget.stop()
