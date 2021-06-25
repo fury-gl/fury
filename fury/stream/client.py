@@ -10,7 +10,8 @@ else:
 
 import numpy as np
 
-from fury.stream.tools import CircularQueue, IntervalTimer
+from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue,\
+    IntervalTimer
 from fury.stream.constants import _CQUEUE
 
 import logging
@@ -336,14 +337,21 @@ class FuryStreamInteraction:
                 SharedMemory instead of RawArrays. Notice that
                 Python >=3.8 it's requirement to use SharedMemory.
             whithout_iren_start : bool, optional
-                Set that to True if you can't initiate the vtkInteractor instance.
+                Set that to True if you can't initiate the vtkInteractor 
+                instance.
         """
 
         self.showm = showm
         self.iren = self.showm.iren
-        self.circular_queue = CircularQueue(
-            max_size=max_queue_size, dimension=_CQUEUE.dimension,
-            use_raw_array=use_raw_array)
+        if use_raw_array:
+            self.circular_queue = ArrayCircularQueue(
+                max_size=max_queue_size, dimension=_CQUEUE.dimension
+            )
+        else:
+            self.circular_queue = SharedMemCircularQueue(
+                max_size=max_queue_size, dimension=_CQUEUE.dimension
+            )
+
         self._id_timer = None
         self._id_observer = None
         self._interval_timer = None

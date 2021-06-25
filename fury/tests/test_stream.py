@@ -130,7 +130,7 @@ def test_multidimensional_buffer():
             )
             m_buffer_0 = tools.RawArrayMultiDimensionalBuffer(
                 max_size, dimension, buffer=m_buffer_org.buffer)
-        else:       
+        else: 
             m_buffer_org = tools.SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension
             )
@@ -159,8 +159,14 @@ def test_circular_queue():
     def test(use_raw_array=True):
         max_size = 3
         dimension = 4
-        queue = tools.CircularQueue(
-            max_size, dimension, use_raw_array=use_raw_array)
+        if use_raw_array:
+            queue = tools.ArrayCircularQueue(
+                max_size=max_size, dimension=dimension
+            )
+        else:
+            queue = tools.SharedMemCircularQueue(
+                max_size=max_size, dimension=dimension
+            )
         # init as empty queue
         assert queue.head == -1 and queue.tail == -1
         assert queue.dequeue() is None
@@ -191,16 +197,27 @@ def test_circular_queue():
     def test_comm(use_raw_array=True):
         max_size = 3
         dimension = 4
-        queue = tools.CircularQueue(
-            max_size, dimension, use_raw_array=use_raw_array)
-        queue_sh = tools.CircularQueue(
-            dimension=dimension, use_raw_array=use_raw_array,
-            head_tail_buffer=queue.head_tail_buffer,
-            head_tail_buffer_name=queue.head_tail_buffer_name,
-            buffer=queue.buffer.buffer,
-            buffer_name=queue.buffer.buffer_name,)
+
+        if use_raw_array:
+            queue = tools.ArrayCircularQueue(
+                max_size=max_size, dimension=dimension
+            )
+            queue_sh = tools.ArrayCircularQueue(
+                max_size=max_size, dimension=dimension,
+                head_tail_buffer=queue.head_tail_buffer,
+                buffer=queue.buffer.buffer
+            )
+        else:
+            queue = tools.SharedMemCircularQueue(
+                max_size=max_size, dimension=dimension
+            )
+            queue_sh = tools.SharedMemCircularQueue(
+                max_size=max_size, dimension=dimension,
+                head_tail_buffer_name=queue.head_tail_buffer_name,
+                buffer_name=queue.buffer.buffer_name
+            )
         # init as empty queue
-        assert queue_sh.max_size == max_size
+        assert queue_sh.buffer.max_size == max_size
         assert queue.head == -1 and queue.tail == -1
         assert queue.dequeue() is None
         arr = np.array([1.0, 2, 3, 4])
@@ -225,8 +242,14 @@ def test_webserver_and_queue():
     use_raw_array = True
 
     # if the weel info has been stored correctly in the circular queue
-    queue = tools.CircularQueue(
-        max_size, dimension, use_raw_array=use_raw_array)
+    if use_raw_array:
+        queue = tools.ArrayCircularQueue(
+            max_size=max_size, dimension=dimension
+        )
+    else:
+        queue = tools.SharedMemCircularQueue(
+            max_size=max_size, dimension=dimension
+        )
     set_weel({'deltaY': .2, 'timestampInMs': 123}, queue)
     arr_queue = queue.dequeue()
     arr = np.zeros(dimension)

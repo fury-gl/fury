@@ -17,7 +17,7 @@ from aiortc import VideoStreamTrack
 import numpy as np
 
 from fury.stream.server.async_app import get_app
-from fury.stream.tools import CircularQueue
+from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
 from fury.stream.constants import _CQUEUE
 
 try:
@@ -293,11 +293,15 @@ def web_server(
     else:
         rtc_server = None
 
-    if queue_buffer is not None or queue_buffer_name is not None:
-        circular_queue = CircularQueue(
+    if queue_buffer is not None:
+        circular_queue = ArrayCircularQueue(
             dimension=_CQUEUE.dimension,
             head_tail_buffer=queue_head_tail_buffer,
-            buffer=queue_buffer,
+            buffer=queue_buffer
+        )
+    elif queue_buffer_name is not None:
+        circular_queue = SharedMemCircularQueue(
+            dimension=_CQUEUE.dimension,
             buffer_name=queue_buffer_name,
             head_tail_buffer_name=queue_head_tail_buffer_name)
     else:

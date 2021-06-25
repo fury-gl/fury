@@ -209,16 +209,12 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
                     File not found')
 
 
-class CircularQueue:
+class GenericCircularQueue(ABC):
     def __init__(
-        self, max_size=10, dimension=6,
-            head_tail_buffer=None,
-            head_tail_buffer_name=None,  buffer=None,
-            buffer_name=None, use_raw_array=True):
-        """This implements a MultiDimensional Queue which works with
+            self, max_size=None, dimension=8,
+            use_shared_mem=False, buffer=None, buffer_name=None):
+        """This implements a generic circular queue which works with
         shared memory resources.
-        This can work with RawArrays or SharedMemory.
-        Stream system uses that to implemenet user interactions
 
         Parameters
         ----------
@@ -228,85 +224,25 @@ class CircularQueue:
             multidimensional buffer
         dimension : int, default 8
             This will be used to construct the multidimensional buffer
-        head_tail_buffer : buffer, optional
-            If buffer and buffer name is not passed to __init__
-            then this obj will create a new
-            RawArray or SharedMemory object to store head and tail position.
-            If buffer is passed than this Obj will read a
-            a already created RawArray
-        head_tail_buffer_name : str, optional
-            if buffer_name is passed than this Obj will read a
-            a already created SharedMemory with the head and tail
-            informations
-        buffer : buffer, optional
-            If buffer and buffer name is not passed to __init__
-            then the multidimensional buffer obj will create a new
-            RawArray or SharedMemory object to store the data
-            If buffer is passed than this Obj will read a
-            a already created RawArray
-        buffer_name : str, optional
-            if buffer_name is passed than this Obj will read a
-            a already created SharedMemory
-        use_raw_array : bool
-            if use_raw_array is False(True) and both buffer and buffer_name
-            are None, then this Obj will create a int64
-            SharedMemory(RawArray) with dim = dimension*max_size
+        use_shared_mem : bool, default False
+            If the multidimensional memory resource should create or read
+            using SharedMemory or RawArrays
+        buffer : RawArray, optional
+        buffer_name: str, optional
 
         """
-
-        use_raw_array = use_raw_array and buffer_name is None
-        if not PY_VERSION_8 and not use_raw_array:
-            raise ValueError("""
-                In order to use the SharedMemory approach
-                you should have to use python 3.8 or higher""")
-        if use_raw_array:
-            buffer = RawArrayMultiDimensionalBuffer(
+        self._created = False
+        self.head_tail_buffer_name = None
+        self.head_tail_buffer_repr = None
+        self.head_tail_buffer = None
+        if use_shared_mem:
+            self.buffer = SharedMemMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension, buffer_name=buffer_name
+            )
+        else:
+            self.buffer = RawArrayMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension, buffer=buffer
             )
-        else:
-            buffer = SharedMemMultiDimensionalBuffer(
-                max_size=max_size, dimension=dimension,
-                buffer_name=buffer_name
-            )
-        # head_tail_arr[0] int; head position
-        # head_tail_arr[1] int; tail position
-        # head_tail_arr[2] 0 or 1; if this memory resource it's busy or not
-        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
-        if head_tail_buffer is None and head_tail_buffer_name is None:
-            self._created_shared_mem = True
-            if use_raw_array:
-                head_tail_buffer = multiprocessing.Array(
-                    'l', head_tail_arr,
-                )
-                head_tail_buffer_name = None
-            else:
-                head_tail_buffer = shared_memory.SharedMemory(
-                    create=True, size=head_tail_arr.nbytes)
-
-                head_tail_buffer_name = head_tail_buffer.name
-                self._unlink_shared_mem = True
-        else:
-            self._created_shared_mem = False
-            if not use_raw_array:
-                head_tail_buffer = shared_memory.SharedMemory(
-                    head_tail_buffer_name)
-                self._unlink_shared_mem = False
-
-        self.use_raw_array = use_raw_array
-        self.dimension = buffer.dimension
-        self.head_tail_buffer = head_tail_buffer
-        self.head_tail_buffer_name = head_tail_buffer_name
-        self.max_size = buffer.max_size
-        self.buffer = buffer
-
-        if use_raw_array:
-            self.head_tail_buffer_repr = self.head_tail_buffer
-        else:
-            self.head_tail_buffer_repr = np.ndarray(
-                head_tail_arr.shape[0],
-                dtype='int64', buffer=self.head_tail_buffer.buf)
-        if self._created_shared_mem:
-            self.set_head_tail(-1, -1, 0)
 
     @property
     def head(self):
@@ -334,6 +270,176 @@ class CircularQueue:
         self.head_tail_buffer_repr[:] = np.array(
             [head, tail, lock]).astype('int64')
 
+    def _enqueue(self, data):
+        ok = False
+        if ((self.tail + 1) % self.buffer.max_size == self.head):
+            ok = False
+        else:
+            if (self.head == -1):
+                self.set_head_tail(0, 0, 1)
+            else:
+                self.tail = (self.tail + 1) % self.buffer.max_size
+            self.buffer[self.tail] = data
+
+            ok = True
+        return ok
+
+    def _dequeue(self):
+        if self.head == -1:
+            interactions = None
+        else:
+            if self.head != self.tail:
+                interactions = self.buffer[self.head]
+                self.head = (self.head + 1) % self.buffer.max_size
+            else:
+                interactions = self.buffer[self.head]
+                self.set_head_tail(-1, -1, 1)
+        return interactions
+
+    @abstractmethod
+    def enqueue(self):
+        pass
+
+    @abstractmethod
+    def dequeue(self):
+        pass
+
+    @abstractmethod
+    def load_mem_resource(self):
+        pass
+
+    @abstractmethod
+    def create_mem_resource(self):
+        pass
+
+    @abstractmethod
+    def cleanup(self):
+        pass
+
+
+class ArrayCircularQueue(GenericCircularQueue):
+    def __init__(
+        self, max_size=10, dimension=6,
+            head_tail_buffer=None, buffer=None):
+        """This implements a MultiDimensional Queue which works with
+        Arrays and RawArrays. Stream system uses that to implement
+        user interactions
+
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory. This will be used to construct the
+            multidimensional buffer
+        dimension : int, default 8
+            This will be used to construct the multidimensional buffer
+        head_tail_buffer : buffer, optional
+            If buffer is not passed to __init__
+            then this obj will create a new
+            RawArray to store head and tail position.
+        buffer : buffer, optional
+            If buffer  is not passed to __init__
+            then the multidimensional buffer obj will create a new
+            RawArray to store the data
+
+        """
+
+        super().__init__(
+            max_size, dimension, use_shared_mem=False, buffer=buffer)
+
+        if head_tail_buffer is None:
+            self.create_mem_resource()
+            self._created = True
+        else:
+            self.head_tail_buffer = head_tail_buffer
+            self._created = False
+
+        self.head_tail_buffer_name = None
+        self.head_tail_buffer_repr = self.head_tail_buffer
+        self.use_raw_array = True
+        if self._created:
+            self.set_head_tail(-1, -1, 0)
+
+    def load_mem_resource(self):
+        pass
+
+    def create_mem_resource(self):
+        # head_tail_arr[0] int; head position
+        # head_tail_arr[1] int; tail position
+        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
+        self.head_tail_buffer = multiprocessing.Array(
+                    'l', head_tail_arr,
+        )
+
+    def enqueue(self, data):
+        ok = False
+        with self.head_tail_buffer.get_lock():
+            ok = self._enqueue(data)
+        return ok
+
+    def dequeue(self):
+        with self.head_tail_buffer.get_lock():
+            interactions = self._dequeue()
+        return interactions
+
+    def cleanup(self):
+        pass
+
+
+class SharedMemCircularQueue(GenericCircularQueue):
+    def __init__(
+        self, max_size=10, dimension=6,
+            head_tail_buffer_name=None, buffer_name=None):
+        """This implements a MultiDimensional Queue which works with
+        SharedMemory.
+        Stream system uses that to implemenet user interactions
+
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory. This will be used to construct the
+            multidimensional buffer
+        dimension : int, default 8
+            This will be used to construct the multidimensional buffer
+        head_tail_buffer_name : str, optional
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory with the head and tail
+            informations
+        buffer_name : str, optional
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory to create the MultiDimensionalBuffer
+        """
+        super().__init__(
+            max_size, dimension, use_shared_mem=True, buffer_name=buffer_name)
+
+        if head_tail_buffer_name is None:
+            self.create_mem_resource()
+            self._created = True
+        else:
+            self.head_tail_buffer_name = head_tail_buffer_name
+            self.load_mem_resource()
+            self._created = False
+
+        self.head_tail_buffer_repr = np.ndarray(
+                3,
+                dtype='int64', buffer=self.head_tail_buffer.buf)
+        self.use_raw_array = False
+        if self._created:
+            self.set_head_tail(-1, -1, 0)
+
+    def load_mem_resource(self):
+        self.head_tail_buffer = shared_memory.SharedMemory(
+                    self.head_tail_buffer_name)
+
+    def create_mem_resource(self):
+        # head_tail_arr[0] int; head position
+        # head_tail_arr[1] int; tail position
+        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
+        self.head_tail_buffer = shared_memory.SharedMemory(
+                create=True, size=head_tail_arr.nbytes)
+        self.head_tail_buffer_name = self.head_tail_buffer.name
+
     def is_unlocked(self):
         return self.head_tail_buffer_repr[2] == 0
 
@@ -343,61 +449,36 @@ class CircularQueue:
     def unlock(self):
         self.head_tail_buffer_repr[2] = 0
 
-    # @property
-    # def queue(self):
-    #     return self.buffer._buffer_repr
-
     def enqueue(self, data):
-        # with self.head_tail_buffer.get_lock():
         ok = False
         if self.is_unlocked():
             self.lock()
-            if ((self.tail + 1) % self.max_size == self.head):
-                ok = False
-            else:
-                if (self.head == -1):
-                    self.set_head_tail(0, 0, 1)
-                else:
-                    self.tail = (self.tail + 1) % self.max_size
-                self.buffer[self.tail] = data
-
-                ok = True
+            ok = self._enqueue(data)
             self.unlock()
         return ok
 
     def dequeue(self):
-        # with self.buffers._buffer_repr.get_lock():
-        # with self.head_tail_buffer.get_lock():
         if self.is_unlocked():
             self.lock()
-            if self.head == -1:
-                interactions = None
-            else:
-                if self.head != self.tail:
-                    interactions = self.buffer[self.head]
-                    self.head = (self.head + 1) % self.max_size
-                else:
-                    interactions = self.buffer[self.head]
-                    self.set_head_tail(-1, -1, 1)
-
+            interactions = self._dequeue()
             self.unlock()
-            return interactions
+        return interactions
 
     def cleanup(self):
-        if not self.use_raw_array:
-            self.buffer.cleanup()
-            self.head_tail_buffer.close()
-            if self._unlink_shared_mem:
-                # this it's due the python core issues
-                # https://bugs.python.org/issue38119
-                # https://bugs.python.org/issue39959
-                # https://github.com/luizalabs/shared-memory-dict/issues/13
-                try:
-                    self.head_tail_buffer.unlink()
-                except FileNotFoundError:
-                    print(
-                        f'Shared Memory {self.head_tail_buffer_name}(head_tail)\
-                         File not found')
+        self.buffer.cleanup()
+        self.head_tail_buffer.close()
+        if self._created:
+            print('unlink')
+            # this it's due the python core issues
+            # https://bugs.python.org/issue38119
+            # https://bugs.python.org/issue39959
+            # https://github.com/luizalabs/shared-memory-dict/issues/13
+            try:
+                self.head_tail_buffer.unlink()
+            except FileNotFoundError:
+                print(
+                    f'Shared Memory {self.head_tail_buffer_name}(head_tail)\
+                     File not found')
 
 
 class IntervalTimer(object):
