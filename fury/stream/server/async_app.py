@@ -53,7 +53,7 @@ async def mjpeg_handler(request):
     await response.prepare(request)
     image_buffer_manager = request.app['image_buffer_manager']
     while True:
-        jpeg_bytes = await image_buffer_manager.get_image()
+        jpeg_bytes = await image_buffer_manager.async_get_jpeg()
         with MultipartWriter('image/jpeg', boundary=my_boundary) as mpwriter:
             mpwriter.append(jpeg_bytes, {
                 'Content-Type': 'image/jpeg'

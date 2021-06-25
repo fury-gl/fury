@@ -82,14 +82,14 @@ if __name__ == '__main__':
     showm.initialize()
     stream = FuryStreamClient(
         showm, use_raw_array=True)
-
+   
     p = multiprocessing.Process(
         target=web_server,
         args=(
-            stream.image_buffers,
-            stream.image_buffer_names,
-            stream.info_buffer,
-            stream.info_buffer_name,
+            stream.img_manager.image_buffers,
+            stream.img_manager.image_buffer_names,
+            stream.img_manager.info_buffer,
+            stream.img_manager.info_buffer_name,
         )
     )
     p.start()

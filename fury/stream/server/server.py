@@ -3,14 +3,11 @@
 import logging
 import sys
 if sys.version_info.minor >= 8:
-    from multiprocessing import shared_memory
     from fury.stream.tools import remove_shm_from_resource_tracker
     PY_VERSION_8 = True
 else:
-    shared_memory = None
     PY_VERSION_8 = False
 
-import asyncio
 from aiohttp import web
 from av import VideoFrame
 from aiortc import VideoStreamTrack
@@ -18,6 +15,8 @@ import numpy as np
 
 from fury.stream.server.async_app import get_app
 from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
+from fury.stream.tools import (
+    SharedMemImageBufferManager, RawArrayImageBufferManager)
 from fury.stream.constants import _CQUEUE
 
 try:
@@ -27,131 +26,6 @@ try:
     CYTHON_AVAILABLE = True
 except ImportError:
     CYTHON_AVAILABLE = False
-
-try:
-    import cv2
-    OPENCV_AVAILABLE = True
-except ImportError:
-    from PIL import Image
-    cv2 = None
-    OPENCV_AVAILABLE = False
-
-
-class ImageBufferManager:
-    def __init__(
-            self,
-            info_buffer=None, info_buffer_name=None,
-            image_buffers=None, image_buffer_names=None,
-            ms_jpeg=33):
-        """This it's responsible to deal with the buffers
-        created by the FuryStreamClient. Extracting a frame
-        or encoding a JPEG image
-
-        Parameters
-        ----------
-        info_buffer : buffer, optional
-            A buffer with the information about the current
-            frame to be streamed and the respective sizes
-            If info_buffer was not passed then it's mandatory
-            pass an info_buffer_name.
-        info_buffer_name : str, optional
-        image_buffers : list of buffers, optional
-            A list of buffers with each one containing a frame.
-            If image_buffers was not passed then it's mandatory
-            pass an image_buffer_names.
-        image_buffer_names : list of str, optional
-        ms_jpeg : float, optional
-            This it's used  only if the MJPEG will be used. The
-            ms_jpeg represents the amount of miliseconds between to
-            consecutive calls of the jpeg enconding.
-
-        """
-
-        use_raw_array = info_buffer_name is None or image_buffer_names is None
-        self.use_raw_array = use_raw_array
-        self.image = None
-        self.ms_jpeg = ms_jpeg
-        if not use_raw_array:
-            self.info_buffer = shared_memory.SharedMemory(info_buffer_name)
-            self.info_buffer_repr = np.ndarray(
-                    6,
-                    dtype='uint64',
-                    buffer=self.info_buffer.buf)
-            self.image_buffers = []
-            self.image_reprs = []
-            self.image_buffer_names = image_buffer_names
-            for buffer_name in self.image_buffer_names:
-                buffer = shared_memory.SharedMemory(buffer_name)
-                self.image_buffers.append(buffer)
-                self.image_reprs.append(np.ndarray(
-                    len(buffer.buf),
-                    dtype=np.uint8,
-                    buffer=buffer.buf))
-        else:
-            self.info_buffer = np.frombuffer(
-                info_buffer, 'uint64')
-            self.info_buffer_repr = np.ctypeslib.as_array(
-                self.info_buffer)
-            self.image_buffers = image_buffers
-
-    def get_infos(self):
-        if self.use_raw_array:
-            self.image_info = np.frombuffer(
-                self.info_buffer, 'uint32')
-        else:
-            self.image_info = self.info_buffer_repr
-
-        buffer_index = int(self.image_info[1])
-
-        self.width = int(self.image_info[2+buffer_index*2])
-        self.height = int(self.image_info[2+buffer_index*2+1])
-
-        if self.use_raw_array:
-            self.image = self.image_buffers[buffer_index]
-        else:
-            self.image = self.image_reprs[buffer_index]
-
-        return self.width, self.height, self.image
-
-    async def get_image(self):
-        if self.use_raw_array:
-            image_info = np.frombuffer(
-                self.info_buffer, 'uint32')
-        else:
-            image_info = self.info_buffer_repr
-
-        buffer_index = int(image_info[1])
-
-        width = int(image_info[2+buffer_index*2])
-        height = int(image_info[2+buffer_index*2+1])
-        if self.use_raw_array:
-            image = self.image_buffers[buffer_index]
-            image = np.frombuffer(
-                image, 'uint8')
-        else:
-            image = self.image_reprs[buffer_index]
-
-        image = image[0:width*height*3].reshape(
-                (height, width, 3))
-        image = np.flipud(image)
-        # preserve width and height, flip B->R
-        image = image[:, :, ::-1]
-        if OPENCV_AVAILABLE:
-            image_encoded = cv2.imencode('.jpg', image)[1]
-        else:
-            image_encoded = Image.fromarray(image)
-        # image_encoded = cv2.cvtColor(image_encoded,  cv2.COLOR_BGR2RGB)
-
-        # this will avoid a huge bandwidth consumption
-        await asyncio.sleep(self.ms_jpeg/1000)
-        return image_encoded.tobytes()
-
-    def cleanup(self):
-        logging.info("buffer release")
-        if not self.use_raw_array:
-            self.info_buffer.close()
-            for buffer in self.image_buffers:
-                buffer.close()
 
 
 class RTCServer(VideoStreamTrack):
@@ -168,13 +42,12 @@ class RTCServer(VideoStreamTrack):
         super().__init__()
 
         self.frame = None
-        self.use_raw_array = image_buffer_manager.use_raw_array
         self.buffer_manager = image_buffer_manager
 
     async def recv(self):
         pts, time_base = await self.next_timestamp()
 
-        width, height, image = self.buffer_manager.get_infos()
+        width, height, image = self.buffer_manager.get_current_frame()
 
         if self.frame is None \
             or self.frame.planes[0].width != width \
@@ -277,15 +150,20 @@ def web_server(
 
         """
 
-    use_raw_array = image_buffer_names is None and info_buffer_name is None
+    use_raw_array = info_buffer_name is None
 
     if avoid_unlink_shared_mem and PY_VERSION_8 and not use_raw_array:
         remove_shm_from_resource_tracker()
 
-    image_buffer_manager = ImageBufferManager(
-            info_buffer=info_buffer, image_buffers=image_buffers,
-            info_buffer_name=info_buffer_name,
-            image_buffer_names=image_buffer_names, ms_jpeg=ms_jpeg)
+    if not use_raw_array:
+        image_buffer_manager = SharedMemImageBufferManager(
+            image_buffer_names=image_buffer_names,
+            info_buffer_name=info_buffer_name
+        )
+    else:
+        image_buffer_manager = RawArrayImageBufferManager(
+            image_buffers=image_buffers, info_buffer=info_buffer
+        )
 
     if provides_webrtc:
         rtc_server = RTCServer(

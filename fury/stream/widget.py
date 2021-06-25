@@ -93,8 +93,8 @@ class Widget:
     @property
     def command_string(self):
         s = 'from fury.stream.server import web_server;'
-        s += f"web_server(image_buffer_names={self.stream.image_buffer_names}"
-        s += f",info_buffer_name='{self.stream.info_buffer_name}',"
+        s += f"web_server(image_buffer_names={self.stream.img_manager.image_buffer_names}"
+        s += f",info_buffer_name='{self.stream.img_manager.info_buffer_name}',"
         s += "queue_head_tail_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.head_tail_buffer_name}'"
         s += ",queue_buffer_name='"

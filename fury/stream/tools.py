@@ -5,6 +5,7 @@ import logging
 from threading import Timer
 from abc import ABC, abstractmethod
 
+import asyncio
 import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
@@ -14,10 +15,17 @@ if sys.version_info.minor >= 8:
 else:
     shared_memory = None
     PY_VERSION_8 = False
+try:
+    import cv2
+    OPENCV_AVAILABLE = True
+except ImportError:
+    from PIL import Image
+    cv2 = None
+    OPENCV_AVAILABLE = False
 
 
 def remove_shm_from_resource_tracker():
-    """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't 
+    """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't
     be tracked
     More details at: https://bugs.python.org/issue38119
     """
@@ -235,6 +243,7 @@ class GenericCircularQueue(ABC):
         self.head_tail_buffer_name = None
         self.head_tail_buffer_repr = None
         self.head_tail_buffer = None
+        self._use_shared_mem = use_shared_mem
         if use_shared_mem:
             self.buffer = SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension, buffer_name=buffer_name
@@ -246,10 +255,10 @@ class GenericCircularQueue(ABC):
 
     @property
     def head(self):
-        if self.use_raw_array:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[0]
-        else:
+        if self._use_shared_mem:
             return self.head_tail_buffer_repr[0]
+        else:
+            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[0]
 
     @head.setter
     def head(self, value):
@@ -257,10 +266,10 @@ class GenericCircularQueue(ABC):
 
     @property
     def tail(self):
-        if self.use_raw_array:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[1]
-        else:
+        if self._use_shared_mem:
             return self.head_tail_buffer_repr[1]
+        else:
+            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[1]
 
     @tail.setter
     def tail(self, value):
@@ -356,7 +365,6 @@ class ArrayCircularQueue(GenericCircularQueue):
 
         self.head_tail_buffer_name = None
         self.head_tail_buffer_repr = self.head_tail_buffer
-        self.use_raw_array = True
         if self._created:
             self.set_head_tail(-1, -1, 0)
 
@@ -424,7 +432,6 @@ class SharedMemCircularQueue(GenericCircularQueue):
         self.head_tail_buffer_repr = np.ndarray(
                 3,
                 dtype='int64', buffer=self.head_tail_buffer.buf)
-        self.use_raw_array = False
         if self._created:
             self.set_head_tail(-1, -1, 0)
 
@@ -458,6 +465,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
         return ok
 
     def dequeue(self):
+        interactions = None
         if self.is_unlocked():
             self.lock()
             interactions = self._dequeue()
@@ -468,7 +476,6 @@ class SharedMemCircularQueue(GenericCircularQueue):
         self.buffer.cleanup()
         self.head_tail_buffer.close()
         if self._created:
-            print('unlink')
             # this it's due the python core issues
             # https://bugs.python.org/issue38119
             # https://bugs.python.org/issue39959
@@ -481,7 +488,292 @@ class SharedMemCircularQueue(GenericCircularQueue):
                      File not found')
 
 
-class IntervalTimer(object):
+class GenericImageBufferManager(ABC):
+    def __init__(
+            self, max_window_size=None, num_buffers=2, use_shared_mem=False):
+        """This implements a abstract (generic) ImageBufferManager with
+        the n-buffer techinique.
+
+       Parameters
+        ----------
+        max_window_size : tuple of ints, optional
+                This allows resize events inside of the FURY window instance.
+                Should be greater than the window size.
+        num_buffers : int, optional
+                Number of buffers to be used in the n-buffering
+                techinique.
+        use_shared_mem: bool, default False
+
+        """
+        self.max_window_size = max_window_size
+        self.num_buffers = num_buffers
+        self.info_buffer_size = num_buffers*2 + 2
+        self._use_shared_mem = use_shared_mem
+        self.max_size = None  # int
+        self.num_components = 3
+        self.image_reprs = []
+        self.image_buffers = []
+        self.image_buffer_names = []
+        self.info_buffer_name = None
+        self.info_buffer = None
+        self.info_buffer_repr = None
+        self._created = False
+
+    @property
+    def next_buffer_index(self):
+        index = int((self.info_buffer_repr[1]+1) % self.num_buffers)
+        return index
+
+    @property
+    def buffer_index(self):
+        index = int(self.info_buffer_repr[1])
+        return index
+
+    def write_into(self, w, h, np_arr):
+        buffer_size = buffer_size = int(h*w)
+        next_buffer_index = self.next_buffer_index
+        if buffer_size == self.max_size:
+            self.image_reprs[
+                next_buffer_index][:] = np_arr
+        elif buffer_size < self.max_size:
+            self.image_reprs[
+                    next_buffer_index][0:buffer_size*3] = np_arr
+        else:
+            rand_img = np.random.randint(
+                0, 255, size=self.max_size*3,
+                dtype='uint8')
+
+            self.image_reprs[
+                next_buffer_index][:] = rand_img
+
+            w = self.max_window_size[0]
+            h = self.max_window_size[1]
+
+        self.info_buffer_repr[2+next_buffer_index*2] = w
+        self.info_buffer_repr[2+next_buffer_index*2+1] = h
+        self.info_buffer_repr[1] = next_buffer_index
+
+    def get_current_frame(self):
+        if not self._use_shared_mem:
+            image_info = np.frombuffer(
+                    self.info_buffer, 'uint32')
+        else:
+            image_info = self.info_buffer_repr
+
+        buffer_index = int(image_info[1])
+
+        self.width = int(image_info[2+buffer_index*2])
+        self.height = int(image_info[2+buffer_index*2+1])
+
+        self.image_buffer_repr = self.image_reprs[buffer_index]
+
+        return self.width, self.height, self.image_buffer_repr
+
+    def get_jpeg(self):
+        width, height, image = self.get_current_frame()
+
+        if self._use_shared_mem:
+            image = np.frombuffer(
+                image, 'uint8')
+
+        image = image[0:width*height*3].reshape(
+                (height, width, 3))
+        image = np.flipud(image)
+        # preserve width and height, flip B->R
+        image = image[:, :, ::-1]
+        if OPENCV_AVAILABLE:
+            image_encoded = cv2.imencode('.jpg', image)[1]
+        else:
+            image_encoded = Image.fromarray(image)
+
+        return image_encoded.tobytes()
+
+    async def async_get_jpeg(self, ms=33):
+        jpeg = self.get_jpeg()
+        await asyncio.sleep(ms/1000)
+        return jpeg
+
+    @abstractmethod
+    def load_mem_resource(self):
+        pass
+
+    @abstractmethod
+    def create_mem_resource(self):
+        pass
+
+    @abstractmethod
+    def cleanup(self):
+        pass
+
+
+class RawArrayImageBufferManager(GenericImageBufferManager):
+    def __init__(
+            self, max_window_size=(100, 100), num_buffers=2,
+            image_buffers=None, info_buffer=None):
+        """This implements an ImageBufferManager using RawArrays.
+
+        Parameters
+        ----------
+        max_window_size : tuple of ints, optional
+                This allows resize events inside of the FURY window instance.
+                Should be greater than the window size.
+        num_buffers : int, optional
+                Number of buffers to be used in the n-buffering
+                techinique.
+        info_buffer : buffer, optional
+            A buffer with the information about the current
+            frame to be streamed and the respective sizes
+        image_buffers : list of buffers, optional
+            A list of buffers with each one containing a frame.
+        """
+        super().__init__(max_window_size, num_buffers, use_shared_mem=False)
+        if image_buffers is None or info_buffer is None:
+            self.create_mem_resource()
+        else:
+            self.image_buffers = image_buffers
+            self.info_buffer = info_buffer
+            self.load_mem_resource()
+
+    def create_mem_resource(self):
+        self.max_size = self.max_window_size[0]*self.max_window_size[1]
+        self.max_size *= self.num_components
+
+        for _ in range(self.num_buffers):
+            buffer = multiprocessing.RawArray(
+                'B', np.random.randint(
+                    0, 255,
+                    size=self.max_size)
+                .astype('uint8'))
+            self.image_buffers.append(buffer)
+            self.image_reprs.append(
+                np.ctypeslib.as_array(buffer))
+
+        # info_list stores the information about the n frame buffers
+        # as well the respectives sizes.
+        # 0 number of components
+        # 1 id buffer
+        # 2, 3, width first buffer, height first buffer
+        # 4, 5, width second buffer , height second buffer
+        info_list = [3, 0]
+        for _ in range(self.num_buffers):
+            info_list += [self.max_window_size[0]]
+            info_list += [self.max_window_size[1]]
+        info_list = np.array(
+            info_list, dtype='uint64'
+        )
+        self.info_buffer = multiprocessing.RawArray(
+                'I', np.array(info_list).astype('uint64')
+        )
+        self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
+
+    def load_mem_resource(self):
+        self.info_buffer = np.frombuffer(
+            self.info_buffer, 'uint64')
+        self.info_buffer_repr = np.ctypeslib.as_array(
+            self.info_buffer)
+        for img_buffer in self.image_buffers:
+            self.image_reprs.append(np.ctypeslib.as_array(img_buffer))
+
+    def cleanup(self):
+        pass
+
+
+class SharedMemImageBufferManager(GenericImageBufferManager):
+    def __init__(
+            self, max_window_size=(100, 100), num_buffers=2,
+            image_buffer_names=None, info_buffer_name=None):
+        """This implements an ImageBufferManager using the
+        SharedMemory approach. Python >=3.8 is a requirement
+        to use this object.
+
+        Parameters
+        ----------
+        max_window_size : tuple of ints, optional
+                This allows resize events inside of the FURY window instance.
+                Should be greater than the window size.
+        num_buffers : int, optional
+                Number of buffers to be used in the n-buffering
+                techinique.
+        info_buffer_name : str
+            The name of a buffer with the information about the current
+            frame to be streamed and the respective sizes
+        image_buffer_names : list of str, optional
+            a list of buffer names. Each buffer contains a frame
+        """
+        super().__init__(max_window_size, num_buffers, use_shared_mem=True)
+        if image_buffer_names is None or info_buffer_name is None:
+            self.create_mem_resource()
+            self._created = True
+        else:
+            self.image_buffer_names = image_buffer_names
+            self.info_buffer_name = info_buffer_name
+            self._created = False
+            self.load_mem_resource()
+
+    def create_mem_resource(self):
+        self.max_size = self.max_window_size[0]*self.max_window_size[1]
+        self.max_size *= self.num_components
+        for _ in range(self.num_buffers):
+            buffer = shared_memory.SharedMemory(
+                        create=True, size=self.max_size)
+            self.image_buffers.append(buffer)
+            self.image_reprs.append(
+                np.ndarray(
+                    self.max_size, dtype=np.uint8, buffer=buffer.buf))
+            self.image_buffer_names.append(buffer.name)
+
+        info_list = [3, 0]
+        for _ in range(self.num_buffers):
+            info_list += [self.max_window_size[0]]
+            info_list += [self.max_window_size[1]]
+        info_list = np.array(
+            info_list, dtype='uint64'
+        )
+        self.info_buffer = shared_memory.SharedMemory(
+            create=True, size=info_list.nbytes)
+        self.info_buffer_repr = np.ndarray(
+                info_list.shape[0],
+                dtype='uint64', buffer=self.info_buffer.buf)
+        self.info_buffer_name = self.info_buffer.name
+
+    def load_mem_resource(self):
+        self.info_buffer = shared_memory.SharedMemory(self.info_buffer_name)
+        self.info_buffer_repr = np.ndarray(
+                self.info_buffer_size,
+                dtype='uint64',
+                buffer=self.info_buffer.buf)
+
+        for buffer_name in self.image_buffer_names:
+            buffer = shared_memory.SharedMemory(buffer_name)
+            self.image_buffers.append(buffer)
+            self.image_reprs.append(np.ndarray(
+                len(buffer.buf),
+                dtype=np.uint8,
+                buffer=buffer.buf))
+
+    def cleanup(self):
+        self.info_buffer.close()
+        # this it's due the python core issues
+        # https://bugs.python.org/issue38119
+        # https://bugs.python.org/issue39959
+        # https://github.com/luizalabs/shared-memory-dict/issues/13
+        if self._created:
+            try:
+                self.info_buffer.unlink()
+            except FileNotFoundError:
+                print(f'Shared Memory {self.info_buffer_name}\
+                        (info_buffer) File not found')
+        for buffer, name in zip(
+                self.image_buffers, self.image_buffer_names):
+            buffer.close()
+            if self._created:
+                try:
+                    buffer.unlink()
+                except FileNotFoundError:
+                    print(f'Shared Memory {name}(buffer image) File not found')
+
+
+class IntervalTimer:
     def __init__(self, seconds, callback, *args, **kwargs):
         """Implements a object with the same behavior of setInterval from Js
 

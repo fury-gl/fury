@@ -1,8 +1,6 @@
 import vtk
-import multiprocessing
 import sys
 if sys.version_info.minor >= 8:
-    from multiprocessing import shared_memory
     PY_VERSION_8 = True
 else:
     shared_memory = None
@@ -10,8 +8,10 @@ else:
 
 import numpy as np
 
-from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue,\
-    IntervalTimer
+from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue
+from fury.stream.tools import (
+    RawArrayImageBufferManager, SharedMemImageBufferManager)
+from fury.stream.tools import IntervalTimer
 from fury.stream.constants import _CQUEUE
 
 import logging
@@ -38,7 +38,7 @@ class FuryStreamClient:
                 Should be greater than the window size.
             use_raw_array : bool, optional
                 If False then FuryStreamClient will use SharedMemory
-                instead of RawArrays. Notice that Python >=3.8 it's a 
+                instead of RawArrays. Notice that Python >=3.8 it's a
                 requirement
                 to use SharedMemory)
             whithout_iren_start : bool, optional
@@ -71,57 +71,12 @@ class FuryStreamClient:
             raise ValueError("""
                SharedMemory works only in python 3.8 or higher""")
 
-        # info_list stores the information about the n frame buffers
-        # as well the respectives sizes.
-        # 0 number of components
-        # 1 id buffer
-        # 2, 3, width first buffer, height first buffer
-        # 4, 5, width second buffer , height second buffer
-        info_list = [3, 0]
-        for _ in range(self.num_buffers):
-            info_list += [self.max_window_size[0]]
-            info_list += [self.max_window_size[1]]
-        info_list = np.array(
-            info_list, dtype='uint64'
-        )
         if use_raw_array:
-            self.info_buffer = multiprocessing.RawArray(
-                    'I', info_list
-            )
-            self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
+            self.img_manager = RawArrayImageBufferManager(
+                max_window_size=max_window_size, num_buffers=num_buffers)
         else:
-            self.info_buffer = shared_memory.SharedMemory(
-                create=True, size=info_list.nbytes)
-            self.info_buffer_repr = np.ndarray(
-                    info_list.shape[0],
-                    dtype='uint64', buffer=self.info_buffer.buf)
-            self.info_buffer_name = self.info_buffer.name
-
-        # creates the shared memory resources to store the
-        # image buffers
-        if use_raw_array:
-            self.image_buffer_names = None
-
-            self.image_reprs = []
-            for _ in range(self.num_buffers):
-                buffer = multiprocessing.RawArray(
-                    'B', np.random.randint(
-                        0, 255,
-                        size=max_window_size[0]*max_window_size[1]*3)
-                    .astype('uint8'))
-                self.image_buffers.append(buffer)
-                self.image_reprs.append(
-                    np.ctypeslib.as_array(buffer))
-        else:
-            for _ in range(self.num_buffers):
-                bufferSize = max_window_size[0]*max_window_size[1]*3
-                buffer = shared_memory.SharedMemory(
-                    create=True, size=bufferSize)
-                self.image_buffers.append(buffer)
-                self.image_reprs.append(
-                    np.ndarray(
-                        bufferSize, dtype=np.uint8, buffer=buffer.buf))
-                self.image_buffer_names.append(buffer.name)
+            self.img_manager = SharedMemImageBufferManager(
+                max_window_size=max_window_size, num_buffers=num_buffers)
 
         self._id_timer = None
         self._id_observer = None
@@ -148,39 +103,9 @@ class FuryStreamClient:
 
                 w, h, _ = vtk_image.GetDimensions()
                 np_arr = np.frombuffer(vtk_array, dtype='uint8')
-
-                if self.image_buffers is not None:
-                    buffer_size = int(h*w)
-                    # self.info_buffer[0] = num_components
-
-                    # N-Buffering
-                    next_buffer_index = int(
-                        (self.info_buffer_repr[1]+1) % self.num_buffers)
-                    if buffer_size == self.max_size:
-                        # if self.use_raw_array:
-                        # throws a type error due uint8
-                        # memoryview(
-                        #     self.image_buffers[next_buffer_index]
-                        # )[:] = np_arr
-                        self.image_reprs[
-                            next_buffer_index][:] = np_arr
-                    elif buffer_size < self.max_size:
-                        self.image_reprs[
-                                next_buffer_index][0:buffer_size*3] = np_arr
-                    else:
-                        rand_img = np.random.randint(
-                            0, 255, size=self.max_size*3,
-                            dtype='uint8')
-
-                        self.image_reprs[
-                            next_buffer_index][:] = rand_img
-
-                        w = self.max_window_size[0]
-                        h = self.max_window_size[1]
-                    self.info_buffer_repr[2+next_buffer_index*2] = w
-                    self.info_buffer_repr[2+next_buffer_index*2+1] = h
-                    self.info_buffer_repr[1] = next_buffer_index
-                self._in_request = False
+                if np_arr is not None:
+                    self.img_manager.write_into(w, h, np_arr)
+                    self._in_request = False
 
         if ms > 0:
             if self._whithout_iren_start:
@@ -222,18 +147,19 @@ class FuryStreamClient:
 
     def cleanup(self):
         if not self.use_raw_array:
-            self.info_buffer.close()
+            self.img_manager.info_buffer.close()
             # this it's due the python core issues
             # https://bugs.python.org/issue38119
             # https://bugs.python.org/issue39959
             # https://github.com/luizalabs/shared-memory-dict/issues/13
             try:
-                self.info_buffer.unlink()
+                self.img_manager.info_buffer.unlink()
             except FileNotFoundError:
-                print(f'Shared Memory {self.info_buffer_name}\
+                print(f'Shared Memory {self.img_manager.info_buffer_name}\
                         (info_buffer) File not found')
             for buffer, name in zip(
-                    self.image_buffers, self.image_buffer_names):
+                    self.img_manager.image_buffers,
+                    self.img_manager.image_buffer_names):
                 buffer.close()
                 try:
                     buffer.unlink()
@@ -337,7 +263,7 @@ class FuryStreamInteraction:
                 SharedMemory instead of RawArrays. Notice that
                 Python >=3.8 it's requirement to use SharedMemory.
             whithout_iren_start : bool, optional
-                Set that to True if you can't initiate the vtkInteractor 
+                Set that to True if you can't initiate the vtkInteractor
                 instance.
         """
 

@@ -9,7 +9,6 @@ else:
 
 from fury import actor, window
 from fury.stream import tools
-from fury.stream.server import ImageBufferManager
 from fury.stream.client import FuryStreamClient
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
@@ -45,15 +44,21 @@ def test_client_and_buffer_manager():
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
             whithout_iren_start=False)
-        img_buffer_manager = ImageBufferManager(
-            stream.info_buffer, stream.info_buffer_name,
-            stream.image_buffers, stream.image_buffer_names
-        )
+        if use_raw_array:
+            img_buffer_manager = tools.RawArrayImageBufferManager(
+                info_buffer=stream.img_manager.info_buffer,
+                image_buffers=stream.img_manager.image_buffers
+            )
+        else:
+            img_buffer_manager = tools.SharedMemImageBufferManager(
+                info_buffer_name=stream.img_manager.info_buffer_name,
+                image_buffer_names=stream.img_manager.image_buffer_names
+            )
         showm.render()
         stream.start(ms_stream)
         showm.render()
         # arr = window.snapshot(scene, size=showm.size)
-        width, height, frame = img_buffer_manager.get_infos()
+        width, height, frame = img_buffer_manager.get_current_frame()
         assert width == width_0 and height == height_0
         image = np.frombuffer(
                     frame,

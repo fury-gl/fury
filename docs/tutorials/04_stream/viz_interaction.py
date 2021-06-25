@@ -77,9 +77,9 @@ if __name__ == '__main__':
         p = multiprocessing.Process(
             target=web_server,
             args=(
-                stream.image_buffers,
+                stream.img_manager.image_buffers,
                 None,
-                stream.info_buffer,
+                stream.img_manager.info_buffer,
                 None,
                 stream_interaction.circular_queue.head_tail_buffer,
                 None,
@@ -98,9 +98,9 @@ if __name__ == '__main__':
             target=web_server,
             args=(
                 None,
-                stream.image_buffer_names,
+                stream.img_manager.image_buffer_names,
                 None,
-                stream.info_buffer_name,
+                stream.img_manager.info_buffer_name,
                 None,
                 stream_interaction.circular_queue.head_tail_buffer_name,
                 None,
