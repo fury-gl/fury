@@ -101,8 +101,14 @@ def test_multidimensional_buffer():
         # creates a raw_array
         max_size = 3
         dimension = 4
-        m_buffer = tools.MultiDimensionalBuffer(
-            max_size, dimension, use_raw_array=use_raw_array)
+        if use_raw_array:
+            m_buffer = tools.RawArrayMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension
+            )
+        else:
+            m_buffer = tools.SharedMemMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension
+            )
         m_buffer[1] = np.array([.2, .3, .4, .5])
 
         assert len(m_buffer[0]) == dimension
@@ -118,13 +124,17 @@ def test_multidimensional_buffer():
         # test the communication between two MultiDimensionalBuffers
         max_size = 3
         dimension = 4
-        m_buffer_org = tools.MultiDimensionalBuffer(
-            max_size, dimension, use_raw_array=use_raw_array)
         if use_raw_array:
-            m_buffer_0 = tools.MultiDimensionalBuffer(
+            m_buffer_org = tools.RawArrayMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension
+            )
+            m_buffer_0 = tools.RawArrayMultiDimensionalBuffer(
                 max_size, dimension, buffer=m_buffer_org.buffer)
-        else:
-            m_buffer_0 = tools.MultiDimensionalBuffer(
+        else:       
+            m_buffer_org = tools.SharedMemMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension
+            )
+            m_buffer_0 = tools.SharedMemMultiDimensionalBuffer(
                 max_size, dimension, buffer_name=m_buffer_org.buffer_name)
 
         m_buffer_0[1] = np.array([.2, .3, .4, .5])

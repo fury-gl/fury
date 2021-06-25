@@ -3,6 +3,7 @@ import multiprocessing
 import time
 import logging
 from threading import Timer
+from abc import ABC, abstractmethod
 
 import sys
 if sys.version_info.minor >= 8:
@@ -24,28 +25,25 @@ def remove_shm_from_resource_tracker():
     def fix_register(name, rtype):
         if rtype == "shared_memory":
             return
-        return resource_tracker._resource_tracker.register(self, name, rtype)
+        return resource_tracker._resource_tracker.register(
+            self, name, rtype)
     resource_tracker.register = fix_register
 
     def fix_unregister(name, rtype):
         if rtype == "shared_memory":
             return
-        return resource_tracker._resource_tracker.unregister(self, name, rtype)
+        return resource_tracker._resource_tracker.unregister(
+            self, name, rtype)
     resource_tracker.unregister = fix_unregister
 
     if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
         del resource_tracker._CLEANUP_FUNCS["shared_memory"]
 
 
-class MultiDimensionalBuffer:
+class GenericMultiDimensionalBuffer(ABC):
     def __init__(
-            self, max_size=None, dimension=8, buffer=None,
-            buffer_name=None,
-            use_raw_array=True):
-        """This implements a generic multidimensional buffer.
-        This buffer can work with RawArrays or SharedMemory.
-        Stream system uses that to implemenet the CircularQueue
-        with shared memory resources.
+            self, max_size=None, dimension=8):
+        """This implements a abstract (generic) multidimensional buffer.
 
         Parameters
         ----------
@@ -53,69 +51,13 @@ class MultiDimensionalBuffer:
             If buffer_name or buffer was not passed then max_size
             it's mandatory
         dimension : int, default 8
-        buffer : buffer, optional
-            If buffer and buffer name is not passed to __init__
-            then the multidimensional buffer obj will create a new
-            RawArray or SharedMemory object to store the data
-            If buffer is passed than this Obj will read a
-            a already created RawArray
-        buffer_name : str, optional
-            if buffer_name is passed than this Obj will read a
-            a already created SharedMemory
-        use_raw_array : bool
-            if use_raw_array is False(True) and both buffer and buffer_name
-            are None, then this Obj will create a float64
-            SharedMemory(RawArray) with dim = dimension*max_size
-
         """
-        use_raw_array = use_raw_array and buffer_name is None
-        if not PY_VERSION_8 and not use_raw_array:
-            raise ValueError("""
-                In order to use the SharedMemory approach
-                you should have to use python 3.8 or higher""")
-
-        if buffer is None and buffer_name is None:
-            if use_raw_array:
-
-                buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
-                buffer = multiprocessing.RawArray(
-                        'd', buffer_arr)
-                self._buffer = buffer
-                self._buffer_repr = np.ctypeslib.as_array(self._buffer)
-            else:
-                buffer_arr = np.zeros(dimension*(max_size+1), dtype='float64')
-                buffer = shared_memory.SharedMemory(
-                    create=True, size=buffer_arr.nbytes)
-                self._buffer_repr = np.ndarray(
-                        buffer_arr.shape[0],
-                        dtype='float64', buffer=buffer.buf)
-                self._buffer = buffer
-                buffer_name = buffer.name
-                self._unlink_shared_mem = True
-                # print('created', max_size, dimension,  len(buffer.buf))
-        else:
-            if buffer_name is None:
-                max_size = int(len(buffer)//dimension)
-                max_size -= 1
-                self._buffer = buffer
-                self._buffer_repr = np.ctypeslib.as_array(self._buffer)
-            else:
-                buffer = shared_memory.SharedMemory(buffer_name)
-                # 8 represents 8 bytes of float64
-                max_size = int(len(buffer.buf)//dimension/8)
-                max_size -= 1
-                self._buffer = buffer
-                self._buffer_repr = np.ndarray(
-                        len(buffer.buf)//8,
-                        dtype='float64', buffer=buffer.buf)
-                self._buffer = buffer
-                self._unlink_shared_mem = False
-                # print('read', max_size, dimension,  len(buffer.buf))
-
-        self.buffer_name = buffer_name
-        self.dimension = dimension
         self.max_size = max_size
-        self.use_raw_array = use_raw_array
+        self.dimension = dimension
+        self.buffer_name = None
+        self._buffer = None
+        self._buffer_repr = None
+        self._created = False
 
     @property
     def buffer(self):
@@ -137,10 +79,7 @@ class MultiDimensionalBuffer:
         start, end = self.get_start_end(idx)
         logging.info(f'dequeue start {int(time.time()*1000)}')
         ts = time.time()*1000
-        if self.use_raw_array:
-            itens = np.frombuffer(self._buffer, 'float64')[start:end]
-        else:
-            itens = self._buffer_repr[start:end]
+        itens = self._buffer_repr[start:end]
         te = time.time()*1000
         logging.info(f'dequeue frombuffer cost {te-ts:.2f}')
         return itens
@@ -152,24 +91,122 @@ class MultiDimensionalBuffer:
                 # if end - start == self.dimension and start >= 0 and end >= 0:
                 self._buffer_repr[start:end] = data
 
+    @abstractmethod
+    def load_mem_resource(self):
+        pass
+
+    @abstractmethod
+    def create_mem_resource(self):
+        pass
+
+    @abstractmethod
     def cleanup(self):
-        """This should be called when SharedMemory (use_raw_array==False)
-        approach is choosed. The aim of that method it's to release
-        the memory resources.
+        pass
+
+
+class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
+    def __init__(self, max_size, dimension=4, buffer=None):
+        """This implements a  multidimensional buffer with RawArray.
+        Stream system uses that to implemenet the CircularQueue
+        with shared memory resources.
+
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory
+        dimension : int, default 8
+        buffer : buffer, optional
+            If buffer is not passed to __init__
+            then the multidimensional buffer obj will create a new
+            RawArray object to store the data
+            If buffer is passed than this Obj will read a
+            a already created RawArray
         """
-        if not self.use_raw_array:
-            self._buffer.close()
-            if self._unlink_shared_mem:
-                # this it's due the python core issues
-                # https://bugs.python.org/issue38119
-                # https://bugs.python.org/issue39959
-                # https://github.com/luizalabs/shared-memory-dict/issues/13
-                try:
-                    self._buffer.unlink()
-                except FileNotFoundError:
-                    print(
-                        f'Shared Memory {self.buffer_name}(queue_event_buffer)\
-                        File not found')
+        super().__init__(max_size, dimension)
+        if buffer is None:
+            self.create_mem_resource()
+        else:
+            self._buffer = buffer
+            self.load_mem_resource()
+
+    def create_mem_resource(self):
+        buffer_arr = np.zeros(
+            self.dimension*(self.max_size+1), dtype='float64')
+        buffer = multiprocessing.RawArray(
+                'd', buffer_arr)
+        self._buffer = buffer
+        self._buffer_repr = np.ctypeslib.as_array(self._buffer)
+
+    def load_mem_resource(self):
+        self.max_size = int(len(self._buffer)//self.dimension)
+        self.max_size -= 1
+        self._buffer_repr = np.ctypeslib.as_array(self._buffer)
+
+    def cleanup(self):
+        pass
+
+
+class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
+    def __init__(self, max_size, dimension=4, buffer_name=None):
+        """This implements a generic multidimensional buffer
+        with SharedMemory. Stream system uses that to implemenet the
+        CircularQueue with shared memory resources.
+
+        Parameters
+        ----------
+        max_size : int, optional
+            If buffer_name or buffer was not passed then max_size
+            it's mandatory
+        dimension : int, default 8
+        buffer_name : str, optional
+            if buffer_name is passed than this Obj will read a
+            a already created SharedMemory
+
+        """
+        super().__init__(max_size, dimension)
+        if buffer_name is None:
+            self.create_mem_resource()
+            self._created = True
+        else:
+            self.buffer_name = buffer_name
+            self.load_mem_resource()
+            self._created = False
+
+    def create_mem_resource(self):
+
+        buffer_arr = np.zeros(
+            self.dimension*(self.max_size+1), dtype='float64')
+        buffer = shared_memory.SharedMemory(
+                    create=True, size=buffer_arr.nbytes)
+        self._buffer_repr = np.ndarray(
+                buffer_arr.shape[0],
+                dtype='float64', buffer=buffer.buf)
+        self._buffer = buffer
+        self.buffer_name = buffer.name
+
+    def load_mem_resource(self):
+        self._buffer = shared_memory.SharedMemory(self.buffer_name)
+        # 8 represents 8 bytes of float64
+        self.max_size = int(len(self._buffer.buf)//self.dimension/8)
+        self.max_size -= 1
+        self._buffer_repr = np.ndarray(
+            len(self._buffer.buf)//8,
+            dtype='float64', buffer=self._buffer.buf)
+
+    def cleanup(self):
+        self._buffer.close()
+        if self._created:
+            # this it's due the python core issues
+            # https://bugs.python.org/issue38119
+            # https://bugs.python.org/issue39959
+            # https://github.com/luizalabs/shared-memory-dict/issues/13
+            try:
+                self._buffer.unlink()
+            except FileNotFoundError:
+                print(
+                    f'Shared Memory {self.buffer_name}(queue_event_buffer)\
+                    File not found')
 
 
 class CircularQueue:
@@ -222,10 +259,15 @@ class CircularQueue:
             raise ValueError("""
                 In order to use the SharedMemory approach
                 you should have to use python 3.8 or higher""")
-        buffer = MultiDimensionalBuffer(
-            max_size=max_size, dimension=dimension, buffer=buffer,
-            buffer_name=buffer_name, use_raw_array=use_raw_array
-        )
+        if use_raw_array:
+            buffer = RawArrayMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension, buffer=buffer
+            )
+        else:
+            buffer = SharedMemMultiDimensionalBuffer(
+                max_size=max_size, dimension=dimension,
+                buffer_name=buffer_name
+            )
         # head_tail_arr[0] int; head position
         # head_tail_arr[1] int; tail position
         # head_tail_arr[2] 0 or 1; if this memory resource it's busy or not
