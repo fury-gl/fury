@@ -3211,7 +3211,7 @@ class ImageContainer2D(UI):
         Parameters
         ----------
         img_path : string
-            Path of the image
+            URL or local path of the image
         position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of the image.
         size : (int, int), optional
