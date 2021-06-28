@@ -69,6 +69,88 @@ def clip_overflow(textblock, width, side='right'):
             return textblock.message
 
 
+class Watcher:
+        def __init__(self, object):
+            """Class to monitor a UI element in runtime
+
+            Parameters
+            ----------
+            instance: :class: `UI`
+                UI element instance
+            show_m: :class: `ShowManager`
+                Show Manager
+            is_running: bool
+                Current running state of the watcher
+            i_ren: :class: `CustomInteractorStyle`
+                CustomInteractorStyle
+            """
+            self.instance = object
+            self.show_m = None
+            self.i_ren = None
+            self.attr = None
+            self.original_attr = None
+            self.updated_attr = None
+            self.is_running = False
+            self.callback = None
+
+        def start(self, delay, show_m, attr):
+            """Start the watcher
+
+            Parameters
+            ----------
+            delay: int
+                delay between each update call
+            show_m: :class: `window.ShowManager`
+                show manager
+            attr: str
+                attribute to watch
+            """
+            self.show_m = show_m
+            self.attr = attr
+            self.i_ren = self.show_m.scene.GetRenderWindow()\
+                .GetInteractor().GetInteractorStyle()
+
+            if hasattr(self.instance, self.attr):
+                self.original_attr = getattr(self.instance, attr)
+
+                if type(self.original_attr) == np.array:
+                    self.original_attr = self.original_attr.tolist()
+            else:
+                raise(AttributeError(
+                    f'{self.instance} has no attribute {self.attr}')
+                )
+
+            if delay > 0:
+                self.id_timer = self.show_m\
+                    .add_timer_callback(True, delay, self.update)
+            else:
+                self.id_observer = self.i_ren.AddObserver('RenderEvent',
+                                                          self.update)
+
+            self.is_running = True
+
+        def stop(self):
+            """Stop the watcher
+            """
+            if self.id_timer:
+                self.show_m.destroy_timer(self.id_timer)
+
+            if self.id_observer:
+                self.i_ren.RemoveObserver(self.id_observer)
+
+            self.is_running = False
+
+        def update(self, _obj, _evt):
+            """ Update the instance of UI element.
+            """
+            self.updated_attr = getattr(self.instance, self.attr)
+
+            if self.original_attr != self.updated_attr:
+                self.callback(self.i_ren, _obj, self.instance)
+                self.original_attr = self.updated_attr
+                self.i_ren.force_render()
+
+
 class UI(object, metaclass=abc.ABCMeta):
     """An umbrella class for all UI elements.
 
