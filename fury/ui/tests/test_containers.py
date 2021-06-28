@@ -13,6 +13,9 @@ from fury.utils import shallow_copy
 from fury.testing import EventCounter
 
 
+def setup_module():
+    fetch_viz_icons()
+
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
@@ -217,7 +220,6 @@ def test_grid_ui(interactive=False):
 
 
 def test_ui_image_container_2d(interactive=False):
-    fetch_viz_icons()
     image_test = ui.ImageContainer2D(
         img_path=read_viz_icons(fname='home3.png'))
 
