@@ -195,7 +195,7 @@ def test_hover_selection_faces(recording=False):
 
 def test_hover_selection_vertices(recording=False):
     # simply hover through blue, green, red cubes
-    # close to any vertices of each of the cube
+    # close to any vertices of each of the cubes
 
     recording_filename = join(DATA_DIR, 'selector_vertices.log.gz')
 

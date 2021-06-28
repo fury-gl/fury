@@ -78,6 +78,12 @@ class PickingManager:
         return iren.GetEventPosition()
 
     def pickable_on(self, actors):
+        """ Choose which actors can be picked
+
+        Parameters
+        ----------
+        actors : actor or sequence of actors
+        """
 
         if isinstance(actors, Sequence):
             for a in actors:
@@ -86,7 +92,13 @@ class PickingManager:
             actors.PickableOn()
 
     def pickable_off(self, actors):
+        """ Choose which actors cannot be picked
 
+        Parameters
+        ----------
+        actors : actor or sequence of actors
+        """
+        
         if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOff()
@@ -97,10 +109,29 @@ class PickingManager:
 class SelectionManager:
 
     def __init__(self, select='faces'):
+        """ Selection Manager helps with picking many 
+        objects simultaneously
+
+        Parameters
+        -----------
+        select : 'faces'
+            Options are 'faces', 'vertices' or 'actors'.
+            Default 'faces'.
+        """
+
         self.hsel = vtk.vtkHardwareSelector()
         self.update_selection_type(select)
 
     def update_selection_type(self, select):
+        """ Update selection type
+
+        Parameters
+        -----------
+        select : 'faces'
+            Options are 'faces', 'vertices' or 'actors'.
+            Default 'faces'.
+        """
+
         self.selected_type = select
         if select == 'faces' or select == 'edges':
             self.hsel.SetFieldAssociation(
@@ -112,9 +143,27 @@ class SelectionManager:
             self.hsel.SetActorPassOnly(True)
 
     def pick(self, disp_xy, sc):
+        """ Pick on display coordinates returns a single object 
+
+        Parameters
+        ----------
+        disp_xyz : tuple
+            Display coordinates x, y.
+
+        sc : Scene
+        """        
         return self.select(disp_xy, sc, area=0)[0]
 
     def select(self, disp_xy, sc, area=0):
+        """ Select multiple objects using display coordinates
+
+        Parameters
+        ----------
+        disp_xyz : tuple
+            Display coordinates x, y.
+
+        sc : Scene
+        """     
         info_plus = {}
         self.hsel.SetRenderer(sc)
         if isinstance(area, int):
@@ -130,20 +179,21 @@ class SelectionManager:
             res = self.hsel.Select()
 
         except OverflowError:
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {'node': None, 'vertex': None, 
+                        'face': None, 'actor': None}}
 
-        # print(res)
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
             sel_node = None
-            return {0: {'node': None, 'vertex': None, 'face': None, 'actor': None}}
+            return {0: {'node': None, 'vertex': None, 
+                        'face': None, 'actor': None}}
         else:
-            # print('Number of Nodes ', num_nodes)
 
             for i in range(num_nodes):
-                # print('Node ', i)
+
                 sel_node = res.GetNode(i)
-                info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
+                info = {'node': None, 'vertex': None, 
+                        'face': None, 'actor': None}
 
                 if(sel_node is not None):
                     selected_nodes = set(
@@ -167,11 +217,17 @@ class SelectionManager:
         ----------
         iren : interactor
             The interactor object can be retrieved for example
-            using providing ShowManager's iren attribute.
+            using ShowManager's iren attribute.
         """
         return iren.GetEventPosition()
 
     def selectable_on(self, actors):
+        """ Choose which actors can be selected
+
+        Parameters
+        ----------
+        actors : actor or sequence of actors
+        """
 
         if isinstance(actors, Sequence):
             for a in actors:
@@ -180,6 +236,12 @@ class SelectionManager:
             actors.PickableOn()
 
     def selectable_off(self, actors):
+        """ Choose which actors cannot be selected
+
+        Parameters
+        ----------
+        actors : actor or sequence of actors
+        """
 
         if isinstance(actors, Sequence):
             for a in actors:
