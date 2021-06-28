@@ -1,11 +1,10 @@
 from collections.abc import Sequence
-from numpy.lib.arraysetops import isin
 import vtk
 import numpy as np
-from fury.utils import numpy_support as nps
+from fury.utils import numpy_support
 
 
-class PickingManager():
+class PickingManager:
     def __init__(self, vertices=True, faces=True, actors=True,
                  world_coords=True):
         """ Picking Manager helps with picking 3D objects
@@ -95,7 +94,7 @@ class PickingManager():
             actors.PickableOff()
 
 
-class SelectionManager():
+class SelectionManager:
 
     def __init__(self, select='faces'):
         self.hsel = vtk.vtkHardwareSelector()
@@ -147,7 +146,8 @@ class SelectionManager():
                 info = {'node': None, 'vertex': None, 'face': None, 'actor': None}
 
                 if(sel_node is not None):
-                    selected_nodes = set(np.floor(nps.vtk_to_numpy(
+                    selected_nodes = set(
+                        np.floor(numpy_support.vtk_to_numpy(
                         sel_node.GetSelectionList())).astype(int))
 
                     info['node'] = sel_node
