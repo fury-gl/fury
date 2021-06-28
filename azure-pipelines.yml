@@ -26,6 +26,7 @@ jobs:
         python.version: '3.8'
       Python39-64bit:
         python.version: '3.9'
+        EXTRA_PIP_FLAGS: "--pre"
       CONDA Python37-64bit + OPTIONAL_DEPS:
         python.version: '3.7'
         OPTIONAL_DEPS: true
