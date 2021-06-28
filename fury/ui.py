@@ -83,7 +83,7 @@ class Watcher:
     i_ren: :class: `CustomInteractorStyle`
         CustomInteractorStyle
     """
-    
+
     def __init__(self, object):
         """Initialize the watcher class
 
@@ -133,7 +133,7 @@ class Watcher:
                 .add_timer_callback(True, delay, self.update)
         else:
             self.id_observer = self.i_ren.AddObserver('RenderEvent',
-                                                        self.update)
+                                                      self.update)
 
         self.is_running = True
 
