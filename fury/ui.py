@@ -4,6 +4,7 @@ from numbers import Number
 from string import printable
 
 import numpy as np
+from numpy.core.fromnumeric import size
 import vtk
 import os
 import abc
@@ -5243,3 +5244,186 @@ class GridUI(UI):
         pass
         # self.actor.SetPosition(*coords)
         # self.container.SetPosition(*coords)
+
+
+class TreeNode2D(UI):
+    """
+    """
+    def __init__(self, label, parent=None, children=None,
+                 position=(0, 0), size=(200, 200), indent=5,
+                 child_indent=10, child_height=25):
+        """
+        """
+        self.children = children
+        if self.children is None:
+            self.children = []
+
+        self._child_nodes = []
+        self.parent = parent
+        self.indent = indent
+
+        self.label = label
+
+        self.child_indent = child_indent
+        self.child_height = child_height
+        self.content_panel_size = size
+        self.expanded = False
+        super(TreeNode2D, self).__init__(position)
+        self.resize(size)
+        self.panel.color = (0.3, 0.3, 0.3)
+        self.panel.opacity = 0.8
+
+    def _setup(self):
+        """Setup this UI element."""
+        self.panel = Panel2D(size=(self.content_panel_size[0],
+                                   self.child_height))
+        self.content_panel = Panel2D(size=self.content_panel_size)
+
+        self.button_icons = []
+        self.button_icons.append(('expand',
+                                 read_viz_icons(fname="circle-up.png")))
+        self.button_icons.append(('collapse',
+                                 read_viz_icons(fname="circle-down.png")))
+
+        self.button = Button2D(icon_fnames=self.button_icons)
+        self.label_text = TextBlock2D(text=self.label)
+
+        self.panel.add_element(self.label_text,
+                               (self.indent,
+                                self.panel.size[1]-self.child_height))
+
+        self.panel.add_element(self.button, self.panel.size-self.button.size)
+        self.panel.add_element(self.content_panel,
+                               (0, -self.content_panel_size[1]))
+
+        self.button.on_left_mouse_button_clicked = self.toggle_view
+
+        if self.children:
+            for child in self.children:
+                self.add_node(child)
+
+        if self.expanded:
+            self.button.set_icon_by_name('expand')
+        else:
+            self.button.set_icon_by_name('collapse')
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.panel.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.panel.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.panel.position = _coords
+
+    def _get_size(self):
+        self.panel.size
+
+    def add_node(self, node):
+        """Add a child node in the current node.
+
+        Parameters
+        ----------
+        node: :class: `TreeNode2D`
+            Node that isto be added
+        """
+        self._child_nodes.append(node)
+        node.parent = self
+
+        _node_size = (self.panel.size[0] - self.indent - self.child_indent,
+                      self.child_height)
+                      
+        _node_coords = (self.indent+self.child_indent,
+                        self.panel.size[1]-self._child_nodes[-1].position[1] -
+                        self.child_height)
+
+        node.resize(_node_size)
+        node.content_panel.set_visibility(False)
+        self.content_panel.add_element(node, _node_coords)
+
+    def resize(self, size):
+        """ Resizes the Tree Node.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        offset = 0
+        self.panel.resize((size[0], self.child_height))
+        self.content_panel.resize(size)
+        self.label_text.resize((size[0]-self.button.size[0],
+                                self.child_height))
+
+        self.panel.update_element(self.label_text,
+                                  (self.indent, self.panel.size[1] -
+                                   self.child_height))
+
+        self.panel.update_element(self.button,
+                                  (self.panel.size - self.button.size))
+
+        self.panel.update_element(self.content_panel, (0, -size[1]))
+
+        if self.children:
+            for _, child in enumerate(self._child_nodes):
+                offset += self.child_height
+                _child_size = (self.panel.size[0] - self.indent -
+                               self.child_indent, self.child_height)
+
+                _child_coords = (self.indent+self.child_indent,
+                                 self.content_panel.size[1]-offset)
+
+                child.panel.resize(_child_size)
+                self.content_panel.update_element(child, _child_coords)
+
+    def toggle_view(self, i_ren, _obj, _element):
+        self.expanded = not self.expanded
+        self.content_panel.set_visibility(self.expanded)
+
+        if self.expanded:
+            if self.parent is not None:
+                idx = self.parent._child_nodes.index(self)
+                self.update_children_coords(idx, self.content_panel.size[1])
+
+            self.button.set_icon_by_name('expand')
+        else:
+            if self.parent is not None:
+                idx = self.parent._child_nodes.index(self)
+                self.update_children_coords(idx, -self.content_panel.size[1])
+
+            self.button.set_icon_by_name('collapse')
+
+        i_ren.force_render()
+
+    def update_children_coords(self, current_child_idx, size_offset):
+        """Updates the coords of the children below a specific child
+
+        Parameters
+        ----------
+        current_child_idx: int
+            The index of the current child
+        size_offset: int
+            Size by which below children are to be offset
+        """
+        if 0 >= current_child_idx > len(self._child_nodes):
+            raise ValueError(
+                f'Child index {current_child_idx} does not exist'
+            )
+
+        for child in self.parent._child_nodes[current_child_idx+1:]:
+            child.position = (child.position[0], child.position[1]-size_offset)
