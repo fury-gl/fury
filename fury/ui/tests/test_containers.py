@@ -16,6 +16,7 @@ from fury.testing import EventCounter
 def setup_module():
     fetch_viz_icons()
 
+
 def test_wrong_interactor_style():
     panel = ui.Panel2D(size=(300, 150))
     dummy_scene = window.Scene()
