@@ -324,19 +324,3 @@ vec3 evaluateSubsurface(float roughnessF, vec3 baseColor, float dotLN,
     float ss = 1.25 * (fss * (1. / (dotLN + dotNV) - .5) + .5);
     return (1 / PI) * ss * baseColor;
 }
-
-const float IOR1 = 1.;  // Air
-//const float IOR1 = 1.333;  // Water(20 °C)
-//const float IOR2 = .18;  // Silver
-//const float IOR2 = .47;  // Gold
-//const float IOR2 = 1.;  // Air
-const float IOR2 = 1.5;  // Glass
-//const float IOR2 = 2.33;  // Platinum
-
-float FRESNEL_POW = 5.;
-
-// Air to glass ratio of the indices of refraction
-const float ETA = IOR1 / IOR2;
-
-// see http://en.wikipedia.org/wiki/Refractive_index Reflectivity
-const float R0 = ((IOR1 - IOR2) * (IOR1 - IOR2)) / ((IOR1 + IOR2) * (IOR1 + IOR2));

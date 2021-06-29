@@ -42,13 +42,12 @@ def change_slice_metallic(slider):
 
 def change_slice_specular(slider):
     global obj_actor, specular
-    obj_actor.GetProperty().SetSpecular(slider._value)
+    #obj_actor.GetProperty().SetSpecular(slider._value)
     specular = slider._value
 
 
 def change_slice_specular_tint(slider):
-    global obj_actor, specular_tint
-    obj_actor.GetProperty().SetSpecularPower(slider._value)
+    global specular_tint
     specular_tint = slider._value
 
 
@@ -195,10 +194,10 @@ if __name__ == '__main__':
     obj_actor.GetProperty().SetRoughness(roughness)
 
     # NOTE: Specular parameters don't seem to work
-    specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
-    obj_actor.GetProperty().SetSpecular(specular)
+    #specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
+    #obj_actor.GetProperty().SetSpecular(specular)
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
-    obj_actor.GetProperty().SetSpecularColor(specular_color)
+    #obj_actor.GetProperty().SetSpecularColor(specular_color)
 
     opacity = 1.
     obj_actor.GetProperty().SetOpacity(opacity)
