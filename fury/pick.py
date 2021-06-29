@@ -138,15 +138,17 @@ class SelectionManager:
             Default 'faces'.
         """
 
-        self.selected_type = select
+        self.selected_type = select.lower()
         if select == 'faces' or select == 'edges':
             self.hsel.SetFieldAssociation(
                 vtk.vtkDataObject.FIELD_ASSOCIATION_CELLS)
-        if select == 'points' or select == 'vertices':
+        elif select == 'points' or select == 'vertices':
             self.hsel.SetFieldAssociation(
                 vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS)
-        if select == 'actors':
+        elif select == 'actors':
             self.hsel.SetActorPassOnly(True)
+        else:
+            raise ValueError('Unkown parameter select')
 
     def pick(self, disp_xy, sc):
         """ Pick on display coordinates returns a single object
@@ -170,7 +172,7 @@ class SelectionManager:
 
         sc : Scene
 
-        area : int or 2d tuple
+        area : int or 2d tuple of ints
             Selection area around x, y coords.
         """
         info_plus = {}
@@ -192,7 +194,7 @@ class SelectionManager:
                         'face': None, 'actor': None}}
 
         num_nodes = res.GetNumberOfNodes()
-        if (num_nodes < 1):
+        if num_nodes < 1:
             sel_node = None
             return {0: {'node': None, 'vertex': None,
                         'face': None, 'actor': None}}
@@ -204,7 +206,7 @@ class SelectionManager:
                 info = {'node': None, 'vertex': None,
                         'face': None, 'actor': None}
 
-                if(sel_node is not None):
+                if sel_node is not None:
                     selected_nodes = set(
                         np.floor(numpy_support.vtk_to_numpy(
                                     sel_node.GetSelectionList())).astype(int))

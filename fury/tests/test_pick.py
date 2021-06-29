@@ -284,4 +284,3 @@ def test_hover_selection_actors_only(recording=False):
 
 if __name__ == "__main__":
     npt.run_module_suite()
-

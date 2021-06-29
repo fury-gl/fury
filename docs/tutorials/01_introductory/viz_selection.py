@@ -36,9 +36,11 @@ colors[:, 3] = 1.0
 radii = 100 * np.random.rand(num_cubes) + 0.1
 
 ###############################################################################
-# Keep track of total number of faces
+# Keep track of total number of triangle faces
+# Note that every quad of each cube has 2 triangles
+# and each cube has 6 quads in total.
 
-num_faces = num_cubes * 6 * 2  # every quad of each cubes has 2 triangles
+num_faces = num_cubes * 6 * 2  
 
 ###############################################################################
 # Build scene and add an actor with many objects.
@@ -103,6 +105,7 @@ def hover_callback(_obj, _event):
             if info[node]['actor'] is cube_actor:
                 for face_index in info[node]['face']:
                     # generates an object_index to help with coloring
+                    # by dividing by the number of faces of each cube (6 * 2)
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
                     color_change = np.array([150, 0, 0, 255], dtype='uint8')
