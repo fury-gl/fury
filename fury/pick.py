@@ -36,7 +36,7 @@ class PickingManager:
 
         Parameters
         ----------
-        disp_xyz : tuple
+        disp_xy : tuple
             Display coordinates x, y.
 
         sc : Scene
@@ -98,7 +98,7 @@ class PickingManager:
         ----------
         actors : actor or sequence of actors
         """
-        
+
         if isinstance(actors, Sequence):
             for a in actors:
                 a.PickableOff()
@@ -147,7 +147,7 @@ class SelectionManager:
 
         Parameters
         ----------
-        disp_xyz : tuple
+        disp_xy : tuple
             Display coordinates x, y.
 
         sc : Scene
@@ -159,10 +159,13 @@ class SelectionManager:
 
         Parameters
         ----------
-        disp_xyz : tuple
+        disp_xy : tuple
             Display coordinates x, y.
 
         sc : Scene
+
+        area : int or 2d tuple
+            Selection area around x, y coords.
         """     
         info_plus = {}
         self.hsel.SetRenderer(sc)
