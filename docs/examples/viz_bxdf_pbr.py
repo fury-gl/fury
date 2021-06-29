@@ -42,13 +42,13 @@ def change_slice_metallic(slider):
 
 def change_slice_specular(slider):
     global obj_actor, specular
-    #obj_actor.GetProperty().SetSpecular(slider._value)
+    obj_actor.GetProperty().SetSpecular(slider._value)
     specular = slider._value
 
 
 def change_slice_specular_tint(slider):
     global obj_actor, specular_tint
-    #obj_actor.GetProperty().SetSpecularPower(slider._value)
+    obj_actor.GetProperty().SetSpecularPower(slider._value)
     specular_tint = slider._value
 
 
@@ -195,10 +195,10 @@ if __name__ == '__main__':
     obj_actor.GetProperty().SetRoughness(roughness)
 
     # NOTE: Specular parameters don't seem to work
-    #specular_color = vtk.vtkNamedColors().GetColor3d('White')
-    #obj_actor.GetProperty().SetSpecular(specular)
+    specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
+    obj_actor.GetProperty().SetSpecular(specular)
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
-    #obj_actor.GetProperty().SetSpecularColor(specular_color)
+    obj_actor.GetProperty().SetSpecularColor(specular_color)
 
     opacity = 1.
     obj_actor.GetProperty().SetOpacity(opacity)
@@ -213,12 +213,12 @@ if __name__ == '__main__':
     shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
                     block='light', debug=False)
 
-    cubemap_fns = [read_viz_textures('skybox-px.jpg'),
-                   read_viz_textures('skybox-nx.jpg'),
-                   read_viz_textures('skybox-py.jpg'),
-                   read_viz_textures('skybox-ny.jpg'),
-                   read_viz_textures('skybox-pz.jpg'),
-                   read_viz_textures('skybox-nz.jpg')]
+    cubemap_fns = [read_viz_textures('waterfall-skybox-px.jpg'),
+                   read_viz_textures('waterfall-skybox-nx.jpg'),
+                   read_viz_textures('waterfall-skybox-py.jpg'),
+                   read_viz_textures('waterfall-skybox-ny.jpg'),
+                   read_viz_textures('waterfall-skybox-pz.jpg'),
+                   read_viz_textures('waterfall-skybox-nz.jpg')]
 
     # Load the cube map
     cubemap = get_cubemap(cubemap_fns)
