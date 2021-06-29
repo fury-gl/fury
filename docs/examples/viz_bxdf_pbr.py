@@ -248,8 +248,8 @@ if __name__ == '__main__':
                                 order_transparent=True)
     show_m.initialize()
 
-    brdf_panel = ui.Panel2D((320, 500), position=(-25, 5), color=(.25, .25, .25),
-                       opacity=.75, align='right')
+    brdf_panel = ui.Panel2D((320, 500), position=(-25, 5),
+                            color=(.25, .25, .25), opacity=.75, align='right')
 
     panel_label_principled_brdf = build_label('"Principled" BRDF',
                                               font_size=18, bold=True)
