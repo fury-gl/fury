@@ -160,10 +160,11 @@ class Widget:
         return url
 
     def return_iframe(self, height=200):
-        display(IFrame(
-            self.url,
-            '100%', f'{int(height)}px')
-        )
+        if IPYTHON_AVAILABLE:
+            display(IFrame(
+                self.url,
+                '100%', f'{int(height)}px')
+            )
 
     def start(self):
         self.start_server()

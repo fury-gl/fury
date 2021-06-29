@@ -10,7 +10,6 @@ import sys
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
     from multiprocessing import resource_tracker
-
     PY_VERSION_8 = True
 else:
     shared_memory = None
@@ -87,6 +86,7 @@ class GenericMultiDimensionalBuffer(ABC):
         start, end = self.get_start_end(idx)
         logging.info(f'dequeue start {int(time.time()*1000)}')
         ts = time.time()*1000
+
         itens = self._buffer_repr[start:end]
         te = time.time()*1000
         logging.info(f'dequeue frombuffer cost {te-ts:.2f}')
@@ -182,25 +182,36 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             self._created = False
 
     def create_mem_resource(self):
-
         buffer_arr = np.zeros(
             self.dimension*(self.max_size+1), dtype='float64')
-        buffer = shared_memory.SharedMemory(
+        self._buffer = shared_memory.SharedMemory(
                     create=True, size=buffer_arr.nbytes)
+
+        # Some OSx versions has a minimum shared memory block size
+        # of 4096 bytes. Therefore, we must update this value
+        self.max_size = self._buffer.size//self.dimension//8-1
         self._buffer_repr = np.ndarray(
-                buffer_arr.shape[0],
-                dtype='float64', buffer=buffer.buf)
-        self._buffer = buffer
-        self.buffer_name = buffer.name
+                self._buffer.size//8,
+                dtype='float64', buffer=self._buffer.buf)
+        self.buffer_name = self._buffer.name
+        logging.info([
+            'create repr multidimensional buffer ',
+            self._buffer_repr.shape, 'max size', self.max_size
+        ])
 
     def load_mem_resource(self):
         self._buffer = shared_memory.SharedMemory(self.buffer_name)
         # 8 represents 8 bytes of float64
-        self.max_size = int(len(self._buffer.buf)//self.dimension/8)
-        self.max_size -= 1
+        self.max_size = self._buffer.size//self.dimension//8-1
+        # self.max_size = int(len(self._buffer.buf)//self.dimension/8)
+        # self.max_size -= 1
         self._buffer_repr = np.ndarray(
-            len(self._buffer.buf)//8,
+            self._buffer.size//8,
             dtype='float64', buffer=self._buffer.buf)
+        logging.info([
+            'load repr multidimensional buffer', 
+            self._buffer_repr.shape, 'max size', self.max_size
+        ])
 
     def cleanup(self):
         self._buffer.close()
@@ -276,7 +287,7 @@ class GenericCircularQueue(ABC):
         self.head_tail_buffer_repr[1] = value
 
     def set_head_tail(self, head, tail, lock=1):
-        self.head_tail_buffer_repr[:] = np.array(
+        self.head_tail_buffer_repr[0:3] = np.array(
             [head, tail, lock]).astype('int64')
 
     def _enqueue(self, data):
@@ -430,8 +441,13 @@ class SharedMemCircularQueue(GenericCircularQueue):
             self._created = False
 
         self.head_tail_buffer_repr = np.ndarray(
-                3,
+                self.head_tail_buffer.size//8,
                 dtype='int64', buffer=self.head_tail_buffer.buf)
+        logging.info([
+            'create shared mem',
+            'size repr', self.head_tail_buffer_repr.shape,
+            'size buffer', self.head_tail_buffer.size//8
+        ])
         if self._created:
             self.set_head_tail(-1, -1, 0)
 
@@ -544,6 +560,7 @@ class GenericImageBufferManager(ABC):
                 dtype='uint8')
 
             self.image_reprs[
+                # next_buffer_index][0:self.max_size*3] = rand_img
                 next_buffer_index][:] = rand_img
 
             w = self.max_window_size[0]
@@ -553,7 +570,7 @@ class GenericImageBufferManager(ABC):
         self.info_buffer_repr[2+next_buffer_index*2+1] = h
         self.info_buffer_repr[1] = next_buffer_index
 
-    def get_current_frame(self):
+    def get_current_frame(self, from_buffer=False):
         if not self._use_shared_mem:
             image_info = np.frombuffer(
                     self.info_buffer, 'uint32')
@@ -565,9 +582,10 @@ class GenericImageBufferManager(ABC):
         self.width = int(image_info[2+buffer_index*2])
         self.height = int(image_info[2+buffer_index*2+1])
 
-        self.image_buffer_repr = self.image_reprs[buffer_index]
+        image = self.image_reprs[buffer_index]
+        self.image_buffer_repr = image
 
-        return self.width, self.height, self.image_buffer_repr
+        return self.width, self.height, image
 
     def get_jpeg(self):
         width, height, image = self.get_current_frame()
@@ -729,25 +747,36 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         info_list = np.array(
             info_list, dtype='uint64'
         )
+
         self.info_buffer = shared_memory.SharedMemory(
             create=True, size=info_list.nbytes)
         self.info_buffer_repr = np.ndarray(
-                info_list.shape[0],
-                dtype='uint64', buffer=self.info_buffer.buf)
+                self.info_buffer.size//8,
+                dtype='uint64',
+                buffer=self.info_buffer.buf)
+        logging.info([
+            'info buffer create',
+            'buffer size', self.info_buffer.size,
+            'repr size', self.info_buffer_repr.shape
+        ])
         self.info_buffer_name = self.info_buffer.name
 
     def load_mem_resource(self):
         self.info_buffer = shared_memory.SharedMemory(self.info_buffer_name)
         self.info_buffer_repr = np.ndarray(
-                self.info_buffer_size,
+                self.info_buffer.size//8,
                 dtype='uint64',
                 buffer=self.info_buffer.buf)
-
+        logging.info([
+            'info buffer load',
+            'buffer size', self.info_buffer.size,
+            'repr size', self.info_buffer_repr.shape
+        ])
         for buffer_name in self.image_buffer_names:
             buffer = shared_memory.SharedMemory(buffer_name)
             self.image_buffers.append(buffer)
             self.image_reprs.append(np.ndarray(
-                len(buffer.buf),
+                buffer.size,
                 dtype=np.uint8,
                 buffer=buffer.buf))
 

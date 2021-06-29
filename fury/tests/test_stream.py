@@ -293,7 +293,12 @@ def test_multidimensional_buffer():
         m_buffer[1] = np.array([.2, .3, .4, .5])
 
         assert len(m_buffer[0]) == dimension
-        assert len(m_buffer[max_size]) == 4 and len(m_buffer[max_size+1]) == 0
+        if not use_raw_array:
+            # in OSx this number can change due the minimum shared memory
+            #  block size
+            max_size = m_buffer.max_size
+
+        assert len(m_buffer[max_size]) == 4
         npt.assert_equal(np.array([.2, .3, .4, .5]), m_buffer[1])
         m_buffer.cleanup()
 
@@ -319,10 +324,12 @@ def test_multidimensional_buffer():
                 max_size, dimension, buffer_name=m_buffer_org.buffer_name)
 
         m_buffer_0[1] = np.array([.2, .3, .4, .5])
-
+        if not use_raw_array:
+            # in OSx this number can change due the minimum shared memory
+            #  block size
+            max_size = m_buffer_org.max_size
         assert len(m_buffer_org[0]) == len(m_buffer_0[0])
-        assert len(m_buffer_org[max_size]) == 4 and\
-            len(m_buffer_org[max_size+1]) == 0
+        assert len(m_buffer_org[max_size]) == 4
         # check values
         npt.assert_equal(np.array([.2, .3, .4, .5]), m_buffer_org[1])
         # check if the correct max_size was recovered
@@ -398,7 +405,7 @@ def test_circular_queue():
                 buffer_name=queue.buffer.buffer_name
             )
         # init as empty queue
-        assert queue_sh.buffer.max_size == max_size
+        assert queue_sh.buffer.max_size == queue.buffer.max_size
         assert queue.head == -1 and queue.tail == -1
         assert queue.dequeue() is None
         arr = np.array([1.0, 2, 3, 4])
@@ -497,5 +504,5 @@ def test_widget():
     widget = Widget(showm)
     widget.start()
     time.sleep(2)
-    widget.return_iframe()
+    # widget.return_iframe()
     widget.stop()
