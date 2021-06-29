@@ -907,6 +907,12 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     # (default is 8)
     win.SetMultiSamples(multi_samples)
 
+    # TODO: enable these but test
+    # win.SetBorders(True)
+    # win.LineSmoothingOn(True)
+    # win.PointSmoothingOn(True)
+    # win.PolygonSmoothingOn(True)
+
     # Choose to use depth peeling (if supported)
     # (default is 0 (false)):
     scene.UseDepthPeelingOn()

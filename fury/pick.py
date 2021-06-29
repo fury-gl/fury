@@ -109,7 +109,7 @@ class PickingManager:
 class SelectionManager:
 
     def __init__(self, select='faces'):
-        """ Selection Manager helps with picking many 
+        """ Selection Manager helps with picking many
         objects simultaneously
 
         Parameters
@@ -117,6 +117,12 @@ class SelectionManager:
         select : 'faces'
             Options are 'faces', 'vertices' or 'actors'.
             Default 'faces'.
+        
+        Methods
+        -------
+        select()
+        pick()
+        
         """
 
         self.hsel = vtk.vtkHardwareSelector()
@@ -166,7 +172,7 @@ class SelectionManager:
 
         area : int or 2d tuple
             Selection area around x, y coords.
-        """     
+        """
         info_plus = {}
         self.hsel.SetRenderer(sc)
         if isinstance(area, int):

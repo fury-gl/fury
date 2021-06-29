@@ -5,7 +5,7 @@ Selecting multiple objects
 ==========================
 
 Here we show how to select objects in the
-3D world. In this example all objects to be picked are part of 
+3D world. In this example all objects to be picked are part of
 a single actor.
 
 FURY likes to bundle objects in a few actors to reduce code and
@@ -105,9 +105,9 @@ def hover_callback(_obj, _event):
                     # generates an object_index to help with coloring
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
-                    color_add = np.array([150, 0, 0, 255], dtype='uint8')
+                    color_change = np.array([150, 0, 0, 255], dtype='uint8')
                     vcolors[object_index * sec: object_index * sec + sec] \
-                        = color_add                   
+                        = color_change
                 utils.update_actor(cube_actor)
     showm.render()
 
