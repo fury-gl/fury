@@ -4,8 +4,9 @@
 Selecting multiple objects
 ==========================
 
-Here we show how to interact with objects in the
-3D world. All objects to be picked are part of a single actor.
+Here we show how to select objects in the
+3D world. In this example all objects to be picked are part of 
+a single actor.
 
 FURY likes to bundle objects in a few actors to reduce code and
 increase speed. Nonetheless the method works for multiple actors too.
@@ -85,7 +86,7 @@ selm = pick.SelectionManager(select='faces')
 selm.selectable_off(texa)
 
 ###############################################################################
-# Time to make the callback which will be called
+# Let's make the callback which will be called
 # when we hover the mouse
 
 
@@ -104,10 +105,9 @@ def hover_callback(_obj, _event):
                     # generates an object_index to help with coloring
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
-                    color_add = np.array([150, 150, 250, 0], dtype='uint8')
+                    color_add = np.array([150, 0, 0, 255], dtype='uint8')
                     vcolors[object_index * sec: object_index * sec + sec] \
-                        += color_add
-                    # switch += to = to erase the cubes (uncomment below)
+                        = color_add                   
                 utils.update_actor(cube_actor)
     showm.render()
 
@@ -122,12 +122,13 @@ showm.initialize()
 
 ###############################################################################
 # Bind the callback to the actor
+
 showm.add_iren_callback(hover_callback)
 
 ###############################################################################
 # Change interactive to True to start interacting with the scene
 
-interactive = True
+interactive = False
 
 if interactive:
 
