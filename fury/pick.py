@@ -117,12 +117,12 @@ class SelectionManager:
         select : 'faces'
             Options are 'faces', 'vertices' or 'actors'.
             Default 'faces'.
-        
+
         Methods
         -------
         select()
         pick()
-        
+
         """
 
         self.hsel = vtk.vtkHardwareSelector()
@@ -149,7 +149,7 @@ class SelectionManager:
             self.hsel.SetActorPassOnly(True)
 
     def pick(self, disp_xy, sc):
-        """ Pick on display coordinates returns a single object 
+        """ Pick on display coordinates returns a single object
 
         Parameters
         ----------
@@ -157,7 +157,7 @@ class SelectionManager:
             Display coordinates x, y.
 
         sc : Scene
-        """        
+        """
         return self.select(disp_xy, sc, area=0)[0]
 
     def select(self, disp_xy, sc, area=0):
@@ -188,29 +188,30 @@ class SelectionManager:
             res = self.hsel.Select()
 
         except OverflowError:
-            return {0: {'node': None, 'vertex': None, 
+            return {0: {'node': None, 'vertex': None,
                         'face': None, 'actor': None}}
 
         num_nodes = res.GetNumberOfNodes()
         if (num_nodes < 1):
             sel_node = None
-            return {0: {'node': None, 'vertex': None, 
+            return {0: {'node': None, 'vertex': None,
                         'face': None, 'actor': None}}
         else:
 
             for i in range(num_nodes):
 
                 sel_node = res.GetNode(i)
-                info = {'node': None, 'vertex': None, 
+                info = {'node': None, 'vertex': None,
                         'face': None, 'actor': None}
 
                 if(sel_node is not None):
                     selected_nodes = set(
                         np.floor(numpy_support.vtk_to_numpy(
-                        sel_node.GetSelectionList())).astype(int))
+                                    sel_node.GetSelectionList())).astype(int))
 
                     info['node'] = sel_node
-                    info['actor'] = sel_node.GetProperties().Get(sel_node.PROP())
+                    info['actor'] = \
+                        sel_node.GetProperties().Get(sel_node.PROP())
                     if self.selected_type == 'faces':
                         info['face'] = list(selected_nodes)
                     if self.selected_type == 'vertex':
@@ -257,4 +258,3 @@ class SelectionManager:
                 a.PickableOff()
         else:
             actors.PickableOff()
-
