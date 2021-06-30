@@ -974,7 +974,6 @@ class Panel2D(UI):
         self.background.on_window_propagate = self.window_resize
         self.resize_button.on_left_mouse_button_pressed = self.left_button_pressed
         self.resize_button.on_left_mouse_button_dragged = self.corner_resize
-        self.resize_button.on_left_mouse_button_clicked = self.panel_resize_callback
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -1137,16 +1136,19 @@ class Panel2D(UI):
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
+
             delta_x = new_position[0] - panel2d_object.position[0] + self.background.size[0]
             delta_y = new_position[1] - panel2d_object.position[1]
             new_size = (delta_x, delta_y)
+            
             self.max_size = new_size
             self.resize(np.clip(new_size, 0, None))
+        
+        self.panel_resize_callback(i_ren, panel2d_object)
         i_ren.force_render()
     
     def panel_resize_callback(self, i_ren, panel2d_object):
         self.on_panel_resize(self)
-        i_ren.forcer_render()
         i_ren.event.abort()
 
     def re_align(self, window_size_change):
