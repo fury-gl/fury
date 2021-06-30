@@ -230,6 +230,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self._callbacks = []
 
         self._setup()  # Setup needed actors and sub UI components.
+        self.watcher = Watcher(self)
         self.position = position
 
         self.left_button_state = "released"
