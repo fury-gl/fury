@@ -134,7 +134,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
         Parameters
         ----------
-        _scene : scene
+        _scene : Scene
 
         """
         msg = "Subclasses of UI must implement `_add_to_scene(self, scene)`."
