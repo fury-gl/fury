@@ -13,7 +13,7 @@ from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
 from fury.utils import set_input, rotate
-from fury.actor import grid
+from fury.actor import grid, label
 
 
 TWO_PI = 2 * np.pi
@@ -5246,13 +5246,199 @@ class GridUI(UI):
         # self.container.SetPosition(*coords)
 
 
+class Tree2D(UI):
+    """Render nodes in tree form
+
+    Attributes
+    ----------
+    structure: List(Dict, Dict, .....)
+        [{'node': ['child', 'child']}, .....]
+    tree_name: str
+        Name of the tree
+    node_height: int
+        Space taken by each node vertically
+    indent: int
+        Global indentation for the parent/child nodes
+    nodes: list of :class: `TreeNode2D`
+        List of all parent nodes present in Tree2D
+    nodes_dict: dict
+        Dict with label, nodes as key/value pairs
+    """
+
+    def __init__(self, structure, tree_name="", position=(0, 0),
+                 size=(300, 300), node_height=30, color=(0.3, 0.3, 0.3),
+                 opacity=0.8, indent=25):
+        """Initialize the UI element
+
+        Parameter
+        ---------
+        structure: List(Dict, Dict, .....)
+            [{'node': ['child', 'child']}, .....]
+        tree_name: str, optional
+            Label for the tree
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int), optional
+            Width and height of the pixels of this UI component.
+        node_height: int, optional
+            Space taken by each node vertically
+        color : list of 3 floats, opational
+            Background color of the Tree2D
+        opacity: float, optional
+            Background opacity of the Tree2D
+        indent: int, optional
+            Global indentation for the parent/child nodes
+        """
+        self.structure = structure
+        self.tree_name = tree_name
+        self.indent = indent
+        self._nodes = []
+        self._nodes_dict = {}
+        self.node_height = node_height
+
+        super(Tree2D, self).__init__(position)
+        self.resize(size)
+        self.base_node.color = color
+        self.base_node.opacity = opacity
+
+    def _setup(self):
+        """Setup this UI element."""
+        self.generate_tree(self.structure)
+
+        self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
+                                    expandable=False, expanded=True,
+                                    indent=self.indent, child_indent=self.indent,
+                                    child_height=self.node_height)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.base_node.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.base_node.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.base_node.position = _coords
+
+    def _get_size(self):
+        return self.base_node.size
+
+    def generate_tree(self, structure):
+        """Generate the structure of the Tree2D
+
+        Parameters
+        ----------
+        structure: List(Dict, Dict, .....)
+            [{'node': ['child', 'child']}, .....]
+        """
+        for obj in structure:
+            parent_label = list(obj.keys())[0]
+            child_labels = list(obj.values())[0]
+
+            parent_node = TreeNode2D(label=parent_label)
+            child_nodes = [TreeNode2D(label=child_label) for child_label in
+                           child_labels]
+
+            for child_node in child_nodes:
+                parent_node.add_node(child_node)
+
+            self._nodes.append(parent_node)
+            self._nodes_dict[parent_label] = parent_node
+
+    def resize(self, size):
+        """ Resizes the Tree Node.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        self.base_node.resize(size)
+    
+    @property
+    def nodes(self):
+        """Get all the nodes present in the Tree2D
+
+        Returns
+        -------
+        list of nodes
+        """
+        return self._nodes
+    
+    @property
+    def nodes_dict(self):
+        """Get all the nodes present in the Tree2D in dict format
+        
+        Returns
+        -------
+        dict with label, node as key, value
+        """
+        return self._nodes_dict
+    
+
 class TreeNode2D(UI):
+    """Node/Leaf of a Tree2D UI
+
+    Attributes
+    ----------
+    children: list of :class: `TreeNode2D`
+        Sub nodes of the current node
+    parent: :class: `TreeNode2D`
+        Parent node of the current node
+    indent: int
+        Indentaion of the current node
+    label: str
+        Label text of the current node
+    expanded: bool
+        Whether the current node is expanded or not
     """
-    """
+
     def __init__(self, label, parent=None, children=None,
                  position=(0, 0), size=(200, 200), indent=5,
-                 child_indent=10, child_height=25):
-        """
+                 child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
+                 opacity=0.8, expandable=True, expanded=False):
+        """Initialize the UI element
+
+        Parameters
+        ----------
+        label: str
+            Label text of the current node
+        children: list of :class: `TreeNode2D`
+            Sub nodes of the current node
+        parent: :class: `TreeNode2D`
+            Parent node of the current node
+        position : (float, float)
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int)
+            Width and height of the pixels of this UI component.
+        indent: int
+            Indentation of the current node
+        child_indent: int
+            Indentation of the child nodes
+        child_height: int
+            Space taken by each sub-node vertically
+        color : list of 3 floats
+            Background color of current node.
+        opacity: float
+            Background opacity of the current node
+        expandable: bool, optional
+            If the node should expand/collapse
         """
         self.children = children
         if self.children is None:
@@ -5266,37 +5452,45 @@ class TreeNode2D(UI):
 
         self.child_indent = child_indent
         self.child_height = child_height
-        self.content_panel_size = size
-        self.expanded = False
+        self.content_size = size
+        self.expandable = expandable
+        self.expanded = expanded
+
         super(TreeNode2D, self).__init__(position)
         self.resize(size)
-        self.panel.color = (0.3, 0.3, 0.3)
-        self.panel.opacity = 0.8
+        self.title_panel.color = color
+        self.title_panel.opacity = opacity
 
     def _setup(self):
-        """Setup this UI element."""
-        self.panel = Panel2D(size=(self.content_panel_size[0],
+        """Setup this UI element.
+        Create a title panel.
+        Create a content panel.
+        Create expand/collapse button, label textblock.
+        Add all the sub UI elements to the title panel.
+        """
+        self.title_panel = Panel2D(size=(self.content_size[0],
                                    self.child_height))
-        self.content_panel = Panel2D(size=self.content_panel_size)
+
+        self.content_panel = Panel2D(size=self.content_size)
+        self.label_text = TextBlock2D(text=self.label)
 
         self.button_icons = []
         self.button_icons.append(('expand',
                                  read_viz_icons(fname="circle-up.png")))
+
         self.button_icons.append(('collapse',
                                  read_viz_icons(fname="circle-down.png")))
 
         self.button = Button2D(icon_fnames=self.button_icons)
-        self.label_text = TextBlock2D(text=self.label)
-
-        self.panel.add_element(self.label_text,
-                               (self.indent,
-                                self.panel.size[1]-self.child_height))
-
-        self.panel.add_element(self.button, self.panel.size-self.button.size)
-        self.panel.add_element(self.content_panel,
-                               (0, -self.content_panel_size[1]))
-
         self.button.on_left_mouse_button_clicked = self.toggle_view
+
+        self.title_panel.add_element(self.label_text, (self.indent, 0))
+
+        self.title_panel.add_element(self.button,
+                                     self.title_panel.size-self.button.size)
+
+        self.title_panel.add_element(self.content_panel,
+                                     (0, -self.content_size[1]))
 
         if self.children:
             for child in self.children:
@@ -5305,12 +5499,16 @@ class TreeNode2D(UI):
         if self.expanded:
             self.button.set_icon_by_name('expand')
         else:
+            self.content_panel.set_visibility(False)
             self.button.set_icon_by_name('collapse')
+
+        if not self.expandable:
+            self.button.set_visibility(False)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
         """
-        return self.panel.actors
+        return self.title_panel.actors
 
     def _add_to_scene(self, _scene):
         """ Add all subcomponents or VTK props that compose this UI component.
@@ -5319,7 +5517,7 @@ class TreeNode2D(UI):
         ----------
         scene : scene
         """
-        self.panel.add_to_scene(_scene)
+        self.title_panel.add_to_scene(_scene)
 
     def _set_position(self, _coords):
         """ Position the lower-left corner of this UI component.
@@ -5329,10 +5527,14 @@ class TreeNode2D(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.panel.position = _coords
+        self.title_panel.position = _coords
 
     def _get_size(self):
-        self.panel.size
+        if self.expanded:
+            return (self.title_panel.size[0],
+                    self.title_panel.size[1]+self.content_panel.size[1])
+
+        return self.title_panel.size
 
     def add_node(self, node):
         """Add a child node in the current node.
@@ -5345,14 +5547,9 @@ class TreeNode2D(UI):
         self._child_nodes.append(node)
         node.parent = self
 
-        _node_size = (self.panel.size[0] - self.indent - self.child_indent,
-                      self.child_height)
-                      
-        _node_coords = (self.indent+self.child_indent,
-                        self.panel.size[1]-self._child_nodes[-1].position[1] -
+        _node_coords = (self.indent+self.child_indent, self.children_size() -
                         self.child_height)
 
-        node.resize(_node_size)
         node.content_panel.set_visibility(False)
         self.content_panel.add_element(node, _node_coords)
 
@@ -5365,30 +5562,31 @@ class TreeNode2D(UI):
             New width and height in pixels.
         """
         offset = 0
-        self.panel.resize((size[0], self.child_height))
+        self.title_panel.resize((size[0], self.child_height))
         self.content_panel.resize(size)
+
         self.label_text.resize((size[0]-self.button.size[0],
                                 self.child_height))
 
-        self.panel.update_element(self.label_text,
-                                  (self.indent, self.panel.size[1] -
-                                   self.child_height))
+        self.title_panel.update_element(self.label_text,
+                                        (self.indent, 0))
 
-        self.panel.update_element(self.button,
-                                  (self.panel.size - self.button.size))
+        self.title_panel.update_element(self.button,
+                                        (self.title_panel.size -
+                                         self.button.size))
 
-        self.panel.update_element(self.content_panel, (0, -size[1]))
+        self.title_panel.update_element(self.content_panel, (0, -size[1]))
 
-        if self.children:
-            for _, child in enumerate(self._child_nodes):
+        if self._child_nodes:
+            for child in self._child_nodes:
                 offset += self.child_height
-                _child_size = (self.panel.size[0] - self.indent -
-                               self.child_indent, self.child_height)
+                _child_size = (size[0] - self.indent -
+                               self.child_indent, child.children_size())
 
                 _child_coords = (self.indent+self.child_indent,
                                  self.content_panel.size[1]-offset)
 
-                child.panel.resize(_child_size)
+                child.resize(_child_size)
                 self.content_panel.update_element(child, _child_coords)
 
     def toggle_view(self, i_ren, _obj, _element):
@@ -5426,4 +5624,80 @@ class TreeNode2D(UI):
             )
 
         for child in self.parent._child_nodes[current_child_idx+1:]:
-            child.position = (child.position[0], child.position[1]-size_offset)
+            new_position = (child.position[0], child.position[1]-size_offset)
+            coords = new_position - self.parent.content_panel.position
+
+            self.parent.content_panel.update_element(child, coords)
+
+    def children_size(self):
+        """Returns the size occupied by the children vertically
+        """
+        _size = 0
+        for child in self._child_nodes:
+            _size += child.size[1]
+
+        return _size
+
+    @property
+    def child_nodes(self):
+        """Returns all the child nodes of the crrent node
+        """
+        return self._child_nodes
+
+    @property
+    def color(self):
+        return self.title_panel.color
+
+    @color.setter
+    def color(self, color):
+        """Sets background color of the title panel.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self.title_panel.color = color
+
+    @property
+    def opacity(self):
+        return self.title_panel.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """Sets the background opacity of title panel
+
+        Parameters
+        ----------
+        opacity: float
+        """
+        self.title_panel.opacity = opacity
+
+    @property
+    def content_color(self):
+        """Returns the background color of the content panel.
+        """
+        return self.content_panel.color
+
+    @content_color.setter
+    def content_color(self, color):
+        """Sets background color of the content panel.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self.content_panel.color = color
+
+    @property
+    def content_opacity(self):
+        return self.content_panel.opacity
+
+    @content_opacity.setter
+    def content_opacity(self, opacity):
+        """Sets the background opacity of content panel
+
+        Parameters
+        ----------
+        opacity: float
+        """
+        self.content_panel.opacity = opacity
