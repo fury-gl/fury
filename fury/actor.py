@@ -3,6 +3,7 @@
 import warnings
 import os.path as op
 import numpy as np
+from functools import partial
 import vtk
 from vtk.util import numpy_support
 
@@ -2498,6 +2499,73 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
+def texture_2d(rgb, interp=False):
+    """ Create 2D texture from array
+
+    Parameters
+    ----------
+    rgb : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    interp : bool
+        Interpolate between grid centers. Default True.
+
+    Returns
+    -------
+    vtkTexturedActor
+    """
+
+    arr = rgb
+    Y, X = arr.shape[:2]
+    size = (X, Y)
+    grid = rgb_to_vtk(np.ascontiguousarray(arr))
+
+    texture_polydata = vtk.vtkPolyData()
+    texture_points = vtk.vtkPoints()
+    texture_points.SetNumberOfPoints(4)
+
+    polys = vtk.vtkCellArray()
+    polys.InsertNextCell(4)
+    polys.InsertCellPoint(0)
+    polys.InsertCellPoint(1)
+    polys.InsertCellPoint(2)
+    polys.InsertCellPoint(3)
+    texture_polydata.SetPolys(polys)
+
+    tc = vtk.vtkFloatArray()
+    tc.SetNumberOfComponents(2)
+    tc.SetNumberOfTuples(4)
+    tc.InsertComponent(0, 0, 0.0)
+    tc.InsertComponent(0, 1, 0.0)
+    tc.InsertComponent(1, 0, 1.0)
+    tc.InsertComponent(1, 1, 0.0)
+    tc.InsertComponent(2, 0, 1.0)
+    tc.InsertComponent(2, 1, 1.0)
+    tc.InsertComponent(3, 0, 0.0)
+    tc.InsertComponent(3, 1, 1.0)
+    texture_polydata.GetPointData().SetTCoords(tc)
+
+    texture_points.SetPoint(0, 0, 0, 0.0)
+    texture_points.SetPoint(1, size[0], 0, 0.0)
+    texture_points.SetPoint(2, size[0], size[1], 0.0)
+    texture_points.SetPoint(3, 0, size[1], 0.0)
+    texture_polydata.SetPoints(texture_points)
+
+    texture_mapper = vtk.vtkPolyDataMapper2D()
+    texture_mapper = set_input(texture_mapper,
+                               texture_polydata)
+
+    act = vtk.vtkTexturedActor2D()
+    act.SetMapper(texture_mapper)
+
+    tex = vtk.vtkTexture()
+    tex.SetInputDataObject(grid)
+    if interp:
+        tex.InterpolateOn()
+    tex.Update()
+    act.SetTexture(tex)
+    return act
+
+
 def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         scales=1):
     """Create a SDF primitive based actor
@@ -2506,7 +2574,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     ----------
     centers : ndarray, shape (N, 3)
         SDF primitive positions
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     directions : ndarray, shape (N, 3)
         The orientation vector of the SDF primitive.
@@ -2569,3 +2637,106 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
     return box_actor
+
+
+def markers(
+        centers,
+        colors=(0, 1, 0),
+        scales=1,
+        marker='3d',
+        marker_opacity=.8,
+        edge_width=.0,
+        edge_color=(255, 255, 255),
+        edge_opacity=.8
+        ):
+    """Create a marker actor with different shapes.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : ndarray, shape (N) or (N,3) or float or int, optional
+    marker : str or a list
+        Available markers are: '3d', 'o', 's', 'd', '^', 'p', 'h', 's6',
+        'x', '+', optional
+    marker_opacity : float, optional
+    edge_width : int, optional
+    edge_color : ndarray, shape (3), optional
+
+    Returns
+    -------
+    vtkActor
+
+    """
+
+    n_markers = centers.shape[0]
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                              scales=scales)
+
+    big_verts, big_faces, big_colors, big_centers = res
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    sq_actor.GetProperty().BackfaceCullingOff()
+
+    attribute_to_actor(sq_actor, big_centers, 'center')
+    marker2id = {
+            'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
+            'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
+
+    vs_dec_code = load("billboard_dec.vert")
+    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
+    vs_impl_code = load("billboard_impl.vert")
+    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
+
+    fs_dec_code = load('billboard_dec.frag')
+    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
+    fs_impl_code = load('billboard_impl.frag')
+
+    if marker == '3d':
+        fs_impl_code += f'{load("billboard_spheres_impl.frag")}'
+    else:
+        fs_impl_code += f'{load("marker_billboard_impl.frag")}'
+        if isinstance(marker, str):
+            list_of_markers = np.ones(n_markers)*marker2id[marker]
+        else:
+            list_of_markers = [marker2id[i] for i in marker]
+
+        list_of_markers = np.repeat(list_of_markers, 4).astype('float')
+        attribute_to_actor(
+            sq_actor,
+            list_of_markers, 'marker')
+
+    def callback(
+        _caller, _event, calldata=None,
+            uniform_type='f', uniform_name=None, value=None):
+        program = calldata
+        if program is not None:
+            program.__getattribute__(f'SetUniform{uniform_type}')(
+                uniform_name, value)
+
+    add_shader_callback(
+            sq_actor, partial(
+                callback, uniform_type='f', uniform_name='edgeWidth',
+                value=edge_width))
+    add_shader_callback(
+            sq_actor, partial(
+                callback, uniform_type='f', uniform_name='markerOpacity',
+                value=marker_opacity))
+    add_shader_callback(
+            sq_actor, partial(
+                callback, uniform_type='f', uniform_name='edgeOpacity',
+                value=edge_opacity))
+    add_shader_callback(
+            sq_actor, partial(
+                callback, uniform_type='3f', uniform_name='edgeColor',
+                value=edge_color))
+
+    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
+                    decl_code=vs_dec_code)
+    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
+                    block="light")
+
+    return sq_actor
