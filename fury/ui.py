@@ -946,6 +946,7 @@ class Panel2D(UI):
         """ Setup this UI component.
 
         Create the background (Rectangle2D) of the panel.
+        Create the borders (Rectangle2D) of the panel.
         """
         self._elements = []
         self.element_offsets = []
