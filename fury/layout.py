@@ -3,17 +3,18 @@ import math
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
 
-
 class Layout(object):
     """Provide functionalities for laying out actors in a 3D scene."""
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
-        from fury.ui import UI
+        from fury import ui
+
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
-            if isinstance(a, UI):
+            
+            if isinstance(a, ui.core.UI):
                 a.position = (pos[0], pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
@@ -80,7 +81,7 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        from fury.ui import UI  # to avoid circular import
+        from fury import ui
 
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
@@ -97,7 +98,7 @@ class GridLayout(Layout):
             # of the largest bounding box.
             diagonals = []
             for a in actors:
-                if isinstance(a, UI):
+                if isinstance(a, ui.core.UI):
                     width, height = a.size
                     diagonal = math.sqrt(width**2 + height**2)
                     diagonals.append(diagonal)

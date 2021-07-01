@@ -753,9 +753,9 @@ def numpy_to_vtk_matrix(array):
 
 def get_bounding_box_sizes(actor):
     """Get the bounding box sizes of an actor."""
-    from fury.ui import UI  # to avoid circular import
+    from fury import ui
 
-    if isinstance(actor, UI):
+    if isinstance(actor, ui.core.UI):
         width, height = actor.size
         return (width, height, 0)
 
