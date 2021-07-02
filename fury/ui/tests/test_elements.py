@@ -1032,8 +1032,8 @@ def test_card_ui(interactive=False):
               "/fury-communication-assets/main/fury-logo.png"
 
     card = ui.elements.Card2D(image_path=img_url, draggable=True,
-                     title_text='Title', body_text='Body',
-                     image_scale=0.5)
+                              title_text='Title', body_text='Body',
+                              image_scale=0.5)
 
     # Assign the counter callback to every possible event.
 
