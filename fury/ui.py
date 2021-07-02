@@ -952,7 +952,7 @@ class Panel2D(UI):
         self.opacity = opacity
         self.position = position
         self._drag_offset = None
-        self.on_panel_resize = lambda ui:None
+        self.on_panel_resize = lambda ui: None
 
     def _setup(self):
         """ Setup this UI component.
@@ -963,7 +963,7 @@ class Panel2D(UI):
         self.element_offsets = []
         self.background = Rectangle2D()
         self.resize_button = Button2D(icon_fnames=[('resize_icon',
-                                                    'https://i.imgur.com/RQF9wLB.png')])
+                                         'https://i.imgur.com/RQF9wLB.png')])
 
         self.add_element(self.background, (0, 0))
         self.add_element(self.resize_button, (0, 0))
@@ -972,7 +972,8 @@ class Panel2D(UI):
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
         self.background.on_window_propagate = self.window_resize
-        self.resize_button.on_left_mouse_button_pressed = self.left_button_pressed
+        self.resize_button.on_left_mouse_button_pressed = \
+            self.left_button_pressed
         self.resize_button.on_left_mouse_button_dragged = self.corner_resize
 
     def _get_actors(self):
@@ -1131,22 +1132,24 @@ class Panel2D(UI):
         _new_size = self.size_ratio * _window_size
         self.resize(np.clip(_new_size, 0, self.max_size))
         i_ren.force_render()
-    
+
     def corner_resize(self, i_ren, _obj, panel2d_object):
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
 
-            delta_x = new_position[0] - panel2d_object.position[0] + self.background.size[0]
+            delta_x = new_position[0] - panel2d_object.position[0] \
+                + self.background.size[0]
+
             delta_y = new_position[1] - panel2d_object.position[1]
             new_size = (delta_x, delta_y)
-            
+
             self.max_size = new_size
             self.resize(np.clip(new_size, 0, None))
-        
+
         self.panel_resize_callback(i_ren, panel2d_object)
         i_ren.force_render()
-    
+
     def panel_resize_callback(self, i_ren, panel2d_object):
         self.on_panel_resize(self)
         i_ren.event.abort()
@@ -1157,7 +1160,7 @@ class Panel2D(UI):
         Parameters
         ----------
         window_size_change : (int, int)
-            New window size (width, height) in pixels. 
+            New window size (width, height) in pixels.
         """
         if self.alignment == "left":
             pass
