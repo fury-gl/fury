@@ -8,7 +8,6 @@ import os
 from collections import OrderedDict
 from numbers import Number
 from string import printable
-from functools import partial
 
 
 import numpy as np
