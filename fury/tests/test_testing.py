@@ -1,10 +1,55 @@
 """Testing file unittest."""
 import sys
 import warnings
-import numpy as np
 
+import numpy as np
+import vtk
+
+from fury.ui.core import UI
+from fury import window
 import fury.testing as ft
 import numpy.testing as npt
+
+
+def test_callback():
+    events_name = ["CharEvent", "MouseMoveEvent", "KeyPressEvent",
+                   "KeyReleaseEvent", "LeftButtonPressEvent",
+                   "LeftButtonReleaseEvent", "RightButtonPressEvent",
+                   "RightButtonReleaseEvent", "MiddleButtonPressEvent",
+                   "MiddleButtonReleaseEvent"]
+
+    class SimplestUI(UI):
+        def __init__(self):
+            super(SimplestUI, self).__init__()
+
+        def _setup(self):
+            self.actor = vtk.vtkActor2D()
+
+        def _set_position(self, coords):
+            self.actor.SetPosition(*coords)
+
+        def _get_size(self):
+            return
+
+        def _get_actors(self):
+            return [self.actor]
+
+        def _add_to_scene(self, _scene):
+            return
+
+    simple_ui = SimplestUI()
+    current_size = (900, 600)
+    scene = window.Scene()
+    show_manager = window.ShowManager(scene,
+                                      size=current_size,
+                                      title="FURY GridUI")
+    show_manager.initialize()
+    scene.add(simple_ui)
+    event_counter = ft.EventCounter()
+    event_counter.monitor(simple_ui)
+    events_name = ["{0} 0 0 0 0 0 0 0".format(name) for name in events_name]
+    show_manager.play_events("\n".join(events_name))
+    npt.assert_equal(len(event_counter.events_counts), len(events_name))
 
 
 def test_captured_output():
