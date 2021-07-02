@@ -5325,7 +5325,6 @@ class Card2D(UI):
 
     def _setup(self):
         """ Setup this UI component
-
         Create the image.
         Create the title and body.
         Create a Panel2D widget to hold image, title, body.
