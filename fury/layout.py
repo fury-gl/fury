@@ -2,19 +2,19 @@ import numpy as np
 import math
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
+from fury.ui.core import UI
+
 
 class Layout(object):
     """Provide functionalities for laying out actors in a 3D scene."""
 
     def apply(self, actors):
         """Position the actors according to a certain layout."""
-        from fury import ui
-
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
             
-            if isinstance(a, ui.core.UI):
+            if isinstance(a, UI):
                 a.position = (pos[0], pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
@@ -81,16 +81,15 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
-        from fury import ui
 
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "square":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),)*2] * len(actors)
         elif self.cell_shape == "diagonal":
@@ -98,7 +97,7 @@ class GridLayout(Layout):
             # of the largest bounding box.
             diagonals = []
             for a in actors:
-                if isinstance(a, ui.core.UI):
+                if isinstance(a, UI):
                     width, height = a.size
                     diagonal = math.sqrt(width**2 + height**2)
                     diagonals.append(diagonal)
@@ -139,3 +138,24 @@ class GridLayout(Layout):
 
         positions += self.position_offset
         return positions
+    
+    def compute_sizes(self, actor):
+        """Compute the size of the bounding boxes of actors/UI
+
+        Parameters
+        ----------
+        actor: `vtkProp3D` or `UI` element
+            Actor/UI element to whose size is to be calculated
+        
+        Returns
+        -------
+        tuple
+            The bounding box size of actor/UI element
+        """
+
+        if isinstance(actor, UI):
+            width, height = actor.size
+            return (width, height, 0)
+        
+        size = get_bounding_box_sizes(actor)
+        return size
