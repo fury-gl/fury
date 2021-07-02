@@ -19,13 +19,18 @@ fetch_viz_icons()
 ###############################################################################
 # Let's create a card and add it to the show manager
 
-img_path = read_viz_icons(fname="stop2.png")
+img_url = "https://raw.githubusercontent.com/fury-gl"\
+          "/fury-communication-assets/main/fury-logo.png"
 
-card = ui.Card2D(image_path=img_path, title_text="Card Title",
-                 body_text="This is the body.\nProvides addition info",
-                 image_scale=0.5, size=(400, 400),
-                 bg_color=(0.498, 0.584, 0.819),
-                 bg_opacity=0.8)
+title = "FURY"
+body = "FURY - Free Unified Rendering in pYthon.\n"\
+       "A software library for scientific visualization in Python."
+
+card = ui.elements.Card2D(image_path=img_url, title_text=title,
+                          body_text=body,
+                          image_scale=0.55, size=(400, 400),
+                          bg_color=(1, 0.294, 0.180),
+                          bg_opacity=0.8)
 
 
 ###############################################################################
@@ -39,7 +44,7 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(card)
 
 # To interact with the UI, set interactive = True
-interactive = False
+interactive = 1
 
 if interactive:
     show_manager.start()
