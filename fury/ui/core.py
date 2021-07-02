@@ -339,6 +339,7 @@ class UI(object, metaclass=abc.ABCMeta):
     def window_propagate_callback(i_ren, obj, self):
         self.on_window_propagate(i_ren, obj, self)
 
+
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI."""
 
