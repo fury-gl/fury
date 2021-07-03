@@ -3,7 +3,7 @@
 __all__ = ["Rectangle2D", "Disk2D", "TextBlock2D"]
 
 import abc
-from fury.ui import Watcher
+from fury.ui.helpers import Watcher
 from warnings import warn
 
 import numpy as np
