@@ -3276,7 +3276,6 @@ class FileMenu2D(UI):
 
 
 class Card2D(UI):
-
     """Card element to show image and related text
 
     Attributes
@@ -3408,6 +3407,13 @@ class Card2D(UI):
         return self.panel.size
 
     def resize(self, size):
+        """Resize Card2D.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Card2D size(width, height) in pixels.
+        """
         _width, _height = size
         self.panel.resize(size)
 
