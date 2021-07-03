@@ -199,22 +199,32 @@ def ball_and_stick(atom_coords, elem_names):
     # generating the streamtubes (indicative of bonds) and spheres (indicative
     # of atoms)
     bs_actor = vtk.vtkAssembly()
-    print(triplebond_coords, doublebond_coords)
+
+    def make_aesthetic(Actor):
+        Actor.GetProperty().SetDiffuse(6)
+        Actor.GetProperty().SetSpecular(0.5)
+        Actor.GetProperty().SetSpecularPower(90.0)
+
     single_bonds = actor.streamtube(bond_coords, colors=bond_colors,
                                     linewidth=0.15)
+    make_aesthetic(single_bonds)
+
     bs_actor.AddPart(single_bonds)
     if doublebond_coords:
         double_bonds = actor.streamtube(doublebond_coords,
                                         colors=doublebond_colors,
                                         linewidth=0.06)
+        make_aesthetic(double_bonds)
         bs_actor.AddPart(double_bonds)
     if triplebond_coords:
         triple_bonds = actor.streamtube(triplebond_coords,
                                         colors=triplebond_colors,
                                         linewidth=0.04)
+        make_aesthetic(triple_bonds)
         bs_actor.AddPart(triple_bonds)
     balls = actor.sphere(atom_coords, colors=atom_colors, radii=radii, phi=32,
                          theta=32)
+    make_aesthetic(balls)
     bs_actor.AddPart(balls)
     return bs_actor
 
@@ -223,7 +233,6 @@ def ball_and_stick(atom_coords, elem_names):
 
 
 scene = window.Scene()
-scene.background((1, 1, 1))
 position = (-9.7857, 15.54, 24)
 focal_point = (6.80, 6.065, 11.39)
 scene.set_camera(position=position, focal_point=focal_point,
