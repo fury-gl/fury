@@ -367,12 +367,6 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
     def setBondThickness(self, bond_radius):
         self.SetBondRadius(bond_radius)
 
-    def setBondColorModeSingle(self):
-        self.SetBondColorModeToSingleColor()
-
-    def setBondColorModeDiscrete(self):
-        self.SetBondColorModeToDiscreteByAtom()
-
     def setMultiCylindersForBondsOn(self):
         self.UseMultiCylindersForBondsOn()
 
