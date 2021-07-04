@@ -161,7 +161,7 @@ class Molecule(vtk.vtkMolecule):
 
         Parameters
         ----------
-        mol : an instance of class Molecule.
+        mol : a Molecule object
         """
         self.DeepCopyStructure(mol)
 
@@ -332,6 +332,7 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
 
     def setAtomicRadiusScaleFactor(self, scaleFactor):
         """Set the uniform scaling factor applied to the atoms.
+
         Parameters
         ----------
         scaleFactor : float
@@ -364,16 +365,39 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
         """
         self.SetAtomColorMode(choice)
 
-    def setBondThickness(self, bond_radius):
-        self.SetBondRadius(bond_radius)
+    def setBondThickness(self, bondThickness):
+        """Sets the thickness of the bonds (i.e. thickness of tubes which are
+         used to render bonds)
+        Parameters
+        ----------
+        bondThickness: float
+            Thickness of the bonds.
+        """
+        self.SetBondRadius(bondThickness)
 
-    def setMultiCylindersForBondsOn(self):
-        self.UseMultiCylindersForBondsOn()
+    def setMultiTubesForBonds(self, choice):
+        """Set whether multiple tubes will be used to represent multiple bonds.
 
-    def setMultiCylindersForBondsOff(self):
-        self.UseMultiCylindersForBondsOff()
+        Parameters
+        ----------
+        choice : bool
+            If choice is True, multiple bonds (double, triple) will be shown by
+            using multiple tubes.
+            If choice is False, all bonds (single, double, triple) will be
+            shown as single bonds (i.e shown using one tube each).
+        """
+        self.SetUseMultiCylindersForBonds(choice)
 
-    def useSphereRep(self, colormode):
+    def useMolecularSphereRep(self, colormode):
+        """Set Mapper settings to create a molecular sphere representation.
+
+        Parameters
+        ----------
+        colormode : string
+            Set the colormode for coloring the atoms. Two valid color modes -
+        * 'discrete': each atom is colored using the internal lookup table.
+        * 'single': all atoms of same color.
+        """
         self.setRenderAtoms(True)
         self.setRenderBonds(False)
         self.setAtomicRadiusTypeToVDWRadius()
@@ -383,17 +407,40 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
         elif colormode == 'single':
             self.setAtomColorModeToDiscrete(False)
 
-    def useBallStickRep(self, colormode, thickness=1, multipleBonds='On'):
+    def useMolecularBallStickRep(self, colormode, atom_scale_factor,
+                                 bond_thickness, multipleBonds):
+        """Set Mapper settings to create a molecular ball and stick
+        representation.
+
+        Parameters
+        ----------
+        colormode : string
+            Set the colormode for coloring the atoms. Two valid color modes -
+            * 'discrete': each atom is colored using the internal lookup table.
+            * 'single': all atoms of same color.
+        atom_scale_factor : float
+            Scaling factor to be applied to the atoms.
+        bond_thickness : float
+            Used to manipulate the thickness of bonds (i.e. thickness of tubes
+            which are used to render bonds)
+        multipleBonds : string
+            Set whether multiple tubes will be used to represent multiple
+            bonds. Two valid choices -
+            * 'On': multiple bonds (double, triple) will be shown by using
+              multiple tubes.
+            * 'Off': all bonds (single, double, triple) will be shown as single
+              bonds (i.e shown using one tube each).
+        """
         if self.bonds_data_available:
             self.setRenderAtoms(True)
             self.setRenderBonds(True)
-            self.setBondThickness(thickness/10)
+            self.setBondThickness(bond_thickness/10)
             self.setAtomicRadiusTypeToVDWRadius()
-            self.setAtomicRadiusScaleFactor(0.3)
+            self.setAtomicRadiusScaleFactor(atom_scale_factor)
             if multipleBonds == 'On':
-                self.setMultiCylindersForBondsOn()
-            else:
-                self.setMultiCylindersForBondsOff()
+                self.setMultiTubesForBonds(True)
+            elif multipleBonds == 'Off':
+                self.setMultiTubesForBonds(False)
         else:
             print("Inadequate Bonding data")
 
@@ -404,13 +451,27 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
             self.setAtomColorModeToDiscrete(False)
             self.setBondColorModeToDiscrete(False)
 
-    def useStickRep(self, colormode, thickness=1):
+    def useMolecularStickRep(self, colormode, bond_thickness):
+        """Set Mapper settings to create a molecular stick representation.
+
+        Parameters
+        ----------
+        colormode : string
+            Set the colormode for coloring the atoms. Two valid color modes -
+            * 'discrete': each atom is colored using the internal lookup table.
+            * 'single': all atoms of same color.
+        atom_scale_factor : float
+            Scaling factor to be applied to the atoms.
+        bond_thickness : float
+            Used to manipulate the thickness of bonds (i.e. thickness of tubes
+            which are used to render bonds)
+        """
         if self.bonds_data_available:
             self.setRenderAtoms(True)
             self.setRenderBonds(True)
-            self.setBondThickness(thickness/10)
+            self.setBondThickness(bond_thickness/10)
             self.setAtomicRadiusTypeToUnitRadius()
-            self.setAtomicRadiusScaleFactor(thickness/10)
+            self.setAtomicRadiusScaleFactor(bond_thickness/10)
         else:
             print("Inadequate Bonding data")
 
