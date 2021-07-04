@@ -153,7 +153,7 @@ class Molecule(vtk.vtkMolecule):
         """
         return numpy_support.vtk_to_numpy(self.GetAtomicPositionArray().GetData())
 
-    def deep_copy(self, mol):
+    def deepCopy(self, mol):
         """
         Deep copies the atomic information (atoms and bonds) from mol into
         the instance calling the function.
@@ -164,7 +164,7 @@ class Molecule(vtk.vtkMolecule):
         """
         self.DeepCopyStructure(mol)
 
-    def create_bonds_algorithm(self):
+    def usevtkBondingAlgorithm(self):
         """
         Uses vtkSimpleBondPerceiver to generate bonding information for a
         molecule.
