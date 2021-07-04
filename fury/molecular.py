@@ -152,7 +152,7 @@ class Molecule(vtk.vtkMolecule):
         """Returns an array of atomic coordinates corresponding to the atoms
         present in the molecule.
         """
-        return numpy_support.vtk_to_numpy(self.GetAtomicPositionArray().\
+        return numpy_support.vtk_to_numpy(self.GetAtomicPositionArray().
                                           GetData())
 
     def deepCopy(self, mol):
