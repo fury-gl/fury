@@ -183,4 +183,4 @@ class Molecule(vtk.vtkMolecule):
         bonder.SetInputData(self)
         bonder.SetTolerance(0.1)
         bonder.Update()
-        self.deep_copy(bonder.GetOutput())
+        self.deepCopy(bonder.GetOutput())
