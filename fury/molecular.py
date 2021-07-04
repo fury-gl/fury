@@ -120,7 +120,6 @@ class Molecule(vtk.vtkMolecule):
         """
         return self.GetBondOrder(bond_index)
 
-    # to get the type of bond (whether it's a single/double/triple bond)
     def setBondType(self, bond_index, bond_type):
         """Set the bond type of a bond for a specified index.
 
