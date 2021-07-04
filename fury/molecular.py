@@ -262,3 +262,167 @@ class PeriodicTable(vtk.vtkPeriodicTable):
             atomic number of the element whose RGB tuple is to be obtained.
         """
         return self.GetDefaultRGBTuple(atomicNumber)
+
+
+class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
+    """Class to create mappers for three types of molecular represenations-
+    1. Ball and Stick Representation.
+    2. Stick Representation.
+    3. Sphere Representation.
+
+    Its member functions are used to create mappers which are then used to
+    create actors for the above mentioned representations.
+    """
+
+    def setMoleculeData(self, molecule):
+        """This member function performs two tasks -
+        1. It sends the molecule data to the mapper object.
+        2. It checks if adequate bonding data is available and assigns a bool
+        to bonds_data_available accordingly.
+
+        Parameters
+        ----------
+        molecule : a Molecule object
+            A Molecule object whose data is sent to the mapper.
+        """
+        self.bonds_data_available = False
+        self.SetInputData(molecule)
+        if molecule.getBondTypesArray().size == molecule.getTotalNumBonds() \
+           and molecule.getTotalNumBonds() > 0:
+            self.bonds_data_available = True
+
+    def setRenderAtoms(self, choice):
+        """Set whether or not to render atoms.
+
+        Parameters
+        ----------
+        choice : bool
+            If choice is True, atoms are rendered.
+            If choice is False, atoms are not rendered.
+        """
+        self.SetRenderAtoms(choice)
+
+    def setRenderBonds(self, choice):
+        """Set whether or not to render bonds.
+
+        Parameters
+        ----------
+        choice : bool
+            If choice is True, bonds are rendered.
+            If choice is False, bonds are not rendered.
+        """
+        self.SetRenderBonds(choice)
+
+    def setAtomicRadiusTypeToVDWRadius(self):
+        """Set the type of radius used to generate the atoms to Van der Waals
+        radius.
+        """
+        self.SetAtomicRadiusTypeToVDWRadius()
+
+    def setAtomicRadiusTypeToUnitRadius(self):
+        """Set the type of radius used to generate the atoms to unit radius.
+        """
+        self.SetAtomicRadiusTypeToUnitRadius()
+
+    def setAtomicRadiusTypeToCovalentRadius(self):
+        """Set the type of radius used to generate the atoms to covalent
+        radius.
+        """
+        self.SetAtomicRadiusTypeToCovalentRadius()
+
+    def setAtomicRadiusScaleFactor(self, scaleFactor):
+        """Set the uniform scaling factor applied to the atoms.
+        Parameters
+        ----------
+        scaleFactor : float
+            Scaling factor to be applied to the atoms.
+        """
+        self.SetAtomicRadiusScaleFactor(scaleFactor)
+
+    def setBondColorModeToDiscrete(self, choice):
+        """Set the method by which bonds are colored.
+
+        Parameters
+        ----------
+        choice : bool
+            If choice is True, each bond is colored using the same lookup
+            table as the atoms at each end, with a sharp color boundary at the
+            bond center.
+            If choice is False, all bonds will be of same color.
+        """
+        self.SetBondColorMode(choice)
+
+    def setAtomColorModeToDiscrete(self, choice):
+        """Set the method by which atoms are colored.
+
+        Parameters
+        ----------
+        choice : bool
+            If choice is True, each atom is colored using the internal lookup
+            table.
+            If choice is False, all atoms will be of same color.
+        """
+        self.SetAtomColorMode(choice)
+
+    def setBondThickness(self, bond_radius):
+        self.SetBondRadius(bond_radius)
+
+    def setBondColorModeSingle(self):
+        self.SetBondColorModeToSingleColor()
+
+    def setBondColorModeDiscrete(self):
+        self.SetBondColorModeToDiscreteByAtom()
+
+    def setMultiCylindersForBondsOn(self):
+        self.UseMultiCylindersForBondsOn()
+
+    def setMultiCylindersForBondsOff(self):
+        self.UseMultiCylindersForBondsOff()
+
+    def useSphereRep(self, colormode):
+        self.setRenderAtoms(True)
+        self.setRenderBonds(False)
+        self.setAtomicRadiusTypeToVDWRadius()
+        self.setAtomicRadiusScaleFactor(1.0)
+        if colormode == 'discrete':
+            self.setAtomColorModeToDiscrete(True)
+        elif colormode == 'single':
+            self.setAtomColorModeToDiscrete(False)
+
+    def useBallStickRep(self, colormode, thickness=1, multipleBonds='On'):
+        if self.bonds_data_available:
+            self.setRenderAtoms(True)
+            self.setRenderBonds(True)
+            self.setBondThickness(thickness/10)
+            self.setAtomicRadiusTypeToVDWRadius()
+            self.setAtomicRadiusScaleFactor(0.3)
+            if multipleBonds == 'On':
+                self.setMultiCylindersForBondsOn()
+            else:
+                self.setMultiCylindersForBondsOff()
+        else:
+            print("Inadequate Bonding data")
+
+        if colormode == 'discrete':
+            self.setAtomColorModeToDiscrete(True)
+            self.setBondColorModeToDiscrete(True)
+        elif colormode == 'single':
+            self.setAtomColorModeToDiscrete(False)
+            self.setBondColorModeToDiscrete(False)
+
+    def useStickRep(self, colormode, thickness=1):
+        if self.bonds_data_available:
+            self.setRenderAtoms(True)
+            self.setRenderBonds(True)
+            self.setBondThickness(thickness/10)
+            self.setAtomicRadiusTypeToUnitRadius()
+            self.setAtomicRadiusScaleFactor(thickness/10)
+        else:
+            print("Inadequate Bonding data")
+
+        if colormode == 'discrete':
+            self.setAtomColorModeToDiscrete(True)
+            self.setBondColorModeToDiscrete(True)
+        elif colormode == 'single':
+            self.setAtomColorModeToDiscrete(False)
+            self.setBondColorModeToDiscrete(False)
