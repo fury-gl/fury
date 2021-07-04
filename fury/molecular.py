@@ -2,6 +2,7 @@ import numpy as np
 import vtk
 from vtk.util import numpy_support
 
+
 class Molecule(vtk.vtkMolecule):
     """Your molecule class.
 
@@ -151,7 +152,8 @@ class Molecule(vtk.vtkMolecule):
         """Returns an array of atomic coordinates corresponding to the atoms
         present in the molecule.
         """
-        return numpy_support.vtk_to_numpy(self.GetAtomicPositionArray().GetData())
+        return numpy_support.vtk_to_numpy(self.GetAtomicPositionArray().\
+                                          GetData())
 
     def deepCopy(self, mol):
         """
