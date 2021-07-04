@@ -187,83 +187,6 @@ class Molecule(vtk.vtkMolecule):
         self.deepCopy(bonder.GetOutput())
 
 
-class PeriodicTable(vtk.vtkPeriodicTable):
-    """ A class to obtain properties of elements (eg: Covalent Radius,
-    Van Der Waals Radius, Symbol etc.).
-
-    This is a more pythonic version of ``vtkPeriodicTable`` providing simple
-    methods to access atomic properties. It provides access to essential
-    functionality available in ``vtkPeriodicTable``. An object of this class
-    provides access to atomic information sourced from Blue Obelisk Data
-    Repository.
-    """
-
-    def getAtomSymbolName(self, atomicNumber):
-        """Given an atomic number, returns the symbol associated with the
-        element.
-
-        Parameters
-        ----------
-        atomicNumber : int
-            atomic number of the element whose symbol is to be obtained.
-        """
-        return self.GetSymbol(atomicNumber)
-
-    def getAtomElementName(self, atomicNumber):
-        """Given an atomic number, returns the name of the element.
-
-        Parameters
-        ----------
-        atomicNumber : int
-            atomic number of the element whose name is to be obtained.
-        """
-        return self.GetElementName(atomicNumber)
-
-    def getAtomicNumber(self, elementName):
-        """Given a case-insensitive string that contains the symbol or name of
-        an element, return the corresponding atomic number.
-
-        Parameters
-        ----------
-        elementName : string
-            Name of the element whose atomic number is to be obtained.
-        """
-        return self.GetAtomicNumber(elementName)
-
-    def getAtomCovRadius(self, atomicNumber):
-        """Given an atomic number, return the covalent radius of the atom.
-
-        Parameters
-        ----------
-        atomicNumber : int
-            atomic number of the element whose covalent radius is to be
-            obtained.
-        """
-        return self.GetCovalentRadius(atomicNumber)
-
-    def getAtomVDWRadius(self, atomicNumber):
-        """Given an atomic number, return the Van Der Waals radius of the atom.
-
-        Parameters
-        ----------
-        atomicNumber : int
-            atomic number of the element whose Van Der Waals radius is to be
-            obtained.
-        """
-        return self.GetVDWRadius(atomicNumber)
-
-    def getAtomColor(self, atomicNumber):
-        """Given an atomic number, return the RGB tuple associated with that
-           element provided by the Blue Obelisk Data Repository.
-
-        Parameters
-        ----------
-        atomicNumber : int
-            atomic number of the element whose RGB tuple is to be obtained.
-        """
-        return self.GetDefaultRGBTuple(atomicNumber)
-
-
 class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
     """Class to create mappers for three types of molecular represenations-
     1. Ball and Stick Representation.
@@ -481,3 +404,80 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
         elif colormode == 'single':
             self.setAtomColorModeToDiscrete(False)
             self.setBondColorModeToDiscrete(False)
+
+
+class PeriodicTable(vtk.vtkPeriodicTable):
+    """ A class to obtain properties of elements (eg: Covalent Radius,
+    Van Der Waals Radius, Symbol etc.).
+
+    This is a more pythonic version of ``vtkPeriodicTable`` providing simple
+    methods to access atomic properties. It provides access to essential
+    functionality available in ``vtkPeriodicTable``. An object of this class
+    provides access to atomic information sourced from Blue Obelisk Data
+    Repository.
+    """
+
+    def getAtomSymbolName(self, atomicNumber):
+        """Given an atomic number, returns the symbol associated with the
+        element.
+
+        Parameters
+        ----------
+        atomicNumber : int
+            atomic number of the element whose symbol is to be obtained.
+        """
+        return self.GetSymbol(atomicNumber)
+
+    def getAtomElementName(self, atomicNumber):
+        """Given an atomic number, returns the name of the element.
+
+        Parameters
+        ----------
+        atomicNumber : int
+            atomic number of the element whose name is to be obtained.
+        """
+        return self.GetElementName(atomicNumber)
+
+    def getAtomicNumber(self, elementName):
+        """Given a case-insensitive string that contains the symbol or name of
+        an element, return the corresponding atomic number.
+
+        Parameters
+        ----------
+        elementName : string
+            Name of the element whose atomic number is to be obtained.
+        """
+        return self.GetAtomicNumber(elementName)
+
+    def getAtomCovRadius(self, atomicNumber):
+        """Given an atomic number, return the covalent radius of the atom.
+
+        Parameters
+        ----------
+        atomicNumber : int
+            atomic number of the element whose covalent radius is to be
+            obtained.
+        """
+        return self.GetCovalentRadius(atomicNumber)
+
+    def getAtomVDWRadius(self, atomicNumber):
+        """Given an atomic number, return the Van Der Waals radius of the atom.
+
+        Parameters
+        ----------
+        atomicNumber : int
+            atomic number of the element whose Van Der Waals radius is to be
+            obtained.
+        """
+        return self.GetVDWRadius(atomicNumber)
+
+    def getAtomColor(self, atomicNumber):
+        """Given an atomic number, return the RGB tuple associated with that
+           element provided by the Blue Obelisk Data Repository.
+
+        Parameters
+        ----------
+        atomicNumber : int
+            atomic number of the element whose RGB tuple is to be obtained.
+        """
+        return self.GetDefaultRGBTuple(atomicNumber)
