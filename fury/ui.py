@@ -5310,6 +5310,9 @@ class Tree2D(UI):
                                     expandable=False, expanded=True,
                                     indent=self.indent, child_indent=self.indent,
                                     child_height=self.node_height)
+        
+        for node in self.nodes_dict.values():
+            node.set_visibility(False)
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -5350,11 +5353,16 @@ class Tree2D(UI):
             parent_label = list(obj.keys())[0]
             child_labels = list(obj.values())[0]
 
-            parent_node = TreeNode2D(label=parent_label)
+            if parent_label in self.nodes_dict.keys():
+                parent_node = self.nodes_dict[parent_label]
+            else:
+                parent_node = TreeNode2D(label=parent_label)
+
             child_nodes = [TreeNode2D(label=child_label) for child_label in
                            child_labels]
 
-            for child_node in child_nodes:
+            for child_node, child_label in zip(child_nodes, child_labels):
+                self._nodes_dict[child_label] = child_node
                 parent_node.add_node(child_node)
 
             self._nodes.append(parent_node)
@@ -5370,6 +5378,37 @@ class Tree2D(UI):
         """
         self.base_node.resize(size)
     
+    def add_content(self, node, content, coords=(0., 0.)):
+        """Add content to a sepcific node
+
+        Parameters
+        ----------
+        node: str
+            Label of the node
+        content: :class: `UI` or `TreeNode2D`
+            The content that is to be added in the node
+        coords : (float, float) or (int, int), optional
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            content panel's size.
+        """
+        _node = self.select_node(node)
+        _node.add_node(content, coords)
+
+        _node.set_visibility(False)
+
+    def select_node(self, node):
+        """Get the instance of a specific node
+
+        Parameters
+        ----------
+        node: str
+            Label of the node
+        """
+        _node = self.nodes_dict[node]
+        return _node
+
     @property
     def nodes(self):
         """Get all the nodes present in the Tree2D
@@ -5411,7 +5450,8 @@ class TreeNode2D(UI):
     def __init__(self, label, parent=None, children=None,
                  position=(0, 0), size=(200, 200), indent=5,
                  child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
-                 opacity=0.8, expandable=True, expanded=False):
+                 opacity=0.8, expandable=True, expanded=False,
+                 selected_color=(0.8, 0.3, 0.3)):
         """Initialize the UI element
 
         Parameters
@@ -5455,11 +5495,18 @@ class TreeNode2D(UI):
         self.content_size = size
         self.expandable = expandable
         self.expanded = expanded
+        self.selected = False
+        self.selected_color = selected_color
+        self.unselected_color = color
 
         super(TreeNode2D, self).__init__(position)
         self.resize(size)
         self.title_panel.color = color
         self.title_panel.opacity = opacity
+
+        #  hooks for selecting/de-selecting node
+        self.on_node_select = lambda ui: None
+        self.on_node_deselect = lambda ui: None
 
     def _setup(self):
         """Setup this UI element.
@@ -5482,8 +5529,6 @@ class TreeNode2D(UI):
                                  read_viz_icons(fname="circle-down.png")))
 
         self.button = Button2D(icon_fnames=self.button_icons)
-        self.button.on_left_mouse_button_clicked = self.toggle_view
-
         self.title_panel.add_element(self.label_text, (self.indent, 0))
 
         self.title_panel.add_element(self.button,
@@ -5492,14 +5537,18 @@ class TreeNode2D(UI):
         self.title_panel.add_element(self.content_panel,
                                      (0, -self.content_size[1]))
 
+        self.button.on_left_mouse_button_clicked = self.toggle_view
+        self.title_panel.background.on_left_mouse_button_clicked = self.select_node
+
         if self.children:
             for child in self.children:
                 self.add_node(child)
 
         if self.expanded:
+            self.set_visibility(True)
             self.button.set_icon_by_name('expand')
         else:
-            self.content_panel.set_visibility(False)
+            self.set_visibility(False)
             self.button.set_icon_by_name('collapse')
 
         if not self.expandable:
@@ -5536,22 +5585,31 @@ class TreeNode2D(UI):
 
         return self.title_panel.size
 
-    def add_node(self, node):
+    def add_node(self, node, coords=(0., 0.)):
         """Add a child node in the current node.
 
         Parameters
         ----------
-        node: :class: `TreeNode2D`
-            Node that isto be added
+        node: :class: `TreeNode2D` or `UI`
+            Node/UI element that isto be added
+        coords: (float, float) or (int, int), optional
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            content panel's size.
         """
         self._child_nodes.append(node)
-        node.parent = self
 
-        _node_coords = (self.indent+self.child_indent, self.children_size() -
-                        self.child_height)
+        if isinstance(node, type(self)):
+            node.parent = self
 
-        node.content_panel.set_visibility(False)
+            _node_coords = (self.indent+self.child_indent,
+                            self.children_size() - self.child_height)
+        else:
+            _node_coords = coords
+
         self.content_panel.add_element(node, _node_coords)
+        self.resize((self.size[0], self.children_size()))
 
     def resize(self, size):
         """ Resizes the Tree Node.
@@ -5579,55 +5637,61 @@ class TreeNode2D(UI):
 
         if self._child_nodes:
             for child in self._child_nodes:
-                offset += self.child_height
-                _child_size = (size[0] - self.indent -
-                               self.child_indent, child.children_size())
 
-                _child_coords = (self.indent+self.child_indent,
-                                 self.content_panel.size[1]-offset)
+                if isinstance(child, type(self)):
+                    offset += self.child_height
+                    _child_size = (size[0] - self.indent -
+                                   self.child_indent, child.children_size())
+
+                    _child_coords = (self.indent+self.child_indent,
+                                     self.content_panel.size[1]-offset)
+                else:
+                    _child_size = child.size
+
+                    _child_coords = (self.indent+self.child_indent,
+                                     self.content_panel.size[1] -
+                                     self.children_size())
 
                 child.resize(_child_size)
                 self.content_panel.update_element(child, _child_coords)
 
     def toggle_view(self, i_ren, _obj, _element):
         self.expanded = not self.expanded
-        self.content_panel.set_visibility(self.expanded)
+        self.set_visibility(self.expanded)
 
         if self.expanded:
-            if self.parent is not None:
-                idx = self.parent._child_nodes.index(self)
-                self.update_children_coords(idx, self.content_panel.size[1])
+            self.update_children_coords(self, self.content_panel.size[1])
 
             self.button.set_icon_by_name('expand')
         else:
-            if self.parent is not None:
-                idx = self.parent._child_nodes.index(self)
-                self.update_children_coords(idx, -self.content_panel.size[1])
+            self.update_children_coords(self, -self.content_panel.size[1])
 
             self.button.set_icon_by_name('collapse')
 
         i_ren.force_render()
 
-    def update_children_coords(self, current_child_idx, size_offset):
+    def update_children_coords(self, node, size_offset):
         """Updates the coords of the children below a specific child
 
         Parameters
         ----------
-        current_child_idx: int
-            The index of the current child
+        node: :class: `TreeNode2D`
+            The node past which nodes are to be updated
         size_offset: int
-            Size by which below children are to be offset
+            Size by which below nodes are to be offset
         """
-        if 0 >= current_child_idx > len(self._child_nodes):
-            raise ValueError(
-                f'Child index {current_child_idx} does not exist'
-            )
+        if node.parent is not None:
+            current_child_idx = node.parent._child_nodes.index(node)
+            parent = node.parent
 
-        for child in self.parent._child_nodes[current_child_idx+1:]:
-            new_position = (child.position[0], child.position[1]-size_offset)
-            coords = new_position - self.parent.content_panel.position
+            for child in node.parent._child_nodes[current_child_idx+1:]:
+                new_position = (child.position[0],
+                                child.position[1]-size_offset)
 
-            self.parent.content_panel.update_element(child, coords)
+                coords = new_position - parent.content_panel.position
+                parent.content_panel.update_element(child, coords)
+
+            node.update_children_coords(node.parent, size_offset)
 
     def children_size(self):
         """Returns the size occupied by the children vertically
@@ -5637,6 +5701,9 @@ class TreeNode2D(UI):
             _size += child.size[1]
 
         return _size
+
+    def set_visibility(self, visibility):
+        self.content_panel.set_visibility(visibility)
 
     @property
     def child_nodes(self):
@@ -5701,3 +5768,15 @@ class TreeNode2D(UI):
         opacity: float
         """
         self.content_panel.opacity = opacity
+    
+    def select_node(self, i_ren, _obj, _node2d):
+        self.selected = not self.selected
+
+        if self.selected:
+            self.color = self.selected_color
+            self.on_node_select(self)
+        else:
+            self.color = self.unselected_color
+            self.on_node_deselect(self)
+
+        i_ren.force_render()
