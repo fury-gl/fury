@@ -282,8 +282,7 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         Parameters
         ----------
         choice : bool
-            If choice is True, each atom is colored using the internal lookup
-            table.
+            If choice is True, atoms are colored using CPK coloring convention.
             If choice is False, all atoms will be of same color.
         """
         self.SetAtomColorMode(choice)
@@ -318,8 +317,10 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         ----------
         colormode : string
             Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': each atom is colored using the internal lookup table.
-        * 'single': all atoms of same color.
+            * 'discrete': Atoms are colored using CPK coloring convention.
+            * 'single': All atoms are colored with same color(grey)
+            RGB tuple used for coloring the bonds when 'single' colormode is
+            selected: (150, 150, 150)
         """
         self.setRenderAtoms(True)
         self.setRenderBonds(False)
@@ -339,12 +340,14 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         ----------
         colormode : string
             Set the colormode for coloring the atoms. Two valid color modes -
-            * 'discrete': each atom and bond is colored using the internal
-              lookup table.
+            * 'discrete': Atoms and bonds are colored using CPK coloring
+              convention.
             * 'single': All atoms are colored with same color(grey) and all
               bonds are colored with same color(dark grey).
-            RGB tuple used for coloring the atoms: (150, 150, 150)
-            RGB tuple used for coloring the bonds: (50, 50, 50)
+            RGB tuple used for coloring the atoms when 'single' colormode is
+            selected: (150, 150, 150)
+            RGB tuple used for coloring the bonds when 'single' colormode is
+            selected: (50, 50, 50)
         atom_scale_factor : float
             Scaling factor to be applied to the atoms.
         bond_thickness : float
@@ -356,7 +359,7 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
             * 'On': multiple bonds (double, triple) will be shown by using
               multiple tubes.
             * 'Off': all bonds (single, double, triple) will be shown as single
-              bonds (i.e shown using one tube each).
+              bonds (i.e. shown using one tube each).
         """
         if self.bonds_data_available:
             self.setRenderAtoms(True)
@@ -385,10 +388,10 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         ----------
         colormode : string
             Set the colormode for coloring the bonds. Two valid color modes -
-            * 'discrete': Each bond is colored using the internal lookup table.
+            * 'discrete': Bonds are colored using CPK coloring convention.
             * 'single': All bonds are colored with the same color (dark grey).
-            RGB tuple used for coloring the bonds: (50, 50, 50)
-            Default is 'discrete'.
+            RGB tuple used for coloring the bonds when 'single' colormode is
+            selected: (50, 50, 50)
         atom_scale_factor : float
             Scaling factor to be applied to the atoms.
         bond_thickness : float
@@ -430,7 +433,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         Parameters
         ----------
         atomicNumber : int
-            atomic number of the element whose symbol is to be obtained.
+            Atomic number of the element whose symbol is to be obtained.
         """
         return self.GetSymbol(atomicNumber)
 
@@ -440,7 +443,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         Parameters
         ----------
         atomicNumber : int
-            atomic number of the element whose name is to be obtained.
+            Atomic number of the element whose name is to be obtained.
         """
         return self.GetElementName(atomicNumber)
 
@@ -461,7 +464,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         Parameters
         ----------
         atomicNumber : int
-            atomic number of the element whose covalent radius is to be
+            Atomic number of the element whose covalent radius is to be
             obtained.
         """
         return self.GetCovalentRadius(atomicNumber)
@@ -472,19 +475,20 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         Parameters
         ----------
         atomicNumber : int
-            atomic number of the element whose Van Der Waals radius is to be
+            Atomic number of the element whose Van Der Waals radius is to be
             obtained.
         """
         return self.GetVDWRadius(atomicNumber)
 
     def getAtomColor(self, atomicNumber):
         """Given an atomic number, return the RGB tuple associated with that
-           element provided by the Blue Obelisk Data Repository.
+           element (CPK coloring convention) provided by the Blue Obelisk Data
+           Repository.
 
         Parameters
         ----------
         atomicNumber : int
-            atomic number of the element whose RGB tuple is to be obtained.
+            Atomic number of the element whose RGB tuple is to be obtained.
         """
         return self.GetDefaultRGBTuple(atomicNumber)
 
@@ -513,8 +517,10 @@ def molecular_sphere_rep_actor(molecule, colormode='discrete'):
         The molecule to be rendered.
     colormode : string
         Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': each atom is colored using the internal lookup table.
-        * 'single': all atoms of same color.
+        * 'discrete': Atoms are colored using CPK coloring convention.
+        * 'single': All atoms are colored with same color(grey).
+        RGB tuple used for coloring the atoms when 'single' colormode is
+        selected: (150, 150, 150)
         Default is 'discrete'.
 
     Returns
@@ -543,12 +549,14 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
         The molecule to be rendered.
     colormode : string
         Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': each atom and bond is colored using the internal lookup
-          table.
+        * 'discrete': Atoms and bonds are colored using CPK coloring
+          convention.
         * 'single': All atoms are colored with same color(grey) and all bonds
           are colored with same color(dark grey).
-        RGB tuple used for coloring the atoms: (150, 150, 150)
-        RGB tuple used for coloring the bonds: (50, 50, 50)
+        RGB tuple used for coloring the atoms when 'single' colormode is
+        selected: (150, 150, 150)
+        RGB tuple used for coloring the bonds when 'single' colormode is
+        selected: (50, 50, 50)
         Default is 'discrete'.
     atom_scale_factor : float
         Scaling factor to be applied to the atoms.
@@ -594,9 +602,10 @@ def molecular_stick_rep_actor(molecule, colormode='discrete',
         The molecule to be rendered.
     colormode : string
         Set the colormode for coloring the bonds. Two valid color modes -
-        * 'discrete': Each bond is colored using the internal lookup table.
+        * 'discrete': Bonds are colored using CPK coloring convention.
         * 'single': All bonds are colored with the same color (dark grey)
-          RGB tuple used for coloring the bonds: (50, 50, 50)
+        RGB tuple used for coloring the bonds when 'single' colormode is
+        selected: (50, 50, 50)
         Default is 'discrete'.
     bond_thickness : float
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
