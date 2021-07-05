@@ -161,7 +161,7 @@ class Molecule(vtk.vtkMolecule):
 
         Parameters
         ----------
-        mol : a Molecule object
+        mol : Molecule object
         """
         self.DeepCopyStructure(mol)
 
@@ -187,7 +187,7 @@ class Molecule(vtk.vtkMolecule):
         self.deepCopy(bonder.GetOutput())
 
 
-class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
+class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
     """Class to create mappers for three types of molecular represenations-
     1. Ball and Stick Representation.
     2. Stick Representation.
@@ -205,8 +205,8 @@ class molecule_mapper(vtk.vtkOpenGLMoleculeMapper):
 
         Parameters
         ----------
-        molecule : a Molecule object
-            A Molecule object whose data is sent to the mapper.
+        molecule : Molecule object
+            Molecule object whose data is sent to the mapper.
         """
         self.bonds_data_available = False
         self.SetInputData(molecule)
@@ -481,3 +481,120 @@ class PeriodicTable(vtk.vtkPeriodicTable):
             atomic number of the element whose RGB tuple is to be obtained.
         """
         return self.GetDefaultRGBTuple(atomicNumber)
+
+
+def make_molecularviz_aesthetic(molecule_actor):
+    """Configure actor propeties to make the molecular visualization
+    aesthetically pleasant to see by manipulating the lighting.
+
+    Parameters
+    ----------
+    molecule_actor : vtkActor
+        Actor that represents the molecule to be visualized.
+    """
+    molecule_actor.GetProperty().SetDiffuse(1)
+    molecule_actor.GetProperty().SetSpecular(0.5)
+    molecule_actor.GetProperty().SetSpecularPower(90.0)
+
+
+def molecular_sphere_rep_actor(molecule, colormode='discrete'):
+    """Create an actor for sphere molecular representation. It's also known as
+    CPK model, space-filling model.
+
+    Parameters
+    ----------
+    molecule : Molecule object
+        the molecule to be rendered
+    colormode : string
+            Set the colormode for coloring the atoms. Two valid color modes -
+            * 'discrete': each atom is colored using the internal lookup table.
+            * 'single': all atoms of same color.
+
+    Returns
+    -------
+    molecule_actor : vtkActor
+        Actor created to render the space filling representation of the
+        molecule to be visualized.
+    """
+    msp_mapper = MoleculeMapper()
+    msp_mapper.setMoleculeData(molecule)
+    msp_mapper.useMolecularSphereRep(colormode)
+    molecule_actor = vtk.vtkActor()
+    molecule_actor.SetMapper(msp_mapper)
+    make_molecularviz_aesthetic(molecule_actor)
+    return molecule_actor
+
+
+def molecular_bstick_rep_actor(molecule, colormode='discrete',
+                               atom_scale_factor=0.3, bond_thickness=1,
+                               multipleBonds='On'):
+    """Create an actor for ball and stick molecular representation.
+
+    Parameters
+    ----------
+    molecule : Molecule object
+        the molecule to be rendered
+    colormode : string
+        Set the colormode for coloring the atoms. Two valid color modes -
+        * 'discrete': each atom is colored using the internal lookup table.
+        * 'single': all atoms of same color.
+    atom_scale_factor : float
+        Scaling factor to be applied to the atoms.
+    bond_thickness : float
+        Used to manipulate the thickness of bonds (i.e. thickness of tubes
+        which are used to render bonds)
+    multipleBonds : string
+        Set whether multiple tubes will be used to represent multiple
+        bonds. Two valid choices -
+        * 'On': multiple bonds (double, triple) will be shown by using
+            multiple tubes.
+        * 'Off': all bonds (single, double, triple) will be shown as single
+            bonds (i.e shown using one tube each).
+
+    Returns
+    -------
+    molecule_actor : vtkActor
+        Actor created to render the ball and stick representation of the
+        molecule to be visualized.
+    """
+    bs_mapper = MoleculeMapper()
+    bs_mapper.setMoleculeData(molecule)
+    bs_mapper.useMolecularBallStickRep(atom_scale_factor=atom_scale_factor,
+                                       colormode=colormode,
+                                       bond_thickness=bond_thickness,
+                                       multipleBonds=multipleBonds)
+    molecule_actor = vtk.vtkActor()
+    molecule_actor.SetMapper(bs_mapper)
+    make_molecularviz_aesthetic(molecule_actor)
+    return molecule_actor
+
+
+def molecular_stick_rep_actor(molecule, colormode='discrete',
+                              bond_thickness=1):
+    """Create an actor for stick molecular representation.
+
+    Parameters
+    ----------
+    molecule : Molecule object
+        the molecule to be rendered
+    colormode : string
+        Set the colormode for coloring the atoms. Two valid color modes -
+        * 'discrete': each atom is colored using the internal lookup table.
+        * 'single': all atoms of same color.
+    bond_thickness : float
+        Used to manipulate the thickness of bonds (i.e. thickness of tubes
+        which are used to render bonds).
+
+    Returns
+    -------
+    molecule_actor : vtkActor
+        Actor created to render the stick representation of the molecule to be
+        visualized.
+    """
+    mst_mapper = MoleculeMapper()
+    mst_mapper.setMoleculeData(molecule)
+    mst_mapper.useMolecularStickRep(colormode, bond_thickness=bond_thickness)
+    molecule_actor = vtk.vtkActor()
+    molecule_actor.SetMapper(mst_mapper)
+    make_molecularviz_aesthetic(molecule_actor)
+    return molecule_actor
