@@ -339,8 +339,12 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         ----------
         colormode : string
             Set the colormode for coloring the atoms. Two valid color modes -
-            * 'discrete': each atom is colored using the internal lookup table.
-            * 'single': all atoms of same color.
+            * 'discrete': each atom and bond is colored using the internal lookup
+              table.
+            * 'single': All atoms are colored with same color(grey) and all bonds
+              are colored with same color(dark grey).
+            RGB tuple used for coloring the atoms: (150, 150, 150)
+            RGB tuple used for coloring the bonds: (50, 50, 50)
         atom_scale_factor : float
             Scaling factor to be applied to the atoms.
         bond_thickness : float
@@ -380,9 +384,11 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         Parameters
         ----------
         colormode : string
-            Set the colormode for coloring the atoms. Two valid color modes -
-            * 'discrete': each atom is colored using the internal lookup table.
-            * 'single': all atoms of same color.
+            Set the colormode for coloring the bonds. Two valid color modes -
+            * 'discrete': Each bond is colored using the internal lookup table.
+            * 'single': All bonds are colored with the same color (dark grey).
+            RGB tuple used for coloring the bonds: (50, 50, 50)
+            Default is 'discrete'.
         atom_scale_factor : float
             Scaling factor to be applied to the atoms.
         bond_thickness : float
@@ -498,17 +504,18 @@ def make_molecularviz_aesthetic(molecule_actor):
 
 
 def molecular_sphere_rep_actor(molecule, colormode='discrete'):
-    """Create an actor for sphere molecular representation. It's also known as
-    CPK model, space-filling model.
+    """Create an actor for sphere molecular representation. It's also referred
+    to as CPK model and space-filling model.
 
     Parameters
     ----------
     molecule : Molecule object
-        the molecule to be rendered
+        The molecule to be rendered.
     colormode : string
-            Set the colormode for coloring the atoms. Two valid color modes -
-            * 'discrete': each atom is colored using the internal lookup table.
-            * 'single': all atoms of same color.
+        Set the colormode for coloring the atoms. Two valid color modes -
+        * 'discrete': each atom is colored using the internal lookup table.
+        * 'single': all atoms of same color.
+        Default is 'discrete'.
 
     Returns
     -------
@@ -533,23 +540,31 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
     Parameters
     ----------
     molecule : Molecule object
-        the molecule to be rendered
+        The molecule to be rendered.
     colormode : string
         Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': each atom is colored using the internal lookup table.
-        * 'single': all atoms of same color.
+        * 'discrete': each atom and bond is colored using the internal lookup
+          table.
+        * 'single': All atoms are colored with same color(grey) and all bonds
+          are colored with same color(dark grey).
+        RGB tuple used for coloring the atoms: (150, 150, 150)
+        RGB tuple used for coloring the bonds: (50, 50, 50)
+        Default is 'discrete'.
     atom_scale_factor : float
         Scaling factor to be applied to the atoms.
+        Default is 0.3.
     bond_thickness : float
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
+        Default is 1.
     multipleBonds : string
         Set whether multiple tubes will be used to represent multiple
         bonds. Two valid choices -
         * 'On': multiple bonds (double, triple) will be shown by using
-            multiple tubes.
+          multiple tubes.
         * 'Off': all bonds (single, double, triple) will be shown as single
-            bonds (i.e shown using one tube each).
+          bonds (i.e shown using one tube each).
+        Default is 'On'.
 
     Returns
     -------
@@ -576,14 +591,17 @@ def molecular_stick_rep_actor(molecule, colormode='discrete',
     Parameters
     ----------
     molecule : Molecule object
-        the molecule to be rendered
+        The molecule to be rendered.
     colormode : string
-        Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': each atom is colored using the internal lookup table.
-        * 'single': all atoms of same color.
+        Set the colormode for coloring the bonds. Two valid color modes -
+        * 'discrete': Each bond is colored using the internal lookup table.
+        * 'single': All bonds are colored with the same color (dark grey)
+          RGB tuple used for coloring the bonds: (50, 50, 50)
+        Default is 'discrete'.
     bond_thickness : float
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds).
+        Default is 1.
 
     Returns
     -------
