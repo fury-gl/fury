@@ -2499,6 +2499,73 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
     return earthActor
 
 
+def texture_2d(rgb, interp=False):
+    """ Create 2D texture from array
+
+    Parameters
+    ----------
+    rgb : ndarray
+        Input 2D RGB or RGBA array. Dtype should be uint8.
+    interp : bool
+        Interpolate between grid centers. Default True.
+
+    Returns
+    -------
+    vtkTexturedActor
+    """
+
+    arr = rgb
+    Y, X = arr.shape[:2]
+    size = (X, Y)
+    grid = rgb_to_vtk(np.ascontiguousarray(arr))
+
+    texture_polydata = vtk.vtkPolyData()
+    texture_points = vtk.vtkPoints()
+    texture_points.SetNumberOfPoints(4)
+
+    polys = vtk.vtkCellArray()
+    polys.InsertNextCell(4)
+    polys.InsertCellPoint(0)
+    polys.InsertCellPoint(1)
+    polys.InsertCellPoint(2)
+    polys.InsertCellPoint(3)
+    texture_polydata.SetPolys(polys)
+
+    tc = vtk.vtkFloatArray()
+    tc.SetNumberOfComponents(2)
+    tc.SetNumberOfTuples(4)
+    tc.InsertComponent(0, 0, 0.0)
+    tc.InsertComponent(0, 1, 0.0)
+    tc.InsertComponent(1, 0, 1.0)
+    tc.InsertComponent(1, 1, 0.0)
+    tc.InsertComponent(2, 0, 1.0)
+    tc.InsertComponent(2, 1, 1.0)
+    tc.InsertComponent(3, 0, 0.0)
+    tc.InsertComponent(3, 1, 1.0)
+    texture_polydata.GetPointData().SetTCoords(tc)
+
+    texture_points.SetPoint(0, 0, 0, 0.0)
+    texture_points.SetPoint(1, size[0], 0, 0.0)
+    texture_points.SetPoint(2, size[0], size[1], 0.0)
+    texture_points.SetPoint(3, 0, size[1], 0.0)
+    texture_polydata.SetPoints(texture_points)
+
+    texture_mapper = vtk.vtkPolyDataMapper2D()
+    texture_mapper = set_input(texture_mapper,
+                               texture_polydata)
+
+    act = vtk.vtkTexturedActor2D()
+    act.SetMapper(texture_mapper)
+
+    tex = vtk.vtkTexture()
+    tex.SetInputDataObject(grid)
+    if interp:
+        tex.InterpolateOn()
+    tex.Update()
+    act.SetTexture(tex)
+    return act
+
+
 def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
         scales=1):
     """Create a SDF primitive based actor
