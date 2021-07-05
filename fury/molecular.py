@@ -339,10 +339,10 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
         ----------
         colormode : string
             Set the colormode for coloring the atoms. Two valid color modes -
-            * 'discrete': each atom and bond is colored using the internal lookup
-              table.
-            * 'single': All atoms are colored with same color(grey) and all bonds
-              are colored with same color(dark grey).
+            * 'discrete': each atom and bond is colored using the internal
+              lookup table.
+            * 'single': All atoms are colored with same color(grey) and all
+              bonds are colored with same color(dark grey).
             RGB tuple used for coloring the atoms: (150, 150, 150)
             RGB tuple used for coloring the bonds: (50, 50, 50)
         atom_scale_factor : float
