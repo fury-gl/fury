@@ -92,7 +92,7 @@ class Molecule(vtk.vtkMolecule):
         """
         return self.GetAtomPosition(atom_index)
 
-    def setAtomicPosition(self, atom_index, atom_coordinate):
+    def setAtomicPosition(self, atom_index, x_coord, y_coord, z_coord):
         """Set the atomic coordinates of an atom for a specified index.
 
         Assign atom_coordinate to the coordinates of the atom present at
@@ -102,10 +102,14 @@ class Molecule(vtk.vtkMolecule):
         ----------
         atom_index : int
             Index of the atom to which the coordinates are to be assigned.
-        atom_coordinate : int
-            Coordinates to be assigned to the atom.
+        x_coord : float
+            x-coordinate of the atom.
+        y_coord : float
+            y-coordinate of the atom.
+        z_coord : float
+            z-coordinate of the atom.
         """
-        self.SetAtomPosition(atom_index, atom_coordinate)
+        self.SetAtomPosition(atom_index, x_coord, y_coord, z_coord)
 
     def getBondType(self, bond_index):
         """Get the type of bond for a specified index.
@@ -558,6 +562,7 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
         RGB tuple used for coloring the bonds when 'single' colormode is
         selected: (50, 50, 50)
         Default is 'discrete'.
+
     atom_scale_factor : float
         Scaling factor to be applied to the atoms.
         Default is 0.3.
@@ -607,6 +612,7 @@ def molecular_stick_rep_actor(molecule, colormode='discrete',
         RGB tuple used for coloring the bonds when 'single' colormode is
         selected: (50, 50, 50)
         Default is 'discrete'.
+
     bond_thickness : float
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds).
