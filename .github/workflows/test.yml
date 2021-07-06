@@ -129,7 +129,7 @@ jobs:
       run: |
         bash ci/travis/script.sh
     - name: Check if experimental
-      if: ${{ matrix.experimental == 'true' }}
+      if: ${{ failure() && matrix.experimental == 'true' }}
       run: |
         echo -e "::warning ::Error on this experimental matrix"
     - name: Deploy docs
