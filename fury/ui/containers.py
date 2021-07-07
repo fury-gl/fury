@@ -26,7 +26,7 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left"):
+                 opacity=0.7, align="left", corner_resizable=True):
         """Init class instance.
 
         Parameters
@@ -41,7 +41,10 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
+        corner_resizable: bool
+            If the panel should be resizable from the corner
         """
+        self.corner_resizable = corner_resizable
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.max_size = size
@@ -65,6 +68,9 @@ class Panel2D(UI):
 
         self.add_element(self.background, (0, 0))
         self.add_element(self.resize_button, (0, 0))
+
+        if not self.corner_resizable:
+            self.resize_button.set_visibility(False)
 
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
@@ -242,9 +248,11 @@ class Panel2D(UI):
                 + self.background.size[0]
 
             delta_y = new_position[1] - panel2d_object.position[1]
-            new_size = (delta_x, delta_y)
+            new_size = (delta_x, self.size[1]-delta_y)
 
             self.max_size = new_size
+
+            self.position = (self.position[0], new_position[1])
             self.resize(np.clip(new_size, 0, None))
 
         self.panel_resize_callback(i_ren, panel2d_object)
