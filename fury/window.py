@@ -27,7 +27,7 @@ class Scene(vtk.vtkRenderer):
 
     This is an important object that is responsible for preparing objects
     e.g. actors and volumes for rendering. This is a more pythonic version
-    of ``vtkRenderer`` proving simple methods for adding and removing actors
+    of ``vtkRenderer`` providing simple methods for adding and removing actors
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
