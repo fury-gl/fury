@@ -11,7 +11,6 @@ from string import printable
 
 
 import numpy as np
-from numpy.core.fromnumeric import size
 import vtk
 
 from fury.data import read_viz_icons
@@ -3338,7 +3337,7 @@ class Tree2D(UI):
         self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
                                     expandable=False, expanded=True,
                                     indent=self.indent, child_indent=self.indent,
-                                    child_height=self.node_height)
+                                    child_height=self.node_height, auto_resize=False)
         
         for node in self.nodes_dict.values():
             node.set_visibility(False)
@@ -3386,6 +3385,8 @@ class Tree2D(UI):
                 parent_node = self.nodes_dict[parent_label]
             else:
                 parent_node = TreeNode2D(label=parent_label)
+                self._nodes.append(parent_node)
+                self._nodes_dict[parent_label] = parent_node
 
             child_nodes = [TreeNode2D(label=child_label) for child_label in
                            child_labels]
@@ -3393,9 +3394,6 @@ class Tree2D(UI):
             for child_node, child_label in zip(child_nodes, child_labels):
                 self._nodes_dict[child_label] = child_node
                 parent_node.add_node(child_node)
-
-            self._nodes.append(parent_node)
-            self._nodes_dict[parent_label] = parent_node
 
     def resize(self, size):
         """ Resizes the Tree Node.
@@ -3480,7 +3478,7 @@ class TreeNode2D(UI):
                  position=(0, 0), size=(200, 200), indent=5,
                  child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
                  opacity=0.8, expandable=True, expanded=False,
-                 selected_color=(0.8, 0.3, 0.3)):
+                 selected_color=(0.8, 0.3, 0.3), auto_resize=True):
         """Initialize the UI element
 
         Parameters
@@ -3524,9 +3522,12 @@ class TreeNode2D(UI):
         self.content_size = size
         self.expandable = expandable
         self.expanded = expanded
+
         self.selected = False
         self.selected_color = selected_color
         self.unselected_color = color
+
+        self.auto_resize = auto_resize
 
         super(TreeNode2D, self).__init__(position)
         self.resize(size)
@@ -3628,10 +3629,9 @@ class TreeNode2D(UI):
             content panel's size.
         """
         self._child_nodes.append(node)
-
         if isinstance(node, type(self)):
             node.parent = self
-
+            node.set_visibility(False)
             _node_coords = (self.indent+self.child_indent,
                             self.children_size() - self.child_height)
         else:
@@ -3674,19 +3674,17 @@ class TreeNode2D(UI):
 
                     _child_coords = (self.indent+self.child_indent,
                                      self.content_panel.size[1]-offset)
-                else:
-                    _child_size = child.size
 
-                    _child_coords = (self.indent+self.child_indent,
-                                     self.content_panel.size[1] -
-                                     self.children_size())
-
-                child.resize(_child_size)
-                self.content_panel.update_element(child, _child_coords)
+                    child.resize(_child_size)
+                    self.content_panel.update_element(child, _child_coords)
 
     def toggle_view(self, i_ren, _obj, _element):
         self.expanded = not self.expanded
         self.set_visibility(self.expanded)
+
+        # parent = self.parent
+        # if parent.auto_resize:
+        #     parent.resize((parent.size[0], parent.children_size()))
 
         if self.expanded:
             self.update_children_coords(self, self.content_panel.size[1])
@@ -3700,7 +3698,7 @@ class TreeNode2D(UI):
         i_ren.force_render()
 
     def update_children_coords(self, node, size_offset):
-        """Updates the coords of the children below a specific child
+        """Updates the coords of the nodes below recursively
 
         Parameters
         ----------
@@ -3713,7 +3711,7 @@ class TreeNode2D(UI):
             current_child_idx = node.parent._child_nodes.index(node)
             parent = node.parent
 
-            for child in node.parent._child_nodes[current_child_idx+1:]:
+            for child in parent._child_nodes[current_child_idx+1:]:
                 new_position = (child.position[0],
                                 child.position[1]-size_offset)
 
@@ -3732,8 +3730,12 @@ class TreeNode2D(UI):
         return _size
 
     def set_visibility(self, visibility):
+        """Set visibility of this UI component."""
         self.content_panel.set_visibility(visibility)
 
+        for child_node in self._child_nodes:
+            if isinstance(child_node, type(self)):
+                child_node.set_visibility(False)
     @property
     def child_nodes(self):
         """Returns all the child nodes of the crrent node
