@@ -1,9 +1,11 @@
+import vtk
 import warnings
+
+VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
 def manifest_pbr(actor, metallicity=1, roughness=.5):
-    """ Applies the Physically Based Rendering properties to the selected
-    actor.
+    """Apply the Physically Based Rendering properties to the selected actor.
 
     Parameters
     ----------
@@ -14,7 +16,13 @@ def manifest_pbr(actor, metallicity=1, roughness=.5):
     roughness : float, optional
         Parameter used to specify how glossy the actor should be. Values must
         be between 0.0 and 1.0.
+
     """
+    if not VTK_9_PLUS:
+        warnings.warn("Your PBR effect can not be apply due to VTK version. "
+                      "Please upgrade your VTK version (should be >= 9.0.0).")
+        return
+
     prop = actor.GetProperty()
     prop.SetInterpolationToPBR()
     prop.SetMetallic(metallicity)
@@ -24,7 +32,7 @@ def manifest_pbr(actor, metallicity=1, roughness=.5):
 def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
                       specular_level=.5, specular_power=10,
                       interpolation='phong'):
-    """ Applies the standard material to the selected actor.
+    """Apply the standard material to the selected actor.
 
     Parameters
     ----------
@@ -44,6 +52,7 @@ def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
     interpolation : float, optional
         Parameter used to specify how glossy the actor should be. Values must
         be between 0.0 and 1.0.
+
     """
     prop = actor.GetProperty()
     prop.SetAmbient(ambient_level)

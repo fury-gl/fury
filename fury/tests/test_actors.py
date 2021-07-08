@@ -1287,6 +1287,38 @@ def test_texture_mapping():
     npt.assert_equal(res.colors_found, [True, True])
 
 
+def test_texture_update():
+    arr = np.zeros((512, 212, 3), dtype='uint8')
+    arr[:256, :] = np.array([255, 0, 0])
+    arr[256:, :] = np.array([0, 255, 0])
+    # create a texture on plane
+    tp = actor.texture(arr, interp=True)
+    scene = window.Scene()
+    scene.add(tp)
+    display = window.snapshot(scene)
+    res1 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # update the texture
+    new_arr = np.zeros((512, 212, 3), dtype='uint8')
+    new_arr[:, :] = np.array([255, 255, 255])
+    actor.texture_update(tp, new_arr)
+    display = window.snapshot(scene)
+    res2 = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                   colors=[(255, 255, 255),
+                                           (255, 0, 0),
+                                           (0, 255, 0)],
+                                   find_objects=False)
+
+    # Test for original colors
+    npt.assert_equal(res1.colors_found, [False, True, True])
+    # Test for changed colors of the actor
+    npt.assert_equal(res2.colors_found, [True, False, False])
+
+
 def test_figure_vs_texture_actor():
     arr = (255 * np.ones((512, 212, 4))).astype('uint8')
 
@@ -1349,7 +1381,10 @@ def test_superquadric_actor(interactive=False):
     scene = window.Scene()
     centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.random.rand(3, 3)
+    directions = np.array([[0.27753247, 0.15332503, 0.63670953],
+                           [0.14138223, 0.76031677, 0.14669451],
+                           [0.23416946, 0.12816617, 0.92596145]])
+
     scales = [1, 2, 3]
     roundness = np.array([[1, 1], [1, 2], [2, 1]])
 
@@ -1475,3 +1510,35 @@ def test_sdf_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 4)
+
+
+def test_marker_actor(interactive=False):
+    scene = window.Scene()
+    scene.background((1, 1, 1))
+    centers_3do = np.array([[4, 0, 0], [4, 4, 0], [4, 8, 0]])
+    markers_2d = ['o', 's', 'd', '^', 'p', 'h', 's6', 'x', '+']
+    center_markers_2d = np.array(
+        [[0, i*2, 0] for i in range(len(markers_2d))])
+    fake_spheres = actor.markers(
+        centers_3do,
+        colors=(0, 1, 0),
+        scales=1,
+        marker='3d'
+    )
+    markers_2d = actor.markers(
+        center_markers_2d,
+        colors=(0, 1, 0),
+        scales=1,
+        marker=markers_2d
+    )
+    scene.add(fake_spheres)
+    scene.add(markers_2d)
+
+    if interactive:
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+
+    colors = np.array([[0, 1, 0] for i in range(12)])
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 12)
