@@ -1,5 +1,5 @@
 from fury.ui.core import Disk2D, Rectangle2D
-from fury.ui.elements import LineSlider2D, ListBox2D
+from fury.ui.elements import LineSlider2D, ListBox2D, TreeNode2D
 from fury.ui.containers import ImageContainer2D
 from fury import ui, window
 
@@ -7,7 +7,9 @@ structure = [{'Containers': ['Panels', 'ImageContainers']},
              {'Elements': ['ListBox', 'LineSlider']},
              {'Core': ['Rectangle', 'Disk']}]
 
-tree = ui.elements.Tree2D(structure=structure, tree_name="FURY UI Breakdown", size=(500, 500), position=(0, 0))
+tree = ui.elements.Tree2D(structure=structure,tree_name="FURY UI Breakdown",
+                          size=(500, 500), position=(0, 0), color=(0.8, 0.4, 0.2))
+
 ###############################################################################
 # Now, we create UI elements for the Containers node
 # First, we create panles for the Panels node
@@ -16,7 +18,10 @@ panel_1 = ui.Panel2D(size=(100, 100), color=(0.3, 0.8, 0.5))
 
 ###############################################################################
 # Now, we create an ImageContainer2D for the ImageContainers node
-img = ImageContainer2D(img_path="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/fury-logo.png", size=(100, 100))
+path = "https://raw.githubusercontent.com/fury-gl/"\
+       "fury-communication-assets/main/fury-logo.png"
+
+img = ImageContainer2D(img_path=path, size=(100, 100))
 
 ###############################################################################
 # Now, we add the UI elements to their respective nodes.
