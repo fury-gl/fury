@@ -15,7 +15,7 @@ It is a community-driven, open-source, and high-performance scientific visualiza
 Statement of Need
 -----------------
 
-FURY was created to address the growing necessity of high-performance 3D scientific visualization in an easy-to-use API fully compatible with the Pythonic ecosystem. To achieve this FURY takes ideas from CGI (Computer-Generated Imagery) and deploys them for usage in everyday research practices.
+FURY was created to address the growing necessity of high-performance 3D scientific visualization in an easy-to-use API fully compatible with the Pythonic ecosystem. To achieve this FURY takes ideas from CGI (Computer-Generated Imagery) and game engines to then be deployed for usage in everyday research practices.
 
 Mission Statement
 -----------------
