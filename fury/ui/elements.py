@@ -3772,6 +3772,7 @@ class TreeNode2D(UI):
         color : list of 3 floats.
         """
         self.title_panel.color = color
+        self.unselected_color = color
 
     @property
     def opacity(self):
