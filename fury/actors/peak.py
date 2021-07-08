@@ -333,7 +333,7 @@ def _points_to_vtk_cells(points, points_per_line=2):
 
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
         """
-        Connectivity is an array that contains the indices of the points that 
+        Connectivity is an array that contains the indices of the points that
         need to be connected in the visualization. The indices start from 0.
         """
         connectivity = np.asarray(list(range(0, num_pnts)), dtype=int)
@@ -358,8 +358,8 @@ def _points_to_vtk_cells(points, points_per_line=2):
         while i_pos < num_pnts:
             e_pos = i_pos + points_per_line
             """
-            In old versions of VTK (<9.0) the connectivity array should include 
-            the length of each line and immediately after the indices of the 
+            In old versions of VTK (<9.0) the connectivity array should include
+            the length of each line and immediately after the indices of the
             points in each line.
             """
             connectivity = np.append(connectivity, [points_per_line, i_pos,
