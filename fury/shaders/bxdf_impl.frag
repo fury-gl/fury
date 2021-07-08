@@ -87,7 +87,7 @@ vec3 anisotropicV3 = evaluateMicrofacetAnisotropic(
 vec3 subsurfaceV3 = evaluateSubsurface(roughness, albedo, NdV, NdV, NdV);
 //fragOutput0 = vec4(subsurfaceV3, opacity);
 
-LoV3 = mix(LoV3, subsurfaceV3, subsurfaceV3);
+LoV3 = mix(LoV3, subsurfaceV3, subsurface);
 //fragOutput0 = vec4(LoV3, opacity);
 
 // Sheen + Sheen Tint
