@@ -77,9 +77,7 @@ def wrap_overflow(textblock, wrap_width):
     end_ptr = len(original_str)
 
     if wrap_width <= 0:
-        raise ValueError(
-            f'Value of wrap_width cannot be less that or equal to 0'
-        )
+        wrap_width = textblock.size[0] + wrap_width
 
     if textblock.size[0] <= wrap_width:
         return original_str
@@ -87,18 +85,44 @@ def wrap_overflow(textblock, wrap_width):
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr)//2
         textblock.message = original_str[:mid_ptr]
-        if textblock.size[0] < wrap_width:
-            start_ptr = mid_ptr
-        elif textblock.size[0] > wrap_width:
-            end_ptr = mid_ptr
 
-        if mid_ptr == (start_ptr + end_ptr)//2 or\
-           textblock.size[0] == wrap_width:
+        if is_overflowing(textblock, wrap_width, start_ptr,
+                          mid_ptr, end_ptr):
 
-            for idx, _ in enumerate(original_str):
-                if idx % mid_ptr == 0 and idx != 0:
-                    original_str = original_str[:idx]\
-                     + '\n' + original_str[idx:]
+            for i in range(len(original_str)):
+                if i % mid_ptr == 0 and i != 0:
+                    original_str = original_str[:i]\
+                     + '\n' + original_str[i:]
 
             textblock.message = original_str
             return textblock.message
+
+
+def is_overflowing(textblock, width, start_ptr,
+                   mid_ptr, end_ptr):
+    """Checks if the text is overflowing
+
+    Parameters
+    ----------
+    textblock : TextBlock2D
+        The textblock object whose text needs to be wrapped.
+    width : int
+        Required width.
+    start_ptr: int
+        The start pointer to the textblock message
+    mid_ptr: int
+        The middle pointer to the textblock message
+    end_ptr: int
+        The end pointer to the textblock message
+    """
+    print(start_ptr, mid_ptr, end_ptr)
+    if textblock.size[0] < width:
+            start_ptr = mid_ptr
+    elif textblock.size[0] > width:
+            end_ptr = mid_ptr
+
+    if mid_ptr == (start_ptr + end_ptr)//2 or\
+        textblock.size[0] == width:
+            return False
+    
+    return True
