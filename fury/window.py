@@ -27,7 +27,7 @@ class Scene(vtk.vtkRenderer):
 
     This is an important object that is responsible for preparing objects
     e.g. actors and volumes for rendering. This is a more pythonic version
-    of ``vtkRenderer`` proving simple methods for adding and removing actors
+    of ``vtkRenderer`` providing simple methods for adding and removing actors
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
@@ -525,6 +525,9 @@ class ShowManager(object):
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
 
+    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
+        self.iren.AddObserver(event, iren_callback)
+
     def destroy_timer(self, timer_id):
         self.iren.DestroyTimer(timer_id)
         del self.timers[self.timers.index(timer_id)]
@@ -778,6 +781,12 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     # Force to not pick a framebuffer with a multisample buffer
     # (default is 8)
     win.SetMultiSamples(multi_samples)
+
+    # TODO: enable these but test
+    # win.SetBorders(True)
+    # win.LineSmoothingOn(True)
+    # win.PointSmoothingOn(True)
+    # win.PolygonSmoothingOn(True)
 
     # Choose to use depth peeling (if supported)
     # (default is 0 (false)):
