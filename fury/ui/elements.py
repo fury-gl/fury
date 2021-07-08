@@ -16,7 +16,7 @@ import vtk
 from fury.data import read_viz_icons
 from fury.io import load_image
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
-from fury.ui.containers import Panel2D
+from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.utils import set_input
 
@@ -3333,9 +3333,11 @@ class Tree2D(UI):
     def _setup(self):
         """Setup this UI element."""
         self.generate_tree(self.structure)
+        _icon_path = 'https://img.icons8.com/material-rounded/24/000000/'\
+                     'stacked-organizational-chart-highlighted-parent-node.png'
 
         self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
-                                    expandable=False, expanded=True,
+                                    expandable=False, expanded=True, icon=_icon_path,
                                     indent=self.indent, child_indent=self.indent,
                                     child_height=self.node_height, auto_resize=False)
         
@@ -3474,7 +3476,7 @@ class TreeNode2D(UI):
         Whether the current node is expanded or not
     """
 
-    def __init__(self, label, parent=None, children=None,
+    def __init__(self, label, parent=None, children=None, icon=None,
                  position=(0, 0), size=(200, 200), indent=5,
                  child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
                  opacity=0.8, expandable=True, expanded=False,
@@ -3487,6 +3489,8 @@ class TreeNode2D(UI):
             Label text of the current node
         children: list of :class: `TreeNode2D`
             Sub nodes of the current node
+        icon: str
+            Path/URl to the icon placed next to the label
         parent: :class: `TreeNode2D`
             Parent node of the current node
         position : (float, float)
@@ -3508,8 +3512,11 @@ class TreeNode2D(UI):
             If the node should expand/collapse
         """
         self.children = children
+        self.icon = icon
         if self.children is None:
             self.children = []
+        if self.icon is None:
+            self.icon = read_viz_icons(fname='stop2.png')
 
         self._child_nodes = []
         self.parent = parent
@@ -3550,6 +3557,7 @@ class TreeNode2D(UI):
 
         self.content_panel = Panel2D(size=self.content_size)
         self.label_text = TextBlock2D(text=self.label)
+        self.label_image = ImageContainer2D(img_path=self.icon)
 
         self.button_icons = []
         self.button_icons.append(('expand',
@@ -3566,6 +3574,9 @@ class TreeNode2D(UI):
 
         self.title_panel.add_element(self.content_panel,
                                      (0, -self.content_size[1]))
+        
+        self.title_panel.add_element(self.label_image,
+                                     (0., 0.))
 
         self.button.on_left_mouse_button_clicked = self.toggle_view
         self.title_panel.background.on_left_mouse_button_clicked = self.select_node
@@ -3655,12 +3666,18 @@ class TreeNode2D(UI):
         self.label_text.resize((size[0]-self.button.size[0],
                                 self.child_height))
 
+        self.label_image.resize((self.child_height, self.child_height))
+        self.button.resize((self.child_height, self.child_height))
+
         self.title_panel.update_element(self.label_text,
-                                        (self.indent, 0))
+                                        (self.label_image.size[0], 0))
 
         self.title_panel.update_element(self.button,
                                         (self.title_panel.size -
                                          self.button.size))
+        
+        self.title_panel.update_element(self.label_image,
+                                        (0., 0.))
 
         self.title_panel.update_element(self.content_panel, (0, -size[1]))
 
