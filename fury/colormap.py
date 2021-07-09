@@ -314,7 +314,7 @@ def create_colormap(v, name='plasma', auto=True):
         'inferno'. 'jet' is popular but can be often misleading and we will
         deprecate it the future.
     auto : bool,
-        if auto is True then v is interpolated to [0, 10] from v.min()
+        if auto is True then v is interpolated to [0, 1] from v.min()
         to v.max()
 
     Notes

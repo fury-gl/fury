@@ -57,6 +57,19 @@ float sdTorus( vec3 p, vec2 t )
 }
 
 
+float sdCapsule(vec3 p, vec3 a, vec3 b, float r) {
+	vec3 ab = vec3(b-a);
+    vec3 ap = vec3(p-a);
+    
+    float t = dot(ab, ap) / dot(ab, ab);
+    t = clamp(t, 0., 1.);
+    
+    vec3 c = a + t*ab;
+    
+    return length(p-c)-r;
+}
+
+
 float map( in vec3 position )
 {
 
@@ -78,6 +91,10 @@ float map( in vec3 position )
     
     else if(primitiveVSOutput==3){
         d1 = sdEllipsoid((pos)/scaleVSOutput, vec3(0.1, 0.1, 0.3))*scaleVSOutput;
+    }
+
+    else if(primitiveVSOutput==4){
+        d1 = sdCapsule((pos)/scaleVSOutput, vec3(0.0, -0.3, 0.2), vec3(0.0, -0.1, 0.2), 0.2)*scaleVSOutput;
     }
     return d1;
 }

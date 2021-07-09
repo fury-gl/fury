@@ -42,6 +42,14 @@ GH_TOKEN = os.environ.get('GH_TOKEN', '')
 
 
 def fetch_url(url):
+    """
+    Notes
+    -----
+    This was pointed out as a Security issue in bandit.
+    please look at issue #355,
+    we fixed it, but the bandit warning might remain,
+    need to suppress it manually (just ignore it)
+    """
     req = Request(url)
     if GH_TOKEN:
         req.add_header('Authorization', 'token {0}'.format(GH_TOKEN))
@@ -50,6 +58,9 @@ def fetch_url(url):
         # url = Request(url,
         #               headers={'Accept': 'application/vnd.github.v3+json',
         #                        'User-agent': 'Defined'})
+        if not url.lower().startswith('http'):
+            msg = "Please make sure you use http/https connection"
+            raise ValueError(msg)
         f = urlopen(req)
     except Exception as e:
         print(e)
@@ -204,6 +215,11 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         contributor_dict["total_deletions"] = total_deletions
         # contributor_dict["weekly_commits"] = contributor["weeks"]
         contributor_stats["contributors"].insert(0, contributor_dict)
+
+    contributor_stats["contributors"] = sorted(
+        contributor_stats["contributors"],
+        key=lambda x: x.get('nb_commits'),
+        reverse=True)
 
     contributor_stats["total_commits"] = cumulative_commits
     return contributor_stats
@@ -564,7 +580,7 @@ def setup(app):
     - Adds extra jinja filters.
     """
     app.connect("builder-inited", add_jinja_filters)
-    app.add_stylesheet("css/custom_github.css")
+    app.add_css_file("css/custom_github.css")
 
 
 # ----------------------------------------------------------------------------
