@@ -42,7 +42,7 @@ def test_port(host, port):
 
 class Widget:
     def __init__(
-            self, showm, ms_stream=33,
+            self, showm, ms_stream=2,
             ms_interaction=33, queue_size=20,
             host='localhost', port=None,
             encoding='mjpeg', ms_jpeg=33):
@@ -188,10 +188,9 @@ class Widget:
             self.stream.stop()
             self.stream_interaction.stop()
 
-        if self.pserver is not None:
-            self.kill_server()
-
-        self.cleanup()
+            if self.pserver is not None:
+                self.kill_server()
+            self.cleanup()
         self._server_started = False
 
     def kill_server(self):

@@ -860,6 +860,8 @@ class IntervalTimer:
             self.is_running = True
 
     def stop(self):
-        self._timer.cancel()
-        self.is_running = False
-        # self._timer.join()
+        if self._timer is not None:
+            self._timer.cancel()
+            self.is_running = False
+            self._timer = None
+            # self._timer.join()

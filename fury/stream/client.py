@@ -1,5 +1,7 @@
 import vtk
 import sys
+import logging
+import time
 if sys.version_info.minor >= 8:
     PY_VERSION_8 = True
 else:
@@ -7,15 +9,33 @@ else:
     PY_VERSION_8 = False
 
 import numpy as np
-
+from functools import partial
 from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue
 from fury.stream.tools import (
     RawArrayImageBufferManager, SharedMemImageBufferManager)
 from fury.stream.tools import IntervalTimer
 from fury.stream.constants import _CQUEUE
 
-import logging
-import time
+
+def callback_stream_client(*args, **kwargs):
+    stream_client = kwargs['stream_client']
+    if not stream_client._in_request:
+        stream_client._in_request = True
+        stream_client.window2image_filter.Update()
+        stream_client.window2image_filter.Modified()
+        vtk_image = stream_client.window2image_filter.GetOutput()
+        vtk_array = vtk_image.GetPointData().GetScalars()
+        # num_components = vtk_array.GetNumberOfComponents()
+
+        w, h, _ = vtk_image.GetDimensions()
+        np_arr = np.frombuffer(vtk_array, dtype='uint8')
+        if np_arr is not None:
+            stream_client.img_manager.write_into(w, h, np_arr)
+            # time.sleep(kwargs['ms']/1000)
+            stream_client._in_request = False
+            if kwargs['force_render']:
+                stream_client.showm.window.Render()
+                stream_client.showm.iren.Render()
 
 
 class FuryStreamClient:
@@ -89,45 +109,42 @@ class FuryStreamClient:
     def start(self, ms=16,):
         if self._started:
             self.stop()
-
-        def callback(caller, timerevent):
-            if not self._in_request:
-                if not self.update:
-                    return
-                self._in_request = True
-                self.window2image_filter.Update()
-                self.window2image_filter.Modified()
-                vtk_image = self.window2image_filter.GetOutput()
-                vtk_array = vtk_image.GetPointData().GetScalars()
-                # num_components = vtk_array.GetNumberOfComponents()
-
-                w, h, _ = vtk_image.GetDimensions()
-                np_arr = np.frombuffer(vtk_array, dtype='uint8')
-                if np_arr is not None:
-                    self.img_manager.write_into(w, h, np_arr)
-                    self._in_request = False
-
         if ms > 0:
             if self._whithout_iren_start:
                 self._interval_timer = IntervalTimer(
                     ms/1000,
-                    callback,
-                    None,
-                    None)
+                    partial(
+                        callback_stream_client,
+                        **{'stream_client': self, 'force_render': False}
+                    )
+                )
             else:
+                def callback(caller, event, *args, **kwargs):
+                    callback_stream_client(*args, **kwargs)
                 self._id_observer = self.showm.iren.AddObserver(
-                    "TimerEvent", callback)
+                    "TimerEvent",
+                    partial(
+                        callback,
+                        **{'stream_client': self, 'force_render': False}
+                    )
+                )
                 self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
                 # self.showm.window.AddObserver("TimerEvent", callback)
                 # id_timer = self.showm.window.CreateRepeatingTimer(ms)
 
         else:
-            # id_observer = self.showm.iren.AddObserver(
             self._id_observer = self.showm.iren.AddObserver(
-                'RenderEvent', callback)
-        self.showm.render()
+                'RenderEvent',
+                partial(
+                    callback_stream_client,
+                    **{'stream_client': self, 'force_render': False}
+                )
+            )
+        self.showm.window.Render()
+        self.showm.iren.Render()
         self._started = True
-        callback(None, None)
+        callback_stream_client(None, None,
+            **{'stream_client': self, 'force_render': False})
 
     def stop(self):
         if not self._started:
@@ -139,6 +156,7 @@ class FuryStreamClient:
             # self.showm.destroy_timer(self._id_timer)
             self.showm.iren.DestroyTimer(self._id_timer)
             self._id_timer = None
+
         if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
             self._id_observer = None
@@ -167,8 +185,7 @@ class FuryStreamClient:
                     print(f'Shared Memory {name}(buffer image) File not found')
 
 
-def interaction_callback(
-        circular_queue, showm, iren, render_after=False):
+def interaction_callback(circular_queue, showm, iren, render_after):
     """This callback is used to invoke vtk interaction events
     reading those events from the provided circular_queue instance
 
@@ -187,7 +204,7 @@ def interaction_callback(
         user_event_id = data[0]
         user_timestamp = data[_CQUEUE.index_info.user_timestamp]
         logging.info(
-            'Interaction: time to dequeue ' +
+            'Interaction Callback: time to dequeue ' +
             f'{ts-user_timestamp:.2f} ms')
 
         ts = time.time()*1000
@@ -213,7 +230,7 @@ def interaction_callback(
             else:
                 iren.MouseWheelBackwardEvent()
 
-            showm.window.Modified()
+            # showm.window.Modified()
 
         elif user_event_id == event_ids.mouse_move:
             iren.SetEventInformation(
@@ -234,7 +251,7 @@ def interaction_callback(
                 event_ids.right_btn_release: iren.RightButtonReleaseEvent,
             }
             mouse_actions[user_event_id]()
-            showm.window.Modified()
+            # showm.window.Modified()
         logging.info(
             'Interaction: time to peform event ' +
             f'{ts-user_timestamp:.2f} ms')
@@ -244,7 +261,8 @@ def interaction_callback(
         # this should be called if we are using
         # renderevent attached to a vtkwindow instance
         if render_after:
-            showm.render()
+            showm.window.Render()
+            showm.iren.Render()
 
 
 class FuryStreamInteraction:
@@ -284,24 +302,25 @@ class FuryStreamInteraction:
         self._whithout_iren_start = whithout_iren_start
         self._started = False
 
-    def start(self, ms=16):
+    def start(self, ms=3):
         if self._started:
             self.stop()
-
-        def callback(caller, timerevent):
-            interaction_callback(
-                self.circular_queue, self.showm, self.iren, False)
-
         if self._whithout_iren_start:
             self._interval_timer = IntervalTimer(
                 ms/1000,
                 interaction_callback,
-                self.circular_queue,
-                self.showm,
-                self.iren,
-                True
+                *[
+                     self.circular_queue,
+                     self.showm,
+                     self.iren,
+                     True
+                 ]
             )
         else:
+            def callback(caller, event, *args, **kwargs):
+                interaction_callback(
+                    self.circular_queue, self.showm, self.iren, False)
+            
             self._id_observer = self.showm.iren.AddObserver(
                 "TimerEvent", callback)
             self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
@@ -313,12 +332,17 @@ class FuryStreamInteraction:
             return
 
         if self._id_timer is not None:
-            self.showm.window.DestroyTimer(self._id_timer)
-        else:
-            if self._interval_timer is not None:
-                self._interval_timer.stop()
-                del self._interval_timer
-                self._interval_timer = None
+            # self.showm.destroy_timer(self._id_timer)
+            self.showm.iren.DestroyTimer(self._id_timer)
+            self._id_timer = None
+
+        if self._id_observer is not None:
+            self.showm.iren.RemoveObserver(self._id_observer)
+            self._id_observer = None
+      
+        if self._interval_timer is not None:
+            self._interval_timer.stop()
+            self._interval_timer = None
 
         self._started = False
 
