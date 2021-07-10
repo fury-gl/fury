@@ -27,19 +27,14 @@ import itertools
 # Kindly note that only the z coordinate is being modified with time as only
 # the z coordinate is a function of time.
 
-def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
-                       upper_ybound=1, npoints=100, time=0, incre=0,
-                       cmap_name='viridis'):
+def update_coordinates(time=0, incre=0, cmap_name='viridis'):
 
-    # creating the points which will be used to generate the surface
-    x = np.linspace(lower_xbound, upper_xbound, npoints)
-    y = np.linspace(lower_ybound, upper_ybound, npoints)
-    x, y = np.meshgrid(x, y)
-    x = x.reshape(-1)
-    y = y.reshape(-1)
+    # x, y points which will be used to fit the equation to get elevation and
+    # generate the surface.
+    global x, y
 
-    # manipulate rate to change the speed of the waves; (default = 1.5)
-    rate = 1.5
+    # manipulate rate to change the speed of the waves; (default = 1)
+    rate = 1
 
     # Z is the function F i.e. F(x, y, t)
     z = 0.48*np.sin(2*np.pi*x)*np.cos(2*np.pi*y-rate*time)
@@ -90,13 +85,19 @@ upper_ybound = 1
 npoints = 300
 cmap_name = 'plasma'
 
+###############################################################################
+# creating the x, y points which will be used to fit the equation to get
+# elevation and generate the surface
+x = np.linspace(lower_xbound, upper_xbound, npoints)
+y = np.linspace(lower_ybound, upper_ybound, npoints)
+x, y = np.meshgrid(x, y)
+x = x.reshape(-1)
+y = y.reshape(-1)
 
 ###############################################################################
 # xyz are the coordinates of the points that'll be used to plot the wave
 # colors refers to the colormap that'll be used to color the wave
-xyz, colors = update_coordinates(lower_xbound, upper_xbound, lower_ybound,
-                                 upper_ybound, npoints, time=time,
-                                 cmap_name=cmap_name)
+xyz, colors = update_coordinates(time=time, cmap_name=cmap_name)
 
 ###############################################################################
 # Initializing wave_actor and adjusting lighting options to make the wave look
@@ -154,10 +155,7 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
 
     # updating the colors and vertices of the triangles used to form the wave
-    xyz, colors = update_coordinates(lower_xbound, upper_xbound,
-                                     lower_ybound, upper_ybound,
-                                     npoints, time=time, incre=cnt,
-                                     cmap_name=cmap_name)
+    xyz, colors = update_coordinates(time=time, incre=cnt, cmap_name=cmap_name)
 
     # updating colors
     wave_alias = wave_actor.GetMapper().GetInput().GetPointData()
@@ -179,7 +177,7 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 30, timer_callback)
 
-interactive = False
+interactive = True
 if interactive:
     showm.start()
 
