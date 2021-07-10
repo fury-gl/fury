@@ -76,7 +76,7 @@ def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
 # npoints: int
 #          For high quality rendering, keep the number high but kindly note
 #          that higher values for npoints slows down the animation
-#          (default = 200)
+#          (default = 300)
 # cmap_name: string
 #            name of the colormap being used to color the wave
 #            (default = 'inferno')
@@ -87,7 +87,7 @@ lower_xbound = -1
 upper_xbound = 1
 lower_ybound = -1
 upper_ybound = 1
-npoints = 200
+npoints = 300
 cmap_name = 'inferno'
 
 
