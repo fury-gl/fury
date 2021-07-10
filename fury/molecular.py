@@ -1,6 +1,6 @@
-from fury import molecular
 import vtk
 from vtk.util import numpy_support
+
 
 class Molecule(vtk.vtkMolecule):
     """Your molecule class.
@@ -9,6 +9,7 @@ class Molecule(vtk.vtkMolecule):
     coordinate and bonding data).
     This is a more pythonic version of ``vtkMolecule``.
     """
+
 
 def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
     """Add atomic data to our molecule.
@@ -28,6 +29,7 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
     """
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
+
 def add_bond(molecule, atom1_index, atom2_index, bond_type=1):
     """Add bonding data to our molecule. Establish a bond of type bond_type
     between the atom at atom1_index and the atom at atom2_index.
@@ -45,6 +47,7 @@ def add_bond(molecule, atom1_index, atom2_index, bond_type=1):
     """
     molecule.AppendBond(atom1_index, atom2_index, bond_type)
 
+
 def get_total_num_atoms(molecule):
     """Returns the total number of atoms in a given molecule.
 
@@ -54,6 +57,7 @@ def get_total_num_atoms(molecule):
     """
     return molecule.GetNumberOfAtoms()
 
+
 def get_total_num_bonds(molecule):
     """Returns the total number of bonds in a given molecule.
 
@@ -62,6 +66,7 @@ def get_total_num_bonds(molecule):
     molecule : Molecule() object
     """
     return molecule.GetNumberOfBonds()
+
 
 def get_atomic_number(molecule, atom_index):
     """Get the atomic number of an atom for a specified index.
@@ -76,6 +81,7 @@ def get_atomic_number(molecule, atom_index):
         Index of the atom whose atomic number is to be obtained.
     """
     return molecule.GetAtomAtomicNumber(atom_index)
+
 
 def set_atomic_number(molecule, atom_index, atomic_num):
     """Set the atomic number of an atom for a specified index.
@@ -94,6 +100,7 @@ def set_atomic_number(molecule, atom_index, atomic_num):
     """
     molecule.SetAtomAtomicNumber(atom_index, atomic_num)
 
+
 def get_atomic_position(molecule, atom_index):
     """Get the atomic coordinates of an atom for a specified index.
 
@@ -107,6 +114,7 @@ def get_atomic_position(molecule, atom_index):
         Index of the atom whose atomic coordinates are to be obtained.
     """
     return molecule.GetAtomPosition(atom_index)
+
 
 def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
     """Set the atomic coordinates of an atom for a specified index.
@@ -129,6 +137,7 @@ def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
     """
     molecule.SetAtomPosition(atom_index, x_coord, y_coord, z_coord)
 
+
 def get_bond_type(molecule, bond_index):
     """Get the type of bond for a specified index.
 
@@ -143,6 +152,7 @@ def get_bond_type(molecule, bond_index):
         Index of the bond whose type is to be obtained.
     """
     return molecule.GetBondOrder(bond_index)
+
 
 def set_bond_type(molecule, bond_index, bond_type):
     """Set the bond type of a bond for a specified index.
@@ -161,6 +171,7 @@ def set_bond_type(molecule, bond_index, bond_type):
     """
     return molecule.SetBondOrder(bond_index, bond_type)
 
+
 def get_atomic_number_array(molecule):
     """Returns an array of atomic numbers corresponding to the atoms
     present in a given molecule.
@@ -171,6 +182,7 @@ def get_atomic_number_array(molecule):
         The molecule whose atomic number array is to be obtained.
     """
     return numpy_support.vtk_to_numpy(molecule.GetAtomicNumberArray())
+
 
 def get_bond_types_array(molecule):
     """Returns an array containing the types of the bond (single/double/
@@ -183,6 +195,7 @@ def get_bond_types_array(molecule):
     """
     return numpy_support.vtk_to_numpy(molecule.GetBondOrdersArray())
 
+
 def get_atomic_position_array(molecule):
     """Returns an array of atomic coordinates corresponding to the atoms
     present in the molecule.
@@ -193,7 +206,8 @@ def get_atomic_position_array(molecule):
         The molecule whose atomic position array is to be obtained.
     """
     return numpy_support.vtk_to_numpy(molecule.GetAtomicPositionArray().
-                                        GetData())
+                                      GetData())
+
 
 def deep_copy(molecule1, molecule2):
     """
@@ -208,6 +222,7 @@ def deep_copy(molecule1, molecule2):
         The molecule from which the atomic information is copied.
     """
     molecule1.DeepCopyStructure(molecule2)
+
 
 def compute_bonding(molecule):
     """
@@ -246,6 +261,7 @@ class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
     above mentioned representations.
     """
 
+
 def set_molecule_to_mapper(molecule_mapper, molecule):
     """This function performs two tasks -
     1. It sends the molecule data to the mapper object.
@@ -262,8 +278,9 @@ def set_molecule_to_mapper(molecule_mapper, molecule):
     molecule_mapper.bonds_data_available = False
     molecule_mapper.SetInputData(molecule)
     if get_bond_types_array(molecule).size == get_total_num_bonds(molecule) \
-        and get_total_num_bonds(molecule) > 0:
+       and get_total_num_bonds(molecule) > 0:
         molecule_mapper.bonds_data_available = True
+
 
 def molecule_mapper_render_atoms(molecule_mapper, choice):
     """Set whether or not to render atoms for a given MoleculeMapper object.
@@ -277,6 +294,7 @@ def molecule_mapper_render_atoms(molecule_mapper, choice):
     """
     molecule_mapper.SetRenderAtoms(choice)
 
+
 def molecule_mapper_render_bonds(molecule_mapper, choice):
     """Set whether or not to render bonds for a given MoleculeMapper object.
 
@@ -288,6 +306,7 @@ def molecule_mapper_render_bonds(molecule_mapper, choice):
         * If choice is False, bonds are not rendered.
     """
     molecule_mapper.SetRenderBonds(choice)
+
 
 def set_atomic_radius_type(molecule_mapper, radius_type):
     """Set the type of radius used to generate the atoms for a given
@@ -301,8 +320,10 @@ def set_atomic_radius_type(molecule_mapper, radius_type):
         types -
         * 'Unit': Use unit radius for all atoms (atomic radius = 1 for all
           atoms, irrespective of element)
-        * 'VDW': Use Van Der Waals radius for all atoms (unique to each element)
-        * 'Covalent': Use covalent radius for all atoms (unique to each element)
+        * 'VDW': Use Van Der Waals radius for all atoms
+                 (unique to each element)
+        * 'Covalent': Use covalent radius for all atoms
+                      (unique to each element)
     """
     if radius_type == 'Unit':
         molecule_mapper.SetAtomicRadiusTypeToUnitRadius()
@@ -324,6 +345,7 @@ def set_atomic_radius_scale(molecule_mapper, scale_factor):
     """
     molecule_mapper.SetAtomicRadiusScaleFactor(scale_factor)
 
+
 def set_bond_colormode(molecule_mapper, choice):
     """Set the method by which bonds are colored for a a given MoleculeMapper
     object.
@@ -333,14 +355,15 @@ def set_bond_colormode(molecule_mapper, choice):
     molecule_mapper : MoleculeMapper() object
     choice : string
         * If choice is 'discrete', each bond is colored using the same lookup
-        table as the atoms at each end, with a sharp color boundary at the
-        bond center.
+          table as the atoms at each end, with a sharp color boundary at the
+          bond center.
         * If choice is 'single', all bonds will be of same color.
     """
     if choice == 'discrete':
         molecule_mapper.SetBondColorMode(1)
     elif choice == 'single':
         molecule_mapper.SetBondColorMode(0)
+
 
 def set_atom_colormode(molecule_mapper, choice):
     """Set the method by which atoms are colored for a given MoleculeMapper
@@ -350,13 +373,15 @@ def set_atom_colormode(molecule_mapper, choice):
     ----------
     molecule_mapper : MoleculeMapper() object
     choice : string
-        * If choice is 'discrete', atoms are colored using CPK coloring convention.
+        * If choice is 'discrete', atoms are colored using CPK coloring
+          convention.
         * If choice is 'single', all atoms will be of same color.
     """
     if choice == 'discrete':
         molecule_mapper.SetAtomColorMode(1)
     elif choice == 'single':
         molecule_mapper.SetAtomColorMode(0)
+
 
 def set_bond_thickness(molecule_mapper, bondThickness):
     """Sets the thickness of the bonds (i.e. thickness of tubes which are used
@@ -370,6 +395,7 @@ def set_bond_thickness(molecule_mapper, bondThickness):
     """
     molecule_mapper.SetBondRadius(bondThickness)
 
+
 def set_multi_bonds(molecule_mapper, choice):
     """Set whether multiple tubes will be used to represent multiple bonds for
     a given MoleculeMapper object.
@@ -379,11 +405,12 @@ def set_multi_bonds(molecule_mapper, choice):
     molecule_mapper : MoleculeMapper() object
     choice : bool
         * If choice is True, multiple bonds (double, triple) will be shown by
-        using multiple tubes.
+          using multiple tubes.
         * If choice is False, all bonds (single, double, triple) will be
           shown as single bonds (i.e. shown using one tube each).
     """
     molecule_mapper.SetUseMultiCylindersForBonds(choice)
+
 
 def config_mapper_to_molecular_sphere(molecule_mapper, colormode):
     """Configure settings to create a molecular sphere representation for a
@@ -406,8 +433,9 @@ def config_mapper_to_molecular_sphere(molecule_mapper, colormode):
     set_atomic_radius_scale(molecule_mapper, 1)
     set_atom_colormode(molecule_mapper, colormode)
 
+
 def config_mapper_to_ball_stick(molecule_mapper, colormode, atom_scale_factor,
-                               bond_thickness, multiple_bonds):
+                                bond_thickness, multiple_bonds):
     """Configure settings to create a molecular ball and stick representation
     for a given MoleculeMapper object.
 
@@ -417,9 +445,9 @@ def config_mapper_to_ball_stick(molecule_mapper, colormode, atom_scale_factor,
     colormode : string
         Set the colormode for coloring the atoms. Two valid color modes -
         * 'discrete': Atoms and bonds are colored using CPK coloring
-            convention.
+          convention.
         * 'single': All atoms are colored with same color(grey) and all
-            bonds are colored with same color(dark grey).
+          bonds are colored with same color(dark grey).
         * RGB tuple used for coloring the atoms when 'single' colormode is
         selected: (150, 150, 150)
         * RGB tuple used for coloring the bonds when 'single' colormode is
@@ -434,9 +462,9 @@ def config_mapper_to_ball_stick(molecule_mapper, colormode, atom_scale_factor,
         Set whether multiple tubes will be used to represent multiple
         bonds. Two valid choices -
         * 'On': multiple bonds (double, triple) will be shown by using
-            multiple tubes.
+          multiple tubes.
         * 'Off': all bonds (single, double, triple) will be shown as single
-            bonds (i.e. shown using one tube each).
+          bonds (i.e. shown using one tube each).
     """
     if molecule_mapper.bonds_data_available:
         molecule_mapper_render_atoms(molecule_mapper, True)
@@ -453,6 +481,7 @@ def config_mapper_to_ball_stick(molecule_mapper, colormode, atom_scale_factor,
 
     set_atom_colormode(molecule_mapper, colormode)
     set_bond_colormode(molecule_mapper, colormode)
+
 
 def config_mapper_to_stick(molecule_mapper, colormode, bond_thickness):
     """Configure settings to create a molecular stick representation for a
