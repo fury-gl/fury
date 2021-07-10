@@ -79,7 +79,7 @@ def update_coordinates(lower_xbound=-1, upper_xbound=1, lower_ybound=-1,
 #          (default = 300)
 # cmap_name: string
 #            name of the colormap being used to color the wave
-#            (default = 'inferno')
+#            (default = 'plasma')
 
 time = 0
 dt = 0.1
@@ -88,7 +88,7 @@ upper_xbound = 1
 lower_ybound = -1
 upper_ybound = 1
 npoints = 300
-cmap_name = 'inferno'
+cmap_name = 'plasma'
 
 
 ###############################################################################
