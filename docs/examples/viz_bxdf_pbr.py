@@ -160,18 +160,18 @@ def uniforms_callback(_caller, _event, calldata=None):
 
 
 def win_callback(obj, event):
-    global brdf_panel, control_panel, size
+    global control_panel, pbr_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
-        brdf_panel.re_align(size_change)
+        pbr_panel.re_align(size_change)
         control_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global anisotropic, brdf_panel, clearcoat, clearcoat_gloss, \
-        control_panel, sheen, sheen_tint, size, specular, specular_tint, \
+    global anisotropic, clearcoat, clearcoat_gloss, control_panel, obj_actor, \
+        pbr_panel, sheen, sheen_tint, size, specular, specular_tint, \
         subsurface
 
     #obj_actor = obj_brain()
@@ -248,8 +248,8 @@ if __name__ == '__main__':
                                 order_transparent=True)
     show_m.initialize()
 
-    brdf_panel = ui.Panel2D((320, 500), position=(-25, 5),
-                            color=(.25, .25, .25), opacity=.75, align='right')
+    pbr_panel = ui.Panel2D((320, 500), position=(-25, 5),
+                           color=(.25, .25, .25), opacity=.75, align='right')
 
     panel_label_principled_brdf = build_label('"Principled" BRDF',
                                               font_size=18, bold=True)
@@ -266,17 +266,17 @@ if __name__ == '__main__':
 
     label_pad_x = .06
 
-    brdf_panel.add_element(panel_label_principled_brdf, (.02, .95))
-    brdf_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
-    brdf_panel.add_element(slider_label_metallic, (label_pad_x, .77))
-    brdf_panel.add_element(slider_label_specular, (label_pad_x, .68))
-    brdf_panel.add_element(slider_label_specular_tint, (label_pad_x, .59))
-    brdf_panel.add_element(slider_label_roughness, (label_pad_x, .5))
-    brdf_panel.add_element(slider_label_anisotropic, (label_pad_x, .41))
-    brdf_panel.add_element(slider_label_sheen, (label_pad_x, .32))
-    brdf_panel.add_element(slider_label_sheen_tint, (label_pad_x, .23))
-    brdf_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
-    brdf_panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
+    pbr_panel.add_element(panel_label_principled_brdf, (.02, .95))
+    pbr_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
+    pbr_panel.add_element(slider_label_metallic, (label_pad_x, .77))
+    pbr_panel.add_element(slider_label_specular, (label_pad_x, .68))
+    pbr_panel.add_element(slider_label_specular_tint, (label_pad_x, .59))
+    pbr_panel.add_element(slider_label_roughness, (label_pad_x, .5))
+    pbr_panel.add_element(slider_label_anisotropic, (label_pad_x, .41))
+    pbr_panel.add_element(slider_label_sheen, (label_pad_x, .32))
+    pbr_panel.add_element(slider_label_sheen_tint, (label_pad_x, .23))
+    pbr_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
+    pbr_panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
 
     length = 150
     text_template = '{value:.1f}'
@@ -325,18 +325,18 @@ if __name__ == '__main__':
 
     slice_pad_x = .46
 
-    brdf_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
-    brdf_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
-    brdf_panel.add_element(slider_slice_specular, (slice_pad_x, .68))
-    brdf_panel.add_element(slider_slice_specular_tint, (slice_pad_x, .59))
-    brdf_panel.add_element(slider_slice_roughness, (slice_pad_x, .5))
-    brdf_panel.add_element(slider_slice_anisotropic, (slice_pad_x, .41))
-    brdf_panel.add_element(slider_slice_sheen, (slice_pad_x, .32))
-    brdf_panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .23))
-    brdf_panel.add_element(slider_slice_clearcoat, (slice_pad_x, .14))
-    brdf_panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
+    pbr_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
+    pbr_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
+    pbr_panel.add_element(slider_slice_specular, (slice_pad_x, .68))
+    pbr_panel.add_element(slider_slice_specular_tint, (slice_pad_x, .59))
+    pbr_panel.add_element(slider_slice_roughness, (slice_pad_x, .5))
+    pbr_panel.add_element(slider_slice_anisotropic, (slice_pad_x, .41))
+    pbr_panel.add_element(slider_slice_sheen, (slice_pad_x, .32))
+    pbr_panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .23))
+    pbr_panel.add_element(slider_slice_clearcoat, (slice_pad_x, .14))
+    pbr_panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
 
-    scene.add(brdf_panel)
+    scene.add(pbr_panel)
 
     control_panel = ui.Panel2D((320, 80), position=(-25, 510),
                                color=(.25, .25, .25), opacity=.75,
