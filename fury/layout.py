@@ -12,7 +12,7 @@ class Layout(object):
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
-            
+
             if hasattr(a, 'add_to_scene'):
                 a.position = (pos[0], pos[1])
             else:
