@@ -84,12 +84,12 @@ class GridLayout(Layout):
 
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "square":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),)*2] * len(actors)
         elif self.cell_shape == "diagonal":
@@ -138,3 +138,18 @@ class GridLayout(Layout):
 
         positions += self.position_offset
         return positions
+
+    def compute_sizes(self, actor):
+        """Compute the bounding box size of the actor/UI element
+
+        Parameters
+        ---------
+        actor: `vtkProp3D` or `UI` element
+            Actor/UI element whose size is to be calculated
+        """
+
+        if hasattr(actor, 'add_to_scene'):
+            width, height = actor.size
+            return (width, height, 0)
+        
+        return get_bounding_box_sizes(actor)
