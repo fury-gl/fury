@@ -9,7 +9,7 @@ from functools import partial
 
 from fury.io import load_image
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
-from fury.ui.elements import Button2D
+from fury.ui.core import Button2D
 from fury.utils import set_input, rotate
 from fury.actor import grid
 
@@ -26,7 +26,7 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left", corner_resizable=True):
+                 opacity=0.7, align="left", resizable=True):
         """Init class instance.
 
         Parameters
@@ -41,10 +41,10 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
-        corner_resizable: bool
+        resizable: bool
             If the panel should be resizable from the corner
         """
-        self.corner_resizable = corner_resizable
+        self.resizable = resizable
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.max_size = size
@@ -64,12 +64,12 @@ class Panel2D(UI):
         self.element_offsets = []
         self.background = Rectangle2D()
         self.resize_button = Button2D(icon_fnames=[('resize_icon',
-                                         'https://i.imgur.com/RQF9wLB.png')])
+                                      'https://i.imgur.com/RQF9wLB.png')])
 
         self.add_element(self.background, (0, 0))
         self.add_element(self.resize_button, (0, 0))
 
-        if not self.corner_resizable:
+        if not self.resizable:
             self.resize_button.set_visibility(False)
 
         # Add default events listener for this UI component.
@@ -234,12 +234,36 @@ class Panel2D(UI):
         i_ren.force_render()
 
     def window_resize(self, i_ren, _obj, panel2d_object):
+        """Method to resize the Panel as per the updated window size.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor
+        obj: :class: `UI`
+            UI element assocaited with the event
+        panel2d_object: :class: `Panel2D`
+            Instance of the Panel2D
+        """
         _window_size = i_ren.GetInteractor().GetSize()
         _new_size = self.size_ratio * _window_size
+
+        self.re_align(_window_size)
         self.resize(np.clip(_new_size, 0, self.max_size))
         i_ren.force_render()
 
     def corner_resize(self, i_ren, _obj, panel2d_object):
+        """Method to resize the Panel2D when grabbed from corner.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor
+        obj: :class: `UI`
+            UI element assocaited with the event
+        panel2d_object: :class: `Panel2D`
+            Instance of the Panel2D
+        """
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
@@ -259,6 +283,15 @@ class Panel2D(UI):
         i_ren.force_render()
 
     def panel_resize_callback(self, i_ren, panel2d_object):
+        """User hook when panel is resized from corner.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor
+        panel2d_object: :class: `Panel2D`
+            Instance of the Panel2D
+        """
         self.on_panel_resize(self)
         i_ren.event.abort()
 
