@@ -22,7 +22,7 @@ class Layout(object):
     def compute_positions(self, _actors):
         """Compute the 3D coordinates of some actors."""
         return []
-    
+
     def is_UI(self, actor):
         """Method to check if the passed actor is `UI` or `vtkProp3D`
 
@@ -31,7 +31,8 @@ class Layout(object):
         actor: :class: `UI` or `vtkProp3D`
             actor that is to be checked
         """
-        return all([hasattr(actor, attr) for attr in ['add_to_scene', '_scene']])
+        return all([hasattr(actor, attr) for attr in ['add_to_scene',
+                                                      '_scene']])
 
 
 class GridLayout(Layout):
@@ -156,7 +157,7 @@ class GridLayout(Layout):
         ---------
         actor: `vtkProp3D` or `UI` element
             Actor/UI element whose size is to be calculated
-        
+
         Returns
         -------
         bounding box sizes: tuple
