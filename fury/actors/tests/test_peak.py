@@ -146,7 +146,7 @@ def test__points_to_vtk_cells():
     npt.assert_equal(vtk_cells.GetNumberOfCells(), 3)
 
 
-def test_colors(interactive=False):
+def test_colors(interactive=True):
     peak_dirs, peak_vals, peak_affine = generate_peaks()
 
     valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
@@ -187,6 +187,12 @@ def test_display_cross_section():
     npt.assert_equal(peak_actor.is_range, False)
     npt.assert_equal(peak_actor.cross_section, [0, 0, 0])
 
+    peak_actor.display_extent(0, 0, 0, 1, 0, 2)
+    npt.assert_equal(peak_actor.is_range, True)
+
+    peak_actor.display_cross_section(0, 0, 0)
+    npt.assert_equal(peak_actor.is_range, False)
+
 
 def test_display_extent():
     peak_dirs, peak_vals, peak_affine = generate_peaks()
@@ -201,6 +207,51 @@ def test_display_extent():
     npt.assert_equal(peak_actor.is_range, True)
     npt.assert_equal(peak_actor.low_ranges, [0, 0, 0])
     npt.assert_equal(peak_actor.high_ranges, [0, 1, 2])
+
+    peak_actor.display_cross_section(0, 0, 0)
+    npt.assert_equal(peak_actor.is_range, False)
+
+    peak_actor.display_extent(0, 0, 0, 1, 0, 2)
+    npt.assert_equal(peak_actor.is_range, True)
+
+
+def test_global_opacity():
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine)
+
+    npt.assert_equal(peak_actor.global_opacity, 1)
+
+    peak_actor.global_opacity = .5
+    npt.assert_equal(peak_actor.global_opacity, .5)
+
+    peak_actor.global_opacity = 0
+    npt.assert_equal(peak_actor.global_opacity, 0)
+
+
+def test_linewidth():
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine)
+
+    npt.assert_equal(peak_actor.linewidth, 1)
+
+    peak_actor.linewidth = 2
+    npt.assert_equal(peak_actor.linewidth, 2)
+
+    peak_actor.linewidth = 5
+    npt.assert_equal(peak_actor.linewidth, 5)
+
+    peak_actor.linewidth = 0
+    npt.assert_equal(peak_actor.linewidth, 0)
 
 
 def test_lookup_colormap(interactive=False):
@@ -235,3 +286,27 @@ def test_lookup_colormap(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 4)
+
+
+def test_max_centers():
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine)
+
+    npt.assert_equal(peak_actor.max_centers, [0, 1, 2])
+
+
+def test_min_centers():
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine)
+
+    npt.assert_equal(peak_actor.min_centers, [0, 0, 0])
