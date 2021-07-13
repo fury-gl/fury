@@ -229,7 +229,8 @@ def shader_apply_effects(
     Parameters
     ----------
     window : vtk.vtkRenderWindow
-    actor : vtk actor
+        For example, this is provided by the ShowManager.window attribute.
+    actor : actor
     effects : a function or a list of functions
     priority : float, optional
         Related with the shader callback command.

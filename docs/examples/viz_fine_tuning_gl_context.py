@@ -4,11 +4,10 @@ Fine-tuning the OpenGL state using shader callbacks
 =======================================================
 
 VTK it’s powerfully, but sometimes we need to get more control about how
-OpenGL will render the actors.  For example, enforcing that deep-test keep
-disabled during the draw call of a specific actor.  This can be useful when
-we need to fine-tuning the performance or create specific visualization
-effects in order to understand a certain data, like to enhance the
-visualization of clusters in a network.
+OpenGL will render the actors. This example shows how to change the OpenGL state
+of one or more actors. This can be useful when
+we need to create specialized visualization
+effects.
 """
 
 ###############################################################################
@@ -23,7 +22,7 @@ import itertools
 
 
 ###############################################################################
-# We just proceeds as usual: creating the actors and initializing a scene in
+# We just proceed as usual: creating the actors and initializing a scene in
 # FURY
 
 centers = np.array([
@@ -139,6 +138,8 @@ counter = itertools.count()
 def timer_callback(obj, event):
     cnt = next(counter)
     showm.render()
+    # we will rotate the visualization just to help you to see
+    # the results of each specifc opengl-state
     showm.scene.GetActiveCamera().Azimuth(1)
     if cnt == 400:
         actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
