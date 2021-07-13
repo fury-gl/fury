@@ -419,6 +419,56 @@ def test_opengl_state():
     shaders.shader_apply_effects(
         showm.window, actor_mul_blending,
         effects=window.gl_set_multiplicative_blending)
-
+    showm.render()
     # removes the no_depth_test effect
     actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
+    showm.render()
+
+
+def test_opengl_state_check():
+    scene = window.Scene()
+    centers = np.array([
+        [0, 0, 0],
+        [-.1, 0, 0],
+        [.1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+    actor_no_depth_test = actor.markers(
+        centers,
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    showm = window.ShowManager(
+        scene,
+        size=(900, 768), reset_camera=False,
+        order_transparent=False)
+
+    scene.add(actor_no_depth_test)
+
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    before_depth_test = state['GL_DEPTH_TEST']
+    assert before_depth_test
+    id_observer = shaders.shader_apply_effects(
+        showm.window, actor_no_depth_test,
+        effects=[
+            window.gl_reset_blend, window.gl_disable_blend,
+            window.gl_disable_depth])
+
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    after_depth_test = state['GL_DEPTH_TEST']
+    assert after_depth_test is False
+    # removes the no_depth_test effect
+    actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    after_remove_depth_test_observer = state['GL_DEPTH_TEST']
+    assert after_remove_depth_test_observer
