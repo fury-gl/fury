@@ -22,6 +22,16 @@ class Layout(object):
     def compute_positions(self, _actors):
         """Compute the 3D coordinates of some actors."""
         return []
+    
+    def is_UI(self, actor):
+        """Method to check if the passed actor is `UI` or `vtkProp3D`
+
+        Parameters
+        ----------
+        actor: :class: `UI` or `vtkProp3D`
+            actor that is to be checked
+        """
+        return all([hasattr(actor, attr) for attr in ['add_to_scene', '_scene']])
 
 
 class GridLayout(Layout):
@@ -97,7 +107,7 @@ class GridLayout(Layout):
             # of the largest bounding box.
             diagonals = []
             for a in actors:
-                if hasattr(a, "add_to_scene"):
+                if self.is_UI(a):
                     width, height = a.size
                     diagonal = math.sqrt(width**2 + height**2)
                     diagonals.append(diagonal)
@@ -146,9 +156,13 @@ class GridLayout(Layout):
         ---------
         actor: `vtkProp3D` or `UI` element
             Actor/UI element whose size is to be calculated
+        
+        Returns
+        -------
+        bounding box sizes: tuple
         """
 
-        if hasattr(actor, 'add_to_scene'):
+        if self.is_UI(actor):
             width, height = actor.size
             return (width, height, 0)
         
