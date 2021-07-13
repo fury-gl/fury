@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from scipy.ndimage.measurements import center_of_mass
+from scipy.signal import convolve
 
 from fury import shaders
 from fury import actor, window
@@ -772,6 +773,34 @@ def test_peak(interactive=False):
     # Diff mask
     diff_mask = np.random.rand(6, 7, 8)
     npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
+
+    peaks_axes = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    peaks_dirs = np.empty((11, 11, 11, 3, 3))
+    for x, y, z in np.ndindex(11, 11, 11):
+        peaks_dirs[x, y, z, :, :] = peaks_axes
+    peaks_vals = np.ones((11, 11, 11, 3)) * .5
+    sigma = 1
+    x = np.arange(-2, 3, 1)
+    y = np.arange(-2, 3, 1)
+    z = np.arange(-2, 3, 1)
+    xx, yy, zz = np.meshgrid(x, y, z)
+    kernel = np.exp(-(xx ** 2 + yy ** 2 + zz ** 2) / 2 * sigma ** 2)
+    data = np.zeros((11, 11, 11))
+    data[5, 5, 5] = 1
+    mask = convolve(data, kernel, mode='same')
+    mask[mask < .5] = 0
+    scene = window.Scene()
+    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask)
+    scene.add(peaks_actor)
+    scene.azimuth(45)
+    scene.pitch(45)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+    if interactive:
+        window.show(scene)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
