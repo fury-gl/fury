@@ -327,7 +327,7 @@ class UI(object, metaclass=abc.ABCMeta):
     @staticmethod
     def key_press_callback(i_ren, obj, self):
         self.on_key_press(i_ren, obj, self)
-    
+
     @staticmethod
     def window_event_propagate(window, evt, obj, i_ren):
         """Method to propagate a windows event to a specific actor.
