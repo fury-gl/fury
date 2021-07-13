@@ -16,7 +16,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order)
+                        fix_winding_order, numpy_to_vtk_colors)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
@@ -273,7 +273,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
             It is an optional parameter, it is computed locally if None
         colors : (N, 3) array
             Specifies the colors associated with each vertex in the
-            vertices array.
+            vertices array. Range should be 0 to 1.
             Optional parameter, if not passed, all vertices
             are colored white
         smooth : string - "loop" or "butterfly"
@@ -300,7 +300,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     if colors is not None:
         triangle_poly_data.GetPointData().\
-            SetScalars(numpy_support.numpy_to_vtk(colors))
+            SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
