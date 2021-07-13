@@ -183,10 +183,6 @@ class PeakActor(vtk.vtkActor):
     def is_range(self):
         return self.__is_range
 
-    @is_range.setter
-    def is_range(self, is_range):
-        self.__is_range = is_range
-
     @property
     def low_ranges(self):
         return self.__low_ranges
@@ -285,25 +281,23 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
         color_array = numpy_to_vtk_colors(np.tile(255 * colors, (num_pnts, 1)))
     else:
         colors = np.asarray(colors)
-        if colors.dtype == object:  # colors is a list of colors
-            color_array = numpy_to_vtk_colors(255 * np.vstack(colors))
-        else:
-            if len(colors) == num_lines:
-                pnts_colors = np.repeat(colors, points_per_line, axis=0)
-                if colors.ndim == 1:  # Scalar per line
-                    color_array = numpy_support.numpy_to_vtk(pnts_colors,
-                                                             deep=True)
-                    colors_are_scalars = True
-                elif colors.ndim == 2:  # RGB(A) color per line
-                    global_opacity = 1 if colors.shape[1] == 3 else -1
-                    color_array = numpy_to_vtk_colors(255 * pnts_colors)
-            elif len(colors) == num_pnts:
-                if colors.ndim == 1:  # Scalar per point
-                    color_array = numpy_support.numpy_to_vtk(colors, deep=True)
-                    colors_are_scalars = True
-                elif colors.ndim == 2:  # RGB(A) color per point
-                    global_opacity = 1 if colors.shape[1] == 3 else -1
-                    color_array = numpy_to_vtk_colors(255 * colors)
+        if len(colors) == num_lines:
+            pnts_colors = np.repeat(colors, points_per_line, axis=0)
+            if colors.ndim == 1:  # Scalar per line
+                color_array = numpy_support.numpy_to_vtk(pnts_colors,
+                                                         deep=True)
+                colors_are_scalars = True
+            elif colors.ndim == 2:  # RGB(A) color per line
+                global_opacity = 1 if colors.shape[1] == 3 else -1
+                color_array = numpy_to_vtk_colors(255 * pnts_colors)
+        elif len(colors) == num_pnts:
+            if colors.ndim == 1:  # Scalar per point
+                color_array = numpy_support.numpy_to_vtk(colors, deep=True)
+                colors_are_scalars = True
+            elif colors.ndim == 2:  # RGB(A) color per point
+                global_opacity = 1 if colors.shape[1] == 3 else -1
+                color_array = numpy_to_vtk_colors(255 * colors)
+
     color_array.SetName('colors')
     return color_array, colors_are_scalars, global_opacity
 
