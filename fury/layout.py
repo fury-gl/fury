@@ -165,5 +165,5 @@ class GridLayout(Layout):
         if self.is_UI(actor):
             width, height = actor.size
             return (width, height, 0)
-        
+
         return get_bounding_box_sizes(actor)
