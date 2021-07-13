@@ -63,23 +63,24 @@ class Panel2D(UI):
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D()
-        self.resize_button = Button2D(icon_fnames=[('resize_icon',
-                                      'https://i.imgur.com/RQF9wLB.png')])
-
         self.add_element(self.background, (0, 0))
-        self.add_element(self.resize_button, (0, 0))
 
-        if not self.resizable:
-            self.resize_button.set_visibility(False)
+        if self.resizable:
+            self.resize_button = Button2D(icon_fnames=[('resize_icon',
+                                          'https://i.imgur.com/RQF9wLB.png')])
+
+            self.resize_button.on_left_mouse_button_pressed = \
+                self.left_button_pressed
+
+            self.resize_button.on_left_mouse_button_dragged = \
+                self.corner_resize
+
+            self.add_element(self.resize_button, (0, 0))
 
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
         self.background.on_window_propagate = self.window_resize
-        self.resize_button.on_left_mouse_button_pressed = \
-            self.left_button_pressed
-
-        self.resize_button.on_left_mouse_button_dragged = self.corner_resize
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -122,8 +123,10 @@ class Panel2D(UI):
             Panel size (width, height) in pixels.
         """
         self.background.resize(size)
-        button_coords = (int(size[0] - self.resize_button.size[0]), 0)
-        self.update_element(self.resize_button, button_coords)
+
+        if self.resizable:
+            button_coords = (int(size[0] - self.resize_button.size[0]), 0)
+            self.update_element(self.resize_button, button_coords)
 
     def _set_position(self, coords):
         """Set the lower-left corner position of this UI component.
