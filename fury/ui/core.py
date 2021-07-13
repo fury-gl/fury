@@ -359,7 +359,7 @@ class UI(object, metaclass=abc.ABCMeta):
         i_ren: :class: `CustomInteractorStyle`
             Custom Interactor associated with the window
         obj: :class: `UI`
-            UI element where event isto be propagated
+            UI element where event is to be propagated
         """
         self.on_window_propagate(i_ren, obj, self)
 

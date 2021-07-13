@@ -41,7 +41,7 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
-        resizable: bool
+        resizable: bool, optional
             If the panel should be resizable from the corner
         """
         self.resizable = resizable
@@ -244,7 +244,7 @@ class Panel2D(UI):
         i_ren: :class: `CustomInteractorStyle`
             Custom Interactor
         obj: :class: `UI`
-            UI element assocaited with the event
+            UI element associated with the event
         panel2d_object: :class: `Panel2D`
             Instance of the Panel2D
         """
@@ -263,7 +263,7 @@ class Panel2D(UI):
         i_ren: :class: `CustomInteractorStyle`
             Custom Interactor
         obj: :class: `UI`
-            UI element assocaited with the event
+            UI element associated with the event
         panel2d_object: :class: `Panel2D`
             Instance of the Panel2D
         """
