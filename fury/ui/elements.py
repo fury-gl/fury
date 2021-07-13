@@ -3659,7 +3659,6 @@ class TreeNode2D(UI):
         size : (int, int)
             New width and height in pixels.
         """
-        offset = 0
         self.title_panel.resize((size[0], self.child_height))
         self.content_panel.resize(size)
 
@@ -3680,28 +3679,26 @@ class TreeNode2D(UI):
                                         (0., 0.))
 
         self.title_panel.update_element(self.content_panel, (0, -size[1]))
-
+        
+        _content_size = self.child_height
         if self._child_nodes:
             for child in self._child_nodes:
 
                 if isinstance(child, type(self)):
-                    offset += self.child_height
                     _child_size = (size[0] - self.indent -
                                    self.child_indent, child.children_size())
 
-                    _child_coords = (self.indent+self.child_indent,
-                                     self.content_panel.size[1]-offset)
-
                     child.resize(_child_size)
+                    _child_coords = (self.indent+self.child_indent,
+                                         self.content_panel.size[1]-_content_size)
+
                     self.content_panel.update_element(child, _child_coords)
+                    _content_size += child.size[1]
 
     def toggle_view(self, i_ren, _obj, _element):
         self.expanded = not self.expanded
         self.set_visibility(self.expanded)
-
-        # parent = self.parent
-        # if parent.auto_resize:
-        #     parent.resize((parent.size[0], parent.children_size()))
+        parent = self.parent
 
         if self.expanded:
             self.update_children_coords(self, self.content_panel.size[1])
@@ -3711,6 +3708,9 @@ class TreeNode2D(UI):
             self.update_children_coords(self, -self.content_panel.size[1])
 
             self.button.set_icon_by_name('collapse')
+
+        if parent.auto_resize:
+            parent.resize((parent.size[0], parent.children_size()))
 
         i_ren.force_render()
 
@@ -3740,9 +3740,7 @@ class TreeNode2D(UI):
     def children_size(self):
         """Returns the size occupied by the children vertically
         """
-        _size = 0
-        for child in self._child_nodes:
-            _size += child.size[1]
+        _size = sum([child.size[1] for child in self.child_nodes])
 
         return _size
 
