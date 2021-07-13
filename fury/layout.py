@@ -13,7 +13,7 @@ class Layout(object):
 
         for a, pos in zip(actors, positions):
 
-            if hasattr(a, 'add_to_scene'):
+            if self.is_UI(a):
                 a.position = (pos[0], pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
