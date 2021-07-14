@@ -675,7 +675,7 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
           multiple tubes.
         * 'Off': all bonds (single, double, triple) will be shown as single
           bonds (i.e shown using one tube each).
-        Default is 'On'.
+        Default is 'On'.print(coorX, coorY, coorZ)
 
     Returns
     -------
