@@ -3339,7 +3339,7 @@ class Tree2D(UI):
         self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
                                     expandable=False, expanded=True, icon=_icon_path,
                                     indent=self.indent, child_indent=self.indent,
-                                    child_height=self.node_height, auto_resize=False)
+                                    child_height=self.node_height, auto_resize=True)
         
         for node in self.nodes_dict.values():
             node.set_visibility(False)
@@ -3487,29 +3487,37 @@ class TreeNode2D(UI):
         ----------
         label: str
             Label text of the current node
-        children: list of :class: `TreeNode2D`
+        children: list of :class: `TreeNode2D`, optional
             Sub nodes of the current node
-        icon: str
+        icon: str, optional
             Path/URl to the icon placed next to the label
-        parent: :class: `TreeNode2D`
+        parent: :class: `TreeNode2D`, optional
             Parent node of the current node
-        position : (float, float)
+        position : (float, float), optional
             Absolute coordinates (x, y) of the lower-left corner of the
             UI component
-        size : (int, int)
+        size : (int, int), optional
             Width and height of the pixels of this UI component.
-        indent: int
+        indent: int, optional
             Indentation of the current node
-        child_indent: int
+        child_indent: int, optional
             Indentation of the child nodes
-        child_height: int
+        child_height: int, optional
             Space taken by each sub-node vertically
-        color : list of 3 floats
+        color : list of 3 floats, optional
             Background color of current node.
-        opacity: float
+        opacity: float, optional
             Background opacity of the current node
         expandable: bool, optional
             If the node should expand/collapse
+        expanded: bool, optional
+            Whether the current node is expanded or not
+        selected_color: list of 3 floats, optional
+            Color of the selected node.
+        unselected_color: list of 3 floats, optional
+            Color of the unselected node.
+        auto_resize: bool, optional
+            If the node should automatically resize to fit its content.
         """
         self.children = children
         self.icon = icon
@@ -3643,8 +3651,10 @@ class TreeNode2D(UI):
         if isinstance(node, type(self)):
             node.parent = self
             node.set_visibility(False)
+            node.child_height = self.child_height
+
             _node_coords = (self.indent+self.child_indent,
-                            self.children_size() - self.child_height)
+                            self.children_size() - node.child_height)
         else:
             _node_coords = coords
 
@@ -3696,6 +3706,17 @@ class TreeNode2D(UI):
                     _content_size += child.size[1]
 
     def toggle_view(self, i_ren, _obj, _element):
+        """Toggle the view of the node.
+        
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+            Interactor style used to interact with the scene.
+        _obj: :class:`vtkActor`
+            The picked actor
+        _element: :class: `TreeNode2D`
+            Instance of the node
+        """
         self.expanded = not self.expanded
         self.set_visibility(self.expanded)
         parent = self.parent
@@ -3709,8 +3730,15 @@ class TreeNode2D(UI):
 
             self.button.set_icon_by_name('collapse')
 
-        if parent.auto_resize:
-            parent.resize((parent.size[0], parent.children_size()))
+        while parent is not None:
+            if parent.auto_resize:
+                current_size = parent.content_panel.size[1]
+                if parent.children_size() > parent.content_panel.size[1]:
+                    parent.resize((parent.size[0], parent.children_size()))
+                else:
+                    parent.resize((parent.size[0], current_size))
+
+            parent = parent.parent
 
         i_ren.force_render()
 
@@ -3738,7 +3766,7 @@ class TreeNode2D(UI):
             node.update_children_coords(node.parent, size_offset)
 
     def children_size(self):
-        """Returns the size occupied by the children vertically
+        """Returns the size occupied by the children vertically.
         """
         _size = sum([child.size[1] for child in self.child_nodes])
 
@@ -3753,7 +3781,7 @@ class TreeNode2D(UI):
                 child_node.set_visibility(False)
     @property
     def child_nodes(self):
-        """Returns all the child nodes of the crrent node
+        """Returns all the child nodes of the current node
         """
         return self._child_nodes
 
@@ -3770,7 +3798,6 @@ class TreeNode2D(UI):
         color : list of 3 floats.
         """
         self.title_panel.color = color
-        self.unselected_color = color
 
     @property
     def opacity(self):
@@ -3816,7 +3843,36 @@ class TreeNode2D(UI):
         """
         self.content_panel.opacity = opacity
     
+    @property
+    def child_height(self):
+        return self._child_height
+    
+    @child_height.setter
+    def child_height(self, height):
+        """Sets the height of title panels.
+        
+        Parameters
+        ----------
+        height: int
+            New height of the title panels
+        """
+        self._child_height = height
+
+        for node in self.child_nodes:
+            node.child_height = height
+    
     def select_node(self, i_ren, _obj, _node2d):
+        """Callback for when the node is clicked on.
+        
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+            Interactor style used to interact with the scene.
+        _obj: :class:`vtkActor`
+            The picked actor
+        _node2d: :class:`TreeNode2D`
+            Instance of the selected node
+        """
         self.selected = not self.selected
 
         if self.selected:
