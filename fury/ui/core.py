@@ -260,7 +260,7 @@ class UI(object, metaclass=abc.ABCMeta):
                           self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
-        self.add_callback(actor, "WindowPropagatedEvent",
+        self.add_callback(actor, "WindowResizeEvent",
                           self.window_propagate_callback)
 
     @staticmethod
@@ -347,7 +347,7 @@ class UI(object, metaclass=abc.ABCMeta):
             raise AttributeError(
                 f'{obj} doesnt have an actor associated with it')
 
-        i_ren.propagate_event('WindowPropagatedEvent', obj.actor)
+        i_ren.propagate_event(evt, obj.actor)
         i_ren.event.abort()
 
     @staticmethod
