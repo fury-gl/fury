@@ -251,271 +251,6 @@ def compute_bonding(molecule):
     deep_copy(molecule, bonder.GetOutput())
 
 
-class MoleculeMapper(vtk.vtkOpenGLMoleculeMapper):
-    """Class to create mappers for three types of molecular represenations-
-    1. Ball and Stick Representation.
-    2. Stick Representation.
-    3. Sphere Representation.
-
-    It is used to create mappers which are then used to create actors for the
-    above mentioned representations.
-    """
-
-
-def set_molecule_to_mapper(molecule_mapper, molecule):
-    """This function performs two tasks -
-    1. It sends the molecule data to the mapper object.
-    2. It checks if adequate bonding data is available and assigns a bool
-    to bonds_data_available accordingly.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-        MoleculeMapper object to which the molecule's atomic info is sent.
-    molecule : Molecule object
-        Molecule whose atomic info is sent to the mapper.
-    """
-    molecule_mapper.bonds_data_available = False
-    molecule_mapper.SetInputData(molecule)
-    if get_bond_types_array(molecule).size == get_total_num_bonds(molecule) \
-       and get_total_num_bonds(molecule) > 0:
-        molecule_mapper.bonds_data_available = True
-
-
-def molecule_mapper_render_atoms(molecule_mapper, choice):
-    """Set whether or not to render atoms for a given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    choice : bool
-        * If choice is True, atoms are rendered.
-        * If choice is False, atoms are not rendered.
-    """
-    molecule_mapper.SetRenderAtoms(choice)
-
-
-def molecule_mapper_render_bonds(molecule_mapper, choice):
-    """Set whether or not to render bonds for a given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    choice : bool
-        * If choice is True, bonds are rendered.
-        * If choice is False, bonds are not rendered.
-    """
-    molecule_mapper.SetRenderBonds(choice)
-
-
-def set_atomic_radius_type(molecule_mapper, radius_type):
-    """Set the type of radius used to generate the atoms for a given
-    MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    radius_type : string
-        The type of radius used to generate the atoms. Three valid radius
-        types -
-        * 'Unit': Use unit radius for all atoms (atomic radius = 1 for all
-          atoms, irrespective of element)
-        * 'VDW': Use Van Der Waals radius for all atoms
-                 (unique to each element)
-        * 'Covalent': Use covalent radius for all atoms
-                      (unique to each element)
-    """
-    if radius_type == 'Unit':
-        molecule_mapper.SetAtomicRadiusTypeToUnitRadius()
-    elif radius_type == 'VDW':
-        molecule_mapper.SetAtomicRadiusTypeToVDWRadius()
-    elif radius_type == 'Covalent':
-        molecule_mapper.SetAtomicRadiusTypeToCovalentRadius()
-
-
-def set_atomic_radius_scale(molecule_mapper, scale_factor):
-    """Set the uniform scaling factor applied to the atoms for a given
-    MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    scale_factor : float
-        Scaling factor to be applied to the atoms.
-    """
-    molecule_mapper.SetAtomicRadiusScaleFactor(scale_factor)
-
-
-def set_bond_colormode(molecule_mapper, choice):
-    """Set the method by which bonds are colored for a a given MoleculeMapper
-    object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    choice : string
-        * If choice is 'discrete', each bond is colored using the same lookup
-          table as the atoms at each end, with a sharp color boundary at the
-          bond center.
-        * If choice is 'single', all bonds will be of same color.
-    """
-    if choice == 'discrete':
-        molecule_mapper.SetBondColorMode(1)
-    elif choice == 'single':
-        molecule_mapper.SetBondColorMode(0)
-
-
-def set_atom_colormode(molecule_mapper, choice):
-    """Set the method by which atoms are colored for a given MoleculeMapper
-    object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    choice : string
-        * If choice is 'discrete', atoms are colored using CPK coloring
-          convention.
-        * If choice is 'single', all atoms will be of same color.
-    """
-    if choice == 'discrete':
-        molecule_mapper.SetAtomColorMode(1)
-    elif choice == 'single':
-        molecule_mapper.SetAtomColorMode(0)
-
-
-def set_bond_thickness(molecule_mapper, bondThickness):
-    """Sets the thickness of the bonds (i.e. thickness of tubes which are used
-    to render bonds) for a given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    bondThickness: float
-        Thickness of the bonds.
-    """
-    molecule_mapper.SetBondRadius(bondThickness)
-
-
-def set_multi_bonds(molecule_mapper, choice):
-    """Set whether multiple tubes will be used to represent multiple bonds for
-    a given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    choice : bool
-        * If choice is True, multiple bonds (double, triple) will be shown by
-          using multiple tubes.
-        * If choice is False, all bonds (single, double, triple) will be
-          shown as single bonds (i.e. shown using one tube each).
-    """
-    molecule_mapper.SetUseMultiCylindersForBonds(choice)
-
-
-def config_mapper_to_molecular_sphere(molecule_mapper, colormode):
-    """Configure settings to create a molecular sphere representation for a
-    given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    colormode : string
-        Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': Atoms are colored using CPK coloring convention.
-        * 'single': All atoms are colored with same color(grey)
-
-        RGB tuple used for coloring the atoms when 'single' colormode is
-        selected: (150, 150, 150)
-    """
-    molecule_mapper_render_atoms(molecule_mapper, True)
-    molecule_mapper_render_bonds(molecule_mapper, False)
-    set_atomic_radius_type(molecule_mapper, 'VDW')
-    set_atomic_radius_scale(molecule_mapper, 1)
-    set_atom_colormode(molecule_mapper, colormode)
-
-
-def config_mapper_to_ball_stick(molecule_mapper, colormode, atom_scale_factor,
-                                bond_thickness, multiple_bonds):
-    """Configure settings to create a molecular ball and stick representation
-    for a given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    colormode : string
-        Set the colormode for coloring the atoms. Two valid color modes -
-        * 'discrete': Atoms and bonds are colored using CPK coloring
-          convention.
-        * 'single': All atoms are colored with same color(grey) and all
-          bonds are colored with same color(dark grey).
-        * RGB tuple used for coloring the atoms when 'single' colormode is
-        selected: (150, 150, 150)
-        * RGB tuple used for coloring the bonds when 'single' colormode is
-        selected: (50, 50, 50)
-
-    atom_scale_factor : float
-        Scaling factor to be applied to the atoms.
-    bond_thickness : float
-        Used to manipulate the thickness of bonds (i.e. thickness of tubes
-        which are used to render bonds)
-    multiple_bonds : string
-        Set whether multiple tubes will be used to represent multiple
-        bonds. Two valid choices -
-        * 'On': multiple bonds (double, triple) will be shown by using
-          multiple tubes.
-        * 'Off': all bonds (single, double, triple) will be shown as single
-          bonds (i.e. shown using one tube each).
-    """
-    if molecule_mapper.bonds_data_available:
-        molecule_mapper_render_atoms(molecule_mapper, True)
-        molecule_mapper_render_bonds(molecule_mapper, True)
-        set_bond_thickness(molecule_mapper, bond_thickness/10)
-        set_atomic_radius_type(molecule_mapper, 'VDW')
-        set_atomic_radius_scale(molecule_mapper, atom_scale_factor)
-        if multiple_bonds == 'On':
-            set_multi_bonds(molecule_mapper, True)
-        elif multiple_bonds == 'Off':
-            set_multi_bonds(molecule_mapper, False)
-    else:
-        print("Inadequate Bonding data")
-
-    set_atom_colormode(molecule_mapper, colormode)
-    set_bond_colormode(molecule_mapper, colormode)
-
-
-def config_mapper_to_stick(molecule_mapper, colormode, bond_thickness):
-    """Configure settings to create a molecular stick representation for a
-    given MoleculeMapper object.
-
-    Parameters
-    ----------
-    molecule_mapper : MoleculeMapper() object
-    colormode : string
-        Set the colormode for coloring the bonds. Two valid color modes -
-        * 'discrete': Bonds are colored using CPK coloring convention.
-        * 'single': All bonds are colored with the same color (dark grey).
-        * RGB tuple used for coloring the bonds when 'single' colormode is
-          selected: (50, 50, 50)
-
-    atom_scale_factor : float
-        Scaling factor to be applied to the atoms.
-    bond_thickness : float
-        Used to manipulate the thickness of bonds (i.e. thickness of tubes
-        which are used to render bonds)
-    """
-    if molecule_mapper.bonds_data_available:
-        molecule_mapper_render_atoms(molecule_mapper, True)
-        molecule_mapper_render_bonds(molecule_mapper, True)
-        set_bond_thickness(molecule_mapper, bond_thickness/10)
-        set_atomic_radius_type(molecule_mapper, 'Unit')
-        set_atomic_radius_scale(molecule_mapper, bond_thickness/10)
-    else:
-        print("Inadequate Bonding data")
-
-    set_atom_colormode(molecule_mapper, colormode)
-    set_bond_colormode(molecule_mapper, colormode)
-
-
 class PeriodicTable(vtk.vtkPeriodicTable):
     """ A class to obtain properties of elements (eg: Covalent Radius,
     Van Der Waals Radius, Symbol etc.).
@@ -527,7 +262,8 @@ class PeriodicTable(vtk.vtkPeriodicTable):
     Repository.
     """
 
-    def get_atomic_symbol(self, atomic_number):
+    @property
+    def atomic_symbol(self, atomic_number):
         """Given an atomic number, returns the symbol associated with the
         element.
 
@@ -538,7 +274,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         """
         return self.GetSymbol(atomic_number)
 
-    def get_element_name(self, atomic_number):
+    def element_name(self, atomic_number):
         """Given an atomic number, returns the name of the element.
 
         Parameters
@@ -548,7 +284,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         """
         return self.GetElementName(atomic_number)
 
-    def get_atomic_number(self, element_name):
+    def atomic_number(self, element_name):
         """Given a case-insensitive string that contains the symbol or name of
         an element, return the corresponding atomic number.
 
@@ -559,7 +295,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         """
         return self.GetAtomicNumber(element_name)
 
-    def get_atomic_radius(self, atomic_number, radius_type):
+    def atomic_radius(self, atomic_number, radius_type):
         """Given an atomic number, return either the covalent radius of the
         atom or return the Van Der Waals radius of the atom depending on
         radius_type.
@@ -579,7 +315,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         elif radius_type == 'Covalent':
             return self.GetCovalentRadius(atomic_number)
 
-    def get_atom_color(self, atomic_number):
+    def atom_color(self, atomic_number):
         """Given an atomic number, return the RGB tuple associated with that
         element (CPK coloring convention) provided by the Blue Obelisk Data
         Repository.
@@ -606,7 +342,7 @@ def make_molecularviz_aesthetic(molecule_actor):
     molecule_actor.GetProperty().SetSpecularPower(90.0)
 
 
-def molecular_sphere_rep_actor(molecule, colormode='discrete'):
+def sphere_rep_actor(molecule, colormode='discrete'):
     """Create an actor for sphere molecular representation. It's also referred
     to as CPK model and space-filling model.
 
@@ -629,16 +365,24 @@ def molecular_sphere_rep_actor(molecule, colormode='discrete'):
         Actor created to render the space filling representation of the
         molecule to be visualized.
     """
-    msp_mapper = MoleculeMapper()
-    set_molecule_to_mapper(msp_mapper, molecule)
-    config_mapper_to_molecular_sphere(msp_mapper, colormode)
+    msp_mapper = vtk.vtkOpenGLMoleculeMapper()
+    msp_mapper.SetInputData(molecule)
+    msp_mapper.SetRenderAtoms(True)
+    msp_mapper.SetRenderBonds(False)
+    msp_mapper.SetAtomicRadiusTypeToVDWRadius()
+    msp_mapper.SetAtomicRadiusScaleFactor(1)
+    if colormode == 'discrete':
+        msp_mapper.SetAtomColorMode(1)
+    elif colormode == 'single':
+        msp_mapper.SetAtomColorMode(0)
+
     molecule_actor = vtk.vtkActor()
     molecule_actor.SetMapper(msp_mapper)
     make_molecularviz_aesthetic(molecule_actor)
     return molecule_actor
 
 
-def molecular_bstick_rep_actor(molecule, colormode='discrete',
+def bstick_rep_actor(molecule, colormode='discrete',
                                atom_scale_factor=0.3, bond_thickness=1,
                                multiple_bonds='On'):
     """Create an actor for ball and stick molecular representation.
@@ -675,7 +419,7 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
           multiple tubes.
         * 'Off': all bonds (single, double, triple) will be shown as single
           bonds (i.e shown using one tube each).
-        Default is 'On'.print(coorX, coorY, coorZ)
+        Default is 'On'.
 
     Returns
     -------
@@ -683,17 +427,31 @@ def molecular_bstick_rep_actor(molecule, colormode='discrete',
         Actor created to render the ball and stick representation of the
         molecule to be visualized.
     """
-    bs_mapper = MoleculeMapper()
-    set_molecule_to_mapper(bs_mapper, molecule)
-    config_mapper_to_ball_stick(bs_mapper, colormode, atom_scale_factor,
-                                bond_thickness, multiple_bonds)
+    bs_mapper = vtk.vtkOpenGLMoleculeMapper()
+    bs_mapper.SetInputData(molecule)
+    bs_mapper.SetRenderAtoms(True)
+    bs_mapper.SetRenderBonds(True)
+    bs_mapper.SetBondRadius(bond_thickness/10)
+    bs_mapper.SetAtomicRadiusTypeToVDWRadius()
+    bs_mapper.SetAtomicRadiusScaleFactor(atom_scale_factor)
+    if multiple_bonds == 'On':
+        bs_mapper.SetUseMultiCylindersForBonds(1)
+    elif multiple_bonds == 'Off':
+        bs_mapper.SetUseMultiCylindersForBonds(0)
+    if colormode == 'discrete':
+        bs_mapper.SetAtomColorMode(1)
+        bs_mapper.SetBondColorMode(1)
+    elif colormode == 'single':
+        bs_mapper.SetAtomColorMode(0)
+        bs_mapper.SetBondColorMode(0)
+
     molecule_actor = vtk.vtkActor()
     molecule_actor.SetMapper(bs_mapper)
     make_molecularviz_aesthetic(molecule_actor)
     return molecule_actor
 
 
-def molecular_stick_rep_actor(molecule, colormode='discrete',
+def stick_rep_actor(molecule, colormode='discrete',
                               bond_thickness=1):
     """Create an actor for stick molecular representation.
 
@@ -720,9 +478,19 @@ def molecular_stick_rep_actor(molecule, colormode='discrete',
         Actor created to render the stick representation of the molecule to be
         visualized.
     """
-    mst_mapper = MoleculeMapper()
-    set_molecule_to_mapper(mst_mapper, molecule)
-    config_mapper_to_stick(mst_mapper, colormode, bond_thickness)
+    mst_mapper = vtk.vtkOpenGLMoleculeMapper()
+    mst_mapper.SetInputData(molecule)
+    mst_mapper.SetRenderAtoms(True)
+    mst_mapper.SetRenderBonds(True)
+    mst_mapper.SetBondRadius(bond_thickness/10)
+    mst_mapper.SetAtomicRadiusTypeToUnitRadius()
+    mst_mapper.SetAtomicRadiusScaleFactor(bond_thickness/10)
+    if colormode == 'discrete':
+        mst_mapper.SetAtomColorMode(1)
+        mst_mapper.SetBondColorMode(1)
+    elif colormode == 'single':
+        mst_mapper.SetAtomColorMode(0)
+        mst_mapper.SetBondColorMode(0)
     molecule_actor = vtk.vtkActor()
     molecule_actor.SetMapper(mst_mapper)
     make_molecularviz_aesthetic(molecule_actor)
