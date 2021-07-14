@@ -3477,7 +3477,7 @@ class TreeNode2D(UI):
     """
 
     def __init__(self, label, parent=None, children=None, icon=None,
-                 position=(0, 0), size=(200, 200), indent=5,
+                 position=(0, 0), size=(200, 200), indent=20,
                  child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
                  opacity=0.8, expandable=True, expanded=False,
                  selected_color=(0.8, 0.3, 0.3), auto_resize=True):
