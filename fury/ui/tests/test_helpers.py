@@ -3,7 +3,7 @@
 import numpy.testing as npt
 
 from fury import window, ui
-from fury.ui.helpers import clip_overflow, wrap_overflow
+from fury.ui.helpers import clip_overflow, wrap_overflow, check_overflow
 
 
 def test_clip_overflow():
@@ -69,5 +69,28 @@ def test_wrap_overflow():
     npt.assert_equal("A very very\n long mess\nage to cli\np text ove\nrflow",
                      text.message)
 
-    with npt.assert_raises(ValueError):
-        wrap_overflow(text, 0)
+    text.message = "A very very long message to clip text overflow"
+    wrap_overflow(text, 0)
+    npt.assert_equal(text.message,
+                     "A very very long message to clip text overflow")
+
+    wrap_overflow(text, -2*text.size[0])
+    npt.assert_equal(text.message,
+                     "A very very long message to clip text overflow")
+
+
+def test_check_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "A very very long message to clip text overflow"
+    start_ptr = 0
+    end_ptr = len(text.message)
+
+    is_overflowing, *ret = check_overflow(text, rectangle.size[0],
+                                          start_ptr, end_ptr)
+
+    npt.assert_equal(True, is_overflowing)

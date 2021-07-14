@@ -46,7 +46,7 @@ def clip_overflow(textblock, width, side='right'):
         textblock.message = original_str[:mid_ptr] + "..."
 
         is_overflowing, start_ptr, end_ptr =\
-            check_overflow(textblock, width, start_ptr, mid_ptr, end_ptr)
+            check_overflow(textblock, width, start_ptr, end_ptr)
 
         if not is_overflowing:
             textblock.have_bg = prev_bg
@@ -88,7 +88,7 @@ def wrap_overflow(textblock, wrap_width):
         textblock.message = original_str[:mid_ptr]
 
         is_overflowing, start_ptr, end_ptr =\
-            check_overflow(textblock, wrap_width, start_ptr, mid_ptr, end_ptr)
+            check_overflow(textblock, wrap_width, start_ptr, end_ptr)
 
         if not is_overflowing:
             for i in range(len(original_str)):
@@ -101,8 +101,7 @@ def wrap_overflow(textblock, wrap_width):
             return textblock.message
 
 
-def check_overflow(textblock, width, start_ptr,
-                   mid_ptr, end_ptr):
+def check_overflow(textblock, width, start_ptr, end_ptr):
     """Checks if the text is overflowing.
 
     Parameters
@@ -113,8 +112,6 @@ def check_overflow(textblock, width, start_ptr,
         Required width of the text.
     start_ptr : int
         Start index of the text.
-    mid_ptr : int
-        Middle index of the text
     end_ptr : int
         End index of the text.
 
@@ -123,6 +120,8 @@ def check_overflow(textblock, width, start_ptr,
     tuple(bool, int, int)
 
     """
+    mid_ptr = (start_ptr + end_ptr)//2
+
     if textblock.size[0] < width:
         start_ptr = mid_ptr
     elif textblock.size[0] > width:
