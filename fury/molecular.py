@@ -383,8 +383,8 @@ def sphere_rep_actor(molecule, colormode='discrete'):
 
 
 def bstick_rep_actor(molecule, colormode='discrete',
-                               atom_scale_factor=0.3, bond_thickness=1,
-                               multiple_bonds='On'):
+                     atom_scale_factor=0.3, bond_thickness=1,
+                     multiple_bonds='On'):
     """Create an actor for ball and stick molecular representation.
 
     Parameters
@@ -452,7 +452,7 @@ def bstick_rep_actor(molecule, colormode='discrete',
 
 
 def stick_rep_actor(molecule, colormode='discrete',
-                              bond_thickness=1):
+                    bond_thickness=1):
     """Create an actor for stick molecular representation.
 
     Parameters
