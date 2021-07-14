@@ -58,7 +58,8 @@ def test_ui_button_panel(recording=False):
     # Panel
     panel = ui.Panel2D(size=(300, 150),
                        position=(290, 15),
-                       color=(1, 1, 1), align="right")
+                       color=(1, 1, 1), align="right",
+                       resizable=True)
     normal_panel = Panel2D(size=(200, 200), position=(10, 10),
                            color=(0, 0, 0), resizable=False)
 
