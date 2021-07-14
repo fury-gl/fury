@@ -51,7 +51,7 @@ for line in pdbx_lines:
                                   float(_line[12])
 
             # obtain the atomic number of atom
-            atomic_num = table.get_atomic_number(_line[2])
+            atomic_num = table.atomic_number(_line[2])
 
             # add the atomic data to the molecule
             molecular.add_atom(molecule, atomic_num, coorX, coorY, coorZ)
@@ -77,15 +77,15 @@ molecular.compute_bonding(molecule)
 
 
 # stick representation
-scene.add(molecular.molecular_stick_rep_actor(molecule, bond_thickness=2))
+scene.add(molecular.stick_rep_actor(molecule, bond_thickness=2))
 
 # ball and stick representation
-# scene.add(molecular.molecular_bstick_rep_actor(molecule,
+# scene.add(molecular.bstick_rep_actor(molecule,
 #                                                atom_scale_factor=0.3,
 #                                                bond_thickness=2))
 
 # sphere representation
-# scene.add(molecular.molecular_sphere_rep_actor(molecule))
+# scene.add(molecular.sphere_rep_actor(molecule))
 
 ###############################################################################
 # Dimensions of the output screen
