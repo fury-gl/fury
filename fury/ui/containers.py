@@ -26,7 +26,7 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left", resizable=True):
+                 opacity=0.7, align="left", resizable=False):
         """Init class instance.
 
         Parameters
