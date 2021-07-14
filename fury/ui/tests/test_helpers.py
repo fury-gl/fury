@@ -1,9 +1,11 @@
 """Test helpers fonction ."""
 
+from fury.ui.containers import GridUI
+from fury.actor import Container
 import numpy.testing as npt
 
 from fury import window, ui
-from fury.ui.helpers import clip_overflow
+from fury.ui.helpers import clip_overflow, is_ui
 
 
 def test_clip_overflow():
@@ -47,3 +49,13 @@ def test_clip_overflow():
 
     npt.assert_raises(ValueError, clip_overflow,
                       text, rectangle.size[0], 'middle')
+
+
+def test_is_ui():
+    panel = ui.Panel2D(position=(0, 0), size=(100, 100))
+    grid = GridUI(actors=[])
+    container = Container()
+
+    npt.assert_equal(True, is_ui(panel))
+    npt.assert_equal(False, is_ui(container))
+    npt.assert_equal(True, is_ui(grid))
