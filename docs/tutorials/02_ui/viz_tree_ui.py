@@ -1,14 +1,15 @@
-from fury.ui.core import Disk2D, Rectangle2D
-from fury.ui.elements import LineSlider2D, ListBox2D, TreeNode2D
-from fury.ui.containers import ImageContainer2D
 from fury import ui, window
+from fury.ui.core import Disk2D, Rectangle2D
+from fury.ui.elements import LineSlider2D, ListBox2D
+from fury.ui.containers import ImageContainer2D
 
 structure = [{'Containers': ['Panels', 'ImageContainers']},
              {'Elements': ['ListBox', 'LineSlider']},
              {'Core': ['Rectangle', 'Disk']}]
 
-tree = ui.elements.Tree2D(structure=structure,tree_name="FURY UI Breakdown",
-                          size=(100, 100), position=(0, 0), color=(0.8, 0.4, 0.2))
+tree = ui.elements.Tree2D(structure=structure, tree_name="FURY UI Breakdown",
+                          size=(500, 500), position=(0, 0),
+                          color=(0.8, 0.4, 0.2))
 
 ###############################################################################
 # Now, we create UI elements for the Containers node
