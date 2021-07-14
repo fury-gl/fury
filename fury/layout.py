@@ -1,8 +1,8 @@
-import numpy as np
 import math
+import numpy as np
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
-
+from fury.ui.helpers import is_ui
 
 class Layout(object):
     """Provide functionalities for laying out actors in a 3D scene."""
@@ -13,7 +13,7 @@ class Layout(object):
 
         for a, pos in zip(actors, positions):
 
-            if self.is_UI(a):
+            if is_ui(a):
                 a.position = (pos[0], pos[1])
             else:
                 anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
@@ -22,17 +22,6 @@ class Layout(object):
     def compute_positions(self, _actors):
         """Compute the 3D coordinates of some actors."""
         return []
-
-    def is_UI(self, actor):
-        """Method to check if the passed actor is `UI` or `vtkProp3D`
-
-        Parameters
-        ----------
-        actor: :class: `UI` or `vtkProp3D`
-            actor that is to be checked
-        """
-        return all([hasattr(actor, attr) for attr in ['add_to_scene',
-                                                      '_scene']])
 
 
 class GridLayout(Layout):
@@ -108,7 +97,7 @@ class GridLayout(Layout):
             # of the largest bounding box.
             diagonals = []
             for a in actors:
-                if self.is_UI(a):
+                if is_ui(a):
                     width, height = a.size
                     diagonal = math.sqrt(width**2 + height**2)
                     diagonals.append(diagonal)
@@ -163,7 +152,7 @@ class GridLayout(Layout):
         bounding box sizes: tuple
         """
 
-        if self.is_UI(actor):
+        if is_ui(actor):
             width, height = actor.size
             return (width, height, 0)
 
