@@ -56,6 +56,7 @@ def clip_overflow(textblock, width, side='right'):
                 textblock.message = textblock.message[::-1]
             return textblock.message
 
+
 def is_ui(actor):
     """Method to check if the passed actor is `UI` or `vtkProp3D`
 
@@ -65,4 +66,4 @@ def is_ui(actor):
         actor that is to be checked
     """
     return all([hasattr(actor, attr) for attr in ['add_to_scene',
-                                                    '_scene']])
+                                                  '_scene']])
