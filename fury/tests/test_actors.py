@@ -775,20 +775,12 @@ def test_peak(interactive=False):
     npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
 
     peaks_axes = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    peaks_dirs = np.empty((11, 11, 11, 3, 3))
-    for x, y, z in np.ndindex(11, 11, 11):
+    peaks_dirs = np.empty((3, 3, 3, 3, 3))
+    for x, y, z in np.ndindex(3, 3, 3):
         peaks_dirs[x, y, z, :, :] = peaks_axes
-    peaks_vals = np.ones((11, 11, 11, 3)) * .5
-    sigma = 1
-    x = np.arange(-2, 3, 1)
-    y = np.arange(-2, 3, 1)
-    z = np.arange(-2, 3, 1)
-    xx, yy, zz = np.meshgrid(x, y, z)
-    kernel = np.exp(-(xx ** 2 + yy ** 2 + zz ** 2) / 2 * sigma ** 2)
-    data = np.zeros((11, 11, 11))
-    data[5, 5, 5] = 1
-    mask = convolve(data, kernel, mode='same')
-    mask[mask < .5] = 0
+    peaks_vals = np.ones((3, 3, 3, 3))
+    mask = np.zeros((3, 3, 3))
+    mask[1, 1, 1] = 1
     scene = window.Scene()
     peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask)
     scene.add(peaks_actor)
