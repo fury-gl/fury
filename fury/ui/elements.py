@@ -3337,10 +3337,12 @@ class Tree2D(UI):
                      'stacked-organizational-chart-highlighted-parent-node.png'
 
         self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
-                                    expandable=False, expanded=True, icon=_icon_path,
-                                    indent=self.indent, child_indent=self.indent,
-                                    child_height=self.node_height, auto_resize=True)
-        
+                                    expandable=False, expanded=True,
+                                    icon=_icon_path, indent=self.indent,
+                                    child_indent=self.indent,
+                                    child_height=self.node_height,
+                                    auto_resize=True)
+
         for node in self.nodes_dict.values():
             node.set_visibility(False)
 
@@ -3406,7 +3408,7 @@ class Tree2D(UI):
             New width and height in pixels.
         """
         self.base_node.resize(size)
-    
+
     def add_content(self, node, content, coords=(0., 0.)):
         """Add content to a sepcific node
 
@@ -3447,17 +3449,17 @@ class Tree2D(UI):
         list of nodes
         """
         return self._nodes
-    
+
     @property
     def nodes_dict(self):
         """Get all the nodes present in the Tree2D in dict format
-        
+
         Returns
         -------
         dict with label, node as key, value
         """
         return self._nodes_dict
-    
+
 
 class TreeNode2D(UI):
     """Node/Leaf of a Tree2D UI
@@ -3582,12 +3584,13 @@ class TreeNode2D(UI):
 
         self.title_panel.add_element(self.content_panel,
                                      (0, -self.content_size[1]))
-        
+
         self.title_panel.add_element(self.label_image,
                                      (0., 0.))
 
         self.button.on_left_mouse_button_clicked = self.toggle_view
-        self.title_panel.background.on_left_mouse_button_clicked = self.select_node
+        self.title_panel.background.on_left_mouse_button_clicked = \
+            self.select_node
 
         if self.children:
             for child in self.children:
@@ -3684,12 +3687,12 @@ class TreeNode2D(UI):
         self.title_panel.update_element(self.button,
                                         (self.title_panel.size -
                                          self.button.size))
-        
+
         self.title_panel.update_element(self.label_image,
                                         (0., 0.))
 
         self.title_panel.update_element(self.content_panel, (0, -size[1]))
-        
+
         _content_size = self.child_height
         if self._child_nodes:
             for child in self._child_nodes:
@@ -3700,14 +3703,14 @@ class TreeNode2D(UI):
 
                     child.resize(_child_size)
                     _child_coords = (self.indent+self.child_indent,
-                                         self.content_panel.size[1]-_content_size)
+                                     self.content_panel.size[1]-_content_size)
 
                     self.content_panel.update_element(child, _child_coords)
                     _content_size += child.size[1]
 
     def toggle_view(self, i_ren, _obj, _element):
         """Toggle the view of the node.
-        
+
         Parameters
         ----------
         i_ren: :class:`CustomInteractorStyle`
@@ -3779,6 +3782,7 @@ class TreeNode2D(UI):
         for child_node in self._child_nodes:
             if isinstance(child_node, type(self)):
                 child_node.set_visibility(False)
+
     @property
     def child_nodes(self):
         """Returns all the child nodes of the current node
@@ -3842,15 +3846,15 @@ class TreeNode2D(UI):
         opacity: float
         """
         self.content_panel.opacity = opacity
-    
+
     @property
     def child_height(self):
         return self._child_height
-    
+
     @child_height.setter
     def child_height(self, height):
         """Sets the height of title panels.
-        
+
         Parameters
         ----------
         height: int
@@ -3860,10 +3864,10 @@ class TreeNode2D(UI):
 
         for node in self.child_nodes:
             node.child_height = height
-    
+
     def select_node(self, i_ren, _obj, _node2d):
         """Callback for when the node is clicked on.
-        
+
         Parameters
         ----------
         i_ren: :class:`CustomInteractorStyle`
