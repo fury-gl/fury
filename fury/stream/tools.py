@@ -19,6 +19,7 @@ try:
     OPENCV_AVAILABLE = True
 except ImportError:
     from PIL import Image
+    import io
     cv2 = None
     OPENCV_AVAILABLE = False
 
@@ -601,10 +602,14 @@ class GenericImageBufferManager(ABC):
         image = image[:, :, ::-1]
         if OPENCV_AVAILABLE:
             image_encoded = cv2.imencode('.jpg', image)[1]
+            bytes_img = image_encoded.tobytes()
         else:
             image_encoded = Image.fromarray(image)
+            bytes_img_data = io.BytesIO()
+            image_encoded.save(bytes_img_data, format='jpeg')
+            bytes_img = bytes_img_data.getvalue()
 
-        return image_encoded.tobytes()
+        return bytes_img
 
     async def async_get_jpeg(self, ms=33):
         jpeg = self.get_jpeg()
