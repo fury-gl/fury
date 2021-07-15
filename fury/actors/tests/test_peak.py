@@ -146,7 +146,7 @@ def test__points_to_vtk_cells():
     npt.assert_equal(vtk_cells.GetNumberOfCells(), 3)
 
 
-def test_colors(interactive=True):
+def test_colors(interactive=False):
     peak_dirs, peak_vals, peak_affine = generate_peaks()
 
     valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
