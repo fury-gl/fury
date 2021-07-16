@@ -774,6 +774,7 @@ def test_peak(interactive=False):
     diff_mask = np.random.rand(6, 7, 8)
     npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
 
+    # Valid mask
     peaks_axes = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     peaks_dirs = np.empty((3, 3, 3, 3, 3))
     for x, y, z in np.ndindex(3, 3, 3):
@@ -782,7 +783,8 @@ def test_peak(interactive=False):
     mask = np.zeros((3, 3, 3))
     mask[1, 1, 1] = 1
     scene = window.Scene()
-    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask)
+    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask,
+                             linewidth=3)
     scene.add(peaks_actor)
     scene.azimuth(45)
     scene.pitch(45)
