@@ -775,26 +775,28 @@ def test_peak(interactive=False):
     npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
 
     # Valid mask
-    peaks_axes = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    peaks_dirs = np.empty((3, 3, 3, 3, 3))
-    for x, y, z in np.ndindex(3, 3, 3):
-        peaks_dirs[x, y, z, :, :] = peaks_axes
-    peaks_vals = np.ones((3, 3, 3, 3))
-    mask = np.zeros((3, 3, 3))
-    mask[1, 1, 1] = 1
+    dirs000 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    dirs100 = np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]])
+    peaks_dirs = np.empty((2, 1, 1, 3, 3))
+    peaks_dirs[0, 0, 0, :, :] = dirs000
+    peaks_dirs[1, 0, 0, :, :] = dirs100
+    peaks_vals = np.ones((2, 1, 1, 3)) * .5
+    mask = np.zeros((2, 1, 1))
+    mask[0, 0, 0] = 1
     scene = window.Scene()
     peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask,
                              linewidth=3)
     scene.add(peaks_actor)
-    scene.azimuth(45)
-    scene.pitch(45)
+    scene.azimuth(-45)
+    scene.pitch(-45)
     scene.reset_camera()
     scene.reset_clipping_range()
     if interactive:
         window.show(scene)
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
+    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
