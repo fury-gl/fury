@@ -4,10 +4,9 @@ Fine-tuning the OpenGL state using shader callbacks
 =======================================================
 
 VTK it’s powerfully, but sometimes we need to get more control about how
-OpenGL will render the actors. This example shows how to change the OpenGL state
-of one or more actors. This can be useful when
-we need to create specialized visualization
-effects.
+OpenGL will render the actors. This example shows how to change the OpenGL
+state of one or more actors. This can be useful when we need to create 
+specialized visualization effects.
 """
 
 ###############################################################################
@@ -150,10 +149,8 @@ def timer_callback(obj, event):
         showm.exit()
 
 
-showm.add_timer_callback(True, 5, timer_callback)
-
 interactive = True
-
+showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
 

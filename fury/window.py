@@ -1062,16 +1062,20 @@ def gl_disable_blend(glState):
     glState.vtkglDisable(_GL['GL_BLEND'])
 
 
-def gl_set_additive_blending(glState, dark_background=True):
+def gl_set_additive_blending(glState):
     gl_reset_blend(glState)
     glState.vtkglEnable(_GL['GL_BLEND'])
     glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    if dark_background:
-        glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
-    else:
-        glState.vtkglBlendFuncSeparate(
-             _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-             _GL['GL_ONE'],  _GL['GL_ZERO'])
+    glState.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
+
+
+def gl_set_additive_blending_white_background(glState):
+    gl_reset_blend(glState)
+    glState.vtkglEnable(_GL['GL_BLEND'])
+    glState.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    glState.vtkglBlendFuncSeparate(
+            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+            _GL['GL_ONE'],  _GL['GL_ZERO'])
 
 
 def gl_set_normal_blending(glState):
