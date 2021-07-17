@@ -112,8 +112,9 @@ scene.add(tb)
 
 ###############################################################################
 # Initializing text box to display the number of simulated steps
-tb2 = ui.TextBlock2D(text="Number of particles:\nSim Steps:", position=(50, 550),
-                     font_size=15, color=(0, 0, 0), bold=True)
+tb2 = ui.TextBlock2D(text="Number of particles:\nSim Steps:",
+                     position=(50, 550), font_size=15, color=(0, 0, 0),
+                     bold=True)
 scene.add(tb2)
 
 
