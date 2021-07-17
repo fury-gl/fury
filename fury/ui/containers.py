@@ -25,7 +25,7 @@ class Panel2D(UI):
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
                  opacity=0.7, align="left", border_color=(1, 1, 1),
-                 border_width=0):
+                 border_width=0, has_border=False):
         """Init class instance.
 
         Parameters
@@ -44,9 +44,12 @@ class Panel2D(UI):
             Must take values in [0, 1].
         border_width: float, optional
             width of the border
+        has_border: bool, optional
+            If the panel should have borders.
         """
-        self.border_colors = border_color
-        self.border_widths = border_width
+        self.has_border = has_border
+        self._border_color = border_color
+        self._border_width = border_width
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.alignment = align
@@ -65,29 +68,35 @@ class Panel2D(UI):
         self.element_offsets = []
         self.background = Rectangle2D()
 
-        self.borders = {'left': Rectangle2D(),
-                        'right': Rectangle2D(),
-                        'top': Rectangle2D(),
-                        'bottom': Rectangle2D()}
+        if self.has_border:
+            self.borders = {'left': Rectangle2D(),
+                            'right': Rectangle2D(),
+                            'top': Rectangle2D(),
+                            'bottom': Rectangle2D()}
 
-        self.border_coords = {'left': (0, 0),
-                              'right': (0, 0),
-                              'top': (0, 0),
-                              'bottom': (0, 0)}
+            self.border_coords = {'left': (0., 0.),
+                                  'right': (1., 0.),
+                                  'top': (0., 1.),
+                                  'bottom': (0., 0.)}
+        else:
+            self.borders, self.border_coords = {}, {}
 
         self.add_element(self.background, (0, 0))
 
         for key in self.borders.keys():
-            self.borders[key].color = self.border_colors
+            self.borders[key].color = self._border_color
             self.add_element(self.borders[key], self.border_coords[key])
 
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
 
+        for key in self.borders.keys():
+            self.borders[key].on_left_mouse_button_pressed = self.left_button_pressed
+            self.borders[key].on_left_mouse_button_dragged = self.left_button_dragged
+
     def _get_actors(self):
-        """Get the actors composing this UI component.
-        """
+        """Get the actors composing this UI component."""
         actors = []
         for element in self._elements:
             actors += element.actors
@@ -117,19 +126,20 @@ class Panel2D(UI):
         """
         self.background.resize(size)
 
-        self.borders['left'].resize((self.border_widths,
-                                     size[1]+self.border_widths))
+        if self.borders:
+            self.borders['left'].resize((self._border_width,
+                                        size[1]+self._border_width))
 
-        self.borders['right'].resize((self.border_widths,
-                                      size[1]+self.border_widths))
+            self.borders['right'].resize((self._border_width,
+                                        size[1]+self._border_width))
 
-        self.borders['top'].resize((self.size[0]+self.border_widths,
-                                    self.border_widths))
+            self.borders['top'].resize((self.size[0]+self._border_width,
+                                        self._border_width))
 
-        self.borders['bottom'].resize((self.size[0]+self.border_widths,
-                                       self.border_widths))
+            self.borders['bottom'].resize((self.size[0]+self._border_width,
+                                        self._border_width))
 
-        self.update_border_coords()
+            self.update_border_coords()
 
     def _set_position(self, coords):
         """Set the lower-left corner position of this UI component.
@@ -229,7 +239,7 @@ class Panel2D(UI):
 
     def left_button_pressed(self, i_ren, _obj, panel2d_object):
         click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - panel2d_object.position
+        self._drag_offset = click_pos - self.position
         i_ren.event.abort()  # Stop propagating the event.
 
     def left_button_dragged(self, i_ren, _obj, _panel2d_object):
@@ -268,59 +278,59 @@ class Panel2D(UI):
 
     @property
     def border_color(self):
-        labels = ['left', 'right', 'top', 'bottom']
-        return [self.borders[label].color for label in labels]
+        sides = ['left', 'right', 'top', 'bottom']
+        return [self.borders[side].color for side in sides]
 
     @border_color.setter
-    def border_color(self, label_color):
+    def border_color(self, side_color):
         """Set the color of a specific border
 
         Parameters
         ----------
-        label_color: Iterable
-            Iterable to pack label, color values
+        side_color: Iterable
+            Iterable to pack side, color values
         """
-        label, color = label_color
+        side, color = side_color
 
-        if label.lower() not in ['left', 'right', 'top', 'bottom']:
+        if side.lower() not in ['left', 'right', 'top', 'bottom']:
             raise ValueError(
-                f'{label} not a valid border label')
+                f'{side} not a valid border side')
 
-        self.borders[label].color = color
+        self.borders[side].color = color
 
     @property
     def border_width(self):
-        labels = ['left', 'right', 'top', 'bottom']
+        sides = ['left', 'right', 'top', 'bottom']
         widths = []
 
-        for label in labels:
-            if label in ['left', 'right']:
-                widths.append(self.borders[label].width)
-            elif label in ['top', 'bottom']:
-                widths.append(self.borders[label].height)
+        for side in sides:
+            if side in ['left', 'right']:
+                widths.append(self.borders[side].width)
+            elif side in ['top', 'bottom']:
+                widths.append(self.borders[side].height)
             else:
                 raise ValueError(
-                    f'{label} not a valid border label')
+                    f'{side} not a valid border side')
         return widths
 
     @border_width.setter
-    def border_width(self, label_width):
+    def border_width(self, side_width):
         """Set the border width of a specific border
 
         Parameters
         ----------
-        label_width: Iterable
-            Iterable to pack label, width values
+        side_width: Iterable
+            Iterable to pack side, width values
         """
-        label, border_width = label_width
+        side, border_width = side_width
 
-        if label.lower() in ['left', 'right']:
-            self.borders[label].width = border_width
-        elif label.lower() in ['top', 'bottom']:
-            self.borders[label].height = border_width
+        if side.lower() in ['left', 'right']:
+            self.borders[side].width = border_width
+        elif side.lower() in ['top', 'bottom']:
+            self.borders[side].height = border_width
         else:
             raise ValueError(
-                f'{label} not a valid border label')
+                f'{side} not a valid border side')
 
 
 class TabPanel2D(UI):
