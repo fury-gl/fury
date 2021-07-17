@@ -106,9 +106,15 @@ scene.add(*l_particle)
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
+tb = ui.TextBlock2D(bold=True, position=(225, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
+
+###############################################################################
+# Initializing text box to display the number of simulated steps
+tb2 = ui.TextBlock2D(text="Number of particles:\nSim Steps:", position=(50, 550),
+                     font_size=15, color=(0, 0, 0), bold=True)
+scene.add(tb2)
 
 
 ###############################################################################
@@ -117,6 +123,8 @@ scene.add(tb)
 def timer_callback(_obj, _event):
     global counter_step
     counter_step += 1
+    tb2.message = "Number of particles: " + str(num_particles) + \
+                  "\nSim Steps: " + str(counter_step)
     for p in l_particle:
         update_path(p, counter_step=counter_step)
     showm.render()
