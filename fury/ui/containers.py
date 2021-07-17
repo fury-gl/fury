@@ -92,8 +92,11 @@ class Panel2D(UI):
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
 
         for key in self.borders.keys():
-            self.borders[key].on_left_mouse_button_pressed = self.left_button_pressed
-            self.borders[key].on_left_mouse_button_dragged = self.left_button_dragged
+            self.borders[key].on_left_mouse_button_pressed = \
+                self.left_button_pressed
+
+            self.borders[key].on_left_mouse_button_dragged = \
+                self.left_button_dragged
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -131,13 +134,13 @@ class Panel2D(UI):
                                         size[1]+self._border_width))
 
             self.borders['right'].resize((self._border_width,
-                                        size[1]+self._border_width))
+                                          size[1]+self._border_width))
 
             self.borders['top'].resize((self.size[0]+self._border_width,
                                         self._border_width))
 
             self.borders['bottom'].resize((self.size[0]+self._border_width,
-                                        self._border_width))
+                                           self._border_width))
 
             self.update_border_coords()
 
