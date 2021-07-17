@@ -58,7 +58,8 @@ def test_ui_button_panel(recording=False):
     # Panel
     panel = ui.Panel2D(size=(300, 150),
                        position=(290, 15),
-                       color=(1, 1, 1), align="right")
+                       color=(1, 1, 1), align="right",
+                       has_border=True)
     panel.add_element(rectangle_test, (290, 135))
     panel.add_element(button_test, (0.1, 0.1))
     panel.add_element(text_block_test, (0.7, 0.7))
