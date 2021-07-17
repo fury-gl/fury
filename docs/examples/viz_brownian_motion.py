@@ -85,7 +85,7 @@ def update_path(act, counter_step):
 
 scene = window.Scene()
 scene.background((1.0, 1.0, 1.0))
-scene.zoom(1.7)
+scene.zoom(2.7)
 scene.set_camera(position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
 showm = window.ShowManager(scene,
@@ -104,13 +104,6 @@ l_particle = [particle(colors=np.random.rand(1, 3), origin=origin,
 scene.add(*l_particle)
 
 ###############################################################################
-# Creating a container (cube actor) inside which the particle(s) move around
-
-container_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                            colors=(0.5, 0.9, 0.7, 0.4), scales=6)
-scene.add(container_actor)
-
-###############################################################################
 # Initializing text box to display the name of the animation
 
 tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
@@ -122,12 +115,11 @@ scene.add(tb)
 # The path of the particles exhibiting Brownian motion is plotted here
 
 def timer_callback(_obj, _event):
-    global counter_step, list_particle
+    global counter_step
     counter_step += 1
     for p in l_particle:
         update_path(p, counter_step=counter_step)
     showm.render()
-    scene.azimuth(2)
     if counter_step == num_total_steps:
         showm.exit()
 
