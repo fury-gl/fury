@@ -5,12 +5,6 @@ Animating a time-varying 2D wave function
 
 This is a simple demonstration of how one can visualize
 time-varying 2D wave functions using FURY.
-
-Some other interesting functions you can try plotting -
-#z = (x**2 - y**2)/(x**2 + y**2)**0.5*np.cos(np.pi*x-rate*time)
-#z = np.sin(x**2)*np.cos(y**2-rate*incre)#*np.sin(rate*time)
-#z = np.sin(x**2-y**2)*np.sin(time)
-
 """
 
 ###############################################################################
@@ -27,17 +21,11 @@ import itertools
 # Kindly note that only the z coordinate is being modified with time as only
 # the z coordinate is a function of time.
 
-def update_coordinates(time=0, incre=0, cmap_name='viridis'):
 
-    # x, y points which will be used to fit the equation to get elevation and
-    # generate the surface.
-    global x, y
+def update_coordinates(x, y, equation, time=0, cmap_name='viridis'):
 
-    # manipulate rate to change the speed of the waves; (default = 1)
-    rate = 1
-
-    # Z is the function F i.e. F(x, y, t)
-    z = 0.48*np.sin(2*np.pi*x)*np.cos(2*np.pi*y-rate*time)
+    # z is the function F i.e. F(x, y, t)
+    z = eval(equation)
     xyz = np.vstack([x, y, z]).T
 
     # creating the colormap
@@ -71,10 +59,8 @@ def update_coordinates(time=0, incre=0, cmap_name='viridis'):
 # npoints: int
 #          For high quality rendering, keep the number high but kindly note
 #          that higher values for npoints slows down the animation
-#          (default = 300)
-# cmap_name: string
-#            name of the colormap being used to color the wave
-#            (default = 'plasma')
+#          (default = 128)
+#
 
 time = 0
 dt = 0.1
@@ -82,8 +68,7 @@ lower_xbound = -1
 upper_xbound = 1
 lower_ybound = -1
 upper_ybound = 1
-npoints = 300
-cmap_name = 'plasma'
+npoints = 128
 
 ###############################################################################
 # creating the x, y points which will be used to fit the equation to get
@@ -95,35 +80,80 @@ x = x.reshape(-1)
 y = y.reshape(-1)
 
 ###############################################################################
-# xyz are the coordinates of the points that'll be used to plot the wave
-# colors refers to the colormap that'll be used to color the wave
-xyz, colors = update_coordinates(time=time, cmap_name=cmap_name)
+# Initializing wave_actors and adjusting lighting options to make the waves
+# look more aesthetically pleasant.
+
+
+def wave(x, y, equation, colormap_name):
+    xyz, colors = update_coordinates(x, y, equation=equation, time=time,
+                                     cmap_name=colormap_name)
+    wave_actor = actor.surface(xyz, colors=colors)
+    wave_actor.equation = equation
+    wave_actor.cmap_name = colormap_name
+    wave_actor.GetProperty().SetAmbient(1)
+    wave_actor.vertices = utils.vertices_from_actor(wave_actor)
+    wave_actor.no_vertices_per_point = len(wave_actor.vertices)/npoints**2
+    wave_actor.initial_vertices = wave_actor.vertices.copy() - \
+        np.repeat(xyz, wave_actor.no_vertices_per_point, axis=0)
+    return wave_actor
+
 
 ###############################################################################
-# Initializing wave_actor and adjusting lighting options to make the wave look
-# more aesthetically pleasant
-wave_actor = actor.surface(xyz, colors=colors)
-wave_actor.GetProperty().SetAmbient(1)
+# Equations to be plotted
+eq1 = "(np.sin(np.cos(3*np.pi*y)-time)*x+y*np.sin(np.cos(x*3*np.pi)-time))*\
+      0.48"
+eq2 = "0.72*((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-time)/3"
+eq3 = "(np.sin(np.pi*2*x-np.sin(1.2*time))*np.cos(np.pi*2*y+np.cos(1.2*time)))\
+      *0.48"
+eq4 = "np.sin(2*np.pi*x**2+time)*np.cos(2*np.pi*y**2-time)*0.48"
+equations = [eq1, eq2, eq3, eq4]
+
+###############################################################################
+# List of colormaps to be used for the various functions.
+cmap_names = ['YlOrRd', 'plasma', 'viridis', 'Blues']
+
+###############################################################################
+# Creating a list of wave actors.
+waves = []
+for i in range(4):
+    waves.append(wave(x, y, equation=equations[i],
+                 colormap_name=cmap_names[i]))
+actors = waves
+
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.zoom(12.5)
-scene.set_camera(position=(60, 40, 30), focal_point=(0.0, 0.0, 0.0),
+scene.set_camera(position=(4.5, -15, 20), focal_point=(4.5, 0.0, 0.0),
                  view_up=(0.0, 0.0, 1.0))
 showm = window.ShowManager(scene, size=(600, 600))
 
 ###############################################################################
-# Adding the wave_actor to the scene
-scene.add(wave_actor)
+# Creating an axes actor(for reference) and a grid to store multiple functions.
+# Adding them both to the scene.
+
+# To store the function names
+text = []
+for i in range(4):
+    t_actor = actor.text_3d("Function " + str(i+1), position=(-10, 0, 0),
+                            font_size=0.3, justification='center')
+    text.append(t_actor)
+
+# grid
+grid_ui = ui.GridUI(actors=actors, captions=text,
+                    caption_offset=(0, -2, 0), dim=(1, 4),
+                    cell_padding=2,
+                    aspect_ratio=1,
+                    rotation_axis=(0, 1, 0))
+showm.scene.add(grid_ui)
+showm.scene.add(actor.axes())
 
 
 ###############################################################################
-# Initializing text box to print the formula of the 2D function which is being
-# animated
-tb = ui.TextBlock2D(bold=True, position=(80, 60))
-tb.message = "z = F(x, y, t) = 0.48*sin(2*pi*x)*cos(2*pi*y-rate*t)"
+# Initializing text box to print the title of the animation
+tb = ui.TextBlock2D(bold=True, position=(200, 60))
+tb.message = "Animated 2D functions"
 scene.add(tb)
 
 ###############################################################################
@@ -132,52 +162,40 @@ showm.initialize()
 counter = itertools.count()
 
 ###############################################################################
-# vertices stores the coordinates and of the triangles used to form the
-# wave_actor, vertices are updated with time as the wave changes its shape
-
-vertices = utils.vertices_from_actor(wave_actor)
-no_vertices_per_point = len(vertices)/npoints**2
-initial_vertices = vertices.copy() - \
-    np.repeat(xyz, no_vertices_per_point, axis=0)
-
-###############################################################################
 # end is used to decide when to end the animation
 end = 200
 
+
 ###############################################################################
 # Coordinates to be plotted are changed everytime timer_callback is called by
-# using the update_coordinates function. The 2D function is rendered here
-
+# using the update_coordinates function. The 2D functions are rendered here
 
 def timer_callback(_obj, _event):
     global xyz, time
     time += dt
     cnt = next(counter)
 
-    # updating the colors and vertices of the triangles used to form the wave
-    xyz, colors = update_coordinates(time=time, incre=cnt, cmap_name=cmap_name)
+    # updating the colors and vertices of the triangles used to form the waves
+    for wave in waves:
+        xyz, colors = update_coordinates(x, y, equation=wave.equation,
+                                         time=time, cmap_name=wave.cmap_name)
+        wave.GetMapper().GetInput().GetPointData().\
+            SetScalars(utils.numpy_to_vtk_colors(255*colors))
+        wave.vertices[:] = wave.initial_vertices + \
+            np.repeat(xyz, wave.no_vertices_per_point, axis=0)
+        utils.update_actor(wave)
 
-    # updating colors
-    wave_alias = wave_actor.GetMapper().GetInput().GetPointData()
-    wave_alias.SetScalars(utils.numpy_to_vtk_colors(255*colors))
-
-    # updating the vertices
-    vertices[:] = initial_vertices + \
-        np.repeat(xyz, no_vertices_per_point, axis=0)
-    utils.update_actor(wave_actor)
     showm.render()
-
     # to end the animation
     if cnt == end:
         showm.exit()
 
+
 ###############################################################################
 # Run every 30 milliseconds
-
-
 showm.add_timer_callback(True, 30, timer_callback)
 
-interactive = False
+interactive = True
 if interactive:
     showm.start()
 
