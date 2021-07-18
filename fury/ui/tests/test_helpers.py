@@ -71,12 +71,10 @@ def test_wrap_overflow():
 
     text.message = "A very very long message to clip text overflow"
     wrap_overflow(text, 0)
-    npt.assert_equal(text.message,
-                     "A very very long message to clip text overflow")
+    npt.assert_equal(text.message, "")
 
     wrap_overflow(text, -2*text.size[0])
-    npt.assert_equal(text.message,
-                     "A very very long message to clip text overflow")
+    npt.assert_equal(text.message, "")
 
 
 def test_check_overflow():
@@ -87,10 +85,8 @@ def test_check_overflow():
     sm.scene.add(rectangle, text)
 
     text.message = "A very very long message to clip text overflow"
-    start_ptr = 0
-    end_ptr = len(text.message)
 
-    is_overflowing, *ret = check_overflow(text, rectangle.size[0],
-                                          start_ptr, end_ptr)
+    is_overflowing, _ = check_overflow(text, rectangle.size[0], '~')
 
-    npt.assert_equal(True, is_overflowing)
+    npt.assert_equal(False, is_overflowing)
+    npt.assert_equal('A very ver~', text.message)
