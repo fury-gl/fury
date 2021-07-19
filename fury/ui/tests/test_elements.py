@@ -1020,3 +1020,58 @@ def test_timer():
 
     arr = window.snapshot(scene, offscreen=True)
     npt.assert_(np.sum(arr) > 0)
+
+
+def test_ui_tree_2d(interactive=False):
+    filename = "test_ui_tree_ed"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    
+    structure = [{'label-1': []}, {'label-2': []}, {'label-3': []}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="Example Tree")
+
+    tree.resize((400, 400))
+    npt.assert_equal(tree.size, (400, tree.node_height+400))
+
+    nodes = ['label-1', 'label-2', 'label-3']
+    npt.assert_array_equal(nodes, [node.label for node in tree.nodes])
+    npt.assert_array_equal(nodes, list(tree.nodes_dict.keys()))
+
+    for node in nodes:
+        npt.assert_equal(tree.select_node(node).child_nodes, [])
+    
+    panel = ui.Panel2D(size=(100, 100), color=(0.1, 0.9, 0.7))
+    listbox = ui.ListBox2D(values=['test', ]*2, size=(100, 100))
+    line_slider = ui.LineSlider2D(length=100, orientation="vertical")
+
+    #  Adding the UI elements to different labels
+    tree.add_content('label-1', panel, (0., 0.))
+    tree.add_content('label-2', listbox, (0., 0.))
+    tree.add_content('label-3', line_slider, (0.5, 0.5))
+
+    for node in tree.nodes:
+        content_actor = node.content_panel.background.actor
+        npt.assert_equal(node.size[1], tree.node_height)
+        npt.assert_equal(content_actor.GetVisibility(), False)
+
+    event_counter = EventCounter()
+    event_counter.monitor(tree)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Tree2D UI Example")
+    show_manager.scene.add(tree)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+    
+    for node in tree.nodes:
+        child = node.child_nodes[0]
+        npt.assert_equal(node.size[1], child.size[1]+tree.node_height)
