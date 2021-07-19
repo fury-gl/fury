@@ -1026,7 +1026,7 @@ def test_ui_tree_2d(interactive=False):
     filename = "test_ui_tree_ed"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-    
+
     structure = [{'label-1': []}, {'label-2': []}, {'label-3': []}]
     tree = ui.elements.Tree2D(structure=structure, tree_name="Example Tree")
 
@@ -1039,7 +1039,7 @@ def test_ui_tree_2d(interactive=False):
 
     for node in nodes:
         npt.assert_equal(tree.select_node(node).child_nodes, [])
-    
+
     panel = ui.Panel2D(size=(100, 100), color=(0.1, 0.9, 0.7))
     listbox = ui.ListBox2D(values=['test', ]*2, size=(100, 100))
     line_slider = ui.LineSlider2D(length=100, orientation="vertical")
@@ -1071,7 +1071,7 @@ def test_ui_tree_2d(interactive=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
-    
+
     for node in tree.nodes:
         child = node.child_nodes[0]
         npt.assert_equal(node.size[1], child.size[1]+tree.node_height)
