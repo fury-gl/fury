@@ -3541,6 +3541,7 @@ class TreeNode2D(UI):
         self.expanded = expanded
 
         self.selected = False
+        self.selected_nodes = []
         self.selected_color = selected_color
         self.unselected_color = color
 
@@ -3880,9 +3881,11 @@ class TreeNode2D(UI):
         self.selected = not self.selected
 
         if self.selected:
+            self.selected_nodes.append(_node2d)
             self.color = self.selected_color
             self.on_node_select(self)
         else:
+            self.selected_nodes.remove(_node2d)
             self.color = self.unselected_color
             self.on_node_deselect(self)
 
