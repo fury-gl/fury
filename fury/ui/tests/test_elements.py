@@ -4,6 +4,7 @@ import os
 import itertools
 
 import numpy as np
+from numpy.lib.function_base import select
 
 import numpy.testing as npt
 import pytest
@@ -1075,3 +1076,77 @@ def test_ui_tree_2d(interactive=False):
     for node in tree.nodes:
         child = node.child_nodes[0]
         npt.assert_equal(node.size[1], child.size[1]+tree.node_height)
+
+
+def test_ui_treenode_2d(interactive=False):
+    filename = "test_ui_treenode_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    non_expandable_node = ui.elements.TreeNode2D(label="Non Expandable", expandable=False,
+                                                 expanded=False)
+    
+    content_actor = non_expandable_node.content_panel.background.actor
+    npt.assert_equal(content_actor.GetVisibility(), False)
+
+    node_1 = ui.elements.TreeNode2D(label="Child-1")
+    node_2 = ui.elements.TreeNode2D(label="Child-2")
+    node_3 = ui.elements.TreeNode2D(label="Child-3")
+    nodes = [node_1, node_2, node_3]
+    children_size = sum([node.size[1] for node in nodes])
+
+    parent_node = ui.elements.TreeNode2D(label="Parent", children=nodes, auto_resize=False)
+    npt.assert_equal(parent_node.children_size(), children_size)
+
+    node = ui.elements.TreeNode2D(label="Child-4")
+    nodes.append(node)
+    parent_node.add_node(node)
+
+    npt.assert_equal(parent_node.parent, None)
+    npt.assert_array_equal(nodes, parent_node.child_nodes)
+    for node in parent_node.child_nodes:
+        npt.assert_equal(node.parent, parent_node)
+    
+    parent_node.child_height = 40
+    for node in parent_node.child_nodes:
+        npt.assert_equal(node.child_height, 40)
+
+    child_1 = ui.elements.TreeNode2D(label="Child-1")
+    child_2 = ui.elements.TreeNode2D(label="Child-2")
+    children = [child_1, child_2]
+    simple_parent = ui.elements.TreeNode2D(label="Simple Tree", children=children, expanded=True)
+
+    child_1 = simple_parent.select_child('Child-1')
+    child_2 = simple_parent.select_child('Child-2')
+    simple_parent.update_children_coords(child_1, 50)
+    npt.assert_equal(child_2.position[1], child_1.position[1]-50-simple_parent.child_height)
+
+    selected = []
+    def node_select(node):
+        selected.append(node)
+    
+    def node_deselect(node):
+        selected.remove(node)
+
+    parent_node.on_node_select = node_select
+    parent_node.on_node_deselect = node_deselect
+
+    event_counter = EventCounter()
+    event_counter.monitor(parent_node)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Tree2D UI Example")
+    show_manager.scene.add(parent_node)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    npt.assert_equal(parent_node.selected_nodes, selected)
