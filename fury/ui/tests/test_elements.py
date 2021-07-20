@@ -1083,9 +1083,10 @@ def test_ui_treenode_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    non_expandable_node = ui.elements.TreeNode2D(label="Non Expandable", expandable=False,
+    non_expandable_node = ui.elements.TreeNode2D(label="Non Expandable",
+                                                 expandable=False,
                                                  expanded=False)
-    
+
     content_actor = non_expandable_node.content_panel.background.actor
     npt.assert_equal(content_actor.GetVisibility(), False)
 
@@ -1095,7 +1096,9 @@ def test_ui_treenode_2d(interactive=False):
     nodes = [node_1, node_2, node_3]
     children_size = sum([node.size[1] for node in nodes])
 
-    parent_node = ui.elements.TreeNode2D(label="Parent", children=nodes, auto_resize=False)
+    parent_node = ui.elements.TreeNode2D(label="Parent", children=nodes,
+                                         auto_resize=False)
+
     npt.assert_equal(parent_node.children_size(), children_size)
 
     node = ui.elements.TreeNode2D(label="Child-4")
@@ -1106,7 +1109,7 @@ def test_ui_treenode_2d(interactive=False):
     npt.assert_array_equal(nodes, parent_node.child_nodes)
     for node in parent_node.child_nodes:
         npt.assert_equal(node.parent, parent_node)
-    
+
     parent_node.child_height = 40
     for node in parent_node.child_nodes:
         npt.assert_equal(node.child_height, 40)
@@ -1114,17 +1117,20 @@ def test_ui_treenode_2d(interactive=False):
     child_1 = ui.elements.TreeNode2D(label="Child-1")
     child_2 = ui.elements.TreeNode2D(label="Child-2")
     children = [child_1, child_2]
-    simple_parent = ui.elements.TreeNode2D(label="Simple Tree", children=children, expanded=True)
+    simple_parent = ui.elements.TreeNode2D(label="Simple Tree",
+                                           children=children, expanded=True)
 
     child_1 = simple_parent.select_child('Child-1')
     child_2 = simple_parent.select_child('Child-2')
     simple_parent.update_children_coords(child_1, 50)
-    npt.assert_equal(child_2.position[1], child_1.position[1]-50-simple_parent.child_height)
+    npt.assert_equal(child_2.position[1],
+                     child_1.position[1]-50-simple_parent.child_height)
 
     selected = []
+
     def node_select(node):
         selected.append(node)
-    
+
     def node_deselect(node):
         selected.remove(node)
 

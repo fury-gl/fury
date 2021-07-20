@@ -3783,10 +3783,10 @@ class TreeNode2D(UI):
         for child_node in self._child_nodes:
             if isinstance(child_node, type(self)):
                 child_node.set_visibility(False)
-    
+
     def select_child(self, child_label):
         """Get the instance of a particular child node.
-        
+
         Parameters
         ----------
         child_label: str
