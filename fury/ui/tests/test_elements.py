@@ -4,7 +4,6 @@ import os
 import itertools
 
 import numpy as np
-from numpy.lib.function_base import select
 
 import numpy.testing as npt
 import pytest
