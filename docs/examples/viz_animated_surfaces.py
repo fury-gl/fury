@@ -22,7 +22,7 @@ import itertools
 # the z coordinate is a function of time.
 
 
-def update_coordinates(x, y, equation, time=0, cmap_name='viridis'):
+def update_coordinates(x, y, equation, cmap_name='viridis'):
 
     # z is the function F i.e. F(x, y, t)
     z = eval(equation)
@@ -85,12 +85,11 @@ y = y.reshape(-1)
 
 
 def wave(x, y, equation, colormap_name):
-    xyz, colors = update_coordinates(x, y, equation=equation, time=time,
+    xyz, colors = update_coordinates(x, y, equation=equation,
                                      cmap_name=colormap_name)
     wave_actor = actor.surface(xyz, colors=colors)
     wave_actor.equation = equation
     wave_actor.cmap_name = colormap_name
-    wave_actor.GetProperty().SetAmbient(1)
     wave_actor.vertices = utils.vertices_from_actor(wave_actor)
     wave_actor.no_vertices_per_point = len(wave_actor.vertices)/npoints**2
     wave_actor.initial_vertices = wave_actor.vertices.copy() - \
@@ -100,17 +99,17 @@ def wave(x, y, equation, colormap_name):
 
 ###############################################################################
 # Equations to be plotted
-eq1 = "(np.sin(np.cos(3*np.pi*y)-time)*x+y*np.sin(np.cos(x*3*np.pi)-time))*\
-      0.48"
-eq2 = "0.72*((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-time)/3"
-eq3 = "(np.sin(np.pi*2*x-np.sin(1.2*time))*np.cos(np.pi*2*y+np.cos(1.2*time)))\
+eq1 = "np.abs(np.sin(x*2*np.pi*np.cos(time/2)))**1*np.cos(time/2)*\
+      np.abs(np.cos(y*2*np.pi*np.sin(time/2)))**1*np.sin(time/2)*1.2"
+eq2 = "((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-1.8*time)*0.24"
+eq3 = "(np.sin(np.pi*2*x-np.sin(1.8*time))*np.cos(np.pi*2*y+np.cos(1.8*time)))\
       *0.48"
-eq4 = "np.sin(2*np.pi*x**2+time)*np.cos(2*np.pi*y**2-time)*0.48"
+eq4 = "np.cos(24*np.sqrt(x**2 + y**2) - 2*time)*0.18"
 equations = [eq1, eq2, eq3, eq4]
 
 ###############################################################################
 # List of colormaps to be used for the various functions.
-cmap_names = ['YlOrRd', 'plasma', 'viridis', 'Blues']
+cmap_names = ['hot', 'plasma', 'viridis', 'ocean']
 
 ###############################################################################
 # Creating a list of wave actors.
@@ -125,7 +124,7 @@ actors = waves
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.set_camera(position=(4.5, -15, 20), focal_point=(4.5, 0.0, 0.0),
+scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
                  view_up=(0.0, 0.0, 1.0))
 showm = window.ShowManager(scene, size=(600, 600))
 
@@ -136,13 +135,13 @@ showm = window.ShowManager(scene, size=(600, 600))
 # To store the function names
 text = []
 for i in range(4):
-    t_actor = actor.text_3d("Function " + str(i+1), position=(-10, 0, 0),
-                            font_size=0.3, justification='center')
+    t_actor = actor.label('Function ' + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2))
+    t_actor.SetCamera(scene.camera())
     text.append(t_actor)
 
 # grid
 grid_ui = ui.GridUI(actors=actors, captions=text,
-                    caption_offset=(0, -2, 0), dim=(1, 4),
+                    caption_offset=(-0.7, -2.5, 0), dim=(1, 4),
                     cell_padding=2,
                     aspect_ratio=1,
                     rotation_axis=(0, 1, 0))
@@ -178,7 +177,7 @@ def timer_callback(_obj, _event):
     # updating the colors and vertices of the triangles used to form the waves
     for wave in waves:
         xyz, colors = update_coordinates(x, y, equation=wave.equation,
-                                         time=time, cmap_name=wave.cmap_name)
+                                         cmap_name=wave.cmap_name)
         wave.GetMapper().GetInput().GetPointData().\
             SetScalars(utils.numpy_to_vtk_colors(255*colors))
         wave.vertices[:] = wave.initial_vertices + \
