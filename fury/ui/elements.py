@@ -3654,7 +3654,7 @@ class TreeNode2D(UI):
         self._child_nodes.append(node)
         if isinstance(node, type(self)):
             node.parent = self
-            node.set_visibility(False)
+            node.title_panel.set_visibility(False)
             node.child_height = self.child_height
 
             _node_coords = (self.indent+self.child_indent,
@@ -3783,6 +3783,18 @@ class TreeNode2D(UI):
         for child_node in self._child_nodes:
             if isinstance(child_node, type(self)):
                 child_node.set_visibility(False)
+    
+    def select_child(self, child_label):
+        """Get the instance of a particular child node.
+        
+        Parameters
+        ----------
+        child_label: str
+            Label of the child node to be selected.
+        """
+        lables = [child.label for child in self.child_nodes]
+        idx = lables.index(child_label)
+        return self.child_nodes[idx]
 
     @property
     def child_nodes(self):
