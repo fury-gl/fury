@@ -1,5 +1,7 @@
 import vtk
 from vtk.util import numpy_support
+import numpy as np
+from fury import utils
 
 
 class Molecule(vtk.vtkMolecule):
@@ -9,6 +11,25 @@ class Molecule(vtk.vtkMolecule):
     coordinate and bonding data).
     This is a more pythonic version of ``vtkMolecule``.
     """
+    def __init__(self, elements=None, coords=None, atom_types=None, model=None,
+                 residue_seq=None, chain=None, sheet=None, helix=None,
+                 is_hetatm=None):
+        if elements.any() and coords.any() and len(elements)==len(coords):
+            self.atom_types = atom_types
+            self.model = model
+            self.residue_seq = residue_seq
+            self.chain = chain
+            self.sheet = sheet
+            self.helix = helix
+            self.is_hetatm = is_hetatm
+            coords = utils.numpy_to_vtk_points(coords)
+            atom_nums = numpy_support.numpy_to_vtk(elements,
+                                                   array_type=
+                                                   vtk.VTK_UNSIGNED_SHORT)
+            atom_nums.SetName("Atomic Numbers")
+            fieldData = vtk.vtkDataSetAttributes()
+            fieldData.AddArray(atom_nums)
+            self.Initialize(coords, fieldData)
 
 
 def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
@@ -338,8 +359,9 @@ def make_molecularviz_aesthetic(molecule_actor):
         Actor that represents the molecule to be visualized.
     """
     molecule_actor.GetProperty().SetDiffuse(1)
-    molecule_actor.GetProperty().SetSpecular(0.5)
-    molecule_actor.GetProperty().SetSpecularPower(90.0)
+    molecule_actor.GetProperty().SetSpecular(1)
+    molecule_actor.GetProperty().SetAmbient(0.3)
+    molecule_actor.GetProperty().SetSpecularPower(100.0)
 
 
 def sphere_rep_actor(molecule, colormode='discrete'):
@@ -493,5 +515,145 @@ def stick_rep_actor(molecule, colormode='discrete',
         mst_mapper.SetBondColorMode(0)
     molecule_actor = vtk.vtkActor()
     molecule_actor.SetMapper(mst_mapper)
+    make_molecularviz_aesthetic(molecule_actor)
+    return molecule_actor
+
+
+def ribbon_rep_actor(molecule):
+    """Create an actor for ribbon molecular representation.
+
+    Parameters
+    ----------
+    molecule : Molecule object
+        The molecule to be rendered.
+
+    Returns
+    -------
+    molecule_actor : vtkActor
+        Actor created to render the rubbon representation of the molecule to be
+        visualized.
+    """
+    num_total_atoms = len(molecule.elements)
+    SecondaryStructures = np.ones(num_total_atoms)
+    for i in range(num_total_atoms):
+        SecondaryStructures[i] = ord('c')
+        resi = molecule.residue_seq[i]
+        for j in range(len(molecule.sheet)):
+            sheet = molecule.sheet[j]
+            if molecule.chain[i] != sheet[0] or resi < sheet[1] or \
+               resi > sheet[3]:
+                continue
+            SecondaryStructures[i] = ord('s')
+
+        for j in range(len(molecule.helix)):
+            helix = molecule.helix[j]
+            if molecule.chain[i] != helix[0] or resi < helix[1] or \
+               resi > helix[3]:
+                continue
+            SecondaryStructures[i] = ord('h')
+
+    output = vtk.vtkPolyData()
+
+    # for atom type i.e. element
+    atom_type = numpy_support.numpy_to_vtk(num_array=molecule.elements,
+                                           deep=True,
+                                           array_type=vtk.VTK_ID_TYPE)
+    atom_type.SetName("atom_type")
+
+    output.GetPointData().AddArray(atom_type)
+
+    # for atom type strings
+    atom_types = vtk.vtkStringArray()
+    atom_types.SetName("atom_types")
+    atom_types.SetNumberOfTuples(num_total_atoms)
+    for i in range(num_total_atoms):
+        atom_types.SetValue(i, molecule.atom_types[i])
+
+    output.GetPointData().AddArray(atom_types)
+
+    # for residue
+    residue = numpy_support.numpy_to_vtk(num_array=molecule.residue_seq,
+                                         deep=True,
+                                         array_type=vtk.VTK_ID_TYPE)
+    residue.SetName("residue")
+    output.GetPointData().AddArray(residue)
+
+    # for chain
+    chain = numpy_support.numpy_to_vtk(num_array=molecule.chain, deep=True,
+                                       array_type=vtk.VTK_UNSIGNED_CHAR)
+    chain.SetName("chain")
+    output.GetPointData().AddArray(chain)
+
+    # for secondary structures
+    s_s = numpy_support.numpy_to_vtk(num_array=SecondaryStructures, deep=True,
+                                     array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_s.SetName("secondary_structures")
+    output.GetPointData().AddArray(s_s)
+
+
+    # for secondary structures begin
+    newarr = np.ones(num_total_atoms)
+    s_sb = numpy_support.numpy_to_vtk(num_array=newarr, deep=True,
+                                      array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_sb.SetName("secondary_structures_begin")
+    output.GetPointData().AddArray(s_sb)
+
+    # for secondary structures end
+    newarr = np.ones(num_total_atoms)
+    s_se = numpy_support.numpy_to_vtk(num_array=newarr, deep=True,
+                                      array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_se.SetName("secondary_structures_end")
+    output.GetPointData().AddArray(s_se)
+
+
+    # for ishetatm
+    ishetatm = numpy_support.numpy_to_vtk(num_array=molecule.is_hetatm,
+                                          deep=True,
+                                         array_type=vtk.VTK_UNSIGNED_CHAR)
+    ishetatm.SetName("ishetatm")
+    output.GetPointData().AddArray(ishetatm)
+
+    # for model
+    model = numpy_support.numpy_to_vtk(num_array=molecule.model, deep=True,
+                                       array_type=vtk.VTK_UNSIGNED_INT)
+    model.SetName("model")
+    output.GetPointData().AddArray(model)
+
+    # for coloring the heteroatoms
+    rgb = vtk.vtkUnsignedCharArray()
+    rgb.SetNumberOfComponents(3)
+    rgb.Allocate(3 * num_total_atoms)
+    rgb.SetName("rgb_colors")
+
+    table = PeriodicTable()
+    for i in range(num_total_atoms):
+        rgb.InsertNextTuple(table.atom_color(molecule.elements[i]))
+
+    output.GetPointData().SetScalars(rgb)
+
+    # for radius of the heteroatoms
+    Radii = vtk.vtkFloatArray()
+    Radii.SetNumberOfComponents(3)
+    Radii.Allocate(3 * num_total_atoms)
+    Radii.SetName("radius")
+
+    for i in range(num_total_atoms):
+        Radii.InsertNextTuple3(table.atomic_radius(molecule.elements[i], 'VDW'),
+                            table.atomic_radius(molecule.elements[i], 'VDW'),
+                            table.atomic_radius(molecule.elements[i], 'VDW'))
+
+    output.GetPointData().SetVectors(Radii)
+
+    # setting the coordinates
+    points = utils.numpy_to_vtk_points(molecule.coords)
+    output.SetPoints(points)
+
+    ribbonFilter = vtk.vtkProteinRibbonFilter()
+    ribbonFilter.SetInputData(output)
+    ribbonFilter.SetCoilWidth(0.2)
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(ribbonFilter.GetOutputPort())
+    molecule_actor = vtk.vtkActor()
+    molecule_actor.SetMapper(mapper)
     make_molecularviz_aesthetic(molecule_actor)
     return molecule_actor
