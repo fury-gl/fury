@@ -1,7 +1,7 @@
 import vtk
 from vtk.util import numpy_support
 import numpy as np
-from fury import utils
+from fury.utils import numpy_to_vtk_points
 
 
 class Molecule(vtk.vtkMolecule):
@@ -11,9 +11,42 @@ class Molecule(vtk.vtkMolecule):
     coordinate and bonding data).
     This is a more pythonic version of ``vtkMolecule``.
     """
+
     def __init__(self, elements=None, coords=None, atom_types=None, model=None,
                  residue_seq=None, chain=None, sheet=None, helix=None,
                  is_hetatm=None):
+        """Send the atomic data to the molecule.
+
+        Parameters
+        ----------
+        elements : ndarray of integers, shape (N, ) where N is the total number
+            of atoms present in the molecule.
+            Array having atomic number corresponding to each atom of the
+            molecule.
+        coords : ndarray of floats, shape (N, 3) where N is the total number
+            of atoms present in the molecule.
+            Array having coordinates corresponding to each atom of the
+            molecule.
+        atom_types : ndarray of strings, shape (N, ) where N is the total
+            number of atoms present in the molecule.
+            Array having the name of type of atom.
+        model : ndarray of integers, shape (N, ) where N is the total number of
+            atoms present in the molecule.
+            Array having the model number corresponding to each atom.
+        residue_seq : ndarray of integers, shape (N, ) where N is the total
+            number of atoms present in the molecule.
+            Array having the residue sequence number corresponding to each atom
+            of the molecule.
+        chain : ndarray of integers, shape (N, ) where N is the total number of
+            atoms present in the molecule.
+            Array having the chain number corresponding to each atom.
+        sheet : ndarray of integers, shape (S, 4) where S is the total number
+            of sheets present in the molecule.
+            Array containing information about sheets present in the molecule.
+        helix : ndarray of integers, shape (H, 4) where H is the total number
+            of helices present in the molecule.
+            Array containing information about helices present in the molecule.
+        """
         if elements.any() and coords.any() and len(elements)==len(coords):
             self.atom_types = atom_types
             self.model = model
@@ -22,7 +55,7 @@ class Molecule(vtk.vtkMolecule):
             self.sheet = sheet
             self.helix = helix
             self.is_hetatm = is_hetatm
-            coords = utils.numpy_to_vtk_points(coords)
+            coords = numpy_to_vtk_points(coords)
             atom_nums = numpy_support.numpy_to_vtk(elements,
                                                    array_type=
                                                    vtk.VTK_UNSIGNED_SHORT)
@@ -533,7 +566,9 @@ def ribbon_rep_actor(molecule):
         Actor created to render the rubbon representation of the molecule to be
         visualized.
     """
-    num_total_atoms = len(molecule.elements)
+    coords = get_atomic_position_array(molecule)
+    elements = get_atomic_number_array(molecule)
+    num_total_atoms = len(coords)
     SecondaryStructures = np.ones(num_total_atoms)
     for i in range(num_total_atoms):
         SecondaryStructures[i] = ord('c')
@@ -555,7 +590,7 @@ def ribbon_rep_actor(molecule):
     output = vtk.vtkPolyData()
 
     # for atom type i.e. element
-    atom_type = numpy_support.numpy_to_vtk(num_array=molecule.elements,
+    atom_type = numpy_support.numpy_to_vtk(num_array=elements,
                                            deep=True,
                                            array_type=vtk.VTK_ID_TYPE)
     atom_type.SetName("atom_type")
@@ -627,7 +662,7 @@ def ribbon_rep_actor(molecule):
 
     table = PeriodicTable()
     for i in range(num_total_atoms):
-        rgb.InsertNextTuple(table.atom_color(molecule.elements[i]))
+        rgb.InsertNextTuple(table.atom_color(elements[i]))
 
     output.GetPointData().SetScalars(rgb)
 
@@ -638,14 +673,14 @@ def ribbon_rep_actor(molecule):
     Radii.SetName("radius")
 
     for i in range(num_total_atoms):
-        Radii.InsertNextTuple3(table.atomic_radius(molecule.elements[i], 'VDW'),
-                            table.atomic_radius(molecule.elements[i], 'VDW'),
-                            table.atomic_radius(molecule.elements[i], 'VDW'))
+        Radii.InsertNextTuple3(table.atomic_radius(elements[i], 'VDW'),
+                            table.atomic_radius(elements[i], 'VDW'),
+                            table.atomic_radius(elements[i], 'VDW'))
 
     output.GetPointData().SetVectors(Radii)
 
     # setting the coordinates
-    points = utils.numpy_to_vtk_points(molecule.coords)
+    points = numpy_to_vtk_points(coords)
     output.SetPoints(points)
 
     ribbonFilter = vtk.vtkProteinRibbonFilter()
