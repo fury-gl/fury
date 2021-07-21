@@ -3324,6 +3324,7 @@ class Tree2D(UI):
         self._nodes = []
         self._nodes_dict = {}
         self.node_height = node_height
+        self.content_size = size
 
         super(Tree2D, self).__init__(position)
         self.resize(size)
@@ -3341,7 +3342,7 @@ class Tree2D(UI):
                                     icon=_icon_path, indent=self.indent,
                                     child_indent=self.indent,
                                     child_height=self.node_height,
-                                    auto_resize=True)
+                                    auto_resize=True, size=self.content_size)
 
         for node in self.nodes_dict.values():
             node.set_visibility(False)
@@ -3529,16 +3530,17 @@ class TreeNode2D(UI):
             self.icon = read_viz_icons(fname='stop2.png')
 
         self._child_nodes = []
+        self.has_ui = False
         self.parent = parent
-        self.indent = indent
+        self.indent = np.clip(indent, 0, int(size[0]*0.025))
 
         self.label = label
 
-        self.child_indent = child_indent
+        self.child_indent = np.clip(child_indent, 0, int(size[0]*0.025))
         self.child_height = child_height
         self.content_size = size
         self.expandable = expandable
-        self.expanded = expanded
+        self._expanded = expanded
 
         self.selected = False
         self.selected_nodes = []
@@ -3548,6 +3550,7 @@ class TreeNode2D(UI):
         self.auto_resize = auto_resize
 
         super(TreeNode2D, self).__init__(position)
+        self.expanded = expanded
         self.resize(size)
         self.title_panel.color = color
         self.title_panel.opacity = opacity
@@ -3596,13 +3599,6 @@ class TreeNode2D(UI):
         if self.children:
             for child in self.children:
                 self.add_node(child)
-
-        if self.expanded:
-            self.set_visibility(True)
-            self.button.set_icon_by_name('expand')
-        else:
-            self.set_visibility(False)
-            self.button.set_icon_by_name('collapse')
 
         if not self.expandable:
             self.button.set_visibility(False)
@@ -3653,17 +3649,22 @@ class TreeNode2D(UI):
         """
         self._child_nodes.append(node)
         if isinstance(node, type(self)):
+            if self.has_ui:
+                raise ValueError('A tree node with UI elements cannot have child nodes')
+
             node.parent = self
+            node.expanded = False
             node.title_panel.set_visibility(False)
             node.child_height = self.child_height
 
             _node_coords = (self.indent+self.child_indent,
                             self.children_size() - node.child_height)
         else:
+            self.has_ui = True
             _node_coords = coords
 
         self.content_panel.add_element(node, _node_coords)
-        self.resize((self.size[0], self.children_size()))
+        self.resize((self.size[0], self.children_size(1)))
 
     def resize(self, size):
         """ Resizes the Tree Node.
@@ -3679,7 +3680,11 @@ class TreeNode2D(UI):
         self.label_text.resize((size[0]-self.button.size[0],
                                 self.child_height))
 
-        self.label_image.resize((self.child_height, self.child_height))
+        if size[0] >= 200:
+            self.label_image.resize((self.child_height, self.child_height))
+        else:
+            self.label_image.resize((0, 0))
+
         self.button.resize((self.child_height, self.child_height))
 
         self.title_panel.update_element(self.label_text,
@@ -3722,7 +3727,6 @@ class TreeNode2D(UI):
             Instance of the node
         """
         self.expanded = not self.expanded
-        self.set_visibility(self.expanded)
         parent = self.parent
 
         if self.expanded:
@@ -3736,11 +3740,10 @@ class TreeNode2D(UI):
 
         while parent is not None:
             if parent.auto_resize:
-                current_size = parent.content_panel.size[1]
-                if parent.children_size() > parent.content_panel.size[1]:
+                if parent.size[1] < parent.children_size():
                     parent.resize((parent.size[0], parent.children_size()))
                 else:
-                    parent.resize((parent.size[0], current_size))
+                    parent.resize(parent.content_size)
 
             parent = parent.parent
 
@@ -3769,12 +3772,21 @@ class TreeNode2D(UI):
 
             node.update_children_coords(node.parent, size_offset)
 
-    def children_size(self):
+    def children_size(self, relative=False):
         """Returns the size occupied by the children vertically.
         """
-        _size = sum([child.size[1] for child in self.child_nodes])
+        if relative:
+            sizes = []
+            for child in self._child_nodes:
+                relative_size = child.size[1] + (child.position[1] - self.content_panel.position[1])
+                sizes.append(relative_size)
 
-        return _size
+            if len(sizes):
+                return int(max(sizes))
+            else:
+                return 0
+
+        return sum([child.size[1] for child in self._child_nodes])
 
     def set_visibility(self, visibility):
         """Set visibility of this UI component."""
@@ -3877,6 +3889,31 @@ class TreeNode2D(UI):
 
         for node in self.child_nodes:
             node.child_height = height
+
+    @property
+    def expanded(self):
+        return self._expanded
+    
+    @expanded.setter
+    def expanded(self, expanded):
+        """Sets the expanded state of the node.
+
+        Parameters
+        ----------
+        expanded: bool
+            True if the node is to be expanded, False otherwise
+        """
+        self._expanded = expanded
+        self.set_visibility(expanded)
+
+        if expanded:
+            self.set_visibility(True)
+            self.button.set_icon_by_name('expand')
+        else:
+            self.set_visibility(False)
+            self.button.set_icon_by_name('collapse')
+            for child in self.child_nodes:
+                child.expanded = False
 
     def select_node(self, i_ren, _obj, _node2d):
         """Callback for when the node is clicked on.
