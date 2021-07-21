@@ -14,50 +14,108 @@ Importing necessary modules
 import urllib
 import os
 from fury import window, actor, ui, molecular
+import numpy as np
 
 ###############################################################################
-# Downloading the PDBx file whose model is to be rendered.
-# User can change the pdbx_code depending on which protein they want to
+# Downloading the PDB file whose model is to be rendered.
+# User can change the pdb_code depending on which protein they want to
 # visualize
-pdbx_code = '4hhb'
+pdb_code = '4re2'
 downloadurl = "https://files.rcsb.org/download/"
-pdbxfn = pdbx_code + ".cif"
+pdbfn = pdb_code + ".pdb"
 flag = 0
-if not os.path.isfile(pdbxfn):
+if not os.path.isfile(pdbfn):
     flag = 1
-    url = downloadurl + pdbxfn
-    outfnm = os.path.join(pdbxfn)
+    url = downloadurl + pdbfn
+    outfnm = os.path.join(pdbfn)
     try:
         urllib.request.urlretrieve(url, outfnm)
     except Exception:
         print("Error in downloading the file!")
 
-
-molecule = molecular.Molecule()
+###############################################################################
+# creating an PeriodicTable() object to obtain atomic numbers from names of
+# elements
 table = molecular.PeriodicTable()
 
 ###############################################################################
-# Parsing the mmCIF file for information about coordinates and atoms
+# Creating empty lists which will be filled with atomic information as we
+# parse the pdb file.
+NumberOfAtoms = 0
 
-pdbxfile = open(pdbxfn, 'r')
-pdbx_lines = pdbxfile.readlines()
-for line in pdbx_lines:
-    _line = line.split()
+Points = []
+AtomType = []
+AtomTypeStrings = []
+Model = []
+Sheets = []
+Helix = []
+Residue = []
+Chain = []
+IsHetatm = []
+SecondaryStructures = []
+current_model_number = 1
+
+###############################################################################
+# Parsing the pdb file for information about coordinates and atoms
+
+pdbfile = open(pdbfn, 'r')
+pdb_lines = pdbfile.readlines()
+for line in pdb_lines:
+    line = line.split()
     try:
-        if _line[0] == 'ATOM' or _line[0] == 'HETATM':
-
-            # obtain coordinates of atom
-            coorX, coorY, coorZ = float(_line[10]), float(_line[11]), \
-                                  float(_line[12])
-
-            # obtain the atomic number of atom
-            atomic_num = table.atomic_number(_line[2])
-
-            # add the atomic data to the molecule
-            molecular.add_atom(molecule, atomic_num, coorX, coorY, coorZ)
-
+        if line[0] == 'ATOM' or line[0] == 'HETATM':
+            if line[-1] != 'H':
+                # print(2)
+                coorX, coorY, coorZ = float(line[6]), float(line[7]), \
+                                      float(line[8])
+                resi = line[5]
+                chain = ord(line[4])
+                Points += [[coorX, coorY, coorZ]]
+                Residue += [resi]
+                Chain += [chain]
+                AtomType += [table.atomic_number(line[-1])]
+                AtomTypeStrings += [line[2]]
+                Model += [current_model_number]
+                NumberOfAtoms += 1
+                if(line[0] == 'HETATM'):
+                    IsHetatm += [1]
+                else:
+                    IsHetatm += [0]
+        if line[0] == 'SHEET':
+            startChain = ord(line[5])
+            startResi = int(line[6])
+            endChain = ord(line[8])
+            endResi = int(line[9])
+            r = [startChain, startResi, endChain, endResi]
+            Sheets += [r]
+        if line[0] == 'HELIX':
+            startChain = ord(line[4])
+            startResi = int(line[5])
+            endChain = ord(line[7])
+            endResi = int(line[8])
+            r = [startChain, startResi, endChain, endResi]
+            Helix += [r]
     except Exception:
         continue
+
+
+Points = np.array(Points)
+print(np.shape(Points))
+Residue = np.array(Residue, dtype=int)
+Chain = np.array(Chain)
+print(np.shape(Chain), Chain[43])
+AtomType = np.array(AtomType)
+print(np.shape(AtomType))
+AtomTypeStrings = np.array(AtomTypeStrings)
+print(np.shape(AtomTypeStrings), type(AtomTypeStrings[2]))
+Model = np.array(Model)
+print(np.shape(Model), type(Model[0]), Model[98])
+Sheets = np.array(Sheets)
+print(np.shape(Sheets))
+Helix = np.array(Helix)
+print(np.shape(Helix))
+IsHetatm = np.array(IsHetatm)
+print(np.shape(IsHetatm))
 
 
 ###############################################################################
@@ -73,16 +131,20 @@ scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
                  view_up=(0, 1, 0))
 axes_actor = actor.axes()
 scene.add(axes_actor)
+molecule = molecular.Molecule(AtomType, Points, AtomTypeStrings, Model,
+                              Residue, Chain, Sheets, Helix, IsHetatm)
 molecular.compute_bonding(molecule)
 
 
 # stick representation
-scene.add(molecular.stick_rep_actor(molecule, bond_thickness=2))
+# scene.add(molecular.stick_rep_actor(molecule, bond_thickness=2))
+
+# ribbon representation
+scene.add(molecular.ribbon_rep_actor(molecule))
 
 # ball and stick representation
-# scene.add(molecular.bstick_rep_actor(molecule,
-#                                                atom_scale_factor=0.3,
-#                                                bond_thickness=2))
+# scene.add(molecular.bstick_rep_actor(molecule, atom_scale_factor=0.3,
+#                                      bond_thickness=2))
 
 # sphere representation
 # scene.add(molecular.sphere_rep_actor(molecule))
@@ -98,7 +160,7 @@ dims = (screen_x_dim, screen_y_dim)
 showm = window.ShowManager(scene, size=dims, reset_camera=True,
                            order_transparent=True)
 
-tb = ui.TextBlock2D(text=pdbx_code, position=(screen_x_dim/2-40,
+tb = ui.TextBlock2D(text=pdb_code, position=(screen_x_dim/2-40,
                     screen_y_dim/12), font_size=30, color=(1, 1, 1))
 scene.add(tb)
 
@@ -107,7 +169,7 @@ scene.add(tb)
 if flag:
     os.remove(outfnm)
 
-interactive = False
+interactive = True
 if interactive:
-    window.show(scene, size=dims, title=pdbx_code)
-window.record(scene, size=dims, out_path=pdbx_code+'.png')
+    window.show(scene, size=dims, title=pdb_code)
+window.record(scene, size=dims, out_path=pdb_code+'.png')
