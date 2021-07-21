@@ -9,4 +9,4 @@ def test_periodic_table():
     npt.assert_equal(table.element_name(7), 'Nitrogen')
     npt.assert_equal(table.atomic_symbol(8), 'O')
     npt.assert_almost_equal(table.atomic_radius(1, 'VDW'), 1.2)
-    npt.assert_almost_equal(table.atomic_radius(1, 'Covalent'), 0.32)
+    npt.assert_almost_equal(table.atomic_radius(1, 'Covalent'), 0.37)
