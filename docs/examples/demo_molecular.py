@@ -20,7 +20,7 @@ import numpy as np
 # Downloading the PDB file whose model is to be rendered.
 # User can change the pdb_code depending on which protein they want to
 # visualize
-pdb_code = '4re2'
+pdb_code = '1pgb'
 downloadurl = "https://files.rcsb.org/download/"
 pdbfn = pdb_code + ".pdb"
 flag = 0
@@ -100,22 +100,14 @@ for line in pdb_lines:
 
 
 Points = np.array(Points)
-print(np.shape(Points))
 Residue = np.array(Residue, dtype=int)
 Chain = np.array(Chain)
-print(np.shape(Chain), Chain[43])
 AtomType = np.array(AtomType)
-print(np.shape(AtomType))
 AtomTypeStrings = np.array(AtomTypeStrings)
-print(np.shape(AtomTypeStrings), type(AtomTypeStrings[2]))
 Model = np.array(Model)
-print(np.shape(Model), type(Model[0]), Model[98])
 Sheets = np.array(Sheets)
-print(np.shape(Sheets))
 Helix = np.array(Helix)
-print(np.shape(Helix))
 IsHetatm = np.array(IsHetatm)
-print(np.shape(IsHetatm))
 
 
 ###############################################################################
