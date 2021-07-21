@@ -1,5 +1,5 @@
 import vtk
-from vtk.util import numpy_support
+from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 import numpy as np
 from fury.utils import numpy_to_vtk_points
 
@@ -47,7 +47,7 @@ class Molecule(vtk.vtkMolecule):
             of helices present in the molecule.
             Array containing information about helices present in the molecule.
         """
-        if elements.any() and coords.any() and len(elements)==len(coords):
+        if elements.any() and coords.any() and len(elements) == len(coords):
             self.atom_types = atom_types
             self.model = model
             self.residue_seq = residue_seq
@@ -56,9 +56,8 @@ class Molecule(vtk.vtkMolecule):
             self.helix = helix
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
-            atom_nums = numpy_support.numpy_to_vtk(elements,
-                                                   array_type=
-                                                   vtk.VTK_UNSIGNED_SHORT)
+            atom_nums = numpy_to_vtk(elements,
+                                     array_type=vtk.VTK_UNSIGNED_SHORT)
             atom_nums.SetName("Atomic Numbers")
             fieldData = vtk.vtkDataSetAttributes()
             fieldData.AddArray(atom_nums)
@@ -235,7 +234,7 @@ def get_atomic_number_array(molecule):
     molecule : Molecule() object
         The molecule whose atomic number array is to be obtained.
     """
-    return numpy_support.vtk_to_numpy(molecule.GetAtomicNumberArray())
+    return vtk_to_numpy(molecule.GetAtomicNumberArray())
 
 
 def get_bond_types_array(molecule):
@@ -247,7 +246,7 @@ def get_bond_types_array(molecule):
     molecule : Molecule() object
         The molecule whose bond types array is to be obtained.
     """
-    return numpy_support.vtk_to_numpy(molecule.GetBondOrdersArray())
+    return vtk_to_numpy(molecule.GetBondOrdersArray())
 
 
 def get_atomic_position_array(molecule):
@@ -259,8 +258,7 @@ def get_atomic_position_array(molecule):
     molecule : Molecule() object
         The molecule whose atomic position array is to be obtained.
     """
-    return numpy_support.vtk_to_numpy(molecule.GetAtomicPositionArray().
-                                      GetData())
+    return vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
 
 
 def deep_copy(molecule1, molecule2):
@@ -590,9 +588,8 @@ def ribbon_rep_actor(molecule):
     output = vtk.vtkPolyData()
 
     # for atom type i.e. element
-    atom_type = numpy_support.numpy_to_vtk(num_array=elements,
-                                           deep=True,
-                                           array_type=vtk.VTK_ID_TYPE)
+    atom_type = numpy_to_vtk(num_array=elements, deep=True,
+                             array_type=vtk.VTK_ID_TYPE)
     atom_type.SetName("atom_type")
 
     output.GetPointData().AddArray(atom_type)
@@ -607,50 +604,46 @@ def ribbon_rep_actor(molecule):
     output.GetPointData().AddArray(atom_types)
 
     # for residue
-    residue = numpy_support.numpy_to_vtk(num_array=molecule.residue_seq,
-                                         deep=True,
-                                         array_type=vtk.VTK_ID_TYPE)
+    residue = numpy_to_vtk(num_array=molecule.residue_seq, deep=True,
+                           array_type=vtk.VTK_ID_TYPE)
     residue.SetName("residue")
     output.GetPointData().AddArray(residue)
 
     # for chain
-    chain = numpy_support.numpy_to_vtk(num_array=molecule.chain, deep=True,
-                                       array_type=vtk.VTK_UNSIGNED_CHAR)
+    chain = numpy_to_vtk(num_array=molecule.chain, deep=True,
+                         array_type=vtk.VTK_UNSIGNED_CHAR)
     chain.SetName("chain")
     output.GetPointData().AddArray(chain)
 
     # for secondary structures
-    s_s = numpy_support.numpy_to_vtk(num_array=SecondaryStructures, deep=True,
-                                     array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_s = numpy_to_vtk(num_array=SecondaryStructures, deep=True,
+                       array_type=vtk.VTK_UNSIGNED_CHAR)
     s_s.SetName("secondary_structures")
     output.GetPointData().AddArray(s_s)
 
-
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
-    s_sb = numpy_support.numpy_to_vtk(num_array=newarr, deep=True,
-                                      array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_sb = numpy_to_vtk(num_array=newarr, deep=True,
+                        array_type=vtk.VTK_UNSIGNED_CHAR)
     s_sb.SetName("secondary_structures_begin")
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
-    s_se = numpy_support.numpy_to_vtk(num_array=newarr, deep=True,
-                                      array_type=vtk.VTK_UNSIGNED_CHAR)
+    s_se = numpy_to_vtk(num_array=newarr, deep=True,
+                        array_type=vtk.VTK_UNSIGNED_CHAR)
     s_se.SetName("secondary_structures_end")
     output.GetPointData().AddArray(s_se)
 
-
     # for ishetatm
-    ishetatm = numpy_support.numpy_to_vtk(num_array=molecule.is_hetatm,
-                                          deep=True,
-                                         array_type=vtk.VTK_UNSIGNED_CHAR)
+    ishetatm = numpy_to_vtk(num_array=molecule.is_hetatm, deep=True,
+                            array_type=vtk.VTK_UNSIGNED_CHAR)
     ishetatm.SetName("ishetatm")
     output.GetPointData().AddArray(ishetatm)
 
     # for model
-    model = numpy_support.numpy_to_vtk(num_array=molecule.model, deep=True,
-                                       array_type=vtk.VTK_UNSIGNED_INT)
+    model = numpy_to_vtk(num_array=molecule.model, deep=True,
+                         array_type=vtk.VTK_UNSIGNED_INT)
     model.SetName("model")
     output.GetPointData().AddArray(model)
 
@@ -674,8 +667,8 @@ def ribbon_rep_actor(molecule):
 
     for i in range(num_total_atoms):
         Radii.InsertNextTuple3(table.atomic_radius(elements[i], 'VDW'),
-                            table.atomic_radius(elements[i], 'VDW'),
-                            table.atomic_radius(elements[i], 'VDW'))
+                               table.atomic_radius(elements[i], 'VDW'),
+                               table.atomic_radius(elements[i], 'VDW'))
 
     output.GetPointData().SetVectors(Radii)
 
