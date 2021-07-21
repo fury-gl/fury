@@ -48,6 +48,7 @@ class Molecule(vtk.vtkMolecule):
             Array containing information about helices present in the molecule.
         """
         if elements.any() and coords.any() and len(elements) == len(coords):
+        # To-do: raise an error if the length of elements and coords are unequal
             self.atom_types = atom_types
             self.model = model
             self.residue_seq = residue_seq
@@ -314,7 +315,6 @@ class PeriodicTable(vtk.vtkPeriodicTable):
     Repository.
     """
 
-    @property
     def atomic_symbol(self, atomic_number):
         """Given an atomic number, returns the symbol associated with the
         element.
