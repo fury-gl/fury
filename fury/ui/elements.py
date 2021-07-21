@@ -3530,6 +3530,7 @@ class TreeNode2D(UI):
             self.icon = read_viz_icons(fname='stop2.png')
 
         self._child_nodes = []
+        self._largest_size = 0
         self.has_ui = False
         self.parent = parent
         self.indent = np.clip(indent, 0, int(size[0]*0.025))
@@ -3658,13 +3659,26 @@ class TreeNode2D(UI):
             node.child_height = self.child_height
 
             _node_coords = (self.indent+self.child_indent,
-                            self.children_size() - node.child_height)
+                            self.children_size() - self.child_height)
+            
+            self.content_panel.add_element(node, _node_coords)
+            self.resize((self.size[0], self.children_size()))
         else:
             self.has_ui = True
             _node_coords = coords
+            is_floating = np.issubdtype(np.array(_node_coords).dtype,
+                                        np.floating)
 
-        self.content_panel.add_element(node, _node_coords)
-        self.resize((self.size[0], self.children_size(1)))
+            self.content_panel.add_element(node, _node_coords)
+            if is_floating:
+                relative_size = node.size[1] + \
+                    int(self.content_panel.size[1]*_node_coords[1])
+
+                if self._largest_size < relative_size:
+                    self._largest_size = relative_size
+                self.resize((self.size[0], self._largest_size))
+            else:
+                self.resize((self.size[0], self.children_size()))
 
     def resize(self, size):
         """ Resizes the Tree Node.
@@ -3772,20 +3786,8 @@ class TreeNode2D(UI):
 
             node.update_children_coords(node.parent, size_offset)
 
-    def children_size(self, relative=False):
-        """Returns the size occupied by the children vertically.
-        """
-        if relative:
-            sizes = []
-            for child in self._child_nodes:
-                relative_size = child.size[1] + (child.position[1] - self.content_panel.position[1])
-                sizes.append(relative_size)
-
-            if len(sizes):
-                return int(max(sizes))
-            else:
-                return 0
-
+    def children_size(self):
+        """Returns the size occupied by the children vertically."""
         return sum([child.size[1] for child in self._child_nodes])
 
     def set_visibility(self, visibility):

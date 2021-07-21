@@ -4,10 +4,11 @@ import numpy as np
 from fury import ui, window, actor, utils
 
 structure = [{'Cube': ['Translate', 'Color']},
-             {'Test': ['Test-1']}]
+             {'Cylinder': []},
+             {'Cone': []}]
 
 tree = ui.elements.Tree2D(structure=structure, tree_name="Actor Modifier",
-                          size=(300, 300), position=(0, 0),
+                          size=(600, 600), position=(0, 0),
                           color=(0.8, 0.4, 0.2))
 
 ###############################################################################
@@ -105,9 +106,9 @@ line_slider_b.on_change = change_b
 ###############################################################################
 # Adding sliders to their respective nodes
 
-tree.add_content('Translate', ring_slider, (0., 0.))
-tree.add_content('Translate', line_slider_x, (0., 1.0))
-tree.add_content('Translate', line_slider_y, (0.5, 0.5))
+tree.add_content('Translate', ring_slider, (0.5, 0.5))
+tree.add_content('Translate', line_slider_x, (0, 0.))
+tree.add_content('Translate', line_slider_y, (0., 0.))
 
 tree.add_content('Color', line_slider_r, (0., 0.))
 tree.add_content('Color', line_slider_g, (0.25, 0.))
@@ -130,12 +131,10 @@ def visibility_off(tree_ui):
 cube_node = tree.select_node('Cube')
 color_node = tree.select_node('Color')
 
-cube.SetVisibility(False)
-
 cube_node.on_node_select = visibility_on
 cube_node.on_node_deselect = visibility_off
 
-current_size = (800, 800)
+current_size = (1000, 1000)
 show_manager = window.ShowManager(size=current_size,
                                   title="FURY Tree2D Example")
 
