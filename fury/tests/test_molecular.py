@@ -149,7 +149,7 @@ def test_bstick_rep_actor(interactive=False):
     multiple_bonds = ['On', 'Off']
     table = molecular.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
-                       [[150/255, 250/255, 150/255],
+                       [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
     for i, colormode in enumerate(colormodes):
         test_actor = molecular.bstick_rep_actor(molecule, colormode,
@@ -171,3 +171,32 @@ def test_bstick_rep_actor(interactive=False):
                                          colors=colors[i])
         npt.assert_equal(report.objects, 1)
 
+
+def test_stick_rep_actor(interactive=False):
+    molecule = molecular.Molecule()
+    molecular.add_atom(molecule, 6, 0, 0, 0)
+    molecular.add_atom(molecule, 6, 2, 0, 0)
+    molecular.add_bond(molecule, 0, 1, 1)
+    colormodes = ['discrete', 'single']
+    bond_thickness = [1, 1.2]
+    table = molecular.PeriodicTable()
+    colors = np.array([[table.atom_color(6)],
+                       [[150/255, 150/255, 150/255],
+                        [50/255, 50/255, 50/255]]], dtype=object)
+    for i, colormode in enumerate(colormodes):
+        test_actor = molecular.stick_rep_actor(molecule, colormode,
+                                                bond_thickness[i])
+        scene = window.Scene()
+        scene.add(test_actor)
+        scene.reset_camera()
+        scene.reset_clipping_range()
+
+        if interactive:
+            window.show(scene)
+
+        npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr,
+                                         colors=colors[i])
+        npt.assert_equal(report.objects, 1)
