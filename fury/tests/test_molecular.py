@@ -112,30 +112,30 @@ def test_make_molecular_viz_aesthetic():
     npt.assert_equal(box.GetProperty().GetSpecularPower(), 100.0)
 
 
-# def test_sphere_rep_actor(interactive=False):
-#     elements, atom_coords = get_default_molecular_info()
-#     molecule = molecular.Molecule(elements=elements, coords=atom_coords)
-#     table = molecular.PeriodicTable()
-#     colormodes = ['discrete', 'single']
-#     colors = np.array([[table.atom_color(1), table.atom_color(6)],
-#                        [[150/255, 250/255, 150/255]]], dtype=object)
-#     for i, colormode in enumerate(colormodes):
-#         test_actor = molecular.sphere_rep_actor(molecule, colormode)
+def test_sphere_rep_actor(interactive=False):
+    elements, atom_coords = get_default_molecular_info()
+    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
+    table = molecular.PeriodicTable()
+    colormodes = ['discrete', 'single']
+    colors = np.array([[table.atom_color(1), table.atom_color(6)],
+                       [[150/255, 250/255, 150/255]]], dtype=object)
+    for i, colormode in enumerate(colormodes):
+        test_actor = molecular.sphere_rep_actor(molecule, colormode)
 
-#         scene = window.Scene()
-#         scene.add(test_actor)
-#         scene.reset_camera()
-#         scene.reset_clipping_range()
+        scene = window.Scene()
+        scene.add(test_actor)
+        scene.reset_camera()
+        scene.reset_clipping_range()
 
-#         if interactive:
-#             window.show(scene)
+        if interactive:
+            window.show(scene)
 
-#         npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+        npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-#         arr = window.snapshot(scene)
-#         report = window.analyze_snapshot(arr,
-#                                          colors=colors[i])
-#         npt.assert_equal(report.objects, 1)
+        arr = window.snapshot(scene)
+        report = window.analyze_snapshot(arr,
+                                         colors=colors[i])
+        npt.assert_equal(report.objects, 1)
 
 
 # def test_bstick_rep_actor(interactive=False):
