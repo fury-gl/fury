@@ -138,35 +138,35 @@ def test_sphere_rep_actor(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
-def test_bstick_rep_actor(interactive=False):
-    elements, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
-    molecular.compute_bonding(molecule)
-    colormodes = ['discrete', 'single']
-    atom_scale_factor = [0.3, 0.4]
-    bond_thickness = [1, 1.2]
-    multiple_bonds = ['On', 'Off']
-    table = molecular.PeriodicTable()
-    colors = np.array([[table.atom_color(1), table.atom_color(6)],
-                       [[150/255, 250/255, 150/255],
-                        [50/255, 50/255, 50/255]]], dtype=object)
-    for i, colormode in enumerate(colormodes):
-        test_actor = molecular.bstick_rep_actor(molecule, colormode,
-                                                atom_scale_factor[i],
-                                                bond_thickness[i],
-                                                multiple_bonds[i])
-        scene = window.Scene()
-        scene.add(test_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
+# def test_bstick_rep_actor(interactive=False):
+#     elements, atom_coords = get_default_molecular_info()
+#     molecule = molecular.Molecule(elements=elements, coords=atom_coords)
+#     molecular.compute_bonding(molecule)
+#     colormodes = ['discrete', 'single']
+#     atom_scale_factor = [0.3, 0.4]
+#     bond_thickness = [1, 1.2]
+#     multiple_bonds = ['On', 'Off']
+#     table = molecular.PeriodicTable()
+#     colors = np.array([[table.atom_color(1), table.atom_color(6)],
+#                        [[150/255, 250/255, 150/255],
+#                         [50/255, 50/255, 50/255]]], dtype=object)
+#     for i, colormode in enumerate(colormodes):
+#         test_actor = molecular.bstick_rep_actor(molecule, colormode,
+#                                                 atom_scale_factor[i],
+#                                                 bond_thickness[i],
+#                                                 multiple_bonds[i])
+#         scene = window.Scene()
+#         scene.add(test_actor)
+#         scene.reset_camera()
+#         scene.reset_clipping_range()
 
-        if interactive:
-            window.show(scene, reset_camera=False)
+#         if interactive:
+#             window.show(scene, reset_camera=False)
 
-        npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+#         npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr,
-                                        colors=colors[i])
-        npt.assert_equal(report.objects, 1)
+#         arr = window.snapshot(scene)
+#         report = window.analyze_snapshot(arr,
+#                                         colors=colors[i])
+#         npt.assert_equal(report.objects, 1)
 
