@@ -2,6 +2,7 @@ import numpy.testing as npt
 import numpy as np
 from fury import window, actor, molecular
 
+
 def test_periodic_table():
     # testing class PeriodicTable()
     table = molecular.PeriodicTable()
@@ -12,25 +13,37 @@ def test_periodic_table():
     npt.assert_allclose(table.atomic_radius(6, 'Covalent'), 0.75, 0.1, 0)
     npt.assert_array_almost_equal(table.atom_color(1), np.array([1, 1, 1]))
 
+
 def get_default_molecular_info():
     elements = np.array([6, 6, 1, 1, 1, 1, 1, 1])
-    atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01, 0.5898320525E+01],
-                            [0.6840181327E+01, 0.6678078649E+01, 0.5159998484E+01],
-                            [0.4774278044E+01, 0.6499436628E+01, 0.5782310182E+01],
-                            [0.5576295333E+01, 0.4957554302E+01, 0.5530844713E+01],
-                            [0.5926818174E+01, 0.5907771848E+01, 0.6968386044E+01],
-                            [0.6985130929E+01, 0.7695511362E+01, 0.5526416671E+01],
-                            [0.7788135127E+01, 0.6150201159E+01, 0.5277430519E+01],
-                            [0.6632858893E+01, 0.6740709254E+01, 0.4090898288E+01]]
+    atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01,
+                             0.5898320525E+01],
+                            [0.6840181327E+01, 0.6678078649E+01,
+                             0.5159998484E+01],
+                            [0.4774278044E+01, 0.6499436628E+01,
+                             0.5782310182E+01],
+                            [0.5576295333E+01, 0.4957554302E+01,
+                             0.5530844713E+01],
+                            [0.5926818174E+01, 0.5907771848E+01,
+                             0.6968386044E+01],
+                            [0.6985130929E+01, 0.7695511362E+01,
+                             0.5526416671E+01],
+                            [0.7788135127E+01, 0.6150201159E+01,
+                             0.5277430519E+01],
+                            [0.6632858893E+01, 0.6740709254E+01,
+                             0.4090898288E+01]]
                            )
     return elements, atom_coords
+
 
 def test_molecule_creation():
     elements, atom_coords = get_default_molecular_info()
     molecule = molecular.Molecule(elements=elements, coords=atom_coords)
     npt.assert_array_almost_equal(molecular.get_atomic_number_array(molecule),
                                   elements)
-    npt.assert_array_almost_equal(molecular.get_atomic_position_array(molecule), atom_coords)
+    npt.assert_array_almost_equal(molecular.get_atomic_position_array
+                                  (molecule), atom_coords)
+
 
 def test_add_atom_bond_creation():
     molecule = molecular.Molecule()
@@ -39,6 +52,7 @@ def test_add_atom_bond_creation():
     molecular.add_bond(molecule, 0, 1, 1)
     npt.assert_equal(molecular.get_total_num_bonds(molecule), 1)
     npt.assert_equal(molecular.get_total_num_atoms(molecule), 2)
+
 
 def test_atomic_number():
     # testing atomic number get/set functions
@@ -60,12 +74,13 @@ def test_atomic_position():
 
     # testing get_atomic_position
     npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
-                                                                np.array([0, 0, 0]))
+                                  np.array([0, 0, 0]))
 
     # testing set_atomic_number
     molecular.set_atomic_position(molecule, 0, 1, 1, 1)
     npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
-                                                                np.array([1, 1, 1]))
+                                  np.array([1, 1, 1]))
+
 
 def test_bond_type():
     # testing bond type get/set functions
@@ -83,7 +98,8 @@ def test_bond_type():
 
     # testing get_bond_types_array
     npt.assert_array_almost_equal(molecular.get_bond_types_array(molecule),
-                                                                 np.array([2]))
+                                  np.array([2]))
+
 
 def test_deep_copy():
     molecule1 = molecular.Molecule()
@@ -94,6 +110,7 @@ def test_deep_copy():
     molecular.deep_copy(molecule2, molecule1)
     npt.assert_equal(molecular.get_total_num_bonds(molecule2), 1)
     npt.assert_equal(molecular.get_total_num_atoms(molecule2), 2)
+
 
 def test_compute_bonding():
     elements, atom_coords = get_default_molecular_info()
@@ -185,7 +202,7 @@ def test_stick_rep_actor(interactive=False):
                         [50/255, 50/255, 50/255]]], dtype=object)
     for i, colormode in enumerate(colormodes):
         test_actor = molecular.stick_rep_actor(molecule, colormode,
-                                                bond_thickness[i])
+                                               bond_thickness[i])
         scene = window.Scene()
         scene.add(test_actor)
         scene.reset_camera()
