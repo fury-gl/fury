@@ -13,8 +13,8 @@ class Molecule(vtk.vtkMolecule):
     """
 
     def __init__(self, elements=None, coords=None, atom_types=None, model=None,
-                 residue_seq=None, chain=None, sheet=None, helix=None,
-                 is_hetatm=None):
+                 residue_seq=None, chain=None, is_hetatm=None, sheet=None,
+                 helix=None):
         """Send the atomic data to the molecule.
 
         Parameters
@@ -46,9 +46,12 @@ class Molecule(vtk.vtkMolecule):
         helix : ndarray of integers, shape (H, 4) where H is the total number
             of helices present in the molecule.
             Array containing information about helices present in the molecule.
+        is_hetatm : ndarray of bools
         """
-        if elements.any() and coords.any() and len(elements) == len(coords):
-        # To-do: raise an error if the length of elements and coords are unequal
+        if isinstance(elements, np.ndarray) and isinstance(coords, np.ndarray)\
+                and len(elements) == len(coords):
+            # To-do: raise an error if the length of elements and coords are
+            # unequal
             self.atom_types = atom_types
             self.model = model
             self.residue_seq = residue_seq
@@ -377,7 +380,8 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         atomicNumber : int
             Atomic number of the element whose RGB tuple is to be obtained.
         """
-        return self.GetDefaultRGBTuple(atomic_number)
+        rgb = np.array(self.GetDefaultRGBTuple(atomic_number))
+        return rgb
 
 
 def make_molecularviz_aesthetic(molecule_actor):
