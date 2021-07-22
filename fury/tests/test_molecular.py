@@ -138,16 +138,17 @@ def test_sphere_rep_actor(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
-def test_bstick_rep_actor(interactive=False):
-    elements, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
-    molecular.compute_bonding(molecule)
+def test_bstick_rep_actor(interactive=True):
+    molecule = molecular.Molecule()
+    molecular.add_atom(molecule, 6, 0, 0, 0)
+    molecular.add_atom(molecule, 6, 2, 0, 0)
+    molecular.add_bond(molecule, 0, 1, 1)
     colormodes = ['discrete', 'single']
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [1, 1.2]
     multiple_bonds = ['On', 'Off']
     table = molecular.PeriodicTable()
-    colors = np.array([[table.atom_color(1), table.atom_color(6)],
+    colors = np.array([[table.atom_color(6)],
                        [[150/255, 250/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
     for i, colormode in enumerate(colormodes):
