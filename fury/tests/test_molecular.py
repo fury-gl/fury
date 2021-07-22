@@ -138,7 +138,7 @@ def test_sphere_rep_actor(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
-def test_bstick_rep_actor(interactive=True):
+def test_bstick_rep_actor(interactive=False):
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 2, 0, 0)
