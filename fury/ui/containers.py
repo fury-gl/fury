@@ -78,25 +78,23 @@ class Panel2D(UI):
                                   'right': (1., 0.),
                                   'top': (0., 1.),
                                   'bottom': (0., 0.)}
-        else:
-            self.borders, self.border_coords = {}, {}
+
+            for key in self.borders.keys():
+                self.borders[key].color = self._border_color
+                self.add_element(self.borders[key], self.border_coords[key])
+
+            for key in self.borders.keys():
+                self.borders[key].on_left_mouse_button_pressed = \
+                    self.left_button_pressed
+
+                self.borders[key].on_left_mouse_button_dragged = \
+                    self.left_button_dragged
 
         self.add_element(self.background, (0, 0))
-
-        for key in self.borders.keys():
-            self.borders[key].color = self._border_color
-            self.add_element(self.borders[key], self.border_coords[key])
 
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
-
-        for key in self.borders.keys():
-            self.borders[key].on_left_mouse_button_pressed = \
-                self.left_button_pressed
-
-            self.borders[key].on_left_mouse_button_dragged = \
-                self.left_button_dragged
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
