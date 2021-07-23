@@ -723,7 +723,7 @@ def test_peak_slicer(interactive=False):
     npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
 
 
-def test_peak(interactive=False):
+def test_peak():
     # 4D dirs data
     dirs_data_4d = np.random.rand(3, 4, 5, 6)
     npt.assert_raises(ValueError, actor.peak, dirs_data_4d)
@@ -783,20 +783,9 @@ def test_peak(interactive=False):
     peaks_vals = np.ones((2, 1, 1, 3)) * .5
     mask = np.zeros((2, 1, 1))
     mask[0, 0, 0] = 1
-    scene = window.Scene()
-    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask,
-                             linewidth=3)
-    scene.add(peaks_actor)
-    scene.azimuth(-45)
-    scene.pitch(-45)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-    arr = window.snapshot(scene)
-    colors = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
-    report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.colors_found, [True, True, True])
+    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask)
+    npt.assert_equal(peaks_actor.min_centers, [0, 0, 0])
+    npt.assert_equal(peaks_actor.max_centers, [0, 0, 0])
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
