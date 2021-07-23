@@ -303,6 +303,7 @@ def test_ribbon_rep_actor(interactive=False):
                                       residue_seq, chain, is_hetatm, sheet,
                                       helix)
         test_actor = molecular.ribbon_rep_actor(molecule)
+        scene = window.Scene()
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -314,4 +315,3 @@ def test_ribbon_rep_actor(interactive=False):
         arr = window.snapshot(scene)
         report = window.analyze_snapshot(arr, colors=[color])
         npt.assert_equal(report.objects, 1)
-        scene.clear()
