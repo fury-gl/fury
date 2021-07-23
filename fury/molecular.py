@@ -48,24 +48,26 @@ class Molecule(vtk.vtkMolecule):
             Array containing information about helices present in the molecule.
         is_hetatm : ndarray of bools
         """
-        if isinstance(elements, np.ndarray) and isinstance(coords, np.ndarray)\
-                and len(elements) == len(coords):
-            # To-do: raise an error if the length of elements and coords are
-            # unequal
-            self.atom_types = atom_types
-            self.model = model
-            self.residue_seq = residue_seq
-            self.chain = chain
-            self.sheet = sheet
-            self.helix = helix
-            self.is_hetatm = is_hetatm
-            coords = numpy_to_vtk_points(coords)
-            atom_nums = numpy_to_vtk(elements,
-                                     array_type=vtk.VTK_UNSIGNED_SHORT)
-            atom_nums.SetName("Atomic Numbers")
-            fieldData = vtk.vtkDataSetAttributes()
-            fieldData.AddArray(atom_nums)
-            self.Initialize(coords, fieldData)
+        if isinstance(elements, np.ndarray) and isinstance(coords, np.ndarray):
+            if len(elements) == len(coords) and len(elements) > 0:
+                self.atom_types = atom_types
+                self.model = model
+                self.residue_seq = residue_seq
+                self.chain = chain
+                self.sheet = sheet
+                self.helix = helix
+                self.is_hetatm = is_hetatm
+                coords = numpy_to_vtk_points(coords)
+                atom_nums = numpy_to_vtk(elements,
+                                         array_type=vtk.VTK_UNSIGNED_SHORT)
+                atom_nums.SetName("Atomic Numbers")
+                fieldData = vtk.vtkDataSetAttributes()
+                fieldData.AddArray(atom_nums)
+                self.Initialize(coords, fieldData)
+            else:
+                raise ValueError('Mismatch in length of elements({0}) and'
+                                 ' length of coords({1}).'
+                                 .format(len(elements), len(coords)))
 
 
 def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
