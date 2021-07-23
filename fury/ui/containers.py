@@ -127,7 +127,7 @@ class Panel2D(UI):
         """
         self.background.resize(size)
 
-        if self.borders:
+        if self.has_border:
             self.borders['left'].resize((self._border_width,
                                         size[1]+self._border_width))
 

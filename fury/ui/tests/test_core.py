@@ -64,7 +64,7 @@ def test_ui_button_panel(recording=False):
     non_bordered_panel = ui.Panel2D(size=(100, 100),
                                     has_border=False)
 
-    npt.assert_equal(hasattr(non_bordered_panel.borders), False)
+    npt.assert_equal(hasattr(non_bordered_panel, 'borders'), False)
 
     panel.add_element(rectangle_test, (290, 135))
     panel.add_element(button_test, (0.1, 0.1))
