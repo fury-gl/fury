@@ -310,7 +310,6 @@ def test_ribbon_rep_actor(interactive=False):
 
         if interactive:
             window.show(scene)
-        print(scene.get_camera())
         npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
         arr = window.snapshot(scene)
         report = window.analyze_snapshot(arr, colors=[color])
