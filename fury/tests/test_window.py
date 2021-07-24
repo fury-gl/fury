@@ -33,6 +33,9 @@ def test_scene():
     npt.assert_equal(report.objects, 0)
     npt.assert_equal(report.colors_found, [True, False])
 
+    # to test gradient background
+    npt.assert_equal(scene.GetGradientBackground(), False)
+
     axes = actor.axes()
     scene.add(axes)
     # window.show(scene)
