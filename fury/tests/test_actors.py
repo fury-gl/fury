@@ -11,7 +11,8 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate
+from fury.utils import (shallow_copy, rotate, colors_from_actor,
+                        vertices_from_actor)
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -1490,3 +1491,27 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
+
+
+def test_attributes_to_actor():
+    colors = window.colors.red
+    centers = np.zeros((1, 3))
+    test_actor = actor.point(centers, colors, point_radius=0.1)
+    actor.attributes_to_actor(test_actor, centers, 1)
+    print(actor.vertices)
+    print(actor.no_vertices_per_point)
+    print(actor.initial_vertices)
+    print(actor.vcolors)
+    print(actor.position)
+
+
+def test_attributes_to_actor():
+    colors = window.colors.red
+    centers = np.zeros((1, 3))
+    test_actor = actor.point(centers, colors, point_radius=0.1)
+    actor.attributes_to_actor(test_actor, centers, 1)
+    npt.assert_array_equal(test_actor.vertices, vertices_from_actor(test_actor))
+    npt.assert_equal(test_actor.no_vertices_per_point, len(test_actor.vertices))
+    npt.assert_array_equal(test_actor.initial_vertices, vertices_from_actor(test_actor))
+    npt.assert_array_equal(test_actor.vcolors, colors_from_actor(test_actor))
+    npt.assert_array_equal(test_actor.position, centers)
