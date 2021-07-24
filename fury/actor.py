@@ -1,6 +1,5 @@
 """Module that provide actors to render."""
 
-from os import nice
 import warnings
 import os.path as op
 import numpy as np
