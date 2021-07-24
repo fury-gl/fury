@@ -16,7 +16,7 @@ helical path.
 Importing necessary modules
 """
 
-from fury import window, actor, utils, ui, colormap
+from fury import window, actor, utils, ui, colormap, material
 import numpy as np
 
 
@@ -37,7 +37,7 @@ import numpy as np
 # * `radius_path`: radius of the path followed by the particle (default = 1.5)
 #
 
-radius_particle = 0.08
+radius_particle = 0.16
 initial_velocity = 0.09
 acc = 0.004
 time = 0
@@ -72,7 +72,10 @@ heights = np.array([8])
 arrow_actor = actor.arrow(centers, directions, color_arrow, heights,
                           resolution=50, tip_length=0.06, tip_radius=0.012,
                           shaft_radius=0.005)
-arrow_actor.GetProperty().SetAmbient(1)
+
+# manipulating shading for aesthetics
+material.manifest_standard(arrow_actor, ambient_level=1, diffuse_level=1,
+                           specular_level=1)
 scene.add(arrow_actor)
 
 ###############################################################################
@@ -97,14 +100,8 @@ cmap_name = 'spring'  # using colormap to color the path of the particle
 colors = colormap.create_colormap(v, name=cmap_name)
 
 path_actor = actor.line([position], colors, linewidth=3)
-path_actor.position = position
-path_actor.vertices = utils.vertices_from_actor(path_actor)
-path_actor.vcolors = utils.colors_from_actor(path_actor)
-path_actor.no_vertices_per_point = \
-    len(path_actor.vertices) / num_total_steps
-path_actor.initial_vertices = path_actor.vertices.copy() - \
-    np.repeat(position, path_actor.no_vertices_per_point, axis=0)
-path_actor.GetProperty().SetAmbient(1)
+actor.attributes_to_actor(path_actor, no_vertices_per_point_divisor=
+    num_total_steps, position=position)
 scene.add(path_actor)
 
 ###############################################################################
@@ -113,15 +110,12 @@ scene.add(path_actor)
 color_particle = window.colors.yellow  # color of particle can be manipulated
 charge_actor = actor.point(pts, color_particle, point_radius=radius_particle,
                            phi=32, theta=32)
-charge_actor.GetProperty().SetAmbient(1)
+actor.attributes_to_actor(charge_actor, pts)
+
+# manipulating shading for aesthetics
+material.manifest_standard(charge_actor, ambient_level=1, diffuse_level=1,
+                           specular_level=1)
 scene.add(charge_actor)
-
-charge_actor.vertices = utils.vertices_from_actor(charge_actor)
-
-charge_actor.no_vertices_per_point = len(charge_actor.vertices)
-charge_actor.initial_vertices = charge_actor.vertices.copy() - \
-    np.repeat(pts, charge_actor.no_vertices_per_point, axis=0)
-
 
 ###############################################################################
 # Initializing text box to display the name of the animation
@@ -151,7 +145,7 @@ counter = 0
 # Coordinates to be plotted are changed everytime timer_callback is called by
 # using the update_coordinates function. The wave is rendered here.
 def timer_callback(_obj, _event):
-    global pts, time, incre_time, counter
+    global time, counter
     time += incre_time
 
     # coordinates of the particle
