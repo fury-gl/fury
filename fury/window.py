@@ -32,9 +32,18 @@ class Scene(vtk.vtkRenderer):
     available in ``vtkRenderer`` if necessary.
     """
 
-    def background(self, color):
-        """Set a background color."""
+    def background(self, color, gradient=False):
+        """Set a background color and gradient.
+
+        Parameters
+        ----------
+        color : ndarray(3,) or tuple (3,)
+            Color to be used as background color.
+        gradient : bool (optional)
+            To decide whether the scene should have a gradient background.
+        """
         self.SetBackground(color)
+        self.SetGradientBackground(gradient)
 
     def add(self, *actors):
         """Add an actor to the scene."""
