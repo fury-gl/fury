@@ -1,5 +1,6 @@
 """Module that provide actors to render."""
 
+from os import nice
 import warnings
 import os.path as op
 import numpy as np
@@ -16,7 +17,8 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors)
+                        fix_winding_order, numpy_to_vtk_colors,
+                        vertices_from_actor, colors_from_actor)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
 import fury.primitive as fp
@@ -2740,3 +2742,26 @@ def markers(
                     block="light")
 
     return sq_actor
+
+
+def attributes_to_actor(actor, position, no_vertices_per_point_divisor=1):
+    """Set some attributes to an actor. These prove helpful when manipulating
+    the actor's colors or vertices, especially in animations.
+
+    Parameters
+    ----------
+    actor : vtkActor
+        The actor to which the attributes are set.
+    position : ndarray of shape(N, 3)
+        to set an attribute called position which holds the ndarray passed
+        to the actor as centers
+    no_vertices_per_point_divisor : integer, optional
+        Divisor used to calculate number of vertices per point. (Default = 1)
+    """
+    actor.vertices = vertices_from_actor(actor)
+    actor.no_vertices_per_point = \
+        len(actor.vertices) / no_vertices_per_point_divisor
+    actor.initial_vertices = actor.vertices.copy() - \
+        np.repeat(position, actor.no_vertices_per_point, axis=0)
+    actor.vcolors = colors_from_actor(actor)
+    actor.position = position
