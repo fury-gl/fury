@@ -51,8 +51,7 @@ radius_path = 1.5
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.background((1, 0, 0))
-scene.GradientBackgroundOn()
+scene.background((1, 0, 0), gradient=True)
 scene.zoom(1.2)
 scene.set_camera(position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
@@ -101,7 +100,6 @@ path_actor = actor.line([position], colors, linewidth=3)
 path_actor.position = position
 path_actor.vertices = utils.vertices_from_actor(path_actor)
 path_actor.vcolors = utils.colors_from_actor(path_actor)
-print(len(path_actor.vcolors))
 path_actor.no_vertices_per_point = \
     len(path_actor.vertices) / num_total_steps
 path_actor.initial_vertices = path_actor.vertices.copy() - \
