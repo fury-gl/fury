@@ -100,8 +100,8 @@ cmap_name = 'spring'  # using colormap to color the path of the particle
 colors = colormap.create_colormap(v, name=cmap_name)
 
 path_actor = actor.line([position], colors, linewidth=3)
-actor.attributes_to_actor(path_actor, no_vertices_per_point_divisor=
-    num_total_steps, position=position)
+actor.attributes_to_actor(path_actor, position=position,
+                          no_vertices_per_point_divisor=num_total_steps)
 scene.add(path_actor)
 
 ###############################################################################
