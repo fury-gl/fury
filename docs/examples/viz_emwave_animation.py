@@ -56,8 +56,9 @@ phase_angle = 0.002
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.set_camera(position=(-6, 5, -10), focal_point=(0.0, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 0.0))
+scene.set_camera(position=(-6, 5, -8), focal_point=(-0.5, 0.0, 0.0),
+                 view_up=(0., 0., 0.))
+scene.zoom(1.1)
 showm = window.ShowManager(scene,
                            size=(800, 600), reset_camera=True,
                            order_transparent=True)
@@ -77,49 +78,37 @@ scene.add(arrow_actor)
 
 
 ###############################################################################
-# Creating point actor that renders the magnetic field
+# Creating line actor that renders the magnetic field
 
 x = np.linspace(-3, 3, npoints)
 y = np.sin(wavenumber*x - angular_frq*time + phase_angle)
 z = np.array([0 for i in range(npoints)])
 
-pts = np.array([(a, b, c) for (a, b, c) in zip(x, y, z)])
-pts = [pts]
+pts = [np.vstack([x, y, z]).T]
 colors = window.colors.red
 wave_actor1 = actor.line(pts, colors, linewidth=3)
+actor.attributes_to_actor(wave_actor1, pts, npoints)
 scene.add(wave_actor1)
-
-vertices = utils.vertices_from_actor(wave_actor1)
-vcolors = utils.colors_from_actor(wave_actor1, 'colors')
-no_vertices_per_point = len(vertices)/npoints
-initial_vertices = vertices.copy() - \
-    np.repeat(pts, no_vertices_per_point, axis=0)
 
 
 ###############################################################################
-# Creating point actor that renders the electric field
+# Creating line actor that renders the electric field
 
-xx = np.linspace(-3, 3, npoints)
-yy = np.array([0 for i in range(npoints)])
-zz = np.sin(wavenumber*xx - angular_frq*time + phase_angle)
+x = np.linspace(-3, 3, npoints)
+y = np.array([0 for i in range(npoints)])
+z = np.sin(wavenumber*x - angular_frq*time + phase_angle)
 
-pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
-pts2 = [pts2]
+pts = [np.vstack([x, y, z]).T]
 colors2 = window.colors.blue
-wave_actor2 = actor.line(pts2, colors2, linewidth=3)
+wave_actor2 = actor.line(pts, colors2, linewidth=3)
+actor.attributes_to_actor(wave_actor2, pts, npoints)
 scene.add(wave_actor2)
-
-vertices2 = utils.vertices_from_actor(wave_actor2)
-vcolors2 = utils.colors_from_actor(wave_actor2, 'colors')
-no_vertices_per_point2 = len(vertices2)/npoints
-initial_vertices2 = vertices2.copy() - \
-    np.repeat(pts2, no_vertices_per_point2, axis=0)
 
 
 ###############################################################################
 # Initializing text box to display the title of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(160, 90))
+tb = ui.TextBlock2D(bold=True, position=(280, 70))
 tb.message = "Electromagnetic Wave"
 scene.add(tb)
 
@@ -140,20 +129,20 @@ counter = itertools.count()
 
 
 def timer_callback(_obj, _event):
-    global pts, pts2, time, time_incre, angular_frq, phase_angle, wavenumber
+    global time, time_incre, angular_frq, phase_angle, wavenumber
     time += incre_time
     cnt = next(counter)
 
     x, y, z = update_coordinates(wavenumber, angular_frq, phase_angle, time)
-    pts = np.array([(a, b, c) for (a, b, c) in zip(x, y, z)])
-    vertices[:] = initial_vertices + \
-        np.repeat(pts, no_vertices_per_point, axis=0)
+    pts = np.vstack([x, y, z]).T
+    wave_actor1.vertices[:] = wave_actor1.initial_vertices + \
+        np.repeat(pts, wave_actor1.no_vertices_per_point, axis=0)
     utils.update_actor(wave_actor1)
 
-    xx, zz, yy = update_coordinates(wavenumber, angular_frq, phase_angle, time)
-    pts2 = np.array([(a, b, c) for (a, b, c) in zip(xx, yy, zz)])
-    vertices2[:] = initial_vertices2 + \
-        np.repeat(pts2, no_vertices_per_point2, axis=0)
+    x, z, y = update_coordinates(wavenumber, angular_frq, phase_angle, time)
+    pts = np.vstack([x, y, z]).T
+    wave_actor2.vertices[:] = wave_actor2.initial_vertices + \
+        np.repeat(pts, wave_actor2.no_vertices_per_point, axis=0)
     utils.update_actor(wave_actor2)
 
     showm.render()
@@ -171,4 +160,5 @@ showm.add_timer_callback(True, 25, timer_callback)
 interactive = False
 if interactive:
     showm.start()
+print(scene.get_camera())
 window.record(showm.scene, size=(800, 600), out_path="viz_emwave.png")
