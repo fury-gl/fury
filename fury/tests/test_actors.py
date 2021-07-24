@@ -1498,18 +1498,6 @@ def test_attributes_to_actor():
     centers = np.zeros((1, 3))
     test_actor = actor.point(centers, colors, point_radius=0.1)
     actor.attributes_to_actor(test_actor, centers, 1)
-    print(actor.vertices)
-    print(actor.no_vertices_per_point)
-    print(actor.initial_vertices)
-    print(actor.vcolors)
-    print(actor.position)
-
-
-def test_attributes_to_actor():
-    colors = window.colors.red
-    centers = np.zeros((1, 3))
-    test_actor = actor.point(centers, colors, point_radius=0.1)
-    actor.attributes_to_actor(test_actor, centers, 1)
     npt.assert_array_equal(test_actor.vertices, vertices_from_actor(test_actor))
     npt.assert_equal(test_actor.no_vertices_per_point, len(test_actor.vertices))
     npt.assert_array_equal(test_actor.initial_vertices, vertices_from_actor(test_actor))
