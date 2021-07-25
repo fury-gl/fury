@@ -1,9 +1,7 @@
-from fury.actor import square
-from fury.layout import GridLayout
 from fury import ui
 from fury import window
-import numpy as np
-from fury import actor
+
+from fury.layout import GridLayout
 
 ###############################################################################
 # We create some panels and then we arrange them in a grid fashion
@@ -48,7 +46,7 @@ diagonal_grid.apply([slider, listbox])
 
 current_size = (1500, 1500)
 show_manager = window.ShowManager(size=current_size,
-                                  title="FURY Bullet List Example")
+                                  title="FURY UI Layout")
 
 show_manager.scene.add(panel_1, panel_2, listbox_1, listbox_2, slider, listbox)
 

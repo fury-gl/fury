@@ -66,4 +66,4 @@ def is_ui(actor):
         actor that is to be checked
     """
     return all([hasattr(actor, attr) for attr in ['add_to_scene',
-                                                  '_scene']])
+                                                  '_setup']])
