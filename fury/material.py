@@ -65,3 +65,16 @@ def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
     else:
         warnings.warn('Unknown interpolation. Ignoring "{}" interpolation '
                       'option.'.format(interpolation))
+
+def manifest_ambience(actor, ambient_level):
+    """Set/Get the ambient lighting coefficient for a given actor.
+
+    Parameters
+    ----------
+    actor : actor
+    ambient_level : float
+        Parameter used to specify the ambient lighting coefficent. Values must
+        be between 0.0 and 1.0.
+    """
+    prop = actor.GetProperty()
+    prop.SetAmbient(ambient_level)
