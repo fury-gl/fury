@@ -277,7 +277,7 @@ def test_manifest_pbr(interactive=False):
     npt.assert_equal(report.objects, 5)
 
     # NOTE: From this point on, these actors don't have full support for PBR
-    # interpolation. This is, the test passes but there is no evidence of the
+    # interpolation. That is, the test passes but there is no evidence of the
     # desired effect.
 
     """
@@ -346,7 +346,7 @@ def test_manifest_pbr(interactive=False):
     scene.add(sdf_actor)
     """
 
-    # NOTE: For these last set of actors, there is not support for PBR
+    # NOTE: For these last set of actors, there is no support for PBR
     # interpolation at all.
 
     """
@@ -853,3 +853,8 @@ def test_manifest_standard(interactive=False):
 
     if interactive:
         window.show(scene)
+
+def test_manifest_ambience():
+    test_actor = actor.sphere(np.zeros((1, 3)), colors=(1, 0, 0))
+    material.manifest_ambience(test_actor, 0.8)
+    npt.assert_equal(test_actor.GetProperty().GetAmbient(), 0.8)
