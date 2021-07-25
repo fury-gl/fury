@@ -31,7 +31,7 @@ import numpy as np
 #   (default = 0.004)
 # * `time`: time (default time i.e. time at beginning of the animation = 0)
 # * `incre_time`: value by which time is incremented for each call of
-#   timer_callback (default = 0.09)
+#   timer_callback (default = 0.2)
 # * `angular_frq`: angular frequency (default = 0.1)
 # * `phase_angle`: phase angle (default = 0.002)
 # * `radius_path`: radius of the path followed by the particle (default = 1.5)
@@ -41,7 +41,7 @@ radius_particle = 0.16
 initial_velocity = 0.09
 acc = 0.004
 time = 0
-incre_time = 0.09
+incre_time = 0.2
 angular_frq = 0.11
 phase_angle = 0.002
 radius_path = 1.5
@@ -51,13 +51,12 @@ radius_path = 1.5
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.background((1, 0, 0), gradient=True)
-scene.zoom(1.2)
-scene.set_camera(position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 0.0))
-showm = window.ShowManager(scene,
-                           size=(800, 600), reset_camera=True,
-                           order_transparent=True)
+scene.background((0, 0.8, 0.5), gradient=True)
+scene.zoom(1.3)
+scene.set_camera(position=(13.499, 11.624, 15.546),
+                 focal_point=(3.639, 0.559, 0.369),
+                 view_up=(-0.271, 0.853, -0.446))
+showm = window.ShowManager(scene, size=(800, 600), reset_camera=True)
 showm.initialize()
 
 
@@ -65,18 +64,19 @@ showm.initialize()
 # Creating a blue colored arrow which shows the direction of magnetic field and
 # electric field.
 
-color_arrow = window.colors.blue  # color of the arrow can be manipulated
+color_arrow = window.colors.red  # color of the arrow can be manipulated
 centers = np.array([[0, 0, 0]])
 directions = np.array([[1, 0, 0]])
 heights = np.array([8])
 arrow_actor = actor.arrow(centers, directions, color_arrow, heights,
-                          resolution=50, tip_length=0.06, tip_radius=0.012,
-                          shaft_radius=0.005)
+                          resolution=100, tip_length=0.04375,
+                          tip_radius=0.0125, shaft_radius=0.00375)
 
 # manipulating shading for aesthetics
-material.manifest_standard(arrow_actor, ambient_level=1, diffuse_level=1,
-                           specular_level=1)
-scene.add(arrow_actor)
+material.manifest_ambience(arrow_actor, 1)
+axes_actor = actor.axes(scale=(0, 1, 1))
+material.manifest_ambience(axes_actor, 1)
+scene.add(arrow_actor, axes_actor)
 
 ###############################################################################
 # Initializing the initial coordinates of the particle
@@ -91,12 +91,12 @@ pts = np.array([[x, y, z]])
 # Initializing the path_actor which will trace the path followed by the
 # charged particle
 
-num_total_steps = 200  # total number of simulation steps
+num_total_steps = 225  # total number of simulation steps
 origin = np.asarray([0, 0, 0], dtype=float)
 position = np.tile(origin, (num_total_steps, 1))
 
 v = np.linspace(0, 1, num_total_steps)
-cmap_name = 'spring'  # using colormap to color the path of the particle
+cmap_name = 'gist_heat'  # using colormap to color the path of the particle
 colors = colormap.create_colormap(v, name=cmap_name)
 
 path_actor = actor.line([position], colors, linewidth=3)
@@ -113,14 +113,13 @@ charge_actor = actor.point(pts, color_particle, point_radius=radius_particle,
 actor.attributes_to_actor(charge_actor, pts)
 
 # manipulating shading for aesthetics
-material.manifest_standard(charge_actor, ambient_level=1, diffuse_level=1,
-                           specular_level=1)
+material.manifest_ambience(charge_actor, 1)
 scene.add(charge_actor)
 
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(40, 60), color=(1, 1, 1),
+tb = ui.TextBlock2D(bold=True, position=(40, 60), color=(0, 0, 0),
                     font_size=20)
 m1 = "Motion of a charged particle in a "
 m2 = "combined electric and magnetic field"
@@ -130,9 +129,9 @@ scene.add(tb)
 ###############################################################################
 # Initializing text box to display the velocity of the particle
 tb2 = ui.TextBlock2D(text="Velocity of the particle\n" +
-                     "  along x axis = \n" +
-                     "  along y axis = \n" +
-                     "  along z axis = ", position=(50, 500),
+                     "  along x-axis = \n" +
+                     "  along y-axis = \n" +
+                     "  along z-axis = ", position=(50, 500),
                      font_size=15, color=(1, 1, 1), bold=True)
 scene.add(tb2)
 
