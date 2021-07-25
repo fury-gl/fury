@@ -66,6 +66,7 @@ def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
         warnings.warn('Unknown interpolation. Ignoring "{}" interpolation '
                       'option.'.format(interpolation))
 
+
 def manifest_ambience(actor, ambient_level):
     """Set/Get the ambient lighting coefficient for a given actor.
 

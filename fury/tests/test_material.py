@@ -854,6 +854,7 @@ def test_manifest_standard(interactive=False):
     if interactive:
         window.show(scene)
 
+
 def test_manifest_ambience():
     test_actor = actor.sphere(np.zeros((1, 3)), colors=(1, 0, 0))
     material.manifest_ambience(test_actor, 0.8)
