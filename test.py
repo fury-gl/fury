@@ -1,15 +1,15 @@
-from fury.ui.elements import TreeNode2D
 import numpy as np
 
 from fury import ui, window, actor, utils
+from fury.ui.elements import TreeNode2D
 
 structure = [{'Cube': ['Translate', 'Color']},
              {'Cylinder': []},
              {'Cone': []}]
 
 tree = ui.elements.Tree2D(structure=structure, tree_name="Actor Modifier",
-                          size=(600, 600), position=(0, 0),
-                          color=(0.8, 0.4, 0.2))
+                          size=(400, 400), position=(0, 0),
+                          color=(0.8, 0.4, 0.2), opacity=1)
 
 ###############################################################################
 # Slider Controls for the node Cube
@@ -56,21 +56,25 @@ cube_r = 0
 cube_g = 0
 cube_b = 0
 
+
 def rotate_cube(slider):
     angle = slider.value
     previous_angle = slider.previous_value
     rotation_angle = angle - previous_angle
     cube.RotateX(rotation_angle)
 
+
 def translate_cube_x(slider):
     global cube_x, cube_y
     cube_x = slider.value
     cube.SetPosition(cube_x, cube_y, 0)
 
+
 def translate_cube_y(slider):
     global cube_x, cube_y
     cube_y = slider.value
     cube.SetPosition(cube_x, cube_y, 0)
+
 
 def update_colors():
     global cube
@@ -79,24 +83,29 @@ def update_colors():
     vcolors[:] = colarr
     utils.update_actor(cube)
 
+
 def change_r(slider):
     global cube_r, cube_g, cube_b
     cube_r = slider.value
     update_colors()
+
 
 def change_g(slider):
     global cube_r, cube_g, cube_b
     cube_g = slider.value
     update_colors()
 
+
 def change_b(slider):
     global cube_r, cube_g, cube_b
     cube_b = slider.value
     update_colors()
 
+
 ring_slider.on_change = rotate_cube
 line_slider_x.on_change = translate_cube_x
 line_slider_y.on_change = translate_cube_y
+
 
 #  Callbacks for color sliders
 line_slider_r.on_change = change_r
@@ -117,9 +126,11 @@ tree.add_content('Color', line_slider_b, (0.5, 0.))
 ###############################################################################
 # Defining hook to toggle the visibility of the cube
 
+
 def visibility_on(tree_ui):
     global cube
     cube.SetVisibility(1)
+
 
 def visibility_off(tree_ui):
     global cube

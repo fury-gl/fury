@@ -3530,7 +3530,7 @@ class TreeNode2D(UI):
             self.icon = read_viz_icons(fname='stop2.png')
 
         self._child_nodes = []
-        self._largest_size = 0
+        self._normalized_children = []
         self.has_ui = False
         self.parent = parent
         self.indent = np.clip(indent, 0, int(size[0]*0.025))
@@ -3651,7 +3651,9 @@ class TreeNode2D(UI):
         self._child_nodes.append(node)
         if isinstance(node, type(self)):
             if self.has_ui:
-                raise ValueError('A tree node with UI elements cannot have child nodes')
+                raise ValueError(
+                    'A tree node with UI elements cannot have child nodes'
+                    )
 
             node.parent = self
             node.expanded = False
@@ -3660,33 +3662,30 @@ class TreeNode2D(UI):
 
             _node_coords = (self.indent+self.child_indent,
                             self.children_size() - self.child_height)
-            
-            self.content_panel.add_element(node, _node_coords)
-            self.resize((self.size[0], self.children_size()))
+
+            _node_size = (self.size[0], self.size[1] + node.size[1])
         else:
             self.has_ui = True
             _node_coords = coords
             is_floating = np.issubdtype(np.array(_node_coords).dtype,
                                         np.floating)
 
-            self.content_panel.add_element(node, _node_coords)
             if is_floating:
-                relative_size = node.size[1] + \
-                    int(self.content_panel.size[1]*_node_coords[1])
+                self._normalized_children.append({node: coords})
+                _node_size = (self.size[0], self._largest_child_size())
 
-                if self._largest_size < relative_size:
-                    self._largest_size = relative_size
-                self.resize((self.size[0], self._largest_size))
-            else:
-                self.resize((self.size[0], self.children_size()))
+        self.content_panel.add_element(node, _node_coords)
+        self.resize(_node_size)
 
-    def resize(self, size):
+    def resize(self, size, recursive=True):
         """ Resizes the Tree Node.
 
         Parameters
         ----------
         size : (int, int)
             New width and height in pixels.
+        recursive : bool, optional
+            If True, all the children nodes are resized as well.
         """
         self.title_panel.resize((size[0], self.child_height))
         self.content_panel.resize(size)
@@ -3718,10 +3717,13 @@ class TreeNode2D(UI):
             for child in self._child_nodes:
 
                 if isinstance(child, type(self)):
-                    _child_size = (size[0] - self.indent -
-                                   self.child_indent, child.children_size())
+                    if recursive:
+                        _child_size = (size[0] - self.indent -
+                                       self.child_indent,
+                                       child.children_size())
 
-                    child.resize(_child_size)
+                        child.resize(_child_size)
+
                     _child_coords = (self.indent+self.child_indent,
                                      self.content_panel.size[1]-_content_size)
 
@@ -3755,9 +3757,11 @@ class TreeNode2D(UI):
         while parent is not None:
             if parent.auto_resize:
                 if parent.size[1] < parent.children_size():
-                    parent.resize((parent.size[0], parent.children_size()))
+                    parent.resize((parent.size[0], parent.children_size()),
+                                  recursive=False)
                 else:
-                    parent.resize(parent.content_size)
+                    parent.resize((parent.size[0], parent.content_size[1]),
+                                  recursive=False)
 
             parent = parent.parent
 
@@ -3809,6 +3813,23 @@ class TreeNode2D(UI):
         lables = [child.label for child in self.child_nodes]
         idx = lables.index(child_label)
         return self.child_nodes[idx]
+
+    def _largest_child_size(self):
+        """Returns the size occupied by the largest child node."""
+        rel_sizes = []
+
+        for child in self._normalized_children:
+            child_node = list(child.keys())[0]
+            coords = list(child.values())[0]
+            relative_size = child_node.size[1] + \
+                self.content_panel.size[1]*coords[1]
+
+            rel_sizes.append(relative_size)
+
+        if not len(rel_sizes):
+            rel_sizes = [0]
+
+        return int(max(rel_sizes))
 
     @property
     def child_nodes(self):
@@ -3895,7 +3916,7 @@ class TreeNode2D(UI):
     @property
     def expanded(self):
         return self._expanded
-    
+
     @expanded.setter
     def expanded(self, expanded):
         """Sets the expanded state of the node.
