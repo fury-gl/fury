@@ -1,14 +1,24 @@
-import numpy as np
+# -*- coding: utf-8 -*-
+"""
+===============
+Actor Modifier using a Tree UI
+===============
 
+This example shows how to create an actor moidifier using a Tree UI.
+The parameters that will be modified are the colors, position,
+rotation of the cube.
+
+First, some imports.
+"""
+import numpy as np
 from fury import ui, window, actor, utils
-from fury.ui.elements import TreeNode2D
 
 structure = [{'Cube': ['Translate', 'Color']},
              {'Cylinder': []},
              {'Cone': []}]
 
 tree = ui.elements.Tree2D(structure=structure, tree_name="Actor Modifier",
-                          size=(400, 400), position=(0, 0),
+                          size=(400, 400), position=(0, 400),
                           color=(0.8, 0.4, 0.2), opacity=1)
 
 ###############################################################################
@@ -152,7 +162,10 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(tree, cube)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
+
+window.record(show_manager.scene, size=current_size,
+              out_path="viz_tree_actor_modifier.png")
