@@ -1,9 +1,8 @@
 """Test helpers fonction ."""
-
-from fury.ui.core import UI
 import numpy.testing as npt
 
 from fury import window, ui
+from fury.ui.core import UI
 from fury.ui.helpers import clip_overflow, is_ui
 
 
