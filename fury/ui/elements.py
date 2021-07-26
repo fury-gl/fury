@@ -2,7 +2,8 @@
 
 __all__ = ["Button2D", "TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D", "Tree2D",
+           "TreeNode2D"]
 
 import os
 from collections import OrderedDict
@@ -3483,7 +3484,8 @@ class TreeNode2D(UI):
                  position=(0, 0), size=(200, 200), indent=20,
                  child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
                  opacity=0.8, expandable=True, expanded=False,
-                 selected_color=(0.8, 0.3, 0.3), auto_resize=True):
+                 selected_color=(0.8, 0.3, 0.3), auto_resize=True,
+                 multiselect=True):
         """Initialize the UI element
 
         Parameters
@@ -3521,13 +3523,13 @@ class TreeNode2D(UI):
             Color of the unselected node.
         auto_resize: bool, optional
             If the node should automatically resize to fit its content.
+        multiselect: bool, optional
+            If multiple nodes can be selected.
         """
         self.children = children
         self.icon = icon
-        if self.children is None:
-            self.children = []
-        if self.icon is None:
-            self.icon = read_viz_icons(fname='stop2.png')
+        self.children = children or []
+        self.icon = icon or read_viz_icons(fname='stop2.png')
 
         self._child_nodes = []
         self._normalized_children = []
@@ -3547,6 +3549,7 @@ class TreeNode2D(UI):
         self.selected_nodes = []
         self.selected_color = selected_color
         self.unselected_color = color
+        self.multiselect = multiselect
 
         self.auto_resize = auto_resize
 
@@ -3941,7 +3944,7 @@ class TreeNode2D(UI):
             for child in self.child_nodes:
                 child.expanded = False
 
-    def select_node(self, i_ren, _obj, _node2d):
+    def select_node(self, i_ren, _obj, _element):
         """Callback for when the node is clicked on.
 
         Parameters
@@ -3950,17 +3953,21 @@ class TreeNode2D(UI):
             Interactor style used to interact with the scene.
         _obj: :class:`vtkActor`
             The picked actor
-        _node2d: :class:`TreeNode2D`
-            Instance of the selected node
+        _element: :class: `Rectangle2D`
+            Element associated with the event.
         """
         self.selected = not self.selected
 
         if self.selected:
-            self.selected_nodes.append(_node2d)
+            if self.parent:
+                self.parent.selected_nodes.append(self)
+
             self.color = self.selected_color
             self.on_node_select(self)
         else:
-            self.selected_nodes.remove(_node2d)
+            if self.parent:
+                self.selected_nodes.remove(self)
+
             self.color = self.unselected_color
             self.on_node_deselect(self)
 

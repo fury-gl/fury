@@ -14,8 +14,8 @@ tree = ui.elements.Tree2D(structure=structure, tree_name="FURY UI Breakdown",
 ###############################################################################
 # Now, we create UI elements for the Containers node
 # First, we create panles for the Panels node
-panel = ui.Panel2D(size=(100, 100), color=(0.5, 0.7, 0.3))
-panel_1 = ui.Panel2D(size=(100, 100), color=(0.3, 0.8, 0.5))
+panel_first = ui.Panel2D(size=(100, 100), color=(0.5, 0.7, 0.3))
+panel_second = ui.Panel2D(size=(100, 100), color=(0.3, 0.8, 0.5))
 
 ###############################################################################
 # Now, we create an ImageContainer2D for the ImageContainers node
@@ -27,8 +27,8 @@ img = ImageContainer2D(img_path=path, size=(100, 100))
 ###############################################################################
 # Now, we add the UI elements to their respective nodes.
 
-tree.add_content('Panels', panel_1)
-tree.add_content('Panels', panel, (0.5, 0.5))
+tree.add_content('Panels', panel_first)
+tree.add_content('Panels', panel_second, (0.5, 0.5))
 tree.add_content('ImageContainers', img, (0.5, 0.5))
 
 ###############################################################################
@@ -68,7 +68,7 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(tree)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()

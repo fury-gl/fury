@@ -1133,8 +1133,9 @@ def test_ui_treenode_2d(interactive=False):
     def node_deselect(node):
         selected.remove(node)
 
-    parent_node.on_node_select = node_select
-    parent_node.on_node_deselect = node_deselect
+    for child_node in parent_node.child_nodes:
+        child_node.on_node_select = node_select
+        child_node.on_node_deselect = node_deselect
 
     event_counter = EventCounter()
     event_counter.monitor(parent_node)
