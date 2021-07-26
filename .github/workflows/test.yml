@@ -48,16 +48,6 @@ jobs:
             depends: OPTIONAL_DEPS
             option-flags: 'USE_PRE'
             experimental: false
-          - os: ubuntu-20.04
-            python-version: 3.9
-            install_type: conda
-            depends: OPTIONAL_DEPS
-            experimental: true
-          - os: macos-latest
-            python-version: 3.8
-            install_type: conda
-            depends: OPTIONAL_DEPS
-            experimental: true
     env:
       TRAVIS_PYTHON_VERSION: ${{ matrix.python-version }} # Keep backward compatibilty with Travis
       TRAVIS_REPO_SLUG: ${{ github.repository }}          # Keep backward compatibilty with Travis
@@ -128,10 +118,6 @@ jobs:
     - name: Install FURY and Test it!
       run: |
         bash ci/travis/script.sh
-    - name: Check if experimental
-      if: ${{ failure() }}  #&& matrix.experimental == 'true'
-      run: |
-        echo -e "::warning ::Error on this experimental matrix"
     - name: Deploy docs
       if: success() && github.ref == 'refs/heads/master'
       run: |
