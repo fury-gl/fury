@@ -3690,6 +3690,11 @@ class TreeNode2D(UI):
         self.title_panel.resize((size[0], self.child_height))
         self.content_panel.resize(size)
 
+        if self.expandable:
+            self.button.resize((self.child_height, self.child_height))
+        else:
+            self.button.resize((0, 0))
+
         self.label_text.resize((size[0]-self.button.size[0],
                                 self.child_height))
 
@@ -3697,8 +3702,6 @@ class TreeNode2D(UI):
             self.label_image.resize((self.child_height, self.child_height))
         else:
             self.label_image.resize((0, 0))
-
-        self.button.resize((self.child_height, self.child_height))
 
         self.title_panel.update_element(self.label_text,
                                         (self.label_image.size[0], 0))
