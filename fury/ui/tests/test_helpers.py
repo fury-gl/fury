@@ -66,7 +66,7 @@ def test_wrap_overflow():
 
     text.message = "A very very long message to clip text overflow"
     wrap_overflow(text, rectangle.size[0])
-    npt.assert_equal("A very very\n long mess\nage to cli\np text ove\nrflow",
+    npt.assert_equal("A very very\n long mess\nage to clip \ntext overflo\nw",
                      text.message)
 
     text.message = "A very very long message to clip text overflow"

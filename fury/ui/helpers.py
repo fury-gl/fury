@@ -26,14 +26,13 @@ def clip_overflow(textblock, width, side='right'):
     original_str = textblock.message
     prev_bg = textblock.have_bg
 
-    is_overflowing, mid_ptr = check_overflow(textblock, width, '...', side)
+    _, mid_ptr = check_overflow(textblock, width, '...', side)
 
     if mid_ptr == 0:
         return original_str
 
-    if not is_overflowing:
-        textblock.have_bg = prev_bg
-        return textblock.message
+    textblock.have_bg = prev_bg
+    return textblock.message
 
 
 def wrap_overflow(textblock, wrap_width, side='right'):
@@ -55,22 +54,30 @@ def wrap_overflow(textblock, wrap_width, side='right'):
         Wrapped version of the text.
     """
     original_str = textblock.message
+    str_copy = textblock.message
     prev_bg = textblock.have_bg
+    wrap_idx = []
 
-    is_overflowing, mid_ptr = check_overflow(textblock, wrap_width, '', side)
+    _, mid_ptr = check_overflow(textblock, wrap_width, '', side)
 
     if mid_ptr == 0:
         return original_str
 
-    if not is_overflowing:
-        for i in range(len(original_str)):
-            if i % mid_ptr == 0 and i != 0:
-                original_str = original_str[:i]\
-                    + '\n' + original_str[i:]
+    wrap_idx.append(mid_ptr)
 
-        textblock.have_bg = prev_bg
-        textblock.message = original_str
-        return textblock.message
+    while mid_ptr != 0:
+        str_copy = str_copy[mid_ptr:]
+        textblock.message = str_copy
+        _, mid_ptr = check_overflow(textblock, wrap_width, '', side)
+        if mid_ptr != 0:
+            wrap_idx.append(wrap_idx[-1]+mid_ptr+1)
+
+    for idx in wrap_idx:
+        original_str = original_str[:idx] + '\n' + original_str[idx:]
+
+    textblock.message = original_str
+    textblock.have_bg = prev_bg
+    return textblock.message
 
 
 def check_overflow(textblock, width, overflow_postfix='',
