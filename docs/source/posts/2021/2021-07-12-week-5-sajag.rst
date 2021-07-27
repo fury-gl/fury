@@ -1,0 +1,42 @@
+Fifth week of coding!
+=====================
+
+.. post:: June 12 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the sixth weekly check-in. I'll be sharing my progress for the fifth week of coding.
+
+What did you do this week?
+--------------------------
+
+#. Generalised the vtkProteinRibbonFilter implementation.
+#. Updated the `molecular module`_ based on suggestions of team members
+   and mentors.
+#. Updated wave function animation `PR`_.
+   Preview of the animation -
+
+   |image1|
+
+What is coming up next week?
+----------------------------
+
+#. Update molecular module based on team members' suggestions and add
+   tests for the same.
+#. Add protein ribbon implementation in the molecular.
+#. Begin working on molecular surface model.
+
+Did you get stuck anywhere?
+---------------------------
+
+No! **I was finally able to generalise the vtkProteinRibbonFilter implementation!!** I'm
+grateful to the mentors for keeping a meeting and for helping me debug
+the code. I figured out most of the stuff courtesy the meeting.
+
+.. _molecular module: https://github.com/fury-gl/fury/pull/452
+.. _PR: https://github.com/fury-gl/fury/pull/362
+
+.. |image1| image:: https://user-images.githubusercontent.com/65067354/125155195-d4105800-e17b-11eb-9e6d-2b66ba7a8f6e.gif
+   :width: 300px
+   :height: 300px
