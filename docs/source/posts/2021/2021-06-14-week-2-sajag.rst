@@ -22,9 +22,9 @@ The PR has:
 
 2. Two examples where I show how to visualize the proteins 
 
-   #. In `this example <https://github.com/fury-gl/fury/pull/439/files#diff-9579793ad0f25aa895d88d92a09b49f616969d3b1c859be14a16c469572dc92bR6>`_, I parse a PDBx file myself and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
+   #. In `example 1, <https://github.com/fury-gl/fury/pull/439/files#diff-2c9d065c4d4873b6ce534137cfd990cea495faffd249ff35cf51e36749883534>`_, I parse a PDBx file myself and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
    
-   #. In `this example <https://github.com/fury-gl/fury/pull/439/files#diff-1a09073039495e53b9585d0fd64c58247e98c5659d3cc84be8abe6b2724c3718R6>`_, I parse a PDB file by using `Biopython module <http://biopython.org/>`_ and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
+   #. In `example 2 <https://github.com/fury-gl/fury/pull/439/files#diff-68e69b9f24731ed981cd91763f3dd078aa2bf9a4da638d561352a9cf37cfd29c>`_, I parse a PDB file by using `Biopython module <http://biopython.org/>`_ and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
 
 I created a basic test for the actor which needs to be improved. I'll discuss how to improve the test with the mentors.
 
