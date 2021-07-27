@@ -417,6 +417,7 @@ def test_opengl_state_add_remove_and_check():
 
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
+    print('type', type(showm.window.GetState()))
     after_depth_test = state['GL_DEPTH_TEST']
     npt.assert_equal(after_depth_test, False)
     # removes the no_depth_test effect

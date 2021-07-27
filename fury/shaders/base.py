@@ -224,7 +224,7 @@ def add_shader_callback(actor, callback, priority=0.):
 def shader_apply_effects(
         window, actor, effects, priority=0):
     """This applies a specific opengl state (effect) or a list of effects just
-    before the actor's shader be executed.
+    before the actor's shader is executed.
 
     Parameters
     ----------

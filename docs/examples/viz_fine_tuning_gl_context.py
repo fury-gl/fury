@@ -139,7 +139,7 @@ def timer_callback(obj, event):
     showm.render()
     # we will rotate the visualization just to help you to see
     # the results of each specifc opengl-state
-    showm.scene.GetActiveCamera().Azimuth(1)
+    showm.scene.azimuth(1)
     if cnt == 400:
         actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
         shader_apply_effects(
@@ -149,7 +149,7 @@ def timer_callback(obj, event):
         showm.exit()
 
 
-interactive = True
+interactive = False
 showm.add_timer_callback(interactive, 5, timer_callback)
 if interactive:
     showm.start()
