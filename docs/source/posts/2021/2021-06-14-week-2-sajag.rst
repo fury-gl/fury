@@ -35,4 +35,8 @@ I have two major goals for the next week -
 1. Make an actor for the space filling model of the proteins and make PR for the same which will also include the unit tests and a small tutorial for the users.
 2. Try to understand the documentation of vtkProteinRibbonFilter which will prove beneficial in generating Ribbon diagrams.
 
+Did you get stuck anywhere?
+---------------------------
+I tried to create a class in python which inherits from a vtkclass called vtkMoleculeReaderBase but was unsucessful in this endeavour. I'll try to find a workaround.
+
 ``Au Revoir!``
