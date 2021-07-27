@@ -58,3 +58,5 @@ I didn't get stuck anywhere this week.
 .. |image3| image:: https://user-images.githubusercontent.com/65067354/126061012-b183a47d-ed5e-4026-938b-4124da291524.png
    :width: 400px
    :height: 400px
+
+``Au Revoir!``
