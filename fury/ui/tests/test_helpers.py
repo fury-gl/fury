@@ -86,7 +86,8 @@ def test_check_overflow():
 
     text.message = "A very very long message to clip text overflow"
 
-    is_overflowing, _ = check_overflow(text, rectangle.size[0], '~')
+    overflow_idx = check_overflow(text, rectangle.size[0], '~')
 
-    npt.assert_equal(False, is_overflowing)
+    npt.assert_equal(10, overflow_idx)
     npt.assert_equal('A very ver~', text.message)
+
