@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+=============================
+FURY UI Breakdown with Tree2D
+=============================
+
+This example vizualizes different types of UI elements that are available,
+in FURY's UI sub-module with the help of a Tree2D UI element.
+
+First, some imports.
+"""
 from fury import ui, window
 from fury.ui.core import Disk2D, Rectangle2D
 from fury.ui.elements import LineSlider2D, ListBox2D
@@ -8,7 +19,7 @@ structure = [{'Containers': ['Panels', 'ImageContainers']},
              {'Core': ['Rectangle', 'Disk']}]
 
 tree = ui.elements.Tree2D(structure=structure, tree_name="FURY UI Breakdown",
-                          size=(500, 500), position=(0, 0),
+                          size=(500, 500), position=(0, 500),
                           color=(0.8, 0.4, 0.2))
 
 ###############################################################################
@@ -63,7 +74,7 @@ tree.add_content('Disk', disk, (0.5, 0.5))
 
 current_size = (1000, 1000)
 show_manager = window.ShowManager(size=current_size,
-                                  title="FURY Bullet List Example")
+                                  title="FURY Tree2D Example")
 
 show_manager.scene.add(tree)
 
@@ -72,3 +83,6 @@ interactive = False
 
 if interactive:
     show_manager.start()
+
+window.record(show_manager.scene, size=current_size,
+              out_path="viz_tree2d.png")

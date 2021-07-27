@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-===============
+==============================
 Actor Modifier using a Tree UI
-===============
+==============================
 
 This example shows how to create an actor moidifier using a Tree UI.
 The parameters that will be modified are the colors, position,
