@@ -1,7 +1,7 @@
 Fifth week of coding!
 =====================
 
-.. post:: June 12 2021
+.. post:: July 12 2021
    :author: Sajag Swami
    :tags: google
    :category: gsoc
@@ -40,3 +40,5 @@ the code. I figured out most of the stuff courtesy the meeting.
 .. |image1| image:: https://user-images.githubusercontent.com/65067354/125155195-d4105800-e17b-11eb-9e6d-2b66ba7a8f6e.gif
    :width: 300px
    :height: 300px
+   
+``Au Revoir!``
