@@ -3296,7 +3296,7 @@ class Tree2D(UI):
 
     def __init__(self, structure, tree_name="", position=(0, 0),
                  size=(300, 300), node_height=30, color=(0.3, 0.3, 0.3),
-                 opacity=0.8, indent=25):
+                 opacity=0.8, indent=25, multiselect=True):
         """Initialize the UI element
 
         Parameter
@@ -3318,6 +3318,8 @@ class Tree2D(UI):
             Background opacity of the Tree2D
         indent: int, optional
             Global indentation for the parent/child nodes
+        multiselect: bool, optional
+            If multiple nodes can be selected.
         """
         self.structure = structure
         self.tree_name = tree_name
@@ -3326,6 +3328,7 @@ class Tree2D(UI):
         self._nodes_dict = {}
         self.node_height = node_height
         self.content_size = size
+        self.multiselect = multiselect
 
         super(Tree2D, self).__init__(position)
         self.resize(size)
@@ -3343,7 +3346,8 @@ class Tree2D(UI):
                                     icon=_icon_path, indent=self.indent,
                                     child_indent=self.indent,
                                     child_height=self.node_height,
-                                    auto_resize=True, size=self.content_size)
+                                    auto_resize=True, size=self.content_size,
+                                    multiselect=self.multiselect)
 
         for node in self.nodes_dict.values():
             node.set_visibility(False)
@@ -3390,11 +3394,14 @@ class Tree2D(UI):
             if parent_label in self.nodes_dict.keys():
                 parent_node = self.nodes_dict[parent_label]
             else:
-                parent_node = TreeNode2D(label=parent_label)
+                parent_node = TreeNode2D(label=parent_label,
+                                         multiselect=self.multiselect)
+
                 self._nodes.append(parent_node)
                 self._nodes_dict[parent_label] = parent_node
 
-            child_nodes = [TreeNode2D(label=child_label) for child_label in
+            child_nodes = [TreeNode2D(label=child_label,
+                           multiselect=self.multiselect) for child_label in
                            child_labels]
 
             for child_node, child_label in zip(child_nodes, child_labels):
@@ -3944,6 +3951,16 @@ class TreeNode2D(UI):
             for child in self.child_nodes:
                 child.expanded = False
 
+    def clear_selections(self):
+        """Clear all the selcted nodes."""
+        for selected_node in self.selected_nodes:
+            selected_node.color = selected_node.unselected_color
+            selected_node.on_node_deselect(selected_node)
+            selected_node.selected = False
+            selected_node.clear_selections()
+
+        self.selected_nodes.clear()
+
     def select_node(self, i_ren, _obj, _element):
         """Callback for when the node is clicked on.
 
@@ -3959,14 +3976,21 @@ class TreeNode2D(UI):
         self.selected = not self.selected
 
         if self.selected:
+
             if self.parent:
+                if not self.multiselect:
+                    self.parent.clear_selections()
+
                 self.parent.selected_nodes.append(self)
 
             self.color = self.selected_color
             self.on_node_select(self)
         else:
             if self.parent:
-                self.selected_nodes.remove(self)
+                self.parent.selected_nodes.remove(self)
+
+                if not self.multiselect:
+                    self.parent.clear_selections()
 
             self.color = self.unselected_color
             self.on_node_deselect(self)
