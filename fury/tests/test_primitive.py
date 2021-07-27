@@ -49,6 +49,8 @@ def test_vertices_primitives_octagonalprism():
     npt.assert_equal(vertices.max(), two)
 
 def test_vertices_primitives_pentagonalprism():
+
+
     # Testing the default vertices of the primitive pentagonal prism.
     vertices, _ = fp.prim_pentagonalprism()
     shape = (10, 3)
