@@ -26,9 +26,9 @@ def clip_overflow(textblock, width, side='right'):
     original_str = textblock.message
     prev_bg = textblock.have_bg
 
-    _, mid_ptr = check_overflow(textblock, width, '...', side)
+    clip_idx = check_overflow(textblock, width, '...', side)
 
-    if mid_ptr == 0:
+    if clip_idx == 0:
         return original_str
 
     textblock.have_bg = prev_bg
@@ -56,23 +56,23 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     original_str = textblock.message
     str_copy = textblock.message
     prev_bg = textblock.have_bg
-    wrap_idx = []
+    wrap_idxs = []
 
-    _, mid_ptr = check_overflow(textblock, wrap_width, '', side)
+    wrap_idx = check_overflow(textblock, wrap_width, '', side)
 
-    if mid_ptr == 0:
+    if wrap_idx == 0:
         return original_str
 
-    wrap_idx.append(mid_ptr)
+    wrap_idxs.append(wrap_idx)
 
-    while mid_ptr != 0:
-        str_copy = str_copy[mid_ptr:]
+    while wrap_idx != 0:
+        str_copy = str_copy[wrap_idx:]
         textblock.message = str_copy
-        _, mid_ptr = check_overflow(textblock, wrap_width, '', side)
-        if mid_ptr != 0:
-            wrap_idx.append(wrap_idx[-1]+mid_ptr+1)
+        wrap_idx = check_overflow(textblock, wrap_width, '', side)
+        if wrap_idx != 0:
+            wrap_idxs.append(wrap_idxs[-1]+wrap_idx+1)
 
-    for idx in wrap_idx:
+    for idx in wrap_idxs:
         original_str = original_str[:idx] + '\n' + original_str[idx:]
 
     textblock.message = original_str
@@ -95,7 +95,7 @@ def check_overflow(textblock, width, overflow_postfix='',
 
     Returns
     -------
-    tuple(bool, int)
+    int
 
     """
     side = side.lower()
@@ -113,7 +113,7 @@ def check_overflow(textblock, width, overflow_postfix='',
 
     if textblock.size[0] <= width:
         textblock.have_bg = prev_bg
-        return (False, 0)
+        return 0
 
     while start_ptr < end_ptr:
         mid_ptr = (start_ptr + end_ptr)//2
@@ -127,4 +127,4 @@ def check_overflow(textblock, width, overflow_postfix='',
         if mid_ptr == (start_ptr + end_ptr) // 2 or textblock.size[0] == width:
             if side == 'left':
                 textblock.message = textblock.message[::-1]
-            return (False, mid_ptr)
+            return mid_ptr
