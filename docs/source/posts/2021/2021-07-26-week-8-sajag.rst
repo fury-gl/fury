@@ -41,3 +41,5 @@ No.
 .. |image1| image:: https://user-images.githubusercontent.com/65067354/126382288-b755c01d-8010-43ab-87db-2f1a4fb5b015.png
    :width: 300px
    :height: 300px
+
+``Au Revoir!``
