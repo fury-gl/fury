@@ -31,3 +31,5 @@ Sending protein data to ProteinRibbonFilter via a vtkPolyData has been
 unsuccessful so far.
 
 .. _PR: https://github.com/fury-gl/fury/pull/452
+
+``Au Revoir!``
