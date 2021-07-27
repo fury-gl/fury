@@ -1,5 +1,6 @@
 """Core module testing."""
 from os.path import join as pjoin
+import numpy as np
 import numpy.testing as npt
 import warnings
 
@@ -57,7 +58,14 @@ def test_ui_button_panel(recording=False):
     # Panel
     panel = ui.Panel2D(size=(300, 150),
                        position=(290, 15),
-                       color=(1, 1, 1), align="right")
+                       color=(1, 1, 1), align="right",
+                       has_border=True)
+    
+    non_bordered_panel = ui.Panel2D(size=(100, 100),
+                                    has_border=False)
+
+    npt.assert_equal(hasattr(non_bordered_panel, 'borders'), False)
+
     panel.add_element(rectangle_test, (290, 135))
     panel.add_element(button_test, (0.1, 0.1))
     panel.add_element(text_block_test, (0.7, 0.7))
@@ -66,6 +74,29 @@ def test_ui_button_panel(recording=False):
     npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
                       (-0.5, 0.5))
 
+    npt.assert_equal(panel.border_width, [0.0, ]*4)
+    npt.assert_equal(panel.border_color, [np.asarray([1, 1, 1]), ]*4)
+
+    panel.border_width = ['bottom', 10.0]
+    npt.assert_equal(panel.border_width[3], 10.0)
+    npt.assert_equal(panel.borders['bottom'].height, 10.0)
+
+    panel.border_width = ['right', 10.0]
+    npt.assert_equal(panel.border_width[1], 10.0)
+    npt.assert_equal(panel.borders['right'].width, 10.0)
+
+    with npt.assert_raises(ValueError):
+        panel.border_width = ['invalid_label', 10.0]
+
+    panel.border_color = ['bottom', (0.4, 0.5, 0.6)]
+    npt.assert_equal(panel.border_color[3], (0.4, 0.5, 0.6))
+
+    with npt.assert_raises(ValueError):
+        panel.border_color = ['invalid_label', (0.4, 0.5, 0.6)]
+
+    new_size = (400, 400)
+    panel.resize(new_size)
+    npt.assert_equal(panel.borders['bottom'].width, 400.0)
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(button_test)
