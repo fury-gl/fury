@@ -1,7 +1,7 @@
 Welcome to my GSoC Blog!
 ========================
 
-.. post:: June 7 2021
+.. post:: June 8 2021
    :author: Sajag Swami
    :tags: google
    :category: gsoc
