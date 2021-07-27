@@ -408,7 +408,7 @@ def test_opengl_state_add_remove_and_check():
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
     before_depth_test = state['GL_DEPTH_TEST']
-    assert before_depth_test
+    npt.assert_equal(before_depth_test, True)
     id_observer = shaders.shader_apply_effects(
         showm.window, actor_no_depth_test,
         effects=[
@@ -418,10 +418,10 @@ def test_opengl_state_add_remove_and_check():
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
     after_depth_test = state['GL_DEPTH_TEST']
-    assert after_depth_test is False
+    npt.assert_equal(after_depth_test, False)
     # removes the no_depth_test effect
     actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
-    assert after_remove_depth_test_observer
+    npt.assert_equal(after_remove_depth_test_observer, True)
