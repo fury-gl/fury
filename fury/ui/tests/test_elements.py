@@ -1156,3 +1156,5 @@ def test_ui_treenode_2d(interactive=False):
         event_counter.check_counts(expected)
 
     npt.assert_equal(parent_node.selected_nodes, selected)
+    parent_node.clear_selections()
+    npt.assert_equal(parent_node.selected_nodes, [])
