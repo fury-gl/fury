@@ -625,6 +625,53 @@ def prim_triangularprism():
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
 
+def prim_pentagonalprism():
+    """Return vertices and triangle for an pentagonal prism.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+    # Local variable to represent the square root of five rounded
+    # to 7 decimal places
+    five = float('{:.7f}'.format(math.sqrt(5)))
+    onec = (five - 1) / 4.0
+    twoc = (five + 1) / 4.0
+    sone = (math.sqrt(10 + (2 * five))) / 4.0
+    stwo = (math.sqrt(10 - (2 * five))) / 4.0
+
+    vertices = np.array([[-twoc, stwo, -1],
+                         [onec, sone, -1],
+                         [1, 0, -1],
+                         [onec, -sone, -1],
+                         [-twoc, -stwo, -1],
+                         [-twoc, stwo, 1],
+                         [onec, sone, 1],
+                         [1, 0, 1],
+                         [onec, -sone, 1],
+                         [-twoc, -stwo, 1]])
+    triangles = np.array([[9, 5, 4],
+                          [4, 5, 0],
+                          [5, 6, 0],
+                          [0, 6, 1],
+                          [6, 7, 1],
+                          [1, 7, 2],
+                          [7, 8, 2],
+                          [2, 8, 3],
+                          [8, 9, 3],
+                          [3, 9, 4],
+                          [0, 1, 4],
+                          [1, 4, 3],
+                          [1, 3, 2],
+                          [5, 6, 9],
+                          [6, 8, 9],
+                          [6, 7, 8]])
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
+    return vertices, triangles
 
 def prim_octagonalprism():
     """Return vertices and triangle for an octagonal prism.
