@@ -1,3 +1,14 @@
+"""
+========================================
+Using Layouts with different UI elements
+========================================
+
+This example shows how to place different UI elements in different Layouts.
+The Layouts used here is GridLayout (with different cell shapes).
+
+First, some imports.
+"""
+
 from fury import ui
 from fury import window
 
