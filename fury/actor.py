@@ -1718,8 +1718,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     tri_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return tri_actor
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                   scales=1):
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many pentagonal prisms with different features.
 
     Parameters
@@ -1757,6 +1756,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     big_verts, big_faces, big_colors, _ = res
     pent_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return pent_actor
+
 
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                    scales=1):

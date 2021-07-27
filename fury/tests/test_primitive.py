@@ -62,6 +62,7 @@ def test_vertices_primitives_pentagonalprism():
     npt.assert_equal(vertices.min(), onec)
     npt.assert_equal(vertices.max(), sone)
 
+
 def test_vertices_primitives_triangularprism():
     # Testing the default vertices of the primitive triangular prism.
     vertices, _ = fp.prim_triangularprism()

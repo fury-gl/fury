@@ -673,6 +673,7 @@ def prim_pentagonalprism():
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
 
+
 def prim_octagonalprism():
     """Return vertices and triangle for an octagonal prism.
 
