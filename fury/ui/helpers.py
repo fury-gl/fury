@@ -95,8 +95,8 @@ def check_overflow(textblock, width, overflow_postfix='',
 
     Returns
     -------
-    int
-
+    mid_ptr: int
+        Overflow index of the text.
     """
     side = side.lower()
     if side not in ['left', 'right']:
@@ -104,6 +104,7 @@ def check_overflow(textblock, width, overflow_postfix='',
 
     original_str = textblock.message
     start_ptr = 0
+    mid_ptr = 0
     end_ptr = len(original_str)
     prev_bg = textblock.have_bg
     textblock.have_bg = False
