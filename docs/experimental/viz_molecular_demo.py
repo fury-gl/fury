@@ -65,7 +65,6 @@ for line in pdb_lines:
     try:
         if line[0] == 'ATOM' or line[0] == 'HETATM':
             if line[-1] != 'H':
-                # print(2)
                 coorX, coorY, coorZ = float(line[6]), float(line[7]), \
                                       float(line[8])
                 resi = line[5]
@@ -124,7 +123,7 @@ scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
 axes_actor = actor.axes()
 scene.add(axes_actor)
 molecule = molecular.Molecule(AtomType, Points, AtomTypeStrings, Model,
-                              Residue, Chain, Sheets, Helix, IsHetatm)
+                              Residue, Chain, IsHetatm, Sheets, Helix)
 molecular.compute_bonding(molecule)
 
 
