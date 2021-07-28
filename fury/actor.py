@@ -1292,13 +1292,12 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
             warnings.warn('Invalid mask. The mask must be a 3D array. The '
                           'passed mask has {} dimensions. Ignoring passed '
                           'mask.'.format(mask.ndim), UserWarning)
+        elif mask.shape != dirs_shape[:3]:
+            warnings.warn('Invalid mask. The shape of the mask must coincide '
+                          'with the shape of the directions. Ignoring passed '
+                          'mask.', UserWarning)
         else:
-            if mask.shape != dirs_shape[:3]:
-                warnings.warn('Invalid mask. The shape of the mask must '
-                              'coincide with the shape of the directions. '
-                              'Ignoring passed mask.', UserWarning)
-            else:
-                valid_mask = np.logical_and(valid_mask, mask)
+            valid_mask = np.logical_and(valid_mask, mask)
     indices = np.nonzero(valid_mask)
 
     return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
