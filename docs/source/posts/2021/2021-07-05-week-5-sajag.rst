@@ -12,7 +12,7 @@ What did you do this week?
 --------------------------
 
 Created a `PR`_ for the molecular module. Enables the ability to create
-three types of molecular representations -
+three types of molecular representations:
 
 #. Space-filling model aka calotte model and CPK model.
 #. Stick model.
