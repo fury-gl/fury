@@ -14,7 +14,7 @@ What did you do this week?
 #. Updated `Molecular module`_: made it more pythonic, implemented
    ribbon actor, added support to pass numpy arrays (earlier, atomic
    data could only be added by using the add_atom).
-#. Created a `PR #462`_ to:
+#. Created `PR #462`_ to:
 
    -  Update the helical motion animation to use a single line actor,
       added textblocks to display velocity of the particle.
