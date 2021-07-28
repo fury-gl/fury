@@ -13,8 +13,8 @@ What did you do this week?
 
 1. Generalised the vtkProteinRibbonFilter implementation.
 2. Updated the molecular module based on suggestions of team members
-   and mentors. `PR #452`_.
-3. Updated wave function animation. `PR #362`_.
+   and mentors (`PR #452`_).
+3. Updated wave function animation (`PR #362`_).
 
  .. figure:: https://user-images.githubusercontent.com/65067354/125155195-d4105800-e17b-11eb-9e6d-2b66ba7a8f6e.gif
     :width: 300
