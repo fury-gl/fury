@@ -1,5 +1,0 @@
-aiohttp
-aiortc
-# opencv-python
-Pillow
-Cython
