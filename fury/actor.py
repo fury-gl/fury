@@ -1279,12 +1279,10 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
             raise ValueError('Invalid peak values. The shape of the structure '
                              'must be (XxYxZxD). Your data has {} dimensions.'
                              ''.format(peaks_values.ndim))
-        else:
-            vals_shape = peaks_values.shape
-            if vals_shape != dirs_shape[:4]:
-                raise ValueError('Invalid peak values. The shape of the '
-                                 'values must coincide with the shape of the '
-                                 'directions.')
+        vals_shape = peaks_values.shape
+        if vals_shape != dirs_shape[:4]:
+            raise ValueError('Invalid peak values. The shape of the values '
+                             'must coincide with the shape of the directions.')
 
     valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
     if mask is not None:
