@@ -13,11 +13,11 @@ What did you do this week?
 
 I made a document with code snippets and visuals to show how one can use
 some vtk classes in python for molecular visualization. Classes of
-interest -
+interest:
 
--  vtkMolecule (store atomic information about the molecule)
--  vtkSimpleBondPerceiver (calculate bonding info for a vtkMolecule)
--  vtkMoleculeMapper (mapper to draw vtkMolecule object)
+-  vtkMolecule (store atomic information about the molecule).
+-  vtkSimpleBondPerceiver (calculate bonding info for a vtkMolecule).
+-  vtkMoleculeMapper (mapper to draw vtkMolecule object).
 -  vtkPeriodicTable (stores chemical data sourced from the Blue Obelisk
    Data).
 
@@ -30,7 +30,7 @@ using vtkPDBReader but was unsuccessful in this endeavour.
 What is coming up next week?
 ----------------------------
 
-Three goals for next week -
+Three goals for next week:
 
 #. Implement vtkProteinRibbonFilter usage without using vtkPDBReader.
 #. Make a class for vtkMolecule which can store molecular data and pass
