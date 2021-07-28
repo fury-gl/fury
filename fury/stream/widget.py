@@ -49,8 +49,8 @@ class Widget:
             ms_interaction=33, queue_size=20,
             host='localhost', port=None,
             encoding='mjpeg', ms_jpeg=33):
-        """Thi Obj it's able to run the fury streaming system using the SharedMemory
-        from python multiprocessing.
+        """Thi Obj it's able to run the fury streaming system
+        using the SharedMemory from python multiprocessing.
 
         Parameters
         ----------
@@ -118,7 +118,6 @@ class Widget:
         if self._server_started:
             self.stop()
 
-        # self.showm.initialize()
         self.stream = FuryStreamClient(
             self.showm,
             max_window_size=self.max_window_size,

@@ -857,7 +857,7 @@ class IntervalTimer:
         -----------
         [1] https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
 
-        """
+        """ # noqa
         self._timer = None
         self.seconds = seconds
         self.callback = callback

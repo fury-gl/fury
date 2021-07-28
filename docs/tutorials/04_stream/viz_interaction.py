@@ -14,6 +14,9 @@ import logging
 logging.root.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO)
 
+interactive = False
+
+
 if __name__ == '__main__':
     use_high_res = False
     if use_high_res:
@@ -118,7 +121,8 @@ if __name__ == '__main__':
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.start(ms_stream,)
-    showm.start()
+    if interactive:
+        showm.start()
     p.kill()
     stream.stop()
     stream_interaction.stop()
@@ -127,3 +131,5 @@ if __name__ == '__main__':
     # open a browser using the following the url
     # http://localhost:8000/
 
+window.record(
+    showm.scene, size=window_size, out_path="viz_interaction.png")

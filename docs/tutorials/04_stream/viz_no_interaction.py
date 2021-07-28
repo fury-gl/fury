@@ -18,6 +18,7 @@ import numpy as np
 from fury.data.fetcher import fetch_viz_wiki_nw
 from fury.stream.server import web_server
 
+interactive = False
 if __name__ == '__main__':
 
     ###########################################################################
@@ -88,7 +89,7 @@ if __name__ == '__main__':
     showm.initialize()
     stream = FuryStreamClient(
         showm, use_raw_array=True)
-   
+
     p = multiprocessing.Process(
         target=web_server,
         args=(
@@ -101,4 +102,10 @@ if __name__ == '__main__':
     p.start()
 
     stream.start(ms,)
-    showm.start()
+    if interactive:
+        showm.start()
+    stream.stop()
+    stream.cleanup()
+
+window.record(
+    showm.scene, size=window_size, out_path="viz_no_interaction.png")
