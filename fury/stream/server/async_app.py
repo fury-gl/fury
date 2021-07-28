@@ -40,6 +40,7 @@ async def mjpeg_handler(request):
     Notes:
     ------
     endpoint : /video/mjpeg
+
     """
     my_boundary = 'image-boundary'
     response = web.StreamResponse(

@@ -35,8 +35,8 @@ class RTCServer(VideoStreamTrack):
         """This Obj it's responsible to create the VideoStream for
         the WebRTCServer
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         image_buffer_manager : ImageBufferManager
 
         """
@@ -102,54 +102,54 @@ def web_server(
         ms_jpeg=16):
     """
 
-        Parameters
-        ----------
-        image_buffers : list of buffers, optional
-            A list of buffers with each one containing a frame.
-            If image_buffers was not passed then it's mandatory
-            pass the image_buffer_names argument.
-        image_buffer_names : list of str, optional
-        info_buffer : buffer, optional
-            A buffer with the information about the current
-            frame to be streamed and the respective sizes
-            If info_buffer was not passed then it's mandatory
-            pass the info_buffer_name argument.
-        info_buffer_name : str, optional
-        queue_head_tail_buffer : buffer, optional
-            If buffer is passed than this Obj will read a
-            a already created RawArray.
-            You must pass queue_head_tail_buffer or
-            queue_head_tail_buffer_name.
-        queue_head_tail_buffer_name : str, optional
-        queue_buffer : buffer, optional
-            If queue_buffer is passed than this Obj will read a
-            a already created RawArray containing the user interactions
-            events stored in the queue_buffer.
-            You must pass queue_buffer or a queue_buffer_name.
-        buffer_name : str, optional
-        port : int, optional
-            Port to be used by the aiohttp server
-        host : str, optional, default localhost
-            host to be used by the aiohttp server
-        provides_mjpeg : bool, default True
-            If a MJPEG streaming should be available.
-            If True you can consume that through
-            host:port/video/mjpeg
-            or if you want to interact you can consume that
-            through your browser
-            http://host:port?encoding=mjpeg
-        provides_webrtc : bool, default True
-            If a WebRTC streaming should be available.
-            http://host:port
-        avoid_unlink_shared_mem : bool, default False
-            If True, then this will apply a monkey-patch solution to
-            a python>=3.8 core bug
-        ms_jpeg : float, optional
-            This it's used  only if the MJPEG will be used. The
-            ms_jpeg represents the amount of miliseconds between to
-            consecutive calls of the jpeg enconding.
+    Parameters
+    ----------
+    image_buffers : list of buffers, optional
+        A list of buffers with each one containing a frame.
+        If image_buffers was not passed then it's mandatory
+        pass the image_buffer_names argument.
+    image_buffer_names : list of str, optional
+    info_buffer : buffer, optional
+        A buffer with the information about the current
+        frame to be streamed and the respective sizes
+        If info_buffer was not passed then it's mandatory
+        pass the info_buffer_name argument.
+    info_buffer_name : str, optional
+    queue_head_tail_buffer : buffer, optional
+        If buffer is passed than this Obj will read a
+        a already created RawArray.
+        You must pass queue_head_tail_buffer or
+        queue_head_tail_buffer_name.
+    queue_head_tail_buffer_name : str, optional
+    queue_buffer : buffer, optional
+        If queue_buffer is passed than this Obj will read a
+        a already created RawArray containing the user interactions
+        events stored in the queue_buffer.
+        You must pass queue_buffer or a queue_buffer_name.
+    buffer_name : str, optional
+    port : int, optional
+        Port to be used by the aiohttp server
+    host : str, optional, default localhost
+        host to be used by the aiohttp server
+    provides_mjpeg : bool, default True
+        If a MJPEG streaming should be available.
+        If True you can consume that through
+        host:port/video/mjpeg
+        or if you want to interact you can consume that
+        through your browser
+        http://host:port?encoding=mjpeg
+    provides_webrtc : bool, default True
+        If a WebRTC streaming should be available.
+        http://host:port
+    avoid_unlink_shared_mem : bool, default False
+        If True, then this will apply a monkey-patch solution to
+        a python>=3.8 core bug
+    ms_jpeg : float, optional
+        This it's used  only if the MJPEG will be used. The
+        ms_jpeg represents the amount of miliseconds between to
+        consecutive calls of the jpeg enconding.
 
-        """
+    """
 
     use_raw_array = info_buffer_name is None
 
