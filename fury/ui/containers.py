@@ -97,16 +97,17 @@ class Panel2D(UI):
         ----------
         scene : scene
         """
-        window = scene.GetRenderWindow()
-        i_ren = window.GetInteractor().GetInteractorStyle()
+        if self.resizable:
+            window = scene.GetRenderWindow()
+            i_ren = window.GetInteractor().GetInteractorStyle()
 
-        window_size = window.GetSize()
-        panel_size = self.size
-        self.size_ratio = panel_size / window_size
+            window_size = window.GetSize()
+            panel_size = self.size
+            self.size_ratio = panel_size / window_size
 
-        window.AddObserver('WindowResizeEvent',
-                           partial(self.window_event_propagate,
-                                   obj=self.background, i_ren=i_ren))
+            window.AddObserver('WindowResizeEvent',
+                            partial(self.window_event_propagate,
+                                    obj=self.background, i_ren=i_ren))
 
         for element in self._elements:
             element.add_to_scene(scene)
@@ -282,20 +283,8 @@ class Panel2D(UI):
             self.position = (self.position[0], new_position[1])
             self.resize(np.clip(new_size, 0, None))
 
-        self.panel_resize_callback(i_ren, panel2d_object)
-        i_ren.force_render()
-
-    def panel_resize_callback(self, i_ren, panel2d_object):
-        """User hook when panel is resized from corner.
-
-        Parameters
-        ----------
-        i_ren: :class: `CustomInteractorStyle`
-            Custom Interactor
-        panel2d_object: :class: `Panel2D`
-            Instance of the Panel2D
-        """
         self.on_panel_resize(self)
+        i_ren.force_render()
         i_ren.event.abort()
 
     def re_align(self, window_size_change):

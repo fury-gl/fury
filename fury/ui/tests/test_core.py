@@ -73,6 +73,12 @@ def test_ui_button_panel(recording=False):
     npt.assert_equal(False, hasattr(normal_panel, 'resize_button'))
 
     # Assign the counter callback to every possible event.
+    size = panel.size
+    def panel_resize(panel):
+        global size
+        size = panel.size
+
+    panel.on_panel_resize = panel_resize
     event_counter = EventCounter()
     event_counter.monitor(button_test)
     event_counter.monitor(panel.background)
@@ -94,6 +100,8 @@ def test_ui_button_panel(recording=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
+
+    npt.assert_equal(panel.size, size)
 
 
 def test_ui_rectangle_2d():
