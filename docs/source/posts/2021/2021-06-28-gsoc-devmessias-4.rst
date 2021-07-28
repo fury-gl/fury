@@ -6,21 +6,18 @@ SOLID, monkey patching  a python issue and  network vizualization through WebRTC
    :tags: google
    :category: gsoc
 
-Hi everyone! My name is Bruno Messias and I'm a PhD student working with
-graphs and networks. This summer I'll develop new tools and features for
-FURY-GL Specifically, I'll focus on developing a system for
-collaborative visualization of large network layouts using FURY and VTK.
+
 
 These past two weeks I’ve spent most of my time in the `Streaming System
 PR <https://github.com/fury-gl/fury/pull/437>`__ and the `Network Layout
-PR <https://github.com/fury-gl/helios/pull/1/>`__ In this post I’ll
-focus on the most relevant things I’ve made for those PRs
+PR <https://github.com/fury-gl/helios/pull/1/>`__ . In this post I’ll
+focus on the most relevant things I’ve made for those PRs.
 
 Streaming System
 ----------------
 
 **Pull
-request**\ `fury-gl/fury/pull/437 <https://github.com/fury-gl/fury/pull/437/>`__
+request** : \ `fury-gl/fury/pull/437 <https://github.com/fury-gl/fury/pull/437/>`__.
 
 Code Refactoring
 ~~~~~~~~~~~~~~~~
@@ -34,7 +31,7 @@ I’ve done let’ s take a look into this
 the FuryStreamClient Object before the refactoring.
 
 The code is a mess. To see why this code is not good according to SOLID
-principles let’s just list all the responsibilities of FuryStreamClient
+principles let’s just list all the responsibilities of FuryStreamClient:
 
 -  Creates a RawArray or SharedMemory to store the n-buffers
 -  Creates a RawArray or SharedMemory to store the information about
@@ -154,8 +151,8 @@ without modifying the behavior of FuryStreamClient or the code inside of
 server.py.
 
 I’ve also applied the same SOLID principles to improve the CircularQueue
-object. Although the CircularQueue and FuryStreamInteraction was not
-violating the S from SOLID the head-tail buffer from the CircularQueue
+object. Although the CircularQueue and FuryStreamInteraction were not
+violating the S from SOLID, the head-tail buffer from the CircularQueue
 must have a way to lock the write/read if the memory resource is busy.
 Meanwhile the
 `multiprocessing.Arrays <https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array>`__
@@ -259,7 +256,7 @@ Network Layout (Helios-FURY)
 request**\ `fury-gl/helios/pull/1 <https://github.com/fury-gl/helios/pull/1/>`__
 
 Finally, the first version of FURY network layout is working as can you
-see in the video below
+see in the video below.
 
 In addition, this already can be used with the streaming system allowing
 user interactions across the internet with WebRTC protocol.

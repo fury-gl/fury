@@ -19,14 +19,14 @@ What did I do this week?
    animations for IPC network layout algorithms
 
    Before this commit was not possible to record the positions to have a
-   smooth animations with IPCLayout approach. See the animation bellow
+   smooth animations with IPCLayout approach. See the animation below
 
    |image1|
 
    After this PR now it's possible to tell Helios to store the evolution
    of the network positions using the record_positions parameter. This
    parameter should be passed on the start method. Notice in the image
-   bellow how this gives to us a better visualization
+   below how this gives to us a better visualization
 
    |image2|
 

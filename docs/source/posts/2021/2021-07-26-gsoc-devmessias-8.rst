@@ -12,7 +12,7 @@ What did I do this week?
 
 -  `PR fury-gl/helios#18 (merged):`_ Helios Documentation
 
-   I’ve been working in the Helios documentation. Now it’s available
+   I’ve been working on Helios documentation. Now it’s available
    online at https://fury-gl.github.io/helios-website |image1|
 
 -   `PR fury-gl/helios#17 (merged):`_ Helios CI for tests and code

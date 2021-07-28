@@ -13,18 +13,17 @@ What did you do this week?
 
 -  `PR fury-gl/fury#422
    (merged): <https://github.com/fury-gl/fury/pull/422/commits/8a0012b66b95987bafdb71367a64897b25c89368>`__
-   Integrated the 3d impostor spheres with the marker actor
+   Integrated the 3d impostor spheres with the marker actor.
 -  `PR fury-gl/fury#422
    (merged): <https://github.com/fury-gl/fury/pull/422>`__ Fixed some
-   issues with my maker PR which now it's merged on fury
+   issues with my maker PR which now it's merged on fury.
 -  `PR fury-gl/fury#432 <https://github.com/fury-gl/fury/pull/432>`__
-   I've made some improvements in my PR which can be used to fine tuning
-   the opengl state on VTK
+   I've made some improvements in my PR which can be used to fine tune 
+   the opengl state on VTK.
 -  `PR fury-gl/fury#437 <https://github.com/fury-gl/fury/pull/437>`__
-   I've made several improvements in my streamer proposal for FURY. most
-   of those improvements it's related with memory management. Using the
-   SharedMemory from python 3.8 now it's possible to use the streamer
-   direct on a jupyter without blocking
+   I've made several improvements in my streamer proposal for FURY related to memory management.
+
+
 -  `PR fury-gl/helios#1 <https://github.com/fury-gl/helios/pull/1>`__
    First version of async network layout using force-directed.
 
@@ -41,7 +40,7 @@ through the commit
 The `SharedMemory <https://docs.python.org/3/library/multiprocessing.shared_memory.html>`__
 from python>=3.8 offers new a way to share memory resources between
 unrelated process. One of the advantages of using the SharedMemory
-instead of the RawArray from multiprocessing it’s that the SharedMemory
+instead of the RawArray from multiprocessing is that the SharedMemory
 allows to share memory blocks without those processes be related with a
 fork or spawm method. The SharedMemory behavior allowed to achieve our
 jupyter integration and `simplifies the use of the streaming
@@ -60,9 +59,9 @@ Let’s see the following scenario:
    4-Process A closes  X
    5-Process A unlink() the shared memory resource X
 
-This scenario should work well. unlink() X in it's the right way as
+The above scenario should work flawless. Calling unlink() in X is the right way as
 discussed in the python official documentation. However, there is a open
-issue which a think it's related with the above scenario.
+issue  related the unlink method
 
 -  `Issue:
    https://bugs.python.org/issue38119 <https://bugs.python.org/issue38119>`__

@@ -14,7 +14,7 @@ What did you do this week?
 
 -  Before the `8c670c2`_ commit, for some versions of MacOs the
    streaming system was falling in a silent bug. I’ve spent a lot of
-   time researching to find a cause for this. Fortunately, I could found
+   time researching to found a cause for this. Fortunately, I could found
    the cause and the solution. This troublesome MacOs was falling in a
    silent bug because the SharedMemory Object was creating a memory
    resource with at least 4086 bytes indepedent if I've requested less
@@ -41,7 +41,7 @@ tasks related with this PR:
    in the network visualization system.
 -  - Minimum Distortion Embeddings examples: I've created some examples
    which shows how integrate pymde (Python Minimum Distortion
-   Embeddings) with fury/helios. The image bellow shows the result of
+   Embeddings) with fury/helios. The image below shows the result of
    this integration: a "perfect" graph embedding
 
 .. image:: https://user-images.githubusercontent.com/6979335/124524052-da937e00-ddcf-11eb-83ca-9b58ca692c2e.png
