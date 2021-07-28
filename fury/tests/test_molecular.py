@@ -58,6 +58,9 @@ def test_molecule_creation():
     elements = np.array([6, 6])
     npt.assert_raises(ValueError, molecular.Molecule, elements, atom_coords)
 
+    elements = [i for i in range(8)]
+    npt.assert_raises(ValueError, molecular.Molecule, elements, atom_coords)
+
 
 def test_add_atom_bond_creation():
     molecule = molecular.Molecule()
