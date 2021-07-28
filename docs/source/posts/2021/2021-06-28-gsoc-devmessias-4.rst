@@ -1,7 +1,7 @@
 SOLID, monkey patching  a python issue and  network vizualization through WebRTC
 ================================================================================
 
-.. post:: Jully 05 2021
+.. post:: July 05 2021
    :author: Bruno Messias
    :tags: google
    :category: gsoc
