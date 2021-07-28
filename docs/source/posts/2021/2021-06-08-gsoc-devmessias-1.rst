@@ -8,7 +8,7 @@ Weekly Check-In #1
 
 Hi everyone! My name is Bruno Messias currently I'm a Ph.D student at
 USP/Brazil. In this summer I'll develop new tools and features for
-FURY-GL Specifically, I'll focus into developing a system for
+FURY-GL. Specifically, I'll focus into developing a system for
 collaborative visualization of large network layouts using FURY and VTK.
 
 What did I do this week?
@@ -44,7 +44,7 @@ What is coming up next?
 
 In this week I'll focus on finish the #432 and #422 pull-requests.
 
-.. _`A FURY/VTK webrtc stream system proposal:`: ’https://github.com/fury-gl/fury/pull/437’
-.. _shader markers PR: https://github.com/fury-gl/fury/pull/422’
-.. _fine tunning open-gl state PR: ’https://github.com/fury-gl/fury/pull/432/
-.. _commit: %20https://github.com/fury-gl/fury/pull/437/commits/b1b0caf30db762cc018fc99dd4e77ba0390b2f9e%20
+.. _`A FURY/VTK webrtc stream system proposal:`: https://github.com/fury-gl/fury/pull/437
+.. _shader markers PR: https://github.com/fury-gl/fury/pull/422
+.. _fine tunning open-gl state PR: https://github.com/fury-gl/fury/pull/432/
+.. _commit: https://github.com/fury-gl/fury/pull/437/commits/b1b0caf30db762cc018fc99dd4e77ba0390b2f9e%20
