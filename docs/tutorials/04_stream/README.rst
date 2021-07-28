@@ -1,9 +1,8 @@
-STREAM
-------
+Streaming
+---------
 
 These tutorials show:
 
-- How to create a simple streaming server and
-turn that available on internet using ngrok
-- How to create a straeming server with user interaction
-- How to create a server with off-screen rendering
+- How to create a simple streaming server and turn that available.
+- How to create a streaming server with user interaction.
+- How to create a streaming server using the Widget Object.

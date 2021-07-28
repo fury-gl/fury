@@ -1,3 +1,9 @@
+"""
+====================================
+Streaming FURY with WebRTC/MJPEG
+====================================
+
+"""
 import multiprocessing
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line

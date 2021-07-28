@@ -1,6 +1,9 @@
-# if this example it's not working for you and you're using MacOs
-# uncoment the following line
-# multiprocessing.set_start_method('spawn')
+"""
+====================================
+Streaming FURY with user interaction
+====================================
+
+"""
 from fury import actor, window
 import numpy as np
 
@@ -123,3 +126,4 @@ if __name__ == '__main__':
     stream_interaction.cleanup()
     # open a browser using the following the url
     # http://localhost:8000/
+
