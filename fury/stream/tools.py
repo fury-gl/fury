@@ -27,7 +27,11 @@ except ImportError:
 def remove_shm_from_resource_tracker():
     """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't
     be tracked
-    More details at: https://bugs.python.org/issue38119
+
+    Notes
+    -----
+        More details at: https://bugs.python.org/issue38119
+
     """
 
     def fix_register(name, rtype):
@@ -59,6 +63,7 @@ class GenericMultiDimensionalBuffer(ABC):
             If buffer_name or buffer was not passed then max_size
             it's mandatory
         dimension : int, default 8
+
         """
         self.max_size = max_size
         self.dimension = dimension
@@ -116,6 +121,7 @@ class GenericMultiDimensionalBuffer(ABC):
 class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     def __init__(self, max_size, dimension=4, buffer=None):
         """This implements a  multidimensional buffer with RawArray.
+
         Stream system uses that to implemenet the CircularQueue
         with shared memory resources.
 
@@ -131,6 +137,7 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             RawArray object to store the data
             If buffer is passed than this Obj will read a
             a already created RawArray
+
         """
         super().__init__(max_size, dimension)
         if buffer is None:
@@ -159,7 +166,9 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
     def __init__(self, max_size, dimension=4, buffer_name=None):
         """This implements a generic multidimensional buffer
-        with SharedMemory. Stream system uses that to implemenet the
+        with SharedMemory.
+
+        Stream system uses that to implemenet the
         CircularQueue with shared memory resources.
 
         Parameters
@@ -210,7 +219,7 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             self._buffer.size//8,
             dtype='float64', buffer=self._buffer.buf)
         logging.info([
-            'load repr multidimensional buffer', 
+            'load repr multidimensional buffer',
             self._buffer_repr.shape, 'max size', self.max_size
         ])
 
@@ -343,8 +352,9 @@ class ArrayCircularQueue(GenericCircularQueue):
         self, max_size=10, dimension=6,
             head_tail_buffer=None, buffer=None):
         """This implements a MultiDimensional Queue which works with
-        Arrays and RawArrays. Stream system uses that to implement
-        user interactions
+        Arrays and RawArrays.
+
+        Stream system uses that to implement user interactions
 
         Parameters
         ----------
@@ -412,6 +422,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
             head_tail_buffer_name=None, buffer_name=None):
         """This implements a MultiDimensional Queue which works with
         SharedMemory.
+
         Stream system uses that to implemenet user interactions
 
         Parameters
@@ -429,6 +440,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
         buffer_name : str, optional
             if buffer_name is passed than this Obj will read a
             a already created SharedMemory to create the MultiDimensionalBuffer
+
         """
         super().__init__(
             max_size, dimension, use_shared_mem=True, buffer_name=buffer_name)
@@ -511,14 +523,14 @@ class GenericImageBufferManager(ABC):
         """This implements a abstract (generic) ImageBufferManager with
         the n-buffer techinique.
 
-       Parameters
+        Parameters
         ----------
         max_window_size : tuple of ints, optional
-                This allows resize events inside of the FURY window instance.
-                Should be greater than the window size.
+            This allows resize events inside of the FURY window instance.
+            Should be greater than the window size.
         num_buffers : int, optional
-                Number of buffers to be used in the n-buffering
-                techinique.
+            Number of buffers to be used in the n-buffering
+            techinique.
         use_shared_mem: bool, default False
 
         """
@@ -706,8 +718,11 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             self, max_window_size=(100, 100), num_buffers=2,
             image_buffer_names=None, info_buffer_name=None):
         """This implements an ImageBufferManager using the
-        SharedMemory approach. Python >=3.8 is a requirement
-        to use this object.
+        SharedMemory approach.
+
+        Note
+        -----
+        Python >=3.8 is a requirement to use this object.
 
         Parameters
         ----------
@@ -722,6 +737,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffer_names : list of str, optional
             a list of buffer names. Each buffer contains a frame
+
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=True)
         if image_buffer_names is None or info_buffer_name is None:
@@ -824,20 +840,22 @@ class IntervalTimer:
             kwargs to be passed to callback
 
         Examples
-        -------
-        >>> def callback(arr):
-        >>>    arr += [len(arr)]
-        >>> arr = []
-        >>> interval_timer = tools.IntervalTimer(1, callback, arr)
-        >>> interval_timer.start()
-        >>> time.sleep(5)
-        >>> interval_timer.stop()
-        >>> # len(arr) == 5
+        --------
 
-        Refs
-        ----
-        I got this from
-        https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
+        .. code-block:: python
+
+            def callback(arr):
+                arr += [len(arr)]
+            arr = []
+            interval_timer = tools.IntervalTimer(1, callback, arr)
+            interval_timer.start()
+            time.sleep(5)
+            interval_timer.stop()
+            # len(arr) == 5
+
+        References
+        -----------
+        [1] https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
 
         """
         self._timer = None

@@ -38,6 +38,7 @@ class RTCServer(VideoStreamTrack):
         Parameters:
         -----------
         image_buffer_manager : ImageBufferManager
+
         """
         super().__init__()
 

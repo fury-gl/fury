@@ -13,21 +13,24 @@ except ImportError:
     IPYTHON_AVAILABLE = False
 
 import time
-import socket, errno
+import socket
+import errno
 
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 
 def test_port(host, port):
     """Check if a given port it's available
+
     Parameters
     ----------
-        host : str
-        port : int
+    host : str
+    port : int
 
     Returns
     -------
-        available : bool
+    available : bool
+
     """
     available = True
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,6 +52,8 @@ class Widget:
         """Thi Obj it's able to run the fury streaming system using the SharedMemory
         from python multiprocessing.
 
+        Parameters
+        ----------
         showm : ShowmManager
         ms_stream : float, optional
             time in mileseconds between each frame buffer update.
@@ -93,7 +98,8 @@ class Widget:
     @property
     def command_string(self):
         s = 'from fury.stream.server import web_server;'
-        s += f"web_server(image_buffer_names={self.stream.img_manager.image_buffer_names}"
+        s += "web_server(image_buffer_names="
+        s += f"{self.stream.img_manager.image_buffer_names}"
         s += f",info_buffer_name='{self.stream.img_manager.info_buffer_name}',"
         s += "queue_head_tail_buffer_name='"
         s += f"{self.stream_interaction.circular_queue.head_tail_buffer_name}'"

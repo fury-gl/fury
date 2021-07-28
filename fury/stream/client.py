@@ -18,6 +18,15 @@ from fury.stream.constants import _CQUEUE
 
 
 def callback_stream_client(*args, **kwargs):
+    """This callback is used to update the image inside of
+    the ImageManager instance
+
+    Parameters
+    ----------
+    args : args
+    kwargs : kwargs
+
+    """
     stream_client = kwargs['stream_client']
     if not stream_client._in_request:
         stream_client._in_request = True
@@ -47,25 +56,26 @@ class FuryStreamClient:
             num_buffers=2,
     ):
         '''This obj is responsible to create a StreamClient.
+
         A StreamClient extracts a framebuffer from the OpenGL context
         and writes into a shared memory resource.
 
         Parameters
         ----------
-            showm : FuryShowmManager
-            max_window_size : tuple of ints, optional
-                This allows resize events inside of the FURY window instance.
-                Should be greater than the window size.
-            use_raw_array : bool, optional
-                If False then FuryStreamClient will use SharedMemory
-                instead of RawArrays. Notice that Python >=3.8 it's a
-                requirement
-                to use SharedMemory)
-            whithout_iren_start : bool, optional
-                Sometimes you can't initiate the vtkInteractor instance.
-            num_buffers : int, optional
-                Number of buffers to be used in the n-buffering
-                techinique.
+        showm : FuryShowmManager
+        max_window_size : tuple of ints, optional
+            This allows resize events inside of the FURY window instance.
+            Should be greater than the window size.
+        use_raw_array : bool, optional
+            If False then FuryStreamClient will use SharedMemory
+            instead of RawArrays. Notice that Python >=3.8 it's a
+            requirement
+            to use SharedMemory)
+        whithout_iren_start : bool, optional
+            Sometimes you can't initiate the vtkInteractor instance.
+        num_buffers : int, optional
+            Number of buffers to be used in the n-buffering
+            techinique.
 
         '''
 
@@ -143,8 +153,8 @@ class FuryStreamClient:
         self.showm.window.Render()
         self.showm.iren.Render()
         self._started = True
-        callback_stream_client(None, None,
-            **{'stream_client': self, 'force_render': False})
+        callback_stream_client(
+            None, None, **{'stream_client': self, 'force_render': False})
 
     def stop(self):
         if not self._started:
@@ -189,14 +199,15 @@ def interaction_callback(circular_queue, showm, iren, render_after):
     """This callback is used to invoke vtk interaction events
     reading those events from the provided circular_queue instance
 
-    Parameters:
+    Parameters
     ----------
-        circular_queue : CircularQueue
-        showm : ShowmManager
-        iren : vtkInteractor
-        render_after : bool, optional
-            If the render method should be called after an
-            dequeue
+    circular_queue : CircularQueue
+    showm : ShowmManager
+    iren : vtkInteractor
+    render_after : bool, optional
+        If the render method should be called after an
+        dequeue
+
     """
     ts = time.time()*1000
     data = circular_queue.dequeue()
@@ -273,16 +284,17 @@ class FuryStreamInteraction:
 
         Parameters
         ----------
-            showm : ShowmManager
-            max_queue_size : int, optional
-                maximum number of events to be stored.
-            use_raw_array : bool, optional
-                If False then a CircularQueue will be created using
-                SharedMemory instead of RawArrays. Notice that
-                Python >=3.8 it's requirement to use SharedMemory.
-            whithout_iren_start : bool, optional
-                Set that to True if you can't initiate the vtkInteractor
-                instance.
+        showm : ShowmManager
+        max_queue_size : int, optional
+            maximum number of events to be stored.
+        use_raw_array : bool, optional
+            If False then a CircularQueue will be created using
+            SharedMemory instead of RawArrays. Notice that
+            Python >=3.8 it's requirement to use SharedMemory.
+        whithout_iren_start : bool, optional
+            Set that to True if you can't initiate the vtkInteractor
+            instance.
+
         """
 
         self.showm = showm
@@ -320,7 +332,7 @@ class FuryStreamInteraction:
             def callback(caller, event, *args, **kwargs):
                 interaction_callback(
                     self.circular_queue, self.showm, self.iren, False)
-            
+
             self._id_observer = self.showm.iren.AddObserver(
                 "TimerEvent", callback)
             self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
@@ -339,7 +351,7 @@ class FuryStreamInteraction:
         if self._id_observer is not None:
             self.showm.iren.RemoveObserver(self._id_observer)
             self._id_observer = None
-      
+
         if self._interval_timer is not None:
             self._interval_timer.stop()
             self._interval_timer = None
