@@ -63,14 +63,12 @@ below presents the sketch of the abstract class
 
 
 .. code-block:: python
-
    from abc import ABC, abstractmethod
 
    GenericImageBufferManager(ABC):
        def __init__(
                self, max_window_size=None, num_buffers=2, use_shared_mem=False):
-       …
-       #...
+            ...
        @abstractmethod
        def load_mem_resource(self):
            pass
@@ -177,7 +175,7 @@ constant values, for example
 .. code-block:: python
 
    EVENT_IDS = {
-       “ mouse_move” : 2, “mouse_weel”: 1, ….
+        "mouse_move" : 2, "mouse_weel": 1, #...
    }
 
 But this solution has another issue, anywhere in the code we can change
