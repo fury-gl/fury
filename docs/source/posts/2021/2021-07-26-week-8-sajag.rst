@@ -17,8 +17,10 @@ What did you do this week?
    -  Added tests for all functions in the molecular module.
 
 #. Updated `PR #462`_: Addressed the reviews of team members and
-   mentors, added more new features. Preview -
+   mentors, added new features.
+
    |image1|
+
 #. Updated `PR #362`_: Addressed the feedbacks of team members and
    mentors.
 
