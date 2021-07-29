@@ -1,9 +1,121 @@
 """Core module testing."""
-
+from os.path import join as pjoin
+import numpy as np
 import numpy.testing as npt
 import warnings
 
+from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
 from fury import window, ui
+from fury.testing import EventCounter
+
+
+def test_ui_button_panel(recording=False):
+    filename = "test_ui_button_panel"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    # Rectangle
+    rectangle_test = ui.Rectangle2D(size=(10, 10))
+    another_rectangle_test = ui.Rectangle2D(size=(1, 1))
+
+    # Button
+    fetch_viz_icons()
+
+    icon_files = []
+    icon_files.append(('stop', read_viz_icons(fname='stop2.png')))
+    icon_files.append(('play', read_viz_icons(fname='play3.png')))
+
+    button_test = ui.Button2D(icon_fnames=icon_files)
+    button_test.center = (20, 20)
+
+    def make_invisible(i_ren, _obj, button):
+        # i_ren: CustomInteractorStyle
+        # obj: vtkActor picked
+        # button: Button2D
+        button.set_visibility(False)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def modify_button_callback(i_ren, _obj, button):
+        # i_ren: CustomInteractorStyle
+        # obj: vtkActor picked
+        # button: Button2D
+        button.next_icon()
+        i_ren.force_render()
+
+    button_test.on_right_mouse_button_pressed = make_invisible
+    button_test.on_left_mouse_button_pressed = modify_button_callback
+
+    button_test.scale((2, 2))
+    button_color = button_test.color
+    button_test.color = button_color
+
+    # TextBlock
+    text_block_test = ui.TextBlock2D()
+    text_block_test.message = 'TextBlock'
+    text_block_test.color = (0, 0, 0)
+
+    # Panel
+    panel = ui.Panel2D(size=(300, 150),
+                       position=(290, 15),
+                       color=(1, 1, 1), align="right",
+                       has_border=True)
+    
+    non_bordered_panel = ui.Panel2D(size=(100, 100),
+                                    has_border=False)
+
+    npt.assert_equal(hasattr(non_bordered_panel, 'borders'), False)
+
+    panel.add_element(rectangle_test, (290, 135))
+    panel.add_element(button_test, (0.1, 0.1))
+    panel.add_element(text_block_test, (0.7, 0.7))
+    npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
+                      (10., 0.5))
+    npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
+                      (-0.5, 0.5))
+
+    npt.assert_equal(panel.border_width, [0.0, ]*4)
+    npt.assert_equal(panel.border_color, [np.asarray([1, 1, 1]), ]*4)
+
+    panel.border_width = ['bottom', 10.0]
+    npt.assert_equal(panel.border_width[3], 10.0)
+    npt.assert_equal(panel.borders['bottom'].height, 10.0)
+
+    panel.border_width = ['right', 10.0]
+    npt.assert_equal(panel.border_width[1], 10.0)
+    npt.assert_equal(panel.borders['right'].width, 10.0)
+
+    with npt.assert_raises(ValueError):
+        panel.border_width = ['invalid_label', 10.0]
+
+    panel.border_color = ['bottom', (0.4, 0.5, 0.6)]
+    npt.assert_equal(panel.border_color[3], (0.4, 0.5, 0.6))
+
+    with npt.assert_raises(ValueError):
+        panel.border_color = ['invalid_label', (0.4, 0.5, 0.6)]
+
+    new_size = (400, 400)
+    panel.resize(new_size)
+    npt.assert_equal(panel.borders['bottom'].width, 400.0)
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(button_test)
+    event_counter.monitor(panel.background)
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size, title="FURY Button")
+
+    show_manager.scene.add(panel)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
 
 
 def test_ui_rectangle_2d():
