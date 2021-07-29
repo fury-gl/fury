@@ -28,7 +28,7 @@ What is coming up next week?
 ----------------------------
 
 #. Work more on molecular module, meeting with mentors and core team on
-   thursday to optimize the module and merge `PR #452`_.
+   Thursday to optimize the module and merge `PR #452`_.
 #. Start working upon molecular surface model.
 
 Did you get stuck anywhere?
