@@ -112,10 +112,10 @@ IsHetatm = np.array(IsHetatm)
 ###############################################################################
 # Doing 5 things here -
 # 1. Creating a scene object
-# 2. configuring the camera's position
+# 2. Configuring the camera's position
 # 3. Creating and adding axes actor to the scene
 # 4. Computing the bonding information for the molecule.
-# 4. Generating and adding molecular model to the scene.
+# 5. Generating and adding molecular model to the scene.
 
 scene = window.Scene()
 scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
