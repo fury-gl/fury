@@ -116,7 +116,17 @@ class FuryStreamClient:
         self.use_raw_array = use_raw_array
         self._started = False
 
-    def start(self, ms=16,):
+    def start(self, ms=0,):
+        """Start the stream client.
+
+        Parameters
+        ----------
+        ms : float, optional
+            positive number. This update the image buffer using a interval
+            of ms milliseconds. If ms is 0 then the stream client
+            will update the buffer after every Render event.
+
+        """
         if self._started:
             self.stop()
         if ms > 0:
@@ -157,6 +167,8 @@ class FuryStreamClient:
             None, None, **{'stream_client': self, 'force_render': False})
 
     def stop(self):
+        """Stop the stream client.
+        """
         if not self._started:
             return
 
@@ -174,6 +186,8 @@ class FuryStreamClient:
         self._started = False
 
     def cleanup(self):
+        """Relsese the shared memory resources if necessary.
+        """
         if not self.use_raw_array:
             self.img_manager.info_buffer.close()
             # this it's due the python core issues
@@ -315,6 +329,17 @@ class FuryStreamInteraction:
         self._started = False
 
     def start(self, ms=3):
+        """Start the stream interaction client.
+
+        Parameters
+        ----------
+        ms : float, optional
+            positive number greather than zero.
+
+        """
+        if ms <= 0:
+            raise ValueError('ms must be greater than zero')
+
         if self._started:
             self.stop()
         if self._whithout_iren_start:
@@ -340,6 +365,8 @@ class FuryStreamInteraction:
         self._started = True
 
     def stop(self):
+        """Stop the stream interaction client.
+        """
         if not self._started:
             return
 
@@ -359,4 +386,6 @@ class FuryStreamInteraction:
         self._started = False
 
     def cleanup(self):
+        """Relsese the shared memory resources if necessary.
+        """
         self.circular_queue.cleanup()
