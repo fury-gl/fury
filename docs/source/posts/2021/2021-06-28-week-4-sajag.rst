@@ -25,7 +25,7 @@ Link to the document: `Molecular_viz_vtk`_. In addition to the
 document, I read some research papers recommended by my mentors to
 understand some other (and potentially better) methods of ribbon
 visualization. Tried to implement vtkProteinRibbonFilter usage without
-using vtkPDBReader but was unsuccessful in this endeavour.
+using vtkPDBReader but was unsuccessful in this endeavor.
 
 What is coming up next week?
 ----------------------------
