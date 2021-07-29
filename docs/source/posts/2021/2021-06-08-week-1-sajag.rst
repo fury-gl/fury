@@ -26,10 +26,10 @@ I made a `document <https://docs.google.com/document/d/1mSoAWyXlLNrCa3hN-hiP35Lj
 I worked upon my `previous PR <https://github.com/fury-gl/fury/pull/404>`_ too during the community bonding period and fixed its docstring syntax.
 
 As my college ended early courtesy covid, I had extra time during which I experimented and learnt more about PDB and PDBx files - the details they contain and how to parse them. 
-A small backbone visualisation  of 1mb0 protein made on FURY by extracting coordinate data of its alpha carbons - 
+A small backbone visualisation  of 1mb0 protein made on FURY by extracting coordinate data of its alpha carbons:
 
-.. image:: https://github.com/SunTzunami/gsoc2021_blog_data/blob/master/visuals/week1_backbone.png?raw=true
-
+.. figure:: https://github.com/SunTzunami/gsoc2021_blog_data/blob/master/visuals/week1_backbone.png?raw=true
+  :align: center
 
 What is coming up next week?
 ----------------------------
