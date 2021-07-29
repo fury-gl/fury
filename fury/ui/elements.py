@@ -16,7 +16,7 @@ import numpy as np
 from fury.data import read_viz_icons
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D, ImageContainer2D
-from fury.ui.helpers import TWO_PI, clip_overflow
+from fury.ui.helpers import TWO_PI, clip_overflow, wrap_overflow
 from fury.ui.core import Button2D
 
 
@@ -3067,12 +3067,12 @@ class Card2D(UI):
         Displays the body text.
     """
 
-    def __init__(
-        self, image_path, body_text="Body", draggable=True,
-        title_text="Title", padding=10, position=(0, 0),
-        size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
-        bg_opacity=1, title_color=(0., 0., 0.), body_color=(0., 0., 0.)
-            ):
+    def __init__(self, image_path, body_text="Body", draggable=True,
+                 title_text="Title", padding=10, position=(0, 0),
+                 size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
+                 bg_opacity=1, title_color=(0., 0., 0.),
+                 body_color=(0., 0., 0.), border_color=(1., 1., 1.),
+                 border_width=0):
         """
 
         Parameters
@@ -3102,6 +3102,10 @@ class Card2D(UI):
             Title text color
         body_color: (float, float, float), optional
             Body text color
+        border_color: (float, float, float), optional
+            Border color
+        border_width: int, optional
+            Width of the border
         """
 
         self.image_path = image_path
@@ -3120,12 +3124,16 @@ class Card2D(UI):
         self.title_color = [np.clip(value, 0, 1) for value in title_color]
         self.body_color = [np.clip(value, 0, 1) for value in body_color]
         self.bg_color = [np.clip(value, 0, 1) for value in bg_color]
+        self.border_color = [np.clip(value, 0, 1) for value in border_color]
         self.bg_opacity = bg_opacity
 
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
         self._image_size = (self.card_size[0], self.card_size[1] *
                             self.image_scale)
+
+        self.border_width = border_width
+        self.has_border = bool(border_width)
 
         super(Card2D, self).__init__()
         self.position = position
@@ -3147,7 +3155,10 @@ class Card2D(UI):
                                      color=self.title_color)
 
         self.panel = Panel2D(self.card_size, color=self.bg_color,
-                             opacity=self.bg_opacity)
+                             opacity=self.bg_opacity,
+                             border_color=self.border_color,
+                             border_width=self.border_width,
+                             has_border=self.has_border)
 
         self.panel.add_element(self.image, (0., 0.))
         self.panel.add_element(self.title_box, (0., 0.))
@@ -3179,8 +3190,13 @@ class Card2D(UI):
         ----------
         scene : scene
         """
-
         self.panel.add_to_scene(_scene)
+        if self.size[0] <= 200:
+            clip_overflow(self.body_box, self.size[0]-2*self.padding)
+        else:
+            wrap_overflow(self.body_box, self.size[0]-2*self.padding)
+
+        wrap_overflow(self.title_box, self.size[0]-2*self.padding)
 
     def _get_size(self):
         return self.panel.size
@@ -3196,26 +3212,31 @@ class Card2D(UI):
         _width, _height = size
         self.panel.resize(size)
 
-        self._image_size = (size[0], int(self.image_scale*size[1]))
+        self._image_size = (size[0]-int(self.border_width),
+                            int(self.image_scale*size[1]))
+
         _title_box_size = (_width - 2 * self.padding, _height *
                            0.34 * self.text_scale / 2)
 
         _body_box_size = (_width - 2 * self.padding, _height *
                           self.text_scale / 2)
 
-        _img_coords = (0, int(size[1] - self._image_size[1]))
+        _img_coords = (int(self.border_width),
+                       int(size[1] - self._image_size[1]))
+
         _title_coords = (self.padding, int(_img_coords[1] -
-                                           _title_box_size[1] - self.padding))
+                                           _title_box_size[1] - self.padding +
+                                           self.border_width))
 
         _text_coords = (self.padding, int(_title_coords[1] -
-                                          _body_box_size[1] - self.padding))
+                                          _body_box_size[1] - self.padding +
+                                          self.border_width))
 
         self.panel.update_element(self.image, _img_coords)
         self.panel.update_element(self.body_box, _text_coords)
         self.panel.update_element(self.title_box, _title_coords)
 
         self.image.resize(self._image_size)
-        self.body_box.resize(_body_box_size)
         self.title_box.resize(_title_box_size)
 
     def _set_position(self, _coords):
