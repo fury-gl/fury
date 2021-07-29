@@ -42,9 +42,6 @@ def callback_stream_client(*args, **kwargs):
             stream_client.img_manager.write_into(w, h, np_arr)
             # time.sleep(kwargs['ms']/1000)
             stream_client._in_request = False
-            if kwargs['force_render']:
-                stream_client.showm.window.Render()
-                stream_client.showm.iren.Render()
 
 
 class FuryStreamClient:
