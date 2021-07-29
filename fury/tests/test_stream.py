@@ -236,15 +236,14 @@ def test_stream_client_resize():
             width_0, height_0), order_transparent=False,
         )
 
-
     with npt.assert_raises(ValueError):
         FuryStreamClient(
-            showm, use_raw_array=False,
+            showm, use_raw_array=True,
             max_window_size=(width_0-10, height_0),
             whithout_iren_start=True)
 
     stream = FuryStreamClient(
-            showm, use_raw_array=False,
+            showm, use_raw_array=True,
             max_window_size=(width_0, height_0),
             whithout_iren_start=True)
 
