@@ -28,20 +28,24 @@ def callback_stream_client(*args, **kwargs):
 
     """
     stream_client = kwargs['stream_client']
-    if not stream_client._in_request:
-        stream_client._in_request = True
-        stream_client.window2image_filter.Update()
-        stream_client.window2image_filter.Modified()
-        vtk_image = stream_client.window2image_filter.GetOutput()
-        vtk_array = vtk_image.GetPointData().GetScalars()
-        # num_components = vtk_array.GetNumberOfComponents()
+    if stream_client._in_request:
+        return
 
-        w, h, _ = vtk_image.GetDimensions()
-        np_arr = np.frombuffer(vtk_array, dtype='uint8')
-        if np_arr is not None:
-            stream_client.img_manager.write_into(w, h, np_arr)
-            # time.sleep(kwargs['ms']/1000)
-            stream_client._in_request = False
+    stream_client._in_request = True
+    stream_client.window2image_filter.Update()
+    stream_client.window2image_filter.Modified()
+    vtk_image = stream_client.window2image_filter.GetOutput()
+    vtk_array = vtk_image.GetPointData().GetScalars()
+    # num_components = vtk_array.GetNumberOfComponents()
+
+    w, h, _ = vtk_image.GetDimensions()
+    np_arr = np.frombuffer(vtk_array, dtype='uint8')
+    if np_arr is None:
+        stream_client._in_request = False
+        return
+
+    stream_client.img_manager.write_into(w, h, np_arr)
+    stream_client._in_request = False
 
 
 class FuryStreamClient:
@@ -52,7 +56,7 @@ class FuryStreamClient:
             whithout_iren_start=False,
             num_buffers=2,
     ):
-        '''This obj is responsible to create a StreamClient.
+        """This obj is responsible to create a StreamClient.
 
         A StreamClient extracts a framebuffer from the OpenGL context
         and writes into a shared memory resource.
@@ -74,7 +78,7 @@ class FuryStreamClient:
             Number of buffers to be used in the n-buffering
             techinique.
 
-        '''
+        """
 
         self._whithout_iren_start = whithout_iren_start
         self.showm = showm
@@ -222,69 +226,70 @@ def interaction_callback(circular_queue, showm, iren, render_after):
     """
     ts = time.time()*1000
     data = circular_queue.dequeue()
-    if data is not None:
-        user_event_id = data[0]
-        user_timestamp = data[_CQUEUE.index_info.user_timestamp]
-        logging.info(
-            'Interaction Callback: time to dequeue ' +
-            f'{ts-user_timestamp:.2f} ms')
+    if data is None:
+        return
 
-        ts = time.time()*1000
-        newX = int(showm.size[0]*data[_CQUEUE.index_info.x])
-        newY = int(showm.size[1]*data[_CQUEUE.index_info.y])
-        ctrl_key = int(data[_CQUEUE.index_info.ctrl])
-        shift_key = int(data[_CQUEUE.index_info.shift])
-        newY = showm.size[1] - newY
-        event_ids = _CQUEUE.event_ids
-        if user_event_id == event_ids.mouse_weel:
-            zoomFactor = 1.0 - data[_CQUEUE.index_info.weel] / 1000.0
-            camera = showm.scene.GetActiveCamera()
-            fp = camera.GetFocalPoint()
-            pos = camera.GetPosition()
-            delta = [fp[i] - pos[i] for i in range(3)]
-            camera.Zoom(zoomFactor)
+    user_event_id = data[0]
+    user_timestamp = data[_CQUEUE.index_info.user_timestamp]
+    logging.info(
+        'Interaction Callback: time to dequeue ' +
+        f'{ts-user_timestamp:.2f} ms')
 
-            pos2 = camera.GetPosition()
-            camera.SetFocalPoint(
-                [pos2[i] + delta[i] for i in range(3)])
-            if data[1] < 0:
-                iren.MouseWheelForwardEvent()
-            else:
-                iren.MouseWheelBackwardEvent()
+    ts = time.time()*1000
+    newX = int(showm.size[0]*data[_CQUEUE.index_info.x])
+    newY = int(showm.size[1]*data[_CQUEUE.index_info.y])
+    ctrl_key = int(data[_CQUEUE.index_info.ctrl])
+    shift_key = int(data[_CQUEUE.index_info.shift])
+    newY = showm.size[1] - newY
+    event_ids = _CQUEUE.event_ids
+    if user_event_id == event_ids.mouse_weel:
+        zoomFactor = 1.0 - data[_CQUEUE.index_info.weel] / 1000.0
+        camera = showm.scene.GetActiveCamera()
+        fp = camera.GetFocalPoint()
+        pos = camera.GetPosition()
+        delta = [fp[i] - pos[i] for i in range(3)]
+        camera.Zoom(zoomFactor)
 
-            # showm.window.Modified()
+        pos2 = camera.GetPosition()
+        camera.SetFocalPoint(
+            [pos2[i] + delta[i] for i in range(3)])
+        if data[1] < 0:
+            iren.MouseWheelForwardEvent()
+        else:
+            iren.MouseWheelBackwardEvent()
+        # showm.window.Modified()
 
-        elif user_event_id == event_ids.mouse_move:
-            iren.SetEventInformation(
-                newX, newY, ctrl_key, shift_key, chr(0), 0, None)
+    elif user_event_id == event_ids.mouse_move:
+        iren.SetEventInformation(
+            newX, newY, ctrl_key, shift_key, chr(0), 0, None)
 
-            iren.MouseMoveEvent()
+        iren.MouseMoveEvent()
 
-        elif event_ids.mouse_ids:
-            iren.SetEventInformation(
-                newX, newY, ctrl_key, shift_key,
-                chr(0), 0, None)
-            mouse_actions = {
-                event_ids.left_btn_press: iren.LeftButtonPressEvent,
-                event_ids.left_btn_release: iren.LeftButtonReleaseEvent,
-                event_ids.middle_btn_press: iren.MiddleButtonPressEvent,
-                event_ids.middle_btn_release: iren.MiddleButtonReleaseEvent,
-                event_ids.right_btn_press: iren.RightButtonPressEvent,
-                event_ids.right_btn_release: iren.RightButtonReleaseEvent,
-            }
-            mouse_actions[user_event_id]()
-            # showm.window.Modified()
-        logging.info(
-            'Interaction: time to peform event ' +
-            f'{ts-user_timestamp:.2f} ms')
-        # maybe when the fury host rendering is disabled
-        # fury_client.window2image_filter.Update()
-        # fury_client.window2image_filter.Modified()
-        # this should be called if we are using
-        # renderevent attached to a vtkwindow instance
-        if render_after:
-            showm.window.Render()
-            showm.iren.Render()
+    elif event_ids.mouse_ids:
+        iren.SetEventInformation(
+            newX, newY, ctrl_key, shift_key,
+            chr(0), 0, None)
+        mouse_actions = {
+            event_ids.left_btn_press: iren.LeftButtonPressEvent,
+            event_ids.left_btn_release: iren.LeftButtonReleaseEvent,
+            event_ids.middle_btn_press: iren.MiddleButtonPressEvent,
+            event_ids.middle_btn_release: iren.MiddleButtonReleaseEvent,
+            event_ids.right_btn_press: iren.RightButtonPressEvent,
+            event_ids.right_btn_release: iren.RightButtonReleaseEvent,
+        }
+        mouse_actions[user_event_id]()
+        # showm.window.Modified()
+    logging.info(
+        'Interaction: time to peform event ' +
+        f'{ts-user_timestamp:.2f} ms')
+    # maybe when the fury host rendering is disabled
+    # fury_client.window2image_filter.Update()
+    # fury_client.window2image_filter.Modified()
+    # this should be called if we are using
+    # renderevent attached to a vtkwindow instance
+    if render_after:
+        showm.window.Render()
+        showm.iren.Render()
 
 
 class FuryStreamInteraction:
