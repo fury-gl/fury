@@ -161,7 +161,91 @@ def test_client_and_buffer_manager():
         test(False, 16)
 
 
-def test_interaction():
+def test_stream_client_conditions():
+    def test(
+            use_raw_array, ms_stream=16,
+            whithout_iren_start=False):
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=whithout_iren_start)
+
+        showm.render()
+        stream.start(ms_stream)
+        npt.assert_equal(stream._started, True)
+        # test if stop method has been called
+        stream.start(ms_stream)
+        npt.assert_equal(stream._started, True)
+        showm.render()
+        stream.stop()
+        # double stop test
+        npt.assert_equal(stream.stop(), False)
+        stream.cleanup()
+
+    test(True, 16, False)
+    test(True, 0, True)
+    if PY_VERSION_8:
+        test(False, 16, False)
+        test(False, 0, True)
+
+
+def test_stream_client_resize():
+    width_0 = 100
+    height_0 = 200
+    centers = np.array([
+        [0, 0, 0],
+        [-1, 0, 0],
+        [1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+    actors = actor.sdf(
+        centers, primitives='sphere', colors=colors, scales=2)
+
+    scene = window.Scene()
+    scene.add(actors)
+    showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+    showm.initialize()
+
+    with npt.assert_raises(ValueError):
+        FuryStreamClient(
+            showm, use_raw_array=False,
+            max_window_size=(width_0-10, height_0),
+            whithout_iren_start=True)
+
+
+def test_stream_interaction():
     def test(use_raw_array, ms_stream=16):
         width_0 = 300
         height_0 = 200
@@ -193,7 +277,8 @@ def test_interaction():
             whithout_iren_start=True)
         stream_interaction = FuryStreamInteraction(
             max_queue_size=500,
-            showm=showm, use_raw_array=use_raw_array, whithout_iren_start=True)
+            showm=showm, use_raw_array=use_raw_array, 
+            whithout_iren_start=True)
 
         showm.render()
         # test jpeg method
@@ -256,7 +341,68 @@ def test_interaction():
         stream.cleanup()
         stream_interaction.cleanup()
 
-    test(True, 8)
+    test(True, 16)
+    if PY_VERSION_8:
+        test(False, 16)
+
+
+def test_stream_interaction_conditions():
+    def test(use_raw_array, ms_stream, whitouth_iren_start):
+        width_0 = 300
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, size=(width_0, height_0))
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=whitouth_iren_start)
+        stream_interaction = FuryStreamInteraction(
+            max_queue_size=500,
+            showm=showm, use_raw_array=use_raw_array, 
+            whithout_iren_start=whitouth_iren_start)
+
+        showm.render()
+     
+        # ms should always be greather than 0
+        with npt.assert_raises(ValueError):
+            stream_interaction.start(-1)
+
+        stream_interaction.start(ms_stream)
+        # test double start
+        stream_interaction.start(ms_stream)
+        while stream_interaction.circular_queue.head != -1:
+            showm.render()
+            time.sleep(.01)
+        stream_interaction.stop()
+        # double stop test
+        npt.assert_equal(stream_interaction.stop(), False)
+        stream.stop()
+        stream.cleanup()
+        stream_interaction.cleanup()
+
+    test(True, 16, True)
+    test(True, 16, False)
+    if PY_VERSION_8:
+        test(False, 16, True)
+        test(False, 16, False)
 
 
 def test_time_interval():
@@ -290,8 +436,8 @@ def test_multidimensional_buffer():
             m_buffer = tools.SharedMemMultiDimensionalBuffer(
                 max_size=max_size, dimension=dimension
             )
+        m_buffer.buffer = np.arange((max_size+1)*dimension).astype('float64')
         m_buffer[1] = np.array([.2, .3, .4, .5])
-
         assert len(m_buffer[0]) == dimension
         if not use_raw_array:
             # in OSx this number can change due the minimum shared memory
@@ -300,6 +446,7 @@ def test_multidimensional_buffer():
 
         assert len(m_buffer[max_size]) == 4
         npt.assert_equal(np.array([.2, .3, .4, .5]), m_buffer[1])
+        npt.assert_equal(np.array([8., 9,10, 11]), m_buffer[2])
         m_buffer.cleanup()
 
     test(True)

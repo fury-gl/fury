@@ -167,7 +167,7 @@ class FuryStreamClient:
         """Stop the stream client.
         """
         if not self._started:
-            return
+            return False
 
         if self._interval_timer is not None:
             self._interval_timer.stop()
@@ -365,7 +365,7 @@ class FuryStreamInteraction:
         """Stop the stream interaction client.
         """
         if not self._started:
-            return
+            return False
 
         if self._id_timer is not None:
             # self.showm.destroy_timer(self._id_timer)

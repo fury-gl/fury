@@ -107,15 +107,15 @@ class GenericMultiDimensionalBuffer(ABC):
 
     @abstractmethod
     def load_mem_resource(self):
-        pass
+        ...  # pragma: no cover
 
     @abstractmethod
     def create_mem_resource(self):
-        pass
+        ...  # pragma: no cover
 
     @abstractmethod
     def cleanup(self):
-        pass
+        ...  # pragma: no cover
 
 
 class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
@@ -328,23 +328,23 @@ class GenericCircularQueue(ABC):
 
     @abstractmethod
     def enqueue(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def dequeue(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def load_mem_resource(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def create_mem_resource(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def cleanup(self):
-        pass
+        pass  # pragma: no cover
 
 
 class ArrayCircularQueue(GenericCircularQueue):
@@ -630,15 +630,15 @@ class GenericImageBufferManager(ABC):
 
     @abstractmethod
     def load_mem_resource(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def create_mem_resource(self):
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def cleanup(self):
-        pass
+        pass  # pragma: no cover
 
 
 class RawArrayImageBufferManager(GenericImageBufferManager):
