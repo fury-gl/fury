@@ -1,4 +1,5 @@
 import numpy as np
+from PIL import Image, ImageDraw
 import multiprocessing
 import time
 import logging
@@ -391,7 +392,7 @@ class ArrayCircularQueue(GenericCircularQueue):
             self.set_head_tail(-1, -1, 0)
 
     def load_mem_resource(self):
-        pass
+        pass  # pragma: no cover
 
     def create_mem_resource(self):
         # head_tail_arr[0] int; head position
@@ -534,7 +535,7 @@ class GenericImageBufferManager(ABC):
         use_shared_mem: bool, default False
 
         """
-        self.max_window_size = max_window_size
+        self.max_window_size = np.array(max_window_size)
         self.num_buffers = num_buffers
         self.info_buffer_size = num_buffers*2 + 2
         self._use_shared_mem = use_shared_mem
@@ -548,6 +549,19 @@ class GenericImageBufferManager(ABC):
         self.info_buffer_repr = None
         self._created = False
 
+        size = (self.max_window_size[0], self.max_window_size[1])
+        img = Image.new(
+            'RGB', size,
+            color=(0, 0, 0))
+
+        d = ImageDraw.Draw(img)
+        pos_text = (12, size[1]//2)
+        d.text(
+            pos_text, "Image size have exceed the Buffer Max Size",
+            fill=(255, 255, 0))
+        img = np.flipud(img)
+        self.img_exceed = np.asarray(img).flatten()
+
     @property
     def next_buffer_index(self):
         index = int((self.info_buffer_repr[1]+1) % self.num_buffers)
@@ -555,27 +569,22 @@ class GenericImageBufferManager(ABC):
 
     @property
     def buffer_index(self):
-        index = int(self.info_buffer_repr[1])
+        index = self.info_buffer_repr[1]
         return index
 
     def write_into(self, w, h, np_arr):
-        buffer_size = buffer_size = int(h*w)
+        buffer_size = buffer_size = int(h*w*3)
         next_buffer_index = self.next_buffer_index
+
         if buffer_size == self.max_size:
             self.image_reprs[
                 next_buffer_index][:] = np_arr
         elif buffer_size < self.max_size:
             self.image_reprs[
-                    next_buffer_index][0:buffer_size*3] = np_arr
+                    next_buffer_index][0:buffer_size] = np_arr
         else:
-            rand_img = np.random.randint(
-                0, 255, size=self.max_size*3,
-                dtype='uint8')
-
             self.image_reprs[
-                # next_buffer_index][0:self.max_size*3] = rand_img
-                next_buffer_index][:] = rand_img
-
+                next_buffer_index][0:self.max_size] = self.img_exceed
             w = self.max_window_size[0]
             h = self.max_window_size[1]
 
