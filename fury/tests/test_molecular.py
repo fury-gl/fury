@@ -4,7 +4,7 @@ from fury import window, actor, molecular
 
 
 def test_periodic_table():
-    # testing class PeriodicTable()
+    # Testing class PeriodicTable()
     table = molecular.PeriodicTable()
     npt.assert_equal(table.atomic_number('C'), 6)
     npt.assert_equal(table.element_name(7), 'Nitrogen')
@@ -12,6 +12,9 @@ def test_periodic_table():
     npt.assert_allclose(table.atomic_radius(1, 'VDW'), 1.2, 0.1, 0)
     npt.assert_allclose(table.atomic_radius(6, 'Covalent'), 0.75, 0.1, 0)
     npt.assert_array_almost_equal(table.atom_color(1), np.array([1, 1, 1]))
+
+    # Test errors
+    npt.assert_raises(ValueError, table.atomic_radius, 4, "test")
 
 
 def get_default_molecular_info(all_info=False):
@@ -72,48 +75,48 @@ def test_add_atom_bond_creation():
 
 
 def test_atomic_number():
-    # testing atomic number get/set functions
+    # Testing atomic number get/set functions
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 4, 0, 0, 0)
 
-    # testing get_atomic_number
+    # Testing get_atomic_number
     npt.assert_equal(molecular.get_atomic_number(molecule, 0), 4)
 
-    # testing set_atomic_number
+    # Testing set_atomic_number
     molecular.set_atomic_number(molecule, 0, 6)
     npt.assert_equal(molecular.get_atomic_number(molecule, 0), 6)
 
 
 def test_atomic_position():
-    # testing atomic position get/set functions
+    # Testing atomic position get/set functions
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 4, 0, 0, 0)
 
-    # testing get_atomic_position
+    # Testing get_atomic_position
     npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
                                   np.array([0, 0, 0]))
 
-    # testing set_atomic_number
+    # Testing set_atomic_number
     molecular.set_atomic_position(molecule, 0, 1, 1, 1)
     npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
                                   np.array([1, 1, 1]))
 
 
 def test_bond_order():
-    # testing bond order get/set functions
+    # Testing bond order get/set functions
 
-    # testing get_bond_order
+    # Testing get_bond_order
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 1, 0, 0)
     molecular.add_bond(molecule, 0, 1, 3)
     npt.assert_equal(molecular.get_bond_order(molecule, 0), 3)
 
-    # testing set_bond_order
+    # Testing set_bond_order
     molecular.set_bond_order(molecule, 0, 2)
     npt.assert_equal(molecular.get_bond_order(molecule, 0), 2)
 
-    # testing get_bond_orders_array
+    # Testing get_bond_orders_array
     npt.assert_array_almost_equal(molecular.get_bond_orders_array(molecule),
                                   np.array([2]))
 
@@ -238,7 +241,7 @@ def test_stick_rep_actor(interactive=False):
 
 def test_ribbon_rep_actor(interactive=False):
 
-    # testing if heteroatoms are rendered properly
+    # Testing if heteroatoms are rendered properly
     scene = window.Scene()
     elements, atom_coords, atom_types, model, residue_seq, chain, is_hetatm, \
         sheet, helix = get_default_molecular_info(True)
@@ -260,7 +263,7 @@ def test_ribbon_rep_actor(interactive=False):
     npt.assert_equal(report.objects, 1)
     scene.clear()
 
-    # testing if helices and sheets are rendered properly
+    # Testing if helices and sheets are rendered properly
     atom_coords = np.array([[31.726, 105.084,  71.456],
                             [31.477, 105.680,  70.156],
                             [32.599, 106.655,  69.845],

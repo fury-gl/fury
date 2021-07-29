@@ -357,7 +357,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
         """
         return self.GetAtomicNumber(element_name)
 
-    def atomic_radius(self, atomic_number, radius_type):
+    def atomic_radius(self, atomic_number, radius_type='VDW'):
         """Given an atomic number, return either the covalent radius of the
         atom or return the Van Der Waals radius of the atom depending on
         radius_type.
@@ -371,11 +371,15 @@ class PeriodicTable(vtk.vtkPeriodicTable):
             Two valid choices -
             * 'VDW' : for Van Der Waals radius of the atom
             * 'Covalent' : for covalent radius of the atom
+            Default: 'VDW'
         """
         if radius_type == 'VDW':
             return self.GetVDWRadius(atomic_number)
         elif radius_type == 'Covalent':
             return self.GetCovalentRadius(atomic_number)
+        else:
+            raise ValueError('Incorrect radius_type specified. Please choose'
+                             ' from "VDW" or "Covalent".')
 
     def atom_color(self, atomic_number):
         """Given an atomic number, return the RGB tuple associated with that
