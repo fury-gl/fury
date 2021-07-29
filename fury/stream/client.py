@@ -189,25 +189,27 @@ class FuryStreamClient:
     def cleanup(self):
         """Relsese the shared memory resources if necessary.
         """
-        if not self.use_raw_array:
-            self.img_manager.info_buffer.close()
-            # this it's due the python core issues
-            # https://bugs.python.org/issue38119
-            # https://bugs.python.org/issue39959
-            # https://github.com/luizalabs/shared-memory-dict/issues/13
+        if self.use_raw_array:
+            return
+
+        self.img_manager.info_buffer.close()
+        # this it's due the python core issues
+        # https://bugs.python.org/issue38119
+        # https://bugs.python.org/issue39959
+        # https://github.com/luizalabs/shared-memory-dict/issues/13
+        try:
+            self.img_manager.info_buffer.unlink()
+        except FileNotFoundError:
+            print(f'Shared Memory {self.img_manager.info_buffer_name}\
+                    (info_buffer) File not found')
+        for buffer, name in zip(
+                self.img_manager.image_buffers,
+                self.img_manager.image_buffer_names):
+            buffer.close()
             try:
-                self.img_manager.info_buffer.unlink()
+                buffer.unlink()
             except FileNotFoundError:
-                print(f'Shared Memory {self.img_manager.info_buffer_name}\
-                        (info_buffer) File not found')
-            for buffer, name in zip(
-                    self.img_manager.image_buffers,
-                    self.img_manager.image_buffer_names):
-                buffer.close()
-                try:
-                    buffer.unlink()
-                except FileNotFoundError:
-                    print(f'Shared Memory {name}(buffer image) File not found')
+                print(f'Shared Memory {name}(buffer image) File not found')
 
 
 def interaction_callback(circular_queue, showm, iren, render_after):
