@@ -253,7 +253,7 @@ Network Layout (Helios-FURY)
 **Pull
 request**\ `fury-gl/helios/pull/1 <https://github.com/fury-gl/helios/pull/1/>`__
 
-Finally, the first version of FURY network layout is working as can you
+Finally, the first version of FURY network layout is working as you can 
 see in the video below.
 
 In addition, this already can be used with the streaming system allowing

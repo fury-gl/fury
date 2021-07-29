@@ -38,7 +38,7 @@ through the commit
 `devmessias/fury/commit/071dab85 <https://github.com/devmessias/fury/commit/071dab85a86ec4f97eba36721b247ca9233fd59e>`__
 
 The `SharedMemory <https://docs.python.org/3/library/multiprocessing.shared_memory.html>`__
-from python>=3.8 offers new a way to share memory resources between
+from python>=3.8 offers a new a way to share memory resources between
 unrelated process. One of the advantages of using the SharedMemory
 instead of the RawArray from multiprocessing is that the SharedMemory
 allows to share memory blocks without those processes be related with a
