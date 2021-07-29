@@ -46,6 +46,16 @@ class RTCServer(VideoStreamTrack):
         self.buffer_manager = image_buffer_manager
 
     async def recv(self):
+        """Return a VideoFrame to be used in the WebRTC Server
+
+        The frame will be created using the image stored in the
+        shared memory
+
+        Returns
+        -------
+        frame : VideoFrame
+
+        """
         pts, time_base = await self.next_timestamp()
 
         width, height, image = self.buffer_manager.get_current_frame()
@@ -55,8 +65,6 @@ class RTCServer(VideoStreamTrack):
                 or self.frame.planes[0].height != height:
             if CYTHON_AVAILABLE:
                 self.frame = FuryVideoFrame(width, height, "rgb24")
-            # else:
-            #    self.frame = VideoFrame(width, height, "rgb24")
         self.image = image
 
         if not CYTHON_AVAILABLE:
@@ -77,11 +85,12 @@ class RTCServer(VideoStreamTrack):
         return self.frame
 
     def release(self):
-        logging.info("Release Server")
+        """Release the RTCServer"""
         try:
-            if not (self.stream is None):
-                self.stream.release()
-                self.stream = None
+            if self.stream is None:
+                return
+            self.stream.release()
+            self.stream = None
         except AttributeError:
             pass
 
@@ -99,8 +108,9 @@ def web_server(
         provides_mjpeg=True,
         provides_webrtc=True,
         avoid_unlink_shared_mem=False,
-        ms_jpeg=16):
-    """
+        ms_jpeg=16,
+        run_app=True):
+    """This will create a streaming webserver running on the given port and host
 
     Parameters
     ----------
@@ -148,6 +158,9 @@ def web_server(
         This it's used  only if the MJPEG will be used. The
         ms_jpeg represents the amount of miliseconds between to
         consecutive calls of the jpeg enconding.
+    run_app : bool, default True
+        This will run the aiohttp application. The False condition
+        is used just to be able to test the server.
 
     """
 
@@ -166,12 +179,12 @@ def web_server(
             image_buffers=image_buffers, info_buffer=info_buffer
         )
 
+    rtc_server = None
     if provides_webrtc:
         rtc_server = RTCServer(
             image_buffer_manager)
-    else:
-        rtc_server = None
 
+    circular_queue = None
     if queue_buffer is not None:
         circular_queue = ArrayCircularQueue(
             dimension=_CQUEUE.dimension,
@@ -183,8 +196,6 @@ def web_server(
             dimension=_CQUEUE.dimension,
             buffer_name=queue_buffer_name,
             head_tail_buffer_name=queue_head_tail_buffer_name)
-    else:
-        circular_queue = None
 
     app_fury = get_app(
        rtc_server, circular_queue=circular_queue,
@@ -192,13 +203,14 @@ def web_server(
        provides_mjpeg=provides_mjpeg
     )
 
-    web.run_app(
-        app_fury, host=host, port=port, ssl_context=None)
-
-    if circular_queue is not None:
-        circular_queue.cleanup()
+    if run_app:
+        web.run_app(
+            app_fury, host=host, port=port, ssl_context=None)
 
     if rtc_server is not None:
         rtc_server.release()
+
+    if circular_queue is not None:
+        circular_queue.cleanup()
 
     image_buffer_manager.cleanup()

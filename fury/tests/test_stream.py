@@ -15,7 +15,7 @@ from fury.stream import tools
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
-from fury.stream.server.server import RTCServer
+from fury.stream.server.server import RTCServer, web_server
 from fury.stream.widget import Widget
 
 
@@ -582,8 +582,8 @@ def test_circular_queue():
         test_comm(False)
 
 
-def test_webserver_and_queue():
-    """This it's to check if the correct
+def test_queue_and_webserver():
+    """check if the correct
     envent ids and the data are stored in the
     correct positions
     """
@@ -636,6 +636,79 @@ def test_webserver_and_queue():
     arr[_CQUEUE.index_info.user_timestamp] = data['timestampInMs']
     npt.assert_equal(arr, arr_queue)
     queue.cleanup()
+
+
+def test_webserver():
+    def test(use_raw_array):
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array)
+        stream_interaction = FuryStreamInteraction(
+            showm, use_raw_array=use_raw_array)
+        showm.initialize()
+        if use_raw_array:
+            web_server(
+                stream.img_manager.image_buffers,
+                None,
+                stream.img_manager.info_buffer,
+                None,
+                stream_interaction.circular_queue.head_tail_buffer,
+                None,
+                stream_interaction.circular_queue.buffer._buffer,
+                None,
+                8000,
+                'localhost',
+                True,
+                True,
+                True,
+                run_app=False
+            )
+        else:
+            web_server(
+                None,
+                stream.img_manager.image_buffer_names,
+                None,
+                stream.img_manager.info_buffer_name,
+                None,
+                stream_interaction.circular_queue.head_tail_buffer_name,
+                None,
+                stream_interaction.circular_queue.buffer.buffer_name,
+                8000,
+                'localhost',
+                True,
+                True,
+                True,
+                run_app=False
+            )
+
+        stream.stop()
+        stream_interaction.stop()
+        stream.cleanup()
+
+    test(True)
+    if PY_VERSION_8:
+        test(False)
 
 
 def test_widget():
