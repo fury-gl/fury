@@ -236,13 +236,29 @@ def test_stream_client_resize():
             width_0, height_0), order_transparent=False,
         )
 
-    showm.initialize()
 
     with npt.assert_raises(ValueError):
         FuryStreamClient(
             showm, use_raw_array=False,
             max_window_size=(width_0-10, height_0),
             whithout_iren_start=True)
+
+    stream = FuryStreamClient(
+            showm, use_raw_array=False,
+            max_window_size=(width_0, height_0),
+            whithout_iren_start=True)
+
+    showm.window.SetSize((width_0+210, height_0+210))
+    showm.initialize()
+    npt.assert_equal(0, stream.img_manager.buffer_index)
+    stream.start()
+    showm.render()
+    showm.scene.azimuth(1)
+    showm.render()
+    showm.render()
+
+    stream.stop()
+    stream.cleanup()
 
 
 def test_stream_interaction():
@@ -277,7 +293,7 @@ def test_stream_interaction():
             whithout_iren_start=True)
         stream_interaction = FuryStreamInteraction(
             max_queue_size=500,
-            showm=showm, use_raw_array=use_raw_array, 
+            showm=showm, use_raw_array=use_raw_array,
             whithout_iren_start=True)
 
         showm.render()
@@ -376,11 +392,11 @@ def test_stream_interaction_conditions():
             whithout_iren_start=whitouth_iren_start)
         stream_interaction = FuryStreamInteraction(
             max_queue_size=500,
-            showm=showm, use_raw_array=use_raw_array, 
+            showm=showm, use_raw_array=use_raw_array,
             whithout_iren_start=whitouth_iren_start)
 
         showm.render()
-     
+
         # ms should always be greather than 0
         with npt.assert_raises(ValueError):
             stream_interaction.start(-1)
