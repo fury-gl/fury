@@ -13,7 +13,7 @@ Importing necessary modules
 
 import urllib
 import os
-from fury import window, actor, ui, molecular
+from fury import window, actor, ui, molecular as mol
 import numpy as np
 
 ###############################################################################
@@ -36,23 +36,22 @@ if not os.path.isfile(pdbfn):
 ###############################################################################
 # creating an PeriodicTable() object to obtain atomic numbers from names of
 # elements
-table = molecular.PeriodicTable()
+table = mol.PeriodicTable()
 
 ###############################################################################
 # Creating empty lists which will be filled with atomic information as we
 # parse the pdb file.
 NumberOfAtoms = 0
 
-Points = []
-AtomType = []
-AtomTypeStrings = []
-Model = []
-Sheets = []
-Helix = []
-Residue = []
-Chain = []
-IsHetatm = []
-SecondaryStructures = []
+points = []
+elements = []
+atom_names = []
+model = []
+sheets = []
+helix = []
+residue_seq = []
+chain = []
+is_hetatm = []
 current_model_number = 1
 
 ###############################################################################
@@ -68,45 +67,44 @@ for line in pdb_lines:
                 coorX, coorY, coorZ = float(line[6]), float(line[7]), \
                                       float(line[8])
                 resi = line[5]
-                chain = ord(line[4])
-                Points += [[coorX, coorY, coorZ]]
-                Residue += [resi]
-                Chain += [chain]
-                AtomType += [table.atomic_number(line[-1])]
-                AtomTypeStrings += [line[2]]
-                Model += [current_model_number]
+                current_chain = ord(line[4])
+                points += [[coorX, coorY, coorZ]]
+                residue_seq += [resi]
+                chain += [current_chain]
+                elements += [table.atomic_number(line[-1])]
+                atom_names += [line[2]]
+                model += [current_model_number]
                 NumberOfAtoms += 1
                 if(line[0] == 'HETATM'):
-                    IsHetatm += [1]
+                    is_hetatm += [1]
                 else:
-                    IsHetatm += [0]
+                    is_hetatm += [0]
         if line[0] == 'SHEET':
-            startChain = ord(line[5])
-            startResi = int(line[6])
-            endChain = ord(line[8])
-            endResi = int(line[9])
-            r = [startChain, startResi, endChain, endResi]
-            Sheets += [r]
+            start_chain = ord(line[5])
+            start_resi = int(line[6])
+            end_chain = ord(line[8])
+            end_resi = int(line[9])
+            r = [start_chain, start_resi, end_chain, end_resi]
+            sheets += [r]
         if line[0] == 'HELIX':
-            startChain = ord(line[4])
-            startResi = int(line[5])
-            endChain = ord(line[7])
-            endResi = int(line[8])
-            r = [startChain, startResi, endChain, endResi]
-            Helix += [r]
+            start_chain = ord(line[4])
+            start_resi = int(line[5])
+            end_chain = ord(line[7])
+            end_resi = int(line[8])
+            r = [start_chain, start_resi, end_chain, end_resi]
+            helix += [r]
     except Exception:
         continue
 
-
-Points = np.array(Points)
-Residue = np.array(Residue, dtype=int)
-Chain = np.array(Chain)
-AtomType = np.array(AtomType)
-AtomTypeStrings = np.array(AtomTypeStrings)
-Model = np.array(Model)
-Sheets = np.array(Sheets)
-Helix = np.array(Helix)
-IsHetatm = np.array(IsHetatm)
+points = np.array(points)
+residue_seq = np.array(residue_seq, dtype=int)
+chain = np.array(chain)
+elements = np.array(elements)
+atom_names = np.array(atom_names)
+model = np.array(model)
+sheets = np.array(sheets)
+helix = np.array(helix)
+is_hetatm = np.array(is_hetatm)
 
 
 ###############################################################################
@@ -122,23 +120,22 @@ scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
                  view_up=(0, 1, 0))
 axes_actor = actor.axes()
 scene.add(axes_actor)
-molecule = molecular.Molecule(AtomType, Points, AtomTypeStrings, Model,
-                              Residue, Chain, IsHetatm, Sheets, Helix)
-molecular.compute_bonding(molecule)
-
+molecule = mol.Molecule(elements, points, atom_names, model,
+                        residue_seq, chain, sheets, helix, is_hetatm)
+mol.compute_bonding(molecule)
 
 # stick representation
-# scene.add(molecular.stick_rep_actor(molecule, bond_thickness=2))
+scene.add(mol.stick(molecule, bond_thickness=0.2))
 
 # ribbon representation
-scene.add(molecular.ribbon_rep_actor(molecule))
+scene.add(mol.ribbon(molecule))
 
 # ball and stick representation
-# scene.add(molecular.bstick_rep_actor(molecule, atom_scale_factor=0.3,
-#                                      bond_thickness=2))
+# scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
+#                          bond_thickness=0.2))
 
 # sphere representation
-# scene.add(molecular.sphere_rep_actor(molecule))
+# scene.add(mol.sphere_cpk(molecule))
 
 ###############################################################################
 # Dimensions of the output screen

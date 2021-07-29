@@ -1,6 +1,6 @@
 import numpy.testing as npt
 import numpy as np
-from fury import window, actor, molecular
+from fury import window, molecular
 
 
 def test_periodic_table():
@@ -18,7 +18,7 @@ def test_periodic_table():
 
 
 def get_default_molecular_info(all_info=False):
-    elements = np.array([6, 6, 1, 1, 1, 1, 1, 1])
+    atom_numbers = np.array([6, 6, 1, 1, 1, 1, 1, 1])
     atom_coords = np.array([[0.5723949486E+01, 0.5974463617E+01,
                              0.5898320525E+01],
                             [0.6840181327E+01, 0.6678078649E+01,
@@ -36,7 +36,7 @@ def get_default_molecular_info(all_info=False):
                             [0.6632858893E+01, 0.6740709254E+01,
                              0.4090898288E+01]]
                            )
-    atom_types = np.array(['CA', 'CA', 'H', 'H', 'H', 'H', 'H', 'H'])
+    atom_names = np.array(['CA', 'CA', 'H', 'H', 'H', 'H', 'H', 'H'])
     model = np.ones(8)
     residue = np.ones(8)
     chain = np.ones(8)*65
@@ -44,18 +44,21 @@ def get_default_molecular_info(all_info=False):
     sheet = []
     helix = []
     if all_info:
-        return elements, atom_coords, atom_types, model, residue, chain, \
+        return atom_numbers, atom_coords, atom_names, model, residue, chain, \
             is_hetatm, sheet, helix
-    return elements, atom_coords
+    return atom_numbers, atom_coords
 
 
 def test_molecule_creation():
-    elements, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
-    npt.assert_array_almost_equal(molecular.get_atomic_number_array(molecule),
-                                  elements)
-    npt.assert_array_almost_equal(molecular.get_atomic_position_array
-                                  (molecule), atom_coords)
+    atomic_numbers, atom_coords = get_default_molecular_info()
+    molecule = molecular.Molecule(atomic_numbers=atomic_numbers,
+                                  coords=atom_coords)
+    npt.assert_array_almost_equal(molecular.get_all_atomic_numbers(molecule),
+                                  atomic_numbers)
+    npt.assert_array_almost_equal(molecular.get_all_atomic_positions(molecule),
+                                  atom_coords)
+    npt.assert_equal(molecule.total_num_atoms, 8)
+    npt.assert_equal(molecule.total_num_bonds, 0)
 
     # Test errors
     elements = np.array([6, 6])
@@ -70,8 +73,8 @@ def test_add_atom_bond_creation():
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 1, 0, 0)
     molecular.add_bond(molecule, 0, 1, 1)
-    npt.assert_equal(molecular.get_total_num_bonds(molecule), 1)
-    npt.assert_equal(molecular.get_total_num_atoms(molecule), 2)
+    npt.assert_equal(molecule.total_num_bonds, 1)
+    npt.assert_equal(molecule.total_num_atoms, 2)
 
 
 def test_atomic_number():
@@ -116,49 +119,39 @@ def test_bond_order():
     molecular.set_bond_order(molecule, 0, 2)
     npt.assert_equal(molecular.get_bond_order(molecule, 0), 2)
 
-    # Testing get_bond_orders_array
-    npt.assert_array_almost_equal(molecular.get_bond_orders_array(molecule),
+    # Testing get_all_bond_orders
+    npt.assert_array_almost_equal(molecular.get_all_bond_orders(molecule),
                                   np.array([2]))
 
 
-def test_deep_copy():
+def test_deep_copy_molecule():
     molecule1 = molecular.Molecule()
     molecular.add_atom(molecule1, 6, 0, 0, 0)
     molecular.add_atom(molecule1, 6, 1, 0, 0)
     molecular.add_bond(molecule1, 0, 1, 1)
     molecule2 = molecular.Molecule()
-    molecular.deep_copy(molecule2, molecule1)
-    npt.assert_equal(molecular.get_total_num_bonds(molecule2), 1)
-    npt.assert_equal(molecular.get_total_num_atoms(molecule2), 2)
+    molecular.deep_copy_molecule(molecule2, molecule1)
+    npt.assert_equal(molecule2.total_num_bonds, 1)
+    npt.assert_equal(molecule2.total_num_atoms, 2)
 
 
 def test_compute_bonding():
-    elements, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
+    atomic_numbers, atom_coords = get_default_molecular_info()
+    molecule = molecular.Molecule(atomic_numbers, atom_coords)
     molecular.compute_bonding(molecule)
-    npt.assert_equal(molecular.get_total_num_bonds(molecule), 7)
+    npt.assert_equal(molecule.total_num_bonds, 7)
 
 
-def test_make_molecular_viz_aesthetic():
-    centers = np.zeros((1, 3))
-    box = actor.box(centers=centers)
-    molecular.make_molecularviz_aesthetic(box)
-    npt.assert_equal(box.GetProperty().GetDiffuse(), 1)
-    npt.assert_equal(box.GetProperty().GetSpecular(), 1)
-    npt.assert_equal(box.GetProperty().GetAmbient(), 0.3)
-    npt.assert_equal(box.GetProperty().GetSpecularPower(), 100.0)
-
-
-def test_sphere_rep_actor(interactive=False):
-    elements, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(elements=elements, coords=atom_coords)
+def test_sphere_cpk(interactive=False):
+    atomic_numbers, atom_coords = get_default_molecular_info()
+    molecule = molecular.Molecule(atomic_numbers, atom_coords)
     table = molecular.PeriodicTable()
     colormodes = ['discrete', 'single']
     colors = np.array([[table.atom_color(1), table.atom_color(6)],
                        [[150/255, 250/255, 150/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.sphere_rep_actor(molecule, colormode)
+        test_actor = molecular.sphere_cpk(molecule, colormode)
 
         scene.add(test_actor)
         scene.reset_camera()
@@ -175,14 +168,18 @@ def test_sphere_rep_actor(interactive=False):
         scene.clear()
 
 
-def test_bstick_rep_actor(interactive=False):
+def test_bstick(interactive=False):
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 2, 0, 0)
+
+    # Test errors for inadequate bonding data
+    npt.assert_raises(ValueError, molecular.ball_stick, molecule)
+
     molecular.add_bond(molecule, 0, 1, 1)
     colormodes = ['discrete', 'single']
     atom_scale_factor = [0.3, 0.4]
-    bond_thickness = [1, 1.2]
+    bond_thickness = [0.1, 0.2]
     multiple_bonds = ['On', 'Off']
     table = molecular.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
@@ -190,10 +187,10 @@ def test_bstick_rep_actor(interactive=False):
                         [50/255, 50/255, 50/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.bstick_rep_actor(molecule, colormode,
-                                                atom_scale_factor[i],
-                                                bond_thickness[i],
-                                                multiple_bonds[i])
+        test_actor = molecular.ball_stick(molecule, colormode,
+                                          atom_scale_factor[i],
+                                          bond_thickness[i],
+                                          multiple_bonds[i])
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -209,21 +206,25 @@ def test_bstick_rep_actor(interactive=False):
         scene.clear()
 
 
-def test_stick_rep_actor(interactive=False):
+def test_stick(interactive=False):
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 2, 0, 0)
+
+    # Test errors for inadequate bonding data
+    npt.assert_raises(ValueError, molecular.stick, molecule)
     molecular.add_bond(molecule, 0, 1, 1)
+
     colormodes = ['discrete', 'single']
-    bond_thickness = [1, 1.2]
+    bond_thickness = [0.1, 0.12]
     table = molecular.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.stick_rep_actor(molecule, colormode,
-                                               bond_thickness[i])
+        test_actor = molecular.stick(molecule, colormode,
+                                     bond_thickness[i])
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -239,15 +240,16 @@ def test_stick_rep_actor(interactive=False):
         scene.clear()
 
 
-def test_ribbon_rep_actor(interactive=False):
+def test_ribbon(interactive=False):
 
     # Testing if heteroatoms are rendered properly
     scene = window.Scene()
-    elements, atom_coords, atom_types, model, residue_seq, chain, is_hetatm, \
-        sheet, helix = get_default_molecular_info(True)
-    molecule = molecular.Molecule(elements, atom_coords, atom_types, model,
-                                  residue_seq, chain, is_hetatm, sheet, helix)
-    test_actor = molecular.ribbon_rep_actor(molecule)
+    atomic_numbers, atom_coords, atom_types, model, residue_seq, chain, \
+        is_hetatm, sheet, helix = get_default_molecular_info(True)
+    molecule = molecular.Molecule(atomic_numbers, atom_coords, atom_types,
+                                  model, residue_seq, chain, sheet, helix,
+                                  is_hetatm)
+    test_actor = molecular.ribbon(molecule)
     scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
@@ -286,7 +288,7 @@ def test_ribbon_rep_actor(interactive=False):
                             [37.751, 104.014,  70.958]])
     elements = np.array([7, 6, 6, 8, 6, 6, 6, 8, 7, 7, 6, 6, 8, 7, 6, 6, 8, 6,
                          8, 6])
-    atom_types = np.array(['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'NE2',
+    atom_names = np.array(['N', 'CA', 'C', 'O', 'CB', 'CG', 'CD', 'OE1', 'NE2',
                            'N', 'CA', 'C', 'O', 'N', 'CA', 'C', 'O', 'CB',
                            'OG1', 'OG2'])
     model = np.ones(20)
@@ -305,10 +307,10 @@ def test_ribbon_rep_actor(interactive=False):
         else:
             helix = secondary_structure
             sheet = []
-        molecule = molecular.Molecule(elements, atom_coords, atom_types, model,
-                                      residue_seq, chain, is_hetatm, sheet,
-                                      helix)
-        test_actor = molecular.ribbon_rep_actor(molecule)
+        molecule = molecular.Molecule(elements, atom_coords, atom_names, model,
+                                      residue_seq, chain, sheet, helix,
+                                      is_hetatm)
+        test_actor = molecular.ribbon(molecule)
         scene.set_camera((28, 113, 74), (34, 106, 70), (-0.37, 0.29, -0.88))
         scene.add(test_actor)
         scene.reset_camera()
