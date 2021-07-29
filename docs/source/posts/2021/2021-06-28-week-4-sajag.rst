@@ -21,7 +21,7 @@ interest:
 -  vtkPeriodicTable (stores chemical data sourced from the Blue Obelisk
    Data).
 
-Link to the document - `Molecular_viz_vtk`_. In addition to the
+Link to the document: `Molecular_viz_vtk`_. In addition to the
 document, I read some research papers recommended by my mentors to
 understand some other (and potentially better) methods of ribbon
 visualization. Tried to implement vtkProteinRibbonFilter usage without
