@@ -94,8 +94,8 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
     molecule.AppendAtom(atomic_num, x_coord, y_coord, z_coord)
 
 
-def add_bond(molecule, atom1_index, atom2_index, bond_type=1):
-    """Add bonding data to our molecule. Establish a bond of type bond_type
+def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
+    """Add bonding data to our molecule. Establish a bond of type bond_order
     between the atom at atom1_index and the atom at atom2_index.
 
     Parameters
@@ -106,10 +106,10 @@ def add_bond(molecule, atom1_index, atom2_index, bond_type=1):
         Index of the first atom.
     atom2_index : int
         Index of the second atom.
-    bond_type : int (optional)
-        Type of bond (single/double/triple). Default: 1
+    bond_order : int (optional)
+        Bond order (whether it's a single/double/triple bond). Default: 1
     """
-    molecule.AppendBond(atom1_index, atom2_index, bond_type)
+    molecule.AppendBond(atom1_index, atom2_index, bond_order)
 
 
 def get_total_num_atoms(molecule):
@@ -202,10 +202,10 @@ def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
     molecule.SetAtomPosition(atom_index, x_coord, y_coord, z_coord)
 
 
-def get_bond_type(molecule, bond_index):
-    """Get the type of bond for a specified index.
+def get_bond_order(molecule, bond_index):
+    """Get the order of bond for a specified index.
 
-    Returns the type of bond (whether it's a single/double/triple bond)
+    Returns the order of bond (whether it's a single/double/triple bond)
     present at bond_index.
 
     Parameters
@@ -213,15 +213,15 @@ def get_bond_type(molecule, bond_index):
     molecule : Molecule() object
         The molecule to which the bond belongs.
     bond_index : int
-        Index of the bond whose type is to be obtained.
+        Index of the bond whose order is to be obtained.
     """
     return molecule.GetBondOrder(bond_index)
 
 
-def set_bond_type(molecule, bond_index, bond_type):
-    """Set the bond type of a bond for a specified index.
+def set_bond_order(molecule, bond_index, bond_order):
+    """Set the bond order of a bond for a specified index.
 
-    Assign bond_type (whether it's a single/double/triple bond) to the bond
+    Assign bond_order (whether it's a single/double/triple bond) to the bond
     present at the bond_index.
 
     Parameters
@@ -230,10 +230,10 @@ def set_bond_type(molecule, bond_index, bond_type):
         The molecule to which the bond belongs.
     bond_index : int
         Index of the atom to which the coordinates are to be assigned.
-    bond_type : int
+    bond_order : int
         Type of the bond (single/double/triple).
     """
-    return molecule.SetBondOrder(bond_index, bond_type)
+    return molecule.SetBondOrder(bond_index, bond_order)
 
 
 def get_atomic_number_array(molecule):
@@ -248,8 +248,8 @@ def get_atomic_number_array(molecule):
     return vtk_to_numpy(molecule.GetAtomicNumberArray())
 
 
-def get_bond_types_array(molecule):
-    """Returns an array containing the types of the bond (single/double/
+def get_bond_orders_array(molecule):
+    """Returns an array of integers containing the bond orders (single/double/
     triple) corresponding to the bonds present in the molecule.
 
     Parameters

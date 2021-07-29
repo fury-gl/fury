@@ -99,22 +99,22 @@ def test_atomic_position():
                                   np.array([1, 1, 1]))
 
 
-def test_bond_type():
-    # testing bond type get/set functions
+def test_bond_order():
+    # testing bond order get/set functions
 
-    # testing get_bond_type
+    # testing get_bond_order
     molecule = molecular.Molecule()
     molecular.add_atom(molecule, 6, 0, 0, 0)
     molecular.add_atom(molecule, 6, 1, 0, 0)
     molecular.add_bond(molecule, 0, 1, 3)
-    npt.assert_equal(molecular.get_bond_type(molecule, 0), 3)
+    npt.assert_equal(molecular.get_bond_order(molecule, 0), 3)
 
-    # testing set_bond_type
-    molecular.set_bond_type(molecule, 0, 2)
-    npt.assert_equal(molecular.get_bond_type(molecule, 0), 2)
+    # testing set_bond_order
+    molecular.set_bond_order(molecule, 0, 2)
+    npt.assert_equal(molecular.get_bond_order(molecule, 0), 2)
 
-    # testing get_bond_types_array
-    npt.assert_array_almost_equal(molecular.get_bond_types_array(molecule),
+    # testing get_bond_orders_array
+    npt.assert_array_almost_equal(molecular.get_bond_orders_array(molecule),
                                   np.array([2]))
 
 
