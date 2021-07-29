@@ -951,9 +951,13 @@ def test_card_ui(interactive=False):
 
     img_url = "https://raw.githubusercontent.com/fury-gl"\
               "/fury-communication-assets/main/fury-logo.png"
+    
+    title = "FURY"
+    body = "FURY - Free Unified Rendering in pYthon."\
+           "A software library for scientific visualization in Python."
 
     card = ui.elements.Card2D(image_path=img_url, draggable=True,
-                              title_text='Title', body_text='Body',
+                              title_text=title, body_text=body,
                               image_scale=0.5)
 
     # Assign the counter callback to every possible event.
@@ -961,10 +965,10 @@ def test_card_ui(interactive=False):
     event_counter = EventCounter()
     event_counter.monitor(card)
 
-    npt.assert_equal(card._get_size(), (400.0, 400.0))
-    npt.assert_equal(card._image_size[1], 200.0)
-    npt.assert_equal(card.title, 'Title')
-    npt.assert_equal(card.body, 'Body')
+    npt.assert_equal(card.size, (400.0, 400.0))
+    npt.assert_equal(card.image.size[1], 200.0)
+    npt.assert_equal(card.title, title)
+    npt.assert_equal(card.body, body)
     npt.assert_equal(card.color, (0.5, 0.5, 0.5))
     npt.assert_equal(card.panel.position, (0, 0))
 
@@ -974,14 +978,13 @@ def test_card_ui(interactive=False):
     card.body = 'Changed Body'
     npt.assert_equal(card.body, 'Changed Body')
 
+    card.title = title
+    card.body = body
     card.color = (1.0, 1.0, 1.0)
     npt.assert_equal(card.color, (1.0, 1.0, 1.0))
 
-    card._set_position((100, 100))
-    npt.assert_equal(card.panel.position, (100, 100))
-
-    card.resize((600, 600))
-    npt.assert_equal(card._image_size[1], 300.0)
+    card.resize((300, 300))
+    npt.assert_equal(card.image.size[1], 150.0)
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size, title='FURY Card')
     show_manager.scene.add(card)
