@@ -2,6 +2,8 @@ import time
 import numpy as np
 import numpy.testing as npt
 import sys
+from unittest import mock
+from importlib import reload
 import asyncio
 import pytest
 
@@ -88,6 +90,138 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
     if PY_VERSION_8:
         test(False, 0)
         test(False, 16)
+
+
+def test_pillow():
+    use_raw_array = True
+    ms_stream = 0
+    # creates a context whithout opencv
+    with mock.patch.dict(sys.modules, {'cv2': None}):
+        reload(sys.modules["fury.stream.tools"])
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=False)
+        if use_raw_array:
+            img_buffer_manager = tools.RawArrayImageBufferManager(
+                info_buffer=stream.img_manager.info_buffer,
+                image_buffers=stream.img_manager.image_buffers
+            )
+        else:
+            img_buffer_manager = tools.SharedMemImageBufferManager(
+                info_buffer_name=stream.img_manager.info_buffer_name,
+                image_buffer_names=stream.img_manager.image_buffer_names
+            )
+
+        showm.render()
+        stream.start(ms_stream)
+        showm.render()
+        # test jpeg method
+        img_buffer_manager.get_jpeg()
+        width, height, frame = img_buffer_manager.get_current_frame()
+        assert width == width_0 and height == height_0
+        image = np.frombuffer(
+                    frame,
+                    'uint8')[0:width*height*3].reshape((height, width, 3))
+        # image = np.flipud(image)
+
+        # image = image[:, :, ::-1]
+        # import matplotlib.pyplot as plt
+        # plt.imshow(image)
+        # plt.show()
+        # npt.assert_allclose(arr, image)
+        report = window.analyze_snapshot(image, find_objects=True)
+        npt.assert_equal(report.objects, 3)
+        img_buffer_manager.cleanup()
+        stream.stop()
+        stream.cleanup()
+        # import cv2
+        # sys.modules["cv2"] = cv2
+        # reload(sys.modules["fury.stream.tools"])
+    reload(sys.modules["fury.stream.tools"])
+
+
+def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
+    use_raw_array = True
+    ms_stream = 0
+    # creates a context whithout opencv
+    with mock.patch.dict(sys.modules, {'pyximport': None}):
+        reload(sys.modules["fury.stream.server.server"])
+        width_0 = 100
+        height_0 = 200
+
+        centers = np.array([
+            [0, 0, 0],
+            [-1, 0, 0],
+            [1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.sdf(
+            centers, primitives='sphere', colors=colors, scales=2)
+
+        scene = window.Scene()
+        scene.add(actors)
+        showm = window.ShowManager(scene, reset_camera=False, size=(
+            width_0, height_0), order_transparent=False,
+        )
+
+        showm.initialize()
+
+        stream = FuryStreamClient(
+            showm, use_raw_array=use_raw_array,
+            whithout_iren_start=False)
+        if use_raw_array:
+            img_buffer_manager = tools.RawArrayImageBufferManager(
+                info_buffer=stream.img_manager.info_buffer,
+                image_buffers=stream.img_manager.image_buffers
+            )
+        else:
+            img_buffer_manager = tools.SharedMemImageBufferManager(
+                info_buffer_name=stream.img_manager.info_buffer_name,
+                image_buffer_names=stream.img_manager.image_buffer_names
+            )
+
+        rtc_server = RTCServer(img_buffer_manager)
+        showm.render()
+        stream.start(ms_stream)
+        showm.render()
+        frame = loop.run_until_complete(rtc_server.recv())
+        assert frame.width == width_0 and frame.height == height_0
+        rtc_server.release()
+        img_buffer_manager.cleanup()
+        stream.stop()
+        stream.cleanup()
+
+    reload(sys.modules["fury.stream.server.server"])
 
 
 def test_client_and_buffer_manager():
