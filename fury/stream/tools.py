@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 
 import asyncio
 import sys
+
 if sys.version_info.minor >= 8:
     from multiprocessing import shared_memory
     from multiprocessing import resource_tracker
@@ -15,12 +16,13 @@ if sys.version_info.minor >= 8:
 else:
     shared_memory = None
     PY_VERSION_8 = False
+
+from PIL import Image
+import io
 try:
     import cv2
     OPENCV_AVAILABLE = True
 except ImportError:
-    from PIL import Image
-    import io
     cv2 = None
     OPENCV_AVAILABLE = False
 

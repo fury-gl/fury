@@ -1,6 +1,6 @@
 # import os
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
-import logging
+# import logging
 import sys
 if sys.version_info.minor >= 8:
     from fury.stream.tools import remove_shm_from_resource_tracker
@@ -9,8 +9,15 @@ else:
     PY_VERSION_8 = False
 
 from aiohttp import web
-from av import VideoFrame
-from aiortc import VideoStreamTrack
+
+VideoStreamTrack = object
+try:
+    from av import VideoFrame
+    from aiortc import VideoStreamTrack
+    WEBRTC_AVAILABLE = True
+except ImportError:
+    WEBRTC_AVAILABLE = False
+
 import numpy as np
 
 from fury.stream.server.async_app import get_app
@@ -19,13 +26,16 @@ from fury.stream.tools import (
     SharedMemImageBufferManager, RawArrayImageBufferManager)
 from fury.stream.constants import _CQUEUE
 
-try:
-    import pyximport
-    pyximport.install()
-    from fury.stream.server.FuryVideoFrame import FuryVideoFrame
-    CYTHON_AVAILABLE = True
-except ImportError:
-    CYTHON_AVAILABLE = False
+
+CYTHON_AVAILABLE = False
+if WEBRTC_AVAILABLE:
+    try:
+        import pyximport
+        pyximport.install()
+        from fury.stream.server.FuryVideoFrame import FuryVideoFrame
+        CYTHON_AVAILABLE = True
+    except ImportError:
+        pass
 
 
 class RTCServer(VideoStreamTrack):
@@ -180,9 +190,12 @@ def web_server(
         )
 
     rtc_server = None
-    if provides_webrtc:
+    create_webrtc = provides_webrtc and WEBRTC_AVAILABLE
+    if create_webrtc:
         rtc_server = RTCServer(
             image_buffer_manager)
+    else:
+        provides_mjpeg = True
 
     circular_queue = None
     if queue_buffer is not None:

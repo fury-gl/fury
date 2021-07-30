@@ -14,9 +14,10 @@ else:
 
 from fury import actor, window
 from fury.stream import tools
+from fury.stream.server import server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
-from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
+from fury.stream.server.async_app import WEBRTC_AVAILABLE, set_mouse, set_weel, set_mouse_click
 from fury.stream.server.server import RTCServer, web_server
 from fury.stream.widget import Widget, check_port_is_available
 
@@ -34,6 +35,10 @@ def loop():
 
 
 def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
+    if not WEBRTC_AVAILABLE:
+        print('\n aiortc not available -> skipping test\n')
+        return
+
     def test(use_raw_array, ms_stream=16):
         width_0 = 100
         height_0 = 200
@@ -96,8 +101,9 @@ def test_pillow():
     use_raw_array = True
     ms_stream = 0
     # creates a context whithout opencv
-    with mock.patch.dict(sys.modules, {'cv2': None}):
-        reload(sys.modules["fury.stream.tools"])
+    # with mock.patch.object(sys.modules, {'cv2': None}):
+    #     reload(sys.modules["fury.stream.tools"])
+    with mock.patch.object(tools, 'OPENCV_AVAILABLE', False):
         width_0 = 100
         height_0 = 200
 
@@ -162,10 +168,14 @@ def test_pillow():
         # import cv2
         # sys.modules["cv2"] = cv2
         # reload(sys.modules["fury.stream.tools"])
-    reload(sys.modules["fury.stream.tools"])
+    # reload(sys.modules["fury.stream.tools"])
 
 
 def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
+    if not WEBRTC_AVAILABLE:
+        print('\n aiortc not available -> skipping test\n')
+        return
+
     use_raw_array = True
     ms_stream = 0
     # creates a context whithout opencv

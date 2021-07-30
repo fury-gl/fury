@@ -9,8 +9,13 @@ from aiohttp import WSCloseCode
 from aiohttp import web
 import weakref
 
-from aiortc import RTCPeerConnection, RTCSessionDescription
-from aiortc.contrib.media import MediaRelay
+try:
+    from aiortc import RTCPeerConnection, RTCSessionDescription
+    from aiortc.contrib.media import MediaRelay
+    WEBRTC_AVAILABLE = True
+except ImportError:
+    WEBRTC_AVAILABLE = False
+    print('webrtc not available')
 
 import logging
 import time
