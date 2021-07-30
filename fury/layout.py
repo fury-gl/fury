@@ -157,17 +157,14 @@ class VerticalLayout(GridLayout):
         list of 3-tuple
             The computed 3D coordinates of every actors.
         """
-        positions = []
-        shapes = self.get_cells_shape(actors)
+        positions = [np.asarray([0, 0, 0]), ]
+        shapes = self.get_cells_shape(actors[1:])
 
         # Add padding, if any, around every cell.
         shapes = [np.array(self.cell_padding)/2. + s for s in shapes]
 
         for shape in shapes:
-            if not len(positions):
-                actor_position = np.asarray([0, 0, 0])
-            else:
-                actor_position = positions[-1] + np.asarray([0, shape[1], 0])
+            actor_position = positions[-1] + np.asarray([0, shape[1], 0])
             positions.append(actor_position)
 
         return positions
