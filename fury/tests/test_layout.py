@@ -112,16 +112,23 @@ def test_grid_layout_apply():
 
 
 def test_vertical_layout_compute_positions():
-    cube_first, cube_second = get_default_cubes()
+    (cube_first, cube_second) = get_default_cubes()
 
     vertical_layout_rect = VerticalLayout()
-    vertical_layout_square = VerticalLayout(cell_shape="square")
-    vertical_layout_diagonal = VerticalLayout(cell_shape="diagonal")
+    vertical_layout_square = VerticalLayout(cell_shape='square')
+    vertical_layout_diagonal = VerticalLayout(cell_shape='diagonal')
 
-    position_rect = vertical_layout_rect.compute_positions([cube_first, cube_second])
-    position_square = vertical_layout_square.compute_positions([cube_first, cube_second])
-    position_diagonal = vertical_layout_diagonal.compute_positions([cube_first, cube_second])
+    position_rect = vertical_layout_rect.compute_positions([cube_first,
+                                                            cube_second])
+
+    position_square = \
+        vertical_layout_square.compute_positions([cube_first, cube_second])
+
+    position_diagonal = \
+        vertical_layout_diagonal.compute_positions([cube_first, cube_second])
 
     npt.assert_array_equal(position_rect, [[0, 0, 0], [0, 1.5, 0]])
     npt.assert_array_equal(position_square, [[0, 0, 0], [0, 1.5, 0]])
-    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [0, 2.59, 0]], 0)
+    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [0,
+                                  2.59, 0]], 0)
+
