@@ -18,9 +18,9 @@ import numpy as np
 from fury.data.fetcher import fetch_viz_wiki_nw
 from fury.stream.server import web_server
 
-interactive = False
 if __name__ == '__main__':
 
+    interactive = False
     ###########################################################################
     # First we will set the resolution which it'll be used by the streamer
 
@@ -70,8 +70,6 @@ if __name__ == '__main__':
     scene.add(lines_actor)
     scene.add(sphere_actor)
 
-    interactive = False
-
     scene.set_camera(
         position=(0, 0, 1000),
         focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0))
@@ -107,5 +105,5 @@ if __name__ == '__main__':
     stream.stop()
     stream.cleanup()
 
-window.record(
-    showm.scene, size=window_size, out_path="viz_no_interaction.png")
+    window.record(
+        showm.scene, size=window_size, out_path="viz_no_interaction.png")

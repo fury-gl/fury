@@ -14,54 +14,44 @@ import logging
 logging.root.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO)
 
-interactive = False
-
 
 if __name__ == '__main__':
+    interactive = True
+    use_raw_array = False
     use_high_res = False
     if use_high_res:
         window_size = (1280, 720)
         max_window_size = (1920, 1080)
     else:
-        window_size = (720, 500)
-        max_window_size = (600, 600)
+        window_size = (300, 300)
+        max_window_size = (400, 400)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
 
     ms_interaction = 1
     ms_stream = 0
-    use_raw_array = True
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
     ######################################################################
-    centers = 1*np.array([
+    centers = np.array([
         [0, 0, 0],
         [-1, 0, 0],
         [1, 0, 0]
     ])
-    centers2 = centers - np.array([[0, -1, 0]])
-    # centers_additive = centers_no_depth_test - np.array([[0, -1, 0]])
-    # centers_no_depth_test2 = centers_additive - np.array([[0, -1, 0]])
     colors = np.array([
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1]
     ])
 
-    actors = actor.sdf(
-        centers, primitives='sphere', colors=colors, scales=2)
-
-    actors2 = actor.sphere(
-        centers2, opacity=.5, radii=.4, colors=colors)
+    actors = actor.sphere(
+        centers, opacity=.5, radii=.4, colors=colors)
     scene = window.Scene()
 
     scene.add(actors)
-    scene.add(actors2)
 
-    interactive = False
-
-    showm = window.ShowManager(scene, reset_camera=False, size=(
-        window_size[0], window_size[1]), order_transparent=False,
+    showm = window.ShowManager(
+        scene, size=(window_size[0], window_size[1])
     )
 
     ###########################################################################
@@ -131,5 +121,5 @@ if __name__ == '__main__':
     # open a browser using the following the url
     # http://localhost:8000/
 
-window.record(
-    showm.scene, size=window_size, out_path="viz_interaction.png")
+    window.record(
+        showm.scene, size=window_size, out_path="viz_interaction.png")

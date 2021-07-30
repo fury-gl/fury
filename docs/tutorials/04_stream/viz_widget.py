@@ -17,28 +17,26 @@ import time
 from fury import actor, window
 from fury.stream.widget import Widget
 
+interactive = False
 window_size = (720, 500)
+
 centers = 1*np.array([[0, 0, 0], [-1, 0, 0], [1, 0, 0]])
 colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-actors = actor.sdf(
-    centers, primitives='torus', colors=colors, scales=2)
-
+actors = actor.sphere(
+        centers, opacity=.5, radii=.4, colors=colors)
 scene = window.Scene()
 scene.add(actors)
-showm = window.ShowManager(scene, reset_camera=False, size=(
-    window_size[0], window_size[1]), order_transparent=False,
-    # multi_samples=8
-)
-widget = Widget(showm, port=7777)
+showm = window.ShowManager(
+    scene,
+    window_size[0], window_size[1])
+widget = Widget(showm)
 
 widget.start()
 # open  your default  browser with the following url
 # localhost:7777?encoding=mjpeg
-time.sleep(100)
+time.sleep(5)
 widget.stop()
 
-
-interactive = False
 if interactive:
     showm.start()
 
