@@ -6,7 +6,7 @@ Week #1: Welcome to my weekly Blogs!
    :tags: google
    :category: gsoc
 
-Hi everyone! I am **Antriksh Misri**. I am a Pre-Final year student at MIT Pune. This summer, I will be working on **Layout Management** under FURY's UI module as my primary goal. This includes addition of different classes under Layout Management to provide different layouts/arrangements in which the UI elements can be arranged. As my stretch goals, I will be working on a couple of UI components for FURY’s UI module. These 2D and 3D components will be sci-fi like as seen in the movie “**Guardians of The Galaxy**”. My objective for the stretch goals would be to develop these UI components with their respective test and tutorials such that it adds on to the UI module of FURY and doesn’t hinder existing functionalities/performance.
+Hi everyone! I am **Antriksh Misri**. I am a Pre-Final year student at MIT Pune. This summer, I will be working on **Layout Management** under FURY's `UI <https://fury.gl/latest/reference/fury.ui.html>`_ module as my primary goal. This includes addition of different classes under Layout Management to provide different layouts/arrangements in which the UI elements can be arranged. As my stretch goals, I will be working on a couple of UI components for FURY’s UI module. These 2D and 3D components will be sci-fi like as seen in the movie “**Guardians of The Galaxy**”. My objective for the stretch goals would be to develop these UI components with their respective test and tutorials such that it adds on to the UI module of FURY and doesn’t hinder existing functionalities/performance.
 
 What did I do this week?
 ------------------------
