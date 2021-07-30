@@ -16,7 +16,7 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import set_mouse, set_weel, set_mouse_click
 from fury.stream.server.server import RTCServer, web_server
-from fury.stream.widget import Widget
+from fury.stream.widget import Widget, check_port_is_available
 
 
 @pytest.fixture
@@ -739,5 +739,13 @@ def test_widget():
     widget = Widget(showm)
     widget.start()
     time.sleep(2)
-    # widget.return_iframe()
+
+    npt.assert_equal(
+        False, check_port_is_available(widget._host, widget._port))
+
+    widget2 = Widget(showm, port=widget._port)
+    widget2.display()
+    widget2.start()
+
+    widget2.stop()
     widget.stop()

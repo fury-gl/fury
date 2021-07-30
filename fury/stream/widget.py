@@ -19,7 +19,7 @@ import errno
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 
-def test_port(host, port):
+def check_port_is_available(host, port):
     """Check if a given port it's available
 
     Parameters
@@ -45,9 +45,10 @@ def test_port(host, port):
 
 class Widget:
     def __init__(
-            self, showm, ms_stream=2,
-            ms_interaction=33, queue_size=20,
+            self, showm, ms_stream=0,
+            ms_interaction=33,
             host='localhost', port=None,
+            queue_size=20,
             encoding='mjpeg', ms_jpeg=33):
         """Thi Obj it's able to run the fury streaming system
         using the SharedMemory from python multiprocessing.
@@ -84,10 +85,10 @@ class Widget:
         self.ms_stream = ms_stream
         self.ms_interaction = ms_interaction
         self.ms_jpeg = ms_jpeg
-        self.host = host
+        self._host = host
         if port is None:
             port = np.random.randint(7000, 8888)
-        self.port = port
+        self._port = port
         self.queue_size = queue_size
         self._server_started = False
         self.pserver = None
@@ -109,7 +110,7 @@ class Widget:
             s += ",provides_mjpeg=True"
             s += f",ms_jpeg={self.ms_jpeg}"
             s += ",provides_webrtc=False"
-        s += f",port={self.port},host='{self.host}',"
+        s += f",port={self._port},host='{self._host}',"
         s += "avoid_unlink_shared_mem=True"
         s += ")"
         return s
@@ -139,10 +140,10 @@ class Widget:
             self.kill_server()
 
         i = 0
-        available = test_port(self.host, self.port)
+        available = check_port_is_available(self._host, self._port)
         while not available and i < 50:
-            self.port = np.random.randint(7000, 8888)
-            available = test_port(self.host, self.port)
+            self._port = np.random.randint(7000, 8888)
+            available = check_port_is_available(self._host, self._port)
             i += 1
         if not available:
             return False
@@ -160,7 +161,7 @@ class Widget:
 
     @property
     def url(self):
-        url = f'http://{self.host}:{self.port}'
+        url = f'http://{self._host}:{self._port}'
         url += f'?iframe=1&encoding={self.encoding}'
         return url
 
