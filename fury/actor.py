@@ -2339,6 +2339,15 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
 
         actors = actors_with_caption
 
+    else:
+        actor_list = []
+        for actor in actors:
+            container_actor = Container()
+            container_actor.add(actor)
+            actor_list.append(container_actor)
+
+        actors = actor_list
+
     grid.add(*actors)
     return grid
 
