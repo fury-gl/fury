@@ -167,6 +167,9 @@ def test_sphere_cpk(interactive=False):
         npt.assert_equal(report.objects, 1)
         scene.clear()
 
+    # Testing warnings
+    npt.assert_warns(UserWarning, molecular.sphere_cpk, molecule, 'multiple')
+
 
 def test_bstick(interactive=False):
     molecule = molecular.Molecule()
@@ -205,6 +208,10 @@ def test_bstick(interactive=False):
         npt.assert_equal(report.objects, 1)
         scene.clear()
 
+    # Testing warnings
+    npt.assert_warns(UserWarning, molecular.ball_stick, molecule, 'multiple')
+    npt.assert_warns(UserWarning, molecular.ball_stick, molecule, multiple_bonds='yes')
+
 
 def test_stick(interactive=False):
     molecule = molecular.Molecule()
@@ -238,6 +245,9 @@ def test_stick(interactive=False):
         report = window.analyze_snapshot(arr, colors=colors[i])
         npt.assert_equal(report.objects, 1)
         scene.clear()
+
+    # Testing warnings
+    npt.assert_warns(UserWarning, molecular.stick, molecule, 'multiple')
 
 
 def test_ribbon(interactive=False):
