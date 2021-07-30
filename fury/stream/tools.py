@@ -811,6 +811,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                 buffer=buffer.buf))
 
     def cleanup(self):
+        """Release the resources used by the Shared Memory Manager"""
         self.info_buffer.close()
         # this it's due the python core issues
         # https://bugs.python.org/issue38119
@@ -882,18 +883,23 @@ class IntervalTimer:
         self.callback(*self.args, **self.kwargs)
 
     def start(self):
-        if not self.is_running:
-            self._timer = Timer(self.seconds, self._run)
+        """Start the timer"""
+        if self.is_running:
+            return
 
-            # self.next_call += selfseconds.
-            # self._timer = Timer(self.next_call - time.time(), self._run)
-            self._timer.daemon = True
-            self._timer.start()
-            self.is_running = True
+        self._timer = Timer(self.seconds, self._run)
+
+        # self.next_call += selfseconds.
+        # self._timer = Timer(self.next_call - time.time(), self._run)
+        self._timer.daemon = True
+        self._timer.start()
+        self.is_running = True
 
     def stop(self):
-        if self._timer is not None:
-            self._timer.cancel()
-            self.is_running = False
-            self._timer = None
-            # self._timer.join()
+        """Stop the timer"""
+        if self._timer is None:
+            return
+
+        self._timer.cancel()
+        self.is_running = False
+        self._timer = None

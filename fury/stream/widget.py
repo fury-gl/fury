@@ -98,6 +98,13 @@ class Widget:
 
     @property
     def command_string(self):
+        """Return the command string to start the server
+
+        Returns
+        -------
+        command_string : str
+
+        """
         s = 'from fury.stream.server import web_server;'
         s += "web_server(image_buffer_names="
         s += f"{self.stream.img_manager.image_buffer_names}"
@@ -115,7 +122,9 @@ class Widget:
         s += ")"
         return s
 
-    def start_server(self):
+    def _start_fury_client(self):
+        """Start the fury image buffer client and the interaction client
+        """
         if self._server_started:
             self.stop()
 
@@ -136,8 +145,10 @@ class Widget:
         self.pserver = None
 
     def run_command(self):
+        """Evaluate the command string to start the server
+        """
         if self.pserver is not None:
-            self.kill_server()
+            self._kill_server()
 
         i = 0
         available = check_port_is_available(self._host, self._port)
@@ -166,6 +177,8 @@ class Widget:
         return url
 
     def return_iframe(self, height=200):
+        """Return the jupyter div iframe used to show the stream
+        """
         if IPYTHON_AVAILABLE:
             display(IFrame(
                 self.url,
@@ -173,7 +186,9 @@ class Widget:
             )
 
     def start(self):
-        self.start_server()
+        """Start the fury client and the interaction client and return the url
+        """
+        self._start_fury_client()
         ok = self.run_command()
         if not ok:
             self.stop()
@@ -181,7 +196,9 @@ class Widget:
         print(f'url: {self.url}')
 
     def display(self, height=150):
-        self.start_server()
+        """Start the server and display the url in an iframe
+        """
+        self._start_fury_client()
         ok = self.run_command()
         if not ok:
             self.stop()
@@ -190,21 +207,27 @@ class Widget:
         self.return_iframe(height)
 
     def stop(self):
+        """Stop the streaming server and release the shared memory
+        """
         if self._server_started:
             self.stream.stop()
             self.stream_interaction.stop()
 
             if self.pserver is not None:
-                self.kill_server()
+                self._kill_server()
             self.cleanup()
         self._server_started = False
 
-    def kill_server(self):
+    def _kill_server(self):
+        """Kill the server process
+        """
         self.pserver.kill()
         self.pserver.wait()
         self.pserver = None
 
     def cleanup(self):
+        """Release the shared memory
+        """
         if self.stream is not None:
             self.stream.cleanup()
 
