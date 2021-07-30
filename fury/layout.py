@@ -126,7 +126,7 @@ class VerticalLayout(GridLayout):
     """Provide functionalities for laying out actors in a vertical stack."""
     def __init__(self, cell_padding=0, cell_shape="rect"):
         """
-        
+
         Parameters
         ----------
         cell_padding : 2-tuple of float or float (optional)
@@ -143,15 +143,15 @@ class VerticalLayout(GridLayout):
         """
         super(VerticalLayout, self).__init__(cell_padding=cell_padding,
                                              cell_shape=cell_shape)
-    
+
     def compute_positions(self, actors):
         """Compute the 3D coordinates of some actors.
-        
+
         Parameters
         ----------
         actors : list of `vtkProp3D` objects
             Actors to be layout in a vertical stack.
-        
+
         Returns
         -------
         list of 3-tuple
@@ -159,7 +159,7 @@ class VerticalLayout(GridLayout):
         """
         positions = []
         shapes = self.get_cells_shape(actors)
-        
+
         # Add padding, if any, around every cell.
         shapes = [np.array(self.cell_padding)/2. + s for s in shapes]
 
@@ -169,5 +169,5 @@ class VerticalLayout(GridLayout):
             else:
                 actor_position = positions[-1] + np.asarray([0, shape[1], 0])
             positions.append(actor_position)
-        
+
         return positions
