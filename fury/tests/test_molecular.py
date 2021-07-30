@@ -210,7 +210,8 @@ def test_bstick(interactive=False):
 
     # Testing warnings
     npt.assert_warns(UserWarning, molecular.ball_stick, molecule, 'multiple')
-    npt.assert_warns(UserWarning, molecular.ball_stick, molecule, multiple_bonds='yes')
+    npt.assert_warns(UserWarning, molecular.ball_stick, molecule,
+                     multiple_bonds='yes')
 
 
 def test_stick(interactive=False):
