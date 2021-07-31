@@ -298,7 +298,7 @@ class FuryStreamInteraction:
     def __init__(
             self, showm,  max_queue_size=50,
             use_raw_array=True, whithout_iren_start=False):
-        """
+        """This obj. is responsible to manage the user interaction
 
         Parameters
         ----------

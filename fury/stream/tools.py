@@ -1,4 +1,5 @@
 import numpy as np
+import io
 from PIL import Image, ImageDraw
 import multiprocessing
 import time
@@ -17,8 +18,6 @@ else:
     shared_memory = None
     PY_VERSION_8 = False
 
-from PIL import Image
-import io
 try:
     import cv2
     OPENCV_AVAILABLE = True
@@ -575,6 +574,18 @@ class GenericImageBufferManager(ABC):
         return index
 
     def write_into(self, w, h, np_arr):
+        """This writes a image buffer (np_arr) into the
+        shared memory resource
+
+        Parameters
+        ----------
+        w : uint
+            width
+        h : uint
+            height
+        np_arr : buffer
+
+        """
         buffer_size = buffer_size = int(h*w*3)
         next_buffer_index = self.next_buffer_index
 
@@ -594,7 +605,16 @@ class GenericImageBufferManager(ABC):
         self.info_buffer_repr[2+next_buffer_index*2+1] = h
         self.info_buffer_repr[1] = next_buffer_index
 
-    def get_current_frame(self, from_buffer=False):
+    def get_current_frame(self):
+        """Get the FURY current frame
+
+        Returns
+        -------
+        width : int
+        height : int
+        image : buffer
+
+        """
         if not self._use_shared_mem:
             image_info = np.frombuffer(
                     self.info_buffer, 'uint32')
@@ -612,6 +632,13 @@ class GenericImageBufferManager(ABC):
         return self.width, self.height, image
 
     def get_jpeg(self):
+        """"Encodes and return the OpenGl current frame
+
+        Returns
+        -------
+        bytes_img : bytes
+
+        """
         width, height, image = self.get_current_frame()
 
         if self._use_shared_mem:
@@ -635,9 +662,16 @@ class GenericImageBufferManager(ABC):
         return bytes_img
 
     async def async_get_jpeg(self, ms=33):
-        jpeg = self.get_jpeg()
+        """"Encodes and return the OpenGl current frame
+
+        Returns
+        -------
+        bytes_img : bytes
+
+        """
+        bytes_img = self.get_jpeg()
         await asyncio.sleep(ms/1000)
-        return jpeg
+        return bytes_img
 
     @abstractmethod
     def load_mem_resource(self):
@@ -671,6 +705,7 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffers : list of buffers, optional
             A list of buffers with each one containing a frame.
+
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=False)
         if image_buffers is None or info_buffer is None:
@@ -731,10 +766,6 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         """This implements an ImageBufferManager using the
         SharedMemory approach.
 
-        Note
-        -----
-        Python >=3.8 is a requirement to use this object.
-
         Parameters
         ----------
         max_window_size : tuple of ints, optional
@@ -748,6 +779,10 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffer_names : list of str, optional
             a list of buffer names. Each buffer contains a frame
+
+        Note
+        -----
+        Python >=3.8 is a requirement to use this object.
 
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=True)
@@ -815,10 +850,13 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
     def cleanup(self):
         """Release the resources used by the Shared Memory Manager"""
         self.info_buffer.close()
-        # this it's due the python core issues
-        # https://bugs.python.org/issue38119
-        # https://bugs.python.org/issue39959
-        # https://github.com/luizalabs/shared-memory-dict/issues/13
+        """ this it's due the python core issues
+
+        https://bugs.python.org/issue38119
+        https://bugs.python.org/issue39959
+        https://github.com/luizalabs/shared-memory-dict/issues/13
+
+        """
         if self._created:
             try:
                 self.info_buffer.unlink()

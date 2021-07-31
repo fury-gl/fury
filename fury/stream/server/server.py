@@ -1,14 +1,21 @@
 # import os
 # os.environ['PYTHONASYNCIODEBUG'] = '1'
 # import logging
+import numpy as np
+from aiohttp import web
+
+from fury.stream.server.async_app import get_app
+from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
+from fury.stream.tools import (
+    SharedMemImageBufferManager, RawArrayImageBufferManager)
+from fury.stream.constants import _CQUEUE
+
 import sys
 if sys.version_info.minor >= 8:
     from fury.stream.tools import remove_shm_from_resource_tracker
     PY_VERSION_8 = True
 else:
     PY_VERSION_8 = False
-
-from aiohttp import web
 
 VideoStreamTrack = object
 try:
@@ -17,15 +24,6 @@ try:
     WEBRTC_AVAILABLE = True
 except ImportError:
     WEBRTC_AVAILABLE = False
-
-import numpy as np
-
-from fury.stream.server.async_app import get_app
-from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
-from fury.stream.tools import (
-    SharedMemImageBufferManager, RawArrayImageBufferManager)
-from fury.stream.constants import _CQUEUE
-
 
 CYTHON_AVAILABLE = False
 if WEBRTC_AVAILABLE:

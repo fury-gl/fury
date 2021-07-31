@@ -48,9 +48,9 @@ class Widget:
             self, showm, ms_stream=0,
             ms_interaction=33,
             host='localhost', port=None,
-            queue_size=20,
-            encoding='mjpeg', ms_jpeg=33):
-        """Thi Obj it's able to run the fury streaming system
+            encoding='mjpeg', ms_jpeg=33,
+            queue_size=20):
+        """Thi Obj it's able execute the fury streaming system
         using the SharedMemory from python multiprocessing.
 
         Parameters
@@ -60,16 +60,16 @@ class Widget:
             time in mileseconds between each frame buffer update.
         ms_interaction : float, optional
             time in mileseconds between each user interaction update.
-        queue_size : int, optional
-            maximum number of user interactions to be stored
         host : str, optional
         port : int, optional
         encoding : str, optional
-            If should use MJPEG streaming or WebRTC
+            If should use MJPEG streaming or WebRTC.
         ms_jpeg : float, optional
             This it's used  only if the MJPEG will be used. The
             ms_jpeg represents the amount of miliseconds between to
             consecutive calls of the jpeg enconding.
+        queue_size : int, optional
+            maximum number of user interactions to be stored
 
         """
         if not PY_VERSION_8:
