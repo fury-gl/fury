@@ -20,34 +20,46 @@ class Molecule(vtk.vtkMolecule):
 
         Parameters
         ----------
-        atomic_numbers : ndarray of integers, shape (N, ) where N is the total
-            number of atoms present in the molecule.
+        atomic_numbers : ndarray of integers, optional
+            The shape of the array must be (N, ) where N is the total number of
+            atoms present in the molecule.
             Array having atomic number corresponding to each atom of the
             molecule.
-        coords : ndarray of floats, shape (N, 3) where N is the total number
+        coords : ndarray of floats, optional
+            The shape of the array must be (N, 3) where N is the total number
             of atoms present in the molecule.
             Array having coordinates corresponding to each atom of the
             molecule.
-        atom_names : ndarray of strings, shape (N, ) where N is the total
-            number of atoms present in the molecule.
-            Array having the names of atoms in form of strings.
-        model : ndarray of integers, shape (N, ) where N is the total number of
+        atom_names : ndarray of strings, optional
+            The shape of the array must be (N, ) where N is the total number of
+            atoms present in the molecule.
+            Array having the names of atoms.
+        model : ndarray of integers, optional
+            The shape of the array must be (N, ) where N is the total number of
             atoms present in the molecule.
             Array having the model number corresponding to each atom.
-        residue_seq : ndarray of integers, shape (N, ) where N is the total
-            number of atoms present in the molecule.
+        residue_seq : ndarray of integers, optional
+            The shape of the array must be (N, ) where N is the total number of
+            atoms present in the molecule.
             Array having the residue sequence number corresponding to each atom
             of the molecule.
-        chain : ndarray of integers, shape (N, ) where N is the total number of
+        chain : ndarray of integers, optional
+            The shape of the array must be (N, ) where N is the total number of
             atoms present in the molecule.
             Array having the chain number corresponding to each atom.
-        sheet : ndarray of integers, shape (S, 4) where S is the total number
+        sheet : ndarray of integers, optional
+            The shape of the array must be (S, 4) where S is the total number
             of sheets present in the molecule.
             Array containing information about sheets present in the molecule.
-        helix : ndarray of integers, shape (H, 4) where H is the total number
+        helix : ndarray of integers, optional
+            The shape of the array must be (H, 4) where H is the total number
             of helices present in the molecule.
             Array containing information about helices present in the molecule.
-        is_hetatm : ndarray of bools
+        is_hetatm : ndarray of bools, optional
+            The shape of the array must be (N, ) where N is the total number of
+            atoms present in the molecule.
+            Array containing a bool value to indicate if an atom is a
+            heteroatom.
         """
         if atomic_numbers is None and coords is None:
             self.Initialize()
@@ -362,7 +374,7 @@ class PeriodicTable(vtk.vtkPeriodicTable):
             Atomic number of the element whose covalent radius is to be
             obtained.
         radius_type : string
-            Two valid choices -
+            Two valid choices:
             * 'VDW' : for Van Der Waals radius of the atom
             * 'Covalent' : for covalent radius of the atom
             Default: 'VDW'
@@ -398,8 +410,8 @@ def sphere_cpk(molecule, colormode='discrete'):
     ----------
     molecule : Molecule() object
         The molecule to be rendered.
-    colormode : string
-        Set the colormode for coloring the atoms. Two valid color modes -
+    colormode : string, optional
+        Set the colormode for coloring the atoms. Two valid color modes:
         * 'discrete': Atoms are colored using CPK coloring convention.
         * 'single': All atoms are colored with same color(grey).
 
@@ -443,7 +455,7 @@ def ball_stick(molecule, colormode='discrete',
     ----------
     molecule : Molecule() object
         The molecule to be rendered.
-    colormode : string
+    colormode : string, optional
         Set the colormode for coloring the atoms. Two valid color modes -
         * 'discrete': Atoms and bonds are colored using CPK coloring
           convention.
@@ -455,22 +467,22 @@ def ball_stick(molecule, colormode='discrete',
         selected: (50, 50, 50)
         * Default is 'discrete'.
 
-    atom_scale_factor : float
+    atom_scale_factor : float, optional
         Scaling factor colormode='discrete',
                                atom_scale_factor=0.3, bond_thickness=1,
                                multipleBoto be applied to the atoms.
         Default is 0.3.
-    bond_thickness : float
+    bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
         Default is 0.1. (Optimal range: 0.1 - 0.5)
-    multiple_bonds : string
+    multiple_bonds : string, optional
         Set whether multiple tubes will be used to represent multiple
-        bonds. Two valid choices -
+        bonds. Two valid choices:
         * 'on': multiple bonds (double, triple) will be shown by using
           multiple tubes.
         * 'off': all bonds (single, double, triple) will be shown as single
-          bonds (i.e shown using one tube each).
+          bonds (i.e. shown using one tube each).
         Default is 'on'.
 
     Returns
@@ -519,15 +531,15 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     ----------
     molecule : Molecule object
         The molecule to be rendered.
-    colormode : string
-        Set the colormode for coloring the bonds. Two valid color modes -
+    colormode : string, optional
+        Set the colormode for coloring the bonds. Two valid color modes:
         * 'discrete': Bonds are colored using CPK coloring convention.
         * 'single': All bonds are colored with the same color (dark grey)
         RGB tuple used for coloring the bonds when 'single' colormode is
         selected: (50, 50, 50)
         Default is 'discrete'.
 
-    bond_thickness : float
+    bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds).
         Default is 0.1. (Optimal range: 0.1 - 0.5)
@@ -584,14 +596,14 @@ def ribbon(molecule):
     for i in range(num_total_atoms):
         secondary_structures[i] = ord('c')
         resi = molecule.residue_seq[i]
-        for j in range(len(molecule.sheet)):
+        for j, _ in enumerate(molecule.sheet):
             sheet = molecule.sheet[j]
             if molecule.chain[i] != sheet[0] or resi < sheet[1] or \
                resi > sheet[3]:
                 continue
             secondary_structures[i] = ord('s')
 
-        for j in range(len(molecule.helix)):
+        for j, _ in enumerate(molecule.helix):
             helix = molecule.helix[j]
             if molecule.chain[i] != helix[0] or resi < helix[1] or \
                resi > helix[3]:
