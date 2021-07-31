@@ -529,7 +529,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
 
     Parameters
     ----------
-    molecule : Molecule object
+    molecule : Molecule() object
         The molecule to be rendered.
     colormode : string, optional
         Set the colormode for coloring the bonds. Two valid color modes:
@@ -580,7 +580,7 @@ def ribbon(molecule):
 
     Parameters
     ----------
-    molecule : Molecule object
+    molecule : Molecule() object
         The molecule to be rendered.
 
     Returns
