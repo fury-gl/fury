@@ -1176,6 +1176,7 @@ def test_grid(_interactive=False):
     arr[arr < 20] = 0
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 6)
+    npt.assert_equal(type(container._items[0]), actor.Container)
 
     scene.rm_all()
 
@@ -1196,6 +1197,7 @@ def test_grid(_interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects > 6, True)
+    npt.assert_equal(type(container._items[0]), actor.Container)
 
 
 def test_direct_sphere_mapping():
