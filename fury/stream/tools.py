@@ -400,7 +400,7 @@ class ArrayCircularQueue(GenericCircularQueue):
         # head_tail_arr[1] int; tail position
         head_tail_arr = np.array([-1, -1, 0], dtype='int64')
         self.head_tail_buffer = multiprocessing.Array(
-                    'l', head_tail_arr,
+                    'q', head_tail_arr,
         )
 
     def enqueue(self, data):
@@ -718,7 +718,7 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
     def create_mem_resource(self):
         self.max_size = self.max_window_size[0]*self.max_window_size[1]
         self.max_size *= self.num_components
-
+        self.max_size = int(self.max_size)
         for _ in range(self.num_buffers):
             buffer = multiprocessing.RawArray(
                 'B', np.random.randint(
