@@ -1,0 +1,41 @@
+Welcome to my GSoC Blog!
+========================
+
+.. post:: June 8 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Hi all! 
+I'm Sajag Swami, a sophomore at Indian Institute of Technology, Roorkee. This summer, I will be working on adding a new functionality to **FURY** which shall enable users to 
+visualise various types of proteins via different representations like Richardson aka Ribbon diagrams and molecular surface diagrams. 
+As a part of my stretch goals, I’ll try to expand protein diagrams via other representations including:
+
+1. Stick
+2. Ball and stick
+3. Wire
+4. Pipes and Planks
+5. Sphere
+
+What did you do during the Community Bonding Period?
+----------------------------------------------------
+I had weekly meetings with my mentors and other core team members. In the first meeting I got acquainted with the team members and learnt about the organisation and its goal/vision.
+In the later meetings we discussed about various representations of proteins and how to go about implementing them in FURY.
+We discussed about various libraries which can be used to parse PDB and PDBx files.
+I made a `document <https://docs.google.com/document/d/1mSoAWyXlLNrCa3hN-hiP35Lj7rURYMk5jFnWZbZp70s>`_ for the same to list pros and cons of using each library. 
+I worked upon my `previous PR <https://github.com/fury-gl/fury/pull/404>`_ too during the community bonding period and fixed its docstring syntax.
+
+As my college ended early courtesy covid, I had extra time during which I experimented and learnt more about PDB and PDBx files - the details they contain and how to parse them. 
+A small backbone visualisation  of 1mb0 protein made on FURY by extracting coordinate data of its alpha carbons:
+
+.. figure:: https://github.com/SunTzunami/gsoc2021_blog_data/blob/master/visuals/week1_backbone.png?raw=true
+  :align: center
+
+What is coming up next week?
+----------------------------
+I have two major goals for the next week:
+
+1. Make an actor for the space filling model of the proteins and make PR for the same which will also include the unit tests and a small tutorial for the users.
+2. Try to understand the documentation of vtkProteinRibbonFilter which will prove beneficial in generating Ribbon diagrams.
+
+``Au Revoir!``
