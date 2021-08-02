@@ -3382,16 +3382,27 @@ class TreeNode2D(UI):
         self.title_panel.add_element(self.label_image,
                                      (0., 0.))
 
-        self.button.on_left_mouse_button_clicked = self.toggle_view
-        self.title_panel.background.on_left_mouse_button_clicked = \
-            self.select_node
-
         if self.children:
             for child in self.children:
                 self.add_node(child)
 
         if not self.expandable:
             self.button.set_visibility(False)
+
+        #  Adding event callbacks
+        self.button.on_left_mouse_button_clicked = self.toggle_view
+        self.label_text.on_left_mouse_button_pressed =\
+            self.left_button_pressed
+
+        self.label_image.on_left_mouse_button_pressed =\
+            self.left_button_pressed
+
+        self.title_panel.background.on_left_mouse_button_clicked = \
+            self.select_node
+
+        self.label_text.on_left_mouse_button_dragged = self.left_button_dragged
+        self.label_image.on_left_mouse_button_dragged =\
+            self.left_button_dragged
 
     def _get_actors(self):
         """ Get the actors composing this UI component.
@@ -3774,4 +3785,16 @@ class TreeNode2D(UI):
             self.color = self.unselected_color
             self.on_node_deselect(self)
 
+        i_ren.force_render()
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.title_panel.position += change
+        self._click_position = click_position
         i_ren.force_render()
