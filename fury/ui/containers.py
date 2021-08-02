@@ -26,7 +26,8 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left", resizable=False):
+                 opacity=0.7, align="left", resizable=False,
+                 adaptive_resizing=False):
         """Init class instance.
 
         Parameters
@@ -42,9 +43,14 @@ class Panel2D(UI):
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
         resizable: bool, optional
-            If the panel should be resizable from the corner
+            If the panel should be resizable from the corner.
+        adaptive_resizing: bool, optional
+            If the panel should adapt to the changing window size.
+            Note that window resizing is perfomance heavy and
+            only 4-5 insatnces should be created at a time.
         """
         self.resizable = resizable
+        self.adaptive_resizing = adaptive_resizing
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.max_size = size
@@ -97,7 +103,7 @@ class Panel2D(UI):
         ----------
         scene : scene
         """
-        if self.resizable:
+        if self.adaptive_resizing:
             window = scene.GetRenderWindow()
             i_ren = window.GetInteractor().GetInteractorStyle()
 
@@ -106,8 +112,8 @@ class Panel2D(UI):
             self.size_ratio = panel_size / window_size
 
             window.AddObserver('WindowResizeEvent',
-                            partial(self.window_event_propagate,
-                                    obj=self.background, i_ren=i_ren))
+                               partial(self.window_event_propagate,
+                                       obj=self.background, i_ren=i_ren))
 
         for element in self._elements:
             element.add_to_scene(scene)
