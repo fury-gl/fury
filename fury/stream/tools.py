@@ -25,6 +25,16 @@ except ImportError:
     cv2 = None
     OPENCV_AVAILABLE = False
 
+_FLOAT_ShM_TYPE = 'd'
+_INT_ShM_TYPE = 'i'
+_UINT_ShM_TYPE = 'I'
+_BYTE_ShM_TYPE = 'B'
+
+_FLOAT_SIZE = np.dtype(_FLOAT_ShM_TYPE).itemsize
+_INT_SIZE = np.dtype(_INT_ShM_TYPE).itemsize
+_UINT_SIZE = np.dtype(_UINT_ShM_TYPE).itemsize
+_BYTE_SIZE = np.dtype(_BYTE_ShM_TYPE).itemsize
+
 
 def remove_shm_from_resource_tracker():
     """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't
@@ -81,7 +91,7 @@ class GenericMultiDimensionalBuffer(ABC):
     @buffer.setter
     def buffer(self, data):
         if isinstance(data, (np.ndarray, np.generic)):
-            if data.dtype == 'float64':
+            if data.dtype == _FLOAT_ShM_TYPE:
                 self._buffer_repr[:] = data
 
     def get_start_end(self, idx):
@@ -103,7 +113,7 @@ class GenericMultiDimensionalBuffer(ABC):
     def __setitem__(self, idx, data):
         start, end = self.get_start_end(idx)
         if isinstance(data, (np.ndarray, np.generic)):
-            if data.dtype == 'float64':
+            if data.dtype == _FLOAT_ShM_TYPE:
                 # if end - start == self.dimension and start >= 0 and end >= 0:
                 self._buffer_repr[start:end] = data
 
@@ -150,9 +160,9 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
     def create_mem_resource(self):
         buffer_arr = np.zeros(
-            self.dimension*(self.max_size+1), dtype='float64')
+            self.dimension*(self.max_size+1), dtype=_FLOAT_ShM_TYPE)
         buffer = multiprocessing.RawArray(
-                'd', buffer_arr)
+                _FLOAT_ShM_TYPE, np.ctypeslib.as_ctypes(buffer_arr))
         self._buffer = buffer
         self._buffer_repr = np.ctypeslib.as_array(self._buffer)
 
@@ -195,16 +205,16 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
     def create_mem_resource(self):
         buffer_arr = np.zeros(
-            self.dimension*(self.max_size+1), dtype='float64')
+            self.dimension*(self.max_size+1), dtype=_FLOAT_ShM_TYPE)
         self._buffer = shared_memory.SharedMemory(
                     create=True, size=buffer_arr.nbytes)
 
         # Some OSx versions has a minimum shared memory block size
         # of 4096 bytes. Therefore, we must update this value
-        self.max_size = self._buffer.size//self.dimension//8-1
+        self.max_size = self._buffer.size//self.dimension//_FLOAT_SIZE-1
         self._buffer_repr = np.ndarray(
-                self._buffer.size//8,
-                dtype='float64', buffer=self._buffer.buf)
+                self._buffer.size//_FLOAT_SIZE,
+                dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf)
         self.buffer_name = self._buffer.name
         logging.info([
             'create repr multidimensional buffer ',
@@ -213,13 +223,11 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
     def load_mem_resource(self):
         self._buffer = shared_memory.SharedMemory(self.buffer_name)
-        # 8 represents 8 bytes of float64
-        self.max_size = self._buffer.size//self.dimension//8-1
-        # self.max_size = int(len(self._buffer.buf)//self.dimension/8)
-        # self.max_size -= 1
+        self.max_size = self._buffer.size/self.dimension//_FLOAT_SIZE
+        self.max_size -= 1
         self._buffer_repr = np.ndarray(
-            self._buffer.size//8,
-            dtype='float64', buffer=self._buffer.buf)
+            self._buffer.size//_FLOAT_SIZE,
+            dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf)
         logging.info([
             'load repr multidimensional buffer',
             self._buffer_repr.shape, 'max size', self.max_size
@@ -281,7 +289,8 @@ class GenericCircularQueue(ABC):
         if self._use_shared_mem:
             return self.head_tail_buffer_repr[0]
         else:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[0]
+            return np.frombuffer(
+                self.head_tail_buffer.get_obj(), _INT_ShM_TYPE)[0]
 
     @head.setter
     def head(self, value):
@@ -292,7 +301,8 @@ class GenericCircularQueue(ABC):
         if self._use_shared_mem:
             return self.head_tail_buffer_repr[1]
         else:
-            return np.frombuffer(self.head_tail_buffer.get_obj(), 'int64')[1]
+            return np.frombuffer(
+                self.head_tail_buffer.get_obj(), _INT_ShM_TYPE)[1]
 
     @tail.setter
     def tail(self, value):
@@ -300,7 +310,7 @@ class GenericCircularQueue(ABC):
 
     def set_head_tail(self, head, tail, lock=1):
         self.head_tail_buffer_repr[0:3] = np.array(
-            [head, tail, lock]).astype('int64')
+            [head, tail, lock]).astype(_INT_ShM_TYPE)
 
     def _enqueue(self, data):
         ok = False
@@ -398,9 +408,9 @@ class ArrayCircularQueue(GenericCircularQueue):
     def create_mem_resource(self):
         # head_tail_arr[0] int; head position
         # head_tail_arr[1] int; tail position
-        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
+        head_tail_arr = np.array([-1, -1, 0], dtype=_INT_ShM_TYPE)
         self.head_tail_buffer = multiprocessing.Array(
-                    'q', head_tail_arr,
+                    _INT_ShM_TYPE, head_tail_arr,
         )
 
     def enqueue(self, data):
@@ -456,12 +466,12 @@ class SharedMemCircularQueue(GenericCircularQueue):
             self._created = False
 
         self.head_tail_buffer_repr = np.ndarray(
-                self.head_tail_buffer.size//8,
-                dtype='int64', buffer=self.head_tail_buffer.buf)
+                self.head_tail_buffer.size//_INT_SIZE,
+                dtype=_INT_ShM_TYPE, buffer=self.head_tail_buffer.buf)
         logging.info([
             'create shared mem',
             'size repr', self.head_tail_buffer_repr.shape,
-            'size buffer', self.head_tail_buffer.size//8
+            'size buffer', self.head_tail_buffer.size/_INT_SIZE
         ])
         if self._created:
             self.set_head_tail(-1, -1, 0)
@@ -473,7 +483,7 @@ class SharedMemCircularQueue(GenericCircularQueue):
     def create_mem_resource(self):
         # head_tail_arr[0] int; head position
         # head_tail_arr[1] int; tail position
-        head_tail_arr = np.array([-1, -1, 0], dtype='int64')
+        head_tail_arr = np.array([-1, -1, 0], dtype=_INT_ShM_TYPE)
         self.head_tail_buffer = shared_memory.SharedMemory(
                 create=True, size=head_tail_arr.nbytes)
         self.head_tail_buffer_name = self.head_tail_buffer.name
@@ -574,18 +584,6 @@ class GenericImageBufferManager(ABC):
         return index
 
     def write_into(self, w, h, np_arr):
-        """This writes a image buffer (np_arr) into the
-        shared memory resource
-
-        Parameters
-        ----------
-        w : uint
-            width
-        h : uint
-            height
-        np_arr : buffer
-
-        """
         buffer_size = buffer_size = int(h*w*3)
         next_buffer_index = self.next_buffer_index
 
@@ -605,19 +603,10 @@ class GenericImageBufferManager(ABC):
         self.info_buffer_repr[2+next_buffer_index*2+1] = h
         self.info_buffer_repr[1] = next_buffer_index
 
-    def get_current_frame(self):
-        """Get the FURY current frame
-
-        Returns
-        -------
-        width : int
-        height : int
-        image : buffer
-
-        """
+    def get_current_frame(self, from_buffer=False):
         if not self._use_shared_mem:
             image_info = np.frombuffer(
-                    self.info_buffer, 'uint32')
+                    self.info_buffer, _UINT_ShM_TYPE)
         else:
             image_info = self.info_buffer_repr
 
@@ -632,29 +621,22 @@ class GenericImageBufferManager(ABC):
         return self.width, self.height, image
 
     def get_jpeg(self):
-        """"Encodes and return the OpenGl current frame
-
-        Returns
-        -------
-        bytes_img : bytes
-
-        """
         width, height, image = self.get_current_frame()
 
         if self._use_shared_mem:
             image = np.frombuffer(
-                image, 'uint8')
+                image, _BYTE_ShM_TYPE)
 
         image = image[0:width*height*3].reshape(
                 (height, width, 3))
         image = np.flipud(image)
-        # preserve width and height, flip B->R
-        image = image[:, :, ::-1]
         if OPENCV_AVAILABLE:
+            # preserve width and height, flip B->R
+            image = image[:, :, ::-1]
             image_encoded = cv2.imencode('.jpg', image)[1]
             bytes_img = image_encoded.tobytes()
         else:
-            image_encoded = Image.fromarray(image)
+            image_encoded = Image.fromarray(image, mode="RGB")
             bytes_img_data = io.BytesIO()
             image_encoded.save(bytes_img_data, format='jpeg')
             bytes_img = bytes_img_data.getvalue()
@@ -662,16 +644,9 @@ class GenericImageBufferManager(ABC):
         return bytes_img
 
     async def async_get_jpeg(self, ms=33):
-        """"Encodes and return the OpenGl current frame
-
-        Returns
-        -------
-        bytes_img : bytes
-
-        """
-        bytes_img = self.get_jpeg()
+        jpeg = self.get_jpeg()
         await asyncio.sleep(ms/1000)
-        return bytes_img
+        return jpeg
 
     @abstractmethod
     def load_mem_resource(self):
@@ -705,7 +680,6 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffers : list of buffers, optional
             A list of buffers with each one containing a frame.
-
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=False)
         if image_buffers is None or info_buffer is None:
@@ -718,13 +692,17 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
     def create_mem_resource(self):
         self.max_size = self.max_window_size[0]*self.max_window_size[1]
         self.max_size *= self.num_components
-        self.max_size = int(self.max_size)
+
         for _ in range(self.num_buffers):
             buffer = multiprocessing.RawArray(
-                'B', np.random.randint(
-                    0, 255,
-                    size=self.max_size)
-                .astype('uint8'))
+                _BYTE_ShM_TYPE,
+                np.ctypeslib.as_ctypes(
+                    np.random.randint(
+                        0, 255,
+                        size=self.max_size, dtype=_BYTE_ShM_TYPE
+                    )
+                )
+            )
             self.image_buffers.append(buffer)
             self.image_reprs.append(
                 np.ctypeslib.as_array(buffer))
@@ -740,16 +718,17 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
             info_list += [self.max_window_size[0]]
             info_list += [self.max_window_size[1]]
         info_list = np.array(
-            info_list, dtype='uint64'
+            info_list, dtype=_UINT_ShM_TYPE
         )
         self.info_buffer = multiprocessing.RawArray(
-                'I', np.array(info_list).astype('uint64')
+                _UINT_ShM_TYPE,
+                np.ctypeslib.as_ctypes(np.array(info_list))
         )
         self.info_buffer_repr = np.ctypeslib.as_array(self.info_buffer)
 
     def load_mem_resource(self):
         self.info_buffer = np.frombuffer(
-            self.info_buffer, 'uint64')
+            self.info_buffer, _UINT_ShM_TYPE)
         self.info_buffer_repr = np.ctypeslib.as_array(
             self.info_buffer)
         for img_buffer in self.image_buffers:
@@ -766,6 +745,10 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
         """This implements an ImageBufferManager using the
         SharedMemory approach.
 
+        Note
+        -----
+        Python >=3.8 is a requirement to use this object.
+
         Parameters
         ----------
         max_window_size : tuple of ints, optional
@@ -779,10 +762,6 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             frame to be streamed and the respective sizes
         image_buffer_names : list of str, optional
             a list of buffer names. Each buffer contains a frame
-
-        Note
-        -----
-        Python >=3.8 is a requirement to use this object.
 
         """
         super().__init__(max_window_size, num_buffers, use_shared_mem=True)
@@ -798,13 +777,15 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
     def create_mem_resource(self):
         self.max_size = self.max_window_size[0]*self.max_window_size[1]
         self.max_size *= self.num_components
+        self.max_size = int(self.max_size)
         for _ in range(self.num_buffers):
             buffer = shared_memory.SharedMemory(
                         create=True, size=self.max_size)
             self.image_buffers.append(buffer)
             self.image_reprs.append(
                 np.ndarray(
-                    self.max_size, dtype=np.uint8, buffer=buffer.buf))
+                    self.max_size, dtype=_BYTE_ShM_TYPE,
+                    buffer=buffer.buf))
             self.image_buffer_names.append(buffer.name)
 
         info_list = [3, 0]
@@ -812,14 +793,14 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             info_list += [self.max_window_size[0]]
             info_list += [self.max_window_size[1]]
         info_list = np.array(
-            info_list, dtype='uint64'
+            info_list, dtype=_UINT_ShM_TYPE
         )
 
         self.info_buffer = shared_memory.SharedMemory(
             create=True, size=info_list.nbytes)
         self.info_buffer_repr = np.ndarray(
-                self.info_buffer.size//8,
-                dtype='uint64',
+                self.info_buffer.size//_UINT_SIZE,
+                dtype=_UINT_ShM_TYPE,
                 buffer=self.info_buffer.buf)
         logging.info([
             'info buffer create',
@@ -831,8 +812,8 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
     def load_mem_resource(self):
         self.info_buffer = shared_memory.SharedMemory(self.info_buffer_name)
         self.info_buffer_repr = np.ndarray(
-                self.info_buffer.size//8,
-                dtype='uint64',
+                self.info_buffer.size//_UINT_SIZE,
+                dtype=_UINT_ShM_TYPE,
                 buffer=self.info_buffer.buf)
         logging.info([
             'info buffer load',
@@ -843,20 +824,17 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
             buffer = shared_memory.SharedMemory(buffer_name)
             self.image_buffers.append(buffer)
             self.image_reprs.append(np.ndarray(
-                buffer.size,
-                dtype=np.uint8,
+                buffer.size//_BYTE_SIZE,
+                dtype=_BYTE_ShM_TYPE,
                 buffer=buffer.buf))
 
     def cleanup(self):
         """Release the resources used by the Shared Memory Manager"""
         self.info_buffer.close()
-        """ this it's due the python core issues
-
-        https://bugs.python.org/issue38119
-        https://bugs.python.org/issue39959
-        https://github.com/luizalabs/shared-memory-dict/issues/13
-
-        """
+        # this it's due the python core issues
+        # https://bugs.python.org/issue38119
+        # https://bugs.python.org/issue39959
+        # https://github.com/luizalabs/shared-memory-dict/issues/13
         if self._created:
             try:
                 self.info_buffer.unlink()
