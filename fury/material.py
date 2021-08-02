@@ -49,15 +49,18 @@ def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
     specular_power : float, optional
         Parameter used to specify how glossy the actor should be. Values must
         be between 0.0 and 1.0.
-    interpolation : float, optional
+    interpolation : string, optional
         Parameter used to specify how glossy the actor should be. Values must
         be between 0.0 and 1.0.
 
     """
     prop = actor.GetProperty()
     prop.SetAmbient(ambient_level)
+    prop.SetAmbientColor()
     prop.SetDiffuse(diffuse_level)
+    prop.SetDiffuseColor()
     prop.SetSpecular(specular_level)
+    prop.SetSpecularColor()
     prop.SetSpecularPower(specular_power)
 
     if interpolation.lower() == 'phong':
