@@ -1724,11 +1724,11 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
     Parameters
     ----------
-    centers : ndarray, shape (N, 3)
+    centers : ndarray, shape (N, 3), optional
         Pentagonal prism positions
-    directions : ndarray, shape (N, 3)
+    directions : ndarray, shape (N, 3), optional
         The orientation vector of the pentagonal prism.
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : int or ndarray (N,3) or tuple (3,), optional
         Pentagonal prism size on each direction (x, y), default(1)

@@ -52,16 +52,18 @@ def test_vertices_primitives_octagonalprism():
 def test_vertices_primitives_pentagonalprism():
     # Testing the default vertices of the primitive pentagonal prism.
     vertices, _ = fp.prim_pentagonalprism()
+    lower_face = vertices[:, 0:2][0:5, ]
+    upper_face = vertices[:, 0:2][5:10, ]
+    centroid_upper = np.mean(upper_face, 0)
+    centroid_lower = np.mean(lower_face, 0)
     shape = (10, 3)
-    five = (float('{:.7f}'.format(math.sqrt(5))))
-    onec = (five - 1) / 4.0
-    twoc = (five + 1) / 4.0
-    sone = (math.sqrt(10 + (2 * five))) / 4.0
-    stwo = (math.sqrt(10 - (2 * five))) / 4.0
     npt.assert_equal(vertices.shape, shape)
-    npt.assert_equal(np.mean(vertices), 0)
-    npt.assert_equal(vertices.min(), onec)
-    npt.assert_equal(vertices.max(), sone)
+    # This test will check whether the z-axis vertex dispersion is correct
+    npt.assert_almost_equal(np.mean(vertices[:, 2]), 0)
+    #check if the centroid of the upper face is at the origin
+    npt.assert_almost_equal(centroid_upper, np.array([0, 0]))
+    # check if the centroid of the lower face is at the origin
+    npt.assert_almost_equal(centroid_lower, np.array([0, 0]))
 
 
 def test_vertices_primitives_triangularprism():
