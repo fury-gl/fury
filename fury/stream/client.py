@@ -90,7 +90,10 @@ class FuryStreamClient:
         self.image_reprs = []
         self.num_buffers = num_buffers
         if max_window_size is None:
-            max_window_size = self.showm.size
+            max_window_size = (
+                int(self.showm.size[0]*(1+0.1)),
+                int(self.showm.size[1]*(1+0.1))
+            )
 
         self.max_size = max_window_size[0]*max_window_size[1]
         self.max_window_size = max_window_size

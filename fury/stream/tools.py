@@ -942,5 +942,7 @@ class IntervalTimer:
             return
 
         self._timer.cancel()
+        if self._timer.isAlive():
+            self._timer.join()
         self.is_running = False
         self._timer = None
