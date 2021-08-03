@@ -27,7 +27,8 @@ class Panel2D(UI):
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
                  opacity=0.7, align="left", resizable=False,
-                 adaptive_resizing=False):
+                 adaptive_resizing=False, border_color=(1, 1, 1),
+                 border_width=0, has_border=False):
         """Init class instance.
 
         Parameters
@@ -42,15 +43,24 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
-        resizable: bool, optional
-            If the panel should be resizable from the corner.
-        adaptive_resizing: bool, optional
-            If the panel should adapt to the changing window size.
-            Note that window resizing is perfomance heavy and
-            only 4-5 insatnces should be created at a time.
+        resizable : bool, optional
+            If True, the panel will be resizable from the corner.
+        adaptive_resizing : bool, optional
+            If True, the panel will adapt to changing window size.
+            Note that adaptive resizing is performance heavy
+            and works well with only 4-5 instances at once.
+        border_color: (float, float, float), optional
+            Must take values in [0, 1].
+        border_width: float, optional
+            width of the border
+        has_border: bool, optional
+            If the panel should have borders.
         """
         self.resizable = resizable
         self.adaptive_resizing = adaptive_resizing
+        self.has_border = has_border
+        self._border_color = border_color
+        self._border_width = border_width
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.max_size = size
@@ -65,10 +75,34 @@ class Panel2D(UI):
         """Setup this UI component.
 
         Create the background (Rectangle2D) of the panel.
+        Create the borders (Rectangle2D) of the panel.
         """
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D()
+
+        if self.has_border:
+            self.borders = {'left': Rectangle2D(),
+                            'right': Rectangle2D(),
+                            'top': Rectangle2D(),
+                            'bottom': Rectangle2D()}
+
+            self.border_coords = {'left': (0., 0.),
+                                  'right': (1., 0.),
+                                  'top': (0., 1.),
+                                  'bottom': (0., 0.)}
+
+            for key in self.borders.keys():
+                self.borders[key].color = self._border_color
+                self.add_element(self.borders[key], self.border_coords[key])
+
+            for key in self.borders.keys():
+                self.borders[key].on_left_mouse_button_pressed = \
+                    self.left_button_pressed
+
+                self.borders[key].on_left_mouse_button_dragged = \
+                    self.left_button_dragged
+
         self.add_element(self.background, (0, 0))
 
         if self.resizable:
@@ -134,6 +168,21 @@ class Panel2D(UI):
         if self.resizable:
             button_coords = (int(size[0] - self.resize_button.size[0]), 0)
             self.update_element(self.resize_button, button_coords)
+
+        if self.has_border:
+            self.borders['left'].resize((self._border_width,
+                                        size[1]+self._border_width))
+
+            self.borders['right'].resize((self._border_width,
+                                          size[1]+self._border_width))
+
+            self.borders['top'].resize((self.size[0]+self._border_width,
+                                        self._border_width))
+
+            self.borders['bottom'].resize((self.size[0]+self._border_width,
+                                           self._border_width))
+
+            self.update_border_coords()
 
     def _set_position(self, coords):
         """Set the lower-left corner position of this UI component.
@@ -233,7 +282,7 @@ class Panel2D(UI):
 
     def left_button_pressed(self, i_ren, _obj, panel2d_object):
         click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - panel2d_object.position
+        self._drag_offset = click_pos - self.position
         i_ren.event.abort()  # Stop propagating the event.
 
     def left_button_dragged(self, i_ren, _obj, _panel2d_object):
@@ -262,7 +311,7 @@ class Panel2D(UI):
         self.resize(np.clip(_new_size, 0, self.max_size))
         i_ren.force_render()
 
-    def corner_resize(self, i_ren, _obj, panel2d_object):
+    def corner_resize(self, i_ren, _obj, _element):
         """Method to resize the Panel2D when grabbed from corner.
 
         Parameters
@@ -271,17 +320,15 @@ class Panel2D(UI):
             Custom Interactor
         obj: :class: `UI`
             UI element associated with the event
-        panel2d_object: :class: `Panel2D`
-            Instance of the Panel2D
+        panel2d_object: :class: `Button2D`
+            Instance of the resize button
         """
         if self._drag_offset is not None:
             click_position = np.array(i_ren.event.position)
             new_position = click_position - self._drag_offset
 
-            delta_x = new_position[0] - panel2d_object.position[0] \
-                + self.background.size[0]
-
-            delta_y = new_position[1] - panel2d_object.position[1]
+            delta_x = click_position[0] - self.position[0]
+            delta_y = new_position[1] - _element.position[1]
             new_size = (delta_x, self.size[1]-delta_y)
 
             self.max_size = new_size
@@ -308,6 +355,73 @@ class Panel2D(UI):
         else:
             msg = "You can only left-align or right-align objects in a panel."
             raise ValueError(msg)
+
+    def update_border_coords(self):
+        """Update the coordinates of the borders
+        """
+        self.border_coords = {'left': (0., 0.),
+                              'right': (1., 0.),
+                              'top': (0., 1.),
+                              'bottom': (0., 0.)}
+
+        for key in self.borders.keys():
+            self.update_element(self.borders[key], self.border_coords[key])
+
+    @property
+    def border_color(self):
+        sides = ['left', 'right', 'top', 'bottom']
+        return [self.borders[side].color for side in sides]
+
+    @border_color.setter
+    def border_color(self, side_color):
+        """Set the color of a specific border
+
+        Parameters
+        ----------
+        side_color: Iterable
+            Iterable to pack side, color values
+        """
+        side, color = side_color
+
+        if side.lower() not in ['left', 'right', 'top', 'bottom']:
+            raise ValueError(
+                f'{side} not a valid border side')
+
+        self.borders[side].color = color
+
+    @property
+    def border_width(self):
+        sides = ['left', 'right', 'top', 'bottom']
+        widths = []
+
+        for side in sides:
+            if side in ['left', 'right']:
+                widths.append(self.borders[side].width)
+            elif side in ['top', 'bottom']:
+                widths.append(self.borders[side].height)
+            else:
+                raise ValueError(
+                    f'{side} not a valid border side')
+        return widths
+
+    @border_width.setter
+    def border_width(self, side_width):
+        """Set the border width of a specific border
+
+        Parameters
+        ----------
+        side_width: Iterable
+            Iterable to pack side, width values
+        """
+        side, border_width = side_width
+
+        if side.lower() in ['left', 'right']:
+            self.borders[side].width = border_width
+        elif side.lower() in ['top', 'bottom']:
+            self.borders[side].height = border_width
+        else:
+            raise ValueError(
+                f'{side} not a valid border side')
 
 
 class TabPanel2D(UI):
