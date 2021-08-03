@@ -39,8 +39,7 @@ The following 15 authors contributed 211 commits.
 * Praneeth Shetty
 * Sajag Swami
 * Serge Koudoro
-* bruno messias
-* haran2001
+* Hariharan Ayappane
 
 
 We closed a total of 89 issues, 35 pull requests and 54 regular issues;
