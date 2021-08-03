@@ -203,34 +203,48 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
             self.load_mem_resource()
             self._created = False
 
+        self._create_repr()
+
     def create_mem_resource(self):
+        self._num_el = self.dimension*(self.max_size+1)
         buffer_arr = np.zeros(
-            self.dimension*(self.max_size+1), dtype=_FLOAT_ShM_TYPE)
+            self._num_el+2, dtype=_FLOAT_ShM_TYPE)
         self._buffer = shared_memory.SharedMemory(
                     create=True, size=buffer_arr.nbytes)
-
-        # Some OSx versions has a minimum shared memory block size
-        # of 4096 bytes. Therefore, we must update this value
-        self.max_size = self._buffer.size//self.dimension//_FLOAT_SIZE-1
-        self._buffer_repr = np.ndarray(
-                self._buffer.size//_FLOAT_SIZE,
-                dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf)
+        sizes = np.ndarray(
+            2, dtype=_FLOAT_ShM_TYPE,
+            buffer=self._buffer.buf[0:_FLOAT_SIZE*2])
+        sizes[0] = self.max_size
+        sizes[1] = self.dimension
         self.buffer_name = self._buffer.name
         logging.info([
             'create repr multidimensional buffer ',
-            self._buffer_repr.shape, 'max size', self.max_size
         ])
 
     def load_mem_resource(self):
         self._buffer = shared_memory.SharedMemory(self.buffer_name)
-        self.max_size = self._buffer.size/self.dimension//_FLOAT_SIZE
-        self.max_size -= 1
-        self._buffer_repr = np.ndarray(
-            self._buffer.size//_FLOAT_SIZE,
-            dtype=_FLOAT_ShM_TYPE, buffer=self._buffer.buf)
+        sizes = np.ndarray(
+            2, dtype='d',
+            buffer=self._buffer.buf[0:_FLOAT_SIZE*2])
+        self.max_size = int(sizes[0])
+        self.dimension = int(sizes[1])
+        num_el = int((sizes[0]+1)*sizes[1])
+        self._num_el = num_el
         logging.info([
             'load repr multidimensional buffer',
-            self._buffer_repr.shape, 'max size', self.max_size
+        ])
+
+    def _create_repr(self):
+        start = _FLOAT_SIZE*2
+        end = (self._num_el+2)*_FLOAT_SIZE
+        self._buffer_repr = np.ndarray(
+            self._num_el,
+            dtype=_FLOAT_ShM_TYPE,
+            buffer=self._buffer.buf[start:end])
+        logging.info([
+            'create repr multidimensional buffer',
+            self._buffer_repr.shape,
+            'max size', self.max_size, 'dimension', self.dimension
         ])
 
     def cleanup(self):
@@ -466,8 +480,9 @@ class SharedMemCircularQueue(GenericCircularQueue):
             self._created = False
 
         self.head_tail_buffer_repr = np.ndarray(
-                self.head_tail_buffer.size//_INT_SIZE,
-                dtype=_INT_ShM_TYPE, buffer=self.head_tail_buffer.buf)
+                3,
+                dtype=_INT_ShM_TYPE,
+                buffer=self.head_tail_buffer.buf[0:3*_INT_SIZE])
         logging.info([
             'create shared mem',
             'size repr', self.head_tail_buffer_repr.shape,
@@ -788,7 +803,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                     buffer=buffer.buf))
             self.image_buffer_names.append(buffer.name)
 
-        info_list = [3, 0]
+        info_list = [2+self.num_buffers*2, 1, 3, 0]
         for _ in range(self.num_buffers):
             info_list += [self.max_window_size[0]]
             info_list += [self.max_window_size[1]]
@@ -798,26 +813,34 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
 
         self.info_buffer = shared_memory.SharedMemory(
             create=True, size=info_list.nbytes)
+        sizes = np.ndarray(
+            2, dtype=_UINT_ShM_TYPE,
+            buffer=self.info_buffer.buf[0:_UINT_SIZE*2])
+        sizes[0] = info_list[0]
+        sizes[1] = 1
         self.info_buffer_repr = np.ndarray(
-                self.info_buffer.size//_UINT_SIZE,
+                sizes[0],
                 dtype=_UINT_ShM_TYPE,
-                buffer=self.info_buffer.buf)
+                buffer=self.info_buffer.buf[2*_UINT_SIZE:])
         logging.info([
             'info buffer create',
-            'buffer size', self.info_buffer.size,
+            'buffer size', sizes[0],
             'repr size', self.info_buffer_repr.shape
         ])
         self.info_buffer_name = self.info_buffer.name
 
     def load_mem_resource(self):
         self.info_buffer = shared_memory.SharedMemory(self.info_buffer_name)
+        sizes = np.ndarray(
+            2, dtype=_UINT_ShM_TYPE,
+            buffer=self.info_buffer.buf[0:_UINT_SIZE*2])
         self.info_buffer_repr = np.ndarray(
-                self.info_buffer.size//_UINT_SIZE,
+                sizes[0],
                 dtype=_UINT_ShM_TYPE,
-                buffer=self.info_buffer.buf)
+                buffer=self.info_buffer.buf[2*_UINT_SIZE:])
         logging.info([
             'info buffer load',
-            'buffer size', self.info_buffer.size,
+            'buffer size', sizes[0],
             'repr size', self.info_buffer_repr.shape
         ])
         for buffer_name in self.image_buffer_names:
