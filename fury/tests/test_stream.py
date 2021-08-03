@@ -53,9 +53,8 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -118,8 +117,8 @@ def test_pillow():
             [0, 0, 1]
         ])
 
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -194,9 +193,8 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -250,8 +248,8 @@ def test_client_and_buffer_manager():
             [0, 0, 1]
         ])
 
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -322,9 +320,8 @@ def test_stream_client_conditions():
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -371,9 +368,8 @@ def test_stream_client_resize():
         [0, 0, 1]
     ])
 
-    actors = actor.sdf(
-        centers, primitives='sphere', colors=colors, scales=2)
-
+    actors = actor.sphere(
+            centers, colors=colors, radii=.1)
     scene = window.Scene()
     scene.add(actors)
     showm = window.ShowManager(scene, reset_camera=False, size=(
@@ -419,9 +415,8 @@ def test_stream_interaction():
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -520,9 +515,8 @@ def test_stream_interaction_conditions():
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -797,9 +791,8 @@ def test_webserver():
             [0, 1, 0],
             [0, 0, 1]
         ])
-
-        actors = actor.sdf(
-            centers, primitives='sphere', colors=colors, scales=2)
+        actors = actor.sphere(
+            centers, colors=colors, radii=.1)
 
         scene = window.Scene()
         scene.add(actors)
@@ -871,10 +864,8 @@ def test_widget():
         [0, 1, 0],
         [0, 0, 1]
     ])
-
-    actors = actor.sdf(
-        centers, primitives='sphere', colors=colors, scales=2)
-
+    actors = actor.sphere(
+            centers, colors=colors, radii=.1)
     scene = window.Scene()
     scene.add(actors)
     showm = window.ShowManager(scene, reset_camera=False, size=(
