@@ -320,7 +320,6 @@ class ShowManager(object):
             scene = Scene()
         self.scene = scene
         self.title = title
-        self.size = size
         self.png_magnify = png_magnify
         self.reset_camera = reset_camera
         self.order_transparent = order_transparent
@@ -552,6 +551,10 @@ class ShowManager(object):
         self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.timers.clear()
+
+    @property
+    def size(self):
+        return self.scene.GetSize()
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
