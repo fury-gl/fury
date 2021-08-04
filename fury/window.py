@@ -511,13 +511,46 @@ class ShowManager(object):
 
     def add_window_callback(self, win_callback,
                             event=vtk.vtkCommand.ModifiedEvent):
-        """Add window callbacks."""
+        """Add window callbacks.
+
+        Parameters
+        ----------
+        win_callback : function
+            A callback function to call when a window event happens.
+            The callback function must accept the following arguments:
+            `ren`, `iren` and `obj`.
+        event : vtk event (default: `vtkCommand::ModifiedEvent`)
+            The event to watch for.
+
+        Returns
+        -------
+        id_observer : int
+            The observer id.
+
+        """
         id_observer = self.window.AddObserver(event, win_callback)
         self.window.Render()
         return id_observer
 
     def add_timer_callback(self, repeat, duration, timer_callback):
-        id_timer = len(self._timers.keys())
+        """Add a timer callback.
+
+        Parameters
+        ----------
+        repeat : bool
+            If True, the timer will repeat.
+        duration : int
+            Timer duration in milliseconds.
+        timer_callback : function
+            Function to call when the timer expires.
+
+        Returns
+        -------
+        id_timer : int
+            The timer ID.
+
+        """
+        timer_id = len(self._timers.keys())
         id_observer = self.iren.AddObserver(
             "TimerEvent", timer_callback)
 
@@ -525,20 +558,45 @@ class ShowManager(object):
             timer_id = self.iren.CreateRepeatingTimer(duration)
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
-        self._timers[id_timer] = (timer_id, id_observer)
-        return id_timer
+        self._timers[timer_id] = (timer_id, id_observer)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
+        """Add a callback to a specific event on the interactor.
+
+        Parameters
+        ----------
+        iren_callback : function
+            A function that will be called when the specified event happens.
+        event : str
+            The event that will trigger the callback.
+
+        Returns
+        -------
+        id_observer : int
+            The id of the observer.
+
+        """
         id_observer = self.iren.AddObserver(event, iren_callback)
         return id_observer
 
     def destroy_timer(self, id):
+        """Destroy a timer given the id.
+
+        Parameters
+        ----------
+        id : int
+            Id of the timer to destroy.
+            Cames from the `add_timer_callback` method.
+
+        """
         timer_id, observer_id = self._timers[id]
         self.iren.DestroyTimer(timer_id)
         self.iren.RemoveObserver(observer_id)
         del self._timers[id]
 
     def destroy_timers(self):
+        """Destroy all the timers."""
         for id in self._timers.keys():
             self.destroy_timer(id)
 
