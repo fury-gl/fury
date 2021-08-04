@@ -513,8 +513,9 @@ class ShowManager(object):
     def add_window_callback(self, win_callback,
                             event=vtk.vtkCommand.ModifiedEvent):
         """Add window callbacks."""
-        self.window.AddObserver(event, win_callback)
+        id_observer = self.window.AddObserver(event, win_callback)
         self.window.Render()
+        return id_observer
 
     def add_timer_callback(self, repeat, duration, timer_callback):
         id_timer = len(self._timers.keys())
@@ -529,7 +530,8 @@ class ShowManager(object):
         return id_timer
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
-        self. iren.AddObserver(event, iren_callback)
+        id_observer = self.iren.AddObserver(event, iren_callback)
+        return id_observer
 
     def destroy_timer(self, id):
         timer_id, observer_id = self._timers[id]
