@@ -327,6 +327,7 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self._timer_observers_ids = []
 
         if self.reset_camera:
             self.scene.ResetCamera()
@@ -517,7 +518,9 @@ class ShowManager(object):
         self.window.Render()
 
     def add_timer_callback(self, repeat, duration, timer_callback):
-        self.iren.AddObserver("TimerEvent", timer_callback)
+        id_observer = self.iren.AddObserver(
+            "TimerEvent", timer_callback)
+        self._timer_observers_ids.append(id_observer)
 
         if repeat:
             timer_id = self.iren.CreateRepeatingTimer(duration)
@@ -527,6 +530,14 @@ class ShowManager(object):
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)
+
+    def destroy_timer_by_id(self, id):
+        """Destroy a timer by id.
+        """
+        self.iren.DestroyTimer(self.timers[id])
+        self.iren.RemoveObserver(self._timer_observers_ids[id])
+        del self.timers[id]
+        del self._timer_observers_ids[id]
 
     def destroy_timer(self, timer_id):
         self.iren.DestroyTimer(timer_id)
