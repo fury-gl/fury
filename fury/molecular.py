@@ -134,6 +134,12 @@ def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
         Index of the second atom.
     bond_order : int (optional)
         Bond order (whether it's a single/double/triple bond). Default: 1
+
+    Notes
+    -----
+    Ensure that the total number of bonds between two atoms doesn't exceed 3.
+    Calling ``add_bond`` to add bonds between atoms that already have a triple
+    bond between them leads to erratic behavior and must be avoided.
     """
     molecule.AppendBond(atom1_index, atom2_index, bond_order)
 
@@ -235,9 +241,9 @@ def set_bond_order(molecule, bond_index, bond_order):
     molecule : Molecule() object
         The molecule to which the bond belongs.
     bond_index : int
-        Index of the atom to which the coordinates are to be assigned.
+        Index of the bond whose order is to be assigned.
     bond_order : int
-        Type of the bond (single/double/triple).
+        Bond order (whether it's a single/double/triple bond).
     """
     return molecule.SetBondOrder(bond_index, bond_order)
 
