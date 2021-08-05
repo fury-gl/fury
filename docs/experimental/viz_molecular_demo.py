@@ -6,7 +6,7 @@ Space filling model actor
 A small example to show how to use the space_filling_model actor and
 and generate a space filling model for a protein. This example also
 shows how to parse PDBx/mmCIF files to obtain atomic info essential
-(coordinates and element names) to constructing the model.
+(coordinates and element names) to construct the model.
 
 Importing necessary modules
 """
@@ -34,7 +34,7 @@ if not os.path.isfile(pdbfn):
         print("Error in downloading the file!")
 
 ###############################################################################
-# creating an PeriodicTable() object to obtain atomic numbers from names of
+# creating a PeriodicTable() object to obtain atomic numbers from names of
 # elements
 table = mol.PeriodicTable()
 
