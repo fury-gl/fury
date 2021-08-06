@@ -1,11 +1,15 @@
 import warnings
-import vtk
-from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 import numpy as np
+import vtkmodules.vtkCommonCore as ccvtk
+import vtkmodules.vtkCommonDataModel as cdmvtk
+import vtkmodules.vtkRenderingCore as rcvtk
+import vtkmodules.vtkDomainsChemistry as dcvtk
+import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
+from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 from fury.utils import numpy_to_vtk_points
 
 
-class Molecule(vtk.vtkMolecule):
+class Molecule(cdmvtk.vtkMolecule):
     """Your molecule class.
 
     An object that is used to create molecules and store molecular data (e.g.
@@ -77,9 +81,9 @@ class Molecule(vtk.vtkMolecule):
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
             atom_nums = numpy_to_vtk(atomic_numbers,
-                                     array_type=vtk.VTK_UNSIGNED_SHORT)
+                                     array_type=ccvtk.VTK_UNSIGNED_SHORT)
             atom_nums.SetName("Atomic Numbers")
-            fieldData = vtk.vtkDataSetAttributes()
+            fieldData = cdmvtk.vtkDataSetAttributes()
             fieldData.AddArray(atom_nums)
             self.Initialize(coords, fieldData)
         else:
@@ -319,14 +323,14 @@ def compute_bonding(molecule):
     or anything other than atomic separations. It will not produce anything
     other than single bonds.
     """
-    bonder = vtk.vtkSimpleBondPerceiver()
+    bonder = dcvtk.vtkSimpleBondPerceiver()
     bonder.SetInputData(molecule)
     bonder.SetTolerance(0.1)
     bonder.Update()
     deep_copy_molecule(molecule, bonder.GetOutput())
 
 
-class PeriodicTable(vtk.vtkPeriodicTable):
+class PeriodicTable(dcvtk.vtkPeriodicTable):
     """ A class to obtain properties of elements (eg: Covalent Radius,
     Van Der Waals Radius, Symbol etc.).
 
@@ -432,7 +436,7 @@ def sphere_cpk(molecule, colormode='discrete'):
         molecule to be visualized.
     """
     colormode = colormode.lower()
-    msp_mapper = vtk.vtkOpenGLMoleculeMapper()
+    msp_mapper = dcovtk.vtkOpenGLMoleculeMapper()
     msp_mapper.SetInputData(molecule)
     msp_mapper.SetRenderAtoms(True)
     msp_mapper.SetRenderBonds(False)
@@ -447,7 +451,7 @@ def sphere_cpk(molecule, colormode='discrete'):
         warnings.warn("Incorrect colormode specified! Using discrete.")
 
     # To-Do manipulate shading properties to make it look aesthetic
-    molecule_actor = vtk.vtkActor()
+    molecule_actor = rcvtk.vtkActor()
     molecule_actor.SetMapper(msp_mapper)
     return molecule_actor
 
@@ -502,7 +506,7 @@ def ball_stick(molecule, colormode='discrete',
                          'and stick model cannot be made!')
     colormode = colormode.lower()
     multiple_bonds = multiple_bonds.lower()
-    bs_mapper = vtk.vtkOpenGLMoleculeMapper()
+    bs_mapper = dcovtk.vtkOpenGLMoleculeMapper()
     bs_mapper.SetInputData(molecule)
     bs_mapper.SetRenderAtoms(True)
     bs_mapper.SetRenderBonds(True)
@@ -525,7 +529,7 @@ def ball_stick(molecule, colormode='discrete',
     else:
         bs_mapper.SetAtomColorMode(1)
         warnings.warn("Incorrect colormode specified! Using discrete.")
-    molecule_actor = vtk.vtkActor()
+    molecule_actor = rcvtk.vtkActor()
     molecule_actor.SetMapper(bs_mapper)
     return molecule_actor
 
@@ -560,7 +564,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
         raise ValueError('No bonding data available for the molecule! Stick '
                          'model cannot be made!')
     colormode = colormode.lower()
-    mst_mapper = vtk.vtkOpenGLMoleculeMapper()
+    mst_mapper = dcovtk.vtkOpenGLMoleculeMapper()
     mst_mapper.SetInputData(molecule)
     mst_mapper.SetRenderAtoms(True)
     mst_mapper.SetRenderBonds(True)
@@ -576,7 +580,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     else:
         mst_mapper.SetAtomColorMode(1)
         warnings.warn("Incorrect colormode specified! Using discrete.")
-    molecule_actor = vtk.vtkActor()
+    molecule_actor = rcvtk.vtkActor()
     molecule_actor.SetMapper(mst_mapper)
     return molecule_actor
 
@@ -616,11 +620,11 @@ def ribbon(molecule):
                 continue
             secondary_structures[i] = ord('h')
 
-    output = vtk.vtkPolyData()
+    output = cdmvtk.vtkPolyData()
 
     # for atomic numbers
     atomic_num_arr = numpy_to_vtk(num_array=all_atomic_numbers, deep=True,
-                                  array_type=vtk.VTK_ID_TYPE)
+                                  array_type=ccvtk.VTK_ID_TYPE)
 
     # setting the array name to atom_type as vtkProteinRibbonFilter requires
     # the array to be named atom_type
@@ -629,7 +633,7 @@ def ribbon(molecule):
     output.GetPointData().AddArray(atomic_num_arr)
 
     # for atom names
-    atom_names = vtk.vtkStringArray()
+    atom_names = ccvtk.vtkStringArray()
 
     # setting the array name to atom_types as vtkProteinRibbonFilter requires
     # the array to be named atom_types
@@ -642,50 +646,50 @@ def ribbon(molecule):
 
     # for residue sequences
     residue_seq = numpy_to_vtk(num_array=molecule.residue_seq, deep=True,
-                               array_type=vtk.VTK_ID_TYPE)
+                               array_type=ccvtk.VTK_ID_TYPE)
     residue_seq.SetName("residue")
     output.GetPointData().AddArray(residue_seq)
 
     # for chain
     chain = numpy_to_vtk(num_array=molecule.chain, deep=True,
-                         array_type=vtk.VTK_UNSIGNED_CHAR)
+                         array_type=ccvtk.VTK_UNSIGNED_CHAR)
     chain.SetName("chain")
     output.GetPointData().AddArray(chain)
 
     # for secondary structures
     s_s = numpy_to_vtk(num_array=secondary_structures, deep=True,
-                       array_type=vtk.VTK_UNSIGNED_CHAR)
+                       array_type=ccvtk.VTK_UNSIGNED_CHAR)
     s_s.SetName("secondary_structures")
     output.GetPointData().AddArray(s_s)
 
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
     s_sb = numpy_to_vtk(num_array=newarr, deep=True,
-                        array_type=vtk.VTK_UNSIGNED_CHAR)
+                        array_type=ccvtk.VTK_UNSIGNED_CHAR)
     s_sb.SetName("secondary_structures_begin")
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
     s_se = numpy_to_vtk(num_array=newarr, deep=True,
-                        array_type=vtk.VTK_UNSIGNED_CHAR)
+                        array_type=ccvtk.VTK_UNSIGNED_CHAR)
     s_se.SetName("secondary_structures_end")
     output.GetPointData().AddArray(s_se)
 
     # for is_hetatm
     is_hetatm = numpy_to_vtk(num_array=molecule.is_hetatm, deep=True,
-                             array_type=vtk.VTK_UNSIGNED_CHAR)
+                             array_type=ccvtk.VTK_UNSIGNED_CHAR)
     is_hetatm.SetName("ishetatm")
     output.GetPointData().AddArray(is_hetatm)
 
     # for model
     model = numpy_to_vtk(num_array=molecule.model, deep=True,
-                         array_type=vtk.VTK_UNSIGNED_INT)
+                         array_type=ccvtk.VTK_UNSIGNED_INT)
     model.SetName("model")
     output.GetPointData().AddArray(model)
 
     # for coloring the heteroatoms
-    rgb = vtk.vtkUnsignedCharArray()
+    rgb = ccvtk.vtkUnsignedCharArray()
     rgb.SetNumberOfComponents(3)
     rgb.Allocate(3 * num_total_atoms)
     rgb.SetName("rgb_colors")
@@ -697,7 +701,7 @@ def ribbon(molecule):
     output.GetPointData().SetScalars(rgb)
 
     # for radius of the heteroatoms
-    Radii = vtk.vtkFloatArray()
+    Radii = ccvtk.vtkFloatArray()
     Radii.SetNumberOfComponents(3)
     Radii.Allocate(3 * num_total_atoms)
     Radii.SetName("radius")
@@ -712,11 +716,11 @@ def ribbon(molecule):
     points = numpy_to_vtk_points(coords)
     output.SetPoints(points)
 
-    ribbonFilter = vtk.vtkProteinRibbonFilter()
+    ribbonFilter = dcvtk.vtkProteinRibbonFilter()
     ribbonFilter.SetInputData(output)
     ribbonFilter.SetCoilWidth(0.2)
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = rcvtk.vtkPolyDataMapper()
     mapper.SetInputConnection(ribbonFilter.GetOutputPort())
-    molecule_actor = vtk.vtkActor()
+    molecule_actor = rcvtk.vtkActor()
     molecule_actor.SetMapper(mapper)
     return molecule_actor
