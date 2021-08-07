@@ -335,15 +335,15 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
-def test_timers():
+def test_timers(interactive=False):
     centers = np.array([[1, 0, 0]])
     showm = window.ShowManager(size=(400, 400))
     # number of times that  each time call is called
-    counts_by_interval = {0: 0, 1: 0, 2: 0}
+    counts_by_interval = {0: 0, 1: 0, 2: 0, 3:0}
     # interval of each timer in miliseconds
-    ms_1 = 1
-    ms_2 = 100
-    ms_3 = 1000
+    ms_1 = 10
+    ms_2 = 10
+    ms_3 = 100
     state = {
         'first_call': True,
         # amount of milleseconds passe since the timer was started
@@ -364,7 +364,9 @@ def test_timers():
     def t3(iren, event_name_str):
         if state['current_time'] >= ms_3:
             counts_by_interval[2] += 1
-            showm.iren.TerminateApp()
+
+            showm.destroy_timers()
+            showm.exit()
 
     id1 = showm.add_timer_callback(False, ms_1, t1)
     showm.add_timer_callback(True, ms_2, t2)
@@ -378,7 +380,9 @@ def test_timers():
     showm.scene.add(sphere)
 
     state['first_time'] = time.time()
-    showm.start()
-    # callback 1 was not called
-    npt.assert_equal(counts_by_interval[0], 0)
-    npt.assert_equal(counts_by_interval[1] >= ms_3//ms_2, True)
+    if interactive:
+        showm.start()
+        # callback 1 was not called
+        npt.assert_equal(counts_by_interval[0], 0)
+        npt.assert_equal(counts_by_interval[1] >= ms_3//ms_2, True)
+

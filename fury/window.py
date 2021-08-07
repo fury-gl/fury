@@ -602,13 +602,12 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        if is_osx and self.timers:
+        if is_osx and len(self._timers) > 0:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
             self.destroy_timers()
         self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
-        self.timers.clear()
 
     @property
     def size(self):
