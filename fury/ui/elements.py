@@ -9,7 +9,8 @@ import os
 from collections import OrderedDict
 from numbers import Number
 from string import printable
-
+from fury.utils import set_input
+from fury.io import load_image
 
 import numpy as np
 
@@ -3798,3 +3799,225 @@ class TreeNode2D(UI):
         self.title_panel.position += change
         self._click_position = click_position
         i_ren.force_render()
+
+
+class Accordion2D(UI):
+    """Display content is an Accordion form.
+    
+    Attributes
+    ----------
+    items: list of str
+        List of items to be added to the accordion.
+    icons: list of str
+        List of paths/URLs to the icons to be used for the items.
+    """
+    def __init__(self, title='', items=None, icons=None, size=(400, 400), position=(0, 0),
+                 item_height=30, indent=25, multiselect=True, title_color=(0.5, 0.5, 0.5),
+                 title_opacity=1, body_color=(0.3, 0.3, 0.3), body_opacity=0.8):
+        """Initialize the UI element.
+        
+        Parameters
+        ----------
+        title: str, optional
+            Title of the accordion
+        items: list of str, optional
+            Items to be added to the accordion
+        icons: list of str, optional
+            Icons corresponding to the respective item
+        size : (int, int), optional
+            Width and height of the pixels of this UI component.
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        item_height: int, optional
+            Height of each item in the accordion.
+        indent: int, optional
+            Global indentation of the accordion items.
+        multiselect: bool, optional
+            If true, multiple items can be selected.
+        title_color: (float, float, float), optional
+            Color of the title text.
+        title_opacity: float, optional
+            Opacity of the title text.
+        body_color: (float, float, float), optional
+            Color of the body text.
+        body_opacity: float, optional
+            Opacity of the body text.
+        """
+        self.title = title
+        self.item_height = item_height
+        self._nodes = []
+        self.items = items or []
+        self.icons = icons or []
+
+        self.indent = indent
+        self.multiselect = multiselect
+
+        self._title_color = title_color
+        self._title_opacity = title_opacity
+        self._body_color = body_color
+        self._body_opacity = body_opacity
+
+        self._structure = []
+        self._children_prop = []
+
+        self.content_size = size
+        super(Accordion2D, self).__init__(position)
+        self.resize(size)
+    
+    def _setup(self):
+        """Setup this UI element.
+        Create a base node.
+        Convert the items to nodes.
+        Add the converted items as child nodes of base node.
+        """
+        self.generate_structure()
+        self.tree = Tree2D(structure=self._structure, tree_name=self.title,
+                           node_height=self.item_height, color=self.title_color,
+                           opacity=self.title_opacity, indent=self.indent,
+                           multiselect=self.multiselect, size=self.content_size)
+
+        self.tree.base_node.content_color = self.body_color
+        self.tree.base_node.content_opacity = self.body_opacity
+ 
+        for child_node, icon in zip(self.tree.nodes, self.icons):
+            child_node.icon = icon
+
+    def resize(self, size):
+        """ Resizes the Tree Node.
+
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        self.tree.resize(size)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.tree.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.tree.add_to_scene(_scene)
+        for child_prop in self._children_prop:
+            child_node = list(child_prop.values())[0][0]
+            child_node.set_visibility(False)
+            child_node.add_to_scene(_scene)
+
+        for child_prop in self._children_prop:
+            parent_node = list(child_prop.keys())[0]
+            child_node, coords = list(child_prop.values())[0]
+            parent_node.add_node(child_node, coords)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.tree.position = _coords
+
+    def _get_size(self):
+        return self.tree.size
+
+    def generate_structure(self):
+        """Generate the structure for tree."""
+        for item in self.items:
+            item_dict = {item: []}
+            self._structure.append(item_dict)
+    
+    def add_content(self, item_label, content, coords=(0., 0.)):
+        """Add content to a specific item.
+        
+        Parameters
+        ----------
+        item_label: str
+            Label of the item where content is to be added
+        content: :class: `UI`
+            UI component to be added to the item
+        coords: (float, float), optional
+            Coordinates of the content in the item
+        """
+        item = self.tree.select_node(item_label)
+        child_prop = {item: [content, coords]}
+        self._children_prop.append(child_prop)
+    
+    def select_item(self, item_label):
+        """Select the instance of a specific item.
+        
+        Parameters
+        ----------
+        item_label: str
+            Label of the item to be selected
+        """
+        _node = self.tree.select_node(item_label)
+        return _node
+
+    @property
+    def title_color(self):
+        return self._title_color
+    
+    @title_color.setter
+    def title_color(self, color):
+        """Sets background color of the title.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self._title_color = color
+        self.tree.base_node.color = self._title_color
+    
+    @property
+    def title_opacity(self):
+        return self._title_opacity
+    
+    @title_opacity.setter
+    def title_opacity(self, opacity):
+        """Sets background opacity of the title.
+
+        Parameters
+        ----------
+        opacity : float
+        """
+        self._title_opacity = opacity
+        self.tree.base_node.opacity = self._title_opacity
+    
+    @property
+    def body_color(self):
+        return self._body_color
+    
+    @body_color.setter
+    def body_color(self, color):
+        """Sets background color of the title.
+
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self._body_color = color
+        self.tree.base_node.content_color = self._body_color
+    
+    @property
+    def body_opacity(self):
+        return self._body_opacity
+    
+    @body_opacity.setter
+    def body_opacity(self, opacity):
+        """Sets background opacity of the title.
+
+        Parameters
+        ----------
+        opacity : float
+        """
+        self._body_opacity = opacity
+        self.tree.base_node.content_opacity = self._body_opacity
