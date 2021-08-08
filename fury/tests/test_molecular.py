@@ -270,7 +270,8 @@ def test_ribbon(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    colors = np.array([[150/255, 150/255, 150/255], [50/255, 50/255, 50/255]])
+    table = molecular.PeriodicTable()
+    colors = np.array([table.atom_color(1), table.atom_color(6)])
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 1)
@@ -346,16 +347,13 @@ def test_bounding_box(interactive=False):
     test_box = molecular.bounding_box(molecule)
     scene.add(molecule_actor, test_box)
 
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
     if interactive:
         window.show(scene)
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 2)
 
-    colors = np.array([[150/255, 150/255, 150/255], [50/255, 50/255, 50/255],
-                       [1, 1, 1]])
+    table = molecular.PeriodicTable()
+    colors = np.array([table.atom_color(1), table.atom_color(6)])
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 1)

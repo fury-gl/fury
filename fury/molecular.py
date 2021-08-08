@@ -741,12 +741,8 @@ def bounding_box(molecule):
         Actor created to serve as a bounding box for a given molecule.
     """
     pts = numpy_to_vtk_points(get_all_atomic_positions(molecule))
-    xmin, xmax, ymin, ymax, zmin, zmax = pts.GetBounds()
-    bounding_coords = np.array([[xmin, ymin, zmin],
-                                [xmax, ymax, zmax],
-                                [(xmin+xmax)/2, (ymin+ymax)/2, (zmin+zmax)/2]])
     bbox_poly = cdmvtk.vtkPolyData()
-    bbox_poly.SetPoints(numpy_to_vtk_points(bounding_coords))
+    bbox_poly.SetPoints(pts)
     outline = fmvtk.vtkOutlineFilter()
     outline.SetInputData(bbox_poly)
     outlineMapper = rcvtk.vtkPolyDataMapper()
