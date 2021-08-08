@@ -342,15 +342,6 @@ def test_bounding_box(interactive=False):
     molecule = molecular.Molecule(atomic_numbers, atom_coords)
     molecular.compute_bonding(molecule)
 
-    # testing bounding coordinates
-    _, bounds = molecular.bounding_box(molecule,
-                                       get_bounding_coords=True)
-    coords = np.array([[4.77427816, 4.95755434, 4.09089851],
-                       [7.78813505, 7.69551134, 6.96838617],
-                       [6.28120661, 6.32653284, 5.52964234]], dtype=float)
-    npt.assert_almost_equal(coords, bounds, 4)
-
-    # testing bounding box actor
     molecule_actor = molecular.stick(molecule)
     test_box = molecular.bounding_box(molecule)
     scene.add(molecule_actor, test_box)

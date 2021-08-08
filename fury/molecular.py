@@ -727,23 +727,18 @@ def ribbon(molecule):
     return molecule_actor
 
 
-def bounding_box(molecule, get_bounding_coords=False):
+def bounding_box(molecule):
     """Create a bounding box for a molecule.
 
     Parameters
     ----------
     molecule : Molecule() object
         The molecule around which the bounding box is to be created.
-    return_bounding_coords : bool, optional
-        If it is set to True, bounds of the bounding box along with its
-        centroid are returned in a numpy array. Default: False.
 
     Returns
     -------
     bbox_actor : vtkActor
         Actor created to serve as a bounding box for a given molecule.
-    get_bounding_coords : ndarray of shape (3, 3)
-        Array containing bounds and centroid of the bounding box.
     """
     pts = numpy_to_vtk_points(get_all_atomic_positions(molecule))
     xmin, xmax, ymin, ymax, zmin, zmax = pts.GetBounds()
@@ -758,6 +753,4 @@ def bounding_box(molecule, get_bounding_coords=False):
     outlineMapper.SetInputConnection(outline.GetOutputPort())
     bbox_actor = rcvtk.vtkActor()
     bbox_actor.SetMapper(outlineMapper)
-    if get_bounding_coords:
-        return bbox_actor, bounding_coords
     return bbox_actor
