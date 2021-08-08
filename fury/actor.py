@@ -1719,7 +1719,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     return tri_actor
 
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1, height=1):
     """Visualize one or many pentagonal prisms with different features.
 
     Parameters
@@ -1739,18 +1739,19 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
     Examples
     --------
+    >>> import numpy as np
     >>> from fury import window, actor
     >>> scene = window.Scene()
     >>> centers = np.random.rand(3, 3)
     >>> dirs = np.random.rand(3, 3)
     >>> colors = np.random.rand(3, 3)
     >>> scales = np.random.rand(3, 1)
-    >>> actor = actor.pentagonalprism(centers, dirs, colors, scales)
-    >>> scene.add(actor)
+    >>> actor_pentagonal = actor.pentagonalprism(centers, dirs, colors, scales)
+    >>> scene.add(actor_pentagonal)
     >>> # window.show(scene)
 
     """
-    verts, faces = fp.prim_pentagonalprism()
+    verts, faces = fp.prim_pentagonalprism(height)
     res = fp.repeat_primitive(verts, faces, directions=directions,
                               centers=centers, colors=colors, scales=scales)
 

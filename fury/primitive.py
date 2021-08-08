@@ -626,7 +626,7 @@ def prim_triangularprism():
     return vertices, triangles
 
 
-def prim_pentagonalprism():
+def prim_pentagonalprism(height=1.0):
     """Return vertices and triangles for a pentagonal prism.
 
     Returns
@@ -637,24 +637,24 @@ def prim_pentagonalprism():
         triangles that compose our prism
 
     """
-    # Local variable to represent the square root of five rounded
-    # to 7 decimal places
+    # Local variable to represent the square root of five
     five = math.sqrt(5)
     onec = (five - 1) / 4.0
     twoc = (five + 1) / 4.0
     sone = (math.sqrt(10 + (2 * five))) / 4.0
     stwo = (math.sqrt(10 - (2 * five))) / 4.0
 
-    vertices = np.array([[-twoc/2, stwo/2, -1/2],
-                         [onec/2, sone/2, -1/2],
-                         [1/2, 0, -1/2],
-                         [onec/2, -sone/2, -1/2],
-                         [-twoc/2, -stwo/2, -1/2],
-                         [-twoc/2, stwo/2, 1/2],
-                         [onec/2, sone/2, 1/2],
-                         [1/2, 0, 1/2],
-                         [onec/2, -sone/2, 1/2],
-                         [-twoc/2, -stwo/2, 1/2]])
+    vertices = np.array([[stwo/2, twoc/2, -1.84],
+                         [sone/2, -onec/2, -1.84],
+                         [0, -1/2, -1.84],
+                         [-sone/2, -onec/2, -1.84],
+                         [-stwo/2, twoc/2, -1.84],
+                         [stwo/2, twoc/2, 1.84],
+                         [sone/2, -onec/2, 1.84],
+                         [0, -1/2, 1.84],
+                         [-sone/2, -onec/2, 1.84],
+                         [-stwo/2, twoc/2, 1.84]])
+    vertices[:,2] = height*vertices[:,2]
     triangles = np.array([[9, 5, 4],
                           [4, 5, 0],
                           [5, 6, 0],
