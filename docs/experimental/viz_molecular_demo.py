@@ -20,7 +20,7 @@ import numpy as np
 # Downloading the PDB file whose model is to be rendered.
 # User can change the pdb_code depending on which protein they want to
 # visualize
-pdb_code = '1pgb'
+pdb_code = '4ury'
 downloadurl = "https://files.rcsb.org/download/"
 pdbfn = pdb_code + ".pdb"
 flag = 0
@@ -116,8 +116,9 @@ is_hetatm = np.array(is_hetatm)
 # 5. Generating and adding molecular model to the scene.
 
 scene = window.Scene()
-scene.set_camera(position=(20, 20, 0), focal_point=(0, 0, 0),
+scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0),
                  view_up=(0, 1, 0))
+scene.zoom(0.8)
 axes_actor = actor.axes()
 scene.add(axes_actor)
 molecule = mol.Molecule(elements, points, atom_names, model,
@@ -128,7 +129,7 @@ mol.compute_bonding(molecule)
 scene.add(mol.stick(molecule, bond_thickness=0.2))
 
 # ribbon representation
-scene.add(mol.ribbon(molecule))
+scene.add(mol.ribbon(molecule), mol.bounding_box(molecule))
 
 # ball and stick representation
 # scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
