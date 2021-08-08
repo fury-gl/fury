@@ -5,6 +5,7 @@ import vtkmodules.vtkCommonDataModel as cdmvtk
 import vtkmodules.vtkRenderingCore as rcvtk
 import vtkmodules.vtkDomainsChemistry as dcvtk
 import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
+import vtkmodules.vtkFiltersModeling as fmvtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 from fury.utils import numpy_to_vtk_points
 
@@ -427,7 +428,7 @@ def sphere_cpk(molecule, colormode='discrete'):
 
         RGB tuple used for coloring the atoms when 'single' colormode is
         selected: (150, 150, 150)
-        Default is 'discrete'.
+        Default: 'discrete'.
 
     Returns
     -------
@@ -475,17 +476,17 @@ def ball_stick(molecule, colormode='discrete',
         selected: (150, 150, 150)
         * RGB tuple used for coloring the bonds when 'single' colormode is
         selected: (50, 50, 50)
-        * Default is 'discrete'.
+        * Default: 'discrete'.
 
     atom_scale_factor : float, optional
         Scaling factor colormode='discrete',
                                atom_scale_factor=0.3, bond_thickness=1,
                                multipleBoto be applied to the atoms.
-        Default is 0.3.
+        Default: 0.3.
     bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
-        Default is 0.1. (Optimal range: 0.1 - 0.5)
+        Default: 0.1 (Optimal range: 0.1 - 0.5).
     multiple_bonds : string, optional
         Set whether multiple tubes will be used to represent multiple
         bonds. Two valid choices:
@@ -493,7 +494,7 @@ def ball_stick(molecule, colormode='discrete',
           multiple tubes.
         * 'off': all bonds (single, double, triple) will be shown as single
           bonds (i.e. shown using one tube each).
-        Default is 'on'.
+        Default: 'on'.
 
     Returns
     -------
@@ -547,12 +548,12 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
         * 'single': All bonds are colored with the same color (dark grey)
         RGB tuple used for coloring the bonds when 'single' colormode is
         selected: (50, 50, 50)
-        Default is 'discrete'.
+        Default: 'discrete'.
 
     bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds).
-        Default is 0.1. (Optimal range: 0.1 - 0.5)
+        Default: 0.1 (Optimal range: 0.1 - 0.5).
 
     Returns
     -------
@@ -724,3 +725,39 @@ def ribbon(molecule):
     molecule_actor = rcvtk.vtkActor()
     molecule_actor.SetMapper(mapper)
     return molecule_actor
+
+
+def bounding_box(molecule, get_bounding_coords=False):
+    """Create a bounding box for a molecule.
+
+    Parameters
+    ----------
+    molecule : Molecule() object
+        The molecule around which the bounding box is to be created.
+    return_bounding_coords : bool, optional
+        If it is set to True, bounds of the bounding box along with its
+        centroid are returned in a numpy array. Default: False.
+
+    Returns
+    -------
+    bbox_actor : vtkActor
+        Actor created to serve as a bounding box for a given molecule.
+    get_bounding_coords : ndarray of shape (3, 3)
+        Array containing bounds and centroid of the bounding box.
+    """
+    pts = numpy_to_vtk_points(get_all_atomic_positions(molecule))
+    xmin, xmax, ymin, ymax, zmin, zmax = pts.GetBounds()
+    bounding_coords = np.array([[xmin, ymin, zmin],
+                                [xmax, ymax, zmax],
+                                [(xmin+xmax)/2, (ymin+ymax)/2, (zmin+zmax)/2]])
+    bbox_poly = cdmvtk.vtkPolyData()
+    bbox_poly.SetPoints(numpy_to_vtk_points(bounding_coords))
+    outline = fmvtk.vtkOutlineFilter()
+    outline.SetInputData(bbox_poly)
+    outlineMapper = rcvtk.vtkPolyDataMapper()
+    outlineMapper.SetInputConnection(outline.GetOutputPort())
+    bbox_actor = rcvtk.vtkActor()
+    bbox_actor.SetMapper(outlineMapper)
+    if get_bounding_coords:
+        return bbox_actor, bounding_coords
+    return bbox_actor
