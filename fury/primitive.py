@@ -654,7 +654,7 @@ def prim_pentagonalprism(height=1.0):
                          [0, -1/2, 1.84],
                          [-sone/2, -onec/2, 1.84],
                          [-stwo/2, twoc/2, 1.84]])
-    vertices[:,2] = height*vertices[:,2]
+    vertices[:, 2] = height*vertices[:, 2]
     triangles = np.array([[9, 5, 4],
                           [4, 5, 0],
                           [5, 6, 0],

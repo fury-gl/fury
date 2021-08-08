@@ -60,7 +60,7 @@ def test_vertices_primitives_pentagonalprism():
     npt.assert_equal(vertices.shape, shape)
     # This test will check whether the z-axis vertex dispersion is correct
     npt.assert_almost_equal(np.mean(vertices[:, 2]), 0)
-    #check if the centroid of the upper face is at the origin
+    # check if the centroid of the upper face is at the origin
     npt.assert_almost_equal(centroid_upper, np.array([0, 0]))
     # check if the centroid of the lower face is at the origin
     npt.assert_almost_equal(centroid_lower, np.array([0, 0]))
