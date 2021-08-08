@@ -334,3 +334,38 @@ def test_ribbon(interactive=False):
         report = window.analyze_snapshot(arr, colors=[color])
         npt.assert_equal(report.objects, 1)
         scene.clear()
+
+
+def test_bounding_box(interactive=False):
+    scene = window.Scene()
+    atomic_numbers, atom_coords = get_default_molecular_info()
+    molecule = molecular.Molecule(atomic_numbers, atom_coords)
+    molecular.compute_bonding(molecule)
+
+    # testing bounding coordinates
+    _, bounds = molecular.bounding_box(molecule,
+                                       get_bounding_coords=True)
+    coords = np.array([[4.77427816, 4.95755434, 4.09089851],
+                       [7.78813505, 7.69551134, 6.96838617],
+                       [6.28120661, 6.32653284, 5.52964234]], dtype=float)
+    npt.assert_almost_equal(coords, bounds, 4)
+
+    # testing bounding box actor
+    molecule_actor = molecular.stick(molecule)
+    test_box = molecular.bounding_box(molecule)
+    scene.add(molecule_actor, test_box)
+
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene)
+
+    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 2)
+
+    colors = np.array([[150/255, 150/255, 150/255], [50/255, 50/255, 50/255],
+                       [1, 1, 1]])
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 1)
+    scene.clear()
