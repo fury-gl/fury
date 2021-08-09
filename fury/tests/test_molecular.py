@@ -341,6 +341,7 @@ def test_bounding_box(interactive=True):
 
     molecule_actor = mol.stick(molecule)
     test_box = mol.bounding_box(molecule)
+    """
     scene.add(molecule_actor)
     scene.add(test_box)
 
@@ -355,3 +356,4 @@ def test_bounding_box(interactive=True):
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 1)
     scene.clear()
+    """
