@@ -1,11 +1,11 @@
 import numpy.testing as npt
 import numpy as np
-from fury import window, molecular
+from fury import window, molecular as mol
 
 
 def test_periodic_table():
     # Testing class PeriodicTable()
-    table = molecular.PeriodicTable()
+    table = mol.PeriodicTable()
     npt.assert_equal(table.atomic_number('C'), 6)
     npt.assert_equal(table.element_name(7), 'Nitrogen')
     npt.assert_equal(table.atomic_symbol(8), 'O')
@@ -51,57 +51,57 @@ def get_default_molecular_info(all_info=False):
 
 def test_molecule_creation():
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(atomic_numbers=atomic_numbers,
-                                  coords=atom_coords)
-    npt.assert_array_almost_equal(molecular.get_all_atomic_numbers(molecule),
+    molecule = mol.Molecule(atomic_numbers=atomic_numbers,
+                            coords=atom_coords)
+    npt.assert_array_almost_equal(mol.get_all_atomic_numbers(molecule),
                                   atomic_numbers)
-    npt.assert_array_almost_equal(molecular.get_all_atomic_positions(molecule),
+    npt.assert_array_almost_equal(mol.get_all_atomic_positions(molecule),
                                   atom_coords)
     npt.assert_equal(molecule.total_num_atoms, 8)
     npt.assert_equal(molecule.total_num_bonds, 0)
 
     # Test errors
     elements = np.array([6, 6])
-    npt.assert_raises(ValueError, molecular.Molecule, elements, atom_coords)
+    npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
 
     elements = [i for i in range(8)]
-    npt.assert_raises(ValueError, molecular.Molecule, elements, atom_coords)
+    npt.assert_raises(ValueError, mol.Molecule, elements, atom_coords)
 
 
 def test_add_atom_bond_creation():
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 6, 0, 0, 0)
-    molecular.add_atom(molecule, 6, 1, 0, 0)
-    molecular.add_bond(molecule, 0, 1, 1)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 6, 0, 0, 0)
+    mol.add_atom(molecule, 6, 1, 0, 0)
+    mol.add_bond(molecule, 0, 1, 1)
     npt.assert_equal(molecule.total_num_bonds, 1)
     npt.assert_equal(molecule.total_num_atoms, 2)
 
 
 def test_atomic_number():
     # Testing atomic number get/set functions
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 4, 0, 0, 0)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 4, 0, 0, 0)
 
     # Testing get_atomic_number
-    npt.assert_equal(molecular.get_atomic_number(molecule, 0), 4)
+    npt.assert_equal(mol.get_atomic_number(molecule, 0), 4)
 
     # Testing set_atomic_number
-    molecular.set_atomic_number(molecule, 0, 6)
-    npt.assert_equal(molecular.get_atomic_number(molecule, 0), 6)
+    mol.set_atomic_number(molecule, 0, 6)
+    npt.assert_equal(mol.get_atomic_number(molecule, 0), 6)
 
 
 def test_atomic_position():
     # Testing atomic position get/set functions
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 4, 0, 0, 0)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 4, 0, 0, 0)
 
     # Testing get_atomic_position
-    npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
+    npt.assert_array_almost_equal(mol.get_atomic_position(molecule, 0),
                                   np.array([0, 0, 0]))
 
     # Testing set_atomic_number
-    molecular.set_atomic_position(molecule, 0, 1, 1, 1)
-    npt.assert_array_almost_equal(molecular.get_atomic_position(molecule, 0),
+    mol.set_atomic_position(molecule, 0, 1, 1, 1)
+    npt.assert_array_almost_equal(mol.get_atomic_position(molecule, 0),
                                   np.array([1, 1, 1]))
 
 
@@ -109,49 +109,49 @@ def test_bond_order():
     # Testing bond order get/set functions
 
     # Testing get_bond_order
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 6, 0, 0, 0)
-    molecular.add_atom(molecule, 6, 1, 0, 0)
-    molecular.add_bond(molecule, 0, 1, 3)
-    npt.assert_equal(molecular.get_bond_order(molecule, 0), 3)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 6, 0, 0, 0)
+    mol.add_atom(molecule, 6, 1, 0, 0)
+    mol.add_bond(molecule, 0, 1, 3)
+    npt.assert_equal(mol.get_bond_order(molecule, 0), 3)
 
     # Testing set_bond_order
-    molecular.set_bond_order(molecule, 0, 2)
-    npt.assert_equal(molecular.get_bond_order(molecule, 0), 2)
+    mol.set_bond_order(molecule, 0, 2)
+    npt.assert_equal(mol.get_bond_order(molecule, 0), 2)
 
     # Testing get_all_bond_orders
-    npt.assert_array_almost_equal(molecular.get_all_bond_orders(molecule),
+    npt.assert_array_almost_equal(mol.get_all_bond_orders(molecule),
                                   np.array([2]))
 
 
 def test_deep_copy_molecule():
-    molecule1 = molecular.Molecule()
-    molecular.add_atom(molecule1, 6, 0, 0, 0)
-    molecular.add_atom(molecule1, 6, 1, 0, 0)
-    molecular.add_bond(molecule1, 0, 1, 1)
-    molecule2 = molecular.Molecule()
-    molecular.deep_copy_molecule(molecule2, molecule1)
+    molecule1 = mol.Molecule()
+    mol.add_atom(molecule1, 6, 0, 0, 0)
+    mol.add_atom(molecule1, 6, 1, 0, 0)
+    mol.add_bond(molecule1, 0, 1, 1)
+    molecule2 = mol.Molecule()
+    mol.deep_copy_molecule(molecule2, molecule1)
     npt.assert_equal(molecule2.total_num_bonds, 1)
     npt.assert_equal(molecule2.total_num_atoms, 2)
 
 
 def test_compute_bonding():
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(atomic_numbers, atom_coords)
-    molecular.compute_bonding(molecule)
+    molecule = mol.Molecule(atomic_numbers, atom_coords)
+    mol.compute_bonding(molecule)
     npt.assert_equal(molecule.total_num_bonds, 7)
 
 
 def test_sphere_cpk(interactive=False):
     atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(atomic_numbers, atom_coords)
-    table = molecular.PeriodicTable()
+    molecule = mol.Molecule(atomic_numbers, atom_coords)
+    table = mol.PeriodicTable()
     colormodes = ['discrete', 'single']
     colors = np.array([[table.atom_color(1), table.atom_color(6)],
                        [[150/255, 250/255, 150/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.sphere_cpk(molecule, colormode)
+        test_actor = mol.sphere_cpk(molecule, colormode)
 
         scene.add(test_actor)
         scene.reset_camera()
@@ -168,32 +168,30 @@ def test_sphere_cpk(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, molecular.sphere_cpk, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.sphere_cpk, molecule, 'multiple')
 
 
 def test_bstick(interactive=False):
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 6, 0, 0, 0)
-    molecular.add_atom(molecule, 6, 2, 0, 0)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 6, 0, 0, 0)
+    mol.add_atom(molecule, 6, 2, 0, 0)
 
     # Test errors for inadequate bonding data
-    npt.assert_raises(ValueError, molecular.ball_stick, molecule)
+    npt.assert_raises(ValueError, mol.ball_stick, molecule)
 
-    molecular.add_bond(molecule, 0, 1, 1)
+    mol.add_bond(molecule, 0, 1, 1)
     colormodes = ['discrete', 'single']
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [0.1, 0.2]
     multiple_bonds = ['On', 'Off']
-    table = molecular.PeriodicTable()
+    table = mol.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.ball_stick(molecule, colormode,
-                                          atom_scale_factor[i],
-                                          bond_thickness[i],
-                                          multiple_bonds[i])
+        test_actor = mol.ball_stick(molecule, colormode, atom_scale_factor[i],
+                                    bond_thickness[i], multiple_bonds[i])
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -209,30 +207,29 @@ def test_bstick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, molecular.ball_stick, molecule, 'multiple')
-    npt.assert_warns(UserWarning, molecular.ball_stick, molecule,
+    npt.assert_warns(UserWarning, mol.ball_stick, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.ball_stick, molecule,
                      multiple_bonds='yes')
 
 
 def test_stick(interactive=False):
-    molecule = molecular.Molecule()
-    molecular.add_atom(molecule, 6, 0, 0, 0)
-    molecular.add_atom(molecule, 6, 2, 0, 0)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 6, 0, 0, 0)
+    mol.add_atom(molecule, 6, 2, 0, 0)
 
     # Test errors for inadequate bonding data
-    npt.assert_raises(ValueError, molecular.stick, molecule)
-    molecular.add_bond(molecule, 0, 1, 1)
+    npt.assert_raises(ValueError, mol.stick, molecule)
+    mol.add_bond(molecule, 0, 1, 1)
 
     colormodes = ['discrete', 'single']
     bond_thickness = [0.1, 0.12]
-    table = molecular.PeriodicTable()
+    table = mol.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
     scene = window.Scene()
     for i, colormode in enumerate(colormodes):
-        test_actor = molecular.stick(molecule, colormode,
-                                     bond_thickness[i])
+        test_actor = mol.stick(molecule, colormode, bond_thickness[i])
         scene.add(test_actor)
         scene.reset_camera()
         scene.reset_clipping_range()
@@ -248,7 +245,7 @@ def test_stick(interactive=False):
         scene.clear()
 
     # Testing warnings
-    npt.assert_warns(UserWarning, molecular.stick, molecule, 'multiple')
+    npt.assert_warns(UserWarning, mol.stick, molecule, 'multiple')
 
 
 def test_ribbon(interactive=False):
@@ -257,10 +254,9 @@ def test_ribbon(interactive=False):
     scene = window.Scene()
     atomic_numbers, atom_coords, atom_types, model, residue_seq, chain, \
         is_hetatm, sheet, helix = get_default_molecular_info(True)
-    molecule = molecular.Molecule(atomic_numbers, atom_coords, atom_types,
-                                  model, residue_seq, chain, sheet, helix,
-                                  is_hetatm)
-    test_actor = molecular.ribbon(molecule)
+    molecule = mol.Molecule(atomic_numbers, atom_coords, atom_types, model,
+                            residue_seq, chain, sheet, helix, is_hetatm)
+    test_actor = mol.ribbon(molecule)
     scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
@@ -270,7 +266,7 @@ def test_ribbon(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    table = molecular.PeriodicTable()
+    table = mol.PeriodicTable()
     colors = np.array([table.atom_color(1), table.atom_color(6)])
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
@@ -319,10 +315,9 @@ def test_ribbon(interactive=False):
         else:
             helix = secondary_structure
             sheet = []
-        molecule = molecular.Molecule(elements, atom_coords, atom_names, model,
-                                      residue_seq, chain, sheet, helix,
-                                      is_hetatm)
-        test_actor = molecular.ribbon(molecule)
+        molecule = mol.Molecule(elements, atom_coords, atom_names, model,
+                                residue_seq, chain, sheet, helix, is_hetatm)
+        test_actor = mol.ribbon(molecule)
         scene.set_camera((28, 113, 74), (34, 106, 70), (-0.37, 0.29, -0.88))
         scene.add(test_actor)
         scene.reset_camera()
@@ -337,14 +332,15 @@ def test_ribbon(interactive=False):
         scene.clear()
 
 
-def test_bounding_box(interactive=False):
+def test_bounding_box(interactive=True):
     scene = window.Scene()
-    atomic_numbers, atom_coords = get_default_molecular_info()
-    molecule = molecular.Molecule(atomic_numbers, atom_coords)
-    molecular.compute_bonding(molecule)
+    molecule = mol.Molecule()
+    mol.add_atom(molecule, 6, 0, 0, 0)
+    mol.add_atom(molecule, 6, 1, 1, 1)
+    mol.add_bond(molecule, 0, 1, 1)
 
-    molecule_actor = molecular.stick(molecule)
-    test_box = molecular.bounding_box(molecule)
+    molecule_actor = mol.stick(molecule)
+    test_box = mol.bounding_box(molecule)
     scene.add(molecule_actor, test_box)
 
     if interactive:
@@ -352,7 +348,7 @@ def test_bounding_box(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 2)
 
-    table = molecular.PeriodicTable()
+    table = mol.PeriodicTable()
     colors = np.array([table.atom_color(1), table.atom_color(6)])
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
