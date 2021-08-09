@@ -3393,7 +3393,7 @@ class TreeNode2D(UI):
         self.button.on_left_mouse_button_clicked = self.toggle_view
         self.label_text.on_left_mouse_button_pressed =\
             self.left_button_pressed
-        
+
         self.label_text.on_left_mouse_button_clicked =\
             self.select_node
 
@@ -3477,7 +3477,8 @@ class TreeNode2D(UI):
                 self._normalized_children.append({node: coords})
                 _node_size = (self.size[0], self._largest_child_size())
             else:
-                _node_size = (self.size[0], self._largest_child_size() + node.size[1])
+                _node_size = (self.size[0],
+                              self._largest_child_size() + node.size[1])
 
         self.content_panel.add_element(node, _node_coords)
         self.resize(_node_size)
@@ -3505,8 +3506,8 @@ class TreeNode2D(UI):
         else:
             self.label_image.resize((0, 0))
 
-        self.label_text.resize((size[0]-self.button.size[0]-self.label_image.size[0],
-                                self.child_height))
+        self.label_text.resize((size[0] - self.button.size[0]
+                               - self.label_image.size[0], self.child_height))
 
         self.title_panel.update_element(self.label_text,
                                         (self.label_image.size[0], 0))
@@ -3745,15 +3746,15 @@ class TreeNode2D(UI):
             self.button.set_icon_by_name('collapse')
             for child in self.child_nodes:
                 child.expanded = False
-    
+
     @property
     def icon(self):
         return self._icon
-    
+
     @icon.setter
     def icon(self, icon):
         """Set a new image as the label icon.
-        
+
         Parameters
         ----------
         icon : str
