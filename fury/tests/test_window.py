@@ -335,7 +335,8 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
-def test_timers(interactive=False):
+def test_timers():
+    interactive = False
     centers = np.array([[1, 0, 0]])
     showm = window.ShowManager(size=(400, 400))
     # number of times that  each time call is called
