@@ -15,7 +15,7 @@ specialized visualization effects.
 import numpy as np
 
 from fury.shaders import shader_apply_effects
-
+from fury.utils import remove_observer_from_actor
 from fury import window, actor
 import itertools
 
@@ -141,7 +141,7 @@ def timer_callback(obj, event):
     # the results of each specifc opengl-state
     showm.scene.azimuth(1)
     if cnt == 400:
-        actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
+        remove_observer_from_actor(actor_no_depth_test, id_observer)
         shader_apply_effects(
              showm.window, actor_no_depth_test,
              effects=window.gl_set_additive_blending)

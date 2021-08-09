@@ -1,3 +1,4 @@
+from fury.utils import remove_observer_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -421,7 +422,7 @@ def test_opengl_state_add_remove_and_check():
     after_depth_test = state['GL_DEPTH_TEST']
     npt.assert_equal(after_depth_test, False)
     # removes the no_depth_test effect
-    actor_no_depth_test.GetMapper().RemoveObserver(id_observer)
+    remove_observer_from_actor(actor_no_depth_test, id_observer)
     showm.render()
     state = window.gl_get_current_state(showm.window.GetState())
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
