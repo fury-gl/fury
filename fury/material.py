@@ -29,9 +29,10 @@ def manifest_pbr(actor, metallicity=1, roughness=.5):
     prop.SetRoughness(roughness)
 
 
-def manifest_standard(actor, ambient_level=.7, diffuse_level=.8,
-                      specular_level=.5, specular_power=10,
-                      interpolation='phong'):
+def manifest_standard(actor, ambient_level=.7, ambient_color=(1, 1, 1),
+                      diffuse_level=.8, diffuse_color=(1, 1, 1),
+                      specular_level=.5, specular_color=(1, 1, 1),
+                      specular_power=10, interpolation='phong'):
     """Apply the standard material to the selected actor.
 
     Parameters
