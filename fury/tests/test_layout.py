@@ -1,7 +1,8 @@
 import numpy as np
 import numpy.testing as npt
 from fury import actor
-from fury.layout import GridLayout, HorizontalLayout, Layout
+from fury.layout import GridLayout, HorizontalLayout, Layout, \
+    VerticalLayout, XLayout, YLayout, ZLayout
 
 
 def get_default_cubes(centers=np.asarray([[[0, 0, 0]], [[5, 5, 5]]]),
@@ -132,3 +133,130 @@ def test_horizontal_layout_compute_positions():
     npt.assert_array_equal(position_square, [[0, 0, 0], [1.5, 0, 0]])
     npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [2.59, 0, 0]],
                                   0)
+
+
+def test_vertical_layout_compute_positions():
+    (cube_first, cube_second) = get_default_cubes()
+
+    vertical_layout_rect = VerticalLayout()
+    vertical_layout_square = VerticalLayout(cell_shape='square')
+    vertical_layout_diagonal = VerticalLayout(cell_shape='diagonal')
+
+    position_rect = vertical_layout_rect.compute_positions([cube_first,
+                                                            cube_second])
+
+    position_square = \
+        vertical_layout_square.compute_positions([cube_first, cube_second])
+
+    position_diagonal = \
+        vertical_layout_diagonal.compute_positions([cube_first, cube_second])
+
+    npt.assert_array_equal(position_rect, [[0, 0, 0], [0, 1.5, 0]])
+    npt.assert_array_equal(position_square, [[0, 0, 0], [0, 1.5, 0]])
+    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [0,
+                                  2.59, 0]], 0)
+
+
+def test_x_layout():
+    cube_first, cube_second = get_default_cubes()
+    actors = [cube_first, cube_second]
+
+    positive_x_layout = XLayout(direction='x+')
+    negative_x_layout = XLayout(direction='x-')
+
+    with npt.assert_raises(ValueError):
+        _ = XLayout(direction='Invalid direction')
+
+    positive_positions = positive_x_layout.compute_positions(actors)
+    negative_positions = negative_x_layout.compute_positions(actors)
+    npt.assert_array_equal(positive_positions, [[0, 0, 0], [1.5, 0, 0]])
+    npt.assert_array_equal(negative_positions, [[0, 0, 0], [1., 0, 0]])
+
+    positive_x_shapes = positive_x_layout.get_cells_shape(actors)
+    negative_x_shapes = negative_x_layout.get_cells_shape(actors)
+    npt.assert_array_equal(positive_x_shapes, [[1.5, 1.5], [1.5, 1.5]])
+    npt.assert_array_equal(negative_x_shapes, [[1.5, 1.5], [1.5, 1.5]])
+
+    positive_x_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[0, 0, 0], [1.5, 0, 0]])
+
+    negative_x_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[1.5, 0, 0], [0, 0, 0]])
+
+
+def test_y_layout():
+    cube_first, cube_second = get_default_cubes()
+    actors = [cube_first, cube_second]
+
+    positive_y_layout = YLayout(direction='y+')
+    negative_y_layout = YLayout(direction='y-')
+
+    with npt.assert_raises(ValueError):
+        _ = YLayout(direction='Invalid direction')
+
+    positive_positions = positive_y_layout.compute_positions(actors)
+    negative_positions = negative_y_layout.compute_positions(actors)
+    npt.assert_array_equal(positive_positions, [[0, 0, 0], [0, 1.5, 0]])
+    npt.assert_array_equal(negative_positions, [[0, 0, 0], [0, 1., 0]])
+
+    positive_y_shapes = positive_y_layout.get_cells_shape(actors)
+    negative_y_shapes = negative_y_layout.get_cells_shape(actors)
+    npt.assert_array_equal(positive_y_shapes, [[1.5, 1.5], [1.5, 1.5]])
+    npt.assert_array_equal(negative_y_shapes, [[1.5, 1.5], [1.5, 1.5]])
+
+    positive_y_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[0, 0, 0], [0, 1.5, 0]])
+
+    negative_y_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[0, 1.5, 0], [0, 0, 0]])
+
+
+def test_z_layout():
+    cube_first, cube_second = get_default_cubes()
+    actors = [cube_first, cube_second]
+
+    positive_z_layout = ZLayout(direction='z+')
+    negative_z_layout = ZLayout(direction='z-')
+
+    with npt.assert_raises(ValueError):
+        _ = XLayout(direction='Invalid direction')
+
+    positive_positions = positive_z_layout.compute_positions(actors)
+    negative_positions = negative_z_layout.compute_positions(actors)
+    npt.assert_array_equal(positive_positions, [[0, 0, 0], [0, 0, 1.5]])
+    npt.assert_array_equal(negative_positions, [[0, 0, 0], [0, 0, 1.]])
+
+    positive_z_shapes = positive_z_layout.get_cells_shape(actors)
+    negative_z_shapes = negative_z_layout.get_cells_shape(actors)
+    npt.assert_array_equal(positive_z_shapes, [1.5, 1.5])
+    npt.assert_array_equal(negative_z_shapes, [1.5, 1.5])
+
+    positive_z_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[0, 0, 0], [0, 0, 1.5]])
+
+    negative_z_layout.apply(actors)
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_equal([cube_first_center, cube_second_center],
+                           [[0, 0, 1.5], [0, 0, 0]])
