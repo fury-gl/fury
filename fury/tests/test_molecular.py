@@ -341,7 +341,8 @@ def test_bounding_box(interactive=True):
 
     molecule_actor = mol.stick(molecule)
     test_box = mol.bounding_box(molecule)
-    scene.add(molecule_actor, test_box)
+    scene.add(molecule_actor)
+    scene.add(test_box)
 
     if interactive:
         window.show(scene)
