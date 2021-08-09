@@ -87,4 +87,3 @@ interactive = True
 
 if interactive:
     show_manager.start()
-

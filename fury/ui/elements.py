@@ -3825,7 +3825,7 @@ class TreeNode2D(UI):
 
 class Accordion2D(UI):
     """Display content is an Accordion form.
-    
+
     Attributes
     ----------
     items: list of str
@@ -3833,11 +3833,12 @@ class Accordion2D(UI):
     icons: list of str
         List of paths/URLs to the icons to be used for the items.
     """
-    def __init__(self, title='', items=None, icons=None, size=(400, 400), position=(0, 0),
-                 item_height=30, indent=25, multiselect=True, title_color=(0.5, 0.5, 0.5),
-                 title_opacity=1, body_color=(0.3, 0.3, 0.3), body_opacity=0.8):
+    def __init__(self, title='', items=None, icons=None, size=(400, 400),
+                 position=(0, 0), item_height=30, indent=25, multiselect=True,
+                 title_color=(0.5, 0.5, 0.5), title_opacity=1,
+                 body_color=(0.3, 0.3, 0.3), body_opacity=0.8):
         """Initialize the UI element.
-        
+
         Parameters
         ----------
         title: str, optional
@@ -3886,7 +3887,7 @@ class Accordion2D(UI):
         self.content_size = size
         super(Accordion2D, self).__init__(position)
         self.resize(size)
-    
+
     def _setup(self):
         """Setup this UI element.
         Create a base node.
@@ -3895,13 +3896,14 @@ class Accordion2D(UI):
         """
         self.generate_structure()
         self.tree = Tree2D(structure=self._structure, tree_name=self.title,
-                           node_height=self.item_height, color=self.title_color,
-                           opacity=self.title_opacity, indent=self.indent,
-                           multiselect=self.multiselect, size=self.content_size)
+                           node_height=self.item_height,
+                           color=self.title_color, opacity=self.title_opacity,
+                           indent=self.indent, multiselect=self.multiselect,
+                           size=self.content_size)
 
         self.tree.base_node.content_color = self.body_color
         self.tree.base_node.content_opacity = self.body_opacity
- 
+
         for child_node, icon in zip(self.tree.nodes, self.icons):
             child_node.icon = icon
 
@@ -3956,10 +3958,10 @@ class Accordion2D(UI):
         for item in self.items:
             item_dict = {item: []}
             self._structure.append(item_dict)
-    
+
     def add_content(self, item_label, content, coords=(0., 0.)):
         """Add content to a specific item.
-        
+
         Parameters
         ----------
         item_label: str
@@ -3972,10 +3974,10 @@ class Accordion2D(UI):
         item = self.tree.select_node(item_label)
         child_prop = {item: [content, coords]}
         self._children_prop.append(child_prop)
-    
+
     def select_item(self, item_label):
         """Select the instance of a specific item.
-        
+
         Parameters
         ----------
         item_label: str
@@ -3987,7 +3989,7 @@ class Accordion2D(UI):
     @property
     def title_color(self):
         return self._title_color
-    
+
     @title_color.setter
     def title_color(self, color):
         """Sets background color of the title.
@@ -3998,11 +4000,11 @@ class Accordion2D(UI):
         """
         self._title_color = color
         self.tree.base_node.color = self._title_color
-    
+
     @property
     def title_opacity(self):
         return self._title_opacity
-    
+
     @title_opacity.setter
     def title_opacity(self, opacity):
         """Sets background opacity of the title.
@@ -4013,11 +4015,11 @@ class Accordion2D(UI):
         """
         self._title_opacity = opacity
         self.tree.base_node.opacity = self._title_opacity
-    
+
     @property
     def body_color(self):
         return self._body_color
-    
+
     @body_color.setter
     def body_color(self, color):
         """Sets background color of the title.
@@ -4028,11 +4030,11 @@ class Accordion2D(UI):
         """
         self._body_color = color
         self.tree.base_node.content_color = self._body_color
-    
+
     @property
     def body_opacity(self):
         return self._body_opacity
-    
+
     @body_opacity.setter
     def body_opacity(self, opacity):
         """Sets background opacity of the title.
