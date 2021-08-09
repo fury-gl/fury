@@ -54,7 +54,6 @@ accordion.add_content(items[0], fury_logo)
 ###############################################################################
 # Creating the bullet points for 'Key Features' item.
 points = ['Custom User Interfaces', 'Physics Engines API', 'Custom Shaders',
-          'Interactive local and Remote rendering in Jupyter Notebooks',
           'Large amount of Tutorials and Examples']
 
 tooltip_text = TextBlock2D()
