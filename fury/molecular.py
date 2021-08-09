@@ -689,28 +689,25 @@ def ribbon(molecule):
     model.SetName("model")
     output.GetPointData().AddArray(model)
 
-    # for coloring the heteroatoms
-    rgb = ccvtk.vtkUnsignedCharArray()
-    rgb.SetNumberOfComponents(3)
-    rgb.Allocate(3 * num_total_atoms)
-    rgb.SetName("rgb_colors")
-
     table = PeriodicTable()
+
+    # for colors and radii of hetero-atoms
+    radii = np.ones((num_total_atoms, 3))
+    rgb = np.ones((num_total_atoms, 3))
+
     for i in range(num_total_atoms):
-        rgb.InsertNextTuple(table.atom_color(all_atomic_numbers[i]))
+        radii[i] = np.repeat(table.atomic_radius(all_atomic_numbers[i], 'VDW'),
+                             3)
+        rgb[i] = table.atom_color(all_atomic_numbers[i])
 
-    output.GetPointData().SetScalars(rgb)
+    Rgb = numpy_to_vtk(num_array=rgb, deep=True,
+                       array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    Rgb.SetName("rgb_colors")
+    output.GetPointData().SetScalars(Rgb)
 
-    # for radius of the heteroatoms
-    Radii = ccvtk.vtkFloatArray()
-    Radii.SetNumberOfComponents(3)
-    Radii.Allocate(3 * num_total_atoms)
+    Radii = numpy_to_vtk(num_array=radii, deep=True,
+                         array_type=ccvtk.VTK_FLOAT)
     Radii.SetName("radius")
-
-    for i in range(num_total_atoms):
-        radius = table.atomic_radius(all_atomic_numbers[i], 'VDW')
-        Radii.InsertNextTuple3(radius, radius, radius)
-
     output.GetPointData().SetVectors(Radii)
 
     # setting the coordinates
