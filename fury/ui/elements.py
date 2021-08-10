@@ -3835,7 +3835,7 @@ class Accordion2D(UI):
         List of paths/URLs to the icons to be used for the items.
     """
     def __init__(self, title='', items=None, icons=None, size=(400, 400),
-                 position=(0, 0), item_height=30, indent=25, multiselect=True,
+                 position=(0, 0), item_height=30, multiselect=True,
                  title_color=(0.5, 0.5, 0.5), title_opacity=1,
                  body_color=(0.3, 0.3, 0.3), body_opacity=0.8):
         """Initialize the UI element.
@@ -3874,7 +3874,6 @@ class Accordion2D(UI):
         self.items = items or []
         self.icons = icons or []
 
-        self.indent = indent
         self.multiselect = multiselect
 
         self._title_color = title_color
@@ -3899,7 +3898,7 @@ class Accordion2D(UI):
         self.tree = Tree2D(structure=self._structure, tree_name=self.title,
                            node_height=self.item_height,
                            color=self.title_color, opacity=self.title_opacity,
-                           indent=self.indent, multiselect=self.multiselect,
+                           indent=0, multiselect=self.multiselect,
                            size=self.content_size)
 
         self.tree.base_node.content_color = self.body_color
