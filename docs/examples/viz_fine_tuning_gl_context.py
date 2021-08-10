@@ -3,7 +3,7 @@
 Fine-tuning the OpenGL state using shader callbacks
 =======================================================
 
-VTK it’s powerfully, but sometimes we need to get more control about how
+Sometimes we need to get more control about how
 OpenGL will render the actors. This example shows how to change the OpenGL
 state of one or more actors. This can be useful when we need to create 
 specialized visualization effects.
