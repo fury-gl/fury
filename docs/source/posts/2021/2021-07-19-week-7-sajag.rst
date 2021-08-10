@@ -1,0 +1,65 @@
+Sixth week of coding!
+=====================
+
+.. post:: July 19 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the seventh weekly check-in. I'll be sharing my progress for the sixth week of coding.
+
+What did you do this week?
+--------------------------
+
+#. Updated `Molecular module`_: made it more pythonic, implemented
+   ribbon actor, added support to pass numpy arrays (earlier, atomic
+   data could only be added by using the add_atom).
+#. Created `PR #462`_ to:
+
+   -  Update the helical motion animation to use a single line actor,
+      added textblocks to display velocity of the particle.
+
+      |image1|
+
+   -  For brownian motion animation, I removed rotation(azimuth) and box
+      actor, added textblock to display the number of particles and to
+      show the simulation steps.
+
+      |image2|
+
+#. Updated surface animation (used gridUI, added multiple animations).
+
+   |image3|
+
+#. Created a `topic`_ on vtk discourse forum to query about gaps in
+   bonds (tried resolving it by manipulating vtkProperties:
+   BackfaceCulling, FrontfaceCulling but was unsuccessful).
+#. Read about molecular surface (theory behind it).
+
+What is coming up next week?
+----------------------------
+
+#. Update molecular module by adding tests, ribbon actor.
+#. Try to implement molecular surface representation.
+#. Interactivity of the molecules.
+
+Did you get stuck anywhere?
+---------------------------
+
+I didn't get stuck anywhere this week.
+
+.. _Molecular module: https://github.com/fury-gl/fury/pull/452
+.. _PR #462: https://github.com/fury-gl/fury/pull/462
+.. _topic: https://discourse.vtk.org/t/vtkmoleculemapper-gaps-in-bonds-on-zooming-in/6183
+
+.. |image1| image:: https://user-images.githubusercontent.com/65067354/126033284-882ed6fd-fcc3-4a1c-8dfd-3220908859b1.png
+   :width: 400px
+   :height: 300px
+.. |image2| image:: https://user-images.githubusercontent.com/65067354/126033291-da68cb0d-b856-48ad-9aa4-c46621052267.png
+   :width: 400px
+   :height: 400px
+.. |image3| image:: https://user-images.githubusercontent.com/65067354/126061012-b183a47d-ed5e-4026-938b-4124da291524.png
+   :width: 400px
+   :height: 400px
+
+``Au Revoir!``
