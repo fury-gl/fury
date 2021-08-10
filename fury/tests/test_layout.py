@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.testing as npt
 from fury import actor
-from fury.layout import GridLayout, Layout
+from fury.layout import GridLayout, HorizontalLayout, Layout
 
 
 def get_default_cubes(centers=np.asarray([[[0, 0, 0]], [[5, 5, 5]]]),
@@ -109,3 +109,26 @@ def test_grid_layout_apply():
     cube_second_center = cube_second.GetCenter()
     npt.assert_array_almost_equal([cube_first_center, cube_second_center],
                                   [[0, 0, 0], [2.59, 0, 0]], 0)
+
+
+def test_horizontal_layout_compute_positions():
+
+    cube_first, cube_second = get_default_cubes()
+
+    horizontal_rect = HorizontalLayout()
+    horizontal_square = HorizontalLayout(cell_shape="square")
+    horizontal_diagonal = HorizontalLayout(cell_shape="diagonal")
+
+    position_rect = horizontal_rect.compute_positions([cube_first,
+                                                       cube_second])
+
+    position_square = horizontal_square.compute_positions([cube_first,
+                                                           cube_second])
+
+    position_diagonal = horizontal_diagonal.compute_positions([cube_first,
+                                                               cube_second])
+
+    npt.assert_array_equal(position_rect, [[0, 0, 0], [1.5, 0, 0]])
+    npt.assert_array_equal(position_square, [[0, 0, 0], [1.5, 0, 0]])
+    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [2.59, 0, 0]],
+                                  0)
