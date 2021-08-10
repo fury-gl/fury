@@ -823,7 +823,6 @@ def test_manifest_standard(interactive=False):
     # NOTE: For these last set of actors, there is not support for PBR
     # interpolation at all.
 
-    """
     # Billboard setup
     centers = np.array([[0, 0, 0], [5, -5, 5], [-7, 7, -7], [10, 10, 10],
                         [10.5, 11.5, 11.5], [12, -12, -12], [-17, 17, 17],
@@ -831,7 +830,6 @@ def test_manifest_standard(interactive=False):
     colors = np.array([[1, 1, 0], [0, 0, 0], [1, 0, 1], [0, 0, 1], [1, 1, 1],
                        [1, 0, 0], [0, 1, 0], [0, 1, 1]])
     scales = [6, .4, 1.2, 1, .2, .7, 3, 2]
-    """
     fake_sphere = \
         """
         float len = length(point);
@@ -844,12 +842,10 @@ def test_manifest_standard(interactive=False):
         float sf_1 = pow(df_1, 24);
         fragOutput0 = vec4(max(df_1 * color, sf_1 * vec3(1)), 1);
         """
-    """
     billboard_actor = actor.billboard(centers, colors=colors, scales=scales,
                                       fs_impl=fake_sphere)
     material.manifest_pbr(billboard_actor)
     scene.add(billboard_actor)
-    """
 
     if interactive:
         window.show(scene)
