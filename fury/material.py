@@ -4,7 +4,7 @@ import warnings
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
-def manifest_pbr(actor, metallicity=1, roughness=.5):
+def manifest_pbr(actor, metallicity=0, roughness=.5):
     """Apply the Physically Based Rendering properties to the selected actor.
 
     Parameters
