@@ -17,6 +17,7 @@ def bitmap_labels(
         labels,
         colors=(0, 1, 0),
         scales=1,
+        align='center',
         x_offset_ratio=1,
         y_offset_ratio=1,
         font_size=50,
@@ -31,6 +32,7 @@ def bitmap_labels(
         list of strings
     colors : array or ndarray
     scales : float
+    align : str, {left, right, center}
     x_offset_ratio : float
         Percentage of the width to offset the labels on the x axis.
     y_offset_ratio : float
@@ -49,6 +51,7 @@ def bitmap_labels(
         font_size=font_size, font_path=font_path, show=False)
     padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,
+            align=align,
             x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio)
     # num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
