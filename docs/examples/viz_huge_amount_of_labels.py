@@ -13,7 +13,6 @@ using the interdisciplinary map of journal networks.
 
 from os.path import join as pjoin
 from fury import actor, window, colormap as cmap
-from fury.actor_text import bitmap_labels
 import numpy as np
 
 ###############################################################################
@@ -88,7 +87,7 @@ lines_actor = actor.line(
 labels = [
     f'{category} journal {i}' for i, category in enumerate(categories)
 ]
-my_text_actor = bitmap_labels(
+my_text_actor = actor.bitmap_labels(
     positions, labels,
     y_offset_ratio=2,
     align='center', scales=.1)

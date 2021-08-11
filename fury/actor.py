@@ -3215,16 +3215,13 @@ def markers(
 def bitmap_labels(
         centers,
         labels,
-        colors=(0, 1, .5),
+        colors=(0, 1, 0),
         scales=1,
-        border_color=(1, 1, 1, 1.),
-        border_width=0.05,
         align='center',
         x_offset_ratio=1,
         y_offset_ratio=1,
-        font_name='InconsolataBold700',
-        border_type='halo',
-        use_sdf=True,
+        font_size=50,
+        font_path=None,
         ):
     """Create a bitmap label actor that always faces the camera.
 
@@ -3234,9 +3231,7 @@ def bitmap_labels(
     labels  : list
         list of strings
     colors : array or ndarray
-    scales : float, optional
-    border_color : array or ndarray, optional
-    border_width : float, optional
+    scales : float
     align : str, {left, right, center}
     x_offset_ratio : float
         Percentage of the width to offset the labels on the x axis.
@@ -3244,36 +3239,32 @@ def bitmap_labels(
         Percentage of the height to offset the labels on the y axis.
     font_size : int, optional
         size of the text
-    font_name : str, optional
-        name of the font. A list of available fonts can be found in
-        `fury.text_tools.list_fonts_available()`.
-    use_sdf : bool, optional
-        If True, the labels will be rendered using a signed distance field.
+    font_path : str, optional
+        str of path to font file
 
     Returns
     -------
     vtkActor
 
     """
-    img_arr, char2pos = text_tools.get_texture_atlas_font(
-        font_name=font_name, use_sdf=use_sdf)
-    padding, labels_positions,\
-        uv, relative_sizes = text_tools.get_positions_labels_billboards(
+    img_arr, char2pos = text_tools.create_bitmap_font(
+        font_size=font_size, font_path=font_path, show=False)
+    padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,
             align=align,
-            x_offset_ratio=x_offset_ratio,
-            y_offset_ratio=y_offset_ratio)
+            x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio)
+    # num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
-        verts, faces, centers=labels_positions+padding, colors=colors,
+        verts, faces, centers=labels_positions, colors=colors,
         scales=scales)
 
     big_verts, big_faces, big_colors, big_centers = res
-    label_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    label_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    label_actor.GetProperty().BackfaceCullingOff()
+    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    sq_actor.GetProperty().BackfaceCullingOff()
 
-    attribute_to_actor(label_actor, big_centers, 'center')
+    attribute_to_actor(sq_actor, big_centers, 'center')
 
     vs_dec_code = load("billboard_dec.vert")
     vs_dec_code += f'\n{load("text_billboard_dec.vert")}'
@@ -3284,75 +3275,27 @@ def bitmap_labels(
     fs_dec_code += f'\n{load("text_billboard_dec.frag")}'
 
     fs_impl_code = load('billboard_impl.frag')
-    if use_sdf:
-        fs_impl_code += f'{load("text_sdf_billboard_impl.frag")}'
-    else:
-        fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
-    if use_sdf and border_type == 'solid':
-        fs_impl_code += f'{load("text_sdf_solid_impl.frag")}'
-    else:
-        fs_impl_code += f'{load("text_sdf_halo_impl.frag")}'
+    fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
 
     img_vtk = one_chanel_to_vtk(img_arr)
     tex = vtk.vtkTexture()
     tex.SetInputDataObject(img_vtk)
     tex.Update()
-    label_actor.GetProperty().SetTexture('charactersTexture', tex)
+    sq_actor.GetProperty().SetTexture('charactersTexture', tex)
     attribute_to_actor(
-        label_actor,
+        sq_actor,
         uv,
         'vUV')
-    attribute_to_actor(
-        label_actor,
-        relative_sizes,
-        'vRelativeSize')
     padding = np.repeat(padding, 4, axis=0)
     attribute_to_actor(
-        label_actor,
+        sq_actor,
         padding,
         'vPadding')
 
-    def callback(
-        _caller, _event, calldata=None,
-            uniform_type='f', uniform_name=None, value=None):
-        program = calldata
-        if program is not None:
-            program.__getattribute__(f'SetUniform{uniform_type}')(
-                uniform_name, value)
-    add_shader_callback(
-            label_actor, partial(
-                callback, uniform_type='f', uniform_name='borderWidth',
-                value=border_width))
-    if border_color is not None:
-        border_color = np.asarray(border_color)
-        if border_color.ndim == 1:
-            add_shader_callback(
-                    label_actor, partial(
-                        callback, uniform_type='4f',
-                        uniform_name='borderColor',
-                        value=border_color))
-        else:
-            border_color = np.repeat(border_color, 4, axis=0)
-            print('\n bc', border_color.shape)
-            attribute_to_actor(
-                    label_actor,
-                    border_color,
-                    'vBorderColor')
-            vs_dec_code = vs_dec_code.replace(
-                '//in vec4 vBorderColor', 'in vec4 vBorderColor')
-            vs_dec_code = vs_dec_code.replace(
-                '//out vec4 borderColor', 'out vec4 borderColor')
-            vs_impl_code = vs_impl_code.replace(
-                '//borderColor = vBorderColor',
-                'borderColor = vBorderColor'
-            )
-            fs_dec_code = fs_dec_code.replace(
-                'uniform vec4 borderColor', 'in vec4 borderColor')
-
-    shader_to_actor(label_actor, "vertex", impl_code=vs_impl_code,
+    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
-    shader_to_actor(label_actor, "fragment", decl_code=fs_dec_code)
-    shader_to_actor(label_actor, "fragment", impl_code=fs_impl_code,
+    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
 
-    return label_actor
+    return sq_actor
