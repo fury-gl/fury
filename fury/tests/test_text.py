@@ -1,14 +1,14 @@
-from numpy.random import random
+import numpy as np
 from fury import text_tools
 from fury import actor, window
 from fury import actor_text
-import numpy as np
+import fury
 
 
 def test_create_bitmap():
+    font_path = f'{fury.__path__[0]}/data/files/font.png'
     img_arr, char2pos = text_tools.create_bitmap_font(
-        #12, show=False,)
-        50, show=False, save_path='/home/devmessias/phd/fury/fury/data/files/font.png')
+        50, show=False, save_path=font_path)
 
 
 def test_get_positions_text_billboards():
@@ -43,7 +43,7 @@ def test_text_bitmap_actor():
     interactive = False
     char2pos = text_tools.get_ascii_chars()[1]
     chars = list(char2pos.keys())
-    N = 10 
+    N = 1000
     colors = (0, 0.8, .5)
     scales = 1
     labels = ['Abracadabra 1664123!@']
@@ -53,13 +53,13 @@ def test_text_bitmap_actor():
         min_s = 5
         max_s = 10
         labels = [
-            f'Sphere {i}!@'
-            # ''.join(
-            #         np.random.choice(
-            #             chars,
-            #             size=np.random.randint(min_s, max_s)
-            #         )
-            #     )
+            # f'Sphere {i}!@'
+            ''.join(
+                    np.random.choice(
+                        chars,
+                        size=np.random.randint(min_s, max_s)
+                    )
+                )
             for i in range(N)
         ]
         colors = []

@@ -17,5 +17,5 @@ vec4 rgba = vec4(  color, 1);
     //vertexMC.xyz - center
 
 rgba = texture(charactersTexture, UV)*rgba;
-rgba.w = 1.0;
+//rgba.w = 0.0;
 fragOutput0 = rgba;
