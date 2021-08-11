@@ -4045,7 +4045,7 @@ class Accordion2D(UI):
         """
         self._body_opacity = opacity
         self.tree.base_node.content_opacity = self._body_opacity
-    
+
     @property
     def structure(self):
         return self._structure
