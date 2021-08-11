@@ -1118,3 +1118,16 @@ def get_bounds(actor):
 
     """
     return actor.GetMapper().GetInput().GetBounds()
+
+
+def update_surface_actor_colors(actor, colors):
+    """Update colors of a surface actor.
+
+    Parameters
+    ----------
+    actor : surface actor
+    colors : ndarray of shape (N, 3) having colors. The colors should be in the
+        range [0, 1].
+    """
+    actor.GetMapper().GetInput().GetPointData().\
+        SetScalars(numpy_to_vtk_colors(255*colors))
