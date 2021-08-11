@@ -86,7 +86,7 @@ y = y.reshape(-1)
 
 def create_surface(x, y, equation, colormap_name):
     xyz, colors = update_surface(x, y, equation=equation,
-                                     cmap_name=colormap_name)
+                                 cmap_name=colormap_name)
     surf = actor.surface(xyz, colors=colors)
     surf.equation = equation
     surf.cmap_name = colormap_name
@@ -116,7 +116,7 @@ cmap_names = ['hot', 'plasma', 'viridis', 'ocean']
 surfaces = []
 for i in range(4):
     surfaces.append(create_surface(x, y, equation=equations[i],
-                 colormap_name=cmap_names[i]))
+                    colormap_name=cmap_names[i]))
 
 
 ###############################################################################
@@ -133,7 +133,8 @@ showm = window.ShowManager(scene, size=(600, 600))
 # To store the function names
 text = []
 for i in range(4):
-    t_actor = actor.label('Function ' + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2))
+    t_actor = actor.label('Function ' + str(i + 1), pos=(0, 0, 0),
+                          scale=(0.17, 0.2, 0.2))
     t_actor.SetCamera(scene.camera())
     text.append(t_actor)
 
@@ -165,18 +166,18 @@ end = 200
 
 
 ###############################################################################
-# Coordinates to be plotted are changed everytime timer_callback is called by
-# using the ``update_surface`` function. The 2D functions are rendered here.
+# The 2D functions are updated and rendered here.
 
 def timer_callback(_obj, _event):
     global xyz, time
     time += dt
     cnt = next(counter)
 
-    # updating the colors and vertices of the triangles used to form the surfaces
+    # updating the colors and vertices of the triangles used to form the
+    # surfaces
     for surf in surfaces:
         xyz, colors = update_surface(x, y, equation=surf.equation,
-                                         cmap_name=surf.cmap_name)
+                                     cmap_name=surf.cmap_name)
         utils.update_surface_actor_colors(surf, colors)
         surf.vertices[:] = surf.initial_vertices + \
             np.repeat(xyz, surf.no_vertices_per_point, axis=0)
@@ -196,4 +197,5 @@ interactive = True
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600), out_path="viz_animated_surfaces.png")
+window.record(showm.scene, size=(600, 600),
+              out_path="viz_animated_surfaces.png")
