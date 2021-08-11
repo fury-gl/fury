@@ -44,7 +44,7 @@ def bitmap_labels(
         font_size=font_size, font_path=font_path, show=False)
     padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales)
-
+    num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=labels_positions, colors=colors,
@@ -78,6 +78,7 @@ def bitmap_labels(
         uv,
         'vUV')
     padding = np.repeat(padding, 4, axis=0)
+    #assert padding.shape[0] == num_chars*4
     # num_labels = padding.shape[0]
     # padding = np.repeat(np.array([padding]).T, 6, axis=0).reshape(num_labels*6, 3)
     # print(padding[0:10])

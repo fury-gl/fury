@@ -32,35 +32,43 @@ def test_atlas():
     tf.load('a sdf123')
 
 def test_text_bitmap_actor():
+    interactive = False
     char2pos = text_tools.get_ascii_chars()[1]
     chars = list(char2pos.keys())
-    N = 1
+    N = 10 
     colors = (0, 0.8, .5)
     scales = 1
     labels = ['Abracadabra 1664123!@']
-    centers = np.random.normal(0, 1, size=(N, 3))
+    centers = np.random.normal(0, 10, size=(N, 3))
     if N > 1:
         # colors = np.random.uniform(0, 1, size=(N, 3))
         min_s = 5
         max_s = 10
         chars = [chr(i) for i in range(32, 134)]
         labels = [
-            ''.join(
-                    np.random.choice(
-                        chars,
-                        size=np.random.randint(min_s, max_s)
-                    )
-                )
+            f'Sphere {i}!@'
+            # ''.join(
+            #         np.random.choice(
+            #             chars,
+            #             size=np.random.randint(min_s, max_s)
+            #         )
+            #     )
             for i in range(N)
         ]
-        colors = np.array([
-            np.random.uniform(size=(3))
-            for label in labels
-            for _ in label
-        ])
-    
+        colors = []
+        colors_spheres = []
+        for label in labels:
+            c = np.random.uniform(0, 1, size=3)
+            colors_spheres.append(c)
+            for _ in label:
+                colors.append(c)
+    spheres = actor.sphere(centers, colors)
     my_text_actor = actor_text.bitmap_labels(
         centers, labels, colors=colors, scales=scales)
     showm = window.ShowManager()
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
+    if interactive:
+        showm.initialize()
+        showm.start()
+

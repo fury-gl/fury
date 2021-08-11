@@ -127,15 +127,15 @@ def get_positions_labels_billboards(
             scale = scales[i]
         else:
             scale = scales
-        z_pad = scale*(1+0.1)
-        x_pad = scale*(1+0.1)
+        y_pad = scale*(2+0.1)
+        x_pad = scale*(1)
 
         for i_l, l in enumerate(label):
-            pad = np.array([x_pad*2*i_l, 0, z_pad])
+            pad = np.array([x_pad*2*i_l, y_pad, 0])
             labels_pad.append(
               pad
             )
-            labels_positions.append(center+pad)
+            labels_positions.append(center)
 
             pos_char_begin = char2pos[l]
             mx_s = pos_char_begin[0]
