@@ -1,6 +1,6 @@
 //centerNew += vPadding;
 centerVertexMCVSOutput = center;
-normalizedVertexMCVSOutput = vertexMC.xyz - center; // 1st Norm. [-scale, scale]
+normalizedVertexMCVSOutput = vertexMC.xyz - center + vPadding; // 1st Norm. [-scale, scale]
 float scalingFactor = 1. / abs(normalizedVertexMCVSOutput.x);
 float size = abs(normalizedVertexMCVSOutput.x) * 2;
 normalizedVertexMCVSOutput *= scalingFactor; // 2nd Norm. [-1, 1]
