@@ -152,14 +152,15 @@ def get_positions_labels_billboards(
                 align_pad += x_pad
             align_pad /= 2
 
-        for i_l, l in enumerate(label):
+        for i_l, char in enumerate(label):
             pad = np.array([x_pad*i_l + align_pad, y_pad, 0])
             labels_pad.append(
               pad
             )
             labels_positions.append(center)
-
-            pos_char_begin = char2pos[l]
+            if char not in char2pos.keys():
+                char = '?'
+            pos_char_begin = char2pos[char]
             mx_s = pos_char_begin[0]
             my_s = pos_char_begin[1]
             mx_e = mx_s + 1/num_cols_ascii
