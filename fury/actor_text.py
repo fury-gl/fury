@@ -6,7 +6,8 @@ import numpy as np
 import vtk
 
 from fury.shaders import load, shader_to_actor, attribute_to_actor
-from fury.utils import rgb_to_vtk, get_actor_from_primitive
+from fury.utils import (
+    rgb_to_vtk, get_actor_from_primitive,  one_chanel_to_vtk)
 import fury.primitive as fp
 from fury import text_tools
 
@@ -73,7 +74,7 @@ def bitmap_labels(
     fs_impl_code = load('billboard_impl.frag')
     fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
 
-    img_vtk = rgb_to_vtk(np.ascontiguousarray(img_arr))
+    img_vtk = one_chanel_to_vtk(img_arr)
     tex = vtk.vtkTexture()
     tex.SetInputDataObject(img_vtk)
     tex.Update()

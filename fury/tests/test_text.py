@@ -62,9 +62,9 @@ def test_text_bitmap_actor():
             colors_spheres.append(c)
             for _ in label:
                 colors.append(c)
-    spheres = actor.sphere(centers, colors)
+    spheres = actor.markers(centers, colors_spheres)
     my_text_actor = actor_text.bitmap_labels(
-        centers, labels, colors=colors, scales=scales)
+        centers, labels, colors=colors, scales=scales, font_size=51)
     showm = window.ShowManager()
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
