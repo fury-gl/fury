@@ -7,7 +7,7 @@
 
 // if (sdf<0.0) discard;
 
-vec4 rgba = vec4(color, vtkOpacity);
+vec4 rgba = vec4(  color, 1);
 // if (edgeWidthNew > 0.0){
 //     if (sdf < edgeWidthNew) {
 //         rgba = vec4(edgeColor, edgeOpacity);
@@ -16,12 +16,6 @@ vec4 rgba = vec4(color, vtkOpacity);
 
     //vertexMC.xyz - center
 
-//texture(charactersTexture, UV);
-// if (texture(charactersTexture, UV).rgb != vec3(0.0, 0.0, 1.0)) discard;
-if (texture(charactersTexture, UV).r < 1.0) discard;
-// if (texture(charactersTexture, UV).r < 1.0) {
-//  rgba.rgb = vec3(1., 1.0, 1.0);
-// }
-//rgba.w = 0.0;
-
+rgba = texture(charactersTexture, UV)*rgba;
+rgba.w = 1.0;
 fragOutput0 = rgba;
