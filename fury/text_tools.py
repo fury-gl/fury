@@ -72,7 +72,7 @@ def create_bitmap_font(
     """
 
     chars, char2pos = get_ascii_chars()
-    if font_size == 50 and font_path is None:
+    if font_size == 50 and font_path is None  and False:
         font_path = f'{fury.__path__[0]}/data/files/font.png'
         image_arr = Image.open(font_path)
     else:
@@ -81,13 +81,15 @@ def create_bitmap_font(
 
         width = num_cols_ascii*(font_size + pad*2)
         height = num_rows_ascii*(font_size + pad*2)
-        image = Image.new("RGB", (width, height), background_color)
+        # image = Image.new("RGB", (width, height), 'black')
+        image = Image.new("RGBA", (width, height), (255,255,255,0))
         draw = ImageDraw.Draw(image)
         font = ImageFont.truetype(font_path, font_size)
         for i_row, row in enumerate(chars):
             x = 2*pad
             for i_col, char in enumerate(row):
-                draw.text((x, font_size*i_row + 2*pad), char, font=font)
+                # draw.text((x, font_size*i_row + 2*pad), char, font=font)
+                draw.text((x, font_size*i_row + 2*pad), char, fill=(255, 255, 255, 255), font=font)
                 x += font_size
         if show:
             image.show()

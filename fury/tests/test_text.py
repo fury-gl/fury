@@ -1,4 +1,4 @@
-from numpy.random import random
+import numpy as np
 from fury import text_tools
 from fury import actor, window
 import fury
@@ -35,7 +35,7 @@ def test_text_bitmap_actor():
     interactive = False
     char2pos = text_tools.get_ascii_chars()[1]
     chars = list(char2pos.keys())
-    N = 10 
+    N = 1000
     colors = (0, 0.8, .5)
     scales = 1
     labels = ['Abracadabra 1664123!@']
@@ -46,13 +46,13 @@ def test_text_bitmap_actor():
         max_s = 10
         chars = [chr(i) for i in range(32, 134)]
         labels = [
-            f'Sphere {i}!@'
-            # ''.join(
-            #         np.random.choice(
-            #             chars,
-            #             size=np.random.randint(min_s, max_s)
-            #         )
-            #     )
+            # f'Sphere {i}!@'
+            ''.join(
+                    np.random.choice(
+                        chars,
+                        size=np.random.randint(min_s, max_s)
+                    )
+                )
             for i in range(N)
         ]
         colors = []
