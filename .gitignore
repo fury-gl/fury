@@ -25,6 +25,7 @@ venv/
 .installed.cfg
 *.egg
 *.png
+!fury/data/files/font.bmp
 !fury/data/files/font.png
 # PyInstaller
 #  Usually these files are written by a python script from a template
