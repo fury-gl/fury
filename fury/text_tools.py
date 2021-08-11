@@ -106,6 +106,7 @@ def create_bitmap_font(
 
 def get_positions_labels_billboards(
         labels, centers, char2pos, scales=1,
+        align='center',
         x_offset_ratio=1, y_offset_ratio=1,):
     """This function is used to get the positions of the labels.
 
@@ -115,6 +116,7 @@ def get_positions_labels_billboards(
     centers : ndarray
     char2pos : dict
     scales : ndarray
+    align : str, {'left', 'right', 'center'}
     x_offset_ratio : float
         Percentage of the width to offset the labels on the x axis.
     y_offset_ratio : float
@@ -138,9 +140,20 @@ def get_positions_labels_billboards(
             scale = scales
         y_pad = scale*y_offset_ratio
         x_pad = scale*x_offset_ratio
+        align_pad = 0.
+        if align == 'left':
+            align_pad = 0
+        elif align == 'right':
+            align_pad = -x_pad*len(label)
+            align_pad += x_pad
+        elif align == 'center':
+            align_pad = -x_pad*len(label)
+            if not len(label) % 2 == 0:
+                align_pad += x_pad
+            align_pad /= 2
 
         for i_l, l in enumerate(label):
-            pad = np.array([x_pad*i_l, y_pad, 0])
+            pad = np.array([x_pad*i_l + align_pad, y_pad, 0])
             labels_pad.append(
               pad
             )
