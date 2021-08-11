@@ -153,7 +153,6 @@ class HorizontalLayout(GridLayout):
         ----------
         actors : list of `vtkProp3D` objects
             Actors to be layout in a horizontal fashion.
-
         Returns
         -------
         list of 3-tuple
@@ -176,6 +175,7 @@ class VerticalLayout(GridLayout):
     """Provide functionalities for laying out actors in a vertical stack."""
     def __init__(self, cell_padding=0, cell_shape="rect"):
         """
+
         Parameters
         ----------
         cell_padding : 2-tuple of float or float (optional)
@@ -195,10 +195,12 @@ class VerticalLayout(GridLayout):
 
     def compute_positions(self, actors):
         """Compute the 3D coordinates of some actors.
+
         Parameters
         ----------
         actors : list of `vtkProp3D` objects
             Actors to be layout in a vertical stack.
+
         Returns
         -------
         list of 3-tuple
