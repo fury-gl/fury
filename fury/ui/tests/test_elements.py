@@ -1079,3 +1079,76 @@ def test_ui_treenode_2d(interactive=False):
     npt.assert_equal(parent_node.selected_nodes, selected)
     parent_node.clear_selections()
     npt.assert_equal(parent_node.selected_nodes, [])
+
+
+def test_ui_accordion_2d(interactive=False):
+    filename = "test_ui_accordion_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    fetch_viz_icons()
+
+    icons = [read_viz_icons(fname='stop2.png'), ]*3
+    items = ['Item-1', 'Item-2', 'Item-3']
+
+    accordion = ui.elements.Accordion2D(items=items, icons=icons)
+
+    for item, icon in zip(items, icons):
+        node_label = accordion.select_item(item).label
+        node_icon = accordion.select_item(item).icon
+
+        npt.assert_equal(node_label, item)
+        npt.assert_equal(node_icon, icon)
+
+    accordion.title_color = (0.3, 0.5, 0.3)
+    npt.assert_equal(accordion.title_color, (0.3, 0.5, 0.3))
+    accordion.title_opacity = 0.5
+    npt.assert_equal(accordion.title_opacity, 0.5)
+
+    accordion.body_color = (0.5, 0.3, 0.3)
+    npt.assert_equal(accordion.body_color, (0.5, 0.3, 0.3))
+    accordion.body_opacity = 1
+    npt.assert_equal(accordion.body_opacity, 1)
+
+    empty_accordion = ui.elements.Accordion2D(items=[])
+    for item in items:
+        empty_accordion.items.append(item)
+
+    empty_accordion.generate_structure()
+    new_structure = empty_accordion.structure
+
+    for node_obj, item in zip(new_structure, items):
+        node_label = list(node_obj.keys())[0]
+        npt.assert_equal(node_label, item)
+
+    base_message = 'This is the content of'
+    contents = []
+    for item in items:
+        message = base_message + ' ' + item
+        contents.append(ui.core.TextBlock2D(text=message))
+
+    for item, content in zip(items, contents):
+        accordion.add_content(item, content)
+        node = accordion.select_item(item)
+        npt.assert_equal(node.child_nodes, [])
+
+    event_counter = EventCounter()
+    event_counter.monitor(accordion)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Accordion2D UI Example")
+    show_manager.scene.add(accordion)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    for item, content in zip(items, contents):
+        node = accordion.select_item(item)
+        npt.assert_equal(node.child_nodes, [content])
