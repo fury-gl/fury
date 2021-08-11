@@ -16,6 +16,8 @@ def bitmap_labels(
         labels,
         colors=(0, 1, 0),
         scales=1,
+        x_offset_ratio=1,
+        y_offset_ratio=1,
         font_size=50,
         font_path=None,
         ):
@@ -26,10 +28,12 @@ def bitmap_labels(
     centers : ndarray, shape (N, 3)
     labels  : list
         list of strings
-    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    scales : ndarray, optional
-        shape (N) or (N,3) or float or int, optional
+    colors : array or ndarray
+    scales : float
+    x_offset_ratio : float
+        Percentage of the width to offset the labels on the x axis.
+    y_offset_ratio : float
+        Percentage of the height to offset the labels on the y axis.
     font_size : int, optional
         size of the text
     font_path : str, optional
@@ -43,8 +47,9 @@ def bitmap_labels(
     img_arr, char2pos = text_tools.create_bitmap_font(
         font_size=font_size, font_path=font_path, show=False)
     padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
-            labels, centers, char2pos, scales)
-    num_chars = labels_positions.shape[0]
+            labels, centers, char2pos, scales,
+            x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio)
+    # num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=labels_positions, colors=colors,
@@ -78,11 +83,6 @@ def bitmap_labels(
         uv,
         'vUV')
     padding = np.repeat(padding, 4, axis=0)
-    #assert padding.shape[0] == num_chars*4
-    # num_labels = padding.shape[0]
-    # padding = np.repeat(np.array([padding]).T, 6, axis=0).reshape(num_labels*6, 3)
-    # print(padding[0:10])
-
     attribute_to_actor(
         sq_actor,
         padding,
