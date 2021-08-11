@@ -72,7 +72,7 @@ def create_bitmap_font(
     """
 
     chars, char2pos = get_ascii_chars()
-    if font_size == 50 and font_path is None  and False:
+    if font_size == 50 and font_path is None:
         font_path = f'{fury.__path__[0]}/data/files/font.png'
         image_arr = Image.open(font_path)
     else:
@@ -82,14 +82,16 @@ def create_bitmap_font(
         width = num_cols_ascii*(font_size + pad*2)
         height = num_rows_ascii*(font_size + pad*2)
         # image = Image.new("RGB", (width, height), 'black')
-        image = Image.new("RGBA", (width, height), (255,255,255,0))
+        image = Image.new("RGBA", (width, height), (255, 255, 255, 0))
         draw = ImageDraw.Draw(image)
         font = ImageFont.truetype(font_path, font_size)
         for i_row, row in enumerate(chars):
             x = 2*pad
             for i_col, char in enumerate(row):
                 # draw.text((x, font_size*i_row + 2*pad), char, font=font)
-                draw.text((x, font_size*i_row + 2*pad), char, fill=(255, 255, 255, 255), font=font)
+                draw.text(
+                    (x, font_size*i_row + 2*pad),
+                    char, fill=(255, 255, 255, 255), font=font)
                 x += font_size
         if show:
             image.show()
@@ -103,7 +105,8 @@ def create_bitmap_font(
 
 
 def get_positions_labels_billboards(
-        labels, centers, char2pos, scales=1):
+        labels, centers, char2pos, scales=1,
+        x_offset_ratio=1, y_offset_ratio=1,):
     """This function is used to get the positions of the labels.
 
     Parameters
@@ -112,6 +115,10 @@ def get_positions_labels_billboards(
     centers : ndarray
     char2pos : dict
     scales : ndarray
+    x_offset_ratio : float
+        Percentage of the width to offset the labels on the x axis.
+    y_offset_ratio : float
+        Percentage of the height to offset the labels on the y axis.
 
     Returns
     -------
@@ -129,11 +136,11 @@ def get_positions_labels_billboards(
             scale = scales[i]
         else:
             scale = scales
-        y_pad = scale*(2+0.1)
-        x_pad = scale*(1)
+        y_pad = scale*y_offset_ratio
+        x_pad = scale*x_offset_ratio
 
         for i_l, l in enumerate(label):
-            pad = np.array([x_pad*2*i_l, y_pad, 0])
+            pad = np.array([x_pad*i_l, y_pad, 0])
             labels_pad.append(
               pad
             )
