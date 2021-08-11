@@ -1,5 +1,4 @@
-import numpy as np
-import shutil
+from numpy.random import random
 from fury import text_tools
 from fury import actor, window
 import fury
@@ -32,15 +31,16 @@ def test_atlas():
     tf = text_tools.TextureFont(texture_atlas, font_path, 100)
     tf.load('a sdf123')
 
-
-def test_bitmap_actor():
-    N = 10
+def test_text_bitmap_actor():
+    char2pos = text_tools.get_ascii_chars()[1]
+    chars = list(char2pos.keys())
+    N = 1
     colors = (0, 0.8, .5)
-    colors_spheres = colors
-
-    labels = ['AbrBac..ooo0123_///::adabra_ 1664123!@/?*...)(']
-    centers = np.random.normal(0, 10, size=(N, 3))
+    scales = 1
+    labels = ['Abracadabra 1664123!@']
+    centers = np.random.normal(0, 1, size=(N, 3))
     if N > 1:
+        # colors = np.random.uniform(0, 1, size=(N, 3))
         min_s = 5
         max_s = 10
         chars = [chr(i) for i in range(32, 134)]
@@ -53,18 +53,14 @@ def test_bitmap_actor():
                 )
             for i in range(N)
         ]
-        colors = []
-        colors_spheres = []
-        for label in labels:
-            c = np.random.uniform(0, 1, size=3)
-            colors_spheres.append(c)
-            for _ in label:
-                colors.append(c)
-    spheres = actor.markers(centers, colors_spheres, scales=.1)
-    my_text_actor = actor.bitmap_labels(
-        centers, labels, colors=colors, scales=.1,
-        y_offset_ratio=1,
-        align='center', font_name='FreeMono')
-    showm = window.ShowManager(size=(700, 200))
+        colors = np.array([
+            np.random.uniform(size=(3))
+            for label in labels
+            for _ in label
+        ])
+    
+    my_text_actor = actor_text.bitmap_labels(
+        centers, labels, colors=colors, scales=scales)
+    showm = window.ShowManager()
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)

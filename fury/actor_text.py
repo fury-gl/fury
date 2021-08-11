@@ -44,6 +44,7 @@ def bitmap_labels(
         font_size=font_size, font_path=font_path, show=False)
     padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales)
+
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=labels_positions, colors=colors,
