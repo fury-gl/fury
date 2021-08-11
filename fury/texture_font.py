@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 #
 #  FreeType high-level python API - Copyright 2011-2015 Nicolas P. Rougier
@@ -290,7 +288,7 @@ class TextureFont:
             for i in range(rows):
                 data.extend(bitmap.buffer[i*pitch:i*pitch+width])
             data = np.array(
-                data, dtype=np.ubyte).reshape(h, w, 3)
+                data, dtype=np.ubyte).reshape(h, w, self.atlas.depth)
             gamma = 1.5
             Z = ((data/255.0)**(gamma))
             data = (Z*255).astype(np.ubyte)
