@@ -6,7 +6,9 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import load_polydata, save_polydata, load_image, save_image, load_sprite_sheet
+from fury.io import load_polydata, save_polydata, load_image, save_image, \
+    load_sprite_sheet
+
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.testing import assert_greater
 
