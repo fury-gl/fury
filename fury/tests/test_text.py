@@ -8,14 +8,14 @@ def test_create_bitmap():
     save_path = f'{fury.__path__[0]}/data/files/FreeMono'
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
     text_tools.create_bitmap_font(
-        100, show=False, font_path=font_path, save_path=save_path)
+        10, show=False, font_path=font_path, save_path=save_path)
 
 
 def test_atlas():
-    texture_atlas = text_tools.TextureAtlas(depth=1)
+    texture_atlas = text_tools.TextureAtlas(num_chanels=1)
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
     tf = text_tools.TextureFont(texture_atlas, font_path, 100)
-    tf.load('a sdf123') 
+    tf.load('a sdf123')
 
     name = 'test_fonts_1238210930'
     font_path_atlas = text_tools._FONT_PATH_USER
@@ -30,7 +30,7 @@ def test_atlas():
 
 
 def test_bitmap_actor():
-    interactive = False 
+    interactive = False
     N = 1
     colors = (0, 0.8, .5)
     colors_spheres = colors
@@ -63,7 +63,7 @@ def test_bitmap_actor():
     spheres = actor.markers(centers, colors_spheres, scales=.1)
     my_text_actor = actor.bitmap_labels(
         centers, labels, colors=colors, scales=.1,
-        align='center', font_size=50)
+        align='center', font_size=10)
     showm = window.ShowManager(size=(700, 200))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)

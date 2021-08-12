@@ -50,7 +50,7 @@ class TextureAtlas:
 
     """
 
-    def __init__(self, width=1024, height=1024, depth=1):
+    def __init__(self, width=1024, height=1024, num_chanels=1):
         """
         Initialize a new atlas of given size.
 
@@ -63,16 +63,16 @@ class TextureAtlas:
         height : int
             Height of the underlying texture
 
-        depth : 1 or 3
+        num_chanels : 1 or 3
             Depth of the underlying texture
 
         """
         self.width = int(np.power(2, int(np.log2(width) + 0.5)))
         self.height = int(np.power(2, int(np.log2(height) + 0.5)))
-        self.depth = depth
+        self.num_chanels = num_chanels
         self.nodes = [(0, 0, self.width)]
         self.data = np.zeros(
-            (self.height, self.width, self.depth),
+            (self.height, self.width, self.num_chanels),
             dtype=np.ubyte)
         self.used = 0
 
@@ -217,7 +217,7 @@ class TextureFont:
 
     """
 
-    def __init__(self, atlas, filename, size):
+    def __init__(self, atlas, filename, font_size):
         """
         Initialize font
 
@@ -230,14 +230,13 @@ class TextureFont:
         filename: str
             Font filename
 
-        size : float
+        font_size : float
             Font size
 
         """
         self.atlas = atlas
         self.filename = filename
-        self.size = size
-        print('\n\n\font size', size, '\n\n')
+        self.size = int(font_size**2)
         self.glyphs = {}
         face = ft.Face(self.filename)
         face.set_char_size(int(self.size*64))
@@ -247,7 +246,7 @@ class TextureFont:
         self.descender = metrics.descender/64.0
         self.height = metrics.height/64.0
         self.linegap = self.height - self.ascender + self.descender
-        self.depth = atlas.depth
+        self.num_chanels = atlas.num_chanels
         self.max_glyphy_size = np.array([0., 0.])
         try:
             ft.set_lcd_filter(ft.FT_LCD_FILTER_LIGHT)
@@ -296,7 +295,8 @@ class TextureFont:
             width = face.glyph.bitmap.width
             rows = face.glyph.bitmap.rows
             pitch = face.glyph.bitmap.pitch
-            x, y, w, h = self.atlas.get_region(width/self.depth+2, rows+2)
+            x, y, w, h = self.atlas.get_region(
+                width/self.num_chanels+2, rows+2)
             w = int(w)
             h = int(h)
             if x < 0:
@@ -307,7 +307,7 @@ class TextureFont:
             for i in range(rows):
                 data.extend(bitmap.buffer[i*pitch:i*pitch+width])
             data = np.array(
-                data, dtype=np.ubyte).reshape(h, w, self.atlas.depth)
+                data, dtype=np.ubyte).reshape(h, w, self.atlas.num_chanels)
             gamma = 1.5
             Z = ((data/255.0)**(gamma))
             data = (Z*255).astype(np.ubyte)
@@ -331,13 +331,13 @@ class TextureFont:
             texcoords = (u0, v0, u1, v1)
             glyph = TextureGlyph(
                 charcode, size, offset, advance, texcoords, px)
-            glyph.bearing =  slot.metrics.vertBearingY/64 
+            glyph.bearing = slot.metrics.vertBearingY/64
             glyph.metricHeight = slot.metrics.height/64
             glyph.descender = glyph.metricHeight - glyph.bearing
             glyph.h = h
             glyph.top = top
             glyph.st = self.size - top
-            glyph.b = slot.metrics.vertBearingY/64 
+            glyph.b = slot.metrics.vertBearingY/64
             glyph.stb = glyph.st - glyph.b
             glyph.ht = glyph.h - glyph.top
             self.glyphs[charcode] = glyph
@@ -428,7 +428,7 @@ class TextureGlyph:
 
 
 def create_bitmap_font(
-        font_size=50, font_path=None,
+        font_size=7, font_path=None,
         show=False, save_path=None):
     """This function is used to create a bitmap font.
 
@@ -455,16 +455,17 @@ def create_bitmap_font(
 
     """
 
-    if font_size == 50 and font_path is None and False:
+    if font_size == 7 and font_path is None:
         font_path = f'{fury.__path__[0]}/data/files/FreeMono'
         image_arr = Image.open(font_path+'.bmp')
-        char2coord = pickle.loads(open(font_path + '_char2coord.p', 'rb').read())
+        char2coord = pickle.loads(
+            open(font_path + '_char2coord.p', 'rb').read())
     else:
         if not _FREETYPE_AVAILABLE:
             raise ImportError('Pleasse, install  the freetype-py lib')
         if font_path is None:
             font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-        texture_atlas = TextureAtlas(depth=1)
+        texture_atlas = TextureAtlas(num_chanels=1)
         image_arr = texture_atlas.data
 
         image_arr = texture_atlas.data.reshape(
@@ -472,7 +473,7 @@ def create_bitmap_font(
         texture_font = TextureFont(
             texture_atlas,
             font_path,
-            size=font_size)
+            font_size=font_size)
         ascii_chars = ''.join([chr(i) for i in range(32, 127)])
         texture_font.load(ascii_chars)
         char2coord = {
@@ -549,12 +550,13 @@ def get_positions_labels_billboards(
             relative_sizes.append(relative_size)
             pad = np.array([x_pad*i_l + align_pad, 0, 0])
             if glyph.h > 0:
-                pad[1] -= scale*glyph.pad - scale*y_offset_ratio/relative_size[1]
+                offset = scale*y_offset_ratio/relative_size[1]
+                pad[1] -= scale*glyph.pad - offset
             labels_pad.append(
               pad
             )
             labels_positions.append(center)
-            
+
             mx_s = glyph.texcoords[0]
             my_s = glyph.texcoords[1]
             mx_e = glyph.texcoords[2]

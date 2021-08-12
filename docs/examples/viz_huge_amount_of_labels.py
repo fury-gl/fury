@@ -111,7 +111,7 @@ interactive = False
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='journal_networks.png', size=(600, 600))
+window.record(scene, out_path='viz_huge_amount_of_labels.png', size=(600, 600))
 
 ###############################################################################
 # This example can be improved by adding some interactivy with slider,
