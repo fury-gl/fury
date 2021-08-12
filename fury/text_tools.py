@@ -20,11 +20,13 @@ import sys
 import numpy as np
 from PIL import Image
 import pickle
+
 try:
     _FREETYPE_AVAILABLE = True
     import freetype as ft
 except ImportError:
     _FREETYPE_AVAILABLE = False
+
 import fury
 
 
@@ -235,6 +237,7 @@ class TextureFont:
         self.atlas = atlas
         self.filename = filename
         self.size = size
+        print('\n\n\font size', size, '\n\n')
         self.glyphs = {}
         face = ft.Face(self.filename)
         face.set_char_size(int(self.size*64))
@@ -245,6 +248,7 @@ class TextureFont:
         self.height = metrics.height/64.0
         self.linegap = self.height - self.ascender + self.descender
         self.depth = atlas.depth
+        self.max_glyphy_size = np.array([0., 0.])
         try:
             ft.set_lcd_filter(ft.FT_LCD_FILTER_LIGHT)
         except ft.FT_Exception:
@@ -284,14 +288,14 @@ class TextureFont:
             flags = ft.FT_LOAD_RENDER | ft.FT_LOAD_FORCE_AUTOHINT
             flags |= ft.FT_LOAD_TARGET_LCD
 
-            face.load_char(charcode, flags)
+            face.load_char(charcode)
             bitmap = face.glyph.bitmap
+            slot = face.glyph
             left = face.glyph.bitmap_left
             top = face.glyph.bitmap_top
             width = face.glyph.bitmap.width
             rows = face.glyph.bitmap.rows
             pitch = face.glyph.bitmap.pitch
-
             x, y, w, h = self.atlas.get_region(width/self.depth+2, rows+2)
             w = int(w)
             h = int(h)
@@ -311,6 +315,11 @@ class TextureFont:
 
             # Build glyph
             size = w, h
+            self.max_glyphy_size[0] = max(
+                self.max_glyphy_size[0], w)
+            self.max_glyphy_size[1] = max(
+                self.max_glyphy_size[1], h)
+
             offset = left, top
             advance = face.glyph.advance.x, face.glyph.advance.y
 
@@ -322,6 +331,15 @@ class TextureFont:
             texcoords = (u0, v0, u1, v1)
             glyph = TextureGlyph(
                 charcode, size, offset, advance, texcoords, px)
+            glyph.bearing =  slot.metrics.vertBearingY/64 
+            glyph.metricHeight = slot.metrics.height/64
+            glyph.descender = glyph.metricHeight - glyph.bearing
+            glyph.h = h
+            glyph.top = top
+            glyph.st = self.size - top
+            glyph.b = slot.metrics.vertBearingY/64 
+            glyph.stb = glyph.st - glyph.b
+            glyph.ht = glyph.h - glyph.top
             self.glyphs[charcode] = glyph
 
             # Generate kerning
@@ -344,6 +362,15 @@ class TextureFont:
             # a = face.get_advance(gindex, FT_LOAD_RENDER |
             # FT_LOAD_TARGET_LCD)/(64*72)
             # glyph.advance = a, glyph.advance[1]
+        self._calc_relative_sizes()
+
+    def _calc_relative_sizes(self):
+        for char, glyph in self.glyphs.items():
+            glyph.relative_size = np.array([0, glyph.h])/self.max_glyphy_size
+            glyph.relative_offset = np.array(glyph.offset)/self.size
+            glyph.hmax = self.max_glyphy_size[1]
+            if glyph.h > 0:
+                glyph.pad = (glyph.stb)/glyph.h
 
 
 class TextureGlyph:
@@ -378,6 +405,7 @@ class TextureGlyph:
         """
         self.charcode = charcode
         self.size = size
+        self.relative_size = np.array([1., 1.])
         self.px = px
         self.offset = offset
         self.advance = advance
@@ -427,7 +455,7 @@ def create_bitmap_font(
 
     """
 
-    if font_size == 50 and font_path is None:
+    if font_size == 50 and font_path is None and False:
         font_path = f'{fury.__path__[0]}/data/files/FreeMono'
         image_arr = Image.open(font_path+'.bmp')
         char2coord = pickle.loads(open(font_path + '_char2coord.p', 'rb').read())
@@ -441,7 +469,10 @@ def create_bitmap_font(
 
         image_arr = texture_atlas.data.reshape(
             (texture_atlas.data.shape[0], texture_atlas.data.shape[1]))
-        texture_font = TextureFont(texture_atlas, font_path, font_size)
+        texture_font = TextureFont(
+            texture_atlas,
+            font_path,
+            size=font_size)
         ascii_chars = ''.join([chr(i) for i in range(32, 127)])
         texture_font.load(ascii_chars)
         char2coord = {
@@ -490,13 +521,15 @@ def get_positions_labels_billboards(
     labels_positions = []
     labels_pad = []
     uv_coordinates = []
+    relative_sizes = []
     for i, (label, center) in enumerate(zip(labels, centers)):
         if isinstance(scales, list):
             scale = scales[i]
         else:
             scale = scales
-        y_pad = scale*y_offset_ratio
+
         x_pad = scale*x_offset_ratio
+
         align_pad = 0.
         if align == 'left':
             align_pad = 0
@@ -509,14 +542,19 @@ def get_positions_labels_billboards(
                 align_pad += x_pad
             align_pad /= 2
         for i_l, char in enumerate(label):
-            pad = np.array([x_pad*i_l + align_pad, y_pad, 0])
+            if char not in char2coord.keys():
+                char = '?'
+            glyph = char2coord[char]
+            relative_size = glyph.relative_size
+            relative_sizes.append(relative_size)
+            pad = np.array([x_pad*i_l + align_pad, 0, 0])
+            if glyph.h > 0:
+                pad[1] -= scale*glyph.pad - scale*y_offset_ratio/relative_size[1]
             labels_pad.append(
               pad
             )
             labels_positions.append(center)
-            if char not in char2coord.keys():
-                char = '?'
-            glyph = char2coord[char]
+            
             mx_s = glyph.texcoords[0]
             my_s = glyph.texcoords[1]
             mx_e = glyph.texcoords[2]
@@ -527,7 +565,8 @@ def get_positions_labels_billboards(
     labels_positions = np.array(labels_positions)
     labels_pad = np.array(labels_pad)
     uv_coordinates = np.array(uv_coordinates)
+    relative_sizes = np.repeat(np.array(relative_sizes), 4, axis=0)
     uv_coordinates = uv_coordinates.reshape(
          uv_coordinates.shape[0]*uv_coordinates.shape[2], 2).astype('float')
 
-    return labels_pad, labels_positions, uv_coordinates
+    return labels_pad, labels_positions, uv_coordinates, relative_sizes

@@ -3249,7 +3249,7 @@ def bitmap_labels(
     """
     img_arr, char2pos = text_tools.create_bitmap_font(
         font_size=font_size, font_path=font_path, show=False)
-    padding, labels_positions, uv = text_tools.get_positions_labels_billboards(
+    padding, labels_positions, uv, relative_sizes = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,
             align=align,
             x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio)
@@ -3286,6 +3286,10 @@ def bitmap_labels(
         sq_actor,
         uv,
         'vUV')
+    attribute_to_actor(
+        sq_actor,
+        relative_sizes,
+        'vRelativeSize')
     padding = np.repeat(padding, 4, axis=0)
     attribute_to_actor(
         sq_actor,
