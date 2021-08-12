@@ -61,13 +61,12 @@ scene.add(left_actor)
 font_path = font_path = f'{fury.__path__[0]}/data/files/verdanab.ttf'
 new_font_actor = actor.bitmap_labels(
     [centers[3]], ['font size and format'],
-    font_size=50, font_path=font_path,
+    font_size=10, font_path=font_path,
     align='center', scales=.05, colors=colors[3])
 
 offset_change_actor = actor.bitmap_labels(
     [centers[4]], ['offset'],
     x_offset_ratio=3, y_offset_ratio=2,
-    font_path=font_path,
     scales=.05, colors=colors[4])
 
 scene.add(offset_change_actor)
@@ -75,7 +74,7 @@ scene.add(new_font_actor)
 scene.reset_camera()
 scene.reset_clipping_range()
 
-interactive = True 
+interactive = False
 
 if interactive:
     window.show(scene, size=(600, 600))
