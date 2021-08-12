@@ -19,5 +19,8 @@ vec4 rgba = vec4(color, 1);
 //texture(charactersTexture, UV);
 // if (texture(charactersTexture, UV).rgb != vec3(0.0, 0.0, 1.0)) discard;
 if (texture(charactersTexture, UV).r < 1.0) discard;
+// if (texture(charactersTexture, UV).r < 1.0) {
+//  rgba.rgb = vec3(1., 1.0, 1.0);
+// }
 //rgba.w = 0.0;
 fragOutput0 = rgba;
