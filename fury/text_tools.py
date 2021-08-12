@@ -331,14 +331,15 @@ class TextureFont:
             texcoords = (u0, v0, u1, v1)
             glyph = TextureGlyph(
                 charcode, size, offset, advance, texcoords, px)
-            glyph.bearing = slot.metrics.vertBearingY/64
+            glyph.bearingY = slot.metrics.vertBearingY/64
             glyph.metricHeight = slot.metrics.height/64
-            glyph.descender = glyph.metricHeight - glyph.bearing
+            glyph.descender = glyph.metricHeight - glyph.bearingY
             glyph.h = h
+            glyph.w = w
             glyph.top = top
             glyph.st = self.size - top
-            glyph.b = slot.metrics.vertBearingY/64
-            glyph.stb = glyph.st - glyph.b
+            glyph.stb = glyph.st - glyph.bearingY
+
             glyph.ht = glyph.h - glyph.top
             self.glyphs[charcode] = glyph
 
@@ -366,7 +367,8 @@ class TextureFont:
 
     def _calc_relative_sizes(self):
         for char, glyph in self.glyphs.items():
-            glyph.relative_size = np.array([0, glyph.h])/self.max_glyphy_size
+            glyph.relative_size = np.array(
+                [glyph.w, glyph.h])/self.max_glyphy_size
             glyph.relative_offset = np.array(glyph.offset)/self.size
             glyph.hmax = self.max_glyphy_size[1]
             if glyph.h > 0:
@@ -542,16 +544,27 @@ def get_positions_labels_billboards(
             if not len(label) % 2 == 0:
                 align_pad += x_pad
             align_pad /= 2
+
+        sum_x_spacing = 0
         for i_l, char in enumerate(label):
             if char not in char2coord.keys():
                 char = '?'
             glyph = char2coord[char]
+
             relative_size = glyph.relative_size
+            rx = relative_size[0]
             relative_sizes.append(relative_size)
-            pad = np.array([x_pad*i_l + align_pad, 0, 0])
+            pad = np.array([0., 0, 0], dtype='float64')
+
             if glyph.h > 0:
                 offset = scale*y_offset_ratio/relative_size[1]
                 pad[1] -= scale*glyph.pad - offset
+
+            pad_x = (scale*x_offset_ratio)
+            if rx == 0:
+                rx = 1
+            pad[0] = (sum_x_spacing + pad_x + align_pad)/rx  # + align_pad
+            sum_x_spacing += pad_x
             labels_pad.append(
               pad
             )

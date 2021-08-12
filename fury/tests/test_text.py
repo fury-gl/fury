@@ -19,7 +19,7 @@ def test_atlas():
 
 
 def test_bitmap_actor():
-    interactive = False
+    interactive = False 
     N = 1
     colors = (0, 0.8, .5)
     colors_spheres = colors
@@ -52,7 +52,8 @@ def test_bitmap_actor():
     spheres = actor.markers(centers, colors_spheres, scales=.1)
     my_text_actor = actor.bitmap_labels(
         centers, labels, colors=colors, scales=.1,
-        align='center', font_size=10)
+        y_offset_ratio=1,
+        align='center', font_size=7)
     showm = window.ShowManager(size=(700, 200))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
