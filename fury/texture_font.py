@@ -303,8 +303,10 @@ class TextureFont:
             v0 = (y + 0.0)/float(self.atlas.height)
             u1 = (x + w - 0.0)/float(self.atlas.width)
             v1 = (y + h - 0.0)/float(self.atlas.height)
+            px = w/self.atlas.width
             texcoords = (u0, v0, u1, v1)
-            glyph = TextureGlyph(charcode, size, offset, advance, texcoords)
+            glyph = TextureGlyph(
+                charcode, size, offset, advance, texcoords, px)
             self.glyphs[charcode] = glyph
 
             # Generate kerning
@@ -336,7 +338,7 @@ class TextureGlyph:
     automatically by a TextureFont.
     '''
 
-    def __init__(self, charcode, size, offset, advance, texcoords):
+    def __init__(self, charcode, size, offset, advance, texcoords, px):
         '''
         Build a new texture glyph
 
@@ -360,6 +362,7 @@ class TextureGlyph:
         '''
         self.charcode = charcode
         self.size = size
+        self.px = px
         self.offset = offset
         self.advance = advance
         self.texcoords = texcoords

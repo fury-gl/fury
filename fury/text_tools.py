@@ -1,48 +1,12 @@
-import fury
 import numpy as np
-from PIL import ImageFont, ImageDraw, Image
-
-
-num_ascii_chars = 95
-num_cols_ascii = 9
-num_rows_ascii = 11
-
-
-def get_ascii_chars():
-    """This function is used to generate a list of ascii characters.
-
-    Returns
-    -------
-    chars : ndarray
-        A numpy array of ascii characters.
-    char2pos : dict
-        A dictionary that maps characters to their positions in the
-        numpy array.
-
-    """
-    ascii_chars = [
-        chr(i) for i in range(32, 127)
-    ]
-
-    chars = np.zeros(shape=(num_rows_ascii, num_cols_ascii), dtype='str')
-    char2pos = {}
-    for i in range(num_rows_ascii):
-        for j in range(num_cols_ascii):
-            index = i*num_cols_ascii+j
-            if index >= num_ascii_chars-1:
-                chars[i, j] = ' '
-                continue
-            char = ascii_chars[index]
-            chars[i, j] = char
-            char2pos[char] = [i/num_rows_ascii, j/num_cols_ascii][::-1]
-    return [
-        chars,
-        char2pos,
-    ]
+from PIL import Image
+import pickle
+import fury
+from fury.texture_font import TextureAtlas, TextureFont
 
 
 def create_bitmap_font(
-        font_size=50, font_path=None, pad=0,
+        font_size=50, font_path=None,
         show=False, save_path=None):
     """This function is used to create a bitmap font.
 
@@ -69,43 +33,40 @@ def create_bitmap_font(
 
     """
 
-    chars, char2pos = get_ascii_chars()
     if font_size == 50 and font_path is None:
-        font_path = f'{fury.__path__[0]}/data/files/font.bmp'
-        image_arr = Image.open(font_path)
+        font_path = f'{fury.__path__[0]}/data/files/font'
+        image_arr = Image.open(font_path+'.bmp')
+        char2coord = pickle.loads(open(font_path + '_char2coord.p', 'rb').read())
     else:
         if font_path is None:
             font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
+        texture_atlas = TextureAtlas(depth=1)
+        image_arr = texture_atlas.data
 
-        width = num_cols_ascii*(font_size + pad*2)
-        height = num_rows_ascii*(font_size + pad*2)
-        # image = Image.new("RGB", (width, height), 'black')
-        # image = Image.new("RGBA", (width, height), (255, 255, 255, 0))
-        image = Image.new("P", (width, height))
-        draw = ImageDraw.Draw(image)
-        font = ImageFont.truetype(font_path, font_size)
-        for i_row, row in enumerate(chars):
-            x = 2*pad
-            for i_col, char in enumerate(row):
-                # draw.text((x, font_size*i_row + 2*pad), char, font=font)
-                draw.text(
-                    (x, font_size*i_row + 2*pad),
-                    # char, fill=(255, 255, 255, 255), font=font)
-                    char, fill=(255), font=font)
-                x += font_size
+        image_arr = texture_atlas.data.reshape(
+            (texture_atlas.data.shape[0], texture_atlas.data.shape[1]))
+        texture_font = TextureFont(texture_atlas, font_path, font_size)
+        ascii_chars = ''.join([chr(i) for i in range(32, 127)])
+        texture_font.load(ascii_chars)
+        char2coord = {
+            c: glyph
+            for c, glyph in texture_font.glyphs.items()
+        }
+
         if show:
+            image = Image.fromarray(image_arr).convert('P')
             image.show()
         if save_path is not None:
-            image.save(save_path)
-
-        image_arr = np.array(image)
+            image = Image.fromarray(image_arr).convert('P')
+            image.save(save_path + '.bmp')
+            pickle.dump(char2coord, open(save_path + '_char2coord.p', 'wb'))
     # due vtk
     image_arr = np.flipud(image_arr)
-    return image_arr, char2pos
+    return image_arr, char2coord
 
 
 def get_positions_labels_billboards(
-        labels, centers, char2pos, scales=1,
+        labels, centers, char2coord, scales=1,
         align='center',
         x_offset_ratio=1, y_offset_ratio=1,):
     """This function is used to get the positions of the labels.
@@ -151,21 +112,19 @@ def get_positions_labels_billboards(
             if not len(label) % 2 == 0:
                 align_pad += x_pad
             align_pad /= 2
-
         for i_l, char in enumerate(label):
             pad = np.array([x_pad*i_l + align_pad, y_pad, 0])
             labels_pad.append(
               pad
             )
             labels_positions.append(center)
-            if char not in char2pos.keys():
+            if char not in char2coord.keys():
                 char = '?'
-            pos_char_begin = char2pos[char]
-            mx_s = pos_char_begin[0]
-            my_s = pos_char_begin[1]
-            mx_e = mx_s + 1/num_cols_ascii
-            my_e = my_s + 1/num_rows_ascii
-
+            glyph = char2coord[char]
+            mx_s = glyph.texcoords[0]
+            my_s = glyph.texcoords[1]
+            mx_e = glyph.texcoords[2]
+            my_e = glyph.texcoords[3]
             coord = np.array(
                 [[[mx_s, my_e], [mx_s, my_s], [mx_e, my_s], [mx_e, my_e]]])
             uv_coordinates.append(coord)
