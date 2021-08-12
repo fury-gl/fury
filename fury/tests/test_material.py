@@ -432,29 +432,18 @@ def test_manifest_pbr(interactive=False):
         window.show(scene)
 
 
-def test_manifest_standard(interactive=False):
+def test_manifest_standard():
     scene = window.Scene()  # Setup scene
-
-    # Setup surface
-    surface_actor = _generate_surface()
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(surface_actor)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
 
     # Contour from roi setup
     data = np.zeros((50, 50, 50))
     data[20:30, 25, 25] = 1.
     data[25, 20:30, 25] = 1.
     affine = np.eye(4)
-    surface = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]))
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(surface)
+    test_actor = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]))
+    # TODO: Find out why the color disappears
+    material.manifest_standard(test_actor)
+    scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
     arr = window.snapshot(scene)
@@ -471,253 +460,60 @@ def test_manifest_standard(interactive=False):
     color = np.array([[255, 0, 0],
                       [0, 255, 0],
                       [0, 0, 255]])
-    surface = actor.contour_from_label(data, color=color)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(surface)
+    test_actor = actor.contour_from_label(data, color=color)
+    material.manifest_standard(test_actor)
+    scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
+    # TODO: Test assert warning
     npt.assert_equal(report.objects, 3)
 
     scene.clear()  # Reset scene
 
     # Streamtube setup
-    data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
-    data2 = data1 + np.array([0.5, 0., 0.])
-    data = [data1, data2]
-    colors = np.array([[1, 0, 0], [0, 0, 1.]])
-    tubes = actor.streamtube(data, colors, linewidth=.1)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(tubes)
+    data = [np.array([[-1., -1., -1.], [.0, .0, .0], [1., 1., 1.]])]
+    color = np.array([[1, 0, 0]])
+    test_actor = actor.streamtube(data, colors=color)
+    material.manifest_standard(test_actor, ambient_level=1)
+    scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 2)
-
-    scene.clear()  # Reset scene
-
-    # ODF slicer setup
-    if have_dipy:
-        from dipy.data import get_sphere
-        from tempfile import mkstemp
-        sphere = get_sphere('symmetric362')
-        shape = (11, 11, 11, sphere.vertices.shape[0])
-        fid, fname = mkstemp(suffix='_odf_slicer.mmap')
-        odfs = np.memmap(fname, dtype=np.float64, mode='w+', shape=shape)
-        odfs[:] = 1
-        affine = np.eye(4)
-        mask = np.ones(odfs.shape[:3])
-        mask[:4, :4, :4] = 0
-        odfs[..., 0] = 1
-        odf_actor = actor.odf_slicer(odfs, affine, mask=mask, sphere=sphere,
-                                     scale=.25, colormap='blues')
-        material.manifest_standard(surface_actor, ambient_level=.3,
-                                   diffuse_level=.25)
-        k = 5
-        I, J, _ = odfs.shape[:3]
-        odf_actor.display_extent(0, I, 0, J, k, k)
-        odf_actor.GetProperty().SetOpacity(1.0)
-        scene.add(odf_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 11 * 11)
-
-    scene.clear()  # Reset scene
-
-    # Tensor slicer setup
-    if have_dipy:
-        from dipy.data import get_sphere
-        sphere = get_sphere('symmetric724')
-        evals = np.array([1.4, .35, .35]) * 10 ** (-3)
-        evecs = np.eye(3)
-        mevals = np.zeros((3, 2, 4, 3))
-        mevecs = np.zeros((3, 2, 4, 3, 3))
-        mevals[..., :] = evals
-        mevecs[..., :, :] = evecs
-        affine = np.eye(4)
-        scene = window.Scene()
-        tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                           sphere=sphere, scale=.3)
-        material.manifest_standard(surface_actor, ambient_level=.3,
-                                   diffuse_level=.25)
-        _, J, K = mevals.shape[:3]
-        tensor_actor.display_extent(0, 1, 0, J, 0, K)
-        scene.add(tensor_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 4)
-
-    scene.clear()  # Reset scene
-
-    # Point setup
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    opacity = 0.5
-    points_actor = actor.point(points, colors, opacity=opacity)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(points_actor)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
+    # TODO: Test ambient
 
     scene.clear()  # Reset scene
 
     # Sphere setup
-    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
-    opacity = 0.5
-    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3], opacity=opacity)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(sphere_actor)
+    center = np.array([[0, 0, 0]])
+    color = (0, 1, 0)
+    test_actor = actor.sphere(centers=center, colors=color, radii=5, phi=32,
+                              theta=32)
+    material.manifest_standard(test_actor, specular_level=1)
+    scene.add(test_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
+    # TODO: Test specular_power
 
     scene.clear()  # Reset scene
 
-    # Advanced geometry actors setup (Arrow, cone, cylinder)
-    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
-    heights = np.array([5, 7, 10])
-    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
-                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.cylinder, {'directions': dirs}]]
-    for act_func, extra_args in actor_list:
-        aga_actor = act_func(centers=xyz, colors=colors[:], heights=heights,
-                             **extra_args)
-        material.manifest_standard(surface_actor, ambient_level=.3,
-                                   diffuse_level=.25)
-        scene.add(aga_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 3)
-        scene.clear()
-
-    # Basic geometry actors (Box, cube, frustum, octagonalprism, rectangle,
-    # square)
+    # Basic geometry actors (box & square)
     centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0, 0.4], [0, 1, 0, 0.8], [0, 0, 1, 0.5]])
-    directions = np.array([[1, 1, 0]])
-    scale_list = [1, 2, (1, 1, 1), [3, 2, 1], np.array([1, 2, 3]),
-                  np.array([[1, 2, 3], [1, 3, 2], [3, 1, 2]])]
-    actor_list = [[actor.box, {}], [actor.cube, {}], [actor.frustum, {}],
-                  [actor.octagonalprism, {}], [actor.rectangle, {}],
-                  [actor.square, {}]]
-    for act_func, extra_args in actor_list:
-        for scale in scale_list:
-            scene = window.Scene()
-            bga_actor = act_func(centers=centers, directions=directions,
-                                 colors=colors, scales=scale, **extra_args)
-            material.manifest_standard(surface_actor, ambient_level=.3,
-                                       diffuse_level=.25)
-            scene.add(bga_actor)
-            arr = window.snapshot(scene)
-            report = window.analyze_snapshot(arr)
-            msg = 'Failed with {}, scale={}'.format(act_func.__name__, scale)
-            npt.assert_equal(report.objects, 3, err_msg=msg)
-            scene.clear()
-
-    # Cone setup using vertices
-    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
-    vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
-                         [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
-    faces = np.array([[0, 1, 3], [0, 1, 2]])
-    cone_actor = actor.cone(centers=centers, directions=directions,
-                            colors=colors[:], vertices=vertices, faces=faces)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(cone_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
-
-    scene.clear()  # Reset scene
-
-    # Superquadric setup
-    centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
+    directions = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 1]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.random.rand(3, 3)
-    scales = [1, 2, 3]
-    roundness = np.array([[1, 1], [1, 2], [2, 1]])
-    sq_actor = actor.superquadric(centers, roundness=roundness,
-                                  directions=directions,
-                                  colors=colors.astype(np.uint8),
-                                  scales=scales)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(sq_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    ft.assert_greater_equal(report.objects, 3)
+    scales = (3, 2, 1)
+
+    test_actor = actor.box(centers, directions=directions, colors=colors,
+                           scales=scales)
+    material.manifest_standard(test_actor, specular_level=1)
+    scene.add(test_actor)
+    # TODO: Simpler candidate to test specular_power
 
     scene.clear()  # Reset scene
-
-    # Label setup
-    text_actor = actor.label("Hello")
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(text_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 5)
-
-    scene.clear()  # Reset scene
-
-    # Texture setup
-    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
-    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
-    tp2 = actor.texture(arr)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(tp2)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
-
-    # Texture on sphere setup
-    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
-    rows, cols, _ = arr.shape
-    rs = rows // 2
-    cs = cols // 2
-    w = 150 // 2
-    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
-    tsa = actor.texture_on_sphere(arr)
-    material.manifest_standard(surface_actor, ambient_level=.3,
-                               diffuse_level=.25)
-    scene.add(tsa)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
 
     # NOTE: From this point on, these actors don't have full support for PBR
     # interpolation. This is, the test passes but there is no evidence of the
@@ -846,6 +642,3 @@ def test_manifest_standard(interactive=False):
                                       fs_impl=fake_sphere)
     material.manifest_pbr(billboard_actor)
     scene.add(billboard_actor)
-
-    if interactive:
-        window.show(scene)

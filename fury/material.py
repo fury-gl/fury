@@ -19,8 +19,8 @@ def manifest_pbr(actor, metallicity=0, roughness=.5):
 
     """
     if not VTK_9_PLUS:
-        warnings.warn("Your PBR effect can not be apply due to VTK version. "
-                      "Please upgrade your VTK version (should be >= 9.0.0).")
+        warnings.warn('Your PBR effect can not be apply due to VTK version. '
+                      'Please upgrade your VTK version (should be >= 9.0.0).')
         return
 
     prop = actor.GetProperty()
@@ -60,22 +60,30 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         fragment level.
 
     """
-    prop = actor.GetProperty()
+    try:
+        prop = actor.GetProperty()
 
-    if interpolation.lower() == 'flat':
-        prop.SetInterpolationToFlat()
-    elif interpolation.lower() == 'gouraud':
-        prop.SetInterpolationToGouraud()
-    elif interpolation.lower() == 'phong':
-        prop.SetInterpolationToPhong()
-    else:
-        warnings.warn('Unknown interpolation. Ignoring "{}" interpolation '
-                      'option.'.format(interpolation))
+        if interpolation.lower() == 'flat':
+            prop.SetInterpolationToFlat()
+        elif interpolation.lower() == 'gouraud':
+            prop.SetInterpolationToGouraud()
+        elif interpolation.lower() == 'phong':
+            prop.SetInterpolationToPhong()
+        else:
+            warnings.warn(
+                'Unknown interpolation. Ignoring "{}" interpolation option. '
+                'And using the default ("{}") option.'.format(
+                    interpolation, 'gouraud'))
 
-    prop.SetAmbient(ambient_level)
-    prop.SetAmbientColor(ambient_color)
-    prop.SetDiffuse(diffuse_level)
-    prop.SetDiffuseColor(diffuse_color)
-    prop.SetSpecular(specular_level)
-    prop.SetSpecularColor(specular_color)
-    prop.SetSpecularPower(specular_power)
+        prop.SetAmbient(ambient_level)
+        prop.SetAmbientColor(ambient_color)
+        prop.SetDiffuse(diffuse_level)
+        prop.SetDiffuseColor(diffuse_color)
+        prop.SetSpecular(specular_level)
+        prop.SetSpecularColor(specular_color)
+        prop.SetSpecularPower(specular_power)
+    except AttributeError:
+        warnings.warn('Actor does not have the attribute property. This '
+                      'material will not be applied.')
+        return
+
