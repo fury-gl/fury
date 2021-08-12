@@ -6,7 +6,7 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import load_polydata, save_polydata, load_image, save_image
+from fury.io import load_polydata, save_polydata, load_image, save_image, load_sprite_sheet
 from fury.utils import vtk, numpy_support, numpy_to_vtk_points
 from fury.testing import assert_greater
 
@@ -155,3 +155,23 @@ def test_pillow():
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
+
+
+def test_load_sprite_sheet():
+    sprite_URL = 'https://i.imgur.com/0yKFTBQ.png'
+
+    with InTemporaryDirectory() as tdir:
+        sprites = load_sprite_sheet(sprite_URL, 5, 5)
+
+        for idx, sprite in enumerate(list(sprites.values())):
+            img_name = f"{idx}.png"
+            save_image(sprite, os.path.join(tdir, img_name))
+
+        sprite_count = len(os.listdir(tdir))
+        npt.assert_equal(sprite_count, 25)
+
+        vtktype_sprites = load_sprite_sheet(sprite_URL, 5, 5,
+                                            as_vtktype=True)
+
+        for vtk_sprite in list(vtktype_sprites.values()):
+            npt.assert_equal(isinstance(vtk_sprite, vtk.vtkImageData), True)
