@@ -4,10 +4,18 @@ from fury import actor, window
 import fury
 
 
-def test_create_atlas():
-    if not text_tools._FREETYPE_AVAILABLE:
-        print('Bitmap text not tested (FREETYPE is not available)')
-        return
+def test_create_bitmap():
+    save_path = f'{fury.__path__[0]}/data/files/FreeMono'
+    font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
+    text_tools.create_bitmap_font(
+        50, show=False, font_path=font_path, save_path=save_path)
+
+
+def test_atlas():
+    texture_atlas = text_tools.TextureAtlas(depth=1)
+    font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
+    tf = text_tools.TextureFont(texture_atlas, font_path, 100)
+    tf.load('a sdf123') 
 
     name = 'test_fonts_1238210930'
     font_path_atlas = text_tools._FONT_PATH_USER
@@ -31,22 +39,20 @@ def test_atlas():
     tf = text_tools.TextureFont(texture_atlas, font_path, 100)
     tf.load('a sdf123')
 
-def test_text_bitmap_actor():
-    interactive = False 
-    char2pos = text_tools.get_ascii_chars()[1]
-    chars = list(char2pos.keys())
+def test_bitmap_actor():
+    interactive = False
     N = 10
     colors = (0, 0.8, .5)
+    colors_spheres = colors
     scales = 1
-    labels = ['Abracadabra 1664123!@']
+    labels = ['Abracadabra 1664123!@/?*)(']
     centers = np.random.normal(0, 10, size=(N, 3))
     if N > 1:
         # colors = np.random.uniform(0, 1, size=(N, 3))
-        min_s = 5
-        max_s = 10
-        chars = [chr(i) for i in range(32, 134)]
+        # min_s = 5
+        # max_s = 10
         labels = [
-            f'Sphere{i}' if i % 2 == 0 else f'Sphere_{i}'
+            f'Sphere{i}' if i % 2 == 0 else f'Sphere {i}'
             # ''.join(
             #         np.random.choice(
             #             chars,
@@ -65,7 +71,7 @@ def test_text_bitmap_actor():
     spheres = actor.markers(centers, colors_spheres)
     my_text_actor = actor.bitmap_labels(
         centers, labels, colors=colors, scales=scales,
-        align='right', font_size=51)
+        align='center', font_size=51)
     showm = window.ShowManager(size=(500, 400))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
