@@ -465,6 +465,7 @@ def create_bitmap_font(
     else:
         if not _FREETYPE_AVAILABLE:
             raise ImportError('Pleasse, install  the freetype-py lib')
+
         if font_path is None:
             font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
         texture_atlas = TextureAtlas(num_chanels=1)

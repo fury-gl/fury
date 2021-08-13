@@ -5,6 +5,10 @@ import fury
 
 
 def test_create_bitmap():
+    if not text_tools._FREETYPE_AVAILABLE:
+        print('Bitmap text not tested (FREETYPE is not available)')
+        return
+
     save_path = f'{fury.__path__[0]}/data/files/FreeMono'
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
     text_tools.create_bitmap_font(
@@ -12,6 +16,10 @@ def test_create_bitmap():
 
 
 def test_atlas():
+    if not text_tools._FREETYPE_AVAILABLE:
+        print('Bitmap text not tested (FREETYPE is not available)')
+        return
+
     texture_atlas = text_tools.TextureAtlas(num_chanels=1)
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
     tf = text_tools.TextureFont(texture_atlas, font_path, 100)
@@ -50,10 +58,16 @@ def test_bitmap_actor():
             for _ in label:
                 colors.append(c)
     spheres = actor.markers(centers, colors_spheres, scales=.1)
-    my_text_actor = actor.bitmap_labels(
-        centers, labels, colors=colors, scales=.1,
-        y_offset_ratio=1,
-        align='center', font_size=7)
+    if not text_tools._FREETYPE_AVAILABLE:
+        my_text_actor = actor.bitmap_labels(
+            centers, labels, colors=colors, scales=.1,
+            y_offset_ratio=1,
+            align='center')
+    else:
+        my_text_actor = actor.bitmap_labels(
+            centers, labels, colors=colors, scales=.1,
+            y_offset_ratio=1,
+            align='center', font_size=7)
     showm = window.ShowManager(size=(700, 200))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
