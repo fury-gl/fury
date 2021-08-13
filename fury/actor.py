@@ -3222,6 +3222,7 @@ def bitmap_labels(
         y_offset_ratio=1,
         font_size=7,
         font_path=None,
+        atlas_size=(1024, 1024)
         ):
     """Create a bitmap label actor that always faces the camera.
 
@@ -3241,6 +3242,10 @@ def bitmap_labels(
         size of the text
     font_path : str, optional
         str of path to font file
+    atlas_size : tuple, optional
+        (width, height) of the atlas image to use for the labels.
+        Default is (1024, 1024). You can change this if you change the
+        font size or font path default parameters.
 
     Returns
     -------
@@ -3248,7 +3253,8 @@ def bitmap_labels(
 
     """
     img_arr, char2pos = text_tools.create_bitmap_font(
-        font_size=font_size, font_path=font_path, show=False)
+        font_size=font_size, font_path=font_path,
+        atlas_size=atlas_size, show=False)
     padding, labels_positions,\
         uv, relative_sizes = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,

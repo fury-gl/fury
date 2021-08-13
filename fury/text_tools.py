@@ -50,25 +50,21 @@ class TextureAtlas:
 
     """
 
-    def __init__(self, width=1024, height=1024, num_chanels=1):
+    def __init__(self, atlas_size=(1024, 1024), num_chanels=1):
         """
         Initialize a new atlas of given size.
 
         Parameters
         ----------
 
-        width : int
-            Width of the underlying texture
-
-        height : int
-            Height of the underlying texture
-
-        num_chanels : 1 or 3
+        atlas_size : tuple of int, optional
+            Size of the underlying texture image. Default is (1024, 1024)
+        num_chanels : int, optional
             Depth of the underlying texture
 
         """
-        self.width = int(np.power(2, int(np.log2(width) + 0.5)))
-        self.height = int(np.power(2, int(np.log2(height) + 0.5)))
+        self.width = int(np.power(2, int(np.log2(atlas_size[0]) + 0.5)))
+        self.height = int(np.power(2, int(np.log2(atlas_size[1]) + 0.5)))
         self.num_chanels = num_chanels
         self.nodes = [(0, 0, self.width)]
         self.data = np.zeros(
@@ -404,6 +400,8 @@ class TextureGlyph:
 
         texcoords: tuple of 4 floats
             Texture coordinates of bottom-left and top-right corner
+            of glyph bounding box
+
         """
         self.charcode = charcode
         self.size = size
@@ -431,6 +429,7 @@ class TextureGlyph:
 
 def create_bitmap_font(
         font_size=7, font_path=None,
+        atlas_size=(1024, 1024),
         show=False, save_path=None):
     """This function is used to create a bitmap font.
 
@@ -442,6 +441,8 @@ def create_bitmap_font(
         The path to the font file.
     pad : int
         The padding of the font.
+    atlas_size : tuple, optional
+        The size of the texture atlas in pixels.
     show : bool
         Whether to show the result.
     save_path : str
@@ -468,7 +469,7 @@ def create_bitmap_font(
 
         if font_path is None:
             font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-        texture_atlas = TextureAtlas(num_chanels=1)
+        texture_atlas = TextureAtlas(num_chanels=1, atlas_size=atlas_size)
         image_arr = texture_atlas.data
 
         image_arr = texture_atlas.data.reshape(
