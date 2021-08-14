@@ -251,17 +251,16 @@ def interaction_callback(circular_queue, showm, iren, render_after):
         fp = camera.GetFocalPoint()
         pos = camera.GetPosition()
         delta = [fp[i] - pos[i] for i in range(3)]
-        camera.Zoom(zoomFactor)
 
         pos2 = camera.GetPosition()
         camera.SetFocalPoint(
             [pos2[i] + delta[i] for i in range(3)])
-        if data[1] < 0:
-            iren.MouseWheelForwardEvent()
-        else:
-            iren.MouseWheelBackwardEvent()
+        camera.Zoom(zoomFactor)
+        # if data[1] < 0:
+        #     iren.MouseWheelForwardEvent()
+        # else:
+        #     iren.MouseWheelBackwardEvent()
         # showm.window.Modified()
-
     elif user_event_id == event_ids.mouse_move:
         iren.SetEventInformation(
             newX, newY, ctrl_key, shift_key, chr(0), 0, None)

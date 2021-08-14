@@ -19,9 +19,9 @@ from fury.stream.widget import Widget
 
 interactive = False
 window_size = (720, 500)
-
-centers = np.array([[0, 0, 0], [-1, 0, 0], [1, 0, 0]])
-colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+N = 4
+centers = np.random.normal(size=(N, 3))
+colors = np.random.uniform(0.1, 1.0, size=(N, 3))
 actors = actor.sphere(
         centers, opacity=.5, radii=.4, colors=colors)
 scene = window.Scene()
