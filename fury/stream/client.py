@@ -30,7 +30,6 @@ def callback_stream_client(*args, **kwargs):
     stream_client = kwargs['stream_client']
     if stream_client._in_request:
         return
-
     stream_client._in_request = True
     stream_client.window2image_filter.Update()
     stream_client.window2image_filter.Modified()
@@ -137,10 +136,9 @@ class FuryStreamClient:
             if self._whithout_iren_start:
                 self._interval_timer = IntervalTimer(
                     ms/1000,
-                    partial(
-                        callback_stream_client,
-                        **{'stream_client': self, 'force_render': False}
-                    )
+                    callback_stream_client,
+                    *[],
+                    **{'stream_client': self, 'force_render': False}
                 )
             else:
                 def callback(caller, event, *args, **kwargs):

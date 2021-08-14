@@ -45,7 +45,7 @@ def check_port_is_available(host, port):
 
 class Widget:
     def __init__(
-            self, showm, ms_stream=0,
+            self, showm, ms_stream=33,
             ms_interaction=33,
             host='localhost', port=None,
             encoding='mjpeg', ms_jpeg=33,
@@ -167,7 +167,8 @@ class Widget:
             self.pserver = subprocess.Popen(
                 args,
                 # f'python -c "{self.command_string}"',
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, shell=False)
         return True
 
     @property

@@ -1,3 +1,5 @@
+from enum import auto
+import threading
 import numpy as np
 import io
 from PIL import Image, ImageDraw
@@ -5,9 +7,9 @@ import multiprocessing
 import time
 import logging
 from threading import Timer
+import asyncio
 from abc import ABC, abstractmethod
 
-import asyncio
 import sys
 
 if sys.version_info.minor >= 8:
@@ -874,7 +876,7 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
                     print(f'Shared Memory {name}(buffer image) File not found')
 
 
-class IntervalTimer:
+class IntervalTimerThreading:
     def __init__(self, seconds, callback, *args, **kwargs):
         """Implements a object with the same behavior of setInterval from Js
 
@@ -946,3 +948,47 @@ class IntervalTimer:
             self._timer.join()
         self.is_running = False
         self._timer = None
+
+
+class IntervalTimer:
+    def __init__(self, seconds, callback, *args, **kwargs):
+        """A object that creates a timer that calls a function periodically.
+
+        Parameters
+        ----------
+        seconds : float
+            A postive float number. Represents the total amount of
+            seconds between each call
+        callback : function
+            The function to be called
+        *args : args
+            args to be passed to callback
+        **kwargs : kwargs
+            kwargs to be passed to callback
+
+        """
+        self._seconds = seconds
+        self._callback = callback
+        self.args = args
+        self.kwargs = kwargs
+        self._is_running = False
+        self.start()
+
+    async def _run(self):
+        self._is_running = True
+        while True:
+            await asyncio.sleep(self._seconds)
+            if self._is_running:
+                self._callback(*self.args, **self.kwargs)
+
+    def start(self):
+        """Start the timer"""
+        if self._is_running:
+            return
+        self._loop = asyncio.get_event_loop()
+        self._task = self._loop.create_task(self._run())
+
+    def stop(self):
+        """Stop the timer"""
+        self._task.cancel()
+        self._is_running = False
