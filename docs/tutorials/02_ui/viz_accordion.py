@@ -83,7 +83,7 @@ wrap_overflow(fury_intro,
               fury_node.size[0]-fury_logo.size[0]-20)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
