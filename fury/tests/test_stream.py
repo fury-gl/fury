@@ -402,8 +402,8 @@ def test_stream_client_resize():
     stream.cleanup()
 
 
-def test_stream_interaction():
-    def test(use_raw_array, ms_stream=16):
+def test_stream_interaction(loop: asyncio.AbstractEventLoop):
+    async def test(use_raw_array, ms_stream=16):
         width_0 = 300
         height_0 = 200
 
@@ -491,15 +491,14 @@ def test_stream_interaction():
         stream_interaction.start(ms_stream)
         while stream_interaction.circular_queue.head != -1:
             showm.render()
-            time.sleep(.01)
+            await asyncio.sleep(.01)
         stream_interaction.stop()
         stream.stop()
         stream.cleanup()
         stream_interaction.cleanup()
-
-    test(True, 16)
+    loop.run_until_complete(test(True, 16))
     if PY_VERSION_8:
-        test(False, 16)
+        loop.run_until_complete(test(False, 16))
 
 
 def test_stream_interaction_conditions():
@@ -558,12 +557,12 @@ def test_stream_interaction_conditions():
         test(False, 16, True)
 
 
-def test_time_interval():
+def test_time_interval_threading():
     def callback(arr):
         arr += [len(arr)]
 
     arr = []
-    interval_timer = tools.IntervalTimer(.5, callback, arr)
+    interval_timer = tools.IntervalTimerThreading(.5, callback, arr)
     interval_timer.start()
     time.sleep(2)
     old_len = len(arr)
@@ -574,6 +573,29 @@ def test_time_interval():
     time.sleep(2)
     # check if the stop method worked
     assert len(arr) == old_len
+
+
+def test_time_interval_async(loop):
+    def callback(arr):
+        arr += [len(arr)]
+
+    async def main():
+        arr = []
+        interval_timer = tools.IntervalTimer(
+            .5, callback, arr)
+        interval_timer.start()
+        await asyncio.sleep(2)
+        interval_timer.stop()
+        assert len(arr) > 0
+        old_len0 = len(arr)
+        await asyncio.sleep(10)
+        old_len1 = len(arr)
+        await asyncio.sleep(2)
+        print(old_len0, old_len1, len(arr))
+        # check if the stop method worked
+        assert len(arr) == old_len0
+
+    loop.run_until_complete(main())
 
 
 def test_multidimensional_buffer():
