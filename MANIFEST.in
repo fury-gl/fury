@@ -14,5 +14,7 @@ include fury/_version.py
 # If including data files in the package, add them like:
 # include path/to/data_file
 include fury/data/files/*
+include fury/data/files/font_atlas/*
+include fury/data/files/font_atlas/**/*
 include fury/shaders/*
 include fury/stream/server/www/*
