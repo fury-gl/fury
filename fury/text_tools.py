@@ -20,6 +20,8 @@ import sys
 import numpy as np
 from PIL import Image
 import pickle
+import os
+from os.path import join as pjoin
 
 try:
     _FREETYPE_AVAILABLE = True
@@ -28,6 +30,11 @@ except ImportError:
     _FREETYPE_AVAILABLE = False
 
 import fury
+from fury.data.fetcher import fury_home
+
+_FONT_PATH_DEFAULT = f'{fury.__path__[0]}/data/files/font_atlas'
+_FONT_PATH_TTF = f'{fury.__path__[0]}/data/files/'
+_FONT_PATH_USER = pjoin(fury_home, 'font_atlas')
 
 
 class TextureAtlas:
@@ -427,15 +434,48 @@ class TextureGlyph:
             return 0
 
 
-def create_bitmap_font(
-        font_size=7, font_path=None,
+def list_fonts_available(fullpath=False):
+    """ List available fonts in the system
+
+    Parameters
+    ----------
+    fullpath: bool, optional
+        If True, return full path, otherwise, return only the font name
+
+    Returns
+    -------
+    fonts: list or dict
+        Font names available in your FURY installation.
+        A dictionary with full path and font names is returned if fullpath is
+        True.
+
+    """
+
+    fonts = {}
+    for f in os.listdir(_FONT_PATH_DEFAULT):
+        fonts[f] = f'{_FONT_PATH_DEFAULT}/{f}/'
+
+    if not os.path.exists(_FONT_PATH_USER):
+        return fonts
+    for f in os.listdir(_FONT_PATH_USER):
+        fonts[f] = f'{_FONT_PATH_USER}/{f}/'
+    if not fullpath:
+        return list(fonts.keys())
+
+    return fonts
+
+
+def create_atlas_font(
+        name, font_path, font_size_res=7,
         atlas_size=(1024, 1024),
-        show=False, save_path=None):
+        show=False, use_system_path=False):
     """This function is used to create a bitmap font.
 
     Parameters
     ----------
-    font_size : int
+    name : str
+        Name of the font to be saved
+    font_size_res : int
         The size of the font.
     font_path : str
         The path to the font file.
@@ -445,8 +485,9 @@ def create_bitmap_font(
         The size of the texture atlas in pixels.
     show : bool
         Whether to show the result.
-    save_path : str
-        The path to save the image file.
+    use_system_path : bool, optional
+        If True, the font path is the system path, otherwise, it is the
+        user path.
 
     Returns
     -------
@@ -457,41 +498,93 @@ def create_bitmap_font(
         numpy array.
 
     """
+    if not _FREETYPE_AVAILABLE:
+        raise ImportError('Pleasse, install  the freetype-py lib')
 
-    if font_size == 7 and font_path is None:
-        font_path = f'{fury.__path__[0]}/data/files/FreeMono'
-        image_arr = Image.open(font_path+'.bmp')
-        char2coord = pickle.loads(
-            open(font_path + '_char2coord.p', 'rb').read())
+    font_path_save = _FONT_PATH_DEFAULT if use_system_path else _FONT_PATH_USER
+    folder = font_path_save + f'/{name}'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     else:
-        if not _FREETYPE_AVAILABLE:
-            raise ImportError('Pleasse, install  the freetype-py lib')
+        print(
+            f'Font {name} already exists. ' +
+            'Please choose a another name.')
+        return folder
 
-        if font_path is None:
-            font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-        texture_atlas = TextureAtlas(num_chanels=1, atlas_size=atlas_size)
-        image_arr = texture_atlas.data
+    texture_atlas = TextureAtlas(num_chanels=1, atlas_size=atlas_size)
+    image_arr = texture_atlas.data
 
-        image_arr = texture_atlas.data.reshape(
-            (texture_atlas.data.shape[0], texture_atlas.data.shape[1]))
-        texture_font = TextureFont(
-            texture_atlas,
-            font_path,
-            font_size=font_size)
-        ascii_chars = ''.join([chr(i) for i in range(32, 127)])
-        texture_font.load(ascii_chars)
-        char2coord = {
-            c: glyph
-            for c, glyph in texture_font.glyphs.items()
-        }
+    image_arr = texture_atlas.data.reshape(
+        (texture_atlas.data.shape[0], texture_atlas.data.shape[1]))
+    texture_font = TextureFont(
+        texture_atlas,
+        font_path,
+        font_size=font_size_res)
+    ascii_chars = ''.join([chr(i) for i in range(32, 127)])
+    texture_font.load(ascii_chars)
+    char2coord = {
+        c: glyph
+        for c, glyph in texture_font.glyphs.items()
+    }
 
-        if show:
-            image = Image.fromarray(image_arr).convert('P')
-            image.show()
-        if save_path is not None:
-            image = Image.fromarray(image_arr).convert('P')
-            image.save(save_path + '.bmp')
-            pickle.dump(char2coord, open(save_path + '_char2coord.p', 'wb'))
+    if show:
+        image = Image.fromarray(image_arr).convert('P')
+        image.show()
+
+    image = Image.fromarray(image_arr).convert('P')
+    image.save(folder + '/atlas.bmp')
+    pickle.dump(char2coord, open(folder+'/char2coord.p', 'wb'))
+    # due vtk
+    return folder
+
+
+def _create_fury_system_atlas_fonts(font_size_res=12, atlas_size=(1024, 1024)):
+    """This function is used to create all the atlas fonts
+    in the system. Using the TTF fonts available in the fury files
+    folder.
+    """
+
+    # list all TTF files in a folder
+    fonts = [f for f in os.listdir(_FONT_PATH_TTF) if f.endswith('.ttf')]
+    for font in fonts:
+        font_name = font.split('.')[0].replace(' ', '').replace('-', '_')
+        # create a font atlas
+        print('Creating system font atlas:', font)
+        create_atlas_font(
+            font_name,
+            f'{_FONT_PATH_TTF}/{font}',
+            font_size_res=font_size_res,
+            atlas_size=atlas_size,
+            use_system_path=True,
+            show=False)
+
+
+def get_texture_atlas_font(font_name='FreeMono'):
+    """This function is used to create a bitmap font.
+
+    Parameters
+    ----------
+    font_name : str
+        Name of the font to be loaded.
+    Returns
+    -------
+    image_array : ndarray
+        The image array.
+    char2pos : dict
+        A dictionary that maps characters to their positions in the
+        numpy array.
+
+    """
+    fonts_available = list_fonts_available(fullpath=True)
+    if font_name not in fonts_available.keys():
+        raise ValueError(
+            "Font name %s not available. "
+            "Please choose one of the following fonts: %s" % (
+                font_name, list(fonts_available.keys())))
+    font_path = fonts_available[font_name]
+    image_arr = Image.open(font_path + 'atlas.bmp')
+    char2coord = pickle.load(open(font_path + 'char2coord.p', 'rb'))
+
     # due vtk
     image_arr = np.flipud(image_arr)
     return image_arr, char2coord
