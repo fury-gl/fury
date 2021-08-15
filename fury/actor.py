@@ -3215,12 +3215,12 @@ def markers(
 def bitmap_labels(
         centers,
         labels,
-        colors=(0, 1, 0),
+        colors=(0, 1, .5),
         scales=1,
         align='center',
         x_offset_ratio=1,
         y_offset_ratio=1,
-        font_name='FreeMono',
+        font_name='InconsolataBold700',
         ):
     """Create a bitmap label actor that always faces the camera.
 
