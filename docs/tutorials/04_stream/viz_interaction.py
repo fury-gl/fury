@@ -3,32 +3,80 @@
 Streaming FURY with user interaction
 ====================================
 
+In this tutorial, we show how to use the FURY Streaming system to
+serve an interactive visualization through a web browser.
+
+You can choose between two differnet encodings: WebRTC or MJPEG.
+WebRTC is a more robust option and can be used to perform
+a live streaming with a low-latency connection for exampel using 
+ngrok. However, to use webRTC you need to install the aiortc library.
+
+.. code-block:: bash
+    pip install aiortc
+
+In addition, if you don't have ffmpeg installed, you need 
+to install it.
+
+Linux
+
+
+`apt install libavdevice-dev libavfilter-dev libopus-dev libvpx-dev pkg-config`
+
+OS X
+
+`brew install ffmpeg opus libvpx pkg-config`
+
+Notes
+------
+For this example your python version should be 3.8 or greater
+
+
 """
+
+from fury.stream.server.server import WEBRTC_AVAILABLE
 from fury import actor, window
 import numpy as np
 
 import multiprocessing
+# if this example it's not working for you and you're using MacOs
+# uncoment the following line
+# multiprocessing.set_start_method('spawn')
 from fury.stream.server import web_server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-import logging
-logging.root.setLevel(logging.INFO)
-logging.basicConfig(level=logging.INFO)
+try:
+    import aiortc
+    WEBRTC_AVAILABLE = True
+except ImportError:
+    WEBRTC_AVAILABLE = False
 
 
 if __name__ == '__main__':
-    interactive = True
+    interactive = False
+    # `use_raw_array` is a flag to tell the server to use python RawArray
+    # instead of SharedMemory which is a new feature in python 3.8
+    # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array
+    # https://docs.python.org/3/library/multiprocessing.html#shared-memory-objects
+    #
     use_raw_array = False
-    use_high_res = False
-    if use_high_res:
-        window_size = (1280, 720)
-        max_window_size = (1920, 1080)
-    else:
-        window_size = (300, 300)
-        max_window_size = (400, 400)
+   
+    window_size = (300, 300)
+    # `max_window_size` are the maximum size of the window that will be
+    # allowed to be sent to the browser. For example, if you set
+    # `max_window_size=(800, 800)` then the browser will be limited to
+    # a window of size (800, 800).
+    #
+    max_window_size = (400, 400)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
 
+    # `ms_interaction` is the time in milliseconds that the user will have
+    # to interact with the visualization
+    #
     ms_interaction = 1
+    # `ms_stream` is the number of milliseconds that the server will
+    # wait before sending a new frame to the browser. If `ms_stream=0`
+    # then the server will send the frame right after the rendering.
+    #
     ms_stream = 0
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
@@ -54,12 +102,6 @@ if __name__ == '__main__':
         scene, size=(window_size[0], window_size[1])
     )
 
-    ###########################################################################
-    # ms define the amount of mileseconds that will be used in the timer event.
-    # Otherwise, if ms it's equal to zero the shared memory it's updated at
-    # each  render event
-    # showm.window.SetOffScreenRendering(1)
-    # showm.window.EnableRenderOff()
     showm.initialize()
 
     stream = FuryStreamClient(
@@ -84,7 +126,7 @@ if __name__ == '__main__':
                 8000,
                 'localhost',
                 True,
-                True,
+                WEBRTC_AVAILABLE,
                 True
             )
         )
@@ -104,22 +146,30 @@ if __name__ == '__main__':
                 8000,
                 'localhost',
                 True,
-                True,
+                WEBRTC_AVAILABLE,
                 True
             )
         )
     p.start()
     stream_interaction.start(ms=ms_interaction)
     stream.start(ms_stream,)
+    ###########################################################################
+    # If you have aiortc in your system, you can see your live streaming
+    # through the following url: htttp://localhost:8000/?enconding=webrtc
+    # Other wise, you can use the following url:
+    # http://localhost:8000/?enconding=mjpeg
+
     if interactive:
         showm.start()
+
+    # we need to close the server after the show is over
     p.kill()
+    ###########################################################################
+    # We release the resources and stop the interactive mode
     stream.stop()
     stream_interaction.stop()
     stream.cleanup()
     stream_interaction.cleanup()
-    # open a browser using the following the url
-    # http://localhost:8000/
 
     window.record(
         showm.scene, size=window_size, out_path="viz_interaction.png")
