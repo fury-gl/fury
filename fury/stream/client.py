@@ -14,6 +14,8 @@ from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue
 from fury.stream.tools import (
     RawArrayImageBufferManager, SharedMemImageBufferManager)
 from fury.stream.tools import IntervalTimer
+from fury.stream.tools import IntervalTimerThreading
+import platform
 from fury.stream.constants import _CQUEUE
 
 
@@ -119,7 +121,7 @@ class FuryStreamClient:
         self.use_raw_array = use_raw_array
         self._started = False
 
-    def start(self, ms=0,):
+    def start(self, ms=0, use_asyncio=False):
         """Start the stream client.
 
         Parameters
@@ -128,13 +130,21 @@ class FuryStreamClient:
             positive number. This update the image buffer using a interval
             of ms milliseconds. If ms is 0 then the stream client
             will update the buffer after every Render event.
+        use_asyncio : bool, optional
+            If False then the stream client will update the image
+            using a threading technique.
 
         """
+        use_asyncio = platform.system() == 'Windows' or use_asyncio
+       
         if self._started:
             self.stop()
         if ms > 0:
             if self._whithout_iren_start:
-                self._interval_timer = IntervalTimer(
+
+                Interval = IntervalTimer \
+                    if use_asyncio else IntervalTimerThreading
+                self._interval_timer = Interval(
                     ms/1000,
                     callback_stream_client,
                     *[],
@@ -332,22 +342,29 @@ class FuryStreamInteraction:
         self._whithout_iren_start = whithout_iren_start
         self._started = False
 
-    def start(self, ms=3):
+    def start(self, ms=3, use_asyncio=False):
         """Start the stream interaction client.
 
         Parameters
         ----------
         ms : float, optional
             positive number greather than zero.
+        use_asyncio : bool, optional
+            If False then the interaction will be performed in a
+            separate thread.
 
         """
+
+        use_asyncio = platform.system() == 'Windows' or use_asyncio
         if ms <= 0:
             raise ValueError('ms must be greater than zero')
 
         if self._started:
             self.stop()
         if self._whithout_iren_start:
-            self._interval_timer = IntervalTimer(
+            Interval = IntervalTimer \
+                    if use_asyncio else IntervalTimerThreading
+            self._interval_timer = Interval(
                 ms/1000,
                 interaction_callback,
                 *[
@@ -360,7 +377,7 @@ class FuryStreamInteraction:
         else:
             def callback(caller, event, *args, **kwargs):
                 interaction_callback(
-                    self.circular_queue, self.showm, self.iren, False)
+                    self.circular_queue, self.showm, self.iren, True)
 
             self._id_observer = self.showm.iren.AddObserver(
                 "TimerEvent", callback)

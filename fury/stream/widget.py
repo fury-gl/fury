@@ -122,8 +122,15 @@ class Widget:
         s += ")"
         return s
 
-    def _start_fury_client(self):
+    def _start_fury_client(self, use_asyncio=False):
         """Start the fury image buffer client and the interaction client
+
+        Parameters
+        ----------
+        use_asyncio : bool, optional
+            If should use asyncio to start the server.
+            Default is False.
+
         """
         if self._server_started:
             self.stop()
@@ -139,8 +146,9 @@ class Widget:
             whithout_iren_start=True,
             use_raw_array=False)
 
-        self.stream_interaction.start(ms=self.ms_interaction)
-        self.stream.start(self.ms_stream)
+        self.stream_interaction.start(
+            ms=self.ms_interaction, use_asyncio=use_asyncio)
+        self.stream.start(self.ms_stream, use_asyncio=use_asyncio)
         self._server_started = True
         self.pserver = None
 
@@ -186,10 +194,17 @@ class Widget:
                 '100%', f'{int(height)}px')
             )
 
-    def start(self):
+    def start(self, use_asyncio=False):
         """Start the fury client and the interaction client and return the url
+
+        Parameters
+        ----------
+        use_asyncio : bool, optional
+            If should use the asyncio version of the server.
+            Default is False.
+
         """
-        self._start_fury_client()
+        self._start_fury_client(use_asyncio)
         ok = self.run_command()
         if not ok:
             self.stop()

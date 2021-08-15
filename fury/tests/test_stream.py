@@ -488,7 +488,7 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
                 )
             )
 
-        stream_interaction.start(ms_stream)
+        stream_interaction.start(ms_stream, use_asyncio=True)
         while stream_interaction.circular_queue.head != -1:
             showm.render()
             await asyncio.sleep(.01)
