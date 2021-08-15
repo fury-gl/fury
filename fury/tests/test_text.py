@@ -1,18 +1,25 @@
 import numpy as np
+import shutil
 from fury import text_tools
 from fury import actor, window
 import fury
 
 
-def test_create_bitmap():
+def test_create_atlas():
     if not text_tools._FREETYPE_AVAILABLE:
         print('Bitmap text not tested (FREETYPE is not available)')
         return
 
-    save_path = f'{fury.__path__[0]}/data/files/FreeMono'
+    name = 'test_fonts_1238210930'
+    font_path_atlas = text_tools._FONT_PATH_USER
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-    text_tools.create_bitmap_font(
-        10, show=False, font_path=font_path, save_path=save_path)
+    text_tools.create_atlas_font(
+        name=name,
+        font_size_res=10, font_path=font_path, show=False)
+    fonts = text_tools.list_fonts_available(True)
+    shutil.rmtree(f'{font_path_atlas}/{name}')
+    if name not in fonts.keys():
+        raise FileNotFoundError(f'Font {name} was not created')
 
 
 def test_atlas():
@@ -27,7 +34,7 @@ def test_atlas():
 
 
 def test_bitmap_actor():
-    interactive = False 
+    interactive = False
     N = 1
     colors = (0, 0.8, .5)
     colors_spheres = colors
@@ -58,16 +65,10 @@ def test_bitmap_actor():
             for _ in label:
                 colors.append(c)
     spheres = actor.markers(centers, colors_spheres, scales=.1)
-    if not text_tools._FREETYPE_AVAILABLE:
-        my_text_actor = actor.bitmap_labels(
-            centers, labels, colors=colors, scales=.1,
-            y_offset_ratio=1,
-            align='center')
-    else:
-        my_text_actor = actor.bitmap_labels(
-            centers, labels, colors=colors, scales=.1,
-            y_offset_ratio=1,
-            align='center', font_size=7)
+    my_text_actor = actor.bitmap_labels(
+        centers, labels, colors=colors, scales=.1,
+        y_offset_ratio=1,
+        align='center', font_name='FreeMono')
     showm = window.ShowManager(size=(700, 200))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
