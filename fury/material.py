@@ -73,7 +73,7 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
             warnings.warn(
                 'Unknown interpolation. Ignoring "{}" interpolation option. '
                 'And using the default ("{}") option.'.format(
-                    interpolation, 'gouraud'))
+                    interpolation, 'gouraud'), UserWarning)
 
         prop.SetAmbient(ambient_level)
         prop.SetAmbientColor(ambient_color)
@@ -84,6 +84,6 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         prop.SetSpecularPower(specular_power)
     except AttributeError:
         warnings.warn('Actor does not have the attribute property. This '
-                      'material will not be applied.')
+                      'material will not be applied.', UserWarning)
         return
 

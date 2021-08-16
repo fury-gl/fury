@@ -1,12 +1,14 @@
 from fury import actor, material, window
+from fury.io import load_image
 from fury.optpkg import optional_package
-import fury.testing as ft
+from nibabel.tmpdirs import TemporaryDirectory
 from scipy.spatial import Delaunay
 
 
 import math
 import numpy as np
 import numpy.testing as npt
+import os
 import random
 import pytest
 
@@ -433,82 +435,143 @@ def test_manifest_pbr(interactive=False):
 
 
 def test_manifest_standard():
-    scene = window.Scene()  # Setup scene
-
-    # Contour from roi setup
-    data = np.zeros((50, 50, 50))
-    data[20:30, 25, 25] = 1.
-    data[25, 20:30, 25] = 1.
-    affine = np.eye(4)
-    test_actor = actor.contour_from_roi(data, affine, color=np.array([1, 0, 1]))
-    # TODO: Find out why the color disappears
-    material.manifest_standard(test_actor)
-    scene.add(test_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
-
-    # Contour from label setup
+    # Test non-supported property
     data = np.zeros((50, 50, 50))
     data[5:15, 1:10, 25] = 1.
     data[25:35, 1:10, 25] = 2.
     data[40:49, 1:10, 25] = 3.
-    color = np.array([[255, 0, 0],
-                      [0, 255, 0],
-                      [0, 0, 255]])
+    color = np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]])
     test_actor = actor.contour_from_label(data, color=color)
-    material.manifest_standard(test_actor)
-    scene.add(test_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    # TODO: Test assert warning
-    npt.assert_equal(report.objects, 3)
+    npt.assert_warns(UserWarning, material.manifest_standard, test_actor)
 
-    scene.clear()  # Reset scene
-
-    # Streamtube setup
-    data = [np.array([[-1., -1., -1.], [.0, .0, .0], [1., 1., 1.]])]
-    color = np.array([[1, 0, 0]])
-    test_actor = actor.streamtube(data, colors=color)
-    material.manifest_standard(test_actor, ambient_level=1)
-    scene.add(test_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    # TODO: Test ambient
-
-    scene.clear()  # Reset scene
-
-    # Sphere setup
     center = np.array([[0, 0, 0]])
-    color = (0, 1, 0)
-    test_actor = actor.sphere(centers=center, colors=color, radii=5, phi=32,
-                              theta=32)
-    material.manifest_standard(test_actor, specular_level=1)
-    scene.add(test_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    # TODO: Test specular_power
 
-    scene.clear()  # Reset scene
+    # Test non-supported interpolation method
+    test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
+    npt.assert_warns(UserWarning, material.manifest_standard, test_actor,
+                     interpolation='test')
 
-    # Basic geometry actors (box & square)
-    centers = np.array([[4, 0, 0], [0, 4, 0], [0, 0, 0]])
-    directions = np.array([[0, 0, 0], [0, 1, 0], [1, 1, 1]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    scales = (3, 2, 1)
+    # Create tmp dir to save and query images
+    with TemporaryDirectory() as out_dir:
+        tmp_fname = os.path.join(out_dir, 'tmp_img.png')  # Tmp image to test
 
-    test_actor = actor.box(centers, directions=directions, colors=colors,
-                           scales=scales)
-    material.manifest_standard(test_actor, specular_level=1)
-    scene.add(test_actor)
-    # TODO: Simpler candidate to test specular_power
+        scene = window.Scene()  # Setup scene
+
+        test_actor = actor.box(center, directions=(1, 1, 1), colors=(0, 0, 1),
+                               scales=1)
+        scene.add(test_actor)
+
+        # Test basic actor
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [0, 0, 170])
+        npt.assert_equal(ss[125, 125, :], [0, 0, 170])
+        npt.assert_equal(ss[125, 75, :], [0, 0, 85])
+
+        # Test ambient level
+        material.manifest_standard(test_actor, ambient_level=1)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [0, 0, 255])
+        npt.assert_equal(ss[125, 125, :], [0, 0, 255])
+        npt.assert_equal(ss[125, 75, :], [0, 0, 255])
+
+        # Test ambient color
+        material.manifest_standard(test_actor, ambient_level=.5,
+                                   ambient_color=(1, 0, 0))
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [0, 0, 255])
+        npt.assert_equal(ss[125, 125, :], [0, 0, 255])
+        npt.assert_equal(ss[125, 75, :], [0, 0, 212])
+
+        # Test diffuse level
+        material.manifest_standard(test_actor, diffuse_level=.75)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [0, 0, 127])
+        npt.assert_equal(ss[125, 125, :], [0, 0, 128])
+        npt.assert_equal(ss[125, 75, :], [0, 0, 64])
+
+        # Test diffuse color
+        material.manifest_standard(test_actor, diffuse_level=.5,
+                                   diffuse_color=(1, 0, 0))
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [0, 0, 85])
+        npt.assert_equal(ss[125, 125, :], [0, 0, 85])
+        npt.assert_equal(ss[125, 75, :], [0, 0, 42])
+
+        # Test specular level
+        material.manifest_standard(test_actor, specular_level=1)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [170, 170, 255])
+        npt.assert_equal(ss[125, 125, :], [170, 170, 255])
+        npt.assert_equal(ss[125, 75, :], [85, 85, 170])
+
+        # Test specular power
+        material.manifest_standard(test_actor, specular_level=1,
+                                   specular_power=5)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [34, 34, 204])
+        npt.assert_equal(ss[125, 125, :], [34, 34, 204])
+        npt.assert_equal(ss[125, 75, :], [1, 1, 86])
+
+        # Test specular color
+        material.manifest_standard(test_actor, specular_level=1,
+                                   specular_color=(1, 0, 0), specular_power=5)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[75, 100, :], [34, 0, 170])
+        npt.assert_equal(ss[125, 125, :], [34, 0, 170])
+        npt.assert_equal(ss[125, 75, :], [1, 0, 85])
+
+        scene.clear()  # Reset scene
+
+        # Special case: Contour from roi
+        data = np.zeros((50, 50, 50))
+        data[20:30, 25, 25] = 1.
+        data[25, 20:30, 25] = 1.
+        test_actor = actor.contour_from_roi(data, color=np.array([1, 0, 1]))
+        scene.add(test_actor)
+
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[90, 110, :], [253, 0, 253])
+        npt.assert_equal(ss[90, 60, :], [180, 0, 180])
+
+        material.manifest_standard(test_actor)
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[90, 110, :], [253, 253, 253])
+        npt.assert_equal(ss[90, 60, :], [180, 180, 180])
+
+        material.manifest_standard(test_actor, diffuse_color=(1, 0, 1))
+        window.record(scene, out_path=tmp_fname, size=(200, 200),
+                      reset_camera=True)
+        npt.assert_equal(os.path.exists(tmp_fname), True)
+        ss = load_image(tmp_fname)
+        npt.assert_equal(ss[90, 110, :], [253, 0, 253])
+        npt.assert_equal(ss[90, 60, :], [180, 0, 180])
