@@ -217,4 +217,3 @@ def test_horizontal_layout_compute_positions():
     npt.assert_array_equal(position_square, [[0, 0, 0], [1.5, 0, 0]])
     npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [2.59, 0, 0]],
                                   0)
-    
