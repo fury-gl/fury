@@ -3,7 +3,7 @@ import numpy.testing as npt
 
 from fury import window, ui
 from fury.ui.core import UI
-from fury.ui.helpers import clip_overflow, is_ui
+from fury.ui.helpers import clip_overflow, wrap_overflow, check_overflow, is_ui
 
 
 def test_clip_overflow():
@@ -47,6 +47,49 @@ def test_clip_overflow():
 
     npt.assert_raises(ValueError, clip_overflow,
                       text, rectangle.size[0], 'middle')
+
+
+def test_wrap_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "Hello"
+    wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello", text.message)
+
+    text.message = "Hello wassup"
+    wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("Hello wassu\np", text.message)
+
+    text.message = "A very very long message to clip text overflow"
+    wrap_overflow(text, rectangle.size[0])
+    npt.assert_equal("A very very\n long mess\nage to clip \ntext overflo\nw",
+                     text.message)
+
+    text.message = "A very very long message to clip text overflow"
+    wrap_overflow(text, 0)
+    npt.assert_equal(text.message, "")
+
+    wrap_overflow(text, -2*text.size[0])
+    npt.assert_equal(text.message, "")
+
+
+def test_check_overflow():
+    text = ui.TextBlock2D(text="", position=(50, 50), color=(1, 0, 0))
+    rectangle = ui.Rectangle2D(position=(50, 50), size=(100, 50))
+
+    sm = window.ShowManager()
+    sm.scene.add(rectangle, text)
+
+    text.message = "A very very long message to clip text overflow"
+
+    overflow_idx = check_overflow(text, rectangle.size[0], '~')
+
+    npt.assert_equal(10, overflow_idx)
+    npt.assert_equal('A very ver~', text.message)
 
 
 class DummyActor:

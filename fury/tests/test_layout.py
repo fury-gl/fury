@@ -1,8 +1,8 @@
 import numpy as np
 import numpy.testing as npt
 from fury import actor
-from fury.layout import GridLayout, Layout
 from fury.ui.containers import Panel2D
+from fury.layout import GridLayout, Layout, VerticalLayout, HorizontalLayout
 
 
 def get_default_cubes(centers=np.asarray([[[0, 0, 0]], [[5, 5, 5]]]),
@@ -154,6 +154,7 @@ def test_grid_layout_compute_positions():
     npt.assert_array_almost_equal(panel_position_diagonal, [(0, 0, 0),
                                                             (282.8, 0, 0)], 0)
 
+
 def test_grid_layout_apply():
 
     cube_first, cube_second = get_default_cubes()
@@ -171,3 +172,49 @@ def test_grid_layout_apply():
     npt.assert_array_almost_equal([panel_first.position,
                                    panel_second.position], [(0, 0), (282.8,
                                                                      0)], 0)
+
+
+def test_vertical_layout_compute_positions():
+    (cube_first, cube_second) = get_default_cubes()
+
+    vertical_layout_rect = VerticalLayout()
+    vertical_layout_square = VerticalLayout(cell_shape='square')
+    vertical_layout_diagonal = VerticalLayout(cell_shape='diagonal')
+
+    position_rect = vertical_layout_rect.compute_positions([cube_first,
+                                                            cube_second])
+
+    position_square = \
+        vertical_layout_square.compute_positions([cube_first, cube_second])
+
+    position_diagonal = \
+        vertical_layout_diagonal.compute_positions([cube_first, cube_second])
+
+    npt.assert_array_equal(position_rect, [[0, 0, 0], [0, 1.5, 0]])
+    npt.assert_array_equal(position_square, [[0, 0, 0], [0, 1.5, 0]])
+    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [0,
+                                  2.59, 0]], 0)
+
+
+def test_horizontal_layout_compute_positions():
+
+    cube_first, cube_second = get_default_cubes()
+
+    horizontal_rect = HorizontalLayout()
+    horizontal_square = HorizontalLayout(cell_shape="square")
+    horizontal_diagonal = HorizontalLayout(cell_shape="diagonal")
+
+    position_rect = horizontal_rect.compute_positions([cube_first,
+                                                       cube_second])
+
+    position_square = horizontal_square.compute_positions([cube_first,
+                                                           cube_second])
+
+    position_diagonal = horizontal_diagonal.compute_positions([cube_first,
+                                                               cube_second])
+
+    npt.assert_array_equal(position_rect, [[0, 0, 0], [1.5, 0, 0]])
+    npt.assert_array_equal(position_square, [[0, 0, 0], [1.5, 0, 0]])
+    npt.assert_array_almost_equal(position_diagonal, [[0, 0, 0], [2.59, 0, 0]],
+                                  0)
+    
