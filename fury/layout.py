@@ -235,7 +235,7 @@ class XLayout(HorizontalLayout):
             'diagonal' ensures the content of the cells can be rotated without
             colliding with content of the neighboring cells.
         """
-        self.direction = direction
+        self.direction = direction.lower()
 
         if self.direction not in ['x+', 'x-']:
             raise ValueError(f'{direction} is not a valid direction'
@@ -315,7 +315,7 @@ class YLayout(VerticalLayout):
             'diagonal' ensures the content of the cells can be rotated without
             colliding with content of the neighboring cells.
         """
-        self.direction = direction
+        self.direction = direction.lower()
 
         if self.direction not in ['y+', 'y-']:
             raise ValueError(f'{direction} is not a valid direction'
@@ -395,7 +395,7 @@ class ZLayout(GridLayout):
             'diagonal' ensures the content of the cells can be rotated without
             colliding with content of the neighboring cells.
         """
-        self.direction = direction
+        self.direction = direction.lower()
 
         if self.direction not in ['z+', 'z-']:
             raise ValueError(f'{direction} is not a valid direction'
