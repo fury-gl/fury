@@ -1,8 +1,8 @@
 from fury import actor, material, window
 from fury.io import load_image
 from fury.optpkg import optional_package
-from nibabel.tmpdirs import TemporaryDirectory
 from scipy.spatial import Delaunay
+from tempfile import TemporaryDirectory
 
 
 import math
