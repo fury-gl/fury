@@ -1,3 +1,4 @@
+from fury.utils import remove_observer_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -7,6 +8,7 @@ import pytest
 from fury import actor, window, io
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
+from fury import shaders
 
 
 def test_scene():
@@ -332,3 +334,96 @@ def test_record():
 
             assert_less_equal(arr.shape[0], 5000)
             assert_less_equal(arr.shape[1], 5000)
+
+
+def test_opengl_state_simple():
+    for gl_state in [
+        window.gl_reset_blend, window.gl_enable_depth,
+        window.gl_disable_depth, window.gl_enable_blend,
+        window.gl_disable_blend,
+        window.gl_set_additive_blending,
+        window.gl_set_normal_blending,
+        window.gl_set_multiplicative_blending,
+        window.gl_set_subtractive_blending,
+        window.gl_set_additive_blending_white_background
+    ]:
+        scene = window.Scene()
+        centers = np.array([
+            [0, 0, 0],
+            [-.1, 0, 0],
+            [.1, 0, 0]
+        ])
+        colors = np.array([
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ])
+
+        actors = actor.markers(
+            centers,
+            marker='s',
+            colors=colors,
+            marker_opacity=.5,
+            scales=.2,
+        )
+        showm = window.ShowManager(
+            scene,
+            size=(900, 768), reset_camera=False,
+            order_transparent=False)
+
+        scene.add(actors)
+        # single effect
+        shaders.shader_apply_effects(
+            showm.window, actors,
+            effects=gl_state)
+        showm.render()
+
+
+def test_opengl_state_add_remove_and_check():
+    scene = window.Scene()
+    centers = np.array([
+        [0, 0, 0],
+        [-.1, 0, 0],
+        [.1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+
+    actor_no_depth_test = actor.markers(
+        centers,
+        marker='s',
+        colors=colors,
+        marker_opacity=.5,
+        scales=.2,
+    )
+    showm = window.ShowManager(
+        scene,
+        size=(900, 768), reset_camera=False,
+        order_transparent=False)
+
+    scene.add(actor_no_depth_test)
+
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    before_depth_test = state['GL_DEPTH_TEST']
+    npt.assert_equal(before_depth_test, True)
+    id_observer = shaders.shader_apply_effects(
+        showm.window, actor_no_depth_test,
+        effects=[
+            window.gl_reset_blend, window.gl_disable_blend,
+            window.gl_disable_depth])
+
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    print('type', type(showm.window.GetState()))
+    after_depth_test = state['GL_DEPTH_TEST']
+    npt.assert_equal(after_depth_test, False)
+    # removes the no_depth_test effect
+    remove_observer_from_actor(actor_no_depth_test, id_observer)
+    showm.render()
+    state = window.gl_get_current_state(showm.window.GetState())
+    after_remove_depth_test_observer = state['GL_DEPTH_TEST']
+    npt.assert_equal(after_remove_depth_test_observer, True)
