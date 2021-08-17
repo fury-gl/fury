@@ -39,9 +39,9 @@ category2index = {category: i
 
 index2category = np.unique(categories)
 
-categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
+category_colors = cmap.distinguishable_colormap(nb_colors=len(index2category))
 
-colors = np.array([categoryColors[category2index[category]]
+colors = np.array([category_colors[category2index[category]]
                    for category in categories])
 
 ###############################################################################
@@ -54,14 +54,14 @@ radii = 1 + np.random.rand(len(positions))
 # OF course, the colors of each edges will be an interpolation between the two
 # node that it connects.
 
-edgesPositions = []
-edgesColors = []
+edges_positions = []
+edges_colors = []
 for source, target in edges:
-    edgesPositions.append(np.array([positions[source], positions[target]]))
-    edgesColors.append(np.array([colors[source], colors[target]]))
+    edges_positions.append(np.array([positions[source], positions[target]]))
+    edges_colors.append(np.array([colors[source], colors[target]]))
 
-edgesPositions = np.array(edgesPositions)
-edgesColors = np.average(np.array(edgesColors), axis=1)
+edges_positions = np.array(edges_positions)
+edges_colors = np.average(np.array(edges_colors), axis=1)
 
 ###############################################################################
 # Our data preparation is ready, it is time to visualize them all. We start to
@@ -75,18 +75,21 @@ sphere_actor = actor.markers(
 )
 
 lines_actor = actor.line(
-    edgesPositions,
-    colors=edgesColors,
+    edges_positions,
+    colors=edges_colors,
     opacity=0.1,
 )
 
 ###############################################################################
-#
+# Now, we will create the  list of labels that will be displayed on the nodes.
 #
 
 labels = [
     f'{category} journal {i}' for i, category in enumerate(categories)
 ]
+#############################################################################
+# Finally, we create our network label actor.
+
 my_text_actor = actor.bitmap_labels(
     positions, labels,
     y_offset_ratio=2,
@@ -105,14 +108,9 @@ scene.add(my_text_actor)
 ###############################################################################
 # The final step ! Visualize and save the result of our creation! Please,
 # switch interactive variable to True if you want to visualize it.
-
 interactive = False
 
 if interactive:
     window.show(scene, size=(600, 600))
 
 window.record(scene, out_path='viz_huge_amount_of_labels.png', size=(600, 600))
-
-###############################################################################
-# This example can be improved by adding some interactivy with slider,
-# picking, etc. Play with it, improve it!
