@@ -1,6 +1,7 @@
 import vtk
 from vtk.util import numpy_support
 from fury import enable_warnings
+from functools import partial
 
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
@@ -19,6 +20,26 @@ SHADERS_BLOCK = {
     "prim_id": "//VTK::PrimID",   # Apple Bug
     "valuepass": "//VTK::ValuePass",  # Value raster
     "output": "//VTK::Output",  # only for geometry shader
+}
+
+# See [1] for a more extensive list of OpenGL constants
+# [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
+GL_NUMBERS = {
+    "GL_SRC_ALPHA": 770,
+    "GL_ONE": 1,
+    "GL_ZERO": 0,
+    "GL_BLEND": 3042,
+    "GL_ONE_MINUS_SRC_ALPHA": 771,
+    "GL_SRC_ALPHA": 770,
+    "GL_DEPTH_TEST": 2929,
+    "GL_DST_COLOR": 774,
+    "GL_FUNC_SUBTRACT": 3277,
+    "GL_CULL_FACE": 2884,
+    "GL_ALPHA_TEST": 3008,
+    "GL_CW": 2304,
+    "GL_CCW": 2305,
+    "GL_ONE_MINUS_SRC_COLOR": 769,
+    "GL_SRC_COLOR": 768
 }
 
 
@@ -196,6 +217,50 @@ def add_shader_callback(actor, callback, priority=0.):
     mapper = actor.GetMapper()
     id_observer = mapper.AddObserver(
         vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+
+    return id_observer
+
+
+def shader_apply_effects(
+        window, actor, effects, priority=0):
+    """This applies a specific opengl state (effect) or a list of effects just
+    before the actor's shader is executed.
+
+    Parameters
+    ----------
+    window : vtk.vtkRenderWindow
+        For example, this is provided by the ShowManager.window attribute.
+    actor : actor
+    effects : a function or a list of functions
+    priority : float, optional
+        Related with the shader callback command.
+        Effects with a higher priority are applied first and
+        can be override by the others.
+
+    Returns
+    -------
+    id_observer : int
+        An unsigned Int tag which can be used later to remove the event
+        or retrieve the vtkCommand used in the observer.
+        See more at: https://vtk.org/doc/nightly/html/classvtkObject.html
+
+    """
+    if not isinstance(effects, list):
+        effects = [effects]
+
+    def callback(
+            _caller, _event, calldata=None,
+            effects=None, window=None):
+        program = calldata
+        glState = window.GetState()
+        if program is not None:
+            for func in effects:
+                func(glState)
+
+    id_observer = add_shader_callback(
+        actor, partial(
+            callback,
+            effects=effects, window=window), priority)
 
     return id_observer
 

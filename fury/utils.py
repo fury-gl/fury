@@ -5,6 +5,25 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 
 
+def remove_observer_from_actor(actor, id):
+    """Remove the observer with the given id from the actor.
+
+    Parameters
+    ----------
+    actor : vtkActor
+    id : int
+        id of the observer to remove
+
+    """
+    if not hasattr(actor, "GetMapper"):
+        raise ValueError("Invalid actor")
+
+    mapper = actor.GetMapper()
+    if not hasattr(mapper, "RemoveObserver"):
+        raise ValueError("Invalid mapper")
+    mapper.RemoveObserver(id)
+
+
 def set_input(vtk_object, inp):
     """Set Generic input function which takes into account VTK 5 or 6.
 
