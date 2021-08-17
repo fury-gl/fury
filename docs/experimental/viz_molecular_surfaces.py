@@ -5,12 +5,12 @@ Molecular Surfaces
 
 There are three types of molecular Surfaces:
 
-a. Van Der Waals
+a. Van der Waals
 b. Solvent Accessible
 c. Solvent Excluded
 
 This program aims to implement all the surfaces, currently the first
-two i.e. Van Der Waals and Solvent Accessible are implemented.
+two i.e. Van der Waals and Solvent Accessible are implemented.
 This program is based on the paper "Generating Triangulated
 Macromolecular Surfaces by Euclidean Distance Transform" by Dong Xu
 and Yang Zhang.
