@@ -17,17 +17,35 @@ and Yang Zhang.
 
 Importing necessary modules
 """
-
+import urllib
+import os
+from vtk.util.numpy_support import numpy_to_vtk
+import vtk
 from fury import window, utils
 import numpy as np
-import vtk
-from vtk.util.numpy_support import numpy_to_vtk
+
 
 ###############################################################################
-# ``table`` will help in accessing the atomic information such as atomic radius
+# Downloading the PDB file whose model is to be rendered.
+# User can change the pdb_code depending on which protein they want to
+# visualize
+pdb_code = '1pgb'
+downloadurl = "https://files.rcsb.org/download/"
+pdbfn = pdb_code + ".cif"
+flag = 0
+if not os.path.isfile(pdbfn):
+    flag = 1
+    url = downloadurl + pdbfn
+    outfnm = os.path.join(pdbfn)
+    try:
+        urllib.request.urlretrieve(url, outfnm)
+    except Exception:
+        print("Error in downloading the file!")
+
+###############################################################################
+# ``table`` will help in accessing the atomic information such as radius of the
+# atoms.
 table = vtk.vtkPeriodicTable()
-pdbx_code = '1pgb'
-pdbxfn = 'cif_files/' + pdbx_code + ".cif"
 
 # atomic_nums will store the atomic number of the atoms
 atomic_nums = []
@@ -35,11 +53,13 @@ atomic_nums = []
 # coords will store the coordinates of the centers of the atoms
 coords = []
 
-pdbxfile = open(pdbxfn, 'r')
-pdbx_lines = pdbxfile.readlines()
+###############################################################################
+# Accessing and parsing the PDB file.
+pdbfile = open(pdbfn, 'r')
+pdb_lines = pdbfile.readlines()
 
 # parsing pdbx file
-for line in pdbx_lines:
+for line in pdb_lines:
     _line = line.split()
     try:
         if _line[0] == 'ATOM' or _line[0] == 'HETATM':
@@ -269,4 +289,13 @@ scene.add(sas_actor)
 # scene.add(actor.markers(newcoords2, scales=0.4, marker_opacity=1,
 #           colors=np.random.rand(3))
 
-window.show(scene, size=(600, 600))
+
+###############################################################################
+# Delete the PDB file if it's downloaded from the internet
+if flag:
+    os.remove(outfnm)
+
+
+interactive = True
+if interactive:
+    window.show(scene, size=(600, 600))
