@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 =================================
 Billboard labels actor behaviosrs
@@ -100,17 +101,23 @@ scene.add(offset_change_actor)
 #
 if text_tools._FREETYPE_AVAILABLE:
 
-    # We start chosing a path for the TTF file.
-    font_path = font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
+    # We start chosing a path for the TTF file. Here we use the Roboto font
+    # that is available on the FURY examples folder.
+    font_path = font_path = f'{fury.__path__[0]}/data/files/RobotoMonoBold700.ttf'
 ###############################################################################
 # Then we create the texture atlas for the font. The `font_size_res`
 # argument controls the quality of the font rendering, the higher the better
 #
+    text = 'A custom font with special characters like: ç, ã and à'
+    # The `label` need to have special characters thus we will tell the 
+    # `create_atlas_font` to draw those characters.
+    chars = list(set(text))
     text_tools.create_atlas_font(
-        'FreeMonoMy', font_path=font_path, font_size_res=7)
+        'FreeMonoWithSpecial', font_path=font_path, font_size_res=7,
+        chars=chars, force_recreate=True)
     new_font_actor = actor.bitmap_labels(
-        [centers[5]], ['font size and format'],
-        font_name='FreeMonoMy',
+        [centers[5]], [text],
+        font_name='FreeMonoWithSpecial',
         align='center', scales=.05, colors=colors[3])
 
     scene.add(new_font_actor)
