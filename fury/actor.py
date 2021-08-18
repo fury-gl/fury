@@ -3257,7 +3257,8 @@ def bitmap_labels(
     # num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
-        verts, faces, centers=labels_positions, colors=colors,
+        verts, faces, centers=labels_positions+padding, colors=colors,
+        # verts, faces, centers=labels_positions, colors=colors,
         scales=scales)
 
     big_verts, big_faces, big_colors, big_centers = res

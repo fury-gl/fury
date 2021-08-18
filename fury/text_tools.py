@@ -637,17 +637,19 @@ def get_positions_labels_billboards(
 
         align_pad = 0.
         if align == 'left':
-            align_pad = 0
+            align_pad = -x_pad
         elif align == 'right':
             align_pad = -x_pad*len(label)
-            align_pad += x_pad
+            # align_pad += x_pad
         elif align == 'center':
             align_pad = -x_pad*len(label)
             if not len(label) % 2 == 0:
                 align_pad += x_pad
             align_pad /= 2
+            align_pad -= x_pad
 
         sum_x_spacing = 0
+        pads = []
         for i_l, char in enumerate(label):
             if char not in char2coord.keys():
                 char = '?'
@@ -657,17 +659,17 @@ def get_positions_labels_billboards(
             rx = relative_size[0]
             relative_sizes.append(relative_size)
             pad = np.array([0., 0, 0], dtype='float64')
-
+            ry = relative_size[1]
             if glyph.h > 0:
-                offset = scale*y_offset_ratio/relative_size[1]
+                offset = scale*y_offset_ratio/ry
                 pad[1] -= scale*glyph.pad - offset
 
             pad_x = (scale*x_offset_ratio)
             if rx == 0:
                 rx = 1
-            pad[0] = (sum_x_spacing + pad_x + align_pad)/rx  # + align_pad
+            pad[0] = (sum_x_spacing + pad_x+align_pad)/rx  # + align_pad
             sum_x_spacing += pad_x
-            labels_pad.append(
+            pads.append(
               pad
             )
             labels_positions.append(center)
@@ -679,8 +681,10 @@ def get_positions_labels_billboards(
             coord = np.array(
                 [[[mx_s, my_e], [mx_s, my_s], [mx_e, my_s], [mx_e, my_e]]])
             uv_coordinates.append(coord)
+        labels_pad += list(np.array(pads) - np.array([-0, 0, 0]))
     labels_positions = np.array(labels_positions)
     labels_pad = np.array(labels_pad)
+    # labels_pad = np.array(labels_pad-np.array([sum_x_spacing/2., 0, 0]))
     uv_coordinates = np.array(uv_coordinates)
     relative_sizes = np.repeat(np.array(relative_sizes), 4, axis=0)
     uv_coordinates = uv_coordinates.reshape(
