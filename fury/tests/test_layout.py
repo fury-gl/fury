@@ -233,9 +233,15 @@ def test_z_layout():
 
     positive_z_layout = ZLayout(direction='z+')
     negative_z_layout = ZLayout(direction='z-')
+    diagonal_z_layout = ZLayout(direction='z+', cell_shape='diagonal')
 
     with npt.assert_raises(ValueError):
         _ = XLayout(direction='Invalid direction')
+
+    with npt.assert_raises(ValueError):
+        invalid_shape_layout = ZLayout(direction='z+',
+                                       cell_shape='Invalid Shape')
+        _ = invalid_shape_layout.get_cells_shape(actors)
 
     positive_positions = positive_z_layout.compute_positions(actors)
     negative_positions = negative_z_layout.compute_positions(actors)
@@ -260,3 +266,10 @@ def test_z_layout():
 
     npt.assert_array_equal([cube_first_center, cube_second_center],
                            [[0, 0, 1.5], [0, 0, 0]])
+
+    diagonal_z_layout.apply([cube_first, cube_second])
+    cube_first_center = cube_first.GetCenter()
+    cube_second_center = cube_second.GetCenter()
+
+    npt.assert_array_almost_equal([cube_first_center, cube_second_center],
+                                  [[0, 0, 0], [0, 0, 2.59]], 0)
