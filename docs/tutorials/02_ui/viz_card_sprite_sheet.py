@@ -70,6 +70,7 @@ def sprite_to_vtk():
             vtk_sprite = load_image(sprite_path, as_vtktype=True)
             vtk_sprites.append(vtk_sprite)
 
+
 ###############################################################################
 # Now that the card has been initialised, we add it to the show
 # manager.
