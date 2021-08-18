@@ -468,7 +468,8 @@ def list_fonts_available(fullpath=False):
 def create_atlas_font(
         name, font_path, font_size_res=7,
         atlas_size=(1024, 1024),
-        show=False, use_system_path=False):
+        chars=None,
+        show=False, use_system_path=False, force_recreate=False):
     """This function is used to create a bitmap font.
 
     Parameters
@@ -483,11 +484,16 @@ def create_atlas_font(
         The padding of the font.
     atlas_size : tuple, optional
         The size of the texture atlas in pixels.
+    chars : list, optional
+        The characters to be used in the font. If None, the default list is
+        the ASCII letters.
     show : bool
         Whether to show the result.
     use_system_path : bool, optional
         If True, the font path is the system path, otherwise, it is the
         user path.
+    force_recreate : bool, optional
+        If True, always recreate the font, even if it exists.
 
     Returns
     -------
@@ -505,7 +511,7 @@ def create_atlas_font(
     folder = font_path_save + f'/{name}'
     if not os.path.exists(folder):
         os.makedirs(folder)
-    else:
+    elif not force_recreate:
         print(
             f'Font {name} already exists. ' +
             'Please choose a another name.')
@@ -520,8 +526,9 @@ def create_atlas_font(
         texture_atlas,
         font_path,
         font_size=font_size_res)
-    ascii_chars = ''.join([chr(i) for i in range(32, 127)])
-    texture_font.load(ascii_chars)
+    if chars is None:
+        chars = ''.join([chr(i) for i in range(32, 127)])
+    texture_font.load(chars)
     char2coord = {
         c: glyph
         for c, glyph in texture_font.glyphs.items()
