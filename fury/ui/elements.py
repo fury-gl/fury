@@ -8,7 +8,8 @@ import os
 from collections import OrderedDict
 from numbers import Number
 from string import printable
-from PIL import UnidentifiedImageError
+from PIL import UnidentifiedImageError, Image
+from urllib.request import urlopen
 
 
 import numpy as np
@@ -3072,7 +3073,7 @@ class Card2D(UI):
                  size=(400, 400), image_scale=0.5, bg_color=(0.5, 0.5, 0.5),
                  bg_opacity=1, title_color=(0., 0., 0.),
                  body_color=(0., 0., 0.), border_color=(1., 1., 1.),
-                 border_width=0):
+                 border_width=0, maintain_aspect=False):
         """
 
         Parameters
@@ -3106,6 +3107,8 @@ class Card2D(UI):
             Border color
         border_width: int, optional
             Width of the border
+        maintain_aspect: bool, optional
+            If the image should be scaled to maintain aspect ratio
         """
 
         self.image_path = image_path
@@ -3129,6 +3132,11 @@ class Card2D(UI):
 
         self.text_scale = np.clip(1 - image_scale, 0, 1)
         self.image_scale = np.clip(image_scale, 0, 1)
+
+        self.maintain_aspect = maintain_aspect
+        if self.maintain_aspect:
+            self._true_image_size = Image.open(urlopen(self.image_path)).size
+
         self._image_size = (self.card_size[0], self.card_size[1] *
                             self.image_scale)
 
@@ -3137,7 +3145,13 @@ class Card2D(UI):
 
         super(Card2D, self).__init__()
         self.position = position
-        self.resize(size)
+
+        if self.maintain_aspect:
+            self._new_size = (self._true_image_size[0],
+                              self._true_image_size[1] // self.image_scale)
+            self.resize(self._new_size)
+        else:
+            self.resize(size)
 
     def _setup(self):
         """ Setup this UI component

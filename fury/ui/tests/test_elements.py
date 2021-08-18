@@ -951,7 +951,7 @@ def test_card_ui(interactive=False):
 
     img_url = "https://raw.githubusercontent.com/fury-gl"\
               "/fury-communication-assets/main/fury-logo.png"
-    
+
     title = "FURY"
     body = "FURY - Free Unified Rendering in pYthon."\
            "A software library for scientific visualization in Python."
