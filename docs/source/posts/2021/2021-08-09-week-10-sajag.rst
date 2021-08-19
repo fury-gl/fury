@@ -12,7 +12,7 @@ What did you do this week?
 --------------------------
 
 #. Updated `PR #452`_: 
-	- Updated a part of code to make it faster.
+	- Made ribbon representation faster.
 	- Added an actor to display bounding box around the molecule.
 
 	 .. figure:: https://user-images.githubusercontent.com/65067354/128624529-03c026be-7f80-4792-b57e-eceeb1767ec2.png

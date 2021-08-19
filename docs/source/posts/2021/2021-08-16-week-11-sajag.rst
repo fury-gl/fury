@@ -17,7 +17,7 @@ What did you do this week?
 	    :width: 300
 	    :height: 300
 	    
-	    Notice that it's not much smooth
+	    Notice that it's rather rough
 
    Current implementation (this implementation was according to the paper):
 
@@ -27,7 +27,7 @@ What did you do this week?
 
 	    grid dimenstions = 256 × 256 × 256, used smoothing algorithms recommended by vtk
 
-#. I also understood how to go about rendering volumes. I think that the ability to render volumes with FURY will be a cool capability and I'll discuss my implementation and request the mentors for feedback and ideas in the weekly meeting. Example of volume rendering:
+I also understood how to go about rendering volumes. I think that the ability to render volumes with FURY will be a cool capability and I'll discuss my implementation and request the mentors for feedback and ideas in the weekly meeting. Example of volume rendering:
 
 	.. figure:: https://user-images.githubusercontent.com/65067354/129562606-50a9f0cf-e16d-4501-b0fa-a0038fda406b.png
 	    :width: 300

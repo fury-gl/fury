@@ -23,6 +23,7 @@ What did you do this week?
 
 #. Added my GSoC blogs to the FURY blogs directory. (`PR #475`_)
 
+Other goals will be decided in the meeting with mentors.
 
 What is coming up next week?
 ----------------------------
