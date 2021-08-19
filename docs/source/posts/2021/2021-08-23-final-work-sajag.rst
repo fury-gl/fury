@@ -154,7 +154,7 @@ Other Objectives
 
     - **First Evaluation:** https://github.com/fury-gl/fury/pull/475
 
-    - **Second Evaluation:** TODO
+    - **Second Evaluation:** https://github.com/fury-gl/fury/pull/493
 
 Timeline
 --------
