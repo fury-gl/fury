@@ -1,12 +1,12 @@
 """
 ======================================================================
-Space filling model actor
+Molecular Module Demo
 ======================================================================
 
-A small example to show how to use the space_filling_model actor and
-and generate a space filling model for a protein. This example also
-shows how to parse PDBx/mmCIF files to obtain atomic info essential
-(coordinates and element names) to construct the model.
+A small example to show how to use the various molecular
+representations present in the `molecular` module to visualize
+proteins. This example also shows how to parse PDB files to obtain
+atomic info essential for constructing the representations.
 
 Importing necessary modules
 """
@@ -17,9 +17,9 @@ from fury import window, actor, ui, molecular as mol
 import numpy as np
 
 ###############################################################################
-# Downloading the PDB file whose model is to be rendered.
+# Downloading the PDB file of the protein to be rendered.
 # User can change the pdb_code depending on which protein they want to
-# visualize
+# visualize.
 pdb_code = '4ury'
 downloadurl = "https://files.rcsb.org/download/"
 pdbfn = pdb_code + ".pdb"
@@ -34,7 +34,7 @@ if not os.path.isfile(pdbfn):
         print("Error in downloading the file!")
 
 ###############################################################################
-# creating a PeriodicTable() object to obtain atomic numbers from names of
+# creating a `PeriodicTable()` object to obtain atomic numbers from names of
 # elements
 table = mol.PeriodicTable()
 
@@ -43,9 +43,9 @@ table = mol.PeriodicTable()
 # parse the pdb file.
 NumberOfAtoms = 0
 
-points = []
-elements = []
-atom_names = []
+atom_coords = []
+atomic_numbers = []
+atom_types = []
 model = []
 sheets = []
 helix = []
@@ -68,11 +68,11 @@ for line in pdb_lines:
                                       float(line[8])
                 resi = line[5]
                 current_chain = ord(line[4])
-                points += [[coorX, coorY, coorZ]]
+                atom_coords += [[coorX, coorY, coorZ]]
                 residue_seq += [resi]
                 chain += [current_chain]
-                elements += [table.atomic_number(line[-1])]
-                atom_names += [line[2]]
+                atomic_numbers += [table.atomic_number(line[-1])]
+                atom_types += [line[2]]
                 model += [current_model_number]
                 NumberOfAtoms += 1
                 if(line[0] == 'HETATM'):
@@ -96,11 +96,11 @@ for line in pdb_lines:
     except Exception:
         continue
 
-points = np.array(points)
+atom_coords = np.array(atom_coords)
 residue_seq = np.array(residue_seq, dtype=int)
 chain = np.array(chain)
-elements = np.array(elements)
-atom_names = np.array(atom_names)
+atomic_numbers = np.array(atomic_numbers)
+atom_types = np.array(atom_types)
 model = np.array(model)
 sheets = np.array(sheets)
 helix = np.array(helix)
@@ -109,11 +109,11 @@ is_hetatm = np.array(is_hetatm)
 
 ###############################################################################
 # Doing 5 things here -
-# 1. Creating a scene object
-# 2. Configuring the camera's position
-# 3. Creating and adding axes actor to the scene
+# 1. Creating a scene object.
+# 2. Configuring the camera's position.
+# 3. Creating and adding axes actor to the scene.
 # 4. Computing the bonding information for the molecule.
-# 5. Generating and adding molecular model to the scene.
+# 5. Generating and adding various molecular representaions to the scene.
 
 scene = window.Scene()
 scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0),
@@ -121,19 +121,23 @@ scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0),
 scene.zoom(0.8)
 axes_actor = actor.axes()
 scene.add(axes_actor)
-molecule = mol.Molecule(elements, points, atom_names, model,
+
+molecule = mol.Molecule(atomic_numbers, atom_coords, atom_types, model,
                         residue_seq, chain, sheets, helix, is_hetatm)
 mol.compute_bonding(molecule)
 
 # stick representation
-scene.add(mol.stick(molecule, bond_thickness=0.2))
+# scene.add(mol.stick(molecule, bond_thickness=0.2))
 
 # ribbon representation
-scene.add(mol.ribbon(molecule), mol.bounding_box(molecule))
+scene.add(mol.ribbon(molecule))
 
 # ball and stick representation
-# scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
-#                          bond_thickness=0.2))
+scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
+                         bond_thickness=0.2))
+
+# bounding box
+scene.add(mol.bounding_box(molecule, linewidth=0.4))
 
 # sphere representation
 # scene.add(mol.sphere_cpk(molecule))
@@ -158,7 +162,7 @@ scene.add(tb)
 if flag:
     os.remove(outfnm)
 
-interactive = True
+interactive = False
 if interactive:
     window.show(scene, size=dims, title=pdb_code)
 window.record(scene, size=dims, out_path=pdb_code+'.png')
