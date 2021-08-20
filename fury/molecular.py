@@ -5,9 +5,9 @@ import vtkmodules.vtkCommonDataModel as cdmvtk
 import vtkmodules.vtkRenderingCore as rcvtk
 import vtkmodules.vtkDomainsChemistry as dcvtk
 import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
-import vtkmodules.vtkFiltersModeling as fmvtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 from fury.utils import numpy_to_vtk_points
+from fury.actor import line, streamtube
 
 
 class Molecule(cdmvtk.vtkMolecule):
@@ -459,7 +459,7 @@ def sphere_cpk(molecule, colormode='discrete'):
 
 def ball_stick(molecule, colormode='discrete',
                atom_scale_factor=0.3, bond_thickness=0.1,
-               multiple_bonds='on'):
+               multiple_bonds=True):
     """Create an actor for ball and stick molecular representation.
 
     Parameters
@@ -487,14 +487,12 @@ def ball_stick(molecule, colormode='discrete',
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
         Default: 0.1 (Optimal range: 0.1 - 0.5).
-    multiple_bonds : string, optional
+    multiple_bonds : bool, optional
         Set whether multiple tubes will be used to represent multiple
-        bonds. Two valid choices:
-        * 'on': multiple bonds (double, triple) will be shown by using
-          multiple tubes.
-        * 'off': all bonds (single, double, triple) will be shown as single
-          bonds (i.e. shown using one tube each).
-        Default: 'on'.
+        bonds. If True, multiple bonds (double, triple) will be shown by using
+        multiple tubes. If False, all bonds (single, double, triple) will be
+        shown as single bonds (i.e. shown using one tube each).
+        Default is True.
 
     Returns
     -------
@@ -506,7 +504,6 @@ def ball_stick(molecule, colormode='discrete',
         raise ValueError('No bonding data available for the molecule! Ball '
                          'and stick model cannot be made!')
     colormode = colormode.lower()
-    multiple_bonds = multiple_bonds.lower()
     bs_mapper = dcovtk.vtkOpenGLMoleculeMapper()
     bs_mapper.SetInputData(molecule)
     bs_mapper.SetRenderAtoms(True)
@@ -514,13 +511,10 @@ def ball_stick(molecule, colormode='discrete',
     bs_mapper.SetBondRadius(bond_thickness)
     bs_mapper.SetAtomicRadiusTypeToVDWRadius()
     bs_mapper.SetAtomicRadiusScaleFactor(atom_scale_factor)
-    if multiple_bonds == 'on':
+    if multiple_bonds:
         bs_mapper.SetUseMultiCylindersForBonds(1)
-    elif multiple_bonds == 'off':
-        bs_mapper.SetUseMultiCylindersForBonds(0)
     else:
-        bs_mapper.SetUseMultiCylindersForBonds(1)
-        warnings.warn("Incorrect choice for multiple_bonds! Setting it to on.")
+        bs_mapper.SetUseMultiCylindersForBonds(0)
     if colormode == 'discrete':
         bs_mapper.SetAtomColorMode(1)
         bs_mapper.SetBondColorMode(1)
@@ -724,26 +718,37 @@ def ribbon(molecule):
     return molecule_actor
 
 
-def bounding_box(molecule):
+def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.2):
     """Create a bounding box for a molecule.
 
     Parameters
     ----------
     molecule : Molecule() object
         The molecule around which the bounding box is to be created.
+    colors : tuple (3,) or ndarray of shape (3,)
+        Color of the bounding box.
 
     Returns
     -------
     bbox_actor : vtkActor
         Actor created to serve as a bounding box for a given molecule.
     """
+
     pts = numpy_to_vtk_points(get_all_atomic_positions(molecule))
-    bbox_poly = cdmvtk.vtkPolyData()
-    bbox_poly.SetPoints(pts)
-    outline = fmvtk.vtkOutlineFilter()
-    outline.SetInputData(bbox_poly)
-    outlineMapper = rcvtk.vtkPolyDataMapper()
-    outlineMapper.SetInputConnection(outline.GetOutputPort())
-    bbox_actor = rcvtk.vtkActor()
-    bbox_actor.SetMapper(outlineMapper)
-    return bbox_actor
+    min_x, max_x, min_y, max_y, min_z, max_z = pts.GetBounds()
+
+    lines = np.array([[[min_x, min_y, min_z], [min_x, min_y, max_z]],
+                      [[min_x, max_y, min_z], [min_x, max_y, max_z]],
+                      [[max_x, min_y, min_z], [max_x, min_y, max_z]],
+                      [[max_x, max_y, min_z], [max_x, max_y, max_z]],
+                      [[min_x, min_y, min_z], [max_x, min_y, min_z]],
+                      [[min_x, max_y, min_z], [max_x, max_y, min_z]],
+                      [[min_x, max_y, max_z], [max_x, max_y, max_z]],
+                      [[min_x, min_y, max_z], [max_x, min_y, max_z]],
+                      [[min_x, min_y, min_z], [min_x, max_y, min_z]],
+                      [[max_x, min_y, min_z], [max_x, max_y, min_z]],
+                      [[min_x, min_y, max_z], [min_x, max_y, max_z]],
+                      [[max_x, min_y, max_z], [max_x, max_y, max_z]]])
+
+    return streamtube(lines, colors=colors, linewidth=linewidth)
+
