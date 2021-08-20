@@ -153,7 +153,7 @@ dims = (screen_x_dim, screen_y_dim)
 showm = window.ShowManager(scene, size=dims, reset_camera=True,
                            order_transparent=True)
 
-tb = ui.TextBlock2D(text=pdb_code, position=(screen_x_dim/2-40,
+tb = ui.TextBlock2D(text=pdb_code.upper(), position=(screen_x_dim/2-40,
                     screen_y_dim/12), font_size=30, color=(1, 1, 1))
 scene.add(tb)
 
@@ -164,5 +164,5 @@ if flag:
 
 interactive = False
 if interactive:
-    window.show(scene, size=dims, title=pdb_code)
-window.record(scene, size=dims, out_path=pdb_code+'.png')
+    window.show(scene, size=dims, title=pdb_code.upper())
+window.record(scene, size=dims, out_path=pdb_code.upper()+'.png')

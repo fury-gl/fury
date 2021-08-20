@@ -751,4 +751,3 @@ def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.2):
                       [[max_x, min_y, max_z], [max_x, max_y, max_z]]])
 
     return streamtube(lines, colors=colors, linewidth=linewidth)
-
