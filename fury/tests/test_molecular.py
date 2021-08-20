@@ -183,7 +183,7 @@ def test_bstick(interactive=False):
     colormodes = ['discrete', 'single']
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [0.1, 0.2]
-    multiple_bonds = ['On', 'Off']
+    multiple_bonds = [True, False]
     table = mol.PeriodicTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
@@ -208,8 +208,6 @@ def test_bstick(interactive=False):
 
     # Testing warnings
     npt.assert_warns(UserWarning, mol.ball_stick, molecule, 'multiple')
-    npt.assert_warns(UserWarning, mol.ball_stick, molecule,
-                     multiple_bonds='yes')
 
 
 def test_stick(interactive=False):
