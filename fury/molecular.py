@@ -1,3 +1,5 @@
+"""Module that provides molecular visualization tools."""
+
 import warnings
 import numpy as np
 import vtkmodules.vtkCommonCore as ccvtk
@@ -111,7 +113,7 @@ def add_atom(molecule, atomic_num, x_coord, y_coord, z_coord):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the atom is to be added.
     atomic_num : int
         Atomic number of the atom.
@@ -131,7 +133,7 @@ def add_bond(molecule, atom1_index, atom2_index, bond_order=1):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the bond is to be added.
     atom1_index : int
         Index of the first atom.
@@ -156,7 +158,7 @@ def get_atomic_number(molecule, atom_index):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic number is to be obtained.
@@ -172,7 +174,7 @@ def set_atomic_number(molecule, atom_index, atomic_num):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom to whom the atomic number is to be assigned.
@@ -189,7 +191,7 @@ def get_atomic_position(molecule, atom_index):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom whose atomic coordinates are to be obtained.
@@ -205,7 +207,7 @@ def set_atomic_position(molecule, atom_index, x_coord, y_coord, z_coord):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the atom belongs.
     atom_index : int
         Index of the atom to which the coordinates are to be assigned.
@@ -227,7 +229,7 @@ def get_bond_order(molecule, bond_index):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the bond belongs.
     bond_index : int
         Index of the bond whose order is to be obtained.
@@ -243,7 +245,7 @@ def set_bond_order(molecule, bond_index, bond_order):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to which the bond belongs.
     bond_index : int
         Index of the bond whose order is to be assigned.
@@ -259,7 +261,7 @@ def get_all_atomic_numbers(molecule):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule whose atomic number array is to be obtained.
     """
     return vtk_to_numpy(molecule.GetAtomicNumberArray())
@@ -271,7 +273,7 @@ def get_all_bond_orders(molecule):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule whose bond types array is to be obtained.
     """
     return vtk_to_numpy(molecule.GetBondOrdersArray())
@@ -283,7 +285,7 @@ def get_all_atomic_positions(molecule):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule whose atomic position array is to be obtained.
     """
     return vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
@@ -296,9 +298,9 @@ def deep_copy_molecule(molecule1, molecule2):
 
     Parameters
     ----------
-    molecule1 : Molecule() object
+    molecule1 : Molecule
         The molecule to which the atomic information is copied.
-    molecule2 : Molecule() object
+    molecule2 : Molecule
         The molecule from which the atomic information is copied.
     """
     molecule1.DeepCopyStructure(molecule2)
@@ -315,7 +317,7 @@ def compute_bonding(molecule):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule for which bonding information is to be generated.
 
     Notes
@@ -376,8 +378,8 @@ class PeriodicTable(dcvtk.vtkPeriodicTable):
 
     def atomic_radius(self, atomic_number, radius_type='VDW'):
         """Given an atomic number, return either the covalent radius of the
-        atom or return the Van Der Waals radius of the atom depending on
-        radius_type.
+        atom (in Å) or return the Van Der Waals radius (in Å) of the atom
+        depending on radius_type.
 
         Parameters
         ----------
@@ -385,9 +387,11 @@ class PeriodicTable(dcvtk.vtkPeriodicTable):
             Atomic number of the element whose covalent radius is to be
             obtained.
         radius_type : string
-            Two valid choices:
-            * 'VDW' : for Van Der Waals radius of the atom
+            Type of atomic radius to be obtained. Two valid choices:
+
+            * 'VDW' : for Van der Waals radius of the atom
             * 'Covalent' : for covalent radius of the atom
+
             Default: 'VDW'
         """
         radius_type = radius_type.lower()
@@ -419,15 +423,16 @@ def sphere_cpk(molecule, colormode='discrete'):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to be rendered.
     colormode : string, optional
         Set the colormode for coloring the atoms. Two valid color modes:
-        * 'discrete': Atoms are colored using CPK coloring convention.
-        * 'single': All atoms are colored with same color(grey).
 
-        RGB tuple used for coloring the atoms when 'single' colormode is
-        selected: (150, 150, 150)
+        * 'discrete': Atoms are colored using CPK coloring convention.
+        * 'single': All atoms are colored with same color (grey). RGB tuple
+          used for coloring the atoms when 'single' colormode is selected:
+          (150, 150, 150).
+
         Default: 'discrete'.
 
     Returns
@@ -464,25 +469,22 @@ def ball_stick(molecule, colormode='discrete',
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to be rendered.
     colormode : string, optional
-        Set the colormode for coloring the atoms. Two valid color modes -
+        Set the colormode for coloring the atoms. Two valid color modes:
+
         * 'discrete': Atoms and bonds are colored using CPK coloring
           convention.
-        * 'single': All atoms are colored with same color(grey) and all bonds
-          are colored with same color(dark grey).
-        * RGB tuple used for coloring the atoms when 'single' colormode is
-        selected: (150, 150, 150)
-        * RGB tuple used for coloring the bonds when 'single' colormode is
-        selected: (50, 50, 50)
-        * Default: 'discrete'.
+        * 'single': All atoms are colored with same color (grey) and all bonds
+          are colored with same color (dark grey). RGB tuple used for coloring
+          the atoms when 'single' colormode is selected: (150, 150, 150). RGB
+          tuple used for coloring the bonds when 'single' colormode is
+          selected: (50, 50, 50)
 
+        Default: 'discrete'.
     atom_scale_factor : float, optional
-        Scaling factor colormode='discrete',
-                               atom_scale_factor=0.3, bond_thickness=1,
-                               multipleBoto be applied to the atoms.
-        Default: 0.3.
+        Scaling factor. Default: 0.3.
     bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
@@ -534,15 +536,17 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to be rendered.
     colormode : string, optional
         Set the colormode for coloring the bonds. Two valid color modes:
+
         * 'discrete': Bonds are colored using CPK coloring convention.
         * 'single': All bonds are colored with the same color (dark grey)
-        RGB tuple used for coloring the bonds when 'single' colormode is
-        selected: (50, 50, 50)
-        Default: 'discrete'.
+          RGB tuple used for coloring the bonds when 'single' colormode is
+          selected: (50, 50, 50)
+
+        Default: 'discrete'
 
     bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
@@ -585,7 +589,7 @@ def ribbon(molecule):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule to be rendered.
 
     Returns
@@ -723,7 +727,7 @@ def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.3):
 
     Parameters
     ----------
-    molecule : Molecule() object
+    molecule : Molecule
         The molecule around which the bounding box is to be created.
     colors : tuple (3,) or ndarray of shape (3,), optional
         Color of the bounding box. Default: (1, 1, 1)
