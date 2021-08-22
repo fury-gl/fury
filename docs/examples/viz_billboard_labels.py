@@ -21,7 +21,7 @@ from fury import text_tools
 import numpy as np
 
 # Set to True to enable user interaction
-interactive = False
+interactive = True
 
 # Create a window FURY
 scene = window.Scene()
@@ -55,9 +55,11 @@ scene.add(sphere_actor)
 # Create a text actor aligned to the center of the first sphere
 center_actor = actor.bitmap_labels(
     [centers[0]], ['Center align'],
-
+    border_width=0.1,
+    border_color=(.75, .25, 0, .5),
+    border_type='solid',
     font_name='FreeMono',
-    align='center', scales=.05, colors=colors[0])
+    align='center', scales=.08, colors=colors[0])
 
 scene.add(center_actor)
 
@@ -70,7 +72,7 @@ scene.add(right_actor)
 
 # Create a text actor aligned to the left of the third sphere
 left_actor = actor.bitmap_labels(
-    [centers[2]], ['Left align 123 2asdf asd fasdf asdfa dfa sdfasd fasd fadfa df'],
+    [centers[2]], ['Left align'],
     align='left', scales=.05, colors=colors[2])
 
 scene.add(left_actor)
@@ -99,31 +101,17 @@ offset_change_actor = actor.bitmap_labels(
 scene.add(offset_change_actor)
 
 ###############################################################################
-# To create a label with a different font, you need to have the FreeType
-# library and freetype-py installed.
-#
-if text_tools._FREETYPE_AVAILABLE:
+# We can change the border width and color of the labels with the
+# `border_width` and `border_color` arguments. 
 
-    # We start chosing a path for the TTF file. Here we use the Roboto font
-    # that is available on the FURY examples folder.
-    font_path = font_path = f'{fury.__path__[0]}/data/files/RobotoMonoBold700.ttf'
-###############################################################################
-# Then we create the texture atlas for the font. The `font_size_res`
-# argument controls the quality of the font rendering, the higher the better
-#
-    text = 'A custom font with special characters like: ç, ã and à'
-    # # The `label` need to have special characters thus we will tell the 
-    # # `create_atlas_font` to draw those characters.
-    chars = list(set(text))
-    text_tools.create_new_font(
-        'FreeMonoWithSpecial', font_path=font_path, font_size_res=10,
-        chars=chars, force_recreate=True)
-    new_font_actor = actor.bitmap_labels(
-        [centers[5]], [text],
-        font_name='FreeMonoWithSpecial',
-        align='center', scales=0.1, colors=colors[5])
 
-    scene.add(new_font_actor)
+text_with_border = actor.bitmap_labels(
+    [centers[5]], ['Text with a border'],
+    border_width=.1, border_color=(.75, .25, 0, .5),
+    border_type='solid',
+    align='center', scales=0.1, colors=colors[5])
+
+scene.add(text_with_border)
 
 scene.reset_camera()
 scene.reset_clipping_range()
