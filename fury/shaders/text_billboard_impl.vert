@@ -20,3 +20,4 @@ vec3 vertexPositionMC = (center - vPadding) +
 gl_Position = MCDCMatrix * vec4(vertexPositionMC, 1.);
 //gl_Position = gl_Position*vec4(1.0, 1.0, 0, 1.0);
 UV = vUV;
+//borderColor = vBorderColor;
