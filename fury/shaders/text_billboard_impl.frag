@@ -23,4 +23,5 @@ if (texture(charactersTexture, UV).r < 1.0) discard;
 //  rgba.rgb = vec3(1., 1.0, 1.0);
 // }
 //rgba.w = 0.0;
+
 fragOutput0 = rgba;

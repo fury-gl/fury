@@ -25,6 +25,7 @@ interactive = False
 
 # Create a window FURY
 scene = window.Scene()
+# scene.background((1., 1., 1.))
 centers = np.array([
     [0, 0, 0],
     [0, 0, 1],
@@ -54,6 +55,8 @@ scene.add(sphere_actor)
 # Create a text actor aligned to the center of the first sphere
 center_actor = actor.bitmap_labels(
     [centers[0]], ['Center align'],
+
+    font_name='FreeMono',
     align='center', scales=.05, colors=colors[0])
 
 scene.add(center_actor)
@@ -67,7 +70,7 @@ scene.add(right_actor)
 
 # Create a text actor aligned to the left of the third sphere
 left_actor = actor.bitmap_labels(
-    [centers[2]], ['Left align'],
+    [centers[2]], ['Left align 123 2asdf asd fasdf asdfa dfa sdfasd fasd fadfa df'],
     align='left', scales=.05, colors=colors[2])
 
 scene.add(left_actor)
@@ -109,16 +112,16 @@ if text_tools._FREETYPE_AVAILABLE:
 # argument controls the quality of the font rendering, the higher the better
 #
     text = 'A custom font with special characters like: ç, ã and à'
-    # The `label` need to have special characters thus we will tell the 
-    # `create_atlas_font` to draw those characters.
+    # # The `label` need to have special characters thus we will tell the 
+    # # `create_atlas_font` to draw those characters.
     chars = list(set(text))
-    text_tools.create_atlas_font(
-        'FreeMonoWithSpecial', font_path=font_path, font_size_res=7,
+    text_tools.create_new_font(
+        'FreeMonoWithSpecial', font_path=font_path, font_size_res=10,
         chars=chars, force_recreate=True)
     new_font_actor = actor.bitmap_labels(
         [centers[5]], [text],
         font_name='FreeMonoWithSpecial',
-        align='center', scales=.05, colors=colors[3])
+        align='center', scales=0.1, colors=colors[5])
 
     scene.add(new_font_actor)
 
@@ -127,6 +130,6 @@ scene.reset_clipping_range()
 
 
 if interactive:
-    window.show(scene, size=(600, 600))
+    window.show(scene, size=(600, 600), order_transparent=True)
 
 window.record(scene, out_path='viz_billboard_labels.png', size=(600, 600))

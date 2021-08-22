@@ -3221,6 +3221,7 @@ def bitmap_labels(
         x_offset_ratio=1,
         y_offset_ratio=1,
         font_name='InconsolataBold700',
+        use_sdf=True,
         ):
     """Create a bitmap label actor that always faces the camera.
 
@@ -3241,6 +3242,8 @@ def bitmap_labels(
     font_name : str, optional
         name of the font. A list of available fonts can be found in
         `fury.text_tools.list_fonts_available()`.
+    use_sdf : bool, optional
+        If True, the labels will be rendered using a signed distance field.
 
     Returns
     -------
@@ -3248,12 +3251,13 @@ def bitmap_labels(
 
     """
     img_arr, char2pos = text_tools.get_texture_atlas_font(
-        font_name=font_name,)
+        font_name=font_name, use_sdf=use_sdf)
     padding, labels_positions,\
         uv, relative_sizes = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,
             align=align,
-            x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio)
+            x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio,
+    )
     # num_chars = labels_positions.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
@@ -3277,7 +3281,10 @@ def bitmap_labels(
     fs_dec_code += f'\n{load("text_billboard_dec.frag")}'
 
     fs_impl_code = load('billboard_impl.frag')
-    fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
+    if use_sdf:
+        fs_impl_code += f'{load("text_sdf_billboard_impl.frag")}'
+    else:
+        fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
 
     img_vtk = one_chanel_to_vtk(img_arr)
     tex = vtk.vtkTexture()
