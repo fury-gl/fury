@@ -13,7 +13,7 @@ def test_create_atlas():
     name = 'test_fonts_1238210930'
     font_path_atlas = text_tools._FONT_PATH_USER
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-    text_tools.create_atlas_font(
+    text_tools.create_new_font(
         name=name,
         font_size_res=10, font_path=font_path, show=False)
     fonts = text_tools.list_fonts_available(True)

@@ -18,14 +18,15 @@ We fixed some bugs in those objects.
 
 import sys
 import numpy as np
+from scipy import ndimage
 from PIL import Image
 import pickle
 import os
 from os.path import join as pjoin
 
 try:
-    _FREETYPE_AVAILABLE = True
     import freetype as ft
+    _FREETYPE_AVAILABLE = True
 except ImportError:
     _FREETYPE_AVAILABLE = False
 
@@ -35,6 +36,57 @@ from fury.data.fetcher import fury_home
 _FONT_PATH_DEFAULT = f'{fury.__path__[0]}/data/files/font_atlas'
 _FONT_PATH_TTF = f'{fury.__path__[0]}/data/files/'
 _FONT_PATH_USER = pjoin(fury_home, 'font_atlas')
+
+
+def norm(img, vmin=0, vmax=255):
+    if vmin == 0:
+        img = np.interp(img, (img.min(), img.max()), (vmin, vmax))
+        # img /= np.max(img)
+        # img *= vmax
+        # img[img > 0.75] = 0.
+    elif vmin > 0:
+        # pass
+        img = np.interp(img, (img.min(), img.max()), (vmin, vmax))
+    img = img.astype(np.uint8)
+    return img
+
+
+def one_chanel2sdf(img, threshold=0.5):
+    """Convert a one channel image to signed distance field.
+
+    Parameters
+    ----------
+    img : ndarray
+        The image array.
+    threshold : float, optional
+        The thresold to be used to define the boundaries of the
+        signed distance field.
+
+    Returns
+    -------
+    distComb : ndarray
+        The signed distance field.
+
+    """
+    border_px = int(threshold*255)
+    img_white_px = np.zeros_like(img)
+    img_black_px = np.zeros_like(img)
+
+    img_white_px[img > 0] = 1
+    img_black_px[img > 0] = 0
+    img_black_px[img == 0] = 1
+    dist = ndimage.distance_transform_edt(img_white_px)[img > 0]
+    distNeg = ndimage.distance_transform_edt(img_black_px)[img == 0]
+    # dist = cv2.distanceTransform(img_white_px, cv2.DIST_L2, 0)[img > 0]
+    # distNeg = cv2.distanceTransform(img_black_px, cv2.DIST_L2, 0)[img == 0]
+    distNeg = border_px - norm(distNeg, distNeg.min(), border_px)
+    # distNeg[distNeg< 255*0.25] = 0.
+    dist = norm(dist, border_px + 1, 255)
+    distComb = img.copy()
+    distComb[img > 0] = dist
+    distComb[img == 0] = distNeg
+    distComb = distComb.astype(np.uint8)
+    return distComb
 
 
 class TextureAtlas:
@@ -57,7 +109,8 @@ class TextureAtlas:
 
     """
 
-    def __init__(self, atlas_size=(1024, 1024), num_chanels=1):
+    def __init__(
+            self, atlas_size=(1024, 1024), num_chanels=1, sdf=False, pad=0):
         """
         Initialize a new atlas of given size.
 
@@ -78,6 +131,9 @@ class TextureAtlas:
             (self.height, self.width, self.num_chanels),
             dtype=np.ubyte)
         self.used = 0
+        self._dx = 1
+        self._sdf = sdf
+        self._pad = pad
 
     def set_region(self, region, data):
         """
@@ -99,6 +155,29 @@ class TextureAtlas:
         y = int(y)
         width = int(width)
         height = int(height)
+        w, h = data.shape[:2]
+        if self._sdf and w > 0 and h > 0:
+            data = data.reshape(w, h)
+            dx = self._dx
+            data = np.pad(
+                data,
+                (
+                    (self._pad-dx, self._pad-dx),
+                    (self._pad-dx, self._pad-dx)
+                ),
+                'constant'
+            )
+
+            data = one_chanel2sdf(data)
+            if dx > 0:
+                data = np.pad(
+                    data,
+                    ((dx, dx), (dx, dx)), 'constant')
+
+            data = data.reshape(w + 2*self._pad, h + 2*self._pad, 1)
+            height = height + 2*self._pad
+            width = width + 2*self._pad
+
         self.data[y:y+height, x:x+width, :] = data
 
     def get_region(self, width, height):
@@ -119,6 +198,9 @@ class TextureAtlas:
             A newly allocated region as (x,y,width,height) or (-1,-1,0,0)
 
         """
+        if self._sdf:
+            width = width + 2*self._pad
+            height = height + 2*self._pad
 
         best_height = sys.maxsize
         best_index = -1
@@ -161,6 +243,7 @@ class TextureAtlas:
 
         self.merge()
         self.used += width*height
+        region = (region[0], region[1], int(region[2]), int(region[3]))
         return region
 
     def fit(self, index, width, height):
@@ -287,6 +370,7 @@ class TextureFont:
                 continue
 
             self.dirty = True
+            # if not self.atlas._sdf:
             flags = ft.FT_LOAD_RENDER | ft.FT_LOAD_FORCE_AUTOHINT
             flags |= ft.FT_LOAD_TARGET_LCD
 
@@ -298,33 +382,35 @@ class TextureFont:
             width = face.glyph.bitmap.width
             rows = face.glyph.bitmap.rows
             pitch = face.glyph.bitmap.pitch
+            offset = left, top
+            advance = face.glyph.advance.x, face.glyph.advance.y
+            pad = 0 if self.atlas._sdf else 2
             x, y, w, h = self.atlas.get_region(
-                width/self.num_chanels+2, rows+2)
-            w = int(w)
-            h = int(h)
+                width/self.num_chanels+pad, rows+pad)
+            if self.atlas._sdf:
+                w = w - 2*self.atlas._pad
+                h = h - 2*self.atlas._pad
+
             if x < 0:
                 continue
-            x, y = x+1, y+1
-            w, h = w-2, h-2
+            if not self.atlas._sdf:
+                x, y = x+1, y+1
+                w, h = w-2, h-2
             data = []
             for i in range(rows):
                 data.extend(bitmap.buffer[i*pitch:i*pitch+width])
             data = np.array(
                 data, dtype=np.ubyte).reshape(h, w, self.atlas.num_chanels)
-            gamma = 1.5
-            Z = ((data/255.0)**(gamma))
-            data = (Z*255).astype(np.ubyte)
+            if not self.atlas._sdf:
+                gamma = 1.5
+                Z = ((data/255.0)**(gamma))
+                data = (Z*255).astype(np.ubyte)
+
             self.atlas.set_region((x, y, w, h), data)
 
-            # Build glyph
-            size = w, h
-            self.max_glyphy_size[0] = max(
-                self.max_glyphy_size[0], w)
-            self.max_glyphy_size[1] = max(
-                self.max_glyphy_size[1], h)
-
-            offset = left, top
-            advance = face.glyph.advance.x, face.glyph.advance.y
+            if self.atlas._sdf:
+                w = w + 2*self.atlas._pad
+                h = h + 2*self.atlas._pad
 
             u0 = (x + 0.0)/float(self.atlas.width)
             v0 = (y + 0.0)/float(self.atlas.height)
@@ -332,6 +418,13 @@ class TextureFont:
             v1 = (y + h - 0.0)/float(self.atlas.height)
             px = w/self.atlas.width
             texcoords = (u0, v0, u1, v1)
+            if self.atlas._sdf:
+                w, h = w-2*self.atlas._pad, h-2*self.atlas._pad
+            size = w, h
+            self.max_glyphy_size[0] = max(
+                self.max_glyphy_size[0], w)
+            self.max_glyphy_size[1] = max(
+                self.max_glyphy_size[1], h)
             glyph = TextureGlyph(
                 charcode, size, offset, advance, texcoords, px)
             glyph.bearingY = slot.metrics.vertBearingY/64
@@ -466,34 +559,33 @@ def list_fonts_available(fullpath=False):
 
 
 def create_atlas_font(
-        name, font_path, font_size_res=7,
+        font_path, folder, font_size_res=7,
         atlas_size=(1024, 1024),
         chars=None,
-        show=False, use_system_path=False, force_recreate=False):
+        use_sdf=False,
+        pad_sdf=0,
+        show=False):
     """This function is used to create a bitmap font.
 
     Parameters
     ----------
-    name : str
-        Name of the font to be saved
-    font_size_res : int
-        The size of the font.
     font_path : str
         The path to the font file.
-    pad : int
-        The padding of the font.
+    folder : str
+        The path to the folder where the font will be saved.
+    font_size_res : int
+        The size of the font.
     atlas_size : tuple, optional
         The size of the texture atlas in pixels.
     chars : list, optional
         The characters to be used in the font. If None, the default list is
         the ASCII letters.
+    use_sdf : bool, optional
+        If True, the font will be rendered as signed distance field.
+    pad_sdf : int, optional
+        The padding to be used when rendering the font as SDF.
     show : bool
         Whether to show the result.
-    use_system_path : bool, optional
-        If True, the font path is the system path, otherwise, it is the
-        user path.
-    force_recreate : bool, optional
-        If True, always recreate the font, even if it exists.
 
     Returns
     -------
@@ -507,21 +599,12 @@ def create_atlas_font(
     if not _FREETYPE_AVAILABLE:
         raise ImportError('Pleasse, install  the freetype-py lib')
 
-    font_path_save = _FONT_PATH_DEFAULT if use_system_path else _FONT_PATH_USER
-    folder = font_path_save + f'/{name}'
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    elif not force_recreate:
-        print(
-            f'Font {name} already exists. ' +
-            'Please choose a another name.')
-        return folder
-
-    texture_atlas = TextureAtlas(num_chanels=1, atlas_size=atlas_size)
+    texture_atlas = TextureAtlas(
+        num_chanels=1, atlas_size=atlas_size, sdf=use_sdf, pad=pad_sdf)
     image_arr = texture_atlas.data
+    image_arr = image_arr.reshape(
+        (image_arr.shape[0], image_arr.shape[1]))
 
-    image_arr = texture_atlas.data.reshape(
-        (texture_atlas.data.shape[0], texture_atlas.data.shape[1]))
     texture_font = TextureFont(
         texture_atlas,
         font_path,
@@ -529,6 +612,7 @@ def create_atlas_font(
     if chars is None:
         chars = ''.join([chr(i) for i in range(32, 127)])
     texture_font.load(chars)
+
     char2coord = {
         c: glyph
         for c, glyph in texture_font.glyphs.items()
@@ -538,10 +622,74 @@ def create_atlas_font(
         image = Image.fromarray(image_arr).convert('P')
         image.show()
 
+    sdf_str = '_sdf' if use_sdf else ''
     image = Image.fromarray(image_arr).convert('P')
-    image.save(folder + '/atlas.bmp')
-    pickle.dump(char2coord, open(folder+'/char2coord.p', 'wb'))
-    # due vtk
+    image.save(f'{folder}/atlas{sdf_str}.bmp')
+    pickle.dump(char2coord, open(f'{folder}/char2coord{sdf_str}.p', 'wb'))
+
+
+def create_new_font(
+        name, font_path,
+        chars=None,
+        force_recreate=False,
+        font_size_res=7,
+        font_size_res_sdf=11,
+        pad_sdf=8,
+        atlas_size=(1024, 1024),
+        show=False, use_system_path=False):
+    """This function is used to create a bitmap font.
+
+    Parameters
+    ----------
+    name : str
+        Name of the font to be saved
+    font_path : str
+        The path to the font file.
+    chars : list, optional
+        The characters to be used in the font. If None, the default list is
+        the ASCII letters.
+    force_recreate : bool, optional
+        If True, always recreate the font, even if it exists.
+    font_size_res : int
+        The size of the font.
+    font_size_res_sdf : int
+        The size of the sdf font.
+    pad_sdf : int
+        The padding to be used when rendering the font as SDF.
+    atlas_size : tuple, optional
+        The size of the texture atlas in pixels.
+    show : bool
+        Whether to show the result.
+    use_system_path : bool, optional
+        If True, the font path is the system path, otherwise, it is the
+        user path.
+
+    Returns
+    -------
+    folder : str
+        The folder where the font is saved.
+
+    """
+    if not _FREETYPE_AVAILABLE:
+        raise ImportError('Pleasse, install  the freetype-py lib')
+
+    font_path_save = _FONT_PATH_DEFAULT if use_system_path else _FONT_PATH_USER
+    folder = font_path_save + f'/{name}'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    elif not force_recreate:
+        print(
+            f'Font {name} already exists. ' +
+            'Please choose a another name.')
+        return
+
+    create_atlas_font(
+           font_path, folder, font_size_res, atlas_size,
+           chars, show=show, use_sdf=False)
+    create_atlas_font(
+        font_path, folder, font_size_res_sdf, atlas_size,
+        chars, show=show, use_sdf=True, pad_sdf=pad_sdf)
+
     return folder
 
 
@@ -555,24 +703,27 @@ def _create_fury_system_atlas_fonts(font_size_res=12, atlas_size=(1024, 1024)):
     fonts = [f for f in os.listdir(_FONT_PATH_TTF) if f.endswith('.ttf')]
     for font in fonts:
         font_name = font.split('.')[0].replace(' ', '').replace('-', '_')
-        # create a font atlas
-        print('Creating system font atlas:', font)
-        create_atlas_font(
+        print(f'Creating {font_name} ...')
+        create_new_font(
             font_name,
             f'{_FONT_PATH_TTF}/{font}',
             font_size_res=font_size_res,
             atlas_size=atlas_size,
             use_system_path=True,
+            force_recreate=True,
             show=False)
 
 
-def get_texture_atlas_font(font_name='FreeMono'):
+def get_texture_atlas_font(font_name='FreeMono', use_sdf=True):
     """This function is used to create a bitmap font.
 
     Parameters
     ----------
     font_name : str
         Name of the font to be loaded.
+    use_sdf : bool
+        If True, the font will be loaded with the signed distance field.
+
     Returns
     -------
     image_array : ndarray
@@ -589,8 +740,9 @@ def get_texture_atlas_font(font_name='FreeMono'):
             "Please choose one of the following fonts: %s" % (
                 font_name, list(fonts_available.keys())))
     font_path = fonts_available[font_name]
-    image_arr = Image.open(font_path + 'atlas.bmp')
-    char2coord = pickle.load(open(font_path + 'char2coord.p', 'rb'))
+    sdf_str = '_sdf' if use_sdf else ''
+    image_arr = Image.open(f'{font_path}atlas{sdf_str}.bmp')
+    char2coord = pickle.load(open(f'{font_path}char2coord{sdf_str}.p', 'rb'))
 
     # due vtk
     image_arr = np.flipud(image_arr)
@@ -684,7 +836,6 @@ def get_positions_labels_billboards(
         labels_pad += list(np.array(pads) - np.array([-0, 0, 0]))
     labels_positions = np.array(labels_positions)
     labels_pad = np.array(labels_pad)
-    # labels_pad = np.array(labels_pad-np.array([sum_x_spacing/2., 0, 0]))
     uv_coordinates = np.array(uv_coordinates)
     relative_sizes = np.repeat(np.array(relative_sizes), 4, axis=0)
     uv_coordinates = uv_coordinates.reshape(
