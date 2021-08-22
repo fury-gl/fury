@@ -308,9 +308,9 @@ def deep_copy_molecule(molecule1, molecule2):
 
 def compute_bonding(molecule):
     """
-    Uses vtkSimpleBondPerceiver to generate bonding information for a
+    Uses `vtkSimpleBondPerceiver` to generate bonding information for a
     molecule.
-    vtkSimpleBondPerceiver performs a simple check of all interatomic
+    `vtkSimpleBondPerceiver` performs a simple check of all interatomic
     distances and adds a single bond between atoms that are reasonably
     close. If the interatomic distance is less than the sum of the two
     atom's covalent radii plus a tolerance, a single bond is added.
@@ -384,8 +384,7 @@ class PeriodicTable(dcvtk.vtkPeriodicTable):
         Parameters
         ----------
         atomic_number : int
-            Atomic number of the element whose covalent radius is to be
-            obtained.
+            Atomic number of the element whose atomic radius is to be obtained.
         radius_type : string
             Type of atomic radius to be obtained. Two valid choices:
 
@@ -433,7 +432,7 @@ def sphere_cpk(molecule, colormode='discrete'):
           used for coloring the atoms when 'single' colormode is selected:
           (150, 150, 150).
 
-        Default: 'discrete'.
+        Default: 'discrete'
 
     Returns
     -------
@@ -482,9 +481,9 @@ def ball_stick(molecule, colormode='discrete',
           tuple used for coloring the bonds when 'single' colormode is
           selected: (50, 50, 50)
 
-        Default: 'discrete'.
+        Default: 'discrete'
     atom_scale_factor : float, optional
-        Scaling factor. Default: 0.3.
+        Scaling factor. Default: 0.3
     bond_thickness : float, optional
         Used to manipulate the thickness of bonds (i.e. thickness of tubes
         which are used to render bonds)
