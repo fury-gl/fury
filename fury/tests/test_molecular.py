@@ -338,7 +338,7 @@ def test_bounding_box(interactive=False):
     mol.add_bond(molecule, 0, 1, 1)
 
     molecule_actor = mol.stick(molecule)
-    test_box = mol.bounding_box(molecule)
+    test_box = mol.bounding_box(molecule, colors=(0, 1, 1), linewidth=0.1)
     scene.add(molecule_actor)
     scene.add(test_box)
 

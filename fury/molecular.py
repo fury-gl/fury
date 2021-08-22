@@ -7,7 +7,7 @@ import vtkmodules.vtkDomainsChemistry as dcvtk
 import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 from fury.utils import numpy_to_vtk_points
-from fury.actor import line, streamtube
+from fury.actor import streamtube
 
 
 class Molecule(cdmvtk.vtkMolecule):
@@ -718,15 +718,17 @@ def ribbon(molecule):
     return molecule_actor
 
 
-def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.2):
+def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.3):
     """Create a bounding box for a molecule.
 
     Parameters
     ----------
     molecule : Molecule() object
         The molecule around which the bounding box is to be created.
-    colors : tuple (3,) or ndarray of shape (3,)
-        Color of the bounding box.
+    colors : tuple (3,) or ndarray of shape (3,), optional
+        Color of the bounding box. Default: (1, 1, 1)
+    linewidth: float, optional
+        Thickness of tubes used to compose bounding box. Default: 0.3
 
     Returns
     -------
