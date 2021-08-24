@@ -3510,7 +3510,7 @@ class TreeNode2D(UI):
                                - self.label_image.size[0], self.child_height))
 
         self.title_panel.update_element(self.label_text,
-                                        (self.label_image.size[0], 0))
+                                        (self.label_image.size[0], -(size[1]//100)))
 
         self.title_panel.update_element(self.button,
                                         (self.title_panel.size -
@@ -3565,7 +3565,7 @@ class TreeNode2D(UI):
 
         while parent is not None:
             if parent.auto_resize:
-                if parent.size[1] < parent.children_size():
+                if parent.content_size[1] < parent.children_size():
                     parent.resize((parent.size[0], parent.children_size()),
                                   recursive=False)
                 else:
