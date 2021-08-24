@@ -248,28 +248,7 @@ def test_stick(interactive=False):
 
 def test_ribbon(interactive=False):
 
-    # Testing if heteroatoms are rendered properly
     scene = window.Scene()
-    atomic_numbers, atom_coords, atom_types, model, residue_seq, chain, \
-        is_hetatm, sheet, helix = get_default_molecular_info(True)
-    molecule = mol.Molecule(atomic_numbers, atom_coords, atom_types, model,
-                            residue_seq, chain, sheet, helix, is_hetatm)
-    test_actor = mol.ribbon(molecule)
-    scene.add(test_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
-    if interactive:
-        window.show(scene)
-
-    npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
-
-    table = mol.PeriodicTable()
-    colors = np.array([table.atom_color(1), table.atom_color(6)])
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 1)
-    scene.clear()
 
     # Testing if helices and sheets are rendered properly
     atom_coords = np.array([[31.726, 105.084,  71.456],

@@ -714,6 +714,7 @@ def ribbon(molecule):
     ribbonFilter = dcvtk.vtkProteinRibbonFilter()
     ribbonFilter.SetInputData(output)
     ribbonFilter.SetCoilWidth(0.2)
+    ribbonFilter.SetDrawSmallMoleculesAsSpheres(0)
     mapper = rcvtk.vtkPolyDataMapper()
     mapper.SetInputConnection(ribbonFilter.GetOutputPort())
     molecule_actor = rcvtk.vtkActor()
