@@ -8,6 +8,22 @@ representations present in the `molecular` module to visualize
 proteins. This example also shows how to parse PDB files to obtain
 atomic info essential for constructing the representations.
 
+References
+----------
+Corey R.B.; Pauling L. Molecular Models of Amino Acids,
+Peptides, and Proteins
+`Review of Scientific Instruments 1953, 24 (8), 621-627.
+<https://doi.org/10.1063/1.1770803>`_
+
+Turner, M. Ball and stick models for organic chemistry
+`J. Chem. Educ. 1971, 48, 6, 407.
+<https://doi.org/10.1021/ed048p407>`_
+
+Richardson, J.S. The anatomy and taxonomy of protein structure
+`Advances in Protein Chemistry, 1981, 34, 167-339.
+<https://doi.org/10.1016/S0065-3233(08)60520-3>`_
+
+
 Importing necessary modules
 """
 
@@ -127,14 +143,14 @@ molecule = mol.Molecule(atomic_numbers, atom_coords, atom_types, model,
 mol.compute_bonding(molecule)
 
 # stick representation
-# scene.add(mol.stick(molecule, bond_thickness=0.2))
+scene.add(mol.stick(molecule, bond_thickness=0.2))
 
 # ribbon representation
 scene.add(mol.ribbon(molecule))
 
 # ball and stick representation
-scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
-                         bond_thickness=0.2))
+# scene.add(mol.ball_stick(molecule, atom_scale_factor=0.3,
+#                          bond_thickness=0.2))
 
 # bounding box
 scene.add(mol.bounding_box(molecule, linewidth=0.4))
@@ -162,7 +178,7 @@ scene.add(tb)
 if flag:
     os.remove(outfnm)
 
-interactive = False
+interactive = True
 if interactive:
     window.show(scene, size=dims, title=pdb_code.upper())
 window.record(scene, size=dims, out_path=pdb_code.upper()+'.png')

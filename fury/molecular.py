@@ -439,6 +439,13 @@ def sphere_cpk(molecule, colormode='discrete'):
     molecule_actor : vtkActor
         Actor created to render the space filling representation of the
         molecule to be visualized.
+
+    References
+    ----------
+    Corey R.B.; Pauling L. Molecular Models of Amino Acids,
+    Peptides, and Proteins
+    `Review of Scientific Instruments 1953, 24 (8), 621-627.
+    <https://doi.org/10.1063/1.1770803>`_
     """
     colormode = colormode.lower()
     msp_mapper = dcovtk.vtkOpenGLMoleculeMapper()
@@ -500,6 +507,12 @@ def ball_stick(molecule, colormode='discrete',
     molecule_actor : vtkActor
         Actor created to render the ball and stick representation of the
         molecule to be visualized.
+
+    References
+    ----------
+    Turner, M. Ball and stick models for organic chemistry
+    `J. Chem. Educ. 1971, 48, 6, 407.
+    <https://doi.org/10.1021/ed048p407>`_
     """
     if molecule.total_num_bonds == 0:
         raise ValueError('No bonding data available for the molecule! Ball '
@@ -596,6 +609,12 @@ def ribbon(molecule):
     molecule_actor : vtkActor
         Actor created to render the rubbon representation of the molecule to be
         visualized.
+
+    References
+    ----------
+    Richardson, J.S. The anatomy and taxonomy of protein structure
+    `Advances in Protein Chemistry, 1981, 34, 167-339.
+    <https://doi.org/10.1016/S0065-3233(08)60520-3>`_
     """
     coords = get_all_atomic_positions(molecule)
     all_atomic_numbers = get_all_atomic_numbers(molecule)
