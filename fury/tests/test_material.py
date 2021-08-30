@@ -466,9 +466,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 170])
-        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 170])
-        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 85])
+        actual = ss[75, 100, :] / 255
+        desired = np.array([0, 0, 170]) / 255
+        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[125, 125, :] / 255
+        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[125, 75, :] / 255
+        desired = np.array([0, 0, 85]) / 255
+        npt.assert_array_almost_equal(actual, desired)
 
         # Test ambient level
         material.manifest_standard(test_actor, ambient_level=1)
@@ -497,9 +502,15 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 127])
-        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 128])
-        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 64])
+        actual = ss[75, 100, :] / 255
+        desired = np.array([0, 0, 127]) / 255
+        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[125, 125, :] / 255
+        desired = np.array([0, 0, 128]) / 255
+        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[125, 75, :] / 255
+        desired = np.array([0, 0, 64]) / 255
+        npt.assert_array_almost_equal(actual, desired)
 
         # Test diffuse color
         material.manifest_standard(test_actor, diffuse_level=.5,
