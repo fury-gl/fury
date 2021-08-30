@@ -466,9 +466,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [0, 0, 170])
-        npt.assert_almost_equal(ss[125, 125, :], [0, 0, 170])
-        npt.assert_almost_equal(ss[125, 75, :], [0, 0, 85])
+        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 170])
+        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 170])
+        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 85])
 
         # Test ambient level
         material.manifest_standard(test_actor, ambient_level=1)
@@ -476,9 +476,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [0, 0, 255])
-        npt.assert_almost_equal(ss[125, 125, :], [0, 0, 255])
-        npt.assert_almost_equal(ss[125, 75, :], [0, 0, 255])
+        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 255])
+        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 255])
+        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 255])
 
         # Test ambient color
         material.manifest_standard(test_actor, ambient_level=.5,
@@ -487,9 +487,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [0, 0, 255])
-        npt.assert_almost_equal(ss[125, 125, :], [0, 0, 255])
-        npt.assert_almost_equal(ss[125, 75, :], [0, 0, 212])
+        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 255])
+        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 255])
+        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 212])
 
         # Test diffuse level
         material.manifest_standard(test_actor, diffuse_level=.75)
@@ -497,9 +497,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [0, 0, 127])
-        npt.assert_almost_equal(ss[125, 125, :], [0, 0, 128])
-        npt.assert_almost_equal(ss[125, 75, :], [0, 0, 64])
+        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 127])
+        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 128])
+        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 64])
 
         # Test diffuse color
         material.manifest_standard(test_actor, diffuse_level=.5,
@@ -508,9 +508,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [0, 0, 85])
-        npt.assert_almost_equal(ss[125, 125, :], [0, 0, 85])
-        npt.assert_almost_equal(ss[125, 75, :], [0, 0, 42])
+        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 85])
+        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 85])
+        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 42])
 
         # Test specular level
         material.manifest_standard(test_actor, specular_level=1)
@@ -518,9 +518,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [170, 170, 255])
-        npt.assert_almost_equal(ss[125, 125, :], [170, 170, 255])
-        npt.assert_almost_equal(ss[125, 75, :], [85, 85, 170])
+        npt.assert_array_almost_equal(ss[75, 100, :], [170, 170, 255])
+        npt.assert_array_almost_equal(ss[125, 125, :], [170, 170, 255])
+        npt.assert_array_almost_equal(ss[125, 75, :], [85, 85, 170])
 
         # Test specular power
         material.manifest_standard(test_actor, specular_level=1,
@@ -529,9 +529,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [34, 34, 204])
-        npt.assert_almost_equal(ss[125, 125, :], [34, 34, 204])
-        npt.assert_almost_equal(ss[125, 75, :], [1, 1, 86])
+        npt.assert_array_almost_equal(ss[75, 100, :], [34, 34, 204])
+        npt.assert_array_almost_equal(ss[125, 125, :], [34, 34, 204])
+        npt.assert_array_almost_equal(ss[125, 75, :], [1, 1, 86])
 
         # Test specular color
         material.manifest_standard(test_actor, specular_level=1,
@@ -540,9 +540,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[75, 100, :], [34, 0, 170])
-        npt.assert_almost_equal(ss[125, 125, :], [34, 0, 170])
-        npt.assert_almost_equal(ss[125, 75, :], [1, 0, 85])
+        npt.assert_array_almost_equal(ss[75, 100, :], [34, 0, 170])
+        npt.assert_array_almost_equal(ss[125, 125, :], [34, 0, 170])
+        npt.assert_array_almost_equal(ss[125, 75, :], [1, 0, 85])
 
         scene.clear()  # Reset scene
 
@@ -557,21 +557,21 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[90, 110, :], [253, 0, 253])
-        npt.assert_almost_equal(ss[90, 60, :], [180, 0, 180])
+        npt.assert_array_almost_equal(ss[90, 110, :], [253, 0, 253])
+        npt.assert_array_almost_equal(ss[90, 60, :], [180, 0, 180])
 
         material.manifest_standard(test_actor)
         window.record(scene, out_path=tmp_fname, size=(200, 200),
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[90, 110, :], [253, 253, 253])
-        npt.assert_almost_equal(ss[90, 60, :], [180, 180, 180])
+        npt.assert_array_almost_equal(ss[90, 110, :], [253, 253, 253])
+        npt.assert_array_almost_equal(ss[90, 60, :], [180, 180, 180])
 
         material.manifest_standard(test_actor, diffuse_color=(1, 0, 1))
         window.record(scene, out_path=tmp_fname, size=(200, 200),
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_almost_equal(ss[90, 110, :], [253, 0, 253])
-        npt.assert_almost_equal(ss[90, 60, :], [180, 0, 180])
+        npt.assert_array_almost_equal(ss[90, 110, :], [253, 0, 253])
+        npt.assert_array_almost_equal(ss[90, 60, :], [180, 0, 180])
