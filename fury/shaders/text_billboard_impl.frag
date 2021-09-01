@@ -7,7 +7,7 @@
 
 // if (sdf<0.0) discard;
 
-vec4 rgba = vec4(color, 1);
+vec4 rgba = vec4(color, vtkOpacity);
 // if (edgeWidthNew > 0.0){
 //     if (sdf < edgeWidthNew) {
 //         rgba = vec4(edgeColor, edgeOpacity);

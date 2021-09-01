@@ -3217,7 +3217,6 @@ def bitmap_labels(
         labels,
         colors=(0, 1, .5),
         scales=1,
-        opacity=1,
         border_color=(1, 1, 1, 1.),
         border_width=0.05,
         align='center',
@@ -3236,7 +3235,6 @@ def bitmap_labels(
         list of strings
     colors : array or ndarray
     scales : float, optional
-    opacity : float or list, optional
 
     align : str, {left, right, center}
     x_offset_ratio : float
@@ -3322,10 +3320,6 @@ def bitmap_labels(
         if program is not None:
             program.__getattribute__(f'SetUniform{uniform_type}')(
                 uniform_name, value)
-    add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='opacity',
-                value=opacity))
     add_shader_callback(
             sq_actor, partial(
                 callback, uniform_type='f', uniform_name='borderWidth',

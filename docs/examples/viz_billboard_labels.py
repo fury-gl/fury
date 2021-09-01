@@ -1,27 +1,25 @@
-# -*- coding: utf-8 -*-
 """
 =================================
 Billboard labels actor behaviosrs
 =================================
 
 This examples shows some functionalities of the `billboard_labels` actor.
-We show here how to change the font-size (resolution), the font face, alignment
+We show here how to change the font size (resolution), the font face, alignment
 and offsets.
 
 If you want to see the labels with a different font, you need to install
-the Freetype library and freetype-py (`pip install freetype-py`).
+the Freetype library and freetype py (`pip install freetype py`).
 
 """
 
 ###############################################################################
 # First, let's import some useful functions
-import fury
 from fury import actor, window
 from fury import text_tools
 import numpy as np
 
 # Set to True to enable user interaction
-interactive = True
+interactive = False 
 
 # Create a window FURY
 scene = window.Scene()
@@ -30,17 +28,17 @@ centers = np.array([
     [0, 0, 0],
     [0, 0, 1],
     [0, 1, 0],
-    [0, 1, 1],
+    [1, 1, 0],
     [1, 1, 1],
     [1, 0, 0],
 ])
 colors = np.array([
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-    [0, 1, 1],
-    [.15, .5, .75],
-    [.75, .15, .5]
+    [1, 0, 0, 1],
+    [0, 1, 0,  1],
+    [0, 0, 1, 1],
+    [0, 1, 1, .5],  # opacity value set 0.2
+    [.15, .5, .75, 1],
+    [.75, .15, .5, 1]
 ])
 
 
@@ -54,7 +52,7 @@ scene.add(sphere_actor)
 
 # Create a text actor aligned to the center of the first sphere
 center_actor = actor.bitmap_labels(
-    [centers[0]], ['Center align'],
+    [centers[0]], ['1 Center align'],
     border_width=0.1,
     border_color=(.75, .25, 0, .5),
     border_type='solid',
@@ -65,14 +63,14 @@ scene.add(center_actor)
 
 # Create a text actor aligned to the right of the second sphere
 right_actor = actor.bitmap_labels(
-    [centers[1]], ['Right align'],
+    [centers[1]], ['2 Right align'],
     align='right', scales=.05, colors=colors[1])
 
 scene.add(right_actor)
 
 # Create a text actor aligned to the left of the third sphere
 left_actor = actor.bitmap_labels(
-    [centers[2]], ['Left align'],
+    [centers[2]], ['3 Left align'],
     align='left', scales=.05, colors=colors[2])
 
 scene.add(left_actor)
@@ -83,7 +81,7 @@ print('\n\t Fonts available: ', text_tools.list_fonts_available(), '\n')
 # We will use the InconsolataBold700 font in this label actor
 #
 offset_change_actor = actor.bitmap_labels(
-    [centers[3]], ['Inconsolata'],
+    [centers[3]], ['4 Inconsolata and opacity'],
     font_name='InconsolataBold700',
     scales=.05, colors=colors[3])
 
@@ -94,7 +92,7 @@ scene.add(offset_change_actor)
 # font size.
 #
 offset_change_actor = actor.bitmap_labels(
-    [centers[4]], ['offset'],
+    [centers[4]], ['5 offset'],
     x_offset_ratio=3, y_offset_ratio=2,
     scales=.05, colors=colors[4])
 
@@ -106,7 +104,7 @@ scene.add(offset_change_actor)
 
 
 text_with_border = actor.bitmap_labels(
-    [centers[5]], ['Text with a border'],
+    [centers[5]], ['6 Text with a border'],
     border_width=.1, border_color=(.75, .25, 0, .5),
     border_type='solid',
     align='center', scales=0.1, colors=colors[5])
