@@ -178,7 +178,7 @@ scene.add(tb)
 if flag:
     os.remove(outfnm)
 
-interactive = True
+interactive = False
 if interactive:
     window.show(scene, size=dims, title=pdb_code.upper())
 window.record(scene, size=dims, out_path=pdb_code.upper()+'.png')
