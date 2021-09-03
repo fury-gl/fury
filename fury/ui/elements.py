@@ -2,7 +2,8 @@
 
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
+           "ProgressUI"]
 
 import os
 from collections import OrderedDict
@@ -3051,3 +3052,114 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class ProgressUI(UI):
+    """Progress Bar UI.
+    """
+
+    def __init__(self, position=(0, 0), size=(300, 100), padding=20,
+                 initial_value=50, min_value=0, max_value=100,
+                 bg_color=(1, 1, 1), progress_color=(0.5, 0.5, 0.5)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        size : (float, float)
+            Center of the slider's center.
+        initial_value : float
+            Initial value of the slider.
+        min_value : float
+            Minimum value of the slider.
+        max_value : float
+            Maximum value of the slider.
+        padding : float
+            Distance between loader and background.
+        bg_color : (float, float, float)
+            Background color of progress bar.
+        progress_color : (float, float, float)
+            Color of the progress bar.
+        """
+        self.bg_size = size
+        self.padding = padding
+        self.bg_color = bg_color
+        self.progress_color = progress_color
+
+        super(ProgressUI, self).__init__(position)
+
+        self.min_value = min_value
+        self.max_value = max_value
+        self.value = initial_value
+
+        self.update()
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create the ProgressUI with its background (Rectangle2D) and progress
+        (Rectangle2D).
+        """
+        self.progress_total_size = (self.bg_size[0]-2*self.padding,
+                                    self.bg_size[1]-2*self.padding)
+
+        self.background = Rectangle2D(size=self.bg_size, color=self.bg_color)
+        self.progress = Rectangle2D(size=self.progress_total_size,
+                                    color=self.progress_color)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.background + self.loader
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : Scene
+
+        """
+        self.background.add_to_scene(scene)
+        self.progress.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.background.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.background.position = coords
+        self.progress.position = coords + self.padding
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        value_range = self.max_value - self.min_value
+        self.ratio = (value - self.min_value) / value_range
+
+    @property
+    def ratio(self):
+        return self._ratio
+
+    @ratio.setter
+    def ratio(self, ratio):
+        progress_width = ratio * self.progress_total_size[0]
+        if progress_width > self.progress_total_size[0]:
+            progress_width = self.progress_total_size[0]
+        elif progress_width < 0:
+            progress_width = 0
+        self.progress.width = progress_width
+        self.update()
+
+    def update(self):
+        self._ratio = self.progress.width/self.progress_total_size[0]
+
+        value_range = self.max_value - self.min_value
+        self._value = self.min_value + self.ratio * value_range

@@ -789,6 +789,23 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+def test_ui_progress():
+    progressui = ui.ProgressUI(size=(500, 300), initial_value=-1, min_value=-5,
+                               max_value=5, padding=10)
+
+    show_manager = window.ShowManager(
+        size=(800, 800), title="Progress UI Example")
+    show_manager.scene.add(progressui)
+
+    npt.assert_equal((480, 280), progressui.progress_total_size)
+    npt.assert_equal(0.4, progressui.ratio)
+    npt.assert_equal(192, progressui.progress.width)
+    npt.assert_equal(-1, progressui.value)
+
+    progressui.value = 4
+    npt.assert_equal(4, progressui.value)
+    npt.assert_equal(0.9, progressui.ratio)
+
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
 
