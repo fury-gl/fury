@@ -1719,8 +1719,8 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     return tri_actor
 
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                    scales=1, height=1):
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), 
+                    scales=1):
     """Visualize one or many pentagonal prisms with different features.
 
     Parameters
@@ -1752,7 +1752,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> # window.show(scene)
 
     """
-    verts, faces = fp.prim_pentagonalprism(height)
+    verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(verts, faces, directions=directions,
                               centers=centers, colors=colors, scales=scales)
 
