@@ -17,7 +17,7 @@ authors:
   - name: Javier Guaje
     orcid: 0000-0003-3534-3794
     affiliation: 1
-  - name: Marc-Alex Côté
+  - name: Marc-Alexandre Côté
     orcid: 0000-0002-5147-7859
     affiliation: 3
   - name: Soham Biswas
