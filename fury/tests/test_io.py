@@ -160,7 +160,8 @@ def test_pillow():
 
 
 def test_load_sprite_sheet():
-    sprite_URL = 'https://i.imgur.com/0yKFTBQ.png'
+    sprite_URL = 'https://raw.githubusercontent.com/'\
+                 'antrikshmisri/DATA/master/fury/0yKFTBQ.png'
 
     with InTemporaryDirectory() as tdir:
         sprites = load_sprite_sheet(sprite_URL, 5, 5)

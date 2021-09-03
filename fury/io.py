@@ -1,8 +1,8 @@
 import os
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 import vtk
 import numpy as np
 from PIL import Image
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 from vtk.util import numpy_support
 from fury.utils import set_input
 from urllib.request import urlretrieve
@@ -295,7 +295,7 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
         Number of rows in the sprite sheet
     nb_cols: int
         Number of columns in the sprite sheet
-    as_vtktype: bool
+    as_vtktype: bool, optional
         If True, the output is a vtkImageData
 
     Returns
