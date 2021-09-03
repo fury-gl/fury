@@ -466,14 +466,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        actual = ss[75, 100, :] / 255
-        desired = np.array([0, 0, 170]) / 255
-        npt.assert_array_almost_equal(actual, desired)
-        actual = ss[125, 125, :] / 255
-        npt.assert_array_almost_equal(actual, desired)
-        actual = ss[125, 75, :] / 255
-        desired = np.array([0, 0, 85]) / 255
-        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([0, 0, 170]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([0, 0, 85]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test ambient level
         material.manifest_standard(test_actor, ambient_level=1)
@@ -481,9 +481,13 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 255])
-        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 255])
-        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 255])
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([0, 0, 255]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test ambient color
         material.manifest_standard(test_actor, ambient_level=.5,
@@ -492,9 +496,13 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 255])
-        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 255])
-        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 212])
+        actual = ss[75, 100, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([0, 0, 212]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test diffuse level
         material.manifest_standard(test_actor, diffuse_level=.75)
@@ -505,12 +513,12 @@ def test_manifest_standard():
         actual = ss[75, 100, :] / 1000
         desired = np.array([0, 0, 127]) / 1000
         npt.assert_array_almost_equal(actual, desired, decimal=2)
-        actual = ss[125, 125, :] / 255
-        desired = np.array([0, 0, 128]) / 255
-        npt.assert_array_almost_equal(actual, desired)
-        actual = ss[125, 75, :] / 255
-        desired = np.array([0, 0, 64]) / 255
-        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[125, 125, :] / 1000
+        desired = np.array([0, 0, 128]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([0, 0, 64]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test diffuse color
         material.manifest_standard(test_actor, diffuse_level=.5,
@@ -519,9 +527,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [0, 0, 85])
-        npt.assert_array_almost_equal(ss[125, 125, :], [0, 0, 85])
-        npt.assert_array_almost_equal(ss[125, 75, :], [0, 0, 42])
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([0, 0, 85]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([0, 0, 42]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test specular level
         material.manifest_standard(test_actor, specular_level=1)
@@ -529,9 +542,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [170, 170, 255])
-        npt.assert_array_almost_equal(ss[125, 125, :], [170, 170, 255])
-        npt.assert_array_almost_equal(ss[125, 75, :], [85, 85, 170])
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([170, 170, 255]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([85, 85, 170]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test specular power
         material.manifest_standard(test_actor, specular_level=1,
@@ -540,9 +558,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [34, 34, 204])
-        npt.assert_array_almost_equal(ss[125, 125, :], [34, 34, 204])
-        npt.assert_array_almost_equal(ss[125, 75, :], [1, 1, 86])
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([34, 34, 204]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([1, 1, 86]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         # Test specular color
         material.manifest_standard(test_actor, specular_level=1,
@@ -551,9 +574,14 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[75, 100, :], [34, 0, 170])
-        npt.assert_array_almost_equal(ss[125, 125, :], [34, 0, 170])
-        npt.assert_array_almost_equal(ss[125, 75, :], [1, 0, 85])
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([34, 0, 170]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 125, :] / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[125, 75, :] / 1000
+        desired = np.array([1, 0, 85]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         scene.clear()  # Reset scene
 
@@ -568,21 +596,33 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[90, 110, :], [253, 0, 253])
-        npt.assert_array_almost_equal(ss[90, 60, :], [180, 0, 180])
+        actual = ss[90, 110, :] / 1000
+        desired = np.array([253, 0, 253]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[90, 60, :] / 1000
+        desired = np.array([180, 0, 180]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         material.manifest_standard(test_actor)
         window.record(scene, out_path=tmp_fname, size=(200, 200),
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[90, 110, :], [253, 253, 253])
-        npt.assert_array_almost_equal(ss[90, 60, :], [180, 180, 180])
+        actual = ss[90, 110, :] / 1000
+        desired = np.array([253, 253, 253]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[90, 60, :] / 1000
+        desired = np.array([180, 180, 180]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
 
         material.manifest_standard(test_actor, diffuse_color=(1, 0, 1))
         window.record(scene, out_path=tmp_fname, size=(200, 200),
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        npt.assert_array_almost_equal(ss[90, 110, :], [253, 0, 253])
-        npt.assert_array_almost_equal(ss[90, 60, :], [180, 0, 180])
+        actual = ss[90, 110, :] / 1000
+        desired = np.array([253, 0, 253]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
+        actual = ss[90, 60, :] / 1000
+        desired = np.array([180, 0, 180]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
