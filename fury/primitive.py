@@ -644,16 +644,16 @@ def prim_pentagonalprism():
     sone = (math.sqrt(10 + (2 * five))) / 4.0
     stwo = (math.sqrt(10 - (2 * five))) / 4.0
 
-    vertices = np.array([[stwo/2, twoc/2, -1.84],
-                         [sone/2, -onec/2, -1.84],
-                         [0, -1/2, -1.84],
-                         [-sone/2, -onec/2, -1.84],
-                         [-stwo/2, twoc/2, -1.84],
-                         [stwo/2, twoc/2, 1.84],
-                         [sone/2, -onec/2, 1.84],
-                         [0, -1/2, 1.84],
-                         [-sone/2, -onec/2, 1.84],
-                         [-stwo/2, twoc/2, 1.84]])
+    vertices = np.array([[stwo/2, twoc/2, -0.5],
+                         [sone/2, -onec/2, -0.5],
+                         [0, -1/2, -0.5],
+                         [-sone/2, -onec/2, -0.5],
+                         [-stwo/2, twoc/2, -0.5],
+                         [stwo/2, twoc/2, 0.5],
+                         [sone/2, -onec/2, 0.5],
+                         [0, -1/2, 0.5],
+                         [-sone/2, -onec/2, 0.5],
+                         [-stwo/2, twoc/2, 0.5]])
     triangles = np.array([[9, 5, 4],
                           [4, 5, 0],
                           [5, 6, 0],
