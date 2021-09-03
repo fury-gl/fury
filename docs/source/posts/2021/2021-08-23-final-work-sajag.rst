@@ -59,6 +59,7 @@ Objectives Completed
    -  **Ribbon representation:** https://github.com/fury-gl/fury/pull/452
    -  **Ribbon Representation demo:** https://github.com/fury-gl/fury/pull/452
 
+
 - **Ball and Stick Representation**
 
   The ball-and-stick model is a molecular model of a chemical substance which

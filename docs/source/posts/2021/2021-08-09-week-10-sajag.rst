@@ -1,4 +1,4 @@
-Ninth week of coding!
+Ninth coding week!
 =======================
 
 .. post:: August 09 2021
@@ -11,7 +11,8 @@ Welcome to the tenth weekly check-in. I'll be sharing my progress for the ninth 
 What did you do this week?
 --------------------------
 
-#. Updated `PR #452`_: 
+#. Updated `PR #452`_ :
+
 	- Made ribbon representation faster.
 	- Added an actor to display bounding box around the molecule.
 
