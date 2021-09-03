@@ -502,9 +502,9 @@ def test_manifest_standard():
                       reset_camera=True)
         npt.assert_equal(os.path.exists(tmp_fname), True)
         ss = load_image(tmp_fname)
-        actual = ss[75, 100, :] / 255
-        desired = np.array([0, 0, 127]) / 255
-        npt.assert_array_almost_equal(actual, desired)
+        actual = ss[75, 100, :] / 1000
+        desired = np.array([0, 0, 127]) / 1000
+        npt.assert_array_almost_equal(actual, desired, decimal=2)
         actual = ss[125, 125, :] / 255
         desired = np.array([0, 0, 128]) / 255
         npt.assert_array_almost_equal(actual, desired)

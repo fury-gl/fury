@@ -63,11 +63,13 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
     try:
         prop = actor.GetProperty()
 
-        if interpolation.lower() == 'flat':
+        interpolation = interpolation.lower()
+
+        if interpolation == 'flat':
             prop.SetInterpolationToFlat()
-        elif interpolation.lower() == 'gouraud':
+        elif interpolation == 'gouraud':
             prop.SetInterpolationToGouraud()
-        elif interpolation.lower() == 'phong':
+        elif interpolation == 'phong':
             prop.SetInterpolationToPhong()
         else:
             warnings.warn(
