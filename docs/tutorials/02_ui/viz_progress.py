@@ -9,7 +9,7 @@ create a whole ProgressBar and show the progress of adding Cubes to the scene.
 
 First, some imports.
 """
-from fury import ui, window, actor
+from fury import actor, ui, window
 import numpy as np
 import itertools
 

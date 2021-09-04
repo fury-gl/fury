@@ -3065,19 +3065,19 @@ class ProgressUI(UI):
 
         Parameters
         ----------
-        size : (float, float)
+        size : (float, float), optional
             Center of the slider's center.
-        initial_value : float
+        initial_value : float, optional
             Initial value of the slider.
-        min_value : float
+        min_value : float, optional
             Minimum value of the slider.
-        max_value : float
+        max_value : float, optional
             Maximum value of the slider.
-        padding : float
+        padding : float, optional
             Distance between loader and background.
-        bg_color : (float, float, float)
+        bg_color : (float, float, float), optional
             Background color of progress bar.
-        progress_color : (float, float, float)
+        progress_color : (float, float, float), optional
             Color of the progress bar.
         """
         self.bg_size = size
