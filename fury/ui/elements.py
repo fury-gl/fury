@@ -3065,8 +3065,11 @@ class ProgressUI(UI):
 
         Parameters
         ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
         size : (float, float), optional
-            Center of the slider's center.
+            Width and height in pixels of this UI component.
         initial_value : float, optional
             Initial value of the slider.
         min_value : float, optional
@@ -3111,7 +3114,7 @@ class ProgressUI(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.background + self.loader
+        return self.background.actors + self.progress.actors
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3144,6 +3147,13 @@ class ProgressUI(UI):
 
     @value.setter
     def value(self, value):
+        """Set the value of progressbar
+
+        Parameters
+        ----------
+        value : float
+            New value for the progressbar.
+        """
         value_range = self.max_value - self.min_value
         self.ratio = (value - self.min_value) / value_range
 
@@ -3153,6 +3163,13 @@ class ProgressUI(UI):
 
     @ratio.setter
     def ratio(self, ratio):
+        """Set the ratio of Progressbar
+
+        Parameters
+        ----------
+        ratio : float
+            New ratio for the progressbar.
+        """
         progress_width = ratio * self.progress_total_size[0]
         if progress_width >= self.progress_total_size[0]:
             progress_width = self.progress_total_size[0]
