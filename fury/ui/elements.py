@@ -2,7 +2,8 @@
 
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
+           "SpinBox"]
 
 import os
 from collections import OrderedDict
@@ -3051,3 +3052,74 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class SpinBox(UI):
+    """SpinBox UI.
+    """
+
+    def __init__(self, position=(300,300), size=(200,50), padding=10,
+                 panel_color=(1,1,1)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of this
+            UI component.
+        size : (float, float), optional
+            Width and height in pixels of this UI component.
+        padding : float, optional
+            Distance between  and background.
+        bg_color : (float, float, float), optional
+            Background color of progress bar.
+        """
+        self.panel_size = size
+        self.padding = padding
+        self.panel_color = panel_color
+
+        super(SpinBox,self).__init__(position)
+
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create the ProgressUI with its background (Rectangle2D) and progress (Rectangle2D).
+        """
+        self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
+
+        self.textbox = TextBox2D(width=self.size[0],height=self.size[1])
+        self.increment_button = Button2D(icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
+        self.decrement_button = Button2D(icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
+
+        # self.panel.add_element(self.textbox,(50,50))
+        # self.panel.add_element(self.increment_button,(100,50))
+        # self.panel.add_element(self.decrement_button,(100,10))
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.panel
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : Scene
+
+        """
+        self.panel.add_to_scene(scene)
+
+
+    def _get_size(self):
+        return self.panel.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.panel.center = coords
