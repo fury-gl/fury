@@ -3091,6 +3091,9 @@ class ProgressUI(UI):
         self.max_value = max_value
         self.value = initial_value
 
+        # Offer some standard hooks to the user.
+        self.on_complete = lambda ui: None
+
         self.update()
 
     def _setup(self):
@@ -3151,8 +3154,9 @@ class ProgressUI(UI):
     @ratio.setter
     def ratio(self, ratio):
         progress_width = ratio * self.progress_total_size[0]
-        if progress_width > self.progress_total_size[0]:
+        if progress_width >= self.progress_total_size[0]:
             progress_width = self.progress_total_size[0]
+            self.on_complete(self)
         elif progress_width < 0:
             progress_width = 0
         self.progress.width = progress_width
