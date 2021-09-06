@@ -85,6 +85,7 @@ def timer_callback(_obj, _event):
 ###############################################################################
 # Initializing the ShowManager and adding callback function
 
+
 show_manager.initialize()
 show_manager.add_timer_callback(True, 30, timer_callback)
 
