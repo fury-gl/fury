@@ -47,8 +47,10 @@ progressbar = ui.ProgressUI(position=(200, 100), padding=10, size=(400, 50),
 ###############################################################################
 # Using the on_complete hook to display a message
 
+
 def remove_progressbar(self):
     print("Progress Completed")
+
 
 progressbar.on_complete = remove_progressbar
 
@@ -82,7 +84,6 @@ def timer_callback(_obj, _event):
 
 ###############################################################################
 # Initializing the ShowManager and adding callback function
-
 
 show_manager.initialize()
 show_manager.add_timer_callback(True, 30, timer_callback)

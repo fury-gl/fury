@@ -3112,7 +3112,7 @@ class ProgressUI(UI):
         self.progress = Rectangle2D(size=self.progress_total_size,
                                     color=self.progress_color)
 
-    def resize(self,size):
+    def resize(self, size):
         self.progress_total_size = (size[0]-2*self.padding,
                                     size[1]-2*self.padding)
 
