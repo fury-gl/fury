@@ -72,10 +72,10 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         elif interpolation == 'phong':
             prop.SetInterpolationToPhong()
         else:
-            warnings.warn(
-                'Unknown interpolation. Ignoring "{}" interpolation option. '
-                'And using the default ("{}") option.'.format(
-                    interpolation, 'gouraud'), UserWarning)
+            message = 'Unknown interpolation. Ignoring "{}" interpolation ' \
+                      'option and using the default ("{}") option.'.format(
+                interpolation, 'gouraud')
+            warnings.warn(message, UserWarning)
 
         prop.SetAmbient(ambient_level)
         prop.SetAmbientColor(ambient_color)

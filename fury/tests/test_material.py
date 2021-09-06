@@ -17,44 +17,18 @@ dipy, have_dipy, _ = optional_package('dipy')
 VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
-def _generate_surface():
-    size = 11
-    vertices = list()
-    for i in range(-size, size):
-        for j in range(-size, size):
-            fact1 = - math.sin(i) * math.cos(j)
-            fact2 = - math.exp(abs(1 - math.sqrt(i ** 2 + j ** 2) / math.pi))
-            z_coord = -abs(fact1 * fact2)
-            vertices.append([i, j, z_coord])
-    c_arr = np.random.rand(len(vertices), 3)
-    random.shuffle(vertices)
-    vertices = np.array(vertices)
-    tri = Delaunay(vertices[:, [0, 1]])
-    faces = tri.simplices
-    c_loop = [None, c_arr]
-    f_loop = [None, faces]
-    s_loop = [None, "butterfly", "loop"]
-    for smooth_type in s_loop:
-        for face in f_loop:
-            for color in c_loop:
-                surface_actor = actor.surface(vertices, faces=face,
-                                              colors=color, smooth=smooth_type)
-    return surface_actor
+@pytest.mark.skipif(VTK_9_PLUS, reason="Requires VTK < 9.0.0")
+def test_manifest_pbr_vtk_less_than_9():
+    center = np.array([[0, 0, 0]])
+
+    # Test non-supported material
+    test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
+    npt.assert_warns(UserWarning, material.manifest_pbr, test_actor)
 
 
 @pytest.mark.skipif(not VTK_9_PLUS, reason="Requires VTK >= 9.0.0")
-def test_manifest_pbr(interactive=False):
+def test_manifest_pbr_vtk_great_than_9():
     scene = window.Scene()  # Setup scene
-
-    # Setup surface
-    surface_actor = _generate_surface()
-    material.manifest_pbr(surface_actor)
-    scene.add(surface_actor)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
 
     # Contour from roi setup
     data = np.zeros((50, 50, 50))
@@ -69,104 +43,6 @@ def test_manifest_pbr(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
-
-    # Streamtube setup
-    data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
-    data2 = data1 + np.array([0.5, 0., 0.])
-    data = [data1, data2]
-    colors = np.array([[1, 0, 0], [0, 0, 1.]])
-    tubes = actor.streamtube(data, colors, linewidth=.1)
-    material.manifest_pbr(tubes)
-    scene.add(tubes)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 2)
-
-    scene.clear()  # Reset scene
-
-    # Axes setup
-    axes = actor.axes()
-    material.manifest_pbr(axes)
-    scene.add(axes)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    scene.clear()  # Reset scene
-
-    # ODF slicer setup
-    if have_dipy:
-        from dipy.data import get_sphere
-        from tempfile import mkstemp
-        sphere = get_sphere('symmetric362')
-        shape = (11, 11, 11, sphere.vertices.shape[0])
-        fid, fname = mkstemp(suffix='_odf_slicer.mmap')
-        odfs = np.memmap(fname, dtype=np.float64, mode='w+', shape=shape)
-        odfs[:] = 1
-        affine = np.eye(4)
-        mask = np.ones(odfs.shape[:3])
-        mask[:4, :4, :4] = 0
-        odfs[..., 0] = 1
-        odf_actor = actor.odf_slicer(odfs, affine, mask=mask, sphere=sphere,
-                                     scale=.25, colormap='blues')
-        material.manifest_pbr(odf_actor)
-        k = 5
-        I, J, _ = odfs.shape[:3]
-        odf_actor.display_extent(0, I, 0, J, k, k)
-        odf_actor.GetProperty().SetOpacity(1.0)
-        scene.add(odf_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 11 * 11)
-
-    scene.clear()  # Reset scene
-
-    # Tensor slicer setup
-    if have_dipy:
-        from dipy.data import get_sphere
-        sphere = get_sphere('symmetric724')
-        evals = np.array([1.4, .35, .35]) * 10 ** (-3)
-        evecs = np.eye(3)
-        mevals = np.zeros((3, 2, 4, 3))
-        mevecs = np.zeros((3, 2, 4, 3, 3))
-        mevals[..., :] = evals
-        mevecs[..., :, :] = evecs
-        affine = np.eye(4)
-        scene = window.Scene()
-        tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                           sphere=sphere, scale=.3)
-        material.manifest_pbr(tensor_actor)
-        _, J, K = mevals.shape[:3]
-        tensor_actor.display_extent(0, 1, 0, J, 0, K)
-        scene.add(tensor_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 4)
-        # TODO: Rotate to test
-        # npt.assert_equal(report.objects, 4 * 2 * 2)
-
-    scene.clear()  # Reset scene
-
-    # Point setup
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    opacity = 0.5
-    points_actor = actor.point(points, colors, opacity=opacity)
-    material.manifest_pbr(points_actor)
-    scene.add(points_actor)
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
 
     scene.clear()  # Reset scene
 
@@ -185,26 +61,6 @@ def test_manifest_pbr(interactive=False):
     npt.assert_equal(report.objects, 3)
 
     scene.clear()  # Reset scene
-
-    # Advanced geometry actors setup (Arrow, cone, cylinder)
-    xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
-    dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
-    heights = np.array([5, 7, 10])
-    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
-                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.cylinder, {'directions': dirs}]]
-    for act_func, extra_args in actor_list:
-        aga_actor = act_func(centers=xyz, colors=colors[:], heights=heights,
-                             **extra_args)
-        material.manifest_pbr(aga_actor)
-        scene.add(aga_actor)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-        arr = window.snapshot(scene)
-        report = window.analyze_snapshot(arr)
-        npt.assert_equal(report.objects, 3)
-        scene.clear()
 
     # Basic geometry actors (Box, cube, frustum, octagonalprism, rectangle,
     # square)
@@ -228,55 +84,6 @@ def test_manifest_pbr(interactive=False):
             msg = 'Failed with {}, scale={}'.format(act_func.__name__, scale)
             npt.assert_equal(report.objects, 3, err_msg=msg)
             scene.clear()
-
-    # Cone setup using vertices
-    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
-    vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
-                         [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
-    faces = np.array([[0, 1, 3], [0, 1, 2]])
-    cone_actor = actor.cone(centers=centers, directions=directions,
-                            colors=colors[:], vertices=vertices, faces=faces)
-    material.manifest_pbr(cone_actor)
-    scene.add(cone_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
-
-    scene.clear()  # Reset scene
-
-    # Superquadric setup
-    centers = np.array([[8, 0, 0], [0, 8, 0], [0, 0, 0]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.random.rand(3, 3)
-    scales = [1, 2, 3]
-    roundness = np.array([[1, 1], [1, 2], [2, 1]])
-    sq_actor = actor.superquadric(centers, roundness=roundness,
-                                  directions=directions,
-                                  colors=colors.astype(np.uint8),
-                                  scales=scales)
-    material.manifest_pbr(sq_actor)
-    scene.add(sq_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 3)
-
-    scene.clear()  # Reset scene
-
-    # Label setup
-    text_actor = actor.label("Hello")
-    material.manifest_pbr(text_actor)
-    scene.add(text_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 5)
 
     # NOTE: From this point on, these actors don't have full support for PBR
     # interpolation. This is, the test passes but there is no evidence of the
@@ -429,9 +236,6 @@ def test_manifest_pbr(interactive=False):
     material.manifest_pbr(tp)
     scene.add(tp)
     """
-
-    if interactive:
-        window.show(scene)
 
 
 def test_manifest_standard():
