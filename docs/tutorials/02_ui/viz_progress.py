@@ -45,6 +45,14 @@ progressbar = ui.ProgressUI(position=(200, 100), padding=10, size=(400, 50),
                             max_value=len(cube_list))
 
 ###############################################################################
+# Using the on_complete hook to display a message
+
+def remove_progressbar(self):
+    print("Progress Completed")
+
+progressbar.on_complete = remove_progressbar
+
+###############################################################################
 # Show Manager
 # ============
 #
@@ -65,12 +73,12 @@ counter = itertools.count()
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
+    show_manager.render()
     if cnt % 12 == 0 and len(cube_list):
         show_manager.scene.add(cube_list.pop(0))
         progressbar.value += 1
-    if cnt == 50:
+    if cnt == 60:
         show_manager.exit()
-    show_manager.render()
 
 ###############################################################################
 # Initializing the ShowManager and adding callback function

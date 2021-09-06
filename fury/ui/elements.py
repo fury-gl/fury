@@ -3112,6 +3112,13 @@ class ProgressUI(UI):
         self.progress = Rectangle2D(size=self.progress_total_size,
                                     color=self.progress_color)
 
+    def resize(self,size):
+        self.progress_total_size = (size[0]-2*self.padding,
+                                    size[1]-2*self.padding)
+
+        self.background.resize(size)
+        self.progress.resize(self.progress_total_size)
+
     def _get_actors(self):
         """Get the actors composing this UI component."""
         return self.background.actors + self.progress.actors
@@ -3154,33 +3161,16 @@ class ProgressUI(UI):
         value : float
             New value for the progressbar.
         """
-        value_range = self.max_value - self.min_value
-        self.ratio = (value - self.min_value) / value_range
-
-    @property
-    def ratio(self):
-        return self._ratio
-
-    @ratio.setter
-    def ratio(self, ratio):
-        """Set the ratio of Progressbar
-
-        Parameters
-        ----------
-        ratio : float
-            New ratio for the progressbar.
-        """
-        progress_width = ratio * self.progress_total_size[0]
-        if progress_width >= self.progress_total_size[0]:
-            progress_width = self.progress_total_size[0]
-            self.on_complete(self)
-        elif progress_width < 0:
-            progress_width = 0
-        self.progress.width = progress_width
+        if value > self.max_value:
+            value = self.max_value
+        elif value < self.min_value:
+            value = self.min_value
+        self._value = value
         self.update()
 
     def update(self):
-        self._ratio = self.progress.width/self.progress_total_size[0]
-
         value_range = self.max_value - self.min_value
-        self._value = self.min_value + self.ratio * value_range
+        ratio = (self.value - self.min_value)/value_range
+        self.progress.width = int(ratio * self.progress_total_size[0])
+        if ratio == 1.0:
+            self.on_complete(self)
