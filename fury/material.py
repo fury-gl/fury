@@ -73,8 +73,8 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
             prop.SetInterpolationToPhong()
         else:
             message = 'Unknown interpolation. Ignoring "{}" interpolation ' \
-                      'option and using the default ("{}") option.'.format(
-                interpolation, 'gouraud')
+                      'option and using the default ("{}") option.'
+            message = message.format(interpolation, 'gouraud')
             warnings.warn(message, UserWarning)
 
         prop.SetAmbient(ambient_level)

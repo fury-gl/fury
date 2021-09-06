@@ -85,75 +85,7 @@ def test_manifest_pbr_vtk_great_than_9():
             npt.assert_equal(report.objects, 3, err_msg=msg)
             scene.clear()
 
-    # NOTE: From this point on, these actors don't have full support for PBR
-    # interpolation. This is, the test passes but there is no evidence of the
-    # desired effect.
-
-    """
-    # Line setup
-    data1 = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2.]])
-    data2 = data1 + np.array([0.5, 0., 0.])
-    data = [data1, data2]
-    colors = np.array([[1, 0, 0], [0, 0, 1.]])
-    lines = actor.line(data, colors, linewidth=5)
-    material.manifest_pbr(lines)
-    scene.add(lines)
-    """
-
-    """
-    # Peak slicer setup
-    _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
-    # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape
-    peak_dirs = np.zeros((11, 11, 11, 3, 3))
-    peak_dirs[:, :, :] = _peak_dirs
-    peak_actor = actor.peak_slicer(peak_dirs)
-    material.manifest_pbr(peak_actor)
-    scene.add(peak_actor)
-    """
-
-    """
-    # Dots setup
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    dots_actor = actor.dots(points, color=(0, 255, 0))
-    material.manifest_pbr(dots_actor)
-    scene.add(dots_actor)
-    """
-
-    """
-    # Texture setup
-    arr = (255 * np.ones((512, 212, 4))).astype('uint8')
-    arr[20:40, 20:40, :] = np.array([255, 0, 0, 255], dtype='uint8')
-    tp2 = actor.texture(arr)
-    material.manifest_pbr(tp2)
-    scene.add(tp2)
-    """
-
-    """
-    # Texture on sphere setup
-    arr = 255 * np.ones((810, 1620, 3), dtype='uint8')
-    rows, cols, _ = arr.shape
-    rs = rows // 2
-    cs = cols // 2
-    w = 150 // 2
-    arr[rs - w: rs + w, cs - 10 * w: cs + 10 * w] = np.array([255, 127, 0])
-    tsa = actor.texture_on_sphere(arr)
-    material.manifest_pbr(tsa)
-    scene.add(tsa)
-    """
-
-    """
-    # SDF setup
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) * 11
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    scales = [1, 2, 3]
-    primitive = ['sphere', 'ellipsoid', 'torus']
-
-    sdf_actor = actor.sdf(centers, directions=directions, colors=colors,
-                          primitives=primitive, scales=scales)
-    material.manifest_pbr(sdf_actor)
-    scene.add(sdf_actor)
-    """
+    #window.show(scene)
 
     # NOTE: For these last set of actors, there is not support for PBR
     # interpolation at all.
