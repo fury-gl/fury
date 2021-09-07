@@ -19,14 +19,25 @@ def manifest_pbr(actor, metallicity=0, roughness=.5):
 
     """
     if not VTK_9_PLUS:
-        warnings.warn('Your PBR effect can not be apply due to VTK version. '
+        warnings.warn('Your PBR effect cannot be apply due to VTK version. '
                       'Please upgrade your VTK version (should be >= 9.0.0).')
         return
 
-    prop = actor.GetProperty()
-    prop.SetInterpolationToPBR()
-    prop.SetMetallic(metallicity)
-    prop.SetRoughness(roughness)
+    try:
+        prop = actor.GetProperty()
+        try:
+            prop.SetInterpolationToPBR()
+            prop.SetMetallic(metallicity)
+            prop.SetRoughness(roughness)
+        except AttributeError:
+            warnings.warn(
+                'PBR interpolation cannot be applied to this actor. The '
+                'material will not be applied.')
+            return
+    except AttributeError:
+        warnings.warn('Actor does not have the attribute property. This '
+                      'material will not be applied.')
+        return
 
 
 def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
@@ -75,7 +86,7 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
             message = 'Unknown interpolation. Ignoring "{}" interpolation ' \
                       'option and using the default ("{}") option.'
             message = message.format(interpolation, 'gouraud')
-            warnings.warn(message, UserWarning)
+            warnings.warn(message)
 
         prop.SetAmbient(ambient_level)
         prop.SetAmbientColor(ambient_color)
@@ -86,6 +97,6 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         prop.SetSpecularPower(specular_power)
     except AttributeError:
         warnings.warn('Actor does not have the attribute property. This '
-                      'material will not be applied.', UserWarning)
+                      'material will not be applied.')
         return
 
