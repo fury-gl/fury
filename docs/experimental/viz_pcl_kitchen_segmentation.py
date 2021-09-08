@@ -1,5 +1,5 @@
-from fury import actor, window
 from docs.experimental.tmp_pcl_fetcher import read_viz_dataset
+from fury import window
 
 
 import matplotlib.pyplot as plt
@@ -8,32 +8,14 @@ import open3d as o3d
 import vtk
 
 
-#pcl_fname = read_viz_dataset('sample.xyz')
-#pcl_fname = read_viz_dataset('NZ19_Wellington_voxel-center_2.xyz')
 pcl_fname = read_viz_dataset('TLS_kitchen.ply')
-
-#point_cloud = np.loadtxt(pcl_fname, skiprows=1)
-#point_cloud = np.loadtxt(pcl_fname, delimiter=';', skiprows=1)
 pcd = o3d.io.read_point_cloud(pcl_fname)
 
-#xyz = point_cloud[:, :3]
 xyz = np.asarray(pcd.points)
-
-#pcd = o3d.geometry.PointCloud()
-#pcd.points = o3d.utility.Vector3dVector(xyz)
-
-#rgb = point_cloud[:, 3:]
-#rgb = np.ones((len(xyz), 3)) * 255
 rgb = np.ones((len(xyz), 3)) * 40
-#pcd.colors = o3d.utility.Vector3dVector(rgb / 255)
 
-# Normals estimation
 pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(
     radius=.1, max_nn=30))
-
-normals = np.asarray(pcd.normals)
-rgb = (normals + 1) / 2 * 255
-#pcd.colors = o3d.utility.Vector3dVector((normals + 1) / 2)
 
 """
 plane_model, inliers = pcd.segment_plane(distance_threshold=.01, ransac_n=3,
@@ -110,6 +92,7 @@ xyz.extend(pnts)
 rgb.extend(cols)
 xyz = np.asarray(xyz)
 rgb = np.asarray(rgb)
+
 """
 o3d.visualization.draw_geometries([segments[i] for i in range(
     max_plane_idx)] + [rest])
@@ -154,11 +137,8 @@ pcl_actor.SetMapper(mapper)
 scene = window.Scene()
 scene.background((1, 1, 1))
 
-#scene.add(actor.dots(xyz))
 scene.add(pcl_actor)
 
-#scene.roll(-145)
-#scene.pitch(70)
 scene.roll(-160)
 scene.pitch(85)
 
