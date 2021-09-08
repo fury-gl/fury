@@ -9,7 +9,8 @@ from scipy import ndimage
 from vtkmodules.util import numpy_support, colors
 import vtkmodules.vtkCommonCore as ccvtk
 import vtkmodules.vtkRenderingCore as rcvtk
-
+import vtkmodules.vtkFiltersHybrid as fhvtk
+import vtkmodules.vtkInteractionStyle as isvtk
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
@@ -348,9 +349,9 @@ class ShowManager(object):
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
-            self.style = rcvtk.vtkInteractorStyleImage()
+            self.style = isvtk.vtkInteractorStyleImage()
         elif self.interactor_style == 'trackball':
-            self.style = rcvtk.vtkInteractorStyleTrackballCamera()
+            self.style = isvtk.vtkInteractorStyleTrackballCamera()
         elif self.interactor_style == 'custom':
             self.style = CustomInteractorStyle()
         else:
@@ -706,7 +707,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
-    renderLarge = rcvtk.vtkRenderLargeImage()
+    renderLarge = fhvtk.vtkRenderLargeImage()
     renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
@@ -731,7 +732,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
-        renderLarge = rcvtk.vtkRenderLargeImage()
+        renderLarge = fhvtk.vtkRenderLargeImage()
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
