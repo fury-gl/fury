@@ -1,7 +1,5 @@
-import vtk
 import warnings
-
-VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
+from fury.utils import VTK_9_PLUS
 
 
 def manifest_pbr(actor, metallicity=0, roughness=.5):

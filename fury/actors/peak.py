@@ -1,7 +1,8 @@
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
 from fury.shaders import attribute_to_actor, load, shader_to_actor
-from fury.utils import apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points
-from vtk.util import numpy_support
+from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points,
+                        VTK_9_PLUS)
+from vtkmodules.util import numpy_support
 
 
 import numpy as np
@@ -325,7 +326,7 @@ def _points_to_vtk_cells(points, points_per_line=2):
 
     cell_array = vtk.vtkCellArray()
 
-    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+    if VTK_9_PLUS:
         """
         Connectivity is an array that contains the indices of the points that
         need to be connected in the visualization. The indices start from 0.

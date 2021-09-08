@@ -5,7 +5,7 @@ import os.path as op
 import numpy as np
 from functools import partial
 import vtk
-from vtk.util import numpy_support
+from vtkmodules.util import numpy_support
 
 from fury.shaders import (load, shader_to_actor, attribute_to_actor,
                           add_shader_callback, replace_shader_in_actor)
@@ -1800,7 +1800,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     return tri_actor
 
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), 
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                     scales=1):
     """Visualize one or many pentagonal prisms with different features.
 

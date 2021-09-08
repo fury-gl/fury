@@ -1,7 +1,9 @@
+from tempfile import TemporaryDirectory
+
 from fury import actor, material, window
 from fury.io import load_image
 from fury.optpkg import optional_package
-from tempfile import TemporaryDirectory
+from fury.utils import VTK_9_PLUS
 
 
 import numpy as np
@@ -11,7 +13,6 @@ import pytest
 
 
 dipy, have_dipy, _ = optional_package('dipy')
-VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
 @pytest.mark.skipif(VTK_9_PLUS, reason="Requires VTK < 9.0.0")

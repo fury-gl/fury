@@ -1,8 +1,11 @@
 import numpy as np
 import vtk
-from vtk.util import numpy_support
+import vtkmodules.vtkCommonCore as ccvtk
+from vtkmodules.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
+
+VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
 def remove_observer_from_actor(actor, id):
@@ -123,7 +126,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     cell_array = vtk.vtkCellArray()
 
-    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+    if ccvtk.vtkVersion.GetVTKMajorVersion() >= 9:
         for i in range(nb_cells):
             current_len = len(data[i])
             offset.append(offset[-1] + current_len)
@@ -408,7 +411,7 @@ def set_polydata_triangles(polydata, triangles):
 
     """
     vtk_cells = vtk.vtkCellArray()
-    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+    if ccvtk.vtkVersion.GetVTKMajorVersion() >= 9:
         vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
     else:
         isize = vtk.vtkIdTypeArray().GetDataTypeSize()

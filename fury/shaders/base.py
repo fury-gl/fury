@@ -1,9 +1,9 @@
 import vtk
-from vtk.util import numpy_support
+from vtkmodules.util import numpy_support
 from fury import enable_warnings
+from fury.utils import VTK_9_PLUS
 from functools import partial
 
-VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
                 "geometry": vtk.vtkShader.Geometry,
                 "fragment": vtk.vtkShader.Fragment,
