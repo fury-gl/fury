@@ -5,8 +5,6 @@ from vtkmodules.util import numpy_support
 from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 
-VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
-
 
 def remove_observer_from_actor(actor, id):
     """Remove the observer with the given id from the actor.

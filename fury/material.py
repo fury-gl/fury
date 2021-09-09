@@ -1,5 +1,5 @@
 import warnings
-from fury.utils import VTK_9_PLUS
+from fury.lib import VTK_9_PLUS
 
 
 def manifest_pbr(actor, metallicity=0, roughness=.5):
