@@ -45,16 +45,6 @@ progressbar = ui.ProgressUI(position=(200, 100), padding=10, size=(400, 50),
                             max_value=len(cube_list))
 
 ###############################################################################
-# Using the on_complete hook to display a message
-
-
-def remove_progressbar(self):
-    print("Progress Completed")
-
-
-progressbar.on_complete = remove_progressbar
-
-###############################################################################
 # Show Manager
 # ============
 #
@@ -66,6 +56,18 @@ show_manager = window.ShowManager(size=current_size,
                                   title="FURY ProgressUI Example")
 
 show_manager.scene.add(progressbar)
+
+###############################################################################
+# Using the on_complete hook to display a message
+
+
+def remove_progressbar(self):
+    print("Progress Completed")
+    # To remove progress bar from the scene after completion
+    # show_manager.scene.rm(self.background.actor,self.progress.actor)
+
+
+progressbar.on_complete = remove_progressbar
 
 ###############################################################################
 # Creating a timer callback to add cubes to the scene after some time interval.

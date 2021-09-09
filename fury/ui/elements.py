@@ -3121,7 +3121,7 @@ class ProgressUI(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.background.actors + self.progress.actors
+        return self.background.actor + self.progress.actor
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
