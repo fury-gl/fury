@@ -25,6 +25,7 @@ from vtkmodules.util import numpy_support, colors
 
 
 VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
+VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()
 
 ##############################################################
 #  vtkCommonCore Module
@@ -125,6 +126,7 @@ CylinderSource = fsvtk.vtkCylinderSource
 ArrowSource = fsvtk.vtkArrowSource
 ConeSource = fsvtk.vtkConeSource
 TexturedSphereSource = fsvtk.vtkTexturedSphereSource
+RegularPolygonSource = fsvtk.vtkRegularPolygonSource
 
 ##############################################################
 #  vtkCommonDataModel Module

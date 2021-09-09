@@ -3,12 +3,12 @@ import sys
 import warnings
 
 import numpy as np
-import vtk
+import numpy.testing as npt
 
-from fury.ui.core import UI
 from fury import window
 import fury.testing as ft
-import numpy.testing as npt
+from fury.ui.core import UI
+from fury.lib import Actor2D
 
 
 def test_callback():
@@ -23,7 +23,7 @@ def test_callback():
             super(SimplestUI, self).__init__()
 
         def _setup(self):
-            self.actor = vtk.vtkActor2D()
+            self.actor = Actor2D()
 
         def _set_position(self, coords):
             self.actor.SetPosition(*coords)

@@ -29,7 +29,7 @@ def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
 
     Returns
     -------
-    lookup_table : vtkLookupTable
+    lookup_table : LookupTable
 
     """
     lookup_table = LookupTable()
