@@ -4105,7 +4105,7 @@ class SpinBox(UI):
     """SpinBox UI.
     """
 
-    def __init__(self, position=(300, 300), size=(200, 50), padding=10,
+    def __init__(self, position=(300, 300), size=(150, 80), padding=10,
                  panel_color=(1, 1, 1)):
         """Init this UI element.
 
@@ -4134,15 +4134,27 @@ class SpinBox(UI):
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=self.size[0], height=self.size[1])
+        self.textbox = TextBox2D(width=10, height=2)
         self.increment_button = Button2D(
             icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
         self.decrement_button = Button2D(
             icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
 
-        # self.panel.add_element(self.textbox,(50,50))
-        # self.panel.add_element(self.increment_button,(100,50))
-        # self.panel.add_element(self.decrement_button,(100,10))
+        print(self.panel.size)
+
+        self.panel.add_element(self.textbox, (self.padding, self.padding+20))
+        self.panel.add_element(self.increment_button, (100, self.padding+30))
+        self.panel.add_element(self.decrement_button, (100, self.padding))
+
+    def resize(self, size):
+        """Resize SpinBox.
+
+        Parameters
+        ----------
+        size : (float, float)
+            SpinBox size(width, height) in pixels.
+        """
+        pass
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
