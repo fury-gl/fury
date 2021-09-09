@@ -1,9 +1,7 @@
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
 from fury.shaders import attribute_to_actor, load, shader_to_actor
-from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points,
-                        VTK_9_PLUS)
-from vtkmodules.util import numpy_support
-
+from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points)
+from fury.lib import VTK_9_PLUS, numpy_support
 
 import numpy as np
 import vtk

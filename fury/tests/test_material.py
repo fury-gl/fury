@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 from fury import actor, material, window
 from fury.io import load_image
 from fury.optpkg import optional_package
-from fury.utils import VTK_9_PLUS
+from fury.lib import VTK_9_PLUS
 
 
 import numpy as np

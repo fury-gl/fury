@@ -1,13 +1,15 @@
 """Module dedicated for basic primitive."""
+import math
 from os.path import join as pjoin
 from distutils.version import LooseVersion
+
 import numpy as np
+from scipy.spatial import ConvexHull, transform
+from scipy.version import short_version
+
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
-from scipy.spatial import ConvexHull, transform
-from scipy.version import short_version
-import math
 
 SCIPY_1_4_PLUS = LooseVersion(short_version) >= LooseVersion('1.4.0')
 

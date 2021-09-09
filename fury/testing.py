@@ -7,11 +7,11 @@ import sys
 import warnings
 from functools import partial
 from contextlib import contextmanager
+from distutils.version import LooseVersion
 
 from numpy.testing import assert_array_equal
 import numpy as np
 import scipy
-from distutils.version import LooseVersion
 
 
 @contextmanager

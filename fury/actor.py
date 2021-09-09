@@ -2,25 +2,37 @@
 
 import warnings
 import os.path as op
-import numpy as np
 from functools import partial
-import vtk
-from vtkmodules.util import numpy_support
+
+import numpy as np
 
 from fury.shaders import (load, shader_to_actor, attribute_to_actor,
                           add_shader_callback, replace_shader_in_actor)
 from fury import layout
+from fury.actors.odf_slicer import OdfSlicerActor
+from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
 from fury.deprecator import deprecated_params
+from fury.io import load_image
+from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
+                      ImageReslice, ImageActor, CellPicker, OutlineFilter,
+                      Actor, PolyDataMapper, LookupTable, ImageMapToColors,
+                      Points, CleanPolyData, LoopSubdivisionFilter, TubeFilter,
+                      ButterflySubdivisionFilter, ContourFilter, SplineFilter,
+                      PolyDataNormals, Assembly, LODActor, VTK_UNSIGNED_CHAR,
+                      PolyDataMapper2D, ScalarBarActor, PolyVertex, CellArray,
+                      UnstructuredGrid, DataSetMapper, ConeSource, ArrowSource,
+                      SphereSource, CylinderSource, TexturedSphereSource,
+                      Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
+                      VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
+                      TexturedActor2D, TextureMapToPlane, TextActor3D,
+                      Follower, VectorText)
+import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors)
-from fury.io import load_image
-from fury.actors.odf_slicer import OdfSlicerActor
-from fury.actors.peak import PeakActor
-import fury.primitive as fp
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -76,7 +88,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     vol = data
 
-    im = vtk.vtkImageData()
+    im = ImageData()
     I, J, K = vol.shape[:3]
     im.SetDimensions(I, J, K)
     # for now setting up for 1x1x1 but transformation comes later.
@@ -86,7 +98,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     vtk_type = numpy_support.get_vtk_array_type(vol.dtype)
     im.AllocateScalars(vtk_type, nb_components)
-    # im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+    # im.AllocateScalars(VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
     # what I do below is the same as what is
@@ -109,8 +121,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         affine = np.eye(4)
 
     # Set the transform (identity if none given)
-    transform = vtk.vtkTransform()
-    transform_matrix = vtk.vtkMatrix4x4()
+    transform = Transform()
+    transform_matrix = Matrix4x4()
     transform_matrix.DeepCopy((
         affine[0][0], affine[0][1], affine[0][2], affine[0][3],
         affine[1][0], affine[1][1], affine[1][2], affine[1][3],
@@ -120,7 +132,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     transform.Inverse()
 
     # Set the reslicing
-    image_resliced = vtk.vtkImageReslice()
+    image_resliced = ImageReslice()
     set_input(image_resliced, im)
     image_resliced.SetResliceTransform(transform)
     image_resliced.AutoCropOutputOn()
@@ -148,9 +160,9 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     if data.ndim == 3:
         resliced = resliced.reshape(ez2 + 1, ey2 + 1, ex2 + 1)
 
-    class ImageActor(vtk.vtkImageActor):
+    class ImActor(ImageActor):
         def __init__(self):
-            self.picker = vtk.vtkCellPicker()
+            self.picker = CellPicker()
             self.output = None
             self.shape = None
             self.outline_actor = None
@@ -158,11 +170,11 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def input_connection(self, output):
 
             # outline only
-            outline = vtk.vtkOutlineFilter()
+            outline = OutlineFilter()
             outline.SetInputData(vtk_resliced_data)
-            outline_mapper = vtk.vtkPolyDataMapper()
+            outline_mapper = PolyDataMapper()
             outline_mapper.SetInputConnection(outline.GetOutputPort())
-            self.outline_actor = vtk.vtkActor()
+            self.outline_actor = Actor()
             self.outline_actor.SetMapper(outline_mapper)
             self.outline_actor.GetProperty().SetColor(1, 0.5, 0)
             self.outline_actor.GetProperty().SetLineWidth(5)
@@ -191,7 +203,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
                 self.display_extent(ex1, ex2, ey1, ey2, z, z)
 
         def resliced_array(self):
-            """ Returns resliced array as numpy array"""
+            """Return resliced array as numpy array."""
             resliced = numpy_support.vtk_to_numpy(
                 vtk_resliced_data.GetPointData().GetScalars())
 
@@ -212,7 +224,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
             self.picker.SetTolerance(value)
 
         def copy(self):
-            im_actor = ImageActor()
+            im_actor = ImActor()
             im_actor.input_connection(self.output)
             im_actor.SetDisplayExtent(*self.GetDisplayExtent())
             im_actor.opacity(self.GetOpacity())
@@ -230,14 +242,14 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     r1, r2 = value_range
 
-    image_actor = ImageActor()
+    image_actor = ImActor()
     if nb_components == 1:
         lut = lookup_colormap
         if lookup_colormap is None:
             # Create a black/white lookup table.
             lut = colormap_lookup_table((r1, r2), (0, 0), (0, 0), (0, 1))
 
-        plane_colors = vtk.vtkImageMapToColors()
+        plane_colors = ImageMapToColors()
         plane_colors.SetOutputFormatToRGB()
         plane_colors.SetLookupTable(lut)
         plane_colors.SetInputConnection(image_resliced.GetOutputPort())
@@ -260,42 +272,43 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
 
 def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
-    """Generates a surface actor from an array of vertices
-        The color and smoothness of the surface can be customized by specifying
-        the type of subdivision algorithm and the number of subdivisions.
+    """Generate a surface actor from an array of vertices.
 
-        Parameters
-        ----------
-        vertices : array, shape (X, Y, Z)
-            The point cloud defining the surface.
-        faces : array
-            An array of precomputed triangulation for the point cloud.
-            It is an optional parameter, it is computed locally if None
-        colors : (N, 3) array
-            Specifies the colors associated with each vertex in the
-            vertices array. Range should be 0 to 1.
-            Optional parameter, if not passed, all vertices
-            are colored white
-        smooth : string - "loop" or "butterfly"
-            Defines the type of subdivision to be used
-            for smoothing the surface
-        subdivision : integer, default = 3
-            Defines the number of subdivisions to do for
-            each triangulation of the point cloud.
-            The higher the value, smoother the surface
-            but at the cost of higher computation
+    The color and smoothness of the surface can be customized by specifying
+    the type of subdivision algorithm and the number of subdivisions.
 
-        Returns
-        -------
-        surface_actor : vtkActor
-            A vtkActor visualizing the final surface
-            computed from the point cloud is returned.
+    Parameters
+    ----------
+    vertices : array, shape (X, Y, Z)
+        The point cloud defining the surface.
+    faces : array
+        An array of precomputed triangulation for the point cloud.
+        It is an optional parameter, it is computed locally if None
+    colors : (N, 3) array
+        Specifies the colors associated with each vertex in the
+        vertices array. Range should be 0 to 1.
+        Optional parameter, if not passed, all vertices
+        are colored white
+    smooth : string - "loop" or "butterfly"
+        Defines the type of subdivision to be used
+        for smoothing the surface
+    subdivision : integer, default = 3
+        Defines the number of subdivisions to do for
+        each triangulation of the point cloud.
+        The higher the value, smoother the surface
+        but at the cost of higher computation
+
+    Returns
+    -------
+    surface_actor : vtkActor
+        A vtkActor visualizing the final surface
+        computed from the point cloud is returned.
 
     """
     from scipy.spatial import Delaunay
-    points = vtk.vtkPoints()
+    points = Points()
     points.SetData(numpy_support.numpy_to_vtk(vertices))
-    triangle_poly_data = vtk.vtkPolyData()
+    triangle_poly_data = PolyData()
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
@@ -308,25 +321,25 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     set_polydata_triangles(triangle_poly_data, faces)
 
-    clean_poly_data = vtk.vtkCleanPolyData()
+    clean_poly_data = CleanPolyData()
     clean_poly_data.SetInputData(triangle_poly_data)
 
-    mapper = vtk.vtkPolyDataMapper()
-    surface_actor = vtk.vtkActor()
+    mapper = PolyDataMapper()
+    surface_actor = Actor()
 
     if smooth is None:
         mapper.SetInputData(triangle_poly_data)
         surface_actor.SetMapper(mapper)
 
     elif smooth == "loop":
-        smooth_loop = vtk.vtkLoopSubdivisionFilter()
+        smooth_loop = LoopSubdivisionFilter()
         smooth_loop.SetNumberOfSubdivisions(subdivision)
         smooth_loop.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_loop.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
     elif smooth == "butterfly":
-        smooth_butterfly = vtk.vtkButterflySubdivisionFilter()
+        smooth_butterfly = ButterflySubdivisionFilter()
         smooth_butterfly.SetNumberOfSubdivisions(subdivision)
         smooth_butterfly.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_butterfly.GetOutputPort())
@@ -369,13 +382,13 @@ def contour_from_roi(data, affine=None,
     vol = np.interp(data, xp=[data.min(), data.max()], fp=[0, 255])
     vol = vol.astype('uint8')
 
-    im = vtk.vtkImageData()
+    im = ImageData()
     di, dj, dk = vol.shape[:3]
     im.SetDimensions(di, dj, dk)
     voxsz = (1., 1., 1.)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
-    im.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, nb_components)
+    im.AllocateScalars(VTK_UNSIGNED_CHAR, nb_components)
 
     # copy data
     vol = np.swapaxes(vol, 0, 2)
@@ -390,8 +403,8 @@ def contour_from_roi(data, affine=None,
         affine = np.eye(4)
 
     # Set the transform (identity if none given)
-    transform = vtk.vtkTransform()
-    transform_matrix = vtk.vtkMatrix4x4()
+    transform = Transform()
+    transform_matrix = Matrix4x4()
     transform_matrix.DeepCopy((
         affine[0][0], affine[0][1], affine[0][2], affine[0][3],
         affine[1][0], affine[1][1], affine[1][2], affine[1][3],
@@ -401,7 +414,7 @@ def contour_from_roi(data, affine=None,
     transform.Inverse()
 
     # Set the reslicing
-    image_resliced = vtk.vtkImageReslice()
+    image_resliced = ImageReslice()
     set_input(image_resliced, im)
     image_resliced.SetResliceTransform(transform)
     image_resliced.AutoCropOutputOn()
@@ -416,19 +429,19 @@ def contour_from_roi(data, affine=None,
     image_resliced.SetInterpolationModeToLinear()
     image_resliced.Update()
 
-    skin_extractor = vtk.vtkContourFilter()
+    skin_extractor = ContourFilter()
     skin_extractor.SetInputData(image_resliced.GetOutput())
 
     skin_extractor.SetValue(0, 1)
-    skin_normals = vtk.vtkPolyDataNormals()
+    skin_normals = PolyDataNormals()
     skin_normals.SetInputConnection(skin_extractor.GetOutputPort())
     skin_normals.SetFeatureAngle(60.0)
 
-    skin_mapper = vtk.vtkPolyDataMapper()
+    skin_mapper = PolyDataMapper()
     skin_mapper.SetInputConnection(skin_normals.GetOutputPort())
     skin_mapper.ScalarVisibilityOff()
 
-    skin_actor = vtk.vtkActor()
+    skin_actor = Actor()
 
     skin_actor.SetMapper(skin_mapper)
     skin_actor.GetProperty().SetColor(color[0], color[1], color[2])
@@ -460,13 +473,13 @@ def contour_from_label(data, affine=None, color=None):
         Array surface object displayed in space
         coordinates as calculated by the affine parameter
         in the order of their roi ids.
-    """
 
+    """
     unique_roi_id = np.delete(np.unique(data), 0)
 
     nb_surfaces = len(unique_roi_id)
 
-    unique_roi_surfaces = vtk.vtkAssembly()
+    unique_roi_surfaces = Assembly()
 
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
@@ -492,7 +505,7 @@ def contour_from_label(data, affine=None, color=None):
 def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
                spline_subdiv=None, lookup_colormap=None):
-    """Use streamtubes to visualize polylines
+    """Use streamtubes to visualize polylines.
 
     Parameters
     ----------
@@ -575,7 +588,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     next_input = poly_data
 
     # Set Normals
-    poly_normals = set_input(vtk.vtkPolyDataNormals(), next_input)
+    poly_normals = set_input(PolyDataNormals(), next_input)
     poly_normals.ComputeCellNormalsOn()
     poly_normals.ComputePointNormalsOn()
     poly_normals.ConsistencyOn()
@@ -585,14 +598,14 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 
     # Spline interpolation
     if (spline_subdiv is not None) and (spline_subdiv > 0):
-        spline_filter = set_input(vtk.vtkSplineFilter(), next_input)
+        spline_filter = set_input(SplineFilter(), next_input)
         spline_filter.SetSubdivideToSpecified()
         spline_filter.SetNumberOfSubdivisions(spline_subdiv)
         spline_filter.Update()
         next_input = spline_filter.GetOutputPort()
 
     # Add thickness to the resulting lines
-    tube_filter = set_input(vtk.vtkTubeFilter(), next_input)
+    tube_filter = set_input(TubeFilter(), next_input)
     tube_filter.SetNumberOfSides(tube_sides)
     tube_filter.SetRadius(linewidth)
     # TODO using the line above we will be able to visualize
@@ -603,7 +616,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     next_input = tube_filter.GetOutputPort()
 
     # Poly mapper
-    poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
+    poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray("colors")
@@ -619,11 +632,11 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
 
     # Set Actor
     if lod:
-        actor = vtk.vtkLODActor()
+        actor = LODActor()
         actor.SetNumberOfCloudPoints(lod_points)
         actor.GetProperty().SetPointSize(lod_points_size)
     else:
-        actor = vtk.vtkActor()
+        actor = Actor()
 
     actor.SetMapper(poly_mapper)
 
@@ -710,13 +723,13 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
     # use spline interpolation
     if (spline_subdiv is not None) and (spline_subdiv > 0):
-        spline_filter = set_input(vtk.vtkSplineFilter(), next_input)
+        spline_filter = set_input(SplineFilter(), next_input)
         spline_filter.SetSubdivideToSpecified()
         spline_filter.SetNumberOfSubdivisions(spline_subdiv)
         spline_filter.Update()
         next_input = spline_filter.GetOutputPort()
 
-    poly_mapper = set_input(vtk.vtkPolyDataMapper(), next_input)
+    poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray("colors")
@@ -733,11 +746,11 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
     # Set Actor
     if lod:
-        actor = vtk.vtkLODActor()
+        actor = LODActor()
         actor.SetNumberOfCloudPoints(lod_points)
         actor.GetProperty().SetPointSize(lod_points_size)
     else:
-        actor = vtk.vtkActor()
+        actor = Actor()
 
     actor.SetMapper(poly_mapper)
     actor.GetProperty().SetLineWidth(linewidth)
@@ -776,12 +789,12 @@ def scalar_bar(lookup_table=None, title=" "):
     :func:`fury.actor.colormap_lookup_table`
 
     """
-    lookup_table_copy = vtk.vtkLookupTable()
+    lookup_table_copy = LookupTable()
     if lookup_table is None:
         lookup_table = colormap_lookup_table()
     # Deepcopy the lookup_table because sometimes vtkPolyDataMapper deletes it
     lookup_table_copy.DeepCopy(lookup_table)
-    scalar_bar = vtk.vtkScalarBarActor()
+    scalar_bar = ScalarBarActor()
     scalar_bar.SetTitle(title)
     scalar_bar.SetLookupTable(lookup_table_copy)
     scalar_bar.SetNumberOfLabels(6)
@@ -905,8 +918,7 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
 
 
 def _makeNd(array, ndim):
-    """
-    Pads as many 1s at the beginning of array's shape as are need to give
+    """Pad as many 1s at the beginning of array's shape as are need to give
     array ndim dimensions.
     """
     new_shape = (1,) * (ndim - array.ndim) + array.shape
@@ -959,7 +971,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
     szx, szy, szz = evals.shape[:3]
 
-    class TensorSlicerActor(vtk.vtkLODActor):
+    class TensorSlicerActor(LODActor):
         def __init__(self):
             self.mapper = None
 
@@ -1000,7 +1012,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
 def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
                           scale=2.2, norm=True, scalar_colors=None):
-    """Helper function for slicing tensor fields
+    """Return Helper function for slicing tensor fields.
 
     Parameters
     ----------
@@ -1070,7 +1082,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
 
-    points = vtk.vtkPoints()
+    points = Points()
     points.SetData(all_xyz_vtk)
 
     all_faces = np.concatenate(all_faces)
@@ -1082,16 +1094,16 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vtk_colors = numpy_support.numpy_to_vtk(
         cols,
         deep=True,
-        array_type=vtk.VTK_UNSIGNED_CHAR)
+        array_type=VTK_UNSIGNED_CHAR)
 
     vtk_colors.SetName("colors")
 
-    polydata = vtk.vtkPolyData()
+    polydata = PolyData()
     polydata.SetPoints(points)
     set_polydata_triangles(polydata, all_faces)
     polydata.GetPointData().SetScalars(vtk_colors)
 
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = PolyDataMapper()
     mapper.SetInputData(polydata)
 
     return mapper
@@ -1156,7 +1168,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     if mask is None:
         mask = np.ones(grid_shape).astype(bool)
 
-    class PeakSlicerActor(vtk.vtkLODActor):
+    class PeakSlicerActor(LODActor):
         def __init__(self):
             self.line = None
 
@@ -1328,9 +1340,9 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     else:
         points_no = 1
 
-    polyVertexPoints = vtk.vtkPoints()
+    polyVertexPoints = Points()
     polyVertexPoints.SetNumberOfPoints(points_no)
-    aPolyVertex = vtk.vtkPolyVertex()
+    aPolyVertex = PolyVertex()
     aPolyVertex.GetPointIds().SetNumberOfIds(points_no)
 
     cnt = 0
@@ -1344,15 +1356,15 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
         aPolyVertex.GetPointIds().SetId(cnt, cnt)
         cnt += 1
 
-    aPolyVertexGrid = vtk.vtkUnstructuredGrid()
+    aPolyVertexGrid = UnstructuredGrid()
     aPolyVertexGrid.Allocate(1, 1)
     aPolyVertexGrid.InsertNextCell(aPolyVertex.GetCellType(),
                                    aPolyVertex.GetPointIds())
 
     aPolyVertexGrid.SetPoints(polyVertexPoints)
-    aPolyVertexMapper = vtk.vtkDataSetMapper()
+    aPolyVertexMapper = DataSetMapper()
     aPolyVertexMapper.SetInputData(aPolyVertexGrid)
-    aPolyVertexActor = vtk.vtkActor()
+    aPolyVertexActor = Actor()
     aPolyVertexActor.SetMapper(aPolyVertexMapper)
 
     aPolyVertexActor.GetProperty().SetColor(color)
@@ -1429,7 +1441,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkSphereSource() if faces is None else None
+    src = SphereSource() if faces is None else None
 
     if src is not None:
         src.SetRadius(1)
@@ -1487,7 +1499,7 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkCylinderSource() if faces is None else None
+    src = CylinderSource() if faces is None else None
 
     if src is not None:
         src.SetCapping(capped)
@@ -1695,7 +1707,7 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkArrowSource() if faces is None else None
+    src = ArrowSource() if faces is None else None
 
     if src is not None:
         src.SetTipResolution(resolution)
@@ -1749,7 +1761,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    src = vtk.vtkConeSource() if faces is None else None
+    src = ConeSource() if faces is None else None
 
     if src is not None:
         src.SetResolution(resolution)
@@ -2096,13 +2108,13 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     >>> #window.show(scene)
 
     """
-    atext = vtk.vtkVectorText()
+    atext = VectorText()
     atext.SetText(text)
 
-    textm = vtk.vtkPolyDataMapper()
+    textm = PolyDataMapper()
     textm.SetInputConnection(atext.GetOutputPort())
 
-    texta = vtk.vtkFollower()
+    texta = Follower()
     texta.SetMapper(textm)
     texta.SetScale(scale)
 
@@ -2135,10 +2147,10 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
     Returns
     -------
-    textActor3D
+    Text3D
     """
 
-    class TextActor3D(vtk.vtkTextActor3D):
+    class Text3D(TextActor3D):
 
         def message(self, text):
             self.set_message(text)
@@ -2223,26 +2235,26 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             self.GetBoundingBox(text_bounds)
 
             tprop = self.GetTextProperty()
-            if tprop.GetJustification() == vtk.VTK_TEXT_LEFT:
+            if tprop.GetJustification() == VTK_TEXT_LEFT:
                 user_matrix[:3, -1] += (-text_bounds[0], 0, 0)
-            elif tprop.GetJustification() == vtk.VTK_TEXT_CENTERED:
+            elif tprop.GetJustification() == VTK_TEXT_CENTERED:
                 tm = -(text_bounds[0] + (text_bounds[1] - text_bounds[0]) / 2.)
                 user_matrix[:3, -1] += (tm, 0, 0)
-            elif tprop.GetJustification() == vtk.VTK_TEXT_RIGHT:
+            elif tprop.GetJustification() == VTK_TEXT_RIGHT:
                 user_matrix[:3, -1] += (-text_bounds[1], 0, 0)
 
-            if tprop.GetVerticalJustification() == vtk.VTK_TEXT_BOTTOM:
+            if tprop.GetVerticalJustification() == VTK_TEXT_BOTTOM:
                 user_matrix[:3, -1] += (0, -text_bounds[2], 0)
-            elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_CENTERED:
+            elif tprop.GetVerticalJustification() == VTK_TEXT_CENTERED:
                 tm = -(text_bounds[2] + (text_bounds[3] - text_bounds[2]) / 2.)
                 user_matrix[:3, -1] += (0, tm, 0)
-            elif tprop.GetVerticalJustification() == vtk.VTK_TEXT_TOP:
+            elif tprop.GetVerticalJustification() == VTK_TEXT_TOP:
                 user_matrix[:3, -1] += (0, -text_bounds[3], 0)
 
             user_matrix[:3, -1] *= self.GetScale()
             self.SetUserMatrix(numpy_to_vtk_matrix(user_matrix))
 
-    text_actor = TextActor3D()
+    text_actor = Text3D()
     text_actor.message(text)
     text_actor.font_size(font_size)
     text_actor.set_position(position)
@@ -2274,6 +2286,7 @@ class Container(object):
     """
     def __init__(self, layout=layout.Layout()):
         """
+
         Parameters
         ----------
         layout : ``fury.layout.Layout`` object
@@ -2295,7 +2308,7 @@ class Container(object):
         return self._items
 
     def add(self, *items, **kwargs):
-        """ Adds some items to this container.
+        """Adds some items to this container.
 
         Parameters
         ----------
@@ -2467,7 +2480,7 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
 
 
 def figure(pic, interpolation='nearest'):
-    """ Return a figure as an image actor
+    """Return a figure as an image actor.
 
     Parameters
     ----------
@@ -2486,8 +2499,8 @@ def figure(pic, interpolation='nearest'):
 
         if pic.ndim == 3 and pic.shape[2] == 4:
 
-            vtk_image_data = vtk.vtkImageData()
-            vtk_image_data.AllocateScalars(vtk.VTK_UNSIGNED_CHAR, 4)
+            vtk_image_data = ImageData()
+            vtk_image_data.AllocateScalars(VTK_UNSIGNED_CHAR, 4)
 
             # width, height
             vtk_image_data.SetDimensions(pic.shape[1], pic.shape[0], 1)
@@ -2500,7 +2513,7 @@ def figure(pic, interpolation='nearest'):
             uchar_array = numpy_support.numpy_to_vtk(pic_tmp, deep=True)
             vtk_image_data.GetPointData().SetScalars(uchar_array)
 
-    image_actor = vtk.vtkImageActor()
+    image_actor = ImageActor()
     image_actor.SetInputData(vtk_image_data)
 
     if interpolation == 'nearest':
@@ -2517,7 +2530,7 @@ def figure(pic, interpolation='nearest'):
 
 
 def texture(rgb, interp=True):
-    """ Map an RGB or RGBA texture on a plane
+    """Map an RGB or RGBA texture on a plane.
 
     Parameters
     ----------
@@ -2540,12 +2553,12 @@ def texture(rgb, interp=True):
     vertices *= np.array([[X, Y, 0]])
 
     # Create a polydata
-    my_polydata = vtk.vtkPolyData()
+    my_polydata = PolyData()
     set_polydata_vertices(my_polydata, vertices)
     set_polydata_triangles(my_polydata, triangles)
 
     # Create texture object
-    texture = vtk.vtkTexture()
+    texture = Texture()
     texture.SetInputDataObject(grid)
     # texture.UseSRGBColorSpaceOn()
     # texture.SetPremultipliedAlpha(True)
@@ -2553,16 +2566,16 @@ def texture(rgb, interp=True):
         texture.InterpolateOn()
 
     # Map texture coordinates
-    map_to_sphere = vtk.vtkTextureMapToPlane()
+    map_to_sphere = TextureMapToPlane()
     map_to_sphere.SetInputData(my_polydata)
 
     # Create mapper and set the mapped texture as input
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = PolyDataMapper()
     mapper.SetInputConnection(map_to_sphere.GetOutputPort())
     mapper.Update()
 
     # Create actor and set the mapper and the texture
-    act = vtk.vtkActor()
+    act = Actor()
     act.SetMapper(mapper)
     act.SetTexture(texture)
 
@@ -2596,7 +2609,7 @@ def texture_update(texture_actor, arr):
 
 
 def _textured_sphere_source(theta=60, phi=60):
-    tss = vtk.vtkTexturedSphereSource()
+    tss = TexturedSphereSource()
     tss.SetThetaResolution(theta)
     tss.SetPhiResolution(phi)
 
@@ -2606,13 +2619,13 @@ def _textured_sphere_source(theta=60, phi=60):
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
     tss = _textured_sphere_source(theta=theta, phi=phi)
-    earthMapper = vtk.vtkPolyDataMapper()
+    earthMapper = PolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
 
-    earthActor = vtk.vtkActor()
+    earthActor = Actor()
     earthActor.SetMapper(earthMapper)
 
-    atext = vtk.vtkTexture()
+    atext = Texture()
     grid = rgb_to_vtk(rgb)
     atext.SetInputDataObject(grid)
     if interpolate:
@@ -2642,11 +2655,11 @@ def texture_2d(rgb, interp=False):
     size = (X, Y)
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
 
-    texture_polydata = vtk.vtkPolyData()
-    texture_points = vtk.vtkPoints()
+    texture_polydata = PolyData()
+    texture_points = Points()
     texture_points.SetNumberOfPoints(4)
 
-    polys = vtk.vtkCellArray()
+    polys = CellArray()
     polys.InsertNextCell(4)
     polys.InsertCellPoint(0)
     polys.InsertCellPoint(1)
@@ -2654,7 +2667,7 @@ def texture_2d(rgb, interp=False):
     polys.InsertCellPoint(3)
     texture_polydata.SetPolys(polys)
 
-    tc = vtk.vtkFloatArray()
+    tc = FloatArray()
     tc.SetNumberOfComponents(2)
     tc.SetNumberOfTuples(4)
     tc.InsertComponent(0, 0, 0.0)
@@ -2673,14 +2686,14 @@ def texture_2d(rgb, interp=False):
     texture_points.SetPoint(3, 0, size[1], 0.0)
     texture_polydata.SetPoints(texture_points)
 
-    texture_mapper = vtk.vtkPolyDataMapper2D()
+    texture_mapper = PolyDataMapper2D()
     texture_mapper = set_input(texture_mapper,
                                texture_polydata)
 
-    act = vtk.vtkTexturedActor2D()
+    act = TexturedActor2D()
     act.SetMapper(texture_mapper)
 
-    tex = vtk.vtkTexture()
+    tex = Texture()
     tex.SetInputDataObject(grid)
     if interp:
         tex.InterpolateOn()

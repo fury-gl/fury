@@ -3,7 +3,10 @@
 from collections import deque
 
 import numpy as np
-import vtk
+
+from fury.lib import (Command, InteractorStyleUser, InteractorStyleImage,
+                      InteractorStyleTrackballCamera, PropPicker,
+                      InteractorStyleTrackballActor, InteractorStyle)
 
 
 class Event(object):
@@ -47,7 +50,7 @@ class Event(object):
         self._abort_flag = False
 
 
-class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
+class CustomInteractorStyle(InteractorStyleUser):
     """Manipulate the camera and interact with objects in the scene.
 
     This interactor style allows the user to interactively manipulate (pan,
@@ -71,14 +74,14 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     def __init__(self):
         """Init."""
         # Interactor responsible for moving the camera.
-        self.trackball_camera = vtk.vtkInteractorStyleTrackballCamera()
+        self.trackball_camera = InteractorStyleTrackballCamera()
         # Interactor responsible for moving/rotating a selected actor.
-        self.trackball_actor = vtk.vtkInteractorStyleTrackballActor()
+        self.trackball_actor = InteractorStyleTrackballActor()
         # Interactor responsible for panning/zooming the camera.
-        self.image = vtk.vtkInteractorStyleImage()
+        self.image = InteractorStyleImage()
 
         # The picker allows us to know which object/actor is under the mouse.
-        self.picker = vtk.vtkPropPicker()
+        self.picker = PropPicker()
         self.chosen_element = None
         self.event = Event()
         self.event2id = {}  # To map an event's name to an ID.
@@ -333,7 +336,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
         # `vtkInteractorStyle`. In addition to setting the interactor, the
         # following line adds the necessary hooks to listen to this
         # observers instances.
-        vtk.vtkInteractorStyle.SetInteractor(self, interactor)
+        InteractorStyle.SetInteractor(self, interactor)
 
         # Keyboard events.
         self.AddObserver("CharEvent", self._process_event)
@@ -389,12 +392,12 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
 
         # Dealing with custom events not defined in VTK.
         # Check whether the Event is predefined or not.
-        if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
+        if Command.GetEventIdFromString(event_type) == 0:
             if event_type not in self.event2id:
                 # If the event type was not previously defined,
                 # then create an extra user defined event.
                 self.event2id[event_type] = \
-                    vtk.vtkCommand.UserEvent + len(self.event2id) + 1
+                    Command.UserEvent + len(self.event2id) + 1
 
             event_type = self.event2id[event_type]
 

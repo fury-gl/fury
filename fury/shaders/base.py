@@ -1,7 +1,7 @@
 import vtk
 from vtkmodules.util import numpy_support
 from fury import enable_warnings
-from fury.utils import VTK_9_PLUS
+from fury.lib import VTK_9_PLUS
 from functools import partial
 
 SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
