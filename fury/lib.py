@@ -21,7 +21,9 @@ import vtkmodules.vtkRenderingAnnotation as ravtk
 import vtkmodules.vtkRenderingCore as rcvtk
 import vtkmodules.vtkRenderingFreeType as rftvtk
 import vtkmodules.vtkRenderingLOD as rlodvtk
+import vtkmodules.vtkRenderingOpenGL2 as roglvtk
 from vtkmodules.util import numpy_support, colors
+from vtkmodules.util.misc import calldata_type
 
 
 VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
@@ -36,6 +38,7 @@ IdTypeArray = ccvtk.vtkIdTypeArray
 FloatArray = ccvtk.vtkFloatArray
 DoubleArray = ccvtk.vtkDoubleArray
 UnsignedCharArray = ccvtk.vtkUnsignedCharArray
+VTK_OBJECT = ccvtk.VTK_OBJECT
 VTK_DOUBLE = ccvtk.VTK_DOUBLE
 VTK_TEXT_LEFT = ccvtk.VTK_TEXT_LEFT
 VTK_TEXT_RIGHT = ccvtk.VTK_TEXT_RIGHT
@@ -72,7 +75,9 @@ DataSetMapper = rcvtk.vtkDataSetMapper
 Texture = rcvtk.vtkTexture
 TexturedActor2D = rcvtk.vtkTexturedActor2D
 Follower = rcvtk.vtkFollower
+TextActor = rcvtk.vtkTextActor
 TextActor3D = rcvtk.vtkTextActor3D
+Property2D = rcvtk.vtkProperty2D
 
 ##############################################################
 #  vtkRenderingFreeType Module
@@ -85,6 +90,10 @@ LODActor = rlodvtk.vtkLODActor
 ##############################################################
 #  vtkRenderingAnnotation Module
 ScalarBarActor = ravtk.vtkScalarBarActor
+
+##############################################################
+#  vtkRenderingOpenGL2 Module
+Shader = roglvtk.vtkShader
 
 ##############################################################
 #  vtkInteractionStyle Module
@@ -125,6 +134,7 @@ SphereSource = fsvtk.vtkSphereSource
 CylinderSource = fsvtk.vtkCylinderSource
 ArrowSource = fsvtk.vtkArrowSource
 ConeSource = fsvtk.vtkConeSource
+DiskSource = fsvtk.vtkDiskSource
 TexturedSphereSource = fsvtk.vtkTexturedSphereSource
 RegularPolygonSource = fsvtk.vtkRegularPolygonSource
 
@@ -137,6 +147,7 @@ CellArray = cdmvtk.vtkCellArray
 PolyVertex = cdmvtk.vtkPolyVertex
 UnstructuredGrid = cdmvtk.vtkUnstructuredGrid
 Polygon = cdmvtk.vtkPolygon
+DataObject = cdmvtk.vtkDataObject
 
 ##############################################################
 #  vtkCommonTransforms Module
