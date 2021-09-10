@@ -281,3 +281,29 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
         writer.SetFileTypeToBinary()
     writer.Update()
     writer.Write()
+
+
+def frames_to_gif(file_name, use_pillow=True):
+    """
+    Saves frames as a gif.
+    """
+
+    file_extension = file_name.split(".")[-1].lower()
+
+    if file_extension != "obj":
+        raise IOError(f"We cannot save {file_name} as  a gif.")
+    elif file_extension == "obj":
+        # how do we take snapshots of
+        # an existing scene? or do we create a scene?
+        pass
+
+    if use_pillow:
+        images = []
+        # add code to generate images from scene
+        # Using `save` from PIL to convert the
+        # Series of Frames into a GIF Image.
+        images[0].save( 'frame_to_gif.gif',
+                        save_all=True,
+                        append_images=images[1:],
+                        optimize=False,
+                        loop=0)
