@@ -3058,8 +3058,8 @@ class SpinBox(UI):
     """SpinBox UI.
     """
 
-    def __init__(self, position=(300,300), size=(150,80), padding=10,
-                 panel_color=(1,1,1)):
+    def __init__(self, position=(300, 300), size=(150, 80), padding=10,
+                 panel_color=(1, 1, 1), min_val=0, max_val=100, step=1):
         """Init this UI element.
 
         Parameters
@@ -3073,30 +3073,46 @@ class SpinBox(UI):
             Distance between  and background.
         bg_color : (float, float, float), optional
             Background color of progress bar.
+        min_val: float, optional
+            Minimum value of SpinBoxUI.
+        max_val: float, optional
+            Maximum value of SpinBoxUI.
+        initial_val: float, optional
+            Initial value of SpinBoxUI.
+        step: float, optional
+            Step value of SpinBoxUI.
         """
         self.panel_size = size
         self.padding = padding
         self.panel_color = panel_color
 
-        super(SpinBox,self).__init__(position)
+        super(SpinBox, self).__init__(position)
+
+        self.min_val = min_val
+        self.max_val = max_val
+        self.step = step
 
 
     def _setup(self):
         """Setup this UI component.
 
-        Create the ProgressUI with its background (Rectangle2D) and progress (Rectangle2D).
+        Create the SpinBoxUI with Background (Panel2D) and InputBox (TextBox2D)
+        and Increment,Decrement Button (Button2D).
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=10,height=2)
+        self.textbox = TextBox2D(width=10, height=2)
         self.increment_button = Button2D(icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
         self.decrement_button = Button2D(icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
 
-        print(self.panel.size)
+        self.panel.add_element(self.textbox, (self.padding, self.padding+20))
+        self.panel.add_element(self.increment_button, (100, self.padding+30))
+        self.panel.add_element(self.decrement_button, (100, self.padding))
 
-        self.panel.add_element(self.textbox,(self.padding,self.padding+20))
-        self.panel.add_element(self.increment_button,(100,self.padding+30))
-        self.panel.add_element(self.decrement_button,(100,self.padding))
+        #Adding button click callbacks
+        self.increment_button.on_left_mouse_button_pressed = self.increment_callback
+        self.decrement_button.on_left_mouse_button_pressed = self.decrement_callback
+
 
     def resize(self,size):
         """Resize SpinBox.
@@ -3106,7 +3122,6 @@ class SpinBox(UI):
         size : (float, float)
             SpinBox size(width, height) in pixels.
         """
-        pass
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3122,7 +3137,6 @@ class SpinBox(UI):
         """
         self.panel.add_to_scene(scene)
 
-
     def _get_size(self):
         return self.panel.size
 
@@ -3135,3 +3149,26 @@ class SpinBox(UI):
             Absolute pixel coordinates (x, y).
         """
         self.panel.center = coords
+
+    def increment_callback(self,i_ren,_obj,_button):
+        self.set_value(self.step)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def decrement_callback(self,i_ren,_obj,_button):
+        self.set_value(-self.step)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def set_value(self, step):
+        try:
+            current_val =  int(self.textbox.message)
+            value = current_val + step
+        except:
+            value = self.min_val
+
+        if value > self.max_val:
+            value = self.max_val
+        elif value < self.min_val:
+            value = self.min_val
+        self.textbox.set_message(str(value))
