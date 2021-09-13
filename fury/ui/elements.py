@@ -4105,7 +4105,7 @@ class SpinBox(UI):
     """SpinBox UI.
     """
 
-    def __init__(self, position=(300, 300), size=(150, 80), padding=10,
+    def __init__(self, position=(300, 300), size=(300, 100), padding=10,
                  panel_color=(1, 1, 1), min_val=0, max_val=100, step=1):
         """Init this UI element.
 
@@ -4135,6 +4135,7 @@ class SpinBox(UI):
 
         super(SpinBox, self).__init__(position)
 
+        self.resize(size)
         self.min_val = min_val
         self.max_val = max_val
         self.step = step
@@ -4153,9 +4154,9 @@ class SpinBox(UI):
         self.decrement_button = Button2D(
             icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
 
-        self.panel.add_element(self.textbox, (self.padding, self.padding+20))
-        self.panel.add_element(self.increment_button, (100, self.padding+30))
-        self.panel.add_element(self.decrement_button, (100, self.padding))
+        self.panel.add_element(self.textbox, (0,0))
+        self.panel.add_element(self.increment_button, (0,0))
+        self.panel.add_element(self.decrement_button, (0,0))
 
         # Adding button click callbacks
         self.increment_button.on_left_mouse_button_pressed = self.increment_callback
@@ -4169,6 +4170,22 @@ class SpinBox(UI):
         size : (float, float)
             SpinBox size(width, height) in pixels.
         """
+        self.panel_size = size
+        textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
+        button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+
+        self.panel.resize(size)
+        self.textbox.text.resize(textbox_size)
+        self.increment_button.resize(button_size)
+        self.decrement_button.resize(button_size)
+
+        textbox_pos = (self.padding, int((size[1] - textbox_size[1])/2))
+        inc_btn_pos = (size[0] - self.padding - button_size[0], int((1.5*size[1] - button_size[1])/2))
+        dec_btn_pos = (size[0] - self.padding - button_size[0], int((0.5*size[1] - button_size[1])/2))
+
+        self.panel.update_element(self.textbox, textbox_pos)
+        self.panel.update_element(self.increment_button, inc_btn_pos)
+        self.panel.update_element(self.decrement_button, dec_btn_pos)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
