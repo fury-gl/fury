@@ -1034,6 +1034,7 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.rectangle, {}],
                   [actor.frustum, {}],
                   [actor.octagonalprism, {}],
+                  [actor.pentagonalprism, {}],
                   [actor.triangularprism, {}]]
 
     for act_func, extra_args in actor_list:
