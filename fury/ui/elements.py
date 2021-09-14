@@ -3058,8 +3058,9 @@ class SpinBox(UI):
     """SpinBox UI.
     """
 
-    def __init__(self, position=(300, 300), size=(300, 100), padding=10,
-                 panel_color=(1, 1, 1), min_val=0, max_val=100, step=1):
+    def __init__(self, position=(350, 400), size=(300, 100), padding=10,
+                 panel_color=(1, 1, 1), min_val=0, max_val=100,
+                 initial_val=50, step=1):
         """Init this UI element.
 
         Parameters
@@ -3085,6 +3086,7 @@ class SpinBox(UI):
         self.panel_size = size
         self.padding = padding
         self.panel_color = panel_color
+        self.value = initial_val
 
         super(SpinBox, self).__init__(position)
 
@@ -3093,6 +3095,7 @@ class SpinBox(UI):
         self.max_val = max_val
         self.step = step
 
+        self.on_change = lambda ui: None
 
     def _setup(self):
         """Setup this UI component.
@@ -3103,6 +3106,7 @@ class SpinBox(UI):
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
         self.textbox = TextBox2D(width=10, height=2)
+        self.textbox.set_message(str(self.value))
         self.increment_button = Button2D(icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
         self.decrement_button = Button2D(icon_fnames=[("down", read_viz_icons(fname="circle-down.png"))])
 
@@ -3124,17 +3128,17 @@ class SpinBox(UI):
             SpinBox size(width, height) in pixels.
         """
         self.panel_size = size
-        textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
-        button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
+        self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
 
         self.panel.resize(size)
-        self.textbox.text.resize(textbox_size)
-        self.increment_button.resize(button_size)
-        self.decrement_button.resize(button_size)
+        self.textbox.text.resize(self.textbox_size)
+        self.increment_button.resize(self.button_size)
+        self.decrement_button.resize(self.button_size)
 
-        textbox_pos = (self.padding, int((size[1] - textbox_size[1])/2))
-        inc_btn_pos = (size[0] - self.padding - button_size[0], int((1.5*size[1] - button_size[1])/2))
-        dec_btn_pos = (size[0] - self.padding - button_size[0], int((0.5*size[1] - button_size[1])/2))
+        textbox_pos = (self.padding, int((size[1] - self.textbox_size[1])/2))
+        inc_btn_pos = (size[0] - self.padding - self.button_size[0], int((1.5*size[1] - self.button_size[1])/2))
+        dec_btn_pos = (size[0] - self.padding - self.button_size[0], int((0.5*size[1] - self.button_size[1])/2))
 
         self.panel.update_element(self.textbox, textbox_pos)
         self.panel.update_element(self.increment_button, inc_btn_pos)
@@ -3142,7 +3146,7 @@ class SpinBox(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.panel
+        return self.panel.actors
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3178,14 +3182,13 @@ class SpinBox(UI):
         i_ren.event.abort()
 
     def set_value(self, step):
-        try:
-            current_val =  int(self.textbox.message)
-            value = current_val + step
-        except:
-            value = self.min_val
+        current_val =  int(self.textbox.message)
+        self.value = current_val + step
 
-        if value > self.max_val:
-            value = self.max_val
-        elif value < self.min_val:
-            value = self.min_val
-        self.textbox.set_message(str(value))
+        if self.value > self.max_val:
+            self.value = self.max_val
+        elif self.value < self.min_val:
+            self.value = self.min_val
+
+        self.textbox.set_message(str(self.value))
+        self.on_change(self)
