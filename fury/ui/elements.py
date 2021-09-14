@@ -4133,14 +4133,14 @@ class SpinBox(UI):
         self.panel_size = size
         self.padding = padding
         self.panel_color = panel_color
+        self.min_val = min_val
+        self.max_val = max_val
         self.value = initial_val
+        self.step = step
 
         super(SpinBox, self).__init__(position)
 
         self.resize(size)
-        self.min_val = min_val
-        self.max_val = max_val
-        self.step = step
 
         self.on_change = lambda ui: None
 
@@ -4224,23 +4224,38 @@ class SpinBox(UI):
         self.panel.center = coords
 
     def increment_callback(self, i_ren, _obj, _button):
-        self.set_value(self.step)
+        self.increment()
         i_ren.force_render()
         i_ren.event.abort()
 
     def decrement_callback(self, i_ren, _obj, _button):
-        self.set_value(-self.step)
+        self.decrement()
         i_ren.force_render()
         i_ren.event.abort()
 
-    def set_value(self, step):
-        current_val = int(self.textbox.message)
-        self.value = current_val + step
+    @property
+    def value(self):
+        return self._value
 
-        if self.value > self.max_val:
-            self.value = self.max_val
-        elif self.value < self.min_val:
-            self.value = self.min_val
+    @value.setter
+    def value(self, value):
+        if value > self.max_val:
+            self._value = self.max_val
+        elif value < self.min_val:
+            self._value = self.min_val
+        else:
+            self._value = value
+
+    def increment(self):
+        current_val = int(self.textbox.message)
+        self.value = current_val + self.step
+
+        self.textbox.set_message(str(self.value))
+        self.on_change(self)
+
+    def decrement(self):
+        current_val = int(self.textbox.message)
+        self.value = current_val - self.step
 
         self.textbox.set_message(str(self.value))
         self.on_change(self)
