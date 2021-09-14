@@ -3123,7 +3123,6 @@ class SpinBox(UI):
         self.decrement_button.on_left_mouse_button_pressed = \
             self.decrement_callback
 
-
     def resize(self, size):
         """Resize SpinBox.
 
