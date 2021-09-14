@@ -1,14 +1,14 @@
 """
-=================================
-Billboard labels actor behaviosrs
-=================================
+================================
+Billboard labels actor behaviors
+================================
 
 This examples shows some functionalities of the `billboard_labels` actor.
 We show here how to change the font size (resolution), the font face, alignment
 and offsets.
 
 If you want to see the labels with a different font, you need to install
-the Freetype library and freetype py (`pip install freetype py`).
+the freetype-py (`pip install freetype py`).
 
 """
 
@@ -19,11 +19,10 @@ from fury import text_tools
 import numpy as np
 
 # Set to True to enable user interaction
-interactive = False 
+interactive = True
 
 # Create a window FURY
 scene = window.Scene()
-# scene.background((1., 1., 1.))
 centers = np.array([
     [0, 0, 0],
     [0, 0, 1],
@@ -86,6 +85,7 @@ offset_change_actor = actor.bitmap_labels(
     scales=.05, colors=colors[3])
 
 scene.add(offset_change_actor)
+
 ###############################################################################
 # We can change the offsets of the labels with the `x_offset_ratio` and
 # `y_offset_ratio` arguments. The offset is computed as a ratio of the
@@ -100,7 +100,7 @@ scene.add(offset_change_actor)
 
 ###############################################################################
 # We can change the border width and color of the labels with the
-# `border_width` and `border_color` arguments. 
+# `border_width` and `border_color` arguments.
 
 
 text_with_border = actor.bitmap_labels(
@@ -116,6 +116,7 @@ scene.reset_clipping_range()
 
 
 if interactive:
-    window.show(scene, size=(600, 600), order_transparent=True)
+    window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_billboard_labels.png', size=(600, 600))
+window.record(
+    scene, out_path='viz_billboard_labels.png', size=(600, 600))

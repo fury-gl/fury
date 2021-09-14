@@ -12,13 +12,15 @@ using the interdisciplinary map of journal networks.
 # First, let's import some useful functions
 
 from os.path import join as pjoin
-from fury import actor, window, colormap as cmap
 import numpy as np
+from fury import actor, window, colormap as cmap
+from fury.data.fetcher import fetch_viz_wiki_nw
+
+# Please, switch interactive variable to True if you want to visualize it.
+interactive = False
 
 ###############################################################################
 # Then let's download some available datasets.
-
-from fury.data.fetcher import fetch_viz_wiki_nw
 
 files, folder = fetch_viz_wiki_nw()
 categories_file, edges_file, positions_file = sorted(files.keys())
@@ -87,6 +89,7 @@ lines_actor = actor.line(
 labels = [
     f'{category} journal {i}' for i, category in enumerate(categories)
 ]
+
 #############################################################################
 # Finally, we create our network label actor.
 
@@ -106,11 +109,10 @@ scene.add(sphere_actor)
 scene.add(my_text_actor)
 
 ###############################################################################
-# The final step ! Visualize and save the result of our creation! Please,
-# switch interactive variable to True if you want to visualize it.
-interactive = False
+# The final step ! Visualize and save the result of our creation!
 
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_huge_amount_of_labels.png', size=(600, 600))
+window.record(
+    scene, out_path='viz_huge_amount_of_labels.png', size=(600, 600))

@@ -3235,7 +3235,8 @@ def bitmap_labels(
         list of strings
     colors : array or ndarray
     scales : float, optional
-
+    border_color : array or ndarray, optional
+    border_width : float, optional
     align : str, {left, right, center}
     x_offset_ratio : float
         Percentage of the width to offset the labels on the x axis.
@@ -3260,21 +3261,19 @@ def bitmap_labels(
         uv, relative_sizes = text_tools.get_positions_labels_billboards(
             labels, centers, char2pos, scales,
             align=align,
-            x_offset_ratio=x_offset_ratio, y_offset_ratio=y_offset_ratio,
-    )
-    # num_chars = labels_positions.shape[0]
+            x_offset_ratio=x_offset_ratio,
+            y_offset_ratio=y_offset_ratio)
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts, faces, centers=labels_positions+padding, colors=colors,
-        # verts, faces, centers=labels_positions, colors=colors,
         scales=scales)
 
     big_verts, big_faces, big_colors, big_centers = res
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    sq_actor.GetProperty().BackfaceCullingOff()
+    label_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    label_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    label_actor.GetProperty().BackfaceCullingOff()
 
-    attribute_to_actor(sq_actor, big_centers, 'center')
+    attribute_to_actor(label_actor, big_centers, 'center')
 
     vs_dec_code = load("billboard_dec.vert")
     vs_dec_code += f'\n{load("text_billboard_dec.vert")}'
@@ -3298,18 +3297,18 @@ def bitmap_labels(
     tex = vtk.vtkTexture()
     tex.SetInputDataObject(img_vtk)
     tex.Update()
-    sq_actor.GetProperty().SetTexture('charactersTexture', tex)
+    label_actor.GetProperty().SetTexture('charactersTexture', tex)
     attribute_to_actor(
-        sq_actor,
+        label_actor,
         uv,
         'vUV')
     attribute_to_actor(
-        sq_actor,
+        label_actor,
         relative_sizes,
         'vRelativeSize')
     padding = np.repeat(padding, 4, axis=0)
     attribute_to_actor(
-        sq_actor,
+        label_actor,
         padding,
         'vPadding')
 
@@ -3321,14 +3320,14 @@ def bitmap_labels(
             program.__getattribute__(f'SetUniform{uniform_type}')(
                 uniform_name, value)
     add_shader_callback(
-            sq_actor, partial(
+            label_actor, partial(
                 callback, uniform_type='f', uniform_name='borderWidth',
                 value=border_width))
     if border_color is not None:
         border_color = np.asarray(border_color)
         if border_color.ndim == 1:
             add_shader_callback(
-                    sq_actor, partial(
+                    label_actor, partial(
                         callback, uniform_type='4f',
                         uniform_name='borderColor',
                         value=border_color))
@@ -3336,7 +3335,7 @@ def bitmap_labels(
             border_color = np.repeat(border_color, 4, axis=0)
             print('\n bc', border_color.shape)
             attribute_to_actor(
-                    sq_actor,
+                    label_actor,
                     border_color,
                     'vBorderColor')
             vs_dec_code = vs_dec_code.replace(
@@ -3350,10 +3349,10 @@ def bitmap_labels(
             fs_dec_code = fs_dec_code.replace(
                 'uniform vec4 borderColor', 'in vec4 borderColor')
 
-    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
+    shader_to_actor(label_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
-    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
-    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
+    shader_to_actor(label_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(label_actor, "fragment", impl_code=fs_impl_code,
                     block="light")
 
-    return sq_actor
+    return label_actor
