@@ -4164,8 +4164,10 @@ class SpinBox(UI):
         self.panel.add_element(self.decrement_button, (0, 0))
 
         # Adding button click callbacks
-        self.increment_button.on_left_mouse_button_pressed = self.increment_callback
-        self.decrement_button.on_left_mouse_button_pressed = self.decrement_callback
+        self.increment_button.on_left_mouse_button_pressed = \
+            self.increment_callback
+        self.decrement_button.on_left_mouse_button_pressed = \
+            self.decrement_callback
 
     def resize(self, size):
         """Resize SpinBox.
