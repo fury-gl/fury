@@ -4,7 +4,7 @@ The objects: TextureAtlas, TextureFont and TextureGlyph was obtained
 from the example provided by Nicolas P. Rougier at here
 
 https://github.com/rougier/freetype-py/blob/09a664d23850a7ba8cc208443b1c4f96f21116c6/examples/texture_font.py
-which has the follwoing copyright
+which has the following copyright
 
 freetype-py is licensed under the terms of the new or revised BSD license, as
 follows:
@@ -59,7 +59,7 @@ def one_chanel2sdf(img, threshold=0.5):
     img : ndarray
         The image array.
     threshold : float, optional
-        The thresold to be used to define the boundaries of the
+        The threshold to be used to define the boundaries of the
         signed distance field.
 
     Returns
@@ -76,17 +76,14 @@ def one_chanel2sdf(img, threshold=0.5):
     img_black_px[img > 0] = 0
     img_black_px[img == 0] = 1
     dist = ndimage.distance_transform_edt(img_white_px)[img > 0]
-    distNeg = ndimage.distance_transform_edt(img_black_px)[img == 0]
-    # dist = cv2.distanceTransform(img_white_px, cv2.DIST_L2, 0)[img > 0]
-    # distNeg = cv2.distanceTransform(img_black_px, cv2.DIST_L2, 0)[img == 0]
-    distNeg = border_px - norm(distNeg, distNeg.min(), border_px)
-    # distNeg[distNeg< 255*0.25] = 0.
+    dist_neg = ndimage.distance_transform_edt(img_black_px)[img == 0]
+    dist_neg = border_px - norm(dist_neg, dist_neg.min(), border_px)
     dist = norm(dist, border_px + 1, 255)
-    distComb = img.copy()
-    distComb[img > 0] = dist
-    distComb[img == 0] = distNeg
-    distComb = distComb.astype(np.uint8)
-    return distComb
+    dist_comb = img.copy()
+    dist_comb[img > 0] = dist
+    dist_comb[img == 0] = dist_neg
+    dist_comb = dist_comb.astype(np.uint8)
+    return dist_comb
 
 
 class TextureAtlas:
@@ -145,7 +142,7 @@ class TextureAtlas:
         region : (int,int,int,int)
             an allocated region (x,y,width,height)
 
-        data : numpy array
+        data : ndarray 
             data to be copied into given region
 
         """
@@ -350,8 +347,7 @@ class TextureFont:
 
         Parameters:
         -----------
-
-        charcodes: [str | unicode]
+        charcodes : str 
             Set of characters to be represented
 
         """
@@ -439,11 +435,9 @@ class TextureFont:
             glyph.ht = glyph.h - glyph.top
             self.glyphs[charcode] = glyph
 
-            # Generate kerning
             for g in self.glyphs.values():
                 # 64 * 64 because of 26.6 encoding AND the transform
                 # matrix used
-                # in texture_font_load_face (hres = 64)
                 kerning = face.get_kerning(
                     g.charcode, charcode,
                     mode=ft.FT_KERNING_UNFITTED)
@@ -454,11 +448,6 @@ class TextureFont:
                 if kerning.x != 0:
                     g.kerning[charcode] = kerning.x/(64.0*64.0)
 
-            # High resolution advance.x calculation
-            # gindex = face.get_char_index( charcode )
-            # a = face.get_advance(gindex, FT_LOAD_RENDER |
-            # FT_LOAD_TARGET_LCD)/(64*72)
-            # glyph.advance = a, glyph.advance[1]
         self._calc_relative_sizes()
 
     def _calc_relative_sizes(self):
@@ -485,22 +474,17 @@ class TextureGlyph:
 
         Parameter:
         ----------
-
         charcode : char
             Represented character
-
-        size: tuple of 2 ints
-            Glyph size in pixels
-
-        offset: tuple of 2 floats
-            Glyph offset relatively to anchor point
-
-        advance: tuple of 2 floats
-            Glyph advance
-
-        texcoords: tuple of 4 floats
+        size: tuple
+            Glyph size in pixels. A tuple of two integers (width, height)
+        offset: tuple
+            Glyph offset relatively to anchor point. A tuple of two floats.
+        advance: tuple
+            Glyph advance. A tuple of two floats.
+        texcoords: tuple
             Texture coordinates of bottom-left and top-right corner
-            of glyph bounding box
+            of glyph bounding box. A tuple of four floats (x0, y0, x1, y1).
 
         """
         self.charcode = charcode
@@ -517,9 +501,9 @@ class TextureGlyph:
 
         Parameters:
         -----------
-
-        charcode: char
+        charcode : char
             Character preceding this glyph
+
         """
         if charcode in self.kerning.keys():
             return self.kerning[charcode]
@@ -532,12 +516,12 @@ def list_fonts_available(fullpath=False):
 
     Parameters
     ----------
-    fullpath: bool, optional
+    fullpath : bool, optional
         If True, return full path, otherwise, return only the font name
 
     Returns
     -------
-    fonts: list or dict
+    fonts : list or dict
         Font names available in your FURY installation.
         A dictionary with full path and font names is returned if fullpath is
         True.
@@ -573,7 +557,7 @@ def create_atlas_font(
         The path to the font file.
     folder : str
         The path to the folder where the font will be saved.
-    font_size_res : int
+    font_size_res : int, optional
         The size of the font.
     atlas_size : tuple, optional
         The size of the texture atlas in pixels.

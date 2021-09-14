@@ -5,7 +5,7 @@ Billboard labels new font example
 =================================
 
 If you want to see the labels with a different font, you need to install
-the Freetype library and freetype-py (`pip install freetype-py`).
+the Freetype library (`pip install freetype-py`).
 
 """
 
@@ -17,7 +17,7 @@ from fury import text_tools
 import numpy as np
 
 # Set to True to enable user interaction
-interactive = True
+interactive = False
 
 # Create a window FURY
 scene = window.Scene()
@@ -29,9 +29,10 @@ scene = window.Scene()
 #
 if text_tools._FREETYPE_AVAILABLE:
 
-    # We start chosing a path for the TTF file. Here we use the Roboto font
+    # We start choosing a path for the TTF file. Here we use the Roboto font
     # that is available on the FURY examples folder.
-    font_path = font_path = f'{fury.__path__[0]}/data/files/RobotoMonoBold700.ttf'
+    font_path = f'{fury.__path__[0]}/data/files/RobotoMonoBold700.ttf'
+
 ###############################################################################
 # Then we create the texture atlas for the font. The `font_size_res`
 # argument controls the quality of the font rendering, the higher the better
@@ -55,7 +56,6 @@ scene.reset_clipping_range()
 
 
 if interactive:
-    window.show(scene, size=(600, 600), order_transparent=True)
+    window.show(scene, size=(600, 600))
 
 window.record(scene, out_path='viz_billboard_labels.png', size=(600, 600))
-

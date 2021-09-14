@@ -34,21 +34,17 @@ def test_atlas():
 
 
 def test_bitmap_actor():
-    interactive = False
-    N = 1
+    N = 10
     colors = (0, 0.8, .5)
     colors_spheres = colors
 
     labels = ['AbrBac..ooo0123_///::adabra_ 1664123!@/?*...)(']
-    # labels = [''.join([chr(i) for i in range(32, 127)])]
     centers = np.random.normal(0, 10, size=(N, 3))
     if N > 1:
-        # colors = np.random.uniform(0, 1, size=(N, 3))
         min_s = 5
         max_s = 10
         chars = [chr(i) for i in range(32, 134)]
         labels = [
-            # f'Sphere{i}' if i % 2 == 0 else f'Sphere {i}'
             ''.join(
                     np.random.choice(
                         chars,
@@ -72,7 +68,3 @@ def test_bitmap_actor():
     showm = window.ShowManager(size=(700, 200))
     showm.scene.add(my_text_actor)
     showm.scene.add(spheres)
-    if interactive:
-        showm.initialize()
-        showm.start()
-
