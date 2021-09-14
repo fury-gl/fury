@@ -21,12 +21,14 @@ fetch_viz_icons()
 ###############################################################################
 # Let's create a Cone.
 
-cone = actor.cone(np.random.rand(1,3), np.random.rand(1,3), (1, 1, 1), np.random.rand(1))
+cone = actor.cone(np.random.rand(1, 3), np.random.rand(1, 3), (1, 1, 1),
+                  np.random.rand(1))
 
 ###############################################################################
-#Creating the SpinBox UI.
+# Creating the SpinBox UI.
 
-spinbox = ui.SpinBox(position=(200,100),size=(300,100),min_val=0,max_val=360,initial_val=180,step=10)
+spinbox = ui.SpinBox(position=(200, 100), size=(300, 100), min_val=0,
+                     max_val=360, initial_val=180, step=10)
 
 ###############################################################################
 # Now that all the elements have been initialised, we add them to the show
@@ -41,6 +43,7 @@ show_manager.scene.add(spinbox)
 
 ###############################################################################
 # Using the on_change hook to rotate the scene.
+
 
 def rotate_cone(spinbox):
     show_manager.scene.azimuth(spinbox.value)
