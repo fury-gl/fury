@@ -96,8 +96,8 @@ class TextureAtlas:
     the Skyline Bottom-Left algorithm based on C++ sources provided by Jukka
     Jylänki at: http://clb.demon.fi/files/RectangleBinPack/
 
-    Example usage:
-    --------------
+    Example
+    -------
 
     atlas = TextureAtlas(512,512,3)
     region = atlas.get_region(20,20)
@@ -113,7 +113,6 @@ class TextureAtlas:
 
         Parameters
         ----------
-
         atlas_size : tuple of int, optional
             Size of the underlying texture image. Default is (1024, 1024)
         num_chanels : int, optional
@@ -138,11 +137,9 @@ class TextureAtlas:
 
         Parameters
         ----------
-
         region : (int,int,int,int)
             an allocated region (x,y,width,height)
-
-        data : ndarray 
+        data : ndarray
             data to be copied into given region
 
         """
@@ -295,8 +292,8 @@ class TextureAtlas:
 
 
 class TextureFont:
-    """A texture font gathers a set of glyph relatively to a given font filename
-    and size.
+    """A texture font gathers a set of glyph relatively to a
+    given font filename and size.
 
     """
 
@@ -347,7 +344,7 @@ class TextureFont:
 
         Parameters:
         -----------
-        charcodes : str 
+        charcodes : str
             Set of characters to be represented
 
         """
