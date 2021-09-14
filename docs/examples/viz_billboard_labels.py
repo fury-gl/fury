@@ -3,12 +3,11 @@
 Billboard labels actor behaviors
 ================================
 
-This examples shows some functionalities of the `billboard_labels` actor.
+This example shows how to use the  :func:`fury.actor.billboard_labels` function
+to create a set of labels that are always facing the camera. This is useful
+for creating labels that are always visible in a scene.
 We show here how to change the font size (resolution), the font face, alignment
 and offsets.
-
-If you want to see the labels with a different font, you need to install
-the freetype-py (`pip install freetype py`).
 
 """
 
@@ -19,7 +18,7 @@ from fury import text_tools
 import numpy as np
 
 # Set to True to enable user interaction
-interactive = True
+interactive = False
 
 # Create a window FURY
 scene = window.Scene()
@@ -78,7 +77,7 @@ scene.add(left_actor)
 # To list all the available fonts, run:
 print('\n\t Fonts available: ', text_tools.list_fonts_available(), '\n')
 # We will use the InconsolataBold700 font in this label actor
-#
+
 offset_change_actor = actor.bitmap_labels(
     [centers[3]], ['4 Inconsolata and opacity'],
     font_name='InconsolataBold700',
@@ -90,7 +89,7 @@ scene.add(offset_change_actor)
 # We can change the offsets of the labels with the `x_offset_ratio` and
 # `y_offset_ratio` arguments. The offset is computed as a ratio of the
 # font size.
-#
+
 offset_change_actor = actor.bitmap_labels(
     [centers[4]], ['5 offset'],
     x_offset_ratio=3, y_offset_ratio=2,
