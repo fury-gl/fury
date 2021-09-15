@@ -303,30 +303,29 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
     Dict containing the processed sprites.
     """
     sprite_dicts = {}
-    sprite_sheet = Image.fromarray(load_image(sheet_path))
-    width, height = sprite_sheet.size
+    sprite_sheet = load_image(sheet_path)
+    width, height = sprite_sheet.shape[:2]
 
-    sprite_size_x = width // nb_rows
-    sprite_size_y = height // nb_cols
+    sprite_size_x = int(np.ceil(width / nb_rows))
+    sprite_size_y = int(np.ceil(height / nb_cols))
 
-    for row in range(nb_rows):
-        for col in range(nb_cols):
-            nxt_row = row + 1
-            nxt_col = col + 1
+    for row, col in np.ndindex((nb_rows, nb_cols)):
+        nxt_row = row + 1
+        nxt_col = col + 1
 
-            box = (row*sprite_size_x, col*sprite_size_y,
-                   nxt_row*sprite_size_x, nxt_col*sprite_size_y)
+        box = (row*sprite_size_x, col*sprite_size_y,
+               nxt_row*sprite_size_x, nxt_col*sprite_size_y)
 
-            sprite_arr = sprite_sheet.crop(box)
-            if as_vtktype:
-                with InTemporaryDirectory() as tdir:
-                    tmp_img_path = os.path.join(tdir, f'{row}{col}.png')
-                    save_image(np.asarray(sprite_arr), tmp_img_path,
-                               compression_quality=100)
+        sprite_arr = sprite_sheet[box[0]:box[2], box[1]:box[3]]
+        if as_vtktype:
+            with InTemporaryDirectory() as tdir:
+                tmp_img_path = os.path.join(tdir, f'{row}{col}.png')
+                save_image(sprite_arr, tmp_img_path,
+                           compression_quality=100)
 
-                    sprite_dicts[f'{row}{col}'] = load_image(tmp_img_path,
-                                                             as_vtktype=True)
-            else:
-                sprite_dicts[f'{row}{col}'] = np.asarray(sprite_arr)
+                sprite_dicts[(row, col)] = load_image(tmp_img_path,
+                                                      as_vtktype=True)
+        else:
+            sprite_dicts[(row, col)] = sprite_arr
 
     return sprite_dicts
