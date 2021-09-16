@@ -9,9 +9,9 @@ a SpinBox UI.
 
 First, some imports.
 """
-from fury import actor, ui, window
+from fury import actor, ui, utils, window
+from fury.data import fetch_viz_icons
 import numpy as np
-from fury.data import read_viz_icons, fetch_viz_icons
 
 ##############################################################################
 # First we need to fetch some icons that are included in FURY.
@@ -21,8 +21,9 @@ fetch_viz_icons()
 ###############################################################################
 # Let's create a Cone.
 
-cone = actor.cone(np.random.rand(1, 3), np.random.rand(1, 3), (1, 1, 1),
-                  np.random.rand(1))
+cone = actor.cone(centers=np.random.rand(1, 3),
+                  directions=np.random.rand(1, 3),
+                  colors=(1, 1, 1), heights=np.random.rand(1))
 
 ###############################################################################
 # Creating the SpinBox UI.
@@ -42,11 +43,16 @@ show_manager.scene.add(cone)
 show_manager.scene.add(spinbox)
 
 ###############################################################################
-# Using the on_change hook to rotate the scene.
+# Using the on_change hook to rotate the cone.
 
+# Tracking previous value to check in/decrement.
+previous_value = spinbox.value
 
 def rotate_cone(spinbox):
-    show_manager.scene.azimuth(spinbox.value)
+    global previous_value
+    change_in_value = spinbox.value - previous_value
+    utils.rotate(cone, (change_in_value, 1, 0, 0))
+    previous_value = spinbox.value
 
 
 spinbox.on_change = rotate_cone
