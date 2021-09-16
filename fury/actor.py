@@ -16,9 +16,10 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order)
+                        fix_winding_order, numpy_to_vtk_colors)
 from fury.io import load_image
 from fury.actors.odf_slicer import OdfSlicerActor
+from fury.actors.peak import PeakActor
 import fury.primitive as fp
 
 
@@ -272,7 +273,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
             It is an optional parameter, it is computed locally if None
         colors : (N, 3) array
             Specifies the colors associated with each vertex in the
-            vertices array.
+            vertices array. Range should be 0 to 1.
             Optional parameter, if not passed, all vertices
             are colored white
         smooth : string - "loop" or "butterfly"
@@ -299,7 +300,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     if colors is not None:
         triangle_poly_data.GetPointData().\
-            SetScalars(numpy_support.numpy_to_vtk(colors))
+            SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
@@ -1222,6 +1223,86 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     return peak_actor
 
 
+def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
+         linewidth=1, lookup_colormap=None):
+    """Visualize peak directions as given from ``peaks_from_model``.
+
+    Parameters
+    ----------
+    peaks_dirs : ndarray
+        Peak directions. The shape of the array should be (X, Y, Z, D, 3).
+    peaks_values : ndarray, optional
+        Peak values. The shape of the array should be (X, Y, Z, D).
+    affine : array, optional
+        4x4 transformation array from native coordinates to world coordinates.
+    mask : ndarray, optional
+        3D mask
+    colors : tuple or None, optional
+        Default None. If None then every peak gets an orientation color
+        in similarity to a DEC map.
+    lookup_colormap : vtkLookupTable, optional
+        Add a default lookup table to the colormap. Default is None which calls
+        :func:`fury.actor.colormap_lookup_table`.
+    linewidth : float, optional
+        Line thickness. Default is 1.
+
+    Returns
+    -------
+    actor : PeakActor
+        vtkActor or vtkLODActor representing the peaks directions and/or
+        magnitudes.
+
+    Examples
+    ----------
+    >>> from fury import actor, window
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> peak_dirs = np.random.rand(3, 3, 3, 3, 3)
+    >>> c = actor.peak(peak_dirs)
+    >>> scene.add(c)
+    >>> #window.show(scene)
+
+    """
+    if peaks_dirs.ndim != 5:
+        raise ValueError('Invalid peak directions. The shape of the structure '
+                         'must be (XxYxZxDx3). Your data has {} dimensions.'
+                         ''.format(peaks_dirs.ndim))
+    if peaks_dirs.shape[4] != 3:
+        raise ValueError('Invalid peak directions. The shape of the last '
+                         'dimension must be 3. Your data has a last dimension '
+                         'of {}.'.format(peaks_dirs.shape[4]))
+
+    dirs_shape = peaks_dirs.shape
+
+    if peaks_values is not None:
+        if peaks_values.ndim != 4:
+            raise ValueError('Invalid peak values. The shape of the structure '
+                             'must be (XxYxZxD). Your data has {} dimensions.'
+                             ''.format(peaks_values.ndim))
+        vals_shape = peaks_values.shape
+        if vals_shape != dirs_shape[:4]:
+            raise ValueError('Invalid peak values. The shape of the values '
+                             'must coincide with the shape of the directions.')
+
+    valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
+    if mask is not None:
+        if mask.ndim != 3:
+            warnings.warn('Invalid mask. The mask must be a 3D array. The '
+                          'passed mask has {} dimensions. Ignoring passed '
+                          'mask.'.format(mask.ndim), UserWarning)
+        elif mask.shape != dirs_shape[:3]:
+            warnings.warn('Invalid mask. The shape of the mask must coincide '
+                          'with the shape of the directions. Ignoring passed '
+                          'mask.', UserWarning)
+        else:
+            valid_mask = np.logical_and(valid_mask, mask)
+    indices = np.nonzero(valid_mask)
+
+    return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
+                     colors=colors, lookup_colormap=lookup_colormap,
+                     linewidth=linewidth)
+
+
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     """Create one or more 3d points.
 
@@ -1717,6 +1798,48 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     big_verts, big_faces, big_colors, _ = res
     tri_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
     return tri_actor
+
+
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), 
+                    scales=1):
+    """Visualize one or many pentagonal prisms with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3), optional
+        Pentagonal prism positions
+    directions : ndarray, shape (N, 3), optional
+        The orientation vector of the pentagonal prism.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        Pentagonal prism size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(3, 1)
+    >>> actor_pentagonal = actor.pentagonalprism(centers, dirs, colors, scales)
+    >>> scene.add(actor_pentagonal)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_pentagonalprism()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scales=scales)
+
+    big_verts, big_faces, big_colors, _ = res
+    pent_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return pent_actor
 
 
 def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),

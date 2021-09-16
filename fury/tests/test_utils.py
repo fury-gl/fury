@@ -8,9 +8,10 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vtk, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds)
+                        get_bounds, update_surface_actor_colors)
 from fury import actor, window, utils
 import fury.primitive as fp
+from vtk.util import numpy_support
 
 
 def test_map_coordinates_3d_4d():
@@ -477,3 +478,27 @@ def test_get_bounds():
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
+
+
+def test_update_surface_actor_colors():
+    x = np.linspace(-1, 1, 20)
+    y = np.linspace(-1, 1, 20)
+    x, y = np.meshgrid(x, y)
+    x = x.reshape(-1)
+    y = y.reshape(-1)
+    z = x**2 + y**2
+    colors = np.array([[0.2, 0.4, 0.8]]*400)
+    xyz = np.vstack([x, y, z]).T
+    act = actor.surface(xyz)
+    update_surface_actor_colors(act, colors)
+
+    # Multiplying colors by 255 to convert them into RGB format used by VTK.
+    colors *= 255
+
+    # colors obtained from the surface
+    surface_colors = numpy_support.vtk_to_numpy(act.GetMapper().GetInput().
+                                                GetPointData().GetScalars())
+
+    # Checking if the colors passed to the function and colors assigned are
+    # same.
+    npt.assert_equal(colors, surface_colors)
