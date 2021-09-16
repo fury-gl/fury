@@ -1,6 +1,7 @@
 from fury.utils import remove_observer_from_actor
 import os
 import warnings
+import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
@@ -336,6 +337,60 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
+
+def test_timers():
+    interactive = False
+    centers = np.array([[1, 0, 0]])
+    showm = window.ShowManager(size=(400, 400))
+    # number of times that  each time call is called
+    counts_by_interval = {0: 0, 1: 0, 2: 0, 3:0}
+    # interval of each timer in miliseconds
+    ms_1 = 10
+    ms_2 = 10
+    ms_3 = 100
+    state = {
+        'first_call': True,
+        # amount of milleseconds passe since the timer was started
+        'current_time': 0,
+    }
+
+    def t1(iren, event_name_str):
+        if state['first_call']:
+            state['first_call'] = False
+        counts_by_interval[0] += 1
+
+    def t2(iren, event_name_str):
+        if state['first_call']:
+            state['first_call'] = False
+        state['current_time'] += ms_2
+        counts_by_interval[1] += 1
+
+    def t3(iren, event_name_str):
+        if state['current_time'] >= ms_3:
+            counts_by_interval[2] += 1
+
+            showm.destroy_timers()
+            showm.exit()
+
+    id1 = showm.add_timer_callback(False, ms_1, t1)
+    showm.add_timer_callback(True, ms_2, t2)
+    showm.add_timer_callback(False, ms_3, t3)
+    showm.destroy_timer(id1)
+
+    showm.initialize()
+
+    color = np.array([0, 1, 0])
+    sphere = actor.sphere(centers, color)
+    showm.scene.add(sphere)
+
+    state['first_time'] = time.time()
+    if interactive:
+        showm.start()
+        # callback 1 was not called
+        npt.assert_equal(counts_by_interval[0], 0)
+        npt.assert_equal(counts_by_interval[1] >= ms_3//ms_2, True)
+
+
 def test_opengl_state_simple():
     for gl_state in [
         window.gl_reset_blend, window.gl_enable_depth,
@@ -427,3 +482,4 @@ def test_opengl_state_add_remove_and_check():
     state = window.gl_get_current_state(showm.window.GetState())
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
     npt.assert_equal(after_remove_depth_test_observer, True)
+
