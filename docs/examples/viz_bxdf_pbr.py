@@ -212,12 +212,12 @@ if __name__ == '__main__':
     shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
                     block='light', debug=False)
 
-    cubemap_fns = [read_viz_textures('waterfall-skybox-px.jpg'),
-                   read_viz_textures('waterfall-skybox-nx.jpg'),
-                   read_viz_textures('waterfall-skybox-py.jpg'),
-                   read_viz_textures('waterfall-skybox-ny.jpg'),
-                   read_viz_textures('waterfall-skybox-pz.jpg'),
-                   read_viz_textures('waterfall-skybox-nz.jpg')]
+    cubemap_fns = [read_viz_textures('skybox-px.jpg'),
+                   read_viz_textures('skybox-nx.jpg'),
+                   read_viz_textures('skybox-py.jpg'),
+                   read_viz_textures('skybox-ny.jpg'),
+                   read_viz_textures('skybox-pz.jpg'),
+                   read_viz_textures('skybox-nz.jpg')]
 
     # Load the cube map
     cubemap = get_cubemap(cubemap_fns)

@@ -118,7 +118,16 @@ float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
     float dotHY2 = square(dotHY);
     float ax2 = square(ax);
     float ay2 = square(ay);
-    return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay + dotHN2));
+    return 1. / (PI * ax * ay * square(dotHX2 / ax2 + dotHY2 / ay2 + dotHN2));
+}
+
+float GGXAnisotropic(float dotHN, float dotHX, float dotHY, float ax, float ay)
+{
+    float a2 = ax * ay;
+    vec3 d = vec3(ax * dotHY, ay * dotHX, a2 * dotHN);
+    float d2 = dot(d, d);
+    float b2 = a2 / d2;
+    return a2 * square(b2) * (1 / PI);
 }
 
 float schlickWeight(float cosTheta)
@@ -170,11 +179,10 @@ float separableSmithGGXG1(float dotVX, float dotVY, float dotNV,
     if(isinf(absTanTheta))
         return .0;
 
-    // TODO: Check
-    float alpha2 = square(absTanTheta * sqrt(dotVX2 * ax2 + dotVY2 * ay2));
+    float alpha = absTanTheta * sqrt(dotVX2 * ax2 + dotVY2 * ay2);
+    float alpha2 = square(alpha);
 
     float lambda = .5 * (-1. + sqrt(1. + alpha2));
-    //float lambda = .5 * (-1. + sqrt(1. + 1. / alpha2));
 
     return 1. / (1. + lambda);
 }
@@ -194,6 +202,15 @@ float smithGGGXAnisotropic(float dotNV, float dotVX, float dotVY, float ax,
     float ax2 = square(ax);
     float ay2 = square(ay);
     return 1. / (dotNV + sqrt(dotVX2 * ax2 + dotVY2 * ay2 + square(dotNV)));
+}
+
+float smithGGGXCorrelatedAnisotropic(float dotLN, float dotLX, float dotLY,
+                                     float dotNV, float dotVX, float dotVY,
+                                     float ax, float ay)
+{
+    float lambdaL = dotNV * length(vec3(ax * dotLX, ay * dotLY, dotLN));
+    float lambdaV = dotLN * length(vec3(ax * dotVX, ay * dotVY, dotNV));
+    return .5 / (lambdaL + lambdaV);
 }
 
 vec3 evaluateBRDF(float anisotropicF, float roughnessF, float specularTintF,
@@ -271,11 +288,17 @@ vec3 evaluateMicrofacetAnisotropic(float specularF, float specularTintF,
     float ay = max(.001, square(roughnessF) * aspect);
 
     float ds = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
+
+    //float ds = GGXAnisotropic(dotHN, dotHX, dotHY, ax, ay);
+
     float fh = schlickWeight(dotHL);
     vec3 fs = mix(spec, vec3(1.), fh);
 
     float gs = smithGGGXAnisotropic(dotLN, dotLX, dotLY, ax, ay);
     gs *= smithGGGXAnisotropic(dotNV, dotVX, dotVY, ax, ay);
+
+    //float gs = smithGGGXCorrelatedAnisotropic(dotLN, dotLX, dotLY, dotNV,
+        //dotVX, dotVY, ax, ay);
 
     return gs * fs * ds;
 }
