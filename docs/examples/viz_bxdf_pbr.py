@@ -41,9 +41,8 @@ def change_slice_metallic(slider):
 
 
 def change_slice_specular(slider):
-    global obj_actor, specular
-    #obj_actor.GetProperty().SetSpecular(slider._value)
-    specular = slider._value
+    global obj_actor
+    obj_actor.GetProperty().SetSpecular(slider._value)
 
 
 def change_slice_specular_tint(slider):
@@ -147,10 +146,9 @@ def obj_surface():
 
 def uniforms_callback(_caller, _event, calldata=None):
     global anisotropic, clearcoat, clearcoat_gloss, sheen, sheen_tint, \
-        specular, specular_tint, subsurface
+        specular_tint, subsurface
     if calldata is not None:
         calldata.SetUniformf('subsurface', subsurface)
-        calldata.SetUniformf('specularValue', specular)
         calldata.SetUniformf('specularTint', specular_tint)
         calldata.SetUniformf('anisotropic', anisotropic)
         calldata.SetUniformf('sheen', sheen)
@@ -171,8 +169,7 @@ def win_callback(obj, event):
 
 if __name__ == '__main__':
     global anisotropic, clearcoat, clearcoat_gloss, control_panel, obj_actor, \
-        pbr_panel, sheen, sheen_tint, size, specular, specular_tint, \
-        subsurface
+        pbr_panel, sheen, sheen_tint, size, specular_tint, subsurface
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -195,7 +192,7 @@ if __name__ == '__main__':
 
     # NOTE: Specular parameters don't seem to work
     #specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
-    #obj_actor.GetProperty().SetSpecular(specular)
+    obj_actor.GetProperty().SetSpecular(specular)
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
     #obj_actor.GetProperty().SetSpecularColor(specular_color)
 

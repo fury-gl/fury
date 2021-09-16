@@ -23,7 +23,6 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 #define EPSILON .0001
 
 uniform float subsurface;
-uniform float specularValue;
 uniform float specularTint;
 uniform float anisotropic;
 uniform float sheen;
@@ -87,7 +86,8 @@ float dielectric(float cosThetaI, float ni, float nt)
 
 void directionOfAnisotropicity(vec3 normal, out vec3 tangent, out vec3 binormal)
 {
-    tangent = cross(normal, vec3(.5, .5, 1.));
+    //tangent = cross(normal, vec3(.5, .5, 1.));
+    tangent = cross(normal, vec3(.0, 1., .5));
     binormal = normalize(cross(normal, tangent));
     tangent = normalize(cross(normal, binormal));
 }
@@ -324,6 +324,26 @@ vec3 evaluateMicrofacetIsotropic(float specularF, float specularTintF,
     float gs = smithGGGX(dotLN, a);
     gs *= smithGGGX(dotNV, a);
     return gs * fs * ds;
+}
+
+vec3 vtkSpecularAnisotropic(float anisotropicF, float roughnessF, float dotHL,
+                            float dotHN, float dotHX, float dotHY, float dotLN,
+                            float dotLX, float dotLY, float dotNV, float dotVX,
+                            float dotVY, vec3 F0, vec3 F90)
+{
+    float aspect = sqrt(1. - anisotropicF * .9);
+
+    float ax = max(.001, square(roughnessF) / aspect);
+    float ay = max(.001, square(roughnessF) * aspect);
+
+    float d = GGXAnisotropic(dotHN, dotHX, dotHY, ax, ay);
+
+    float g = smithGGGXCorrelatedAnisotropic(dotLN, dotLX, dotLY, dotNV, dotVX,
+        dotVY, ax, ay);
+
+    vec3 f = F0 + (F90 - F0) * schlickWeight(dotHL);
+
+    return (d * g) * f;
 }
 
 vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
