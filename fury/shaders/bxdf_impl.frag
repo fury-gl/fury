@@ -46,8 +46,8 @@ directionOfAnisotropicity(N, tangent, binormal);
 //fragOutput0 = vec4(tangent, opacity);
 //fragOutput0 = vec4(binormal, opacity);
 
-float HdX = clamp(dot(V, tangent), 1e-5, 1.);
-float HdY = clamp(dot(V, binormal), 1e-5, 1.);
+float VdX = clamp(dot(V, tangent), 1e-5, 1.);
+float VdY = clamp(dot(V, binormal), 1e-5, 1.);
 
 vec3 anisotropicTangent = cross(binormal, V);
 vec3 anisotropicNormal = cross(anisotropicTangent, binormal);
@@ -59,6 +59,9 @@ vec3 prefilteredSpecularColor = textureLod(prefilterTex, worldReflect, roughness
 //fragOutput0 = vec4(bentNormal, opacity);
 //fragOutput0 = vec4(worldReflect, opacity);
 //fragOutput0 = vec4(prefilteredSpecularColor, opacity);
+
+VdX = clamp(dot(V, mix(N, anisotropicTangent, anisotropic)), 1e-5, 1.);
+VdY = clamp(dot(V, mix(N, anisotropicNormal, anisotropic)), 1e-5, 1.);
 
 //F0 = mix(vec3(baseF0Uniform), albedo, metallic);
 // specular occlusion, it affects only material with an f0 < 0.02, else f90 is 1.0
@@ -72,8 +75,8 @@ vec3 F90 = mix(vec3(f90), albedo, metallic);
 //fragOutput0 = vec4(specular, opacity);
 
 specular = evaluateMicrofacetAnisotropic(specularIntensity, specularTint,
-    metallic, anisotropic, roughness, albedo, 1., NdV, HdX, HdY, NdV, HdX, HdY,
-    NdV, HdX, HdY);
+    metallic, anisotropic, roughness, albedo, 1., NdV, VdX, VdY, NdV, VdX, VdY,
+    NdV, VdX, VdY);
 //fragOutput0 = vec4(specular, opacity);
 
 Lo += specular;

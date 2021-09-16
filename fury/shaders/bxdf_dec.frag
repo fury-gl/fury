@@ -124,10 +124,10 @@ float GTR2Anisotropic(float dotHN, float dotHX, float dotHY, float ax,
 float GGXAnisotropic(float dotHN, float dotHX, float dotHY, float ax, float ay)
 {
     float a2 = ax * ay;
-    vec3 d = vec3(ax * dotHY, ay * dotHX, a2 * dotHN);
+    vec3 d = vec3(ay * dotHX, ax * dotHY, a2 * dotHN);
     float d2 = dot(d, d);
     float b2 = a2 / d2;
-    return a2 * square(b2) * (1 / PI);
+    return a2 * square(b2) * recPI;
 }
 
 float schlickWeight(float cosTheta)
