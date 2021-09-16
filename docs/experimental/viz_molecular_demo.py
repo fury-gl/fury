@@ -4,7 +4,7 @@ Molecular Module Demo
 ======================================================================
 
 A small example to show how to use the various molecular
-representations present in the `molecular` module to visualize
+representations available in the `molecular` module to visualize
 proteins. This example also shows how to parse PDB files to obtain
 atomic info essential for constructing the representations.
 
@@ -33,9 +33,8 @@ from fury import window, actor, ui, molecular as mol
 import numpy as np
 
 ###############################################################################
-# Downloading the PDB file of the protein to be rendered.
-# User can change the pdb_code depending on which protein they want to
-# visualize.
+# Downloading the PDB file of the protein to be rendered (the user can change
+# the pdb code depending on which protein they want to visualize).
 pdb_code = '4ury'
 downloadurl = "https://files.rcsb.org/download/"
 pdbfn = pdb_code + ".pdb"
@@ -50,7 +49,7 @@ if not os.path.isfile(pdbfn):
         print("Error in downloading the file!")
 
 ###############################################################################
-# creating a `PeriodicTable()` object to obtain atomic numbers from names of
+# Creating a `PeriodicTable()` object to obtain atomic numbers from names of
 # elements
 table = mol.PeriodicTable()
 
@@ -72,7 +71,6 @@ current_model_number = 1
 
 ###############################################################################
 # Parsing the pdb file for information about coordinates and atoms
-
 pdbfile = open(pdbfn, 'r')
 pdb_lines = pdbfile.readlines()
 for line in pdb_lines:
@@ -122,15 +120,13 @@ sheets = np.array(sheets)
 helix = np.array(helix)
 is_hetatm = np.array(is_hetatm)
 
-
 ###############################################################################
-# Doing 5 things here -
+# Doing 5 things here:
 # 1. Creating a scene object.
 # 2. Configuring the camera's position.
 # 3. Creating and adding axes actor to the scene.
 # 4. Computing the bonding information for the molecule.
 # 5. Generating and adding various molecular representaions to the scene.
-
 scene = window.Scene()
 scene.set_camera(position=(20, 10, 0), focal_point=(0, 0, 0),
                  view_up=(0, 1, 0))
@@ -174,7 +170,7 @@ tb = ui.TextBlock2D(text=pdb_code.upper(), position=(screen_x_dim/2-40,
 scene.add(tb)
 
 ###############################################################################
-# Delete the PDBx file if it's downloaded from the internet
+# Delete the PDB file if it's downloaded from the internet
 if flag:
     os.remove(outfnm)
 
