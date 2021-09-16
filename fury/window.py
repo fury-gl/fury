@@ -15,7 +15,7 @@ from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.utils import asbytes
-
+from fury.shaders.base import GL_NUMBERS as _GL
 try:
     basestring
 except NameError:
@@ -27,7 +27,7 @@ class Scene(vtk.vtkRenderer):
 
     This is an important object that is responsible for preparing objects
     e.g. actors and volumes for rendering. This is a more pythonic version
-    of ``vtkRenderer`` proving simple methods for adding and removing actors
+    of ``vtkRenderer`` providing simple methods for adding and removing actors
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
@@ -525,6 +525,9 @@ class ShowManager(object):
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
 
+    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
+        self.iren.AddObserver(event, iren_callback)
+
     def destroy_timer(self, timer_id):
         self.iren.DestroyTimer(timer_id)
         del self.timers[self.timers.index(timer_id)]
@@ -779,6 +782,12 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     # (default is 8)
     win.SetMultiSamples(multi_samples)
 
+    # TODO: enable these but test
+    # win.SetBorders(True)
+    # win.LineSmoothingOn(True)
+    # win.PointSmoothingOn(True)
+    # win.PolygonSmoothingOn(True)
+
     # Choose to use depth peeling (if supported)
     # (default is 0 (false)):
     scene.UseDepthPeelingOn()
@@ -1008,3 +1017,161 @@ def enable_stereo(renwin, stereo_type):
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
+
+
+def gl_get_current_state(gl_state):
+    """Returns a dict which describes the current state of the opengl
+    context
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    state_description = {
+        glName: gl_state.GetEnumState(glNumber)
+        for glName, glNumber in _GL.items()
+    }
+    return state_description
+
+
+def gl_reset_blend(gl_state):
+    """Redefines the state of the OpenGL context related with how the RGBA
+    channels will be combined.
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    See more
+    ---------
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
+    [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
+    vtk specification:
+    [3] https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
+
+    """  # noqa
+    gl_state.ResetGLBlendEquationState()
+    gl_state.ResetGLBlendFuncState()
+
+
+def gl_enable_depth(gl_state):
+    """Enable OpenGl depth test
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
+
+
+def gl_disable_depth(gl_state):
+    """Disable OpenGl depth test
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+
+
+def gl_enable_blend(gl_state):
+    """Enable OpenGl blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+
+
+def gl_disable_blend(gl_state):
+    """This it will disable any gl behavior which has no
+    function for opaque objects. This has the benefit of
+    speeding up the rendering of the image.
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    See more
+    --------
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
+
+    """  # noqa
+
+    gl_state.vtkglDisable(_GL['GL_CULL_FACE'])
+    gl_state.vtkglDisable(_GL['GL_BLEND'])
+
+
+def gl_set_additive_blending(gl_state):
+    """Enable additive blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
+
+
+def gl_set_additive_blending_white_background(gl_state):
+    """Enable additive blending for a white background
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFuncSeparate(
+            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+            _GL['GL_ONE'],  _GL['GL_ZERO'])
+
+
+def gl_set_normal_blending(gl_state):
+    """Enable normal blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+    gl_state.vtkglBlendFuncSeparate(
+                _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+                _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
+
+
+def gl_set_multiplicative_blending(gl_state):
+    """Enable multiplicative blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
+
+
+def gl_set_subtractive_blending(gl_state):
+    """Enable subtractive blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
