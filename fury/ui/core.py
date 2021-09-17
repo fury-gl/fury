@@ -260,6 +260,8 @@ class UI(object, metaclass=abc.ABCMeta):
                           self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
+        self.add_callback(actor, "WindowResizeEvent",
+                          self.window_propagate_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
@@ -325,6 +327,41 @@ class UI(object, metaclass=abc.ABCMeta):
     @staticmethod
     def key_press_callback(i_ren, obj, self):
         self.on_key_press(i_ren, obj, self)
+
+    @staticmethod
+    def window_event_propagate(window, evt, obj, i_ren):
+        """Method to propagate a windows event to a specific actor.
+
+        Parameters
+        ----------
+        window: :class: `vtkWin32OpenGLRenderWindow`
+            Current window
+        evt: str
+            Window invoked event
+        obj: :class: `UI`
+            UI element where event isto be propagated
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor associated with the window
+        """
+        if not hasattr(obj, 'actor'):
+            raise AttributeError(
+                f'{obj} doesnt have an actor associated with it')
+
+        i_ren.propagate_event(evt, obj.actor)
+        i_ren.event.abort()
+
+    @staticmethod
+    def window_propagate_callback(i_ren, obj, self):
+        """Callback for the event propagated by window.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor associated with the window
+        obj: :class: `UI`
+            UI element where event is to be propagated
+        """
+        self.on_window_propagate(i_ren, obj, self)
 
 
 class Rectangle2D(UI):

@@ -1,4 +1,5 @@
 """Core module testing."""
+from fury.ui.containers import Panel2D
 from os.path import join as pjoin
 import numpy as np
 import numpy.testing as npt
@@ -59,7 +60,10 @@ def test_ui_button_panel(recording=False):
     panel = ui.Panel2D(size=(300, 150),
                        position=(290, 15),
                        color=(1, 1, 1), align="right",
-                       has_border=True)
+                       resizable=True, has_border=True,
+                       adaptive_resizing=True)
+    normal_panel = Panel2D(size=(200, 200), position=(10, 10),
+                           color=(0, 0, 0), resizable=False)
     
     non_bordered_panel = ui.Panel2D(size=(100, 100),
                                     has_border=False)
@@ -73,6 +77,7 @@ def test_ui_button_panel(recording=False):
                       (10., 0.5))
     npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
                       (-0.5, 0.5))
+    npt.assert_equal(False, hasattr(normal_panel, 'resize_button'))
 
     npt.assert_equal(panel.border_width, [0.0, ]*4)
     npt.assert_equal(panel.border_color, [np.asarray([1, 1, 1]), ]*4)
@@ -98,6 +103,7 @@ def test_ui_button_panel(recording=False):
     panel.resize(new_size)
     npt.assert_equal(panel.borders['bottom'].width, 400.0)
     # Assign the counter callback to every possible event.
+
     event_counter = EventCounter()
     event_counter.monitor(button_test)
     event_counter.monitor(panel.background)
@@ -106,7 +112,10 @@ def test_ui_button_panel(recording=False):
     show_manager = window.ShowManager(size=current_size, title="FURY Button")
 
     show_manager.scene.add(panel)
+    render_window = show_manager.scene.GetRenderWindow()
 
+    npt.assert_equal(True, render_window.HasObserver('WindowResizeEvent'))
+    npt.assert_equal(panel.size/current_size, panel.size_ratio)
     if recording:
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))

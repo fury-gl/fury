@@ -5,9 +5,11 @@ __all__ = ["Panel2D", "TabPanel2D", "TabUI", "ImageContainer2D",
 
 import numpy as np
 import vtk
+from functools import partial
 
 from fury.io import load_image
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
+from fury.ui.core import Button2D
 from fury.utils import set_input, rotate
 from fury.actor import grid
 
@@ -24,7 +26,8 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left", border_color=(1, 1, 1),
+                 opacity=0.7, align="left", resizable=False,
+                 adaptive_resizing=False, border_color=(1, 1, 1),
                  border_width=0, has_border=False):
         """Init class instance.
 
@@ -40,6 +43,12 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
+        resizable : bool, optional
+            If True, the panel will be resizable from the corner.
+        adaptive_resizing : bool, optional
+            If True, the panel will adapt to changing window size.
+            Note that adaptive resizing is performance heavy
+            and works well with only 4-5 instances at once.
         border_color: (float, float, float), optional
             Must take values in [0, 1].
         border_width: float, optional
@@ -47,16 +56,20 @@ class Panel2D(UI):
         has_border: bool, optional
             If the panel should have borders.
         """
+        self.resizable = resizable
+        self.adaptive_resizing = adaptive_resizing
         self.has_border = has_border
         self._border_color = border_color
         self._border_width = border_width
         super(Panel2D, self).__init__(position)
         self.resize(size)
+        self.max_size = size
         self.alignment = align
         self.color = color
         self.opacity = opacity
         self.position = position
         self._drag_offset = None
+        self.on_panel_resize = lambda ui: None
 
     def _setup(self):
         """Setup this UI component.
@@ -92,9 +105,22 @@ class Panel2D(UI):
 
         self.add_element(self.background, (0, 0))
 
+        if self.resizable:
+            self.resize_button = Button2D(icon_fnames=[('resize_icon',
+                                          'https://i.imgur.com/RQF9wLB.png')])
+
+            self.resize_button.on_left_mouse_button_pressed = \
+                self.left_button_pressed
+
+            self.resize_button.on_left_mouse_button_dragged = \
+                self.corner_resize
+
+            self.add_element(self.resize_button, (0, 0))
+
         # Add default events listener for this UI component.
         self.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.background.on_left_mouse_button_dragged = self.left_button_dragged
+        self.background.on_window_propagate = self.window_resize
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -111,6 +137,18 @@ class Panel2D(UI):
         ----------
         scene : scene
         """
+        if self.adaptive_resizing:
+            window = scene.GetRenderWindow()
+            i_ren = window.GetInteractor().GetInteractorStyle()
+
+            window_size = window.GetSize()
+            panel_size = self.size
+            self.size_ratio = panel_size / window_size
+
+            window.AddObserver('WindowResizeEvent',
+                               partial(self.window_event_propagate,
+                                       obj=self.background, i_ren=i_ren))
+
         for element in self._elements:
             element.add_to_scene(scene)
 
@@ -126,6 +164,10 @@ class Panel2D(UI):
             Panel size (width, height) in pixels.
         """
         self.background.resize(size)
+
+        if self.resizable:
+            button_coords = (int(size[0] - self.resize_button.size[0]), 0)
+            self.update_element(self.resize_button, button_coords)
 
         if self.has_border:
             self.borders['left'].resize((self._border_width,
@@ -249,6 +291,54 @@ class Panel2D(UI):
             new_position = click_position - self._drag_offset
             self.position = new_position
         i_ren.force_render()
+
+    def window_resize(self, i_ren, _obj, panel2d_object):
+        """Method to resize the Panel as per the updated window size.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor
+        obj: :class: `UI`
+            UI element associated with the event
+        panel2d_object: :class: `Panel2D`
+            Instance of the Panel2D
+        """
+        _window_size = i_ren.GetInteractor().GetSize()
+        _new_size = self.size_ratio * _window_size
+
+        self.re_align(_window_size)
+        self.resize(np.clip(_new_size, 0, self.max_size))
+        i_ren.force_render()
+
+    def corner_resize(self, i_ren, _obj, _element):
+        """Method to resize the Panel2D when grabbed from corner.
+
+        Parameters
+        ----------
+        i_ren: :class: `CustomInteractorStyle`
+            Custom Interactor
+        obj: :class: `UI`
+            UI element associated with the event
+        panel2d_object: :class: `Button2D`
+            Instance of the resize button
+        """
+        if self._drag_offset is not None:
+            click_position = np.array(i_ren.event.position)
+            new_position = click_position - self._drag_offset
+
+            delta_x = click_position[0] - self.position[0]
+            delta_y = new_position[1] - _element.position[1]
+            new_size = (delta_x, self.size[1]-delta_y)
+
+            self.max_size = new_size
+
+            self.position = (self.position[0], new_position[1])
+            self.resize(np.clip(new_size, 0, None))
+
+        self.on_panel_resize(self)
+        i_ren.force_render()
+        i_ren.event.abort()
 
     def re_align(self, window_size_change):
         """Re-organise the elements in case the window size is changed.
