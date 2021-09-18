@@ -61,10 +61,10 @@ spinbox.on_change = rotate_cone
 ###############################################################################
 # Starting the ShowManager.
 
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
 
-# window.record(show_manager.scene, size=current_size,
-#               out_path="viz_spinbox.png")
+window.record(show_manager.scene, size=current_size,
+              out_path="viz_spinbox.png")
