@@ -63,7 +63,8 @@ show_manager.scene.add(progressbar)
 
 def remove_progressbar(ui):
     # Removing progressbar from the scene.
-    show_manager.scene.rm(ui.background.actor,ui.progress.actor)
+    for element in ui.actors:
+        show_manager.scene.rm(element)
 
 
 progressbar.on_complete = remove_progressbar
@@ -96,10 +97,10 @@ show_manager.add_timer_callback(True, 30, timer_callback)
 show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 500))
 show_manager.scene.reset_clipping_range()
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
 
-# window.record(show_manager.scene,
-#               size=current_size, out_path="viz_progress.png")
+window.record(show_manager.scene,
+              size=current_size, out_path="viz_progress.png")

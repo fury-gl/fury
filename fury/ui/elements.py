@@ -3109,9 +3109,11 @@ class ProgressUI(UI):
         self.progress_total_size = (self.bg_size[0]-2*self.padding,
                                     self.bg_size[1]-2*self.padding)
 
-        self.background = Rectangle2D(size=self.bg_size, color=self.bg_color)
+        self.background = Panel2D(size=self.bg_size, color=self.bg_color)
         self.progress = Rectangle2D(size=self.progress_total_size,
                                     color=self.progress_color)
+        
+        self.background.add_element(self.progress, self.padding)
 
     def resize(self, size):
         self.progress_total_size = (size[0]-2*self.padding,
@@ -3120,9 +3122,11 @@ class ProgressUI(UI):
         self.background.resize(size)
         self.progress.resize(self.progress_total_size)
 
+        self.background.update_element(self.progress, self.padding)
+
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.background.actors + self.progress.actors
+        return self.background.actors
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3133,7 +3137,6 @@ class ProgressUI(UI):
 
         """
         self.background.add_to_scene(scene)
-        self.progress.add_to_scene(scene)
 
     def _get_size(self):
         return self.background.size
@@ -3147,7 +3150,6 @@ class ProgressUI(UI):
             Absolute pixel coordinates (x, y).
         """
         self.background.position = coords
-        self.progress.position = coords + self.padding
 
     @property
     def value(self):
