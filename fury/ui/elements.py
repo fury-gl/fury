@@ -3066,18 +3066,18 @@ class ProgressUI(UI):
 
         Parameters
         ----------
-        position : (float, float), optional
+        position : (int, int), optional
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
-        size : (float, float), optional
+        size : (int, int), optional
             Width and height in pixels of this UI component.
-        initial_value : float, optional
+        initial_value : int, optional
             Initial value of the slider.
-        min_value : float, optional
+        min_value : int, optional
             Minimum value of the slider.
-        max_value : float, optional
+        max_value : int, optional
             Maximum value of the slider.
-        padding : float, optional
+        padding : int, optional
             Distance between loader and background.
         bg_color : (float, float, float), optional
             Background color of progress bar.
@@ -3122,7 +3122,7 @@ class ProgressUI(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.background.actor + self.progress.actor
+        return self.background.actors + self.progress.actors
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3159,7 +3159,7 @@ class ProgressUI(UI):
 
         Parameters
         ----------
-        value : float
+        value : int
             New value for the progressbar.
         """
         if value > self.max_value:
@@ -3170,6 +3170,7 @@ class ProgressUI(UI):
         self.update()
 
     def update(self):
+        """Updating the prograssbar width according to value"""
         value_range = self.max_value - self.min_value
         ratio = (self.value - self.min_value)/value_range
         self.progress.width = int(ratio * self.progress_total_size[0])
