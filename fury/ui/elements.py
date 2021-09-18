@@ -3112,7 +3112,7 @@ class ProgressUI(UI):
         self.background = Panel2D(size=self.bg_size, color=self.bg_color)
         self.progress = Rectangle2D(size=self.progress_total_size,
                                     color=self.progress_color)
-        
+
         self.background.add_element(self.progress, self.padding)
 
     def resize(self, size):
