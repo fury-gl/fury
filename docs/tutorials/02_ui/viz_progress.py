@@ -10,8 +10,8 @@ create a whole ProgressBar and show the progress of adding Cubes to the scene.
 First, some imports.
 """
 from fury import actor, ui, window
-import numpy as np
 import itertools
+import numpy as np
 
 ###############################################################################
 # Cubes
@@ -61,10 +61,9 @@ show_manager.scene.add(progressbar)
 # Using the on_complete hook to display a message
 
 
-def remove_progressbar(self):
-    print("Progress Completed")
-    # To remove progress bar from the scene after completion
-    # show_manager.scene.rm(self.background.actor,self.progress.actor)
+def remove_progressbar(ui):
+    # Removing progressbar from the scene.
+    show_manager.scene.rm(ui.background.actor,ui.progress.actor)
 
 
 progressbar.on_complete = remove_progressbar
@@ -81,7 +80,7 @@ def timer_callback(_obj, _event):
     if cnt % 12 == 0 and len(cube_list):
         show_manager.scene.add(cube_list.pop(0))
         progressbar.value += 1
-    if cnt == 60:
+    if cnt == 70:
         show_manager.exit()
 
 ###############################################################################
@@ -97,10 +96,10 @@ show_manager.add_timer_callback(True, 30, timer_callback)
 show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 500))
 show_manager.scene.reset_clipping_range()
-interactive = False
+interactive = True
 
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene,
-              size=current_size, out_path="viz_progress.png")
+# window.record(show_manager.scene,
+#               size=current_size, out_path="viz_progress.png")
