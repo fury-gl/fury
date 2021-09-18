@@ -4107,28 +4107,32 @@ class SpinBox(UI):
 
     def __init__(self, position=(350, 400), size=(300, 100), padding=10,
                  panel_color=(1, 1, 1), min_val=0, max_val=100,
-                 initial_val=50, step=1):
+                 initial_val=50, step=1, textbox_width=10, textbox_height=2):
         """Init this UI element.
 
         Parameters
         ----------
-        position : (float, float), optional
+        position : (int, int), optional
             Absolute coordinates (x, y) of the lower-left corner of this
             UI component.
-        size : (float, float), optional
+        size : (int, int), optional
             Width and height in pixels of this UI component.
-        padding : float, optional
+        padding : int, optional
             Distance between  and background.
-        bg_color : (float, float, float), optional
-            Background color of progress bar.
-        min_val: float, optional
+        panel_color : (float, float, float), optional
+            Panel color of SpinBoxUI.
+        min_val: int, optional
             Minimum value of SpinBoxUI.
-        max_val: float, optional
+        max_val: int, optional
             Maximum value of SpinBoxUI.
-        initial_val: float, optional
+        initial_val: int, optional
             Initial value of SpinBoxUI.
-        step: float, optional
+        step: int, optional
             Step value of SpinBoxUI.
+        textbox_width: int, optional
+            Width of Textbox.
+        textbox_height: int, optional
+            Height of Textbox.
         """
         self.panel_size = size
         self.padding = padding
@@ -4137,6 +4141,8 @@ class SpinBox(UI):
         self.max_val = max_val
         self.value = initial_val
         self.step = step
+        self.textbox_width = textbox_width
+        self.textbox_height = textbox_height
 
         super(SpinBox, self).__init__(position)
 
@@ -4152,7 +4158,7 @@ class SpinBox(UI):
         """
         self.panel = Panel2D(size=self.panel_size, color=self.panel_color)
 
-        self.textbox = TextBox2D(width=10, height=2)
+        self.textbox = TextBox2D(width=self.textbox_width, height=self.textbox_height)
         self.textbox.set_message(str(self.value))
         self.increment_button = Button2D(
             icon_fnames=[("up", read_viz_icons(fname="circle-up.png"))])
@@ -4180,6 +4186,7 @@ class SpinBox(UI):
         self.panel_size = size
         self.textbox_size = (int(0.7 * size[0]), int(0.8 * size[1]))
         self.button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
+        self.padding = int(0.03 * self.panel_size[0])
 
         self.panel.resize(size)
         self.textbox.text.resize(self.textbox_size)
@@ -4247,14 +4254,20 @@ class SpinBox(UI):
             self._value = value
 
     def increment(self):
+        """Increment the current value by the step."""
         current_val = int(self.textbox.message)
+        if current_val == self.max_val:
+            return
         self.value = current_val + self.step
 
         self.textbox.set_message(str(self.value))
         self.on_change(self)
 
     def decrement(self):
+        """Decrement the current value by the step."""
         current_val = int(self.textbox.message)
+        if current_val == self.min_val:
+            return
         self.value = current_val - self.step
 
         self.textbox.set_message(str(self.value))
