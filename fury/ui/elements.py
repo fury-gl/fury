@@ -101,6 +101,8 @@ class TextBox2D(UI):
         self.caret_pos = 0
         self.init = True
 
+        self.on_blur = lambda ui: None
+
     def _setup(self):
         """Setup this UI component.
 
@@ -187,11 +189,12 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if key_char != '' and key_char in printable:
-            self.add_character(key_char)
-        elif key.lower() == "return":
+        if key.lower() == "return":
             self.render_text(False)
+            self.on_blur(self)
             return True
+        elif key_char != '' and key_char in printable:
+            self.add_character(key_char)
         if key.lower() == "backspace":
             self.remove_character()
         elif key.lower() == "left":
