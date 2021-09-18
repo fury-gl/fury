@@ -48,6 +48,7 @@ show_manager.scene.add(spinbox)
 # Tracking previous value to check in/decrement.
 previous_value = spinbox.value
 
+
 def rotate_cone(spinbox):
     global previous_value
     change_in_value = spinbox.value - previous_value
@@ -60,10 +61,10 @@ spinbox.on_change = rotate_cone
 ###############################################################################
 # Starting the ShowManager.
 
-interactive = False
+interactive = True
 
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size,
-              out_path="viz_spinbox.png")
+# window.record(show_manager.scene, size=current_size,
+#               out_path="viz_spinbox.png")
