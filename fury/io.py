@@ -1,4 +1,5 @@
 import os
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 import vtk
 import numpy as np
 from PIL import Image
@@ -281,3 +282,50 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
         writer.SetFileTypeToBinary()
     writer.Update()
     writer.Write()
+
+
+def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
+    """Process and load sprites from a sprite sheet
+
+    Parameters
+    ----------
+    sheet_path: str
+        Path to the sprite sheet
+    nb_rows: int
+        Number of rows in the sprite sheet
+    nb_cols: int
+        Number of columns in the sprite sheet
+    as_vtktype: bool, optional
+        If True, the output is a vtkImageData
+
+    Returns
+    -------
+    Dict containing the processed sprites.
+    """
+    sprite_dicts = {}
+    sprite_sheet = load_image(sheet_path)
+    width, height = sprite_sheet.shape[:2]
+
+    sprite_size_x = int(np.ceil(width / nb_rows))
+    sprite_size_y = int(np.ceil(height / nb_cols))
+
+    for row, col in np.ndindex((nb_rows, nb_cols)):
+        nxt_row = row + 1
+        nxt_col = col + 1
+
+        box = (row*sprite_size_x, col*sprite_size_y,
+               nxt_row*sprite_size_x, nxt_col*sprite_size_y)
+
+        sprite_arr = sprite_sheet[box[0]:box[2], box[1]:box[3]]
+        if as_vtktype:
+            with InTemporaryDirectory() as tdir:
+                tmp_img_path = os.path.join(tdir, f'{row}{col}.png')
+                save_image(sprite_arr, tmp_img_path,
+                           compression_quality=100)
+
+                sprite_dicts[(row, col)] = load_image(tmp_img_path,
+                                                      as_vtktype=True)
+        else:
+            sprite_dicts[(row, col)] = sprite_arr
+
+    return sprite_dicts
