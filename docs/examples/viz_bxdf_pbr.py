@@ -1,8 +1,10 @@
 from dipy.data import get_fnames
 from fury import actor, ui, window
-from fury.data import read_viz_textures
+from fury.data import fetch_viz_models, read_viz_models, read_viz_textures
 from fury.io import load_polydata
-from fury.utils import get_actor_from_polydata
+from fury.utils import (get_actor_from_polydata, get_polydata_triangles,
+                        get_polydata_vertices, normals_from_v_f,
+                        set_polydata_normals)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
 
@@ -108,6 +110,10 @@ def get_cubemap(files_names):
 def obj_brain():
     brain_lh = get_fnames(name='fury_surface')
     polydata = load_polydata(brain_lh)
+    verts = get_polydata_vertices(polydata)
+    faces = get_polydata_triangles(polydata)
+    normals = normals_from_v_f(verts, faces)
+    set_polydata_normals(polydata, normals)
     return get_actor_from_polydata(polydata)
 
 
@@ -141,7 +147,20 @@ def obj_surface():
             for color in c_loop:
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
+    normals = normals_from_v_f(vertices, faces)
+    #polydata = vtk.vtkPolyData()
+    #polydata.DeepCopy(surface_actor.GetMapper().GetInput())
+    polydata = surface_actor.GetMapper().GetInput()
+    set_polydata_normals(polydata, normals)
+    #surface_actor = get_actor_from_polydata(polydata)
     return surface_actor
+
+
+def obj_suzanne():
+    fetch_viz_models()
+    model = read_viz_models('suzanne.obj')
+    polydata = load_polydata(model)
+    return get_actor_from_polydata(polydata)
 
 
 def uniforms_callback(_caller, _event, calldata=None):
@@ -173,7 +192,8 @@ if __name__ == '__main__':
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
-    obj_actor = obj_spheres()
+    obj_actor = obj_suzanne()
+    #obj_actor = obj_spheres()
 
     subsurface = .0
     metallic = .0
