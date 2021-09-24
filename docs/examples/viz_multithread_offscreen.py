@@ -1,6 +1,6 @@
 """
 =======================================================
-Multithreading Example
+Multithreading Offscreen Example
 =======================================================
 
 The goal of this demo is to show how to use different threads
@@ -19,6 +19,7 @@ import random
 import itertools
 from sys import platform
 
+
 def release_context(window):
     # Once release current context is available:
     # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/8418
@@ -26,8 +27,9 @@ def release_context(window):
         window.ReleaseCurrent()
     except AttributeError:
         if(platform == "win32"):
-            from OpenGL.WGL import wglMakeCurrent 
-            wglMakeCurrent(window.GetGenericDisplayId(),None)
+            from OpenGL.WGL import wglMakeCurrent
+            wglMakeCurrent(window.GetGenericDisplayId(), None)
+
 
 mutex = Lock()
 
@@ -49,9 +51,11 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
+
 def checkevent(obj, evt):
-    print("Event");
-    print(obj,evt)
+    print("Event")
+    print(obj, evt)
+
 
 showm.iren.AddObserver(Command.WindowResizeEvent, checkevent)
 showm.window.AddObserver(Command.WindowResizeEvent, checkevent)
@@ -64,12 +68,12 @@ tb = ui.TextBlock2D(bold=True)
 
 def save_image():
     for i in range(10):
-        fig_filename = "example_%d.png"%i
+        fig_filename = "example_%d.png" % i
         mutex.acquire()
-        print("Saving %s ..."%fig_filename)
+        print("Saving %s ..." % fig_filename)
         showm.window.MakeCurrent()
         window.record(
-            showm.scene, 
+            showm.scene,
             size=(300, 300),
             out_path=fig_filename)
         release_context(window)
@@ -94,6 +98,3 @@ for i in range(100):
     mutex.release()
     time.sleep(0.050)
 thread_a.join()
-
-
-

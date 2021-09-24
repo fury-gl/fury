@@ -20,6 +20,7 @@ import random
 import itertools
 from sys import platform
 
+
 def release_context(window):
     # Once release current context is available:
     # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/8418
@@ -27,8 +28,8 @@ def release_context(window):
         window.ReleaseCurrent()
     except AttributeError:
         if(platform == "win32"):
-            from OpenGL.WGL import wglMakeCurrent 
-            wglMakeCurrent(window.GetGenericDisplayId(),None)
+            from OpenGL.WGL import wglMakeCurrent
+            wglMakeCurrent(window.GetGenericDisplayId(), None)
 
 
 mutex = Lock()
@@ -51,11 +52,13 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
+
 def startEvent(obj, evt):
     print("Getting Event lock")
     mutex.acquire()
     print("Event lock acquired")
     showm.window.MakeCurrent()
+
 
 def endEvent(obj, evt):
     release_context(showm.window)
@@ -70,26 +73,26 @@ tb = ui.TextBlock2D(bold=True)
 
 
 def rotate_camera():
-        # Python mutex global
-        global mutex
-        for i in range(100):
-            message = "Let's count up to 100 and exit :" + str(i+1)
-            print("Getting Lock")
-            mutex.acquire()
-            print("Lock acquired")
-            showm.window.MakeCurrent()
-            tb.message = message
-            print(message)
-            scene.azimuth(0.05 * i)
-            showm.window.Render()
-            release_context(showm.window)
-            print("Lock will release")
-            mutex.release()
-            print("Lock released")
-            time.sleep(0.016)
+    # Python mutex global
+    global mutex
+    for i in range(100):
+        message = "Let's count up to 100 and exit :" + str(i+1)
+        print("Getting Lock")
+        mutex.acquire()
+        print("Lock acquired")
+        showm.window.MakeCurrent()
+        tb.message = message
+        print(message)
+        scene.azimuth(0.05 * i)
+        showm.window.Render()
+        release_context(showm.window)
+        print("Lock will release")
+        mutex.release()
+        print("Lock released")
+        time.sleep(0.016)
+
 
 scene.add(tb)
-
 
 
 thread_a = Thread(target=rotate_camera)
@@ -114,5 +117,3 @@ while showm.iren.GetDone() is False:
     if end - start < timePerFrame:
         time.sleep(timePerFrame - (end - start))
 thread_a.join()
-
-
