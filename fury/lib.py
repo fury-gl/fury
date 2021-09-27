@@ -3,6 +3,8 @@ import vtkmodules.vtkCommonDataModel as cdmvtk
 import vtkmodules.vtkCommonExecutionModel as cemvtk
 import vtkmodules.vtkCommonTransforms as ctvtk
 import vtkmodules.vtkCommonMath as cmvtk
+import vtkmodules.vtkDomainsChemistry as dcvtk
+import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
 import vtkmodules.vtkFiltersCore as fcvtk
 import vtkmodules.vtkFiltersGeneral as fgvtk
 import vtkmodules.vtkFiltersHybrid as fhvtk
@@ -22,6 +24,8 @@ import vtkmodules.vtkRenderingCore as rcvtk
 import vtkmodules.vtkRenderingFreeType as rftvtk
 import vtkmodules.vtkRenderingLOD as rlodvtk
 import vtkmodules.vtkRenderingOpenGL2 as roglvtk
+
+
 from vtkmodules.util import numpy_support, colors
 from vtkmodules.util.misc import calldata_type
 
@@ -37,15 +41,20 @@ Points = ccvtk.vtkPoints
 IdTypeArray = ccvtk.vtkIdTypeArray
 FloatArray = ccvtk.vtkFloatArray
 DoubleArray = ccvtk.vtkDoubleArray
+StringArray = ccvtk.vtkStringArray
 UnsignedCharArray = ccvtk.vtkUnsignedCharArray
 VTK_OBJECT = ccvtk.VTK_OBJECT
+VTK_ID_TYPE = ccvtk.VTK_ID_TYPE
 VTK_DOUBLE = ccvtk.VTK_DOUBLE
+VTK_FLOAT = ccvtk.VTK_FLOAT
 VTK_TEXT_LEFT = ccvtk.VTK_TEXT_LEFT
 VTK_TEXT_RIGHT = ccvtk.VTK_TEXT_RIGHT
 VTK_TEXT_BOTTOM = ccvtk.VTK_TEXT_BOTTOM
 VTK_TEXT_TOP = ccvtk.VTK_TEXT_TOP
 VTK_TEXT_CENTERED = ccvtk.VTK_TEXT_CENTERED
 VTK_UNSIGNED_CHAR = ccvtk.VTK_UNSIGNED_CHAR
+VTK_UNSIGNED_SHORT = ccvtk.VTK_UNSIGNED_SHORT
+VTK_UNSIGNED_INT = ccvtk.VTK_UNSIGNED_INT
 
 ##############################################################
 #  vtkCommonExecutionModel Module
@@ -148,6 +157,8 @@ PolyVertex = cdmvtk.vtkPolyVertex
 UnstructuredGrid = cdmvtk.vtkUnstructuredGrid
 Polygon = cdmvtk.vtkPolygon
 DataObject = cdmvtk.vtkDataObject
+Molecule = cdmvtk.vtkMolecule
+DataSetAttributes = cdmvtk.vtkDataSetAttributes
 
 ##############################################################
 #  vtkCommonTransforms Module
@@ -185,3 +196,10 @@ STLWriter = iogvtk.vtkSTLWriter
 MNIObjectWriter = iomincvtk.vtkMNIObjectWriter
 PolyDataWriter = iolvtk.vtkPolyDataWriter
 XMLPolyDataWriter = ioxmlvtk.vtkXMLPolyDataWriter
+
+##############################################################
+#  vtkDomainsChemistry  and vtkDomainsChemistryOpenGL2 Module
+SimpleBondPerceiver = dcvtk.vtkSimpleBondPerceiver
+ProteinRibbonFilter = dcvtk.vtkProteinRibbonFilter
+PeriodicTable = dcvtk.vtkPeriodicTable
+OpenGLMoleculeMapper = dcovtk.vtkOpenGLMoleculeMapper

@@ -2,22 +2,21 @@
 
 import warnings
 import numpy as np
-import vtkmodules.vtkCommonCore as ccvtk
-import vtkmodules.vtkCommonDataModel as cdmvtk
-import vtkmodules.vtkRenderingCore as rcvtk
-import vtkmodules.vtkDomainsChemistry as dcvtk
-import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
-from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
+from fury.lib import (numpy_support as nps, Molecule as Mol, DataSetAttributes,
+                      VTK_UNSIGNED_SHORT, VTK_FLOAT, VTK_ID_TYPE, StringArray,
+                      VTK_UNSIGNED_CHAR, Actor, PolyData, SimpleBondPerceiver,
+                      PeriodicTable, ProteinRibbonFilter, OpenGLMoleculeMapper,
+                      PolyDataMapper, VTK_UNSIGNED_INT)
 from fury.utils import numpy_to_vtk_points
 from fury.actor import streamtube
 
 
-class Molecule(cdmvtk.vtkMolecule):
+class Molecule(Mol):
     """Your molecule class.
 
     An object that is used to create molecules and store molecular data (e.g.
     coordinate and bonding data).
-    This is a more pythonic version of ``vtkMolecule``.
+    This is a more pythonic version of ``Molecule``.
     """
 
     def __init__(self, atomic_numbers=None, coords=None, atom_names=None,
@@ -83,10 +82,10 @@ class Molecule(cdmvtk.vtkMolecule):
             self.helix = helix
             self.is_hetatm = is_hetatm
             coords = numpy_to_vtk_points(coords)
-            atom_nums = numpy_to_vtk(atomic_numbers,
-                                     array_type=ccvtk.VTK_UNSIGNED_SHORT)
+            atom_nums = nps.numpy_to_vtk(atomic_numbers,
+                                         array_type=VTK_UNSIGNED_SHORT)
             atom_nums.SetName("Atomic Numbers")
-            fieldData = cdmvtk.vtkDataSetAttributes()
+            fieldData = DataSetAttributes()
             fieldData.AddArray(atom_nums)
             self.Initialize(coords, fieldData)
         else:
@@ -97,14 +96,12 @@ class Molecule(cdmvtk.vtkMolecule):
 
     @property
     def total_num_atoms(self):
-        """Returns the total number of atoms in a given molecule.
-        """
+        """Return the total number of atoms in a given molecule."""
         return self.GetNumberOfAtoms()
 
     @property
     def total_num_bonds(self):
-        """Returns the total number of bonds in a given molecule.
-        """
+        """Return the total number of bonds in a given molecule."""
         return self.GetNumberOfBonds()
 
 
@@ -256,7 +253,7 @@ def set_bond_order(molecule, bond_index, bond_order):
 
 
 def get_all_atomic_numbers(molecule):
-    """Returns an array of atomic numbers corresponding to the atoms
+    """Return an array of atomic numbers corresponding to the atoms
     present in a given molecule.
 
     Parameters
@@ -264,11 +261,11 @@ def get_all_atomic_numbers(molecule):
     molecule : Molecule
         The molecule whose atomic number array is to be obtained.
     """
-    return vtk_to_numpy(molecule.GetAtomicNumberArray())
+    return nps.vtk_to_numpy(molecule.GetAtomicNumberArray())
 
 
 def get_all_bond_orders(molecule):
-    """Returns an array of integers containing the bond orders (single/double/
+    """Return an array of integers containing the bond orders (single/double/
     triple) corresponding to the bonds present in the molecule.
 
     Parameters
@@ -276,11 +273,11 @@ def get_all_bond_orders(molecule):
     molecule : Molecule
         The molecule whose bond types array is to be obtained.
     """
-    return vtk_to_numpy(molecule.GetBondOrdersArray())
+    return nps.vtk_to_numpy(molecule.GetBondOrdersArray())
 
 
 def get_all_atomic_positions(molecule):
-    """Returns an array of atomic coordinates corresponding to the atoms
+    """Return an array of atomic coordinates corresponding to the atoms
     present in the molecule.
 
     Parameters
@@ -288,7 +285,7 @@ def get_all_atomic_positions(molecule):
     molecule : Molecule
         The molecule whose atomic position array is to be obtained.
     """
-    return vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
+    return nps.vtk_to_numpy(molecule.GetAtomicPositionArray().GetData())
 
 
 def deep_copy_molecule(molecule1, molecule2):
@@ -326,14 +323,14 @@ def compute_bonding(molecule):
     or anything other than atomic separations. It will not produce anything
     other than single bonds.
     """
-    bonder = dcvtk.vtkSimpleBondPerceiver()
+    bonder = SimpleBondPerceiver()
     bonder.SetInputData(molecule)
     bonder.SetTolerance(0.1)
     bonder.Update()
     deep_copy_molecule(molecule, bonder.GetOutput())
 
 
-class PeriodicTable(dcvtk.vtkPeriodicTable):
+class PTable(PeriodicTable):
     """ A class to obtain properties of elements (eg: Covalent Radius,
     Van Der Waals Radius, Symbol etc.).
 
@@ -448,7 +445,7 @@ def sphere_cpk(molecule, colormode='discrete'):
     <https://doi.org/10.1063/1.1770803>`_
     """
     colormode = colormode.lower()
-    msp_mapper = dcovtk.vtkOpenGLMoleculeMapper()
+    msp_mapper = OpenGLMoleculeMapper()
     msp_mapper.SetInputData(molecule)
     msp_mapper.SetRenderAtoms(True)
     msp_mapper.SetRenderBonds(False)
@@ -463,7 +460,7 @@ def sphere_cpk(molecule, colormode='discrete'):
         warnings.warn("Incorrect colormode specified! Using discrete.")
 
     # To-Do manipulate shading properties to make it look aesthetic
-    molecule_actor = rcvtk.vtkActor()
+    molecule_actor = Actor()
     molecule_actor.SetMapper(msp_mapper)
     return molecule_actor
 
@@ -518,7 +515,7 @@ def ball_stick(molecule, colormode='discrete',
         raise ValueError('No bonding data available for the molecule! Ball '
                          'and stick model cannot be made!')
     colormode = colormode.lower()
-    bs_mapper = dcovtk.vtkOpenGLMoleculeMapper()
+    bs_mapper = OpenGLMoleculeMapper()
     bs_mapper.SetInputData(molecule)
     bs_mapper.SetRenderAtoms(True)
     bs_mapper.SetRenderBonds(True)
@@ -538,7 +535,7 @@ def ball_stick(molecule, colormode='discrete',
     else:
         bs_mapper.SetAtomColorMode(1)
         warnings.warn("Incorrect colormode specified! Using discrete.")
-    molecule_actor = rcvtk.vtkActor()
+    molecule_actor = Actor()
     molecule_actor.SetMapper(bs_mapper)
     return molecule_actor
 
@@ -575,7 +572,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
         raise ValueError('No bonding data available for the molecule! Stick '
                          'model cannot be made!')
     colormode = colormode.lower()
-    mst_mapper = dcovtk.vtkOpenGLMoleculeMapper()
+    mst_mapper = OpenGLMoleculeMapper()
     mst_mapper.SetInputData(molecule)
     mst_mapper.SetRenderAtoms(True)
     mst_mapper.SetRenderBonds(True)
@@ -591,7 +588,7 @@ def stick(molecule, colormode='discrete', bond_thickness=0.1):
     else:
         mst_mapper.SetAtomColorMode(1)
         warnings.warn("Incorrect colormode specified! Using discrete.")
-    molecule_actor = rcvtk.vtkActor()
+    molecule_actor = Actor()
     molecule_actor.SetMapper(mst_mapper)
     return molecule_actor
 
@@ -637,11 +634,11 @@ def ribbon(molecule):
                 continue
             secondary_structures[i] = ord('h')
 
-    output = cdmvtk.vtkPolyData()
+    output = PolyData()
 
     # for atomic numbers
-    atomic_num_arr = numpy_to_vtk(num_array=all_atomic_numbers, deep=True,
-                                  array_type=ccvtk.VTK_ID_TYPE)
+    atomic_num_arr = nps.numpy_to_vtk(num_array=all_atomic_numbers, deep=True,
+                                      array_type=VTK_ID_TYPE)
 
     # setting the array name to atom_type as vtkProteinRibbonFilter requires
     # the array to be named atom_type
@@ -650,7 +647,7 @@ def ribbon(molecule):
     output.GetPointData().AddArray(atomic_num_arr)
 
     # for atom names
-    atom_names = ccvtk.vtkStringArray()
+    atom_names = StringArray()
 
     # setting the array name to atom_types as vtkProteinRibbonFilter requires
     # the array to be named atom_types
@@ -662,50 +659,50 @@ def ribbon(molecule):
     output.GetPointData().AddArray(atom_names)
 
     # for residue sequences
-    residue_seq = numpy_to_vtk(num_array=molecule.residue_seq, deep=True,
-                               array_type=ccvtk.VTK_ID_TYPE)
+    residue_seq = nps.numpy_to_vtk(num_array=molecule.residue_seq, deep=True,
+                                   array_type=VTK_ID_TYPE)
     residue_seq.SetName("residue")
     output.GetPointData().AddArray(residue_seq)
 
     # for chain
-    chain = numpy_to_vtk(num_array=molecule.chain, deep=True,
-                         array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    chain = nps.numpy_to_vtk(num_array=molecule.chain, deep=True,
+                             array_type=VTK_UNSIGNED_CHAR)
     chain.SetName("chain")
     output.GetPointData().AddArray(chain)
 
     # for secondary structures
-    s_s = numpy_to_vtk(num_array=secondary_structures, deep=True,
-                       array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    s_s = nps.numpy_to_vtk(num_array=secondary_structures, deep=True,
+                           array_type=VTK_UNSIGNED_CHAR)
     s_s.SetName("secondary_structures")
     output.GetPointData().AddArray(s_s)
 
     # for secondary structures begin
     newarr = np.ones(num_total_atoms)
-    s_sb = numpy_to_vtk(num_array=newarr, deep=True,
-                        array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    s_sb = nps.numpy_to_vtk(num_array=newarr, deep=True,
+                            array_type=VTK_UNSIGNED_CHAR)
     s_sb.SetName("secondary_structures_begin")
     output.GetPointData().AddArray(s_sb)
 
     # for secondary structures end
     newarr = np.ones(num_total_atoms)
-    s_se = numpy_to_vtk(num_array=newarr, deep=True,
-                        array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    s_se = nps.numpy_to_vtk(num_array=newarr, deep=True,
+                            array_type=VTK_UNSIGNED_CHAR)
     s_se.SetName("secondary_structures_end")
     output.GetPointData().AddArray(s_se)
 
     # for is_hetatm
-    is_hetatm = numpy_to_vtk(num_array=molecule.is_hetatm, deep=True,
-                             array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    is_hetatm = nps.numpy_to_vtk(num_array=molecule.is_hetatm, deep=True,
+                                 array_type=VTK_UNSIGNED_CHAR)
     is_hetatm.SetName("ishetatm")
     output.GetPointData().AddArray(is_hetatm)
 
     # for model
-    model = numpy_to_vtk(num_array=molecule.model, deep=True,
-                         array_type=ccvtk.VTK_UNSIGNED_INT)
+    model = nps.numpy_to_vtk(num_array=molecule.model, deep=True,
+                             array_type=VTK_UNSIGNED_INT)
     model.SetName("model")
     output.GetPointData().AddArray(model)
 
-    table = PeriodicTable()
+    table = PTable()
 
     # for colors and radii of hetero-atoms
     radii = np.ones((num_total_atoms, 3))
@@ -716,13 +713,13 @@ def ribbon(molecule):
                              3)
         rgb[i] = table.atom_color(all_atomic_numbers[i])
 
-    Rgb = numpy_to_vtk(num_array=rgb, deep=True,
-                       array_type=ccvtk.VTK_UNSIGNED_CHAR)
+    Rgb = nps.numpy_to_vtk(num_array=rgb, deep=True,
+                           array_type=VTK_UNSIGNED_CHAR)
     Rgb.SetName("rgb_colors")
     output.GetPointData().SetScalars(Rgb)
 
-    Radii = numpy_to_vtk(num_array=radii, deep=True,
-                         array_type=ccvtk.VTK_FLOAT)
+    Radii = nps.numpy_to_vtk(num_array=radii, deep=True,
+                             array_type=VTK_FLOAT)
     Radii.SetName("radius")
     output.GetPointData().SetVectors(Radii)
 
@@ -730,13 +727,13 @@ def ribbon(molecule):
     points = numpy_to_vtk_points(coords)
     output.SetPoints(points)
 
-    ribbonFilter = dcvtk.vtkProteinRibbonFilter()
+    ribbonFilter = ProteinRibbonFilter()
     ribbonFilter.SetInputData(output)
     ribbonFilter.SetCoilWidth(0.2)
     ribbonFilter.SetDrawSmallMoleculesAsSpheres(0)
-    mapper = rcvtk.vtkPolyDataMapper()
+    mapper = PolyDataMapper()
     mapper.SetInputConnection(ribbonFilter.GetOutputPort())
-    molecule_actor = rcvtk.vtkActor()
+    molecule_actor = Actor()
     molecule_actor.SetMapper(mapper)
     return molecule_actor
 
@@ -757,8 +754,8 @@ def bounding_box(molecule, colors=(1, 1, 1), linewidth=0.3):
     -------
     bbox_actor : vtkActor
         Actor created to serve as a bounding box for a given molecule.
-    """
 
+    """
     pts = numpy_to_vtk_points(get_all_atomic_positions(molecule))
     min_x, max_x, min_y, max_y, min_z, max_z = pts.GetBounds()
 
