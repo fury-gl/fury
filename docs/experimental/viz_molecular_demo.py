@@ -51,7 +51,7 @@ if not os.path.isfile(pdbfn):
 ###############################################################################
 # Creating a `PeriodicTable()` object to obtain atomic numbers from names of
 # elements
-table = mol.PeriodicTable()
+table = mol.PTable()
 
 ###############################################################################
 # Creating empty lists which will be filled with atomic information as we
