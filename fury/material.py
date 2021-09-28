@@ -43,6 +43,7 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
                       specular_level=0, specular_color=(1, 1, 1),
                       specular_power=1, interpolation='gouraud'):
     """Apply the standard material to the selected actor.
+
     Parameters
     ----------
     actor : actor
@@ -66,6 +67,7 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         'gouraud' (default), then the shading will be calculated at the
         vertex level. If 'phong', then the shading will be calculated at the
         fragment level.
+
     """
     try:
         prop = actor.GetProperty()
