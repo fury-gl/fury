@@ -12,7 +12,8 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate, VTK_9_PLUS
+from fury.utils import shallow_copy, rotate, VTK_9_PLUS, vertices_from_actor, \
+                       colors_from_actor
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
