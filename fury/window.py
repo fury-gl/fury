@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
 
 import gzip
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
+import vtk
+from vtk.util import numpy_support, colors
+
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
+from fury.deprecator import deprecate_with_version
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
-                      InteractorStyleImage, InteractorStyleTrackballCamera,
-                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
-                      WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
-from fury.shaders.base import GL_NUMBERS as _GL
+
 try:
     basestring
 except NameError:
     basestring = str
 
 
-class Scene(Renderer):
+class Scene(vtk.vtkRenderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
     e.g. actors and volumes for rendering. This is a more pythonic version
-    of ``vtkRenderer`` providing simple methods for adding and removing actors
+    of ``vtkRenderer`` proving simple methods for adding and removing actors
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
@@ -40,9 +40,9 @@ class Scene(Renderer):
     def add(self, *actors):
         """Add an actor to the scene."""
         for actor in actors:
-            if isinstance(actor, Volume):
+            if isinstance(actor, vtk.vtkVolume):
                 self.AddVolume(actor)
-            elif isinstance(actor, Actor2D):
+            elif isinstance(actor, vtk.vtkActor2D):
                 self.AddActor2D(actor)
             elif hasattr(actor, 'add_to_scene'):
                 actor.add_to_scene(self)
@@ -238,6 +238,130 @@ class Scene(Renderer):
         self.SetUseFXAA(False)
 
 
+class Renderer(Scene):
+    """Your scene class.
+
+    This is an important object that is responsible for preparing objects
+    e.g. actors and volumes for rendering. This is a more pythonic version
+    of ``vtkRenderer`` proving simple methods for adding and removing actors
+    but also it provides access to all the functionality
+    available in ``vtkRenderer`` if necessary.
+
+    .. deprecated:: 0.2.0
+          `Renderer()` will be removed in Fury v0.6.0, it is replaced by the
+          class `Scene()`
+    """
+
+    @deprecate_with_version("Renderer() deprecated, Please use Scene()"
+                            "instead", since='0.2.0', until='0.6.0')
+    def __init__(self, _parent=None):
+        """Init old class with a warning."""
+        pass
+
+
+@deprecate_with_version("'fury.window.renderer' function deprecated, use "
+                        "'fury.window.Scene' instead",
+                        since='0.2.0', until='0.6.0')
+def renderer(background=None):
+    """Create a Scene.
+
+    .. deprecated:: 0.2.0
+          `renderer` will be removed in Fury 0.6.0, it is replaced by the
+          class `Scene()`
+
+    Parameters
+    ----------
+    background : tuple
+        Initial background color of scene
+
+    Returns
+    -------
+    v : Scene instance
+        scene object
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> r = window.renderer()
+    >>> lines=[np.random.rand(10,3)]
+    >>> c=actor.line(lines, window.colors.red)
+    >>> r.add(c)
+    >>> #window.show(r)
+
+    """
+    scene = Scene()
+    if background is not None:
+        scene.SetBackground(background)
+
+    return scene
+
+
+@deprecate_with_version("'fury.window.ren' function deprecated, use "
+                        "'fury.window.Scene' instead",
+                        since='0.2.0', until='0.6.0')
+def ren(background=None):
+    """Create a Scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.6.0, it is replaced by
+          `Scene()`
+    """
+    return renderer(background=background)
+
+
+@deprecate_with_version("'fury.window.add' function deprecated, use "
+                        "'fury.window.Scene().add' instead",
+                        since='0.2.0', until='0.6.0')
+def add(scene, a):
+    """Add a specific actor to the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.6.0, it is replaced by
+          `Scene().add`
+    """
+    scene.add(a)
+
+
+@deprecate_with_version("'fury.window.rm' function deprecated, use "
+                        "'fury.window.Scene().rm' instead",
+                        since='0.2.0', until='0.6.0')
+def rm(scene, a):
+    """Remove a specific actor from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.6.0, it is replaced by
+          `Scene().rm`
+    """
+    scene.rm(a)
+
+
+@deprecate_with_version("'fury.window.clear' function deprecated, use "
+                        "'fury.window.Scene().clear' instead",
+                        since='0.2.0', until='0.6.0')
+def clear(scene):
+    """Remove all actors from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.6.0, it is replaced by
+          `Scene().clear`
+    """
+    scene.clear()
+
+
+@deprecate_with_version("'fury.window.rm_all()' function deprecated, use "
+                        "'fury.window.Scene().clear' instead",
+                        since='0.2.0', until='0.6.0')
+def rm_all(scene):
+    """Remove all actors from the scene.
+
+    .. deprecated:: 0.2.0
+          `ren` will be removed in Fury 0.6.0, it is replaced by
+          `Scene().rm_all`
+    """
+    scene.rm_all()
+
+
 class ShowManager(object):
     """Class interface between the scene, the window and the interactor."""
 
@@ -332,7 +456,7 @@ class ShowManager(object):
         if self.reset_camera:
             self.scene.ResetCamera()
 
-        self.window = RenderWindow()
+        self.window = vtk.vtkRenderWindow()
 
         if self.stereo.lower() != 'off':
             enable_stereo(self.window, self.stereo)
@@ -348,15 +472,15 @@ class ShowManager(object):
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
-            self.style = InteractorStyleImage()
+            self.style = vtk.vtkInteractorStyleImage()
         elif self.interactor_style == 'trackball':
-            self.style = InteractorStyleTrackballCamera()
+            self.style = vtk.vtkInteractorStyleTrackballCamera()
         elif self.interactor_style == 'custom':
             self.style = CustomInteractorStyle()
         else:
             self.style = interactor_style
 
-        self.iren = RenderWindowInteractor()
+        self.iren = vtk.vtkRenderWindowInteractor()
         self.style.SetCurrentRenderer(self.scene)
         # Hack: below, we explicitly call the Python version of SetInteractor.
         self.style.SetInteractor(self.iren)
@@ -419,7 +543,7 @@ class ShowManager(object):
         """
         with InTemporaryDirectory():
             filename = "recorded_events.log"
-            recorder = InteractorEventRecorder()
+            recorder = vtk.vtkInteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
 
@@ -479,7 +603,7 @@ class ShowManager(object):
             Recorded events (one per line).
 
         """
-        recorder = InteractorEventRecorder()
+        recorder = vtk.vtkInteractorEventRecorder()
         recorder.SetInteractor(self.iren)
 
         recorder.SetInputString(events)
@@ -512,7 +636,7 @@ class ShowManager(object):
         self.play_events(events)
 
     def add_window_callback(self, win_callback,
-                            event=Command.ModifiedEvent):
+                            event=vtk.vtkCommand.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
@@ -525,9 +649,6 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
-
-    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
-        self.iren.AddObserver(event, iren_callback)
 
     def destroy_timer(self, timer_id):
         self.iren.DestroyTimer(timer_id)
@@ -689,13 +810,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = Renderer()
+        scene = vtk.vtkRenderer()
 
-    renWin = RenderWindow()
+    renWin = vtk.vtkRenderWindow()
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = RenderWindowInteractor()
+    iren = vtk.vtkRenderWindowInteractor()
     iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
@@ -706,7 +827,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
-    renderLarge = RenderLargeImage()
+    renderLarge = vtk.vtkRenderLargeImage()
     renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
@@ -731,7 +852,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
-        renderLarge = RenderLargeImage()
+        renderLarge = vtk.vtkRenderLargeImage()
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
@@ -782,12 +903,6 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     # Force to not pick a framebuffer with a multisample buffer
     # (default is 8)
     win.SetMultiSamples(multi_samples)
-
-    # TODO: enable these but test
-    # win.SetBorders(True)
-    # win.LineSmoothingOn(True)
-    # win.PointSmoothingOn(True)
-    # win.PolygonSmoothingOn(True)
 
     # Choose to use depth peeling (if supported)
     # (default is 0 (false)):
@@ -851,7 +966,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    render_window = RenderWindow()
+    render_window = vtk.vtkRenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
     if stereo.lower() != 'off':
@@ -865,7 +980,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     render_window.Render()
 
-    window_to_image_filter = WindowToImageFilter()
+    window_to_image_filter = vtk.vtkWindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
     window_to_image_filter.Update()
 
@@ -903,6 +1018,19 @@ def analyze_scene(scene):
         report.actors_classnames.append(class_name)
 
     return report
+
+
+@deprecate_with_version("'fury.window.analyze_renderer' function deprecated, "
+                        "use 'fury.window.analyze_scene' instead",
+                        since='0.2.0', until='0.6.0')
+def analyze_renderer(scene):
+    """Report number of actors on the scene.
+
+    .. deprecated:: 0.2.0
+        `analyze_renderer` will be removed in Fury 0.3.0, it is replaced by
+        `analyze_scene()`
+    """
+    return analyze_scene(scene)
 
 
 def analyze_snapshot(im, bg_color=colors.black, colors=None,
@@ -1018,161 +1146,3 @@ def enable_stereo(renwin, stereo_type):
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
-
-
-def gl_get_current_state(gl_state):
-    """Returns a dict which describes the current state of the opengl
-    context
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    state_description = {
-        glName: gl_state.GetEnumState(glNumber)
-        for glName, glNumber in _GL.items()
-    }
-    return state_description
-
-
-def gl_reset_blend(gl_state):
-    """Redefines the state of the OpenGL context related with how the RGBA
-    channels will be combined.
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    See more
-    ---------
-    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
-    [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
-    vtk specification:
-    [3] https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
-
-    """  # noqa
-    gl_state.ResetGLBlendEquationState()
-    gl_state.ResetGLBlendFuncState()
-
-
-def gl_enable_depth(gl_state):
-    """Enable OpenGl depth test
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
-
-
-def gl_disable_depth(gl_state):
-    """Disable OpenGl depth test
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
-
-
-def gl_enable_blend(gl_state):
-    """Enable OpenGl blending
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-
-
-def gl_disable_blend(gl_state):
-    """This it will disable any gl behavior which has no
-    function for opaque objects. This has the benefit of
-    speeding up the rendering of the image.
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    See more
-    --------
-    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
-
-    """  # noqa
-
-    gl_state.vtkglDisable(_GL['GL_CULL_FACE'])
-    gl_state.vtkglDisable(_GL['GL_BLEND'])
-
-
-def gl_set_additive_blending(gl_state):
-    """Enable additive blending
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_reset_blend(gl_state)
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    gl_state.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
-
-
-def gl_set_additive_blending_white_background(gl_state):
-    """Enable additive blending for a white background
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_reset_blend(gl_state)
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
-    gl_state.vtkglBlendFuncSeparate(
-            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-            _GL['GL_ONE'],  _GL['GL_ZERO'])
-
-
-def gl_set_normal_blending(gl_state):
-    """Enable normal blending
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_state.vtkglEnable(_GL['GL_BLEND'])
-    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
-    gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
-    gl_state.vtkglBlendFuncSeparate(
-                _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-                _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
-
-
-def gl_set_multiplicative_blending(gl_state):
-    """Enable multiplicative blending
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_reset_blend(gl_state)
-    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
-
-
-def gl_set_subtractive_blending(gl_state):
-    """Enable subtractive blending
-
-    Parameters
-    ----------
-    gl_state : vtkOpenGLState
-
-    """
-    gl_reset_blend(gl_state)
-    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])

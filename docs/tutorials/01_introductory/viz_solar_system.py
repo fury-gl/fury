@@ -20,57 +20,35 @@ from fury.data import read_viz_textures, fetch_viz_textures
 scene = window.Scene()
 
 ##############################################################################
-# Define information relevant for each planet actor including its
-# texture name, relative position, and scale.
+# Load in a texture for each of the actors. To do this, we will create
+# a function called ``init_planet``, which will initialize each planet actor
+# given its corresponding filename and actor name. It will also add each
+# actor to the scene that has already been created.
 
-planets_data = [{'filename': '8k_mercury.jpg', 'position': 7,
-                 'scale': (.4, .4, .4)},
-                {'filename': '8k_venus_surface.jpg', 'position': 9,
-                 'scale': (.6, .6, .6)},
-                {'filename': '1_earth_8k.jpg', 'position': 11,
-                 'scale': (.4, .4, .4)},
-                {'filename': '8k_mars.jpg', 'position': 13,
-                 'scale': (.8, .8, .8)},
-                {'filename': 'jupiter.jpg', 'position': 16,
-                 'scale': (2, 2, 2)},
-                {'filename': '8k_saturn.jpg', 'position': 19,
-                 'scale': (2, 2, 2)},
-                {'filename': '8k_saturn_ring_alpha.png', 'position': 19,
-                 'scale': (3, .5, 3)},
-                {'filename': '2k_uranus.jpg', 'position': 22,
-                 'scale': (1, 1, 1)},
-                {'filename': '2k_neptune.jpg', 'position': 25,
-                 'scale': (1, 1, 1)},
-                {'filename': '8k_sun.jpg', 'position': 0,
-                 'scale': (5, 5, 5)}]
+planet_filenames = ["8k_mercury.jpg", "8k_venus_surface.jpg",
+                    "1_earth_8k.jpg", "8k_mars.jpg", "jupiter.jpg",
+                    "8k_saturn.jpg", "8k_saturn_ring_alpha.png",
+                    "2k_uranus.jpg", "2k_neptune.jpg",
+                    "8k_sun.jpg"]
 fetch_viz_textures()
 
-##############################################################################
-# To take advantage of the previously defined data structure we are going to
-# create an auxiliary function that will load and apply the respective
-# texture, set its respective properties (relative position and scale),
-# and add the actor to a previously created scene.
 
-
-def init_planet(planet_data):
+def init_planet(filename):
     """Initialize a planet actor.
 
     Parameters
     ----------
-    planet_data : dict
-        The planet_data is a dictionary, and the keys are filename(texture),
-        position and scale.
+    filename : str
+        The filename for the corresponding planet texture.
 
     Returns
     -------
     planet_actor: actor
         The corresponding sphere actor with texture applied.
     """
-    planet_file = read_viz_textures(planet_data['filename'])
+    planet_file = read_viz_textures(filename)
     planet_image = io.load_image(planet_file)
     planet_actor = actor.texture_on_sphere(planet_image)
-    planet_actor.SetPosition(planet_data['position'], 0, 0)
-    planet_actor.SetScale(planet_data['scale'])
     scene.add(planet_actor)
     return planet_actor
 
@@ -80,7 +58,7 @@ def init_planet(planet_data):
 # in the ``planet_files`` list. Then, assign each actor to its corresponding
 # actor in the list.
 
-planet_actor_list = list(map(init_planet, planets_data))
+planet_actor_list = list(map(init_planet, planet_filenames))
 
 mercury_actor = planet_actor_list[0]
 venus_actor = planet_actor_list[1]
@@ -97,15 +75,51 @@ sun_actor = planet_actor_list[9]
 utils.rotate(jupiter_actor, (90, 1, 0, 0))
 
 ##############################################################################
+# Next, change the positions and scales of the planets according to their
+# position and size within the solar system (relatively). For the purpose
+# of this tutorial, planet sizes and positions will not be completely
+# accurate.
+
+sun_actor.SetScale(5, 5, 5)
+mercury_actor.SetScale(0.4, 0.4, 0.4)
+venus_actor.SetScale(0.6, 0.6, 0.6)
+earth_actor.SetScale(0.4, 0.4, 0.4)
+mars_actor.SetScale(0.8, 0.8, 0.8)
+jupiter_actor.SetScale(2, 2, 2)
+saturn_actor.SetScale(2, 2, 2)
+saturn_rings_actor.SetScale(3, 0.5, 3)
+uranus_actor.SetScale(1, 1, 1)
+neptune_actor.SetScale(1, 1, 1)
+
+mercury_actor.SetPosition(7, 0, 0)
+venus_actor.SetPosition(9, 0, 0)
+earth_actor.SetPosition(11, 0, 0)
+mars_actor.SetPosition(13, 0, 0)
+jupiter_actor.SetPosition(16, 0, 0)
+saturn_actor.SetPosition(19, 0, 0)
+saturn_rings_actor.SetPosition(19, 0, 0)
+uranus_actor.SetPosition(22, 0, 0)
+neptune_actor.SetPosition(25, 0, 0)
+
+##############################################################################
 # Define the gravitational constant G, the orbital radii of each of the
-# planets, and the central mass of the sun. The gravity and mass will be
-# used to calculate the orbital position, so multiply these two together to
-# create a new constant, which we will call miu.
+# planets, and the central mass of the sun. The gravity and mass will be used
+# to calculate the orbital position, so multiply these two together to create
+# a new constant, which we will call miu.
+
+r_mercury = 7
+r_venus = 9
+r_earth = 11
+r_mars = 13
+r_jupiter = 16
+r_saturn = 19
+r_uranus = 22
+r_neptune = 25
 
 g_exponent = np.float_power(10, -11)
 g_constant = 6.673*g_exponent
 
-m_exponent = 1073741824   # np.power(10, 30)
+m_exponent = np.power(10, 30)
 m_constant = 1.989*m_exponent
 
 miu = m_constant*g_constant
@@ -118,14 +132,14 @@ miu = m_constant*g_constant
 
 
 def get_orbit_period(radius):
-    return 2 * np.pi * np.sqrt(np.power(radius, 3)/miu)
+    return np.sqrt(2*np.pi * np.power(radius, 3)/miu)
 
 
 def get_orbital_position(radius, time):
     orbit_period = get_orbit_period(radius)
     x = radius * np.cos((2*np.pi*time)/orbit_period)
     y = radius * np.sin((2*np.pi*time)/orbit_period)
-    return x, y
+    return (x, y)
 
 
 ##############################################################################
@@ -149,72 +163,137 @@ showm = window.ShowManager(scene,
 counter = itertools.count()
 
 ##############################################################################
-# Define one new function to use in ``timer_callback`` to update the planet
-# positions ``update_planet_position``.
+# To track and visualize the orbital paths of the planets, we will create
+# several new variables to map each planet's orbits using ``actor.dots``.
+# It is important to define the track variable for each planet as global,
+# allowing it to be used within the ``timer_callback`` function. To do this,
+# create a function called ``get_orbit_actor``.
 
 
-def update_planet_position(r_planet, planet_actor, cnt):
+def get_orbit_actor(orbit_points):
+    orbit_actor = actor.dots(orbit_points, color=(1, 1, 1),
+                             opacity=1, dot_size=1)
+    return orbit_actor
+
+
+##############################################################################
+# All of the planets will have the same initial positions, so assign each of
+# those to the positions variables for each planet. These variables will be
+# updated within the ``timer_callback`` function. Initialize and add the
+# orbit actors into the scene. Also initialize the track variables for each
+# planet.
+
+orbit_points = np.zeros((1000, 3), dtype='f8')
+
+mercury_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(mercury_orbit_actor)
+positions_mercury = utils.vertices_from_actor(mercury_orbit_actor)
+
+venus_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(venus_orbit_actor)
+positions_venus = utils.vertices_from_actor(venus_orbit_actor)
+
+earth_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(earth_orbit_actor)
+positions_earth = utils.vertices_from_actor(earth_orbit_actor)
+
+mars_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(mars_orbit_actor)
+positions_mars = utils.vertices_from_actor(mars_orbit_actor)
+
+jupiter_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(jupiter_orbit_actor)
+positions_jupiter = utils.vertices_from_actor(jupiter_orbit_actor)
+
+saturn_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(saturn_orbit_actor)
+positions_saturn = utils.vertices_from_actor(saturn_orbit_actor)
+
+uranus_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(uranus_orbit_actor)
+positions_uranus = utils.vertices_from_actor(uranus_orbit_actor)
+
+neptune_orbit_actor = get_orbit_actor(orbit_points)
+scene.add(neptune_orbit_actor)
+positions_neptune = utils.vertices_from_actor(neptune_orbit_actor)
+
+mercury_track = []
+venus_track = []
+earth_track = []
+mars_track = []
+jupiter_track = []
+saturn_track = []
+uranus_track = []
+neptune_track = []
+
+##############################################################################
+# Define two new functions to use in ``timer_callback`` to update the planet
+# positions and their tracks to visualize their orbit: ``update_track`` and
+# ``update_planet_position``.
+
+
+def update_planet_position(r_planet, planet_actor, planet_track, cnt):
     pos_planet = get_orbital_position(r_planet, cnt)
     planet_actor.SetPosition(pos_planet[0], 0, pos_planet[1])
+    planet_track.append([pos_planet[0], 0, pos_planet[1]])
     return pos_planet
 
 
-##############################################################################
-# ``calculate_path`` function is for calculating the path/orbit
-# of every planet.
+def update_track(positions_planet, planet_track, planet_orbit_actor):
+    positions_planet[:] = np.array(planet_track)
+    utils.update_actor(planet_orbit_actor)
 
-
-def calculate_path(r_planet, c):
-    planet_track = [[get_orbital_position(r_planet, i)[0], 0,
-                     get_orbital_position(r_planet, i)[1]] for i in range(c)]
-    return planet_track
-
-
-##############################################################################
-# First we are making a list that will contain radius from `planets_data`.
-# Here we are not taking the radius of orbit/path for sun and saturn ring.
-# And `planet_actors` will contain all the planet actors.
-
-r_planets = [p_data['position'] for p_data in planets_data
-             if 'sun' not in p_data['filename']
-             if 'saturn_ring' not in p_data['filename']]
-
-planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
-                 jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
-
-##############################################################################
-# Here we are calculating and updating the path/orbit before animation starts.
-
-planet_tracks = [calculate_path(rplanet, rplanet*85) for rplanet in r_planets]
-
-##############################################################################
-# This is for orbit visualization. We are using line actor for orbits.
-# After creating an actor we add it to the scene.
-
-orbit_actor = actor.line(planet_tracks, colors=(1, 1, 1), linewidth=0.1)
-scene.add(orbit_actor)
 
 ##############################################################################
 # Define the ``timer_callback`` function, which controls what events happen
-# at certain times, using the counter. Update the position of each planet
-# actor using ``update_planet_position,`` assigning the x and y values of
-# each planet's position with the newly calculated ones.
-
+# at certain times, using the counter. Redefine the position of each planet
+# actor using ``get_orbital_position,`` assigning the x and y values of
+# each planet's position with the newly calculated ones. Append each new
+# planet position to its corresponding track array.
 
 def timer_callback(_obj, _event):
     cnt = next(counter)
     showm.render()
 
-    for r_planet, planet_actor in zip(r_planets, planet_actors):
-        # if the planet is saturn then we also need to update the position
-        # of its rings.
-        if planet_actor == saturn_actor:
-            pos_saturn = update_planet_position(19, saturn_actor, cnt)
-            saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
-        else:
-            update_planet_position(r_planet, planet_actor, cnt)
+    global mercury_track, venus_track, earth_track, mars_track, jupiter_track
+    global saturn_track, uranus_track, neptune_track
 
-    if cnt == 2000:
+    update_planet_position(r_mercury, mercury_actor, mercury_track, cnt)
+
+    update_planet_position(r_venus, venus_actor, venus_track, cnt)
+
+    update_planet_position(r_earth, earth_actor, earth_track, cnt)
+
+    update_planet_position(r_mars, mars_actor, mars_track, cnt)
+
+    update_planet_position(r_jupiter, jupiter_actor, jupiter_track, cnt)
+
+    pos_saturn = update_planet_position(r_saturn, saturn_actor, saturn_track,
+                                        cnt)
+    saturn_rings_actor.SetPosition(pos_saturn[0], 0, pos_saturn[1])
+
+    update_planet_position(r_uranus, uranus_actor, uranus_track, cnt)
+
+    update_planet_position(r_neptune, neptune_actor, neptune_track, cnt)
+
+    if cnt == 999:
+        update_track(positions_mercury, mercury_track, mercury_orbit_actor)
+
+        update_track(positions_venus, venus_track, venus_orbit_actor)
+
+        update_track(positions_earth, earth_track, earth_orbit_actor)
+
+        update_track(positions_mars, mars_track, mars_orbit_actor)
+
+        update_track(positions_jupiter, jupiter_track, jupiter_orbit_actor)
+
+        update_track(positions_saturn, saturn_track, saturn_orbit_actor)
+
+        update_track(positions_uranus, uranus_track, uranus_orbit_actor)
+
+        update_track(positions_neptune, neptune_track, neptune_orbit_actor)
+
+    if cnt == 1500:
         showm.exit()
 
 

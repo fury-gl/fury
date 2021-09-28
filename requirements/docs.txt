@@ -9,4 +9,3 @@ sphinx_rtd_theme
 networkx
 ablog >= 0.10.5
 pybullet>=2.7.0
-opencv-python

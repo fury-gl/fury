@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import vtk
 
-from fury.colormap import create_colormap
 from fury.utils import (set_polydata_vertices, set_polydata_triangles,
                         set_polydata_colors, apply_affine)
-from fury.lib import Actor, PolyData, PolyDataMapper
+from fury.colormap import create_colormap
 
 
-class OdfSlicerActor(Actor):
+class OdfSlicerActor(vtk.vtkActor):
     """
     VTK actor for visualizing slices of ODF field.
 
@@ -84,7 +84,7 @@ class OdfSlicerActor(Actor):
 
         # Initialize mapper and slice to the
         # middle of the volume along Z axis
-        self.mapper = PolyDataMapper()
+        self.mapper = vtk.vtkPolyDataMapper()
         self.SetMapper(self.mapper)
         self.slice_along_axis(self.grid_shape[-1]//2)
         self.set_opacity(opacity)
@@ -160,7 +160,7 @@ class OdfSlicerActor(Actor):
         """
         Map vtkPolyData to the actor.
         """
-        polydata = PolyData()
+        polydata = vtk.vtkPolyData()
 
         offsets = self._get_odf_offsets(self.mask)
         if len(offsets) == 0:

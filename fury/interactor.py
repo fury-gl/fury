@@ -3,10 +3,7 @@
 from collections import deque
 
 import numpy as np
-
-from fury.lib import (Command, InteractorStyleUser, InteractorStyleImage,
-                      InteractorStyleTrackballCamera, PropPicker,
-                      InteractorStyleTrackballActor, InteractorStyle)
+import vtk
 
 
 class Event(object):
@@ -16,7 +13,6 @@ class Event(object):
         self.position = None
         self.name = None
         self.key = None
-        self.key_char = None
         self.alt_key = None
         self.shift_key = None
         self.ctrl_key = None
@@ -32,7 +28,6 @@ class Event(object):
         self.name = event_name
         self.position = np.asarray(interactor.GetEventPosition())
         self.key = interactor.GetKeySym()
-        self.key_char = interactor.GetKeyCode()
         self.alt_key = bool(interactor.GetAltKey())
         self.shift_key = bool(interactor.GetShiftKey())
         self.ctrl_key = bool(interactor.GetControlKey())
@@ -50,7 +45,7 @@ class Event(object):
         self._abort_flag = False
 
 
-class CustomInteractorStyle(InteractorStyleUser):
+class CustomInteractorStyle(vtk.vtkInteractorStyleUser):
     """Manipulate the camera and interact with objects in the scene.
 
     This interactor style allows the user to interactively manipulate (pan,
@@ -74,14 +69,14 @@ class CustomInteractorStyle(InteractorStyleUser):
     def __init__(self):
         """Init."""
         # Interactor responsible for moving the camera.
-        self.trackball_camera = InteractorStyleTrackballCamera()
+        self.trackball_camera = vtk.vtkInteractorStyleTrackballCamera()
         # Interactor responsible for moving/rotating a selected actor.
-        self.trackball_actor = InteractorStyleTrackballActor()
+        self.trackball_actor = vtk.vtkInteractorStyleTrackballActor()
         # Interactor responsible for panning/zooming the camera.
-        self.image = InteractorStyleImage()
+        self.image = vtk.vtkInteractorStyleImage()
 
         # The picker allows us to know which object/actor is under the mouse.
-        self.picker = PropPicker()
+        self.picker = vtk.vtkPropPicker()
         self.chosen_element = None
         self.event = Event()
         self.event2id = {}  # To map an event's name to an ID.
@@ -336,7 +331,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         # `vtkInteractorStyle`. In addition to setting the interactor, the
         # following line adds the necessary hooks to listen to this
         # observers instances.
-        InteractorStyle.SetInteractor(self, interactor)
+        vtk.vtkInteractorStyle.SetInteractor(self, interactor)
 
         # Keyboard events.
         self.AddObserver("CharEvent", self._process_event)
@@ -392,12 +387,12 @@ class CustomInteractorStyle(InteractorStyleUser):
 
         # Dealing with custom events not defined in VTK.
         # Check whether the Event is predefined or not.
-        if Command.GetEventIdFromString(event_type) == 0:
+        if vtk.vtkCommand.GetEventIdFromString(event_type) == 0:
             if event_type not in self.event2id:
                 # If the event type was not previously defined,
                 # then create an extra user defined event.
                 self.event2id[event_type] = \
-                    Command.UserEvent + len(self.event2id) + 1
+                    vtk.vtkCommand.UserEvent + len(self.event2id) + 1
 
             event_type = self.event2id[event_type]
 

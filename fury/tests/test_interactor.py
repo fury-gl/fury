@@ -2,13 +2,12 @@ from os.path import join as pjoin
 from collections import defaultdict
 
 import numpy as np
+import vtk
 
 from fury import actor, window, interactor, ui
 from fury import utils as vtk_utils
 from fury.data import DATA_DIR
 from fury.decorators import skip_osx, skip_win
-from fury.lib import (VTK_VERSION, PolyDataMapper2D, Actor2D,
-                      RegularPolygonSource)
 
 import numpy.testing as npt
 import pytest
@@ -18,7 +17,7 @@ import pytest
                                                  " Windows and OSX. Need to "
                                                  " be introspected")
 def test_custom_interactor_style_events(recording=False):
-    print("Using VTK {}".format(VTK_VERSION))
+    print("Using VTK {}".format(vtk.vtkVersion.GetVTKVersion()))
     filename = "test_custom_interactor_style_events.log.gz"
     recording_filename = pjoin(DATA_DIR, filename)
     scene = window.Scene()
@@ -31,17 +30,17 @@ def test_custom_interactor_style_events(recording=False):
                                       interactor_style=interactor_style)
 
     # Create a cursor, a circle that will follow the mouse.
-    polygon_source = RegularPolygonSource()
+    polygon_source = vtk.vtkRegularPolygonSource()
     polygon_source.GeneratePolygonOff()  # Only the outline of the circle.
     polygon_source.SetNumberOfSides(50)
     polygon_source.SetRadius(10)
     # polygon_source.SetRadius
     polygon_source.SetCenter(0, 0, 0)
 
-    mapper = PolyDataMapper2D()
+    mapper = vtk.vtkPolyDataMapper2D()
     vtk_utils.set_input(mapper, polygon_source.GetOutputPort())
 
-    cursor = Actor2D()
+    cursor = vtk.vtkActor2D()
     cursor.SetMapper(mapper)
     cursor.GetProperty().SetColor(1, 0.5, 0)
     scene.add(cursor)

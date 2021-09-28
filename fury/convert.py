@@ -1,9 +1,7 @@
-import os
-from tempfile import TemporaryDirectory
-
 import numpy as np
-
+import os
 from fury.io import load_image
+from tempfile import TemporaryDirectory
 
 
 def matplotlib_figure_to_numpy(fig, dpi=100, fname=None, flip_up_down=True,
