@@ -6,13 +6,13 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 from scipy.ndimage.measurements import center_of_mass
+from scipy.signal import convolve
 
 from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import (shallow_copy, rotate, colors_from_actor,
-                        vertices_from_actor)
+from fury.utils import shallow_copy, rotate, VTK_9_PLUS
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -424,7 +424,6 @@ def test_streamtube_and_line_actors():
 
     c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
 
-    VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
     shader_obj = c3.GetShaderProperty() if VTK_9_PLUS else c3.GetMapper()
     mapper_code = shader_obj.GetGeometryShaderCode()
     file_code = shaders.load("line.geom")
@@ -723,6 +722,71 @@ def test_peak_slicer(interactive=False):
     npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
 
 
+def test_peak():
+    # 4D dirs data
+    dirs_data_4d = np.random.rand(3, 4, 5, 6)
+    npt.assert_raises(ValueError, actor.peak, dirs_data_4d)
+
+    # 6D dirs data
+    dirs_data_6d = np.random.rand(7, 8, 9, 10, 11, 12)
+    npt.assert_raises(ValueError, actor.peak, dirs_data_6d)
+
+    # 2D directions
+    dirs_2d = np.random.rand(3, 4, 5, 6, 2)
+    npt.assert_raises(ValueError, actor.peak, dirs_2d)
+
+    # 4D directions
+    dirs_4d = np.random.rand(3, 4, 5, 6, 4)
+    npt.assert_raises(ValueError, actor.peak, dirs_4d)
+
+    valid_dirs = np.random.rand(3, 4, 5, 6, 3)
+
+    # 3D vals data
+    vals_data_3d = np.random.rand(3, 4, 5)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_3d)
+
+    # 5D vals data
+    vals_data_5d = np.random.rand(6, 7, 8, 9, 10)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_5d)
+
+    # Diff vals data #1
+    vals_data_diff_1 = np.random.rand(3, 4, 5, 9)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_diff_1)
+
+    # Diff vals data #2
+    vals_data_diff_2 = np.random.rand(7, 8, 9, 10)
+    npt.assert_raises(ValueError, actor.peak, valid_dirs,
+                      peaks_values=vals_data_diff_2)
+
+    # 2D mask
+    mask_2d = np.random.rand(2, 3)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=mask_2d)
+
+    # 4D mask
+    mask_4d = np.random.rand(4, 5, 6, 7)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=mask_4d)
+
+    # Diff mask
+    diff_mask = np.random.rand(6, 7, 8)
+    npt.assert_warns(UserWarning, actor.peak, valid_dirs, mask=diff_mask)
+
+    # Valid mask
+    dirs000 = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    dirs100 = np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]])
+    peaks_dirs = np.empty((2, 1, 1, 3, 3))
+    peaks_dirs[0, 0, 0, :, :] = dirs000
+    peaks_dirs[1, 0, 0, :, :] = dirs100
+    peaks_vals = np.ones((2, 1, 1, 3)) * .5
+    mask = np.zeros((2, 1, 1))
+    mask[0, 0, 0] = 1
+    peaks_actor = actor.peak(peaks_dirs, peaks_values=peaks_vals, mask=mask)
+    npt.assert_equal(peaks_actor.min_centers, [0, 0, 0])
+    npt.assert_equal(peaks_actor.max_centers, [0, 0, 0])
+
+
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_tensor_slicer(interactive=False):
 
@@ -969,6 +1033,7 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.rectangle, {}],
                   [actor.frustum, {}],
                   [actor.octagonalprism, {}],
+                  [actor.pentagonalprism, {}],
                   [actor.triangularprism, {}]]
 
     for act_func, extra_args in actor_list:

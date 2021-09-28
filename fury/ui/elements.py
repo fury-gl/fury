@@ -1,6 +1,6 @@
 """UI components module."""
 
-__all__ = ["Button2D", "TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
+__all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
 
@@ -11,233 +11,12 @@ from string import printable
 
 
 import numpy as np
-import vtk
 
 from fury.data import read_viz_icons
-from fury.io import load_image
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
-from fury.utils import set_input
-
-
-class Button2D(UI):
-    """A 2D overlay button and is of type vtkTexturedActor2D.
-
-    Currently supports::
-
-        - Multiple icons.
-        - Switching between icons.
-
-    """
-
-    def __init__(self, icon_fnames, position=(0, 0), size=(30, 30)):
-        """Init class instance.
-
-        Parameters
-        ----------
-        icon_fnames : List(string, string)
-            ((iconname, filename), (iconname, filename), ....)
-        position : (float, float), optional
-            Absolute coordinates (x, y) of the lower-left corner of the button.
-        size : (int, int), optional
-            Width and height in pixels of the button.
-
-        """
-        super(Button2D, self).__init__(position)
-
-        self.icon_extents = dict()
-        self.icons = self._build_icons(icon_fnames)
-        self.icon_names = [icon[0] for icon in self.icons]
-        self.current_icon_id = 0
-        self.current_icon_name = self.icon_names[self.current_icon_id]
-        self.set_icon(self.icons[self.current_icon_id][1])
-        self.resize(size)
-
-    def _get_size(self):
-        lower_left_corner = self.texture_points.GetPoint(0)
-        upper_right_corner = self.texture_points.GetPoint(2)
-        size = np.array(upper_right_corner) - np.array(lower_left_corner)
-        return abs(size[:2])
-
-    def _build_icons(self, icon_fnames):
-        """Convert file names to vtkImageDataGeometryFilters.
-
-        A pre-processing step to prevent re-read of file names during every
-        state change.
-
-        Parameters
-        ----------
-        icon_fnames : List(string, string)
-            ((iconname, filename), (iconname, filename), ....)
-
-        Returns
-        -------
-        icons : List
-            A list of corresponding vtkImageDataGeometryFilters.
-
-        """
-        icons = []
-        for icon_name, icon_fname in icon_fnames:
-            icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
-
-        return icons
-
-    def _setup(self):
-        """Set up this UI component.
-
-        Creating the button actor used internally.
-
-        """
-        # This is highly inspired by
-        # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
-
-        self.texture_polydata = vtk.vtkPolyData()
-        self.texture_points = vtk.vtkPoints()
-        self.texture_points.SetNumberOfPoints(4)
-
-        polys = vtk.vtkCellArray()
-        polys.InsertNextCell(4)
-        polys.InsertCellPoint(0)
-        polys.InsertCellPoint(1)
-        polys.InsertCellPoint(2)
-        polys.InsertCellPoint(3)
-        self.texture_polydata.SetPolys(polys)
-
-        tc = vtk.vtkFloatArray()
-        tc.SetNumberOfComponents(2)
-        tc.SetNumberOfTuples(4)
-        tc.InsertComponent(0, 0, 0.0)
-        tc.InsertComponent(0, 1, 0.0)
-        tc.InsertComponent(1, 0, 1.0)
-        tc.InsertComponent(1, 1, 0.0)
-        tc.InsertComponent(2, 0, 1.0)
-        tc.InsertComponent(2, 1, 1.0)
-        tc.InsertComponent(3, 0, 0.0)
-        tc.InsertComponent(3, 1, 1.0)
-        self.texture_polydata.GetPointData().SetTCoords(tc)
-
-        texture_mapper = vtk.vtkPolyDataMapper2D()
-        texture_mapper = set_input(texture_mapper, self.texture_polydata)
-
-        button = vtk.vtkTexturedActor2D()
-        button.SetMapper(texture_mapper)
-
-        self.texture = vtk.vtkTexture()
-        button.SetTexture(self.texture)
-
-        button_property = vtk.vtkProperty2D()
-        button_property.SetOpacity(1.0)
-        button.SetProperty(button_property)
-        self.actor = button
-
-        # Add default events listener to the VTK actor.
-        self.handle_events(self.actor)
-
-    def _get_actors(self):
-        """Get the actors composing this UI component."""
-        return [self.actor]
-
-    def _add_to_scene(self, scene):
-        """Add all subcomponents or VTK props that compose this UI component.
-
-        Parameters
-        ----------
-        scene : scene
-
-        """
-        scene.add(self.actor)
-
-    def resize(self, size):
-        """Resize the button.
-
-        Parameters
-        ----------
-        size : (float, float)
-            Button size (width, height) in pixels.
-
-        """
-        # Update actor.
-        self.texture_points.SetPoint(0, 0, 0, 0.0)
-        self.texture_points.SetPoint(1, size[0], 0, 0.0)
-        self.texture_points.SetPoint(2, size[0], size[1], 0.0)
-        self.texture_points.SetPoint(3, 0, size[1], 0.0)
-        self.texture_polydata.SetPoints(self.texture_points)
-
-    def _set_position(self, coords):
-        """Set the lower-left corner position of this UI component.
-
-        Parameters
-        ----------
-        coords: (float, float)
-            Absolute pixel coordinates (x, y).
-        """
-        self.actor.SetPosition(*coords)
-
-    @property
-    def color(self):
-        """Get the button's color."""
-        color = self.actor.GetProperty().GetColor()
-        return np.asarray(color)
-
-    @color.setter
-    def color(self, color):
-        """Set the button's color.
-
-        Parameters
-        ----------
-        color : (float, float, float)
-            RGB. Must take values in [0, 1].
-
-        """
-        self.actor.GetProperty().SetColor(*color)
-
-    def scale(self, factor):
-        """Scale the button.
-
-        Parameters
-        ----------
-        factor : (float, float)
-            Scaling factor (width, height) in pixels.
-
-        """
-        self.resize(self.size * factor)
-
-    def set_icon_by_name(self, icon_name):
-        """Set the button icon using its name.
-
-        Parameters
-        ----------
-        icon_name : str
-
-        """
-        icon_id = self.icon_names.index(icon_name)
-        self.set_icon(self.icons[icon_id][1])
-
-    def set_icon(self, icon):
-        """Modify the icon used by the vtkTexturedActor2D.
-
-        Parameters
-        ----------
-        icon : imageDataGeometryFilter
-
-        """
-        self.texture = set_input(self.texture, icon)
-
-    def next_icon_id(self):
-        """Set the next icon ID while cycling through icons."""
-        self.current_icon_id += 1
-        if self.current_icon_id == len(self.icons):
-            self.current_icon_id = 0
-        self.current_icon_name = self.icon_names[self.current_icon_id]
-
-    def next_icon(self):
-        """Increment the state of the Button.
-
-        Also changes the icon.
-        """
-        self.next_icon_id()
-        self.set_icon(self.icons[self.current_icon_id][1])
+from fury.ui.core import Button2D
 
 
 class TextBox2D(UI):
@@ -852,6 +631,7 @@ class LineSlider2D(UI):
 
         if self.orientation == "horizontal":
             length = float(self.right_x_position - self.left_x_position)
+            length = np.round(length, decimals=6)
             if length != self.track.width:
                 raise ValueError("Disk position outside the slider line")
             disk_position_x = self.handle.center[0]

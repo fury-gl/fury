@@ -1,13 +1,15 @@
 """Module dedicated for basic primitive."""
+import math
 from os.path import join as pjoin
 from distutils.version import LooseVersion
+
 import numpy as np
+from scipy.spatial import ConvexHull, transform
+from scipy.version import short_version
+
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
-from scipy.spatial import ConvexHull, transform
-from scipy.version import short_version
-import math
 
 SCIPY_1_4_PLUS = LooseVersion(short_version) >= LooseVersion('1.4.0')
 
@@ -622,6 +624,54 @@ def prim_triangularprism():
                          [0, 2, 4],
                          [0, 4, 5],
                          [5, 4, 3]])
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
+    return vertices, triangles
+
+
+def prim_pentagonalprism():
+    """Return vertices and triangles for a pentagonal prism.
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+    # Local variable to represent the square root of five
+    five = math.sqrt(5)
+    onec = (five - 1) / 4.0
+    twoc = (five + 1) / 4.0
+    sone = (math.sqrt(10 + (2 * five))) / 4.0
+    stwo = (math.sqrt(10 - (2 * five))) / 4.0
+
+    vertices = np.array([[stwo/2, twoc/2, -0.5],
+                         [sone/2, -onec/2, -0.5],
+                         [0, -1/2, -0.5],
+                         [-sone/2, -onec/2, -0.5],
+                         [-stwo/2, twoc/2, -0.5],
+                         [stwo/2, twoc/2, 0.5],
+                         [sone/2, -onec/2, 0.5],
+                         [0, -1/2, 0.5],
+                         [-sone/2, -onec/2, 0.5],
+                         [-stwo/2, twoc/2, 0.5]])
+    triangles = np.array([[9, 5, 4],
+                          [4, 5, 0],
+                          [5, 6, 0],
+                          [0, 6, 1],
+                          [6, 7, 1],
+                          [1, 7, 2],
+                          [7, 8, 2],
+                          [2, 8, 3],
+                          [8, 9, 3],
+                          [3, 9, 4],
+                          [0, 1, 4],
+                          [1, 4, 3],
+                          [1, 3, 2],
+                          [5, 6, 9],
+                          [6, 8, 9],
+                          [6, 7, 8]])
     triangles = fix_winding_order(vertices, triangles, clockwise=True)
     return vertices, triangles
 

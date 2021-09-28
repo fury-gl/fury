@@ -6,8 +6,10 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import load_polydata, save_polydata, load_image, save_image
-from fury.utils import vtk, numpy_support, numpy_to_vtk_points
+from fury.io import (load_polydata, save_polydata, load_image, save_image,
+                     load_sprite_sheet)
+from fury.lib import numpy_support, PolyData, ImageData
+from fury.utils import numpy_to_vtk_points
 from fury.testing import assert_greater
 
 
@@ -19,7 +21,7 @@ def test_save_and_load_polydata():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -33,8 +35,8 @@ def test_save_and_load_polydata():
 
             npt.assert_array_equal(data, out_data)
 
-    npt.assert_raises(IOError, save_polydata, vtk.vtkPolyData(), "test.vti")
-    npt.assert_raises(IOError, save_polydata, vtk.vtkPolyData(), "test.obj")
+    npt.assert_raises(IOError, save_polydata, PolyData(), "test.vti")
+    npt.assert_raises(IOError, save_polydata, PolyData(), "test.obj")
     npt.assert_raises(IOError, load_polydata, "test.vti")
 
 
@@ -47,7 +49,7 @@ def test_save_and_load_options():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -67,7 +69,7 @@ def test_save_and_load_options():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -81,7 +83,7 @@ def test_save_load_image():
     l_ext = ["png", "jpeg", "jpg", "bmp", "tiff"]
     fury_logo_link = 'https://raw.githubusercontent.com/fury-gl/'\
                      'fury-communication-assets/main/fury-logo.png'
-         
+
     invalid_link = 'https://picsum.photos/200'
     fname = "temp-io"
 
@@ -155,3 +157,24 @@ def test_pillow():
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
+
+
+def test_load_sprite_sheet():
+    sprite_URL = 'https://raw.githubusercontent.com/'\
+                 'antrikshmisri/DATA/master/fury/0yKFTBQ.png'
+
+    with InTemporaryDirectory() as tdir:
+        sprites = load_sprite_sheet(sprite_URL, 5, 5)
+
+        for idx, sprite in enumerate(list(sprites.values())):
+            img_name = f"{idx}.png"
+            save_image(sprite, os.path.join(tdir, img_name))
+
+        sprite_count = len(os.listdir(tdir))
+        npt.assert_equal(sprite_count, 25)
+
+        vtktype_sprites = load_sprite_sheet(sprite_URL, 5, 5,
+                                            as_vtktype=True)
+
+        for vtk_sprite in list(vtktype_sprites.values()):
+            npt.assert_equal(isinstance(vtk_sprite, ImageData), True)

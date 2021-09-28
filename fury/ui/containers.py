@@ -4,9 +4,10 @@ __all__ = ["Panel2D", "TabPanel2D", "TabUI", "ImageContainer2D",
            "GridUI"]
 
 import numpy as np
-import vtk
 
 from fury.io import load_image
+from fury.lib import (PolyData, PolyDataMapper2D, Points, CellArray,
+                      FloatArray, Texture, TexturedActor2D, Property2D)
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
 from fury.utils import set_input, rotate
 from fury.actor import grid
@@ -24,7 +25,8 @@ class Panel2D(UI):
     """
 
     def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left"):
+                 opacity=0.7, align="left", border_color=(1, 1, 1),
+                 border_width=0, has_border=False):
         """Init class instance.
 
         Parameters
@@ -39,7 +41,16 @@ class Panel2D(UI):
             Must take values in [0, 1].
         align : [left, right]
             Alignment of the panel with respect to the overall screen.
+        border_color: (float, float, float), optional
+            Must take values in [0, 1].
+        border_width: float, optional
+            width of the border
+        has_border: bool, optional
+            If the panel should have borders.
         """
+        self.has_border = has_border
+        self._border_color = border_color
+        self._border_width = border_width
         super(Panel2D, self).__init__(position)
         self.resize(size)
         self.alignment = align
@@ -52,11 +63,34 @@ class Panel2D(UI):
         """Setup this UI component.
 
         Create the background (Rectangle2D) of the panel.
-
+        Create the borders (Rectangle2D) of the panel.
         """
         self._elements = []
         self.element_offsets = []
         self.background = Rectangle2D()
+
+        if self.has_border:
+            self.borders = {'left': Rectangle2D(),
+                            'right': Rectangle2D(),
+                            'top': Rectangle2D(),
+                            'bottom': Rectangle2D()}
+
+            self.border_coords = {'left': (0., 0.),
+                                  'right': (1., 0.),
+                                  'top': (0., 1.),
+                                  'bottom': (0., 0.)}
+
+            for key in self.borders.keys():
+                self.borders[key].color = self._border_color
+                self.add_element(self.borders[key], self.border_coords[key])
+
+            for key in self.borders.keys():
+                self.borders[key].on_left_mouse_button_pressed = \
+                    self.left_button_pressed
+
+                self.borders[key].on_left_mouse_button_dragged = \
+                    self.left_button_dragged
+
         self.add_element(self.background, (0, 0))
 
         # Add default events listener for this UI component.
@@ -77,7 +111,6 @@ class Panel2D(UI):
         Parameters
         ----------
         scene : scene
-
         """
         for element in self._elements:
             element.add_to_scene(scene)
@@ -92,9 +125,23 @@ class Panel2D(UI):
         ----------
         size : (float, float)
             Panel size (width, height) in pixels.
-
         """
         self.background.resize(size)
+
+        if self.has_border:
+            self.borders['left'].resize((self._border_width,
+                                        size[1]+self._border_width))
+
+            self.borders['right'].resize((self._border_width,
+                                          size[1]+self._border_width))
+
+            self.borders['top'].resize((self.size[0]+self._border_width,
+                                        self._border_width))
+
+            self.borders['bottom'].resize((self.size[0]+self._border_width,
+                                           self._border_width))
+
+            self.update_border_coords()
 
     def _set_position(self, coords):
         """Set the lower-left corner position of this UI component.
@@ -194,7 +241,7 @@ class Panel2D(UI):
 
     def left_button_pressed(self, i_ren, _obj, panel2d_object):
         click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - panel2d_object.position
+        self._drag_offset = click_pos - self.position
         i_ren.event.abort()  # Stop propagating the event.
 
     def left_button_dragged(self, i_ren, _obj, _panel2d_object):
@@ -219,6 +266,73 @@ class Panel2D(UI):
         else:
             msg = "You can only left-align or right-align objects in a panel."
             raise ValueError(msg)
+
+    def update_border_coords(self):
+        """Update the coordinates of the borders
+        """
+        self.border_coords = {'left': (0., 0.),
+                              'right': (1., 0.),
+                              'top': (0., 1.),
+                              'bottom': (0., 0.)}
+
+        for key in self.borders.keys():
+            self.update_element(self.borders[key], self.border_coords[key])
+
+    @property
+    def border_color(self):
+        sides = ['left', 'right', 'top', 'bottom']
+        return [self.borders[side].color for side in sides]
+
+    @border_color.setter
+    def border_color(self, side_color):
+        """Set the color of a specific border
+
+        Parameters
+        ----------
+        side_color: Iterable
+            Iterable to pack side, color values
+        """
+        side, color = side_color
+
+        if side.lower() not in ['left', 'right', 'top', 'bottom']:
+            raise ValueError(
+                f'{side} not a valid border side')
+
+        self.borders[side].color = color
+
+    @property
+    def border_width(self):
+        sides = ['left', 'right', 'top', 'bottom']
+        widths = []
+
+        for side in sides:
+            if side in ['left', 'right']:
+                widths.append(self.borders[side].width)
+            elif side in ['top', 'bottom']:
+                widths.append(self.borders[side].height)
+            else:
+                raise ValueError(
+                    f'{side} not a valid border side')
+        return widths
+
+    @border_width.setter
+    def border_width(self, side_width):
+        """Set the border width of a specific border
+
+        Parameters
+        ----------
+        side_width: Iterable
+            Iterable to pack side, width values
+        """
+        side, border_width = side_width
+
+        if side.lower() in ['left', 'right']:
+            self.borders[side].width = border_width
+        elif side.lower() in ['top', 'bottom']:
+            self.borders[side].height = border_width
+        else:
+            raise ValueError(
+                f'{side} not a valid border side')
 
 
 class TabPanel2D(UI):
@@ -648,11 +762,11 @@ class ImageContainer2D(UI):
         -------
         :class:`vtkTexturedActor2D`
         """
-        self.texture_polydata = vtk.vtkPolyData()
-        self.texture_points = vtk.vtkPoints()
+        self.texture_polydata = PolyData()
+        self.texture_points = Points()
         self.texture_points.SetNumberOfPoints(4)
 
-        polys = vtk.vtkCellArray()
+        polys = CellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
         polys.InsertCellPoint(1)
@@ -660,7 +774,7 @@ class ImageContainer2D(UI):
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
 
-        tc = vtk.vtkFloatArray()
+        tc = FloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
         tc.InsertComponent(0, 0, 0.0)
@@ -673,16 +787,16 @@ class ImageContainer2D(UI):
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
 
-        texture_mapper = vtk.vtkPolyDataMapper2D()
+        texture_mapper = PolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
 
-        image = vtk.vtkTexturedActor2D()
+        image = TexturedActor2D()
         image.SetMapper(texture_mapper)
 
-        self.texture = vtk.vtkTexture()
+        self.texture = Texture()
         image.SetTexture(self.texture)
 
-        image_property = vtk.vtkProperty2D()
+        image_property = Property2D()
         image_property.SetOpacity(1.0)
         image.SetProperty(image_property)
         self.actor = image

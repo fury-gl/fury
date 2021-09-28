@@ -1,28 +1,29 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
-import vtk
-from vtk.util import numpy_support, colors
-
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
+from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
+                      InteractorStyleImage, InteractorStyleTrackballCamera,
+                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+                      WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
-
+from fury.shaders.base import GL_NUMBERS as _GL
 try:
     basestring
 except NameError:
     basestring = str
 
 
-class Scene(vtk.vtkRenderer):
+class Scene(Renderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -48,9 +49,9 @@ class Scene(vtk.vtkRenderer):
     def add(self, *actors):
         """Add an actor to the scene."""
         for actor in actors:
-            if isinstance(actor, vtk.vtkVolume):
+            if isinstance(actor, Volume):
                 self.AddVolume(actor)
-            elif isinstance(actor, vtk.vtkActor2D):
+            elif isinstance(actor, Actor2D):
                 self.AddActor2D(actor)
             elif hasattr(actor, 'add_to_scene'):
                 actor.add_to_scene(self)
@@ -340,7 +341,7 @@ class ShowManager(object):
         if self.reset_camera:
             self.scene.ResetCamera()
 
-        self.window = vtk.vtkRenderWindow()
+        self.window = RenderWindow()
 
         if self.stereo.lower() != 'off':
             enable_stereo(self.window, self.stereo)
@@ -356,15 +357,15 @@ class ShowManager(object):
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
-            self.style = vtk.vtkInteractorStyleImage()
+            self.style = InteractorStyleImage()
         elif self.interactor_style == 'trackball':
-            self.style = vtk.vtkInteractorStyleTrackballCamera()
+            self.style = InteractorStyleTrackballCamera()
         elif self.interactor_style == 'custom':
             self.style = CustomInteractorStyle()
         else:
             self.style = interactor_style
 
-        self.iren = vtk.vtkRenderWindowInteractor()
+        self.iren = RenderWindowInteractor()
         self.style.SetCurrentRenderer(self.scene)
         # Hack: below, we explicitly call the Python version of SetInteractor.
         self.style.SetInteractor(self.iren)
@@ -427,7 +428,7 @@ class ShowManager(object):
         """
         with InTemporaryDirectory():
             filename = "recorded_events.log"
-            recorder = vtk.vtkInteractorEventRecorder()
+            recorder = InteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
 
@@ -487,7 +488,7 @@ class ShowManager(object):
             Recorded events (one per line).
 
         """
-        recorder = vtk.vtkInteractorEventRecorder()
+        recorder = InteractorEventRecorder()
         recorder.SetInteractor(self.iren)
 
         recorder.SetInputString(events)
@@ -520,7 +521,7 @@ class ShowManager(object):
         self.play_events(events)
 
     def add_window_callback(self, win_callback,
-                            event=vtk.vtkCommand.ModifiedEvent):
+                            event=Command.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
@@ -697,13 +698,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = vtk.vtkRenderer()
+        scene = Renderer()
 
-    renWin = vtk.vtkRenderWindow()
+    renWin = RenderWindow()
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = vtk.vtkRenderWindowInteractor()
+    iren = RenderWindowInteractor()
     iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
@@ -714,7 +715,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
-    renderLarge = vtk.vtkRenderLargeImage()
+    renderLarge = RenderLargeImage()
     renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
@@ -739,7 +740,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
-        renderLarge = vtk.vtkRenderLargeImage()
+        renderLarge = RenderLargeImage()
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
@@ -859,7 +860,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    render_window = vtk.vtkRenderWindow()
+    render_window = RenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
     if stereo.lower() != 'off':
@@ -873,7 +874,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     render_window.Render()
 
-    window_to_image_filter = vtk.vtkWindowToImageFilter()
+    window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
     window_to_image_filter.Update()
 
@@ -1026,3 +1027,161 @@ def enable_stereo(renwin, stereo_type):
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
+
+
+def gl_get_current_state(gl_state):
+    """Returns a dict which describes the current state of the opengl
+    context
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    state_description = {
+        glName: gl_state.GetEnumState(glNumber)
+        for glName, glNumber in _GL.items()
+    }
+    return state_description
+
+
+def gl_reset_blend(gl_state):
+    """Redefines the state of the OpenGL context related with how the RGBA
+    channels will be combined.
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    See more
+    ---------
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendEquation.xhtml
+    [2] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBlendFunc.xhtml
+    vtk specification:
+    [3] https://gitlab.kitware.com/vtk/vtk/-/blob/master/Rendering/OpenGL2/vtkOpenGLState.cxx#L1705
+
+    """  # noqa
+    gl_state.ResetGLBlendEquationState()
+    gl_state.ResetGLBlendFuncState()
+
+
+def gl_enable_depth(gl_state):
+    """Enable OpenGl depth test
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
+
+
+def gl_disable_depth(gl_state):
+    """Disable OpenGl depth test
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+
+
+def gl_enable_blend(gl_state):
+    """Enable OpenGl blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+
+
+def gl_disable_blend(gl_state):
+    """This it will disable any gl behavior which has no
+    function for opaque objects. This has the benefit of
+    speeding up the rendering of the image.
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    See more
+    --------
+    [1] https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glFrontFace.xhtml
+
+    """  # noqa
+
+    gl_state.vtkglDisable(_GL['GL_CULL_FACE'])
+    gl_state.vtkglDisable(_GL['GL_BLEND'])
+
+
+def gl_set_additive_blending(gl_state):
+    """Enable additive blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFunc(_GL['GL_SRC_ALPHA'], _GL['GL_ONE'])
+
+
+def gl_set_additive_blending_white_background(gl_state):
+    """Enable additive blending for a white background
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFuncSeparate(
+            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+            _GL['GL_ONE'],  _GL['GL_ZERO'])
+
+
+def gl_set_normal_blending(gl_state):
+    """Enable normal blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_state.vtkglEnable(_GL['GL_BLEND'])
+    gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
+    gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
+    gl_state.vtkglBlendFuncSeparate(
+                _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+                _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
+
+
+def gl_set_multiplicative_blending(gl_state):
+    """Enable multiplicative blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_SRC_COLOR'])
+
+
+def gl_set_subtractive_blending(gl_state):
+    """Enable subtractive blending
+
+    Parameters
+    ----------
+    gl_state : vtkOpenGLState
+
+    """
+    gl_reset_blend(gl_state)
+    gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
