@@ -1,0 +1,42 @@
+First week of coding!
+=====================
+
+.. post:: June 14 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the second weekly check-in. I'll be sharing my progress for the first week of coding.
+
+What did you do this week?
+--------------------------
+I implemented the space filling model for proteins and created a PR for the same. Preview:
+
+.. figure:: https://user-images.githubusercontent.com/65067354/121518963-b92cb580-ca0e-11eb-8232-3512edc04670.png
+
+   (protein rendered: `3pgk <https://www.rcsb.org/structure/3pgk>`_)
+   
+The PR has: 
+
+1. Actor for space_filling_model.
+
+2. Two examples where I show how to visualize the proteins:
+
+   a. In `example 1 <https://github.com/fury-gl/fury/pull/439/files#diff-2c9d065c4d4873b6ce534137cfd990cea495faffd249ff35cf51e36749883534>`_, I parse a PDBx file myself and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
+   
+   b. In `example 2 <https://github.com/fury-gl/fury/pull/439/files#diff-68e69b9f24731ed981cd91763f3dd078aa2bf9a4da638d561352a9cf37cfd29c>`_, I parse a PDB file by using `Biopython module <http://biopython.org/>`_ and extract the atomic info essential for constructing the model which is then used by the actor to visualize it.
+
+I created a basic test for the actor which needs to be improved. I'll discuss how to improve the test with the mentors.
+
+What is coming up next week?
+----------------------------
+I have two major goals for the next week:
+
+1. Make an actor for the space filling model of the proteins and make PR for the same which will also include the unit tests and a small tutorial for the users.
+2. Try to understand the documentation of vtkProteinRibbonFilter which will prove beneficial in generating Ribbon diagrams.
+
+Did you get stuck anywhere?
+---------------------------
+I tried to create a class in python which inherits from a vtk class called vtkMoleculeReaderBase but was unsucessful in this endeavour. I'll try to find a workaround.
+
+``Au Revoir!``

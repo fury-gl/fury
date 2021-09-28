@@ -21,33 +21,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
         os: [ubuntu-latest, macos-latest]
         platform: [x64]
-        install_type: [pip, conda]
+        install_type: [pip, ]  # conda]
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
         pip-flags: ['']
         option-flags: ['']
         experimental: [false]
         include:
-          - os: ubuntu-20.04
-            python-version: 3.8
-            depends: OPTIONAL_DEPS
-            option-flags: 'BUILD_DOCS DEPLOY_DOCS'
-            install_type: pip
-            experimental: true
-          - os: ubuntu-20.04
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   depends: OPTIONAL_DEPS
+          #   option-flags: 'BUILD_DOCS DEPLOY_DOCS'
+          #   install_type: pip
+          #   experimental: true
+          - os: ubuntu-latest
             python-version: 3.8
             install_type: pip
             depends: OPTIONAL_DEPS
             option-flags: 'COVERAGE'
             experimental: false
-          - os: ubuntu-20.04
-            python-version: 3.8
-            install_type: pip
-            depends: OPTIONAL_DEPS
-            option-flags: 'USE_PRE'
-            experimental: true
+          # - os: ubuntu-latest
+          #   python-version: 3.8
+          #   install_type: pip
+          #   depends: OPTIONAL_DEPS
+          #   option-flags: 'USE_PRE'
+          #   experimental: true
     env:
       TRAVIS_PYTHON_VERSION: ${{ matrix.python-version }} # Keep backward compatibilty with Travis
       TRAVIS_REPO_SLUG: ${{ github.repository }}          # Keep backward compatibilty with Travis

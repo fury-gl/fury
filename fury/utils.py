@@ -1,8 +1,30 @@
 import numpy as np
-import vtk
-from vtk.util import numpy_support
 from scipy.ndimage import map_coordinates
+
 from fury.colormap import line_colors
+from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
+                      CellArray, PolyDataNormals, Actor, PolyDataMapper,
+                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
+                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray)
+
+
+def remove_observer_from_actor(actor, id):
+    """Remove the observer with the given id from the actor.
+
+    Parameters
+    ----------
+    actor : vtkActor
+    id : int
+        id of the observer to remove
+
+    """
+    if not hasattr(actor, "GetMapper"):
+        raise ValueError("Invalid actor")
+
+    mapper = actor.GetMapper()
+    if not hasattr(mapper, "RemoveObserver"):
+        raise ValueError("Invalid mapper")
+    mapper.RemoveObserver(id)
 
 
 def set_input(vtk_object, inp):
@@ -21,12 +43,12 @@ def set_input(vtk_object, inp):
     -------
     This can be used in the following way::
         from fury.utils import set_input
-        poly_mapper = set_input(vtk.vtkPolyDataMapper(), poly_data)
+        poly_mapper = set_input(PolyDataMapper(), poly_data)
 
     """
-    if isinstance(inp, (vtk.vtkPolyData, vtk.vtkImageData)):
+    if isinstance(inp, (PolyData, ImageData)):
         vtk_object.SetInputData(inp)
-    elif isinstance(inp, vtk.vtkAlgorithmOutput):
+    elif isinstance(inp, AlgorithmOutput):
         vtk_object.SetInputConnection(inp)
     vtk_object.Update()
     return vtk_object
@@ -44,7 +66,7 @@ def numpy_to_vtk_points(points):
     vtk_points : vtkPoints()
 
     """
-    vtk_points = vtk.vtkPoints()
+    vtk_points = Points()
     vtk_points.SetData(numpy_support.numpy_to_vtk(np.asarray(points),
                                                   deep=True))
     return vtk_points
@@ -74,7 +96,7 @@ def numpy_to_vtk_colors(colors):
 
     """
     vtk_colors = numpy_support.numpy_to_vtk(np.asarray(colors), deep=True,
-                                            array_type=vtk.VTK_UNSIGNED_CHAR)
+                                            array_type=VTK_UNSIGNED_CHAR)
     return vtk_colors
 
 
@@ -102,9 +124,9 @@ def numpy_to_vtk_cells(data, is_coords=True):
     offset = [0, ]
     current_position = 0
 
-    cell_array = vtk.vtkCellArray()
+    cell_array = CellArray()
 
-    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+    if VTK_9_PLUS:
         for i in range(nb_cells):
             current_len = len(data[i])
             offset.append(offset[-1] + current_len)
@@ -139,8 +161,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
 
 def map_coordinates_3d_4d(input_array, indices):
-    """Evaluate the input_array data at the given indices
-    using trilinear interpolation.
+    """Evaluate input_array at the given indices using trilinear interpolation.
 
     Parameters
     ----------
@@ -214,7 +235,7 @@ def lines_to_vtk_polydata(lines, colors=None):
     vtk_cell_array = numpy_to_vtk_cells(lines)
 
     # Create the poly_data
-    poly_data = vtk.vtkPolyData()
+    poly_data = PolyData()
     poly_data.SetPoints(vtk_points)
     poly_data.SetLines(vtk_cell_array)
 
@@ -388,11 +409,11 @@ def set_polydata_triangles(polydata, triangles):
         triangles, represented as 2D ndarrays (Nx3)
 
     """
-    vtk_cells = vtk.vtkCellArray()
-    if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
+    vtk_cells = CellArray()
+    if VTK_9_PLUS:
         vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
     else:
-        isize = vtk.vtkIdTypeArray().GetDataTypeSize()
+        isize = IdTypeArray().GetDataTypeSize()
         req_dtype = np.int32 if isize == 4 else np.int64
         all_triangles =\
             np.insert(triangles, 0, 3, axis=1).astype(req_dtype).flatten()
@@ -412,7 +433,7 @@ def set_polydata_vertices(polydata, vertices):
     vertices : vertices, represented as 2D ndarrays (Nx3)
 
     """
-    vtk_points = vtk.vtkPoints()
+    vtk_points = Points()
     vtk_points.SetData(numpy_support.numpy_to_vtk(vertices, deep=True))
     polydata.SetPoints(vtk_points)
     return polydata
@@ -443,7 +464,7 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
 
     """
     vtk_colors = numpy_support.numpy_to_vtk(colors, deep=True,
-                                            array_type=vtk.VTK_UNSIGNED_CHAR)
+                                            array_type=VTK_UNSIGNED_CHAR)
     nb_components = colors.shape[1]
     vtk_colors.SetNumberOfComponents(nb_components)
     vtk_colors.SetName(array_name)
@@ -459,7 +480,7 @@ def update_polydata_normals(polydata):
     polydata : vtkPolyData
 
     """
-    normals_gen = set_input(vtk.vtkPolyDataNormals(), polydata)
+    normals_gen = set_input(PolyDataNormals(), polydata)
     normals_gen.ComputePointNormalsOn()
     normals_gen.ComputeCellNormalsOn()
     normals_gen.SplittingOff()
@@ -484,7 +505,7 @@ def get_polymapper_from_polydata(polydata):
     poly_mapper : vtkPolyDataMapper
 
     """
-    poly_mapper = set_input(vtk.vtkPolyDataMapper(), polydata)
+    poly_mapper = set_input(PolyDataMapper(), polydata)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.InterpolateScalarsBeforeMappingOn()
     poly_mapper.Update()
@@ -504,7 +525,7 @@ def get_actor_from_polymapper(poly_mapper):
     actor : actor
 
     """
-    actor = vtk.vtkActor()
+    actor = Actor()
     actor.SetMapper(poly_mapper)
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetInterpolationToPhong()
@@ -555,7 +576,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     """
     # Create a Polydata
-    pd = vtk.vtkPolyData()
+    pd = PolyData()
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
     if isinstance(colors, np.ndarray):
@@ -577,9 +598,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
 def repeat_sources(centers, colors, active_scalars=1., directions=None,
                    source=None, vertices=None, faces=None):
-    """Transform a vtksource to glyph.
-
-    """
+    """Transform a vtksource to glyph."""
     if source is None and faces is None:
         raise IOError("A source or faces should be defined")
 
@@ -594,17 +613,17 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     if isinstance(active_scalars, np.ndarray):
         ascalars = numpy_support.numpy_to_vtk(np.asarray(active_scalars),
                                               deep=True,
-                                              array_type=vtk.VTK_DOUBLE)
+                                              array_type=VTK_DOUBLE)
         ascalars.SetName('active_scalars')
 
     if directions is not None:
         directions_fa = numpy_support.numpy_to_vtk(np.asarray(directions),
                                                    deep=True,
-                                                   array_type=vtk.VTK_DOUBLE)
+                                                   array_type=VTK_DOUBLE)
         directions_fa.SetName('directions')
 
-    polydata_centers = vtk.vtkPolyData()
-    polydata_geom = vtk.vtkPolyData()
+    polydata_centers = PolyData()
+    polydata_geom = PolyData()
 
     if faces is not None:
         set_polydata_vertices(polydata_geom, vertices.astype(np.int8))
@@ -619,7 +638,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
         polydata_centers.GetPointData().AddArray(ascalars)
         polydata_centers.GetPointData().SetActiveScalars('active_scalars')
 
-    glyph = vtk.vtkGlyph3D()
+    glyph = Glyph3D()
     if faces is None:
         glyph.SetSourceConnection(source.GetOutputPort())
     else:
@@ -631,12 +650,12 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     glyph.SetVectorModeToUseVector()
     glyph.Update()
 
-    mapper = vtk.vtkPolyDataMapper()
+    mapper = PolyDataMapper()
     mapper.SetInputData(glyph.GetOutput())
     mapper.SetScalarModeToUsePointFieldData()
     mapper.SelectColorArray('colors')
 
-    actor = vtk.vtkActor()
+    actor = Actor()
     actor.SetMapper(mapper)
     return actor
 
@@ -721,7 +740,7 @@ def vtk_matrix_to_numpy(matrix):
         return None
 
     size = (4, 4)
-    if isinstance(matrix, vtk.vtkMatrix3x3):
+    if isinstance(matrix, Matrix3x3):
         size = (3, 3)
 
     mat = np.zeros(size)
@@ -738,9 +757,9 @@ def numpy_to_vtk_matrix(array):
         return None
 
     if array.shape == (4, 4):
-        matrix = vtk.vtkMatrix4x4()
+        matrix = Matrix4x4()
     elif array.shape == (3, 3):
-        matrix = vtk.vtkMatrix3x3()
+        matrix = Matrix3x3()
     else:
         raise ValueError("Invalid matrix shape: {0}".format(array.shape))
 
@@ -831,7 +850,7 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
     oldMatrix = prop3D.GetMatrix()
     orig = np.array(prop3D.GetOrigin())
 
-    newTransform = vtk.vtkTransform()
+    newTransform = Transform()
     newTransform.PostMultiply()
     if prop3D.GetUserMatrix() is not None:
         newTransform.SetMatrix(prop3D.GetUserMatrix())
@@ -868,7 +887,7 @@ def rgb_to_vtk(data):
     vtkImageData
 
     """
-    grid = vtk.vtkImageData()
+    grid = ImageData()
     grid.SetDimensions(data.shape[1], data.shape[0], 1)
     nd = data.shape[-1]
     vtkarr = numpy_support.numpy_to_vtk(
@@ -1118,3 +1137,16 @@ def get_bounds(actor):
 
     """
     return actor.GetMapper().GetInput().GetBounds()
+
+
+def update_surface_actor_colors(actor, colors):
+    """Update colors of a surface actor.
+
+    Parameters
+    ----------
+    actor : surface actor
+    colors : ndarray of shape (N, 3) having colors. The colors should be in the
+        range [0, 1].
+    """
+    actor.GetMapper().GetInput().GetPointData().\
+        SetScalars(numpy_to_vtk_colors(255*colors))

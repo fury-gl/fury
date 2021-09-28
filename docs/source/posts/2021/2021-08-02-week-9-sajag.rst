@@ -1,0 +1,44 @@
+Eighth coding week!
+=======================
+
+.. post:: August 02 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the ninth weekly check-in. I'll be sharing my progress for the eighth week of coding.
+
+What did you do this week?
+--------------------------
+
+#. Updated `PR #452`_: Had an extra meeting with the mentors in which we fine-tuned the `molecular module and optimised the code to make it more pythonic.
+
+#. I was able to generate vertices and triangles for Solvent Excluded Surfaces (SES) by using a bioconda package called `msms`_. It's based on `this paper`_ by Michel F. Sanner, Arthur J. Olson & Jean-Claude Spehner. The vertices and triangles were then sent to surface actor to generate a surface.
+
+	 .. figure:: https://user-images.githubusercontent.com/65067354/128756004-553d1880-b6e1-4a43-99fa-5bd6a2ee70d4.png
+	    :width: 300
+	    :height: 300
+
+	    SES surface generated via msms and surface actor
+
+#. Added my GSoC blogs to the FURY blogs directory. (`PR #475`_)
+
+Other goals will be decided in the meeting with mentors.
+
+What is coming up next week?
+----------------------------
+
+#. Research about recent papers having good (fast) algorithms to create the molecular surfaces.
+#. Create tutorials to explain how to use molecular module.
+
+Did you get stuck anywhere?
+---------------------------
+
+No.
+
+.. _PR #452: https://github.com/fury-gl/fury/pull/452
+.. _msms: https://anaconda.org/bioconda/msms
+.. _this paper: https://onlinelibrary.wiley.com/doi/10.1002/%28SICI%291097-0282%28199603%2938%3A3%3C305%3A%3AAID-BIP4%3E3.0.CO%3B2-Y
+.. _PR #475: https://github.com/fury-gl/fury/pull/475
+
+``Au Revoir!``
