@@ -24,22 +24,22 @@ import numpy as np
 # Let's define some variable and their description:
 #
 # * `radius_particle`: radius of the point that will represent the particle
-#   (default = 0.08)
+#   (default = 0.15)
 # * `initial_velocity`: initial velocity of the particle along +x
 #   (default = 0.09)
-# * `acc`: acceleration of the particle along +x (due to the electric field)
+# * `acc_particle`: acceleration of the particle along +x (due to the electric field)
 #   (default = 0.004)
 # * `time`: time (default time i.e. time at beginning of the animation = 0)
 # * `incre_time`: value by which time is incremented for each call of
 #   timer_callback (default = 0.2)
-# * `angular_frq`: angular frequency (default = 0.1)
+# * `angular_frq`: angular frequency (default = 0.11)
 # * `phase_angle`: phase angle (default = 0.002)
 # * `radius_path`: radius of the path followed by the particle (default = 1.5)
 #
 
 radius_particle = 0.15
 initial_velocity = 0.09
-acc = 0.004
+acc_particle = 0.004
 time = 0
 incre_time = 0.2
 angular_frq = 0.11
@@ -81,7 +81,7 @@ scene.add(arrow_actor, axes_actor)
 ###############################################################################
 # Initializing the initial coordinates of the particle
 
-x = initial_velocity*time + 0.5*acc*(time**2)
+x = initial_velocity*time + 0.5*acc_particle*(time**2)
 y = radius_path*np.sin(angular_frq*time + phase_angle)
 z = radius_path*np.cos(angular_frq*time + phase_angle)
 pts = np.array([[x, y, z]])
@@ -148,13 +148,13 @@ def timer_callback(_obj, _event):
     time += incre_time
 
     # coordinates of the particle
-    x = initial_velocity*time + 0.5*acc*(time**2)
+    x = initial_velocity*time + 0.5*acc_particle*(time**2)
     y = radius_path*np.sin(10*angular_frq*time + phase_angle)
     z = radius_path*np.cos(10*angular_frq*time + phase_angle)
     pts = np.array([[x, y, z]])
 
     # computing and displaying the velocity of the particle along x, y, z axes
-    vx = initial_velocity + acc*time
+    vx = initial_velocity + acc_particle*time
     vy = 10*angular_frq*radius_path*np.cos(10*angular_frq*time + phase_angle)
     vz = -10*angular_frq*radius_path*np.sin(10*angular_frq*time + phase_angle)
 
