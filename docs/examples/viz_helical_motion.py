@@ -37,7 +37,7 @@ import numpy as np
 # * `radius_path`: radius of the path followed by the particle (default = 1.5)
 #
 
-radius_particle = 0.16
+radius_particle = 0.15
 initial_velocity = 0.09
 acc = 0.004
 time = 0
@@ -73,9 +73,9 @@ arrow_actor = actor.arrow(centers, directions, color_arrow, heights,
                           tip_radius=0.0125, shaft_radius=0.00375)
 
 # manipulating shading for aesthetics
-material.manifest_ambience(arrow_actor, 1)
+material.manifest_standard(arrow_actor, ambient_level=1)
 axes_actor = actor.axes(scale=(0, 1, 1))
-material.manifest_ambience(axes_actor, 1)
+material.manifest_standard(axes_actor, ambient_level=1)
 scene.add(arrow_actor, axes_actor)
 
 ###############################################################################
@@ -113,7 +113,7 @@ charge_actor = actor.point(pts, color_particle, point_radius=radius_particle,
 actor.attributes_to_actor(charge_actor, pts)
 
 # manipulating shading for aesthetics
-material.manifest_ambience(charge_actor, 1)
+material.manifest_standard(charge_actor, ambient_level=1)
 scene.add(charge_actor)
 
 ###############################################################################
