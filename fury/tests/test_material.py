@@ -283,9 +283,3 @@ def test_manifest_standard():
         actual = ss[90, 60, :] / 1000
         desired = np.array([180, 0, 180]) / 1000
         npt.assert_array_almost_equal(actual, desired, decimal=2)
-
-
-def test_manifest_ambience():
-    test_actor = actor.sphere(np.zeros((1, 3)), colors=(1, 0, 0))
-    material.manifest_ambience(test_actor, 0.8)
-    npt.assert_equal(test_actor.GetProperty().GetAmbient(), 0.8)

@@ -95,17 +95,3 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
         return
-
-
-def manifest_ambience(actor, ambient_level):
-    """Set/Get the ambient lighting coefficient for a given actor.
-
-    Parameters
-    ----------
-    actor : actor
-    ambient_level : float
-        Parameter used to specify the ambient lighting coefficent. Values must
-        be between 0.0 and 1.0.
-    """
-    prop = actor.GetProperty()
-    prop.SetAmbient(ambient_level)
