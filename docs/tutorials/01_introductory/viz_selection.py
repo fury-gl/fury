@@ -40,7 +40,7 @@ radii = 100 * np.random.rand(num_cubes) + 0.1
 # Note that every quad of each cube has 2 triangles
 # and each cube has 6 quads in total.
 
-num_faces = num_cubes * 6 * 2  
+num_faces = num_cubes * 6 * 2
 
 ###############################################################################
 # Build scene and add an actor with many objects.
