@@ -337,8 +337,41 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
+def test_timers_basic():
+    centers = np.array([[1, 0, 0]])
+    showm = window.ShowManager(size=(400, 400))
+    # interval of each timer in miliseconds
+    ms_1 = 10
+    ms_2 = 10
+    state = {
+        'first_call': True,
+        # amount of milleseconds passe since the timer was started
+        'current_time': 0,
+    }
 
-def test_timers():
+    def t1(iren, event_name_str):
+        if state['first_call']:
+            state['first_call'] = False
+
+    def t2(iren, event_name_str):
+        if state['first_call']:
+            state['first_call'] = False
+        state['current_time'] += ms_2
+
+    id1 = showm.add_timer_callback(False, ms_1, t1)
+    showm.add_timer_callback(True, ms_2, t2)
+    showm.destroy_timer(id1)
+
+    showm.initialize()
+
+    color = np.array([0, 1, 0])
+    sphere = actor.sphere(centers, color)
+    showm.scene.add(sphere)
+
+
+@pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
+                                     "exit method cannot be performed inside of a timer")
+def test_timers_count():
     interactive = False
     centers = np.array([[1, 0, 0]])
     showm = window.ShowManager(size=(400, 400))
@@ -482,4 +515,3 @@ def test_opengl_state_add_remove_and_check():
     state = window.gl_get_current_state(showm.window.GetState())
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
     npt.assert_equal(after_remove_depth_test_observer, True)
-
