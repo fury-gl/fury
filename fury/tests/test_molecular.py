@@ -5,7 +5,7 @@ from fury import window, molecular as mol
 
 def test_periodic_table():
     # Testing class PeriodicTable()
-    table = mol.PeriodicTable()
+    table = mol.PTable()
     npt.assert_equal(table.atomic_number('C'), 6)
     npt.assert_equal(table.element_name(7), 'Nitrogen')
     npt.assert_equal(table.atomic_symbol(8), 'O')
@@ -145,7 +145,7 @@ def test_compute_bonding():
 def test_sphere_cpk(interactive=False):
     atomic_numbers, atom_coords = get_default_molecular_info()
     molecule = mol.Molecule(atomic_numbers, atom_coords)
-    table = mol.PeriodicTable()
+    table = mol.PTable()
     colormodes = ['discrete', 'single']
     colors = np.array([[table.atom_color(1), table.atom_color(6)],
                        [[150/255, 250/255, 150/255]]], dtype=object)
@@ -184,7 +184,7 @@ def test_bstick(interactive=False):
     atom_scale_factor = [0.3, 0.4]
     bond_thickness = [0.1, 0.2]
     multiple_bonds = [True, False]
-    table = mol.PeriodicTable()
+    table = mol.PTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
@@ -221,7 +221,7 @@ def test_stick(interactive=False):
 
     colormodes = ['discrete', 'single']
     bond_thickness = [0.1, 0.12]
-    table = mol.PeriodicTable()
+    table = mol.PTable()
     colors = np.array([[table.atom_color(6)],
                        [[150/255, 150/255, 150/255],
                         [50/255, 50/255, 50/255]]], dtype=object)
@@ -326,7 +326,7 @@ def test_bounding_box(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 2)
 
-    table = mol.PeriodicTable()
+    table = mol.PTable()
     colors = np.array([table.atom_color(1), table.atom_color(6)])
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
