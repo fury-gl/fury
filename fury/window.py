@@ -515,7 +515,7 @@ class ShowManager(object):
 
         Parameters
         ----------
-        win_callback : function
+        win_callback : callables
             A callback function to call when a window event happens.
             The callback function must accept the following arguments:
             `ren`, `iren` and `obj`.
@@ -541,8 +541,8 @@ class ShowManager(object):
             If True, the timer will repeat.
         duration : int
             Timer duration in milliseconds.
-        timer_callback : function
-            Function to call when the timer expires.
+        timer_callback : callable
+            Callable to call when the timer expires.
 
         Returns
         -------
