@@ -804,7 +804,8 @@ def test_points(interactive=False):
 
 
 def test_labels(interactive=False):
-    text_actor = actor.label("Hello")
+    npt.assert_warns(DeprecationWarning, actor.label, "hello")
+    text_actor = actor.vector_text("Hello")
 
     scene = window.Scene()
     scene.add(text_actor)
