@@ -53,15 +53,12 @@ def particle(colors, origin=[0, 0, 0], num_total_steps=300,
     position = np.tile(origin, (num_total_steps, 1))
     path_actor = actor.line([position], colors,
                             linewidth=path_thickness)
-    path_actor.position = position
+    actor.attributes_to_actor(path_actor, position, num_total_steps)
+
+    # extra attributes (specific to this simulation)
     path_actor.delta = delta
     path_actor.num_total_steps = num_total_steps
     path_actor.time_step = total_time / num_total_steps
-    path_actor.vertices = utils.vertices_from_actor(path_actor)
-    path_actor.no_vertices_per_point = \
-        len(path_actor.vertices) / num_total_steps
-    path_actor.initial_vertices = path_actor.vertices.copy() - \
-        np.repeat(position, path_actor.no_vertices_per_point, axis=0)
     return path_actor
 
 
@@ -85,7 +82,7 @@ def update_path(act, counter_step):
 
 scene = window.Scene()
 scene.background((1.0, 1.0, 1.0))
-scene.zoom(1.7)
+scene.zoom(2.7)
 scene.set_camera(position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
 showm = window.ShowManager(scene,
@@ -104,30 +101,31 @@ l_particle = [particle(colors=np.random.rand(1, 3), origin=origin,
 scene.add(*l_particle)
 
 ###############################################################################
-# Creating a container (cube actor) inside which the particle(s) move around
-
-container_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                            colors=(0.5, 0.9, 0.7, 0.4), scales=6)
-scene.add(container_actor)
-
-###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
+tb = ui.TextBlock2D(bold=True, position=(225, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
+
+###############################################################################
+# Initializing text box to display the number of simulated steps
+tb2 = ui.TextBlock2D(text="Number of particles:\nSim Steps:",
+                     position=(50, 550), font_size=15, color=(0, 0, 0),
+                     bold=True)
+scene.add(tb2)
 
 
 ###############################################################################
 # The path of the particles exhibiting Brownian motion is plotted here
 
 def timer_callback(_obj, _event):
-    global counter_step, list_particle
+    global counter_step
     counter_step += 1
+    tb2.message = "Number of particles: " + str(num_particles) + \
+                  "\nSim Steps: " + str(counter_step)
     for p in l_particle:
         update_path(p, counter_step=counter_step)
     showm.render()
-    scene.azimuth(2)
     if counter_step == num_total_steps:
         showm.exit()
 
