@@ -1135,7 +1135,7 @@ def one_chanel_to_vtk(data):
     """
     w, h = data.shape
     data = data.reshape(data.shape + (1, ))
-    grid = vtk.vtkImageData()
+    grid = ImageData()
     grid.SetDimensions(h, w, 1)
     vtkarr = numpy_support.numpy_to_vtk(
         np.flip(data.swapaxes(0, 1), axis=1).reshape((-1, 1), order='F'))

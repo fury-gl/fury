@@ -3294,7 +3294,7 @@ def bitmap_labels(
         fs_impl_code += f'{load("text_sdf_halo_impl.frag")}'
 
     img_vtk = one_chanel_to_vtk(img_arr)
-    tex = vtk.vtkTexture()
+    tex = Texture()
     tex.SetInputDataObject(img_vtk)
     tex.Update()
     label_actor.GetProperty().SetTexture('charactersTexture', tex)
