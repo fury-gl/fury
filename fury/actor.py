@@ -3212,7 +3212,7 @@ def markers(
     return sq_actor
 
 
-def billboard_labels(
+def label_fast(
         centers,
         labels,
         colors=(0, 1, .5),

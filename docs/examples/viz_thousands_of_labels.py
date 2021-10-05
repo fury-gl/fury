@@ -93,7 +93,7 @@ labels = [
 #############################################################################
 # Finally, we create our network label actor.
 
-my_text_actor = actor.billboard_labels(
+my_text_actor = actor.label_fast(
     positions, labels,
     y_offset_ratio=2,
     align='center', scales=.1)

@@ -3,7 +3,7 @@
 Billboard labels actor behaviors
 ================================
 
-This example shows how to use the  :func:`fury.actor.billboard_labels` function
+This example shows how to use the  :func:`fury.actor.label_fast` function
 to create a set of labels that are always facing the camera. This is useful
 for creating labels that are always visible in a scene.
 We show here how to change the font size (resolution), the font face, alignment
@@ -49,7 +49,7 @@ sphere_actor = actor.sphere(
 scene.add(sphere_actor)
 
 # Create a text actor aligned to the center of the first sphere
-center_actor = actor.billboard_labels(
+center_actor = actor.label_fast(
     [centers[0]], ['1 Center align'],
     border_width=0.1,
     border_color=(.75, .25, 0, .5),
@@ -60,14 +60,14 @@ center_actor = actor.billboard_labels(
 scene.add(center_actor)
 
 # Create a text actor aligned to the right of the second sphere
-right_actor = actor.billboard_labels(
+right_actor = actor.label_fast(
     [centers[1]], ['2 Right align'],
     align='right', scales=.05, colors=colors[1])
 
 scene.add(right_actor)
 
 # Create a text actor aligned to the left of the third sphere
-left_actor = actor.billboard_labels(
+left_actor = actor.label_fast(
     [centers[2]], ['3 Left align'],
     align='left', scales=.05, colors=colors[2])
 
@@ -78,7 +78,7 @@ scene.add(left_actor)
 print('\n\t Fonts available: ', text_tools.list_fonts_available(), '\n')
 # We will use the InconsolataBold700 font in this label actor
 
-offset_change_actor = actor.billboard_labels(
+offset_change_actor = actor.label_fast(
     [centers[3]], ['4 Inconsolata and opacity'],
     font_name='InconsolataBold700',
     scales=.05, colors=colors[3])
@@ -90,7 +90,7 @@ scene.add(offset_change_actor)
 # `y_offset_ratio` arguments. The offset is computed as a ratio of the
 # font size.
 
-offset_change_actor = actor.billboard_labels(
+offset_change_actor = actor.label_fast(
     [centers[4]], ['5 offset'],
     x_offset_ratio=3, y_offset_ratio=2,
     scales=.05, colors=colors[4])
@@ -102,7 +102,7 @@ scene.add(offset_change_actor)
 # `border_width` and `border_color` arguments.
 
 
-text_with_border = actor.billboard_labels(
+text_with_border = actor.label_fast(
     [centers[5]], ['6 Text with a border'],
     border_width=.1, border_color=(.75, .25, 0, .5),
     border_type='solid',
@@ -118,4 +118,4 @@ if interactive:
     window.show(scene, size=(600, 600))
 
 window.record(
-    scene, out_path='viz_billboard_labels.png', size=(600, 600))
+    scene, out_path='viz_label_fast.png', size=(600, 600))

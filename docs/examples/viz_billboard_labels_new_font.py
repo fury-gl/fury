@@ -44,7 +44,7 @@ if text_tools._FREETYPE_AVAILABLE:
     text_tools.create_new_font(
         'FreeMonoWithSpecial', font_path=font_path, font_size_res=10,
         chars=chars, force_recreate=True)
-    new_font_actor = actor.billboard_labels(
+    new_font_actor = actor.label_fast(
         [np.array([0., 0., 0.])], [text],
         font_name='FreeMonoWithSpecial',
         align='center', scales=0.1,)
@@ -58,4 +58,4 @@ scene.reset_clipping_range()
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_billboard_labels.png', size=(600, 600))
+window.record(scene, out_path='viz_label_fast.png', size=(600, 600))
