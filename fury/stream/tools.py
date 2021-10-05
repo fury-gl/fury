@@ -9,16 +9,13 @@ import logging
 from threading import Timer
 import asyncio
 from abc import ABC, abstractmethod
+from fury.stream.constants import PY_VERSION_8
 
-import sys
-
-if sys.version_info.minor >= 8:
+if PY_VERSION_8:
     from multiprocessing import shared_memory
     from multiprocessing import resource_tracker
-    PY_VERSION_8 = True
 else:
     shared_memory = None
-    PY_VERSION_8 = False
 
 try:
     import cv2

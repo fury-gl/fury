@@ -1,10 +1,8 @@
 import subprocess
 import numpy as np
 import sys
-if sys.version_info.minor >= 8:
-    PY_VERSION_8 = True
-else:
-    PY_VERSION_8 = False
+from fury.stream.constants import PY_VERSION_8
+
 try:
     from IPython.display import IFrame
     from IPython.core.display import display

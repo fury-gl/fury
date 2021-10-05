@@ -8,14 +8,10 @@ from fury.stream.server.async_app import get_app
 from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
 from fury.stream.tools import (
     SharedMemImageBufferManager, RawArrayImageBufferManager)
-from fury.stream.constants import _CQUEUE
+from fury.stream.constants import _CQUEUE, PY_VERSION_8
 
-import sys
-if sys.version_info.minor >= 8:
+if PY_VERSION_8:
     from fury.stream.tools import remove_shm_from_resource_tracker
-    PY_VERSION_8 = True
-else:
-    PY_VERSION_8 = False
 
 VideoStreamTrack = object
 try:

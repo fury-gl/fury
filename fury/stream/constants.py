@@ -1,4 +1,8 @@
 from collections import namedtuple
+import sys
+
+
+PY_VERSION_8 = sys.version_info.minor >= 8
 
 
 # The first element of each list stored in the multidimensional buffer

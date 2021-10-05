@@ -1,12 +1,6 @@
 import vtk
-import sys
 import logging
 import time
-if sys.version_info.minor >= 8:
-    PY_VERSION_8 = True
-else:
-    shared_memory = None
-    PY_VERSION_8 = False
 
 import numpy as np
 from functools import partial
@@ -16,7 +10,7 @@ from fury.stream.tools import (
 from fury.stream.tools import IntervalTimer
 from fury.stream.tools import IntervalTimerThreading
 import platform
-from fury.stream.constants import _CQUEUE
+from fury.stream.constants import _CQUEUE, PY_VERSION_8
 
 
 def callback_stream_client(*args, **kwargs):
