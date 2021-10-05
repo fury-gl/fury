@@ -41,7 +41,7 @@ import multiprocessing
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
-from fury.stream.server import web_server
+from fury.stream.server import web_server, web_server_raw_array
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 try:
     import aiortc
@@ -113,21 +113,16 @@ if __name__ == '__main__':
 
     if use_raw_array:
         p = multiprocessing.Process(
-            target=web_server,
+            target=web_server_raw_array,
             args=(
                 stream.img_manager.image_buffers,
-                None,
                 stream.img_manager.info_buffer,
-                None,
                 stream_interaction.circular_queue.head_tail_buffer,
-                None,
                 stream_interaction.circular_queue.buffer._buffer,
-                None,
                 8000,
                 'localhost',
                 True,
                 WEBRTC_AVAILABLE,
-                True
             )
         )
 
@@ -135,19 +130,14 @@ if __name__ == '__main__':
         p = multiprocessing.Process(
             target=web_server,
             args=(
-                None,
                 stream.img_manager.image_buffer_names,
-                None,
                 stream.img_manager.info_buffer_name,
-                None,
                 stream_interaction.circular_queue.head_tail_buffer_name,
-                None,
                 stream_interaction.circular_queue.buffer.buffer_name,
                 8000,
                 'localhost',
                 True,
                 WEBRTC_AVAILABLE,
-                True
             )
         )
     p.start()

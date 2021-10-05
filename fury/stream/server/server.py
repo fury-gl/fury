@@ -99,48 +99,125 @@ class RTCServer(VideoStreamTrack):
             pass
 
 
+def web_server_raw_array(
+    image_buffers=None,
+    info_buffer=None,
+    queue_head_tail_buffer=None,
+    queue_buffer=None,
+    port=8000, host='localhost',
+    provides_mjpeg=True,
+    provides_webrtc=True,
+    ms_jpeg=16,
+    run_app=True
+):
+    """This will create a streaming webserver running on the 
+    given port and host using RawArrays.
+
+    Parameters
+    ----------
+    image_buffers : list of buffers
+        A list of buffers with each one containing a frame.
+    info_buffer : buffer
+        A buffer with the information about the current
+        frame to be streamed and the respective sizes
+    queue_head_tail_buffer : buffer
+        If buffer is passed than this Obj will read a
+        a already created RawArray.
+    queue_buffer : buffer
+        If queue_buffer is passed than this Obj will read a
+        a already created RawArray containing the user interactions
+        events stored in the queue_buffer.
+    port : int, optional
+        Port to be used by the aiohttp server
+    host : str, optional, default localhost
+        host to be used by the aiohttp server
+    provides_mjpeg : bool, default True
+        If a MJPEG streaming should be available.
+        If True you can consume that through
+        host:port/video/mjpeg
+        or if you want to interact you can consume that
+        through your browser
+        http://host:port?encoding=mjpeg
+    provides_webrtc : bool, default True
+        If a WebRTC streaming should be available.
+        http://host:port
+    ms_jpeg : float, optional
+        This it's used  only if the MJPEG will be used. The
+        ms_jpeg represents the amount of miliseconds between to
+        consecutive calls of the jpeg enconding.
+    run_app : bool, default True
+        This will run the aiohttp application. The False condition
+        is used just to be able to test the server.
+
+    """
+
+    image_buffer_manager = RawArrayImageBufferManager(
+        image_buffers=image_buffers, info_buffer=info_buffer
+    )
+
+    rtc_server = None
+    create_webrtc = provides_webrtc and WEBRTC_AVAILABLE
+    if create_webrtc:
+        rtc_server = RTCServer(
+            image_buffer_manager)
+    else:
+        provides_mjpeg = True
+
+    circular_queue = None
+    if queue_buffer is not None:
+        circular_queue = ArrayCircularQueue(
+            dimension=_CQUEUE.dimension,
+            head_tail_buffer=queue_head_tail_buffer,
+            buffer=queue_buffer
+        )
+
+    app_fury = get_app(
+       rtc_server, circular_queue=circular_queue,
+       image_buffer_manager=image_buffer_manager,
+       provides_mjpeg=provides_mjpeg
+    )
+
+    if run_app:
+        web.run_app(
+            app_fury, host=host, port=port, ssl_context=None)
+
+    if rtc_server is not None:
+        rtc_server.release()
+
+    if circular_queue is not None:
+        circular_queue.cleanup()
+
+    image_buffer_manager.cleanup()
+
+
 def web_server(
-        image_buffers=None,
         image_buffer_names=None,
-        info_buffer=None,
         info_buffer_name=None,
-        queue_head_tail_buffer=None,
         queue_head_tail_buffer_name=None,
-        queue_buffer=None,
         queue_buffer_name=None,
         port=8000, host='localhost',
         provides_mjpeg=True,
         provides_webrtc=True,
-        avoid_unlink_shared_mem=False,
+        avoid_unlink_shared_mem=True,
         ms_jpeg=16,
         run_app=True):
-    """This will create a streaming webserver running on the given port and host
+    """This will create a streaming webserver running on the given port
+    and host using SharedMemory.
 
     Parameters
     ----------
-    image_buffers : list of buffers, optional
+    image_buffers_name : list of str
         A list of buffers with each one containing a frame.
-        If image_buffers was not passed then it's mandatory
-        pass the image_buffer_names argument.
-    image_buffer_names : list of str, optional
-    info_buffer : buffer, optional
+    info_buffer_name : str
         A buffer with the information about the current
         frame to be streamed and the respective sizes
-        If info_buffer was not passed then it's mandatory
-        pass the info_buffer_name argument.
-    info_buffer_name : str, optional
-    queue_head_tail_buffer : buffer, optional
+    queue_head_tail_buffer_name : str, optional
         If buffer is passed than this Obj will read a
         a already created RawArray.
-        You must pass queue_head_tail_buffer or
-        queue_head_tail_buffer_name.
-    queue_head_tail_buffer_name : str, optional
-    queue_buffer : buffer, optional
+    buffer_name : str, optional
         If queue_buffer is passed than this Obj will read a
         a already created RawArray containing the user interactions
         events stored in the queue_buffer.
-        You must pass queue_buffer or a queue_buffer_name.
-    buffer_name : str, optional
     port : int, optional
         Port to be used by the aiohttp server
     host : str, optional, default localhost
@@ -168,20 +245,13 @@ def web_server(
 
     """
 
-    use_raw_array = info_buffer_name is None
-
-    if avoid_unlink_shared_mem and PY_VERSION_8 and not use_raw_array:
+    if avoid_unlink_shared_mem and PY_VERSION_8:
         remove_shm_from_resource_tracker()
 
-    if not use_raw_array:
-        image_buffer_manager = SharedMemImageBufferManager(
-            image_buffer_names=image_buffer_names,
-            info_buffer_name=info_buffer_name
-        )
-    else:
-        image_buffer_manager = RawArrayImageBufferManager(
-            image_buffers=image_buffers, info_buffer=info_buffer
-        )
+    image_buffer_manager = SharedMemImageBufferManager(
+        image_buffer_names=image_buffer_names,
+        info_buffer_name=info_buffer_name
+    )
 
     rtc_server = None
     create_webrtc = provides_webrtc and WEBRTC_AVAILABLE
@@ -192,13 +262,7 @@ def web_server(
         provides_mjpeg = True
 
     circular_queue = None
-    if queue_buffer is not None:
-        circular_queue = ArrayCircularQueue(
-            dimension=_CQUEUE.dimension,
-            head_tail_buffer=queue_head_tail_buffer,
-            buffer=queue_buffer
-        )
-    elif queue_buffer_name is not None:
+    if queue_buffer_name is not None:
         circular_queue = SharedMemCircularQueue(
             dimension=_CQUEUE.dimension,
             buffer_name=queue_buffer_name,

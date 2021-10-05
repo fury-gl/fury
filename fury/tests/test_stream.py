@@ -14,11 +14,10 @@ else:
 
 from fury import actor, window
 from fury.stream import tools
-from fury.stream.server import server
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import WEBRTC_AVAILABLE, set_mouse, set_weel, set_mouse_click
-from fury.stream.server.server import RTCServer, web_server
+from fury.stream.server.server import RTCServer, web_server, web_server_raw_array
 from fury.stream.widget import Widget, check_port_is_available
 
 
@@ -82,7 +81,7 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
         showm.render()
         stream.start(ms_stream)
         showm.render()
-        frame = loop.run_until_complete(rtc_server.recv())
+        loop.run_until_complete(rtc_server.recv())
         # sassert frame.width == width_0 and frame.height == height_0
         rtc_server.release()
         img_buffer_manager.cleanup()
@@ -223,7 +222,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
         showm.render()
         stream.start(ms_stream)
         showm.render()
-        frame = loop.run_until_complete(rtc_server.recv())
+        loop.run_until_complete(rtc_server.recv())
         # assert frame.width == showm.size[0] and frame.height == showm.size[1]
         rtc_server.release()
         img_buffer_manager.cleanup()
@@ -827,31 +826,22 @@ def test_webserver():
             showm, use_raw_array=use_raw_array)
         showm.initialize()
         if use_raw_array:
-            web_server(
+            web_server_raw_array(
                 stream.img_manager.image_buffers,
-                None,
                 stream.img_manager.info_buffer,
-                None,
                 stream_interaction.circular_queue.head_tail_buffer,
-                None,
                 stream_interaction.circular_queue.buffer._buffer,
-                None,
                 8000,
                 'localhost',
-                True,
                 True,
                 True,
                 run_app=False
             )
         else:
             web_server(
-                None,
                 stream.img_manager.image_buffer_names,
-                None,
                 stream.img_manager.info_buffer_name,
-                None,
                 stream_interaction.circular_queue.head_tail_buffer_name,
-                None,
                 stream_interaction.circular_queue.buffer.buffer_name,
                 8000,
                 'localhost',

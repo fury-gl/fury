@@ -16,7 +16,7 @@ import numpy as np
 # Then let's download some available datasets.
 
 from fury.data.fetcher import fetch_viz_wiki_nw
-from fury.stream.server import web_server
+from fury.stream.server import web_server_raw_array
 
 if __name__ == '__main__':
 
@@ -87,14 +87,11 @@ if __name__ == '__main__':
     showm.initialize()
     stream = FuryStreamClient(
         showm, use_raw_array=True)
-
     p = multiprocessing.Process(
-        target=web_server,
+        target=web_server_raw_array,
         args=(
             stream.img_manager.image_buffers,
-            stream.img_manager.image_buffer_names,
             stream.img_manager.info_buffer,
-            stream.img_manager.info_buffer_name,
         )
     )
     p.start()
