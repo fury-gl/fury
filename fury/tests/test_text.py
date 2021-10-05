@@ -72,7 +72,7 @@ def test_bitmap_actor():
             for _ in label:
                 colors.append(c)
     spheres = actor.markers(centers, colors_spheres, scales=.1)
-    my_text_actor = actor.bitmap_labels(
+    my_text_actor = actor.billboard_labels(
         centers, labels, colors=colors, scales=.1,
         y_offset_ratio=1,
         align='center', font_name='FreeMono')

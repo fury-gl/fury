@@ -44,7 +44,7 @@ if text_tools._FREETYPE_AVAILABLE:
     text_tools.create_new_font(
         'FreeMonoWithSpecial', font_path=font_path, font_size_res=10,
         chars=chars, force_recreate=True)
-    new_font_actor = actor.bitmap_labels(
+    new_font_actor = actor.billboard_labels(
         [np.array([0., 0., 0.])], [text],
         font_name='FreeMonoWithSpecial',
         align='center', scales=0.1,)
