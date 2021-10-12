@@ -3,9 +3,9 @@ import json
 from os.path import join as pjoin
 
 import numpy as np
-import vtk
 
 from fury.data import DATA_DIR
+from fury.lib import LookupTable
 # Allow import, but disable doctests if we don't have matplotlib
 from fury.optpkg import optional_package
 cm, have_matplotlib, _ = optional_package('matplotlib.cm')
@@ -29,10 +29,10 @@ def colormap_lookup_table(scale_range=(0, 1), hue_range=(0.8, 0),
 
     Returns
     -------
-    lookup_table : vtkLookupTable
+    lookup_table : LookupTable
 
     """
-    lookup_table = vtk.vtkLookupTable()
+    lookup_table = LookupTable()
     lookup_table.SetRange(scale_range)
     lookup_table.SetTableRange(scale_range)
 
@@ -595,25 +595,25 @@ def distinguishable_colormap(bg=(0, 0, 0), exclude=[], nb_colors=None):
 
 def hex_to_rgb(color):
     """Converts Hexadecimal color code to rgb()
-    
+
     color : string containting hexcode of color (can also start with a hash)
-    
+
     Returns
     -------
-    c : array, shape(1, 3) matrix of rbg colors corresponding to the 
+    c : array, shape(1, 3) matrix of rbg colors corresponding to the
         hexcode string given in color.
-    
+
     Examples
     --------
     >>> from fury import colormap
     >>> color = "#FFFFFF"
     >>> c = colormap.hex_to_rgb(color)
-    
-   
+
+
     >>> from fury import colormap
     >>> color = "FFFFFF"
     >>> c = colormap.hex_to_rgb(color)
-    
+
     """
     if color[0] == "#":
         color = color[1:]

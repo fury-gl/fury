@@ -12,7 +12,7 @@ from fury import shaders
 from fury import actor, window
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate
+from fury.utils import shallow_copy, rotate, VTK_9_PLUS
 from fury.testing import assert_greater, assert_greater_equal
 
 # Allow import, but disable doctests if we don't have dipy
@@ -424,7 +424,6 @@ def test_streamtube_and_line_actors():
 
     c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
 
-    VTK_9_PLUS = window.vtk.vtkVersion.GetVTKMajorVersion() >= 9
     shader_obj = c3.GetShaderProperty() if VTK_9_PLUS else c3.GetMapper()
     mapper_code = shader_obj.GetGeometryShaderCode()
     file_code = shaders.load("line.geom")
@@ -1034,6 +1033,7 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.rectangle, {}],
                   [actor.frustum, {}],
                   [actor.octagonalprism, {}],
+                  [actor.pentagonalprism, {}],
                   [actor.triangularprism, {}]]
 
     for act_func, extra_args in actor_list:

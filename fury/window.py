@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
 import numpy as np
 from scipy import ndimage
-import vtk
-from vtk.util import numpy_support, colors
-
-from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
+from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
+                      InteractorStyleImage, InteractorStyleTrackballCamera,
+                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+                      WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
 from fury.shaders.base import GL_NUMBERS as _GL
 try:
@@ -22,7 +23,7 @@ except NameError:
     basestring = str
 
 
-class Scene(vtk.vtkRenderer):
+class Scene(Renderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -39,9 +40,9 @@ class Scene(vtk.vtkRenderer):
     def add(self, *actors):
         """Add an actor to the scene."""
         for actor in actors:
-            if isinstance(actor, vtk.vtkVolume):
+            if isinstance(actor, Volume):
                 self.AddVolume(actor)
-            elif isinstance(actor, vtk.vtkActor2D):
+            elif isinstance(actor, Actor2D):
                 self.AddActor2D(actor)
             elif hasattr(actor, 'add_to_scene'):
                 actor.add_to_scene(self)
@@ -331,7 +332,7 @@ class ShowManager(object):
         if self.reset_camera:
             self.scene.ResetCamera()
 
-        self.window = vtk.vtkRenderWindow()
+        self.window = RenderWindow()
 
         if self.stereo.lower() != 'off':
             enable_stereo(self.window, self.stereo)
@@ -347,15 +348,15 @@ class ShowManager(object):
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
-            self.style = vtk.vtkInteractorStyleImage()
+            self.style = InteractorStyleImage()
         elif self.interactor_style == 'trackball':
-            self.style = vtk.vtkInteractorStyleTrackballCamera()
+            self.style = InteractorStyleTrackballCamera()
         elif self.interactor_style == 'custom':
             self.style = CustomInteractorStyle()
         else:
             self.style = interactor_style
 
-        self.iren = vtk.vtkRenderWindowInteractor()
+        self.iren = RenderWindowInteractor()
         self.style.SetCurrentRenderer(self.scene)
         # Hack: below, we explicitly call the Python version of SetInteractor.
         self.style.SetInteractor(self.iren)
@@ -418,7 +419,7 @@ class ShowManager(object):
         """
         with InTemporaryDirectory():
             filename = "recorded_events.log"
-            recorder = vtk.vtkInteractorEventRecorder()
+            recorder = InteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
 
@@ -478,7 +479,7 @@ class ShowManager(object):
             Recorded events (one per line).
 
         """
-        recorder = vtk.vtkInteractorEventRecorder()
+        recorder = InteractorEventRecorder()
         recorder.SetInteractor(self.iren)
 
         recorder.SetInputString(events)
@@ -511,7 +512,7 @@ class ShowManager(object):
         self.play_events(events)
 
     def add_window_callback(self, win_callback,
-                            event=vtk.vtkCommand.ModifiedEvent):
+                            event=Command.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
@@ -688,13 +689,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = vtk.vtkRenderer()
+        scene = Renderer()
 
-    renWin = vtk.vtkRenderWindow()
+    renWin = RenderWindow()
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = vtk.vtkRenderWindowInteractor()
+    iren = RenderWindowInteractor()
     iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
@@ -705,7 +706,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     if stereo.lower() != 'off':
         enable_stereo(renWin, stereo)
 
-    renderLarge = vtk.vtkRenderLargeImage()
+    renderLarge = RenderLargeImage()
     renderLarge.SetInput(scene)
     renderLarge.SetMagnification(magnification)
     renderLarge.Update()
@@ -730,7 +731,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     for i in range(n_frames):
         scene.GetActiveCamera().Azimuth(ang)
-        renderLarge = vtk.vtkRenderLargeImage()
+        renderLarge = RenderLargeImage()
         renderLarge.SetInput(scene)
         renderLarge.SetMagnification(magnification)
         renderLarge.Update()
@@ -850,7 +851,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     """
     width, height = size
 
-    render_window = vtk.vtkRenderWindow()
+    render_window = RenderWindow()
     if offscreen:
         render_window.SetOffScreenRendering(1)
     if stereo.lower() != 'off':
@@ -864,7 +865,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     render_window.Render()
 
-    window_to_image_filter = vtk.vtkWindowToImageFilter()
+    window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
     window_to_image_filter.Update()
 

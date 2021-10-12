@@ -631,6 +631,7 @@ class LineSlider2D(UI):
 
         if self.orientation == "horizontal":
             length = float(self.right_x_position - self.left_x_position)
+            length = np.round(length, decimals=6)
             if length != self.track.width:
                 raise ValueError("Disk position outside the slider line")
             disk_position_x = self.handle.center[0]

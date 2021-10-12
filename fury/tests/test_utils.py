@@ -5,13 +5,15 @@ from fury.utils import (map_coordinates_3d_4d,
                         vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk, vertices_from_actor,
+                        rotate, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors)
 from fury import actor, window, utils
+from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
+                      CellArray, Polygon, Actor2D, DoubleArray,
+                      UnsignedCharArray)
 import fury.primitive as fp
-from vtk.util import numpy_support
 
 
 def test_map_coordinates_3d_4d():
@@ -52,7 +54,7 @@ def test_polydata_lines():
     res_colors = np.unique(res_colors, axis=0) / 255
     npt.assert_array_equal(colors, np.flipud(res_colors))
 
-    npt.assert_equal(utils.get_polydata_colors(vtk.vtkPolyData()), None)
+    npt.assert_equal(utils.get_polydata_colors(PolyData()), None)
 
 
 def test_polydata_polygon(interactive=False):
@@ -78,7 +80,7 @@ def test_polydata_polygon(interactive=False):
                             [1.0, 1.0, 0.0],
                             [1.0, 1.0, 1.0]])
     colors = my_vertices * 255
-    my_polydata = vtk.vtkPolyData()
+    my_polydata = PolyData()
 
     utils.set_polydata_vertices(my_polydata, my_vertices)
     utils.set_polydata_triangles(my_polydata, my_triangles)
@@ -339,7 +341,7 @@ def test_vertices_from_actor(interactive=False):
     res_vertices_vtk = vertices_from_actor(actr, as_vtk=True)
 
     npt.assert_array_almost_equal(expected, res_vertices)
-    npt.assert_equal(isinstance(res_vertices_vtk, vtk.vtkDoubleArray), True)
+    npt.assert_equal(isinstance(res_vertices_vtk, DoubleArray), True)
 
     # test colors_from_actor:
     l_colors = utils.colors_from_actor(actr)
@@ -347,7 +349,7 @@ def test_vertices_from_actor(interactive=False):
     l_colors_none = utils.colors_from_actor(actr, array_name='col')
 
     npt.assert_equal(l_colors_none, None)
-    npt.assert_equal(isinstance(l_colors_vtk, vtk.vtkUnsignedCharArray), True)
+    npt.assert_equal(isinstance(l_colors_vtk, UnsignedCharArray), True)
     npt.assert_equal(np.unique(l_colors, axis=0).shape, colors.shape)
 
     l_array = utils.array_from_actor(actr, 'colors')
@@ -356,7 +358,7 @@ def test_vertices_from_actor(interactive=False):
 
     npt.assert_array_equal(l_array, l_colors)
     npt.assert_equal(l_array_none, None)
-    npt.assert_equal(isinstance(l_array_vtk, vtk.vtkUnsignedCharArray), True)
+    npt.assert_equal(isinstance(l_array_vtk, UnsignedCharArray), True)
 
 
 def test_get_actor_from_primitive():
@@ -371,30 +373,30 @@ def test_compute_bounds():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     npt.assert_equal(compute_bounds(actor), None)
     npt.assert_equal(actor.GetMapper().GetInput().GetBounds(), test_bounds)
@@ -405,30 +407,30 @@ def test_update_actor():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(actor.GetMapper().GetInput().GetBounds(), test_bounds)
@@ -451,30 +453,30 @@ def test_get_bounds():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
