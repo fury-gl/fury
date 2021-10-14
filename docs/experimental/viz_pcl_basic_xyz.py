@@ -149,4 +149,4 @@ scene.add(mesh_actor)
 # TODO: Replace with SS
 window.show(scene, reset_camera=False)
 
-save_polydata(polydata, 'glyptotek.ply', color_array_name='colors')
+save_polydata(polydata, 'glyptotek.vtk')
