@@ -117,6 +117,14 @@ def obj_brain():
     return get_actor_from_polydata(polydata)
 
 
+def obj_model(model='glyptotek.ply'):
+    if model != 'glyptotek.ply':
+        fetch_viz_models()
+    model = read_viz_models(model)
+    polydata = load_polydata(model)
+    return get_actor_from_polydata(polydata)
+
+
 def obj_spheres(radii=2, theta=32, phi=32):
     centers = [[-5, 5, 0], [0, 5, 0], [5, 5, 0], [-5, 0, 0], [0, 0, 0],
                [5, 0, 0], [-5, -5, 0], [0, -5, 0], [5, -5, 0]]
@@ -156,13 +164,6 @@ def obj_surface():
     return surface_actor
 
 
-def obj_suzanne():
-    fetch_viz_models()
-    model = read_viz_models('suzanne.obj')
-    polydata = load_polydata(model)
-    return get_actor_from_polydata(polydata)
-
-
 def uniforms_callback(_caller, _event, calldata=None):
     global anisotropic, clearcoat, clearcoat_gloss, sheen, sheen_tint, \
         specular_tint, subsurface
@@ -192,7 +193,8 @@ if __name__ == '__main__':
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
-    obj_actor = obj_suzanne()
+    #obj_actor = obj_model(model='suzanne.obj')
+    obj_actor = obj_model(model='glyptotek.ply')
     #obj_actor = obj_spheres()
 
     subsurface = .0
