@@ -1,5 +1,6 @@
 from docs.experimental.tmp_pcl_fetcher import read_viz_dataset
 from fury import window
+from fury.io import save_polydata
 from fury.utils import (array_from_actor, get_actor_from_polydata,
                         set_polydata_colors, set_polydata_normals,
                         set_polydata_triangles, set_polydata_vertices)
@@ -147,3 +148,5 @@ scene.add(mesh_actor)
 
 # TODO: Replace with SS
 window.show(scene, reset_camera=False)
+
+save_polydata(polydata, 'glyptotek.ply', color_array_name='colors')
