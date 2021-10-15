@@ -2,8 +2,9 @@ from dipy.data import get_fnames
 from fury import actor, ui, window
 from fury.data import fetch_viz_models, read_viz_models, read_viz_textures
 from fury.io import load_polydata
-from fury.utils import (get_actor_from_polydata, get_polydata_triangles,
-                        get_polydata_vertices, normals_from_v_f,
+from fury.utils import (get_actor_from_polydata, get_polydata_colors,
+                        get_polydata_triangles, get_polydata_vertices,
+                        normals_from_v_f, set_polydata_colors,
                         set_polydata_normals)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
@@ -117,11 +118,23 @@ def obj_brain():
     return get_actor_from_polydata(polydata)
 
 
-def obj_model(model='glyptotek.ply'):
-    if model != 'glyptotek.ply':
+def obj_model(model='glyptotek.vtk', color=None):
+    if model != 'glyptotek.vtk':
         fetch_viz_models()
     model = read_viz_models(model)
     polydata = load_polydata(model)
+    if color is not None:
+        color = np.asarray([color]) * 255
+        colors = get_polydata_colors(polydata)
+        if colors is not None:
+            num_vertices = colors.shape[0]
+            new_colors = np.repeat(color, num_vertices, axis=0)
+            colors[:, :] = new_colors
+        else:
+            vertices = get_polydata_vertices(polydata)
+            num_vertices = vertices.shape[0]
+            new_colors = np.repeat(color, num_vertices, axis=0)
+            set_polydata_colors(polydata, new_colors)
     return get_actor_from_polydata(polydata)
 
 
@@ -193,8 +206,8 @@ if __name__ == '__main__':
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
-    #obj_actor = obj_model(model='suzanne.obj')
-    obj_actor = obj_model(model='glyptotek.ply')
+    #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
+    obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
     #obj_actor = obj_spheres()
 
     subsurface = .0
