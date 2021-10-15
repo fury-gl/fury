@@ -4175,7 +4175,7 @@ class SpinBox(UI):
             self.increment_callback
         self.decrement_button.on_left_mouse_button_pressed = \
             self.decrement_callback
-        self.textbox.on_blur = self.textbox_update_value
+        self.textbox.off_focus = self.textbox_update_value
 
     def resize(self, size):
         """Resize SpinBox.
