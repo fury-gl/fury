@@ -208,25 +208,27 @@ def uniforms_callback(_caller, _event, calldata=None):
 
 
 def win_callback(obj, event):
-    global control_panel, pbr_panel, size
+    global control_panel, params_panel, pbr_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
+        params_panel.re_align(size_change)
         pbr_panel.re_align(size_change)
         control_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
     global anisotropic, clearcoat, clearcoat_gloss, control_panel, obj_actor, \
-        pbr_panel, sheen, sheen_tint, size, specular_tint, subsurface
+        params_panel, pbr_panel, sheen, sheen_tint, size, specular_tint, \
+        subsurface
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
     #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
     #obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
-    obj_actor = obj_model(model='glyptotek.vtk')
-    #obj_actor = obj_spheres()
+    #obj_actor = obj_model(model='glyptotek.vtk')
+    obj_actor = obj_spheres()
 
     subsurface = .0
     metallic = .0
@@ -309,7 +311,7 @@ if __name__ == '__main__':
                                 order_transparent=True)
     show_m.initialize()
 
-    pbr_panel = ui.Panel2D((320, 500), position=(-25, 5),
+    pbr_panel = ui.Panel2D((380, 500), position=(-85, 5),
                            color=(.25, .25, .25), opacity=.75, align='right')
 
     panel_label_principled_brdf = build_label('"Principled" BRDF',
@@ -339,7 +341,7 @@ if __name__ == '__main__':
     pbr_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
     pbr_panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
 
-    length = 150
+    length = 200
     text_template = '{value:.1f}'
 
     slider_slice_subsurface = ui.LineSlider2D(
@@ -384,7 +386,7 @@ if __name__ == '__main__':
     slider_slice_clearcoat.on_change = change_slice_clearcoat
     slider_slice_clearcoat_gloss.on_change = change_slice_clearcoat_gloss
 
-    slice_pad_x = .46
+    slice_pad_x = .4
 
     pbr_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
     pbr_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
@@ -399,12 +401,63 @@ if __name__ == '__main__':
 
     scene.add(pbr_panel)
 
-    control_panel = ui.Panel2D((320, 80), position=(-25, 510),
+    params_panel = ui.Panel2D((380, 500), position=(-85, 510),
+                              color=(.25, .25, .25), opacity=.75,
+                              align='right')
+
+    panel_label_params = build_label('Parameters', font_size=18, bold=True)
+    section_label_subsurf_color = build_label('Subsurface Color', bold=True)
+    slider_label_subsurf_r = build_label('R')
+    slider_label_subsurf_g = build_label('G')
+    slider_label_subsurf_b = build_label('B')
+    section_label_aniso_dir = build_label('Anisotropic Direction', bold=True)
+    slider_label_aniso_x = build_label('X')
+    slider_label_aniso_y = build_label('Y')
+    slider_label_aniso_z = build_label('Z')
+
+    params_panel.add_element(panel_label_params, (.02, .95))
+    params_panel.add_element(section_label_subsurf_color, (.04, .86))
+    params_panel.add_element(slider_label_subsurf_r, (label_pad_x, .77))
+    params_panel.add_element(slider_label_subsurf_g, (label_pad_x, .68))
+    params_panel.add_element(slider_label_subsurf_b, (label_pad_x, .59))
+    params_panel.add_element(section_label_aniso_dir, (.04, .5))
+    params_panel.add_element(slider_label_aniso_x, (label_pad_x, .41))
+    params_panel.add_element(slider_label_aniso_y, (label_pad_x, .32))
+    params_panel.add_element(slider_label_aniso_z, (label_pad_x, .23))
+
+    slider_slice_subsurf_r = ui.LineSlider2D(initial_value=255, max_value=255,
+                                             length=length,
+                                             text_template='{value:.0f}')
+    slider_slice_subsurf_g = ui.LineSlider2D(initial_value=255, max_value=255,
+                                             length=length,
+                                             text_template='{value:.0f}')
+    slider_slice_subsurf_b = ui.LineSlider2D(initial_value=255, max_value=255,
+                                             length=length,
+                                             text_template='{value:.0f}')
+    slider_slice_aniso_x = ui.LineSlider2D(initial_value=0, min_value=-1,
+                                           max_value=1, length=length,
+                                           text_template=text_template)
+    slider_slice_aniso_y = ui.LineSlider2D(initial_value=1, min_value=-1,
+                                           max_value=1, length=length,
+                                           text_template=text_template)
+    slider_slice_aniso_z = ui.LineSlider2D(initial_value=.5, min_value=-1,
+                                           max_value=1, length=length,
+                                           text_template=text_template)
+
+    params_panel.add_element(slider_slice_subsurf_r, (slice_pad_x, .77))
+    params_panel.add_element(slider_slice_subsurf_g, (slice_pad_x, .68))
+    params_panel.add_element(slider_slice_subsurf_b, (slice_pad_x, .59))
+    params_panel.add_element(slider_slice_aniso_x, (slice_pad_x, .41))
+    params_panel.add_element(slider_slice_aniso_y, (slice_pad_x, .32))
+    params_panel.add_element(slider_slice_aniso_z, (slice_pad_x, .23))
+
+    scene.add(params_panel)
+
+    control_panel = ui.Panel2D((380, 80), position=(-85, 1015),
                                color=(.25, .25, .25), opacity=.75,
                                align='right')
 
-    panel_label_control = build_label('Control', font_size=18,
-                                               bold=True)
+    panel_label_control = build_label('Control', font_size=18, bold=True)
     slider_label_opacity = build_label('Opacity')
 
     control_panel.add_element(panel_label_control, (.02, .7))
