@@ -8,6 +8,7 @@ from fury.utils import (get_actor_from_polydata, get_polydata_colors,
                         set_polydata_normals)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
+from vtk.util import numpy_support
 
 
 import math
@@ -86,6 +87,22 @@ def change_slice_clearcoat_gloss(slider):
 def change_slice_opacity(slider):
     global obj_actor
     obj_actor.GetProperty().SetOpacity(slider._value)
+
+
+def get_cubemap_from_ndarrays(array):
+    texture = vtk.vtkTexture()
+    texture.CubeMapOn()
+    for idx, img in enumerate(array):
+        vtk_img = vtk.vtkImageData()
+        vtk_img.SetDimensions(img.shape[1], img.shape[0], 1)
+        #vtk_arr = numpy_support.numpy_to_vtk(img)
+        vtk_arr = numpy_support.numpy_to_vtk(np.flip(
+            img.swapaxes(0, 1), axis=1).reshape((-1, 3), order='F'))
+        vtk_arr.SetName('Image')
+        vtk_img.GetPointData().AddArray(vtk_arr)
+        vtk_img.GetPointData().SetActiveScalars('Image')
+        texture.SetInputDataObject(idx, vtk_img)
+    return texture
 
 
 def get_cubemap(files_names):
@@ -207,7 +224,8 @@ if __name__ == '__main__':
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
     #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
-    obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
+    #obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
+    obj_actor = obj_model(model='glyptotek.vtk')
     #obj_actor = obj_spheres()
 
     subsurface = .0
@@ -244,6 +262,7 @@ if __name__ == '__main__':
     shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
                     block='light', debug=False)
 
+    """
     cubemap_fns = [read_viz_textures('skybox-px.jpg'),
                    read_viz_textures('skybox-nx.jpg'),
                    read_viz_textures('skybox-py.jpg'),
@@ -253,9 +272,19 @@ if __name__ == '__main__':
 
     # Load the cube map
     cubemap = get_cubemap(cubemap_fns)
+    """
+
+    img_shape = (512, 512)
+    img_grad = np.tile(np.linspace(0, 255, num=img_shape[0]),
+                       (img_shape[1], 1)).astype(np.uint8)
+    cubemap_img = np.stack((img_grad,) * 3, axis=-1)
+    cubemap_imgs = [cubemap_img, cubemap_img, cubemap_img, cubemap_img,
+                    cubemap_img, cubemap_img]
+
+    cubemap = get_cubemap_from_ndarrays(cubemap_imgs)
 
     # Load the skybox
-    skybox = get_cubemap(cubemap_fns)
+    skybox = cubemap
     skybox.InterpolateOn()
     skybox.RepeatOff()
     skybox.EdgeClampOn()
