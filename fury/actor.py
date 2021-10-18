@@ -30,6 +30,7 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
+                        set_polydata_colors, set_polydata_normals,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors)
@@ -2876,3 +2877,36 @@ def markers(
                     block="light")
 
     return sq_actor
+
+
+def point_cloud(points, colors=None, normals=None, affine=None, point_size=1):
+    # TODO: if affine is None
+    # Create the geometry of a point (the coordinate)
+    vtk_vertices = Points()
+    # Create the topology of the point (a vertex)
+    vtk_faces = CellArray()
+    # Add points
+    for i in range(len(points)):
+        p = points[i]
+        id = vtk_vertices.InsertNextPoint(p)
+        vtk_faces.InsertNextCell(1)
+        vtk_faces.InsertCellPoint(id)
+    # Create a polydata object
+    polydata = PolyData()
+    # Set the vertices and faces we created as the geometry and topology of the
+    # polydata
+    polydata.SetPoints(vtk_vertices)
+    polydata.SetVerts(vtk_faces)
+    if colors is not None:
+        set_polydata_colors(polydata, colors)
+    if normals is not None:
+        set_polydata_normals(polydata, normals)
+    polydata.Modified()
+    # Visualize
+    mapper = PolyDataMapper()
+    mapper.SetInputData(polydata)
+    # Create an actor
+    pcl_actor = Actor()
+    pcl_actor.SetMapper(mapper)
+    pcl_actor.GetProperty().SetPointSize(point_size)
+    return pcl_actor

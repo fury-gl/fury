@@ -1,5 +1,5 @@
 from docs.experimental.tmp_pcl_fetcher import read_viz_dataset
-from fury import window
+from fury import actor, window
 from fury.io import save_polydata
 from fury.utils import (array_from_actor, get_actor_from_polydata,
                         set_polydata_colors, set_polydata_normals,
@@ -10,43 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import open3d as o3d
 import vtk
-
-
-# TODO: Move to actor
-def point_cloud(points, colors=None, normals=None, affine=None, point_size=1):
-    # TODO: if affine is None
-    # Create the geometry of a point (the coordinate)
-    vtk_vertices = vtk.vtkPoints()
-    # Create the topology of the point (a vertex)
-    vtk_faces = vtk.vtkCellArray()
-    # Add points
-    for i in range(len(points)):
-        p = points[i]
-        id = vtk_vertices.InsertNextPoint(p)
-        vtk_faces.InsertNextCell(1)
-        vtk_faces.InsertCellPoint(id)
-    # Create a polydata object
-    polydata = vtk.vtkPolyData()
-    # Set the vertices and faces we created as the geometry and topology of the
-    # polydata
-    polydata.SetPoints(vtk_vertices)
-    polydata.SetVerts(vtk_faces)
-    if colors is not None:
-        set_polydata_colors(polydata, colors)
-    if normals is not None:
-        set_polydata_normals(polydata, normals)
-    polydata.Modified()
-    # Visualize
-    mapper = vtk.vtkPolyDataMapper()
-    if vtk.VTK_MAJOR_VERSION <= 5:
-        mapper.SetInput(polydata)
-    else:
-        mapper.SetInputData(polydata)
-    # Create an actor
-    pcl_actor = vtk.vtkActor()
-    pcl_actor.SetMapper(mapper)
-    pcl_actor.GetProperty().SetPointSize(point_size)
-    return pcl_actor
 
 
 scene = window.Scene()
@@ -67,7 +30,7 @@ pcd.points = o3d.utility.Vector3dVector(xyz)
 rgb = pcd_data[:, 3:]
 pcd.colors = o3d.utility.Vector3dVector(rgb / 255)
 
-pcd_actor = point_cloud(xyz, colors=rgb)
+pcd_actor = actor.point_cloud(xyz, colors=rgb)
 
 scene.add(pcd_actor)
 
@@ -134,7 +97,7 @@ set_polydata_colors(polydata, den_colors * 255)
 
 scene.clear()
 
-verts_to_remove = den < np.quantile(den, .01)
+verts_to_remove = den < np.quantile(den, .02)
 rec_mesh.remove_vertices_by_mask(verts_to_remove)
 
 polydata = vtk.vtkPolyData()
@@ -147,6 +110,6 @@ mesh_actor = get_actor_from_polydata(polydata)
 scene.add(mesh_actor)
 
 # TODO: Replace with SS
-window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 save_polydata(polydata, 'glyptotek.vtk')
