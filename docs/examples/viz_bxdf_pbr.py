@@ -40,53 +40,71 @@ def change_slice_subsurface(slider):
 
 
 def change_slice_metallic(slider):
-    global obj_actor
-    obj_actor.GetProperty().SetMetallic(slider._value)
+    global obj_actor, principled_params
+    principled_params['metallic'] = slider.value
+    obj_actor.GetProperty().SetMetallic(slider.value)
 
 
 def change_slice_specular(slider):
-    global obj_actor
-    obj_actor.GetProperty().SetSpecular(slider._value)
+    global obj_actor, principled_params
+    principled_params['specular'] = slider.value
+    obj_actor.GetProperty().SetSpecular(slider.value)
 
 
 def change_slice_specular_tint(slider):
-    global specular_tint
-    specular_tint = slider._value
+    global principled_params
+    principled_params['specular_tint'] = slider.value
 
 
 def change_slice_roughness(slider):
-    global obj_actor
-    obj_actor.GetProperty().SetRoughness(slider._value)
+    global obj_actor, principled_params
+    principled_params['roughness'] = slider.value
+    obj_actor.GetProperty().SetRoughness(slider.value)
 
 
 def change_slice_anisotropic(slider):
-    global anisotropic
-    anisotropic = slider._value
+    global principled_params
+    principled_params['anisotropic'] = slider.value
 
 
 def change_slice_sheen(slider):
-    global sheen
-    sheen = slider._value
+    global principled_params
+    principled_params['sheen'] = slider.value
 
 
 def change_slice_sheen_tint(slider):
-    global sheen_tint
-    sheen_tint = slider._value
+    global principled_params
+    principled_params['sheen_tint'] = slider.value
 
 
 def change_slice_clearcoat(slider):
-    global clearcoat
-    clearcoat = slider._value
+    global principled_params
+    principled_params['clearcoat'] = slider.value
 
 
 def change_slice_clearcoat_gloss(slider):
-    global clearcoat_gloss
-    clearcoat_gloss = slider._value
+    global principled_params
+    principled_params['clearcoat_gloss'] = slider.value
+
+
+def change_slice_aniso_x(slider):
+    global additional_params
+    additional_params['anisotropic_direction'][0] = slider.value
+
+
+def change_slice_aniso_y(slider):
+    global additional_params
+    additional_params['anisotropic_direction'][1] = slider.value
+
+
+def change_slice_aniso_z(slider):
+    global additional_params
+    additional_params['anisotropic_direction'][2] = slider.value
 
 
 def change_slice_opacity(slider):
     global obj_actor
-    obj_actor.GetProperty().SetOpacity(slider._value)
+    obj_actor.GetProperty().SetOpacity(slider.value)
 
 
 def get_cubemap_from_ndarrays(array):
@@ -195,33 +213,36 @@ def obj_surface():
 
 
 def uniforms_callback(_caller, _event, calldata=None):
-    global anisotropic, clearcoat, clearcoat_gloss, sheen, sheen_tint, \
-        specular_tint, subsurface
+    global additional_params, principled_params, subsurface
     if calldata is not None:
         calldata.SetUniformf('subsurface', subsurface)
-        calldata.SetUniformf('specularTint', specular_tint)
-        calldata.SetUniformf('anisotropic', anisotropic)
-        calldata.SetUniformf('sheen', sheen)
-        calldata.SetUniformf('sheenTint', sheen_tint)
-        calldata.SetUniformf('clearcoat', clearcoat)
-        calldata.SetUniformf('clearcoatGloss', clearcoat_gloss)
+        calldata.SetUniformf('specularTint',
+                             principled_params['specular_tint'])
+        calldata.SetUniformf('anisotropic', principled_params['anisotropic'])
+        calldata.SetUniformf('sheen', principled_params['sheen'])
+        calldata.SetUniformf('sheenTint', principled_params['sheen_tint'])
+        calldata.SetUniformf('clearcoat', principled_params['clearcoat'])
+        calldata.SetUniformf('clearcoatGloss',
+                             principled_params['clearcoat_gloss'])
+
+        calldata.SetUniform3f('anisotropicDirection',
+                              additional_params['anisotropic_direction'])
 
 
 def win_callback(obj, event):
-    global control_panel, params_panel, pbr_panel, size
+    global control_panel, params_panel, principled_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
         params_panel.re_align(size_change)
-        pbr_panel.re_align(size_change)
+        principled_panel.re_align(size_change)
         control_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global anisotropic, clearcoat, clearcoat_gloss, control_panel, obj_actor, \
-        params_panel, pbr_panel, sheen, sheen_tint, size, specular_tint, \
-        subsurface
+    global additional_params, control_panel, obj_actor, params_panel, \
+        principled_panel, principled_params, size, subsurface
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -230,24 +251,25 @@ if __name__ == '__main__':
     #obj_actor = obj_model(model='glyptotek.vtk')
     obj_actor = obj_spheres()
 
+    # TODO: Move to dict
+    principled_params = {'subsurface': 0, 'metallic': 0, 'specular': 0,
+                         'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
+                         'sheen': 0, 'sheen_tint': 0, 'clearcoat': 0,
+                         'clearcoat_gloss': 0}
     subsurface = .0
-    metallic = .0
-    specular = .0
-    specular_tint = .0
-    roughness = .0
-    anisotropic = .0
-    sheen = .0
-    sheen_tint = .0
-    clearcoat = .0
-    clearcoat_gloss = .0
 
+    additional_params = {'subsurface_color': [255, 255, 255],
+                         'anisotropic_direction': [0, 1, .5]}
+
+    # TODO: Change to default
     obj_actor.GetProperty().SetInterpolationToPBR()
-    obj_actor.GetProperty().SetMetallic(metallic)
-    obj_actor.GetProperty().SetRoughness(roughness)
+    # TODO: Handle independently
+    obj_actor.GetProperty().SetMetallic(principled_params['metallic'])
+    obj_actor.GetProperty().SetRoughness(principled_params['roughness'])
 
     # NOTE: Specular parameters don't seem to work
     #specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
-    obj_actor.GetProperty().SetSpecular(specular)
+    obj_actor.GetProperty().SetSpecular(principled_params['specular'])
     #obj_actor.GetProperty().SetSpecularPower(specular_tint)
     #obj_actor.GetProperty().SetSpecularColor(specular_color)
 
@@ -264,7 +286,6 @@ if __name__ == '__main__':
     shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
                     block='light', debug=False)
 
-    """
     cubemap_fns = [read_viz_textures('skybox-px.jpg'),
                    read_viz_textures('skybox-nx.jpg'),
                    read_viz_textures('skybox-py.jpg'),
@@ -274,8 +295,8 @@ if __name__ == '__main__':
 
     # Load the cube map
     cubemap = get_cubemap(cubemap_fns)
-    """
 
+    """
     img_shape = (512, 512)
     img_grad = np.tile(np.linspace(0, 255, num=img_shape[0]),
                        (img_shape[1], 1)).astype(np.uint8)
@@ -284,6 +305,7 @@ if __name__ == '__main__':
                     cubemap_img, cubemap_img]
 
     cubemap = get_cubemap_from_ndarrays(cubemap_imgs)
+    """
 
     # Load the skybox
     skybox = cubemap
@@ -311,8 +333,9 @@ if __name__ == '__main__':
                                 order_transparent=True)
     show_m.initialize()
 
-    pbr_panel = ui.Panel2D((380, 500), position=(-85, 5),
-                           color=(.25, .25, .25), opacity=.75, align='right')
+    principled_panel = ui.Panel2D(
+        (380, 500), position=(-85, 5), color=(.25, .25, .25), opacity=.75,
+        align='right')
 
     panel_label_principled_brdf = build_label('"Principled" BRDF',
                                               font_size=18, bold=True)
@@ -329,17 +352,19 @@ if __name__ == '__main__':
 
     label_pad_x = .06
 
-    pbr_panel.add_element(panel_label_principled_brdf, (.02, .95))
-    pbr_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
-    pbr_panel.add_element(slider_label_metallic, (label_pad_x, .77))
-    pbr_panel.add_element(slider_label_specular, (label_pad_x, .68))
-    pbr_panel.add_element(slider_label_specular_tint, (label_pad_x, .59))
-    pbr_panel.add_element(slider_label_roughness, (label_pad_x, .5))
-    pbr_panel.add_element(slider_label_anisotropic, (label_pad_x, .41))
-    pbr_panel.add_element(slider_label_sheen, (label_pad_x, .32))
-    pbr_panel.add_element(slider_label_sheen_tint, (label_pad_x, .23))
-    pbr_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
-    pbr_panel.add_element(slider_label_clearcoat_gloss, (label_pad_x, .05))
+    principled_panel.add_element(panel_label_principled_brdf, (.02, .95))
+    principled_panel.add_element(slider_label_subsurface, (label_pad_x, .86))
+    principled_panel.add_element(slider_label_metallic, (label_pad_x, .77))
+    principled_panel.add_element(slider_label_specular, (label_pad_x, .68))
+    principled_panel.add_element(slider_label_specular_tint,
+                                 (label_pad_x, .59))
+    principled_panel.add_element(slider_label_roughness, (label_pad_x, .5))
+    principled_panel.add_element(slider_label_anisotropic, (label_pad_x, .41))
+    principled_panel.add_element(slider_label_sheen, (label_pad_x, .32))
+    principled_panel.add_element(slider_label_sheen_tint, (label_pad_x, .23))
+    principled_panel.add_element(slider_label_clearcoat, (label_pad_x, .14))
+    principled_panel.add_element(slider_label_clearcoat_gloss,
+                                 (label_pad_x, .05))
 
     length = 200
     text_template = '{value:.1f}'
@@ -348,32 +373,32 @@ if __name__ == '__main__':
         initial_value=subsurface, max_value=1, length=length,
         text_template=text_template)
     slider_slice_metallic = ui.LineSlider2D(
-        initial_value=metallic, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['metallic'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_specular = ui.LineSlider2D(
-        initial_value=specular, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['specular'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_specular_tint = ui.LineSlider2D(
-        initial_value=specular_tint, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['specular_tint'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_roughness = ui.LineSlider2D(
-        initial_value=roughness, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['roughness'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_anisotropic = ui.LineSlider2D(
-        initial_value=anisotropic, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['anisotropic'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_sheen = ui.LineSlider2D(
-        initial_value=sheen, max_value=1, length=length,
+        initial_value=principled_params['sheen'], max_value=1, length=length,
         text_template=text_template)
     slider_slice_sheen_tint = ui.LineSlider2D(
-        initial_value=sheen_tint, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['sheen_tint'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_clearcoat = ui.LineSlider2D(
-        initial_value=clearcoat, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['clearcoat'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_clearcoat_gloss = ui.LineSlider2D(
-        initial_value=clearcoat_gloss, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['clearcoat_gloss'], max_value=1,
+        length=length, text_template=text_template)
 
     slider_slice_subsurface.on_change = change_slice_subsurface
     slider_slice_metallic.on_change = change_slice_metallic
@@ -388,18 +413,20 @@ if __name__ == '__main__':
 
     slice_pad_x = .4
 
-    pbr_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
-    pbr_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
-    pbr_panel.add_element(slider_slice_specular, (slice_pad_x, .68))
-    pbr_panel.add_element(slider_slice_specular_tint, (slice_pad_x, .59))
-    pbr_panel.add_element(slider_slice_roughness, (slice_pad_x, .5))
-    pbr_panel.add_element(slider_slice_anisotropic, (slice_pad_x, .41))
-    pbr_panel.add_element(slider_slice_sheen, (slice_pad_x, .32))
-    pbr_panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .23))
-    pbr_panel.add_element(slider_slice_clearcoat, (slice_pad_x, .14))
-    pbr_panel.add_element(slider_slice_clearcoat_gloss, (slice_pad_x, .05))
+    principled_panel.add_element(slider_slice_subsurface, (slice_pad_x, .86))
+    principled_panel.add_element(slider_slice_metallic, (slice_pad_x, .77))
+    principled_panel.add_element(slider_slice_specular, (slice_pad_x, .68))
+    principled_panel.add_element(slider_slice_specular_tint,
+                                 (slice_pad_x, .59))
+    principled_panel.add_element(slider_slice_roughness, (slice_pad_x, .5))
+    principled_panel.add_element(slider_slice_anisotropic, (slice_pad_x, .41))
+    principled_panel.add_element(slider_slice_sheen, (slice_pad_x, .32))
+    principled_panel.add_element(slider_slice_sheen_tint, (slice_pad_x, .23))
+    principled_panel.add_element(slider_slice_clearcoat, (slice_pad_x, .14))
+    principled_panel.add_element(slider_slice_clearcoat_gloss,
+                                 (slice_pad_x, .05))
 
-    scene.add(pbr_panel)
+    scene.add(principled_panel)
 
     params_panel = ui.Panel2D((380, 500), position=(-85, 510),
                               color=(.25, .25, .25), opacity=.75,
@@ -425,24 +452,28 @@ if __name__ == '__main__':
     params_panel.add_element(slider_label_aniso_y, (label_pad_x, .32))
     params_panel.add_element(slider_label_aniso_z, (label_pad_x, .23))
 
-    slider_slice_subsurf_r = ui.LineSlider2D(initial_value=255, max_value=255,
-                                             length=length,
-                                             text_template='{value:.0f}')
-    slider_slice_subsurf_g = ui.LineSlider2D(initial_value=255, max_value=255,
-                                             length=length,
-                                             text_template='{value:.0f}')
-    slider_slice_subsurf_b = ui.LineSlider2D(initial_value=255, max_value=255,
-                                             length=length,
-                                             text_template='{value:.0f}')
-    slider_slice_aniso_x = ui.LineSlider2D(initial_value=0, min_value=-1,
-                                           max_value=1, length=length,
-                                           text_template=text_template)
-    slider_slice_aniso_y = ui.LineSlider2D(initial_value=1, min_value=-1,
-                                           max_value=1, length=length,
-                                           text_template=text_template)
-    slider_slice_aniso_z = ui.LineSlider2D(initial_value=.5, min_value=-1,
-                                           max_value=1, length=length,
-                                           text_template=text_template)
+    slider_slice_subsurf_r = ui.LineSlider2D(
+        initial_value=additional_params['subsurface_color'][0], max_value=255,
+        length=length, text_template='{value:.0f}')
+    slider_slice_subsurf_g = ui.LineSlider2D(
+        initial_value=additional_params['subsurface_color'][1], max_value=255,
+        length=length, text_template='{value:.0f}')
+    slider_slice_subsurf_b = ui.LineSlider2D(
+        initial_value=additional_params['subsurface_color'][2],
+        max_value=255, length=length, text_template='{value:.0f}')
+    slider_slice_aniso_x = ui.LineSlider2D(
+        initial_value=additional_params['anisotropic_direction'][0],
+        min_value=-1, max_value=1, length=length, text_template=text_template)
+    slider_slice_aniso_y = ui.LineSlider2D(
+        initial_value=additional_params['anisotropic_direction'][1],
+        min_value=-1, max_value=1, length=length, text_template=text_template)
+    slider_slice_aniso_z = ui.LineSlider2D(
+        initial_value=additional_params['anisotropic_direction'][2],
+        min_value=-1, max_value=1, length=length, text_template=text_template)
+
+    slider_slice_aniso_x.on_change = change_slice_aniso_x
+    slider_slice_aniso_y.on_change = change_slice_aniso_y
+    slider_slice_aniso_z.on_change = change_slice_aniso_z
 
     params_panel.add_element(slider_slice_subsurf_r, (slice_pad_x, .77))
     params_panel.add_element(slider_slice_subsurf_g, (slice_pad_x, .68))

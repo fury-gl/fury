@@ -30,6 +30,8 @@ uniform float sheenTint;
 uniform float clearcoat;
 uniform float clearcoatGloss;
 
+uniform vec3 anisotropicDirection;
+
 float square(float x)
 {
     return x * x;
@@ -86,9 +88,8 @@ float dielectric(float cosThetaI, float ni, float nt)
 
 void directionOfAnisotropicity(vec3 normal, out vec3 tangent, out vec3 binormal)
 {
-    //tangent = cross(normal, vec3(.5, .5, 1.));
-    tangent = cross(normal, vec3(.0, 1., .5));
-    //tangent = normalize(tangent - dot(tangent, normal) * normal);
+    //tangent = cross(normal, vec3(.0, 1., .5));
+    tangent = cross(normal, anisotropicDirection);
     binormal = normalize(cross(normal, tangent));
     tangent = normalize(cross(normal, binormal));
 }
