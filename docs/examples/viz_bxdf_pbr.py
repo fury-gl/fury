@@ -5,7 +5,7 @@ from fury.io import load_polydata
 from fury.utils import (get_actor_from_polydata, get_polydata_colors,
                         get_polydata_triangles, get_polydata_vertices,
                         normals_from_v_f, set_polydata_colors,
-                        set_polydata_normals, update_actor)
+                        set_polydata_normals)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
