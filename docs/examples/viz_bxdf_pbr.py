@@ -5,7 +5,7 @@ from fury.io import load_polydata
 from fury.utils import (get_actor_from_polydata, get_polydata_colors,
                         get_polydata_triangles, get_polydata_vertices,
                         normals_from_v_f, set_polydata_colors,
-                        set_polydata_normals)
+                        set_polydata_normals, update_actor)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
@@ -218,12 +218,12 @@ def obj_surface():
             for color in c_loop:
                 surface_actor = actor.surface(vertices, faces=face,
                                               colors=color, smooth=smooth_type)
-    normals = normals_from_v_f(vertices, faces)
-    #polydata = vtk.vtkPolyData()
-    #polydata.DeepCopy(surface_actor.GetMapper().GetInput())
+    # TODO: Report bug with polydata content not updated
     polydata = surface_actor.GetMapper().GetInput()
+    vertices = get_polydata_vertices(polydata)
+    faces = get_polydata_triangles(polydata)
+    normals = normals_from_v_f(vertices, faces)
     set_polydata_normals(polydata, normals)
-    #surface_actor = get_actor_from_polydata(polydata)
     return surface_actor
 
 
@@ -261,14 +261,23 @@ if __name__ == '__main__':
     global additional_params, control_panel, obj_actor, params_panel, \
         principled_panel, principled_params, size
 
+    scene = window.Scene()
+
+    scene.roll(-145)
+    scene.pitch(70)
+
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
     #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
     #obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
-    #obj_actor = obj_model(model='glyptotek.vtk')
-    obj_actor = obj_spheres()
+    obj_actor = obj_model(model='glyptotek.vtk')
+    #obj_actor = obj_spheres()
 
-    # TODO: Move to dict
+    scene.add(obj_actor)
+
+    scene.reset_camera()
+    scene.zoom(1.3)
+
     principled_params = {'subsurface': 0, 'metallic': 0, 'specular': 0,
                          'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
                          'sheen': 0, 'sheen_tint': 0, 'clearcoat': 0,
@@ -332,15 +341,12 @@ if __name__ == '__main__':
     skybox_actor = vtk.vtkSkybox()
     skybox_actor.SetTexture(skybox)
 
-    scene = window.Scene()
-
     scene.UseImageBasedLightingOn()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
         scene.SetEnvironmentTexture(cubemap)
     else:
         scene.SetEnvironmentCubeMap(cubemap)
 
-    scene.add(obj_actor)
     scene.add(skybox_actor)
 
     #window.show(scene)
