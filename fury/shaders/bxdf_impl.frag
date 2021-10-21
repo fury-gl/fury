@@ -14,7 +14,9 @@ Lo += diffuse;
 //fragOutput0 = vec4(Lo, opacity);
 
 // Subsurface
-vec3 subsurfaceV3 = evaluateSubsurface(roughness, albedo, NdV, NdV, NdV);
+//vec3 subsurfaceV3 = evaluateSubsurface(roughness, albedo, NdV, NdV, NdV);
+vec3 subsurfaceV3 = evaluateSubsurface(roughness, subsurfaceColor, NdV, NdV,
+    NdV);
 //fragOutput0 = vec4(subsurfaceV3, opacity);
 
 Lo = mix(Lo, subsurfaceV3, subsurface);

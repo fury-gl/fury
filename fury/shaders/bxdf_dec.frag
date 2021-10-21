@@ -31,6 +31,7 @@ uniform float clearcoat;
 uniform float clearcoatGloss;
 
 uniform vec3 anisotropicDirection;
+uniform vec3 subsurfaceColor;
 
 float square(float x)
 {
@@ -358,7 +359,7 @@ vec3 evaluateSheen(float sheenF, float sheenTintF, vec3 baseColor, float dotHL)
     return sheenF * tintMix * fh;
 }
 
-vec3 evaluateSubsurface(float roughnessF, vec3 baseColor, float dotLN,
+vec3 evaluateSubsurface(float roughnessF, vec3 color, float dotLN,
                         float dotNV, float dotHL)
 {
     float fl = schlickWeight(dotLN);
@@ -367,5 +368,6 @@ vec3 evaluateSubsurface(float roughnessF, vec3 baseColor, float dotLN,
     float fss90 = square(dotHL) * roughnessF;
     float fss = mix(1., fss90, fl) * mix(1., fss90, fv);
     float ss = 1.25 * (fss * (1. / (dotLN + dotNV) - .5) + .5);
-    return (1 / PI) * ss * baseColor;
+    // TODO: Check transmitance
+    return (1 / PI) * ss * color;
 }

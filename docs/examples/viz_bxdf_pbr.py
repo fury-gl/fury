@@ -35,8 +35,8 @@ def build_label(text, font_size=16, color=(1, 1, 1), bold=False, italic=False,
 
 
 def change_slice_subsurface(slider):
-    global subsurface
-    subsurface = slider._value
+    global principled_params
+    principled_params['subsurface'] = slider.value
 
 
 def change_slice_metallic(slider):
@@ -85,6 +85,21 @@ def change_slice_clearcoat(slider):
 def change_slice_clearcoat_gloss(slider):
     global principled_params
     principled_params['clearcoat_gloss'] = slider.value
+
+
+def change_slice_subsurf_r(slider):
+    global additional_params
+    additional_params['subsurface_color'][0] = slider.value
+
+
+def change_slice_subsurf_g(slider):
+    global additional_params
+    additional_params['subsurface_color'][1] = slider.value
+
+
+def change_slice_subsurf_b(slider):
+    global additional_params
+    additional_params['subsurface_color'][2] = slider.value
 
 
 def change_slice_aniso_x(slider):
@@ -213,9 +228,9 @@ def obj_surface():
 
 
 def uniforms_callback(_caller, _event, calldata=None):
-    global additional_params, principled_params, subsurface
+    global additional_params, principled_params
     if calldata is not None:
-        calldata.SetUniformf('subsurface', subsurface)
+        calldata.SetUniformf('subsurface', principled_params['subsurface'])
         calldata.SetUniformf('specularTint',
                              principled_params['specular_tint'])
         calldata.SetUniformf('anisotropic', principled_params['anisotropic'])
@@ -225,6 +240,8 @@ def uniforms_callback(_caller, _event, calldata=None):
         calldata.SetUniformf('clearcoatGloss',
                              principled_params['clearcoat_gloss'])
 
+        calldata.SetUniform3f('subsurfaceColor',
+                              additional_params['subsurface_color'])
         calldata.SetUniform3f('anisotropicDirection',
                               additional_params['anisotropic_direction'])
 
@@ -242,7 +259,7 @@ def win_callback(obj, event):
 
 if __name__ == '__main__':
     global additional_params, control_panel, obj_actor, params_panel, \
-        principled_panel, principled_params, size, subsurface
+        principled_panel, principled_params, size
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
@@ -256,9 +273,8 @@ if __name__ == '__main__':
                          'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
                          'sheen': 0, 'sheen_tint': 0, 'clearcoat': 0,
                          'clearcoat_gloss': 0}
-    subsurface = .0
 
-    additional_params = {'subsurface_color': [255, 255, 255],
+    additional_params = {'subsurface_color': [0, 0, 0],
                          'anisotropic_direction': [0, 1, .5]}
 
     # TODO: Change to default
@@ -370,8 +386,8 @@ if __name__ == '__main__':
     text_template = '{value:.1f}'
 
     slider_slice_subsurface = ui.LineSlider2D(
-        initial_value=subsurface, max_value=1, length=length,
-        text_template=text_template)
+        initial_value=principled_params['subsurface'], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_metallic = ui.LineSlider2D(
         initial_value=principled_params['metallic'], max_value=1,
         length=length, text_template=text_template)
@@ -453,14 +469,14 @@ if __name__ == '__main__':
     params_panel.add_element(slider_label_aniso_z, (label_pad_x, .23))
 
     slider_slice_subsurf_r = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][0], max_value=255,
-        length=length, text_template='{value:.0f}')
+        initial_value=additional_params['subsurface_color'][0], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_subsurf_g = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][1], max_value=255,
-        length=length, text_template='{value:.0f}')
+        initial_value=additional_params['subsurface_color'][1], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_subsurf_b = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][2],
-        max_value=255, length=length, text_template='{value:.0f}')
+        initial_value=additional_params['subsurface_color'][2], max_value=1,
+        length=length, text_template=text_template)
     slider_slice_aniso_x = ui.LineSlider2D(
         initial_value=additional_params['anisotropic_direction'][0],
         min_value=-1, max_value=1, length=length, text_template=text_template)
@@ -471,6 +487,9 @@ if __name__ == '__main__':
         initial_value=additional_params['anisotropic_direction'][2],
         min_value=-1, max_value=1, length=length, text_template=text_template)
 
+    slider_slice_subsurf_r.on_change = change_slice_subsurf_r
+    slider_slice_subsurf_g.on_change = change_slice_subsurf_g
+    slider_slice_subsurf_b.on_change = change_slice_subsurf_b
     slider_slice_aniso_x.on_change = change_slice_aniso_x
     slider_slice_aniso_y.on_change = change_slice_aniso_y
     slider_slice_aniso_z.on_change = change_slice_aniso_z
