@@ -273,7 +273,7 @@ if __name__ == '__main__':
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
     #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
-    #obj_actor = obj_model(model='glyptotek.vtk', color=(0, 1, 1))
+    #obj_actor = obj_model(model='glyptotek.vtk', color=(.75, .48, .34))
     obj_actor = obj_model(model='glyptotek.vtk')
     #obj_actor = obj_spheres()
 
@@ -283,7 +283,7 @@ if __name__ == '__main__':
     scene.add(obj_actor)
 
     scene.reset_camera()
-    scene.zoom(1.3)
+    scene.zoom(1.9)
 
     principled_params = {'subsurface': 0, 'metallic': 0, 'specular': 0,
                          'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
@@ -366,6 +366,7 @@ if __name__ == '__main__':
         scene.SetEnvironmentCubeMap(cubemap)
 
     scene.add(skybox_actor)
+    #scene.background((1, 1, 1))
 
     #window.show(scene)
 
