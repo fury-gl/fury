@@ -3,9 +3,9 @@ from fury import actor, ui, window
 from fury.data import fetch_viz_models, read_viz_models, read_viz_textures
 from fury.io import load_polydata
 from fury.utils import (get_actor_from_polydata, get_polydata_colors,
-                        get_polydata_triangles, get_polydata_vertices,
-                        normals_from_v_f, rotate, set_polydata_colors,
-                        set_polydata_normals)
+                        get_polydata_normals, get_polydata_triangles,
+                        get_polydata_vertices, normals_from_v_f, rotate,
+                        set_polydata_colors, set_polydata_normals)
 from fury.shaders import add_shader_callback, load, shader_to_actor
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
@@ -172,22 +172,34 @@ def obj_brain():
     return get_actor_from_polydata(polydata)
 
 
-def obj_model(model='glyptotek.vtk', color=None):
+def obj_model(model='glyptotek.vtk', colors=None):
     if model != 'glyptotek.vtk':
         fetch_viz_models()
     model = read_viz_models(model)
     polydata = load_polydata(model)
-    if color is not None:
-        color = np.asarray([color]) * 255
-        colors = get_polydata_colors(polydata)
-        if colors is not None:
-            num_vertices = colors.shape[0]
-            new_colors = np.repeat(color, num_vertices, axis=0)
-            colors[:, :] = new_colors
+    if colors is not None:
+        poly_colors = get_polydata_colors(polydata)
+        if type(colors) is tuple:
+            color = np.asarray([colors]) * 255
+            if poly_colors is not None:
+                num_verts = poly_colors.shape[0]
+            else:
+                verts = get_polydata_vertices(polydata)
+                num_verts = verts.shape[0]
+            new_colors = np.repeat(color, num_verts, axis=0)
+        elif colors.lower() == 'normals':
+            normals = get_polydata_normals(polydata)
+            if normals is not None:
+                new_colors = (normals + 1) / 2 * 255
         else:
-            vertices = get_polydata_vertices(polydata)
-            num_vertices = vertices.shape[0]
-            new_colors = np.repeat(color, num_vertices, axis=0)
+            # TODO: Check ndarray
+            new_colors = colors * 255
+        # Either replace or set
+        if poly_colors is not None:
+            # Replace original colors
+            poly_colors[:, :] = new_colors
+        else:
+            # Set new color array
             set_polydata_colors(polydata, new_colors)
     return get_actor_from_polydata(polydata)
 
@@ -272,9 +284,11 @@ if __name__ == '__main__':
 
     #obj_actor = obj_brain()
     #obj_actor = obj_surface()
-    #obj_actor = obj_model(model='suzanne.obj', color=(0, 1, 1))
-    #obj_actor = obj_model(model='glyptotek.vtk', color=(.75, .48, .34))
-    obj_actor = obj_model(model='glyptotek.vtk')
+    #obj_actor = obj_model(model='suzanne.obj', colors=(0, 1, 1))
+    #obj_actor = obj_model(model='glyptotek.vtk', colors=(.75, .48, .34))
+    #obj_actor = obj_model(model='glyptotek.vtk', colors=(1, 1, 0))
+    obj_actor = obj_model(model='glyptotek.vtk', colors='normals')
+    #obj_actor = obj_model(model='glyptotek.vtk')
     #obj_actor = obj_spheres()
 
     rotate(obj_actor, rotation=(-145, 0, 0, 1))
@@ -365,8 +379,8 @@ if __name__ == '__main__':
     else:
         scene.SetEnvironmentCubeMap(cubemap)
 
-    scene.add(skybox_actor)
-    #scene.background((1, 1, 1))
+    #scene.add(skybox_actor)
+    scene.background((1, 1, 1))
 
     #window.show(scene)
 
