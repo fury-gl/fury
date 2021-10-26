@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from sys import platform
+import time
+from threading import Lock
 import gzip
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
@@ -362,6 +365,7 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self.mutex = Lock()
 
         if self.reset_camera:
             self.scene.ResetCamera()
@@ -405,15 +409,41 @@ class ShowManager(object):
         """Render only once."""
         self.window.Render()
 
-    def start(self):
-        """Start interaction."""
+    def start(self, multithreaded=False, desired_fps=60):
+        """Start interaction.
+
+        Parameters
+        ----------
+        multithreaded : bool
+            Whether to use multithreading. (Default False)
+        desired_fps : int
+            Desired frames per second when using multithreading is enabled.
+            (Default 60)
+
+        """
         try:
-            self.render()
-            if self.title.upper() == "FURY":
-                self.window.SetWindowName(self.title + " " + fury_version)
-            else:
-                self.window.SetWindowName(self.title)
-            self.iren.Start()
+            if(multithreaded):
+                while self.iren.GetDone() is False:
+                    startTime = time.perf_counter()
+                    self.lock()
+                    self.window.MakeCurrent()
+                    self.iren.ProcessEvents() # Check if we can really do that
+                    self.window.Render()
+                    release_context(self.window)
+                    self.release_lock()
+                    endTime = time.perf_counter()
+                    # throttle to 60fps to avoid busy wait
+                    timePerFrame = 1.0/desired_fps
+                    if endTime - startTime < timePerFrame:
+                        time.sleep(timePerFrame - (endTime - startTime))
+            else:   
+                self.render()
+                if self.title.upper() == "FURY":
+                    self.window.SetWindowName(self.title + " " + fury_version)
+                else:
+                    self.window.SetWindowName(self.title)
+                self.iren.Start()
+
         except AttributeError:
             self.__init__(self.scene, self.title, size=self.size,
                           png_magnify=self.png_magnify,
@@ -434,6 +464,19 @@ class ShowManager(object):
         del self.iren
         del self.window
 
+    def lock(self):
+        """Lock the render window."""
+        self.mutex.acquire()
+
+    def release_lock(self):
+        """Release the lock of the render window."""
+        self.mutex.release()
+
+    def wait(self):
+        """ Wait for thread to finish. """
+        if(self.thread):
+            self.thread.join()
+    
     def record_events(self):
         """Record events during the interaction.
 
@@ -1265,3 +1308,23 @@ def gl_set_subtractive_blending(gl_state):
     """
     gl_reset_blend(gl_state)
     gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
+
+
+
+def release_context(window):
+    """Release the context of the window
+    
+    Parameters
+    ----------
+    window : vtkRenderWindow
+    
+    """
+    # Once release current context is available:
+    # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/8418
+    try:
+        window.ReleaseCurrent()
+    except AttributeError:
+        if(platform == "win32"):
+            from OpenGL.WGL import wglMakeCurrent
+            wglMakeCurrent(window.GetGenericDisplayId(), None)
+
