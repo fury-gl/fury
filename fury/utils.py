@@ -159,7 +159,20 @@ def numpy_to_vtk_cells(data, is_coords=True):
     cell_array.SetNumberOfCells(nb_cells)
     return cell_array
 
+
 def numpy_to_vtk_image_data(array):
+    """Convert numpy array to a vtk image data.
+
+    Parameters
+    ----------
+    array : ndarray
+        pixel coordinate and colors values.
+
+    Returns
+    -------
+    vtk_image : vtkImageData
+
+    """
     if array.ndim not in [2, 3]:
         raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
 
