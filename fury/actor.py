@@ -2879,8 +2879,69 @@ def markers(
     return sq_actor
 
 
-def point_cloud(points, colors=None, normals=None, affine=None, point_size=1):
-    # TODO: if affine is None
+def point_cloud(points, colors=(1, 1, 1), normals=None, affine=None,
+                point_size=1):
+    """
+    Create an actor designed to visualize point cloud datasets.
+
+    Parameters
+    ----------
+    points : ndarray, shape (N, 3)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,), optional
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    normals : ndarray, shape (N, 3), optional
+    affine : ndarray, shape (4, 4), optional
+    point_size : int, optional
+
+    Returns
+    -------
+    actor: vtkActor
+        actor displaying the individial points contained in a point cloud
+        dataset. Adjusted with the respective properties and transformations
+        passed as parameters (colors and point_size for properties, and affine
+        for transformations). Containing the normals as attributes.
+
+    Examples
+    --------
+    >>> from fury import actor, window
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> points = np.random.rand(100, 3)
+    >>> c = actor.point_cloud(points)
+    >>> scene.add(c)
+    >>> #window.show(scene)
+
+    """
+    if points.ndim != 2:
+        raise ValueError('Invalid points. The shape of the structure must be '
+                         '(Nx3). Your data has {} dimensions.'
+                         .format(points.ndim))
+    if points.shape[1] != 3:
+        raise ValueError('Invalid points. The shape of the last dimension '
+                         'must be 3. Your data has a last dimension of {}.'
+                         .format(points.shape[1]))
+
+    if normals is not None:
+        if normals.ndim != 2:
+            raise ValueError('Invalid normals. The shape of the structure '
+                             'must be (Nx3). Your data has {} dimensions.'
+                             .format(normals.ndim))
+        if normals.shape[1] != 3:
+            raise ValueError('Invalid normals. The shape of the last '
+                             'dimension must be 3. Your data has a last '
+                             'dimension of {}.'.format(normals.shape[1]))
+        if points.shape[0] != normals.shape[0]:
+            raise ValueError('Invalid normals. The shape of the normals '
+                             'must coincide with the shape of the points.')
+        normals_min = np.min(normals)
+        normals_max = np.max(normals)
+        if normals_min < -1 or normals_max > 1:
+            raise ValueError('Invalid normals. The normals must be in the '
+                             'range [-1, 1]. Your data is in the [{}, {}] '
+                             'range.'.format(normals_min, normals_max))
+
+    if affine is not None:
+        points = apply_affine(affine, points)
     # Create the geometry of a point (the coordinate)
     vtk_vertices = Points()
     # Create the topology of the point (a vertex)
