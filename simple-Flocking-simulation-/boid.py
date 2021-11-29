@@ -7,7 +7,7 @@ from tools import *
 
 
 # def hsvToRGB(h, s, v):
-# 	return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
+#     return tuple(round(i * 255) for i in colorsys.hsv_to_rgb(h,s,v))
 
 
 class Boid:
@@ -29,12 +29,10 @@ class Boid:
         self.stroke = 5
         self.angle = 0
         self.hue = 0
-        self.toggles = {"separation": True, 
-                        "alignment": True, 
-                        "cohesion": True}
-        self.values = {"separation": 0.1, 
-                       "alignment": 0.1, 
-                       "cohesion": 0.1}
+        self.toggles = {"separation": True},
+        self.toggles = {"alignment": True},
+        self.toggles = {"cohesion": True},
+        self.values = {"separation": 0.1, "alignment": 0.1, "cohesion": 0.1}
         self.radius = 40
 
     def limits(self, width, height):
