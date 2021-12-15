@@ -125,7 +125,7 @@ def test_save_load_image():
                       np.random.randint(0, 255, size=(50, 3, 1, 1)),
                       "test.png")
 
-    compression_type = [None, "lzw"]
+    compression_type = [None, "bits", "random"]
 
     for ct in compression_type:
         with InTemporaryDirectory() as odir:

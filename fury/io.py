@@ -197,13 +197,14 @@ def save_image(arr, filename, compression_quality=75,
         writer.ProgressiveOn()
         writer.SetQuality(compression_quality)
     if extension.lower() in [".tif", ".tiff"]:
-        if not compression_type:
-            writer.SetCompressionToNoCompression()
-        elif compression_type.lower() == 'lzw':
-            writer.SetCompressionToLZW()
-        elif compression_type.lower() == 'deflation':
-            writer.SetCompressionToDeflate()
+        compression_type = compression_type or 'nocompression'
+        l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
 
+        if compression_type.lower() in l_compression:
+            comp_id = l_compression.index(compression_type.lower())
+            writer.SetCompression(comp_id)
+        else:
+            writer.SetCompressionToDeflate()
     writer.Write()
 
 
