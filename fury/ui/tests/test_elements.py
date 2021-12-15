@@ -435,8 +435,8 @@ def test_ui_checkbox_default(recording=False):
         assert_arrays_equal(selected_options, expected)
 
 
-def test_ui_radio_button_initial_state(interactive=False):
-    filename = "test_ui_radio_button"
+def test_ui_radio_button_initial_state(recording=False):
+    filename = "test_ui_radio_button_initial"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
@@ -459,39 +459,34 @@ def test_ui_radio_button_initial_state(interactive=False):
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY Checkbox")
     show_manager.scene.add(radio_button_test)
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        # Recorded events:
+        #  1. Click on button of option 1.
+        #  2. Click on button of option 2.
+        #  3. Click on button of option 2.
+        #  4. Click on text of option 2.
+        #  5. Click on button of option 1.
+        #  6. Click on text of option 3.
+        #  7. Click on button of option 4.
+        #  8. Click on text of option 4.
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
 
-    # Recorded events:
-    #  1. Click on button of option 1.
-    #  2. Click on button of option 2.
-    #  3. Click on button of option 2.
-    #  4. Click on text of option 2.
-    #  5. Click on button of option 1.
-    #  6. Click on text of option 3.
-    #  7. Click on button of option 4.
-    #  8. Click on text of option 4.
-    show_manager.play_events_from_file(recording_filename)
-    expected = EventCounter.load(expected_events_counts_filename)
-    event_counter.check_counts(expected)
-
-    # Check if the right options were selected.
-    expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
-                ['option 2\nOption 2'], ['option 1'], ['option 3'],
-                ['option 4'], ['option 4']]
-    npt.assert_equal(len(selected_option), len(expected))
-    assert_arrays_equal(selected_option, expected)
-    del show_manager
-
-    if interactive:
-        radio_button_test = ui.RadioButton(
-            labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-            position=(100, 100), checked_labels=[])
-        showm = window.ShowManager(size=(600, 600))
-        showm.scene.add(radio_button_test)
-        showm.start()
+        # Check if the right options were selected.
+        expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+                    ['option 2\nOption 2'], ['option 1'], ['option 3'],
+                    ['option 4'], ['option 4']]
+        npt.assert_equal(len(selected_option), len(expected))
+        assert_arrays_equal(selected_option, expected)
 
 
-def test_ui_radio_button_default(interactive=False):
-    filename = "test_ui_radio_button"
+def test_ui_radio_button_default(recording=False):
+    filename = "test_ui_radio_button_default"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
@@ -526,35 +521,30 @@ def test_ui_radio_button_default(interactive=False):
     show_manager = window.ShowManager(size=(600, 600),
                                       title="FURY Checkbox")
     show_manager.scene.add(radio_button_test)
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+    else:
+        # Recorded events:
+        #  1. Click on button of option 1.
+        #  2. Click on button of option 2.
+        #  3. Click on button of option 2.
+        #  4. Click on text of option 2.
+        #  5. Click on button of option 1.
+        #  6. Click on text of option 3.
+        #  7. Click on button of option 4.
+        #  8. Click on text of option 4.
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
 
-    # Recorded events:
-    #  1. Click on button of option 1.
-    #  2. Click on button of option 2.
-    #  3. Click on button of option 2.
-    #  4. Click on text of option 2.
-    #  5. Click on button of option 1.
-    #  6. Click on text of option 3.
-    #  7. Click on button of option 4.
-    #  8. Click on text of option 4.
-    show_manager.play_events_from_file(recording_filename)
-    expected = EventCounter.load(expected_events_counts_filename)
-    event_counter.check_counts(expected)
-
-    # Check if the right options were selected.
-    expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
-                ['option 2\nOption 2'], ['option 1'], ['option 3'],
-                ['option 4'], ['option 4']]
-    npt.assert_equal(len(selected_option), len(expected))
-    assert_arrays_equal(selected_option, expected)
-    del show_manager
-
-    if interactive:
-        radio_button_test = ui.RadioButton(
-            labels=["option 1", "option 2\nOption 2", "option 3", "option 4"],
-            position=(100, 100), checked_labels=[])
-        showm = window.ShowManager(size=(600, 600))
-        showm.scene.add(radio_button_test)
-        showm.start()
+        # Check if the right options were selected.
+        expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+                    ['option 2\nOption 2'], ['option 1'], ['option 3'],
+                    ['option 4'], ['option 4']]
+        npt.assert_equal(len(selected_option), len(expected))
+        assert_arrays_equal(selected_option, expected)
 
 
 def test_multiple_radio_button_pre_selected():
