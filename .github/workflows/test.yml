@@ -113,7 +113,7 @@ jobs:
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
           sudo apt-get install libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install libegl1-mesa-dev xvfb;
+          sudo apt-get install libglx-mesa0 libglx-dev libglx0 xvfb;
         fi
         Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
     - name: Install dependencies
