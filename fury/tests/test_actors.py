@@ -139,31 +139,6 @@ def test_slicer(verbose=False):
     slicer2 = slicer.copy()
     npt.assert_equal(slicer2.shape, slicer.shape)
 
-    scene.clear()
-
-    data = (255 * np.random.rand(50, 50, 50))
-    affine = np.diag([1, 3, 2, 1])
-
-    if have_dipy:
-        from dipy.align.reslice import reslice
-
-        data2, affine2 = reslice(data, affine, zooms=(1, 3, 2),
-                                 new_zooms=(1, 1, 1))
-
-        slicer = actor.slicer(data2, affine2, interpolation='linear')
-        slicer.display(None, None, 25)
-
-        scene.add(slicer)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-
-        # window.show(scene, reset_camera=False)
-        arr = window.snapshot(scene, offscreen=True)
-        report = window.analyze_snapshot(arr, find_objects=True)
-        npt.assert_equal(report.objects, 1)
-        npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
-                               np.array(slicer.shape))
-
 
 def test_surface():
     import math
