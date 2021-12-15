@@ -110,7 +110,11 @@ jobs:
     - name: Start Xvfb
       if: startsWith(matrix.os,'ubuntu')
       run: |
-        sudo apt-get install libgl1-mesa-dev xvfb
+        if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
+          sudo apt-get install libgl1-mesa-dev xvfb;
+        else
+          sudo apt-get install libegl1-mesa-dev xvfb;
+        fi
         Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
     - name: Install dependencies
       run: |
