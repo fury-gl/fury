@@ -341,20 +341,25 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def simulated_bundle(no_streamlines=10, waves=False):
+    t = np.linspace(20, 80, 200)
+    # parallel waves or parallel lines
+    bundle = []
+    for i in np.linspace(-5, 5, no_streamlines):
+        if waves:
+            pts = np.vstack((np.cos(t), t, i * np.ones(t.shape))).T
+        else:
+            pts = np.vstack((np.zeros(t.shape), t, i * np.ones(t.shape))).T
+        bundle.append(pts)
+
+    return bundle
+
+
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_bundle_maps():
     scene = window.Scene()
-    bundle = fornix_streamlines()
-    bundle, _ = center_streamlines(bundle)
+    bundle = simulated_bundle(no_streamlines=10, waves=False)
 
-    mat = np.array([[1, 0, 0, 100],
-                    [0, 1, 0, 100],
-                    [0, 0, 1, 100],
-                    [0, 0, 0, 1.]])
-
-    bundle = transform_streamlines(bundle, mat)
-
-    # metric = np.random.rand(*(200, 200, 200))
     metric = 100 * np.ones((200, 200, 200))
 
     # add lower values
@@ -414,11 +419,15 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_odf_slicer(interactive=False):
-    # Prepare our data
-    sphere = get_sphere('repulsion100')
-    shape = (11, 11, 11, sphere.vertices.shape[0])
+    # TODO: we should change the odf_slicer to work directly
+    # vertices and faces of a sphere rather that needing
+    # a specific type of sphere. We can use prim_sphere
+    # as an alternative to get_sphere.
+    # vertices, faces = prim_sphere('repulsion100', True)
+
+    shape = (11, 11, 11, 100)
     odfs = np.ones(shape)
 
     affine = np.array([[2.0, 0.0, 0.0, 3.0],
@@ -429,7 +438,7 @@ def test_odf_slicer(interactive=False):
     mask[:4, :4, :4] = False
 
     # Test that affine and mask work
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, affine=affine, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=None, affine=affine, mask=mask,
                                  scale=.25, colormap='blues')
 
     k = 2
@@ -449,7 +458,7 @@ def test_odf_slicer(interactive=False):
     npt.assert_equal(report.objects, 11 * 11 - 16)
 
     # Test that global colormap works
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask, scale=.25,
+    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=mask, scale=.25,
                                  colormap='blues', norm=False, global_cm=True)
     scene.clear()
     scene.add(odf_actor)
@@ -482,7 +491,7 @@ def test_odf_slicer(interactive=False):
 
     # With mask equal to zero everything should be black
     mask = np.zeros(odfs.shape[:3])
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=mask,
                                  scale=.25, colormap='blues',
                                  norm=False, global_cm=True)
     scene.clear()
@@ -493,7 +502,7 @@ def test_odf_slicer(interactive=False):
         window.show(scene)
 
     # global_cm=True with colormap=None should raise an error
-    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere=sphere,
+    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere=None,
                       mask=None, scale=.25, colormap=None, norm=False,
                       global_cm=True)
 
@@ -503,56 +512,13 @@ def test_odf_slicer(interactive=False):
                       sphere=get_sphere('repulsion200'), scale=.25)
 
     # colormap=None and global_cm=False results in directionally encoded colors
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=None,
+    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=None,
                                  scale=.25, colormap=None,
                                  norm=False, global_cm=False)
     scene.clear()
     scene.add(odf_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Test that SH coefficients input works
-    B = sh_to_sf_matrix(sphere, sh_order=4, return_inv=False)
-    odfs = np.zeros((11, 11, 11, B.shape[0]))
-    odfs[..., 0] = 1.0
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B)
-
-    scene.clear()
-    scene.add(odf_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Dimension mismatch between sphere vertices and dimension of
-    # B matrix will raise an error.
-    npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
-                      sphere=get_sphere('repulsion200'))
-
-    # Test that constant colormap color works. Also test that sphere
-    # normals are oriented correctly. Will show purple spheres with
-    # a white contour.
-    odf_contour = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
-                                   colormap=(255, 255, 255))
-    odf_contour.GetProperty().SetAmbient(1.0)
-    odf_contour.GetProperty().SetFrontfaceCulling(True)
-
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
-                                 colormap=(255, 0, 255), scale=0.4)
-    scene.clear()
-    scene.add(odf_contour)
-    scene.add(odf_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Test that we can change the sphere on an active actor
-    new_sphere = get_sphere('symmetric362')
-    new_B = sh_to_sf_matrix(new_sphere, sh_order=4, return_inv=False)
-    odf_actor.update_sphere(new_sphere.vertices, new_sphere.faces, new_B)
     if interactive:
         window.show(scene)
 
@@ -1466,3 +1432,7 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
+
+
+# test_bundle_maps()
+# test_odf_slicer()
