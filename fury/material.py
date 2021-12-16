@@ -1,11 +1,8 @@
-import vtk
 import warnings
 
 
 from fury.shaders import add_shader_callback, load, shader_to_actor
-
-
-VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
+from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
 
 
 def manifest_pbr(actor, metallicity=0, roughness=.5):
@@ -67,7 +64,7 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
     prop.SetMetallic(metallic)
     prop.SetRoughness(roughness)
 
-    @vtk.calldata_type(vtk.VTK_OBJECT)
+    @calldata_type(VTK_OBJECT)
     def uniforms_callback(_caller, _event, calldata=None):
         if calldata is not None:
             calldata.SetUniformf('subsurface', principled_params['subsurface'])
