@@ -1,10 +1,11 @@
-from vtk.util import numpy_support
+
 import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
 from fury.shaders import (shader_to_actor, add_shader_callback,
                           attribute_to_actor, replace_shader_in_actor)
+from fury.lib import numpy_support
 
 
 vertex_dec = \

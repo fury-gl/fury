@@ -1,11 +1,18 @@
 import os
 from tempfile import TemporaryDirectory as InTemporaryDirectory
-import vtk
+from urllib.request import urlretrieve
+
 import numpy as np
 from PIL import Image
-from vtk.util import numpy_support
+
+from fury.lib import (numpy_support, PNGReader, BMPReader, JPEGReader,
+                      ImageData, TIFFReader, PNGWriter, BMPWriter,
+                      JPEGWriter, TIFFWriter, PolyDataReader,
+                      XMLPolyDataReader, PLYReader, STLReader,
+                      OBJReader, MNIObjectReader, PolyDataWriter,
+                      XMLPolyDataWriter, PLYWriter, STLWriter,
+                      MNIObjectWriter)
 from fury.utils import set_input
-from urllib.request import urlretrieve
 
 
 def load_image(filename, as_vtktype=False, use_pillow=True):
@@ -59,7 +66,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             if image.ndim not in [2, 3]:
                 raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
 
-            vtk_image = vtk.vtkImageData()
+            vtk_image = ImageData()
             depth = 1 if image.ndim == 2 else image.shape[2]
 
             # width, height
@@ -82,12 +89,12 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             os.remove(filename)
         return image
 
-    d_reader = {".png": vtk.vtkPNGReader,
-                ".bmp": vtk.vtkBMPReader,
-                ".jpeg": vtk.vtkJPEGReader,
-                ".jpg": vtk.vtkJPEGReader,
-                ".tiff": vtk.vtkTIFFReader,
-                ".tif": vtk.vtkTIFFReader}
+    d_reader = {".png": PNGReader,
+                ".bmp": BMPReader,
+                ".jpeg": JPEGReader,
+                ".jpg": JPEGReader,
+                ".tiff": TIFFReader,
+                ".tif": TIFFReader}
 
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
 
@@ -139,12 +146,12 @@ def save_image(arr, filename, compression_quality=75,
     if arr.ndim > 3:
         raise IOError("Image Dimensions should be <=3")
 
-    d_writer = {".png": vtk.vtkPNGWriter,
-                ".bmp": vtk.vtkBMPWriter,
-                ".jpeg": vtk.vtkJPEGWriter,
-                ".jpg": vtk.vtkJPEGWriter,
-                ".tiff": vtk.vtkTIFFWriter,
-                ".tif": vtk.vtkTIFFWriter,
+    d_writer = {".png": PNGWriter,
+                ".bmp": BMPWriter,
+                ".jpeg": JPEGWriter,
+                ".jpg": JPEGWriter,
+                ".tiff": TIFFWriter,
+                ".tif": TIFFWriter,
                 }
 
     extension = os.path.splitext(os.path.basename(filename).lower())[1]
@@ -174,7 +181,7 @@ def save_image(arr, filename, compression_quality=75,
 
     # Todo, look the following link for managing png 16bit
     # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
-    vtk_data = vtk.vtkImageData()
+    vtk_data = ImageData()
     vtk_data.SetDimensions(shape[1], shape[0], shape[2])
     vtk_data.SetExtent(0, shape[1] - 1,
                        0, shape[0] - 1,
@@ -190,18 +197,20 @@ def save_image(arr, filename, compression_quality=75,
         writer.ProgressiveOn()
         writer.SetQuality(compression_quality)
     if extension.lower() in [".tif", ".tiff"]:
-        if not compression_type:
-            writer.SetCompressionToNoCompression()
-        elif compression_type.lower() == 'lzw':
-            writer.SetCompressionToLZW()
-        elif compression_type.lower() == 'deflation':
-            writer.SetCompressionToDeflate()
+        compression_type = compression_type or 'nocompression'
+        l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
 
+        if compression_type.lower() in l_compression:
+            comp_id = l_compression.index(compression_type.lower())
+            writer.SetCompression(comp_id)
+        else:
+            writer.SetCompressionToDeflate()
     writer.Write()
 
 
 def load_polydata(file_name):
     """Load a vtk polydata to a supported format file.
+
     Supported file formats are VTK, VTP, FIB, PLY, STL XML and OBJ
 
     Parameters
@@ -215,22 +224,22 @@ def load_polydata(file_name):
     """
     file_extension = file_name.split(".")[-1].lower()
 
-    poly_reader = {"vtk": vtk.vtkPolyDataReader,
-                   "vtp": vtk.vtkXMLPolyDataReader,
-                   "fib": vtk.vtkPolyDataReader,
-                   "ply": vtk.vtkPLYReader,
-                   "stl": vtk.vtkSTLReader,
-                   "xml": vtk.vtkXMLPolyDataReader}
+    poly_reader = {"vtk": PolyDataReader,
+                   "vtp": XMLPolyDataReader,
+                   "fib": PolyDataReader,
+                   "ply": PLYReader,
+                   "stl": STLReader,
+                   "xml": XMLPolyDataReader}
 
     if file_extension in poly_reader.keys():
         reader = poly_reader.get(file_extension)()
     elif file_extension == "obj":
         # Special case, since there is two obj format
-        reader = vtk.vtkOBJReader()
+        reader = OBJReader()
         reader.SetFileName(file_name)
         reader.Update()
         if reader.GetOutput().GetNumberOfCells() == 0:
-            reader = vtk.vtkMNIObjectReader()
+            reader = MNIObjectReader()
     else:
         raise IOError("." + file_extension + " is not supported by FURY")
 
@@ -241,6 +250,7 @@ def load_polydata(file_name):
 
 def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     """Save a vtk polydata to a supported format file.
+
     Save formats can be VTK, FIB, PLY, STL and XML.
 
     Parameters
@@ -253,12 +263,12 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
     """
     # get file extension (type)
     file_extension = file_name.split(".")[-1].lower()
-    poly_writer = {"vtk": vtk.vtkPolyDataWriter,
-                   "vtp": vtk.vtkXMLPolyDataWriter,
-                   "fib": vtk.vtkPolyDataWriter,
-                   "ply": vtk.vtkPLYWriter,
-                   "stl": vtk.vtkSTLWriter,
-                   "xml": vtk.vtkXMLPolyDataWriter}
+    poly_writer = {"vtk": PolyDataWriter,
+                   "vtp": XMLPolyDataWriter,
+                   "fib": PolyDataWriter,
+                   "ply": PLYWriter,
+                   "stl": STLWriter,
+                   "xml": XMLPolyDataWriter}
 
     if file_extension in poly_writer.keys():
         writer = poly_writer.get(file_extension)()
@@ -266,7 +276,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
         # Special case, since there is two obj format
         find_keyword = file_name.lower().split(".")
         if "mni" in find_keyword or "mnc" in find_keyword:
-            writer = vtk.vtkMNIObjectWriter()
+            writer = MNIObjectWriter()
         else:
             raise IOError("Wavefront obj requires a scene \n"
                           " for MNI obj, use '.mni.obj' extension")
@@ -285,7 +295,7 @@ def save_polydata(polydata, file_name, binary=False, color_array_name=None):
 
 
 def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
-    """Process and load sprites from a sprite sheet
+    """Process and load sprites from a sprite sheet.
 
     Parameters
     ----------
@@ -301,6 +311,7 @@ def load_sprite_sheet(sheet_path, nb_rows, nb_cols, as_vtktype=False):
     Returns
     -------
     Dict containing the processed sprites.
+
     """
     sprite_dicts = {}
     sprite_sheet = load_image(sheet_path)

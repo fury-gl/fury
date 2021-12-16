@@ -4,9 +4,10 @@ __all__ = ["Panel2D", "TabPanel2D", "TabUI", "ImageContainer2D",
            "GridUI"]
 
 import numpy as np
-import vtk
 
 from fury.io import load_image
+from fury.lib import (PolyData, PolyDataMapper2D, Points, CellArray,
+                      FloatArray, Texture, TexturedActor2D, Property2D)
 from fury.ui.core import UI, Rectangle2D, TextBlock2D
 from fury.utils import set_input, rotate
 from fury.actor import grid
@@ -761,11 +762,11 @@ class ImageContainer2D(UI):
         -------
         :class:`vtkTexturedActor2D`
         """
-        self.texture_polydata = vtk.vtkPolyData()
-        self.texture_points = vtk.vtkPoints()
+        self.texture_polydata = PolyData()
+        self.texture_points = Points()
         self.texture_points.SetNumberOfPoints(4)
 
-        polys = vtk.vtkCellArray()
+        polys = CellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
         polys.InsertCellPoint(1)
@@ -773,7 +774,7 @@ class ImageContainer2D(UI):
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
 
-        tc = vtk.vtkFloatArray()
+        tc = FloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
         tc.InsertComponent(0, 0, 0.0)
@@ -786,16 +787,16 @@ class ImageContainer2D(UI):
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
 
-        texture_mapper = vtk.vtkPolyDataMapper2D()
+        texture_mapper = PolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
 
-        image = vtk.vtkTexturedActor2D()
+        image = TexturedActor2D()
         image.SetMapper(texture_mapper)
 
-        self.texture = vtk.vtkTexture()
+        self.texture = Texture()
         image.SetTexture(self.texture)
 
-        image_property = vtk.vtkProperty2D()
+        image_property = Property2D()
         image_property.SetOpacity(1.0)
         image.SetProperty(image_property)
         self.actor = image

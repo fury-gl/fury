@@ -17,8 +17,8 @@ positions is also demoed.
 import math
 from os.path import join as pjoin
 import numpy as np
-from vtk.util import numpy_support
 from fury import actor, window, colormap as cmap
+from fury.lib import numpy_support
 
 ###############################################################################
 # This demo has two modes.

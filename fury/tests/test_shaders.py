@@ -1,12 +1,12 @@
 import os
 
+import numpy as np
 import numpy.testing as npt
 import pytest
 
 from fury import window
-import numpy as np
 import fury.shaders as fs
-import vtk
+from fury.lib import PolyDataMapper, Actor, ConeSource
 
 
 def test_load():
@@ -24,10 +24,10 @@ def test_load():
 
 def test_shader_callback():
 
-    cone = vtk.vtkConeSource()
-    coneMapper = vtk.vtkPolyDataMapper()
+    cone = ConeSource()
+    coneMapper = PolyDataMapper()
     coneMapper.SetInputConnection(cone.GetOutputPort())
-    actor = vtk.vtkActor()
+    actor = Actor()
     actor.SetMapper(coneMapper)
 
     test_values = []
