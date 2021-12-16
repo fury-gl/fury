@@ -729,49 +729,6 @@ def test_tensor_slicer(interactive=False):
                                       sphere=sphere, scale=.3)
     npt.assert_equal(empty_actor.GetMapper(), None)
 
-    # Test mask
-    mask = np.ones(mevals.shape[:3])
-    mask[:2, :3, :3] = 0
-    # # cfa = color_fa(fractional_anisotropy(mevals), mevecs)    
-    # tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-    #                                    mask=mask, scalar_colors=cfa,
-    #                                    sphere=sphere, scale=.3)
-    scene.clear()
-    scene.add(tensor_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    mask_extent = scene.GetActors().GetLastActor().GetBounds()
-    mask_extent_x = abs(mask_extent[1] - mask_extent[0])
-    npt.assert_equal(big_extent_x > mask_extent_x, True)
-
-    # test display
-    tensor_actor.display()
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_x = abs(current_extent[1] - current_extent[0])
-    npt.assert_equal(big_extent_x > current_extent_x, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    tensor_actor.display(y=1)
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_y = abs(current_extent[3] - current_extent[2])
-    big_extent_y = abs(big_extent[3] - big_extent[2])
-    npt.assert_equal(big_extent_y > current_extent_y, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    tensor_actor.display(z=1)
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_z = abs(current_extent[5] - current_extent[4])
-    big_extent_z = abs(big_extent[5] - big_extent[4])
-    npt.assert_equal(big_extent_z > current_extent_z, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
     # Test error handling of the method when
     # incompatible dimension of mevals and evecs are passed.
     mevals = np.zeros((3, 2, 3))
@@ -779,8 +736,9 @@ def test_tensor_slicer(interactive=False):
 
     with npt.assert_raises(RuntimeError):
         tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                           mask=mask, scalar_colors=cfa,
+                                           mask=None, scalar_colors=None,
                                            sphere=sphere, scale=.3)
+    # TODO: Add colorfa test here as previous test moved to DIPY.
 
 
 def test_dots(interactive=False):
@@ -1450,4 +1408,6 @@ def test_marker_actor(interactive=False):
 
 
 # test_bundle_maps()
-# test_odf_slicer()
+test_odf_slicer()
+test_tensor_slicer()
+
