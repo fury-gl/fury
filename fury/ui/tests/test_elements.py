@@ -357,7 +357,8 @@ def test_ui_checkbox_initial_state(recording=False):
                     ['option 4', 'option 2\nOption 2', 'option 3'],
                     ['option 2\nOption 2', 'option 3'],
                     ['option 2\nOption 2', 'option 3', 'option 1'],
-                    ['option 3', 'option 1'], ['option 3', 'option 1', 'option 4'],
+                    ['option 3', 'option 1'],
+                    ['option 3', 'option 1', 'option 4'],
                     ['option 1', 'option 4']]
 
         npt.assert_equal(len(selected_options), len(expected))
@@ -478,7 +479,8 @@ def test_ui_radio_button_initial_state(recording=False):
         event_counter.check_counts(expected)
 
         # Check if the right options were selected.
-        expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+        expected = [['option 1'], ['option 2\nOption 2'],
+                    ['option 2\nOption 2'],
                     ['option 2\nOption 2'], ['option 1'], ['option 3'],
                     ['option 4'], ['option 4']]
         npt.assert_equal(len(selected_option), len(expected))
@@ -540,7 +542,8 @@ def test_ui_radio_button_default(recording=False):
         event_counter.check_counts(expected)
 
         # Check if the right options were selected.
-        expected = [['option 1'], ['option 2\nOption 2'], ['option 2\nOption 2'],
+        expected = [['option 1'], ['option 2\nOption 2'],
+                    ['option 2\nOption 2'],
                     ['option 2\nOption 2'], ['option 1'], ['option 3'],
                     ['option 4'], ['option 4']]
         npt.assert_equal(len(selected_option), len(expected))
