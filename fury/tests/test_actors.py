@@ -14,24 +14,28 @@ from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate, VTK_9_PLUS
 from fury.testing import assert_greater, assert_greater_equal
+from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
-dipy, have_dipy, _ = optional_package('dipy')
+# dipy, have_dipy, _ = optional_package('dipy')
 matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
-if have_dipy:
-    from dipy.data import get_sphere
-    from dipy.reconst.shm import sh_to_sf_matrix
-    from dipy.tracking.streamline import (center_streamlines,
-                                          transform_streamlines)
-    from dipy.align.tests.test_streamlinear import fornix_streamlines
-    from dipy.reconst.dti import color_fa, fractional_anisotropy
+# if have_dipy:
+#     from dipy.data import get_sphere
+#     from dipy.reconst.shm import sh_to_sf_matrix
+#     from dipy.tracking.streamline import (center_streamlines,
+#                                           transform_streamlines)
+#     from dipy.align.tests.test_streamlinear import fornix_streamlines
+#     from dipy.reconst.dti import color_fa, fractional_anisotropy
 
 if have_matplotlib:
     import matplotlib.pyplot as plt
     from fury.convert import matplotlib_figure_to_numpy
 
+class Sphere():
+    vertices = None
+    faces = None
 
 def test_slicer(verbose=False):
     scene = window.Scene()
@@ -425,7 +429,10 @@ def test_odf_slicer(interactive=False):
     # vertices and faces of a sphere rather that needing
     # a specific type of sphere. We can use prim_sphere
     # as an alternative to get_sphere.
-    # vertices, faces = prim_sphere('repulsion100', True)
+    vertices, faces = prim_sphere('repulsion100', True)
+    sphere = Sphere()
+    sphere.vertices = vertices
+    sphere.faces = faces
 
     shape = (11, 11, 11, 100)
     odfs = np.ones(shape)
@@ -438,7 +445,7 @@ def test_odf_slicer(interactive=False):
     mask[:4, :4, :4] = False
 
     # Test that affine and mask work
-    odf_actor = actor.odf_slicer(odfs, sphere=None, affine=affine, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, affine=affine, mask=mask,
                                  scale=.25, colormap='blues')
 
     k = 2
@@ -458,7 +465,7 @@ def test_odf_slicer(interactive=False):
     npt.assert_equal(report.objects, 11 * 11 - 16)
 
     # Test that global colormap works
-    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=mask, scale=.25,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask, scale=.25,
                                  colormap='blues', norm=False, global_cm=True)
     scene.clear()
     scene.add(odf_actor)
@@ -491,7 +498,7 @@ def test_odf_slicer(interactive=False):
 
     # With mask equal to zero everything should be black
     mask = np.zeros(odfs.shape[:3])
-    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=mask,
+    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=mask,
                                  scale=.25, colormap='blues',
                                  norm=False, global_cm=True)
     scene.clear()
@@ -506,10 +513,15 @@ def test_odf_slicer(interactive=False):
                       mask=None, scale=.25, colormap=None, norm=False,
                       global_cm=True)
 
+    vertices2, faces2 = prim_sphere('repulsion200', True)
+    sphere2 = Sphere()
+    sphere2.vertices = vertices2
+    sphere2.faces = faces2
+
     # Dimension mismatch between sphere vertices and number
     # of SF coefficients will raise an error.
     npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
-                      sphere=get_sphere('repulsion200'), scale=.25)
+                      sphere=sphere2, scale=.25)
 
     # colormap=None and global_cm=False results in directionally encoded colors
     odf_actor = actor.odf_slicer(odfs, sphere=None, mask=None,
@@ -662,7 +674,7 @@ def test_peak():
     npt.assert_equal(peaks_actor.max_centers, [0, 0, 0])
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_tensor_slicer(interactive=False):
 
     evals = np.array([1.4, .35, .35]) * 10 ** (-3)
@@ -674,7 +686,10 @@ def test_tensor_slicer(interactive=False):
     mevals[..., :] = evals
     mevecs[..., :, :] = evecs
 
-    sphere = get_sphere('symmetric724')
+    vertices, faces = prim_sphere('symmetric724', True)
+    sphere = Sphere()
+    sphere.vertices = vertices
+    sphere.faces = faces
 
     affine = np.eye(4)
     scene = window.Scene()
@@ -717,10 +732,10 @@ def test_tensor_slicer(interactive=False):
     # Test mask
     mask = np.ones(mevals.shape[:3])
     mask[:2, :3, :3] = 0
-    cfa = color_fa(fractional_anisotropy(mevals), mevecs)
-    tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                       mask=mask, scalar_colors=cfa,
-                                       sphere=sphere, scale=.3)
+    # # cfa = color_fa(fractional_anisotropy(mevals), mevecs)    
+    # tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
+    #                                    mask=mask, scalar_colors=cfa,
+    #                                    sphere=sphere, scale=.3)
     scene.clear()
     scene.add(tensor_actor)
     scene.reset_camera()
