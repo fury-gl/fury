@@ -2,6 +2,7 @@ from dipy.data import get_fnames
 from fury import actor, ui, window
 from fury.data import fetch_viz_models, read_viz_models, read_viz_textures
 from fury.io import load_polydata
+from fury.material import manifest_principled
 from fury.utils import (get_actor_from_polydata, get_polydata_colors,
                         get_polydata_normals, get_polydata_triangles,
                         get_polydata_vertices, normals_from_v_f, rotate,
@@ -88,33 +89,33 @@ def change_slice_clearcoat_gloss(slider):
 
 
 def change_slice_subsurf_r(slider):
-    global additional_params
-    additional_params['subsurface_color'][0] = slider.value
+    global principled_params
+    principled_params['subsurface_color'][0] = slider.value
 
 
 def change_slice_subsurf_g(slider):
-    global additional_params
-    additional_params['subsurface_color'][1] = slider.value
+    global principled_params
+    principled_params['subsurface_color'][1] = slider.value
 
 
 def change_slice_subsurf_b(slider):
-    global additional_params
-    additional_params['subsurface_color'][2] = slider.value
+    global principled_params
+    principled_params['subsurface_color'][2] = slider.value
 
 
 def change_slice_aniso_x(slider):
-    global additional_params
-    additional_params['anisotropic_direction'][0] = slider.value
+    global principled_params
+    principled_params['anisotropic_direction'][0] = slider.value
 
 
 def change_slice_aniso_y(slider):
-    global additional_params
-    additional_params['anisotropic_direction'][1] = slider.value
+    global principled_params
+    principled_params['anisotropic_direction'][1] = slider.value
 
 
 def change_slice_aniso_z(slider):
-    global additional_params
-    additional_params['anisotropic_direction'][2] = slider.value
+    global principled_params
+    principled_params['anisotropic_direction'][2] = slider.value
 
 
 def change_slice_opacity(slider):
@@ -244,22 +245,21 @@ def obj_surface():
 
 
 def uniforms_callback(_caller, _event, calldata=None):
-    global additional_params, principled_params
+    global principled_params
     if calldata is not None:
         calldata.SetUniformf('subsurface', principled_params['subsurface'])
-        calldata.SetUniformf('specularTint',
-                             principled_params['specular_tint'])
+        calldata.SetUniform3f('subsurfaceColor', principled_params[
+            'subsurface_color'])
+        calldata.SetUniformf('specularTint', principled_params[
+            'specular_tint'])
         calldata.SetUniformf('anisotropic', principled_params['anisotropic'])
+        calldata.SetUniform3f('anisotropicDirection', principled_params[
+            'anisotropic_direction'])
         calldata.SetUniformf('sheen', principled_params['sheen'])
         calldata.SetUniformf('sheenTint', principled_params['sheen_tint'])
         calldata.SetUniformf('clearcoat', principled_params['clearcoat'])
-        calldata.SetUniformf('clearcoatGloss',
-                             principled_params['clearcoat_gloss'])
-
-        calldata.SetUniform3f('subsurfaceColor',
-                              additional_params['subsurface_color'])
-        calldata.SetUniform3f('anisotropicDirection',
-                              additional_params['anisotropic_direction'])
+        calldata.SetUniformf('clearcoatGloss', principled_params[
+            'clearcoat_gloss'])
 
 
 def win_callback(obj, event):
@@ -274,8 +274,8 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global additional_params, control_panel, obj_actor, params_panel, \
-        principled_panel, principled_params, size
+    global control_panel, obj_actor, params_panel, principled_panel, \
+        principled_params, size
 
     scene = window.Scene()
 
@@ -287,54 +287,29 @@ if __name__ == '__main__':
     #obj_actor = obj_model(model='suzanne.obj', colors=(0, 1, 1))
     #obj_actor = obj_model(model='glyptotek.vtk', colors=(.75, .48, .34))
     #obj_actor = obj_model(model='glyptotek.vtk', colors=(1, 1, 0))
-    obj_actor = obj_model(model='glyptotek.vtk', colors='normals')
+    #obj_actor = obj_model(model='glyptotek.vtk', colors='normals')
     #obj_actor = obj_model(model='glyptotek.vtk')
-    #obj_actor = obj_spheres()
+    obj_actor = obj_spheres()
 
-    rotate(obj_actor, rotation=(-145, 0, 0, 1))
-    rotate(obj_actor, rotation=(-70, 1, 0, 0))
+    #rotate(obj_actor, rotation=(-145, 0, 0, 1))
+    #rotate(obj_actor, rotation=(-70, 1, 0, 0))
 
     scene.add(obj_actor)
 
-    scene.reset_camera()
-    scene.zoom(1.9)
+    #scene.reset_camera()
+    #scene.zoom(1.9)
 
-    principled_params = {'subsurface': 0, 'metallic': 0, 'specular': 0,
-                         'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
-                         'sheen': 0, 'sheen_tint': 0, 'clearcoat': 0,
-                         'clearcoat_gloss': 0}
-
-    additional_params = {'subsurface_color': [0, 0, 0],
-                         'anisotropic_direction': [0, 1, .5]}
-
-    # TODO: Change to default
-    obj_actor.GetProperty().SetInterpolationToPBR()
-    # TODO: Handle independently
-    obj_actor.GetProperty().SetMetallic(principled_params['metallic'])
-    obj_actor.GetProperty().SetRoughness(principled_params['roughness'])
-
-    # NOTE: Specular parameters don't seem to work
-    #specular_color = vtk.vtkNamedColors().GetColor3d('Blue')
-    obj_actor.GetProperty().SetSpecular(principled_params['specular'])
-    #obj_actor.GetProperty().SetSpecularPower(specular_tint)
-    #obj_actor.GetProperty().SetSpecularColor(specular_color)
+    principled_params = manifest_principled(
+        obj_actor, subsurface=0, subsurface_color=[0, 0, 0], metallic=0,
+        specular=0, specular_tint=0, roughness=0, anisotropic=0,
+        anisotropic_direction=[0, 1, .5], sheen=0, sheen_tint=0, clearcoat=0,
+        clearcoat_gloss=0)
 
     opacity = 1.
     obj_actor.GetProperty().SetOpacity(opacity)
 
-    add_shader_callback(obj_actor, uniforms_callback)
-
-    fs_dec_code = load('bxdf_dec.frag')
-    fs_impl_code = load('bxdf_impl.frag')
-
-    #shader_to_actor(obj_actor, 'vertex', debug=True)
-    shader_to_actor(obj_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(obj_actor, 'fragment', impl_code=fs_impl_code,
-                    block='light', debug=False)
-
-    """
-    #texture_name = 'skybox'
-    texture_name = 'brudslojan'
+    texture_name = 'skybox'
+    #texture_name = 'brudslojan'
     cubemap_fns = [read_viz_textures(texture_name + '-px.jpg'),
                    read_viz_textures(texture_name + '-nx.jpg'),
                    read_viz_textures(texture_name + '-py.jpg'),
@@ -344,8 +319,8 @@ if __name__ == '__main__':
 
     # Load the cube map
     cubemap = get_cubemap(cubemap_fns)
+    
     """
-
     img_shape = (1024, 1024)
 
     # Flip horizontally
@@ -363,6 +338,7 @@ if __name__ == '__main__':
                     cubemap_bottom_img, cubemap_side_img, cubemap_side_img]
 
     cubemap = get_cubemap_from_ndarrays(cubemap_imgs, flip=False)
+    """
 
     # Load the skybox
     skybox = cubemap
@@ -379,8 +355,8 @@ if __name__ == '__main__':
     else:
         scene.SetEnvironmentCubeMap(cubemap)
 
-    #scene.add(skybox_actor)
-    scene.background((1, 1, 1))
+    scene.add(skybox_actor)
+    #scene.background((1, 1, 1))
 
     #window.show(scene)
 
@@ -508,22 +484,22 @@ if __name__ == '__main__':
     params_panel.add_element(slider_label_aniso_z, (label_pad_x, .23))
 
     slider_slice_subsurf_r = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][0], max_value=1,
+        initial_value=principled_params['subsurface_color'][0], max_value=1,
         length=length, text_template=text_template)
     slider_slice_subsurf_g = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][1], max_value=1,
+        initial_value=principled_params['subsurface_color'][1], max_value=1,
         length=length, text_template=text_template)
     slider_slice_subsurf_b = ui.LineSlider2D(
-        initial_value=additional_params['subsurface_color'][2], max_value=1,
+        initial_value=principled_params['subsurface_color'][2], max_value=1,
         length=length, text_template=text_template)
     slider_slice_aniso_x = ui.LineSlider2D(
-        initial_value=additional_params['anisotropic_direction'][0],
+        initial_value=principled_params['anisotropic_direction'][0],
         min_value=-1, max_value=1, length=length, text_template=text_template)
     slider_slice_aniso_y = ui.LineSlider2D(
-        initial_value=additional_params['anisotropic_direction'][1],
+        initial_value=principled_params['anisotropic_direction'][1],
         min_value=-1, max_value=1, length=length, text_template=text_template)
     slider_slice_aniso_z = ui.LineSlider2D(
-        initial_value=additional_params['anisotropic_direction'][2],
+        initial_value=principled_params['anisotropic_direction'][2],
         min_value=-1, max_value=1, length=length, text_template=text_template)
 
     slider_slice_subsurf_r.on_change = change_slice_subsurf_r

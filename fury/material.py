@@ -1,6 +1,10 @@
 import vtk
 import warnings
 
+
+from fury.shaders import add_shader_callback, load, shader_to_actor
+
+
 VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
 
 
@@ -38,6 +42,58 @@ def manifest_pbr(actor, metallicity=0, roughness=.5):
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
         return
+
+
+def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
+                        metallic=0, specular=0, specular_tint=0, roughness=0,
+                        anisotropic=0, anisotropic_direction=[0, 1, .5],
+                        sheen=0, sheen_tint=0, clearcoat=0, clearcoat_gloss=0):
+
+    principled_params = {'subsurface': subsurface,
+                         'subsurface_color': subsurface_color,
+                         'metallic': metallic, 'specular': specular,
+                         'specular_tint': specular_tint,
+                         'roughness': roughness, 'anisotropic': anisotropic,
+                         'anisotropic_direction': anisotropic_direction,
+                         'sheen': sheen, 'sheen_tint': sheen_tint,
+                         'clearcoat': clearcoat,
+                         'clearcoat_gloss': clearcoat_gloss}
+
+    prop = actor.GetProperty()
+    # TODO: Change to default
+    prop.SetInterpolationToPBR()
+    # TODO: Handle independently
+    prop.SetSpecular(specular)
+    prop.SetMetallic(metallic)
+    prop.SetRoughness(roughness)
+
+    @vtk.calldata_type(vtk.VTK_OBJECT)
+    def uniforms_callback(_caller, _event, calldata=None):
+        if calldata is not None:
+            calldata.SetUniformf('subsurface', principled_params['subsurface'])
+            calldata.SetUniform3f('subsurfaceColor', principled_params[
+                'subsurface_color'])
+            calldata.SetUniformf('specularTint', principled_params[
+                'specular_tint'])
+            calldata.SetUniformf('anisotropic', principled_params[
+                'anisotropic'])
+            calldata.SetUniform3f('anisotropicDirection', principled_params[
+                'anisotropic_direction'])
+            calldata.SetUniformf('sheen', principled_params['sheen'])
+            calldata.SetUniformf('sheenTint', principled_params['sheen_tint'])
+            calldata.SetUniformf('clearcoat', principled_params['clearcoat'])
+            calldata.SetUniformf('clearcoatGloss', principled_params[
+                'clearcoat_gloss'])
+
+    add_shader_callback(actor, uniforms_callback)
+
+    fs_dec_code = load('bxdf_dec.frag')
+    fs_impl_code = load('bxdf_impl.frag')
+
+    shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
+    shader_to_actor(actor, 'fragment', impl_code=fs_impl_code, block='light',
+                    debug=False)
+    return principled_params
 
 
 def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),

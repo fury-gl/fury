@@ -1,3 +1,27 @@
+/*
+// VC position of this fragment. This should not branch/return/discard.
+vec4 vertexVC = vertexVCVSOutput;
+
+// Place any calls that require uniform flow (e.g. dFdx) here.
+vec3 fdx = vec3(dFdx(vertexVC.x),dFdx(vertexVC.y),dFdx(vertexVC.z));
+vec3 fdy = vec3(dFdy(vertexVC.x),dFdy(vertexVC.y),dFdy(vertexVC.z));
+
+// Generate the normal if we are not passed in one
+fdx = normalize(fdx);
+fdy = normalize(fdy);
+vec3 normalVCVSOutput = normalize(cross(fdx,fdy));
+if(cameraParallel == 1 && normalVCVSOutput.z < 0.0)
+    normalVCVSOutput = -1.0*normalVCVSOutput;
+if(cameraParallel == 0 && dot(normalVCVSOutput,vertexVC.xyz) > 0.0)
+    normalVCVSOutput = -1.0*normalVCVSOutput;
+
+const float prefilterMaxLevel = float(4);
+
+vec3 albedo = pow(diffuseColor, vec3(2.2));
+
+// TODO: roughness uniform
+*/
+
 Lo = vec3(.0);
 radiance = lightColor0;
 
