@@ -925,6 +925,110 @@ def _makeNd(array, ndim):
     return array.reshape(new_shape)
 
 
+def _roll_evals(evals, axis=-1):
+    """Check evals shape.
+
+    Helper function to check that the evals provided to functions calculating
+    tensor statistics have the right shape
+
+    Parameters
+    ----------
+    evals : array-like
+        Eigenvalues of a diffusion tensor. shape should be (...,3).
+
+    axis : int
+        The axis of the array which contains the 3 eigenvals. Default: -1
+
+    Returns
+    -------
+    evals : array-like
+        Eigenvalues of a diffusion tensor, rolled so that the 3 eigenvals are
+        the last axis.
+
+    """
+    if evals.shape[-1] != 3:
+        msg = "Expecting 3 eigenvalues, got {}".format(evals.shape[-1])
+        raise ValueError(msg)
+
+    evals = np.rollaxis(evals, axis)
+
+    return evals
+
+def _fa(evals, axis=-1):
+    r"""Return Fractional anisotropy (FA) of a diffusion tensor.
+
+    Parameters
+    ----------
+    evals : array-like
+        Eigenvalues of a diffusion tensor.
+    axis : int
+        Axis of `evals` which contains 3 eigenvalues.
+
+    Returns
+    -------
+    fa : array
+        Calculated FA. Range is 0 <= FA <= 1.
+
+    Notes
+    -----
+    FA is calculated using the following equation:
+
+    .. math::
+
+        FA = \sqrt{\frac{1}{2}\frac{(\lambda_1-\lambda_2)^2+(\lambda_1-
+                    \lambda_3)^2+(\lambda_2-\lambda_3)^2}{\lambda_1^2+
+                    \lambda_2^2+\lambda_3^2}}
+
+    """
+    evals = _roll_evals(evals, axis)
+    # Make sure not to get nans
+    all_zero = (evals == 0).all(axis=0)
+    ev1, ev2, ev3 = evals
+    fa = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
+                        (ev2 - ev3) ** 2 +
+                        (ev3 - ev1) ** 2) /
+                 ((evals * evals).sum(0) + all_zero))
+
+    return fa
+
+
+def _color_fa(fa, evecs):
+    r""" Color fractional anisotropy of diffusion tensor
+
+    Parameters
+    ----------
+    fa : array-like
+        Array of the fractional anisotropy (can be 1D, 2D or 3D)
+
+    evecs : array-like
+        eigen vectors from the tensor model
+
+    Returns
+    -------
+    rgb : Array with 3 channels for each color as the last dimension.
+        Colormap of the FA with red for the x value, y for the green
+        value and z for the blue value.
+
+    Notes
+    -----
+
+    It is computed from the clipped FA between 0 and 1 using the following
+    formula
+
+    .. math::
+
+        rgb = abs(max(\vec{e})) \times fa
+    """
+
+    if (fa.shape != evecs[..., 0, 0].shape) or ((3, 3) != evecs.shape[-2:]):
+        raise ValueError("Wrong number of dimensions for evecs")
+
+    return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
+
+
+
+
+
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                   norm=True, opacity=1., scalar_colors=None):
     """Slice many tensors as ellipsoids in native or world coordinates.
@@ -1053,8 +1157,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vertices = sphere.vertices
 
     if scalar_colors is None:
-        from dipy.reconst.dti import color_fa, fractional_anisotropy
-        cfa = color_fa(fractional_anisotropy(evals), evecs)
+        #from dipy.reconst.dti import color_fa, fractional_anisotropy
+        cfa = _color_fa(_fa(evals), evecs)
     else:
         cfa = _makeNd(scalar_colors, 4)
 
