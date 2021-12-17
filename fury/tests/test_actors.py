@@ -1079,15 +1079,15 @@ def test_grid(_interactive=False):
         cnt = next(counter)
         # show_m.scene.zoom(1)
         show_m.render()
-        if cnt == 4:
+        if cnt == 5:
             show_m.exit()
-            show_m.destroy_timers()
+            # show_m.destroy_timers()
 
     show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
     arr = window.snapshot(scene)
-    arr[arr < 20] = 0
+    arr[arr < 100] = 0
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 6)
 
@@ -1404,6 +1404,4 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
-
-
 
