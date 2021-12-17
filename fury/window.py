@@ -542,7 +542,7 @@ class ShowManager(object):
         # if is_osx and self.timers:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
-        self.destroy_timers()
+        # self.destroy_timers()
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.timers.clear()

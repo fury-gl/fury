@@ -160,7 +160,7 @@ def test_grid_ui(interactive=False):
         show_m.render()
         if cnt == 10:
             show_m.exit()
-            show_m.destroy_timers()
+            # show_m.destroy_timers()
 
     # show the grid with the captions
     grid_ui = ui.GridUI(actors=actors, captions=texts,
