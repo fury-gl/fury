@@ -57,30 +57,28 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
                          'clearcoat_gloss': clearcoat_gloss}
 
     prop = actor.GetProperty()
-    # TODO: Change to default
-    prop.SetInterpolationToPBR()
-    # TODO: Handle independently
     prop.SetSpecular(specular)
-    prop.SetMetallic(metallic)
-    prop.SetRoughness(roughness)
 
     @calldata_type(VTK_OBJECT)
     def uniforms_callback(_caller, _event, calldata=None):
         if calldata is not None:
             calldata.SetUniformf('subsurface', principled_params['subsurface'])
-            calldata.SetUniform3f('subsurfaceColor', principled_params[
-                'subsurface_color'])
+            calldata.SetUniformf('metallic', principled_params['metallic'])
             calldata.SetUniformf('specularTint', principled_params[
                 'specular_tint'])
+            calldata.SetUniformf('roughness', principled_params['roughness'])
             calldata.SetUniformf('anisotropic', principled_params[
                 'anisotropic'])
-            calldata.SetUniform3f('anisotropicDirection', principled_params[
-                'anisotropic_direction'])
             calldata.SetUniformf('sheen', principled_params['sheen'])
             calldata.SetUniformf('sheenTint', principled_params['sheen_tint'])
             calldata.SetUniformf('clearcoat', principled_params['clearcoat'])
             calldata.SetUniformf('clearcoatGloss', principled_params[
                 'clearcoat_gloss'])
+
+            calldata.SetUniform3f('subsurfaceColor', principled_params[
+                'subsurface_color'])
+            calldata.SetUniform3f('anisotropicDirection', principled_params[
+                'anisotropic_direction'])
 
     add_shader_callback(actor, uniforms_callback)
 

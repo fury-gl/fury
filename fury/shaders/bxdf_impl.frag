@@ -1,11 +1,8 @@
-/*
-// VC position of this fragment. This should not branch/return/discard.
-vec4 vertexVC = vertexVCVSOutput;
-
 // Place any calls that require uniform flow (e.g. dFdx) here.
 vec3 fdx = vec3(dFdx(vertexVC.x),dFdx(vertexVC.y),dFdx(vertexVC.z));
 vec3 fdy = vec3(dFdy(vertexVC.x),dFdy(vertexVC.y),dFdy(vertexVC.z));
 
+/*
 // Generate the normal if we are not passed in one
 fdx = normalize(fdx);
 fdy = normalize(fdy);
@@ -19,9 +16,24 @@ const float prefilterMaxLevel = float(4);
 
 vec3 albedo = pow(diffuseColor, vec3(2.2));
 
-// TODO: roughness uniform
+float ao = 1.0;
+
+vec3 N = normalVCVSOutput;
+
+vec3 V = normalize(-vertexVC.xyz);
+
+float NdV = clamp(dot(N, V), 1e-5, 1.0);
+
+vec3 irradiance = texture(irradianceTex, envMatrix*N).rgb;
+
+vec3 worldReflect = normalize(envMatrix*reflect(-V, N));
+
+vec3 prefilteredColor = textureLod(prefilterTex, worldReflect, roughness * prefilterMaxLevel).rgb;
+
+vec2 brdf = texture(brdfTex, vec2(NdV, roughness)).rg;
 */
 
+/*
 Lo = vec3(.0);
 radiance = lightColor0;
 
@@ -144,3 +156,4 @@ color += emissiveColor;
 // Gamma correction
 color = pow(color, vec3(1. / 2.2));
 fragOutput0 = vec4(color, opacity);
+*/

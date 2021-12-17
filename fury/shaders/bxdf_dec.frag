@@ -1,3 +1,4 @@
+/*
 float chiGGX(float v)
 {
     return v > 0 ? 1. : .0;
@@ -18,20 +19,30 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
     float tan2 = (1 - cVdH) / cVdH;
     return (chi * 2) / (1 + sqrt(1 + alpha * alpha * tan2));
 }
+*/
 
 // Disney's Principled BRDF
 #define EPSILON .0001
+#define PI 3.14159265359
+#define recPI 0.31830988618
 
 uniform float subsurface;
+uniform float metallic;
 uniform float specularTint;
+uniform float roughness;
 uniform float anisotropic;
 uniform float sheen;
 uniform float sheenTint;
 uniform float clearcoat;
 uniform float clearcoatGloss;
 
-uniform vec3 anisotropicDirection;
 uniform vec3 subsurfaceColor;
+uniform vec3 anisotropicDirection;
+
+vec3 F_Schlick(float HdV, vec3 F0)
+{
+  return F0 + (1.0 - F0) * pow(1.0 - HdV, 5.0);
+}
 
 float square(float x)
 {
