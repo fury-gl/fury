@@ -1406,7 +1406,4 @@ def test_marker_actor(interactive=False):
     npt.assert_equal(report.objects, 12)
 
 
-# test_bundle_maps()
-test_odf_slicer()
-test_tensor_slicer()
 
