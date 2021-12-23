@@ -264,6 +264,8 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
+
+@pytest.mark.skipif(True, reason="Under investigation")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
@@ -345,8 +347,8 @@ def test_opengl_state_simple():
         window.gl_set_normal_blending,
         window.gl_set_multiplicative_blending,
         window.gl_set_subtractive_blending,
-        window.gl_set_additive_blending_white_background
-    ]:
+        window.gl_set_additive_blending_white_background]:
+
         scene = window.Scene()
         centers = np.array([
             [0, 0, 0],
@@ -433,3 +435,5 @@ def test_opengl_state_add_remove_and_check():
 
 
 # test_opengl_state_add_remove_and_check()
+# test_opengl_state_simple()
+# test_record()

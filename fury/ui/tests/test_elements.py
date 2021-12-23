@@ -19,7 +19,8 @@ def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
-
+    
+    print(recording_filename)
     # TextBox
     textbox_test = ui.TextBox2D(height=3, width=10, text="Text")
 
