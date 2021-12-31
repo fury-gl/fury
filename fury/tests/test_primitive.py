@@ -10,7 +10,7 @@ def test_vertices_primitives():
                     (fp.prim_box, (8, 3), -.5, .5, 0),
                     (fp.prim_tetrahedron, (4, 3), -.5, .5, 0),
                     (fp.prim_star, (10, 3), -3, 3, -0.0666666666),
-                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0),
+                    (fp.prim_rhombicuboctahedron, (24, 3), -0.5, 0.5, 0),
                     (fp.prim_frustum, (8, 3), -0.5, 0.5, 0)]
 
     for func, shape, e_min, e_max, e_mean in l_primitives:
@@ -75,6 +75,16 @@ def test_vertices_primitives_triangularprism():
     npt.assert_equal(np.mean(vertices), 0)
     npt.assert_equal(vertices.min(), -1/three)
     npt.assert_equal(vertices.max(), 1/2)
+
+
+def test_vertices_primitives_rhombicuboctahedron():
+    # Testing the default vertices of the primitive rhombicuboctahedron.
+    vertices, _ = fp.prim_rhombicuboctahedron()
+    shape = (24, 3)
+    npt.assert_equal(vertices.shape, shape)
+    npt.assert_equal(np.mean(vertices, axis=0), 0)
+    npt.assert_equal(vertices.min(), -0.5)
+    npt.assert_equal(vertices.max(), 0.5)
 
 
 def test_triangles_primitives():
