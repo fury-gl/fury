@@ -1813,7 +1813,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
 
 def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                    scales=1):
+                        scales=1):
     """Visualize one or many rhombicuboctahedron with different features.
 
     Parameters
@@ -2324,6 +2324,7 @@ class Container(object):
         Default: (0, 0, 0, 0, 0, 0)
 
     """
+
     def __init__(self, layout=layout.Layout()):
         """
 
@@ -2824,7 +2825,7 @@ def markers(
         edge_width=.0,
         edge_color=(255, 255, 255),
         edge_opacity=.8
-        ):
+):
     """Create a marker actor with different shapes.
 
     Parameters
@@ -2858,8 +2859,8 @@ def markers(
 
     attribute_to_actor(sq_actor, big_centers, 'center')
     marker2id = {
-            'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
-            'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
+        'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
+        'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
 
     vs_dec_code = load("billboard_dec.vert")
     vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
@@ -2893,21 +2894,21 @@ def markers(
                 uniform_name, value)
 
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='edgeWidth',
-                value=edge_width))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='edgeWidth',
+            value=edge_width))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='markerOpacity',
-                value=marker_opacity))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='markerOpacity',
+            value=marker_opacity))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='edgeOpacity',
-                value=edge_opacity))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='edgeOpacity',
+            value=edge_opacity))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='3f', uniform_name='edgeColor',
-                value=edge_color))
+        sq_actor, partial(
+            callback, uniform_type='3f', uniform_name='edgeColor',
+            value=edge_color))
 
     shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)

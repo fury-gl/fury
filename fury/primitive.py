@@ -470,13 +470,13 @@ def prim_rhombicuboctahedron():
                          [-phi, -phi, -0.5]])
 
     triangles = np.array([[0, 1, 2],
-                          [1, 3, 2], 
+                          [1, 3, 2],
                           [0, 4, 5],
                           [0, 5, 1],
                           [6, 4, 7],
                           [4, 5, 7],
                           [0, 8, 4],
-                          [0, 2, 8], 
+                          [0, 2, 8],
                           [2, 9, 8],
                           [8, 9, 10],
                           [9, 11, 10],
@@ -854,7 +854,8 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
                 k += 3
 
     if capped:
-        vertices = (np.array(vertices).reshape(2 * (sectors + 1) + 2 * sectors + 2, 3))
+        vertices = (np.array(vertices).reshape(
+            2 * (sectors + 1) + 2 * sectors + 2, 3))
     else:
         vertices = (np.array(vertices).reshape(2 * (sectors + 1), 3))
 
