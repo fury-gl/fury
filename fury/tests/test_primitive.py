@@ -77,16 +77,6 @@ def test_vertices_primitives_triangularprism():
     npt.assert_equal(vertices.max(), 1/2)
 
 
-def test_vertices_primitives_rhombicuboctahedron():
-    # Testing the default vertices of the primitive rhombicuboctahedron.
-    vertices, _ = fp.prim_rhombicuboctahedron()
-    shape = (24, 3)
-    npt.assert_equal(vertices.shape, shape)
-    npt.assert_equal(np.mean(vertices, axis=0), 0)
-    npt.assert_equal(vertices.min(), -0.5)
-    npt.assert_equal(vertices.max(), 0.5)
-
-
 def test_triangles_primitives():
     l_primitives = [(fp.prim_square, (2, 3)),
                     (fp.prim_box, (12, 3)),
@@ -146,14 +136,14 @@ def test_cylinder_primitive():
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
 
-    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10, capped=False)
+    verts, faces = fp.prim_cylinder(
+        radius=.5, height=1, sectors=10, capped=False)
     npt.assert_equal(verts.shape, (22, 3))
     npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
     npt.assert_equal(verts.min(), -.5)
     npt.assert_equal(verts.max(), .5)
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
-
 
 
 def test_repeat_primitive():
