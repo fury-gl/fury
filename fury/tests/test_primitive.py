@@ -10,7 +10,7 @@ def test_vertices_primitives():
                     (fp.prim_box, (8, 3), -.5, .5, 0),
                     (fp.prim_tetrahedron, (4, 3), -.5, .5, 0),
                     (fp.prim_star, (10, 3), -3, 3, -0.0666666666),
-                    (fp.prim_rhombicuboctahedron, (24, 3), -4, 4, 0),
+                    (fp.prim_rhombicuboctahedron, (24, 3), -0.5, 0.5, 0),
                     (fp.prim_frustum, (8, 3), -0.5, 0.5, 0)]
 
     for func, shape, e_min, e_max, e_mean in l_primitives:
@@ -136,14 +136,14 @@ def test_cylinder_primitive():
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
 
-    verts, faces = fp.prim_cylinder(radius=.5, height=1, sectors=10, capped=False)
+    verts, faces = fp.prim_cylinder(
+        radius=.5, height=1, sectors=10, capped=False)
     npt.assert_equal(verts.shape, (22, 3))
     npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
     npt.assert_equal(verts.min(), -.5)
     npt.assert_equal(verts.max(), .5)
     npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
                      list(range(len(verts))))
-
 
 
 def test_repeat_primitive():
