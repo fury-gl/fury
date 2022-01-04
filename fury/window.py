@@ -487,7 +487,7 @@ class ShowManager(object):
         # self.initialize()
         # self.render()
         recorder.Play()
-        print('After Play')
+        # print('After Play')
 
         # self.window.RemoveRenderer(self.scene)
         # self.scene.SetRenderWindow(None)
@@ -497,7 +497,7 @@ class ShowManager(object):
         
         self.window.Finalize()
         self.exit()
-        print('After Finalize and Exit')
+        # print('After Finalize and Exit')
 
         # del self.iren
         # del self.window
