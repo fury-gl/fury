@@ -778,6 +778,7 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+@pytest.mark.skipif(True, reason="Under investigation")
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
 
