@@ -1034,7 +1034,8 @@ def test_basic_geometry_actor(interactive=False):
                   [actor.frustum, {}],
                   [actor.octagonalprism, {}],
                   [actor.pentagonalprism, {}],
-                  [actor.triangularprism, {}]]
+                  [actor.triangularprism, {}],
+                  [actor.rhombicuboctahedron, {}]]
 
     for act_func, extra_args in actor_list:
         for scale in scale_list:
