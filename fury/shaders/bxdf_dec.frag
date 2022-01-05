@@ -26,6 +26,11 @@ float GGXPartialGeometryTerm(float VdH, float VdN, float alpha)
 #define PI 3.14159265359
 #define recPI 0.31830988618
 
+//uniform mat3 envMatrix;
+//uniform sampler2D brdfTex;
+//uniform samplerCube irradianceTex;
+//uniform samplerCube prefilterTex;
+
 uniform float subsurface;
 uniform float metallic;
 uniform float specularTint;
@@ -35,6 +40,8 @@ uniform float sheen;
 uniform float sheenTint;
 uniform float clearcoat;
 uniform float clearcoatGloss;
+
+uniform float ambientOcclusion;
 
 uniform vec3 subsurfaceColor;
 uniform vec3 anisotropicDirection;

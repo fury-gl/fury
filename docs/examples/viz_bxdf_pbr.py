@@ -349,14 +349,16 @@ if __name__ == '__main__':
     skybox_actor = vtk.vtkSkybox()
     skybox_actor.SetTexture(skybox)
 
+    """
     scene.UseImageBasedLightingOn()
     if vtk.vtkVersion.GetVTKMajorVersion() >= 9:
         scene.SetEnvironmentTexture(cubemap)
     else:
         scene.SetEnvironmentCubeMap(cubemap)
+    """
 
-    scene.add(skybox_actor)
-    #scene.background((1, 1, 1))
+    #scene.add(skybox_actor)
+    scene.background((1, 1, 1))
 
     #window.show(scene)
 
