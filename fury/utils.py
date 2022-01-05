@@ -5,7 +5,7 @@ from fury.colormap import line_colors
 from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
-                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray)
+                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray, Assembly)
 
 
 def remove_observer_from_actor(actor, id):
@@ -658,6 +658,16 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     actor = Actor()
     actor.SetMapper(mapper)
     return actor
+
+
+def combine_actors(sources=()):
+    """Combines an array of actors into a single Assemby object which 
+        is similar to Actor class as they both inherit Prop3D"""
+    assembly = Assembly()
+    for actor in sources:
+        assembly.AddPart(actor)
+    return assembly
+    
 
 
 def apply_affine(aff, pts):
