@@ -667,7 +667,6 @@ def combine_actors(sources=()):
     for actor in sources:
         assembly.AddPart(actor)
     return assembly
-    
 
 
 def apply_affine(aff, pts):

@@ -31,7 +31,7 @@ import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
-                        repeat_sources, get_actor_from_primitive,
+                        repeat_sources, combine_actors, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors)
 
 
@@ -804,7 +804,7 @@ def scalar_bar(lookup_table=None, title=" "):
 
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
          opacity=1):
-    """ Create an actor with the coordinate's system axes where
+    """ Create an assembly with the coordinate's system axes where
     red = x, green = y, blue = z.
 
     Parameters
@@ -822,7 +822,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
 
     Returns
     -------
-    vtkActor
+    vtkAssembly
     """
 
     centers = np.zeros((3, 3))
@@ -831,8 +831,19 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
                        colory + (opacity,),
                        colorz + (opacity,)])
 
+    font_size = (sum(scale) / len(scale)) / 3
     scales = np.asarray(scale)
-    return arrow(centers, dirs, colors, scales)
+
+    label_x = text_3d(
+        text='X', position=dirs[0] * scale[0], color=colorx, font_size=font_size)
+    label_y = text_3d(
+        text='Y', position=dirs[1] * scale[1], color=colory, font_size=font_size)
+    label_z = text_3d(
+        text='Z', position=dirs[2] * scale[2], color=colorz, font_size=font_size)
+
+    arrows = arrow(centers, dirs, colors, scales)
+
+    return combine_actors(sources=(arrows, label_x, label_y, label_z))
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
