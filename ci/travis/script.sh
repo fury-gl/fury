@@ -27,7 +27,15 @@ if [[ "${COVERAGE}" == "1" ]]; then
   coverage report -m  # Generate test coverage report.
   codecov  # Upload the report to codecov.
 else
-    pytest -svv --pyargs fury
+    # Threads issue so we run test on individual file
+    # pytest -svv --pyargs fury
+    error_code=0
+    for file in `find ../ -name 'test_*.py' -print`;
+    do
+      if pytest -svv $file; then
+      error_code=1
+      fi
+    done
 fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
