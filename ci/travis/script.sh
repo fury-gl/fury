@@ -19,6 +19,7 @@ cd for_testing
 # We need the setup.cfg for the pytest settings
 cp ../setup.cfg .
 python3 -c "import fury; print(fury.__version__)"
+error_code=0
 
 if [[ "${COVERAGE}" == "1" ]]; then
   cp ../.coveragerc .;
@@ -29,13 +30,13 @@ if [[ "${COVERAGE}" == "1" ]]; then
 else
     # Threads issue so we run test on individual file
     # pytest -svv --pyargs fury
-    error_code=0
     for file in `find ../ -name 'test_*.py' -print`;
     do
       if pytest -svv $file; then
       error_code=1
       fi
     done
+
 fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
@@ -45,4 +46,5 @@ if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
   make -C docs html
 fi
 
+exit $error_code
 set +ev
