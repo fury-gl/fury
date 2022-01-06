@@ -4,8 +4,8 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
-                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
-                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray, Assembly)
+                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, IdTypeArray,
+                      AlgorithmOutput, VTK_UNSIGNED_CHAR, Transform, Assembly)
 
 
 def remove_observer_from_actor(actor, id):
@@ -661,7 +661,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
 
 def combine_actors(sources=()):
-    """Combines an array of actors into a single Assemby object which 
+    """Combines an array of actors into a single Assemby object which
         is similar to Actor class as they both inherit Prop3D"""
     assembly = Assembly()
     for actor in sources:

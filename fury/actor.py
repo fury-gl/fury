@@ -31,8 +31,9 @@ import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
-                        repeat_sources, combine_actors, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors)
+                        repeat_sources, get_actor_from_primitive,
+                        fix_winding_order, combine_actors,
+                        numpy_to_vtk_colors)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -836,12 +837,12 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     sources = []
     if label:
         font_size = (sum(scale) / len(scale)) / 3
-        sources.append(text_3d(
-            text='X', position=dirs[0] * scale[0], color=colorx, font_size=font_size))
-        sources.append(text_3d(
-            text='Y', position=dirs[1] * scale[1], color=colory, font_size=font_size))
-        sources.append(text_3d(
-            text='Z', position=dirs[2] * scale[2], color=colorz, font_size=font_size))
+        sources.append(text_3d(text='X', position=dirs[0] * scale[0],
+                               color=colorx, font_size=font_size))
+        sources.append(text_3d(text='Y', position=dirs[1] * scale[1],
+                               color=colory, font_size=font_size))
+        sources.append(text_3d(text='Z', position=dirs[2] * scale[2],
+                               color=colorz, font_size=font_size))
 
     scales = np.asarray(scale)
     sources.append(arrow(centers, dirs, colors, scales))
