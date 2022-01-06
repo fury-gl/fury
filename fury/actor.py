@@ -803,7 +803,7 @@ def scalar_bar(lookup_table=None, title=" "):
 
 
 def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
-         opacity=1):
+         opacity=1, label=False):
     """ Create an assembly with the coordinate's system axes where
     red = x, green = y, blue = z.
 
@@ -819,6 +819,8 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
         z-axis color. Default blue (0, 0, 1).
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+    label: boolean, optional
+        Displays labels on the axes when True. Default is False.
 
     Returns
     -------
@@ -831,19 +833,20 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
                        colory + (opacity,),
                        colorz + (opacity,)])
 
-    font_size = (sum(scale) / len(scale)) / 3
+    sources = []
+    if label:
+        font_size = (sum(scale) / len(scale)) / 3
+        sources.append(text_3d(
+            text='X', position=dirs[0] * scale[0], color=colorx, font_size=font_size))
+        sources.append(text_3d(
+            text='Y', position=dirs[1] * scale[1], color=colory, font_size=font_size))
+        sources.append(text_3d(
+            text='Z', position=dirs[2] * scale[2], color=colorz, font_size=font_size))
+
     scales = np.asarray(scale)
+    sources.append(arrow(centers, dirs, colors, scales))
 
-    label_x = text_3d(
-        text='X', position=dirs[0] * scale[0], color=colorx, font_size=font_size)
-    label_y = text_3d(
-        text='Y', position=dirs[1] * scale[1], color=colory, font_size=font_size)
-    label_z = text_3d(
-        text='Z', position=dirs[2] * scale[2], color=colorz, font_size=font_size)
-
-    arrows = arrow(centers, dirs, colors, scales)
-
-    return combine_actors(sources=(arrows, label_x, label_y, label_z))
+    return combine_actors(sources=sources)
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
