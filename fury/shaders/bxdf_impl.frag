@@ -1,3 +1,5 @@
+// Disney's Principled BXDF
+
 /*
 // TODO: Move to VTK::UniformFlow::Impl
 // Place any calls that require uniform flow (e.g. dFdx) here.
@@ -53,7 +55,7 @@ vec3 radiance = lightColor0;
 
 vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
-vec3 F = F_Schlick(1.0, F0);
+vec3 F = calculateFresnelSchlick(1.0, F0);
 
 // Diffuse
 // VTK's diffuse produces a similar effect
