@@ -14,24 +14,28 @@ from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate, VTK_9_PLUS
 from fury.testing import assert_greater, assert_greater_equal
+from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
 from fury.optpkg import optional_package
-dipy, have_dipy, _ = optional_package('dipy')
+# dipy, have_dipy, _ = optional_package('dipy')
 matplotlib, have_matplotlib, _ = optional_package('matplotlib')
 
-if have_dipy:
-    from dipy.data import get_sphere
-    from dipy.reconst.shm import sh_to_sf_matrix
-    from dipy.tracking.streamline import (center_streamlines,
-                                          transform_streamlines)
-    from dipy.align.tests.test_streamlinear import fornix_streamlines
-    from dipy.reconst.dti import color_fa, fractional_anisotropy
+# if have_dipy:
+#     from dipy.data import get_sphere
+#     from dipy.reconst.shm import sh_to_sf_matrix
+#     from dipy.tracking.streamline import (center_streamlines,
+#                                           transform_streamlines)
+#     from dipy.align.tests.test_streamlinear import fornix_streamlines
+#     from dipy.reconst.dti import color_fa, fractional_anisotropy
 
 if have_matplotlib:
     import matplotlib.pyplot as plt
     from fury.convert import matplotlib_figure_to_numpy
 
+class Sphere():
+    vertices = None
+    faces = None
 
 def test_slicer(verbose=False):
     scene = window.Scene()
@@ -139,31 +143,6 @@ def test_slicer(verbose=False):
     slicer2 = slicer.copy()
     npt.assert_equal(slicer2.shape, slicer.shape)
 
-    scene.clear()
-
-    data = (255 * np.random.rand(50, 50, 50))
-    affine = np.diag([1, 3, 2, 1])
-
-    if have_dipy:
-        from dipy.align.reslice import reslice
-
-        data2, affine2 = reslice(data, affine, zooms=(1, 3, 2),
-                                 new_zooms=(1, 1, 1))
-
-        slicer = actor.slicer(data2, affine2, interpolation='linear')
-        slicer.display(None, None, 25)
-
-        scene.add(slicer)
-        scene.reset_camera()
-        scene.reset_clipping_range()
-
-        # window.show(scene, reset_camera=False)
-        arr = window.snapshot(scene, offscreen=True)
-        report = window.analyze_snapshot(arr, find_objects=True)
-        npt.assert_equal(report.objects, 1)
-        npt.assert_array_equal([1, 3, 2] * np.array(data.shape),
-                               np.array(slicer.shape))
-
 
 def test_surface():
     import math
@@ -247,73 +226,7 @@ def test_contour_from_roi(interactive=False):
 
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(report2.objects, 2)
-
-    # test on real streamlines using tracking example
-    if have_dipy:
-        from dipy.data import read_stanford_labels
-        from dipy.reconst.shm import CsaOdfModel
-        from dipy.data import default_sphere
-        from dipy.direction import peaks_from_model
-        from fury.colormap import line_colors
-        from dipy.tracking import utils
-        try:
-            from dipy.tracking.local import ThresholdTissueClassifier \
-                as ThresholdStoppingCriterion
-            from dipy.tracking.local import LocalTracking
-        except ImportError:
-            from dipy.tracking.stopping_criterion import \
-                ThresholdStoppingCriterion
-            from dipy.tracking.local_tracking import LocalTracking
-
-        hardi_img, gtab, labels_img = read_stanford_labels()
-        data = np.asanyarray(hardi_img.dataobj)
-        labels = np.asanyarray(labels_img.dataobj)
-        affine = hardi_img.affine
-
-        white_matter = (labels == 1) | (labels == 2)
-
-        csa_model = CsaOdfModel(gtab, sh_order=6)
-        csa_peaks = peaks_from_model(csa_model, data, default_sphere,
-                                     relative_peak_threshold=.8,
-                                     min_separation_angle=45,
-                                     mask=white_matter)
-
-        classifier = ThresholdStoppingCriterion(csa_peaks.gfa, .25)
-
-        seed_mask = labels == 2
-        seeds = utils.seeds_from_mask(seed_mask, density=[1, 1, 1],
-                                      affine=affine)
-
-        # Initialization of LocalTracking.
-        # The computation happens in the next step.
-        streamlines = LocalTracking(csa_peaks, classifier, seeds, affine,
-                                    step_size=2)
-
-        # Compute streamlines and store as a list.
-        streamlines = list(streamlines)
-
-        # Prepare the display objects.
-        streamlines_actor = actor.line(streamlines, line_colors(streamlines))
-        seedroi_actor = actor.contour_from_roi(seed_mask, affine,
-                                               [0, 1, 1], 0.5)
-
-        # Create the 3d display.
-        r = window.Scene()
-        r2 = window.Scene()
-        r.add(streamlines_actor)
-        arr3 = window.snapshot(r, 'test_surface3.png', offscreen=True)
-        report3 = window.analyze_snapshot(arr3, find_objects=True)
-        r2.add(streamlines_actor)
-        r2.add(seedroi_actor)
-        arr4 = window.snapshot(r2, 'test_surface4.png', offscreen=True)
-        report4 = window.analyze_snapshot(arr4, find_objects=True)
-
-        # assert that the seed ROI rendering is not far
-        # away from the streamlines (affine error)
-        npt.assert_equal(report3.objects, report4.objects)
-        # window.show(r)
-        # window.show(r2)
-
+   
 
 @pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
                                      "Travis. It works on a local machine"
@@ -432,20 +345,25 @@ def test_streamtube_and_line_actors():
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def simulated_bundle(no_streamlines=10, waves=False):
+    t = np.linspace(20, 80, 200)
+    # parallel waves or parallel lines
+    bundle = []
+    for i in np.linspace(-5, 5, no_streamlines):
+        if waves:
+            pts = np.vstack((np.cos(t), t, i * np.ones(t.shape))).T
+        else:
+            pts = np.vstack((np.zeros(t.shape), t, i * np.ones(t.shape))).T
+        bundle.append(pts)
+
+    return bundle
+
+
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_bundle_maps():
     scene = window.Scene()
-    bundle = fornix_streamlines()
-    bundle, _ = center_streamlines(bundle)
+    bundle = simulated_bundle(no_streamlines=10, waves=False)
 
-    mat = np.array([[1, 0, 0, 100],
-                    [0, 1, 0, 100],
-                    [0, 0, 1, 100],
-                    [0, 0, 0, 1.]])
-
-    bundle = transform_streamlines(bundle, mat)
-
-    # metric = np.random.rand(*(200, 200, 200))
     metric = 100 * np.ones((200, 200, 200))
 
     # add lower values
@@ -505,11 +423,18 @@ def test_bundle_maps():
     actor.line(bundle, colors=colors)
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_odf_slicer(interactive=False):
-    # Prepare our data
-    sphere = get_sphere('repulsion100')
-    shape = (11, 11, 11, sphere.vertices.shape[0])
+    # TODO: we should change the odf_slicer to work directly
+    # vertices and faces of a sphere rather that needing
+    # a specific type of sphere. We can use prim_sphere
+    # as an alternative to get_sphere.
+    vertices, faces = prim_sphere('repulsion100', True)
+    sphere = Sphere()
+    sphere.vertices = vertices
+    sphere.faces = faces
+
+    shape = (11, 11, 11, 100)
     odfs = np.ones(shape)
 
     affine = np.array([[2.0, 0.0, 0.0, 3.0],
@@ -584,66 +509,28 @@ def test_odf_slicer(interactive=False):
         window.show(scene)
 
     # global_cm=True with colormap=None should raise an error
-    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere=sphere,
+    npt.assert_raises(IOError, actor.odf_slicer, odfs, sphere=None,
                       mask=None, scale=.25, colormap=None, norm=False,
                       global_cm=True)
+
+    vertices2, faces2 = prim_sphere('repulsion200', True)
+    sphere2 = Sphere()
+    sphere2.vertices = vertices2
+    sphere2.faces = faces2
 
     # Dimension mismatch between sphere vertices and number
     # of SF coefficients will raise an error.
     npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
-                      sphere=get_sphere('repulsion200'), scale=.25)
+                      sphere=sphere2, scale=.25)
 
     # colormap=None and global_cm=False results in directionally encoded colors
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, mask=None,
+    odf_actor = actor.odf_slicer(odfs, sphere=None, mask=None,
                                  scale=.25, colormap=None,
                                  norm=False, global_cm=False)
     scene.clear()
     scene.add(odf_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Test that SH coefficients input works
-    B = sh_to_sf_matrix(sphere, sh_order=4, return_inv=False)
-    odfs = np.zeros((11, 11, 11, B.shape[0]))
-    odfs[..., 0] = 1.0
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B)
-
-    scene.clear()
-    scene.add(odf_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Dimension mismatch between sphere vertices and dimension of
-    # B matrix will raise an error.
-    npt.assert_raises(ValueError, actor.odf_slicer, odfs, mask=None,
-                      sphere=get_sphere('repulsion200'))
-
-    # Test that constant colormap color works. Also test that sphere
-    # normals are oriented correctly. Will show purple spheres with
-    # a white contour.
-    odf_contour = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
-                                   colormap=(255, 255, 255))
-    odf_contour.GetProperty().SetAmbient(1.0)
-    odf_contour.GetProperty().SetFrontfaceCulling(True)
-
-    odf_actor = actor.odf_slicer(odfs, sphere=sphere, B_matrix=B,
-                                 colormap=(255, 0, 255), scale=0.4)
-    scene.clear()
-    scene.add(odf_contour)
-    scene.add(odf_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-    if interactive:
-        window.show(scene)
-
-    # Test that we can change the sphere on an active actor
-    new_sphere = get_sphere('symmetric362')
-    new_B = sh_to_sf_matrix(new_sphere, sh_order=4, return_inv=False)
-    odf_actor.update_sphere(new_sphere.vertices, new_sphere.faces, new_B)
     if interactive:
         window.show(scene)
 
@@ -787,7 +674,7 @@ def test_peak():
     npt.assert_equal(peaks_actor.max_centers, [0, 0, 0])
 
 
-@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+# @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_tensor_slicer(interactive=False):
 
     evals = np.array([1.4, .35, .35]) * 10 ** (-3)
@@ -799,7 +686,10 @@ def test_tensor_slicer(interactive=False):
     mevals[..., :] = evals
     mevecs[..., :, :] = evecs
 
-    sphere = get_sphere('symmetric724')
+    vertices, faces = prim_sphere('symmetric724', True)
+    sphere = Sphere()
+    sphere.vertices = vertices
+    sphere.faces = faces
 
     affine = np.eye(4)
     scene = window.Scene()
@@ -839,49 +729,6 @@ def test_tensor_slicer(interactive=False):
                                       sphere=sphere, scale=.3)
     npt.assert_equal(empty_actor.GetMapper(), None)
 
-    # Test mask
-    mask = np.ones(mevals.shape[:3])
-    mask[:2, :3, :3] = 0
-    cfa = color_fa(fractional_anisotropy(mevals), mevecs)
-    tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                       mask=mask, scalar_colors=cfa,
-                                       sphere=sphere, scale=.3)
-    scene.clear()
-    scene.add(tensor_actor)
-    scene.reset_camera()
-    scene.reset_clipping_range()
-
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    mask_extent = scene.GetActors().GetLastActor().GetBounds()
-    mask_extent_x = abs(mask_extent[1] - mask_extent[0])
-    npt.assert_equal(big_extent_x > mask_extent_x, True)
-
-    # test display
-    tensor_actor.display()
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_x = abs(current_extent[1] - current_extent[0])
-    npt.assert_equal(big_extent_x > current_extent_x, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    tensor_actor.display(y=1)
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_y = abs(current_extent[3] - current_extent[2])
-    big_extent_y = abs(big_extent[3] - big_extent[2])
-    npt.assert_equal(big_extent_y > current_extent_y, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
-    tensor_actor.display(z=1)
-    current_extent = scene.GetActors().GetLastActor().GetBounds()
-    current_extent_z = abs(current_extent[5] - current_extent[4])
-    big_extent_z = abs(big_extent[5] - big_extent[4])
-    npt.assert_equal(big_extent_z > current_extent_z, True)
-    if interactive:
-        window.show(scene, reset_camera=False)
-
     # Test error handling of the method when
     # incompatible dimension of mevals and evecs are passed.
     mevals = np.zeros((3, 2, 3))
@@ -889,8 +736,9 @@ def test_tensor_slicer(interactive=False):
 
     with npt.assert_raises(RuntimeError):
         tensor_actor = actor.tensor_slicer(mevals, mevecs, affine=affine,
-                                           mask=mask, scalar_colors=cfa,
+                                           mask=None, scalar_colors=None,
                                            sphere=sphere, scale=.3)
+    # TODO: Add colorfa test here as previous test moved to DIPY.
 
 
 def test_dots(interactive=False):
@@ -1232,15 +1080,15 @@ def test_grid(_interactive=False):
         cnt = next(counter)
         # show_m.scene.zoom(1)
         show_m.render()
-        if cnt == 4:
+        if cnt == 5:
             show_m.exit()
-            show_m.destroy_timers()
+            # show_m.destroy_timers()
 
     show_m.add_timer_callback(True, 200, timer_callback)
     show_m.start()
 
     arr = window.snapshot(scene)
-    arr[arr < 20] = 0
+    arr[arr < 100] = 0
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 6)
 
@@ -1557,3 +1405,4 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
+
