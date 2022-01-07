@@ -23,7 +23,7 @@ scene = window.Scene()
 # Define information relevant for each planet actor including its
 # texture name, relative position, and scale.
 
-planets_data = [{'filename': '8k_mercury.jpg', 'position': 7, 
+planets_data = [{'filename': '8k_mercury.jpg', 'position': 7,
                  'earth_days': 58, 'scale': (.4, .4, .4)},
                 {'filename': '8k_venus_surface.jpg', 'position': 9,
                  'earth_days': 243, 'scale': (.6, .6, .6)},
@@ -198,8 +198,8 @@ planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
                  jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
 
 
-sun_data = {'actor': sun_actor,'position': planets_data[9]['position'],
-             'earth_days': planets_data[9]['earth_days']}
+sun_data = {'actor': sun_actor, 'position': planets_data[9]['position'],
+            'earth_days': planets_data[9]['earth_days']}
 
 r_times = [p_data['earth_days'] for p_data in planets_data]
 
