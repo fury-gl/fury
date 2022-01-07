@@ -494,7 +494,6 @@ class ShowManager(object):
 
         # Finalize seems very important otherwise
         # the recording window will not close.
-        
         self.window.Finalize()
         self.exit()
         # print('After Finalize and Exit')
@@ -556,12 +555,12 @@ class ShowManager(object):
         # if is_osx and self.timers:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
-        
+
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
         self.timers.clear()
-        
+
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,

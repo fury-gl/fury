@@ -108,6 +108,7 @@ class CustomInteractorStyle(InteractorStyleUser):
         """Return the prop that lays at the event position."""
         # TODO: return a list of items (i.e. each level of the assembly path).
         event_pos = self.GetInteractor().GetEventPosition()
+
         self.picker.Pick(event_pos[0], event_pos[1], 0,
                          self.GetCurrentRenderer())
 
