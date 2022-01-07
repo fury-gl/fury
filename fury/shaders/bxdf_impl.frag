@@ -1,24 +1,4 @@
 // Disney's Principled BXDF
-
-/*
-// TODO: Move to VTK::UniformFlow::Impl
-// Place any calls that require uniform flow (e.g. dFdx) here.
-vec3 fdx = vec3(dFdx(vertexVC.x),dFdx(vertexVC.y),dFdx(vertexVC.z));
-vec3 fdy = vec3(dFdy(vertexVC.x),dFdy(vertexVC.y),dFdy(vertexVC.z));
-*/
-
-/*
-// TODO: Move to VTK::Normal::Impl
-// Generate the normal if we are not passed in one
-fdx = normalize(fdx);
-fdy = normalize(fdy);
-vec3 normalVCVSOutput = normalize(cross(fdx,fdy));
-if(cameraParallel == 1 && normalVCVSOutput.z < 0.0)
-    normalVCVSOutput = -1.0*normalVCVSOutput;
-if(cameraParallel == 0 && dot(normalVCVSOutput,vertexVC.xyz) > 0.0)
-    normalVCVSOutput = -1.0*normalVCVSOutput;
-*/
-
 const float prefilterMaxLevel = float(4);
 
 vec3 albedo = pow(diffuseColor, vec3(2.2));
@@ -31,160 +11,91 @@ vec3 N = normalVCVSOutput;
 
 vec3 V = normalize(-vertexVC.xyz);
 
-float NdV = clamp(dot(N, V), 1e-5, 1.0);
+float dotNV = clamp(dot(N, V), 1e-5, 1.0);
 
-// TODO: Fix cubemap interpolation
-//vec3 irradiance = texture(irradianceTex, envMatrix * N).rgb;
-//fragOutput0 = vec4(irradiance, opacity);
 vec3 irradiance = vec3(0.0);
 
-//vec3 worldReflect = normalize(envMatrix*reflect(-V, N));
-//fragOutput0 = vec4(worldReflect, opacity);
-
-//vec3 prefilteredColor = textureLod(prefilterTex, worldReflect,
-//    roughness * prefilterMaxLevel).rgb;
-//fragOutput0 = vec4(prefilteredColor, opacity);
-
-//vec2 brdf = texture(brdfTex, vec2(NdV, roughness)).rg;
 vec2 brdf = vec2(0.0, 0.0);
 
 vec3 Lo = vec3(.0);
 
 vec3 radiance = lightColor0;
-//fragOutput0 = vec4(radiance, opacity);
 
 vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
 vec3 F = calculateFresnelSchlick(1.0, F0);
 
 // Diffuse
-// VTK's diffuse produces a similar effect
-diffuse = evaluateDiffuse(roughness, albedo, NdV, NdV, NdV);
-//fragOutput0 = vec4(diffuse, opacity);
+diffuse = evaluateDiffuse(roughness, albedo, dotNV, dotNV, dotNV);
 
 //diffuse *= (1. - F);
 diffuse *= (1. - metallic) * (1. - F);
-//fragOutput0 = vec4(diffuse, opacity);
 
 Lo += diffuse;
-//fragOutput0 = vec4(Lo, opacity);
 
 // Subsurface
-//vec3 subsurfaceV3 = evaluateSubsurface(roughness, albedo, NdV, NdV, NdV);
-vec3 subsurfaceV3 = evaluateSubsurface(roughness, subsurfaceColor, NdV, NdV,
-    NdV);
-//fragOutput0 = vec4(subsurfaceV3, opacity);
+vec3 subsurfaceV3 = evaluateSubsurface(roughness, subsurfaceColor, dotNV,
+    dotNV, dotNV);
 
 Lo = mix(Lo, subsurfaceV3, subsurface);
-//fragOutput0 = vec4(Lo, opacity);
 
 // Sheen + Sheen Tint
-vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, NdV);
-//fragOutput0 = vec4(sheenV3, opacity);
+vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, dotNV);
 
 Lo += sheenV3;
-//fragOutput0 = vec4(Lo, opacity);
 
 //Lo *= (1. - metallic);
-//fragOutput0 = vec4(Lo, opacity);
 
-// Isotropic BRDF
+// Isotropic specular
 //specular = evaluateMicrofacetIsotropic(specularIntensity, specularTint,
-//    metallic, roughness, albedo, max(NdV, .0), NdV, NdV, NdV);
-//fragOutput0 = vec4(specular, opacity);
+//    metallic, roughness, albedo, max(dotNV, .0), dotNV, dotNV, dotNV);
 
-// Anisotropic BRDF
-//specular = evaluateBRDF(anisotropic, roughness, NdV, NdV, NdV, NdV, NdV, NdV,
-//    NdV, NdV, NdV);
-//fragOutput0 = vec4(specular, opacity);
+// Anisotropic specular
 vec3 tangent = vec3(.0);
 vec3 binormal = vec3(.0);
 directionOfAnisotropicity(N, tangent, binormal);
-//createBasis(N, tangent, binormal);
-//fragOutput0 = vec4(tangent, opacity);
-//fragOutput0 = vec4(binormal, opacity);
 
-float TdV = dot(tangent, V);
-float BdV = dot(binormal, V);
+float dotTV = dot(tangent, V);
+float dotBV = dot(binormal, V);
 
-//vec3 anisotropicTangent = cross(binormal, V);
-//vec3 anisotropicNormal = cross(anisotropicTangent, binormal);
-//vec3 bentNormal = normalize(mix(N, anisotropicNormal, anisotropic));
-//vec3 worldReflect = normalize(envMatrix * reflect(-V, bentNormal));
-//vec3 prefilteredSpecularColor = textureLod(prefilterTex, worldReflect,
-//    roughness * prefilterMaxLevel).rgb;
 vec3 prefilteredSpecularColor = vec3(0.0);
-//fragOutput0 = vec4(anisotropicTangent, opacity);
-//fragOutput0 = vec4(anisotropicNormal, opacity);
-//fragOutput0 = vec4(bentNormal, opacity);
-//fragOutput0 = vec4(worldReflect, opacity);
-//fragOutput0 = vec4(prefilteredSpecularColor, opacity);
 
-//F0 = mix(vec3(baseF0Uniform), albedo, metallic);
-// specular occlusion, it affects only material with an f0 < 0.02, else f90 is 1.0
+// Specular occlusion, it affects only material with an f0 < 0.02, else f90 is
+//1.0
 float f90 = clamp(dot(F0, vec3(50.0 * 0.33)), .0, 1.);
-//vec3 F90 = mix(vec3(f90), edgeTintUniform, metallic);
+
 vec3 F90 = mix(vec3(f90), albedo, metallic);
-//fragOutput0 = vec4(F90, opacity);
 
 specular = evaluateMicrofacetAnisotropic(specularIntensity, specularTint,
-    metallic, anisotropic, roughness, albedo, 1., NdV, TdV, BdV, NdV, TdV, BdV,
-    NdV, TdV, BdV);
-//fragOutput0 = vec4(specular, opacity);
+    metallic, anisotropic, roughness, albedo, 1., dotNV, dotTV, dotBV, dotNV,
+    dotTV, dotBV, dotNV, dotTV, dotBV);
 
 Lo += specular;
-//fragOutput0 = vec4(Lo, opacity);
 
 // Clearcoat + Clearcoat Gloss
-// TODO: Add Clearcoat Normal
-float coatNdV = clamp(dot(N, V), 1e-5, 1.0);
-//vec3 coatWorldReflect = normalize(envMatrix * reflect(-V, N));
+float coatDotNV = clamp(dot(N, V), 1e-5, 1.0);
 
-// TODO: Check if Gloss must be inverted
-//vec3 prefilteredSpecularCoatColor = textureLod(prefilterTex, coatWorldReflect,
-//    clearcoatGloss * prefilterMaxLevel).rgb;
-//vec2 coatBrdf = texture(brdfTex, vec2(coatNdV, clearcoatGloss)).rg;
-//fragOutput0 = vec4(coatWorldReflect, opacity);
-//fragOutput0 = vec4(prefilteredSpecularCoatColor, opacity);
-
-// TODO: Clearcoat F0 and F90
-
-// TODO: Check if SpecularIsotropic does the same
-float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, max(NdV, .0),
-        NdV, NdV, NdV);
-fragOutput0 = vec4(vec3(clearcoatF), opacity);
-
-// TODO: Energy compensation
+float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, max(dotNV, .0),
+        dotNV, dotNV, dotNV);
 
 Lo += clearcoatF;
-//fragOutput0 = vec4(Lo, opacity);
 
-Lo *= radiance * NdV;
-//fragOutput0 = vec4(Lo, opacity);
+Lo *= radiance * dotNV;
 
 vec3 specularBrdf = F0 * brdf.r + F90 * brdf.g;
-//fragOutput0 = vec4(specularBrdf, opacity);
 
 vec3 iblSpecular = prefilteredSpecularColor * specularBrdf;
-//fragOutput0 = vec4(iblSpecular, opacity);
 
 // No diffuse for metals
 vec3 iblDiffuse = (1.0 - F0) * (1.0 - metallic) * irradiance * albedo;
-//fragOutput0 = vec4(iblDiffuse, opacity);
-
-// TODO: Clearcoat attenuation
 
 vec3 color = iblDiffuse + iblSpecular;
-//fragOutput0 = vec4(color, opacity);
 
 color += Lo;
-//fragOutput0 = vec4(color, opacity);
 
 color = mix(color, color * ao, ambientOcclusion);
-//fragOutput0 = vec4(color, opacity);
 
 color += emissiveColor;
-//fragOutput0 = vec4(color, opacity);
 
 // Gamma correction
 color = pow(color, vec3(1. / 2.2));

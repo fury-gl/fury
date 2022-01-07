@@ -189,6 +189,5 @@ vec3 evaluateSubsurface(float roughness, vec3 color, float dotLN,
     float fss90 = square(dotHL) * roughness;
     float fss = mix(1., fss90, fl) * mix(1., fss90, fv);
     float ss = 1.25 * (fss * (1. / (dotLN + dotNV) - .5) + .5);
-    // TODO: Check transmitance
     return (1 / PI) * ss * color;
 }
