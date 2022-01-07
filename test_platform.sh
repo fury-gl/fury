@@ -1,4 +1,3 @@
-
 error_code=0
 for file in `find . -name 'test_*.py' -print`;
 do
@@ -8,3 +7,4 @@ do
 done
 
 exit $error_code
+

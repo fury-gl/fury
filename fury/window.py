@@ -560,6 +560,7 @@ class ShowManager(object):
         self.iren.TerminateApp()
         self.destroy_timers()
         self.timers.clear()
+        
 
 
 
