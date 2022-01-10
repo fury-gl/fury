@@ -484,10 +484,9 @@ class ShowManager(object):
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
-        # self.initialize()
+        self.initialize()
         # self.render()
         recorder.Play()
-        # print('After Play')
 
         # self.window.RemoveRenderer(self.scene)
         # self.scene.SetRenderWindow(None)
@@ -500,7 +499,6 @@ class ShowManager(object):
 
         # del self.iren
         # del self.window
-
 
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
@@ -560,7 +558,7 @@ class ShowManager(object):
         self.iren.TerminateApp()
         self.destroy_timers()
         self.timers.clear()
-        
+
 
 
 
