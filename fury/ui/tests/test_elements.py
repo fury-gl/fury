@@ -1,7 +1,8 @@
 """Test for components module."""
-from os.path import join as pjoin
-import os
 import itertools
+import os
+from os.path import join as pjoin
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 import numpy as np
 
@@ -9,7 +10,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import window, actor, ui
-from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
+from fury.data import DATA_DIR
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter
@@ -97,7 +98,7 @@ def test_ui_line_slider_2d_horizontal_top(recording=False):
     event_counter.monitor(line_slider_2d_test)
 
     current_size = (600, 600)
-    show_manager = window.ShowMxanager(size=current_size,
+    show_manager = window.ShowManager(size=current_size,
                                       title="FURY Horizontal Line Slider")
 
     show_manager.scene.add(line_slider_2d_test)
@@ -649,70 +650,63 @@ def test_ui_file_menu_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    # Create temporary directory and files
-    os.mkdir(os.path.join(os.getcwd(), "testdir"))
-    os.chdir("testdir")
-    os.mkdir(os.path.join(os.getcwd(), "tempdir"))
-    for i in range(10):
-        open(os.path.join(os.getcwd(), "tempdir", "test" + str(i) + ".txt"),
-             'wt').close()
-    open("testfile.txt", 'wt').close()
+    with InTemporaryDirectory() as tmpdir:
+        test_dir = os.path.join(tmpdir, "testdir")
+        os.mkdir(test_dir)
+        os.chdir(test_dir)
+        os.mkdir(os.path.join(test_dir, "tempdir"))
+        for i in range(10):
+            open(os.path.join(test_dir, "tempdir", f"test{i}.txt"), 'wt').close()
+        open("testfile.txt", 'wt').close()
 
-    filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
-                             directory_path=os.getcwd())
+        filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
+                                 directory_path=os.getcwd())
 
-    # We will collect the sequence of files that have been selected.
-    selected_files = []
+        # We will collect the sequence of files that have been selected.
+        selected_files = []
 
-    def _on_change():
-        selected_files.append(list(filemenu.listbox.selected))
+        def _on_change():
+            selected_files.append(list(filemenu.listbox.selected))
 
-    # Set up a callback when selection changes.
-    filemenu.listbox.on_change = _on_change
+        # Set up a callback when selection changes.
+        filemenu.listbox.on_change = _on_change
 
-    # Assign the counter callback to every possible event.
-    event_counter = EventCounter()
-    event_counter.monitor(filemenu)
+        # Assign the counter callback to every possible event.
+        event_counter = EventCounter()
+        event_counter.monitor(filemenu)
 
-    # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600),
-                                      title="FURY FileMenu")
-    show_manager.scene.add(filemenu)
-
-    # Recorded events:
-    #  1. Click on 'testfile.txt'
-    #  2. Click on 'tempdir/'
-    #  3. Click on 'test0.txt'.
-    #  4. Shift + Click on 'test6.txt'.
-    #  5. Click on '../'.
-    #  2. Click on 'testfile.txt'.
-    show_manager.play_events_from_file(recording_filename)
-    expected = EventCounter.load(expected_events_counts_filename)
-    event_counter.check_counts(expected)
-
-    # Check if the right files were selected.
-    expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
-                ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
-                 "test4.txt", "test5.txt", "test6.txt"],
-                ["../"], ["testfile.txt"]]
-    npt.assert_equal(len(selected_files), len(expected))
-    assert_arrays_equal(selected_files, expected)
-
-    # Remove temporary directory and files
-    os.remove("testfile.txt")
-    for i in range(10):
-        os.remove(os.path.join(os.getcwd(), "tempdir",
-                               "test" + str(i) + ".txt"))
-    os.rmdir(os.path.join(os.getcwd(), "tempdir"))
-    os.chdir("..")
-    os.rmdir("testdir")
-
-    if interactive:
-        filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
+        # Create a show manager and record/play events.
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY FileMenu")
         show_manager.scene.add(filemenu)
-        show_manager.start()
+
+        # Recorded events:
+        #  1. Click on 'testfile.txt'
+        #  2. Click on 'tempdir/'
+        #  3. Click on 'test0.txt'.
+        #  4. Shift + Click on 'test6.txt'.
+        #  5. Click on '../'.
+        #  2. Click on 'testfile.txt'.
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+        # Check if the right files were selected.
+        expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
+                    ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
+                    "test4.txt", "test5.txt", "test6.txt"],
+                    ["../"], ["testfile.txt"]]
+
+        npt.assert_equal(len(selected_files), len(expected))
+        assert_arrays_equal(selected_files, expected)
+
+        if interactive:
+            filemenu = ui.FileMenu2D(size=(500, 500),
+                                     directory_path=os.getcwd())
+            show_manager = window.ShowManager(size=(600, 600),
+                                              title="FURY FileMenu")
+            show_manager.scene.add(filemenu)
+            show_manager.start()
 
 
 def test_ui_combobox_2d(interactive=False):
