@@ -656,7 +656,8 @@ def test_ui_file_menu_2d(interactive=False):
         os.chdir(test_dir)
         os.mkdir(os.path.join(test_dir, "tempdir"))
         for i in range(10):
-            open(os.path.join(test_dir, "tempdir", f"test{i}.txt"), 'wt').close()
+            open(os.path.join(test_dir, "tempdir", f"test{i}.txt"),
+                 'wt').close()
         open("testfile.txt", 'wt').close()
 
         filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
