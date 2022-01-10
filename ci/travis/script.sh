@@ -29,13 +29,13 @@ if [[ "${COVERAGE}" == "1" ]]; then
   codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
-    # pytest -svv --pyargs fury
-    for file in `find ../ -name 'test_*.py' -print`;
-    do
-      if pytest -svv $file; then
-      error_code=1
-      fi
-    done
+    pytest -svv --pyargs fury
+    # for file in `find ../ -name 'test_*.py' -print`;
+    # do
+    #   if pytest -svv $file; then
+    #   error_code=1
+    #   fi
+    # done
 
 fi
 
