@@ -370,7 +370,7 @@ def test_ui_checkbox_initial_state(recording=False):
 
 
 def test_ui_checkbox_default(recording=False):
-    filename = "test_ui_checkbox_default"
+    filename = "test_ui_checkbox_initial_state"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
@@ -492,7 +492,7 @@ def test_ui_radio_button_initial_state(recording=False):
 
 
 def test_ui_radio_button_default(recording=False):
-    filename = "test_ui_radio_button_default"
+    filename = "test_ui_radio_button_initial"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
