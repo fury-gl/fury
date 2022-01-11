@@ -30,22 +30,15 @@ if [[ "${COVERAGE}" == "1" ]]; then
 else
     # Threads issue so we run test on individual file
     # pytest -svv --pyargs fury
-    pwd
-    ls
-    cd ..
-    pwd
-    ls
-    exit 1
-    # for file in `find ../ -name 'test_*.py' -print`;
-    # do
-    #   pytest -svv $file;
-    #   retVal=$?
-    #   if [ $retVal -ne 0 ]; then
-    #   echo "THE CURRENT ERROR CODE IS $retVal";
-    #   error_code=1
-    #   fi
-    # done
-
+    for file in `find ../fury -name 'test_*.py' -print`;
+    do
+      pytest -svv $file;
+      retVal=$?
+      if [ $retVal -ne 0 ]; then
+      echo "THE CURRENT ERROR CODE IS $retVal";
+      error_code=1
+      fi
+    done
 fi
 
 if [[ "${BUILD_DOCS}" == "1" && "$TRAVIS_OS_NAME" != "osx" ]]; then
