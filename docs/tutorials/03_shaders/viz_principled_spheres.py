@@ -1,9 +1,9 @@
 """
 ===============================================================================
-"Principled" shader on spheres
+Principled BRDF shader on spheres
 ===============================================================================
 
-The "Principled" Bidirectional Reflectance Distribution Function ([BRDF]
+The Principled Bidirectional Reflectance Distribution Function ([BRDF]
 (https://en.wikipedia.org/wiki/Bidirectional_reflectance_distribution_function)
 ) was introduced by Brent Burley as part of the [SIGGRAPH 2012 Physically Based
 Shading course]
@@ -14,7 +14,7 @@ Exchange and Research Library) database. Moreover, each parameter was
 carefully chosen and limited to be easy to use and understand, so that
 blending multiple layers together would give intuitive results.
 
-In this demo, we showcase our implementation of the "Principled" BRDF in FURY.
+In this demo, we showcase our implementation of the Principled BRDF in FURY.
 
 Let's start by importing the necessary modules:
 """
@@ -31,18 +31,18 @@ scene.background((.9, .9, .9))
 
 """
 Let's define the parameters needed for our demo. In this demo we will see the
-effect of each one of the 10 parameters defined by the "Principled" shader.
+effect of each one of the 10 parameters defined by the Principled shader.
 For interpretability and usability purposes, each parameter is limited to
 values between the range 0 to 1.
 """
 
-spheres_params = [
+material_params = [
     [(1, 1, 1), {'subsurface': 0, 'subsurface_color': [.8, .8, .8]}],
     [[1, 1, 0], {'metallic': 0}], [(1, 0, 0), {'specular': 0}],
     [(1, 0, 0), {'specular_tint': 0, 'specular': 1}],
     [(0, 0, 1), {'roughness': 0}],
     [(1, 0, 1), {'anisotropic': 0, 'metallic': .25, 'roughness': .5}],
-    [[0, 0, 0], {'sheen': 0}], [(0, 0, 0), {'sheen_tint': 0, 'sheen': 1}],
+    [[0, 1, .5], {'sheen': 0}], [(0, 1, .5), {'sheen_tint': 0, 'sheen': 1}],
     [(0, 1, 1), {'clearcoat': 0}],
     [(0, 1, 1), {'clearcoat_gloss': 0, 'clearcoat': 1}]
 ]
@@ -56,11 +56,11 @@ for i in range(10):
     center = [[0, -5 * i, 0]]
     for j in range(11):
         center[0][0] = -25 + 5 * j
-        sphere = actor.sphere(center, colors=spheres_params[i][0], radii=2,
+        sphere = actor.sphere(center, colors=material_params[i][0], radii=2,
                               theta=32, phi=32)
-        keys = list(spheres_params[i][1])
-        spheres_params[i][1][keys[0]] = np.round(0.1 * j, decimals=1)
-        material.manifest_principled(sphere, **spheres_params[i][1])
+        keys = list(material_params[i][1])
+        material_params[i][1][keys[0]] = np.round(0.1 * j, decimals=1)
+        material.manifest_principled(sphere, **material_params[i][1])
         scene.add(sphere)
 
 """
@@ -86,8 +86,8 @@ for j in range(11):
 And visualize our demo.
 """
 
-interactive = False
+interactive = True
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+#window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
