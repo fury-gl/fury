@@ -35,7 +35,7 @@ else
       ec = pytest -svv $file;
       echo "THE CURRENT ERROR CODE IS $ec";
       if ec then
-        error_code=1;
+      error_code=1
       fi
     done
 
