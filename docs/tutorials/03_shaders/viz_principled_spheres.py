@@ -86,8 +86,8 @@ for j in range(11):
 And visualize our demo.
 """
 
-interactive = True
+interactive = False
 if interactive:
     window.show(scene)
 
-#window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
