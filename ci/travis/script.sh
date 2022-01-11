@@ -32,9 +32,10 @@ else
     # pytest -svv --pyargs fury
     for file in `find ../ -name 'test_*.py' -print`;
     do
-      ec = pytest -svv $file;
-      echo "THE CURRENT ERROR CODE IS $ec";
-      if $ec; then
+      pytest -svv $file;
+      retVal=$?
+      if [ $retVal -ne 0 ]; then
+      echo "THE CURRENT ERROR CODE IS $retVal";
       error_code=1
       fi
     done
