@@ -30,9 +30,9 @@ scene = window.Scene()
 scene.background((.9, .9, .9))
 
 """
-Let's define the parameters needed for our demo. In this demo we will see the 
-effect of each one of the 10 parameters defined by the "Principled" shader. 
-For interpretability and usability purposes, each parameter is limited to 
+Let's define the parameters needed for our demo. In this demo we will see the
+effect of each one of the 10 parameters defined by the "Principled" shader.
+For interpretability and usability purposes, each parameter is limited to
 values between the range 0 to 1.
 """
 
@@ -48,7 +48,7 @@ spheres_params = [
 ]
 
 """
-We can start to add our actors to the scene and see how different values of the 
+We can start to add our actors to the scene and see how different values of the
 parameters produce interesting effects.
 """
 
