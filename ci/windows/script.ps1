@@ -1,8 +1,7 @@
 # Powershell Install script
 param(
-    [Parameter(Mandatory=$True, Position=0, ValueFromPipeline=$false)]
-    [System.String]
-    $test_fname
+    [Parameter(Mandatory=$True, Position=0)]
+    [System.String] $TestFname
 )
 
 # Useful function from https://stackoverflow.com/questions/50093582/powershell-not-recognizing-conda-as-cmdlet-function-or-operable-program
