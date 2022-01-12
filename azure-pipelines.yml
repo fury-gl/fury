@@ -61,7 +61,7 @@ jobs:
       $fileList = Get-ChildItem -Recurse -Path ./fury -Include test_*.py | Select-Object -ExpandProperty FullName
       foreach ($textfile in $fileList) {
         Write-Output "Processed file: $textfile"
-        ./ci/windows/script.ps1 -$TestFname $textfile
+        powershell -File ci/windows/script.ps1 $textfile
         $Code1 = $LASTEXITCODE
         if ( $Code1 -ne 0 )
         {

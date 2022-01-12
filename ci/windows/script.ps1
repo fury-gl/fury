@@ -1,8 +1,5 @@
 # Powershell Install script
-param(
-    [Parameter(Mandatory=$True, Position=0)]
-    [System.String] $TestFname
-)
+param([System.String] $TestFname)
 
 Write-Output "Run the test for $TestFname"
 
