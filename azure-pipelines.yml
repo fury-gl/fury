@@ -20,8 +20,6 @@ jobs:
         OPTIONAL_DEPS: true
       Python37-64bit:
         python.version: '3.7'
-      Python36-64bit:
-        python.version: '3.6'
       Python38-64bit:
         python.version: '3.8'
       Python39-64bit:
