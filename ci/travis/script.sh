@@ -24,8 +24,18 @@ error_code=0
 if [[ "${COVERAGE}" == "1" ]]; then
   cp ../.coveragerc .;
   cp ../.codecov.yml .;
-  coverage run -m pytest -svv --pyargs fury  # Run the tests and check for test coverage.
-  coverage report -m  # Generate test coverage report.
+  # coverage run -m pytest -svv --pyargs fury  # Run the tests and check for test coverage.
+  for file in `find ../fury -name 'test_*.py' -print`;
+    do
+      coverage run -m -p pytest -svv $file;
+      retVal=$?
+      if [ $retVal -ne 0 ]; then
+      echo "THE CURRENT ERROR CODE IS $retVal";
+      error_code=1
+      fi
+      coverage report -m  # Generate test coverage report.
+    done
+  coverage combine
   codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file
