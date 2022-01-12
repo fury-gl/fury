@@ -61,6 +61,10 @@ jobs:
         ./ci/windows/script.ps1 -or Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
       }
       else {
-      ./ci/windows/script.ps1
+      Get-ChildItem "fury" -Filter test_*.py |
+      Foreach-Object {
+        Write-Output "Processed file: $_.FullName"
+        ./ci/windows/script.ps1 -$test_fname $_.FullName
+      }
       }
     displayName: 'Run Tests'

@@ -1,4 +1,5 @@
 # Powershell Install script
+param([String]$test_fname)
 
 # Useful function from https://stackoverflow.com/questions/50093582/powershell-not-recognizing-conda-as-cmdlet-function-or-operable-program
 function Invoke-CmdScript {
@@ -31,4 +32,4 @@ Invoke-Expression "$env:PIPI --user -e ."
 
 # Run tests
 Write-Output "======================== Run FURY tests ========================"
-Invoke-Expression "pytest -svv fury"
+Invoke-Expression "pytest -svv $test_fname"
