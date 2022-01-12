@@ -58,20 +58,20 @@ jobs:
     displayName: 'Install dependencies'
   - powershell: |
       $overall_code = 0
-      if ($env:INSTALL_TYPE -eq 'conda') {
-        ./ci/windows/script.ps1 -or Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
-      }
-      else {
       $fileList = Get-ChildItem -Recurse -Path ./fury -Include test_*.py | Select-Object -ExpandProperty FullName
       foreach ($textfile in $fileList) {
         Write-Output "Processed file: $textfile"
-        ./ci/windows/script.ps1 -$test_fname $textfile
+        & ./ci/windows/script.ps1 -$test_fname $textfile
         $Code1 = $LASTEXITCODE
         if ( $Code1 -ne 0 )
         {
           $overall_code = 1
         }
       }
+      if ($env:INSTALL_TYPE -eq 'conda') {
+      exit $overall_code -or Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
+      }
+      else {
       exit $overall_code
       }
     displayName: 'Run Tests'

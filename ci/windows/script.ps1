@@ -1,5 +1,9 @@
 # Powershell Install script
-param([String]$test_fname)
+param(
+    [Parameter(Mandatory=$True, Position=0, ValueFromPipeline=$false)]
+    [System.String]
+    $test_fname,
+)
 
 # Useful function from https://stackoverflow.com/questions/50093582/powershell-not-recognizing-conda-as-cmdlet-function-or-operable-program
 function Invoke-CmdScript {
