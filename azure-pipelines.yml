@@ -68,10 +68,10 @@ jobs:
           $overall_code = 1
         }
       }
-      if ($env:INSTALL_TYPE -eq 'conda') {
-      exit $overall_code -or Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
+      if ($env:INSTALL_TYPE -eq 'conda' -And $overall_code -ne 0) {
+        Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
       }
       else {
-      exit $overall_code
+        exit $overall_code
       }
     displayName: 'Run Tests'
