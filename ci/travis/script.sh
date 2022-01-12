@@ -33,9 +33,9 @@ if [[ "${COVERAGE}" == "1" ]]; then
       echo "THE CURRENT ERROR CODE IS $retVal";
       error_code=1
       fi
-      coverage report -m  # Generate test coverage report.
     done
-  coverage combine
+  coverage combine .
+  coverage report -m  # Generate test coverage report.
   codecov  # Upload the report to codecov.
 else
     # Threads issue so we run test on individual file

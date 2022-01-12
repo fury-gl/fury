@@ -4,9 +4,9 @@ do
     if coverage run -m -p pytest -svv $file; then
     error_code=1
     fi
-    coverage report -m
 done
-coverage combine
+coverage combine .
+coverage report -m
 
 exit $error_code
 
