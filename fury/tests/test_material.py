@@ -15,6 +15,10 @@ import pytest
 dipy, have_dipy, _ = optional_package('dipy')
 
 
+def test_fake():
+    pass
+
+
 @pytest.mark.skipif(VTK_9_PLUS, reason="Requires VTK < 9.0.0")
 def test_manifest_pbr_vtk_less_than_9():
     center = np.array([[0, 0, 0]])
