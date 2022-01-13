@@ -5,13 +5,14 @@ from fury.shaders import add_shader_callback, load, shader_to_actor
 from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
 
 
-def manifest_pbr(actor, metallicity=0, roughness=.5):
+def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
+                 anisotropy_rotation=0, clearcoat=0):
     """Apply the Physically Based Rendering properties to the selected actor.
 
     Parameters
     ----------
     actor : actor
-    metallicity : float, optional
+    metallic : float, optional
         Metallic or non-metallic (dielectric) shading computation value. Values
         must be between 0.0 and 1.0.
     roughness : float, optional
@@ -28,8 +29,11 @@ def manifest_pbr(actor, metallicity=0, roughness=.5):
         prop = actor.GetProperty()
         try:
             prop.SetInterpolationToPBR()
-            prop.SetMetallic(metallicity)
+            prop.SetMetallic(metallic)
             prop.SetRoughness(roughness)
+            prop.SetAnisotropy(anisotropy)
+            prop.SetAnisotropyRotation(anisotropy_rotation)
+            #prop.SetClearcoat(clearcoat)
         except AttributeError:
             warnings.warn(
                 'PBR interpolation cannot be applied to this actor. The '
