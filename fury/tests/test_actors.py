@@ -226,7 +226,7 @@ def test_contour_from_roi(interactive=False):
 
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(report2.objects, 2)
-   
+
 
 @pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
                                      "Travis. It works on a local machine"
@@ -804,8 +804,8 @@ def test_points(interactive=False):
 
 
 def test_labels(interactive=False):
-    npt.assert_warns(DeprecationWarning, actor.label, "hello")
-    text_actor = actor.vector_text("Hello")
+    npt.assert_warns(DeprecationWarning, actor.label, "FURY Rocks")
+    text_actor = actor.vector_text("FURY Rocks")
 
     scene = window.Scene()
     scene.add(text_actor)
