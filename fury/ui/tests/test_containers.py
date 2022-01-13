@@ -90,12 +90,12 @@ def test_grid_ui1(interactive=False):
     show_m.initialize()
 
     def timer_callback(_obj, _event):
+        nonlocal show_m, counter
         cnt = next(counter)
         show_m.scene.zoom(1)
         show_m.render()
         if cnt == 10:
             show_m.exit()
-            show_m.destroy_timers()
 
     # show the grid with the captions
     grid_ui = ui.GridUI(actors=actors, captions=texts,

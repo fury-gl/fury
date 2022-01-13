@@ -484,24 +484,21 @@ class ShowManager(object):
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
-        # self.initialize()
+        self.initialize()
         # self.render()
         recorder.Play()
-        # print('After Play')
 
         # self.window.RemoveRenderer(self.scene)
         # self.scene.SetRenderWindow(None)
 
         # Finalize seems very important otherwise
         # the recording window will not close.
-        
         self.window.Finalize()
         self.exit()
         # print('After Finalize and Exit')
 
         # del self.iren
         # del self.window
-
 
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
@@ -556,12 +553,13 @@ class ShowManager(object):
         # if is_osx and self.timers:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
-        
+
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
         self.timers.clear()
-        
+
+
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
