@@ -115,7 +115,6 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
         components = vtk_array.GetNumberOfComponents()
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
-        # image = np.flipud(image)
 
     if is_url:
         os.remove(filename)
@@ -163,7 +162,7 @@ def save_image(arr, filename, compression_quality=75,
                       format(filename, extension))
 
     if use_pillow:
-        arr = np.flipud(arr)    
+        arr = np.flipud(arr)
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality)
         return
@@ -172,7 +171,6 @@ def save_image(arr, filename, compression_quality=75,
         arr = arr[..., None]
 
     shape = arr.shape
-    # arr = np.flipud(arr)
     if extension.lower() in ['.png', ]:
         arr = arr.astype(np.uint8)
     arr = arr.reshape((shape[1] * shape[0], shape[2]))
