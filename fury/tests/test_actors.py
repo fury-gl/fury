@@ -33,9 +33,11 @@ if have_matplotlib:
     import matplotlib.pyplot as plt
     from fury.convert import matplotlib_figure_to_numpy
 
+
 class Sphere():
     vertices = None
     faces = None
+
 
 def test_slicer(verbose=False):
     scene = window.Scene()
@@ -226,7 +228,7 @@ def test_contour_from_roi(interactive=False):
 
     npt.assert_equal(report.objects, 1)
     npt.assert_equal(report2.objects, 2)
-   
+
 
 @pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
                                      "Travis. It works on a local machine"
@@ -601,7 +603,9 @@ def test_peak_slicer(interactive=False):
         window.show(scene)
 
     report = window.analyze_scene(scene)
-    ex = ['vtkLODActor', 'vtkLODActor', 'vtkOpenGLActor']
+    ex = ['vtkLODActor', 'vtkLODActor', 'vtkOpenGLActor',
+          'vtkOpenGLActor', 'vtkOpenGLActor', 'vtkOpenGLActor',
+          'vtkOpenGLActor', 'vtkOpenGLActor']
     npt.assert_equal(report.actors_classnames, ex)
 
     # 6d data
@@ -1405,4 +1409,3 @@ def test_marker_actor(interactive=False):
     colors = np.array([[0, 1, 0] for i in range(12)])
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
-
