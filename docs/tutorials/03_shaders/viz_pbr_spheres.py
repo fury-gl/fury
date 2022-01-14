@@ -11,10 +11,12 @@ material_params = [
     [(0, 0, 1), {'roughness': 0}],
     [(1, 0, 1), {'anisotropy': 0, 'metallic': .25, 'roughness': .5}],
     [(1, 0, 1), {'anisotropy_rotation': 0, 'anisotropy': 1, 'metallic': .25,
-                 'roughness': .5}]
+                 'roughness': .5}],
+    [(0, 1, 1), {'coat_strength': 0, 'roughness': .5}],
+    [(0, 1, 1), {'coat_roughness': 0, 'coat_strength': 1, 'roughness': 0}]
 ]
 
-for i in range(4):
+for i in range(6):
     center = [[0, -5 * i, 0]]
     for j in range(11):
         center[0][0] = -25 + 5 * j
@@ -31,9 +33,10 @@ for i in range(4):
         material.manifest_pbr(sphere, **material_params[i][1])
         scene.add(sphere)
 
-labels = ['Metallic', 'Roughness', 'Anisotropy', 'Anisotropy Rotation']
+labels = ['Metallic', 'Roughness', 'Anisotropy', 'Anisotropy Rotation',
+          'Coat Strength', 'Coat Roughness']
 
-for i in range(4):
+for i in range(6):
     pos = [-40, -5 * i, 0]
     label = actor.label(labels[i], pos=pos, scale=(.8, .8, .8),
                         color=(0, 0, 0))

@@ -6,8 +6,8 @@ from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
 
 
 def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
-                 anisotropy_rotation=0, clearcoat=0):
-    """Apply the Physically Based Rendering properties to the selected actor.
+                 anisotropy_rotation=0, coat_strength=0, coat_roughness=0):
+    """Apply VTK's Physically Based Rendering properties to the selected actor.
 
     Parameters
     ----------
@@ -18,6 +18,18 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
     roughness : float, optional
         Parameter used to specify how glossy the actor should be. Values must
         be between 0.0 and 1.0.
+    anisotropy : float, optional
+        Isotropic or anisotropic material parameter. Values must be between
+        0.0 and 1.0.
+    anisotropy_rotation : float, optional
+        Rotation of the anisotropy around the normal in a counter-clockwise
+        fashion. Values must be between 0.0 and 1.0. A value of 1.0 means a
+        rotation of 2 * pi.
+    coat_strength : float, optional
+        Strength of the coat layer. Values must be between 0.0 and 1.0 (0.0
+        means no clear coat will be modeled).
+    coat_roughness : float, optional
+        Roughness of the coat layer. Values must be between 0.0 and 1.0.
 
     """
     if not VTK_9_PLUS:
@@ -33,7 +45,8 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
             prop.SetRoughness(roughness)
             prop.SetAnisotropy(anisotropy)
             prop.SetAnisotropyRotation(anisotropy_rotation)
-            #prop.SetClearcoat(clearcoat)
+            prop.SetCoatStrength(coat_strength)
+            prop.SetCoatRoughness(coat_roughness)
         except AttributeError:
             warnings.warn(
                 'PBR interpolation cannot be applied to this actor. The '

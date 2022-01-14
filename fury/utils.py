@@ -486,6 +486,8 @@ def set_polydata_tangents(polydata, tangents):
     """
     vtk_tangents = numpy_support.numpy_to_vtk(tangents, deep=True,
                                               array_type=VTK_FLOAT)
+    # VTK does not require a specific name for the tangents array, however, for
+    # readability purposes, we set it to "Tangents"
     vtk_tangents.SetName('Tangents')
     polydata.GetPointData().SetTangents(vtk_tangents)
     return polydata
