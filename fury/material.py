@@ -6,7 +6,8 @@ from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
 
 
 def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
-                 anisotropy_rotation=0, coat_strength=0, coat_roughness=0):
+                 anisotropy_rotation=0, coat_strength=0, coat_roughness=0,
+                 base_ior=1.5, coat_ior=2):
     """Apply VTK's Physically Based Rendering properties to the selected actor.
 
     Parameters
@@ -30,6 +31,12 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
         means no clear coat will be modeled).
     coat_roughness : float, optional
         Roughness of the coat layer. Values must be between 0.0 and 1.0.
+    base_ior : float, optional
+        Index of refraction of the base material. Default is 1.5. Values must
+        be between 1.0 and 2.3.
+    coat_ior : float, optional
+        Index of refraction of the coat material. Default is 1.5. Values must
+        be between 1.0 and 2.3.
 
     """
     if not VTK_9_PLUS:
@@ -47,6 +54,8 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
             prop.SetAnisotropyRotation(anisotropy_rotation)
             prop.SetCoatStrength(coat_strength)
             prop.SetCoatRoughness(coat_roughness)
+            prop.SetBaseIOR(base_ior)
+            prop.SetCoatIOR(coat_ior)
         except AttributeError:
             warnings.warn(
                 'PBR interpolation cannot be applied to this actor. The '
