@@ -387,6 +387,8 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Complete path of icon.
 
     """
+    if not os.path.isdir(pjoin(fury_home, 'icons')):
+        fetch_viz_icons()
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
 
