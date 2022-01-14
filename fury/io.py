@@ -77,12 +77,11 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                                 0, 0)
             vtk_image.SetSpacing(1.0, 1.0, 1.0)
             vtk_image.SetOrigin(0.0, 0.0, 0.0)
-            arr_tmp = np.flipud(image)
-            arr_tmp = image
-            arr_tmp = arr_tmp.reshape(image.shape[1] * image.shape[0], depth)
-            arr_tmp = np.ascontiguousarray(arr_tmp, dtype=image.dtype)
+
+            image = image.reshape(image.shape[1] * image.shape[0], depth)
+            image = np.ascontiguousarray(image, dtype=image.dtype)
             vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
-            uchar_array = numpy_support.numpy_to_vtk(arr_tmp, deep=True,
+            uchar_array = numpy_support.numpy_to_vtk(image, deep=True,
                                                      array_type=vtk_array_type)
             vtk_image.GetPointData().SetScalars(uchar_array)
             image = vtk_image
