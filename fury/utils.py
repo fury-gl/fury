@@ -4,8 +4,9 @@ from scipy.ndimage import map_coordinates
 from fury.colormap import line_colors
 from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
-                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
-                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray)
+                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
+                      Transform, AlgorithmOutput, VTK_UNSIGNED_CHAR,
+                      IdTypeArray)
 
 
 def remove_observer_from_actor(actor, id):
@@ -379,6 +380,27 @@ def get_polydata_normals(polydata):
     return numpy_support.vtk_to_numpy(vtk_normals)
 
 
+def get_polydata_tangents(polydata):
+    """Get vertices tangent (ndarrays Nx3 int) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents, represented as 2D ndarrays (Nx3). None if there are no
+        tangents in the vtk polydata.
+
+    """
+    vtk_tangents = polydata.GetPointData().GetTangents()
+    if vtk_tangents is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tangents)
+
+
 def get_polydata_colors(polydata):
     """Get points color (ndarrays Nx3 int) from a vtk polydata.
 
@@ -450,6 +472,22 @@ def set_polydata_normals(polydata, normals):
     """
     vtk_normals = numpy_support.numpy_to_vtk(normals, deep=True)
     polydata.GetPointData().SetNormals(vtk_normals)
+    return polydata
+
+
+def set_polydata_tangents(polydata, tangents):
+    """Set polydata tangents with a numpy array (ndarrays Nx3 int).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    """
+    vtk_tangents = numpy_support.numpy_to_vtk(tangents, deep=True,
+                                              array_type=VTK_FLOAT)
+    vtk_tangents.SetName('Tangents')
+    polydata.GetPointData().SetTangents(vtk_tangents)
     return polydata
 
 
