@@ -70,7 +70,7 @@ def init_planet(planet_data):
     planet_image = io.load_image(planet_file)
     planet_actor = actor.texture_on_sphere(planet_image)
     planet_actor.SetPosition(planet_data['position'], 0, 0)
-    if(planet_data['filename'] != '8k_saturn_ring_alpha.png'):
+    if planet_data['filename'] != '8k_saturn_ring_alpha.png':
         utils.rotate(planet_actor, (90, 1, 0, 0))
     planet_actor.SetScale(planet_data['scale'])
     scene.add(planet_actor)
