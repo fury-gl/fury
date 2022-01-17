@@ -54,7 +54,7 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      DISPLAY: :99
+      DISPLAY: :99.0
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
       INSTALL_TYPE: ${{ matrix.install_type }}
@@ -111,11 +111,12 @@ jobs:
       if: startsWith(matrix.os,'ubuntu')
       run: |
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
-          sudo apt-get install libgl1-mesa-dev xvfb;
+          sudo apt-get install -y libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install libglx-mesa0 libglx-dev libglx0 xvfb;
+          sudo apt-get install -y libgl1-mesa-glx libglx-mesa0 libglx-dev libglx0 xvfb;
         fi
-        Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
+        sleep 3
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
