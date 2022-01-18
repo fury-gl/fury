@@ -26,7 +26,7 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText)
+                      Follower, VectorText, OpenGLBillboardTextActor3D)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
@@ -954,6 +954,7 @@ def _roll_evals(evals, axis=-1):
 
     return evals
 
+
 def _fa(evals, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
@@ -1024,9 +1025,6 @@ def _color_fa(fa, evecs):
         raise ValueError("Wrong number of dimensions for evecs")
 
     return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
-
-
-
 
 
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
@@ -2410,6 +2408,87 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
     return text_actor
 
+
+def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
+                            font_size=12, font_family='Arial',
+                            justification='center',
+                            vertical_justification='bottom'):
+    """ Fixed sized pixel aligned text, faces the camera, Anchored at a 3D point
+      
+    parameters
+    ----------
+    text : str
+    position : tuple
+    color : tuple
+    font_size : int
+    font_family : str
+    justification : str
+        Left, center or right (default left)
+    vertical_justification : str
+        Bottom, middle or top (default bottom)
+
+    Returns
+    -------
+    vtkOpenGLBillboardTextActor3D
+    """
+
+    class OpenGlBillboardText3D(OpenGLBillboardTextActor3D):
+        def set_message(self, text):
+            self.SetInput(text)
+
+        def get_message(self):
+            return self.GetInput()
+
+        def set_position(self, position):
+            self.SetPosition(position)
+
+        def get_position(self):
+            return self.GetPosition()
+        
+        def font_size(self, size):
+            self.GetTextProperty().SetFontSize(size)
+
+        def font_family(self, _family='Arial'):
+            self.GetTextProperty().SetFontFamilyToArial()
+
+        def color(self, color):
+            self.GetTextProperty().SetColor(*color)
+        
+        def justification(self, justification):
+            tprop = self.GetTextProperty()
+            if justification == 'left':
+                tprop.SetJustificationToLeft()
+            elif justification == 'center':
+                tprop.SetJustificationToCentered()
+            elif justification == 'right':
+                tprop.SetJustificationToRight()
+            else:
+                raise ValueError("Unknown justification: '{}'"
+                                 .format(justification))
+
+        def vertical_justification(self, justification):
+            tprop = self.GetTextProperty()
+            if justification == 'top':
+                tprop.SetVerticalJustificationToTop()
+            elif justification == 'middle':
+                tprop.SetVerticalJustificationToCentered()
+            elif justification == 'bottom':
+                tprop.SetVerticalJustificationToBottom()
+            else:
+                raise ValueError("Unknown vertical justification: '{}'"
+                                 .format(justification))
+    
+    billboard_text_actor = OpenGlBillboardText3D()
+    billboard_text_actor.set_message(text)
+    billboard_text_actor.set_position(position)
+    billboard_text_actor.font_size(font_size)
+    billboard_text_actor.font_family(font_family)
+    billboard_text_actor.color(color)
+    billboard_text_actor.justification(justification)
+    billboard_text_actor.vertical_justification(vertical_justification)
+
+    return billboard_text_actor
+        
 
 class Container(object):
     """ Provides functionalities for grouping multiple actors using a given
