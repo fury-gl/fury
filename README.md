@@ -135,10 +135,11 @@ You've discovered a bug or something else you want to change - excellent! Create
 
 # Citing
 
-If FURY is helping you during your work, [Please, cite us!](https://doi.org/10.21105/joss.03384) By citing us, you will participate to the FURY growth!
+If you are using FURY in your work then do cite [this paper](https://doi.org/10.21105/joss.03384). By citing FURY, you are helping sustain the FURY ecosystem.
 
-    Garyfallidis et al., (2021). FURY: advanced scientific visualization.
-    Journal of Open Source Software, 6(64), 3384,
+    Garyfallidis, Eleftherios, Serge Koudoro, Javier Guaje, Marc-Alexandre Côté, Soham Biswas,
+    David Reagan, Nasim Anousheh, Filipi Silva, Geoffrey Fox, and Fury Contributors.
+    "FURY: advanced scientific visualization." Journal of Open Source Software 6, no. 64 (2021): 3384.
     https://doi.org/10.21105/joss.03384
 
 
