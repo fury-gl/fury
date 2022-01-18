@@ -2413,8 +2413,8 @@ def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
                             font_size=12, font_family='Arial',
                             justification='center',
                             vertical_justification='bottom'):
-    """ Fixed sized pixel aligned text, faces the camera, Anchored at a 3D point
-      
+    """ Fixed sized, pixel aligned text, faces the camera
+
     parameters
     ----------
     text : str
@@ -2444,7 +2444,7 @@ def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def get_position(self):
             return self.GetPosition()
-        
+
         def font_size(self, size):
             self.GetTextProperty().SetFontSize(size)
 
@@ -2453,7 +2453,7 @@ def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def color(self, color):
             self.GetTextProperty().SetColor(*color)
-        
+
         def justification(self, justification):
             tprop = self.GetTextProperty()
             if justification == 'left':
@@ -2477,7 +2477,7 @@ def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
             else:
                 raise ValueError("Unknown vertical justification: '{}'"
                                  .format(justification))
-    
+
     billboard_text_actor = OpenGlBillboardText3D()
     billboard_text_actor.set_message(text)
     billboard_text_actor.set_position(position)
@@ -2488,7 +2488,7 @@ def opengl_billboard_text3D(text, position=(0, 0, 0), color=(1, 1, 1),
     billboard_text_actor.vertical_justification(vertical_justification)
 
     return billboard_text_actor
-        
+
 
 class Container(object):
     """ Provides functionalities for grouping multiple actors using a given
