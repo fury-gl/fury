@@ -8,6 +8,10 @@ from fury.data import DATA_DIR
 import pytest
 
 
+def test_fake():
+    pass
+
+
 # @pytest.mark.skipif(skip_osx, reason="This test does not work on macOS + "
 #                                      "Travis. It works on a local machine"
 #                                      " with 3 different version of VTK. There"
