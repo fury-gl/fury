@@ -765,7 +765,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                                          .GetScalars())
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = np.flipud(arr.reshape((h, w, components)))
+        arr = arr.reshape((h, w, components))
         save_image(arr, filename)
 
         ang = +az_ang

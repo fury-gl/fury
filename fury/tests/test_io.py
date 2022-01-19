@@ -152,7 +152,6 @@ def test_pillow():
 
         for opt1, opt2 in [(True, True), (False, True), (True, False),
                            (False, False)]:
-
             save_image(data, fname_path, use_pillow=opt1)
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
