@@ -160,7 +160,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
-def numpy_to_vtk_image_data(array):
+def numpy_to_vtk_image_data(array, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), depth=1):
     """Convert numpy array to a vtk image data.
 
     Parameters
@@ -177,14 +177,15 @@ def numpy_to_vtk_image_data(array):
         raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
 
     vtk_image = ImageData()
-    depth = 1 if array.ndim == 2 else array.shape[2]
+    if array.ndim != 2 and depth == 1:
+        depth = array.shape[2]
 
     vtk_image.SetDimensions(array.shape[1], array.shape[0], depth)
     vtk_image.SetExtent(0, array.shape[1] - 1,
                         0, array.shape[0] - 1,
                         0, 0)
-    vtk_image.SetSpacing(1.0, 1.0, 1.0)
-    vtk_image.SetOrigin(0.0, 0.0, 0.0)
+    vtk_image.SetSpacing(spacing)
+    vtk_image.SetOrigin(origin)
     temp_arr = np.flipud(array)
     temp_arr = temp_arr.reshape(array.shape[1] * array.shape[0], depth)
     temp_arr = np.ascontiguousarray(temp_arr, dtype=array.dtype)
