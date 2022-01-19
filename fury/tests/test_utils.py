@@ -2,8 +2,8 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from fury.utils import (map_coordinates_3d_4d,
-                        vtk_matrix_to_numpy,
+from fury.utils import (get_polydata_tangents, map_coordinates_3d_4d,
+                        set_polydata_tangents, vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
                         rotate, vertices_from_actor,
@@ -116,6 +116,26 @@ def test_polydata_polygon(interactive=False):
 
         report = window.analyze_snapshot(arr)
         npt.assert_equal(report.objects, 1)
+
+
+def test_set_polydata_tangents():
+    my_polydata = PolyData()
+    poly_point_data = my_polydata.GetPointData()
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 0)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    set_polydata_tangents(my_polydata, array)
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+
+
+def test_get_polydata_tangents():
+    my_polydata = PolyData()
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    set_polydata_tangents(my_polydata, array)
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_array_equal(tangents, array)
 
 
 def test_asbytes():
