@@ -160,7 +160,8 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
-def numpy_to_vtk_image_data(array, spacing=(1.0, 1.0, 1.0), origin=(0.0, 0.0, 0.0), depth=1):
+def numpy_to_vtk_image_data(array, spacing=(1.0, 1.0, 1.0),
+                            origin=(0.0, 0.0, 0.0), depth=1):
     """Convert numpy array to a vtk image data.
 
     Parameters
