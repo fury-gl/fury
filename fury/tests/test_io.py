@@ -125,7 +125,7 @@ def test_save_load_image():
                       np.random.randint(0, 255, size=(50, 3, 1, 1)),
                       "test.png")
 
-    compression_type = [None, "lzw"]
+    compression_type = [None, "bits", "random"]
 
     for ct in compression_type:
         with InTemporaryDirectory() as odir:
@@ -152,7 +152,6 @@ def test_pillow():
 
         for opt1, opt2 in [(True, True), (False, True), (True, False),
                            (False, False)]:
-
             save_image(data, fname_path, use_pillow=opt1)
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)

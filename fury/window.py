@@ -484,10 +484,21 @@ class ShowManager(object):
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
-
         self.initialize()
-        self.render()
+        # self.render()
         recorder.Play()
+
+        # self.window.RemoveRenderer(self.scene)
+        # self.scene.SetRenderWindow(None)
+
+        # Finalize seems very important otherwise
+        # the recording window will not close.
+        self.window.Finalize()
+        self.exit()
+        # print('After Finalize and Exit')
+
+        # del self.iren
+        # del self.window
 
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
@@ -539,13 +550,16 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        if is_osx and self.timers:
+        # if is_osx and self.timers:
             # OSX seems to not destroy correctly timers
             # segfault 11 appears sometimes if we do not do it manually.
-            self.destroy_timers()
-        self.iren.GetRenderWindow().Finalize()
+
+        # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
+        self.destroy_timers()
         self.timers.clear()
+
+
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
@@ -751,7 +765,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
                                          .GetScalars())
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
-        arr = np.flipud(arr.reshape((h, w, components)))
+        arr = arr.reshape((h, w, components))
         save_image(arr, filename)
 
         ang = +az_ang
@@ -816,7 +830,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     offscreen : bool
-        Default True. Go stealthmode no window should appear.
+        Default True. Go stealth mode no window should appear.
     order_transparent : bool
         Default False. Use depth peeling to sort transparent objects.
         If True also enables anti-aliasing.

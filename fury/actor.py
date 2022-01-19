@@ -12,7 +12,7 @@ from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
-from fury.deprecator import deprecated_params
+from fury.deprecator import deprecated_params, deprecate_with_version
 from fury.io import load_image
 from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       ImageReslice, ImageActor, CellPicker, OutlineFilter,
@@ -925,6 +925,110 @@ def _makeNd(array, ndim):
     return array.reshape(new_shape)
 
 
+def _roll_evals(evals, axis=-1):
+    """Check evals shape.
+
+    Helper function to check that the evals provided to functions calculating
+    tensor statistics have the right shape
+
+    Parameters
+    ----------
+    evals : array-like
+        Eigenvalues of a diffusion tensor. shape should be (...,3).
+
+    axis : int
+        The axis of the array which contains the 3 eigenvals. Default: -1
+
+    Returns
+    -------
+    evals : array-like
+        Eigenvalues of a diffusion tensor, rolled so that the 3 eigenvals are
+        the last axis.
+
+    """
+    if evals.shape[-1] != 3:
+        msg = "Expecting 3 eigenvalues, got {}".format(evals.shape[-1])
+        raise ValueError(msg)
+
+    evals = np.rollaxis(evals, axis)
+
+    return evals
+
+def _fa(evals, axis=-1):
+    r"""Return Fractional anisotropy (FA) of a diffusion tensor.
+
+    Parameters
+    ----------
+    evals : array-like
+        Eigenvalues of a diffusion tensor.
+    axis : int
+        Axis of `evals` which contains 3 eigenvalues.
+
+    Returns
+    -------
+    fa : array
+        Calculated FA. Range is 0 <= FA <= 1.
+
+    Notes
+    -----
+    FA is calculated using the following equation:
+
+    .. math::
+
+        FA = \sqrt{\frac{1}{2}\frac{(\lambda_1-\lambda_2)^2+(\lambda_1-
+                    \lambda_3)^2+(\lambda_2-\lambda_3)^2}{\lambda_1^2+
+                    \lambda_2^2+\lambda_3^2}}
+
+    """
+    evals = _roll_evals(evals, axis)
+    # Make sure not to get nans
+    all_zero = (evals == 0).all(axis=0)
+    ev1, ev2, ev3 = evals
+    fa = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
+                        (ev2 - ev3) ** 2 +
+                        (ev3 - ev1) ** 2) /
+                 ((evals * evals).sum(0) + all_zero))
+
+    return fa
+
+
+def _color_fa(fa, evecs):
+    r""" Color fractional anisotropy of diffusion tensor
+
+    Parameters
+    ----------
+    fa : array-like
+        Array of the fractional anisotropy (can be 1D, 2D or 3D)
+
+    evecs : array-like
+        eigen vectors from the tensor model
+
+    Returns
+    -------
+    rgb : Array with 3 channels for each color as the last dimension.
+        Colormap of the FA with red for the x value, y for the green
+        value and z for the blue value.
+
+    Notes
+    -----
+
+    It is computed from the clipped FA between 0 and 1 using the following
+    formula
+
+    .. math::
+
+        rgb = abs(max(\vec{e})) \times fa
+    """
+
+    if (fa.shape != evecs[..., 0, 0].shape) or ((3, 3) != evecs.shape[-2:]):
+        raise ValueError("Wrong number of dimensions for evecs")
+
+    return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
+
+
+
+
+
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                   norm=True, opacity=1., scalar_colors=None):
     """Slice many tensors as ellipsoids in native or world coordinates.
@@ -1053,8 +1157,8 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vertices = sphere.vertices
 
     if scalar_colors is None:
-        from dipy.reconst.dti import color_fa, fractional_anisotropy
-        cfa = color_fa(fractional_anisotropy(evals), evecs)
+        #from dipy.reconst.dti import color_fa, fractional_anisotropy
+        cfa = _color_fa(_fa(evals), evecs)
     else:
         cfa = _makeNd(scalar_colors, 4)
 
@@ -1812,6 +1916,46 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     return tri_actor
 
 
+def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
+                        scales=1):
+    """Visualize one or many rhombicuboctahedron with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Rhombicuboctahedron positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector(s) of the Rhombicuboctahedron(s)
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    scales : int or ndarray (N,3) or tuple (3,), optional
+        Rhombicuboctahedron size on each direction (x, y), default(1)
+
+    Returns
+    -------
+    vtkActor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(3, 3)
+    >>> dirs = np.random.rand(3, 3)
+    >>> colors = np.random.rand(3, 3)
+    >>> scales = np.random.rand(3, 1)
+    >>> actor = actor.rhombicuboctahedron(centers, dirs, colors, scales)
+    >>> scene.add(actor)
+    >>> # window.show(scene)
+
+    """
+    verts, faces = fp.prim_rhombicuboctahedron()
+    res = fp.repeat_primitive(verts, faces, directions=directions,
+                              centers=centers, colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    rcoh_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return rcoh_actor
+
+
 def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
                     scales=1):
     """Visualize one or many pentagonal prisms with different features.
@@ -2077,8 +2221,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return sq_actor
 
 
-def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-          color=(1, 1, 1)):
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
+                color=(1, 1, 1)):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2122,6 +2266,12 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     texta.SetPosition(pos)
 
     return texta
+
+
+label = deprecate_with_version(message="Label function has been renamed"
+                                       "vector_text",
+                               since="0.7.1",
+                               until="0.9.0")(vector_text)
 
 
 def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
@@ -2284,6 +2434,7 @@ class Container(object):
         Default: (0, 0, 0, 0, 0, 0)
 
     """
+
     def __init__(self, layout=layout.Layout()):
         """
 
@@ -2784,7 +2935,7 @@ def markers(
         edge_width=.0,
         edge_color=(255, 255, 255),
         edge_opacity=.8
-        ):
+):
     """Create a marker actor with different shapes.
 
     Parameters
@@ -2818,8 +2969,8 @@ def markers(
 
     attribute_to_actor(sq_actor, big_centers, 'center')
     marker2id = {
-            'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
-            'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
+        'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
+        'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
 
     vs_dec_code = load("billboard_dec.vert")
     vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
@@ -2853,21 +3004,21 @@ def markers(
                 uniform_name, value)
 
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='edgeWidth',
-                value=edge_width))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='edgeWidth',
+            value=edge_width))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='markerOpacity',
-                value=marker_opacity))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='markerOpacity',
+            value=marker_opacity))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='f', uniform_name='edgeOpacity',
-                value=edge_opacity))
+        sq_actor, partial(
+            callback, uniform_type='f', uniform_name='edgeOpacity',
+            value=edge_opacity))
     add_shader_callback(
-            sq_actor, partial(
-                callback, uniform_type='3f', uniform_name='edgeColor',
-                value=edge_color))
+        sq_actor, partial(
+            callback, uniform_type='3f', uniform_name='edgeColor',
+            value=edge_color))
 
     shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
