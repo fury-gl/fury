@@ -76,7 +76,6 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      MPLBACKEND: TKAgg
 
     steps:
     - uses: actions/checkout@v2
@@ -109,6 +108,7 @@ jobs:
     - name: Setup Environment variables
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
+        if [ "ubuntu-latest" == "${{ matrix.os }}" ]; then echo "MPLBACKEND=TKAgg" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
         if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}" ]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
         python3 -c "import os; print(os.environ['OPTION_FLAGS'])"
