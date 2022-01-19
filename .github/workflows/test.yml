@@ -76,6 +76,7 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      MPLBACKEND: TKAgg
 
     steps:
     - uses: actions/checkout@v2
