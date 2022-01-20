@@ -41,15 +41,6 @@ def test_ui_textbox(recording=False):
     another_textbox_test = ui.TextBox2D(height=3, width=10, text='Enter Text')
     another_textbox_test.set_message('Enter Text')
 
-    # Checking whether textbox went out of focus
-    is_off_focused = [False]
-
-    def _off_focus(textbox):
-        is_off_focused[0] = True
-
-    # Set up a callback when textbox went out of focus
-    textbox_test.off_focus = _off_focus
-
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(textbox_test)
@@ -68,8 +59,6 @@ def test_ui_textbox(recording=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
-
-    npt.assert_equal(is_off_focused[0], True)
 
 
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):
@@ -968,8 +957,10 @@ def test_ui_file_menu_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
     expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
-    with InTemporaryDirectory() as tmpdir:
-        test_dir = os.path.join(tmpdir, 'testdir')
+
+<< << << < HEAD
+  with InTemporaryDirectory() as tmpdir:
+       test_dir = os.path.join(tmpdir, 'testdir')
         os.makedirs(os.path.join(test_dir, 'tempdir'))
         for i in range(10):
             open(os.path.join(test_dir, 'tempdir', f'test{i}.txt'), 'wt').close()
@@ -978,60 +969,107 @@ def test_ui_file_menu_2d(interactive=False):
         filemenu = ui.FileMenu2D(
             size=(500, 500), extensions=['txt'], directory_path=test_dir
         )
+== == == =
+  tmpdir = InTemporaryDirectory()
+   test_dir = os.path.join(tmpdir.name, "testdir")
+    os.mkdir(test_dir)
+    os.chdir(test_dir)
+    os.mkdir(os.path.join(test_dir, "tempdir"))
+    for i in range(10):
+        open(os.path.join(test_dir, "tempdir", f"test{i}.txt"),
+             'wt').close()
+    open("testfile.txt", 'wt').close()
 
-        # We will collect the sequence of files that have been selected.
-        selected_files = []
+    filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
+                             directory_path=os.getcwd())
+>>>>>> > 373529ff(updating test file)
 
-        def _on_change():
-            selected_files.append(list(filemenu.listbox.selected))
+      # We will collect the sequence of files that have been selected.
+  selected_files = []
 
-        # Set up a callback when selection changes.
-        filemenu.listbox.on_change = _on_change
+   def _on_change():
+        selected_files.append(list(filemenu.listbox.selected))
 
-        # Assign the counter callback to every possible event.
-        event_counter = EventCounter()
-        event_counter.monitor(filemenu)
+    # Set up a callback when selection changes.
+    filemenu.listbox.on_change = _on_change
 
-        # Create a show manager and record/play events.
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(filemenu)
+
+<< <<<< < HEAD
+  # Create a show manager and record/play events.
+  show_manager = window.ShowManager(size=(600, 600), title='FURY FileMenu')
+== == ===
+  # Create a show manager and record/play events.
+  show_manager = window.ShowManager(size=(600, 600),
+                                     title="FURY FileMenu")
+   show_manager.scene.add(filemenu)
+
+    # Recorded events:
+    #  1. Click on 'testfile.txt'
+    #  2. Click on 'tempdir/'
+    #  3. Click on 'test0.txt'.
+    #  4. Shift + Click on 'test6.txt'.
+    #  5. Click on '../'.
+    #  2. Click on 'testfile.txt'.
+    show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Check if the right files were selected.
+    expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
+                ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
+                 "test4.txt", "test5.txt", "test6.txt"],
+                ["../"], ["testfile.txt"]]
+
+    npt.assert_equal(len(selected_files), len(expected))
+    assert_arrays_equal(selected_files, expected)
+
+    if interactive:
+        filemenu = ui.FileMenu2D(size=(500, 500),
+                                 directory_path=os.getcwd())
+        show_manager = window.ShowManager(size=(600, 600),
+                                          title="FURY FileMenu")
+>>>>>> > 373529ff(updating test file)
+  show_manager.scene.add(filemenu)
+
+   # Recorded events:
+   #  1. Click on 'testfile.txt'
+   #  2. Click on 'tempdir/'
+   #  3. Click on 'test0.txt'.
+   #  4. Shift + Click on 'test6.txt'.
+   #  5. Click on '../'.
+   #  2. Click on 'testfile.txt'.
+   show_manager.play_events_from_file(recording_filename)
+    expected = EventCounter.load(expected_events_counts_filename)
+    event_counter.check_counts(expected)
+
+    # Check if the right files were selected.
+    expected = [
+        ['testfile.txt'],
+        ['tempdir'],
+        ['test0.txt'],
+        [
+            'test0.txt',
+            'test1.txt',
+            'test2.txt',
+            'test3.txt',
+            'test4.txt',
+            'test5.txt',
+            'test6.txt',
+        ],
+        ['../'],
+        ['testfile.txt'],
+    ]
+
+    npt.assert_equal(len(selected_files), len(expected))
+    assert_arrays_equal(selected_files, expected)
+    if interactive:
+        filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
         show_manager = window.ShowManager(size=(600, 600), title='FURY FileMenu')
         show_manager.scene.add(filemenu)
-
-        # Recorded events:
-        #  1. Click on 'testfile.txt'
-        #  2. Click on 'tempdir/'
-        #  3. Click on 'test0.txt'.
-        #  4. Shift + Click on 'test6.txt'.
-        #  5. Click on '../'.
-        #  2. Click on 'testfile.txt'.
-        show_manager.play_events_from_file(recording_filename)
-        expected = EventCounter.load(expected_events_counts_filename)
-        event_counter.check_counts(expected)
-
-        # Check if the right files were selected.
-        expected = [
-            ['testfile.txt'],
-            ['tempdir'],
-            ['test0.txt'],
-            [
-                'test0.txt',
-                'test1.txt',
-                'test2.txt',
-                'test3.txt',
-                'test4.txt',
-                'test5.txt',
-                'test6.txt',
-            ],
-            ['../'],
-            ['testfile.txt'],
-        ]
-
-        npt.assert_equal(len(selected_files), len(expected))
-        assert_arrays_equal(selected_files, expected)
-        if interactive:
-            filemenu = ui.FileMenu2D(size=(500, 500), directory_path=os.getcwd())
-            show_manager = window.ShowManager(size=(600, 600), title='FURY FileMenu')
-            show_manager.scene.add(filemenu)
-            show_manager.start()
+        show_manager.start()
 
 
 def test_ui_combobox_2d(interactive=False):
@@ -1313,3 +1351,159 @@ def test_ui_spinbox(interactive=False):
     spinbox.resize((450, 200))
     npt.assert_equal((315, 160), spinbox.textbox_size)
     npt.assert_equal((90, 60), spinbox.button_size)
+
+
+@pytest.mark.skipif(True, reason="Under investigation")
+def test_frame_rate_and_anti_aliasing():
+    """Testing frame rate with/out anti-aliasing"""
+
+    length_ = 200
+    multi_samples = 32
+    max_peels = 8
+
+    st_x = np.arange(length_)
+    st_y = np.sin(np.arange(length_))
+    st_z = np.zeros(st_x.shape)
+    st = np.zeros((length_, 3))
+    st[:, 0] = st_x
+    st[:, 1] = st_y
+    st[:, 2] = st_z
+
+    all_st = []
+    all_st.append(st)
+    for i in range(1000):
+        all_st.append(st + i * np.array([0., .5, 0]))
+
+    # st_actor = actor.line(all_st, linewidth=1)
+    # TODO: textblock disappears when lod=True
+    st_actor = actor.streamtube(all_st, linewidth=0.1, lod=False)
+
+    scene = window.Scene()
+    scene.background((1, 1., 1))
+
+    # quick game style antialiasing
+    scene.fxaa_on()
+    scene.fxaa_off()
+
+    # the good staff is later with multi-sampling
+
+    tb = ui.TextBlock2D(font_size=40, color=(1, 0.5, 0))
+
+    panel = ui.Panel2D(position=(400, 400), size=(400, 400))
+    panel.add_element(tb, (0.2, 0.5))
+
+    counter = itertools.count()
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
+
+    showm.initialize()
+    scene.add(panel)
+    scene.add(st_actor)
+    scene.reset_camera_tight()
+    scene.zoom(5)
+
+    class FrameRateHolder(object):
+        fpss = []
+
+    frh = FrameRateHolder()
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        if cnt % 1 == 0:
+            fps = np.round(scene.frame_rate, 0)
+            frh.fpss.append(fps)
+            msg = "FPS " + str(fps) + ' ' + str(cnt)
+            tb.message = msg
+            showm.render()
+        if cnt > 10:
+            showm.exit()
+
+    # Run every 200 milliseconds
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr = window.snapshot(scene, size=(1980, 1080),
+                          offscreen=True,
+                          order_transparent=True,
+                          multi_samples=multi_samples,
+                          max_peels=max_peels,
+                          occlusion_ratio=0.0)
+    assert_greater(np.sum(arr), 0)
+    # TODO: check why in osx we have issues in Azure
+    if not skip_osx:
+        assert_greater(np.median(frh.fpss), 0)
+
+    frh.fpss = []
+    counter = itertools.count()
+    multi_samples = 0
+    showm = window.ShowManager(scene,
+                               size=(1980, 1080), reset_camera=False,
+                               order_transparent=True,
+                               multi_samples=multi_samples,
+                               max_peels=max_peels,
+                               occlusion_ratio=0.0)
+
+    showm.initialize()
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr2 = window.snapshot(scene, size=(1980, 1080),
+                           offscreen=True,
+                           order_transparent=True,
+                           multi_samples=multi_samples,
+                           max_peels=max_peels,
+                           occlusion_ratio=0.0)
+    assert_greater(np.sum(arr2), 0)
+    if not skip_osx:
+        assert_greater(np.median(frh.fpss), 0)
+
+
+# @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
+#                                      " Need to be introspected")
+@pytest.mark.skipif(True, reason="Under investigation")
+def test_timer():
+    """Testing add a timer and exit window and app from inside timer."""
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
+    xyzr2 = np.array([[0, 200, 0, 30], [100, 200, 0, 50], [300, 200, 0, 100]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.45]])
+
+    scene = window.Scene()
+
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3])
+
+    vertices, faces = prim_sphere('repulsion724')
+
+    sphere_actor2 = actor.sphere(centers=xyzr2[:, :3], colors=colors[:],
+                                 radii=xyzr2[:, 3], vertices=vertices,
+                                 faces=faces.astype('i8'))
+
+    scene.add(sphere_actor)
+    scene.add(sphere_actor2)
+
+    tb = ui.TextBlock2D()
+    counter = itertools.count()
+    showm = window.ShowManager(scene,
+                               size=(1024, 768), reset_camera=False,
+                               order_transparent=True)
+
+    showm.initialize()
+    scene.add(tb)
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        tb.message = "Let's count to 10 and exit :" + str(cnt)
+        showm.render()
+        if cnt > 9:
+            showm.exit()
+
+    # Run every 200 milliseconds
+    showm.add_timer_callback(True, 200, timer_callback)
+    showm.start()
+
+    arr = window.snapshot(scene, offscreen=True)
+    npt.assert_(np.sum(arr) > 0)
