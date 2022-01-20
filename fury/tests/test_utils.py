@@ -4,7 +4,10 @@ import numpy as np
 import numpy.testing as npt
 from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         get_polydata_tangents, map_coordinates_3d_4d,
-                        set_polydata_tangents, vtk_matrix_to_numpy,
+                        normals_from_actor, normals_to_actor,
+                        set_polydata_tangents, tangents_from_actor,
+                        tangents_from_direction_of_anisotropy,
+                        tangents_to_actor, vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
                         rotate, vertices_from_actor,
@@ -446,6 +449,58 @@ def test_vertices_from_actor(interactive=False):
     npt.assert_array_equal(l_array, l_colors)
     npt.assert_equal(l_array_none, None)
     npt.assert_equal(isinstance(l_array_vtk, UnsignedCharArray), True)
+
+
+def test_normals_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    normals = normals_from_actor(my_actor)
+    npt.assert_equal(normals, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetNormals(
+        numpy_support.numpy_to_vtk(array, deep=True))
+    normals = normals_from_actor(my_actor)
+    npt.assert_array_equal(normals, array)
+
+
+def test_normals_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Normals'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    normals_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Normals'), True)
+    normals = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Normals'))
+    npt.assert_array_equal(normals, array)
+
+
+def test_tangents_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_array_equal(tangents, array)
+
+
+def test_tangents_from_direction_of_anisotropy():
+    normals = np.array([[-1., 0., 0.], [0., 0., 1.]])
+    doa = (0., 1., 0.)
+    expected = np.array([[0., 0., 1.], [1., 0., 0.]])
+    actual = tangents_from_direction_of_anisotropy(normals, doa)
+    npt.assert_array_equal(actual, expected)
+
+
+def test_tangents_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    tangents_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+    tangents = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Tangents'))
+    npt.assert_array_equal(tangents, array)
 
 
 def test_get_actor_from_primitive():

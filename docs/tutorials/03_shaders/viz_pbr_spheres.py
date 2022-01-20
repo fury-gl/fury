@@ -16,8 +16,8 @@ Let's start by importing the necessary modules:
 """
 
 from fury import actor, material, window
-from fury.utils import (get_polydata_normals, normalize_v3,
-                        set_polydata_tangents)
+from fury.utils import (normals_from_actor, tangents_to_actor,
+                        tangents_from_direction_of_anisotropy)
 import numpy as np
 
 """
@@ -53,12 +53,9 @@ for i in range(6):
         center[0][0] = -25 + 5 * j
         sphere = actor.sphere(center, material_params[i][0], radii=2, theta=32,
                               phi=32)
-        polydata = sphere.GetMapper().GetInput()
-        normals = get_polydata_normals(polydata)
-        tangents = np.cross(normals, np.array([0, 1, .5]))
-        binormals = normalize_v3(np.cross(normals, tangents))
-        tangents = normalize_v3(np.cross(normals, binormals))
-        set_polydata_tangents(polydata, tangents)
+        normals = normals_from_actor(sphere)
+        tangents = tangents_from_direction_of_anisotropy(normals, (0, 1, .5))
+        tangents_to_actor(sphere, tangents)
         keys = list(material_params[i][1])
         material_params[i][1][keys[0]] = np.round(0.1 * j, decimals=1)
         material.manifest_pbr(sphere, **material_params[i][1])

@@ -515,6 +515,9 @@ def set_polydata_normals(polydata, normals):
 
     """
     vtk_normals = numpy_support.numpy_to_vtk(normals, deep=True)
+    # VTK does not require a specific name for the normals array, however, for
+    # readability purposes, we set it to "Normals"
+    vtk_normals.SetName('Normals')
     polydata.GetPointData().SetNormals(vtk_normals)
     return polydata
 
@@ -1028,6 +1031,26 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 
+def tangents_from_direction_of_anisotropy(normals, direction):
+    """Calculate tangents from normals and a 3D vector representing the
+       direction of anisotropy.
+
+    Parameters
+    ----------
+    normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
+    direction : tuple (3,) or array (3,)
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents, represented as 2D ndarrays (Nx3).
+
+    """
+    tangents = np.cross(normals, direction)
+    binormals = normalize_v3(np.cross(normals, tangents))
+    return normalize_v3(np.cross(normals, binormals))
+
+
 def triangle_order(vertices, faces):
     """Determine the winding order of a given set of vertices and a triangle.
 
@@ -1152,6 +1175,40 @@ def colors_from_actor(actor, array_name='colors', as_vtk=False):
                             as_vtk=as_vtk)
 
 
+def normals_from_actor(actor):
+    """Access normals from actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+        Normals
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    return get_polydata_normals(polydata)
+
+
+def tangents_from_actor(actor):
+    """Access tangents from actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    return get_polydata_tangents(polydata)
+
+
 def array_from_actor(actor, array_name, as_vtk=False):
     """Access array from actor which uses polydata.
 
@@ -1175,6 +1232,38 @@ def array_from_actor(actor, array_name, as_vtk=False):
         return vtk_array
 
     return numpy_support.vtk_to_numpy(vtk_array)
+
+
+def normals_to_actor(actor, normals):
+    """Set normals to actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+    normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    Returns
+    -------
+    actor
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    set_polydata_normals(polydata, normals)
+    return actor
+
+
+def tangents_to_actor(actor, tangents):
+    """Set tangents to actor which uses polydata.
+
+    Parameters
+    ----------
+    actor : actor
+    tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    set_polydata_tangents(polydata, tangents)
+    return actor
 
 
 def compute_bounds(actor):
