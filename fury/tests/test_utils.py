@@ -2,7 +2,8 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
-from fury.utils import (get_polydata_tangents, map_coordinates_3d_4d,
+from fury.utils import (add_polydata_numeric_field, get_polydata_field,
+                        get_polydata_tangents, map_coordinates_3d_4d,
                         set_polydata_tangents, vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
@@ -13,7 +14,7 @@ from fury.utils import (get_polydata_tangents, map_coordinates_3d_4d,
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
-                      UnsignedCharArray)
+                      UnsignedCharArray, VTK_DOUBLE, VTK_INT, VTK_FLOAT)
 import fury.primitive as fp
 
 
@@ -118,6 +119,81 @@ def test_polydata_polygon(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
+def test_add_polydata_numeric_field():
+    my_polydata = PolyData()
+    poly_field_data = my_polydata.GetFieldData()
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    bool_data = True
+    add_polydata_numeric_field(my_polydata, 'Test Bool', bool_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Bool').GetValue(0),
+                     bool_data)
+    poly_field_data.RemoveArray('Test Bool')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    int_data = 1
+    add_polydata_numeric_field(my_polydata, 'Test Int', int_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Int').GetValue(0),
+                     int_data)
+    poly_field_data.RemoveArray('Test Int')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    float_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Float', float_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(poly_field_data.GetArray('Test Float').GetValue(0),
+                            float_data)
+    poly_field_data.RemoveArray('Test Float')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    double_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Double', double_data,
+                               array_type=VTK_DOUBLE)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Double').GetValue(0),
+                     double_data)
+    poly_field_data.RemoveArray('Test Double')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    array_data = [-1, 0, 1]
+    add_polydata_numeric_field(my_polydata, 'Test Array', array_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test Array')),
+        array_data)
+    poly_field_data.RemoveArray('Test Array')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    ndarray_data = np.array([[-.1, -.1], [0, 0], [.1, .1]])
+    add_polydata_numeric_field(my_polydata, 'Test NDArray', ndarray_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test NDArray')),
+        ndarray_data)
+
+
+def test_get_polydata_field():
+    my_polydata = PolyData()
+    field_data = get_polydata_field(my_polydata, 'Test')
+    npt.assert_equal(field_data, None)
+    data = 1
+    field_name = 'Test'
+    vtk_data = numpy_support.numpy_to_vtk(data)
+    vtk_data.SetName(field_name)
+    my_polydata.GetFieldData().AddArray(vtk_data)
+    field_data = get_polydata_field(my_polydata, field_name)
+    npt.assert_equal(field_data, data)
+
+
+def test_get_polydata_tangents():
+    my_polydata = PolyData()
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    my_polydata.GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_array_equal(tangents, array)
+
+
 def test_set_polydata_tangents():
     my_polydata = PolyData()
     poly_point_data = my_polydata.GetPointData()
@@ -126,16 +202,6 @@ def test_set_polydata_tangents():
     set_polydata_tangents(my_polydata, array)
     npt.assert_equal(poly_point_data.GetNumberOfArrays(), 1)
     npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
-
-
-def test_get_polydata_tangents():
-    my_polydata = PolyData()
-    tangents = get_polydata_tangents(my_polydata)
-    npt.assert_equal(tangents, None)
-    array = np.array([[0, 0, 0], [1, 1, 1]])
-    set_polydata_tangents(my_polydata, array)
-    tangents = get_polydata_tangents(my_polydata)
-    npt.assert_array_equal(tangents, array)
 
 
 def test_asbytes():

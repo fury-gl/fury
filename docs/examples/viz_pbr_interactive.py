@@ -2,6 +2,7 @@ from fury import actor, material, window
 from fury.data import fetch_viz_textures, read_viz_textures
 from fury.lib import (VTK_9_PLUS, VTK_UNSIGNED_INT, ImageFlip,
                       ImageReader2Factory, Skybox, Texture, numpy_support)
+from fury.utils import add_polydata_numeric_field, get_polydata_field
 import numpy as np
 import os
 
@@ -67,21 +68,18 @@ polydata = sphere.GetMapper().GetInput()
 
 print(polydata.GetFieldData())
 
-# TODO: get_polydata_field/field_from_actor
-print(polydata.GetFieldData().GetArray('Uses IBL'))
+# TODO: field_from_actor
+print(get_polydata_field(polydata, 'Uses IBL'))
 
-# TODO: add_polydata_field/field_to_actor
-field = np.array([[True]])
+# TODO: field_to_actor
+field = True
 field_name = 'Uses IBL'
-array_type = VTK_UNSIGNED_INT
-vtk_field = numpy_support.numpy_to_vtk(field, deep=True, array_type=array_type)
-vtk_field.SetName(field_name)
-polydata.GetFieldData().AddArray(vtk_field)
+add_polydata_numeric_field(polydata, field_name, field)
 
 print(polydata.GetFieldData())
 
-# TODO: get_polydata_field/field_from_actor
-print(numpy_support.vtk_to_numpy(polydata.GetFieldData().GetArray('Uses IBL')))
+# TODO: field_from_actor
+print(get_polydata_field(polydata, 'Uses IBL'))
 
 scene.add(sphere)
 

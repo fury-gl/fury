@@ -5,7 +5,7 @@ from fury.colormap import line_colors
 from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
-                      Transform, AlgorithmOutput, VTK_UNSIGNED_CHAR,
+                      Transform, AlgorithmOutput, VTK_INT, VTK_UNSIGNED_CHAR,
                       IdTypeArray)
 
 
@@ -419,6 +419,50 @@ def get_polydata_colors(polydata):
         return None
 
     return numpy_support.vtk_to_numpy(vtk_colors)
+
+
+def get_polydata_field(polydata, field_name, as_vtk=False):
+    """Get a field from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    field_name : str
+    as_vtk : optional
+        By default, ndarray is returned.
+
+    Returns
+    -------
+    output : ndarray or vtkDataArray
+        Field data. The return type depends on the value of the as_vtk
+        parameter. None if the field is not found.
+
+    """
+    vtk_field_data = polydata.GetFieldData().GetArray(field_name)
+    if vtk_field_data is None:
+        return None
+    if as_vtk:
+        return vtk_field_data
+    return numpy_support.vtk_to_numpy(vtk_field_data)
+
+
+def add_polydata_numeric_field(polydata, field_name, field_data,
+                               array_type=VTK_INT):
+    """Add a field to a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    field_name : str
+    field_data : bool, int, float, double, numeric array or ndarray
+    array_type : vtkArrayType
+
+    """
+    vtk_field_data = numpy_support.numpy_to_vtk(field_data, deep=True,
+                                                array_type=array_type)
+    vtk_field_data.SetName(field_name)
+    polydata.GetFieldData().AddArray(vtk_field_data)
+    return polydata
 
 
 def set_polydata_triangles(polydata, triangles):
