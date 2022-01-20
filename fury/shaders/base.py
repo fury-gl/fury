@@ -1,12 +1,12 @@
-import vtk
-from vtk.util import numpy_support
-from fury import enable_warnings
 from functools import partial
 
-VTK_9_PLUS = vtk.vtkVersion.GetVTKMajorVersion() >= 9
-SHADERS_TYPE = {"vertex": vtk.vtkShader.Vertex,
-                "geometry": vtk.vtkShader.Geometry,
-                "fragment": vtk.vtkShader.Fragment,
+from fury import enable_warnings
+from fury.lib import (VTK_9_PLUS, numpy_support, Command, VTK_OBJECT,
+                      calldata_type, DataObject, Shader)
+
+SHADERS_TYPE = {"vertex": Shader.Vertex,
+                "geometry": Shader.Geometry,
+                "fragment": Shader.Fragment,
                 }
 
 SHADERS_BLOCK = {
@@ -168,7 +168,6 @@ def add_shader_callback(actor, callback, priority=0.):
 
     Examples
     ---------
-
     .. code-block:: python
 
         add_shader_callback(actor, func_call1)
@@ -206,7 +205,7 @@ def add_shader_callback(actor, callback, priority=0.):
         # test_values = [999, 500, 0, 999, 500, 0, ...]
 
     """
-    @vtk.calldata_type(vtk.VTK_OBJECT)
+    @calldata_type(VTK_OBJECT)
     def cbk(caller, event, calldata=None):
         callback(caller, event, calldata)
 
@@ -215,8 +214,7 @@ def add_shader_callback(actor, callback, priority=0.):
             add_shader_callback priority argument shoud be a float/int""")
 
     mapper = actor.GetMapper()
-    id_observer = mapper.AddObserver(
-        vtk.vtkCommand.UpdateShaderEvent, cbk, priority)
+    id_observer = mapper.AddObserver(Command.UpdateShaderEvent, cbk, priority)
 
     return id_observer
 
@@ -228,7 +226,7 @@ def shader_apply_effects(
 
     Parameters
     ----------
-    window : vtk.vtkRenderWindow
+    window : RenderWindow
         For example, this is provided by the ShowManager.window attribute.
     actor : actor
     effects : a function or a list of functions
@@ -289,4 +287,4 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
     actor.GetMapper().GetInput().GetPointData().AddArray(vtk_array)
     mapper = actor.GetMapper()
     mapper.MapDataArrayToVertexAttribute(
-        attr_name, attr_name, vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        attr_name, attr_name, DataObject.FIELD_ASSOCIATION_POINTS, -1)
