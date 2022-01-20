@@ -987,7 +987,7 @@ def test_text_3d():
 def test_billboard_text_3d():
     msg = 'I\nLove\nFury'
 
-    bill_txt_actor = actor.opengl_billboard_text3D(msg)
+    bill_txt_actor = actor.opengl_billboard_text3D(msg, color=(1, 0, 0))
     npt.assert_equal(bill_txt_actor.get_message().lower(), msg.lower())
     npt.assert_raises(ValueError, bill_txt_actor.justification, 'middle')
     npt.assert_raises(
@@ -1012,7 +1012,18 @@ def test_billboard_text_3d():
 
     # TODO:
     # assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
+
+    snap_small_text = window.snapshot(scene, size=(500, 500), offscreen=True)
     scene.clear()
+
+    bill_txt_actor.font_size(13)
+    scene.add(bill_txt_actor)
+    snap_large_text = window.snapshot(scene, size=(500, 500), offscreen=True)
+
+    # Sum of Red values in larger text should be greater
+    assert_greater(
+        np.sum(snap_large_text[:, :, 0]), np.sum(snap_small_text[:, :, 0]))
+
 
 def test_container():
     container = actor.Container()
