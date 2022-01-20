@@ -12,7 +12,7 @@ from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
-from fury.deprecator import deprecated_params
+from fury.deprecator import deprecated_params, deprecate_with_version
 from fury.io import load_image
 from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       ImageReslice, ImageActor, CellPicker, OutlineFilter,
@@ -2219,8 +2219,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return sq_actor
 
 
-def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-          color=(1, 1, 1)):
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
+                color=(1, 1, 1)):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2264,6 +2264,12 @@ def label(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     texta.SetPosition(pos)
 
     return texta
+
+
+label = deprecate_with_version(message="Label function has been renamed"
+                                       "vector_text",
+                               since="0.7.1",
+                               until="0.9.0")(vector_text)
 
 
 def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
