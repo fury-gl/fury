@@ -226,6 +226,8 @@ def test_numpy_to_vtk_image_data():
     numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
     npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
 
+    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data,
+                      np.array([1, 2, 3]))
 
 def test_get_grid_cell_position():
 
