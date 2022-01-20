@@ -31,15 +31,6 @@ def test_ui_textbox(recording=False):
     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
     another_textbox_test.set_message("Enter Text")
 
-    # Checking whether textbox went out of focus
-    is_off_focused = [False]
-
-    def _off_focus(textbox):
-        is_off_focused[0] = True
-
-    # Set up a callback when textbox went out of focus
-    textbox_test.off_focus = _off_focus
-
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(textbox_test)
@@ -58,8 +49,6 @@ def test_ui_textbox(recording=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
-
-    npt.assert_equal(is_off_focused[0], True)
 
 
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):
@@ -669,11 +658,11 @@ def test_ui_file_menu_2d(interactive=False):
     os.mkdir(os.path.join(test_dir, "tempdir"))
     for i in range(10):
         open(os.path.join(test_dir, "tempdir", f"test{i}.txt"),
-                'wt').close()
+             'wt').close()
     open("testfile.txt", 'wt').close()
 
     filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
-                                directory_path=os.getcwd())
+                             directory_path=os.getcwd())
 
     # We will collect the sequence of files that have been selected.
     selected_files = []
@@ -690,7 +679,7 @@ def test_ui_file_menu_2d(interactive=False):
 
     # Create a show manager and record/play events.
     show_manager = window.ShowManager(size=(600, 600),
-                                        title="FURY FileMenu")
+                                      title="FURY FileMenu")
     show_manager.scene.add(filemenu)
 
     # Recorded events:
@@ -707,7 +696,7 @@ def test_ui_file_menu_2d(interactive=False):
     # Check if the right files were selected.
     expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
                 ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
-                "test4.txt", "test5.txt", "test6.txt"],
+                 "test4.txt", "test5.txt", "test6.txt"],
                 ["../"], ["testfile.txt"]]
 
     npt.assert_equal(len(selected_files), len(expected))
@@ -715,9 +704,9 @@ def test_ui_file_menu_2d(interactive=False):
 
     if interactive:
         filemenu = ui.FileMenu2D(size=(500, 500),
-                                    directory_path=os.getcwd())
+                                 directory_path=os.getcwd())
         show_manager = window.ShowManager(size=(600, 600),
-                                            title="FURY FileMenu")
+                                          title="FURY FileMenu")
         show_manager.scene.add(filemenu)
         show_manager.start()
 
@@ -791,7 +780,6 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
-<<<<<<< HEAD
 def test_ui_spinbox(interactive=False):
     filename = "test_ui_spinbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -822,9 +810,8 @@ def test_ui_spinbox(interactive=False):
     npt.assert_equal((315, 160), spinbox.textbox_size)
     npt.assert_equal((90, 60), spinbox.button_size)
 
-=======
+
 @pytest.mark.skipif(True, reason="Under investigation")
->>>>>>> master
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
 
