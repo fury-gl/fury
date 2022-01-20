@@ -204,6 +204,31 @@ def test_vtk_matrix_to_numpy():
     npt.assert_raises(ValueError, numpy_to_vtk_matrix, np.array([A, A]))
 
 
+def test_numpy_to_vtk_image_data():
+    array = np.array([[[1, 2, 3],
+                       [4, 5, 6]],
+                      [[7, 8, 9],
+                       [10, 11, 12]],
+                      [[21, 22, 23],
+                       [24, 25, 26]],
+                      [[27, 28, 29],
+                       [210, 211, 212]]])
+
+    # converting numpy array to vtk_image_data
+    vtk_image_data = utils.numpy_to_vtk_image_data(array)
+
+    # extracting the image data from vtk_image_data
+    w, h, depth = vtk_image_data.GetDimensions()
+    vtk_img_array = vtk_image_data.GetPointData().GetScalars()
+    elements = vtk_img_array.GetNumberOfComponents()
+
+    # converting vtk array to numpy array
+    numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
+    npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
+
+    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data,
+                      np.array([1, 2, 3]))
+
 def test_get_grid_cell_position():
 
     shapes = 10 * [(50, 50), (50, 50), (50, 50), (80, 50)]
