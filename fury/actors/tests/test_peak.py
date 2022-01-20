@@ -1,7 +1,7 @@
 from fury import actor, window
 from fury.actors.peak import (PeakActor, _orientation_colors,
                               _peaks_colors_from_points, _points_to_vtk_cells)
-from vtk.util import numpy_support
+from fury.lib import numpy_support
 
 
 import numpy as np

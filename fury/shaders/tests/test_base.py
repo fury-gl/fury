@@ -1,10 +1,11 @@
-from vtk.util import numpy_support
+
 import numpy as np
 import numpy.testing as npt
 
 from fury import actor, window
 from fury.shaders import (shader_to_actor, add_shader_callback,
                           attribute_to_actor, replace_shader_in_actor)
+from fury.lib import numpy_support
 
 
 vertex_dec = \
@@ -122,21 +123,24 @@ def test_add_shader_callback():
     cube = generate_cube_with_effect()
     showm = window.ShowManager()
     showm.scene.add(cube)
-    timer = 0
+    class Timer(object):
+        idx = 0.0
+    
+    timer = Timer()
 
     def timer_callback(obj, event):
-        nonlocal timer, showm
-        timer += 1.0
+        # nonlocal timer, showm
+        timer.idx += 1.0
         showm.render()
-        if timer > 9:
+        if timer.idx > 90:
             showm.exit()
 
     def my_cbk(_caller, _event, calldata=None):
         program = calldata
-        nonlocal timer
+        
         if program is not None:
             try:
-                program.SetUniformf("time", timer)
+                program.SetUniformf("time", timer.idx)
             except ValueError:
                 pass
 
