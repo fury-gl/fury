@@ -63,6 +63,7 @@ AlgorithmOutput = cemvtk.vtkAlgorithmOutput
 ##############################################################
 #  vtkRenderingCore Module
 Renderer = rcvtk.vtkRenderer
+Skybox = rcvtk.vtkSkybox
 Volume = rcvtk.vtkVolume
 Actor2D = rcvtk.vtkActor2D
 Actor = rcvtk.vtkActor
@@ -171,12 +172,14 @@ Matrix3x3 = cmvtk.vtkMatrix3x3
 
 ##############################################################
 #  vtkImagingCore Module
+ImageFlip = icvtk.vtkImageFlip
 ImageReslice = icvtk.vtkImageReslice
 ImageMapToColors = icvtk.vtkImageMapToColors
 
 ##############################################################
 #  vtkIOImage vtkIOLegacy, vtkIOPLY, vtkIOGeometry,
 # vtkIOMINC Modules
+ImageReader2Factory = ioivtk.vtkImageReader2Factory
 PNGReader = ioivtk.vtkPNGReader
 BMPReader = ioivtk.vtkBMPReader
 JPEGReader = ioivtk.vtkJPEGReader
