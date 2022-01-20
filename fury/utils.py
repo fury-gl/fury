@@ -168,6 +168,12 @@ def numpy_to_vtk_image_data(array, spacing=(1.0, 1.0, 1.0),
     ----------
     array : ndarray
         pixel coordinate and colors values.
+    spacing : (float, float, float) (optional)
+        sets the size of voxel (unit of space in each direction x,y,z)
+    origin : (float, float, float) (optional)
+        sets the origin at the given point
+    deep : bool (optional)
+        decides the type of copy(ie. deep or shallow)
 
     Returns
     -------
