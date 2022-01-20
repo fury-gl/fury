@@ -668,7 +668,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     polydata_geom = PolyData()
 
     if faces is not None:
-        set_polydata_vertices(polydata_geom, vertices.astype(np.int8))
+        set_polydata_vertices(polydata_geom, vertices)
         set_polydata_triangles(polydata_geom, faces)
 
     polydata_centers.SetPoints(pts)
