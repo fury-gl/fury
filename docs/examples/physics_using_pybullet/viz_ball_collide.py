@@ -40,9 +40,7 @@ blue_ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
                                colors=np.array([[0, 0, 1]]),
                                radii=blue_radius)
 
-blue_ball_coll = p.createCollisionShape(
-    p.GEOM_SPHERE,
-    radius=blue_radius)
+blue_ball_coll = p.createCollisionShape(p.GEOM_SPHERE, radius=blue_radius)
 
 blue_ball = p.createMultiBody(baseMass=0.5,
                               baseCollisionShapeIndex=blue_ball_coll,
@@ -63,16 +61,15 @@ scene.add(actor.axes())
 scene.add(red_ball_actor)
 scene.add(blue_ball_actor)
 
-showm = window.ShowManager(scene,
-                           size=(900, 700), reset_camera=False,
+showm = window.ShowManager(scene, size=(900, 700), reset_camera=False,
                            order_transparent=True)
 
 showm.initialize()
 counter = itertools.count()
 
-
 ###############################################################################
 # Method to sync objects.
+
 
 def sync_actor(actor, multibody):
     pos, orn = p.getBasePositionAndOrientation(multibody)

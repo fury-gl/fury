@@ -7,8 +7,8 @@ In this tutorial, we will show how to animate a textured sphere.
 
 import itertools
 from fury import window, actor, utils, io
-from fury.data import read_viz_textures, fetch_viz_textures
-from fury.data import read_viz_models, fetch_viz_models
+from fury.data import (read_viz_textures, fetch_viz_textures,
+                       read_viz_models, fetch_viz_models)
 
 ##############################################################################
 # Create a scene to start.

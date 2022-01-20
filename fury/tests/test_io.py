@@ -6,10 +6,10 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import load_polydata, save_polydata, load_image, save_image, \
-    load_sprite_sheet
-
-from fury.utils import vtk, numpy_support, numpy_to_vtk_points
+from fury.io import (load_polydata, save_polydata, load_image, save_image,
+                     load_sprite_sheet)
+from fury.lib import numpy_support, PolyData, ImageData
+from fury.utils import numpy_to_vtk_points
 from fury.testing import assert_greater
 
 
@@ -21,7 +21,7 @@ def test_save_and_load_polydata():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -35,8 +35,8 @@ def test_save_and_load_polydata():
 
             npt.assert_array_equal(data, out_data)
 
-    npt.assert_raises(IOError, save_polydata, vtk.vtkPolyData(), "test.vti")
-    npt.assert_raises(IOError, save_polydata, vtk.vtkPolyData(), "test.obj")
+    npt.assert_raises(IOError, save_polydata, PolyData(), "test.vti")
+    npt.assert_raises(IOError, save_polydata, PolyData(), "test.obj")
     npt.assert_raises(IOError, load_polydata, "test.vti")
 
 
@@ -49,7 +49,7 @@ def test_save_and_load_options():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -69,7 +69,7 @@ def test_save_and_load_options():
         with InTemporaryDirectory() as odir:
             data = np.random.randint(0, 255, size=(50, 3))
 
-            pd = vtk.vtkPolyData()
+            pd = PolyData()
             pd.SetPoints(numpy_to_vtk_points(data))
 
             fname_path = pjoin(odir, "{0}.{1}".format(fname, ext))
@@ -125,7 +125,7 @@ def test_save_load_image():
                       np.random.randint(0, 255, size=(50, 3, 1, 1)),
                       "test.png")
 
-    compression_type = [None, "lzw"]
+    compression_type = [None, "bits", "random"]
 
     for ct in compression_type:
         with InTemporaryDirectory() as odir:
@@ -152,7 +152,6 @@ def test_pillow():
 
         for opt1, opt2 in [(True, True), (False, True), (True, False),
                            (False, False)]:
-
             save_image(data, fname_path, use_pillow=opt1)
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
@@ -177,4 +176,4 @@ def test_load_sprite_sheet():
                                             as_vtktype=True)
 
         for vtk_sprite in list(vtktype_sprites.values()):
-            npt.assert_equal(isinstance(vtk_sprite, vtk.vtkImageData), True)
+            npt.assert_equal(isinstance(vtk_sprite, ImageData), True)

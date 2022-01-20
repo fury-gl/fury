@@ -6,10 +6,12 @@ import abc
 from warnings import warn
 
 import numpy as np
-import vtk
 
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
+from fury.lib import (PolyData, PolyDataMapper2D, Polygon, Points, CellArray,
+                      Actor2D, TextActor, Texture, TexturedActor2D, Property2D,
+                      FloatArray, DiskSource)
 from fury.utils import set_input
 
 
@@ -351,20 +353,20 @@ class Rectangle2D(UI):
         self.resize(size)
 
     def _setup(self):
-        """Setup this UI component.
+        """Set up this UI component.
 
         Creating the polygon actor used internally.
         """
         # Setup four points
         size = (1, 1)
-        self._points = vtk.vtkPoints()
+        self._points = Points()
         self._points.InsertNextPoint(0, 0, 0)
         self._points.InsertNextPoint(size[0], 0, 0)
         self._points.InsertNextPoint(size[0], size[1], 0)
         self._points.InsertNextPoint(0, size[1], 0)
 
         # Create the polygon
-        polygon = vtk.vtkPolygon()
+        polygon = Polygon()
         polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
         polygon.GetPointIds().SetId(0, 0)
         polygon.GetPointIds().SetId(1, 1)
@@ -372,19 +374,19 @@ class Rectangle2D(UI):
         polygon.GetPointIds().SetId(3, 3)
 
         # Add the polygon to a list of polygons
-        polygons = vtk.vtkCellArray()
+        polygons = CellArray()
         polygons.InsertNextCell(polygon)
 
         # Create a PolyData
-        self._polygonPolyData = vtk.vtkPolyData()
+        self._polygonPolyData = PolyData()
         self._polygonPolyData.SetPoints(self._points)
         self._polygonPolyData.SetPolys(polygons)
 
         # Create a mapper and actor
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._polygonPolyData)
 
-        self.actor = vtk.vtkActor2D()
+        self.actor = Actor2D()
         self.actor.SetMapper(mapper)
 
         # Add default events listener to the VTK actor.
@@ -440,7 +442,7 @@ class Rectangle2D(UI):
         self._points.SetPoint(2, size[0], size[1], 0.0)
         self._points.SetPoint(3, 0, size[1], 0.0)
         self._polygonPolyData.SetPoints(self._points)
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._polygonPolyData)
 
         self.actor.SetMapper(mapper)
@@ -527,17 +529,17 @@ class Disk2D(UI):
 
         """
         # Setting up disk actor.
-        self._disk = vtk.vtkDiskSource()
+        self._disk = DiskSource()
         self._disk.SetRadialResolution(10)
         self._disk.SetCircumferentialResolution(50)
         self._disk.Update()
 
         # Mapper
-        mapper = vtk.vtkPolyDataMapper2D()
+        mapper = PolyDataMapper2D()
         mapper = set_input(mapper, self._disk.GetOutputPort())
 
         # Actor
-        self.actor = vtk.vtkActor2D()
+        self.actor = Actor2D()
         self.actor.SetMapper(mapper)
 
         # Add default events listener to the VTK actor.
@@ -713,7 +715,7 @@ class TextBlock2D(UI):
         self.message = text
 
     def _setup(self):
-        self.actor = vtk.vtkTextActor()
+        self.actor = TextActor()
         self.actor.GetPosition2Coordinate().SetCoordinateSystemToViewport()
         self.background = Rectangle2D()
         self.handle_events(self.actor)
@@ -1139,11 +1141,11 @@ class Button2D(UI):
         # This is highly inspired by
         # https://github.com/Kitware/VTK/blob/c3ec2495b183e3327820e927af7f8f90d34c3474/Interaction/Widgets/vtkBalloonRepresentation.cxx#L47
 
-        self.texture_polydata = vtk.vtkPolyData()
-        self.texture_points = vtk.vtkPoints()
+        self.texture_polydata = PolyData()
+        self.texture_points = Points()
         self.texture_points.SetNumberOfPoints(4)
 
-        polys = vtk.vtkCellArray()
+        polys = CellArray()
         polys.InsertNextCell(4)
         polys.InsertCellPoint(0)
         polys.InsertCellPoint(1)
@@ -1151,7 +1153,7 @@ class Button2D(UI):
         polys.InsertCellPoint(3)
         self.texture_polydata.SetPolys(polys)
 
-        tc = vtk.vtkFloatArray()
+        tc = FloatArray()
         tc.SetNumberOfComponents(2)
         tc.SetNumberOfTuples(4)
         tc.InsertComponent(0, 0, 0.0)
@@ -1164,16 +1166,16 @@ class Button2D(UI):
         tc.InsertComponent(3, 1, 1.0)
         self.texture_polydata.GetPointData().SetTCoords(tc)
 
-        texture_mapper = vtk.vtkPolyDataMapper2D()
+        texture_mapper = PolyDataMapper2D()
         texture_mapper = set_input(texture_mapper, self.texture_polydata)
 
-        button = vtk.vtkTexturedActor2D()
+        button = TexturedActor2D()
         button.SetMapper(texture_mapper)
 
-        self.texture = vtk.vtkTexture()
+        self.texture = Texture()
         button.SetTexture(self.texture)
 
-        button_property = vtk.vtkProperty2D()
+        button_property = Property2D()
         button_property.SetOpacity(1.0)
         button.SetProperty(button_property)
         self.actor = button

@@ -1,13 +1,15 @@
 """Module dedicated for basic primitive."""
+import math
 from os.path import join as pjoin
 from distutils.version import LooseVersion
+
 import numpy as np
+from scipy.spatial import ConvexHull, transform
+from scipy.version import short_version
+
 from fury.data import DATA_DIR
 from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
-from scipy.spatial import ConvexHull, transform
-from scipy.version import short_version
-import math
 
 SCIPY_1_4_PLUS = LooseVersion(short_version) >= LooseVersion('1.4.0')
 
@@ -430,87 +432,91 @@ def prim_icosahedron():
 
 
 def prim_rhombicuboctahedron():
-    """Return vertices and triangle for rhombicuboctahedron geometry.
+    """Return vertices and triangles for rhombicuboctahedron.
 
     Returns
     -------
-    my_vertices: ndarray
-        vertices coords that composed our rhombicuboctahedron
-    my_triangles: ndarray
-        Triangles that composed our rhombicuboctahedron
+    vertices: numpy.ndarray
+        24 vertices coordinates to the rhombicuboctahedron
+    triangles: numpy.ndarray
+        44 triangles representing the rhombicuboctahedron
 
     """
-    my_vertices = np.array([[-2, 4, 2],
-                            [-4, 2, 2],
-                            [-4, -2, 2],
-                            [-2, -4, 2],
-                            [2, -4, 2],
-                            [4, -2, 2],
-                            [4, 2, 2],
-                            [2, 4, 2],
-                            [-2, 2, 4],
-                            [-2, -2, 4],
-                            [2, -2, 4],
-                            [2, 2, 4],
-                            [-2, 4, -2],
-                            [-4, 2, -2],
-                            [-4, -2, -2],
-                            [-2, -4, -2],
-                            [2, -4, -2],
-                            [4, -2, -2],
-                            [4, 2, -2],
-                            [2, 4, -2],
-                            [-2, 2, -4],
-                            [-2, -2, -4],
-                            [2, -2, -4],
-                            [2, 2, -4]])
+    phi = (math.sqrt(2) - 1) / 2.0
 
-    my_triangles = np.array([[0, 1, 8],
-                             [1, 2, 9],
-                             [1, 8, 9],
-                             [2, 3, 9],
-                             [3, 9, 10],
-                             [3, 4, 10],
-                             [4, 10, 5],
-                             [5, 11, 10],
-                             [5, 6, 11],
-                             [6, 7, 11],
-                             [7, 8, 11],
-                             [7, 8, 0],
-                             [8, 9, 10],
-                             [8, 10, 11],
-                             [12, 13, 20],
-                             [13, 14, 21],
-                             [13, 20, 21],
-                             [14, 15, 21],
-                             [15, 21, 22],
-                             [15, 16, 22],
-                             [16, 22, 17],
-                             [17, 22, 23],
-                             [17, 23, 18],
-                             [18, 19, 23],
-                             [19, 20, 23],
-                             [19, 20, 12],
-                             [20, 21, 22],
-                             [20, 22, 23],
-                             [7, 18, 19],
-                             [6, 7, 18],
-                             [6, 17, 18],
-                             [5, 6, 17],
-                             [4, 5, 16],
-                             [5, 16, 17],
-                             [0, 1, 12],
-                             [1, 12, 13],
-                             [1, 2, 13],
-                             [2, 13, 14],
-                             [2, 3, 14],
-                             [3, 14, 15],
-                             [0, 7, 12],
-                             [7, 12, 19],
-                             [3, 15, 16],
-                             [3, 4, 16],
-                             ], dtype='i8')
-    return my_vertices, my_triangles
+    vertices = np.array([[0.5, phi, phi],
+                         [0.5, phi, -phi],
+                         [0.5, -phi, phi],
+                         [0.5, -phi, -phi],
+                         [phi, 0.5, phi],
+                         [phi, 0.5, -phi],
+                         [-phi, 0.5, phi],
+                         [-phi, 0.5, -phi],
+                         [phi, phi, 0.5],
+                         [phi, -phi, 0.5],
+                         [-phi, phi, 0.5],
+                         [-phi, -phi, 0.5],
+                         [-0.5, phi, phi],
+                         [-0.5, phi, -phi],
+                         [-0.5, -phi, phi],
+                         [-0.5, -phi, -phi],
+                         [phi, -0.5, phi],
+                         [phi, -0.5, -phi],
+                         [-phi, -0.5, phi],
+                         [-phi, -0.5, -phi],
+                         [phi, phi, -0.5],
+                         [phi, -phi, -0.5],
+                         [-phi, phi, -0.5],
+                         [-phi, -phi, -0.5]])
+
+    triangles = np.array([[0, 1, 2],
+                          [1, 3, 2],
+                          [0, 4, 5],
+                          [0, 5, 1],
+                          [6, 4, 7],
+                          [4, 5, 7],
+                          [0, 8, 4],
+                          [0, 2, 8],
+                          [2, 9, 8],
+                          [8, 9, 10],
+                          [9, 11, 10],
+                          [6, 8, 10],
+                          [6, 8, 4],
+                          [6, 10, 12],
+                          [6, 12, 7],
+                          [7, 12, 13],
+                          [10, 11, 14],
+                          [10, 14, 12],
+                          [12, 14, 15],
+                          [12, 15, 13],
+                          [2, 3, 16],
+                          [3, 17, 16],
+                          [2, 16, 9],
+                          [9, 16, 11],
+                          [11, 16, 18],
+                          [18, 16, 19],
+                          [16, 17, 19],
+                          [11, 18, 14],
+                          [14, 18, 19],
+                          [14, 19, 15],
+                          [1, 21, 3],
+                          [1, 20, 21],
+                          [3, 21, 17],
+                          [17, 21, 23],
+                          [17, 23, 19],
+                          [21, 20, 23],
+                          [23, 20, 22],
+                          [19, 23, 15],
+                          [15, 23, 13],
+                          [13, 23, 22],
+                          [13, 22, 7],
+                          [22, 7, 5],
+                          [22, 20, 5],
+                          [20, 1, 5]], dtype='i8')
+
+    triangles = fix_winding_order(vertices, triangles, clockwise=True)
+
+    return vertices, triangles
 
 
 def prim_star(dim=2):
@@ -848,7 +854,8 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
                 k += 3
 
     if capped:
-        vertices = (np.array(vertices).reshape(2 * (sectors + 1) + 2 * sectors + 2, 3))
+        vertices = (np.array(vertices).reshape(
+            2 * (sectors + 1) + 2 * sectors + 2, 3))
     else:
         vertices = (np.array(vertices).reshape(2 * (sectors + 1), 3))
 
