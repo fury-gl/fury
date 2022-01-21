@@ -846,6 +846,24 @@ def test_spheres(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
     npt.assert_equal(report.colors_found, [True])
+    # scene = window.Scene()
+    scene.clear()
+
+    opacity = 0.0
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3], opacity=opacity)
+    scene.add(sphere_actor)
+
+    if interactive:
+        window.show(scene, order_transparent=True)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr,
+                                     colors=colors)
+    npt.assert_equal(report.colors_found, [False, False, False])
+    # the original array has non zero color yet opacity 0 renders blank scene
+    npt.assert_equal(report.objects, 0)
+
 
     # test faces and vertices
     scene.clear()
