@@ -26,13 +26,14 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText)
+                      Follower, VectorText, AxesActor)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors)
+                        fix_winding_order, combine_actors,
+                        numpy_to_vtk_colors)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -802,8 +803,8 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
-         opacity=1):
+def axes(scale=(1, 1, 1), col_x=(1, 0, 0), col_y=(0, 1, 0), col_z=(0, 0, 1),
+         opacity=1, label=False):
     """ Create an actor with the coordinate's system axes where
     red = x, green = y, blue = z.
 
@@ -811,28 +812,66 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     ----------
     scale : tuple (3,)
         Axes size e.g. (100, 100, 100). Default is (1, 1, 1).
-    colorx : tuple (3,)
+    col_x : tuple (3,)
         x-axis color. Default red (1, 0, 0).
-    colory : tuple (3,)
+    col_y : tuple (3,)
         y-axis color. Default green (0, 1, 0).
-    colorz : tuple (3,)
+    col_z : tuple (3,)
         z-axis color. Default blue (0, 0, 1).
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+    label: boolean, optional
+        Displays labels on the axes when True. Default is False.
 
     Returns
     -------
     vtkActor
     """
+    class Axes(AxesActor):
+        def __init__(self):
+            super()
+            self.text = {
+                'x': self.GetXAxisCaptionActor2D().GetTextActor(),
+                'y': self.GetYAxisCaptionActor2D().GetTextActor(),
+                'z': self.GetZAxisCaptionActor2D().GetTextActor()
+            }
 
-    centers = np.zeros((3, 3))
-    dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colors = np.array([colorx + (opacity,),
-                       colory + (opacity,),
-                       colorz + (opacity,)])
+        def set_scale(self, scale):
+            font_size = int(8 * sum(scale))
+            self.SetTotalLength(scale)
 
-    scales = np.asarray(scale)
-    return arrow(centers, dirs, colors, scales)
+            for text in self.text.values():
+                text.SetTextScaleModeToNone()
+                text.GetTextProperty().SetFontSize(font_size)
+
+        def set_opacity(self, opacity):
+            self.GetXAxisTipProperty().SetOpacity(opacity)
+            self.GetYAxisTipProperty().SetOpacity(opacity)
+            self.GetZAxisTipProperty().SetOpacity(opacity)
+            self.GetXAxisShaftProperty().SetOpacity(opacity)
+            self.GetYAxisShaftProperty().SetOpacity(opacity)
+            self.GetZAxisShaftProperty().SetOpacity(opacity)
+
+            for text in self.text.values():
+                text.GetTextProperty().SetOpacity(opacity)
+
+        def label_visible(self, enable):
+            self.SetAxisLabels(enable)
+
+        def set_color(self, axis, color):
+            self.text[axis].GetTextProperty().SetColor(color)
+
+    axes = Axes()
+
+    axes.label_visible(label)
+    axes.set_opacity(opacity)
+    axes.set_scale(scale)
+
+    axes.set_color('x', col_x)
+    axes.set_color('y', col_y)
+    axes.set_color('z', col_z)
+
+    return axes
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,

@@ -99,6 +99,7 @@ LODActor = rlodvtk.vtkLODActor
 ##############################################################
 #  vtkRenderingAnnotation Module
 ScalarBarActor = ravtk.vtkScalarBarActor
+AxesActor = ravtk.vtkAxesActor
 
 ##############################################################
 #  vtkRenderingOpenGL2 Module

@@ -118,6 +118,34 @@ def test_polydata_polygon(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
+def test_combine_actors(interactive=False):
+    rand_actors = np.random.randint(low=2, high=5)
+    actors = []
+
+    for i in range(rand_actors):
+        center = np.random.rand(1, 3)
+        box = actor.box(center)
+        actors.append(box)
+    assembly = utils.combine_actors(actors)
+    npt.assert_equal(len(actors), assembly.GetNumberOfPaths())
+
+    assemblyParts = []
+    for part in assembly.GetParts():
+        assemblyParts.append(part)
+    for i in range(len(actors)):
+        npt.assert_equal(actors[i], assemblyParts[i])
+        scene = window.Scene()
+
+    for act in actors + assemblyParts:
+        scene.add(act)
+        if interactive:
+            window.show(scene)
+        arr = window.snapshot(scene)
+
+        report = window.analyze_snapshot(arr)
+        npt.assert_equal(report.objects, 1)
+
+
 def test_asbytes():
     text = [b'test', 'test']
 
