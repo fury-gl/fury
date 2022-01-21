@@ -1,15 +1,10 @@
 Week #11: Welcome to my weekly Blogs!
 ====================================
 
-.. post:: August 16 2021
+.. post:: August 10 2021
    :author: Bruno Messias
    :tags: google
    :category: gsoc
-
-Hi everyone! My name is Bruno Messias. Currently I’m a Ph.D student at
-USP/Brazil. This summer I’ll develop new tools and features for FURY-GL
-Specifically, I’ll focus on developing a system for collaborative
-visualization of large network layouts using FURY and VTK.
 
 What did I do this week?
 ------------------------
