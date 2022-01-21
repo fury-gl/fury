@@ -1,7 +1,7 @@
-Week #11: Welcome to my weekly Blogs!
+Week #10: Welcome to my weekly Blogs!
 ====================================
 
-.. post:: August 16 2021
+.. post:: August 09 2021
    :author: Bruno Messias
    :tags: google
    :category: gsoc

@@ -50,13 +50,6 @@ Objectives Completed
 -  .. rubric:: Create a streaming system (stadia-like) for FURY
       :name: create-a-streaming-system-stadia-like-for-fury
 
-   There are several reasons to have a streaming system for data
-   visualization. Because I am doing my Ph.D. in  developing country, I
-   always need to think of the less expensive solutions to use the
-   computational resources available. For example, with the GPU’s prices
-   increasing, it is necessary to share the a single machine with GPU
-   with other users at different locations.
-
    To construct the streaming system for my project we have opted to
    follow three main properties and behaviors:
 
@@ -81,12 +74,11 @@ Objectives Completed
    The image below shows a simple representation of the streaming
    system.
 
-   .. raw:: html
+.. raw:: html
 
       <center>
-
-   .. raw:: html
-
+      <img alt="..." height="400"
+         src="https://user-images.githubusercontent.com/6979335/121934889-33ff1480-cd1e-11eb-89a4-562fbb953ba4.png"/>
       </center>
 
    The video below shows how our streaming system works smothly and can
@@ -111,7 +103,11 @@ Jupyter <https://user-images.githubusercontent.com/6979335/130284261-20e84622-42
    The image below shows 1 million of markers rendered using an Intel
    HD graphics 3000.
 
-|image1|
+.. raw:: html
+
+      <center>
+         <img src="https://user-images.githubusercontent.com/6979335/116004971-70927780-a5db-11eb-8363-8c0757574eb4.png"/>
+      </center>
 
 -  .. rubric:: Fine-Tunning the OpenGl State
       :name: fine-tunning-the-opengl-state
@@ -191,22 +187,19 @@ The GIF below shows how the network layout through IPC behaved before
 these modification
 
 .. raw:: html
-
+   
    <center>
-
-.. raw:: html
-
+   <img src="https://user-images.githubusercontent.com/6979335/125310065-a3a9f480-e308-11eb-98d9-0ff5406a0e96.gif"/>
    </center>
 
 below, you can see how after those modifications the visual aspect is
 better.
 
 .. raw:: html
-
+   
    <center>
-
-.. raw:: html
-
+   <img alt="..." height="300" 
+   src="https://user-images.githubusercontent.com/6979335/126175583-c7d85f0a-3d0c-400e-bbdd-4cbcd2a36fed.gif"/>
    </center>
 
 *Pull Requests:*
@@ -230,16 +223,11 @@ necessary to create the documentation, hosting and more. Now we have a
 online documentation available at https://heliosnetwork.io/ altough the
 documentation still need some improvements.
 
-Below is presented the Helios Logo which was developed by my mentor
+The Helios Logo which was developed by
 Filipi Nascimento.
 
 .. raw:: html
-
-   <center>
-
-.. raw:: html
-
-   </center>
+   <img alt="Helios Network Logo" height="100" src="https://fury-gl.github.io/helios-website/_images/logo.png"/>
 
 *Pull Requests:*
 
@@ -272,9 +260,7 @@ Filipi Nascimento.
       .. raw:: html
 
          <center>
-
-      .. raw:: html
-
+         <img alt="..." height="400" src="https://user-images.githubusercontent.com/6979335/129643743-6cb12c06-3415-4a02-ba43-ccc97003b02d.png"/>
          </center>
 
 -  .. rubric:: GSoC weekly Blogs
@@ -402,5 +388,4 @@ textures and special effects, in: ACM SIGGRAPH 2007 Courses on -
 SIGGRAPH ’07. Presented at the ACM SIGGRAPH 2007 courses, ACM Press, San
 Diego, California, p. 9. https://doi.org/10.1145/1281500.1281665
 
-.. |image1| image:: https://user-images.githubusercontent.com/6979335/116004971-70927780-a5db-11eb-8363-8c0757574eb4.png
 .. |image2| image:: https://user-images.githubusercontent.com/6979335/125310065-a3a9f480-e308-11eb-98d9-0ff5406a0e96.gif
