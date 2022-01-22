@@ -1561,8 +1561,9 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         scales = np.multiply(radii, [1, 1, 1])
         directions = (1, 0, 0)
         verts, faces = fp.prim_sphere('symmetric724', False)
-        res = fp.repeat_primitive(verts, faces, directions=directions,
-                                  centers=centers, colors=colors, scales=scales)
+        res = fp.repeat_primitive(verts, faces,
+                                  directions=directions, centers=centers,
+                                  colors=colors, scales=scales)
         big_verts, big_faces, big_colors, _ = res
         actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
 
