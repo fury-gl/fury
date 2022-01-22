@@ -1,4 +1,3 @@
-from vtkmodules.vtkRenderingOpenGL2 import vtkOpenGLBillboardTextActor3D
 import vtkmodules.vtkCommonCore as ccvtk
 import vtkmodules.vtkCommonDataModel as cdmvtk
 import vtkmodules.vtkCommonExecutionModel as cemvtk
@@ -104,7 +103,6 @@ ScalarBarActor = ravtk.vtkScalarBarActor
 ##############################################################
 #  vtkRenderingOpenGL2 Module
 Shader = roglvtk.vtkShader
-OpenGLBillboardTextActor3D = roglvtk.vtkOpenGLBillboardTextActor3D
 
 ##############################################################
 #  vtkInteractionStyle Module

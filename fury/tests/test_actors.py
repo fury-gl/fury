@@ -998,35 +998,6 @@ def test_text_3d():
     arr = window.snapshot(scene, size=(1920, 1080), offscreen=True)
     assert_greater_equal(arr.mean(), arr_bottom.mean())
 
-def test_billboard_text_3d():
-    msg = 'I\nLove\nFury'
-    
-    bill_txt_actor = actor.opengl_billboard_text3D(msg)
-    npt.assert_equal(bill_txt_actor.get_message().lower(), msg.lower())
-    npt.assert_raises(ValueError, bill_txt_actor.justification, 'middle')
-    npt.assert_raises(
-        ValueError, bill_txt_actor.vertical_justification, 'center')
-    
-    scene = window.Scene()
-
-    scene.add(bill_txt_actor)
-    bill_txt_actor.vertical_justification('middle')
-    bill_txt_actor.justification('right')
-
-    arr_right = window.snapshot(scene, size=(1920, 1080), offscreen=True)
-    
-    scene.clear()
-    scene.add(bill_txt_actor)
-    bill_txt_actor.vertical_justification('middle')
-    bill_txt_actor.justification('left')
-    arr_left = window.snapshot(scene, size=(1920, 1080), offscreen=True)
-
-    # X axis of right alignment should have a lower center of mass position
-    # than left
-    
-    # TODO:
-    # assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
-    scene.clear()
 
 def test_container():
     container = actor.Container()
