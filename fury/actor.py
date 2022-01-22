@@ -1554,20 +1554,20 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
             src.SetPhiResolution(phi)
 
         actor = repeat_sources(centers=centers, colors=colors,
-                            active_scalars=radii, source=src,
-                            vertices=vertices, faces=faces)
+                               active_scalars=radii, source=src,
+                               vertices=vertices, faces=faces)
 
     else:
         scales = np.multiply(radii, [1, 1, 1])
-        directions=(1, 0, 0)
-        verts, faces = fp.prim_sphere('symmetric724',True)
+        directions = (1, 0, 0)
+        verts, faces = fp.prim_sphere('symmetric724', False)
         res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+                                  centers=centers, colors=colors, scales=scales)
         big_verts, big_faces, big_colors, _ = res
-        actor = get_actor_from_primitive(big_verts,big_faces,big_colors)
-        
+        actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+
     actor.GetProperty().SetOpacity(opacity)
-    
+
     return actor
 
 
