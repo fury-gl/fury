@@ -160,6 +160,48 @@ def numpy_to_vtk_cells(data, is_coords=True):
     return cell_array
 
 
+def numpy_to_vtk_image_data(array, spacing=(1.0, 1.0, 1.0),
+                            origin=(0.0, 0.0, 0.0), deep=True):
+    """Convert numpy array to a vtk image data.
+
+    Parameters
+    ----------
+    array : ndarray
+        pixel coordinate and colors values.
+    spacing : (float, float, float) (optional)
+        sets the size of voxel (unit of space in each direction x,y,z)
+    origin : (float, float, float) (optional)
+        sets the origin at the given point
+    deep : bool (optional)
+        decides the type of copy(ie. deep or shallow)
+
+    Returns
+    -------
+    vtk_image : vtkImageData
+
+    """
+    if array.ndim not in [2, 3]:
+        raise IOError("only 2D (L, RGB, RGBA) or 3D image available")
+
+    vtk_image = ImageData()
+    depth = 1 if array.ndim == 2 else array.shape[2]
+
+    vtk_image.SetDimensions(array.shape[1], array.shape[0], depth)
+    vtk_image.SetExtent(0, array.shape[1] - 1,
+                        0, array.shape[0] - 1,
+                        0, 0)
+    vtk_image.SetSpacing(spacing)
+    vtk_image.SetOrigin(origin)
+    temp_arr = np.flipud(array)
+    temp_arr = temp_arr.reshape(array.shape[1] * array.shape[0], depth)
+    temp_arr = np.ascontiguousarray(temp_arr, dtype=array.dtype)
+    vtk_array_type = numpy_support.get_vtk_array_type(array.dtype)
+    uchar_array = numpy_support.numpy_to_vtk(temp_arr, deep=deep,
+                                             array_type=vtk_array_type)
+    vtk_image.GetPointData().SetScalars(uchar_array)
+    return vtk_image
+
+
 def map_coordinates_3d_4d(input_array, indices):
     """Evaluate input_array at the given indices using trilinear interpolation.
 
@@ -626,7 +668,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     polydata_geom = PolyData()
 
     if faces is not None:
-        set_polydata_vertices(polydata_geom, vertices.astype(np.int8))
+        set_polydata_vertices(polydata_geom, vertices)
         set_polydata_triangles(polydata_geom, faces)
 
     polydata_centers.SetPoints(pts)

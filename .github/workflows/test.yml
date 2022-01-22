@@ -8,6 +8,20 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+      operating_system:
+        description: "Select on which operating system you want to debug"
+        required: false
+        default: 'ubuntu-latest'
+      python_version:
+        description: "Select the python version during the debugging"
+        required: false
+        default: '3.8'
   schedule:
     - cron: '0 2 * * Mon'  # weekly
 
@@ -54,7 +68,7 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      DISPLAY: :99
+      DISPLAY: :99.0
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
       INSTALL_TYPE: ${{ matrix.install_type }}
@@ -87,9 +101,14 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && matrix.os == github.event.inputs.operating_system  && matrix.python-version == github.event.inputs.python_version}}
+      uses: mxschmitt/action-tmate@v3
     - name: Setup Environment variables
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
+        if [ "ubuntu-latest" == "${{ matrix.os }}" ]; then echo "MPLBACKEND=TKAgg" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
         if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}" ]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
         python3 -c "import os; print(os.environ['OPTION_FLAGS'])"
@@ -111,11 +130,12 @@ jobs:
       if: startsWith(matrix.os,'ubuntu')
       run: |
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
-          sudo apt-get install libgl1-mesa-dev xvfb;
+          sudo apt-get install -y libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install libglx-mesa0 libglx-dev libglx0 xvfb;
+          sudo apt-get install -y libgl1-mesa-glx libglx-mesa0 libglx-dev libglx0 xvfb;
         fi
-        Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
+        sleep 3
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh

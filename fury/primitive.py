@@ -1,7 +1,7 @@
 """Module dedicated for basic primitive."""
 import math
 from os.path import join as pjoin
-from distutils.version import LooseVersion
+from packaging.version import parse
 
 import numpy as np
 from scipy.spatial import ConvexHull, transform
@@ -11,7 +11,7 @@ from fury.data import DATA_DIR
 from fury.transform import cart2sphere
 from fury.utils import fix_winding_order
 
-SCIPY_1_4_PLUS = LooseVersion(short_version) >= LooseVersion('1.4.0')
+SCIPY_1_4_PLUS = parse(short_version) >= parse('1.4.0')
 
 SPHERE_FILES = {
     'symmetric362': pjoin(DATA_DIR, 'evenly_distributed_sphere_362.npz'),
