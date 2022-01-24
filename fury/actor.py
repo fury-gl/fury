@@ -2307,7 +2307,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def set_message(self, text):
             self.SetInput(text)
-            self._update_user_matrix()
 
         def get_message(self):
             return self.GetInput()
@@ -2315,11 +2314,9 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
         def font_size(self, size):
             self.GetTextProperty().SetFontSize(24)
             text_actor.SetScale((1./24.*size,)*3)
-            self._update_user_matrix()
 
         def font_family(self, _family='Arial'):
             self.GetTextProperty().SetFontFamilyToArial()
-            # self._update_user_matrix()
 
         def justification(self, justification):
             tprop = self.GetTextProperty()
@@ -2333,8 +2330,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
                 raise ValueError("Unknown justification: '{}'"
                                  .format(justification))
 
-            self._update_user_matrix()
-
         def vertical_justification(self, justification):
             tprop = self.GetTextProperty()
             if justification == 'top':
@@ -2346,8 +2341,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             else:
                 raise ValueError("Unknown vertical justification: '{}'"
                                  .format(justification))
-
-            self._update_user_matrix()
 
         def font_style(self, bold=False, italic=False, shadow=False):
             tprop = self.GetTextProperty()
@@ -2364,8 +2357,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             else:
                 tprop.ShadowOff()
 
-            self._update_user_matrix()
-
         def color(self, color):
             self.GetTextProperty().SetColor(*color)
 
@@ -2375,34 +2366,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
         def get_position(self):
             return self.GetPosition()
 
-        def _update_user_matrix(self):
-            """ Text justification of vtkTextActor3D doesn't seem to be
-            working, so we do it manually. Yeah!
-            """
-            user_matrix = np.eye(4)
-
-            text_bounds = [0, 0, 0, 0]
-            self.GetBoundingBox(text_bounds)
-
-            tprop = self.GetTextProperty()
-            if tprop.GetJustification() == VTK_TEXT_LEFT:
-                user_matrix[:3, -1] += (-text_bounds[0], 0, 0)
-            elif tprop.GetJustification() == VTK_TEXT_CENTERED:
-                tm = -(text_bounds[0] + (text_bounds[1] - text_bounds[0]) / 2.)
-                user_matrix[:3, -1] += (tm, 0, 0)
-            elif tprop.GetJustification() == VTK_TEXT_RIGHT:
-                user_matrix[:3, -1] += (-text_bounds[1], 0, 0)
-
-            if tprop.GetVerticalJustification() == VTK_TEXT_BOTTOM:
-                user_matrix[:3, -1] += (0, -text_bounds[2], 0)
-            elif tprop.GetVerticalJustification() == VTK_TEXT_CENTERED:
-                tm = -(text_bounds[2] + (text_bounds[3] - text_bounds[2]) / 2.)
-                user_matrix[:3, -1] += (0, tm, 0)
-            elif tprop.GetVerticalJustification() == VTK_TEXT_TOP:
-                user_matrix[:3, -1] += (0, -text_bounds[3], 0)
-
-            user_matrix[:3, -1] *= self.GetScale()
-            self.SetUserMatrix(numpy_to_vtk_matrix(user_matrix))
 
     text_actor = Text3D()
     text_actor.message(text)

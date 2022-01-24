@@ -9,12 +9,53 @@ from fury.utils import (map_coordinates_3d_4d,
                         rotate, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds, update_surface_actor_colors)
+                        get_bounds, update_surface_actor_colors,
+                        apply_affine_to_actor)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
-                      UnsignedCharArray)
+                      UnsignedCharArray, TextActor3D)
 import fury.primitive as fp
+
+
+def test_apply_affine_to_actor(interactive=False):
+    text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
+                             vertical_justification='top')
+
+    text_act2 = TextActor3D()
+    text_act2.SetInput("ALIGN TOP RIGHT")
+    text_act2.GetTextProperty().SetFontFamilyToArial()
+    text_act2.GetTextProperty().SetFontSize(24)
+    text_act2.SetScale((1./24.*12,)*3)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    text_bounds = [0, 0, 0, 0]
+    text_act2.GetBoundingBox(text_bounds)
+    initial_bounds = text_act2.GetBounds()
+
+    affine = np.eye(4)
+    affine[:3, -1] += (-text_bounds[1], 0, 0)
+    affine[:3, -1] += (0, -text_bounds[3], 0)
+    affine[:3, -1] *= text_act2.GetScale()
+    apply_affine_to_actor(text_act2, affine)
+    text_act2.GetBoundingBox(text_bounds)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    updated_bounds = text_act2.GetBounds()
+    original_bounds = text_act.GetBounds()
+    npt.assert_array_almost_equal(updated_bounds, original_bounds, decimal=0)
+
+    def compare(x, y):
+        return np.isclose(x, y, rtol=1)
+    npt.assert_array_compare(compare, updated_bounds, original_bounds)
 
 
 def test_map_coordinates_3d_4d():

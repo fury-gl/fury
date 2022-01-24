@@ -702,6 +702,24 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     return actor
 
 
+def apply_affine_to_actor(act, affine):
+    """Apply affine matrix `affine` to the actor `act`.
+
+    Parameters
+    ----------
+    act: Actor
+
+    affine: (4, 4) array-like
+        Homogenous affine, for 3D object.
+
+    Returns
+    -------
+    transformed_act: Actor
+    """
+    act.SetUserMatrix(numpy_to_vtk_matrix(affine))
+    return act
+
+
 def apply_affine(aff, pts):
     """Apply affine matrix `aff` to points `pts`.
 
