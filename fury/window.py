@@ -409,6 +409,13 @@ class ShowManager(object):
         """Render only once."""
         self.window.Render()
 
+    def is_done(self):
+        """Check if show manager is done."""
+        try:
+            return self.iren.GetDone()
+        except AttributeError:
+            return True
+
     def start(self, multithreaded=False, desired_fps=60):
         """Start interaction.
 
@@ -471,6 +478,30 @@ class ShowManager(object):
     def release_lock(self):
         """Release the lock of the render window."""
         self.mutex.release()
+
+    def lock_current(self):
+        """Lock the render window and acuiqre the current context and
+        check if the lock was sucessfully acquired.
+        
+        Returns
+        -------
+        sucessful : bool
+            Returns if the lock was acquired."""
+        if(self.is_done()):
+            return False
+        else:
+            try:
+                self.window
+                self.lock()
+                self.window.MakeCurrent()
+                return True
+            except AttributeError:
+                return False
+
+    def release_current(self):
+        """Release the window context and lock of the render window."""
+        release_context(self.window)
+        self.release_lock()
 
     def wait(self):
         """ Wait for thread to finish. """
