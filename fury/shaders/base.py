@@ -20,6 +20,10 @@ SHADERS_BLOCK = {
     "prim_id": "//VTK::PrimID",   # Apple Bug
     "valuepass": "//VTK::ValuePass",  # Value raster
     "output": "//VTK::Output",  # only for geometry shader
+    "coincident": "//VTK::Coincident",  # handle coincident offsets
+    "zbufer": "//VTK::ZBuffer",
+    "depth_peeling": "//VTK::DepthPeeling",  # Depth Peeling Support
+    "picking": "//VTK::Picking"  # picking support
 }
 
 # See [1] for a more extensive list of OpenGL constants
