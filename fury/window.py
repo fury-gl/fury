@@ -11,9 +11,10 @@ from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
-                      InteractorStyleImage, InteractorStyleTrackballCamera,
-                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+from fury.lib import (VTK_9_PLUS, OpenGLRenderer, Skybox, Volume, Actor2D,
+                      InteractorEventRecorder, InteractorStyleImage,
+                      InteractorStyleTrackballCamera, RenderWindow,
+                      RenderWindowInteractor, RenderLargeImage,
                       WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
 from fury.shaders.base import GL_NUMBERS as _GL
@@ -23,7 +24,7 @@ except NameError:
     basestring = str
 
 
-class Scene(Renderer):
+class Scene(OpenGLRenderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -32,6 +33,24 @@ class Scene(Renderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
+    def __init__(self, bg_color=(0, 0, 0), skybox_tex=None,
+                 render_skybox=False):
+        self.skybox = skybox_tex
+        self.render_skybox = render_skybox
+        self.skybox_actor = None
+        if skybox_tex:
+            self.AutomaticLightCreationOff()
+            self.UseImageBasedLightingOn()
+            self.UseSphericalHarmonicsOff()
+            if VTK_9_PLUS:
+                self.SetEnvironmentTexture(skybox_tex)
+            else:
+                self.SetEnvironmentCubeMap(skybox_tex)
+            if render_skybox:
+                self.skybox_actor = Skybox()
+                self.skybox_actor.SetTexture(skybox_tex)
+                self.skybox_actor.GammaCorrectOn()
+                self.add(self.skybox_actor)
 
     def background(self, color):
         """Set a background color."""

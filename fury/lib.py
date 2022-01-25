@@ -104,6 +104,7 @@ ScalarBarActor = ravtk.vtkScalarBarActor
 
 ##############################################################
 #  vtkRenderingOpenGL2 Module
+OpenGLRenderer = roglvtk.vtkOpenGLRenderer
 Shader = roglvtk.vtkShader
 
 ##############################################################
