@@ -434,7 +434,7 @@ class ShowManager(object):
                     startTime = time.perf_counter()
                     self.lock()
                     self.window.MakeCurrent()
-                    self.iren.ProcessEvents() # Check if we can really do that
+                    self.iren.ProcessEvents()  # Check if we can really do that
                     self.window.Render()
                     release_context(self.window)
                     self.release_lock()
@@ -443,7 +443,7 @@ class ShowManager(object):
                     timePerFrame = 1.0/desired_fps
                     if endTime - startTime < timePerFrame:
                         time.sleep(timePerFrame - (endTime - startTime))
-            else:   
+            else:
                 self.render()
                 if self.title.upper() == "FURY":
                     self.window.SetWindowName(self.title + " " + fury_version)
@@ -482,7 +482,7 @@ class ShowManager(object):
     def lock_current(self):
         """Lock the render window and acuiqre the current context and
         check if the lock was sucessfully acquired.
-        
+
         Returns
         -------
         sucessful : bool
@@ -507,7 +507,7 @@ class ShowManager(object):
         """ Wait for thread to finish. """
         if(self.thread):
             self.thread.join()
-    
+
     def record_events(self):
         """Record events during the interaction.
 
@@ -1297,8 +1297,8 @@ def gl_set_additive_blending_white_background(gl_state):
     gl_state.vtkglEnable(_GL['GL_BLEND'])
     gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
     gl_state.vtkglBlendFuncSeparate(
-            _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-            _GL['GL_ONE'],  _GL['GL_ZERO'])
+        _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        _GL['GL_ONE'],  _GL['GL_ZERO'])
 
 
 def gl_set_normal_blending(gl_state):
@@ -1313,8 +1313,8 @@ def gl_set_normal_blending(gl_state):
     gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
     gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
     gl_state.vtkglBlendFuncSeparate(
-                _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-                _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
+        _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
 
 
 def gl_set_multiplicative_blending(gl_state):
@@ -1341,14 +1341,13 @@ def gl_set_subtractive_blending(gl_state):
     gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
 
 
-
 def release_context(window):
     """Release the context of the window
-    
+
     Parameters
     ----------
     window : vtkRenderWindow
-    
+
     """
     # Once release current context is available:
     # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/8418
@@ -1358,4 +1357,3 @@ def release_context(window):
         if(platform == "win32"):
             from OpenGL.WGL import wglMakeCurrent
             wglMakeCurrent(window.GetGenericDisplayId(), None)
-
