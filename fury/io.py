@@ -11,8 +11,43 @@ from fury.lib import (numpy_support, PNGReader, BMPReader, JPEGReader,
                       XMLPolyDataReader, PLYReader, STLReader,
                       OBJReader, MNIObjectReader, PolyDataWriter,
                       XMLPolyDataWriter, PLYWriter, STLWriter,
-                      MNIObjectWriter)
+                      MNIObjectWriter, ImageFlip, Texture)
 from fury.utils import set_input
+
+
+def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
+    """Load a cube map texture from a list of 6 images.
+
+    Parameters
+    ----------
+    fnames : list of strings
+        List of 6 filenames with png, bmp, jpeg or jpg extensions.
+    interpolate_on : bool, optional
+    mipmap_on : bool, optional
+
+    Returns
+    -------
+    output : vtkTexture
+        Cube map texture.
+
+    """
+    texture = Texture()
+    texture.CubeMapOn()
+    for idx, fn in enumerate(fnames):
+        if not os.path.isfile(fn):
+            raise FileNotFoundError(fn)
+        else:
+            # Read the images
+            vtk_img = load_image(fn, as_vtktype=True)
+            flip = ImageFlip()
+            flip.SetInputData(vtk_img)
+            flip.SetFilteredAxis(1)  # flip y axis
+            texture.SetInputConnection(idx, flip.GetOutputPort(0))
+    if interpolate_on:
+        texture.InterpolateOn()
+    if mipmap_on:
+        texture.MipmapOn()
+    return texture
 
 
 def load_image(filename, as_vtktype=False, use_pillow=True):
