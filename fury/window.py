@@ -33,7 +33,7 @@ class Scene(OpenGLRenderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
-    def __init__(self, bg_color=(0, 0, 0), skybox_tex=None,
+    def __init__(self, background=(0, 0, 0), skybox_tex=None,
                  render_skybox=False):
         self.skybox = skybox_tex
         self.render_skybox = render_skybox
