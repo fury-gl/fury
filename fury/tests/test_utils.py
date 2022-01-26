@@ -18,7 +18,7 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
-                      UnsignedCharArray, VTK_DOUBLE, VTK_INT, VTK_FLOAT)
+                      UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
 import fury.primitive as fp
 
 
