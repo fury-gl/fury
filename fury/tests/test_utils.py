@@ -13,12 +13,53 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         rotate, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds, update_surface_actor_colors)
+                        get_bounds, update_surface_actor_colors,
+                        apply_affine_to_actor)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
                       UnsignedCharArray, VTK_DOUBLE, VTK_INT, VTK_FLOAT)
 import fury.primitive as fp
+
+
+def test_apply_affine_to_actor(interactive=False):
+    text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
+                             vertical_justification='top')
+
+    text_act2 = TextActor3D()
+    text_act2.SetInput("ALIGN TOP RIGHT")
+    text_act2.GetTextProperty().SetFontFamilyToArial()
+    text_act2.GetTextProperty().SetFontSize(24)
+    text_act2.SetScale((1./24.*12,)*3)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    text_bounds = [0, 0, 0, 0]
+    text_act2.GetBoundingBox(text_bounds)
+    initial_bounds = text_act2.GetBounds()
+
+    affine = np.eye(4)
+    affine[:3, -1] += (-text_bounds[1], 0, 0)
+    affine[:3, -1] += (0, -text_bounds[3], 0)
+    affine[:3, -1] *= text_act2.GetScale()
+    apply_affine_to_actor(text_act2, affine)
+    text_act2.GetBoundingBox(text_bounds)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    updated_bounds = text_act2.GetBounds()
+    original_bounds = text_act.GetBounds()
+    npt.assert_array_almost_equal(updated_bounds, original_bounds, decimal=0)
+
+    def compare(x, y):
+        return np.isclose(x, y, rtol=1)
+    npt.assert_array_compare(compare, updated_bounds, original_bounds)
 
 
 def test_map_coordinates_3d_4d():
@@ -292,6 +333,31 @@ def test_vtk_matrix_to_numpy():
     npt.assert_equal(numpy_to_vtk_matrix(None), None)
     npt.assert_raises(ValueError, numpy_to_vtk_matrix, np.array([A, A]))
 
+
+def test_numpy_to_vtk_image_data():
+    array = np.array([[[1, 2, 3],
+                       [4, 5, 6]],
+                      [[7, 8, 9],
+                       [10, 11, 12]],
+                      [[21, 22, 23],
+                       [24, 25, 26]],
+                      [[27, 28, 29],
+                       [210, 211, 212]]])
+
+    # converting numpy array to vtk_image_data
+    vtk_image_data = utils.numpy_to_vtk_image_data(array)
+
+    # extracting the image data from vtk_image_data
+    w, h, depth = vtk_image_data.GetDimensions()
+    vtk_img_array = vtk_image_data.GetPointData().GetScalars()
+    elements = vtk_img_array.GetNumberOfComponents()
+
+    # converting vtk array to numpy array
+    numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
+    npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
+
+    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data,
+                      np.array([1, 2, 3]))
 
 def test_get_grid_cell_position():
 
