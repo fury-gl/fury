@@ -818,15 +818,14 @@ def test_labels(interactive=False):
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
 
-@pytest.mark.parametrize('interactive, prim', [(False, True), (False, False)])
-def test_spheres(interactive, prim):
+def test_spheres(interactive=False):
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
     opacity = 0.5
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3], opacity=opacity, prim=prim)
+                                radii=xyzr[:, 3], opacity=opacity, prim=False)
     scene.add(sphere_actor)
 
     if interactive:
@@ -842,7 +841,7 @@ def test_spheres(interactive, prim):
     scene.clear()
     sphere_actor = actor.sphere(centers=xyzr[:, :3],
                                 colors=np.array([1, 0, 0]),
-                                radii=xyzr[:, 3])
+                                radii=xyzr[:, 3], prim=False)
     scene.add(sphere_actor)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
@@ -861,6 +860,29 @@ def test_spheres(interactive, prim):
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
+
+    # test primitive sphere type
+    scene.clear()
+    phi, theta = (25, 25)
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3], opacity=opacity,
+                                phi=phi, theta=theta, prim=True)
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(sphere_actor.GetProperty().GetOpacity(), opacity)
+
+    # test with unique colors for all sphere
+    scene.clear()
+    sphere_actor = actor.sphere(centers=xyzr[:, :3],
+                                colors=np.array([0, 0, 1]),
+                                radii=xyzr[:, 3], phi=phi, theta=theta)
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(0, 0, 255))
+    npt.assert_equal(report.colors_found, [True])
+    scene.clear()
 
 
 def test_cones_vertices_faces(interactive=False):
