@@ -255,7 +255,7 @@ def prim_box():
     return vertices, triangles
 
 
-def prim_sphere(name='symmetric362', gen_faces=False):
+def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
     """Provide vertices and triangles of the spheres.
 
     Parameters
@@ -290,15 +290,39 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     True
 
     """
-    fname = SPHERE_FILES.get(name)
-    if fname is None:
-        raise ValueError('No sphere called "%s"' % name)
-    res = np.load(fname)
+    if phi is None:
+        fname = SPHERE_FILES.get(name)
+        if fname is None:
+            raise ValueError('No sphere called "%s"' % name)
+        res = np.load(fname)
 
-    verts = res['vertices'].copy()
-    faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-    faces = fix_winding_order(res['vertices'], faces, clockwise=True)
-    return res['vertices'], faces
+        verts = res['vertices'].copy()
+        faces = faces_from_sphere_vertices(
+            verts) if gen_faces else res['faces']
+        faces = fix_winding_order(res['vertices'], faces, clockwise=True)
+    else:
+        phi, theta = 2*phi, 2*theta  # divisons of 360 degrees
+        phi_indices, theta_indices = np.arange(0, phi), np.arange(0, theta)
+
+        phi_angles = 2*np.pi*phi_indices / phi
+        theta_angles = 2*np.pi*theta_indices / theta
+
+        x, y, z = np.zeros(
+            (phi, theta)), np.zeros((phi, theta)), np.zeros((phi, theta))
+
+        for i, phi_angle in enumerate(phi_angles):
+            x[i], y[i], z[i] = (
+                np.cos(phi_angle) * np.cos(theta_angles),
+                np.sin(phi_angle) * np.cos(theta_angles),
+                np.sin(theta_angles)
+            )
+        x, y, z = x.reshape((-1,)), y.reshape((-1,)), z.reshape((-1,))
+
+        verts = np.vstack([x, y, z]).T
+        faces = faces_from_sphere_vertices(verts)
+        faces = fix_winding_order(verts, faces, clockwise=True)
+
+    return verts, faces
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
