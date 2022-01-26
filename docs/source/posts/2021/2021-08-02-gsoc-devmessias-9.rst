@@ -1,5 +1,5 @@
-Week #09: Welcome to my weekly Blogs!
-====================================
+Week #09: Sphinx custom summary
+===============================
 
 .. post:: August 02 2021
    :author: Bruno Messias
@@ -17,7 +17,8 @@ FURY/Helios
 -  `PR fury-gl/helios#22
    : <https://github.com/fury-gl/helios/pull/22>`__ Helios Documentation
    Improvements.
-   I’ve spent some time studying sphinx in order to discover how I could create a custom summary inside of a template module.
+   I’ve spent some time studying sphinx in order to discover how I could create a 
+   custom summary inside of a template module.
    
 FURY
 ^^^^

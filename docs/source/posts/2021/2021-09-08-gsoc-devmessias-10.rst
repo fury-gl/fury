@@ -1,5 +1,5 @@
-Week #10: Welcome to my weekly Blogs!
-====================================
+Week #10: SDF Fonts 
+===================
 
 .. post:: August 09 2021
    :author: Bruno Messias
@@ -30,7 +30,7 @@ FURY
    -  Improve the streaming memory managment system for IPC
       communication
 
--  I've developing a featurehat will allows FURY to draw hundreds
+-  I've developing a feature that will allows FURY to draw hundreds
    thousands of labels using texture maps and signed distance functions.
    Until now I've a sketch that at least is able to draw the labels
    using the markers billboards and bitmap fonts |image1|

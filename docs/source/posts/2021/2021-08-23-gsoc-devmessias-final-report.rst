@@ -1,11 +1,11 @@
-Google Summer of Code 2021 Final Work Product
-=============================================
+Google Summer of Code 2021 - Final Report - Bruno Messias  
+=========================================================
 
--  **Name:** Bruno Messias
--  **Organisation:** Python Software Foundation
--  **Sub-Organisation:** FURY
--  **Project:** A system for collaborative visualization of large
-   network layouts using FURY
+.. post:: August 23 2021
+   :author: Bruno Messias
+   :tags: google
+   :category: gsoc
+
 
 Abstract
 --------
