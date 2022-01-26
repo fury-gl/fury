@@ -1,7 +1,6 @@
 from fury import actor, material, window
-from fury.data import fetch_viz_textures, read_viz_textures
+from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.lib import ImageFlip, ImageReader2Factory, Texture
-from fury.utils import add_polydata_numeric_field, get_polydata_field
 import numpy as np
 import os
 
@@ -29,17 +28,11 @@ def get_cubemap_texture(file_names, interpolate_on=True, mipmap_on=True):
     return texture
 
 
-# TODO: Fetch skybox
-# TODO: Create wrapper function with name order
-texture_name = 'skybox'
-cubemap_fns = [read_viz_textures(texture_name + '-px.jpg'),
-               read_viz_textures(texture_name + '-nx.jpg'),
-               read_viz_textures(texture_name + '-py.jpg'),
-               read_viz_textures(texture_name + '-ny.jpg'),
-               read_viz_textures(texture_name + '-pz.jpg'),
-               read_viz_textures(texture_name + '-nz.jpg')]
+fetch_viz_cubemaps()
 
-cubemap = get_cubemap_texture(cubemap_fns)
+textures = read_viz_cubemap('skybox')
+
+cubemap = get_cubemap_texture(textures)
 
 scene = window.Scene(skybox_tex=cubemap, render_skybox=True)
 
@@ -47,18 +40,7 @@ scene = window.Scene(skybox_tex=cubemap, render_skybox=True)
 #skybox.EdgeClampOn()
 
 sphere = actor.sphere([[0, 0, 0]], (.7, .7, .7), radii=2, theta=64, phi=64)
-polydata = sphere.GetMapper().GetInput()
-
-# TODO: field_from_actor
-print(get_polydata_field(polydata, 'Uses IBL'))
-
-# TODO: field_to_actor
-field = scene.GetUseImageBasedLighting()
-field_name = 'Uses IBL'
-add_polydata_numeric_field(polydata, field_name, field)
-
-# TODO: field_from_actor
-print(get_polydata_field(polydata, 'Uses IBL'))
+material.manifest_pbr(sphere)
 
 scene.add(sphere)
 
