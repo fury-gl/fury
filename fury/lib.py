@@ -31,6 +31,8 @@ from vtkmodules.util.misc import calldata_type
 
 
 VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
+VTK_9_1_PLUS = (ccvtk.vtkVersion.GetVTKMajorVersion() >= 9 and
+                ccvtk.vtkVersion.GetVTKMinorVersion() >= 1)
 VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()
 
 ##############################################################

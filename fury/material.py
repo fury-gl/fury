@@ -2,7 +2,7 @@ import warnings
 
 
 from fury.shaders import add_shader_callback, load, shader_to_actor
-from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
+from fury.lib import VTK_9_PLUS, VTK_9_1_PLUS, VTK_OBJECT, calldata_type
 
 
 def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
@@ -40,31 +40,48 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
 
     """
     if not VTK_9_PLUS:
-        warnings.warn('Your PBR effect cannot be apply due to VTK version. '
+        warnings.warn('Your PBR effect cannot be applied due to VTK version. '
                       'Please upgrade your VTK version (should be >= 9.0.0).')
-        return
+        return None
 
     try:
         prop = actor.GetProperty()
         try:
             prop.SetInterpolationToPBR()
-            prop.SetMetallic(metallic)
-            prop.SetRoughness(roughness)
-            prop.SetAnisotropy(anisotropy)
-            prop.SetAnisotropyRotation(anisotropy_rotation)
-            prop.SetCoatStrength(coat_strength)
-            prop.SetCoatRoughness(coat_roughness)
-            prop.SetBaseIOR(base_ior)
-            prop.SetCoatIOR(coat_ior)
+
+            pbr_params = {'metallic': metallic, 'roughness': roughness}
+
+            prop.SetMetallic(pbr_params['metallic'])
+            prop.SetRoughness(pbr_params['roughness'])
+            if VTK_9_1_PLUS:
+                pbr_params['anisotropy'] = anisotropy
+                pbr_params['anisotropy_rotation'] = anisotropy_rotation
+                pbr_params['coat_strength'] = coat_strength
+                pbr_params['coat_roughness'] = coat_roughness
+                pbr_params['base_ior'] = base_ior
+                pbr_params['coat_ior'] = coat_ior
+
+                prop.SetAnisotropy(pbr_params['anisotropy'])
+                prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
+                prop.SetCoatStrength(pbr_params['coat_strength'])
+                prop.SetCoatRoughness(pbr_params['coat_roughness'])
+                prop.SetBaseIOR(pbr_params['base_ior'])
+                prop.SetCoatIOR(pbr_params['coat_ior'])
+            else:
+                warnings.warn(
+                    'Anisotropy and Clear coat based PBR effects cannot be '
+                    'applied due to VTK version. Please upgrade your VTK '
+                    'version (should be >= 9.1.0).')
+            return pbr_params
         except AttributeError:
             warnings.warn(
                 'PBR interpolation cannot be applied to this actor. The '
                 'material will not be applied.')
-            return
+            return None
     except AttributeError:
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
-        return
+        return None
 
 
 def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
