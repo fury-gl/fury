@@ -114,7 +114,7 @@ def change_slice_coat_ior(slider):
 
 """
 Last, but not least, we define the following function to help us to reposition
-the UI elements every time we resize the window. 
+the UI elements every time we resize the window.
 """
 
 
@@ -183,7 +183,7 @@ tangents_to_actor(sphere, tangents)
 
 """
 With the tangents computed and in place, we have all the elements needed to
-add some material properties to the actor. 
+add some material properties to the actor.
 """
 
 pbr_params = material.manifest_pbr(sphere)
@@ -346,8 +346,8 @@ show_m.add_window_callback(win_callback)
 Finally, let's visualize our demo.
 """
 
-interactive = True
+interactive = False
 if interactive:
     show_m.start()
 
-#window.record(scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")
+window.record(scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")
