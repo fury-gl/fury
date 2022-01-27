@@ -155,7 +155,7 @@ described process. On the other hand, the ``render_skybox`` parameter toggles
 the rendering of the skybox.
 """
 
-scene = window.Scene(skybox_tex=cubemap, render_skybox=True)
+scene = window.Scene(skybox=cubemap)
 
 """
 With the scene created, we can then populate it. In this demo we will only add

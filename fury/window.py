@@ -33,25 +33,31 @@ class Scene(OpenGLRenderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
-    def __init__(self, background=(0, 0, 0), skybox_tex=None,
-                 render_skybox=False):
-        self.skybox = skybox_tex
-        self.render_skybox = render_skybox
+    def __init__(self, background=(0, 0, 0), skybox=None):
+        self.skybox = skybox
         self.skybox_actor = None
-        if skybox_tex:
+        if skybox:
             self.AutomaticLightCreationOff()
             self.UseImageBasedLightingOn()
             self.UseSphericalHarmonicsOff()
-            self.SetEnvironmentTexture(skybox_tex)
-            if render_skybox:
-                self.skybox_actor = Skybox()
-                self.skybox_actor.SetTexture(skybox_tex)
-                self.skybox_actor.GammaCorrectOn()
-                self.add(self.skybox_actor)
+            self.SetEnvironmentTexture(skybox)
+            self.show_skybox()
 
     def background(self, color):
         """Set a background color."""
         self.SetBackground(color)
+
+    def show_skybox(self, gamma_correct=True):
+        if self.skybox:
+            self.skybox_actor = Skybox()
+            self.skybox_actor.SetTexture(self.skybox)
+            if gamma_correct:
+                self.skybox_actor.GammaCorrectOn()
+            self.add(self.skybox_actor)
+
+    def hide_skybox(self):
+        if self.skybox:
+            self.rm(self.skybox_actor)
 
     def add(self, *actors):
         """Add an actor to the scene."""
