@@ -300,8 +300,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     Returns
     -------
-    surface_actor : vtkActor
-        A vtkActor visualizing the final surface
+    surface_actor : Actor
+        An Actor visualizing the final surface
         computed from the point cloud is returned.
 
     """
@@ -539,7 +539,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     tube_sides : int, optional
         Default is 9.
     lod : bool, optional
-        Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
+        Use LODActor(level of detail) rather than Actor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
     lod_points : int, optional
@@ -685,7 +685,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
         Number of splines subdivision to smooth streamtubes. Default is None
         which means no subdivision.
     lod : bool, optional
-        Use vtkLODActor(level of detail) rather than vtkActor. Default is True.
+        Use LODActor(level of detail) rather than Actor. Default is True.
         Level of detail actors do not render the full geometry when the
         frame rate is low.
     lod_points : int, optional
@@ -703,7 +703,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
 
     Returns
     ----------
-    v : vtkActor or vtkLODActor object
+    v : Actor or LODActor object
         Line.
 
     Examples
@@ -822,9 +822,9 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
 
     Returns
     -------
-    vtkActor
-    """
+    arrow_actor: Actor
 
+    """
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,),
@@ -832,7 +832,8 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
                        colorz + (opacity,)])
 
     scales = np.asarray(scale)
-    return arrow(centers, dirs, colors, scales)
+    arrow_actor = arrow(centers, dirs, colors, scales)
+    return arrow_actor
 
 
 def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
@@ -878,7 +879,7 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
     Returns
     ---------
     actor : OdfSlicerActor
-        vtkActor representing the ODF field.
+        Actor representing the ODF field.
     """
     # first we check if the input array is 4D
     n_dims = len(odfs.shape)
@@ -1057,7 +1058,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
     Returns
     ---------
-    actor : vtkActor
+    tensor_actor : Actor
         Ellipsoid
 
     """
@@ -1238,7 +1239,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     linewidth : float, optional
         Line thickness. Default is 1.
     lod : bool
-        Use vtkLODActor(level of detail) rather than vtkActor.
+        Use LODActor(level of detail) rather than Actor.
         Default is False. Level of detail actors do not render the full
         geometry when the frame rate is low.
     lod_points : int
@@ -1252,11 +1253,11 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
     Returns
     -------
-    vtkActor
+    peak_actor: Actor
 
     See Also
     --------
-    fury.actor.odf_slicer
+    :func:`fury.actor.odf_slice`
 
     """
     peaks_dirs = np.asarray(peaks_dirs)
@@ -1364,8 +1365,8 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
 
     Returns
     -------
-    actor : PeakActor
-        vtkActor or vtkLODActor representing the peaks directions and/or
+    peak_actor : PeakActor
+        Actor or LODActor representing the peaks directions and/or
         magnitudes.
 
     Examples
@@ -1432,11 +1433,11 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
 
     Returns
     --------
-    vtkActor
+    dot_actor: Actor
 
     See Also
     ---------
-    fury.actor.point
+    :func:`fury.actor.point`
 
     """
     if points.ndim == 2:
@@ -1492,7 +1493,12 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
     Returns
     -------
-    vtkActor
+    point_actor: Actor
+
+    See Also
+    --------
+    :func:`fury.actor.dots`
+    :func:`fury.actor.sphere`
 
     Examples
     --------
@@ -1533,7 +1539,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
 
     Returns
     -------
-    vtkActor
+    sphere_actor: Actor
 
     Examples
     --------
@@ -1552,13 +1558,13 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         src.SetThetaResolution(theta)
         src.SetPhiResolution(phi)
 
-    actor = repeat_sources(centers=centers, colors=colors,
-                           active_scalars=radii, source=src,
-                           vertices=vertices, faces=faces)
+    sphere_actor = repeat_sources(centers=centers, colors=colors,
+                                  active_scalars=radii, source=src,
+                                  vertices=vertices, faces=faces)
 
-    actor.GetProperty().SetOpacity(opacity)
+    sphere_actor.GetProperty().SetOpacity(opacity)
 
-    return actor
+    return sphere_actor
 
 
 def cylinder(centers, directions, colors, radius=0.05, heights=1,
@@ -1589,7 +1595,7 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
 
     Returns
     -------
-    vtkActor
+    cylinder_actor: Actor
 
     Examples
     --------
@@ -1610,12 +1616,12 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
         src.SetResolution(resolution)
         src.SetRadius(radius)
 
-    actor = repeat_sources(centers=centers, colors=colors,
-                           directions=directions,
-                           active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
+    cylinder_actor = repeat_sources(centers=centers, colors=colors,
+                                    directions=directions,
+                                    active_scalars=heights, source=src,
+                                    vertices=vertices, faces=faces)
 
-    return actor
+    return cylinder_actor
 
 
 def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
@@ -1634,7 +1640,7 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
     Returns
     -------
-    vtkActor
+    sq_actor: Actor
 
     Examples
     --------
@@ -1674,7 +1680,11 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    rect_actor: Actor
+
+    See Also
+    --------
+    :func:`fury.actor.square`
 
     Examples
     --------
@@ -1709,7 +1719,7 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
 
     Returns
     -------
-    vtkActor
+    box_actor: Actor
 
     Examples
     --------
@@ -1748,7 +1758,7 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
     Returns
     -------
-    vtkActor
+    cube_actor: Actor
 
     Examples
     --------
@@ -1797,7 +1807,7 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
 
     Returns
     -------
-    vtkActor
+    arrow_actor: Actor
 
     Examples
     --------
@@ -1820,10 +1830,10 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
         src.SetTipRadius(tip_radius)
         src.SetShaftRadius(shaft_radius)
 
-    actor = repeat_sources(centers=centers, directions=directions,
-                           colors=colors, active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
-    return actor
+    arrow_actor = repeat_sources(centers=centers, directions=directions,
+                                 colors=colors, active_scalars=heights,
+                                 source=src, vertices=vertices, faces=faces)
+    return arrow_actor
 
 
 def cone(centers, directions, colors, heights=1., resolution=10,
@@ -1851,7 +1861,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
 
     Returns
     -------
-    vtkActor
+    cone_actor: Actor
 
     Examples
     --------
@@ -1870,10 +1880,10 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     if src is not None:
         src.SetResolution(resolution)
 
-    actor = repeat_sources(centers=centers, directions=directions,
-                           colors=colors, active_scalars=heights, source=src,
-                           vertices=vertices, faces=faces)
-    return actor
+    cone_actor = repeat_sources(centers=centers, directions=directions,
+                                colors=colors, active_scalars=heights,
+                                source=src, vertices=vertices, faces=faces)
+    return cone_actor
 
 
 def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
@@ -1893,7 +1903,7 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    tprism_actor: Actor
 
     Examples
     --------
@@ -1912,8 +1922,8 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     res = fp.repeat_primitive(verts, faces, directions=directions,
                               centers=centers, colors=colors, scales=scales)
     big_verts, big_faces, big_colors, _ = res
-    tri_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    return tri_actor
+    tprism_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return tprism_actor
 
 
 def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
@@ -1933,7 +1943,7 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    rcoh_actor: Actor
 
     Examples
     --------
@@ -1973,7 +1983,7 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    pent_actor: Actor
 
     Examples
     --------
@@ -2015,7 +2025,7 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    oct_actor: Actor
 
     Examples
     --------
@@ -2054,7 +2064,7 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
         Frustum pyramid size on each direction (x, y), default(1)
     Returns
     -------
-    vtkActor
+    frustum_actor: Actor
 
     Examples
     --------
@@ -2097,7 +2107,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
 
     Returns
     -------
-    vtkActor
+    spq_actor: Actor
 
     Examples
     --------
@@ -2134,8 +2144,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
                                        colors=colors, scales=scales)
 
     big_verts, big_faces, big_colors, _ = res
-    actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    return actor
+    spq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    return spq_actor
 
 
 def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
@@ -2170,7 +2180,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
     Returns
     -------
-    vtkActor
+    sq_actor: Actor
 
     """
     verts, faces = fp.prim_square()
@@ -2240,7 +2250,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
 
     Returns
     -------
-    l : vtkActor object
+    l : Actor object
         Label.
 
     Examples
@@ -2655,7 +2665,7 @@ def texture(rgb, interp=True):
 
     Returns
     -------
-    vtkActor
+    act: Actor
     """
     arr = rgb
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
@@ -2703,7 +2713,7 @@ def texture_update(texture_actor, arr):
 
     Parameters
     ----------
-    texture_actor: vtkActor
+    texture_actor: Actor
         Actor whose texture is to be updated.
     arr : ndarray
         Input 2D image in the form of RGB or RGBA array.
@@ -2836,7 +2846,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
 
     Returns
     -------
-    vtkActor
+    box_actor: Actor
     """
 
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
@@ -2916,7 +2926,7 @@ def markers(
 
     Returns
     -------
-    vtkActor
+    sq_actor: Actor
 
     """
 
