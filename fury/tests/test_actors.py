@@ -863,7 +863,7 @@ def test_spheres(interactive=False):
 
     # test primitive sphere type
     scene.clear()
-    phi, theta = (25, 25)
+    phi, theta = (30, 30)
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3], opacity=opacity,
                                 phi=phi, theta=theta, prim=True)

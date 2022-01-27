@@ -301,11 +301,10 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
             verts) if gen_faces else res['faces']
         faces = fix_winding_order(res['vertices'], faces, clockwise=True)
     else:
-        phi, theta = 2*phi, 2*theta  # divisons of 360 degrees
         phi_indices, theta_indices = np.arange(0, phi), np.arange(0, theta)
 
         phi_angles = 2*np.pi*phi_indices / phi
-        theta_angles = 2*np.pi*theta_indices / theta
+        theta_angles = np.pi/2 - np.pi*theta_indices / (theta-1)
 
         x, y, z = np.zeros(
             (phi, theta)), np.zeros((phi, theta)), np.zeros((phi, theta))
