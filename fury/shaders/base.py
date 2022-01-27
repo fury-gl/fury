@@ -1,7 +1,7 @@
 from functools import partial
 
 from fury import enable_warnings
-from fury.lib import (VTK_9_PLUS, numpy_support, Command, VTK_OBJECT,
+from fury.lib import (numpy_support, Command, VTK_OBJECT,
                       calldata_type, DataObject, Shader)
 
 SHADERS_TYPE = {"vertex": Shader.Vertex,
@@ -20,6 +20,10 @@ SHADERS_BLOCK = {
     "prim_id": "//VTK::PrimID",   # Apple Bug
     "valuepass": "//VTK::ValuePass",  # Value raster
     "output": "//VTK::Output",  # only for geometry shader
+    "coincident": "//VTK::Coincident",  # handle coincident offsets
+    "zbufer": "//VTK::ZBuffer",
+    "depth_peeling": "//VTK::DepthPeeling",  # Depth Peeling Support
+    "picking": "//VTK::Picking"  # picking support
 }
 
 # See [1] for a more extensive list of OpenGL constants
@@ -109,7 +113,7 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
         error_msg = "\n\n--- DEBUG: THIS LINE GENERATES AN ERROR ---\n\n"
         impl_code += error_msg
 
-    sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
+    sp = actor.GetShaderProperty()
 
     sp.AddShaderReplacement(shader_type, block_dec, replace_first,
                             decl_code, replace_all)
@@ -142,7 +146,7 @@ def replace_shader_in_actor(actor, shader_type, code):
         msg += ', '.join(function_name.keys())
         raise ValueError(msg)
 
-    sp = actor.GetShaderProperty() if VTK_9_PLUS else actor.GetMapper()
+    sp = actor.GetShaderProperty()
     getattr(sp, function)(code)
 
 

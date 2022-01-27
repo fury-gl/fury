@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 from fury import actor, material, window
 from fury.io import load_image
 from fury.optpkg import optional_package
-from fury.lib import VTK_9_PLUS
 
 
 import numpy as np
@@ -19,16 +18,6 @@ def test_fake():
     pass
 
 
-@pytest.mark.skipif(VTK_9_PLUS, reason="Requires VTK < 9.0.0")
-def test_manifest_pbr_vtk_less_than_9():
-    center = np.array([[0, 0, 0]])
-
-    # Test non-supported material
-    test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
-    npt.assert_warns(UserWarning, material.manifest_pbr, test_actor)
-
-
-# @pytest.mark.skipif(not VTK_9_PLUS, reason="Requires VTK >= 9.0.0")
 @pytest.mark.skipif(True, reason="Under investigation")
 def test_manifest_pbr_vtk_great_than_9():
     # Test non-supported property
