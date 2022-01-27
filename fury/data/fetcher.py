@@ -24,6 +24,9 @@ else:
 UW_RW_URL = \
     "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
+CUBEMAP_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
+
 FURY_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/examples/"
 
@@ -267,7 +270,7 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
 fetch_viz_cubemaps = _make_fetcher(
     "fetch_viz_cubemaps",
     pjoin(fury_home, "cubemaps"),
-    TEXTURE_DATA_URL,
+    CUBEMAP_DATA_URL,
     ['skybox-nx.jpg', 'skybox-ny.jpg', 'skybox-nz.jpg', 'skybox-px.jpg',
      'skybox-py.jpg', 'skybox-pz.jpg'],
     ['skybox-nx.jpg', 'skybox-ny.jpg', 'skybox-nz.jpg', 'skybox-px.jpg',
