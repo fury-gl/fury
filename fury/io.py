@@ -21,7 +21,7 @@ def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
     Parameters
     ----------
     fnames : list of strings
-        List of 6 filenames with png, bmp, jpeg or jpg extensions.
+        List of 6 filenames with bmp, jpg, jpeg, png, tif or tiff extensions.
     interpolate_on : bool, optional
     mipmap_on : bool, optional
 
@@ -39,10 +39,13 @@ def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
         else:
             # Read the images
             vtk_img = load_image(fn, as_vtktype=True)
-            flip = ImageFlip()
-            flip.SetInputData(vtk_img)
-            flip.SetFilteredAxis(1)  # flip y axis
-            texture.SetInputConnection(idx, flip.GetOutputPort(0))
+            # Flip the image horizontally
+            img_flip = ImageFlip()
+            img_flip.SetInputData(vtk_img)
+            img_flip.SetFilteredAxis(1)  # flip y axis
+            img_flip.Update()
+            # Add the image to the cube map
+            texture.SetInputDataObject(idx, img_flip.GetOutput())
     if interpolate_on:
         texture.InterpolateOn()
     if mipmap_on:

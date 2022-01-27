@@ -6,8 +6,8 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import (load_polydata, save_polydata, load_image, save_image,
-                     load_sprite_sheet)
+from fury.io import (load_cubemap_texture, load_polydata, save_polydata,
+                     load_image, save_image, load_sprite_sheet)
 from fury.lib import numpy_support, PolyData, ImageData
 from fury.utils import numpy_to_vtk_points
 from fury.testing import assert_greater
@@ -156,6 +156,24 @@ def test_pillow():
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
+
+
+def test_load_cubemap_texture():
+    l_ext = ['jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff']
+    for ext in l_ext:
+        with InTemporaryDirectory() as odir:
+            data = np.random.randint(0, 255, size=(50, 50, 3), dtype=np.uint8)
+            fname_path = pjoin(odir, f'test.{ext}')
+            save_image(data, fname_path)
+
+            fnames = [fname_path] * 6
+            texture = load_cubemap_texture(fnames)
+            npt.assert_equal(texture.GetCubeMap(), True)
+            npt.assert_equal(texture.GetMipmap(), True)
+            npt.assert_equal(texture.GetInterpolate(), 1)
+            npt.assert_equal(texture.GetNumberOfInputPorts(), 6)
+            npt.assert_equal(texture.GetInputDataObject(0, 0).GetDimensions(),
+                             (50, 50, 1))
 
 
 def test_load_sprite_sheet():
