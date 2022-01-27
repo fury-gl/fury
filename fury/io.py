@@ -31,6 +31,8 @@ def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
         Cube map texture.
 
     """
+    if len(fnames) != 6:
+        raise IOError("Expected 6 filenames, got {}".format(len(fnames)))
     texture = Texture()
     texture.CubeMapOn()
     for idx, fn in enumerate(fnames):

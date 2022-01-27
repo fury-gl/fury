@@ -166,6 +166,9 @@ def test_load_cubemap_texture():
             fname_path = pjoin(odir, f'test.{ext}')
             save_image(data, fname_path)
 
+            fnames = [fname_path] * 5
+            npt.assert_raises(IOError, load_cubemap_texture, fnames)
+
             fnames = [fname_path] * 6
             texture = load_cubemap_texture(fnames)
             npt.assert_equal(texture.GetCubeMap(), True)
@@ -174,6 +177,9 @@ def test_load_cubemap_texture():
             npt.assert_equal(texture.GetNumberOfInputPorts(), 6)
             npt.assert_equal(texture.GetInputDataObject(0, 0).GetDimensions(),
                              (50, 50, 1))
+
+            fnames = [fname_path] * 7
+            npt.assert_raises(IOError, load_cubemap_texture, fnames)
 
 
 def test_load_sprite_sheet():
