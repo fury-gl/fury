@@ -48,16 +48,29 @@ class Scene(OpenGLRenderer):
         self.SetBackground(color)
 
     def show_skybox(self, gamma_correct=True):
+        """ Add a skybox actor to the scene.
+
+        Parameters
+        ----------
+        gamma_correct : bool
+            If True, the skybox will be gamma corrected.
+
+        """
         if self.skybox:
-            self.skybox_actor = Skybox()
-            self.skybox_actor.SetTexture(self.skybox)
-            if gamma_correct:
-                self.skybox_actor.GammaCorrectOn()
+            if self.skybox_actor is None:
+                self.skybox_actor = Skybox()
+                self.skybox_actor.SetTexture(self.skybox)
+                if gamma_correct:
+                    self.skybox_actor.GammaCorrectOn()
             self.add(self.skybox_actor)
+        else:
+            warn('Scene created without a skybox. Nothing to show.')
 
     def hide_skybox(self):
         if self.skybox:
             self.rm(self.skybox_actor)
+        else:
+            warn('Scene created without a skybox. Nothing to hide.')
 
     def add(self, *actors):
         """Add an actor to the scene."""
