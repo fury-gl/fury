@@ -6,11 +6,10 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from fury import actor, window, io
-from fury.lib import ImageData, Texture
+from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
 from fury import shaders
-from vtk.util import numpy_support
 
 
 def test_scene():
