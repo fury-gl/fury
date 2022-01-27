@@ -126,7 +126,7 @@ for j in range(11):
     scene.add(label)
 
 """
-Finally, let's visualize our demo.
+Finally, let's visualize our tutorial.
 """
 
 interactive = False
