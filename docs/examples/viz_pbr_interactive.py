@@ -108,9 +108,6 @@ cubemap = load_cubemap_texture(textures)
 
 scene = window.Scene(skybox_tex=cubemap, render_skybox=True)
 
-#skybox.RepeatOff()
-#skybox.EdgeClampOn()
-
 sphere = actor.sphere([[0, 0, 0]], (.7, .7, .7), radii=2, theta=64, phi=64)
 
 doa = [0, 1, .5]
@@ -123,12 +120,12 @@ pbr_params = material.manifest_pbr(sphere)
 
 scene.add(sphere)
 
-show_m = window.ShowManager(scene=scene, reset_camera=False,
+show_m = window.ShowManager(scene=scene, size=(1920, 1080), reset_camera=False,
                             order_transparent=True)
 show_m.initialize()
 
 control_panel = ui.Panel2D(
-    (400, 500), position=(-105, 5), color=(.25, .25, .25), opacity=.75,
+    (400, 500), position=(5, 5), color=(.25, .25, .25), opacity=.75,
     align='right')
 
 slider_label_metallic = build_label('Metallic')

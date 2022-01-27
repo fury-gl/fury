@@ -43,7 +43,7 @@ material_params = [
 ]
 
 """
-Now we can start to add our actors to the scene and see how different values of 
+Now we can start to add our actors to the scene and see how different values of
 the parameters produce interesting effects.
 """
 
@@ -62,7 +62,7 @@ for i in range(6):
         scene.add(sphere)
 
 """
-For interpretability purposes we will add some labels to guide us through our 
+For interpretability purposes we will add some labels to guide us through our
 visualization.
 """
 
@@ -82,10 +82,10 @@ for j in range(11):
     scene.add(label)
 
 """
-Some parameters of this material have their values constrained to be between 1 
-and 2.3. These parameters are the Base Index of Refraction (IOR) and the Clear 
-coat Index of Refraction (IOR). Therefore, we will interpolate some values 
-within this range and see how they affect the rendering. 
+Some parameters of this material have their values constrained to be between 1
+and 2.3. These parameters are the Base Index of Refraction (IOR) and the Clear
+coat Index of Refraction (IOR). Therefore, we will interpolate some values
+within this range and see how they affect the rendering.
 """
 
 iors = np.round(np.linspace(1, 2.3, num=11), decimals=2)
