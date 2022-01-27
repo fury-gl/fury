@@ -1215,12 +1215,12 @@ def colors_from_actor(actor, array_name='colors', as_vtk=False):
                             as_vtk=as_vtk)
 
 
-def normals_from_actor(actor):
+def normals_from_actor(act):
     """Access normals from actor which uses polydata.
 
     Parameters
     ----------
-    actor : actor
+    act : actor
 
     Returns
     -------
@@ -1228,16 +1228,16 @@ def normals_from_actor(actor):
         Normals
 
     """
-    polydata = actor.GetMapper().GetInput()
+    polydata = act.GetMapper().GetInput()
     return get_polydata_normals(polydata)
 
 
-def tangents_from_actor(actor):
+def tangents_from_actor(act):
     """Access tangents from actor which uses polydata.
 
     Parameters
     ----------
-    actor : actor
+    act : actor
 
     Returns
     -------
@@ -1245,7 +1245,7 @@ def tangents_from_actor(actor):
         Tangents
 
     """
-    polydata = actor.GetMapper().GetInput()
+    polydata = act.GetMapper().GetInput()
     return get_polydata_tangents(polydata)
 
 
@@ -1274,12 +1274,12 @@ def array_from_actor(actor, array_name, as_vtk=False):
     return numpy_support.vtk_to_numpy(vtk_array)
 
 
-def normals_to_actor(actor, normals):
+def normals_to_actor(act, normals):
     """Set normals to actor which uses polydata.
 
     Parameters
     ----------
-    actor : actor
+    act : actor
     normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
 
     Returns
@@ -1287,23 +1287,23 @@ def normals_to_actor(actor, normals):
     actor
 
     """
-    polydata = actor.GetMapper().GetInput()
+    polydata = act.GetMapper().GetInput()
     set_polydata_normals(polydata, normals)
-    return actor
+    return act
 
 
-def tangents_to_actor(actor, tangents):
+def tangents_to_actor(act, tangents):
     """Set tangents to actor which uses polydata.
 
     Parameters
     ----------
-    actor : actor
+    act : actor
     tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
 
     """
-    polydata = actor.GetMapper().GetInput()
+    polydata = act.GetMapper().GetInput()
     set_polydata_tangents(polydata, tangents)
-    return actor
+    return act
 
 
 def compute_bounds(actor):
