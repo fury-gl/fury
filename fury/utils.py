@@ -2,7 +2,7 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
-from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
+from fury.lib import (numpy_support, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
                       AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray)
@@ -126,35 +126,24 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     cell_array = CellArray()
 
-    if VTK_9_PLUS:
-        for i in range(nb_cells):
-            current_len = len(data[i])
-            offset.append(offset[-1] + current_len)
+    for i in range(nb_cells):
+        current_len = len(data[i])
+        offset.append(offset[-1] + current_len)
 
-            if is_coords:
-                end_position = current_position + current_len
-                connectivity += list(range(current_position, end_position))
-                current_position = end_position
-
-        connectivity = np.array(connectivity, np.intp)
-        offset = np.array(offset, dtype=connectivity.dtype)
-
-        vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
-        cell_array.SetData(
-            numpy_support.numpy_to_vtk(offset, deep=True,
-                                       array_type=vtk_array_type),
-            numpy_support.numpy_to_vtk(connectivity, deep=True,
-                                       array_type=vtk_array_type))
-    else:
-        for i in range(nb_cells):
-            current_len = len(data[i])
+        if is_coords:
             end_position = current_position + current_len
-            connectivity += [current_len]
             connectivity += list(range(current_position, end_position))
             current_position = end_position
 
-        connectivity = np.array(connectivity)
-        cell_array.GetData().DeepCopy(numpy_support.numpy_to_vtk(connectivity))
+    connectivity = np.array(connectivity, np.intp)
+    offset = np.array(offset, dtype=connectivity.dtype)
+
+    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    cell_array.SetData(
+        numpy_support.numpy_to_vtk(offset, deep=True,
+                                    array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(connectivity, deep=True,
+                                    array_type=vtk_array_type))
 
     cell_array.SetNumberOfCells(nb_cells)
     return cell_array
@@ -452,16 +441,7 @@ def set_polydata_triangles(polydata, triangles):
 
     """
     vtk_cells = CellArray()
-    if VTK_9_PLUS:
-        vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
-    else:
-        isize = IdTypeArray().GetDataTypeSize()
-        req_dtype = np.int32 if isize == 4 else np.int64
-        all_triangles =\
-            np.insert(triangles, 0, 3, axis=1).astype(req_dtype).flatten()
-        vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(all_triangles,
-                                                              deep=True)
-        vtk_cells.SetCells(len(triangles), vtk_triangles)
+    vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
     polydata.SetPolys(vtk_cells)
     return polydata
 

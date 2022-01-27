@@ -2,7 +2,7 @@ import warnings
 
 
 from fury.shaders import add_shader_callback, load, shader_to_actor
-from fury.lib import VTK_9_PLUS, VTK_OBJECT, calldata_type
+from fury.lib import VTK_OBJECT, calldata_type
 
 
 def manifest_pbr(actor, metallicity=0, roughness=.5):
@@ -19,11 +19,6 @@ def manifest_pbr(actor, metallicity=0, roughness=.5):
         be between 0.0 and 1.0.
 
     """
-    if not VTK_9_PLUS:
-        warnings.warn('Your PBR effect cannot be apply due to VTK version. '
-                      'Please upgrade your VTK version (should be >= 9.0.0).')
-        return
-
     try:
         prop = actor.GetProperty()
         try:
