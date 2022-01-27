@@ -17,27 +17,6 @@ from fury.utils import (normals_from_actor, tangents_to_actor,
 
 
 """
-This function will help us to define the appearance of our labels.
-"""
-
-
-def build_label(text, font_size=16, color=(1, 1, 1), bold=False, italic=False,
-                shadow=False):
-    label = ui.TextBlock2D()
-    label.message = text
-    label.font_size = font_size
-    label.font_family = 'Arial'
-    label.justification = 'left'
-    label.bold = bold
-    label.italic = italic
-    label.shadow = shadow
-    label.actor.GetTextProperty().SetBackgroundColor(0, 0, 0)
-    label.actor.GetTextProperty().SetBackgroundOpacity(0.0)
-    label.color = color
-    return label
-
-
-"""
 The following functions will help us to manage the sliders events.
 """
 
@@ -215,17 +194,22 @@ By using our previously defined function, we can easily create all the labels
 we need for this demo. And then add them to the panel.
 """
 
-slider_label_metallic = build_label('Metallic')
-slider_label_roughness = build_label('Roughness')
-slider_label_anisotropy = build_label('Anisotropy')
-slider_label_anisotropy_rotation = build_label('Anisotropy Rotation')
-slider_label_anisotropy_direction_x = build_label('Anisotropy Direction X')
-slider_label_anisotropy_direction_y = build_label('Anisotropy Direction Y')
-slider_label_anisotropy_direction_z = build_label('Anisotropy Direction Z')
-slider_label_coat_strength = build_label('Coat Strength')
-slider_label_coat_roughness = build_label('Coat Roughness')
-slider_label_base_ior = build_label('Base IoR')
-slider_label_coat_ior = build_label('Coat IoR')
+slider_label_metallic = ui.TextBlock2D(text='Metallic', font_size=16)
+slider_label_roughness = ui.TextBlock2D(text='Roughness', font_size=16)
+slider_label_anisotropy = ui.TextBlock2D(text='Anisotropy', font_size=16)
+slider_label_anisotropy_rotation = ui.TextBlock2D(
+    text='Anisotropy Rotation', font_size=16)
+slider_label_anisotropy_direction_x = ui.TextBlock2D(
+    text='Anisotropy Direction X', font_size=16)
+slider_label_anisotropy_direction_y = ui.TextBlock2D(
+    text='Anisotropy Direction Y', font_size=16)
+slider_label_anisotropy_direction_z = ui.TextBlock2D(
+    text='Anisotropy Direction Z', font_size=16)
+slider_label_coat_strength = ui.TextBlock2D(text='Coat Strength', font_size=16)
+slider_label_coat_roughness = ui.TextBlock2D(
+    text='Coat Roughness', font_size=16)
+slider_label_base_ior = ui.TextBlock2D(text='Base IoR', font_size=16)
+slider_label_coat_ior = ui.TextBlock2D(text='Coat IoR', font_size=16)
 
 control_panel.add_element(slider_label_metallic, (.01, .95))
 control_panel.add_element(slider_label_roughness, (.01, .86))
