@@ -189,39 +189,6 @@ def test_active_camera():
     npt. assert_equal(view_up, cam.GetViewUp())
 
 
-def test_hide_skybox():
-    # Test scene created without skybox
-    scene = window.Scene()
-    npt.assert_warns(UserWarning, scene.show_skybox)
-    # Test removing automatically shown skybox
-    test_tex = Texture()
-    test_tex.CubeMapOn()
-    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
-    for i in range(6):
-        vtk_img = ImageData()
-        vtk_img.SetDimensions(2, 2, 1)
-        img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
-        img_arr[:, :, i // 2] = checker_arr
-        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3),
-                                                             order='F'))
-        vtk_arr.SetName('Image')
-        img_point_data = vtk_img.GetPointData()
-        img_point_data.AddArray(vtk_arr)
-        img_point_data.SetActiveScalars('Image')
-        test_tex.SetInputDataObject(i, vtk_img)
-    scene = window.Scene(skybox=test_tex)
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.hide_skybox()
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 0)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-
-
 def test_parallel_projection():
 
     scene = window.Scene()
@@ -298,11 +265,11 @@ def test_order_transparent():
     assert_greater(green_stronger, green_weaker)
 
 
-def test_show_scene():
+def test_skybox():
     # Test scene created without skybox
     scene = window.Scene()
-    npt.assert_warns(UserWarning, scene.show_skybox)
-    # Test automatically shown skybox
+    npt.assert_warns(UserWarning, scene.skybox)
+    # Test removing automatically shown skybox
     test_tex = Texture()
     test_tex.CubeMapOn()
     checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
@@ -333,14 +300,23 @@ def test_show_scene():
     npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
     npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
     # Test skybox is not added twice
-    scene.show_skybox()
+    scene.skybox()
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
-    # Test removing the skybox_actor and readding it
-    scene.rm(scene.skybox_actor)
+    # Test make skybox invisible
+    scene.skybox(visible=False)
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 0)
-    scene.add(scene.skybox_actor)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    scene.yaw(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    scene.pitch(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    # Test make skybox visible again
+    scene.skybox(visible=True)
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
 
