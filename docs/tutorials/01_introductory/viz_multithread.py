@@ -5,20 +5,16 @@ Multithreading Example
 
 The goal of this demo is to show how to use different threads
 to interact with fury. In particular, the main thread is used
-to update interactions, while thread A rotates and renders the
-scene.
-
+to update interactions and render the scene, while thread A
+rotates the camera, thread B prints a counter, and thread C
+adds and removes elements from the scene.
 """
 
 from fury import window, actor, ui
-from threading import Timer, Lock, Thread
+from threading import Thread
 import numpy as np
-import vtk
 from fury.lib import Command
 import time
-import random
-import itertools
-from sys import platform
 
 
 # Preparing to draw some spheres
@@ -91,6 +87,8 @@ def add_remove_axes():
             break
 
 
+##############################################################################
+# Start the threads
 # Multiple threads can be started here
 # First, one to rotate the camera
 thread_a = Thread(target=rotate_camera)
