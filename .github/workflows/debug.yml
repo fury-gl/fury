@@ -28,8 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [${{github.event.inputs.python_version}}, ]
-        os: [${{github.event.inputs.operating_system}}, ]
+        python-version: ["${{github.event.inputs.python_version}}", ]
+        os: ["${{github.event.inputs.operating_system}}", ]
         platform: [x64]
         install_type: [pip, ]  # conda]
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
