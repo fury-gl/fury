@@ -345,9 +345,9 @@ def _points_to_vtk_cells(points, points_per_line=2):
     vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
     cell_array.SetData(
         numpy_support.numpy_to_vtk(offset, deep=True,
-                                    array_type=vtk_array_type),
+                                   array_type=vtk_array_type),
         numpy_support.numpy_to_vtk(connectivity, deep=True,
-                                    array_type=vtk_array_type))
+                                   array_type=vtk_array_type))
 
     cell_array.SetNumberOfCells(num_cells)
     return cell_array
