@@ -11,7 +11,7 @@ from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (VTK_9_PLUS, OpenGLRenderer, Skybox, Volume, Actor2D,
+from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
                       InteractorEventRecorder, InteractorStyleImage,
                       InteractorStyleTrackballCamera, RenderWindow,
                       RenderWindowInteractor, RenderLargeImage,
@@ -42,10 +42,7 @@ class Scene(OpenGLRenderer):
             self.AutomaticLightCreationOff()
             self.UseImageBasedLightingOn()
             self.UseSphericalHarmonicsOff()
-            if VTK_9_PLUS:
-                self.SetEnvironmentTexture(skybox_tex)
-            else:
-                self.SetEnvironmentCubeMap(skybox_tex)
+            self.SetEnvironmentTexture(skybox_tex)
             if render_skybox:
                 self.skybox_actor = Skybox()
                 self.skybox_actor.SetTexture(skybox_tex)

@@ -44,29 +44,21 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
         try:
             prop.SetInterpolationToPBR()
 
-            pbr_params = {'metallic': metallic, 'roughness': roughness}
+            pbr_params = {'metallic': metallic, 'roughness': roughness,
+                          'anisotropy': anisotropy,
+                          'anisotropy_rotation': anisotropy_rotation,
+                          'coat_strength': coat_strength,
+                          'coat_roughness': coat_roughness,
+                          'base_ior': base_ior, 'coat_ior': coat_ior}
 
             prop.SetMetallic(pbr_params['metallic'])
             prop.SetRoughness(pbr_params['roughness'])
-            if VTK_9_1_PLUS:
-                pbr_params['anisotropy'] = anisotropy
-                pbr_params['anisotropy_rotation'] = anisotropy_rotation
-                pbr_params['coat_strength'] = coat_strength
-                pbr_params['coat_roughness'] = coat_roughness
-                pbr_params['base_ior'] = base_ior
-                pbr_params['coat_ior'] = coat_ior
-
-                prop.SetAnisotropy(pbr_params['anisotropy'])
-                prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
-                prop.SetCoatStrength(pbr_params['coat_strength'])
-                prop.SetCoatRoughness(pbr_params['coat_roughness'])
-                prop.SetBaseIOR(pbr_params['base_ior'])
-                prop.SetCoatIOR(pbr_params['coat_ior'])
-            else:
-                warnings.warn(
-                    'Anisotropy and Clear coat based PBR effects cannot be '
-                    'applied due to VTK version. Please upgrade your VTK '
-                    'version (should be >= 9.1.0).')
+            prop.SetAnisotropy(pbr_params['anisotropy'])
+            prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
+            prop.SetCoatStrength(pbr_params['coat_strength'])
+            prop.SetCoatRoughness(pbr_params['coat_roughness'])
+            prop.SetBaseIOR(pbr_params['base_ior'])
+            prop.SetCoatIOR(pbr_params['coat_ior'])
             return pbr_params
         except AttributeError:
             warnings.warn(
