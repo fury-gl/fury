@@ -55,8 +55,6 @@ def print_counter():
     print("")
 
 # Create a function to rotate the camera
-
-
 def rotate_camera():
     for i in range(1000):
         message = "Let's count up to 100 and exit :" + str(i+1)
@@ -69,8 +67,6 @@ def rotate_camera():
             break
 
 # Create a function to add or remove the axes and increase its scale
-
-
 def add_remove_axes():
     current_axes = None
     for i in range(1000):
