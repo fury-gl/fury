@@ -6,73 +6,66 @@ import numpy as np
 import numpy.testing as npt
 import pytest
 from fury import actor, window, io
+from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
 from fury import shaders
 
 
 def test_scene():
-
     scene = window.Scene()
-
+    # Scene size test
     npt.assert_equal(scene.size(), (0, 0))
-
-    # background color for scene (1, 0.5, 0)
-    # 0.001 added here to remove numerical errors when moving from float
-    # to int values
+    # Color background test
+    # Background color for scene (1, 0.5, 0). 0.001 added here to remove
+    # numerical errors when moving from float to int values
     bg_float = (1, 0.501, 0)
-
-    # that will come in the image in the 0-255 uint scale
+    # That will come in the image in the 0-255 uint scale
     bg_color = tuple((np.round(255 * np.array(bg_float))).astype('uint8'))
-
     scene.background(bg_float)
-    # window.show(scene)
     arr = window.snapshot(scene)
-
-    report = window.analyze_snapshot(arr,
-                                     bg_color=bg_color,
+    report = window.analyze_snapshot(arr, bg_color=bg_color,
                                      colors=[bg_color, (0, 127, 0)])
     npt.assert_equal(report.objects, 0)
     npt.assert_equal(report.colors_found, [True, False])
-
+    # Add actor to scene to test the remove actor function by analyzing a
+    # snapshot
     axes = actor.axes()
     scene.add(axes)
-    # window.show(scene)
-
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, bg_color)
     npt.assert_equal(report.objects, 1)
-
+    # Test remove actor function by analyzing a snapshot
     scene.rm(axes)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, bg_color)
     npt.assert_equal(report.objects, 0)
-
+    # Add actor to scene to test the remove all actors function by analyzing a
+    # snapshot
     scene.add(axes)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, bg_color)
     npt.assert_equal(report.objects, 1)
-
+    # Test remove all actors function by analyzing a snapshot
     scene.rm_all()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, bg_color)
     npt.assert_equal(report.objects, 0)
-
+    # Test change background color from scene by analyzing the scene
     ren2 = window.Scene(bg_float)
     ren2.background((0, 0, 0.))
-
     report = window.analyze_scene(ren2)
     npt.assert_equal(report.bg_color, (0, 0, 0))
-
+    # Add actor to scene to test the remove actor function by analyzing the
+    # scene
     ren2.add(axes)
-
     report = window.analyze_scene(ren2)
     npt.assert_equal(report.actors, 1)
-
+    # Test remove actor function by analyzing the scene
     ren2.rm(axes)
     report = window.analyze_scene(ren2)
     npt.assert_equal(report.actors, 0)
-
+    # Test camera information retrieving
     with captured_output() as (out, err):
         scene.camera_info()
     npt.assert_equal(out.getvalue().strip(),
@@ -81,6 +74,48 @@ def test_scene():
                      'Focal Point (0.00, 0.00, 0.00)\n   '
                      'View Up (0.00, 1.00, 0.00)')
     npt.assert_equal(err.getvalue().strip(), '')
+    # Test skybox
+    scene = window.Scene()
+    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
+    npt.assert_equal(scene.GetAutomaticLightCreation(), 1)
+    npt.assert_equal(scene.GetSphericalHarmonics(), None)
+    npt.assert_equal(scene.GetEnvironmentTexture(), None)
+    test_tex = Texture()
+    scene = window.Scene(skybox=test_tex)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), True)
+    npt.assert_equal(scene.GetAutomaticLightCreation(), 0)
+    npt.assert_equal(scene.GetSphericalHarmonics(), None)
+    npt.assert_equal(scene.GetEnvironmentTexture(), test_tex)
+    # Test automatically shown skybox
+    test_tex = Texture()
+    test_tex.CubeMapOn()
+    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
+    for i in range(6):
+        vtk_img = ImageData()
+        vtk_img.SetDimensions(2, 2, 1)
+        img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
+        img_arr[:, :, i // 2] = checker_arr
+        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3),
+                                                             order='F'))
+        vtk_arr.SetName('Image')
+        img_point_data = vtk_img.GetPointData()
+        img_point_data.AddArray(vtk_arr)
+        img_point_data.SetActiveScalars('Image')
+        test_tex.SetInputDataObject(i, vtk_img)
+    scene = window.Scene(skybox=test_tex)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    scene.yaw(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    scene.pitch(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
 
 
 def test_active_camera():
@@ -228,6 +263,62 @@ def test_order_transparent():
     green_weaker = arr[150, 150, 1]
 
     assert_greater(green_stronger, green_weaker)
+
+
+def test_skybox():
+    # Test scene created without skybox
+    scene = window.Scene()
+    npt.assert_warns(UserWarning, scene.skybox)
+    # Test removing automatically shown skybox
+    test_tex = Texture()
+    test_tex.CubeMapOn()
+    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
+    for i in range(6):
+        vtk_img = ImageData()
+        vtk_img.SetDimensions(2, 2, 1)
+        img_arr = np.zeros((2, 2, 3), dtype=np.uint8)
+        img_arr[:, :, i // 2] = checker_arr
+        vtk_arr = numpy_support.numpy_to_vtk(img_arr.reshape((-1, 3),
+                                                             order='F'))
+        vtk_arr.SetName('Image')
+        img_point_data = vtk_img.GetPointData()
+        img_point_data.AddArray(vtk_arr)
+        img_point_data.SetActiveScalars('Image')
+        test_tex.SetInputDataObject(i, vtk_img)
+    scene = window.Scene(skybox=test_tex)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    scene.yaw(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    scene.pitch(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
+    # Test skybox is not added twice
+    scene.skybox()
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
+    # Test make skybox invisible
+    scene.skybox(visible=False)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 0)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    scene.yaw(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
+    scene.pitch(90)
+    ss = window.snapshot(scene)
+    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    # Test make skybox visible again
+    scene.skybox(visible=True)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 1)
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
