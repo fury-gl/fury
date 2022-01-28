@@ -13,7 +13,7 @@ on:
         description: "Select on which operating system you want to debug"
         required: false
         type: string
-        default: 'ubuntu-latest'
+        default: ubuntu-latest
       python_version:
         description: "Select the python version during the debugging"
         required: false
@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest 
+    runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
@@ -30,6 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, ]
         python-version: [3.8, ]
         platform: [x64]
         install_type: [pip, ]  # conda]
