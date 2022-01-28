@@ -8,20 +8,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-        required: false
-        default: false
-      operating_system:
-        description: "Select on which operating system you want to debug"
-        required: false
-        default: 'ubuntu-latest'
-      python_version:
-        description: "Select the python version during the debugging"
-        required: false
-        default: '3.8'
   schedule:
     - cron: '0 2 * * Mon'  # weekly
 
@@ -103,7 +89,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && matrix.os == github.event.inputs.operating_system  && matrix.python-version == github.event.inputs.python_version}}
       uses: mxschmitt/action-tmate@v3
     - name: Setup Environment variables
       run: |
