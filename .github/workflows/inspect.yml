@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ github.event.inputs.operating_system }}
+    runs-on: ubuntu-latest # ${{ github.event.inputs.operating_system }}
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
