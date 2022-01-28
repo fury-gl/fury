@@ -114,7 +114,8 @@ jobs:
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
           sudo apt-get install -y libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install -y libgl1-mesa-glx libglx-mesa0 libglx-dev libglx0 xvfb;
+      # libglx-mesa0 libglx-dev libglx0
+          sudo apt-get install -y libgl1-mesa-glx xvfb;
         fi
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
         sleep 3
