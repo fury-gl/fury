@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # ${{ github.event.inputs.operating_system }}
+    runs-on: ubuntu-latest 
     continue-on-error: ${{ matrix.experimental }}
     defaults:
       run:
@@ -30,7 +30,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.8, ]  #["${{github.event.inputs.python_version}}", ]
+        python-version: [3.8, ]
         platform: [x64]
         install_type: [pip, ]  # conda]
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
