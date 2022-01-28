@@ -129,9 +129,8 @@ cubemap = load_cubemap_texture(textures)
 """
 The Scene object in FURY can handle cube map textures and extract light
 information from them, so it can be used to create more plausible materials
-interactions. The ``skybox_tex`` parameter is the one performing the previously
-described process. On the other hand, the ``render_skybox`` parameter toggles
-the rendering of the skybox.
+interactions. The ``skybox`` parameter takes as input a cube map texture and
+performs the previously described process.
 """
 
 scene = window.Scene(skybox=cubemap)
