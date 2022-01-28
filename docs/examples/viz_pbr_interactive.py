@@ -22,21 +22,18 @@ The following functions will help us to manage the sliders events.
 
 
 def change_slice_metallic(slider):
-    global pbr_params, sphere
-    pbr_params['metallic'] = slider.value
-    sphere.GetProperty().SetMetallic(pbr_params['metallic'])
+    global pbr_params
+    pbr_params.metallic = slider.value
 
 
 def change_slice_roughness(slider):
-    global pbr_params, sphere
-    pbr_params['roughness'] = slider.value
-    sphere.GetProperty().SetRoughness(pbr_params['roughness'])
+    global pbr_params
+    pbr_params.roughness = slider.value
 
 
 def change_slice_anisotropy(slider):
-    global pbr_params, sphere
-    pbr_params['anisotropy'] = slider.value
-    sphere.GetProperty().SetAnisotropy(pbr_params['anisotropy'])
+    global pbr_params
+    pbr_params.anisotropy = slider.value
 
 
 def change_slice_anisotropy_direction_x(slider):
@@ -61,34 +58,28 @@ def change_slice_anisotropy_direction_z(slider):
 
 
 def change_slice_anisotropy_rotation(slider):
-    global pbr_params, sphere
-    pbr_params['anisotropy_rotation'] = slider.value
-    sphere.GetProperty().SetAnisotropyRotation(
-        pbr_params['anisotropy_rotation'])
+    global pbr_params
+    pbr_params.anisotropy_rotation = slider.value
 
 
 def change_slice_coat_strength(slider):
-    global pbr_params, sphere
-    pbr_params['coat_strength'] = slider.value
-    sphere.GetProperty().SetCoatStrength(pbr_params['coat_strength'])
+    global pbr_params
+    pbr_params.coat_strength = slider.value
 
 
 def change_slice_coat_roughness(slider):
-    global pbr_params, sphere
-    pbr_params['coat_roughness'] = slider.value
-    sphere.GetProperty().SetCoatRoughness(pbr_params['coat_roughness'])
+    global pbr_params
+    pbr_params.coat_roughness = slider.value
 
 
 def change_slice_base_ior(slider):
-    global pbr_params, sphere
-    pbr_params['base_ior'] = slider.value
-    sphere.GetProperty().SetBaseIOR(pbr_params['base_ior'])
+    global pbr_params
+    pbr_params.base_ior = slider.value
 
 
 def change_slice_coat_ior(slider):
-    global pbr_params, sphere
-    pbr_params['coat_ior'] = slider.value
-    sphere.GetProperty().SetCoatIOR(pbr_params['coat_ior'])
+    global pbr_params
+    pbr_params.coat_ior = slider.value
 
 
 """
@@ -227,22 +218,22 @@ Our sliders are created and added to the panel in the following way.
 """
 
 slider_slice_metallic = ui.LineSlider2D(
-    initial_value=pbr_params['metallic'], max_value=1, length=195,
+    initial_value=pbr_params.metallic, max_value=1, length=195,
     text_template='{value:.1f}')
 slider_slice_roughness = ui.LineSlider2D(
-    initial_value=pbr_params['roughness'], max_value=1, length=195,
+    initial_value=pbr_params.roughness, max_value=1, length=195,
     text_template='{value:.1f}')
 slider_slice_anisotropy = ui.LineSlider2D(
-    initial_value=pbr_params['anisotropy'], max_value=1, length=195,
+    initial_value=pbr_params.anisotropy, max_value=1, length=195,
     text_template='{value:.1f}')
 slider_slice_anisotropy_rotation = ui.LineSlider2D(
-    initial_value=pbr_params['anisotropy_rotation'], max_value=1, length=195,
+    initial_value=pbr_params.anisotropy_rotation, max_value=1, length=195,
     text_template='{value:.1f}')
 slider_slice_coat_strength = ui.LineSlider2D(
-    initial_value=pbr_params['coat_strength'], max_value=1, length=195,
+    initial_value=pbr_params.coat_strength, max_value=1, length=195,
     text_template='{value:.1f}')
 slider_slice_coat_roughness = ui.LineSlider2D(
-    initial_value=pbr_params['coat_roughness'], max_value=1, length=195,
+    initial_value=pbr_params.coat_roughness, max_value=1, length=195,
     text_template='{value:.1f}')
 
 """
@@ -268,10 +259,10 @@ the material.
 """
 
 slider_slice_base_ior = ui.LineSlider2D(
-    initial_value=pbr_params['base_ior'], min_value=1, max_value=2.3,
+    initial_value=pbr_params.base_ior, min_value=1, max_value=2.3,
     length=195, text_template='{value:.02f}')
 slider_slice_coat_ior = ui.LineSlider2D(
-    initial_value=pbr_params['coat_ior'], min_value=1, max_value=2.3,
+    initial_value=pbr_params.coat_ior, min_value=1, max_value=2.3,
     length=195, text_template='{value:.02f}')
 
 """
