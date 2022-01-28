@@ -33,7 +33,7 @@ jobs:
         os: [ubuntu-latest, ]
         python-version: [3.8, ]
         platform: [x64]
-        install_type: [pip, ]  # conda]
+        install_type: [pip, ] 
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
         pip-flags: ['']
         option-flags: ['']
