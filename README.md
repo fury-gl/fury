@@ -152,7 +152,7 @@ If you are using FURY in your work then do cite [this paper](https://doi.org/10.
         volume = {6},
         number = {64},
         pages = {3384},
-        author = {Eleftherios Garyfallidis and Serge Koudoro and Javier Guaje and Marc-Alex Côté and Soham Biswas and David Reagan and Nasim Anousheh and Filipi Silva and Geoffrey Fox and Fury Contributors},
+        author = {Eleftherios Garyfallidis and Serge Koudoro and Javier Guaje and Marc-Alexandre Côté and Soham Biswas and David Reagan and Nasim Anousheh and Filipi Silva and Geoffrey Fox and Fury Contributors},
         title = {FURY: advanced scientific visualization},
         journal = {Journal of Open Source Software}
     }

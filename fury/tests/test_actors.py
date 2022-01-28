@@ -12,7 +12,7 @@ from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate, VTK_9_PLUS
+from fury.utils import shallow_copy, rotate
 from fury.testing import assert_greater, assert_greater_equal
 from fury.primitive import prim_sphere
 
@@ -337,7 +337,7 @@ def test_streamtube_and_line_actors():
 
     c3 = actor.line(lines, colors, depth_cue=True, fake_tube=True)
 
-    shader_obj = c3.GetShaderProperty() if VTK_9_PLUS else c3.GetMapper()
+    shader_obj = c3.GetShaderProperty()
     mapper_code = shader_obj.GetGeometryShaderCode()
     file_code = shaders.load("line.geom")
     npt.assert_equal(mapper_code, file_code)
