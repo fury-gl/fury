@@ -46,8 +46,8 @@ material_params = [
 ]
 
 ###############################################################################
-# We can start to add our actors to the scene and see how different values of the
-# parameters produce interesting effects.
+# We can start to add our actors to the scene and see how different values of
+# the parameters produce interesting effects.
 
 for i in range(10):
     center = [[0, -5 * i, 0]]

@@ -82,8 +82,8 @@ def change_slice_coat_ior(slider):
 
 
 ###############################################################################
-# Last, but not least, we define the following function to help us to reposition
-# the UI elements every time we resize the window.
+# Last, but not least, we define the following function to help us to
+# reposition the UI elements every time we resize the window.
 
 
 def win_callback(obj, event):
@@ -121,8 +121,8 @@ cubemap = load_cubemap_texture(textures)
 scene = window.Scene(skybox=cubemap)
 
 ###############################################################################
-# With the scene created, we can then populate it. In this demo we will only add
-# a sphere actor.
+# With the scene created, we can then populate it. In this demo we will only
+# add a sphere actor.
 
 sphere = actor.sphere([[0, 0, 0]], (.7, .7, .7), radii=2, theta=64, phi=64)
 
@@ -237,9 +237,9 @@ slider_slice_anisotropy_direction_z = ui.LineSlider2D(
     text_template='{value:.1f}')
 
 ###############################################################################
-# Another special case are the Index of Refraction (IoR) sliders. In these cases,
-# the values are defined in the range [1, 2.3] according to the documentation of
-# the material.
+# Another special case are the Index of Refraction (IoR) sliders. In these
+# cases, the values are defined in the range [1, 2.3] according to the
+# documentation of the material.
 
 slider_slice_base_ior = ui.LineSlider2D(
     initial_value=pbr_params.base_ior, min_value=1, max_value=2.3,
@@ -287,9 +287,9 @@ control_panel.add_element(slider_slice_coat_ior, (.44, .05))
 scene.add(control_panel)
 
 ###############################################################################
-# Previously we defined a function to help us when we resize the window, so let's
-# capture the current size and add our helper function as a `window_callback` to
-# the window.
+# Previously we defined a function to help us when we resize the window, so
+# let's capture the current size and add our helper function as a
+# `window_callback` to the window.
 
 size = scene.GetSize()
 
