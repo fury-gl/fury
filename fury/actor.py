@@ -3286,12 +3286,12 @@ def label_fast(
     fs_impl_code = load('billboard_impl.frag')
     if use_sdf:
         fs_impl_code += f'{load("text_sdf_billboard_impl.frag")}'
+        if border_type == 'solid':
+            fs_impl_code += f'{load("text_sdf_solid_impl.frag")}'
+        else:
+            fs_impl_code += f'{load("text_sdf_halo_impl.frag")}'
     else:
         fs_impl_code += f'\n{load("text_billboard_impl.frag")}'
-    if use_sdf and border_type == 'solid':
-        fs_impl_code += f'{load("text_sdf_solid_impl.frag")}'
-    else:
-        fs_impl_code += f'{load("text_sdf_halo_impl.frag")}'
 
     img_vtk = one_chanel_to_vtk(img_arr)
     tex = Texture()
@@ -3333,17 +3333,16 @@ def label_fast(
                         value=border_color))
         else:
             border_color = np.repeat(border_color, 4, axis=0)
-            print('\n bc', border_color.shape)
             attribute_to_actor(
                     label_actor,
                     border_color,
                     'vBorderColor')
             vs_dec_code = vs_dec_code.replace(
-                '//in vec4 vBorderColor', 'in vec4 vBorderColor')
+                '//STR_REPLACEMENT::in vec4 vBorderColor', 'in vec4 vBorderColor')
             vs_dec_code = vs_dec_code.replace(
-                '//out vec4 borderColor', 'out vec4 borderColor')
+                '//STR_REPLACEMENT::out vec4 borderColor', 'out vec4 borderColor')
             vs_impl_code = vs_impl_code.replace(
-                '//borderColor = vBorderColor',
+                '//STR_REPLACEMENT::borderColor = vBorderColor',
                 'borderColor = vBorderColor'
             )
             fs_dec_code = fs_dec_code.replace(
