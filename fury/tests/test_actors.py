@@ -873,7 +873,7 @@ def test_spheres(interactive=False):
     npt.assert_equal(report.objects, 3)
     npt.assert_equal(sphere_actor.GetProperty().GetOpacity(), opacity)
 
-    # test with unique colors for all sphere
+    # test with unique colors for all spheres
     scene.clear()
     sphere_actor = actor.sphere(centers=xyzr[:, :3],
                                 colors=np.array([0, 0, 1]),

@@ -301,21 +301,25 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
             verts) if gen_faces else res['faces']
         faces = fix_winding_order(res['vertices'], faces, clockwise=True)
     else:
-        phi_indices, theta_indices = np.arange(0, phi), np.arange(0, theta)
+        phi_indices, theta_indices = np.arange(0, phi), np.arange(1, theta-1)
 
         phi_angles = 2*np.pi*phi_indices / phi
         theta_angles = np.pi/2 - np.pi*theta_indices / (theta-1)
 
-        x, y, z = np.zeros(
-            (phi, theta)), np.zeros((phi, theta)), np.zeros((phi, theta))
+        # combinations of all phi and theta angles
+        mesh = np.array(np.meshgrid(phi_angles, theta_angles))
+        combinations = mesh.T.reshape(-1, 2)
 
-        for i, phi_angle in enumerate(phi_angles):
-            x[i], y[i], z[i] = (
-                np.cos(phi_angle) * np.cos(theta_angles),
-                np.sin(phi_angle) * np.cos(theta_angles),
-                np.sin(theta_angles)
-            )
-        x, y, z = x.reshape((-1,)), y.reshape((-1,)), z.reshape((-1,))
+        _points = np.array([[0, 0, 1.], [0, 0, -1.]])  # constant verts
+
+        x, y, z = (
+            np.cos(combinations[:, :1]) * np.cos(combinations[:, 1:]),
+            np.sin(combinations[:, :1]) * np.cos(combinations[:, 1:]),
+            np.sin(combinations[:, 1:]))
+
+        x = np.reshape(np.append(x, _points[:, :1]), (-1, ))
+        y = np.reshape(np.append(y, _points[:, 1:2]), (-1, ))
+        z = np.reshape(np.append(z, _points[:, -1:]), (-1, ))
 
         verts = np.vstack([x, y, z]).T
         faces = faces_from_sphere_vertices(verts)
