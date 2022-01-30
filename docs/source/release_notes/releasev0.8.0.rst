@@ -10,10 +10,12 @@ Quick Overview
 * Physically Based Rendering (PBR) module added.
 * VTK 9.1.0 defined as minimum version.
 * CI' and Tests updated.
-* New actor added.
-* New module fury.lib added.
+* New actors added (Rhombicuboctahedron, Pentagonal prism).
+* New UI layaout added (Vertical and Horizontal).
+* New module fury.molecular added.
+* New module fury.lib added. Module improved loading speed.
 * Demos added and updated.
-* Documentation Update.
+* Documentation updated.
 
 
 Details
