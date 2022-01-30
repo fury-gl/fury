@@ -26,6 +26,7 @@ from os.path import join as pjoin
 
 try:
     import freetype as ft
+
     _FREETYPE_AVAILABLE = True
 except ImportError:
     _FREETYPE_AVAILABLE = False
@@ -33,20 +34,33 @@ except ImportError:
 import fury
 from fury.data.fetcher import fury_home
 
-_FONT_PATH_DEFAULT = f'{fury.__path__[0]}/data/files/font_atlas'
-_FONT_PATH_TTF = f'{fury.__path__[0]}/data/files/'
-_FONT_PATH_USER = pjoin(fury_home, 'font_atlas')
+_FONT_PATH_DEFAULT = f"{fury.__path__[0]}/data/files/font_atlas"
+_FONT_PATH_TTF = f"{fury.__path__[0]}/data/files/"
+_FONT_PATH_USER = pjoin(fury_home, "font_atlas")
 
 
 def norm(img, vmin=0, vmax=255):
-    if vmin == 0:
-        img = np.interp(img, (img.min(), img.max()), (vmin, vmax))
-        # img /= np.max(img)
-        # img *= vmax
-        # img[img > 0.75] = 0.
-    elif vmin > 0:
-        # pass
-        img = np.interp(img, (img.min(), img.max()), (vmin, vmax))
+    """This function normalize an image to a range of values.
+
+    It is used to normalize the distance transform of the glyphs.
+    Here we are using a simple normalization  with a linear
+    transformation. Maybe there is a better way to do this.
+
+    Parameters
+    ----------
+    img : ndarray
+        The image array.
+    vmin : float, optional
+        The minimum value of the image.
+    vmax : float, optional
+        The maximum value of the image.
+
+    Returns
+    -------
+    img : ndarray
+        The normalized SDF image.
+    """
+    img = np.interp(img, (img.min(), img.max()), (vmin, vmax))
     img = img.astype(np.uint8)
     return img
 
@@ -68,7 +82,7 @@ def one_chanel2sdf(img, threshold=0.5):
         The signed distance field.
 
     """
-    border_px = int(threshold*255)
+    border_px = int(threshold * 255)
     img_white_px = np.zeros_like(img)
     img_black_px = np.zeros_like(img)
 
@@ -107,7 +121,8 @@ class TextureAtlas:
     """
 
     def __init__(
-            self, atlas_size=(1024, 1024), num_chanels=1, sdf=False, pad=0):
+        self, atlas_size=(1024, 1024), num_chanels=1, sdf=False, pad=0
+    ):
         """
         Initialize a new atlas of given size.
 
@@ -124,8 +139,8 @@ class TextureAtlas:
         self.num_chanels = num_chanels
         self.nodes = [(0, 0, self.width)]
         self.data = np.zeros(
-            (self.height, self.width, self.num_chanels),
-            dtype=np.ubyte)
+            (self.height, self.width, self.num_chanels), dtype=np.ubyte
+        )
         self.used = 0
         self._dx = 1
         self._sdf = sdf
@@ -156,23 +171,21 @@ class TextureAtlas:
             data = np.pad(
                 data,
                 (
-                    (self._pad-dx, self._pad-dx),
-                    (self._pad-dx, self._pad-dx)
+                    (self._pad - dx, self._pad - dx),
+                    (self._pad - dx, self._pad - dx),
                 ),
-                'constant'
+                "constant",
             )
 
             data = one_chanel2sdf(data)
             if dx > 0:
-                data = np.pad(
-                    data,
-                    ((dx, dx), (dx, dx)), 'constant')
+                data = np.pad(data, ((dx, dx), (dx, dx)), "constant")
 
-            data = data.reshape(w + 2*self._pad, h + 2*self._pad, 1)
-            height = height + 2*self._pad
-            width = width + 2*self._pad
+            data = data.reshape(w + 2 * self._pad, h + 2 * self._pad, 1)
+            height = height + 2 * self._pad
+            width = width + 2 * self._pad
 
-        self.data[y:y+height, x:x+width, :] = data
+        self.data[y : y + height, x : x + width, :] = data
 
     def get_region(self, width, height):
         """
@@ -193,8 +206,8 @@ class TextureAtlas:
 
         """
         if self._sdf:
-            width = width + 2*self._pad
-            height = height + 2*self._pad
+            width = width + 2 * self._pad
+            height = height + 2 * self._pad
 
         best_height = sys.maxsize
         best_index = -1
@@ -205,9 +218,10 @@ class TextureAtlas:
             y = self.fit(i, width, height)
             if y >= 0:
                 node = self.nodes[i]
-                if (y+height < best_height or
-                        (y+height == best_height and node[2] < best_width)):
-                    best_height = y+height
+                if y + height < best_height or (
+                    y + height == best_height and node[2] < best_width
+                ):
+                    best_height = y + height
                     best_index = i
                     best_width = node[2]
                     region = node[0], y, width, height
@@ -215,17 +229,17 @@ class TextureAtlas:
         if best_index == -1:
             return -1, -1, 0, 0
 
-        node = region[0], region[1]+height, width
+        node = region[0], region[1] + height, width
         self.nodes.insert(best_index, node)
 
-        i = best_index+1
+        i = best_index + 1
         while i < len(self.nodes):
             node = self.nodes[i]
-            prev_node = self.nodes[i-1]
-            if node[0] < prev_node[0]+prev_node[2]:
-                shrink = prev_node[0]+prev_node[2] - node[0]
+            prev_node = self.nodes[i - 1]
+            if node[0] < prev_node[0] + prev_node[2]:
+                shrink = prev_node[0] + prev_node[2] - node[0]
                 x, y, w = self.nodes[i]
-                self.nodes[i] = x+shrink, y, w-shrink
+                self.nodes[i] = x + shrink, y, w - shrink
                 if self.nodes[i][2] <= 0:
                     del self.nodes[i]
                     i -= 1
@@ -236,7 +250,7 @@ class TextureAtlas:
             i += 1
 
         self.merge()
-        self.used += width*height
+        self.used += width * height
         region = (region[0], region[1], int(region[2]), int(region[3]))
         return region
 
@@ -262,14 +276,14 @@ class TextureAtlas:
         x, y = node[0], node[1]
         width_left = width
 
-        if x+width > self.width:
+        if x + width > self.width:
             return -1
 
         i = index
         while width_left > 0:
             node = self.nodes[i]
             y = max(y, node[1])
-            if y+height > self.height:
+            if y + height > self.height:
                 return -1
             width_left -= node[2]
             i += 1
@@ -281,12 +295,12 @@ class TextureAtlas:
         """
 
         i = 0
-        while i < len(self.nodes)-1:
+        while i < len(self.nodes) - 1:
             node = self.nodes[i]
-            next_node = self.nodes[i+1]
+            next_node = self.nodes[i + 1]
             if node[1] == next_node[1]:
-                self.nodes[i] = node[0], node[1], node[2]+next_node[2]
-                del self.nodes[i+1]
+                self.nodes[i] = node[0], node[1], node[2] + next_node[2]
+                del self.nodes[i + 1]
             else:
                 i += 1
 
@@ -316,18 +330,18 @@ class TextureFont:
         """
         self.atlas = atlas
         self.filename = filename
-        self.size = int(font_size**2)
+        self.size = int(font_size ** 2)
         self.glyphs = {}
         face = ft.Face(self.filename)
-        face.set_char_size(int(self.size*64))
+        face.set_char_size(int(self.size * 64))
         self._dirty = False
         metrics = face.size
-        self.ascender = metrics.ascender/64.0
-        self.descender = metrics.descender/64.0
-        self.height = metrics.height/64.0
+        self.ascender = metrics.ascender / 64.0
+        self.descender = metrics.descender / 64.0
+        self.height = metrics.height / 64.0
         self.linegap = self.height - self.ascender + self.descender
         self.num_chanels = atlas.num_chanels
-        self.max_glyphy_size = np.array([0., 0.])
+        self.max_glyphy_size = np.array([0.0, 0.0])
         try:
             ft.set_lcd_filter(ft.FT_LCD_FILTER_LIGHT)
         except ft.FT_Exception:
@@ -335,10 +349,10 @@ class TextureFont:
 
     def __getitem__(self, charcode):
         if charcode not in self.glyphs.keys():
-            self.load('%c' % charcode)
+            self.load("%c" % charcode)
         return self.glyphs[charcode]
 
-    def load(self, charcodes=''):
+    def load(self, charcodes=""):
         """
         Build glyphs corresponding to individual characters in charcodes.
 
@@ -350,14 +364,17 @@ class TextureFont:
         """
         face = ft.Face(self.filename)
         pen = ft.Vector(0, 0)
-        hres = 16*72
-        hscale = 1.0/16
+        hres = 16 * 72
+        hscale = 1.0 / 16
 
         for charcode in charcodes:
             face.set_char_size(int(self.size * 64), 0, hres, 72)
             matrix = ft.Matrix(
-                int((hscale) * 0x10000), int((0.0) * 0x10000),
-                int((0.0)*0x10000), int((1.0) * 0x10000))
+                int((hscale) * 0x10000),
+                int((0.0) * 0x10000),
+                int((0.0) * 0x10000),
+                int((1.0) * 0x10000),
+            )
             face.set_transform(matrix, pen)
             if charcode in self.glyphs.keys():
                 continue
@@ -379,49 +396,50 @@ class TextureFont:
             advance = face.glyph.advance.x, face.glyph.advance.y
             pad = 0 if self.atlas._sdf else 2
             x, y, w, h = self.atlas.get_region(
-                width/self.num_chanels+pad, rows+pad)
+                width / self.num_chanels + pad, rows + pad
+            )
             if self.atlas._sdf:
-                w = w - 2*self.atlas._pad
-                h = h - 2*self.atlas._pad
+                w = w - 2 * self.atlas._pad
+                h = h - 2 * self.atlas._pad
 
             if x < 0:
                 continue
             if not self.atlas._sdf:
-                x, y = x+1, y+1
-                w, h = w-2, h-2
+                x, y = x + 1, y + 1
+                w, h = w - 2, h - 2
             data = []
             for i in range(rows):
-                data.extend(bitmap.buffer[i*pitch:i*pitch+width])
-            data = np.array(
-                data, dtype=np.ubyte).reshape(h, w, self.atlas.num_chanels)
+                data.extend(bitmap.buffer[i * pitch : i * pitch + width])
+            data = np.array(data, dtype=np.ubyte).reshape(
+                h, w, self.atlas.num_chanels
+            )
             if not self.atlas._sdf:
                 gamma = 1.5
-                Z = ((data/255.0)**(gamma))
-                data = (Z*255).astype(np.ubyte)
+                Z = (data / 255.0) ** (gamma)
+                data = (Z * 255).astype(np.ubyte)
 
             self.atlas.set_region((x, y, w, h), data)
 
             if self.atlas._sdf:
-                w = w + 2*self.atlas._pad
-                h = h + 2*self.atlas._pad
+                w = w + 2 * self.atlas._pad
+                h = h + 2 * self.atlas._pad
 
-            u0 = (x + 0.0)/float(self.atlas.width)
-            v0 = (y + 0.0)/float(self.atlas.height)
-            u1 = (x + w - 0.0)/float(self.atlas.width)
-            v1 = (y + h - 0.0)/float(self.atlas.height)
-            px = w/self.atlas.width
+            u0 = (x + 0.0) / float(self.atlas.width)
+            v0 = (y + 0.0) / float(self.atlas.height)
+            u1 = (x + w - 0.0) / float(self.atlas.width)
+            v1 = (y + h - 0.0) / float(self.atlas.height)
+            px = w / self.atlas.width
             texcoords = (u0, v0, u1, v1)
             if self.atlas._sdf:
-                w, h = w-2*self.atlas._pad, h-2*self.atlas._pad
+                w, h = w - 2 * self.atlas._pad, h - 2 * self.atlas._pad
             size = w, h
-            self.max_glyphy_size[0] = max(
-                self.max_glyphy_size[0], w)
-            self.max_glyphy_size[1] = max(
-                self.max_glyphy_size[1], h)
+            self.max_glyphy_size[0] = max(self.max_glyphy_size[0], w)
+            self.max_glyphy_size[1] = max(self.max_glyphy_size[1], h)
             glyph = TextureGlyph(
-                charcode, size, offset, advance, texcoords, px)
-            glyph.bearingY = slot.metrics.vertBearingY/64
-            glyph.metricHeight = slot.metrics.height/64
+                charcode, size, offset, advance, texcoords, px
+            )
+            glyph.bearingY = slot.metrics.vertBearingY / 64
+            glyph.metricHeight = slot.metrics.height / 64
             glyph.descender = glyph.metricHeight - glyph.bearingY
             glyph.h = h
             glyph.w = w
@@ -436,25 +454,27 @@ class TextureFont:
                 # 64 * 64 because of 26.6 encoding AND the transform
                 # matrix used
                 kerning = face.get_kerning(
-                    g.charcode, charcode,
-                    mode=ft.FT_KERNING_UNFITTED)
+                    g.charcode, charcode, mode=ft.FT_KERNING_UNFITTED
+                )
                 if kerning.x != 0:
-                    glyph.kerning[g.charcode] = kerning.x/(64.0*64.0)
+                    glyph.kerning[g.charcode] = kerning.x / (64.0 * 64.0)
                 kerning = face.get_kerning(
-                    charcode, g.charcode, mode=ft.FT_KERNING_UNFITTED)
+                    charcode, g.charcode, mode=ft.FT_KERNING_UNFITTED
+                )
                 if kerning.x != 0:
-                    g.kerning[charcode] = kerning.x/(64.0*64.0)
+                    g.kerning[charcode] = kerning.x / (64.0 * 64.0)
 
         self._calc_relative_sizes()
 
     def _calc_relative_sizes(self):
         for char, glyph in self.glyphs.items():
-            glyph.relative_size = np.array(
-                [glyph.w, glyph.h])/self.max_glyphy_size
-            glyph.relative_offset = np.array(glyph.offset)/self.size
+            glyph.relative_size = (
+                np.array([glyph.w, glyph.h]) / self.max_glyphy_size
+            )
+            glyph.relative_offset = np.array(glyph.offset) / self.size
             glyph.hmax = self.max_glyphy_size[1]
             if glyph.h > 0:
-                glyph.pad = (glyph.stb)/glyph.h
+                glyph.pad = (glyph.stb) / glyph.h
 
 
 class TextureGlyph:
@@ -486,7 +506,7 @@ class TextureGlyph:
         """
         self.charcode = charcode
         self.size = size
-        self.relative_size = np.array([1., 1.])
+        self.relative_size = np.array([1.0, 1.0])
         self.px = px
         self.offset = offset
         self.advance = advance
@@ -494,7 +514,7 @@ class TextureGlyph:
         self.kerning = {}
 
     def get_kerning(self, charcode):
-        """ Get kerning information
+        """Get kerning information
 
         Parameters:
         -----------
@@ -509,7 +529,7 @@ class TextureGlyph:
 
 
 def list_fonts_available(fullpath=False):
-    """ List available fonts in the system
+    """List available fonts in the system
 
     Parameters
     ----------
@@ -527,12 +547,12 @@ def list_fonts_available(fullpath=False):
 
     fonts = {}
     for f in os.listdir(_FONT_PATH_DEFAULT):
-        fonts[f] = f'{_FONT_PATH_DEFAULT}/{f}/'
+        fonts[f] = f"{_FONT_PATH_DEFAULT}/{f}/"
 
     if not os.path.exists(_FONT_PATH_USER):
         return fonts
     for f in os.listdir(_FONT_PATH_USER):
-        fonts[f] = f'{_FONT_PATH_USER}/{f}/'
+        fonts[f] = f"{_FONT_PATH_USER}/{f}/"
     if not fullpath:
         return list(fonts.keys())
 
@@ -540,12 +560,15 @@ def list_fonts_available(fullpath=False):
 
 
 def create_atlas_font(
-        font_path, folder, font_size_res=7,
-        atlas_size=(1024, 1024),
-        chars=None,
-        use_sdf=False,
-        pad_sdf=0,
-        show=False):
+    font_path,
+    folder,
+    font_size_res=7,
+    atlas_size=(1024, 1024),
+    chars=None,
+    use_sdf=False,
+    pad_sdf=0,
+    show=False,
+):
     """This function is used to create a bitmap font.
 
     Parameters
@@ -578,46 +601,45 @@ def create_atlas_font(
 
     """
     if not _FREETYPE_AVAILABLE:
-        raise ImportError('Pleasse, install  the freetype-py lib')
+        raise ImportError("Pleasse, install  the freetype-py lib")
 
     texture_atlas = TextureAtlas(
-        num_chanels=1, atlas_size=atlas_size, sdf=use_sdf, pad=pad_sdf)
+        num_chanels=1, atlas_size=atlas_size, sdf=use_sdf, pad=pad_sdf
+    )
     image_arr = texture_atlas.data
-    image_arr = image_arr.reshape(
-        (image_arr.shape[0], image_arr.shape[1]))
+    image_arr = image_arr.reshape((image_arr.shape[0], image_arr.shape[1]))
 
     texture_font = TextureFont(
-        texture_atlas,
-        font_path,
-        font_size=font_size_res)
+        texture_atlas, font_path, font_size=font_size_res
+    )
     if chars is None:
-        chars = ''.join([chr(i) for i in range(32, 127)])
+        chars = "".join([chr(i) for i in range(32, 127)])
     texture_font.load(chars)
 
-    char2coord = {
-        c: glyph
-        for c, glyph in texture_font.glyphs.items()
-    }
+    char2coord = {c: glyph for c, glyph in texture_font.glyphs.items()}
 
     if show:
-        image = Image.fromarray(image_arr).convert('P')
+        image = Image.fromarray(image_arr).convert("P")
         image.show()
 
-    sdf_str = '_sdf' if use_sdf else ''
-    image = Image.fromarray(image_arr).convert('P')
-    image.save(f'{folder}/atlas{sdf_str}.bmp')
-    pickle.dump(char2coord, open(f'{folder}/char2coord{sdf_str}.p', 'wb'))
+    sdf_str = "_sdf" if use_sdf else ""
+    image = Image.fromarray(image_arr).convert("P")
+    image.save(f"{folder}/atlas{sdf_str}.bmp")
+    pickle.dump(char2coord, open(f"{folder}/char2coord{sdf_str}.p", "wb"))
 
 
 def create_new_font(
-        name, font_path,
-        chars=None,
-        force_recreate=False,
-        font_size_res=7,
-        font_size_res_sdf=11,
-        pad_sdf=8,
-        atlas_size=(1024, 1024),
-        show=False, use_system_path=False):
+    name,
+    font_path,
+    chars=None,
+    force_recreate=False,
+    font_size_res=7,
+    font_size_res_sdf=11,
+    pad_sdf=8,
+    atlas_size=(1024, 1024),
+    show=False,
+    use_system_path=False,
+):
     """This function is used to create a bitmap font.
 
     Parameters
@@ -652,24 +674,37 @@ def create_new_font(
 
     """
     if not _FREETYPE_AVAILABLE:
-        raise ImportError('Pleasse, install  the freetype-py lib')
+        raise ImportError("Pleasse, install  the freetype-py lib")
 
     font_path_save = _FONT_PATH_DEFAULT if use_system_path else _FONT_PATH_USER
-    folder = font_path_save + f'/{name}'
+    folder = font_path_save + f"/{name}"
     if not os.path.exists(folder):
         os.makedirs(folder)
     elif not force_recreate:
         print(
-            f'Font {name} already exists. ' +
-            'Please choose a another name.')
+            f"Font {name} already exists. " + "Please choose a another name."
+        )
         return
 
     create_atlas_font(
-           font_path, folder, font_size_res, atlas_size,
-           chars, show=show, use_sdf=False)
+        font_path,
+        folder,
+        font_size_res,
+        atlas_size,
+        chars,
+        show=show,
+        use_sdf=False,
+    )
     create_atlas_font(
-        font_path, folder, font_size_res_sdf, atlas_size,
-        chars, show=show, use_sdf=True, pad_sdf=pad_sdf)
+        font_path,
+        folder,
+        font_size_res_sdf,
+        atlas_size,
+        chars,
+        show=show,
+        use_sdf=True,
+        pad_sdf=pad_sdf,
+    )
 
     return folder
 
@@ -681,21 +716,22 @@ def _create_fury_system_atlas_fonts(font_size_res=12, atlas_size=(1024, 1024)):
     """
 
     # list all TTF files in a folder
-    fonts = [f for f in os.listdir(_FONT_PATH_TTF) if f.endswith('.ttf')]
+    fonts = [f for f in os.listdir(_FONT_PATH_TTF) if f.endswith(".ttf")]
     for font in fonts:
-        font_name = font.split('.')[0].replace(' ', '').replace('-', '_')
-        print(f'Creating {font_name} ...')
+        font_name = font.split(".")[0].replace(" ", "").replace("-", "_")
+        print(f"Creating {font_name} ...")
         create_new_font(
             font_name,
-            f'{_FONT_PATH_TTF}/{font}',
+            f"{_FONT_PATH_TTF}/{font}",
             font_size_res=font_size_res,
             atlas_size=atlas_size,
             use_system_path=True,
             force_recreate=True,
-            show=False)
+            show=False,
+        )
 
 
-def get_texture_atlas_font(font_name='FreeMono', use_sdf=True):
+def get_texture_atlas_font(font_name="FreeMono", use_sdf=True):
     """This function is used to create a bitmap font.
 
     Parameters
@@ -718,12 +754,13 @@ def get_texture_atlas_font(font_name='FreeMono', use_sdf=True):
     if font_name not in fonts_available.keys():
         raise ValueError(
             "Font name %s not available. "
-            "Please choose one of the following fonts: %s" % (
-                font_name, list(fonts_available.keys())))
+            "Please choose one of the following fonts: %s"
+            % (font_name, list(fonts_available.keys()))
+        )
     font_path = fonts_available[font_name]
-    sdf_str = '_sdf' if use_sdf else ''
-    image_arr = Image.open(f'{font_path}atlas{sdf_str}.bmp')
-    char2coord = pickle.load(open(f'{font_path}char2coord{sdf_str}.p', 'rb'))
+    sdf_str = "_sdf" if use_sdf else ""
+    image_arr = Image.open(f"{font_path}atlas{sdf_str}.bmp")
+    char2coord = pickle.load(open(f"{font_path}char2coord{sdf_str}.p", "rb"))
 
     # due vtk
     image_arr = np.flipud(image_arr)
@@ -731,9 +768,14 @@ def get_texture_atlas_font(font_name='FreeMono', use_sdf=True):
 
 
 def get_positions_labels_billboards(
-        labels, centers, char2coord, scales=1,
-        align='center',
-        x_offset_ratio=1, y_offset_ratio=1,):
+    labels,
+    centers,
+    char2coord,
+    scales=1,
+    align="center",
+    x_offset_ratio=1,
+    y_offset_ratio=1,
+):
     """This function is used to get the positions of the labels.
 
     Parameters
@@ -766,16 +808,16 @@ def get_positions_labels_billboards(
         else:
             scale = scales
 
-        x_pad = scale*x_offset_ratio
+        x_pad = scale * x_offset_ratio
 
-        align_pad = 0.
-        if align == 'left':
+        align_pad = 0.0
+        if align == "left":
             align_pad = -x_pad
-        elif align == 'right':
-            align_pad = -x_pad*len(label)
+        elif align == "right":
+            align_pad = -x_pad * len(label)
             # align_pad += x_pad
-        elif align == 'center':
-            align_pad = -x_pad*len(label)
+        elif align == "center":
+            align_pad = -x_pad * len(label)
             if not len(label) % 2 == 0:
                 align_pad += x_pad
             align_pad /= 2
@@ -785,26 +827,24 @@ def get_positions_labels_billboards(
         pads = []
         for i_l, char in enumerate(label):
             if char not in char2coord.keys():
-                char = '?'
+                char = "?"
             glyph = char2coord[char]
 
             relative_size = glyph.relative_size
             rx = relative_size[0]
             relative_sizes.append(relative_size)
-            pad = np.array([0., 0, 0], dtype='float64')
+            pad = np.array([0.0, 0, 0], dtype="float64")
             ry = relative_size[1]
             if glyph.h > 0:
-                offset = scale*y_offset_ratio/ry
-                pad[1] -= scale*glyph.pad - offset
+                offset = scale * y_offset_ratio / ry
+                pad[1] -= scale * glyph.pad - offset
 
-            pad_x = (scale*x_offset_ratio)
+            pad_x = scale * x_offset_ratio
             if rx == 0:
                 rx = 1
-            pad[0] = (sum_x_spacing + pad_x+align_pad)/rx  # + align_pad
+            pad[0] = (sum_x_spacing + pad_x + align_pad) / rx  # + align_pad
             sum_x_spacing += pad_x
-            pads.append(
-              pad
-            )
+            pads.append(pad)
             labels_positions.append(center)
 
             mx_s = glyph.texcoords[0]
@@ -812,7 +852,8 @@ def get_positions_labels_billboards(
             mx_e = glyph.texcoords[2]
             my_e = glyph.texcoords[3]
             coord = np.array(
-                [[[mx_s, my_e], [mx_s, my_s], [mx_e, my_s], [mx_e, my_e]]])
+                [[[mx_s, my_e], [mx_s, my_s], [mx_e, my_s], [mx_e, my_e]]]
+            )
             uv_coordinates.append(coord)
         labels_pad += list(np.array(pads) - np.array([-0, 0, 0]))
     labels_positions = np.array(labels_positions)
@@ -820,6 +861,7 @@ def get_positions_labels_billboards(
     uv_coordinates = np.array(uv_coordinates)
     relative_sizes = np.repeat(np.array(relative_sizes), 4, axis=0)
     uv_coordinates = uv_coordinates.reshape(
-         uv_coordinates.shape[0]*uv_coordinates.shape[2], 2).astype('float')
+        uv_coordinates.shape[0] * uv_coordinates.shape[2], 2
+    ).astype("float")
 
     return labels_pad, labels_positions, uv_coordinates, relative_sizes
