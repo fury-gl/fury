@@ -11,7 +11,7 @@ Quick Overview
 * VTK 9.1.0 defined as minimum version.
 * CI' and Tests updated.
 * New actors added (Rhombicuboctahedron, Pentagonal Prism).
-* New UI layaout added (Vertical and Horizontal).
+* New UI layouts added (Vertical and Horizontal).
 * New module fury.molecular added.
 * New module fury.lib added. Module improved loading speed.
 * Demos added and updated.
