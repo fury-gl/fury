@@ -2279,7 +2279,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
 
 
 label = deprecate_with_version(message="Label function has been renamed"
-                                       "vector_text",
+                                       " vector_text",
                                since="0.7.1",
                                until="0.9.0")(vector_text)
 
