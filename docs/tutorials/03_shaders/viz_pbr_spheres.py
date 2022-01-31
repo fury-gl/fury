@@ -20,17 +20,15 @@ from fury.utils import (normals_from_actor, tangents_to_actor,
                         tangents_from_direction_of_anisotropy)
 import numpy as np
 
-"""
-Now set up a new scene.
-"""
+###############################################################################
+# Now set up a new scene.
 
 scene = window.Scene()
 scene.background((.9, .9, .9))
 
-"""
-Let's define the parameters we are going to showcase in this tutorial.
-These subset of parameters have their values constrained in the 0 to 1 range.
-"""
+###############################################################################
+# Let's define the parameters we are going to showcase in this tutorial.
+# These subset of parameters have their values constrained in the 0 to 1 range.
 
 material_params = [
     [[1, 1, 0], {'metallic': 0, 'roughness': 0}],
@@ -42,11 +40,10 @@ material_params = [
     [(0, 1, 1), {'coat_roughness': 0, 'coat_strength': 1, 'roughness': 0}]
 ]
 
-"""
-Now we can start to add our actors to the scene and see how different values of
-the parameters produce interesting effects. For the purpose of this tutorial,
-we will see the effect of 11 different values of each parameter.
-"""
+###############################################################################
+# Now we can start to add our actors to the scene and see how different values
+# of the parameters produce interesting effects. For the purpose of this
+# tutorial, we will see the effect of 11 different values of each parameter.
 
 num_values = 11
 
@@ -65,10 +62,9 @@ for i, mp in enumerate(material_params):
         material.manifest_pbr(sphere, **params)
         scene.add(sphere)
 
-"""
-For interpretability purposes we will add some labels to guide us through our
-visualization.
-"""
+###############################################################################
+# For interpretability purposes we will add some labels to guide us through our
+# visualization.
 
 labels = ['Metallic', 'Roughness', 'Anisotropy', 'Anisotropy Rotation',
           'Coat Strength', 'Coat Roughness']
@@ -84,12 +80,11 @@ for j in range(num_values):
                               scale=(.8, .8, .8), color=(0, 0, 0))
     scene.add(label)
 
-"""
-Some parameters of this material have their values constrained to be between 1
-and 2.3. These parameters are the Base Index of Refraction (IOR) and the Clear
-coat Index of Refraction (IOR). Therefore, we will interpolate some values
-within this range and see how they affect the rendering.
-"""
+###############################################################################
+# Some parameters of this material have their values constrained to be between
+# 1 and 2.3. These parameters are the Base Index of Refraction (IOR) and the
+# Clear coat Index of Refraction (IOR). Therefore, we will interpolate some
+# values within this range and see how they affect the rendering.
 
 iors = np.round(np.linspace(1, 2.3, num=num_values), decimals=2)
 
@@ -111,9 +106,8 @@ for i, iorp in enumerate(ior_params):
         material.manifest_pbr(sphere, **params)
         scene.add(sphere)
 
-"""
-Let's add the respective labels to the scene.
-"""
+###############################################################################
+# Let's add the respective labels to the scene.
 
 labels = ['Base IoR', 'Coat IoR']
 
@@ -128,9 +122,8 @@ for j in range(num_values):
                               scale=(.8, .8, .8), color=(0, 0, 0))
     scene.add(label)
 
-"""
-Finally, let's visualize our tutorial.
-"""
+###############################################################################
+# Finally, let's visualize our tutorial.
 
 interactive = False
 if interactive:
