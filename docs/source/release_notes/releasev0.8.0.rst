@@ -7,9 +7,10 @@
 Quick Overview
 --------------
 
-* Physically Based Rendering (PBR) module added.
+* New Physically Based Rendering (PBR) added. It includes anisotropic rotation and index of refraction among other material properties.
+* New Principled BRDF shader unique to FURY added. BRDF stands for bidirectional reflectance distribution function.
 * VTK 9.1.0 defined as minimum version.
-* CI' and Tests updated.
+* Continuous Integration (CI) platform updated.
 * New actors added (Rhombicuboctahedron, Pentagonal Prism).
 * New UI layouts added (Vertical and Horizontal).
 * New module fury.molecular added.
