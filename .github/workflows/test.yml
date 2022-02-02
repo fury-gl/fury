@@ -63,6 +63,7 @@ jobs:
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       LIBGL_ALWAYS_SOFTWARE: 1
+      LIBGL_ALWAYS_INDIRECT: true
 
     steps:
     - uses: actions/checkout@v2
