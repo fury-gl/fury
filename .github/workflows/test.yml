@@ -62,8 +62,8 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      LIBGL_ALWAYS_SOFTWARE: false
-      LIBGL_ALWAYS_INDIRECT: true
+      LIBGL_ALWAYS_SOFTWARE: true
+      LIBGL_ALWAYS_INDIRECT: false
 
     steps:
     - uses: actions/checkout@v2
