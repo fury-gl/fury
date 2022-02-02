@@ -825,7 +825,7 @@ def test_spheres(interactive=False):
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3], opacity=opacity, prim=False)
+                                radii=xyzr[:, 3], opacity=opacity, use_primitive=False)
     scene.add(sphere_actor)
 
     if interactive:
@@ -841,7 +841,7 @@ def test_spheres(interactive=False):
     scene.clear()
     sphere_actor = actor.sphere(centers=xyzr[:, :3],
                                 colors=np.array([1, 0, 0]),
-                                radii=xyzr[:, 3], prim=False)
+                                radii=xyzr[:, 3], use_primitive=False)
     scene.add(sphere_actor)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
@@ -866,7 +866,7 @@ def test_spheres(interactive=False):
     phi, theta = (30, 30)
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
                                 radii=xyzr[:, 3], opacity=opacity,
-                                phi=phi, theta=theta, prim=True)
+                                phi=phi, theta=theta, use_primitive=True)
     scene.add(sphere_actor)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
