@@ -290,7 +290,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
     True
 
     """
-    if phi is None:
+    if not phi or not theta:
         fname = SPHERE_FILES.get(name)
         if fname is None:
             raise ValueError('No sphere called "%s"' % name)
@@ -300,6 +300,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
         faces = faces_from_sphere_vertices(
             verts) if gen_faces else res['faces']
         faces = fix_winding_order(res['vertices'], faces, clockwise=True)
+        return verts, faces
     else:
         phi_indices, theta_indices = np.arange(0, phi), np.arange(1, theta-1)
 
@@ -324,8 +325,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
         verts = np.vstack([x, y, z]).T
         faces = faces_from_sphere_vertices(verts)
         faces = fix_winding_order(verts, faces, clockwise=True)
-
-    return verts, faces
+        return verts, faces
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
