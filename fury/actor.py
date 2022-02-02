@@ -1515,7 +1515,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
 
 def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1, prim=True):
+           vertices=None, faces=None, opacity=1, use_primitive=True):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1551,7 +1551,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     >>> # window.show(scene)
 
     """
-    if not prim:
+    if not use_primitive:
         src = SphereSource() if faces is None else None
 
         if src is not None:
@@ -1562,6 +1562,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         sphere_actor = repeat_sources(centers=centers, colors=colors,
                                active_scalars=radii, source=src,
                                vertices=vertices, faces=faces)
+        sphere_actor.GetProperty().SetOpacity(opacity)
+        return sphere_actor
 
     else:
         scales = np.multiply(radii, [1, 1, 1])
@@ -1573,10 +1575,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
                                   colors=colors, scales=scales)
         big_verts, big_faces, big_colors, _ = res
         sphere_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-
-    sphere_actor.GetProperty().SetOpacity(opacity)
-
-    return sphere_actor
+        sphere_actor.GetProperty().SetOpacity(opacity)
+        return sphere_actor
 
 
 def cylinder(centers, directions, colors, radius=0.05, heights=1,
