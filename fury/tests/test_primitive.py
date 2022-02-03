@@ -3,6 +3,8 @@ import numpy.testing as npt
 import fury.primitive as fp
 import math
 
+from scipy.misc import face
+
 
 def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
@@ -104,6 +106,17 @@ def test_spheres_primitives():
                          list(range(len(verts))))
 
     npt.assert_raises(ValueError, fp.prim_sphere, 'sym362')
+
+    l_primitives = [(10, 10, 82, 160), (20, 20, 362, 720),
+                    (10, 12, 102, 200), (22, 20, 398, 792)]
+
+    for nb_phi, nb_theta, nb_verts, nb_triangles in l_primitives:
+        verts, faces = fp.prim_sphere(phi=nb_phi, theta=nb_theta)
+        npt.assert_equal(verts.shape, (nb_verts, 3))
+        npt.assert_almost_equal(np.mean(verts), 0)
+        npt.assert_equal(len(faces), nb_triangles)
+        npt.assert_equal(list(set(np.concatenate(faces, axis=None))),
+                         list(range(len(verts))))
 
 
 def test_superquadric_primitives():
