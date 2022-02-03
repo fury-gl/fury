@@ -64,6 +64,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       LIBGL_ALWAYS_SOFTWARE: true
       LIBGL_ALWAYS_INDIRECT: false
+      # LIBGL_DEBUG : 1        # coming from https://docs.mesa3d.org/envvars.html
+      # MESA_DEBUG: 1,context  # coming from https://docs.mesa3d.org/envvars.html
 
     steps:
     - uses: actions/checkout@v2
