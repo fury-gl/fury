@@ -1560,8 +1560,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
             src.SetPhiResolution(phi)
 
         sphere_actor = repeat_sources(centers=centers, colors=colors,
-                               active_scalars=radii, source=src,
-                               vertices=vertices, faces=faces)
+                                      active_scalars=radii, source=src,
+                                      vertices=vertices, faces=faces)
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
@@ -1574,7 +1574,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
                                   directions=directions, centers=centers,
                                   colors=colors, scales=scales)
         big_verts, big_faces, big_colors, _ = res
-        sphere_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+        sphere_actor = get_actor_from_primitive(
+            big_verts, big_faces, big_colors)
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 

@@ -825,7 +825,8 @@ def test_spheres(interactive=False):
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3], opacity=opacity, use_primitive=False)
+                                radii=xyzr[:, 3], opacity=opacity,
+                                use_primitive=False)
     scene.add(sphere_actor)
 
     if interactive:
