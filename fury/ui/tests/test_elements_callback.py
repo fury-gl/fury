@@ -17,7 +17,6 @@ from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter
 
 
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_frame_rate_and_anti_aliasing():
     """Testing frame rate with/out anti-aliasing"""
 
@@ -126,9 +125,6 @@ def test_frame_rate_and_anti_aliasing():
         assert_greater(np.median(frh.fpss), 0)
 
 
-# @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
-#                                      " Need to be introspected")
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
