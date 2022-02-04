@@ -35,7 +35,7 @@ def test_manifest_pbr_vtk():
     scene = window.Scene()  # Setup scene
 
     test_actor = actor.square(np.array([[0, 0, 0]]), directions=(0, 0, 0),
-                                colors=(0, 0, 1))
+                              colors=(0, 0, 1))
 
     scene.add(test_actor)
 
@@ -131,7 +131,7 @@ def test_manifest_standard():
     scene = window.Scene()  # Setup scene
 
     test_actor = actor.box(center, directions=(1, 1, 1), colors=(0, 0, 1),
-                            scales=1)
+                           scales=1)
     scene.add(test_actor)
 
     # scene.reset_camera()
@@ -160,7 +160,7 @@ def test_manifest_standard():
 
     # Test ambient color
     material.manifest_standard(test_actor, ambient_level=.5,
-                                ambient_color=(1, 0, 0))
+                               ambient_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[75, 100, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -187,7 +187,7 @@ def test_manifest_standard():
 
     # Test diffuse color
     material.manifest_standard(test_actor, diffuse_level=.5,
-                                diffuse_color=(1, 0, 0))
+                               diffuse_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[75, 100, :] / 1000
     desired = np.array([0, 0, 85]) / 1000
@@ -214,7 +214,7 @@ def test_manifest_standard():
 
     # Test specular power
     material.manifest_standard(test_actor, specular_level=1,
-                                specular_power=5)
+                               specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[75, 100, :] / 1000
     desired = np.array([34, 34, 204]) / 1000
@@ -228,7 +228,7 @@ def test_manifest_standard():
 
     # Test specular color
     material.manifest_standard(test_actor, specular_level=1,
-                                specular_color=(1, 0, 0), specular_power=5)
+                               specular_color=(1, 0, 0), specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[75, 100, :] / 1000
     desired = np.array([34, 0, 170]) / 1000
