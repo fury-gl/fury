@@ -14,11 +14,6 @@ import pytest
 dipy, have_dipy, _ = optional_package('dipy')
 
 
-def test_fake():
-    pass
-
-
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_manifest_pbr_vtk():
     # Test non-supported property
     test_actor = actor.text_3d('Test')
@@ -115,7 +110,6 @@ def test_manifest_principled():
     npt.assert_equal(actual_principled_params, expected_principled_params)
 
 
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_manifest_standard():
     # Test non-supported property
     test_actor = actor.text_3d('Test')

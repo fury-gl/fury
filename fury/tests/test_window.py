@@ -355,7 +355,6 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
@@ -428,7 +427,6 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
-# @pytest.mark.skipif(True, reason="Under investigation")
 def test_opengl_state_simple():
     for gl_state in [
         window.gl_reset_blend, window.gl_enable_depth,
