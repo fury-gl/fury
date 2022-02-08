@@ -10,7 +10,7 @@ rotates the camera, thread B prints a counter, and thread C
 adds and removes elements from the scene.
 """
 
-from fury import window, actor, ui
+from fury import window, actor, ui, utils
 from threading import Thread
 import numpy as np
 from fury.lib import Command
@@ -46,17 +46,21 @@ scene.ResetCamera()
 def print_counter():
     counter = 0
     print("")
-    for _ in range(10000):
+    for _ in range(30):
         print("\rCounter: %d" % counter, end="")
         counter += 1
-        time.sleep(1)
-        if(showm.is_done()):
+        time.sleep(0.1)
+        if showm.is_done():
             break
+
+    if not showm.is_done():
+        showm.exit()
+
     print("")
 
 # Create a function to rotate the camera
 def rotate_camera():
-    for i in range(1000):
+    for i in range(100):
         message = "Let's count up to 100 and exit :" + str(i+1)
         if(showm.lock_current()):
             tb.message = message
@@ -69,7 +73,7 @@ def rotate_camera():
 # Create a function to add or remove the axes and increase its scale
 def add_remove_axes():
     current_axes = None
-    for i in range(1000):
+    for i in range(100):
         if(showm.lock_current()):
             if(current_axes is None):
                 current_axes = actor.axes(scale=(0.05 * i, 0.05 * i, 0.05 * i))
@@ -78,7 +82,7 @@ def add_remove_axes():
                 scene.rm(current_axes)
                 current_axes = None
             showm.release_current()
-            time.sleep(0.5)
+            time.sleep(0.1)
         else:
             break
 

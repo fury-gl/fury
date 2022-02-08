@@ -1,4 +1,6 @@
-from fury.utils import remove_observer_from_actor
+import time
+from threading import Thread
+from fury.utils import remove_observer_from_actor, rotate, update_actor, vertices_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -565,6 +567,56 @@ def test_opengl_state_add_remove_and_check():
     npt.assert_equal(after_remove_depth_test_observer, True)
 
 
+def test_multithreading():
+
+    xyz = 10 * (np.random.rand(100, 3)-0.5)
+    colors = np.random.rand(100, 4)
+    radii = np.random.rand(100) + 0.5
+
+    scene = window.Scene()
+    sphere_actor = actor.sphere(centers=xyz,
+                                colors=colors,
+                                radii=radii)
+    scene.add(sphere_actor)
+
+    # Preparing the show manager as usual
+    showm = window.ShowManager(scene,
+                            size=(900, 768), reset_camera=False,
+                            order_transparent=True)
+
+    showm.initialize()
+
+    vsa = vertices_from_actor(sphere_actor)
+
+    def callback1():
+        for i in range(100):
+
+            if(showm.lock_current()):
+                # scene.azimuth(0.01 * i)
+                rotate(sphere_actor, rotation=(0.01 * i, 1, 0, 0))
+                vsa[:] = 1.01 * vsa[:]
+                update_actor(sphere_actor)
+                print(i)
+                showm.release_current()
+                time.sleep(0.01)
+            else:
+                break
+
+        if not showm.is_done():
+
+            showm.exit()
+            arr = window.snapshot(scene)
+            npt.assert_equal(np.sum(arr) > 1, True)
+
+
+    thread_a = Thread(target=callback1)
+    thread_a.start()
+
+    showm.start(multithreaded=True)
+    thread_a.join()
+
+
 # test_opengl_state_add_remove_and_check()
 # test_opengl_state_simple()
 # test_record()
+test_multithreading()
