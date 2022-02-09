@@ -8,20 +8,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
-        required: false
-        default: false
-      operating_system:
-        description: "Select on which operating system you want to debug"
-        required: false
-        default: 'ubuntu-latest'
-      python_version:
-        description: "Select the python version during the debugging"
-        required: false
-        default: '3.8'
   schedule:
     - cron: '0 2 * * Mon'  # weekly
 
@@ -76,6 +62,10 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      LIBGL_ALWAYS_SOFTWARE: true
+      LIBGL_ALWAYS_INDIRECT: false
+      # LIBGL_DEBUG : 1        # coming from https://docs.mesa3d.org/envvars.html
+      # MESA_DEBUG: 1,context  # coming from https://docs.mesa3d.org/envvars.html
 
     steps:
     - uses: actions/checkout@v2
@@ -101,10 +91,6 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session
-      if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && matrix.os == github.event.inputs.operating_system  && matrix.python-version == github.event.inputs.python_version}}
-      uses: mxschmitt/action-tmate@v3
     - name: Setup Environment variables
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
@@ -132,7 +118,7 @@ jobs:
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
           sudo apt-get install -y libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install -y libgl1-mesa-glx libglx-mesa0 libglx-dev libglx0 xvfb;
+          sudo apt-get install -y libgl1-mesa-glx xvfb;
         fi
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
         sleep 3
@@ -142,6 +128,10 @@ jobs:
     - name: Install FURY and Test it!
       run: |
         bash ci/travis/script.sh
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    # - name: Setup tmate session
+    #   if: ${{ failure() }}
+    #   uses: mxschmitt/action-tmate@v3
     - name: Deploy docs
       if: success() && github.ref == 'refs/heads/master'
       run: |

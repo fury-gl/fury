@@ -236,7 +236,6 @@ def test_ui_image_container_2d(interactive=False):
         show_manager.start()
 
 
-@pytest.mark.skipif(True, reason="Under investigation")
 def test_ui_tab_ui(interactive=False):
     filename = "test_ui_tab_ui"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
