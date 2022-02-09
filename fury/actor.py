@@ -1568,8 +1568,10 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     else:
         scales = np.multiply(radii, [1, 1, 1])
         directions = (1, 0, 0)
-        if faces is None:
+
+        if faces is None and vertices is None:
             vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
+
         res = fp.repeat_primitive(vertices, faces,
                                   directions=directions, centers=centers,
                                   colors=colors, scales=scales)

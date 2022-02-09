@@ -290,7 +290,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
     True
 
     """
-    if not phi or not theta:
+    if phi is None or theta is None:
         fname = SPHERE_FILES.get(name)
         if fname is None:
             raise ValueError('No sphere called "%s"' % name)
