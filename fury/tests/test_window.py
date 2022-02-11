@@ -2,6 +2,7 @@ from fury.utils import remove_observer_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
+from matplotlib import use
 import numpy as np
 import numpy.testing as npt
 import pytest
@@ -359,7 +360,8 @@ def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3])
+                                radii=xyzr[:, 3], phi=30, theta=30,
+                                use_primitive=True)
     scene = window.Scene()
     scene.add(sphere_actor)
 
@@ -367,7 +369,7 @@ def test_record():
         npt.assert_equal(os.path.isfile(filename), True)
         arr = io.load_image(filename)
         report = window.analyze_snapshot(arr, colors=[(0, 255, 0),
-                                                      (255, 0, 0)])
+                                                      (0, 0, 255)])
         npt.assert_equal(report.objects, 3)
         npt.assert_equal(report.colors_found, colors_found)
         return arr
@@ -396,8 +398,8 @@ def test_record():
         window.record(scene, verbose=True)
 
     npt.assert_equal(out.getvalue().strip(),
-                     "Camera Position (315.14, 0.00, 536.43)\n"
-                     "Camera Focal Point (119.89, 0.00, 0.00)\n"
+                     "Camera Position (315.32, 0.00, 536.73)\n"
+                     "Camera Focal Point (119.97, 0.00, 0.00)\n"
                      "Camera View Up (0.00, 1.00, 0.00)")
     # test camera option
     with InTemporaryDirectory():
