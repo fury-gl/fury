@@ -1,15 +1,24 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This is a basic workflow to help debugging FURY
 
-name: FURY Tests
+name: FuryDebug
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  schedule:
-    - cron: '0 2 * * Mon'  # weekly
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        type: boolean
+      operating_system:
+        description: "Select on which operating system you want to debug"
+        required: false
+        type: string
+        default: ubuntu-latest
+      python_version:
+        description: "Select the python version during the debugging"
+        required: false
+        type: string
+        default: '3.8'
 
 jobs:
   build:
@@ -21,33 +30,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ]
+        python-version: [3.8, ]
         platform: [x64]
-        install_type: [pip, ]  # conda]
+        install_type: [pip, ] 
         depends: [DEFAULT_DEPS, OPTIONAL_DEPS]
         pip-flags: ['']
         option-flags: ['']
         experimental: [false]
-        include:
-          # - os: ubuntu-latest
-          #   python-version: 3.8
-          #   depends: OPTIONAL_DEPS
-          #   option-flags: 'BUILD_DOCS DEPLOY_DOCS'
-          #   install_type: pip
-          #   experimental: true
-          - os: ubuntu-latest
-            python-version: 3.8
-            install_type: pip
-            depends: OPTIONAL_DEPS
-            option-flags: 'COVERAGE'
-            experimental: false
-          # - os: ubuntu-latest
-          #   python-version: 3.8
-          #   install_type: pip
-          #   depends: OPTIONAL_DEPS
-          #   option-flags: 'USE_PRE'
-          #   experimental: true
     env:
       TRAVIS_PYTHON_VERSION: ${{ matrix.python-version }} # Keep backward compatibilty with Travis
       TRAVIS_REPO_SLUG: ${{ github.repository }}          # Keep backward compatibilty with Travis
@@ -62,10 +52,6 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      LIBGL_ALWAYS_SOFTWARE: true
-      LIBGL_ALWAYS_INDIRECT: false
-      # LIBGL_DEBUG : 1        # coming from https://docs.mesa3d.org/envvars.html
-      # MESA_DEBUG: 1,context  # coming from https://docs.mesa3d.org/envvars.html
 
     steps:
     - uses: actions/checkout@v2
@@ -91,6 +77,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: Setup Environment variables
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
@@ -118,7 +107,7 @@ jobs:
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
           sudo apt-get install -y libgl1-mesa-dev xvfb;
         else
-          sudo apt-get install -y libgl1-mesa-glx xvfb;
+          sudo apt-get install -y libgl1-mesa-glx libglx-mesa0 libglx-dev libglx0 xvfb;
         fi
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
         sleep 3
@@ -128,10 +117,6 @@ jobs:
     - name: Install FURY and Test it!
       run: |
         bash ci/travis/script.sh
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    # - name: Setup tmate session
-    #   if: ${{ failure() }}
-    #   uses: mxschmitt/action-tmate@v3
     - name: Deploy docs
       if: success() && github.ref == 'refs/heads/master'
       run: |

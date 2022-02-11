@@ -11,9 +11,10 @@ from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
-                      InteractorStyleImage, InteractorStyleTrackballCamera,
-                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
+                      InteractorEventRecorder, InteractorStyleImage,
+                      InteractorStyleTrackballCamera, RenderWindow,
+                      RenderWindowInteractor, RenderLargeImage,
                       WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
 from fury.shaders.base import GL_NUMBERS as _GL
@@ -23,7 +24,7 @@ except NameError:
     basestring = str
 
 
-class Scene(Renderer):
+class Scene(OpenGLRenderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -32,10 +33,43 @@ class Scene(Renderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
+    def __init__(self, background=(0, 0, 0), skybox=None):
+        self.__skybox = skybox
+        self.__skybox_actor = None
+        if skybox:
+            self.AutomaticLightCreationOff()
+            self.UseImageBasedLightingOn()
+            self.UseSphericalHarmonicsOff()
+            self.SetEnvironmentTexture(self.__skybox)
+            self.skybox()
 
     def background(self, color):
         """Set a background color."""
         self.SetBackground(color)
+
+    def skybox(self, visible=True, gamma_correct=True):
+        """Show or hide the skybox.
+
+        Parameters
+        ----------
+        visible : bool
+            Whether to show the skybox or not.
+        gamma_correct : bool
+            Whether to apply gamma correction to the skybox or not.
+
+        """
+        if self.__skybox:
+            if visible:
+                if self.__skybox_actor is None:
+                    self.__skybox_actor = Skybox()
+                    self.__skybox_actor.SetTexture(self.__skybox)
+                    if gamma_correct:
+                        self.__skybox_actor.GammaCorrectOn()
+                self.add(self.__skybox_actor)
+            else:
+                self.rm(self.__skybox_actor)
+        else:
+            warn('Scene created without a skybox. Nothing to show or hide.')
 
     def add(self, *actors):
         """Add an actor to the scene."""

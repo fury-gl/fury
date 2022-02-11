@@ -3,7 +3,7 @@ import numpy as np
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
 from fury.shaders import attribute_to_actor, load, shader_to_actor
 from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points)
-from fury.lib import (VTK_9_PLUS, numpy_support, Actor, Command, CellArray,
+from fury.lib import (numpy_support, Actor, Command, CellArray,
                       PolyDataMapper, PolyData, VTK_OBJECT, calldata_type)
 
 
@@ -328,42 +328,26 @@ def _points_to_vtk_cells(points, points_per_line=2):
 
     cell_array = CellArray()
 
-    if VTK_9_PLUS:
-        """
-        Connectivity is an array that contains the indices of the points that
-        need to be connected in the visualization. The indices start from 0.
-        """
-        connectivity = np.asarray(list(range(0, num_pnts)), dtype=int)
-        """
-        Offset is an array that contains the indices of the first point of
-        each line. The indices start from 0 and given the known geometry of
-        this actor the creation of this array requires a 2 points padding
-        between indices.
-        """
-        offset = np.asarray(list(range(0, num_pnts + 1, points_per_line)),
-                            dtype=int)
+    """
+    Connectivity is an array that contains the indices of the points that
+    need to be connected in the visualization. The indices start from 0.
+    """
+    connectivity = np.asarray(list(range(0, num_pnts)), dtype=int)
+    """
+    Offset is an array that contains the indices of the first point of
+    each line. The indices start from 0 and given the known geometry of
+    this actor the creation of this array requires a 2 points padding
+    between indices.
+    """
+    offset = np.asarray(list(range(0, num_pnts + 1, points_per_line)),
+                        dtype=int)
 
-        vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
-        cell_array.SetData(
-            numpy_support.numpy_to_vtk(offset, deep=True,
-                                       array_type=vtk_array_type),
-            numpy_support.numpy_to_vtk(connectivity, deep=True,
-                                       array_type=vtk_array_type))
-    else:
-        connectivity = np.array([], dtype=int)
-        i_pos = 0
-        while i_pos < num_pnts:
-            e_pos = i_pos + points_per_line
-            """
-            In old versions of VTK (<9.0) the connectivity array should include
-            the length of each line and immediately after the indices of the
-            points in each line.
-            """
-            connectivity = np.append(connectivity, [points_per_line, i_pos,
-                                                    e_pos - 1])
-            i_pos = e_pos
-
-        cell_array.GetData().DeepCopy(numpy_support.numpy_to_vtk(connectivity))
+    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    cell_array.SetData(
+        numpy_support.numpy_to_vtk(offset, deep=True,
+                                   array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(connectivity, deep=True,
+                                   array_type=vtk_array_type))
 
     cell_array.SetNumberOfCells(num_cells)
     return cell_array

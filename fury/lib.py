@@ -30,7 +30,6 @@ from vtkmodules.util import numpy_support, colors
 from vtkmodules.util.misc import calldata_type
 
 
-VTK_9_PLUS = ccvtk.vtkVersion.GetVTKMajorVersion() >= 9
 VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()
 
 ##############################################################
@@ -45,6 +44,7 @@ StringArray = ccvtk.vtkStringArray
 UnsignedCharArray = ccvtk.vtkUnsignedCharArray
 VTK_OBJECT = ccvtk.VTK_OBJECT
 VTK_ID_TYPE = ccvtk.VTK_ID_TYPE
+VTK_INT = ccvtk.VTK_INT
 VTK_DOUBLE = ccvtk.VTK_DOUBLE
 VTK_FLOAT = ccvtk.VTK_FLOAT
 VTK_TEXT_LEFT = ccvtk.VTK_TEXT_LEFT
@@ -53,8 +53,8 @@ VTK_TEXT_BOTTOM = ccvtk.VTK_TEXT_BOTTOM
 VTK_TEXT_TOP = ccvtk.VTK_TEXT_TOP
 VTK_TEXT_CENTERED = ccvtk.VTK_TEXT_CENTERED
 VTK_UNSIGNED_CHAR = ccvtk.VTK_UNSIGNED_CHAR
-VTK_UNSIGNED_SHORT = ccvtk.VTK_UNSIGNED_SHORT
 VTK_UNSIGNED_INT = ccvtk.VTK_UNSIGNED_INT
+VTK_UNSIGNED_SHORT = ccvtk.VTK_UNSIGNED_SHORT
 
 ##############################################################
 #  vtkCommonExecutionModel Module
@@ -63,6 +63,7 @@ AlgorithmOutput = cemvtk.vtkAlgorithmOutput
 ##############################################################
 #  vtkRenderingCore Module
 Renderer = rcvtk.vtkRenderer
+Skybox = rcvtk.vtkSkybox
 Volume = rcvtk.vtkVolume
 Actor2D = rcvtk.vtkActor2D
 Actor = rcvtk.vtkActor
@@ -102,6 +103,7 @@ ScalarBarActor = ravtk.vtkScalarBarActor
 
 ##############################################################
 #  vtkRenderingOpenGL2 Module
+OpenGLRenderer = roglvtk.vtkOpenGLRenderer
 Shader = roglvtk.vtkShader
 
 ##############################################################
@@ -171,12 +173,14 @@ Matrix3x3 = cmvtk.vtkMatrix3x3
 
 ##############################################################
 #  vtkImagingCore Module
+ImageFlip = icvtk.vtkImageFlip
 ImageReslice = icvtk.vtkImageReslice
 ImageMapToColors = icvtk.vtkImageMapToColors
 
 ##############################################################
 #  vtkIOImage vtkIOLegacy, vtkIOPLY, vtkIOGeometry,
 # vtkIOMINC Modules
+ImageReader2Factory = ioivtk.vtkImageReader2Factory
 PNGReader = ioivtk.vtkPNGReader
 BMPReader = ioivtk.vtkBMPReader
 JPEGReader = ioivtk.vtkJPEGReader

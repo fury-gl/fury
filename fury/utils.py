@@ -2,10 +2,11 @@ import numpy as np
 from scipy.ndimage import map_coordinates
 
 from fury.colormap import line_colors
-from fury.lib import (numpy_support, VTK_9_PLUS, PolyData, ImageData, Points,
+from fury.lib import (numpy_support, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
-                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, Transform,
-                      AlgorithmOutput, VTK_UNSIGNED_CHAR, IdTypeArray)
+                      Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
+                      Transform, AlgorithmOutput, VTK_INT, VTK_UNSIGNED_CHAR,
+                      IdTypeArray)
 
 
 def remove_observer_from_actor(actor, id):
@@ -126,35 +127,24 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     cell_array = CellArray()
 
-    if VTK_9_PLUS:
-        for i in range(nb_cells):
-            current_len = len(data[i])
-            offset.append(offset[-1] + current_len)
+    for i in range(nb_cells):
+        current_len = len(data[i])
+        offset.append(offset[-1] + current_len)
 
-            if is_coords:
-                end_position = current_position + current_len
-                connectivity += list(range(current_position, end_position))
-                current_position = end_position
-
-        connectivity = np.array(connectivity, np.intp)
-        offset = np.array(offset, dtype=connectivity.dtype)
-
-        vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
-        cell_array.SetData(
-            numpy_support.numpy_to_vtk(offset, deep=True,
-                                       array_type=vtk_array_type),
-            numpy_support.numpy_to_vtk(connectivity, deep=True,
-                                       array_type=vtk_array_type))
-    else:
-        for i in range(nb_cells):
-            current_len = len(data[i])
+        if is_coords:
             end_position = current_position + current_len
-            connectivity += [current_len]
             connectivity += list(range(current_position, end_position))
             current_position = end_position
 
-        connectivity = np.array(connectivity)
-        cell_array.GetData().DeepCopy(numpy_support.numpy_to_vtk(connectivity))
+    connectivity = np.array(connectivity, np.intp)
+    offset = np.array(offset, dtype=connectivity.dtype)
+
+    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    cell_array.SetData(
+        numpy_support.numpy_to_vtk(offset, deep=True,
+                                   array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(connectivity, deep=True,
+                                   array_type=vtk_array_type))
 
     cell_array.SetNumberOfCells(nb_cells)
     return cell_array
@@ -421,6 +411,27 @@ def get_polydata_normals(polydata):
     return numpy_support.vtk_to_numpy(vtk_normals)
 
 
+def get_polydata_tangents(polydata):
+    """Get vertices tangent (ndarrays Nx3 int) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents, represented as 2D ndarrays (Nx3). None if there are no
+        tangents in the vtk polydata.
+
+    """
+    vtk_tangents = polydata.GetPointData().GetTangents()
+    if vtk_tangents is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tangents)
+
+
 def get_polydata_colors(polydata):
     """Get points color (ndarrays Nx3 int) from a vtk polydata.
 
@@ -441,6 +452,50 @@ def get_polydata_colors(polydata):
     return numpy_support.vtk_to_numpy(vtk_colors)
 
 
+def get_polydata_field(polydata, field_name, as_vtk=False):
+    """Get a field from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    field_name : str
+    as_vtk : optional
+        By default, ndarray is returned.
+
+    Returns
+    -------
+    output : ndarray or vtkDataArray
+        Field data. The return type depends on the value of the as_vtk
+        parameter. None if the field is not found.
+
+    """
+    vtk_field_data = polydata.GetFieldData().GetArray(field_name)
+    if vtk_field_data is None:
+        return None
+    if as_vtk:
+        return vtk_field_data
+    return numpy_support.vtk_to_numpy(vtk_field_data)
+
+
+def add_polydata_numeric_field(polydata, field_name, field_data,
+                               array_type=VTK_INT):
+    """Add a field to a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    field_name : str
+    field_data : bool, int, float, double, numeric array or ndarray
+    array_type : vtkArrayType
+
+    """
+    vtk_field_data = numpy_support.numpy_to_vtk(field_data, deep=True,
+                                                array_type=array_type)
+    vtk_field_data.SetName(field_name)
+    polydata.GetFieldData().AddArray(vtk_field_data)
+    return polydata
+
+
 def set_polydata_triangles(polydata, triangles):
     """Set polydata triangles with a numpy array (ndarrays Nx3 int).
 
@@ -452,16 +507,7 @@ def set_polydata_triangles(polydata, triangles):
 
     """
     vtk_cells = CellArray()
-    if VTK_9_PLUS:
-        vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
-    else:
-        isize = IdTypeArray().GetDataTypeSize()
-        req_dtype = np.int32 if isize == 4 else np.int64
-        all_triangles =\
-            np.insert(triangles, 0, 3, axis=1).astype(req_dtype).flatten()
-        vtk_triangles = numpy_support.numpy_to_vtkIdTypeArray(all_triangles,
-                                                              deep=True)
-        vtk_cells.SetCells(len(triangles), vtk_triangles)
+    vtk_cells = numpy_to_vtk_cells(triangles, is_coords=False)
     polydata.SetPolys(vtk_cells)
     return polydata
 
@@ -491,7 +537,28 @@ def set_polydata_normals(polydata, normals):
 
     """
     vtk_normals = numpy_support.numpy_to_vtk(normals, deep=True)
+    # VTK does not require a specific name for the normals array, however, for
+    # readability purposes, we set it to "Normals"
+    vtk_normals.SetName('Normals')
     polydata.GetPointData().SetNormals(vtk_normals)
+    return polydata
+
+
+def set_polydata_tangents(polydata, tangents):
+    """Set polydata tangents with a numpy array (ndarrays Nx3 int).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    """
+    vtk_tangents = numpy_support.numpy_to_vtk(tangents, deep=True,
+                                              array_type=VTK_FLOAT)
+    # VTK does not require a specific name for the tangents array, however, for
+    # readability purposes, we set it to "Tangents"
+    vtk_tangents.SetName('Tangents')
+    polydata.GetPointData().SetTangents(vtk_tangents)
     return polydata
 
 
@@ -700,6 +767,24 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     actor = Actor()
     actor.SetMapper(mapper)
     return actor
+
+
+def apply_affine_to_actor(act, affine):
+    """Apply affine matrix `affine` to the actor `act`.
+
+    Parameters
+    ----------
+    act: Actor
+
+    affine: (4, 4) array-like
+        Homogenous affine, for 3D object.
+
+    Returns
+    -------
+    transformed_act: Actor
+    """
+    act.SetUserMatrix(numpy_to_vtk_matrix(affine))
+    return act
 
 
 def apply_affine(aff, pts):
@@ -986,6 +1071,26 @@ def normals_from_v_f(vertices, faces):
     return norm
 
 
+def tangents_from_direction_of_anisotropy(normals, direction):
+    """Calculate tangents from normals and a 3D vector representing the
+       direction of anisotropy.
+
+    Parameters
+    ----------
+    normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
+    direction : tuple (3,) or array (3,)
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents, represented as 2D ndarrays (Nx3).
+
+    """
+    tangents = np.cross(normals, direction)
+    binormals = normalize_v3(np.cross(normals, tangents))
+    return normalize_v3(np.cross(normals, binormals))
+
+
 def triangle_order(vertices, faces):
     """Determine the winding order of a given set of vertices and a triangle.
 
@@ -1110,6 +1215,40 @@ def colors_from_actor(actor, array_name='colors', as_vtk=False):
                             as_vtk=as_vtk)
 
 
+def normals_from_actor(act):
+    """Access normals from actor which uses polydata.
+
+    Parameters
+    ----------
+    act : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+        Normals
+
+    """
+    polydata = act.GetMapper().GetInput()
+    return get_polydata_normals(polydata)
+
+
+def tangents_from_actor(act):
+    """Access tangents from actor which uses polydata.
+
+    Parameters
+    ----------
+    act : actor
+
+    Returns
+    -------
+    output : array (N, 3)
+        Tangents
+
+    """
+    polydata = act.GetMapper().GetInput()
+    return get_polydata_tangents(polydata)
+
+
 def array_from_actor(actor, array_name, as_vtk=False):
     """Access array from actor which uses polydata.
 
@@ -1133,6 +1272,38 @@ def array_from_actor(actor, array_name, as_vtk=False):
         return vtk_array
 
     return numpy_support.vtk_to_numpy(vtk_array)
+
+
+def normals_to_actor(act, normals):
+    """Set normals to actor which uses polydata.
+
+    Parameters
+    ----------
+    act : actor
+    normals : normals, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    Returns
+    -------
+    actor
+
+    """
+    polydata = act.GetMapper().GetInput()
+    set_polydata_normals(polydata, normals)
+    return act
+
+
+def tangents_to_actor(act, tangents):
+    """Set tangents to actor which uses polydata.
+
+    Parameters
+    ----------
+    act : actor
+    tangents : tangents, represented as 2D ndarrays (Nx3) (one per vertex)
+
+    """
+    polydata = act.GetMapper().GetInput()
+    set_polydata_tangents(polydata, tangents)
+    return act
 
 
 def compute_bounds(actor):

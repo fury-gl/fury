@@ -49,7 +49,7 @@ def test_shader_callback():
     scene = window.Scene()
     scene.add(actor)
 
-    window.snapshot(scene)
+    arr1 = window.snapshot(scene, size=(200, 200))
     assert len(test_values) == 0
 
     test_values = []
@@ -68,17 +68,19 @@ def test_shader_callback():
             actor, callbackHigh, 999)
     fs.add_shader_callback(
             actor, callbackLow, 0)
+
     id_mean = fs.add_shader_callback(
             actor, callbackMean, 500)
 
     # check the priority of each call
-    window.snapshot(scene)
+    arr2 = window.snapshot(scene, size=(200, 200))
     assert np.abs([
         test_values[0]-999, test_values[1]-500, test_values[2]-0]).sum() == 0
 
     # check if the correct observer was removed
     mapper.RemoveObserver(id_mean)
     test_values = []
-    window.snapshot(scene)
+
+    arr3 = window.snapshot(scene, size=(200, 200))
     assert np.abs([
         test_values[0]-999, test_values[1]-0]).sum() == 0

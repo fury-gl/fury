@@ -125,7 +125,7 @@ def test_add_shader_callback():
     showm.scene.add(cube)
     class Timer(object):
         idx = 0.0
-    
+
     timer = Timer()
 
     def timer_callback(obj, event):
@@ -137,7 +137,7 @@ def test_add_shader_callback():
 
     def my_cbk(_caller, _event, calldata=None):
         program = calldata
-        
+
         if program is not None:
             try:
                 program.SetUniformf("time", timer.idx)
