@@ -8,7 +8,7 @@ from scipy.spatial import ConvexHull, transform
 from scipy.version import short_version
 
 from fury.data import DATA_DIR
-from fury.transform import cart2sphere
+from fury.transform import cart2sphere, sphere2cart
 from fury.utils import fix_winding_order
 
 SCIPY_1_4_PLUS = parse(short_version) >= parse('1.4.0')
@@ -307,19 +307,19 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
 
         phi_indices, theta_indices = np.arange(0, phi), np.arange(1, theta-1)
 
+        # phi and theta angles are same as standard physics convention
         phi_angles = 2*np.pi*phi_indices / phi
-        theta_angles = np.pi/2 - np.pi*theta_indices / (theta-1)
+        theta_angles = np.pi*theta_indices / (theta-1)
 
         # combinations of all phi and theta angles
         mesh = np.array(np.meshgrid(phi_angles, theta_angles))
-        combinations = mesh.T.reshape(-1, 2)
+        combs = mesh.T.reshape(-1, 2)
 
-        _points = np.array([[0, 0, 1.], [0, 0, -1.]])  # constant verts
+        _angles = np.array([[1, 1], [0, np.pi], [np.pi/2, -np.pi/2]])
+        _points = np.array(sphere2cart(_angles[0],
+                                       _angles[1], _angles[2])).T
 
-        x, y, z = (
-            np.cos(combinations[:, :1]) * np.cos(combinations[:, 1:]),
-            np.sin(combinations[:, :1]) * np.cos(combinations[:, 1:]),
-            np.sin(combinations[:, 1:]))
+        x, y, z = sphere2cart(1, combs[:, 1:], combs[:, :1])
 
         x = np.reshape(np.append(x, _points[:, :1]), (-1, ))
         y = np.reshape(np.append(y, _points[:, 1:2]), (-1, ))
