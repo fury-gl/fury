@@ -914,18 +914,18 @@ def prim_cone(radius=0.5, height=1, sectors=10):
     Parameters
     ----------
     radius: float
-        Radius of the cylinder
+        Radius of the cone
     height: float
-        Height of the cylinder
+        Height of the cone
     sectors: int
-        Sectors in the cylinder
+        Sectors in the cone
 
     Returns
     -------
     vertices: ndarray
-        vertices coords that compose our prism
+        vertices coords that compose our cone
     triangles: ndarray
-        triangles that compose our prism
+        triangles that compose our cone
 
     """
 
@@ -944,7 +944,7 @@ def prim_cone(radius=0.5, height=1, sectors=10):
 
     vertices = np.vstack(np.array([x, y, z])).T
 
-    # index of base cand top centers
+    # index of base and top centers
     base_center_index = int(len(vertices) - 1)
     top_center_index = base_center_index - 1
 
