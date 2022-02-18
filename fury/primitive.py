@@ -906,3 +906,68 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         triangles = (np.array(triangles).reshape(2 * sectors, 3))
 
     return vertices, triangles
+
+
+def prim_cone(radius=0.5, height=1, sectors=10):
+    """Return vertices and triangle of a Cone.
+
+    Parameters
+    ----------
+    radius: float
+        Radius of the cylinder
+    height: float
+        Height of the cylinder
+    sectors: int
+        Sectors in the cylinder
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our prism
+    triangles: ndarray
+        triangles that compose our prism
+
+    """
+
+    if not sectors > 2:
+        raise ValueError("Sectors parameter should be greater than 2")
+
+    sector_angles = 2*np.pi/sectors*np.arange(sectors)
+
+    # Circle in XY plane
+    x, y = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
+    z = np.full((sectors,), 0)
+
+    x = np.concatenate((x, np.array([0, 0])))
+    y = np.concatenate((y, np.array([0, 0])))
+    z = np.concatenate((z, np.array([height, 0])))
+
+    vertices = np.vstack(np.array([x, y, z])).T
+
+    # index of base cand top centers
+    base_center_index = int(len(vertices) - 1)
+    top_center_index = base_center_index - 1
+
+    triangles = []
+
+    for i in range(sectors):
+        if not i+1 == top_center_index:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(i+1)
+
+            triangles.append(base_center_index)
+            triangles.append(i + 1)
+            triangles.append(i)
+        else:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(0)
+
+            triangles.append(base_center_index)
+            triangles.append(0)
+            triangles.append(i)
+
+    triangles = (np.array(triangles).reshape(-1, 3))
+
+    return vertices, triangles

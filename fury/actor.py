@@ -1837,7 +1837,7 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
 
 
 def cone(centers, directions, colors, heights=1., resolution=10,
-         vertices=None, faces=None):
+         vertices=None, faces=None, use_primitive=True):
     """Visualize one or many cones with different features.
 
     Parameters
@@ -1858,6 +1858,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         If faces is None then a cone is created based on directions, heights
         and resolution. If not then a cone is created with the provided
         vertices and faces.
+    use_primitive: boolean
+        If True uses primitives to create the cone actor.
 
     Returns
     -------
@@ -1875,15 +1877,26 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    src = ConeSource() if faces is None else None
+    if not use_primitive:
+        src = ConeSource() if faces is None else None
 
-    if src is not None:
-        src.SetResolution(resolution)
+        if src is not None:
+            src.SetResolution(resolution)
 
-    cone_actor = repeat_sources(centers=centers, directions=directions,
-                                colors=colors, active_scalars=heights,
-                                source=src, vertices=vertices, faces=faces)
-    return cone_actor
+        cone_actor = repeat_sources(centers=centers, directions=directions,
+                                    colors=colors, active_scalars=heights,
+                                    source=src, vertices=vertices, faces=faces)
+        return cone_actor
+    else:
+        verts, faces = fp.prim_cone(sectors=resolution)
+        res = fp.repeat_primitive(
+                    verts, faces, centers,
+                    directions=directions, colors=colors, scales=heights)
+
+        big_verts, big_faces, big_colors, _ = res
+        cone_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+
+        return cone_actor
 
 
 def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
