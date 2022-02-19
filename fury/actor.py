@@ -1888,9 +1888,11 @@ def cone(centers, directions, colors, heights=1., resolution=10,
                                     source=src, vertices=vertices, faces=faces)
         return cone_actor
     else:
-        verts, faces = fp.prim_cone(sectors=resolution)
+        if faces is None and vertices is None:
+            vertices, faces = fp.prim_cone(sectors=resolution)
+
         res = fp.repeat_primitive(
-                    verts, faces, centers,
+                    vertices, faces, centers,
                     directions=directions, colors=colors, scales=heights)
 
         big_verts, big_faces, big_colors, _ = res

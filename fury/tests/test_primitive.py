@@ -146,6 +146,22 @@ def test_cylinder_primitive():
                      list(range(len(verts))))
 
 
+def test_cone_primitive():
+    verts, faces = fp.prim_cone()
+    npt.assert_equal(verts.shape, (12, 3))
+    npt.assert_equal(verts.min(), -0.5)
+    npt.assert_equal(verts.max(), 0.5)
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+
+    # tests for traingles
+    npt.assert_equal(faces.shape, (20, 3))
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
+    # test warnings
+    npt.assert_raises(ValueError, fp.prim_cone, 0.5, 1, 2)
+
+
 def test_repeat_primitive():
     # init variables
     verts, faces = fp.prim_square()

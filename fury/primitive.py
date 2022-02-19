@@ -934,13 +934,14 @@ def prim_cone(radius=0.5, height=1, sectors=10):
 
     sector_angles = 2*np.pi/sectors*np.arange(sectors)
 
-    # Circle in XY plane
-    x, y = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
-    z = np.full((sectors,), 0)
+    # Circle in YZ plane
+    h = height/2.0
+    x = np.full((sectors,), h)
+    y, z = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
 
-    x = np.concatenate((x, np.array([0, 0])))
+    x = np.concatenate((x, np.array([h, -h])))
     y = np.concatenate((y, np.array([0, 0])))
-    z = np.concatenate((z, np.array([height, 0])))
+    z = np.concatenate((z, np.array([0, 0])))
 
     vertices = np.vstack(np.array([x, y, z])).T
 
