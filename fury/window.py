@@ -429,6 +429,10 @@ class ShowManager(object):
 
         """
         try:
+            if self.title.upper() == "FURY":
+                self.window.SetWindowName(self.title + " " + fury_version)
+            else:
+                self.window.SetWindowName(self.title)
             if(multithreaded):
                 while self.iren.GetDone() is False:
                     start_time = time.perf_counter()
@@ -445,10 +449,6 @@ class ShowManager(object):
                         time.sleep(time_per_frame - (end_time - start_time))
             else:
                 self.render()
-                if self.title.upper() == "FURY":
-                    self.window.SetWindowName(self.title + " " + fury_version)
-                else:
-                    self.window.SetWindowName(self.title)
                 self.iren.Start()
 
         except AttributeError:
