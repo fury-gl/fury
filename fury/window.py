@@ -431,18 +431,18 @@ class ShowManager(object):
         try:
             if(multithreaded):
                 while self.iren.GetDone() is False:
-                    startTime = time.perf_counter()
+                    start_time = time.perf_counter()
                     self.lock()
                     self.window.MakeCurrent()
                     self.iren.ProcessEvents()  # Check if we can really do that
                     self.window.Render()
                     release_context(self.window)
                     self.release_lock()
-                    endTime = time.perf_counter()
+                    end_time = time.perf_counter()
                     # throttle to 60fps to avoid busy wait
-                    timePerFrame = 1.0/desired_fps
-                    if endTime - startTime < timePerFrame:
-                        time.sleep(timePerFrame - (endTime - startTime))
+                    time_per_frame = 1.0/desired_fps
+                    if end_time - start_time < time_per_frame:
+                        time.sleep(time_per_frame - (end_time - start_time))
             else:
                 self.render()
                 if self.title.upper() == "FURY":
