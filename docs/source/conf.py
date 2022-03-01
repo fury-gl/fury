@@ -170,7 +170,8 @@ html_theme_options = {
 }
 
 html_additional_pages = {
-    'index': 'index.html'
+    'index': 'home-video-page.html',
+    'home': 'home.html'
     }
 
 # Add any paths that contain custom static files (such as style sheets) here,
