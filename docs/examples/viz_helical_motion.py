@@ -50,6 +50,7 @@ phase_angle = 0.002
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
+scene.background((1.0, 1.0, 1.0))  #Since the text background is white
 scene.zoom(1.2)
 scene.set_camera(position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
@@ -97,11 +98,14 @@ initial_vertices = vertices.copy() - \
 ###############################################################################
 # Initializing text box to display the name of the animation
 
-tb = ui.TextBlock2D(bold=True, position=(100, 90))
+tb = ui.TextBlock2D(bold=True, position=(100, 90), color=(0,0,0))
 m1 = "Motion of a charged particle in a "
 m2 = "combined electric and magnetic field"
 tb.message = m1 + m2
 scene.add(tb)
+
+tt = ui.TextBox2D(bold=False, text="Velocity of the Partícle : \n   along x axis =  {0} \n   along y axis =  {1} \n   along z axis =  {2} \n time {3}".format(1,1,1,0), position=(10, 500),height=100, width=200)
+scene.add(tt)
 
 ###############################################################################
 # Initializing counter
@@ -125,6 +129,7 @@ coor_1 = np.array([0, 0, 0])
 
 def timer_callback(_obj, _event):
     global pts, time, incre_time, coor_1
+    
     time += incre_time
     cnt = next(counter)
 
@@ -146,6 +151,12 @@ def timer_callback(_obj, _event):
     scene.add(line_actor)
     coor_1 = coor_2
 
+    vx = initial_velocity + acc*time
+    vy = 10*angular_frq*np.sin(10*angular_frq*time + phase_angle)
+    vz = 10*angular_frq*np.cos(10*angular_frq*time + phase_angle)
+    
+    tt.set_message("Velocity of the Partícle : \n   along x axis =  {0} \n   along y axis =  {1} \n   along z axis =  {2} \n time {3}".format(round(vx,2), round(vy,2), round(vz,2),round(time,1)))
+   
     showm.render()
 
     # to end the animation
@@ -154,7 +165,6 @@ def timer_callback(_obj, _event):
 
 ###############################################################################
 # Run every 15 milliseconds
-
 
 showm.add_timer_callback(True, 15, timer_callback)
 showm.start()

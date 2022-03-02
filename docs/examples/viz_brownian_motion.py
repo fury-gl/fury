@@ -106,9 +106,9 @@ scene.add(*l_particle)
 ###############################################################################
 # Creating a container (cube actor) inside which the particle(s) move around
 
-container_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                            colors=(0.5, 0.9, 0.7, 0.4), scales=6)
-scene.add(container_actor)
+#container_actor = actor.box(centers=np.array([[0, 0, 0]]),
+#                            colors=(0.5, 0.9, 0.7, 0.4), scales=6)
+#scene.add(container_actor)
 
 ###############################################################################
 # Initializing text box to display the name of the animation
@@ -117,20 +117,27 @@ tb = ui.TextBlock2D(bold=True, position=(235, 40), color=(0, 0, 0))
 tb.message = "Brownian Motion"
 scene.add(tb)
 
+#tnp = ui.TextBlock2D(bold=False, text="Number of Particles : {}".format(num_particles), position=(10, 570), color=(0, 0, 0))
+tnp = ui.TextBox2D(bold=False, text="Number of Particles : {0}\n Sim Step : {1}".format(num_particles, counter_step), position=(10, 560), color=(0, 0, 0),width=10, height=25)
+scene.add(tnp)
 
 ###############################################################################
 # The path of the particles exhibiting Brownian motion is plotted here
 
 def timer_callback(_obj, _event):
     global counter_step, list_particle
+    
+    tnp.set_message("Number of Particles : {0}\n Sim Step : {1}".format(num_particles, counter_step))
+    
     counter_step += 1
     for p in l_particle:
         update_path(p, counter_step=counter_step)
     showm.render()
-    scene.azimuth(2)
+    #scene.azimuth(2)
     if counter_step == num_total_steps:
         showm.exit()
-
+    
+    
 ###############################################################################
 # Run every 30 milliseconds
 
