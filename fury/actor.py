@@ -1627,7 +1627,7 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
 
 
 def disk(centers, directions, colors, rinner=0.3,
-         router=0.7, cresolution=6, rresolution=2, vertices=None, faces=None):
+         router=0.7, cresolution=6, rresolution=2, vertices=None):
     """Visualize one or many disks with different features.
 
     Parameters
@@ -1641,14 +1641,11 @@ def disk(centers, directions, colors, rinner=0.3,
     rinner : float or ndarray (N,) or tuple (N,)
         disk inner radius, default: 0.3
     router : float or ndarray (N,) or tuple (N,)
-        disk inner radius, default: 0.5
+        disk outer radius, default: 0.5
     cresolution: int, default: 6
         Number of facets used to define perimeter of disk.
     rresolution: int, default: 2
         Number of facets used radially.
-    faces : ndarray, shape (M, 3)
-        If faces is None then a disk is created based on theta and phi angles
-        If not then an actor is created with the provided vertices and faces.
 
     Returns
     -------
@@ -1663,23 +1660,20 @@ def disk(centers, directions, colors, rinner=0.3,
     >>> dirs = np.random.rand(5, 3)
     >>> colors = np.random.rand(5, 4)
     >>> actor = actor.disk(centers, dirs, colors, 
-    >>>                    rinner=.1, router=.8, cresolution=10)
+    >>>                    rinner=.1, router=.8, cresolution=30)
     >>> scene.add(actor)
     >>> window.show(scene)
     """
-    if faces is None:
-        src = DiskSource()
-        src.SetCircumferentialResolution(cresolution)
-        src.SetRadialResolution(rresolution)
-        src.SetInnerRadius(rinner)
-        src.SetOuterRadius(router)
-        rotate = np.array([[0,0,-1,0],[0,1,0,0],[1,0,0,0],[0,0,0,1]])
-    else:
-        src = rotate = None
+    src = DiskSource()
+    src.SetCircumferentialResolution(cresolution)
+    src.SetRadialResolution(rresolution)
+    src.SetInnerRadius(rinner)
+    src.SetOuterRadius(router)
+    rotate = np.array([[0,0,-1,0],[0,1,0,0],[1,0,0,0],[0,0,0,1]])
 
     disk_actor = repeat_sources(centers=centers, colors=colors,
                                     directions=directions, source=src,
-                                    vertices=vertices, faces=faces, orientation=rotate)
+                                    vertices=vertices, faces=None, orientation=rotate)
 
     return disk_actor
 
