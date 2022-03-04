@@ -760,7 +760,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
         matrix = Matrix4x4()
         for i in range(4):
             for j in range(4):
-                matrix.SetElement(i, j, orientation[i,j])
+                matrix.SetElement(i, j, orientation[i, j])
         transform = Transform()
         transform.SetMatrix(matrix)
         glyph.SetSourceTransform(transform)

@@ -1614,7 +1614,10 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
         src.SetCapping(capped)
         src.SetResolution(resolution)
         src.SetRadius(radius)
-        rotate = np.array([[0,1,0,0],[-1,0,0,0],[0,0,1,0],[0,0,0,1]])
+        rotate = np.array([[0, 1, 0, 0],
+                           [-1, 0, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
     else:
         src = rotate = None
 
@@ -1659,7 +1662,7 @@ def disk(centers, directions, colors, rinner=0.3,
     >>> centers = np.random.rand(5, 3)
     >>> dirs = np.random.rand(5, 3)
     >>> colors = np.random.rand(5, 4)
-    >>> actor = actor.disk(centers, dirs, colors, 
+    >>> actor = actor.disk(centers, dirs, colors,
     >>>                    rinner=.1, router=.8, cresolution=30)
     >>> scene.add(actor)
     >>> window.show(scene)
@@ -1669,11 +1672,14 @@ def disk(centers, directions, colors, rinner=0.3,
     src.SetRadialResolution(rresolution)
     src.SetInnerRadius(rinner)
     src.SetOuterRadius(router)
-    rotate = np.array([[0,0,-1,0],[0,1,0,0],[1,0,0,0],[0,0,0,1]])
+    rotate = np.array([[0, 0, -1, 0],
+                       [0, 1, 0, 0],
+                       [1, 0, 0, 0],
+                       [0, 0, 0, 1]])
 
     disk_actor = repeat_sources(centers=centers, colors=colors,
-                                    directions=directions, source=src,
-                                    vertices=vertices, faces=None, orientation=rotate)
+                                directions=directions, source=src,
+                                vertices=vertices, faces=None, orientation=rotate)
 
     return disk_actor
 
