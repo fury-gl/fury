@@ -706,7 +706,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
 
 def repeat_sources(centers, colors, active_scalars=1., directions=None,
-                   source=None, vertices=None, faces=None):
+                   source=None, vertices=None, faces=None, orientation=None):
     """Transform a vtksource to glyph."""
     if source is None and faces is None:
         raise IOError("A source or faces should be defined")
@@ -752,11 +752,18 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
         glyph.SetSourceConnection(source.GetOutputPort())
     else:
         glyph.SetSourceData(polydata_geom)
-
     glyph.SetInputData(polydata_centers)
     glyph.SetOrient(True)
     glyph.SetScaleModeToScaleByScalar()
     glyph.SetVectorModeToUseVector()
+    if orientation is not None:
+        matrix = Matrix4x4()
+        for i in range(4):
+            for j in range(4):
+                matrix.SetElement(i, j, orientation[i,j])
+        transform = Transform()
+        transform.SetMatrix(matrix)
+        glyph.SetSourceTransform(transform)
     glyph.Update()
 
     mapper = PolyDataMapper()
