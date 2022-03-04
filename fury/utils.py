@@ -6,7 +6,7 @@ from fury.lib import (numpy_support, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
                       Transform, AlgorithmOutput, VTK_INT, VTK_UNSIGNED_CHAR,
-                      IdTypeArray)
+                      TransformPolyDataFilter, IdTypeArray)
 
 
 def remove_observer_from_actor(actor, id):
@@ -749,6 +749,17 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     glyph = Glyph3D()
     if faces is None:
+        if orientation is not None:
+            matrix = Matrix4x4()
+            for i in range(4):
+                for j in range(4):
+                    matrix.SetElement(i, j, orientation[i, j])
+            transform = Transform()
+            transform.SetMatrix(matrix)
+            rtrans = TransformPolyDataFilter()
+            rtrans.SetInputConnection(source.GetOutputPort())
+            rtrans.SetTransform(transform)
+            source = rtrans
         glyph.SetSourceConnection(source.GetOutputPort())
     else:
         glyph.SetSourceData(polydata_geom)
@@ -756,14 +767,6 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     glyph.SetOrient(True)
     glyph.SetScaleModeToScaleByScalar()
     glyph.SetVectorModeToUseVector()
-    if orientation is not None:
-        matrix = Matrix4x4()
-        for i in range(4):
-            for j in range(4):
-                matrix.SetElement(i, j, orientation[i, j])
-        transform = Transform()
-        transform.SetMatrix(matrix)
-        glyph.SetSourceTransform(transform)
     glyph.Update()
 
     mapper = PolyDataMapper()
