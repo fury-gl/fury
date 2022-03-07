@@ -932,8 +932,12 @@ def test_advanced_geometry_actor(interactive=False):
         colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
         heights = np.array([5, 7, 10])
 
-        geom_actor = act_func(centers=xyz, heights=heights, colors=colors[:],
-                              **extra_args)
+        if act_func == actor.disk:
+          geom_actor = act_func(centers=xyz, colors=colors[:],
+                                **extra_args)
+        else:
+          geom_actor = act_func(centers=xyz, heights=heights, colors=colors[:],
+                                **extra_args)
         scene.add(geom_actor)
 
         if interactive:
