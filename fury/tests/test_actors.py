@@ -921,9 +921,18 @@ def test_advanced_geometry_actor(interactive=False):
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
     dirs = np.array([[0, 1, 0], [1, 0, 0], [0, 0.5, 0.5]])
 
+    rot_Y = np.array([[0, 0, -1, 0],
+                      [0, 1, 0, 0],
+                      [1, 0, 0, 0],
+                      [0, 0, 0, 1]])
+    rot_Z = np.array([[0, 1, 0, 0],
+                      [-1, 0, 0, 0],
+                      [0, 0, 1, 0],
+                      [0, 0, 0, 1]])
     actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
                   [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.cylinder, {'directions': dirs}]]
+                  [actor.cylinder, {'directions': dirs, 'orientation':rot_Z}],
+                  [actor.disk, {'directions': dirs, 'orientation':rot_Y}]]
 
     scene = window.Scene()
 
