@@ -919,7 +919,7 @@ def test_basic_geometry_actor(interactive=False):
 
 def test_advanced_geometry_actor(interactive=False):
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
-    dirs = np.array([[0.5, 0.5, 0], [0.5, 0, 0.5], [0, 0.5, 0.5]])
+    dirs = np.array([[0.5, 0.5, 0.5], [0.5, 0, 0.5], [0, 0.5, 0.5]])
 
     actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
                   [actor.arrow, {'directions': dirs, 'resolution': 9}],
