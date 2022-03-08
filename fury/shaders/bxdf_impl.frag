@@ -41,6 +41,15 @@ Lo = mix(Lo, subsurfaceV3, subsurface);
 
 // Sheen + Sheen Tint
 vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, dotNV);
+float len = length(sheenV3);
+//fragOutput0 = vec4(sheenV3, opacity);
+//fragOutput0 = vec4(sheenV3, len);
+/*
+if(len < 0.1)
+    discard;
+else
+    fragOutput0 = vec4(sheenV3, opacity);
+*/
 
 Lo += sheenV3;
 
