@@ -737,9 +737,11 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = Renderer()
+        scene = Scene()
 
     renWin = RenderWindow()
+
+    renWin.SetOffScreenRendering(1)
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
