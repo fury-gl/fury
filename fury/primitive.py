@@ -913,19 +913,23 @@ def prim_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft
 
     Parameters
     ----------
-    shaft_radius
-    tip_radius
-    tip_length
-    resolution
-    height: overall
-        Represents the dimension of the wanted star
+    height : float
+        The height of the arrow (default: 1.0).
+    resolution : int
+        The resolution of the arrow.
+    tip_length : float
+        The tip size of the arrow (default: 0.35)
+    tip_radius : float
+        the tip radius of the arrow (default: 0.1)
+    shaft_radius : float
+        The shaft radius of the arrow (default: 0.03)
 
     Returns
     -------
     vertices: ndarray
-        vertices coords that composed our star
+        vertices of the Arrow
     triangles: ndarray
-        Triangles that composed our star
+        Triangles of the Arrow
 
     """
 
