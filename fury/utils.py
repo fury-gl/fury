@@ -750,12 +750,8 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
     glyph = Glyph3D()
     if faces is None:
         if orientation is not None:
-            matrix = Matrix4x4()
-            for i in range(4):
-                for j in range(4):
-                    matrix.SetElement(i, j, orientation[i, j])
             transform = Transform()
-            transform.SetMatrix(matrix)
+            transform.SetMatrix(numpy_to_vtk_matrix(orientation))
             rtrans = TransformPolyDataFilter()
             rtrans.SetInputConnection(source.GetOutputPort())
             rtrans.SetTransform(transform)

@@ -1619,18 +1619,20 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
                            [0, 0, 1, 0],
                            [0, 0, 0, 1]])
     else:
-        src = rotate = None
+        src = None
+        rotate = None
 
     cylinder_actor = repeat_sources(centers=centers, colors=colors,
                                     directions=directions,
                                     active_scalars=heights, source=src,
-                                    vertices=vertices, faces=faces, orientation=rotate)
+                                    vertices=vertices, faces=faces,
+                                    orientation=rotate)
 
     return cylinder_actor
 
 
 def disk(centers, directions, colors, rinner=0.3,
-         router=0.7, cresolution=6, rresolution=2, vertices=None):
+         router=0.7, cresolution=6, rresolution=2, vertices=None, faces=None):
     """Visualize one or many disks with different features.
 
     Parameters
@@ -1649,10 +1651,15 @@ def disk(centers, directions, colors, rinner=0.3,
         Number of facets used to define perimeter of disk.
     rresolution: int, default: 2
         Number of facets used radially.
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the disk.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a disk is created based on theta and phi angles
+        If not then a disk is created with the provided vertices and faces.
 
     Returns
     -------
-    cylinder_actor: Actor
+    disk_actor: Actor
 
     Examples
     --------
@@ -1667,19 +1674,24 @@ def disk(centers, directions, colors, rinner=0.3,
     >>> scene.add(actor)
     >>> window.show(scene)
     """
-    src = DiskSource()
-    src.SetCircumferentialResolution(cresolution)
-    src.SetRadialResolution(rresolution)
-    src.SetInnerRadius(rinner)
-    src.SetOuterRadius(router)
-    rotate = np.array([[0, 0, -1, 0],
-                       [0, 1, 0, 0],
-                       [1, 0, 0, 0],
-                       [0, 0, 0, 1]])
+    if faces is None:
+        src = DiskSource()
+        src.SetCircumferentialResolution(cresolution)
+        src.SetRadialResolution(rresolution)
+        src.SetInnerRadius(rinner)
+        src.SetOuterRadius(router)
+        rotate = np.array([[0, 0, -1, 0],
+                           [0, 1, 0, 0],
+                           [1, 0, 0, 0],
+                           [0, 0, 0, 1]])
+    else:
+        src = None
+        rotate = None
 
     disk_actor = repeat_sources(centers=centers, colors=colors,
                                 directions=directions, source=src,
-                                vertices=vertices, faces=None, orientation=rotate)
+                                vertices=vertices, faces=None,
+                                orientation=rotate)
 
     return disk_actor
 
