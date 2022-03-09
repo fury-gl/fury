@@ -1690,7 +1690,7 @@ def disk(centers, directions, colors, rinner=0.3,
 
     disk_actor = repeat_sources(centers=centers, colors=colors,
                                 directions=directions, source=src,
-                                vertices=vertices, faces=None,
+                                vertices=vertices, faces=faces,
                                 orientation=rotate)
 
     return disk_actor
