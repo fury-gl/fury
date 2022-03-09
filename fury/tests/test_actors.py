@@ -921,24 +921,20 @@ def test_advanced_geometry_actor(interactive=False):
     xyz = np.array([[0, 0, 0], [50, 0, 0], [100, 0, 0]])
     dirs = np.array([[0.5, 0.5, 0.5], [0.5, 0, 0.5], [0, 0.5, 0.5]])
 
-    actor_list = [[actor.cone, {'directions': dirs, 'resolution': 8}],
-                  [actor.arrow, {'directions': dirs, 'resolution': 9}],
-                  [actor.cylinder, {'directions': dirs}],
-                  [actor.disk, {'directions': dirs}]]
+    heights = np.array([5, 7, 10])
+
+    actor_list = [[actor.cone, {'heights': heights, 'resolution': 8}],
+                  [actor.arrow, {'heights': heights, 'resolution': 9}],
+                  [actor.cylinder, {'heights': heights, 'resolution': 10}],
+                  [actor.disk, {'rinner': 4, 'router': 8, 'rresolution': 2,
+                                'cresolution': 2}]]
 
     scene = window.Scene()
 
     for act_func, extra_args in actor_list:
         colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [1, 1, 0, 1]])
 
-        if act_func == actor.disk:
-            geom_actor = act_func(centers=xyz, colors=colors[:], rinner=4,
-                                  router=8, rresolution=2, cresolution=10,
-                                  **extra_args)
-        else:
-            heights = np.array([5, 7, 10])
-            geom_actor = act_func(centers=xyz, heights=heights, colors=colors[:],
-                                  **extra_args)
+        geom_actor = act_func(xyz, dirs, colors, **extra_args)
         scene.add(geom_actor)
 
         if interactive:
@@ -947,16 +943,11 @@ def test_advanced_geometry_actor(interactive=False):
         report = window.analyze_snapshot(arr, colors=colors)
         npt.assert_equal(report.objects, 3)
 
-        colors = np.array([1.0, 1.0, 1.0, 1.0])
-        heights = 10
-
         scene.clear()
-        if act_func == actor.disk:
-          geom_actor = act_func(centers=xyz[:, :3], colors=colors[:],
-                                **extra_args)
-        else:
-          geom_actor = act_func(centers=xyz[:, :3], heights=10, colors=colors[:],
-                                **extra_args)
+
+        colors = np.array([1.0, 1.0, 1.0, 1.0])
+
+        geom_actor = act_func(xyz, dirs, colors, **extra_args)
         scene.add(geom_actor)
 
         if interactive:
