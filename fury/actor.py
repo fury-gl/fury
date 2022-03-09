@@ -1643,9 +1643,9 @@ def disk(centers, directions, colors, rinner=0.3,
         The orientation vector of the disk.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
-    rinner : float or ndarray (N,) or tuple (N,)
+    rinner : float
         disk inner radius, default: 0.3
-    router : float or ndarray (N,) or tuple (N,)
+    router : float
         disk outer radius, default: 0.5
     cresolution: int, default: 6
         Number of facets used to define perimeter of disk.
