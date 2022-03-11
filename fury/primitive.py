@@ -942,8 +942,8 @@ def prim_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft
 
     # calculating vertices
     for i in range(resolution + 1):
-        x = math.cos((i * 2 ) * math.pi / resolution )
-        y = math.sin((i * 2 ) * math.pi / resolution )
+        x = math.cos((i * 2 ) * math.pi / resolution)
+        y = math.sin((i * 2 ) * math.pi / resolution)
 
         shaft_x = x * shaft_radius
         shaft_y = y * shaft_radius
