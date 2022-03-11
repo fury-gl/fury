@@ -182,12 +182,23 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     # update orientations
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
-        w = np.cos(0.5 * np.pi)
-        denom = np.linalg.norm(dirs / 2.)
-        f = (np.sin(0.5 * np.pi) / denom) if denom else 0
-        dirs = np.append((dirs / 2.) * f, w)
-        rot = transform.Rotation.from_quat(dirs)
-        rotation_matrix = rot.as_matrix() if SCIPY_1_4_PLUS else rot.as_dcm()
+        # Normal vector of the object.
+        dir_abs = np.linalg.norm(dirs)
+        if dir_abs:
+            normal = np.array([1., 0., 0.])
+            normal = normal / np.linalg.norm(normal)
+            dirs = dirs / dir_abs
+            v = np.cross(normal, dirs)
+            c = np.dot(normal, dirs)
+            v1, v2, v3 = v
+            h = 1 / (1 + c)
+            Vmat = np.array([[0, -v3, v2],
+                             [v3, 0, -v1],
+                             [-v2, v1, 0]])
+
+            rotation_matrix = np.eye(3, dtype=np.float64) + Vmat + (Vmat.dot(Vmat) * h)
+        else:
+            rotation_matrix = np.identity(3)
 
         big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
