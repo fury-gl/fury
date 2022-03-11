@@ -318,8 +318,10 @@ if __name__ == '__main__':
 
     edges = [[left_coordinates[i], right_coordinates[i]] for i in range(
             len(left_coordinates))]
-    edges_actor = actor.line(edges, connectome_colors, linewidth=5)
+    edges_actor = actor.line(edges, connectome_colors, linewidth=2.5,
+                             opacity=.5)
 
+    # TODO: Opacity
     #scene.add(edges_actor)
 
     """
@@ -328,7 +330,12 @@ if __name__ == '__main__':
     left_bg_colors = compute_background_colors(left_sulc_points)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
     """
-    # TODO: Opacity array to vertex data
+    left_max_op_vals = -np.nanmin(left_sulc_points)
+    left_min_op_vals = -np.nanmax(left_sulc_points)
+
+    left_opacities = ((-left_sulc_points - left_min_op_vals) /
+                      (left_max_op_vals - left_min_op_vals)) * 255
+    left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
 
     t = time()
     left_tex_colors = compute_texture_colors(
@@ -336,6 +343,7 @@ if __name__ == '__main__':
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     left_colors = left_tex_colors
+    #left_colors = np.hstack((left_tex_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
@@ -349,12 +357,19 @@ if __name__ == '__main__':
     opacity = 1.
     left_hemi_actor.GetProperty().SetOpacity(opacity)
 
+    right_max_op_vals = -np.nanmin(right_sulc_points)
+    right_min_op_vals = -np.nanmax(right_sulc_points)
+
+    right_opacities = ((-right_sulc_points - right_min_op_vals) /
+                       (right_max_op_vals - right_min_op_vals)) * 255
+
     t = time()
     right_tex_colors = compute_texture_colors(
         right_parcellation[:, np.newaxis], max_val, min_val=min_val)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    right_colors = right_tex_colors
+    right_colors = np.hstack((right_tex_colors,
+                              right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
                                             colors=right_colors)
@@ -365,15 +380,16 @@ if __name__ == '__main__':
         anisotropic_direction=[0, 1, .5], sheen=1, sheen_tint=1, clearcoat=0,
         clearcoat_gloss=0)
 
-    opacity = 1.
     right_hemi_actor.GetProperty().SetOpacity(opacity)
 
     view = 'left lateral'
     if view == 'left lateral':
-        rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
-        rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
+        #rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
+        #rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
         #rotate(right_hemi_actor, rotation=(90, 0, 0, 1))
         #rotate(right_hemi_actor, rotation=(-80, 1, 0, 0))
+        scene.roll(90)
+        scene.pitch(80)
     elif view == 'top left':
         scene.roll(135)
         scene.pitch(80)
