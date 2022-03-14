@@ -310,19 +310,19 @@ if __name__ == '__main__':
     # Connectome colors
     connectome_colors = np.array(connectome_colors) * 255
 
-    left_nodes_actor = actor.sphere(left_coordinates, connectome_colors)
-    right_nodes_actor = actor.sphere(right_coordinates, connectome_colors)
+    left_nodes_actor = actor.sphere(left_coordinates, (1, 0, 0), opacity=.25)
+    right_nodes_actor = actor.sphere(right_coordinates, (1, 0, 0), opacity=.25)
 
-    #scene.add(left_nodes_actor)
-    #scene.add(right_nodes_actor)
+    # TODO: Threshold edges and vertices
+    scene.add(left_nodes_actor)
+    scene.add(right_nodes_actor)
 
     edges = [[left_coordinates[i], right_coordinates[i]] for i in range(
             len(left_coordinates))]
-    edges_actor = actor.line(edges, connectome_colors, linewidth=2.5,
-                             opacity=.5)
+    edges_actor = actor.streamtube(edges, (1, 0, 0), linewidth=.5,
+                                   opacity=.25)
 
-    # TODO: Opacity
-    #scene.add(edges_actor)
+    scene.add(edges_actor)
 
     """
     print('Computing background colors...')
@@ -382,7 +382,10 @@ if __name__ == '__main__':
 
     right_hemi_actor.GetProperty().SetOpacity(opacity)
 
-    view = 'left lateral'
+    scene.add(left_hemi_actor)
+    scene.add(right_hemi_actor)
+
+    view = 'top left'
     if view == 'left lateral':
         #rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
         #rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
@@ -397,11 +400,9 @@ if __name__ == '__main__':
         scene.roll(180)
         scene.pitch(80)
 
-    scene.add(left_hemi_actor)
-    #scene.add(right_hemi_actor)
-
     scene.reset_camera()
     scene.reset_clipping_range()
+    scene.zoom(1.6)
 
     #window.show(scene)
 
@@ -594,3 +595,6 @@ if __name__ == '__main__':
     show_m.add_window_callback(win_callback)
 
     show_m.start()
+
+    #window.record(scene, out_path='sheen_atlas_2.png', size=(1920, 1080),
+    #              magnification=4)
