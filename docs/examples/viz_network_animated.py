@@ -18,7 +18,7 @@ import math
 from os.path import join as pjoin
 import numpy as np
 from fury import actor, window, colormap as cmap
-from fury.lib import numpy_support
+from fury.utils import get_polydata_vertices
 
 ###############################################################################
 # This demo has two modes.
@@ -122,8 +122,8 @@ def new_layout_timer(showm, edges_list, vertices_count,
     b = 1.0
     deltaT = 1.0
 
-    sphere_geometry = np.array(numpy_support.vtk_to_numpy(
-        sphere_actor.GetMapper().GetInput().GetPoints().GetData()))
+    sphere_geometry = np.array(get_polydata_vertices(
+        sphere_actor.GetMapper().GetInput()))
     geometry_length = sphere_geometry.shape[0] / vertices_count
 
     if(vertex_initial_positions is not None):
@@ -188,13 +188,13 @@ def new_layout_timer(showm, edges_list, vertices_count,
             iterate(1)
         else:
             pos[:] += (np.random.random(pos.shape) - 0.5) * 1.5
-        spheres_positions = numpy_support.vtk_to_numpy(
-            sphere_actor.GetMapper().GetInput().GetPoints().GetData())
+        spheres_positions = get_polydata_vertices(
+            sphere_actor.GetMapper().GetInput())
         spheres_positions[:] = sphere_geometry + \
             np.repeat(pos, geometry_length, axis=0)
 
-        edges_positions = numpy_support.vtk_to_numpy(
-            lines_actor.GetMapper().GetInput().GetPoints().GetData())
+        edges_positions = get_polydata_vertices(
+            lines_actor.GetMapper().GetInput())
         edges_positions[::2] = pos[edges_list[:, 0]]
         edges_positions[1::2] = pos[edges_list[:, 1]]
 
