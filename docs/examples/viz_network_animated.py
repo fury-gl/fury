@@ -18,7 +18,7 @@ import math
 from os.path import join as pjoin
 import numpy as np
 from fury import actor, window, colormap as cmap
-from fury.utils import get_polydata_vertices
+from fury.utils import get_polydata_vertices, update_actor
 
 ###############################################################################
 # This demo has two modes.
@@ -198,10 +198,10 @@ def new_layout_timer(showm, edges_list, vertices_count,
         edges_positions[::2] = pos[edges_list[:, 0]]
         edges_positions[1::2] = pos[edges_list[:, 1]]
 
-        lines_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+        update_actor(lines_actor)
         lines_actor.GetMapper().GetInput().ComputeBounds()
 
-        sphere_actor.GetMapper().GetInput().GetPoints().GetData().Modified()
+        update_actor(sphere_actor)
         sphere_actor.GetMapper().GetInput().ComputeBounds()
         showm.scene.ResetCameraClippingRange()
         showm.render()
