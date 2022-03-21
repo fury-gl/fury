@@ -2,21 +2,21 @@
 ======================================================================
 Tesseract (Hypercube)
 ======================================================================
-A tesseract is a four dimensionsal cube, or it can be imagined as an
-extension of a cube in the fourth dimensional space. A tesseract can
+A tesseract is a four dimensional cube, or it can be imagined as an
+extension of a cube in the fourth-dimensional space. A tesseract can
 be unfolded into eight cubes, Just as a cube can be unfolded into eight
 squares.
 """
 
 ###############################################################################
-# First import some useful functions
+# First, import some useful functions
 
 import numpy as np
 from fury import utils, actor, window
 from fury.ui import TextBlock2D
 
 ###############################################################################
-# Let's define some varibales and their descriptions:
+# Let's define some variables and their descriptions:
 #
 # Use `wireframe = True` to show wireframe like representation of the tesseract
 # `wireframe = False` will render it with point actor on each vertex.
@@ -51,12 +51,14 @@ verts3D = np.array(
      [-1, -1, -1]]
 )
 
+# We can use primitive.box alternatively to get the cube's 3-D vertices.
+
 u = np.insert(verts3D, 3, 1, axis=1)
 v = np.insert(verts3D, 3, -1, axis=1)
 verts4D = np.append(u, v, axis=0)
 
 ###############################################################################
-# We define a rotate4D function that takes 4D matrix as parameter and rotates
+# We define a `rotate4D` function that takes 4D matrix as parameter and rotates
 # it in XY plane (Z axis) and ZW plane (an imaginary axis), projects it to the
 # 3D plane so that we can render it in a scene.
 
@@ -90,7 +92,7 @@ def rotate4D(verts4D):
     return np.array(projected_marix)
 
 ###############################################################################
-# Now, We have 4D points projected to 3D let's define a function to connect
+# Now, We have 4D points projected to 3D. Let's define a function to connect
 # lines.
 
 
