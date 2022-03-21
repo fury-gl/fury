@@ -8,7 +8,7 @@ squares.
 """
 
 ###############################################################################
-# First import some useful functions
+# First, import some useful functions
 
 import numpy as np
 from fury import utils, actor, window
@@ -50,14 +50,14 @@ verts3D = np.array(
      [-1, -1, -1]]
 )
 
-# primitive.box can be used alternatively to get 3d vertices of a cube
+# We can use primitive.box alternatively to get the cube's 3-D vertices.
 
 u = np.insert(verts3D, 3, 1, axis=1)
 v = np.insert(verts3D, 3, -1, axis=1)
 verts4D = np.append(u, v, axis=0)
 
 ###############################################################################
-# We define a rotate4D function that takes 4D matrix as parameter and rotates
+# We define a `rotate4D` function that takes 4D matrix as parameter and rotates
 # it in XY plane (Z axis) and ZW plane (an imaginary axis), projects it to the
 # 3D plane so that we can render it in a scene.
 
