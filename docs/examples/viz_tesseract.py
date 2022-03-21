@@ -2,8 +2,7 @@
 ======================================================================
 Tesseract (Hypercube)
 ======================================================================
-A tesseract is a four dimensionsal cube, or it can be imagined as an
-extension of a cube in the fourth dimensional space. A tesseract can
+A tesseract is a four-dimensional cube. A tesseract can
 be unfolded into eight cubes, Just as a cube can be unfolded into eight
 squares.
 """
@@ -16,7 +15,7 @@ from fury import utils, actor, window
 from fury.ui import TextBlock2D
 
 ###############################################################################
-# Let's define some varibales and their descriptions:
+# Let's define some variables and their descriptions:
 #
 # Use `wireframe = True` to show wireframe like representation of the tesseract
 # `wireframe = False` will render it with point actor on each vertex.
@@ -50,6 +49,8 @@ verts3D = np.array(
      [1, -1, -1],
      [-1, -1, -1]]
 )
+
+# primitive.box can be used alternatively to get 3d vertices of a cube
 
 u = np.insert(verts3D, 3, 1, axis=1)
 v = np.insert(verts3D, 3, -1, axis=1)
@@ -90,7 +91,7 @@ def rotate4D(verts4D):
     return np.array(projected_marix)
 
 ###############################################################################
-# Now, We have 4D points projected to 3D let's define a function to connect
+# Now, We have 4D points projected to 3D. Let's define a function to connect
 # lines.
 
 
@@ -156,8 +157,8 @@ tb = TextBlock2D(text="Tesseract", position=(900, 950),
 showm.scene.add(tb)
 
 ###############################################################################
-# Define a timer_callback in which we'll update the vertices from `rotate4D`
-# with the change in angle.
+# Define a timer_callback in which we'll update the vertices of point and lines
+# actor using `rotate4D`.
 
 
 def timer_callback(_obj, _event):
