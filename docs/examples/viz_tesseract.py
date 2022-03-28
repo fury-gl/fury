@@ -13,6 +13,7 @@ squares.
 import numpy as np
 from fury import utils, actor, window
 from fury.ui import TextBlock2D
+import itertools
 
 ###############################################################################
 # Let's define some variables and their descriptions:
@@ -65,20 +66,22 @@ verts4D = np.append(u, v, axis=0)
 def rotate4D(verts4D):
     cos = np.cos(angle)
     sin = np.sin(angle)
-    rotation4d_xy = [[cos, -sin, 0, 0],
+    rotation4d_xy = np.array(
+                    [[cos, -sin, 0, 0],
                      [sin, cos, 0, 0],
                      [0, 0, 1, 0],
-                     [0, 0, 0, 1]]
-    rotation4d_zw = [[1, 0, 0, 0],
+                     [0, 0, 0, 1]])
+    rotation4d_zw = np.array(
+                    [[1, 0, 0, 0],
                      [0, 1, 0, 0],
                      [0, 0, cos, -sin],
-                     [0, 0, sin, cos]]
+                     [0, 0, sin, cos]])
     distance = 2
-    projected_marix = []
-    for vert in verts4D:
+    projected_marix = np.zeros((16, 3))
+    for i, vert in enumerate(verts4D):
         rotated_3D = np.dot(rotation4d_xy, vert)
         rotated_3D = np.dot(rotation4d_zw, rotated_3D)
-        w = 1/(distance - rotated_3D[3])
+        w = 1 / (distance - rotated_3D[3])
         proj_mat4D = np.array(
             [[w, 0, 0, 0],
              [0, w, 0, 0],
@@ -86,9 +89,8 @@ def rotate4D(verts4D):
         )
 
         projeced_mat3D = np.dot(proj_mat4D, rotated_3D)
-        projected_marix.append(projeced_mat3D)  # vertices to be proj (3D)
-
-    return np.array(projected_marix)
+        projected_marix[i] = projeced_mat3D  # vertices to be proj (3D)
+    return projected_marix
 
 ###############################################################################
 # Now, We have 4D points projected to 3D. Let's define a function to connect
@@ -96,23 +98,24 @@ def rotate4D(verts4D):
 
 
 def connect_points(verts3D):
-    lines = []
+    lines = np.array([])
     len_vert = len(verts3D)
 
     for i in range(len_vert-1):
         if i < 8:
-            lines.append(np.array([verts3D[i], verts3D[i+8]]))
+            lines = np.append(lines, [verts3D[i], verts3D[i+8]])
         if i == 7:
             pass
         else:
-            lines.append(np.array([verts3D[i], verts3D[i+1]]))
+            lines = np.append(lines, [verts3D[i], verts3D[i+1]])
         if i % 4 == 0:
-            lines.append(np.array([verts3D[i], verts3D[i+3]]))
+            lines = np.append(lines, [verts3D[i], verts3D[i+3]])
 
     for i in range(3):
-        lines.append(np.array([verts3D[i], verts3D[i+5]]))
-        lines.append(np.array([verts3D[i+8], verts3D[i+5+8]]))
-    return np.array(lines)
+        lines = np.append(lines, [verts3D[i], verts3D[i+5]])
+        lines = np.append(lines, [verts3D[i+8], verts3D[i+5+8]])
+
+    return np.reshape(lines, (-1, 2, 3))
 
 
 ###############################################################################
@@ -132,7 +135,7 @@ verts3D = rotate4D(verts4D)
 if not wireframe:
     points = actor.point(verts3D, colors=p_color)
     point_verts = utils.vertices_from_actor(points)
-    no_vertices = len(point_verts)/16
+    no_vertices = len(point_verts) / 16
     initial_verts = point_verts.copy() - \
         np.repeat(verts3D, no_vertices, axis=0)
 
@@ -160,9 +163,13 @@ showm.scene.add(tb)
 # Define a timer_callback in which we'll update the vertices of point and lines
 # actor using `rotate4D`.
 
+counter = itertools.count()
+end = 200
+
 
 def timer_callback(_obj, _event):
     global verts3D, angle
+    cnt = next(counter)
     verts3D = rotate4D(verts4D)
     if not wireframe:
         point_verts[:] = initial_verts + \
@@ -176,6 +183,9 @@ def timer_callback(_obj, _event):
 
     showm.render()
     angle += dtheta
+
+    if cnt == end:
+        showm.exit()
 
 ###############################################################################
 # Run every 20 milliseconds
