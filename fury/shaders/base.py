@@ -4,10 +4,11 @@ from fury import enable_warnings
 from fury.lib import (numpy_support, Command, VTK_OBJECT,
                       calldata_type, DataObject, Shader)
 
-SHADERS_TYPE = {"vertex": Shader.Vertex,
-                "geometry": Shader.Geometry,
-                "fragment": Shader.Fragment,
-                }
+SHADERS_TYPE = {"vertex": Shader.Vertex, "geometry": Shader.Geometry,
+                "fragment": Shader.Fragment}
+
+REPLACEMENT_SHADERS_TYPES = {'vertex': Shader.Vertex,
+                             'fragment': Shader.Fragment}
 
 SHADERS_BLOCK = {
     "position": "//VTK::PositionVC",  # frag position in VC
@@ -61,7 +62,7 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
     actor : vtkActor
         Object where you want to add the shader code.
     shader_type : str
-        Shader type: vertex, geometry, fragment
+        Shader type: vertex, fragment
     impl_code : str, optional
         shader implementation code, should be a string or filename
     decl_code : str, optional
@@ -88,10 +89,10 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
 
     """
     shader_type = shader_type.lower()
-    shader_type = SHADERS_TYPE.get(shader_type, None)
+    shader_type = REPLACEMENT_SHADERS_TYPES.get(shader_type, None)
     if shader_type is None:
         msg = "Invalid Shader Type. Please choose between "
-        msg += ', '.join(SHADERS_TYPE.keys())
+        msg += ', '.join(REPLACEMENT_SHADERS_TYPES.keys())
         raise ValueError(msg)
 
     block = block.lower()

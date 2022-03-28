@@ -113,6 +113,8 @@ def test_shader_to_actor(interactive=False):
     # test errors
     npt.assert_raises(ValueError, shader_to_actor, cube, "error",
                       vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, "geometry",
+                      vertex_impl)
     npt.assert_raises(ValueError, shader_to_actor, cube, "vertex",
                       vertex_impl, block="error")
     npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
