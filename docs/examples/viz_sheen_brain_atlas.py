@@ -277,7 +277,7 @@ if __name__ == '__main__':
     from nilearn.plotting import plot_surf_roi
     import matplotlib.pyplot as plt
 
-    plot_surf_roi(fsaverage.pial_left, parcellation,
+    plot_surf_roi(fsaverage.pial_left, left_parcellation,
                   bg_map=fsaverage.sulc_left, bg_on_data=True, darkness=.5)
     plt.show()
     """
@@ -402,7 +402,7 @@ if __name__ == '__main__':
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    scene.zoom(1.6)
+    #scene.zoom(1.6)
 
     #window.show(scene)
 
