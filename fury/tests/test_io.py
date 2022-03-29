@@ -38,6 +38,7 @@ def test_save_and_load_polydata():
     npt.assert_raises(IOError, save_polydata, PolyData(), "test.vti")
     npt.assert_raises(IOError, save_polydata, PolyData(), "test.obj")
     npt.assert_raises(IOError, load_polydata, "test.vti")
+    npt.assert_raises(FileNotFoundError, load_polydata, "does-not-exist.obj")
 
 
 def test_save_and_load_options():
