@@ -43,7 +43,7 @@ label_actor = actor.label(text='Test')
 directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
-fury_actor = actor.cube(centers, directions, colors, heights=radii)
+fury_actor = actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
