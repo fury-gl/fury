@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.abspath('./ext'))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '2.1'
+needs_sphinx = '4.3'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -69,7 +69,6 @@ numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 import ablog
 templates_path = ['_templates', ablog.get_html_templates_path(), ]
-
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -313,10 +312,11 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'matplotlib': ('https://matplotlib.org', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'dipy': ('https://dipy.org/documentation/latest',
              'https://dipy.org/documentation/latest/objects.inv/'),
+    'scikit-learn': ('https://scikit-learn.org/stable/', None),
 }
