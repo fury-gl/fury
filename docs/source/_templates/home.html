@@ -77,6 +77,9 @@
             <div id="navbar-menu" class="navbar-menu is-static">
 
                 <div class="navbar-end">
+                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                        Installation
+                    </a>
                     <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
                         Demos
                     </a>
@@ -162,28 +165,27 @@
         <div class="container">
             <h1 class="gallery-title">FURY in action</h1>
             <div class="gallery-box-container">
-                <a class="gallery-box-content gallery-underline">
+                <div class="gallery-box-content gallery-underline">
                     <div class="gallery-box-title">Shaders</div>
                     <img src="_static/images/horse.gif" alt="">
                     <div class="gallery-box-text">Shaders are simple programs that describe the traits of either a
                         vertex or a pixel. Vertex shaders describe the attributes (position, texture coordinates,
                         colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth and alpha
-                        value) of a pixel. A vertex shader is called for each vertex in a primitive (possibly after
-                        tessellation)</div>
-                </a>
-                <a class="gallery-box-content gallery-underline">
+                        value) of a pixel.</div>
+                    </div>
+                <div class="gallery-box-content gallery-underline">
                     <div class="gallery-box-title">Physical based rendering</div>
                     <img src="_static/images/physical.gif" alt="">
                     <div class="gallery-box-text">Physically based rendering (PBR) is a computer graphics approach that seeks to render images in a way that models the flow of light in the real world. Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular reflection in FURY.</div>
-                </a>
-                <a class="gallery-box-content gallery-underline">
+                </div>
+                <div class="gallery-box-content gallery-underline">
                     <div class="gallery-box-title">large networks</div>
                     <img src="_static/images/4.gif" alt="">
                     <div class="gallery-box-text">A large network can be visualized by presenting its interesting parts
                         preferably combined with one or several 'maps' in a multiview display. The main view displays a
                         selected part in details, while the 'maps' provide the user with information about the position
                         of the part inside the network.</div>
-                </a>
+                    </div>
             </div>
         </div>
     </section>
@@ -214,7 +216,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-xs-12 col-sm-7">
-                        <h2 class="component-promotions__title">Latest from Fury</h2>
+                        <h2 class="component-promotions__title"><a href="/blog.html" class="news-title">Latest from Fury</a></h2>
                     </div>
                 </div>
             </div>
@@ -433,16 +435,12 @@
     </div>
 
 
-
-    <div class="news-container">
+    <!-- <div class="news-container">
         <div class="news-title"><a href="/news"> Scientific Python Hugo theme released!</a></div>
 
         <div class="news-date"><a href="/news">2021-10-18</a></div>
 
-    </div>
-
-
-
+    </div> -->
 
 
 
@@ -502,23 +500,38 @@
 
                         <table>
                             <tr class="highlight-th">
-                                <td class="bold-text">Quantum Computing</td>
-                                <td class="bold-text">Statistical Computing</td>
-                                <td class="bold-text">Signal Processing</td>
-                                <td class="bold-text">Image Processing</td>
-                                <td class="bold-text">Graphs and Networks</td>
-                                <td class="bold-text">Astronomy Processes</td>
-                                <td class="bold-text">Cognitive Psychology</td>
+                                <td class="bold-text">Engineering</td>
+                                <td class="bold-text">Physics</td>
+                                <td class="bold-text">Chemistry</td>
+                                <td class="bold-text">Astronomy</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="images/sc-dom/quantum_computing.svg" alt=""></td>
-                                <td><img class="cell-layout" src="images/sc-dom/statistical_computing.svg" alt="">
+                                <td><img class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/physics.svg" alt="">
                                 </td>
-                                <td><img class="cell-layout" src="images/sc-dom/signal_processing.svg" alt=""></td>
-                                <td><img class="cell-layout" src="images/sc-dom/image_processing.svg" alt=""></td>
-                                <td><img class="cell-layout" src="images/sc-dom/sd6.svg" alt=""></td>
-                                <td><img class="cell-layout" src="images/sc-dom/astronomy_processes.svg" alt=""></td>
-                                <td><img class="cell-layout" src="images/sc-dom/cognitive_psychology.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
+                            </tr>
+                            <tr class="highlight-th">
+                                <td class="bold-text">Aerospace</td>
+                                <td class="bold-text">Biology</td>
+                                <td class="bold-text">Data science</td>
+                                <td class="bold-text">Network science</td>  
+                            </tr>
+                            <tr>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/biology.svg" alt="">
+                                </td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
+                            </tr>
+                            <tr class="highlight-th">
+                                <td class="bold-text">Mathematics</td>
+                            </tr>
+                            <tr>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
+                                <td class="bold-text">and</td>
+                                <td class="bold-text">many more ...</td>
                             </tr>
 
                         </table>
@@ -556,8 +569,8 @@
                         </div>
                         <ul class="link-list">
                             <li class="link-list">
-                                <a class="footer-link" href="https://discuss.scientific-python.org">
-                                    Scientific Python Forum
+                                <a class="footer-link" href="https://dipy.org/">
+                                    DIPY
                                 </a>
                             </li>
                         </ul>
@@ -570,8 +583,8 @@
                         <ul class="link-list">
                             <li class="link-list">
                                 <a class="footer-link"
-                                    href="https://github.com/scientific-python/scientific-python-hugo-theme">
-                                    Theme GitHub
+                                    href="https://heliosnetwork.io/">
+                                    Helios
                                 </a>
                             </li>
                         </ul>
@@ -590,9 +603,9 @@
 
                     <nav class="level is-mobile">
                         <div class="social-media-icons">
-                            <a class="level-item" href="https://github.com/scientific-python/"
-                                aria-label="https://github.com/scientific-python/">
-                                <span class="icon"><i class="fab fa-github"></i></span>
+                            <a class="level-item" href="https://github.com/fury-gl/fury"
+                                aria-label="https://github.com/fury-gl/fury">
+                                <span class="icon"><i class="fab fa-github-alt" style="color: white;"></i></span>
                             </a>
                         </div>
                     </nav>

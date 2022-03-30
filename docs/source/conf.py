@@ -200,7 +200,8 @@ html_logo = 'logo.svg'
 #     ]
 # }
 html_sidebars = {
-    "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
+    # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
+    "**": ["search-field", 'globaltoc.html']
 }
 # html_sidebars = {
 #     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],

@@ -12,6 +12,7 @@
     justify-content: center;
     letter-spacing: 1.5px;
     font-size: 27px;
+    font-weight: bold;
 }
 
 .gallery-box-container {
@@ -36,6 +37,8 @@
     margin: 15px;
     font-size: 16px;
     text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
 }
 
 .gallery-box-text {

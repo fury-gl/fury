@@ -26,6 +26,11 @@
     margin: 15px auto;
 }
 
+.scientific-domains > table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .uk-tab > li {
     padding: 0 10px;
 }
@@ -118,6 +123,7 @@ img.cell-layout {
     display: block;
     margin-left: auto;
     margin-right: auto;
+    filter: invert(11%) sepia(86%) saturate(4861%) hue-rotate(10deg) brightness(84%) contrast(121%);
 }
 
 td.center-text {

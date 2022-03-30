@@ -7035,7 +7035,8 @@ body #backtotop a {
 #backtotop a:after {
   outline: none;
   content: "\f106";
-  font-family: "FontAwesome";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
   position: relative;
   display: block;
   top: 50%;
