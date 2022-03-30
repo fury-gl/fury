@@ -1,11 +1,13 @@
-
 import numpy as np
 import numpy.testing as npt
+
 
 from fury import actor, window
 from fury.shaders import (shader_to_actor, add_shader_callback,
                           attribute_to_actor, replace_shader_in_actor)
-from fury.lib import numpy_support
+from fury.lib import (Actor, CellArray, Points, PolyData, PolyDataMapper,
+                      numpy_support)
+from fury.utils import set_polydata_colors
 
 
 vertex_dec = \
@@ -44,6 +46,52 @@ vertex_impl = \
     myVertexMC.xyz = rotate(vertexMC.xyz, ax, time*0.01);
         vertexVCVSOutput = MCVCMatrix * myVertexMC;
         gl_Position = MCDCMatrix * myVertexMC;
+    """
+
+geometry_code = \
+    """
+    //VTK::System::Dec
+    //VTK::PositionVC::Dec
+    uniform mat4 MCDCMatrix;
+    
+    //VTK::PrimID::Dec
+    
+    // declarations below aren't necessary because they are already injected 
+    // by PrimID template this comment is just to justify the passthrough below
+    //in vec4 vertexColorVSOutput[];
+    //out vec4 vertexColorGSOutput;
+    
+    //VTK::Color::Dec
+    //VTK::Normal::Dec
+    //VTK::Light::Dec
+    //VTK::TCoord::Dec
+    //VTK::Picking::Dec
+    //VTK::DepthPeeling::Dec
+    //VTK::Clip::Dec
+    //VTK::Output::Dec
+    
+    // Convert points to line strips
+    layout(points) in;
+    layout(triangle_strip, max_vertices = 4) out;
+    
+    void build_square(vec4 position)
+    {
+        gl_Position = position + vec4(-.5, -.5, 0, 0);  // 1: Bottom left
+        EmitVertex();
+        gl_Position = position + vec4(.5, -.5, 0, 0);  // 2: Bottom right
+        EmitVertex();
+        gl_Position = position + vec4(-.5, .5, 0, 0);  // 3: Top left
+        EmitVertex();
+        gl_Position = position + vec4(.5, .5, 0, 0);  // 4: Top right
+        EmitVertex();
+        EndPrimitive();
+    }
+    
+    void main()
+    {
+    vertexColorGSOutput = vertexColorVSOutput[0];
+    build_square(gl_in[0].gl_Position);
+    }
     """
 
 frag_dec = \
@@ -97,6 +145,39 @@ def generate_cube_with_effect():
     return cube
 
 
+def generate_points():
+    centers = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) * 255
+
+    vtk_vertices = Points()
+    # Create the topology of the point (a vertex)
+    vtk_faces = CellArray()
+    # Add points
+    for i in range(len(centers)):
+        p = centers[i]
+        id = vtk_vertices.InsertNextPoint(p)
+        vtk_faces.InsertNextCell(1)
+        vtk_faces.InsertCellPoint(id)
+    # Create a polydata object
+    polydata = PolyData()
+    # Set the vertices and faces we created as the geometry and topology of the
+    # polydata
+    polydata.SetPoints(vtk_vertices)
+    polydata.SetVerts(vtk_faces)
+
+    set_polydata_colors(polydata, colors)
+
+    mapper = PolyDataMapper()
+    mapper.SetInputData(polydata)
+    mapper.SetVBOShiftScaleMethod(False)
+
+    point_actor = Actor()
+    point_actor.SetMapper(mapper)
+
+    return point_actor
+
+
 def test_shader_to_actor(interactive=False):
     cube = generate_cube_with_effect()
 
@@ -119,6 +200,33 @@ def test_shader_to_actor(interactive=False):
                       vertex_impl, block="error")
     npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
                       vertex_impl)
+
+
+def test_replace_shader_in_actor(interactive=False):
+    scene = window.Scene()
+    test_actor = generate_points()
+    scene.add(test_actor)
+    if interactive:
+        window.show(scene)
+    ss = window.snapshot(scene, size=(200, 200))
+    actual = ss[40, 140, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    actual = ss[140, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    actual = ss[40, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    scene.clear()
+    replace_shader_in_actor(test_actor, 'geometry', geometry_code)
+    scene.add(test_actor)
+    if interactive:
+        window.show(scene)
+    ss = window.snapshot(scene, size=(200, 200))
+    actual = ss[40, 140, :]
+    npt.assert_array_equal(actual, [255, 0, 0])
+    actual = ss[140, 40, :]
+    npt.assert_array_equal(actual, [0, 255, 0])
+    actual = ss[40, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 255])
 
 
 def test_add_shader_callback():
