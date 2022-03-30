@@ -185,7 +185,7 @@ html_css_files = [
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
 
-html_logo = 'logo.svg'
+html_logo = '_static/images/logo.svg'
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

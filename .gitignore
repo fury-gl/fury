@@ -99,3 +99,5 @@ target/
 *.nii.gz
 *.npy
 *.vtk
+*.png
+
