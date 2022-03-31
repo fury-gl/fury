@@ -1,13 +1,13 @@
 """Module that provide actors to render."""
 
 import warnings
-import os.path as op
 from functools import partial
 
 import numpy as np
 
-from fury.shaders import (load, shader_to_actor, attribute_to_actor,
-                          add_shader_callback, replace_shader_in_actor)
+from fury.shaders import (add_shader_callback, attribute_to_actor,
+                          get_shader_code, load, replace_shader_in_actor,
+                          shader_to_actor)
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
@@ -2192,30 +2192,11 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     bb_actor.GetProperty().BackfaceCullingOff()
     attribute_to_actor(bb_actor, big_centers, 'center')
 
-    def get_code(glsl_code):
-        code = ""
-        if not glsl_code:
-            return code
-
-        if not all(isinstance(i, str) for i in glsl_code):
-            raise IOError('The only supported format are string or filename,'
-                          'list of string or filename')
-
-        if isinstance(glsl_code, str):
-            code += '\n'
-            code += load(glsl_code) if op.isfile(glsl_code) else glsl_code
-            return code
-
-        for content in glsl_code:
-            code += '\n'
-            code += load(content) if op.isfile(content) else content
-        return code
-
-    vs_dec_code = get_code(vs_dec) + '\n' + load('billboard_dec.vert')
-    vs_impl_code = get_code(vs_impl) + '\n' + load('billboard_impl.vert')
-    gs_code = get_code(gs_prog)
-    fs_dec_code = get_code(fs_dec) + '\n' + load('billboard_dec.frag')
-    fs_impl_code = load('billboard_impl.frag') + '\n' + get_code(fs_impl)
+    vs_dec_code = load('billboard_dec.vert') + '\n' + get_shader_code(vs_dec)
+    vs_impl_code = get_shader_code(vs_impl) + '\n' + load('billboard_impl.vert')
+    gs_code = get_shader_code(gs_prog)
+    fs_dec_code = load('billboard_dec.frag') + '\n' + get_shader_code(fs_dec)
+    fs_impl_code = load('billboard_impl.frag') + '\n' + get_shader_code(fs_impl)
 
     shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
