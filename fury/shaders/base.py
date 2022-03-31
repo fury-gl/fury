@@ -4,6 +4,11 @@ from fury import enable_warnings
 from fury.lib import (numpy_support, Command, VTK_OBJECT,
                       calldata_type, DataObject, Shader)
 
+from os.path import join as pjoin, dirname, isfile
+
+
+SHADERS_DIR = pjoin(dirname(__file__))
+
 SHADERS_TYPE = {"vertex": Shader.Vertex, "geometry": Shader.Geometry,
                 "fragment": Shader.Fragment}
 
@@ -46,6 +51,31 @@ GL_NUMBERS = {
     "GL_ONE_MINUS_SRC_COLOR": 769,
     "GL_SRC_COLOR": 768
 }
+
+
+def get_shader_code(glsl_code):
+    code = ""
+    if not glsl_code:
+        return code
+
+    if not all(isinstance(i, str) for i in glsl_code):
+        raise IOError('The only supported format are string or filename,'
+                      'list of string or filename')
+
+    if isinstance(glsl_code, str):
+        code += '\n'
+        code += load(glsl_code) if isfile(glsl_code) else glsl_code
+        return code
+
+    for content in glsl_code:
+        code += '\n'
+        code += load(content) if isfile(content) else content
+    return code
+
+
+def load(filename):
+    with open(pjoin(SHADERS_DIR, filename)) as shader_file:
+        return shader_file.read()
 
 
 def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
