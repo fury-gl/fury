@@ -12,6 +12,7 @@
 
     <link rel="icon" type="image/png" href="images/favicon.png" />
     <link href="https://fonts.googleapis.com/css?family=Lato:400,900" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/pydata-sphinx-theme.css" />
     <link rel="stylesheet" type="text/css" href="_static/vendor/style.css" />
     <link rel="stylesheet" type="text/css" href="_static/vendor/icons.css" />
 
@@ -22,6 +23,7 @@
     <link rel="icon" href="images/favicon.ico" />
 
 
+    <link rel="stylesheet" href="_static/css/util.css" />
     <link rel="stylesheet" href="_static/vendor/vars.css" />
     <link rel="stylesheet" href="_static/vendor/styles.css" />
     <link rel="stylesheet" href="_static/vendor/content.css" />
@@ -99,7 +101,7 @@
     <nav id="navbar-clone" class="navbar is-fresh is-transparent" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
-                <a id="navbar-item" class="navbar-item" href="/">
+                <a id="navbar-item" class="navbar-item" href="index.html">
                     <img id="navbar-logo" src="_static/images/logo.svg" alt="%!s(&lt;nil&gt;) logo">
                     <div id="navbar-logo-text">FURY</div>
                 </a>
@@ -115,6 +117,9 @@
             <div id="cloned-navbar-menu" class="navbar-menu is-fixed">
 
                 <div class="navbar-end">
+                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                        Installation
+                    </a>
                     <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
                         Demos
                     </a>
@@ -141,7 +146,7 @@
                     <div class="flex-column">
 
                         <div class="hero-subtitle">
-                            A free and open source software library for scientific visualization and 3D animations.
+                            A free and open-source software library for Scientific Visualization & 3D animations.
                         </div>
 
 
@@ -197,8 +202,7 @@
     <div id="container">
         <header id="banner" class="wrapper">
             <div class="inner">
-                <h1 id="banner-title">
-                    </h2>
+                <h1 id="banner-title">Install FURY And Start Using It!</h1>
                     <div id="banner-start">
                         <span id="banner-start-command" class="txt-rotate" data-period="2000"
                             data-rotate='["pip install fury", "conda install -c conda-forge fury"]'></span>
@@ -208,7 +212,7 @@
     </div>
 
 
-    <div class="section section--promotions">
+    <!-- <div class="section section--promotions">
 
         <a name="latest-unity" id="latest-unity"></a>
 
@@ -432,7 +436,7 @@
             </div>
 
         </section>
-    </div>
+    </div> -->
 
 
     <!-- <div class="news-container">
@@ -440,12 +444,13 @@
 
         <div class="news-date"><a href="/news">2021-10-18</a></div>
 
-    </div> -->
+    </div>
 
 
 
     <section class="keyfeatures">
         <div class="container">
+            <h1 class="gallery-title">Features</h1>
             <div class="keyfeatures-box-container">
                 <div class="keyfeatures-box-content keyfeatures-underline">
                     <p>
@@ -476,7 +481,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> -->
 
 
 
@@ -488,12 +493,16 @@
 
 
 
-    <section class="tabs-section">
+    <section class="p-t-20 tabs-section">
         <div class="container">
             <!-- <h1 class="tabs-title">Scientific Domains</h1> -->
             <div class="uikit-tab-wrapper">
                 <ul class="uk-flex-center uk-nav" uk-tab>
                     <li class="uk-active"><a href="#">Scientific Domains</a></li>
+                    <li><a href="#">Physics Simulation</a></li>
+                    <li><a href="#">Molecular Dynamics</a></li>
+                    <li><a href="#">Neuroscience</a></li>
+                    <li><a href="#">Additional Features</a></li>
                 </ul>
                 <ul id="tabs-content" class="uk-switcher uk-margin">
                     <li class="scientific-domains">
@@ -516,7 +525,7 @@
                                 <td class="bold-text">Aerospace</td>
                                 <td class="bold-text">Biology</td>
                                 <td class="bold-text">Data science</td>
-                                <td class="bold-text">Network science</td>  
+                                <td class="bold-text">Network science</td>
                             </tr>
                             <tr>
                                 <td><img class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
@@ -535,6 +544,117 @@
                             </tr>
 
                         </table>
+                    </li>
+                    <li class="physics-simulation">
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div class="image-grid">
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_domino.gif" alt="physics domino" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_multi_actor.gif" alt="physics bricks" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_collision.gif" alt="physic collision" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/brownian_motion.gif" alt="brownian motion" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/em_wave.gif" alt="Em wave" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/helical_path.gif" alt="Helical path" align="middle"></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <p>FURY allows you to create easily  multiple physics animations.</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="molecular-dynamics">
+                        <div class="col-sm">
+                            <p class="txt-center">Some Molecular Dynamics applications using FURY.</p>
+                        </div>
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://furiousatoms.com/_static/images/fullerene_1.png" alt="fullrene Modellin" align="middle"></a>
+                                    </div>
+                                    <div class="row p-t-5">
+                                        <div class="col-sm">
+                                            <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_ribbons.gif" alt="Molecular Ribbon" align="middle"></a>
+                                        </div>
+                                        <div class="col-sm">
+                                            <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_surface.gif" alt="Molecular Surface" align="middle"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="neuroscience">
+                        <div class="col-sm">
+                            <p class="txt-center">Built with FURY: Neuroscience application examples </p>
+                        </div>
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div class="image-grid">
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/50577357/155691603-161e0546-f150-4389-badd-72e207a10063.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/9929496/115797697-82d5a100-a3a2-11eb-89b4-d9995930ce47.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://github.com/dipy/dipy_data/raw/master/AF_L_highlighted.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/dipy/dipy_data/raw/master/eudx_tracking.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/contour_from_roi_tutorial.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/slices.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="other-features">
+                        <div class="keyfeatures-box-container">
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Releases</div>
+                                    <div class="keyfeatures-box-text">Fury is a Python library available for scientific
+                                        visualization. The library is available via <a
+                                        href="https://pypi.org/project/fury/">PyPi</a> or Anaconda package system</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Free</div>
+                                    <div class="keyfeatures-box-text">FURY is totally free and it will be always free</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Community</div>
+                                    <div class="keyfeatures-box-text">Join FURY family <a
+                                        href="https://fury.gl/latest/community.html">here</a> and share your knowledge</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Easy to Use</div>
+                                    <div class="keyfeatures-box-text">FURY is designed to be really easy to use</div>
+                                </p>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
@@ -620,7 +740,7 @@
                         </a>
                         </div>
                     </nav>
-                    <div class="copyright">&copy; 2021 . All rights reserved.</div>
+                    <div class="copyright">&copy; {{copyright}}. All rights reserved.</div>
                 </div>
             </div>
         </div>
