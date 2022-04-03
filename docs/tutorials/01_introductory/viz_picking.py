@@ -9,7 +9,7 @@ Here we present a tutorial showing how to interact with objects in the
 FURY likes to bundle objects in a few actors to reduce code and
 increase speed.
 
-When the objects will be picked they will change size and color.
+When the objects are picked they will change size and color.
 """
 
 import numpy as np
