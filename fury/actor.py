@@ -1647,10 +1647,10 @@ def disk(centers, directions, colors, rinner=0.3,
         disk inner radius, default: 0.3
     router : float
         disk outer radius, default: 0.5
-    cresolution: int, default: 6
-        Number of facets used to define perimeter of disk.
-    rresolution: int, default: 2
-        Number of facets used radially.
+    cresolution: int, optional
+        Number of facets used to define perimeter of disk, default: 6
+    rresolution: int, optional
+        Number of facets used radially, default: 2
     vertices : ndarray, shape (N, 3)
         The point cloud defining the disk.
     faces : ndarray, shape (M, 3)
