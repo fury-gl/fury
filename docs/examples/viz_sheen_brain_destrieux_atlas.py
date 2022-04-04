@@ -11,7 +11,10 @@ from fury.utils import (get_actor_from_polydata, get_polydata_normals,
                         update_polydata_normals)
 from matplotlib import cm
 from nibabel import gifti
+from nibabel.nifti1 import Nifti1Image
 from nilearn import datasets, surface
+from nilearn.connectome import ConnectivityMeasure
+from nilearn.input_data import NiftiMapsMasker
 from time import time
 
 
@@ -105,21 +108,6 @@ def change_slice_aniso_z(slider):
 def change_slice_opacity(slider):
     global left_hemi_actor
     left_hemi_actor.GetProperty().SetOpacity(slider.value)
-
-
-def compute_background_colors(bg_data, bg_cmap='bone_r'):
-    bg_data_shape = bg_data.shape
-    bg_cmap = cm.get_cmap(bg_cmap)
-    bg_min = np.min(bg_data)
-    bg_max = np.max(bg_data)
-    bg_diff = bg_max - bg_min
-    bg_colors = np.empty((bg_data_shape[0], 3))
-    for i in range(bg_data_shape[0]):
-        # Normalize background data between [0, 1]
-        val = (bg_data[i] - bg_min) / bg_diff
-        bg_colors[i] = np.array(bg_cmap(val))[:3]
-    bg_colors *= 255
-    return bg_colors
 
 
 def compute_texture_colors(textures, max_val, min_val=None, cmap='gist_ncar'):
@@ -264,9 +252,6 @@ if __name__ == '__main__':
 
     fsaverage = datasets.fetch_surf_fsaverage()
 
-    # TODO: Find atlas compatible with high resolution mesh
-    #fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage')
-
     left_pial_mesh = surface.load_surf_mesh(fsaverage.pial_left)
     left_sulc_points = points_from_gzipped_gifti(fsaverage.sulc_left)
 
@@ -312,8 +297,7 @@ if __name__ == '__main__':
 
     left_nodes_actor = actor.sphere(left_coordinates, (1, 0, 0), opacity=.25)
     right_nodes_actor = actor.sphere(right_coordinates, (1, 0, 0), opacity=.25)
-
-    # TODO: Threshold edges and vertices
+    
     scene.add(left_nodes_actor)
     scene.add(right_nodes_actor)
 
@@ -324,12 +308,6 @@ if __name__ == '__main__':
 
     scene.add(edges_actor)
 
-    """
-    print('Computing background colors...')
-    t = time()
-    left_bg_colors = compute_background_colors(left_sulc_points)
-    print('Time: {}'.format(timedelta(seconds=time() - t)))
-    """
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
 
@@ -343,7 +321,7 @@ if __name__ == '__main__':
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     left_colors = left_tex_colors
-    #left_colors = np.hstack((left_tex_colors, left_opacities[:, np.newaxis]))
+    left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
@@ -368,8 +346,8 @@ if __name__ == '__main__':
         right_parcellation[:, np.newaxis], max_val, min_val=min_val)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    right_colors = np.hstack((right_tex_colors,
-                              right_opacities[:, np.newaxis]))
+    right_colors = right_tex_colors
+    right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
                                             colors=right_colors)
