@@ -42,7 +42,7 @@ import time
 from fury import actor, window
 from fury.stream.widget import Widget
 
-interactive = True 
+interactive = False 
 window_size = (720, 500)
 N = 4
 centers = np.random.normal(size=(N, 3))

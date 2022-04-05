@@ -27,7 +27,11 @@ pcs = set()
 
 async def index(request, **kwargs):
     folder = kwargs['folder']
-    content = open(os.path.join(folder, "index.html"), "r").read()
+    just_mjpeg = kwargs['just_mjpeg']
+    index_file = "index.html"
+    if just_mjpeg:
+        index_file = "index_mjpeg.html"
+    content = open(os.path.join(folder, index_file), "r").read()
     return web.Response(content_type="text/html", text=content)
 
 
@@ -249,8 +253,9 @@ def get_app(
     #         rtc_server=rtc_server,
     #     )
     # )
-    app.router.add_get("/", partial(index, folder=folder))
-    js_files = ['main.js', 'webrtc.js', 'constants.js']
+    app.router.add_get("/", partial(
+        index, folder=folder, just_mjpeg=rtc_server is None))
+    js_files = ['main.js', 'main_just_mjpeg.js', 'webrtc.js', 'constants.js', 'interaction.js']
     for js in js_files:
         app.router.add_get(
             "/js/%s" % js, partial(javascript, folder=folder, js=js))

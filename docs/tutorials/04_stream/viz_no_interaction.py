@@ -20,7 +20,7 @@ from fury.stream.server.main import web_server_raw_array
 
 if __name__ == '__main__':
 
-    interactive = True 
+    interactive = False 
     ###########################################################################
     # First we will set the resolution which it'll be used by the streamer
 

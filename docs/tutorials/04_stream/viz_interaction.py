@@ -51,7 +51,7 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    interactive = True 
+    interactive =  False 
     # `use_raw_array` is a flag to tell the server to use python RawArray
     # instead of SharedMemory which is a new feature in python 3.8
     # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array
