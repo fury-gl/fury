@@ -13,37 +13,35 @@ import platform
 from fury.stream.constants import _CQUEUE, PY_VERSION_8
 
 
-def callback_stream_client(*args, **kwargs):
+def callback_stream_client(stream_client):
     """This callback is used to update the image inside of
     the ImageManager instance
 
     Parameters
     ----------
-    args : args
-    kwargs : kwargs
+    stream_client : StreamClient 
 
     """
-    stream_client = kwargs['stream_client']
-    if stream_client._in_request:
+    if stream_client.in_request:
         return
-    stream_client._in_request = True
+    stream_client.in_request = True
     stream_client.window2image_filter.Update()
     stream_client.window2image_filter.Modified()
     vtk_image = stream_client.window2image_filter.GetOutput()
     vtk_array = vtk_image.GetPointData().GetScalars()
-    # num_components = vtk_array.GetNumberOfComponents()
 
     w, h, _ = vtk_image.GetDimensions()
     np_arr = np.frombuffer(vtk_array, dtype='uint8')
     if np_arr is None:
-        stream_client._in_request = False
+        stream_client.in_request = False
         return
 
     stream_client.img_manager.write_into(w, h, np_arr)
-    stream_client._in_request = False
+    stream_client.in_request = False
 
 
 class FuryStreamClient:
+    """This obj is responsible to create a StreamClient."""
     def __init__(
             self, showm,
             max_window_size=None,
@@ -51,8 +49,7 @@ class FuryStreamClient:
             whithout_iren_start=False,
             num_buffers=2,
     ):
-        """This obj is responsible to create a StreamClient.
-
+        """
         A StreamClient extracts a framebuffer from the OpenGL context
         and writes into a shared memory resource.
 
@@ -110,7 +107,7 @@ class FuryStreamClient:
         self._id_timer = None
         self._id_observer = None
         self._interval_timer = None
-        self._in_request = False
+        self.in_request = False
         self.update = True
         self.use_raw_array = use_raw_array
         self._started = False
@@ -129,6 +126,8 @@ class FuryStreamClient:
             using a threading technique.
 
         """
+        def callback_for_vtk(caller, event, *args, **kwargs):
+            callback_stream_client(**{"stream_client": kwargs["stream_client"]})
         use_asyncio = platform.system() == 'Windows' or use_asyncio
        
         if self._started:
@@ -141,36 +140,30 @@ class FuryStreamClient:
                 self._interval_timer = Interval(
                     ms/1000,
                     callback_stream_client,
-                    *[],
-                    **{'stream_client': self, 'force_render': False}
+                    **{'stream_client': self}
                 )
-            else:
-                def callback(caller, event, *args, **kwargs):
-                    callback_stream_client(*args, **kwargs)
+            else: 
                 self._id_observer = self.showm.iren.AddObserver(
                     "TimerEvent",
                     partial(
-                        callback,
-                        **{'stream_client': self, 'force_render': False}
+                        callback_for_vtk,
+                        **{'stream_client': self}
                     )
                 )
                 self._id_timer = self.showm.iren.CreateRepeatingTimer(ms)
-                # self.showm.window.AddObserver("TimerEvent", callback)
-                # id_timer = self.showm.window.CreateRepeatingTimer(ms)
-
         else:
             self._id_observer = self.showm.iren.AddObserver(
                 'RenderEvent',
                 partial(
-                    callback_stream_client,
-                    **{'stream_client': self, 'force_render': False}
+                    callback_for_vtk,
+                    **{'stream_client': self}
                 )
             )
         self.showm.window.Render()
         self.showm.iren.Render()
         self._started = True
         callback_stream_client(
-            None, None, **{'stream_client': self, 'force_render': False})
+            **{'stream_client': self})
 
     def stop(self):
         """Stop the stream client.
@@ -238,9 +231,6 @@ def interaction_callback(circular_queue, showm, iren, render_after):
 
     user_event_id = data[0]
     user_timestamp = data[_CQUEUE.index_info.user_timestamp]
-    logging.info(
-        'Interaction Callback: time to dequeue ' +
-        f'{ts-user_timestamp:.2f} ms')
 
     ts = time.time()*1000
     newX = int(showm.size[0]*data[_CQUEUE.index_info.x])
@@ -260,11 +250,6 @@ def interaction_callback(circular_queue, showm, iren, render_after):
         camera.SetFocalPoint(
             [pos2[i] + delta[i] for i in range(3)])
         camera.Zoom(zoomFactor)
-        # if data[1] < 0:
-        #     iren.MouseWheelForwardEvent()
-        # else:
-        #     iren.MouseWheelBackwardEvent()
-        # showm.window.Modified()
     elif user_event_id == event_ids.mouse_move:
         iren.SetEventInformation(
             newX, newY, ctrl_key, shift_key, chr(0), 0, None)
@@ -284,25 +269,20 @@ def interaction_callback(circular_queue, showm, iren, render_after):
             event_ids.right_btn_release: iren.RightButtonReleaseEvent,
         }
         mouse_actions[user_event_id]()
-        # showm.window.Modified()
     logging.info(
         'Interaction: time to peform event ' +
         f'{ts-user_timestamp:.2f} ms')
-    # maybe when the fury host rendering is disabled
-    # fury_client.window2image_filter.Update()
-    # fury_client.window2image_filter.Modified()
-    # this should be called if we are using
-    # renderevent attached to a vtkwindow instance
     if render_after:
         showm.window.Render()
         showm.iren.Render()
 
 
 class FuryStreamInteraction:
+    """This obj. is responsible to manage the user interaction"""
     def __init__(
             self, showm,  max_queue_size=50,
             use_raw_array=True, whithout_iren_start=False):
-        """This obj. is responsible to manage the user interaction
+        """
 
         Parameters
         ----------
