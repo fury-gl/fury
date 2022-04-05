@@ -17,7 +17,7 @@ from fury.stream import tools
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.constants import _CQUEUE
 from fury.stream.server.async_app import WEBRTC_AVAILABLE, set_mouse, set_weel, set_mouse_click
-from fury.stream.server.server import RTCServer, web_server, web_server_raw_array
+from fury.stream.server.main import RTCServer, web_server, web_server_raw_array
 from fury.stream.widget import Widget, check_port_is_available
 
 
@@ -179,7 +179,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
     ms_stream = 0
     # creates a context whithout opencv
     with mock.patch.dict(sys.modules, {'pyximport': None}):
-        reload(sys.modules["fury.stream.server.server"])
+        reload(sys.modules["fury.stream.server.main"])
         width_0 = 100
         height_0 = 200
 
@@ -229,7 +229,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
         stream.stop()
         stream.cleanup()
 
-    reload(sys.modules["fury.stream.server.server"])
+    reload(sys.modules["fury.stream.server.main"])
 
 
 def test_client_and_buffer_manager():
