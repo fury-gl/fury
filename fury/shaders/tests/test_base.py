@@ -1,12 +1,15 @@
 import numpy as np
 import numpy.testing as npt
+import os
+import pytest
 
 
 from fury import actor, window
-from fury.shaders import (shader_to_actor, add_shader_callback,
-                          attribute_to_actor, replace_shader_in_actor)
-from fury.lib import (Actor, CellArray, Points, PolyData, PolyDataMapper,
-                      numpy_support)
+from fury.shaders import (add_shader_callback, attribute_to_actor, load,
+                          shader_to_actor, replace_shader_in_actor)
+from fury.shaders.base import SHADERS_DIR
+from fury.lib import (Actor, CellArray, ConeSource, Points, PolyData,
+                      PolyDataMapper, numpy_support)
 from fury.utils import set_polydata_colors
 
 
@@ -136,6 +139,15 @@ frag_impl = \
     """
 
 
+def generate_cone():
+    cone_src = ConeSource()
+    cone_mapper = PolyDataMapper()
+    cone_mapper.SetInputConnection(cone_src.GetOutputPort())
+    cone_actor = Actor()
+    cone_actor.SetMapper(cone_mapper)
+    return cone_actor
+
+
 def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
     shader_to_actor(cube, "vertex", impl_code=vertex_impl,
@@ -178,57 +190,6 @@ def generate_points():
     return point_actor
 
 
-def test_shader_to_actor(interactive=False):
-    cube = generate_cube_with_effect()
-
-    scene = window.Scene()
-    scene.add(cube)
-    if interactive:
-        scene.add(actor.axes())
-        window.show(scene)
-
-    arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr)
-    npt.assert_equal(report.objects, 1)
-
-    # test errors
-    npt.assert_raises(ValueError, shader_to_actor, cube, "error",
-                      vertex_impl)
-    npt.assert_raises(ValueError, shader_to_actor, cube, "geometry",
-                      vertex_impl)
-    npt.assert_raises(ValueError, shader_to_actor, cube, "vertex",
-                      vertex_impl, block="error")
-    npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
-                      vertex_impl)
-
-
-def test_replace_shader_in_actor(interactive=False):
-    scene = window.Scene()
-    test_actor = generate_points()
-    scene.add(test_actor)
-    if interactive:
-        window.show(scene)
-    ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
-    npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[140, 40, :]
-    npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[40, 40, :]
-    npt.assert_array_equal(actual, [0, 0, 0])
-    scene.clear()
-    replace_shader_in_actor(test_actor, 'geometry', geometry_code)
-    scene.add(test_actor)
-    if interactive:
-        window.show(scene)
-    ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
-    npt.assert_array_equal(actual, [255, 0, 0])
-    actual = ss[140, 40, :]
-    npt.assert_array_equal(actual, [0, 255, 0])
-    actual = ss[40, 40, :]
-    npt.assert_array_equal(actual, [0, 0, 255])
-
-
 def test_add_shader_callback():
     cube = generate_cube_with_effect()
     showm = window.ShowManager()
@@ -263,6 +224,60 @@ def test_add_shader_callback():
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
 
+    cone_actor = generate_cone()
+
+    test_values = []
+
+    def callbackLow(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(0)
+
+    id_observer = add_shader_callback(cone_actor, callbackLow, 0)
+
+    with pytest.raises(Exception):
+        add_shader_callback(cone_actor, callbackLow, priority='str')
+
+    mapper = cone_actor.GetMapper()
+    mapper.RemoveObserver(id_observer)
+
+    scene = window.Scene()
+    scene.add(cone_actor)
+
+    arr1 = window.snapshot(scene, size=(200, 200))
+    assert len(test_values) == 0
+
+    test_values = []
+
+    def callbackHigh(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(999)
+
+    def callbackMean(_caller, _event, calldata=None):
+        program = calldata
+        if program is not None:
+            test_values.append(500)
+
+    add_shader_callback(cone_actor, callbackHigh, 999)
+    add_shader_callback(cone_actor, callbackLow, 0)
+
+    id_mean = add_shader_callback(cone_actor, callbackMean, 500)
+
+    # check the priority of each call
+    arr2 = window.snapshot(scene, size=(200, 200))
+    assert np.abs([
+        test_values[0] - 999, test_values[1] - 500,
+        test_values[2] - 0]).sum() == 0
+
+    # check if the correct observer was removed
+    mapper.RemoveObserver(id_mean)
+    test_values = []
+
+    arr3 = window.snapshot(scene, size=(200, 200))
+    assert np.abs([
+        test_values[0] - 999, test_values[1] - 0]).sum() == 0
+
 
 def test_attribute_to_actor():
     cube = generate_cube_with_effect()
@@ -272,3 +287,67 @@ def test_attribute_to_actor():
 
     arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
     npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))
+
+
+def test_load():
+    dummy_file_name = 'dummy.txt'
+    dummy_file_contents = 'This is some dummy text.'
+
+    dummy_file = open(os.path.join(SHADERS_DIR, dummy_file_name), 'w')
+    dummy_file.write(dummy_file_contents)
+    dummy_file.close()
+
+    npt.assert_string_equal(load(dummy_file_name), dummy_file_contents)
+
+    os.remove(os.path.join(SHADERS_DIR, dummy_file_name))
+
+
+def test_replace_shader_in_actor(interactive=False):
+    scene = window.Scene()
+    test_actor = generate_points()
+    scene.add(test_actor)
+    if interactive:
+        window.show(scene)
+    ss = window.snapshot(scene, size=(200, 200))
+    actual = ss[40, 140, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    actual = ss[140, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    actual = ss[40, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 0])
+    scene.clear()
+    replace_shader_in_actor(test_actor, 'geometry', geometry_code)
+    scene.add(test_actor)
+    if interactive:
+        window.show(scene)
+    ss = window.snapshot(scene, size=(200, 200))
+    actual = ss[40, 140, :]
+    npt.assert_array_equal(actual, [255, 0, 0])
+    actual = ss[140, 40, :]
+    npt.assert_array_equal(actual, [0, 255, 0])
+    actual = ss[40, 40, :]
+    npt.assert_array_equal(actual, [0, 0, 255])
+
+
+def test_shader_to_actor(interactive=False):
+    cube = generate_cube_with_effect()
+
+    scene = window.Scene()
+    scene.add(cube)
+    if interactive:
+        scene.add(actor.axes())
+        window.show(scene)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 1)
+
+    # test errors
+    npt.assert_raises(ValueError, shader_to_actor, cube, "error",
+                      vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, "geometry",
+                      vertex_impl)
+    npt.assert_raises(ValueError, shader_to_actor, cube, "vertex",
+                      vertex_impl, block="error")
+    npt.assert_raises(ValueError, replace_shader_in_actor, cube, "error",
+                      vertex_impl)
