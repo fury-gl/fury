@@ -33,7 +33,7 @@ For this example your python version should be 3.8 or greater
 
 """
 
-from fury.stream.server.server import WEBRTC_AVAILABLE
+from fury.stream.server.main import WEBRTC_AVAILABLE
 from fury import actor, window
 import numpy as np
 
@@ -41,7 +41,7 @@ import multiprocessing
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
-from fury.stream.server import web_server, web_server_raw_array
+from fury.stream.server.main import web_server, web_server_raw_array
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 try:
     import aiortc
@@ -51,7 +51,7 @@ except ImportError:
 
 
 if __name__ == '__main__':
-    interactive = False
+    interactive = True 
     # `use_raw_array` is a flag to tell the server to use python RawArray
     # instead of SharedMemory which is a new feature in python 3.8
     # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array

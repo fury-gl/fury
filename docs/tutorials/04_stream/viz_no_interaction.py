@@ -16,11 +16,11 @@ import numpy as np
 # Then let's download some available datasets.
 
 from fury.data.fetcher import fetch_viz_wiki_nw
-from fury.stream.server import web_server_raw_array
+from fury.stream.server.main import web_server_raw_array
 
 if __name__ == '__main__':
 
-    interactive = False
+    interactive = True 
     ###########################################################################
     # First we will set the resolution which it'll be used by the streamer
 
