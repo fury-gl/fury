@@ -701,7 +701,10 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     az_ang : float, optional
         Azimuthal angle of camera rotation.
     magnification : int, optional
-        How much to magnify the saved frame. Default is 1.
+        How much to magnify the saved frame. Default is 1. A value greater
+        than 1 increases the quality of the image. However, the output
+        size will be larger. For example, 200x200 image with magnification
+        of 2 will be a 400x400 image.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     screen_clip: bool
@@ -737,9 +740,11 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = Renderer()
+        scene = Scene()
 
     renWin = RenderWindow()
+
+    renWin.SetOffScreenRendering(1)
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])

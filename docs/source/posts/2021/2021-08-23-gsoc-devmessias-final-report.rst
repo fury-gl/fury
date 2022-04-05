@@ -1,4 +1,4 @@
-Google Summer of Code 2021 - Final Report - Bruno Messias  
+Google Summer of Code 2021 - Final Report - Bruno Messias
 =========================================================
 
 .. post:: August 23 2021
@@ -187,7 +187,7 @@ The GIF below shows how the network layout through IPC behaved before
 these modification
 
 .. raw:: html
-   
+
    <center>
    <img src="https://user-images.githubusercontent.com/6979335/125310065-a3a9f480-e308-11eb-98d9-0ff5406a0e96.gif"/>
    </center>
@@ -196,9 +196,9 @@ below, you can see how after those modifications the visual aspect is
 better.
 
 .. raw:: html
-   
+
    <center>
-   <img alt="..." height="300" 
+   <img alt="..." height="300"
    src="https://user-images.githubusercontent.com/6979335/126175583-c7d85f0a-3d0c-400e-bbdd-4cbcd2a36fed.gif"/>
    </center>
 
@@ -227,6 +227,7 @@ The Helios Logo which was developed by
 Filipi Nascimento.
 
 .. raw:: html
+
    <img alt="Helios Network Logo" height="100" src="https://fury-gl.github.io/helios-website/_images/logo.png"/>
 
 *Pull Requests:*
@@ -276,89 +277,89 @@ Filipi Nascimento.
 Timeline
 --------
 
-+----------+-----------------------------+-----------------------------+
-| Date     | Description                 | Blog Link                   |
-+==========+=============================+=============================+
-| Week     | Welcome to my weekly Blogs! | `Weekly Check-in            |
-| 1(08-    |                             | #1 <https://blogs.python-   |
-| 06-2021) |                             | gsoc.org/en/demvessiass-blo |
-|          |                             | g/weekly-check-in-1-21/>`__ |
-+----------+-----------------------------+-----------------------------+
-| Week     | Post #1: A Stadia-like      | `Weekly Check-in            |
-| 2(14-    | system for data             | #                           |
-| 06-2021) | visualization               | 2 <https://blogs.python-gso |
-|          |                             | c.org/en/demvessiass-blog/p |
-|          |                             | ost-1-a-stadia-like-system- |
-|          |                             | for-data-visualization/>`__ |
-+----------+-----------------------------+-----------------------------+
-| Week     | 2d and 3d fake impostors    | `Weekly Check-in            |
-| 3(21-    | marker; fine-tunning        | #3 <https://blogs.python-   |
-| 06-2021) | open-gl state; Shared       | gsoc.org/en/demvessiass-blo |
-|          | Memory support for the      | g/weekly-check-in-3-15/>`__ |
-|          | streaming system;           |                             |
-|          | first-version of helios:    |                             |
-|          | the network visualization   |                             |
-|          | lib for helios              |                             |
-+----------+-----------------------------+-----------------------------+
-| Week     | Post #2: SOLID, monkey      | `Weekly Check-in            |
-| 4(28-    | patching a python issue and | #4                          |
-| 06-2020) | network layouts through     |  <https://blogs.python-gsoc |
-|          | WebRTC                      | .org/en/demvessiass-blog/po |
-|          |                             | st-2-solid-monkey-patching- |
-|          |                             | a-python-issue-and-network- |
-|          |                             | layouts-through-webrtc/>`__ |
-+----------+-----------------------------+-----------------------------+
-| Week     | Code refactoring; 2d        | `Weekly Check-in            |
-| 5(05-    | network layouts for Helios; | #5 <https://blogs.python-   |
-| 07-2021) | Implemented the Minimum     | gsoc.org/en/demvessiass-blo |
-|          | distortion embedding        | g/weekly-check-in-5-14/>`__ |
-|          | algorithm using the IPC     |                             |
-|          | approach                    |                             |
-+----------+-----------------------------+-----------------------------+
-| Week     | Post #3: Network layout     | `Weekly Check-in            |
-| 6(12-    | algorithms using IPC        | #6 <https://blogs.py        |
-| 07-2020) |                             | thon-gsoc.org/en/demvessias |
-|          |                             | s-blog/post-3-network-layou |
-|          |                             | t-algorithms-using-ipc/>`__ |
-+----------+-----------------------------+-----------------------------+
-| Week     | Helios IPC network layout   | `eekly Check-in             |
-| 7(19-    | algorithms support for      | #7 <https://blogs.python-   |
-| 07-2020) | MacOs; Smooth animations    | gsoc.org/en/demvessiass-blo |
-|          | for IPC layouts;            | g/weekly-check-in-7-14/>`__ |
-|          | ForceAtlas2 network layout  |                             |
-|          | using cugraph/cuda          |                             |
-+----------+-----------------------------+-----------------------------+
-| Week     | Helios CI, Helios           | `Weekly Check-in            |
-| 8(26-    | documentation               | #8 <https://blogs.python    |
-| 07-2020) |                             | -gsoc.org/en/demvessiass-bl |
-|          |                             | og/weekly-check-in-8-9/>`__ |
-+----------+-----------------------------+-----------------------------+
-| Week     | Helios documentation;       | `Weekly Check-in            |
-| 9(02-    | improved the examples and   | #9 <https://blogs.python-   |
-| 08-2020) | documentation of the WebRTC | gsoc.org/en/demvessiass-blo |
-|          | streaming system and made   | g/weekly-check-in-9-16/>`__ |
-|          | some improvements in the    |                             |
-|          | compatibility removing some |                             |
-|          | dependencies                |                             |
-+----------+-----------------------------+-----------------------------+
-| Week     | Helios documentation        | `Weekly Check-in            |
-| 10(09-   | improvements; found and     | #10 <https://blogs.python-g |
-| 08-2020) | fixed a bug in fury w.r.t.  | soc.org/en/demvessiass-blog |
-|          | the time management system; | /weekly-check-in-10-12/>`__ |
-|          | improved the memory         |                             |
-|          | management system for the   |                             |
-|          | network layout algorithms   |                             |
-|          | using IPC                   |                             |
-+----------+-----------------------------+-----------------------------+
-| Week     | Created a PR that allows    | `Weekly Check-in            |
-| 11(16-   | FURY to draw hundred of     | #11 <https://blogs.python-g |
-| 08-2020) | thousands of characters     | soc.org/en/demvessiass-blog |
-|          | without any expensive GPU;  | /weekly-check-in-11-13/>`__ |
-|          | fixed the flickering effect |                             |
-|          | on the streaming system;    |                             |
-|          | helios node labels feature; |                             |
-|          | finalizing remaining PRs    |                             |
-+----------+-----------------------------+-----------------------------+
++-----------------+-----------------------------+-----------------------------+
+| Date            | Description                 | Blog Link                   |
++=================+=============================+=============================+
+| Week 1          | Welcome to my weekly Blogs! | `Weekly Check-in            |
+| (08-06-2021)    |                             | #1 <https://blogs.python-   |
+|                 |                             | gsoc.org/en/demvessiass-blo |
+|                 |                             | g/weekly-check-in-1-21/>`__ |
++-----------------+-----------------------------+-----------------------------+
+| Week  2         | Post #1: A Stadia-like      | `Weekly Check-in            |
+| (14-06-2021)    | system for data             | #                           |
+|                 | visualization               | 2 <https://blogs.python-gso |
+|                 |                             | c.org/en/demvessiass-blog/p |
+|                 |                             | ost-1-a-stadia-like-system- |
+|                 |                             | for-data-visualization/>`__ |
++-----------------+-----------------------------+-----------------------------+
+| Week 3          | 2d and 3d fake impostors    | `Weekly Check-in            |
+| (21-06-2021)    | marker; fine-tunning        | #3 <https://blogs.python-   |
+|                 | open-gl state; Shared       | gsoc.org/en/demvessiass-blo |
+|                 | Memory support for the      | g/weekly-check-in-3-15/>`__ |
+|                 | streaming system;           |                             |
+|                 | first-version of helios:    |                             |
+|                 | the network visualization   |                             |
+|                 | lib for helios              |                             |
++-----------------+-----------------------------+-----------------------------+
+| Week 4          | Post #2: SOLID, monkey      | `Weekly Check-in            |
+| (28-06-2020)    | patching a python issue and | #4                          |
+|                 | network layouts through     | <https://blogs.python-gsoc  |
+|                 | WebRTC                      | .org/en/demvessiass-blog/po |
+|                 |                             | st-2-solid-monkey-patching- |
+|                 |                             | a-python-issue-and-network- |
+|                 |                             | layouts-through-webrtc/>`__ |
++-----------------+-----------------------------+-----------------------------+
+| Week 5          | Code refactoring; 2d        | `Weekly Check-in            |
+| (05-07-2021)    | network layouts for Helios; | #5 <https://blogs.python-   |
+|                 | Implemented the Minimum     | gsoc.org/en/demvessiass-blo |
+|                 | distortion embedding        | g/weekly-check-in-5-14/>`__ |
+|                 | algorithm using the IPC     |                             |
+|                 | approach                    |                             |
++-----------------+-----------------------------+-----------------------------+
+| Week 6          | Post #3: Network layout     | `Weekly Check-in            |
+| (12-07-2020)    | algorithms using IPC        | #6 <https://blogs.py        |
+|                 |                             | thon-gsoc.org/en/demvessias |
+|                 |                             | s-blog/post-3-network-layou |
+|                 |                             | t-algorithms-using-ipc/>`__ |
++-----------------+-----------------------------+-----------------------------+
+| Week 7          | Helios IPC network layout   | `Weekly Check-in            |
+| (19-07-2020)    | algorithms support for      | #7 <https://blogs.python-   |
+|                 | MacOs; Smooth animations    | gsoc.org/en/demvessiass-blo |
+|                 | for IPC layouts;            | g/weekly-check-in-7-14/>`__ |
+|                 | ForceAtlas2 network layout  |                             |
+|                 | using cugraph/cuda          |                             |
++-----------------+-----------------------------+-----------------------------+
+| Week 8          | Helios CI, Helios           | `Weekly Check-in            |
+| (26-07-2020)    | documentation               | #8 <https://blogs.python    |
+|                 |                             | -gsoc.org/en/demvessiass-bl |
+|                 |                             | og/weekly-check-in-8-9/>`__ |
++-----------------+-----------------------------+-----------------------------+
+| Week 9          | Helios documentation;       | `Weekly Check-in            |
+| (02-08-2020)    | improved the examples and   | #9 <https://blogs.python-   |
+|                 | documentation of the WebRTC | gsoc.org/en/demvessiass-blo |
+|                 | streaming system and made   | g/weekly-check-in-9-16/>`__ |
+|                 | some improvements in the    |                             |
+|                 | compatibility removing some |                             |
+|                 | dependencies                |                             |
++-----------------+-----------------------------+-----------------------------+
+| Week 10         | Helios documentation        | `Weekly Check-in            |
+| (09-08-2020)    | improvements; found and     | #10 <https://blogs.python-g |
+|                 | fixed a bug in fury w.r.t.  | soc.org/en/demvessiass-blog |
+|                 | the time management system; | /weekly-check-in-10-12/>`__ |
+|                 | improved the memory         |                             |
+|                 | management system for the   |                             |
+|                 | network layout algorithms   |                             |
+|                 | using IPC                   |                             |
++-----------------+-----------------------------+-----------------------------+
+| Week 11         | Created a PR that allows    | `Weekly Check-in            |
+| (16-08-2020)    | FURY to draw hundred of     | #11 <https://blogs.python-g |
+|                 | thousands of characters     | soc.org/en/demvessiass-blog |
+|                 | without any expensive GPU;  | /weekly-check-in-11-13/>`__ |
+|                 | fixed the flickering effect |                             |
+|                 | on the streaming system;    |                             |
+|                 | helios node labels feature; |                             |
+|                 | finalizing remaining PRs    |                             |
++-----------------+-----------------------------+-----------------------------+
 
 Detailed weekly tasks, progress and work done can be found
 `here <https://blogs.python-gsoc.org/en/demvessiass-blog/>`__.

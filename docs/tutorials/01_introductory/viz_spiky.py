@@ -11,7 +11,7 @@ import itertools
 
 ##############################################################################
 # Create a sphere actor. Define the center, radius and color of a sphere.
-# The sphere actor is made of points (vertices) evenly distributing on a
+# The sphere actor is made of points (vertices) evenly distributed on a
 # sphere.
 # Let's create a scene.
 
@@ -20,7 +20,7 @@ scene = window.Scene()
 ##############################################################################
 # The vertices are connected with triangles in order to specify the direction
 # of the surface normal.
-# ``prim_sphere`` provites a sphere with evenly distributed points
+# ``prim_sphere`` provides a sphere with evenly distributed points
 
 vertices, triangles = primitive.prim_sphere(name='symmetric362',
                                             gen_faces=False)
