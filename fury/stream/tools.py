@@ -64,9 +64,10 @@ def remove_shm_from_resource_tracker():
 
 
 class GenericMultiDimensionalBuffer(ABC):
+    """This implements a abstract (generic) multidimensional buffer."""
     def __init__(
             self, max_size=None, dimension=8):
-        """This implements a abstract (generic) multidimensional buffer.
+        """
 
         Parameters
         ----------
@@ -130,8 +131,9 @@ class GenericMultiDimensionalBuffer(ABC):
 
 
 class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
+    """This implements a  multidimensional buffer with RawArray."""
     def __init__(self, max_size, dimension=4, buffer=None):
-        """This implements a  multidimensional buffer with RawArray.
+        """
 
         Stream system uses that to implemenet the CircularQueue
         with shared memory resources.
@@ -175,9 +177,10 @@ class RawArrayMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
 
 class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
+    """This implements a generic multidimensional buffer
+        with SharedMemory."""
     def __init__(self, max_size, dimension=4, buffer_name=None):
-        """This implements a generic multidimensional buffer
-        with SharedMemory.
+        """
 
         Stream system uses that to implemenet the
         CircularQueue with shared memory resources.
@@ -262,11 +265,12 @@ class SharedMemMultiDimensionalBuffer(GenericMultiDimensionalBuffer):
 
 
 class GenericCircularQueue(ABC):
+    """This implements a generic circular queue which works with
+        shared memory resources."""
     def __init__(
             self, max_size=None, dimension=8,
             use_shared_mem=False, buffer=None, buffer_name=None):
-        """This implements a generic circular queue which works with
-        shared memory resources.
+        """
 
         Parameters
         ----------
@@ -373,11 +377,12 @@ class GenericCircularQueue(ABC):
 
 
 class ArrayCircularQueue(GenericCircularQueue):
+    """This implements a MultiDimensional Queue which works with
+        Arrays and RawArrays."""
     def __init__(
         self, max_size=10, dimension=6,
             head_tail_buffer=None, buffer=None):
-        """This implements a MultiDimensional Queue which works with
-        Arrays and RawArrays.
+        """
 
         Stream system uses that to implement user interactions
 
@@ -442,11 +447,12 @@ class ArrayCircularQueue(GenericCircularQueue):
 
 
 class SharedMemCircularQueue(GenericCircularQueue):
+    """This implements a MultiDimensional Queue which works with
+        SharedMemory."""
     def __init__(
         self, max_size=10, dimension=6,
             head_tail_buffer_name=None, buffer_name=None):
-        """This implements a MultiDimensional Queue which works with
-        SharedMemory.
+        """
 
         Stream system uses that to implemenet user interactions
 
@@ -544,10 +550,11 @@ class SharedMemCircularQueue(GenericCircularQueue):
 
 
 class GenericImageBufferManager(ABC):
+    """This implements a abstract (generic) ImageBufferManager with
+        the n-buffer techinique."""
     def __init__(
             self, max_window_size=None, num_buffers=2, use_shared_mem=False):
-        """This implements a abstract (generic) ImageBufferManager with
-        the n-buffer techinique.
+        """
 
         Parameters
         ----------
@@ -676,10 +683,11 @@ class GenericImageBufferManager(ABC):
 
 
 class RawArrayImageBufferManager(GenericImageBufferManager):
+    """This implements an ImageBufferManager using RawArrays."""
     def __init__(
             self, max_window_size=(100, 100), num_buffers=2,
             image_buffers=None, info_buffer=None):
-        """This implements an ImageBufferManager using RawArrays.
+        """
 
         Parameters
         ----------
@@ -753,11 +761,12 @@ class RawArrayImageBufferManager(GenericImageBufferManager):
 
 
 class SharedMemImageBufferManager(GenericImageBufferManager):
+    """This implements an ImageBufferManager using the
+        SharedMemory approach."""
     def __init__(
             self, max_window_size=(100, 100), num_buffers=2,
             image_buffer_names=None, info_buffer_name=None):
-        """This implements an ImageBufferManager using the
-        SharedMemory approach.
+        """
 
         Note
         -----
@@ -874,8 +883,11 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
 
 
 class IntervalTimerThreading:
+    """Implements a object with the same behavior of setInterval from Js
+    
+    """
     def __init__(self, seconds, callback, *args, **kwargs):
-        """Implements a object with the same behavior of setInterval from Js
+        """
 
         Parameters
         ----------
@@ -914,7 +926,6 @@ class IntervalTimerThreading:
         self.args = args
         self.kwargs = kwargs
         self.is_running = False
-        # self.next_call = time.time()
         self.start()
 
     def _run(self):
@@ -928,9 +939,6 @@ class IntervalTimerThreading:
             return
 
         self._timer = Timer(self.seconds, self._run)
-
-        # self.next_call += selfseconds.
-        # self._timer = Timer(self.next_call - time.time(), self._run)
         self._timer.daemon = True
         self._timer.start()
         self.is_running = True
@@ -941,15 +949,16 @@ class IntervalTimerThreading:
             return
 
         self._timer.cancel()
-        if self._timer.isAlive():
+        if self._timer.is_alive():
             self._timer.join()
         self.is_running = False
         self._timer = None
 
 
 class IntervalTimer:
+    """A object that creates a timer that calls a function periodically."""
     def __init__(self, seconds, callback, *args, **kwargs):
-        """A object that creates a timer that calls a function periodically.
+        """
 
         Parameters
         ----------
