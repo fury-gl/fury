@@ -5,7 +5,7 @@ matplotlib
 sphinx-copybutton
 sphinx-gallery>=0.10.0
 pillow
-sphinx_rtd_theme
+pydata-sphinx-theme
 networkx
 ablog >= 0.10.5
 pybullet>=2.7.0
