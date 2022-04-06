@@ -35,7 +35,6 @@ SHADERS_BLOCK = {
 # See [1] for a more extensive list of OpenGL constants
 # [1] https://docs.factorcode.org/content/vocab-opengl.gl.html
 GL_NUMBERS = {
-    "GL_SRC_ALPHA": 770,
     "GL_ONE": 1,
     "GL_ZERO": 0,
     "GL_BLEND": 3042,
@@ -54,26 +53,53 @@ GL_NUMBERS = {
 
 
 def get_shader_code(glsl_code):
+    """Retrieve GLSL shader code from a string, a file or a list of both.
+
+    Parameters
+    ----------
+    glsl_code : str (code or filename) or list of str (code or filenames).
+
+    Returns
+    -------
+    code : str
+        GLSL shader code.
+
+    """
     code = ""
     if not glsl_code:
         return code
 
     if not all(isinstance(i, str) for i in glsl_code):
-        raise IOError('The only supported format are string or filename,'
-                      'list of string or filename')
+        raise IOError('The only supported format are string, filename, list '
+                      'of string or filename.')
 
     if isinstance(glsl_code, str):
         code += '\n'
-        code += load(glsl_code) if isfile(glsl_code) else glsl_code
+        fname = pjoin(SHADERS_DIR, glsl_code)
+        code += load(glsl_code) if isfile(fname) else glsl_code
         return code
 
     for content in glsl_code:
         code += '\n'
-        code += load(content) if isfile(content) else content
+        fname = pjoin(SHADERS_DIR, content)
+        code += load(content) if isfile(fname) else content
     return code
 
 
 def load(filename):
+    """Load a Fury shader file.
+
+    Parameters
+    ----------
+    filename : str
+        Filename of the shader file.
+
+    Returns
+    -------
+    code: str
+        Shader code.
+
+    """
     with open(pjoin(SHADERS_DIR, filename)) as shader_file:
         return shader_file.read()
 
@@ -83,39 +109,37 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
                     replace_first=True, replace_all=False, debug=False):
     """Apply your own substitutions to the shader creation process.
 
-    A bunch of string replacements is applied to a shader template. Using this
-    function you can apply your own string replacements to add features you
-    desire
+    A set of string replacements is applied to a shader template. This
+    function let's apply custom string replacements.
 
     Parameters
     ----------
     actor : vtkActor
-        Object where you want to add the shader code.
+        Fury actor you want to set the shader code to.
     shader_type : str
         Shader type: vertex, fragment
     impl_code : str, optional
-        shader implementation code, should be a string or filename
+        Shader implementation code, should be a string or filename. Default
+        None.
     decl_code : str, optional
-        shader declaration code, should be a string or filename
-        by default None
+        Shader declaration code, should be a string or filename. Default None.
     block : str, optional
-        section name to be replaced. vtk use of heavy string replacments to
-        to insert shader and make it flexible. Each section of the shader
-        template have a specific name. For more informations:
+        Section name to be replaced. VTK use of heavy string replacements to
+        insert shader and make it flexible. Each section of the shader
+        template have a specific name. For more information:
         https://vtk.org/Wiki/Shaders_In_VTK. The possible values are:
         position, normal, light, tcoord, color, clip, camera, prim_id,
         valuepass. by default valuepass
     keep_default : bool, optional
-        keep the default block tag to let VTK replace it with its default
-        behavior. By default True
+        Keep the default block tag to let VTK replace it with its default
+        behavior. Default True.
     replace_first : bool, optional
-        If True, apply this change before the standard VTK replacements
-        by default True
+        If True, apply this change before the standard VTK replacements.
+        Default True.
     replace_all : bool, optional
         [description], by default False
     debug : bool, optional
-        introduce a small error to debug shader code.
-        by default False
+        Introduce a small error to debug shader code. Default False.
 
     """
     shader_type = shader_type.lower()
@@ -153,16 +177,16 @@ def shader_to_actor(actor, shader_type, impl_code="", decl_code="",
 
 
 def replace_shader_in_actor(actor, shader_type, code):
-    """Set and Replace the shader template with a new one.
+    """Set and replace the shader template with a new one.
 
     Parameters
     ----------
     actor : vtkActor
-        Object where you want to set the shader code.
+        Fury actor you want to set the shader code to.
     shader_type : str
-        Shader type: vertex, geometry, fragment
+        Shader type: vertex, geometry, fragment.
     code : str
-        new shader template code
+        New shader template code.
 
     """
     function_name = {
@@ -187,9 +211,9 @@ def add_shader_callback(actor, callback, priority=0.):
     Parameters
     ----------
     actor : vtkActor
-        Rendered Object
+        Fury actor you want to add the callback to.
     callback : callable
-        function or class that contains 3 parameters: caller, event, calldata.
+        Function or class that contains 3 parameters: caller, event, calldata.
         This callback will be trigger at each `UpdateShaderEvent` event.
     priority : float, optional
         Commands with a higher priority are called first.
@@ -254,8 +278,7 @@ def add_shader_callback(actor, callback, priority=0.):
     return id_observer
 
 
-def shader_apply_effects(
-        window, actor, effects, priority=0):
+def shader_apply_effects(window, actor, effects, priority=0):
     """This applies a specific opengl state (effect) or a list of effects just
     before the actor's shader is executed.
 
@@ -304,15 +327,15 @@ def attribute_to_actor(actor, arr, attr_name, deep=True):
     Parameters
     ----------
     actor : vtkActor
-        Rendered Object
+        Fury actor you want to add the vertex attribute to.
     arr : ndarray
-        array to link to vertices
+        Array to link to vertices.
     attr_name : str
-        vertex attribute name. the vtk array will take the same name as the
+        Vertex attribute name. The vtk array will take the same name as the
         attribute.
     deep : bool, optional
-        If True a deep copy is applied. Otherwise a shallow copy is applied,
-        by default True
+        If True a deep copy is applied, otherwise a shallow copy is applied.
+        Default True.
 
     """
     nb_components = arr.shape[1] if arr.ndim > 1 else arr.ndim

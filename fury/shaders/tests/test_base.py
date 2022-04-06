@@ -5,8 +5,9 @@ import pytest
 
 
 from fury import actor, window
-from fury.shaders import (add_shader_callback, attribute_to_actor, load,
-                          shader_to_actor, replace_shader_in_actor)
+from fury.shaders import (add_shader_callback, attribute_to_actor,
+                          get_shader_code, load, shader_to_actor,
+                          replace_shader_in_actor)
 from fury.shaders.base import SHADERS_DIR
 from fury.lib import (Actor, CellArray, ConeSource, Points, PolyData,
                       PolyDataMapper, numpy_support)
@@ -287,6 +288,39 @@ def test_attribute_to_actor():
 
     arr = cube.GetMapper().GetInput().GetPointData().GetArray('test_arr')
     npt.assert_array_equal(test_arr, numpy_support.vtk_to_numpy(arr))
+
+
+def test_get_shader_code():
+    str_test1 = 'Test1'
+    str_test2 = 'Test2'
+    fname_test1 = 'test1.glsl'
+    fname_test2 = 'test2.glsl'
+    pname_test1 = os.path.join(SHADERS_DIR, fname_test1)
+    pname_test2 = os.path.join(SHADERS_DIR, fname_test2)
+    with open(pname_test1, 'w') as f:
+        f.write(str_test1)
+    with open(pname_test2, 'w') as f:
+        f.write(str_test2)
+    list_str = [str_test1, str_test2]
+    list_fname = [fname_test1, fname_test2]
+    list_mix = [str_test1, fname_test2]
+    # Test str code
+    code = get_shader_code(str_test1)
+    npt.assert_equal(code, '\n' + str_test1)
+    # Test str fname
+    code = get_shader_code(fname_test1)
+    npt.assert_equal(code, '\n' + str_test1)
+    # Test list of str code
+    code = get_shader_code(list_str)
+    npt.assert_equal(code, '\n' + '\n'.join(list_str))
+    # Test list of str fname
+    code = get_shader_code(list_fname)
+    npt.assert_equal(code, '\n' + '\n'.join(list_str))
+    # Test list of str code and str fname
+    code = get_shader_code(list_mix)
+    npt.assert_equal(code, '\n' + '\n'.join(list_str))
+    os.remove(pname_test1)
+    os.remove(pname_test2)
 
 
 def test_load():
