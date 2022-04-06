@@ -297,6 +297,7 @@ if __name__ == '__main__':
 
     msdl_atlas_fname = msdl_atlas.maps
     msdl_labels = msdl_atlas.labels
+    num_labels = len(msdl_labels)
     msdl_coords = msdl_atlas.region_coords
     msdl_networks = msdl_atlas.networks
     msdl_unique_networks = np.unique(msdl_networks)
@@ -383,11 +384,52 @@ if __name__ == '__main__':
     correlation_measure = ConnectivityMeasure(kind='correlation')
     correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
-    nodes_colors = np.empty((len(msdl_networks), 3))
+    """
+    from nilearn.plotting import plot_connectome
+    import matplotlib.pyplot as plt
+    plot_connectome(correlation_matrix, msdl_coords, colorbar=True)
+    plt.show()
+    """
+
+    edges_coords = []
+    edges_colors = []
+    show_nodes = [False] * num_labels
+    max_val = np.max(np.abs(correlation_matrix[~np.eye(num_labels,
+                                                       dtype=bool)]))
+    thr = .45
+    cmap = cm.get_cmap('RdYlGn')
+    for i in range(num_labels):
+        for j in range(i + 1, num_labels):
+            if correlation_matrix[i, j] > thr:
+                show_nodes[i] = True
+                show_nodes[j] = True
+                edges_coords.append([msdl_coords[i], msdl_coords[j]])
+                val = (correlation_matrix[i, j] + max_val) / (2 * max_val)
+                edges_colors.append(cmap(val)[:3])
+            elif correlation_matrix[i, j] < -thr:
+                show_nodes[i] = True
+                show_nodes[j] = True
+                edges_coords.append([msdl_coords[i], msdl_coords[j]])
+                val = (correlation_matrix[i, j] + max_val) / (2 * max_val)
+                edges_colors.append(cmap(val)[:3])
+    edges_coords = np.array(edges_coords)
+    edges_colors = np.array(edges_colors)
+
+    edges_actor = actor.streamtube(edges_coords, edges_colors, linewidth=.5)
+
+    scene.add(edges_actor)
+
+    node_coords = []
+    nodes_colors = []
     for idx, net in enumerate(msdl_networks):
-        net_idx = np.where(msdl_unique_networks == net)[0][0]
-        nodes_colors[idx] = msdl_networks_colors[net_idx]
-    nodes_actor = actor.sphere(msdl_coords, nodes_colors, opacity=1)
+        if show_nodes[idx]:
+            net_idx = np.where(msdl_unique_networks == net)[0][0]
+            node_coords.append(msdl_coords[idx])
+            nodes_colors.append(msdl_networks_colors[net_idx])
+    node_coords = np.array(node_coords)
+    nodes_colors = np.array(nodes_colors)
+
+    nodes_actor = actor.sphere(node_coords, nodes_colors, radii=2)
 
     scene.add(nodes_actor)
 
@@ -410,7 +452,7 @@ if __name__ == '__main__':
                                        bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    # left_colors = left_tex_colors
+    #left_colors = left_tex_colors
     left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
@@ -460,7 +502,9 @@ if __name__ == '__main__':
     scene.add(left_hemi_actor)
     scene.add(right_hemi_actor)
 
-    view = 'top left'
+    view = 'dorsal'
+    if view == 'dorsal':
+        pass
     if view == 'left lateral':
         # rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
         # rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
