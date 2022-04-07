@@ -5,16 +5,12 @@ from fury.io import load_cubemap_texture
 from fury.lib import ImageData, PolyData, Texture, numpy_support
 from fury.material import manifest_principled
 from fury.utils import (get_actor_from_polydata, get_polydata_normals,
-                        normals_from_v_f, rotate,
-                        set_polydata_colors, set_polydata_normals,
-                        set_polydata_triangles, set_polydata_vertices,
-                        update_polydata_normals)
+                        normals_from_v_f, set_polydata_colors,
+                        set_polydata_normals, set_polydata_triangles,
+                        set_polydata_vertices, update_polydata_normals)
 from matplotlib import cm
 from nibabel import gifti
-from nibabel.nifti1 import Nifti1Image
 from nilearn import datasets, surface
-from nilearn.connectome import ConnectivityMeasure
-from nilearn.input_data import NiftiMapsMasker
 from time import time
 
 
@@ -364,18 +360,19 @@ if __name__ == '__main__':
     scene.add(right_hemi_actor)
 
     view = 'top left'
-    if view == 'left lateral':
-        #rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
-        #rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
-        #rotate(right_hemi_actor, rotation=(90, 0, 0, 1))
-        #rotate(right_hemi_actor, rotation=(-80, 1, 0, 0))
+    if view == 'dorsal' or view == 'top':
+        pass
+    elif view == 'anterior' or view == 'front':
+        scene.roll(180)
+        scene.pitch(80)
+    elif view == 'left':
         scene.roll(90)
+        scene.pitch(80)
+    elif view == 'right':
+        scene.roll(270)
         scene.pitch(80)
     elif view == 'top left':
         scene.roll(135)
-        scene.pitch(80)
-    elif view == 'front':
-        scene.roll(180)
         scene.pitch(80)
 
     scene.reset_camera()

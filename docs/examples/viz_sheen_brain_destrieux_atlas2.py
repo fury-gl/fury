@@ -1,5 +1,4 @@
 from datetime import timedelta
-from dipy.io.image import load_nifti
 from fury import actor, ui, window
 from fury.colormap import distinguishable_colormap
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
@@ -12,10 +11,8 @@ from fury.utils import (get_actor_from_polydata, get_polydata_normals,
                         set_polydata_vertices, update_polydata_normals)
 from matplotlib import cm
 from nibabel import gifti
-from nibabel.nifti1 import Nifti1Image
 from nilearn import datasets, surface
 from nilearn.connectome import ConnectivityMeasure
-from nilearn.input_data import NiftiMapsMasker
 from time import time
 
 import gzip
@@ -110,12 +107,15 @@ def change_slice_opacity(slider):
     left_hemi_actor.GetProperty().SetOpacity(slider.value)
 
 
-def colors_from_pre_cmap(textures, pre_cmap, bg_colors=None):
+def colors_from_pre_cmap(textures, networks, pre_cmap, bg_colors=None):
     colors = np.zeros((textures.shape[0], 3))
     for i in range(textures.shape[0]):
-        tex_val = textures[i][0]
-        if tex_val > 0:
-            colors[i] = pre_cmap[tex_val - 1] * 255
+        label = textures[i][0]
+        if label > 0:
+            idx = np.where(label == networks + 1)[0]
+            if len(idx) > 0:
+                idx = idx[0]
+                colors[i] = pre_cmap[idx] * 255
         else:
             if bg_colors is not None:
                 colors[i] = bg_colors[i]
@@ -139,24 +139,7 @@ def compute_background_colors(bg_data, bg_cmap='gray_r'):
     return bg_colors
 
 
-def compute_textures(img, affine, mesh, volumes=1, radius=3):
-    if type(volumes) == int:
-        if volumes == 1:
-            nifti = Nifti1Image(img, affine)
-            return surface.vol_to_surf(nifti, mesh, radius=radius)[:, None]
-        else:
-            volumes = np.arange(volumes)
-    num_vols = len(volumes)
-    textures = np.empty((mesh[0].shape[0], len(volumes)))
-    for idx, vol in enumerate(volumes):
-        print('Computing texture for volume ({:02d}/{}): {:4d}'.format(
-            idx + 1, num_vols, vol + 1))
-        nifti = Nifti1Image(img[..., vol], affine)
-        textures[:, idx] = surface.vol_to_surf(nifti, mesh, radius=radius)
-    return textures
-
-
-def compute_texture_colors(textures, max_val, min_val=None, cmap='tab20c_r'):
+def compute_texture_colors(textures, max_val, min_val=None, cmap='gist_ncar'):
     color_cmap = cm.get_cmap(cmap)
     textures_shape = textures.shape
     # TODO: Evaluate move
@@ -292,61 +275,52 @@ if __name__ == '__main__':
     # Scene rotation for brudslojan texture
     # scene.yaw(-110)
 
-    msdl_atlas = datasets.fetch_atlas_msdl()
+    destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
+    destrieux_labels = destrieux_atlas.labels
+    left_parcellation = destrieux_atlas.map_left
+    right_parcellation = destrieux_atlas.map_right
 
-    msdl_atlas_fname = msdl_atlas.maps
-    msdl_labels = msdl_atlas.labels
-    num_labels = len(msdl_labels)
-    msdl_coords = msdl_atlas.region_coords
-    msdl_networks = np.array(msdl_atlas.networks)
-    msdl_unique_networks = np.unique(msdl_networks)
-    num_unique_networks = len(msdl_unique_networks)
+    min_val = np.nanmin(left_parcellation)
+    max_val = 1 + np.nanmax(left_parcellation)
+    num_nets = len(left_parcellation)
 
-    msdl_atlas_nii = load_nifti(msdl_atlas_fname, return_img=True)
-    msdl_atlas_data, msdl_atlas_affine, msdl_atlas_nifti = msdl_atlas_nii
-    msdl_atlas_shape = msdl_atlas_data.shape
+    _, left_unique_count = np.unique(left_parcellation, return_counts=True)
+    _, right_unique_count = np.unique(right_parcellation, return_counts=True)
 
-    msdl_atlas_bin_data = msdl_atlas_data
-    msdl_atlas_bin_data[msdl_atlas_data > 0] = 1
+    n_top = 13
+    n_top_left_nets = np.argpartition(left_unique_count, -n_top)[-n_top:]
+    n_top_right_nets = np.argpartition(right_unique_count, -n_top)[-n_top:]
 
-    for idx, net in enumerate(msdl_networks):
-        net_label = np.argwhere(msdl_unique_networks == net)[0][0]
-        curr_vol_data = msdl_atlas_data[..., idx] == 1
-        msdl_atlas_bin_data[curr_vol_data, idx] = net_label + 1
+    n_top_net = []
+    for i in range(n_top):
+        if n_top_left_nets[i] in n_top_right_nets:
+            n_top_net.append(n_top_left_nets[i])
+    n_top_net = np.array(n_top_net)
+    num_top_net = len(n_top_net)
 
-    #from dipy.viz.app import horizon
-    #horizon(images=[(msdl_atlas_bin_data, msdl_atlas_affine)])
+    n_top_left_parcellation = np.zeros(left_parcellation.shape, dtype=int)
+    n_top_right_parcellation = np.zeros(right_parcellation.shape, dtype=int)
+    for idx, label in enumerate(n_top_net):
+        label += 1
+        n_top_left_parcellation[left_parcellation == label] = label
+        n_top_right_parcellation[right_parcellation == label] = label
 
-    """
-    msdl_atlas_tex = msdl_atlas_bin_data[..., 0]
-    for i in range(1, msdl_atlas_shape[3]):
-        curr_vol = msdl_atlas_bin_data[..., i]
-        curr_vol_data = np.argwhere(curr_vol > 0)
-        vol_label = curr_vol.max()
-        check_vxs = msdl_atlas_tex[curr_vol_data[:, 0], curr_vol_data[:, 1],
-                                   curr_vol_data[:, 2]]
-        overlap_idx = np.where(check_vxs > 0)[0]
-        no_overlap_idx = np.where(check_vxs == 0)[0]
-        overlap_vxs = curr_vol_data[overlap_idx, :]
-        no_overlap_vxs = curr_vol_data[no_overlap_idx, :]
-        msdl_atlas_tex[overlap_vxs[:, 0], overlap_vxs[:, 1],
-                       overlap_vxs[:, 2]] = 0
-        msdl_atlas_tex[no_overlap_vxs[:, 0], no_overlap_vxs[:, 1],
-                       no_overlap_vxs[:, 2]] = vol_label
-    """
-
-    msdl_atlas_tex = np.max(msdl_atlas_bin_data, axis=3)
-
-    #from dipy.viz.app import horizon
-    #horizon(images=[(msdl_atlas_tex, msdl_atlas_affine)])
-
-    fsaverage = datasets.fetch_surf_fsaverage(mesh='fsaverage')
+    fsaverage = datasets.fetch_surf_fsaverage()
 
     left_pial_mesh = surface.load_surf_mesh(fsaverage.pial_left)
     left_sulc_points = points_from_gzipped_gifti(fsaverage.sulc_left)
 
     right_pial_mesh = surface.load_surf_mesh(fsaverage.pial_right)
     right_sulc_points = points_from_gzipped_gifti(fsaverage.sulc_right)
+
+    """
+    from nilearn.plotting import plot_surf_roi
+    import matplotlib.pyplot as plt
+
+    plot_surf_roi(fsaverage.pial_left, left_parcellation,
+                  bg_map=fsaverage.sulc_left, bg_on_data=True, darkness=.5)
+    plt.show()
+    """
 
     print('Computing background colors...')
     t = time()
@@ -358,93 +332,70 @@ if __name__ == '__main__':
     left_excluded_colors = np.unique(left_bg_colors, axis=0)
     right_excluded_colors = np.unique(right_bg_colors, axis=0)
 
-    excluded_colors = np.unique(np.vstack((left_excluded_colors,
-                                           right_excluded_colors)), axis=0)
+    excluded_colors = np.unique(np.vstack((
+        left_excluded_colors, right_excluded_colors)), axis=0) / 255
 
-    msdl_networks_colors = distinguishable_colormap(
-        bg=scene_bg_color, exclude=excluded_colors,
-        nb_colors=len(msdl_unique_networks))
+    n_top_net_colors = distinguishable_colormap(
+        bg=scene_bg_color, exclude=excluded_colors, nb_colors=len(n_top_net))
+    n_top_net_colors = np.array(n_top_net_colors)
     """
 
-    cmap = cm.get_cmap('tab20b')
-    msdl_networks_colors = np.array([
-        cmap(i / (num_unique_networks - 1))[:3]
-        for i in range(num_unique_networks)])
+    cmap = cm.get_cmap('Paired')
+    n_top_net_colors = np.array([cmap(i / (num_top_net - 1))[:3]
+                                 for i in range(num_top_net)])
 
-    msdl_masker = NiftiMapsMasker(msdl_atlas_nifti, standardize=True,
-                                  memory='nilearn_cache', verbose=5)
+    fmri_data = datasets.fetch_surf_nki_enhanced(n_subjects=1)
+    left_ts = surface.load_surf_data(fmri_data.func_left[0])
+    right_ts = surface.load_surf_data(fmri_data.func_right[0])
+    num_ts = left_ts.shape[1]
 
-    fmri_data = datasets.fetch_development_fmri(n_subjects=1)
-
-    time_series = msdl_masker.fit_transform(fmri_data.func[0],
-                                            confounds=fmri_data.confounds)
+    time_series = np.empty((num_ts, num_top_net * 2))
+    for idx, label in enumerate(n_top_net):
+        label += 1
+        label_ts = left_ts[n_top_left_parcellation == label, :]
+        time_series[:, idx] = np.mean(label_ts, axis=0)
+        label_ts = left_ts[n_top_right_parcellation == label, :]
+        time_series[:, idx + num_top_net] = np.mean(label_ts, axis=0)
 
     correlation_measure = ConnectivityMeasure(kind='correlation')
     correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
     """
-    from nilearn.plotting import plot_connectome
-    import matplotlib.pyplot as plt
-    plot_connectome(correlation_matrix, msdl_coords, colorbar=True)
-    plt.show()
-    """
+    left_coordinates = []
+    right_coordinates = []
+    connectome_colors = []
+    for i, label in enumerate(destrieux_labels):
+        if 'Unknown' not in str(label):  # Omit the Unknown label.
+            # Compute mean location of vertices in label of index k
+            left_coordinates.append(np.mean(left_pial_mesh.coordinates[
+                                            left_parcellation == i, :],
+                                            axis=0))
+            right_coordinates.append(np.mean(right_pial_mesh.coordinates[
+                                             right_parcellation == i, :],
+                                             axis=0))
+            connectome_colors.append(
+                cmap((i - min_val) / (max_val - min_val))[:3])
 
-    min_coords = np.min(msdl_coords, axis=0)
-    max_coords = np.max(msdl_coords, axis=0)
-    #hemi_thr = 1
-    hemi_thr = max_coords[0]
+    # 3D coordinates of parcels
+    left_coordinates = np.array(left_coordinates)
+    right_coordinates = np.array(right_coordinates)
 
-    edges_coords = []
-    edges_colors = []
-    show_nodes = [False] * num_labels
-    max_val = np.max(np.abs(correlation_matrix[~np.eye(num_labels,
-                                                       dtype=bool)]))
-    thr = .45
-    cmap = cm.get_cmap('RdYlGn')
-    for i in range(num_labels):
-        coord_i = msdl_coords[i]
-        if coord_i[0] < hemi_thr:
-            for j in range(i + 1, num_labels):
-                coord_j = msdl_coords[j]
-                if coord_j[0] < hemi_thr:
-                    if correlation_matrix[i, j] > thr:
-                        show_nodes[i] = True
-                        show_nodes[j] = True
-                        edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                        val = (correlation_matrix[i, j] + max_val) / \
-                              (2 * max_val)
-                        edges_colors.append(cmap(val)[:3])
-                    elif correlation_matrix[i, j] < -thr:
-                        show_nodes[i] = True
-                        show_nodes[j] = True
-                        edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                        val = (correlation_matrix[i, j] + max_val) / \
-                              (2 * max_val)
-                        edges_colors.append(cmap(val)[:3])
-    edges_coords = np.array(edges_coords)
-    edges_colors = np.array(edges_colors)
-    show_nodes = np.array(show_nodes)
+    # Connectome colors
+    connectome_colors = np.array(connectome_colors) * 255
 
-    edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
-                                   linewidth=.5)
+    left_nodes_actor = actor.sphere(left_coordinates, (1, 0, 0), opacity=.25)
+    right_nodes_actor = actor.sphere(right_coordinates, (1, 0, 0), opacity=.25)
+
+    scene.add(left_nodes_actor)
+    scene.add(right_nodes_actor)
+
+    edges = [[left_coordinates[i], right_coordinates[i]] for i in range(
+        len(left_coordinates))]
+    edges_actor = actor.streamtube(edges, (1, 0, 0), linewidth=.5,
+                                   opacity=.25)
 
     scene.add(edges_actor)
-
-    filtered_networks = np.unique(msdl_networks[show_nodes])
-
-    node_coords = []
-    nodes_colors = []
-    for idx, net in enumerate(msdl_networks):
-        if show_nodes[idx]:
-            net_idx = np.where(msdl_unique_networks == net)[0][0]
-            node_coords.append(msdl_coords[idx])
-            nodes_colors.append(msdl_networks_colors[net_idx])
-    node_coords = np.array(node_coords)
-    nodes_colors = np.array(nodes_colors)
-
-    nodes_actor = actor.sphere(node_coords, nodes_colors, radii=2)
-
-    scene.add(nodes_actor)
+    """
 
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
@@ -453,20 +404,16 @@ if __name__ == '__main__':
                       (left_max_op_vals - left_min_op_vals)) * 255
     left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
 
-    left_tex = np.round(compute_textures(msdl_atlas_tex, msdl_atlas_affine,
-                                         left_pial_mesh)).astype(np.uint8)
-
     t = time()
-    # left_tex_colors = compute_texture_colors(
+    #left_tex_colors = compute_texture_colors(
     #    left_parcellation[:, np.newaxis], max_val, min_val=min_val)
-    # left_tex_colors = compute_texture_colors(left_tex, msdl_atlas_tex.max(),
-    #                                         min_val=0)
-    left_colors = colors_from_pre_cmap(left_tex, msdl_networks_colors,
-                                       bg_colors=left_bg_colors)
+    left_colors = colors_from_pre_cmap(
+        n_top_left_parcellation[:, np.newaxis], n_top_net, n_top_net_colors,
+        bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     #left_colors = left_tex_colors
-    left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
+    #left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
@@ -486,20 +433,16 @@ if __name__ == '__main__':
     right_opacities = ((-right_sulc_points - right_min_op_vals) /
                        (right_max_op_vals - right_min_op_vals)) * 255
 
-    right_tex = np.round(compute_textures(msdl_atlas_tex, msdl_atlas_affine,
-                                          right_pial_mesh)).astype(np.uint8)
-
     t = time()
-    # right_tex_colors = compute_texture_colors(
+    #right_tex_colors = compute_texture_colors(
     #    right_parcellation[:, np.newaxis], max_val, min_val=min_val)
-    #right_tex_colors = compute_texture_colors(right_tex, msdl_atlas_tex.max(),
-    #                                          min_val=0)
-    right_colors = colors_from_pre_cmap(right_tex, msdl_networks_colors,
-                                        bg_colors=right_bg_colors)
+    right_colors = colors_from_pre_cmap(
+        n_top_right_parcellation[:, np.newaxis], n_top_net, n_top_net_colors,
+        bg_colors=right_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     #right_colors = right_tex_colors
-    right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
+    #right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
                                             colors=right_colors)
