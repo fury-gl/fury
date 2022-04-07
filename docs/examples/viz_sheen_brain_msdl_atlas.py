@@ -427,7 +427,8 @@ if __name__ == '__main__':
     edges_colors = np.array(edges_colors)
     show_nodes = np.array(show_nodes)
 
-    edges_actor = actor.streamtube(edges_coords, edges_colors, linewidth=.5)
+    edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
+                                   linewidth=.5)
 
     scene.add(edges_actor)
 
