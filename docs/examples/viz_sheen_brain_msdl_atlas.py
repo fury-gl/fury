@@ -299,7 +299,7 @@ if __name__ == '__main__':
     msdl_labels = msdl_atlas.labels
     num_labels = len(msdl_labels)
     msdl_coords = msdl_atlas.region_coords
-    msdl_networks = msdl_atlas.networks
+    msdl_networks = np.array(msdl_atlas.networks)
     msdl_unique_networks = np.unique(msdl_networks)
     num_unique_networks = len(msdl_unique_networks)
 
@@ -391,6 +391,11 @@ if __name__ == '__main__':
     plt.show()
     """
 
+    min_coords = np.min(msdl_coords, axis=0)
+    max_coords = np.max(msdl_coords, axis=0)
+    #hemi_thr = 1
+    hemi_thr = max_coords[0]
+
     edges_coords = []
     edges_colors = []
     show_nodes = [False] * num_labels
@@ -399,25 +404,34 @@ if __name__ == '__main__':
     thr = .45
     cmap = cm.get_cmap('RdYlGn')
     for i in range(num_labels):
-        for j in range(i + 1, num_labels):
-            if correlation_matrix[i, j] > thr:
-                show_nodes[i] = True
-                show_nodes[j] = True
-                edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                val = (correlation_matrix[i, j] + max_val) / (2 * max_val)
-                edges_colors.append(cmap(val)[:3])
-            elif correlation_matrix[i, j] < -thr:
-                show_nodes[i] = True
-                show_nodes[j] = True
-                edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                val = (correlation_matrix[i, j] + max_val) / (2 * max_val)
-                edges_colors.append(cmap(val)[:3])
+        coord_i = msdl_coords[i]
+        if coord_i[0] < hemi_thr:
+            for j in range(i + 1, num_labels):
+                coord_j = msdl_coords[j]
+                if coord_j[0] < hemi_thr:
+                    if correlation_matrix[i, j] > thr:
+                        show_nodes[i] = True
+                        show_nodes[j] = True
+                        edges_coords.append([msdl_coords[i], msdl_coords[j]])
+                        val = (correlation_matrix[i, j] + max_val) / \
+                              (2 * max_val)
+                        edges_colors.append(cmap(val)[:3])
+                    elif correlation_matrix[i, j] < -thr:
+                        show_nodes[i] = True
+                        show_nodes[j] = True
+                        edges_coords.append([msdl_coords[i], msdl_coords[j]])
+                        val = (correlation_matrix[i, j] + max_val) / \
+                              (2 * max_val)
+                        edges_colors.append(cmap(val)[:3])
     edges_coords = np.array(edges_coords)
     edges_colors = np.array(edges_colors)
+    show_nodes = np.array(show_nodes)
 
     edges_actor = actor.streamtube(edges_coords, edges_colors, linewidth=.5)
 
     scene.add(edges_actor)
+
+    filtered_networks = np.unique(msdl_networks[show_nodes])
 
     node_coords = []
     nodes_colors = []
@@ -503,20 +517,23 @@ if __name__ == '__main__':
     scene.add(right_hemi_actor)
 
     view = 'dorsal'
-    if view == 'dorsal':
+    if view == 'dorsal' or view == 'top':
         pass
-    if view == 'left lateral':
+    elif view == 'anterior' or view == 'front':
+        scene.roll(180)
+        scene.pitch(80)
+    elif view == 'left':
         # rotate(left_hemi_actor, rotation=(90, 0, 0, 1))
         # rotate(left_hemi_actor, rotation=(-80, 1, 0, 0))
         # rotate(right_hemi_actor, rotation=(90, 0, 0, 1))
         # rotate(right_hemi_actor, rotation=(-80, 1, 0, 0))
         scene.roll(90)
         scene.pitch(80)
+    elif view == 'right':
+        scene.roll(270)
+        scene.pitch(80)
     elif view == 'top left':
         scene.roll(135)
-        scene.pitch(80)
-    elif view == 'front':
-        scene.roll(180)
         scene.pitch(80)
 
     scene.reset_camera()
