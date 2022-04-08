@@ -166,7 +166,23 @@ def test_repeat_primitive():
     npt.assert_equal(big_colors.shape[0], verts.shape[0] * centers.shape[0])
     npt.assert_equal(big_centers.shape[0], verts.shape[0] * centers.shape[0])
 
-    # TODO: Check the array content
+    npt.assert_equal(np.unique(np.concatenate(big_faces, axis=None)).tolist(),
+                     list(range(len(big_verts))))
+
+    # translate the squares primitives centers to be the origin
+    big_vert_origin = big_verts - np.repeat(centers, 4, axis=0)
+
+    # three repeated primitives
+    sq1, sq2, sq3 = big_vert_origin.reshape([3, 12])
+
+    #  primitives directed toward different directions must not be the same
+    np.testing.assert_equal(np.any(np.not_equal(sq1, sq2)), True)
+    np.testing.assert_equal(np.any(np.not_equal(sq1, sq3)), True)
+    np.testing.assert_equal(np.any(np.not_equal(sq2, sq3)), True)
+
+    np.testing.assert_equal(big_vert_origin.min(), -0.5)
+    np.testing.assert_equal(big_vert_origin.max(), 0.5)
+    np.testing.assert_equal(np.mean(big_vert_origin), 0)
 
 
 def test_repeat_primitive_function():
