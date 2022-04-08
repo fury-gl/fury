@@ -427,8 +427,6 @@ if __name__ == '__main__':
 
     scene.add(edges_actor)
 
-    filtered_networks = np.unique(msdl_nets[show_nodes])
-
     node_coords = []
     nodes_colors = []
     for idx, net in enumerate(msdl_nets):
