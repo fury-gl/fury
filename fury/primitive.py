@@ -186,7 +186,6 @@ def repeat_primitive(vertices, faces, centers, directions=None,
         dir_abs = np.linalg.norm(dirs)
         if dir_abs:
             normal = np.array([1., 0., 0.])
-            normal = normal / np.linalg.norm(normal)
             dirs = dirs / dir_abs
             v = np.cross(normal, dirs)
             c = np.dot(normal, dirs)
