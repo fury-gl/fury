@@ -20,91 +20,107 @@ import numpy as np
 
 
 def change_slice_subsurface(slider):
-    global principled_params
-    principled_params['subsurface'] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface'] = slider.value
+    right_principled['subsurface'] = slider.value
 
 
 def change_slice_metallic(slider):
-    global left_hemi_actor, principled_params
-    principled_params['metallic'] = slider.value
-    left_hemi_actor.GetProperty().SetMetallic(slider.value)
+    global left_principled, right_principled
+    left_principled['metallic'] = slider.value
+    right_principled['metallic'] = slider.value
 
 
 def change_slice_specular(slider):
-    global left_hemi_actor, principled_params
-    principled_params['specular'] = slider.value
+    global left_hemi_actor, left_principled, right_hemi_actor, right_principled
+    left_principled['specular'] = slider.value
+    right_principled['specular'] = slider.value
     left_hemi_actor.GetProperty().SetSpecular(slider.value)
+    right_hemi_actor.GetProperty().SetSpecular(slider.value)
 
 
 def change_slice_specular_tint(slider):
-    global principled_params
-    principled_params['specular_tint'] = slider.value
+    global left_principled, right_principled
+    left_principled['specular_tint'] = slider.value
+    right_principled['specular_tint'] = slider.value
 
 
 def change_slice_roughness(slider):
-    global left_hemi_actor, principled_params
-    principled_params['roughness'] = slider.value
-    left_hemi_actor.GetProperty().SetRoughness(slider.value)
+    global left_principled, right_principled
+    left_principled['roughness'] = slider.value
+    right_principled['roughness'] = slider.value
 
 
 def change_slice_anisotropic(slider):
-    global principled_params
-    principled_params['anisotropic'] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic'] = slider.value
+    right_principled['anisotropic'] = slider.value
 
 
 def change_slice_sheen(slider):
-    global principled_params
-    principled_params['sheen'] = slider.value
+    global left_principled, right_principled
+    left_principled['sheen'] = slider.value
+    right_principled['sheen'] = slider.value
 
 
 def change_slice_sheen_tint(slider):
-    global principled_params
-    principled_params['sheen_tint'] = slider.value
+    global left_principled, right_principled
+    left_principled['sheen_tint'] = slider.value
+    right_principled['sheen_tint'] = slider.value
 
 
 def change_slice_clearcoat(slider):
-    global principled_params
-    principled_params['clearcoat'] = slider.value
+    global left_principled, right_principled
+    left_principled['clearcoat'] = slider.value
+    right_principled['clearcoat'] = slider.value
 
 
 def change_slice_clearcoat_gloss(slider):
-    global principled_params
-    principled_params['clearcoat_gloss'] = slider.value
+    global left_principled, right_principled
+    left_principled['clearcoat_gloss'] = slider.value
+    right_principled['clearcoat_gloss'] = slider.value
 
 
 def change_slice_subsurf_r(slider):
-    global principled_params
-    principled_params['subsurface_color'][0] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][0] = slider.value
+    right_principled['subsurface_color'][0] = slider.value
 
 
 def change_slice_subsurf_g(slider):
-    global principled_params
-    principled_params['subsurface_color'][1] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][1] = slider.value
+    right_principled['subsurface_color'][1] = slider.value
 
 
 def change_slice_subsurf_b(slider):
-    global principled_params
-    principled_params['subsurface_color'][2] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][2] = slider.value
+    right_principled['subsurface_color'][2] = slider.value
 
 
 def change_slice_aniso_x(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][0] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][0] = slider.value
+    right_principled['anisotropic_direction'][0] = slider.value
 
 
 def change_slice_aniso_y(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][1] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][1] = slider.value
+    right_principled['anisotropic_direction'][1] = slider.value
 
 
 def change_slice_aniso_z(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][2] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][2] = slider.value
+    right_principled['anisotropic_direction'][2] = slider.value
 
 
 def change_slice_opacity(slider):
-    global left_hemi_actor
+    global left_hemi_actor, right_hemi_actor
     left_hemi_actor.GetProperty().SetOpacity(slider.value)
+    right_hemi_actor.GetProperty().SetOpacity(slider.value)
 
 
 def colors_from_pre_cmap(textures, networks, pre_cmap, bg_colors=None):
@@ -137,35 +153,6 @@ def compute_background_colors(bg_data, bg_cmap='gray_r'):
         bg_colors[i] = np.array(bg_cmap(val))[:3]
     bg_colors *= 255
     return bg_colors
-
-
-def compute_texture_colors(textures, max_val, min_val=None, cmap='gist_ncar'):
-    color_cmap = cm.get_cmap(cmap)
-    textures_shape = textures.shape
-    # TODO: Evaluate move
-    colors = np.empty(textures_shape + (3,))
-    if textures_shape[1] == 1:
-        print('Computing colors from texture...')
-        if min_val is not None:
-            vals = (textures - min_val) / (max_val - min_val)
-            colors = np.array([color_cmap(v)[0, :3] for v in vals])
-        else:
-            # TODO: Replace with numpy version
-            for i in range(textures_shape[0]):
-                # Normalize values between [0, 1]
-                val = (textures[i] + max_val) / (2 * max_val)
-                colors[i] = np.array(color_cmap(val))[0, :3]
-    else:
-        for j in range(textures_shape[1]):
-            print('Computing colors for texture {:02d}/{}'.format(
-                j + 1, textures_shape[1]))
-            # TODO: Replace with numpy version
-            for i in range(textures_shape[0]):
-                # Normalize values between [0, 1]
-                val = (textures[i, j] + max_val) / (2 * max_val)
-                colors[i, j] = np.array(color_cmap(val))[:3]
-    colors *= 255
-    return colors
 
 
 def get_cubemap_from_ndarrays(array, flip=True):
@@ -230,8 +217,8 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global control_panel, left_hemi_actor, params_panel, principled_panel, \
-        principled_params, size
+    global control_panel, left_hemi_actor, left_principled, params_panel, \
+        principled_panel, right_hemi_actor, right_principled, size
 
     fetch_viz_cubemaps()
 
@@ -279,10 +266,6 @@ if __name__ == '__main__':
     destrieux_labels = destrieux_atlas.labels
     left_parcellation = destrieux_atlas.map_left
     right_parcellation = destrieux_atlas.map_right
-
-    min_val = np.nanmin(left_parcellation)
-    max_val = 1 + np.nanmax(left_parcellation)
-    num_nets = len(left_parcellation)
 
     _, left_unique_count = np.unique(left_parcellation, return_counts=True)
     _, right_unique_count = np.unique(right_parcellation, return_counts=True)
@@ -340,62 +323,82 @@ if __name__ == '__main__':
     n_top_net_colors = np.array(n_top_net_colors)
     """
 
-    cmap = cm.get_cmap('Paired')
-    n_top_net_colors = np.array([cmap(i / (num_top_net - 1))[:3]
+    n_top_net_cmap = cm.get_cmap('Paired')
+    n_top_net_colors = np.array([n_top_net_cmap(i / (num_top_net - 1))[:3]
                                  for i in range(num_top_net)])
 
     fmri_data = datasets.fetch_surf_nki_enhanced(n_subjects=1)
     left_ts = surface.load_surf_data(fmri_data.func_left[0])
     right_ts = surface.load_surf_data(fmri_data.func_right[0])
-    num_ts = left_ts.shape[1]
+    num_time_pnts = left_ts.shape[1]
+    num_time_series = num_top_net * 2
 
-    time_series = np.empty((num_ts, num_top_net * 2))
+    time_series = np.empty((num_time_pnts, num_time_series))
+    label_coords = np.empty((num_time_series, 3))
     for idx, label in enumerate(n_top_net):
         label += 1
+        # Left time series and node coordinates per label
         label_ts = left_ts[n_top_left_parcellation == label, :]
         time_series[:, idx] = np.mean(label_ts, axis=0)
-        label_ts = left_ts[n_top_right_parcellation == label, :]
+        coords = left_pial_mesh.coordinates[
+                 n_top_left_parcellation == label, :]
+        label_coords[idx, :] = np.mean(coords, axis=0)
+        # Right time series and node coordinates per label
+        label_ts = right_ts[n_top_right_parcellation == label, :]
         time_series[:, idx + num_top_net] = np.mean(label_ts, axis=0)
+        coords = right_pial_mesh.coordinates[
+                   n_top_right_parcellation == label, :]
+        label_coords[idx + num_top_net, :] = np.mean(coords, axis=0)
 
-    correlation_measure = ConnectivityMeasure(kind='correlation')
-    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+    corr_measure = ConnectivityMeasure(kind='correlation')
+    corr_matrix = corr_measure.fit_transform([time_series])[0]
 
-    """
-    left_coordinates = []
-    right_coordinates = []
-    connectome_colors = []
-    for i, label in enumerate(destrieux_labels):
-        if 'Unknown' not in str(label):  # Omit the Unknown label.
-            # Compute mean location of vertices in label of index k
-            left_coordinates.append(np.mean(left_pial_mesh.coordinates[
-                                            left_parcellation == i, :],
-                                            axis=0))
-            right_coordinates.append(np.mean(right_pial_mesh.coordinates[
-                                             right_parcellation == i, :],
-                                             axis=0))
-            connectome_colors.append(
-                cmap((i - min_val) / (max_val - min_val))[:3])
+    max_val = np.max(np.abs(corr_matrix[~np.eye(num_time_series, dtype=bool)]))
+    edges_cmap = cm.get_cmap('bwr')
 
-    # 3D coordinates of parcels
-    left_coordinates = np.array(left_coordinates)
-    right_coordinates = np.array(right_coordinates)
+    thr = .65
+    edges_coords = []
+    edges_colors = []
+    show_nodes = [False] * num_time_series
+    for i in range(num_time_series):
+        for j in range(i + 1, num_time_series):
+            if corr_matrix[i, j] > thr:
+                show_nodes[i] = True
+                show_nodes[j] = True
+                edges_coords.append([label_coords[i], label_coords[j]])
+                val = (corr_matrix[i, j] + max_val) / (2 * max_val)
+                edges_colors.append(edges_cmap(val)[:3])
+            if corr_matrix[i, j] < -thr:
+                show_nodes[i] = True
+                show_nodes[j] = True
+                edges_coords.append([label_coords[i], label_coords[j]])
+                val = (corr_matrix[i, j] + max_val) / (2 * max_val)
+                edges_colors.append(edges_cmap(val)[:3])
+    edges_coords = np.array(edges_coords)
+    edges_colors = np.array(edges_colors)
+    show_nodes = np.array(show_nodes)
 
-    # Connectome colors
-    connectome_colors = np.array(connectome_colors) * 255
-
-    left_nodes_actor = actor.sphere(left_coordinates, (1, 0, 0), opacity=.25)
-    right_nodes_actor = actor.sphere(right_coordinates, (1, 0, 0), opacity=.25)
-
-    scene.add(left_nodes_actor)
-    scene.add(right_nodes_actor)
-
-    edges = [[left_coordinates[i], right_coordinates[i]] for i in range(
-        len(left_coordinates))]
-    edges_actor = actor.streamtube(edges, (1, 0, 0), linewidth=.5,
-                                   opacity=.25)
+    edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
+                                   linewidth=.5)
 
     scene.add(edges_actor)
-    """
+
+    nodes_coords = []
+    nodes_colors = []
+    for i in range(num_top_net):
+        net_color = n_top_net_colors[i]
+        if show_nodes[i]:
+            nodes_coords.append(label_coords[i])
+            nodes_colors.append(net_color)
+        if show_nodes[i + num_top_net]:
+            nodes_coords.append(label_coords[i + num_top_net])
+            nodes_colors.append(net_color)
+    nodes_coords = np.array(nodes_coords)
+    nodes_colors = np.array(nodes_colors)
+
+    nodes_actor = actor.sphere(nodes_coords, nodes_colors, radii=2)
+
+    scene.add(nodes_actor)
 
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
@@ -405,8 +408,6 @@ if __name__ == '__main__':
     left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
 
     t = time()
-    #left_tex_colors = compute_texture_colors(
-    #    left_parcellation[:, np.newaxis], max_val, min_val=min_val)
     left_colors = colors_from_pre_cmap(
         n_top_left_parcellation[:, np.newaxis], n_top_net, n_top_net_colors,
         bg_colors=left_bg_colors)
@@ -418,15 +419,6 @@ if __name__ == '__main__':
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
 
-    principled_params = manifest_principled(
-        left_hemi_actor, subsurface=0, subsurface_color=[0, 0, 0], metallic=0,
-        specular=0, specular_tint=0, roughness=0, anisotropic=0,
-        anisotropic_direction=[0, 1, .5], sheen=1, sheen_tint=1, clearcoat=0,
-        clearcoat_gloss=0)
-
-    opacity = 1.
-    left_hemi_actor.GetProperty().SetOpacity(opacity)
-
     right_max_op_vals = -np.nanmin(right_sulc_points)
     right_min_op_vals = -np.nanmax(right_sulc_points)
 
@@ -434,8 +426,6 @@ if __name__ == '__main__':
                        (right_max_op_vals - right_min_op_vals)) * 255
 
     t = time()
-    #right_tex_colors = compute_texture_colors(
-    #    right_parcellation[:, np.newaxis], max_val, min_val=min_val)
     right_colors = colors_from_pre_cmap(
         n_top_right_parcellation[:, np.newaxis], n_top_net, n_top_net_colors,
         bg_colors=right_bg_colors)
@@ -447,12 +437,19 @@ if __name__ == '__main__':
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
                                             colors=right_colors)
 
-    _ = manifest_principled(
-        right_hemi_actor, subsurface=0, subsurface_color=[0, 0, 0], metallic=0,
-        specular=0, specular_tint=0, roughness=0, anisotropic=0,
-        anisotropic_direction=[0, 1, .5], sheen=1, sheen_tint=1, clearcoat=0,
-        clearcoat_gloss=0)
+    principled_params = {'subsurface': 0, 'subsurface_color': [0, 0, 0],
+                         'metallic': 0, 'specular': 0, 'specular_tint': 0,
+                         'roughness': 0, 'anisotropic': 0,
+                         'anisotropic_direction': [0, 1, .5], 'sheen': 1,
+                         'sheen_tint': 1, 'clearcoat': 0, 'clearcoat_gloss': 0}
 
+    left_principled = manifest_principled(
+        left_hemi_actor, **principled_params)
+    right_principled = manifest_principled(
+        right_hemi_actor, **principled_params)
+
+    opacity = .3
+    left_hemi_actor.GetProperty().SetOpacity(opacity)
     right_hemi_actor.GetProperty().SetOpacity(opacity)
 
     scene.add(left_hemi_actor)

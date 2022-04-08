@@ -43,7 +43,7 @@ Lo = mix(Lo, subsurfaceV3, subsurface);
 vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, dotNV);
 float len = length(sheenV3);
 //fragOutput0 = vec4(sheenV3, opacity);
-//fragOutput0 = vec4(sheenV3, len);
+fragOutput0 = vec4(sheenV3, len);
 /*
 if(len < 0.1)
 {
@@ -54,9 +54,9 @@ else
     //fragOutput0 = vec4(sheenV3, len);
     fragOutput0 = vec4(sheenV3, len);
 }
+*/
 
 Lo += sheenV3;
-*/
 
 //Lo *= (1. - metallic);
 
@@ -113,4 +113,4 @@ color += emissiveColor;
 
 // Gamma correction
 color = pow(color, vec3(1. / 2.2));
-fragOutput0 = vec4(color, opacity);
+//fragOutput0 = vec4(color, opacity);
