@@ -146,6 +146,25 @@ def test_cylinder_primitive():
                      list(range(len(verts))))
 
 
+def test_arrow_primitive():
+    verts, faces = fp.prim_arrow(height=1.0, resolution=10, tip_length=0.35,
+                                 tip_radius=0.1, shaft_radius=0.03)
+    npt.assert_equal(verts.shape, (36, 3))
+    npt.assert_almost_equal(np.mean(verts), 0, decimal=1)
+    # x-axis
+    npt.assert_equal(verts.T[0].min(), 0)
+    npt.assert_equal(verts.T[0].max(), 1)
+    # y and z axes
+    npt.assert_equal(verts.T[1:2].min(), -0.1)
+    npt.assert_equal(verts.T[1:2].max(), 0.1)
+    npt.assert_equal(np.mean(verts[1, 2].T), 0.0)
+
+    # basic tests for triangle
+    npt.assert_equal(faces.shape, (50, 3))
+    npt.assert_equal(np.unique(np.concatenate(faces, axis=None)).tolist(),
+                     list(range(len(verts))))
+
+
 def test_repeat_primitive():
     # init variables
     verts, faces = fp.prim_square()
