@@ -172,35 +172,6 @@ def compute_textures(img, affine, mesh, volumes=1, radius=3):
     return textures
 
 
-def compute_texture_colors(textures, max_val, min_val=None, cmap='tab20c_r'):
-    color_cmap = cm.get_cmap(cmap)
-    textures_shape = textures.shape
-    # TODO: Evaluate move
-    colors = np.empty(textures_shape + (3,))
-    if textures_shape[1] == 1:
-        print('Computing colors from texture...')
-        if min_val is not None:
-            vals = (textures - min_val) / (max_val - min_val)
-            colors = np.array([color_cmap(v)[0, :3] for v in vals])
-        else:
-            # TODO: Replace with numpy version
-            for i in range(textures_shape[0]):
-                # Normalize values between [0, 1]
-                val = (textures[i] + max_val) / (2 * max_val)
-                colors[i] = np.array(color_cmap(val))[0, :3]
-    else:
-        for j in range(textures_shape[1]):
-            print('Computing colors for texture {:02d}/{}'.format(
-                j + 1, textures_shape[1]))
-            # TODO: Replace with numpy version
-            for i in range(textures_shape[0]):
-                # Normalize values between [0, 1]
-                val = (textures[i, j] + max_val) / (2 * max_val)
-                colors[i, j] = np.array(color_cmap(val))[:3]
-    colors *= 255
-    return colors
-
-
 def get_cubemap_from_ndarrays(array, flip=True):
     texture = Texture()
     texture.CubeMapOn()
@@ -468,10 +439,6 @@ if __name__ == '__main__':
                                          left_pial_mesh)).astype(np.uint8)
 
     t = time()
-    # left_tex_colors = compute_texture_colors(
-    #    left_parcellation[:, np.newaxis], max_val, min_val=min_val)
-    # left_tex_colors = compute_texture_colors(left_tex, msdl_atlas_tex.max(),
-    #                                         min_val=0)
     left_colors = colors_from_pre_cmap(left_tex, msdl_net_colors,
                                        bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
@@ -492,10 +459,6 @@ if __name__ == '__main__':
                                           right_pial_mesh)).astype(np.uint8)
 
     t = time()
-    # right_tex_colors = compute_texture_colors(
-    #    right_parcellation[:, np.newaxis], max_val, min_val=min_val)
-    #right_tex_colors = compute_texture_colors(right_tex, msdl_atlas_tex.max(),
-    #                                          min_val=0)
     right_colors = colors_from_pre_cmap(right_tex, msdl_net_colors,
                                         bg_colors=right_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
