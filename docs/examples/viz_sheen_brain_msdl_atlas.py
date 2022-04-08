@@ -427,17 +427,17 @@ if __name__ == '__main__':
 
     scene.add(edges_actor)
 
-    node_coords = []
+    nodes_coords = []
     nodes_colors = []
     for idx, net in enumerate(msdl_nets):
         if show_nodes[idx]:
             net_idx = np.where(msdl_unique_nets == net)[0][0]
-            node_coords.append(msdl_coords[idx])
+            nodes_coords.append(msdl_coords[idx])
             nodes_colors.append(msdl_net_colors[net_idx])
-    node_coords = np.array(node_coords)
+    nodes_coords = np.array(nodes_coords)
     nodes_colors = np.array(nodes_colors)
 
-    nodes_actor = actor.sphere(node_coords, nodes_colors, radii=2)
+    nodes_actor = actor.sphere(nodes_coords, nodes_colors, radii=2)
 
     scene.add(nodes_actor)
 
