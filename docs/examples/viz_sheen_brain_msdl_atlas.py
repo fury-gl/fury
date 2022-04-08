@@ -298,9 +298,9 @@ if __name__ == '__main__':
     msdl_labels = msdl_atlas.labels
     num_labels = len(msdl_labels)
     msdl_coords = msdl_atlas.region_coords
-    msdl_networks = np.array(msdl_atlas.networks)
-    msdl_unique_networks = np.unique(msdl_networks)
-    num_unique_networks = len(msdl_unique_networks)
+    msdl_nets = np.array(msdl_atlas.networks)
+    msdl_unique_nets = np.unique(msdl_nets)
+    num_unique_nets = len(msdl_unique_nets)
 
     msdl_atlas_nii = load_nifti(msdl_atlas_fname, return_img=True)
     msdl_atlas_data, msdl_atlas_affine, msdl_atlas_nifti = msdl_atlas_nii
@@ -309,8 +309,8 @@ if __name__ == '__main__':
     msdl_atlas_bin_data = msdl_atlas_data
     msdl_atlas_bin_data[msdl_atlas_data > 0] = 1
 
-    for idx, net in enumerate(msdl_networks):
-        net_label = np.argwhere(msdl_unique_networks == net)[0][0]
+    for idx, net in enumerate(msdl_nets):
+        net_label = np.argwhere(msdl_unique_nets == net)[0][0]
         curr_vol_data = msdl_atlas_data[..., idx] == 1
         msdl_atlas_bin_data[curr_vol_data, idx] = net_label + 1
 
@@ -366,10 +366,9 @@ if __name__ == '__main__':
         nb_colors=len(msdl_unique_networks))
     """
 
-    cmap = cm.get_cmap('tab20b')
-    msdl_networks_colors = np.array([
-        cmap(i / (num_unique_networks - 1))[:3]
-        for i in range(num_unique_networks)])
+    msdl_net_cmap = cm.get_cmap('tab20b')
+    msdl_net_colors = np.array([msdl_net_cmap(i / (num_unique_nets - 1))[:3]
+                                for i in range(num_unique_nets)])
 
     msdl_masker = NiftiMapsMasker(msdl_atlas_nifti, standardize=True,
                                   memory='nilearn_cache', verbose=5)
@@ -379,8 +378,8 @@ if __name__ == '__main__':
     time_series = msdl_masker.fit_transform(fmri_data.func[0],
                                             confounds=fmri_data.confounds)
 
-    correlation_measure = ConnectivityMeasure(kind='correlation')
-    correlation_matrix = correlation_measure.fit_transform([time_series])[0]
+    corr_measure = ConnectivityMeasure(kind='correlation')
+    corr_matrix = corr_measure.fit_transform([time_series])[0]
 
     """
     from nilearn.plotting import plot_connectome
@@ -397,48 +396,45 @@ if __name__ == '__main__':
     edges_coords = []
     edges_colors = []
     show_nodes = [False] * num_labels
-    max_val = np.max(np.abs(correlation_matrix[~np.eye(num_labels,
-                                                       dtype=bool)]))
+    max_val = np.max(np.abs(corr_matrix[~np.eye(num_labels, dtype=bool)]))
     thr = .45
-    cmap = cm.get_cmap('RdYlGn')
+    edges_cmap = cm.get_cmap('RdYlGn')
     for i in range(num_labels):
         coord_i = msdl_coords[i]
         if coord_i[0] < hemi_thr:
             for j in range(i + 1, num_labels):
                 coord_j = msdl_coords[j]
                 if coord_j[0] < hemi_thr:
-                    if correlation_matrix[i, j] > thr:
+                    if corr_matrix[i, j] > thr:
                         show_nodes[i] = True
                         show_nodes[j] = True
                         edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                        val = (correlation_matrix[i, j] + max_val) / \
-                              (2 * max_val)
-                        edges_colors.append(cmap(val)[:3])
-                    elif correlation_matrix[i, j] < -thr:
+                        val = (corr_matrix[i, j] + max_val) / (2 * max_val)
+                        edges_colors.append(edges_cmap(val)[:3])
+                    elif corr_matrix[i, j] < -thr:
                         show_nodes[i] = True
                         show_nodes[j] = True
                         edges_coords.append([msdl_coords[i], msdl_coords[j]])
-                        val = (correlation_matrix[i, j] + max_val) / \
-                              (2 * max_val)
-                        edges_colors.append(cmap(val)[:3])
+                        val = (corr_matrix[i, j] + max_val) / (2 * max_val)
+                        edges_colors.append(edges_cmap(val)[:3])
     edges_coords = np.array(edges_coords)
     edges_colors = np.array(edges_colors)
     show_nodes = np.array(show_nodes)
 
-    edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
+    edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.75,
                                    linewidth=.5)
 
     scene.add(edges_actor)
 
-    filtered_networks = np.unique(msdl_networks[show_nodes])
+    filtered_networks = np.unique(msdl_nets[show_nodes])
 
     node_coords = []
     nodes_colors = []
-    for idx, net in enumerate(msdl_networks):
+    for idx, net in enumerate(msdl_nets):
         if show_nodes[idx]:
-            net_idx = np.where(msdl_unique_networks == net)[0][0]
+            net_idx = np.where(msdl_unique_nets == net)[0][0]
             node_coords.append(msdl_coords[idx])
-            nodes_colors.append(msdl_networks_colors[net_idx])
+            nodes_colors.append(msdl_net_colors[net_idx])
     node_coords = np.array(node_coords)
     nodes_colors = np.array(nodes_colors)
 
@@ -461,7 +457,7 @@ if __name__ == '__main__':
     #    left_parcellation[:, np.newaxis], max_val, min_val=min_val)
     # left_tex_colors = compute_texture_colors(left_tex, msdl_atlas_tex.max(),
     #                                         min_val=0)
-    left_colors = colors_from_pre_cmap(left_tex, msdl_networks_colors,
+    left_colors = colors_from_pre_cmap(left_tex, msdl_net_colors,
                                        bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
@@ -494,7 +490,7 @@ if __name__ == '__main__':
     #    right_parcellation[:, np.newaxis], max_val, min_val=min_val)
     #right_tex_colors = compute_texture_colors(right_tex, msdl_atlas_tex.max(),
     #                                          min_val=0)
-    right_colors = colors_from_pre_cmap(right_tex, msdl_networks_colors,
+    right_colors = colors_from_pre_cmap(right_tex, msdl_net_colors,
                                         bg_colors=right_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
