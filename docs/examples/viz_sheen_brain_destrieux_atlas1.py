@@ -19,91 +19,107 @@ import numpy as np
 
 
 def change_slice_subsurface(slider):
-    global principled_params
-    principled_params['subsurface'] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface'] = slider.value
+    right_principled['subsurface'] = slider.value
 
 
 def change_slice_metallic(slider):
-    global left_hemi_actor, principled_params
-    principled_params['metallic'] = slider.value
-    left_hemi_actor.GetProperty().SetMetallic(slider.value)
+    global left_principled, right_principled
+    left_principled['metallic'] = slider.value
+    right_principled['metallic'] = slider.value
 
 
 def change_slice_specular(slider):
-    global left_hemi_actor, principled_params
-    principled_params['specular'] = slider.value
+    global left_hemi_actor, left_principled, right_hemi_actor, right_principled
+    left_principled['specular'] = slider.value
+    right_principled['specular'] = slider.value
     left_hemi_actor.GetProperty().SetSpecular(slider.value)
+    right_hemi_actor.GetProperty().SetSpecular(slider.value)
 
 
 def change_slice_specular_tint(slider):
-    global principled_params
-    principled_params['specular_tint'] = slider.value
+    global left_principled, right_principled
+    left_principled['specular_tint'] = slider.value
+    right_principled['specular_tint'] = slider.value
 
 
 def change_slice_roughness(slider):
-    global left_hemi_actor, principled_params
-    principled_params['roughness'] = slider.value
-    left_hemi_actor.GetProperty().SetRoughness(slider.value)
+    global left_principled, right_principled
+    left_principled['roughness'] = slider.value
+    right_principled['roughness'] = slider.value
 
 
 def change_slice_anisotropic(slider):
-    global principled_params
-    principled_params['anisotropic'] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic'] = slider.value
+    right_principled['anisotropic'] = slider.value
 
 
 def change_slice_sheen(slider):
-    global principled_params
-    principled_params['sheen'] = slider.value
+    global left_principled, right_principled
+    left_principled['sheen'] = slider.value
+    right_principled['sheen'] = slider.value
 
 
 def change_slice_sheen_tint(slider):
-    global principled_params
-    principled_params['sheen_tint'] = slider.value
+    global left_principled, right_principled
+    left_principled['sheen_tint'] = slider.value
+    right_principled['sheen_tint'] = slider.value
 
 
 def change_slice_clearcoat(slider):
-    global principled_params
-    principled_params['clearcoat'] = slider.value
+    global left_principled, right_principled
+    left_principled['clearcoat'] = slider.value
+    right_principled['clearcoat'] = slider.value
 
 
 def change_slice_clearcoat_gloss(slider):
-    global principled_params
-    principled_params['clearcoat_gloss'] = slider.value
+    global left_principled, right_principled
+    left_principled['clearcoat_gloss'] = slider.value
+    right_principled['clearcoat_gloss'] = slider.value
 
 
 def change_slice_subsurf_r(slider):
-    global principled_params
-    principled_params['subsurface_color'][0] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][0] = slider.value
+    right_principled['subsurface_color'][0] = slider.value
 
 
 def change_slice_subsurf_g(slider):
-    global principled_params
-    principled_params['subsurface_color'][1] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][1] = slider.value
+    right_principled['subsurface_color'][1] = slider.value
 
 
 def change_slice_subsurf_b(slider):
-    global principled_params
-    principled_params['subsurface_color'][2] = slider.value
+    global left_principled, right_principled
+    left_principled['subsurface_color'][2] = slider.value
+    right_principled['subsurface_color'][2] = slider.value
 
 
 def change_slice_aniso_x(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][0] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][0] = slider.value
+    right_principled['anisotropic_direction'][0] = slider.value
 
 
 def change_slice_aniso_y(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][1] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][1] = slider.value
+    right_principled['anisotropic_direction'][1] = slider.value
 
 
 def change_slice_aniso_z(slider):
-    global principled_params
-    principled_params['anisotropic_direction'][2] = slider.value
+    global left_principled, right_principled
+    left_principled['anisotropic_direction'][2] = slider.value
+    right_principled['anisotropic_direction'][2] = slider.value
 
 
 def change_slice_opacity(slider):
-    global left_hemi_actor
+    global left_hemi_actor, right_hemi_actor
     left_hemi_actor.GetProperty().SetOpacity(slider.value)
+    right_hemi_actor.GetProperty().SetOpacity(slider.value)
 
 
 def compute_texture_colors(textures, max_val, min_val=None, cmap='gist_ncar'):
@@ -197,8 +213,8 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global control_panel, left_hemi_actor, params_panel, principled_panel, \
-        principled_params, size
+    global control_panel, left_hemi_actor, left_principled, params_panel, \
+        principled_panel, right_hemi_actor, right_principled, size
 
     fetch_viz_cubemaps()
 
@@ -317,19 +333,10 @@ if __name__ == '__main__':
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     left_colors = left_tex_colors
-    left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
+    #left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
-
-    principled_params = manifest_principled(
-        left_hemi_actor, subsurface=0, subsurface_color=[0, 0, 0], metallic=0,
-        specular=0, specular_tint=0, roughness=0, anisotropic=0,
-        anisotropic_direction=[0, 1, .5], sheen=1, sheen_tint=1, clearcoat=0,
-        clearcoat_gloss=0)
-
-    opacity = 1.
-    left_hemi_actor.GetProperty().SetOpacity(opacity)
 
     right_max_op_vals = -np.nanmin(right_sulc_points)
     right_min_op_vals = -np.nanmax(right_sulc_points)
@@ -343,23 +350,30 @@ if __name__ == '__main__':
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
     right_colors = right_tex_colors
-    right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
+    #right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
                                             colors=right_colors)
 
-    _ = manifest_principled(
-        right_hemi_actor, subsurface=0, subsurface_color=[0, 0, 0], metallic=0,
-        specular=0, specular_tint=0, roughness=0, anisotropic=0,
-        anisotropic_direction=[0, 1, .5], sheen=1, sheen_tint=1, clearcoat=0,
-        clearcoat_gloss=0)
+    principled_params = {'subsurface': 0, 'subsurface_color': [0, 0, 0],
+                         'metallic': 0, 'specular': 0, 'specular_tint': 0,
+                         'roughness': 0, 'anisotropic': 0,
+                         'anisotropic_direction': [0, 1, .5], 'sheen': 1,
+                         'sheen_tint': 1, 'clearcoat': 0, 'clearcoat_gloss': 0}
 
+    left_principled = manifest_principled(
+        left_hemi_actor, **principled_params)
+    right_principled = manifest_principled(
+        right_hemi_actor, **principled_params)
+
+    opacity = 1.
+    left_hemi_actor.GetProperty().SetOpacity(opacity)
     right_hemi_actor.GetProperty().SetOpacity(opacity)
 
     scene.add(left_hemi_actor)
     scene.add(right_hemi_actor)
 
-    view = 'top left'
+    view = 'dorsal'
     if view == 'dorsal' or view == 'top':
         pass
     elif view == 'anterior' or view == 'front':
