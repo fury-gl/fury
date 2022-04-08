@@ -390,15 +390,16 @@ if __name__ == '__main__':
 
     min_coords = np.min(msdl_coords, axis=0)
     max_coords = np.max(msdl_coords, axis=0)
+    max_val = np.max(np.abs(corr_matrix[~np.eye(num_labels, dtype=bool)]))
+    edges_cmap = cm.get_cmap('RdYlGn')
+
     #hemi_thr = 1
     hemi_thr = max_coords[0]
 
+    thr = .45
     edges_coords = []
     edges_colors = []
     show_nodes = [False] * num_labels
-    max_val = np.max(np.abs(corr_matrix[~np.eye(num_labels, dtype=bool)]))
-    thr = .45
-    edges_cmap = cm.get_cmap('RdYlGn')
     for i in range(num_labels):
         coord_i = msdl_coords[i]
         if coord_i[0] < hemi_thr:
