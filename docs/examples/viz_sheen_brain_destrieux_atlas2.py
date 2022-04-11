@@ -196,6 +196,15 @@ def get_hemisphere_actor(fname, colors=None, auto_normals='vtk'):
     return get_actor_from_polydata(polydata)
 
 
+def key_pressed(obj, event):
+    global show_m
+    key = obj.GetKeySym()
+    if key == 's' or key == 'S':
+        print('Saving image...')
+        show_m.save_screenshot('screenshot.png', mag_factor=4)
+        print('Image saved.')
+
+
 def points_from_gzipped_gifti(fname):
     with gzip.open(fname) as f:
         as_bytes = f.read()
@@ -270,7 +279,8 @@ if __name__ == '__main__':
     _, left_unique_count = np.unique(left_parcellation, return_counts=True)
     _, right_unique_count = np.unique(right_parcellation, return_counts=True)
 
-    n_top = 13
+    #n_top = 13
+    n_top = 24
     n_top_left_nets = np.argpartition(left_unique_count, -n_top)[-n_top:]
     n_top_right_nets = np.argpartition(right_unique_count, -n_top)[-n_top:]
 
@@ -323,7 +333,8 @@ if __name__ == '__main__':
     n_top_net_colors = np.array(n_top_net_colors)
     """
 
-    n_top_net_cmap = cm.get_cmap('Paired')
+    #n_top_net_cmap = cm.get_cmap('Paired')
+    n_top_net_cmap = cm.get_cmap('tab20b')
     n_top_net_colors = np.array([n_top_net_cmap(i / (num_top_net - 1))[:3]
                                  for i in range(num_top_net)])
 
@@ -354,9 +365,10 @@ if __name__ == '__main__':
     corr_matrix = corr_measure.fit_transform([time_series])[0]
 
     max_val = np.max(np.abs(corr_matrix[~np.eye(num_time_series, dtype=bool)]))
-    edges_cmap = cm.get_cmap('bwr')
+    pos_edges_cmap = cm.get_cmap('summer_r')
+    neg_edges_cmap = cm.get_cmap('autumn')
 
-    thr = .65
+    thr = .7
     edges_coords = []
     edges_colors = []
     show_nodes = [False] * num_time_series
@@ -366,14 +378,14 @@ if __name__ == '__main__':
                 show_nodes[i] = True
                 show_nodes[j] = True
                 edges_coords.append([label_coords[i], label_coords[j]])
-                val = (corr_matrix[i, j] + max_val) / (2 * max_val)
-                edges_colors.append(edges_cmap(val)[:3])
+                val = (corr_matrix[i, j] - thr) / (max_val - thr)
+                edges_colors.append(pos_edges_cmap(val)[:3])
             if corr_matrix[i, j] < -thr:
                 show_nodes[i] = True
                 show_nodes[j] = True
                 edges_coords.append([label_coords[i], label_coords[j]])
-                val = (corr_matrix[i, j] + max_val) / (2 * max_val)
-                edges_colors.append(edges_cmap(val)[:3])
+                val = (corr_matrix[i, j] + max_val) / (-thr + max_val)
+                edges_colors.append(neg_edges_cmap(val)[:3])
     edges_coords = np.array(edges_coords)
     edges_colors = np.array(edges_colors)
     show_nodes = np.array(show_nodes)
@@ -381,7 +393,7 @@ if __name__ == '__main__':
     edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
                                    linewidth=.5)
 
-    scene.add(edges_actor)
+    #scene.add(edges_actor)
 
     nodes_coords = []
     nodes_colors = []
@@ -398,7 +410,7 @@ if __name__ == '__main__':
 
     nodes_actor = actor.sphere(nodes_coords, nodes_colors, radii=2)
 
-    scene.add(nodes_actor)
+    #scene.add(nodes_actor)
 
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
@@ -661,11 +673,10 @@ if __name__ == '__main__':
 
     scene.add(control_panel)
 
+    show_m.iren.AddObserver('KeyPressEvent', key_pressed)
+
     size = scene.GetSize()
 
     show_m.add_window_callback(win_callback)
 
     show_m.start()
-
-    # window.record(scene, out_path='sheen_atlas_2.png', size=(1920, 1080),
-    #              magnification=4)
