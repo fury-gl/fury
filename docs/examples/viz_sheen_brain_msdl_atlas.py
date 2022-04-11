@@ -377,12 +377,12 @@ if __name__ == '__main__':
 
     min_coords = np.min(msdl_coords, axis=0)
     max_coords = np.max(msdl_coords, axis=0)
+
     max_val = np.max(np.abs(corr_matrix[~np.eye(num_labels, dtype=bool)]))
     edges_cmap = cm.get_cmap('RdYlGn')
 
     #hemi_thr = 1
     hemi_thr = max_coords[0]
-
     thr = .45
     edges_coords = []
     edges_colors = []
@@ -428,12 +428,21 @@ if __name__ == '__main__':
 
     scene.add(nodes_actor)
 
+    """
+    # Background opacities
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
 
     left_opacities = ((-left_sulc_points - left_min_op_vals) /
                       (left_max_op_vals - left_min_op_vals)) * 255
-    left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
+    #left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
+    
+    right_max_op_vals = -np.nanmin(right_sulc_points)
+    right_min_op_vals = -np.nanmax(right_sulc_points)
+
+    right_opacities = ((-right_sulc_points - right_min_op_vals) /
+                       (right_max_op_vals - right_min_op_vals)) * 255
+    """
 
     left_tex = np.round(compute_textures(msdl_atlas_tex, msdl_atlas_affine,
                                          left_pial_mesh)).astype(np.uint8)
@@ -443,17 +452,10 @@ if __name__ == '__main__':
                                        bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    #left_colors = left_tex_colors
     #left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
-
-    right_max_op_vals = -np.nanmin(right_sulc_points)
-    right_min_op_vals = -np.nanmax(right_sulc_points)
-
-    right_opacities = ((-right_sulc_points - right_min_op_vals) /
-                       (right_max_op_vals - right_min_op_vals)) * 255
 
     right_tex = np.round(compute_textures(msdl_atlas_tex, msdl_atlas_affine,
                                           right_pial_mesh)).astype(np.uint8)
@@ -463,7 +465,6 @@ if __name__ == '__main__':
                                         bg_colors=right_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    #right_colors = right_tex_colors
     #right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
