@@ -364,28 +364,37 @@ if __name__ == '__main__':
     corr_measure = ConnectivityMeasure(kind='correlation')
     corr_matrix = corr_measure.fit_transform([time_series])[0]
 
+    min_coords = np.min(label_coords, axis=0)
+    max_coords = np.max(label_coords, axis=0)
+
     max_val = np.max(np.abs(corr_matrix[~np.eye(num_time_series, dtype=bool)]))
     pos_edges_cmap = cm.get_cmap('summer_r')
     neg_edges_cmap = cm.get_cmap('autumn')
 
+    #hemi_thr = 0
+    hemi_thr = max_coords[0]
     thr = .7
     edges_coords = []
     edges_colors = []
     show_nodes = [False] * num_time_series
     for i in range(num_time_series):
-        for j in range(i + 1, num_time_series):
-            if corr_matrix[i, j] > thr:
-                show_nodes[i] = True
-                show_nodes[j] = True
-                edges_coords.append([label_coords[i], label_coords[j]])
-                val = (corr_matrix[i, j] - thr) / (max_val - thr)
-                edges_colors.append(pos_edges_cmap(val)[:3])
-            if corr_matrix[i, j] < -thr:
-                show_nodes[i] = True
-                show_nodes[j] = True
-                edges_coords.append([label_coords[i], label_coords[j]])
-                val = (corr_matrix[i, j] + max_val) / (-thr + max_val)
-                edges_colors.append(neg_edges_cmap(val)[:3])
+        coord_i = label_coords[i]
+        if coord_i[0] < hemi_thr:
+            for j in range(i + 1, num_time_series):
+                coord_j = label_coords[j]
+                if coord_j[0] < hemi_thr:
+                    if corr_matrix[i, j] > thr:
+                        show_nodes[i] = True
+                        show_nodes[j] = True
+                        edges_coords.append([label_coords[i], label_coords[j]])
+                        val = (corr_matrix[i, j] - thr) / (max_val - thr)
+                        edges_colors.append(pos_edges_cmap(val)[:3])
+                    if corr_matrix[i, j] < -thr:
+                        show_nodes[i] = True
+                        show_nodes[j] = True
+                        edges_coords.append([label_coords[i], label_coords[j]])
+                        val = (corr_matrix[i, j] + max_val) / (-thr + max_val)
+                        edges_colors.append(neg_edges_cmap(val)[:3])
     edges_coords = np.array(edges_coords)
     edges_colors = np.array(edges_colors)
     show_nodes = np.array(show_nodes)
@@ -393,7 +402,7 @@ if __name__ == '__main__':
     edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
                                    linewidth=.5)
 
-    #scene.add(edges_actor)
+    scene.add(edges_actor)
 
     nodes_coords = []
     nodes_colors = []
@@ -410,14 +419,23 @@ if __name__ == '__main__':
 
     nodes_actor = actor.sphere(nodes_coords, nodes_colors, radii=2)
 
-    #scene.add(nodes_actor)
+    scene.add(nodes_actor)
 
+    """
+    # Background opacities
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
 
     left_opacities = ((-left_sulc_points - left_min_op_vals) /
                       (left_max_op_vals - left_min_op_vals)) * 255
-    left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
+    #left_op_colors = np.tile(left_opacities[:, np.newaxis], (1, 3))
+    
+    right_max_op_vals = -np.nanmin(right_sulc_points)
+    right_min_op_vals = -np.nanmax(right_sulc_points)
+
+    right_opacities = ((-right_sulc_points - right_min_op_vals) /
+                       (right_max_op_vals - right_min_op_vals)) * 255
+    """
 
     t = time()
     left_colors = colors_from_pre_cmap(
@@ -425,17 +443,10 @@ if __name__ == '__main__':
         bg_colors=left_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    #left_colors = left_tex_colors
     #left_colors = np.hstack((left_colors, left_opacities[:, np.newaxis]))
 
     left_hemi_actor = get_hemisphere_actor(fsaverage.pial_left,
                                            colors=left_colors)
-
-    right_max_op_vals = -np.nanmin(right_sulc_points)
-    right_min_op_vals = -np.nanmax(right_sulc_points)
-
-    right_opacities = ((-right_sulc_points - right_min_op_vals) /
-                       (right_max_op_vals - right_min_op_vals)) * 255
 
     t = time()
     right_colors = colors_from_pre_cmap(
@@ -443,7 +454,6 @@ if __name__ == '__main__':
         bg_colors=right_bg_colors)
     print('Time: {}'.format(timedelta(seconds=time() - t)))
 
-    #right_colors = right_tex_colors
     #right_colors = np.hstack((right_colors, right_opacities[:, np.newaxis]))
 
     right_hemi_actor = get_hemisphere_actor(fsaverage.pial_right,
