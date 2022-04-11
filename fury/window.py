@@ -593,7 +593,28 @@ class ShowManager(object):
         self.destroy_timers()
         self.timers.clear()
 
+    def save_screenshot(self, fname, mag_factor=1):
+        """Save a screenshot of the current window in the specified filename.
 
+        Parameters
+        ----------
+        fname : str or None
+            File name where to save the screenshot.
+        mag_factor : int, optional
+            Applies a magnification factor to the scene before taking the
+            screenshot which improves the quality. Default is 1.
+
+        """
+        img = RenderLargeImage()
+        img.SetInput(self.scene)
+        img.SetMagnification(mag_factor)
+        img.Update()
+        img_out = img.GetOutput()
+        data = numpy_support.vtk_to_numpy(img_out.GetPointData().GetScalars())
+        w, h, _ = img_out.GetDimensions()
+        components = img_out.GetNumberOfScalarComponents()
+        data = data.reshape((h, w, components))
+        save_image(data, fname)
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
