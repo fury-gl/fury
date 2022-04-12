@@ -374,9 +374,9 @@ def prim_tetrahedron():
                              [-0.5, -0.5, 0.5]])
 
     pyramid_triag = np.array([[2, 0, 1],
-                              [0, 3, 2],
+                              [0, 2, 3],
                               [0, 3, 1],
-                              [1, 2, 3]], dtype='i8')
+                              [1, 3, 2]], dtype='i8')
 
     return pyramid_vert, pyramid_triag
 
