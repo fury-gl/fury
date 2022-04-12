@@ -374,8 +374,10 @@ if __name__ == '__main__':
     #hemi_thr = 0
     hemi_thr = max_coords[0]
     thr = .7
+
     edges_coords = []
     edges_colors = []
+    valid_corr_values = []
     show_nodes = [False] * num_time_series
     for i in range(num_time_series):
         coord_i = label_coords[i]
@@ -386,6 +388,7 @@ if __name__ == '__main__':
                     if corr_matrix[i, j] > thr:
                         show_nodes[i] = True
                         show_nodes[j] = True
+                        valid_corr_values.append(corr_matrix[i, j])
                         edges_coords.append([label_coords[i], label_coords[j]])
                         val = (corr_matrix[i, j] - thr) / (max_val - thr)
                         edges_colors.append(pos_edges_cmap(val)[:3])
@@ -403,6 +406,46 @@ if __name__ == '__main__':
                                    linewidth=.5)
 
     scene.add(edges_actor)
+
+    """
+    import matplotlib.pyplot as plt
+    from matplotlib.cm import ScalarMappable
+    from matplotlib.colors import Normalize, LinearSegmentedColormap
+
+    bel_thr_ratio = thr / max_val
+    abo_thr_ratio = 1 - bel_thr_ratio
+    num_pos_cmap_colors = pos_edges_cmap.N
+    num_pos_cmap_grays = np.round(
+        bel_thr_ratio * num_pos_cmap_colors / abo_thr_ratio).astype(int)
+    bel_thr_cmap_list = [(.5, .5, .5, 1)] * num_pos_cmap_grays
+
+    num_ticks = 5
+    ticks = np.linspace(0, max_val, num_ticks)
+
+    norm = Normalize(vmin=0, vmax=max_val)
+    cmap_list = []
+    # for i in range(neg_edges_cmap.N):
+    #    cmap_list.append(neg_edges_cmap(i))
+    cmap_list.extend(bel_thr_cmap_list)
+    for i in range(pos_edges_cmap.N):
+        cmap_list.append(pos_edges_cmap(i))
+    colorbar_cmap = LinearSegmentedColormap.from_list('Custom cmap', cmap_list,
+                                                      N=len(cmap_list))
+
+    bounds = np.linspace(0, max_val, colorbar_cmap.N)
+
+    proxy_mappable = ScalarMappable(cmap=colorbar_cmap, norm=norm)
+    proxy_mappable.set_array(valid_corr_values)
+
+    figsize = [4.7, 4]
+    figure = plt.figure(figsize=figsize)
+
+    cbar_tick_format = '%.2g'
+    cbar = figure.colorbar(proxy_mappable, ticks=ticks, boundaries=bounds,
+                           spacing='proportional', format=cbar_tick_format,
+                           orientation='vertical')
+    plt.show()
+    """
 
     nodes_coords = []
     nodes_colors = []
