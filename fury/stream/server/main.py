@@ -33,12 +33,14 @@ if WEBRTC_AVAILABLE:
 
 
 class RTCServer(VideoStreamTrack):
+    """This Obj it's responsible to create the VideoStream for
+        the WebRTCServer
+    """
     def __init__(
             self, image_buffer_manager,
     ):
-        """This Obj it's responsible to create the VideoStream for
-        the WebRTCServer
-
+        """
+        
         Parameters
         ----------
         image_buffer_manager : ImageBufferManager

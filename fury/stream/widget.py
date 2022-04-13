@@ -1,7 +1,9 @@
 import subprocess
-import numpy as np
+import time
+import socket
+import errno
 import sys
-from fury.stream.constants import PY_VERSION_8
+import numpy as np
 
 try:
     from IPython.display import IFrame
@@ -10,10 +12,7 @@ try:
 except ImportError:
     IPYTHON_AVAILABLE = False
 
-import time
-import socket
-import errno
-
+from fury.stream.constants import PY_VERSION_8
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 
 

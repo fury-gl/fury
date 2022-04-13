@@ -1,15 +1,15 @@
-from enum import auto
-import threading
-import numpy as np
 import io
-from PIL import Image, ImageDraw
-import multiprocessing
 import time
 import logging
+import multiprocessing
+from abc import ABC, abstractmethod
 from threading import Timer
 import asyncio
-from abc import ABC, abstractmethod
+
+import numpy as np
+from PIL import Image, ImageDraw
 from fury.stream.constants import PY_VERSION_8
+
 
 if PY_VERSION_8:
     from multiprocessing import shared_memory

@@ -1,15 +1,15 @@
-import vtk
 import logging
-import time
-
-import numpy as np
 from functools import partial
+import time
+import platform
+
+import vtk
+import numpy as np
 from fury.stream.tools import ArrayCircularQueue, SharedMemCircularQueue
 from fury.stream.tools import (
     RawArrayImageBufferManager, SharedMemImageBufferManager)
 from fury.stream.tools import IntervalTimer
 from fury.stream.tools import IntervalTimerThreading
-import platform
 from fury.stream.constants import _CQUEUE, PY_VERSION_8
 
 
