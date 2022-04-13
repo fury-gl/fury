@@ -1848,8 +1848,8 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,
-          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
-          vertices=None, faces=None):
+          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03, scales=1,
+          vertices=None, faces=None, repeat_primitive=True):
     """Visualize one or many arrows with differents features.
 
     Parameters
@@ -1893,6 +1893,14 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
+    if repeat_primitive:
+        vertices, faces = fp.prim_arrow()
+        res = fp.repeat_primitive(vertices, faces, directions=directions, centers=centers,
+                                  colors=colors, scales=scales)
+        big_vertices, big_faces, big_colors, _ = res
+        arrow_actor = get_actor_from_primitive(big_vertices, big_faces, big_colors)
+        return arrow_actor
+
     src = ArrowSource() if faces is None else None
 
     if src is not None:
