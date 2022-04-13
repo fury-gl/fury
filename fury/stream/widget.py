@@ -51,7 +51,6 @@ class Widget:
             encoding='mjpeg', ms_jpeg=33,
             queue_size=20):
         """
-        
         Parameters
         ----------
         showm : ShowmManager

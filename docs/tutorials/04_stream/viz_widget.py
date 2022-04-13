@@ -9,7 +9,7 @@ Other users can view and interact with your data visualization
 in real-time using a web-browser.
 
 By default, the widget will open a local server on port 8000.
-With the encoding parameter you can choose between mjpeg or 
+With the encoding parameter you can choose between mjpeg or
 webrtc. WebRTC is a more robust option and can be used to perform
 a live streaming with a low-latency connection. However, to use
 webRTC you need to install the aiortc library.
@@ -17,7 +17,7 @@ webRTC you need to install the aiortc library.
 .. code-block:: bash
     pip install aiortc
 
-In addition, if you don't have ffmpeg installed, you  need 
+In addition, if you don't have ffmpeg installed, you  need
 to install it.
 
 Linux
@@ -42,7 +42,7 @@ import numpy as np
 from fury import actor, window
 from fury.stream.widget import Widget
 
-interactive = False 
+interactive = False
 window_size = (720, 500)
 N = 4
 centers = np.random.normal(size=(N, 3))

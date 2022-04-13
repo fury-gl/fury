@@ -40,7 +40,7 @@ class RTCServer(VideoStreamTrack):
             self, image_buffer_manager,
     ):
         """
-        
+
         Parameters
         ----------
         image_buffer_manager : ImageBufferManager
@@ -112,7 +112,7 @@ def web_server_raw_array(
     ms_jpeg=16,
     run_app=True
 ):
-    """This will create a streaming webserver running on the 
+    """This will create a streaming webserver running on the
     given port and host using RawArrays.
 
     Parameters

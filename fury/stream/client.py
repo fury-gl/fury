@@ -19,7 +19,7 @@ def callback_stream_client(stream_client):
 
     Parameters
     ----------
-    stream_client : StreamClient 
+    stream_client : StreamClient
 
     """
     if stream_client.in_request:
@@ -129,7 +129,6 @@ class FuryStreamClient:
         def callback_for_vtk(caller, event, *args, **kwargs):
             callback_stream_client(**{"stream_client": kwargs["stream_client"]})
         use_asyncio = platform.system() == 'Windows' or use_asyncio
-       
         if self._started:
             self.stop()
         if ms > 0:
@@ -142,7 +141,7 @@ class FuryStreamClient:
                     callback_stream_client,
                     **{'stream_client': self}
                 )
-            else: 
+            else:
                 self._id_observer = self.showm.iren.AddObserver(
                     "TimerEvent",
                     partial(

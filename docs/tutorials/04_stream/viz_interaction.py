@@ -8,7 +8,7 @@ serve an interactive visualization through a web browser.
 
 You can choose between two differnet encodings: WebRTC or MJPEG.
 WebRTC is a more robust option and can be used to perform
-a live streaming with a low-latency connection for example using 
+a live streaming with a low-latency connection for example using
 ngrok. However, to use webRTC you need to install the aiortc library.
 
 .. code-block:: bash
@@ -42,15 +42,9 @@ from fury.stream.client import FuryStreamClient, FuryStreamInteraction
 from fury.stream.server.main import WEBRTC_AVAILABLE
 from fury import actor, window
 
-try:
-    import aiortc
-    WEBRTC_AVAILABLE = True
-except ImportError:
-    WEBRTC_AVAILABLE = False
-
 
 if __name__ == '__main__':
-    interactive =  False 
+    interactive = False
     # `use_raw_array` is a flag to tell the server to use python RawArray
     # instead of SharedMemory which is a new feature in python 3.8
     # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array

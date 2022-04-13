@@ -648,7 +648,6 @@ class GenericImageBufferManager(ABC):
 
         Returns:
             bytes: jpeg image.
-        
         """
         width, height, image = self.get_current_frame()
 
@@ -886,7 +885,6 @@ class SharedMemImageBufferManager(GenericImageBufferManager):
 
 class IntervalTimerThreading:
     """Implements a object with the same behavior of setInterval from Js
-    
     """
     def __init__(self, seconds, callback, *args, **kwargs):
         """
@@ -921,7 +919,7 @@ class IntervalTimerThreading:
         -----------
         [1] https://stackoverflow.com/questions/3393612/run-certain-code-every-n-seconds
 
-        """ # noqa
+        """  # noqa
         self._timer = None
         self.seconds = seconds
         self.callback = callback
