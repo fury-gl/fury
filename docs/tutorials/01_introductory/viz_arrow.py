@@ -11,7 +11,8 @@ from fury import window, actor
 
 
 ############################################################################
-# First thing, you have to specify centers, directions, and colors of the arrow(s)
+# First thing, you have to specify centers, directions, and colors of the
+# arrow(s)
 
 centers = np.zeros([3, 3])
 
@@ -27,7 +28,8 @@ scales = np.array([2.1, 2.6, 2.5])
 arrow_actor = actor.arrow(centers, dirs, colors=colors, scales=1.5)
 
 ############################################################################
-# repeating what we did but this time with random centers, directions, and colors.
+# repeating what we did but this time with random centers, directions, and
+# colors.
 
 cen2 = np.random.rand(5, 3)
 dir2 = np.random.rand(5, 3)
@@ -48,4 +50,4 @@ interactive = False
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_markers.png', size=(600, 600))
+window.record(scene, out_path='viz_arrow.png', size=(600, 600))
