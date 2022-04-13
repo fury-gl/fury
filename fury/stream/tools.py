@@ -17,12 +17,6 @@ if PY_VERSION_8:
 else:
     shared_memory = None
 
-try:
-    import cv2
-    OPENCV_AVAILABLE = True
-except ImportError:
-    cv2 = None
-    OPENCV_AVAILABLE = False
 
 _FLOAT_ShM_TYPE = 'd'
 _INT_ShM_TYPE = 'i'
@@ -651,16 +645,10 @@ class GenericImageBufferManager(ABC):
         image = image[0:width*height*3].reshape(
                 (height, width, 3))
         image = np.flipud(image)
-        if OPENCV_AVAILABLE:
-            # preserve width and height, flip B->R
-            image = image[:, :, ::-1]
-            image_encoded = cv2.imencode('.jpg', image)[1]
-            bytes_img = image_encoded.tobytes()
-        else:
-            image_encoded = Image.fromarray(image, mode="RGB")
-            bytes_img_data = io.BytesIO()
-            image_encoded.save(bytes_img_data, format='jpeg')
-            bytes_img = bytes_img_data.getvalue()
+        image_encoded = Image.fromarray(image, mode="RGB")
+        bytes_img_data = io.BytesIO()
+        image_encoded.save(bytes_img_data, format='jpeg')
+        bytes_img = bytes_img_data.getvalue()
 
         return bytes_img
 

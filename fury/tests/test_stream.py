@@ -98,76 +98,60 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
 def test_pillow():
     use_raw_array = True
     ms_stream = 0
-    # creates a context whithout opencv
-    # with mock.patch.object(sys.modules, {'cv2': None}):
-    #     reload(sys.modules["fury.stream.tools"])
-    with mock.patch.object(tools, 'OPENCV_AVAILABLE', False):
-        width_0 = 100
-        height_0 = 200
+    width_0 = 100
+    height_0 = 200
 
-        centers = np.array([
-            [0, 0, 0],
-            [-1, 0, 0],
-            [1, 0, 0]
-        ])
-        colors = np.array([
-            [1, 0, 0],
-            [0, 1, 0],
-            [0, 0, 1]
-        ])
+    centers = np.array([
+        [0, 0, 0],
+        [-1, 0, 0],
+        [1, 0, 0]
+    ])
+    colors = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
 
-        actors = actor.sphere(
-            centers, colors=colors, radii=.1)
+    actors = actor.sphere(
+        centers, colors=colors, radii=.1)
 
-        scene = window.Scene()
-        scene.add(actors)
-        showm = window.ShowManager(scene, reset_camera=False, size=(
-            width_0, height_0), order_transparent=False,
+    scene = window.Scene()
+    scene.add(actors)
+    showm = window.ShowManager(scene, reset_camera=False, size=(
+        width_0, height_0), order_transparent=False,
+    )
+
+    showm.initialize()
+
+    stream = FuryStreamClient(
+        showm, use_raw_array=use_raw_array,
+        whithout_iren_start=False)
+    if use_raw_array:
+        img_buffer_manager = tools.RawArrayImageBufferManager(
+            info_buffer=stream.img_manager.info_buffer,
+            image_buffers=stream.img_manager.image_buffers
+        )
+    else:
+        img_buffer_manager = tools.SharedMemImageBufferManager(
+            info_buffer_name=stream.img_manager.info_buffer_name,
+            image_buffer_names=stream.img_manager.image_buffer_names
         )
 
-        showm.initialize()
+    showm.render()
+    stream.start(ms_stream)
+    showm.render()
+    # test jpeg method
+    img_buffer_manager.get_jpeg()
+    width, height, frame = img_buffer_manager.get_current_frame()
 
-        stream = FuryStreamClient(
-            showm, use_raw_array=use_raw_array,
-            whithout_iren_start=False)
-        if use_raw_array:
-            img_buffer_manager = tools.RawArrayImageBufferManager(
-                info_buffer=stream.img_manager.info_buffer,
-                image_buffers=stream.img_manager.image_buffers
-            )
-        else:
-            img_buffer_manager = tools.SharedMemImageBufferManager(
-                info_buffer_name=stream.img_manager.info_buffer_name,
-                image_buffer_names=stream.img_manager.image_buffer_names
-            )
-
-        showm.render()
-        stream.start(ms_stream)
-        showm.render()
-        # test jpeg method
-        img_buffer_manager.get_jpeg()
-        width, height, frame = img_buffer_manager.get_current_frame()
-
-        # assert width == showm.size[0] and height == showm.size[1]
-        image = np.frombuffer(
-                    frame,
-                    'uint8')[0:width*height*3].reshape((height, width, 3))
-        # image = np.flipud(image)
-
-        # image = image[:, :, ::-1]
-        # import matplotlib.pyplot as plt
-        # plt.imshow(image)
-        # plt.show()
-        # npt.assert_allclose(arr, image)
-        report = window.analyze_snapshot(image, find_objects=True)
-        npt.assert_equal(report.objects, 3)
-        img_buffer_manager.cleanup()
-        stream.stop()
-        stream.cleanup()
-        # import cv2
-        # sys.modules["cv2"] = cv2
-        # reload(sys.modules["fury.stream.tools"])
-    # reload(sys.modules["fury.stream.tools"])
+    image = np.frombuffer(
+                frame,
+                'uint8')[0:width*height*3].reshape((height, width, 3))
+    report = window.analyze_snapshot(image, find_objects=True)
+    npt.assert_equal(report.objects, 3)
+    img_buffer_manager.cleanup()
+    stream.stop()
+    stream.cleanup()
 
 
 def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
@@ -177,7 +161,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
 
     use_raw_array = True
     ms_stream = 0
-    # creates a context whithout opencv
+    # creates a context whithout cython
     with mock.patch.dict(sys.modules, {'pyximport': None}):
         reload(sys.modules["fury.stream.server.main"])
         width_0 = 100
