@@ -13,7 +13,7 @@ implementing the following fractals:
 
 Let's begin by importing some necessary modules. We need ``fury.primitive`` to
 avoid having to hardcode the geometry of a tetrahedron and a cube.
-``fury.utils`` also contains a ``repeat_sources`` function which we will use
+``fury.utils`` also contains a ``repeat_primitive`` function which we will use
 for this demo.
 """
 
@@ -27,7 +27,7 @@ from fury import window, primitive, utils, ui
 #
 # 1. Instead of creating a new actor to represent each primitive of the
 # fractal, we will compute the centers of each primitive and draw them at once
-# using ``repeat_sources()``.
+# using ``repeat_primitive()``.
 #
 # 2. How many primitives do we need? For each fractal, we define a depth which
 # will prevent infinite recursion. Assuming we have a depth of :math:`N`, and
