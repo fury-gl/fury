@@ -1007,11 +1007,11 @@ def prim_cone(radius=0.5, height=1, sectors=10):
 
     Parameters
     ----------
-    radius: float
+    radius: float, optional
         Radius of the cone
-    height: float
+    height: float, optional
         Height of the cone
-    sectors: int
+    sectors: int, optional
         Sectors in the cone
 
     Returns
@@ -1023,14 +1023,14 @@ def prim_cone(radius=0.5, height=1, sectors=10):
 
     """
 
-    if not sectors > 2:
+    if sectors < 3:
         raise ValueError("Sectors parameter should be greater than 2")
 
     sector_angles = 2*np.pi/sectors*np.arange(sectors)
 
     # Circle in YZ plane
     h = height/2.0
-    x = np.full((sectors,), h)
+    x = np.full((sectors,), -h)
     y, z = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
 
     x = np.concatenate((x, np.array([h, -h])))

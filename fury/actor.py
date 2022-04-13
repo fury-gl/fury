@@ -1938,7 +1938,7 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         If faces is None then a cone is created based on directions, heights
         and resolution. If not then a cone is created with the provided
         vertices and faces.
-    use_primitive: boolean
+    use_primitive: boolean, optional
         If True uses primitives to create the cone actor.
 
     Returns

@@ -870,7 +870,7 @@ def test_cones_vertices_faces(interactive=False):
                       [0, 0, 1, 0.99], [1, 1, 1, 0.6]])
     vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
                          [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
-    faces = np.array([[0, 1, 3], [0, 1, 2]])
+    faces = np.array([[0, 1, 3], [0, 2, 1]])
     cone_1 = actor.cone(centers=centers[:2], directions=directions[:2],
                         colors=colors[:2], vertices=vertices,
                         faces=faces, use_primitive=False)
