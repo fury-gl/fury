@@ -14,7 +14,10 @@ ngrok. However, to use webRTC you need to install the aiortc library.
 .. code-block:: bash
     pip install aiortc
 
-In addition, if you don't have ffmpeg installed, you need to install it.
+Notes
+------
+
+If you don't have ffmpeg installed, you need to install it to use WebRTC
 
 Linux
 
@@ -25,24 +28,20 @@ OS X
 
 `brew install ffmpeg opus libvpx pkg-config`
 
-Notes
-------
-For this example your Python version should be 3.8 or greater
-
 
 """
 
 import sys
-from fury.stream.server.main import WEBRTC_AVAILABLE
-from fury import actor, window
-import numpy as np
-
 import multiprocessing
+import numpy as np
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
 from fury.stream.server.main import web_server, web_server_raw_array
 from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+from fury.stream.server.main import WEBRTC_AVAILABLE
+from fury import actor, window
+
 try:
     import aiortc
     WEBRTC_AVAILABLE = True

@@ -4,17 +4,15 @@ Streaming FURY with WebRTC/MJPEG
 ====================================
 
 """
+
+from os.path import join as pjoin
 import multiprocessing
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
-from os.path import join as pjoin
-from fury import actor, window, colormap as cmap
 import numpy as np
-
-###############################################################################
-# Then let's download some available datasets.
-
+from fury import actor, window, colormap as cmap
+from fury.stream.client import FuryStreamClient
 from fury.data.fetcher import fetch_viz_wiki_nw
 from fury.stream.server.main import web_server_raw_array
 
@@ -76,10 +74,8 @@ if __name__ == '__main__':
 
     showm = window.ShowManager(scene, reset_camera=False, size=(
         window_size[0], window_size[1]), order_transparent=False,
-        # multi_samples=8
     )
 
-    from fury.stream.client import FuryStreamClient
     ###########################################################################
     # ms define the amount of mileseconds that will be used in the timer event.
 

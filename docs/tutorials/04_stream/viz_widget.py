@@ -35,10 +35,10 @@ For this example your python version should be 3.8 or greater
 
 """
 
-import asyncio
-import numpy as np
-import platform
 import time
+import asyncio
+import platform
+import numpy as np
 from fury import actor, window
 from fury.stream.widget import Widget
 
