@@ -124,6 +124,7 @@ Glyph3D = fcvtk.vtkGlyph3D
 ##############################################################
 #  vtkFiltersGeneral Module
 SplineFilter = fgvtk.vtkSplineFilter
+TransformPolyDataFilter = fgvtk.vtkTransformPolyDataFilter
 
 ##############################################################
 #  vtkFiltersHybrid Module
