@@ -291,12 +291,16 @@ if __name__ == '__main__':
     n_top_net = np.array(n_top_net)
     num_top_net = len(n_top_net)
 
+    n_top_net_labels = []
     n_top_left_parcellation = np.zeros(left_parcellation.shape, dtype=int)
     n_top_right_parcellation = np.zeros(right_parcellation.shape, dtype=int)
     for idx, label in enumerate(n_top_net):
         label += 1
         n_top_left_parcellation[left_parcellation == label] = label
         n_top_right_parcellation[right_parcellation == label] = label
+        label += 1
+        n_top_net_labels.append(destrieux_labels[label])
+    n_top_net_labels = np.array(n_top_net_labels)
 
     fsaverage = datasets.fetch_surf_fsaverage()
 
@@ -401,6 +405,18 @@ if __name__ == '__main__':
     edges_coords = np.array(edges_coords)
     edges_colors = np.array(edges_colors)
     show_nodes = np.array(show_nodes)
+
+    """
+    vis_labels = []
+    vis_colors = []
+    for i in range(num_top_net):
+        #if show_nodes[i]:
+        if show_nodes[i] or show_nodes[i + num_top_net]:
+            vis_labels.append(n_top_net_labels[i])
+            vis_colors.append(n_top_net_colors[i])
+    vis_labels = np.array(vis_labels)
+    vis_colors = np.round(np.array(vis_colors) * 255).astype(int)
+    """
 
     edges_actor = actor.streamtube(edges_coords, edges_colors, opacity=.5,
                                    linewidth=.5)
