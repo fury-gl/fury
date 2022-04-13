@@ -32,17 +32,6 @@ def test_atlas():
     tf = text_tools.TextureFont(texture_atlas, font_path, 100)
     tf.load('a sdf123')
 
-    name = 'test_fonts_1238210930'
-    font_path_atlas = text_tools._FONT_PATH_USER
-    font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-    text_tools.create_new_font(
-        name=name,
-        font_size_res=10, font_path=font_path, show=False)
-    fonts = text_tools.list_fonts_available(True)
-    shutil.rmtree(f'{font_path_atlas}/{name}')
-    if name not in fonts.keys():
-        raise FileNotFoundError(f'Font {name} was not created')
-
 
 def test_bitmap_actor():
     N = 10
