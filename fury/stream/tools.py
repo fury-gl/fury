@@ -42,15 +42,21 @@ def remove_shm_from_resource_tracker():
     def fix_register(name, rtype):
         if rtype == "shared_memory":
             return
-        return resource_tracker._resource_tracker.register(
-            self, name, rtype)
+        try:
+            return resource_tracker._resource_tracker.register(
+                self, name, rtype)
+        except NameError:
+            return None
     resource_tracker.register = fix_register
 
     def fix_unregister(name, rtype):
         if rtype == "shared_memory":
             return
-        return resource_tracker._resource_tracker.unregister(
-            self, name, rtype)
+        try:
+            return resource_tracker._resource_tracker.unregister(
+                self, name, rtype)
+        except NameError:
+            return None
     resource_tracker.unregister = fix_unregister
 
     if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
@@ -350,7 +356,7 @@ class GenericCircularQueue(ABC):
         return interactions
 
     @abstractmethod
-    def enqueue(self):
+    def enqueue(self, data):
         pass  # pragma: no cover
 
     @abstractmethod
@@ -618,7 +624,9 @@ class GenericImageBufferManager(ABC):
         self.info_buffer_repr[2+next_buffer_index*2+1] = h
         self.info_buffer_repr[1] = next_buffer_index
 
-    def get_current_frame(self, from_buffer=False):
+    def get_current_frame(self):
+        """Get the current frame from the buffer.
+        """
         if not self._use_shared_mem:
             image_info = np.frombuffer(
                     self.info_buffer, _UINT_ShM_TYPE)
@@ -636,6 +644,12 @@ class GenericImageBufferManager(ABC):
         return self.width, self.height, image
 
     def get_jpeg(self):
+        """Returns a jpeg image from the buffer.
+
+        Returns:
+            bytes: jpeg image.
+        
+        """
         width, height, image = self.get_current_frame()
 
         if self._use_shared_mem:
