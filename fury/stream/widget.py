@@ -34,23 +34,25 @@ def check_port_is_available(host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.bind((host, port))
-    except socket.error as e:
-        if e.errno == errno.EADDRINUSE:
+    except socket.error as error:
+        if error.errno == errno.EADDRINUSE:
             available = False
     s.close()
     return available
 
 
 class Widget:
+    """Thi Obj it's able execute the fury streaming system
+        using the SharedMemory object from Python multiprocessing.
+    """
     def __init__(
             self, showm, ms_stream=33,
             ms_interaction=33,
             host='localhost', port=None,
             encoding='mjpeg', ms_jpeg=33,
             queue_size=20):
-        """Thi Obj it's able execute the fury streaming system
-        using the SharedMemory from python multiprocessing.
-
+        """
+        
         Parameters
         ----------
         showm : ShowmManager
@@ -179,6 +181,8 @@ class Widget:
 
     @property
     def url(self):
+        """Return the url to access the server
+        """
         url = f'http://{self._host}:{self._port}'
         url += f'?iframe=1&encoding={self.encoding}'
         return url

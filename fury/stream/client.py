@@ -55,7 +55,7 @@ class FuryStreamClient:
 
         Parameters
         ----------
-        showm : FuryShowmManager
+        showm : ShowManager
         max_window_size : tuple of ints, optional
             This allows resize events inside of the FURY window instance.
             Should be greater than the window size.
@@ -185,7 +185,7 @@ class FuryStreamClient:
         self._started = False
 
     def cleanup(self):
-        """Relsese the shared memory resources if necessary.
+        """Release the shared memory resources if necessary.
         """
         if self.use_raw_array:
             return
@@ -381,6 +381,6 @@ class FuryStreamInteraction:
         self._started = False
 
     def cleanup(self):
-        """Relsese the shared memory resources if necessary.
+        """Release the shared memory resources if necessary.
         """
         self.circular_queue.cleanup()

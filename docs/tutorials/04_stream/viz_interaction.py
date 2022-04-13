@@ -8,14 +8,13 @@ serve an interactive visualization through a web browser.
 
 You can choose between two differnet encodings: WebRTC or MJPEG.
 WebRTC is a more robust option and can be used to perform
-a live streaming with a low-latency connection for exampel using 
+a live streaming with a low-latency connection for example using 
 ngrok. However, to use webRTC you need to install the aiortc library.
 
 .. code-block:: bash
     pip install aiortc
 
-In addition, if you don't have ffmpeg installed, you need 
-to install it.
+In addition, if you don't have ffmpeg installed, you need to install it.
 
 Linux
 
@@ -28,11 +27,12 @@ OS X
 
 Notes
 ------
-For this example your python version should be 3.8 or greater
+For this example your Python version should be 3.8 or greater
 
 
 """
 
+import sys
 from fury.stream.server.main import WEBRTC_AVAILABLE
 from fury import actor, window
 import numpy as np
@@ -56,27 +56,26 @@ if __name__ == '__main__':
     # instead of SharedMemory which is a new feature in python 3.8
     # https://docs.python.org/3/library/multiprocessing.html#multiprocessing.Array
     # https://docs.python.org/3/library/multiprocessing.html#shared-memory-objects
-    #
-    use_raw_array = False
-   
+
+    use_raw_array = sys.version_info < (3, 8)
     window_size = (300, 300)
     # `max_window_size` are the maximum size of the window that will be
     # allowed to be sent to the browser. For example, if you set
     # `max_window_size=(800, 800)` then the browser will be limited to
     # a window of size (800, 800).
-    #
+
     max_window_size = (400, 400)
     # 0 ms_stream means that the frame will be sent to the server
     # right after the rendering
 
     # `ms_interaction` is the time in milliseconds that the user will have
     # to interact with the visualization
-    #
+
     ms_interaction = 1
     # `ms_stream` is the number of milliseconds that the server will
     # wait before sending a new frame to the browser. If `ms_stream=0`
     # then the server will send the frame right after the rendering.
-    #
+
     ms_stream = 0
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
@@ -152,7 +151,7 @@ if __name__ == '__main__':
     if interactive:
         showm.start()
 
-    # we need to close the server after the show is over
+    # We need to close the server after the show is over
     p.kill()
     ###########################################################################
     # We release the resources and stop the interactive mode
