@@ -1967,18 +1967,18 @@ def cone(centers, directions, colors, heights=1., resolution=10,
                                     colors=colors, active_scalars=heights,
                                     source=src, vertices=vertices, faces=faces)
         return cone_actor
-    else:
-        if faces is None and vertices is None:
-            vertices, faces = fp.prim_cone(sectors=resolution)
 
-        res = fp.repeat_primitive(
+    if faces is None and vertices is None:
+        vertices, faces = fp.prim_cone(sectors=resolution)
+
+    res = fp.repeat_primitive(
                     vertices, faces, centers,
                     directions=directions, colors=colors, scales=heights)
 
-        big_verts, big_faces, big_colors, _ = res
-        cone_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    big_verts, big_faces, big_colors, _ = res
+    cone_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
 
-        return cone_actor
+    return cone_actor
 
 
 def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),

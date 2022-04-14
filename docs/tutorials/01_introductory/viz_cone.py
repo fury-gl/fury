@@ -40,9 +40,9 @@ scene = window.Scene()
 scene.add(cone_actor1)
 scene.add(cone_actor2)
 
-interactive = True
+interactive = False
 
 if interactive:
     window.show(scene, size=(600, 600))
 
-window.record(scene, out_path='viz_markers.png', size=(600, 600))
+window.record(scene, out_path='viz_cone.png', size=(600, 600))
