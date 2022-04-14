@@ -537,6 +537,27 @@ def test_odf_slicer(interactive=False):
     del odf_actor
     del odfs
 
+def test_peak_symmetric(interactive=False):
+    _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
+    peak_dirs = np.zeros((4, 4, 4, 3, 3))
+    peak_dirs[:, :, :] = _peak_dirs
+    peak_values = np.random.rand(4, 4, 4, 3)
+
+    scene = window.Scene()
+    peak_actor = actor.peak(peak_dirs, peaks_values=peak_values,symmetric=False)
+    scene.add(peak_actor)
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    ex = ['vtkOpenGLActor']
+    npt.assert_equal(report.actors_classnames, ex)
+
+    # 6d data
+    data_6d = (255 * np.random.rand(5, 5, 5, 5, 5, 5))
+    npt.assert_raises(ValueError, actor.peak_slicer, data_6d, data_6d)
+
 def test_peak_slicer(interactive=False):
     _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
     # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape
