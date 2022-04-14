@@ -945,7 +945,7 @@ def test_advanced_geometry_actor(interactive=False):
     heights = np.array([5, 7, 10])
 
     actor_list = [[actor.cone, {'heights': heights, 'resolution': 8}],
-                  [actor.arrow, {'heights': heights, 'resolution': 9}],
+                  [actor.arrow, {'scales': heights, 'resolution': 9}],
                   [actor.cylinder, {'heights': heights, 'resolution': 10}],
                   [actor.disk, {'rinner': 4, 'router': 8, 'rresolution': 2,
                                 'cresolution': 2}]]

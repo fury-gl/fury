@@ -832,7 +832,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
                        colorz + (opacity,)])
 
     scales = np.asarray(scale)
-    arrow_actor = arrow(centers, dirs, colors, scales)
+    arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
     return arrow_actor
 
 
