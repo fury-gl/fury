@@ -40,11 +40,15 @@ class PeakActor(Actor):
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     """
 
     def __init__(self, directions, indices, values=None, affine=None,
-                 colors=None, lookup_colormap=None, linewidth=1):
+                 colors=None, lookup_colormap=None, linewidth=1, symmetric=True):
         if affine is not None:
             w_pos = apply_affine(affine, np.asarray(indices).T)
 
@@ -70,8 +74,14 @@ class PeakActor(Actor):
                     pv = values[center][direction]
                 else:
                     pv = 1.
-                point_i = directions[center][direction] * pv + xyz
-                point_e = -directions[center][direction] * pv + xyz
+
+                if symmetric:
+                    point_i = directions[center][direction] * pv + xyz
+                    point_e = -directions[center][direction] * pv + xyz
+                else:
+                    point_i = directions[center][direction] * pv + xyz
+                    point_e = xyz
+
                 diff = point_e - point_i
                 points_array[line_count * pnts_per_line, :] = point_e
                 points_array[line_count * pnts_per_line + 1, :] = point_i

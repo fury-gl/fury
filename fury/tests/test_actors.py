@@ -537,7 +537,6 @@ def test_odf_slicer(interactive=False):
     del odf_actor
     del odfs
 
-
 def test_peak_slicer(interactive=False):
     _peak_dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype='f4')
     # peak_dirs.shape = (1, 1, 1) + peak_dirs.shape

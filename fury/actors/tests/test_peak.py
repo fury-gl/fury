@@ -33,7 +33,6 @@ def generate_peaks():
     peaks_vals[0, 1, 2, :] = np.array([0, .7, 0, 0, 0])
     return peaks_dirs, peaks_vals, np.eye(4)
 
-
 def test__orientation_colors():
     points = np.array([[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1],
                        [0, 0, -1]])
@@ -145,6 +144,37 @@ def test__points_to_vtk_cells():
     npt.assert_array_equal(actual, desired)
     npt.assert_equal(vtk_cells.GetNumberOfCells(), 3)
 
+def test_symmetric_param(interactive=False):
+    peak_dirs, peak_vals, peak_affine = generate_peaks()
+    dirs02 = np.array([[-.3, .3, .7], [.5, .7, -.3], [.8, -.6, .5], [-.5, -.4, .3],
+                       [0, 0, 0]])
+    dirs12 = np.array([[.2, .3, .4], [.7, .6, .1], [.5, -.3, .4], [-.2, .3, .2],
+                       [-.4, -.5, .4]])
+    peak_dirs[0, 0, 2, :, :] = dirs02
+    peak_dirs[0, 1, 2, :, :] = dirs12
+    peak_vals[0, 0, 2, :] = np.array([.3, .5, .4, .6, 0])
+    peak_vals[0, 1, 2, :] = np.array([.6, .7, .5, .3, .4])
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    scene = window.Scene()
+
+    peak_actor = PeakActor(peak_dirs, indices, values=peak_vals,
+                           affine=peak_affine, symmetric=False)
+
+    scene.add(peak_actor)
+
+    scene.azimuth(30)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene)
+
+    report = window.analyze_scene(scene)
+    ex = ['vtkOpenGLActor']
+    npt.assert_equal(report.actors_classnames, ex)
 
 def test_colors(interactive=False):
     peak_dirs, peak_vals, peak_affine = generate_peaks()
