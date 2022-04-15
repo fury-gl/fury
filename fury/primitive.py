@@ -1033,3 +1033,69 @@ def prim_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft
     triangles = np.asarray(all_faces, dtype=np.int)
 
     return vertices, triangles
+
+
+def prim_cone(radius=0.5, height=1, sectors=10):
+    """Return vertices and triangle of a Cone.
+
+    Parameters
+    ----------
+    radius: float, optional
+        Radius of the cone
+    height: float, optional
+        Height of the cone
+    sectors: int, optional
+        Sectors in the cone
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our cone
+    triangles: ndarray
+        triangles that compose our cone
+
+    """
+
+    if sectors < 3:
+        raise ValueError("Sectors parameter should be greater than 2")
+
+    sector_angles = 2*np.pi/sectors*np.arange(sectors)
+
+    # Circle in YZ plane
+    h = height/2.0
+    x = np.full((sectors,), -h)
+    y, z = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
+
+    x = np.concatenate((x, np.array([h, -h])))
+    y = np.concatenate((y, np.array([0, 0])))
+    z = np.concatenate((z, np.array([0, 0])))
+
+    vertices = np.vstack(np.array([x, y, z])).T
+
+    # index of base and top centers
+    base_center_index = int(len(vertices) - 1)
+    top_center_index = base_center_index - 1
+
+    triangles = []
+
+    for i in range(sectors):
+        if not i+1 == top_center_index:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(i+1)
+
+            triangles.append(base_center_index)
+            triangles.append(i + 1)
+            triangles.append(i)
+        else:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(0)
+
+            triangles.append(base_center_index)
+            triangles.append(0)
+            triangles.append(i)
+
+    triangles = (np.array(triangles).reshape(-1, 3))
+
+    return vertices, triangles

@@ -888,22 +888,43 @@ def test_spheres(interactive=False):
 
 def test_cones_vertices_faces(interactive=False):
     scene = window.Scene()
-    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0]])
-    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]])
-    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4], [0, 0, 1., 0.99]])
+    centers = np.array([[0, 0, 0], [20, 0, 0], [40, 0, 0], [60, 0, 0]])
+    directions = np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1], [1, 1, 1]])
+    colors = np.array([[1, 0, 0, 0.3], [0, 1, 0, 0.4],
+                      [0, 0, 1, 0.99], [1, 1, 1, 0.6]])
     vertices = np.array([[0.0, 0.0, 0.0], [0.0, 10.0, 0.0],
                          [10.0, 0.0, 0.0], [0.0, 0.0, 10.0]])
-    faces = np.array([[0, 1, 3], [0, 1, 2]])
-    cone_actor = actor.cone(centers=centers, directions=directions,
-                            colors=colors[:], vertices=vertices,
-                            faces=faces)
-    scene.add(cone_actor)
+    faces = np.array([[0, 1, 3], [0, 2, 1]])
+    cone_1 = actor.cone(centers=centers[:2], directions=directions[:2],
+                        colors=colors[:2], vertices=vertices,
+                        faces=faces, use_primitive=False)
+
+    cone_2 = actor.cone(centers=centers[2:], directions=directions[2:],
+                        colors=colors[2:], heights=10,
+                        use_primitive=False)
+    scene.add(cone_1)
+    scene.add(cone_2)
 
     if interactive:
         window.show(scene, order_transparent=True)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.objects, 4)
+    scene.clear()
+
+    # tests for primitive cone
+    cone_1 = actor.cone(centers=centers[:2], directions=directions[:2],
+                        colors=colors[:2], vertices=vertices,
+                        faces=faces)
+
+    cone_2 = actor.cone(centers=centers[2:], directions=directions[2:],
+                        colors=colors[2:], heights=10)
+    scene.add(cone_1)
+    scene.add(cone_2)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 4)
     scene.clear()
 
 
@@ -948,7 +969,7 @@ def test_advanced_geometry_actor(interactive=False):
     heights = np.array([5, 7, 10])
 
     actor_list = [[actor.cone, {'heights': heights, 'resolution': 8}],
-                  [actor.arrow, {'heights': heights, 'resolution': 9}],
+                  [actor.arrow, {'scales': heights, 'resolution': 9}],
                   [actor.cylinder, {'heights': heights, 'resolution': 10}],
                   [actor.disk, {'rinner': 4, 'router': 8, 'rresolution': 2,
                                 'cresolution': 2}]]
