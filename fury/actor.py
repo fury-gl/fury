@@ -1526,8 +1526,10 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     radii : float or ndarray, shape (N,)
         Sphere radius
-    phi : int
-    theta : int
+    phi : int, optional
+        Set the number of points in the latitude direction
+    theta : int, optional
+        Set the number of points in the longitude direction
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
