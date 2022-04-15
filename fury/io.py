@@ -262,6 +262,11 @@ def load_polydata(file_name):
     output : vtkPolyData
 
     """
+
+    # Check if file actually exists
+    if not os.path.isfile(file_name):
+        raise FileNotFoundError(file_name)
+
     file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {"vtk": PolyDataReader,

@@ -10,12 +10,11 @@ Weekly Check-In #8
 What did I do this week?
 ------------------------
 
--  `PR fury-gl/helios#18 (merged):`_ Helios Documentation
-
+-  `PR fury-gl/helios#18 (merged):`_ Helios Documentation/
    I’ve been working on Helios documentation. Now it’s available
    online at https://fury-gl.github.io/helios-website |image1|
 
--   `PR fury-gl/helios#17 (merged):`_ Helios CI for tests and code
+-  `PR fury-gl/helios#17 (merged):`_ Helios CI for tests and code
    coverage
 
 Did I get stuck anywhere?

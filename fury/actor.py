@@ -22,7 +22,7 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       PolyDataNormals, Assembly, LODActor, VTK_UNSIGNED_CHAR,
                       PolyDataMapper2D, ScalarBarActor, PolyVertex, CellArray,
                       UnstructuredGrid, DataSetMapper, ConeSource, ArrowSource,
-                      SphereSource, CylinderSource, TexturedSphereSource,
+                      SphereSource, CylinderSource, DiskSource, TexturedSphereSource,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
@@ -832,7 +832,7 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
                        colorz + (opacity,)])
 
     scales = np.asarray(scale)
-    arrow_actor = arrow(centers, dirs, colors, scales)
+    arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
     return arrow_actor
 
 
@@ -1624,19 +1624,91 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
     >>> # window.show(scene)
 
     """
-    src = CylinderSource() if faces is None else None
-
-    if src is not None:
+    if faces is None:
+        src = CylinderSource()
         src.SetCapping(capped)
         src.SetResolution(resolution)
         src.SetRadius(radius)
+        rotate = np.array([[0, 1, 0, 0],
+                           [-1, 0, 0, 0],
+                           [0, 0, 1, 0],
+                           [0, 0, 0, 1]])
+    else:
+        src = None
+        rotate = None
 
     cylinder_actor = repeat_sources(centers=centers, colors=colors,
                                     directions=directions,
                                     active_scalars=heights, source=src,
-                                    vertices=vertices, faces=faces)
+                                    vertices=vertices, faces=faces,
+                                    orientation=rotate)
 
     return cylinder_actor
+
+
+def disk(centers, directions, colors, rinner=0.3,
+         router=0.7, cresolution=6, rresolution=2, vertices=None, faces=None):
+    """Visualize one or many disks with different features.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+        Disk positions
+    directions : ndarray, shape (N, 3)
+        The orientation vector of the disk.
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+    rinner : float
+        disk inner radius, default: 0.3
+    router : float
+        disk outer radius, default: 0.5
+    cresolution: int, optional
+        Number of facets used to define perimeter of disk, default: 6
+    rresolution: int, optional
+        Number of facets used radially, default: 2
+    vertices : ndarray, shape (N, 3)
+        The point cloud defining the disk.
+    faces : ndarray, shape (M, 3)
+        If faces is None then a disk is created based on theta and phi angles
+        If not then a disk is created with the provided vertices and faces.
+
+    Returns
+    -------
+    disk_actor: Actor
+
+    Examples
+    --------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> centers = np.random.rand(5, 3)
+    >>> dirs = np.random.rand(5, 3)
+    >>> colors = np.random.rand(5, 4)
+    >>> actor = actor.disk(centers, dirs, colors,
+    >>>                    rinner=.1, router=.8, cresolution=30)
+    >>> scene.add(actor)
+    >>> window.show(scene)
+    """
+    if faces is None:
+        src = DiskSource()
+        src.SetCircumferentialResolution(cresolution)
+        src.SetRadialResolution(rresolution)
+        src.SetInnerRadius(rinner)
+        src.SetOuterRadius(router)
+        rotate = np.array([[0, 0, -1, 0],
+                           [0, 1, 0, 0],
+                           [1, 0, 0, 0],
+                           [0, 0, 0, 1]])
+    else:
+        src = None
+        rotate = None
+
+    disk_actor = repeat_sources(centers=centers, colors=colors,
+                                directions=directions, source=src,
+                                vertices=vertices, faces=faces,
+                                orientation=rotate)
+
+    return disk_actor
 
 
 def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
@@ -1791,8 +1863,8 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
 
 def arrow(centers, directions, colors, heights=1., resolution=10,
-          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03,
-          vertices=None, faces=None):
+          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03, scales=1,
+          vertices=None, faces=None, repeat_primitive=True):
     """Visualize one or many arrows with differents features.
 
     Parameters
@@ -1836,6 +1908,14 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
+    if repeat_primitive:
+        vertices, faces = fp.prim_arrow()
+        res = fp.repeat_primitive(vertices, faces, directions=directions, centers=centers,
+                                  colors=colors, scales=scales)
+        big_vertices, big_faces, big_colors, _ = res
+        arrow_actor = get_actor_from_primitive(big_vertices, big_faces, big_colors)
+        return arrow_actor
+
     src = ArrowSource() if faces is None else None
 
     if src is not None:
@@ -1852,7 +1932,7 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
 
 
 def cone(centers, directions, colors, heights=1., resolution=10,
-         vertices=None, faces=None):
+         vertices=None, faces=None, use_primitive=True):
     """Visualize one or many cones with different features.
 
     Parameters
@@ -1873,6 +1953,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         If faces is None then a cone is created based on directions, heights
         and resolution. If not then a cone is created with the provided
         vertices and faces.
+    use_primitive: boolean, optional
+        If True uses primitives to create the cone actor.
 
     Returns
     -------
@@ -1890,14 +1972,27 @@ def cone(centers, directions, colors, heights=1., resolution=10,
     >>> # window.show(scene)
 
     """
-    src = ConeSource() if faces is None else None
+    if not use_primitive:
+        src = ConeSource() if faces is None else None
 
-    if src is not None:
-        src.SetResolution(resolution)
+        if src is not None:
+            src.SetResolution(resolution)
 
-    cone_actor = repeat_sources(centers=centers, directions=directions,
-                                colors=colors, active_scalars=heights,
-                                source=src, vertices=vertices, faces=faces)
+        cone_actor = repeat_sources(centers=centers, directions=directions,
+                                    colors=colors, active_scalars=heights,
+                                    source=src, vertices=vertices, faces=faces)
+        return cone_actor
+
+    if faces is None and vertices is None:
+        vertices, faces = fp.prim_cone(sectors=resolution)
+
+    res = fp.repeat_primitive(
+                    vertices, faces, centers,
+                    directions=directions, colors=colors, scales=heights)
+
+    big_verts, big_faces, big_colors, _ = res
+    cone_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+
     return cone_actor
 
 

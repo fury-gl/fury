@@ -182,12 +182,22 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     # update orientations
     directions = normalize_input(directions, 'directions')
     for pts, dirs in enumerate(directions):
-        w = np.cos(0.5 * np.pi)
-        denom = np.linalg.norm(dirs / 2.)
-        f = (np.sin(0.5 * np.pi) / denom) if denom else 0
-        dirs = np.append((dirs / 2.) * f, w)
-        rot = transform.Rotation.from_quat(dirs)
-        rotation_matrix = rot.as_matrix() if SCIPY_1_4_PLUS else rot.as_dcm()
+        # Normal vector of the object.
+        dir_abs = np.linalg.norm(dirs)
+        if dir_abs:
+            normal = np.array([1., 0., 0.])
+            dirs = dirs / dir_abs
+            v = np.cross(normal, dirs)
+            c = np.dot(normal, dirs)
+            v1, v2, v3 = v
+            h = 1 / (1 + c)
+            Vmat = np.array([[0, -v3, v2],
+                             [v3, 0, -v1],
+                             [-v2, v1, 0]])
+
+            rotation_matrix = np.eye(3, dtype=np.float64) + Vmat + (Vmat.dot(Vmat) * h)
+        else:
+            rotation_matrix = np.identity(3)
 
         big_vertices[pts * unit_verts_size: (pts + 1) * unit_verts_size] = \
             np.dot(rotation_matrix[:3, :3],
@@ -404,9 +414,9 @@ def prim_tetrahedron():
                              [-0.5, -0.5, 0.5]])
 
     pyramid_triag = np.array([[2, 0, 1],
-                              [0, 3, 2],
+                              [0, 2, 3],
                               [0, 3, 1],
-                              [1, 2, 3]], dtype='i8')
+                              [1, 3, 2]], dtype='i8')
 
     return pyramid_vert, pyramid_triag
 
@@ -934,5 +944,155 @@ def prim_cylinder(radius=0.5, height=1, sectors=36, capped=True):
         triangles = (np.array(triangles).reshape(4 * sectors, 3))
     else:
         triangles = (np.array(triangles).reshape(2 * sectors, 3))
+
+    return vertices, triangles
+
+
+def prim_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft_radius=0.03):
+    """Return vertices and triangle for arrow geometry.
+
+    Parameters
+    ----------
+    height : float
+        The height of the arrow (default: 1.0).
+    resolution : int
+        The resolution of the arrow.
+    tip_length : float
+        The tip size of the arrow (default: 0.35)
+    tip_radius : float
+        the tip radius of the arrow (default: 0.1)
+    shaft_radius : float
+        The shaft radius of the arrow (default: 0.03)
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices of the Arrow
+    triangles: ndarray
+        Triangles of the Arrow
+
+    """
+
+    shaft_height = height - tip_length
+
+    all_faces = []
+    shaft_outer_circle_down = []
+    shaft_outer_circle_up = []
+    tip_outer_circle = []
+
+    # calculating vertices
+    for i in range(resolution + 1):
+        x = math.cos((i * 2) * math.pi / resolution)
+        y = math.sin((i * 2) * math.pi / resolution)
+
+        shaft_x = x * shaft_radius
+        shaft_y = y * shaft_radius
+
+        tip_x = x * tip_radius
+        tip_y = y * tip_radius
+
+        # lower shaft circle (d)
+        shaft_outer_circle_down.append((0.0, shaft_x, shaft_y))
+        # upper shaft circle (u)
+        shaft_outer_circle_up.append((shaft_height, shaft_x, shaft_y))
+        # tip outer circle
+        tip_outer_circle.append((shaft_height, tip_x, tip_y))
+
+    #  center, center at shaft height, center at overall height
+    v1, v2, v3 = (.0, .0, .0), (shaft_height, .0, .0), (height, .0, .0)
+
+    all_verts = [v1, v2, v3] + shaft_outer_circle_down + shaft_outer_circle_up + tip_outer_circle
+
+    offset = len(shaft_outer_circle_down)
+
+    off_1 = 3
+    off_2 = off_1 + offset
+    off_3 = off_2 + offset
+
+    # calculating triangles
+    for i in range(resolution):
+        # down circle  d[i] , 0, d[i + 1]
+        all_faces.append((i + off_1 + 1, i + off_1, 0))
+
+        # cylinder triangles 1 d[i], d[i + 1], u[i + 1]
+        all_faces.append((i + off_2 + 1, i + off_1, i + off_1 + 1))
+
+        # cylinder triangles 2 u[i + 1], u[i], d[i]
+        all_faces.append((i + off_1, i + off_2 + 1, i + off_2))
+
+        # tip circle u[i] , 1, d[i + 1]
+        all_faces.append((i + off_3 + 1, i + off_3, 1))
+
+        # tip cone t[i], t[i + 1], 2
+        all_faces.append((2, i + off_3, i + off_3 + 1))
+
+    vertices = np.asarray(all_verts)
+    triangles = np.asarray(all_faces, dtype=np.int)
+
+    return vertices, triangles
+
+
+def prim_cone(radius=0.5, height=1, sectors=10):
+    """Return vertices and triangle of a Cone.
+
+    Parameters
+    ----------
+    radius: float, optional
+        Radius of the cone
+    height: float, optional
+        Height of the cone
+    sectors: int, optional
+        Sectors in the cone
+
+    Returns
+    -------
+    vertices: ndarray
+        vertices coords that compose our cone
+    triangles: ndarray
+        triangles that compose our cone
+
+    """
+
+    if sectors < 3:
+        raise ValueError("Sectors parameter should be greater than 2")
+
+    sector_angles = 2*np.pi/sectors*np.arange(sectors)
+
+    # Circle in YZ plane
+    h = height/2.0
+    x = np.full((sectors,), -h)
+    y, z = radius*np.cos(sector_angles), radius*np.sin(sector_angles)
+
+    x = np.concatenate((x, np.array([h, -h])))
+    y = np.concatenate((y, np.array([0, 0])))
+    z = np.concatenate((z, np.array([0, 0])))
+
+    vertices = np.vstack(np.array([x, y, z])).T
+
+    # index of base and top centers
+    base_center_index = int(len(vertices) - 1)
+    top_center_index = base_center_index - 1
+
+    triangles = []
+
+    for i in range(sectors):
+        if not i+1 == top_center_index:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(i+1)
+
+            triangles.append(base_center_index)
+            triangles.append(i + 1)
+            triangles.append(i)
+        else:
+            triangles.append(top_center_index)
+            triangles.append(i)
+            triangles.append(0)
+
+            triangles.append(base_center_index)
+            triangles.append(0)
+            triangles.append(i)
+
+    triangles = (np.array(triangles).reshape(-1, 3))
 
     return vertices, triangles
