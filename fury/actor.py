@@ -1535,6 +1535,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         If not then a sphere is created with the provided vertices and faces.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+    use_primitive : boolean, optional
+        If True, uses primitives to create an actor.
 
 
     Returns
@@ -1565,21 +1567,20 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
-    else:
-        scales = np.multiply(radii, [1, 1, 1])
-        directions = (1, 0, 0)
+    scales = np.multiply(radii, [1, 1, 1])
+    directions = (1, 0, 0)
 
-        if faces is None and vertices is None:
-            vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
+    if faces is None and vertices is None:
+        vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
 
-        res = fp.repeat_primitive(vertices, faces,
-                                  directions=directions, centers=centers,
-                                  colors=colors, scales=scales)
-        big_verts, big_faces, big_colors, _ = res
-        sphere_actor = get_actor_from_primitive(
+    res = fp.repeat_primitive(vertices, faces,
+                              directions=directions, centers=centers,
+                              colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    sphere_actor = get_actor_from_primitive(
             big_verts, big_faces, big_colors)
-        sphere_actor.GetProperty().SetOpacity(opacity)
-        return sphere_actor
+    sphere_actor.GetProperty().SetOpacity(opacity)
+    return sphere_actor
 
 
 def cylinder(centers, directions, colors, radius=0.05, heights=1,

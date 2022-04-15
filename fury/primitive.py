@@ -270,7 +270,7 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
 
     Parameters
     ----------
-    name : str
+    name : str, optional
         which sphere - one of:
         * 'symmetric362'
         * 'symmetric642'
@@ -281,7 +281,10 @@ def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
     gen_faces : bool, optional
         If True, triangulate a set of vertices on the sphere to get the faces.
         Otherwise, we load the saved faces from a file. Default: False
-
+    phi : int, optional
+        Set the number of points in the latitude direction
+    theta : int, optional
+        Set the number of points in the longitude direction
     Returns
     -------
     vertices: ndarray
