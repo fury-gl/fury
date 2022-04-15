@@ -286,3 +286,17 @@ blockquote p::after {
         width: 100%;
     }
 }
+
+div.sphx-glr-download a {
+    border-radius: 20px;
+    background-color: var(--colorPrimaryDark);
+    background-image: none;
+    color: white;
+    border: none;
+    font-weight: normal;
+
+}
+
+div.sphx-glr-download a:hover {
+    background-color: var(--colorPrimaryDark);
+}

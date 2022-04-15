@@ -165,6 +165,8 @@ html_theme_options = {
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
+  "footer_items": ["custom-footer.html"]
+  
 
 }
 
@@ -176,7 +178,7 @@ html_additional_pages = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static/css']
+html_static_path = ['_static']
 
 html_css_files = [
     'css/custom.css',
