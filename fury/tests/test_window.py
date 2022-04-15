@@ -329,7 +329,7 @@ def test_save_screenshot():
     scene = window.Scene()
     scene.add(sphere_actor)
 
-    window_sz = (300, 300)
+    window_sz = (400, 400)
     show_m = window.ShowManager(scene, size=window_sz)
     show_m.initialize()
 
@@ -343,12 +343,18 @@ def test_save_screenshot():
                                                        (255, 0, 0)])
         npt.assert_equal(report.objects, 3)
         npt.assert_equal(report.colors_found, (True, True))
-        # Test magnification
-        mag_factor = 2
-        show_m.save_screenshot(fname, mag_factor=mag_factor)
+        # Test size
+        ss_sz = (200, 200)
+        show_m.save_screenshot(fname, size=ss_sz)
         npt.assert_equal(os.path.isfile(fname), True)
         data = io.load_image(fname)
-        desired_sz = tuple(np.array(window_sz) * mag_factor)
+        npt.assert_equal(data.shape[:2], ss_sz)
+        # Test magnification
+        magnification = 2
+        show_m.save_screenshot(fname, magnification=magnification)
+        npt.assert_equal(os.path.isfile(fname), True)
+        data = io.load_image(fname)
+        desired_sz = tuple(np.array(window_sz) * magnification)
         npt.assert_equal(data.shape[:2], desired_sz)
 
 
