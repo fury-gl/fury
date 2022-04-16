@@ -11,11 +11,11 @@ the Freetype library (`pip install freetype-py`).
 
 ###############################################################################
 # First, let's import some useful functions
-import fury
+from os.path import join as pjoin
+import numpy as np
 from fury import actor, window
 from fury import text_tools
-import numpy as np
-
+from fury.data import DATA_DIR
 # Set to True to enable user interaction
 interactive = False
 
@@ -27,11 +27,11 @@ scene = window.Scene()
 # To create a label with a different font, you need to have the FreeType
 # library and freetype-py installed.
 #
-if text_tools._FREETYPE_AVAILABLE:
+if text_tools.FREETYPE_AVAILABLE:
 
     # We start choosing a path for the TTF file. Here we use the Roboto font
     # that is available on the FURY examples folder.
-    font_path = f'{fury.__path__[0]}/data/files/RobotoMonoBold700.ttf'
+    font_path = pjoin(DATA_DIR, 'RobotoMonoBold700.ttf')
 
 ###############################################################################
 # Then we create the texture atlas for the font. The `font_size_res`

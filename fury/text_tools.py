@@ -17,26 +17,26 @@ We fixed some bugs in those objects.
 """
 
 import sys
+import os
+from os.path import join as pjoin
+import pickle
 import numpy as np
 from scipy import ndimage
 from PIL import Image
-import pickle
-import os
-from os.path import join as pjoin
 
 try:
     import freetype as ft
 
-    _FREETYPE_AVAILABLE = True
+    FREETYPE_AVAILABLE = True
 except ImportError:
-    _FREETYPE_AVAILABLE = False
+    FREETYPE_AVAILABLE = False
 
-import fury
 from fury.data.fetcher import fury_home
+from fury.data import DATA_DIR
 
-_FONT_PATH_DEFAULT = f"{fury.__path__[0]}/data/files/font_atlas"
-_FONT_PATH_TTF = f"{fury.__path__[0]}/data/files/"
-_FONT_PATH_USER = pjoin(fury_home, "font_atlas")
+FONT_PATH_DEFAULT = pjoin(DATA_DIR, "font_atlas")
+FONT_PATH_TTF = DATA_DIR
+FONT_PATH_USER = pjoin(fury_home, "font_atlas")
 
 
 def norm(img, vmin=0, vmax=255):
@@ -185,7 +185,7 @@ class TextureAtlas:
             height = height + 2 * self._pad
             width = width + 2 * self._pad
 
-        self.data[y : y + height, x : x + width, :] = data
+        self.data[y: y + height, x: x + width, :] = data
 
     def get_region(self, width, height):
         """
@@ -409,7 +409,7 @@ class TextureFont:
                 w, h = w - 2, h - 2
             data = []
             for i in range(rows):
-                data.extend(bitmap.buffer[i * pitch : i * pitch + width])
+                data.extend(bitmap.buffer[i * pitch: i * pitch + width])
             data = np.array(data, dtype=np.ubyte).reshape(
                 h, w, self.atlas.num_chanels
             )
@@ -546,13 +546,13 @@ def list_fonts_available(fullpath=False):
     """
 
     fonts = {}
-    for f in os.listdir(_FONT_PATH_DEFAULT):
-        fonts[f] = f"{_FONT_PATH_DEFAULT}/{f}/"
+    for f in os.listdir(FONT_PATH_DEFAULT):
+        fonts[f] = f"{FONT_PATH_DEFAULT}/{f}/"
 
-    if not os.path.exists(_FONT_PATH_USER):
+    if not os.path.exists(FONT_PATH_USER):
         return fonts
-    for f in os.listdir(_FONT_PATH_USER):
-        fonts[f] = f"{_FONT_PATH_USER}/{f}/"
+    for f in os.listdir(FONT_PATH_USER):
+        fonts[f] = f"{FONT_PATH_USER}/{f}/"
     if not fullpath:
         return list(fonts.keys())
 
@@ -600,7 +600,7 @@ def create_atlas_font(
         numpy array.
 
     """
-    if not _FREETYPE_AVAILABLE:
+    if not FREETYPE_AVAILABLE:
         raise ImportError("Pleasse, install  the freetype-py lib")
 
     texture_atlas = TextureAtlas(
@@ -673,10 +673,10 @@ def create_new_font(
         The folder where the font is saved.
 
     """
-    if not _FREETYPE_AVAILABLE:
+    if not FREETYPE_AVAILABLE:
         raise ImportError("Pleasse, install  the freetype-py lib")
 
-    font_path_save = _FONT_PATH_DEFAULT if use_system_path else _FONT_PATH_USER
+    font_path_save = FONT_PATH_DEFAULT if use_system_path else FONT_PATH_USER
     folder = font_path_save + f"/{name}"
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -716,13 +716,13 @@ def _create_fury_system_atlas_fonts(font_size_res=12, atlas_size=(1024, 1024)):
     """
 
     # list all TTF files in a folder
-    fonts = [f for f in os.listdir(_FONT_PATH_TTF) if f.endswith(".ttf")]
+    fonts = [f for f in os.listdir(FONT_PATH_TTF) if f.endswith(".ttf")]
     for font in fonts:
         font_name = font.split(".")[0].replace(" ", "").replace("-", "_")
         print(f"Creating {font_name} ...")
         create_new_font(
             font_name,
-            f"{_FONT_PATH_TTF}/{font}",
+            f"{FONT_PATH_TTF}/{font}",
             font_size_res=font_size_res,
             atlas_size=atlas_size,
             use_system_path=True,

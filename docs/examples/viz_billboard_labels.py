@@ -13,9 +13,10 @@ and offsets.
 
 ###############################################################################
 # First, let's import some useful functions
+
+import numpy as np
 from fury import actor, window
 from fury import text_tools
-import numpy as np
 
 # Set to True to enable user interaction
 interactive = False

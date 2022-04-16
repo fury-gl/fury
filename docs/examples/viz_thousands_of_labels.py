@@ -14,7 +14,7 @@ using the interdisciplinary map of journal networks.
 from os.path import join as pjoin
 import numpy as np
 from fury import actor, window, colormap as cmap
-from fury.data.fetcher import fetch_viz_wiki_nw
+from fury.data import fetch_viz_wiki_nw
 
 # Please, switch interactive variable to True if you want to visualize it.
 interactive = False

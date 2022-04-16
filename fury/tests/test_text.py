@@ -6,12 +6,12 @@ import fury
 
 
 def test_create_atlas():
-    if not text_tools._FREETYPE_AVAILABLE:
+    if not text_tools.FREETYPE_AVAILABLE:
         print('Bitmap text not tested (FREETYPE is not available)')
         return
 
     name = 'test_fonts_1238210930'
-    font_path_atlas = text_tools._FONT_PATH_USER
+    font_path_atlas = text_tools.FONT_PATH_USER
     font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
     text_tools.create_new_font(
         name=name,
@@ -23,7 +23,7 @@ def test_create_atlas():
 
 
 def test_atlas():
-    if not text_tools._FREETYPE_AVAILABLE:
+    if not text_tools.FREETYPE_AVAILABLE:
         print('Bitmap text not tested (FREETYPE is not available)')
         return
 
