@@ -123,15 +123,3 @@ def check_overflow(textblock, width, overflow_postfix='',
             if side == 'left':
                 textblock.message = textblock.message[::-1]
             return mid_ptr
-
-
-def is_ui(actor):
-    """Method to check if the passed actor is `UI` or `vtkProp3D`
-
-    Parameters
-    ----------
-    actor: :class: `UI` or `vtkProp3D`
-        actor that is to be checked
-    """
-    return all([hasattr(actor, attr) for attr in ['add_to_scene',
-                                                  '_setup']])
