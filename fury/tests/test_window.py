@@ -2,7 +2,6 @@ from fury.utils import remove_observer_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
-from matplotlib import use
 import numpy as np
 import numpy.testing as npt
 import pytest

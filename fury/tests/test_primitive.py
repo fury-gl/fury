@@ -3,8 +3,6 @@ import numpy.testing as npt
 import fury.primitive as fp
 import math
 
-from scipy.misc import face
-
 
 def test_vertices_primitives():
     # Tests the default vertices of all the built in primitive shapes.
