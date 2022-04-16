@@ -2,7 +2,7 @@ import math
 import numpy as np
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
-from fury.ui.helpers import is_ui
+from fury.utils import is_ui
 
 class Layout(object):
     """Provide functionalities for laying out actors in a 3D scene."""
