@@ -631,6 +631,7 @@ class LineSlider2D(UI):
 
         if self.orientation == "horizontal":
             length = float(self.right_x_position - self.left_x_position)
+            length = np.round(length, decimals=6)
             if length != self.track.width:
                 raise ValueError("Disk position outside the slider line")
             disk_position_x = self.handle.center[0]
@@ -1844,7 +1845,7 @@ class Checkbox(UI):
             the button of the first option.
         """
 
-        self.labels = list(reversed(labels))
+        self.labels = list(reversed(list(labels)))
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family

@@ -56,8 +56,7 @@ ball_actor = actor.sphere(centers=np.array([[0, 0, 0]]),
                           radii=ball_radius)
 
 # Collision shape for the ball.
-ball_coll = p.createCollisionShape(p.GEOM_SPHERE,
-                                   radius=ball_radius)
+ball_coll = p.createCollisionShape(p.GEOM_SPHERE, radius=ball_radius)
 
 # Creating a multi-body which will be tracked by pybullet.
 ball = p.createMultiBody(baseMass=3,
@@ -76,14 +75,12 @@ base_actor = actor.box(centers=np.array([[0, 0, 0]]),
                        scales=base_size,
                        colors=base_color)
 
-base_coll = p.createCollisionShape(p.GEOM_BOX,
-                                   halfExtents=base_size / 2)
+base_coll = p.createCollisionShape(p.GEOM_BOX, halfExtents=base_size / 2)
 # half of the actual size.
 
-base = p.createMultiBody(
-    baseCollisionShapeIndex=base_coll,
-    basePosition=base_position,
-    baseOrientation=base_orientation)
+base = p.createMultiBody(baseCollisionShapeIndex=base_coll,
+                         basePosition=base_position,
+                         baseOrientation=base_orientation)
 
 p.changeDynamics(base, -1, lateralFriction=0.3, restitution=0.5)
 
@@ -140,8 +137,7 @@ scene.add(base_actor)
 scene.add(brick_actor)
 
 # Create show manager.
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
+showm = window.ShowManager(scene, size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
 showm.initialize()
