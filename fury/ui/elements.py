@@ -2068,6 +2068,7 @@ class ComboBox2D(UI):
         self.scroll_active_color = scroll_bar_active_color
         self.scroll_inactive_color = scroll_bar_inactive_color
         self.menu_opacity = menu_opacity
+        self.callback_flag = False
 
         # Define subcomponent sizes.
         self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
@@ -2246,20 +2247,22 @@ class ComboBox2D(UI):
         """
 
         # Set the Text of TextBlock2D to the text of listboxitem
-        self._selection = listboxitem.element
-        self._selection_ID = self.items.index(self._selection)
+        if not self.callback_flag:
+            self._selection = listboxitem.element
+            self._selection_ID = self.items.index(self._selection)
 
-        self.selection_box.message = self._selection
-        clip_overflow(self.selection_box,
-                      self.selection_box.background.size[0])
-        self.drop_down_menu.set_visibility(False)
-        self._menu_visibility = False
+            self.selection_box.message = self._selection
+            clip_overflow(self.selection_box,
+                        self.selection_box.background.size[0])
+            self.drop_down_menu.set_visibility(False)
+            self._menu_visibility = False
 
-        self.drop_down_button.next_icon()
+            self.drop_down_button.next_icon()
 
-        self.on_change(self)
-
-        i_ren.force_render()
+            self.on_change(self)
+            i_ren.force_render()
+            
+        self.callback_flag = True
         i_ren.event.abort()
 
     def menu_toggle_callback(self, i_ren, _vtkactor, _combobox):
@@ -2273,6 +2276,7 @@ class ComboBox2D(UI):
         combobox : :class:`ComboBox2D`
 
         """
+        self.callback_flag = False
         self._menu_visibility = not self._menu_visibility
         self.drop_down_menu.set_visibility(self._menu_visibility)
 
