@@ -201,7 +201,7 @@ def key_pressed(obj, event):
     key = obj.GetKeySym()
     if key == 's' or key == 'S':
         print('Saving image...')
-        show_m.save_screenshot('screenshot.png', mag_factor=4)
+        show_m.save_screenshot('screenshot.png', magnification=4)
         print('Image saved.')
 
 
@@ -554,9 +554,9 @@ if __name__ == '__main__':
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    # scene.zoom(1.6)
+    #scene.zoom(1.6)
 
-    # window.show(scene)
+    #window.show(scene)
 
     show_m = window.ShowManager(scene=scene, size=(1920, 1080),
                                 reset_camera=False, order_transparent=True)
