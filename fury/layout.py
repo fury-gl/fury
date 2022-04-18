@@ -1,8 +1,8 @@
+import math
 import numpy as np
-
 from fury.utils import get_bounding_box_sizes
 from fury.utils import get_grid_cells_position
-
+from fury.utils import is_ui
 
 class Layout(object):
     """Provide functionalities for laying out actors in a 3D scene."""
@@ -12,8 +12,12 @@ class Layout(object):
         positions = self.compute_positions(actors)
 
         for a, pos in zip(actors, positions):
-            anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
-            a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
+
+            if is_ui(a):
+                a.position = (pos[0], pos[1])
+            else:
+                anchor = np.array(getattr(a, 'anchor', (0, 0, 0)))
+                a.AddPosition(pos - (np.array(a.GetCenter()) + anchor))
 
     def compute_positions(self, _actors):
         """Compute the 3D coordinates of some actors."""
@@ -29,7 +33,7 @@ class GridLayout(Layout):
     """
 
     def __init__(self, cell_padding=0, cell_shape="rect",
-                 aspect_ratio=16/9., dim=None):
+                 aspect_ratio=16/9., dim=None, position_offset=(0, 0, 0)):
         """
 
         Parameters
@@ -50,11 +54,13 @@ class GridLayout(Layout):
         dim : tuple of int (optional)
             Dimension (nb_rows, nb_cols) of the grid. If provided,
             `aspect_ratio` will be ignored.
-
+        position_offset: tuple (optional)
+            Offset the grid by some factor
         """
         self.cell_shape = cell_shape
         self.aspect_ratio = aspect_ratio
         self.dim = dim
+        self.position_offset = position_offset
         if isinstance(cell_padding, int):
             self.cell_padding = (cell_padding, cell_padding)
         else:
@@ -75,20 +81,30 @@ class GridLayout(Layout):
             The 2D shape (on the xy-plane) of every actors.
 
         """
+
         if self.cell_shape == "rect":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [cell_shape] * len(actors)
         elif self.cell_shape == "square":
             bounding_box_sizes = np.asarray(
-                    list(map(get_bounding_box_sizes, actors)))
+                    list(map(self.compute_sizes, actors)))
             cell_shape = np.max(bounding_box_sizes, axis=0)[:2]
             shapes = [(max(cell_shape),)*2] * len(actors)
         elif self.cell_shape == "diagonal":
             # Size of every cell corresponds to the diagonal
             # of the largest bounding box.
-            longest_diagonal = np.max([a.GetLength() for a in actors])
+            diagonals = []
+            for a in actors:
+                if is_ui(a):
+                    width, height = a.size
+                    diagonal = math.sqrt(width**2 + height**2)
+                    diagonals.append(diagonal)
+                else:
+                    diagonals.append(a.GetLength())
+
+            longest_diagonal = np.max(diagonals)
             shapes = [(longest_diagonal, longest_diagonal)] * len(actors)
         else:
             raise ValueError("Unknown cell shape: '{0}'"
@@ -98,19 +114,15 @@ class GridLayout(Layout):
 
     def compute_positions(self, actors):
         """Compute the 3D coordinates of some actors.
-
         The coordinates will lie on the xy-plane and form a 2D grid.
-
         Parameters
         ----------
         actors : list of `vtkProp3D` objects
             Actors to be layout in a grid manner.
-
         Returns
         -------
         list of 3-tuple
             The computed 3D coordinates of every actors.
-
         """
         shapes = self.get_cells_shape(actors)
 
@@ -119,7 +131,26 @@ class GridLayout(Layout):
         positions = get_grid_cells_position(shapes,
                                             self.aspect_ratio,
                                             self.dim)
+
+        positions += self.position_offset
         return positions
+
+    def compute_sizes(self, actor):
+        """Compute the bounding box size of the actor/UI element
+        Parameters
+        ---------
+        actor: `vtkProp3D` or `UI` element
+            Actor/UI element whose size is to be calculated
+        Returns
+        -------
+        bounding box sizes: tuple
+        """
+
+        if is_ui(actor):
+            width, height = actor.size
+            return (width, height, 0)
+
+        return get_bounding_box_sizes(actor)
 
 
 class HorizontalLayout(GridLayout):

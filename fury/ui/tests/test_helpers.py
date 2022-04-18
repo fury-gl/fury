@@ -1,5 +1,4 @@
 """Test helpers fonction ."""
-
 import numpy.testing as npt
 
 from fury import window, ui
@@ -90,4 +89,3 @@ def test_check_overflow():
 
     npt.assert_equal(10, overflow_idx)
     npt.assert_equal('A very ver~', text.message)
-
