@@ -62,7 +62,9 @@ show_manager = window.ShowManager(size=current_size,
 show_manager.scene.add(panel_1, panel_2, listbox_1, listbox_2, slider, listbox)
 
 # To interact with the UI, set interactive = True
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
+
+window.record(show_manager.scene, out_path="ui_layout.png", size=(400, 400))
