@@ -2247,6 +2247,7 @@ class ComboBox2D(UI):
         """
 
         # Set the Text of TextBlock2D to the text of listboxitem
+        # The callback_flag prevents unnecessary loops
         if not self.callback_flag:
             self._selection = listboxitem.element
             self._selection_ID = self.items.index(self._selection)
@@ -2260,9 +2261,11 @@ class ComboBox2D(UI):
             self.drop_down_button.next_icon()
 
             self.on_change(self)
-            i_ren.force_render()
             
-        self.callback_flag = True
+            i_ren.force_render()  
+            self.callback_flag = True
+            self.drop_down_menu.callback_flag = True
+
         i_ren.event.abort()
 
     def menu_toggle_callback(self, i_ren, _vtkactor, _combobox):
@@ -2277,6 +2280,8 @@ class ComboBox2D(UI):
 
         """
         self.callback_flag = False
+        self.drop_down_menu.callback_flag = False
+
         self._menu_visibility = not self._menu_visibility
         self.drop_down_menu.set_visibility(self._menu_visibility)
 
@@ -2377,6 +2382,7 @@ class ListBox2D(UI):
 
         self.position = position
         self.scroll_init_position = 0
+        self.callback_flag = False
         self.update()
 
         # Offer some standard hooks to the user.
@@ -2672,29 +2678,30 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        selection_idx = self.values.index(item.element)
-        if self.multiselection and range_select:
-            self.clear_selection()
-            step = 1 if selection_idx >= self.last_selection_idx else -1
-            for i in range(self.last_selection_idx,
-                           selection_idx + step,
-                           step):
-                self.selected.append(self.values[i])
+        if not self.callback_flag:
+            selection_idx = self.values.index(item.element)
+            if self.multiselection and range_select:
+                self.clear_selection()
+                step = 1 if selection_idx >= self.last_selection_idx else -1
+                for i in range(self.last_selection_idx,
+                            selection_idx + step,
+                            step):
+                    self.selected.append(self.values[i])
 
-        elif self.multiselection and multiselect:
-            if item.element in self.selected:
-                self.selected.remove(item.element)
+            elif self.multiselection and multiselect:
+                if item.element in self.selected:
+                    self.selected.remove(item.element)
+                else:
+                    self.selected.append(item.element)
+                self.last_selection_idx = selection_idx
+
             else:
+                self.clear_selection()
                 self.selected.append(item.element)
-            self.last_selection_idx = selection_idx
+                self.last_selection_idx = selection_idx
 
-        else:
-            self.clear_selection()
-            self.selected.append(item.element)
-            self.last_selection_idx = selection_idx
-
-        self.on_change()  # Call hook.
-        self.update()
+            self.on_change()  # Call hook.
+            self.update()
 
 
 class ListBoxItem2D(UI):
