@@ -48,7 +48,8 @@ class PeakActor(Actor):
     """
 
     def __init__(self, directions, indices, values=None, affine=None,
-                 colors=None, lookup_colormap=None, linewidth=1, symmetric=True):
+                 colors=None, lookup_colormap=None, linewidth=1,
+                 symmetric=True):
         if affine is not None:
             w_pos = apply_affine(affine, np.asarray(indices).T)
 
