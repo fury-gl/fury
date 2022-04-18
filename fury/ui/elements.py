@@ -2254,15 +2254,16 @@ class ComboBox2D(UI):
 
             self.selection_box.message = self._selection
             clip_overflow(self.selection_box,
-                        self.selection_box.background.size[0])
+                            self.selection_box.background.size[0])
+
             self.drop_down_menu.set_visibility(False)
             self._menu_visibility = False
 
             self.drop_down_button.next_icon()
 
             self.on_change(self)
-            
-            i_ren.force_render()  
+
+            i_ren.force_render()
             self.callback_flag = True
             self.drop_down_menu.callback_flag = True
 
@@ -2684,8 +2685,8 @@ class ListBox2D(UI):
                 self.clear_selection()
                 step = 1 if selection_idx >= self.last_selection_idx else -1
                 for i in range(self.last_selection_idx,
-                            selection_idx + step,
-                            step):
+                                selection_idx + step,
+                                step):
                     self.selected.append(self.values[i])
 
             elif self.multiselection and multiselect:
