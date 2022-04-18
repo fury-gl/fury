@@ -115,6 +115,7 @@ jobs:
     - name: Start Xvfb
       if: startsWith(matrix.os,'ubuntu')
       run: |
+        sudo apt update
         if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
           sudo apt-get install -y libgl1-mesa-dev xvfb;
         else

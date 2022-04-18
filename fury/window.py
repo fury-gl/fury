@@ -593,7 +593,43 @@ class ShowManager(object):
         self.destroy_timers()
         self.timers.clear()
 
+    def save_screenshot(self, fname, magnification=1, size=None, stereo=None):
+        """Save a screenshot of the current window in the specified filename.
 
+        Parameters
+        ----------
+        fname : str or None
+            File name where to save the screenshot.
+        magnification : int, optional
+            Applies a magnification factor to the scene before taking the
+            screenshot which improves the quality. A value greater than 1
+            increases the quality of the image. However, the output size will
+            be larger. For example, 200x200 image with magnification of 2 will
+            result in a 400x400 image. Default is 1.
+        size : tuple of 2 ints, optional
+            Size of the output image in pixels. If None, the size of the scene
+            will be used. If magnification > 1, then the size will be
+            determined by the magnification factor. Default is None.
+        stereo : str, optional
+            Set the type of stereo for the screenshot. Supported values are:
+
+                * 'opengl': OpenGL frame-sequential stereo. Referred to as
+                  'CrystalEyes' by VTK.
+                * 'anaglyph': For use with red/blue glasses. See VTK docs to
+                  use different colors.
+                * 'interlaced': Line interlaced.
+                * 'checkerboard': Checkerboard interlaced.
+                * 'left': Left eye only.
+                * 'right': Right eye only.
+                * 'horizontal': Side-by-side.
+
+        """
+        if size is None:
+            size = self.size
+        if stereo is None:
+            stereo = self.stereo.lower()
+        record(scene=self.scene, out_path=fname, magnification=magnification,
+               size=size, stereo=stereo)
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
@@ -701,11 +737,14 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     az_ang : float, optional
         Azimuthal angle of camera rotation.
     magnification : int, optional
-        How much to magnify the saved frame. Default is 1.
+        How much to magnify the saved frame. Default is 1. A value greater
+        than 1 increases the quality of the image. However, the output
+        size will be larger. For example, 200x200 image with magnification
+        of 2 will be a 400x400 image.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     screen_clip: bool
-        Clip the the png based on screen resolution. Default is False.
+        Clip the png based on screen resolution. Default is False.
     reset_camera : bool
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
@@ -737,9 +776,11 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = Renderer()
+        scene = Scene()
 
     renWin = RenderWindow()
+
+    renWin.SetOffScreenRendering(1)
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])

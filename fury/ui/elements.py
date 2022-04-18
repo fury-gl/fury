@@ -1845,7 +1845,7 @@ class Checkbox(UI):
             the button of the first option.
         """
 
-        self.labels = list(reversed(labels))
+        self.labels = list(reversed(list(labels)))
         self._padding = padding
         self._font_size = font_size
         self.font_family = font_family
