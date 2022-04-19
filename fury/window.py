@@ -967,7 +967,7 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False, stereo='off',
              multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0):
+             occlusion_ratio=0.0, render_window = None):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -1004,6 +1004,8 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
         Occlusion ration for depth peeling (Default 0 - exact image).
+    render_window : RenderWindow
+        If provided, use this window instead of creating a new one.
 
     Returns
     -------
@@ -1013,20 +1015,20 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     """
     width, height = size
+    if not render_window:
+        render_window = RenderWindow()
+        if offscreen:
+            render_window.SetOffScreenRendering(1)
+        if stereo.lower() != 'off':
+            enable_stereo(render_window, stereo)
+        render_window.AddRenderer(scene)
+        render_window.SetSize(width, height)
 
-    render_window = RenderWindow()
-    if offscreen:
-        render_window.SetOffScreenRendering(1)
-    if stereo.lower() != 'off':
-        enable_stereo(render_window, stereo)
-    render_window.AddRenderer(scene)
-    render_window.SetSize(width, height)
+        if order_transparent:
+            antialiasing(scene, render_window, multi_samples, max_peels,
+                        occlusion_ratio)
 
-    if order_transparent:
-        antialiasing(scene, render_window, multi_samples, max_peels,
-                     occlusion_ratio)
-
-    render_window.Render()
+        render_window.Render()
 
     window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
