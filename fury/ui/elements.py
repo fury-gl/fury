@@ -2254,7 +2254,7 @@ class ComboBox2D(UI):
 
             self.selection_box.message = self._selection
             clip_overflow(self.selection_box,
-                            self.selection_box.background.size[0])
+                          self.selection_box.background.size[0])
 
             self.drop_down_menu.set_visibility(False)
             self._menu_visibility = False
@@ -2685,8 +2685,8 @@ class ListBox2D(UI):
                 self.clear_selection()
                 step = 1 if selection_idx >= self.last_selection_idx else -1
                 for i in range(self.last_selection_idx,
-                                selection_idx + step,
-                                step):
+                               selection_idx + step,
+                               step):
                     self.selected.append(self.values[i])
 
             elif self.multiselection and multiselect:
