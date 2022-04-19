@@ -20,6 +20,7 @@ from fury.data import read_viz_textures, fetch_viz_textures, read_viz_icons, fet
 scene = window.Scene()
 
 # Create a panel and the start/pause buttons
+
 panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
 panel.center = (400, 50)
 
@@ -30,7 +31,8 @@ start_button = ui.Button2D(
     icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
 )
 
-#Add the buttons on the panel
+# Add the buttons on the panel
+
 panel.add_element(pause_button, (0.25,0.33))
 panel.add_element(start_button, (0.66,0.33))
 
@@ -260,14 +262,16 @@ def timer_callback(_obj, _event):
         showm.exit()
 
 ##############################################################################
-# We add a callback to each button to perform some action. 
+# We add a callback to each button to perform some action.
 
 
 def start_animation(i_ren, _obj, _button):
     showm.add_timer_callback(True, 10, timer_callback)
 
+
 def pause_animation(i_ren, _obj, _button):
     showm.destroy_timers()
+
 
 start_button.on_left_mouse_button_clicked = start_animation
 pause_button.on_left_mouse_button_clicked = pause_animation
