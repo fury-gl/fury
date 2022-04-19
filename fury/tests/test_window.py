@@ -321,6 +321,43 @@ def test_skybox():
     npt.assert_equal(report.actors, 1)
 
 
+def test_save_screenshot():
+    xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
+    colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3])
+    scene = window.Scene()
+    scene.add(sphere_actor)
+
+    window_sz = (400, 400)
+    show_m = window.ShowManager(scene, size=window_sz)
+    show_m.initialize()
+
+    with InTemporaryDirectory():
+        fname = 'test.png'
+        # Basic test
+        show_m.save_screenshot(fname)
+        npt.assert_equal(os.path.exists(fname), True)
+        data = io.load_image(fname)
+        report = window.analyze_snapshot(data, colors=[(0, 255, 0),
+                                                       (255, 0, 0)])
+        npt.assert_equal(report.objects, 3)
+        npt.assert_equal(report.colors_found, (True, True))
+        # Test size
+        ss_sz = (200, 200)
+        show_m.save_screenshot(fname, size=ss_sz)
+        npt.assert_equal(os.path.isfile(fname), True)
+        data = io.load_image(fname)
+        npt.assert_equal(data.shape[:2], ss_sz)
+        # Test magnification
+        magnification = 2
+        show_m.save_screenshot(fname, magnification=magnification)
+        npt.assert_equal(os.path.isfile(fname), True)
+        data = io.load_image(fname)
+        desired_sz = tuple(np.array(window_sz) * magnification)
+        npt.assert_equal(data.shape[:2], desired_sz)
+
+
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows."
                                      " Need to be introspected")
 def test_stereo():
