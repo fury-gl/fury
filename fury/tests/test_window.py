@@ -1,6 +1,6 @@
 import time
 from threading import Thread
-from fury.utils import remove_observer_from_actor, rotate, update_actor, vertices_from_actor
+from fury.utils import remove_observer_from_actor, rotate, update_actor, vertices_from_actor,shallow_copy
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -12,6 +12,11 @@ from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
 from fury import shaders
+
+from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
+                      InteractorStyleImage, InteractorStyleTrackballCamera,
+                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+                      WindowToImageFilter, Command)
 
 
 def test_scene():
@@ -603,9 +608,8 @@ def test_multithreading():
                 break
 
         if not showm.is_done():
-
+            arr = window.snapshot(test_scene,render_window=showm.window,fname="test.png")
             showm.exit()
-            arr = window.snapshot(scene)
             npt.assert_equal(np.sum(arr) > 1, True)
 
 
@@ -615,8 +619,3 @@ def test_multithreading():
     showm.start(multithreaded=True)
     thread_a.join()
 
-
-# test_opengl_state_add_remove_and_check()
-# test_opengl_state_simple()
-# test_record()
-test_multithreading()
