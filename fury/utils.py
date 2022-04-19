@@ -1369,3 +1369,15 @@ def update_surface_actor_colors(actor, colors):
     """
     actor.GetMapper().GetInput().GetPointData().\
         SetScalars(numpy_to_vtk_colors(255*colors))
+
+
+def is_ui(actor):
+    """Method to check if the passed actor is `UI` or `vtkProp3D`
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D`
+        actor that is to be checked
+    """
+    return all([hasattr(actor, attr) for attr in ['add_to_scene',
+                                                  '_setup']])
