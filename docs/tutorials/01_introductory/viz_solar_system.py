@@ -33,8 +33,8 @@ start_button = ui.Button2D(
 
 # Add the buttons on the panel
 
-panel.add_element(pause_button, (0.25,0.33))
-panel.add_element(start_button, (0.66,0.33))
+panel.add_element(pause_button, (0.25, 0.33))
+panel.add_element(start_button, (0.66, 0.33))
 
 
 ##############################################################################
