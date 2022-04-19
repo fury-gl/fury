@@ -7,7 +7,7 @@ import pytest
 
 from fury.decorators import skip_osx
 from fury.io import (load_cubemap_texture, load_polydata, save_polydata,
-                     load_image, save_image, load_sprite_sheet)
+                     load_image, save_image, load_sprite_sheet, load_text)
 from fury.lib import numpy_support, PolyData, ImageData
 from fury.utils import numpy_to_vtk_points
 from fury.testing import assert_greater
@@ -202,3 +202,20 @@ def test_load_sprite_sheet():
 
         for vtk_sprite in list(vtktype_sprites.values()):
             npt.assert_equal(isinstance(vtk_sprite, ImageData), True)
+
+
+def test_load_text():
+    with InTemporaryDirectory() as tdir:
+        dummy_file_name = 'dummy.txt'
+
+        # Test file does not exist
+        npt.assert_raises(IOError, load_text, dummy_file_name)
+
+        # Saving file with content
+        dummy_file_contents = 'This is some dummy text.'
+        dummy_fname = os.path.join(tdir, dummy_file_name)
+        dummy_file = open(dummy_fname, 'w')
+        dummy_file.write(dummy_file_contents)
+        dummy_file.close()
+
+        npt.assert_string_equal(load_text(dummy_fname), dummy_file_contents)
