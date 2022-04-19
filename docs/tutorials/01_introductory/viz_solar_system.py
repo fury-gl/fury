@@ -12,7 +12,7 @@ to simulate orbital motion.
 import numpy as np
 from fury import window, actor, utils, io, ui
 import itertools
-from fury.data import read_viz_textures, fetch_viz_textures, read_viz_icons, fetch_viz_icons
+from fury.data import read_viz_textures, fetch_viz_textures, read_viz_icons
 
 ##############################################################################
 # Create a scene to start.
