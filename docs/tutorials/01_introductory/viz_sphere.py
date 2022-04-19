@@ -2,7 +2,7 @@
 ======================================================================
 FURY sphere Actor
 ======================================================================
-This example shows how to use both primitive & vtkSource sphere actor.
+This example shows how to use both primitive and vtkSource sphere actor.
 """
 
 import numpy as np
