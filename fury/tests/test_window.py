@@ -325,7 +325,7 @@ def test_save_screenshot():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3])
+                                radii=xyzr[:, 3], phi=10, theta=30)
     scene = window.Scene()
     scene.add(sphere_actor)
 
