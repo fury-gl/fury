@@ -1515,7 +1515,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
 
 def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1):
+           vertices=None, faces=None, opacity=1, use_primitive=True):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1526,8 +1526,10 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     radii : float or ndarray, shape (N,)
         Sphere radius
-    phi : int
-    theta : int
+    phi : int, optional
+        Set the number of points in the latitude direction
+    theta : int, optional
+        Set the number of points in the longitude direction
     vertices : ndarray, shape (N, 3)
         The point cloud defining the sphere.
     faces : ndarray, shape (M, 3)
@@ -1535,6 +1537,8 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         If not then a sphere is created with the provided vertices and faces.
     opacity : float, optional
         Takes values from 0 (fully transparent) to 1 (opaque). Default is 1.
+    use_primitive : boolean, optional
+        If True, uses primitives to create an actor.
 
 
     Returns
@@ -1551,19 +1555,33 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     >>> # window.show(scene)
 
     """
-    src = SphereSource() if faces is None else None
+    if not use_primitive:
+        src = SphereSource() if faces is None else None
 
-    if src is not None:
-        src.SetRadius(1)
-        src.SetThetaResolution(theta)
-        src.SetPhiResolution(phi)
+        if src is not None:
+            src.SetRadius(1)
+            src.SetThetaResolution(theta)
+            src.SetPhiResolution(phi)
 
-    sphere_actor = repeat_sources(centers=centers, colors=colors,
-                                  active_scalars=radii, source=src,
-                                  vertices=vertices, faces=faces)
+        sphere_actor = repeat_sources(centers=centers, colors=colors,
+                                      active_scalars=radii, source=src,
+                                      vertices=vertices, faces=faces)
+        sphere_actor.GetProperty().SetOpacity(opacity)
+        return sphere_actor
 
+    scales = np.multiply(radii, [1, 1, 1])
+    directions = (1, 0, 0)
+
+    if faces is None and vertices is None:
+        vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
+
+    res = fp.repeat_primitive(vertices, faces,
+                              directions=directions, centers=centers,
+                              colors=colors, scales=scales)
+    big_verts, big_faces, big_colors, _ = res
+    sphere_actor = get_actor_from_primitive(
+            big_verts, big_faces, big_colors)
     sphere_actor.GetProperty().SetOpacity(opacity)
-
     return sphere_actor
 
 
