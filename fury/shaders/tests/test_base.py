@@ -9,8 +9,8 @@ from fury.shaders import (add_shader_callback, attribute_to_actor,
                           compose_shader, import_fury_shader, load_shader,
                           load, shader_to_actor, replace_shader_in_actor)
 from fury.shaders.base import SHADERS_DIR
-from fury.lib import (Actor, CellArray, ConeSource, Points, PolyData,
-                      PolyDataMapper, numpy_support)
+from fury.lib import (Actor, CellArray, Points, PolyData, PolyDataMapper,
+                      numpy_support)
 from fury.utils import set_polydata_colors
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 
@@ -58,14 +58,14 @@ geometry_code = \
     //VTK::System::Dec
     //VTK::PositionVC::Dec
     uniform mat4 MCDCMatrix;
-    
+
     //VTK::PrimID::Dec
-    
-    // declarations below aren't necessary because they are already injected 
+
+    // declarations below aren't necessary because they are already injected
     // by PrimID template this comment is just to justify the passthrough below
     //in vec4 vertexColorVSOutput[];
     //out vec4 vertexColorGSOutput;
-    
+
     //VTK::Color::Dec
     //VTK::Normal::Dec
     //VTK::Light::Dec
@@ -74,11 +74,11 @@ geometry_code = \
     //VTK::DepthPeeling::Dec
     //VTK::Clip::Dec
     //VTK::Output::Dec
-    
+
     // Convert points to line strips
     layout(points) in;
     layout(triangle_strip, max_vertices = 4) out;
-    
+
     void build_square(vec4 position)
     {
         gl_Position = position + vec4(-.5, -.5, 0, 0);  // 1: Bottom left
@@ -91,7 +91,7 @@ geometry_code = \
         EmitVertex();
         EndPrimitive();
     }
-    
+
     void main()
     {
     vertexColorGSOutput = vertexColorVSOutput[0];
