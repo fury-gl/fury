@@ -1,13 +1,15 @@
+import os
+
 from functools import partial
-
 from fury import enable_warnings
-from fury.lib import (numpy_support, Command, VTK_OBJECT,
-                      calldata_type, DataObject, Shader)
+from fury.io import load_text
+from fury.lib import (VTK_OBJECT, Command, DataObject, Shader, calldata_type,
+                      numpy_support)
 
-from os.path import join as pjoin, dirname, isfile
 
+SHADERS_DIR = os.path.join(os.path.dirname(__file__))
 
-SHADERS_DIR = pjoin(dirname(__file__))
+SHADERS_EXTS = ['.vert', '.tesc', '.tese', '.geom', '.frag', '.comp']
 
 SHADERS_TYPE = {"vertex": Shader.Vertex, "geometry": Shader.Geometry,
                 "fragment": Shader.Fragment}
@@ -52,8 +54,8 @@ GL_NUMBERS = {
 }
 
 
-def get_shader_code(glsl_code):
-    """Retrieve GLSL shader code from a string, a file or a list of both.
+def compose_shader(glsl_code):
+    """Get and merge GLSL shader code from a string, a file or a list of both.
 
     Parameters
     ----------
@@ -75,15 +77,44 @@ def get_shader_code(glsl_code):
 
     if isinstance(glsl_code, str):
         code += '\n'
-        fname = pjoin(SHADERS_DIR, glsl_code)
-        code += load(glsl_code) if isfile(fname) else glsl_code
+        fname = os.path.join(SHADERS_DIR, glsl_code)
+        code += load(glsl_code) if os.path.isfile(fname) else glsl_code
         return code
 
     for content in glsl_code:
-        code += '\n'
-        fname = pjoin(SHADERS_DIR, content)
-        code += load(content) if isfile(fname) else content
+        if content:
+            code += '\n'
+            fname = os.path.join(SHADERS_DIR, content)
+            code += load(content) if os.path.isfile(fname) else content
     return code
+
+
+def import_fury_shader(shader_file):
+    """Import a Fury shader.
+
+    Parameters
+    ----------
+    shader_file : str
+        Filename of shader. The file must be in the fury/shaders directory and
+        must have the one of the supported extensions specified by the Khronos
+        Group
+        (https://github.com/KhronosGroup/glslang#execution-of-standalone-wrapper).
+
+    Returns
+    -------
+    code : str
+        GLSL shader code.
+
+    """
+    shader_fname = os.path.join(SHADERS_DIR, shader_file)
+    if not os.path.isfile(shader_fname):
+        raise IOError('Shader file "{}" not found in "{}".'.format(
+            shader_file, SHADERS_DIR))
+    file_ext = os.path.splitext(os.path.basename(shader_file))[1]
+    if file_ext not in SHADERS_EXTS:
+        raise IOError('Shader file "{}" does not have one of the supported '
+                      'extensions: {}.'.format(shader_file, SHADERS_EXTS))
+    return load_text(shader_fname)
 
 
 def load(filename):
@@ -100,7 +131,7 @@ def load(filename):
         Shader code.
 
     """
-    with open(pjoin(SHADERS_DIR, filename)) as shader_file:
+    with open(os.path.join(SHADERS_DIR, filename)) as shader_file:
         return shader_file.read()
 
 
