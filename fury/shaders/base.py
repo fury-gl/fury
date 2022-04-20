@@ -82,10 +82,9 @@ def compose_shader(glsl_code):
         return code
 
     for content in glsl_code:
-        if content:
-            code += '\n'
-            fname = os.path.join(SHADERS_DIR, content)
-            code += load(content) if os.path.isfile(fname) else content
+        code += '\n'
+        fname = os.path.join(SHADERS_DIR, content)
+        code += load(content) if os.path.isfile(fname) else content
     return code
 
 
@@ -106,15 +105,37 @@ def import_fury_shader(shader_file):
         GLSL shader code.
 
     """
-    shader_fname = os.path.join(SHADERS_DIR, shader_file)
-    if not os.path.isfile(shader_fname):
-        raise IOError('Shader file "{}" not found in "{}".'.format(
-            shader_file, SHADERS_DIR))
     file_ext = os.path.splitext(os.path.basename(shader_file))[1]
     if file_ext not in SHADERS_EXTS:
         raise IOError('Shader file "{}" does not have one of the supported '
                       'extensions: {}.'.format(shader_file, SHADERS_EXTS))
+    shader_fname = os.path.join(SHADERS_DIR, shader_file)
+    if not os.path.isfile(shader_fname):
+        raise IOError('Shader file "{}" not found in "{}".'.format(
+            shader_file, SHADERS_DIR))
     return load_text(shader_fname)
+
+
+def load_shader(shader_file):
+    """Load a shader from a file.
+
+    Parameters
+    ----------
+    shader_file : str
+        Full path to a shader file ending with one of the file extensions
+        defined by the Khronos Group
+        (https://github.com/KhronosGroup/glslang#execution-of-standalone-wrapper).
+
+    Returns
+    -------
+    code : str
+        GLSL shader code.
+    """
+    file_ext = os.path.splitext(os.path.basename(shader_file))[1]
+    if file_ext not in SHADERS_EXTS:
+        raise IOError('Shader file "{}" does not have one of the supported '
+                      'extensions: {}.'.format(shader_file, SHADERS_EXTS))
+    return load_text(shader_file)
 
 
 def load(filename):

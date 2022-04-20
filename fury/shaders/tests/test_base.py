@@ -6,12 +6,13 @@ import numpy.testing as npt
 
 from fury import actor, window
 from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          compose_shader, import_fury_shader, load,
-                          shader_to_actor, replace_shader_in_actor)
+                          compose_shader, import_fury_shader, load_shader,
+                          load, shader_to_actor, replace_shader_in_actor)
 from fury.shaders.base import SHADERS_DIR
 from fury.lib import (Actor, CellArray, ConeSource, Points, PolyData,
                       PolyDataMapper, numpy_support)
 from fury.utils import set_polydata_colors
+from tempfile import TemporaryDirectory as InTemporaryDirectory
 
 
 vertex_dec = \
@@ -325,19 +326,15 @@ def test_compose_shader():
 
 def test_import_fury_shader():
     str_test1 = 'Test1'
-    str_test2 = 'Test2'
     fname_test1 = 'test1.frag'
     fname_test2 = 'test2.txt'
     pname_test1 = os.path.join(SHADERS_DIR, fname_test1)
-    pname_test2 = os.path.join(SHADERS_DIR, fname_test2)
-
-    # Test file not found
-    npt.assert_raises(IOError, import_fury_shader, fname_test1)
 
     # Test invalid file extension
-    with open(pname_test2, 'w') as f:
-        f.write(str_test2)
     npt.assert_raises(IOError, import_fury_shader, fname_test2)
+
+    # Test file not found
+    npt.assert_raises(IOError, import_fury_shader, pname_test1)
 
     # Test valid file
     with open(pname_test1, 'w') as f:
@@ -346,7 +343,23 @@ def test_import_fury_shader():
     npt.assert_equal(code, str_test1)
 
     os.remove(pname_test1)
-    os.remove(pname_test2)
+
+
+def test_load_shader():
+    fname_test = 'test.text'
+
+    # Test invalid file extension
+    npt.assert_raises(IOError, load_shader, fname_test)
+
+    with InTemporaryDirectory() as tdir:
+        fname_test = 'test.frag'
+        fname_test = os.path.join(tdir, fname_test)
+        str_test = 'Test1'
+        test_file = open(fname_test, 'w')
+        test_file.write(str_test)
+        test_file.close()
+
+        npt.assert_string_equal(load_shader(fname_test), str_test)
 
 
 def test_load():
