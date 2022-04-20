@@ -825,7 +825,8 @@ def test_spheres(interactive=False):
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
-                                radii=xyzr[:, 3], opacity=opacity)
+                                radii=xyzr[:, 3], opacity=opacity,
+                                use_primitive=False)
     scene.add(sphere_actor)
 
     if interactive:
@@ -841,7 +842,7 @@ def test_spheres(interactive=False):
     scene.clear()
     sphere_actor = actor.sphere(centers=xyzr[:, :3],
                                 colors=np.array([1, 0, 0]),
-                                radii=xyzr[:, 3])
+                                radii=xyzr[:, 3], use_primitive=False)
     scene.add(sphere_actor)
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=(1, 0, 0))
@@ -860,6 +861,29 @@ def test_spheres(interactive=False):
     report = window.analyze_snapshot(arr,
                                      colors=colors)
     npt.assert_equal(report.objects, 3)
+
+    # test primitive sphere type
+    scene.clear()
+    phi, theta = (30, 30)
+    sphere_actor = actor.sphere(centers=xyzr[:, :3], colors=colors[:],
+                                radii=xyzr[:, 3], opacity=opacity,
+                                phi=phi, theta=theta, use_primitive=True)
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(sphere_actor.GetProperty().GetOpacity(), opacity)
+
+    # test with unique colors for all spheres
+    scene.clear()
+    sphere_actor = actor.sphere(centers=xyzr[:, :3],
+                                colors=np.array([0, 0, 1]),
+                                radii=xyzr[:, 3], phi=phi, theta=theta)
+    scene.add(sphere_actor)
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(0, 0, 255))
+    npt.assert_equal(report.colors_found, [True])
+    scene.clear()
 
 
 def test_cones_vertices_faces(interactive=False):

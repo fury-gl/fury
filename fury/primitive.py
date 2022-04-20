@@ -8,7 +8,7 @@ from scipy.spatial import ConvexHull, transform
 from scipy.version import short_version
 
 from fury.data import DATA_DIR
-from fury.transform import cart2sphere
+from fury.transform import cart2sphere, sphere2cart
 from fury.utils import fix_winding_order
 
 SCIPY_1_4_PLUS = parse(short_version) >= parse('1.4.0')
@@ -265,12 +265,12 @@ def prim_box():
     return vertices, triangles
 
 
-def prim_sphere(name='symmetric362', gen_faces=False):
+def prim_sphere(name='symmetric362', gen_faces=False, phi=None, theta=None):
     """Provide vertices and triangles of the spheres.
 
     Parameters
     ----------
-    name : str
+    name : str, optional
         which sphere - one of:
         * 'symmetric362'
         * 'symmetric642'
@@ -281,7 +281,10 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     gen_faces : bool, optional
         If True, triangulate a set of vertices on the sphere to get the faces.
         Otherwise, we load the saved faces from a file. Default: False
-
+    phi : int, optional
+        Set the number of points in the latitude direction
+    theta : int, optional
+        Set the number of points in the longitude direction
     Returns
     -------
     vertices: ndarray
@@ -300,15 +303,45 @@ def prim_sphere(name='symmetric362', gen_faces=False):
     True
 
     """
-    fname = SPHERE_FILES.get(name)
-    if fname is None:
-        raise ValueError('No sphere called "%s"' % name)
-    res = np.load(fname)
+    if phi is None or theta is None:
+        fname = SPHERE_FILES.get(name)
+        if fname is None:
+            raise ValueError('No sphere called "%s"' % name)
+        res = np.load(fname)
 
-    verts = res['vertices'].copy()
-    faces = faces_from_sphere_vertices(verts) if gen_faces else res['faces']
-    faces = fix_winding_order(res['vertices'], faces, clockwise=True)
-    return res['vertices'], faces
+        verts = res['vertices'].copy()
+        faces = faces_from_sphere_vertices(
+            verts) if gen_faces else res['faces']
+        faces = fix_winding_order(res['vertices'], faces, clockwise=True)
+        return verts, faces
+    else:
+        phi = phi if phi >= 3 else 3
+        theta = theta if theta >= 3 else 3
+
+        phi_indices, theta_indices = np.arange(0, phi), np.arange(1, theta-1)
+
+        # phi and theta angles are same as standard physics convention
+        phi_angles = 2*np.pi*phi_indices / phi
+        theta_angles = np.pi*theta_indices / (theta-1)
+
+        # combinations of all phi and theta angles
+        mesh = np.array(np.meshgrid(phi_angles, theta_angles))
+        combs = mesh.T.reshape(-1, 2)
+
+        _angles = np.array([[1, 1], [0, np.pi], [np.pi/2, -np.pi/2]])
+        _points = np.array(sphere2cart(_angles[0],
+                                       _angles[1], _angles[2])).T
+
+        x, y, z = sphere2cart(1, combs[:, 1:], combs[:, :1])
+
+        x = np.reshape(np.append(x, _points[:, :1]), (-1, ))
+        y = np.reshape(np.append(y, _points[:, 1:2]), (-1, ))
+        z = np.reshape(np.append(z, _points[:, -1:]), (-1, ))
+
+        verts = np.vstack([x, y, z]).T
+        faces = faces_from_sphere_vertices(verts)
+        faces = fix_winding_order(verts, faces, clockwise=True)
+        return verts, faces
 
 
 def prim_superquadric(roundness=(1, 1), sphere_name='symmetric362'):
