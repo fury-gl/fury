@@ -608,7 +608,7 @@ def test_multithreading():
                 break
 
         if not showm.is_done():
-            arr = window.snapshot(test_scene,render_window=showm.window,fname="test.png")
+            arr = window.snapshot(scene,render_window=showm.window,fname="test.png")
             showm.exit()
             npt.assert_equal(np.sum(arr) > 1, True)
 
