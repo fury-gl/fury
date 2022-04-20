@@ -206,16 +206,16 @@ def test_load_sprite_sheet():
 
 def test_load_text():
     with InTemporaryDirectory() as tdir:
-        dummy_file_name = 'dummy.txt'
+        test_file_name = 'test.txt'
 
         # Test file does not exist
-        npt.assert_raises(IOError, load_text, dummy_file_name)
+        npt.assert_raises(IOError, load_text, test_file_name)
 
         # Saving file with content
-        dummy_file_contents = 'This is some dummy text.'
-        dummy_fname = os.path.join(tdir, dummy_file_name)
-        dummy_file = open(dummy_fname, 'w')
-        dummy_file.write(dummy_file_contents)
-        dummy_file.close()
+        test_file_contents = 'This is some test text.'
+        test_fname = os.path.join(tdir, test_file_name)
+        test_file = open(test_fname, 'w')
+        test_file.write(test_file_contents)
+        test_file.close()
 
-        npt.assert_string_equal(load_text(dummy_fname), dummy_file_contents)
+        npt.assert_string_equal(load_text(test_fname), test_file_contents)
