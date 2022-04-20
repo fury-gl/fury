@@ -105,15 +105,8 @@ def import_fury_shader(shader_file):
         GLSL shader code.
 
     """
-    file_ext = os.path.splitext(os.path.basename(shader_file))[1]
-    if file_ext not in SHADERS_EXTS:
-        raise IOError('Shader file "{}" does not have one of the supported '
-                      'extensions: {}.'.format(shader_file, SHADERS_EXTS))
     shader_fname = os.path.join(SHADERS_DIR, shader_file)
-    if not os.path.isfile(shader_fname):
-        raise IOError('Shader file "{}" not found in "{}".'.format(
-            shader_file, SHADERS_DIR))
-    return load_text(shader_fname)
+    return load_shader(shader_fname)
 
 
 def load_shader(shader_file):
