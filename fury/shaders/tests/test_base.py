@@ -294,34 +294,19 @@ def test_attribute_to_actor():
 def test_compose_shader():
     str_test1 = 'Test1'
     str_test2 = 'Test2'
-    fname_test1 = 'test1.glsl'
-    fname_test2 = 'test2.glsl'
-    pname_test1 = os.path.join(SHADERS_DIR, fname_test1)
-    pname_test2 = os.path.join(SHADERS_DIR, fname_test2)
-    with open(pname_test1, 'w') as f:
-        f.write(str_test1)
-    with open(pname_test2, 'w') as f:
-        f.write(str_test2)
-    list_str = [str_test1, str_test2]
-    list_fname = [fname_test1, fname_test2]
-    list_mix = [str_test1, fname_test2]
+    list_str1 = [str_test1, None]
+    list_str2 = [str_test1, str_test2]
+    # Test empty parameter
+    code = compose_shader(None)
+    npt.assert_equal(code, "")
+    # Test invalid list
+    npt.assert_raises(IOError, compose_shader, list_str1)
     # Test str code
     code = compose_shader(str_test1)
-    npt.assert_equal(code, '\n' + str_test1)
-    # Test str fname
-    code = compose_shader(fname_test1)
-    npt.assert_equal(code, '\n' + str_test1)
+    npt.assert_equal(code, str_test1)
     # Test list of str code
-    code = compose_shader(list_str)
-    npt.assert_equal(code, '\n' + '\n'.join(list_str))
-    # Test list of str fname
-    code = compose_shader(list_fname)
-    npt.assert_equal(code, '\n' + '\n'.join(list_str))
-    # Test list of str code and str fname
-    code = compose_shader(list_mix)
-    npt.assert_equal(code, '\n' + '\n'.join(list_str))
-    os.remove(pname_test1)
-    os.remove(pname_test2)
+    code = compose_shader(list_str2)
+    npt.assert_equal(code, '\n' + '\n'.join(list_str2))
 
 
 def test_import_fury_shader():

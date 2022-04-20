@@ -6,8 +6,8 @@ from functools import partial
 import numpy as np
 
 from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          get_shader_code, load, replace_shader_in_actor,
-                          shader_to_actor)
+                          compose_shader, import_fury_shader, load,
+                          replace_shader_in_actor, shader_to_actor)
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
@@ -2287,11 +2287,15 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     bb_actor.GetProperty().BackfaceCullingOff()
     attribute_to_actor(bb_actor, big_centers, 'center')
 
-    vs_dec_code = load('billboard_dec.vert') + '\n' + get_shader_code(vs_dec)
-    vs_impl_code = get_shader_code(vs_impl) + '\n' + load('billboard_impl.vert')
-    gs_code = get_shader_code(gs_prog)
-    fs_dec_code = load('billboard_dec.frag') + '\n' + get_shader_code(fs_dec)
-    fs_impl_code = load('billboard_impl.frag') + '\n' + get_shader_code(fs_impl)
+    vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
+                                  compose_shader(vs_dec)])
+    vs_impl_code = compose_shader([compose_shader(vs_impl) +
+                                   import_fury_shader('billboard_impl.vert')])
+    gs_code = compose_shader(gs_prog)
+    fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
+                                  compose_shader(fs_dec)])
+    fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
+                                   compose_shader(fs_impl)])
 
     shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
                     decl_code=vs_dec_code)

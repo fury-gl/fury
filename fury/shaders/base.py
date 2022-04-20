@@ -55,11 +55,11 @@ GL_NUMBERS = {
 
 
 def compose_shader(glsl_code):
-    """Get and merge GLSL shader code from a string, a file or a list of both.
+    """Merge GLSL shader code from a list of strings.
 
     Parameters
     ----------
-    glsl_code : str (code or filename) or list of str (code or filenames).
+    glsl_code : list of str (code or filenames).
 
     Returns
     -------
@@ -67,24 +67,19 @@ def compose_shader(glsl_code):
         GLSL shader code.
 
     """
-    code = ""
     if not glsl_code:
-        return code
+        return ""
 
     if not all(isinstance(i, str) for i in glsl_code):
-        raise IOError('The only supported format are string, filename, list '
-                      'of string or filename.')
+        raise IOError('The only supported format are string.')
 
     if isinstance(glsl_code, str):
-        code += '\n'
-        fname = os.path.join(SHADERS_DIR, glsl_code)
-        code += load(glsl_code) if os.path.isfile(fname) else glsl_code
-        return code
+        return glsl_code
 
+    code = ""
     for content in glsl_code:
         code += '\n'
-        fname = os.path.join(SHADERS_DIR, content)
-        code += load(content) if os.path.isfile(fname) else content
+        code += content
     return code
 
 
