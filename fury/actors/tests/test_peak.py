@@ -145,71 +145,30 @@ def test__points_to_vtk_cells():
     npt.assert_equal(vtk_cells.GetNumberOfCells(), 3)
 
 
-def test_symmetric_param(interactive=False):
-    peak_dirs, peak_vals, peak_affine = generate_peaks()
+def test_symmetric_param():
+    dirs000 = np.array([[1, 0, 0], [0, -1, 0]])
+    dirs001 = np.array([[1, 1, 0], [-1, 1, 0]])
+
+    peak_dirs = np.zeros((1, 1, 2, 2, 3))
+    peak_dirs[0, 0, 0, :, :] = dirs000
+    peak_dirs[0, 0, 1, :, :] = dirs001
 
     valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
     indices = np.nonzero(valid_mask)
 
-    colors = [[1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 1],
-              [1, 1, 0]]
+    peak_actor_asym = PeakActor(peak_dirs, indices, symmetric=False)
+    actor_points = numpy_support.vtk_to_numpy(
+        peak_actor_asym.GetMapper().GetInput().GetPoints().GetData())
+    desired_points = np.array([[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, -1, 0],
+                               [0, 0, 1], [1, 1, 1], [0, 0, 1], [-1, 1, 1]])
+    npt.assert_array_equal(actor_points, desired_points)
 
-    scene = window.Scene()
-
-    scene.azimuth(30)
-
-    peak_actor_asym = PeakActor(peak_dirs, indices, values=peak_vals,
-                                affine=peak_affine, colors=colors, linewidth=5,
-                                symmetric=False)
-    scene.add(peak_actor_asym)
-    scene.reset_camera()
-
-    ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[125, 50, :]
-    desired = np.array([0, 0, 0])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[125, 120, :]
-    desired = np.array([0, 0, 0])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[120, 100, :]
-    desired = np.array([0, 0, 0])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[50, 110, :]
-    desired = np.array([0, 0, 0])
-    npt.assert_array_equal(actual, desired)
-
-    if interactive:
-        window.show(scene)
-
-    scene.clear()
-
-    peak_actor_sym = PeakActor(peak_dirs, indices, values=peak_vals,
-                               affine=peak_affine, colors=colors, linewidth=5)
-    scene.add(peak_actor_sym)
-
-    ss = window.snapshot(scene, size=(200, 200))
-
-    actual = ss[125, 50, :]
-    desired = np.array([255, 255, 0])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[125, 120, :]
-    desired = np.array([0, 255, 0])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[120, 100, :]
-    desired = np.array([0, 0, 255])
-    npt.assert_array_equal(actual, desired)
-
-    actual = ss[50, 110, :]
-    desired = np.array([255, 0, 0])
-    npt.assert_array_equal(actual, desired)
-
-    if interactive:
-        window.show(scene)
+    peak_actor_sym = PeakActor(peak_dirs, indices)
+    actor_points = numpy_support.vtk_to_numpy(
+        peak_actor_sym.GetMapper().GetInput().GetPoints().GetData())
+    desired_points = np.array([[-1, 0, 0], [1, 0, 0], [0, 1, 0], [0, -1, 0],
+                               [-1, -1, 1], [1, 1, 1], [1, -1, 1], [-1, 1, 1]])
+    npt.assert_array_equal(actor_points, desired_points)
 
 
 def test_colors(interactive=False):
