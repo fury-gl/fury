@@ -141,15 +141,6 @@ frag_impl = \
     """
 
 
-def generate_cone():
-    cone_src = ConeSource()
-    cone_mapper = PolyDataMapper()
-    cone_mapper.SetInputConnection(cone_src.GetOutputPort())
-    cone_actor = Actor()
-    cone_actor.SetMapper(cone_mapper)
-    return cone_actor
-
-
 def generate_cube_with_effect():
     cube = actor.cube(np.array([[0, 0, 0]]))
     shader_to_actor(cube, "vertex", impl_code=vertex_impl,
@@ -226,7 +217,8 @@ def test_add_shader_callback():
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 1)
 
-    cone_actor = generate_cone()
+    cone_actor = actor.cone(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]),
+                            (0, 0, 1))
 
     test_values = []
 
