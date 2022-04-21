@@ -1,5 +1,8 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
+import seaborn as sns
 
 from dipy.io.streamline import load_tractogram
 from dipy.data.fetcher import get_bundle_atlas_hcp842
@@ -56,10 +59,26 @@ if __name__ == '__main__':
             if p_values[j] < buan_thr:
                 colors[ind == j] = buan_highlights[i]
 
-        list_actors.append(actor.streamtube(bundle, colors=colors, lod=False))
+        list_actors.append(actor.line(bundle, colors=colors, lod=False))
 
-    grid = ui.GridUI(list_actors, captions=list_labels, dim=(1, 4),
-                     rotation_speed=5, rotation_axis=None)
+    """
+    stat_file = os.path.join(stats_dir, stats[0])
+    stat_data = np.load(stat_file)
+    n = len(stat_data)
+    plot_data = np.empty((n, 2))
+    plot_data[:, 0] = np.arange(n)
+    plot_data[:, 1] = -np.log10(stat_data)
+    plot_data = pd.DataFrame(plot_data, columns=['Segment Number',
+                                                 '-log10(Pvalues)'])
+    ax = sns.barplot(x='Segment Number', y='-log10(Pvalues)', data=plot_data,
+                     facecolor=(0, 1, 0, 1))
+    ax.set_xticks(range(0, n + 1, 20))
+    ax.set_yticks(range(7))
+    plt.show()
+    """
+
+    grid = ui.GridUI(list_actors, captions=list_labels, dim=(2, 4),
+                     rotation_speed=5, rotation_axis=None, cell_padding=10)
 
     show_m = window.ShowManager(scene=scene, size=(1920, 1080),
                                 reset_camera=False, order_transparent=True)
