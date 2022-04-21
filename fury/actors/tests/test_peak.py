@@ -1,4 +1,4 @@
-from fury import actor, window
+from fury import actor, window, utils
 from fury.actors.peak import (PeakActor, _orientation_colors,
                               _peaks_colors_from_points, _points_to_vtk_cells)
 from fury.lib import numpy_support
@@ -157,15 +157,13 @@ def test_symmetric_param():
     indices = np.nonzero(valid_mask)
 
     peak_actor_asym = PeakActor(peak_dirs, indices, symmetric=False)
-    actor_points = numpy_support.vtk_to_numpy(
-        peak_actor_asym.GetMapper().GetInput().GetPoints().GetData())
+    actor_points = utils.vertices_from_actor(peak_actor_asym)
     desired_points = np.array([[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, -1, 0],
                                [0, 0, 1], [1, 1, 1], [0, 0, 1], [-1, 1, 1]])
     npt.assert_array_equal(actor_points, desired_points)
 
     peak_actor_sym = PeakActor(peak_dirs, indices)
-    actor_points = numpy_support.vtk_to_numpy(
-        peak_actor_sym.GetMapper().GetInput().GetPoints().GetData())
+    actor_points = utils.vertices_from_actor(peak_actor_sym)
     desired_points = np.array([[-1, 0, 0], [1, 0, 0], [0, 1, 0], [0, -1, 0],
                                [-1, -1, 1], [1, 1, 1], [1, -1, 1], [-1, 1, 1]])
     npt.assert_array_equal(actor_points, desired_points)
