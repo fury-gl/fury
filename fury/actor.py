@@ -1,13 +1,13 @@
 """Module that provide actors to render."""
 
 import warnings
-import os.path as op
 from functools import partial
 
 import numpy as np
 
-from fury.shaders import (load, shader_to_actor, attribute_to_actor,
-                          add_shader_callback, replace_shader_in_actor)
+from fury.shaders import (add_shader_callback, attribute_to_actor,
+                          compose_shader, import_fury_shader, load,
+                          replace_shader_in_actor, shader_to_actor)
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
@@ -2262,38 +2262,36 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
 
 
 def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
-              fs_dec=None, fs_impl=None, gs_dec=None, gs_impl=None):
+              gs_prog=None, fs_dec=None, fs_impl=None):
     """Create a billboard actor.
 
-    Billboards are 2D elements incrusted in a 3D world. It offers you the
-    possibility to draw differents shapes/elements at the shader level.
+    Billboards are 2D elements placed in a 3D world. They offer possibility to
+    draw different shapes/elements at the fragment shader level.
 
     Parameters
     ----------
     centers : ndarray, shape (N, 3)
-        Superquadrics positions
+        Billboard positions.
     colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
-        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : ndarray, shape (N) or (N,3) or float or int, optional
-        The height of the cone.
+        The scale of the billboards.
     vs_dec : str or list of str, optional
-        vertex shaders code that contains all variable/function delarations
+        Vertex Shader code that contains all variable/function declarations.
     vs_impl : str or list of str, optional
-        vertex shaders code that contains all variable/function implementation
+        Vertex Shaders code that contains all variable/function
+        implementations.
+    gs_prog : str, optional
+        Geometry Shader program.
     fs_dec : str or list of str, optional
-        Fragment shaders code that contains all variable/function delarations
+        Fragment Shaders code that contains all variable/function declarations.
     fs_impl : str or list of str, optional
-        Fragment shaders code that contains all variable/function
-        implementation
-    gs_dec : str or list of str, optional
-        Geometry shaders code that contains all variable/function delarations
-    gs_impl : str or list of str, optional
-        Geometry shaders code that contains all variable/function
-        mplementation
+        Fragment Shaders code that contains all variable/function
+        implementation.
 
     Returns
     -------
-    sq_actor: Actor
+    billboard_actor: Actor
 
     """
     verts, faces = fp.prim_square()
@@ -2302,46 +2300,29 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
     big_verts, big_faces, big_colors, big_centers = res
 
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
-    sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    sq_actor.GetProperty().BackfaceCullingOff()
-    attribute_to_actor(sq_actor, big_centers, 'center')
+    bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    bb_actor.GetProperty().BackfaceCullingOff()
+    attribute_to_actor(bb_actor, big_centers, 'center')
 
-    def get_code(glsl_code):
-        code = ""
-        if not glsl_code:
-            return code
+    vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
+                                  compose_shader(vs_dec)])
+    vs_impl_code = compose_shader([compose_shader(vs_impl) +
+                                   import_fury_shader('billboard_impl.vert')])
+    gs_code = compose_shader(gs_prog)
+    fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
+                                  compose_shader(fs_dec)])
+    fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
+                                   compose_shader(fs_impl)])
 
-        if not all(isinstance(i, (str)) for i in glsl_code):
-            raise IOError("The only supported format are string or filename,"
-                          "list of string or filename")
-
-        if isinstance(glsl_code, str):
-            code += "\n"
-            code += load(glsl_code) if op.isfile(glsl_code) else glsl_code
-            return code
-
-        for content in glsl_code:
-            code += "\n"
-            code += load(content) if op.isfile(content) else content
-        return code
-
-    vs_dec_code = get_code(vs_dec) + "\n" + load("billboard_dec.vert")
-    vs_impl_code = get_code(vs_impl) + "\n" + load("billboard_impl.vert")
-    fs_dec_code = get_code(fs_dec) + "\n" + load("billboard_dec.frag")
-    fs_impl_code = load("billboard_impl.frag") + "\n" + get_code(fs_impl)
-    gs_dec_code = get_code(gs_dec)
-    gs_impl_code = get_code(gs_impl)
-
-    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
+    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
-    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
-    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
-                    block="light")
-    shader_to_actor(sq_actor, "geometry", impl_code=gs_impl_code,
-                    decl_code=gs_dec_code, block="output")
+    replace_shader_in_actor(bb_actor, 'geometry', gs_code)
+    shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
+    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
+                    block='light')
 
-    return sq_actor
+    return bb_actor
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
