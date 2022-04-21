@@ -1341,7 +1341,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
 
 def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
-         linewidth=1, lookup_colormap=None):
+         linewidth=1, lookup_colormap=None, symmetric=True):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1362,6 +1362,10 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     Returns
     -------
@@ -1417,7 +1421,7 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
 
     return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
                      colors=colors, lookup_colormap=lookup_colormap,
-                     linewidth=linewidth)
+                     linewidth=linewidth, symmetric=symmetric)
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
