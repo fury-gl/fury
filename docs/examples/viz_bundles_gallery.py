@@ -13,14 +13,16 @@ from fury.utils import numpy_to_vtk_colors
 if __name__ == '__main__':
     atlas, bundles = get_bundle_atlas_hcp842()
     bundles_dir = os.path.dirname(bundles)
+    stats_dir = '/run/media/guaje/Data/Downloads/buan_flow/lmm_plots'
 
     tractograms = ['AF_L.trk', 'AF_R.trk', 'CST_L.trk', 'CST_R.trk']
-    #stats = []
-    #buan_highlights = [(1, 0, 0), (1, 1, 0), (1, 0, 0)]
+    stats = ['AF_L_fa_pvalues.npy', 'AF_R_fa_pvalues.npy',
+             'CST_L_fa_pvalues.npy', 'CST_R_fa_pvalues.npy']
+    buan_highlights = [(1, 0, 0), (1, 0, 0), (1, 1, 0), (1, 1, 0)]
 
     scene = window.Scene()
 
-    #buan_thr = .05
+    buan_thr = .05
 
     list_actors = []
     list_labels = []
@@ -30,13 +32,14 @@ if __name__ == '__main__':
         sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
         bundle = sft.streamlines
 
-        """
-        n = len(stat)
-        p_values = stat
+        stat_file = os.path.join(stats_dir, stats[i])
+        stat_data = np.load(stat_file)
+
+        n = len(stat_data)
+        p_values = stat_data
 
         indx = assignment_map(bundle, bundle, n)
         ind = np.array(indx)
-        """
 
         num_lines = len(bundle)
         lines_range = range(num_lines)
@@ -49,15 +52,13 @@ if __name__ == '__main__':
         colors = numpy_support.vtk_to_numpy(vtk_colors)
         colors = (colors - np.min(colors)) / np.ptp(colors)
 
-        """
         for j in range(n):
             if p_values[j] < buan_thr:
                 colors[ind == j] = buan_highlights[i]
-        """
 
         list_actors.append(actor.streamtube(bundle, colors=colors, lod=False))
 
-    grid = ui.GridUI(list_actors, captions=list_labels, dim=(2, 2),
+    grid = ui.GridUI(list_actors, captions=list_labels, dim=(1, 4),
                      rotation_speed=5, rotation_axis=None)
 
     show_m = window.ShowManager(scene=scene, size=(1920, 1080),
