@@ -17,8 +17,8 @@ from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter
 
 
-@pytest.mark.skipif(True, reason="Need investigation. Incorrect "
-                                 "number of event for each vtk version")
+# @pytest.mark.skipif(True, reason="Need investigation. Incorrect "
+#                                  "number of event for each vtk version")
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -778,6 +778,7 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((360, 90), combobox.text_block_size)
     npt.assert_equal((90, 90), combobox.drop_button_size)
     npt.assert_equal((450, 210), combobox.drop_menu_size)
+<<<<<<< HEAD
 
 
 def test_ui_spinbox(interactive=False):
@@ -965,3 +966,5 @@ def test_timer():
 
     arr = window.snapshot(scene, offscreen=True)
     npt.assert_(np.sum(arr) > 0)
+=======
+>>>>>>> 9b11a1bad9f1542e7b2d2b0e52dfcccb1ff904fd
