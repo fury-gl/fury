@@ -11,8 +11,48 @@ from fury.lib import (numpy_support, PNGReader, BMPReader, JPEGReader,
                       XMLPolyDataReader, PLYReader, STLReader,
                       OBJReader, MNIObjectReader, PolyDataWriter,
                       XMLPolyDataWriter, PLYWriter, STLWriter,
-                      MNIObjectWriter)
+                      MNIObjectWriter, ImageFlip, Texture)
 from fury.utils import set_input
+
+
+def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
+    """Load a cube map texture from a list of 6 images.
+
+    Parameters
+    ----------
+    fnames : list of strings
+        List of 6 filenames with bmp, jpg, jpeg, png, tif or tiff extensions.
+    interpolate_on : bool, optional
+    mipmap_on : bool, optional
+
+    Returns
+    -------
+    output : vtkTexture
+        Cube map texture.
+
+    """
+    if len(fnames) != 6:
+        raise IOError("Expected 6 filenames, got {}".format(len(fnames)))
+    texture = Texture()
+    texture.CubeMapOn()
+    for idx, fn in enumerate(fnames):
+        if not os.path.isfile(fn):
+            raise FileNotFoundError(fn)
+        else:
+            # Read the images
+            vtk_img = load_image(fn, as_vtktype=True)
+            # Flip the image horizontally
+            img_flip = ImageFlip()
+            img_flip.SetInputData(vtk_img)
+            img_flip.SetFilteredAxis(1)  # flip y axis
+            img_flip.Update()
+            # Add the image to the cube map
+            texture.SetInputDataObject(idx, img_flip.GetOutput())
+    if interpolate_on:
+        texture.InterpolateOn()
+    if mipmap_on:
+        texture.MipmapOn()
+    return texture
 
 
 def load_image(filename, as_vtktype=False, use_pillow=True):
@@ -120,6 +160,26 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
     return reader.GetOutput() if as_vtktype else image
 
 
+def load_text(file):
+    """Load a text file.
+
+    Parameters
+    ----------
+    file: str
+        Path to the text file.
+
+    Returns
+    -------
+    text: str
+        Text contained in the file.
+    """
+    if not os.path.isfile(file):
+        raise IOError('File {} does not exist.'.format(file))
+    with open(file) as f:
+        text = f.read()
+    return text
+
+
 def save_image(arr, filename, compression_quality=75,
                compression_type='deflation', use_pillow=True):
     """Save a 2d or 3d image.
@@ -222,6 +282,11 @@ def load_polydata(file_name):
     output : vtkPolyData
 
     """
+
+    # Check if file actually exists
+    if not os.path.isfile(file_name):
+        raise FileNotFoundError(file_name)
+
     file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {"vtk": PolyDataReader,
