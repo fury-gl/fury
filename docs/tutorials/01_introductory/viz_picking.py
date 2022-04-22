@@ -9,7 +9,7 @@ Here we present a tutorial showing how to interact with objects in the
 FURY likes to bundle objects in a few actors to reduce code and
 increase speed.
 
-When the objects will be picked they will change size and color.
+When the objects are picked they will change size and color.
 """
 
 import numpy as np
@@ -43,7 +43,7 @@ label_actor = actor.label(text='Test')
 directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
-fury_actor = actor.cube(centers, directions, colors, heights=radii)
+fury_actor = actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes

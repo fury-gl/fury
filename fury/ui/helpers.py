@@ -7,7 +7,6 @@ TWO_PI = 2 * np.pi
 
 def clip_overflow(textblock, width, side='right'):
     """Clips overflowing text of TextBlock2D with respect to width.
-
     Parameters
     ----------
     textblock : TextBlock2D
@@ -17,7 +16,6 @@ def clip_overflow(textblock, width, side='right'):
     side : str, optional
         Clips the overflowing text according to side.
         It takes values "left" or "right".
-
     Returns
     -------
     clipped text : str
@@ -37,7 +35,6 @@ def clip_overflow(textblock, width, side='right'):
 
 def wrap_overflow(textblock, wrap_width, side='right'):
     """Wraps overflowing text of TextBlock2D with respect to width.
-
     Parameters
     ----------
     textblock : TextBlock2D
@@ -47,7 +44,6 @@ def wrap_overflow(textblock, wrap_width, side='right'):
     side : str, optional
         Clips the overflowing text according to side.
         It takes values "left" or "right".
-
     Returns
     -------
     wrapped text : str
@@ -83,7 +79,6 @@ def wrap_overflow(textblock, wrap_width, side='right'):
 def check_overflow(textblock, width, overflow_postfix='',
                    side='right'):
     """Checks if the text is overflowing.
-
     Parameters
     ----------
     textblock : TextBlock2D
@@ -92,7 +87,6 @@ def check_overflow(textblock, width, overflow_postfix='',
         Required width of the text.
     overflow_postfix: str, optional
         Postfix to be added to the text if it is overflowing.
-
     Returns
     -------
     mid_ptr: int

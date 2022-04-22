@@ -9,7 +9,7 @@ from os.path import join as pjoin
 from apigen import ApiDocWriter
 
 # version comparison
-from distutils.version import LooseVersion
+from packaging.version import parse
 
 # *****************************************************************************
 
@@ -27,7 +27,7 @@ def generate_api_reference_rst(app=None, package='fury', outdir='reference',
         abort("Can not import " + package)
 
     module = sys.modules[package]
-    installed_version = LooseVersion(module.__version__)
+    installed_version = parse(module.__version__)
     print("Generation API for {} v{}".format(package, installed_version))
 
     docwriter = ApiDocWriter(package, rst_extension='.rst',
