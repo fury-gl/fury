@@ -12,6 +12,8 @@ jobs:
     vmIMage: 'VS2017-Win2016'
   variables:
     AZURE_CI_WINDOWS: 'true'
+    LIBGL_ALWAYS_SOFTWARE: true
+    LIBGL_ALWAYS_INDIRECT: false
   strategy:
     maxParallel: 4
     matrix:
@@ -20,19 +22,16 @@ jobs:
         OPTIONAL_DEPS: true
       Python37-64bit:
         python.version: '3.7'
-      Python36-64bit:
-        python.version: '3.6'
       Python38-64bit:
         python.version: '3.8'
-      CONDA Python37-64bit + OPTIONAL_DEPS:
-        python.version: '3.7'
+      Python39-64bit:
+        python.version: '3.9'
+      CONDA Python38-64bit + OPTIONAL_DEPS:
+        python.version: '3.8'
         OPTIONAL_DEPS: true
         INSTALL_TYPE: "conda"
-      CONDA Python37-64bit:
-        python.version: '3.7'
-        INSTALL_TYPE: "conda"
-      CONDA Python36-64bit:
-        python.version: '3.6'
+      CONDA Python39-64bit:
+        python.version: '3.9'
         INSTALL_TYPE: "conda"
   steps:
   - task: UsePythonVersion@0
@@ -60,5 +59,21 @@ jobs:
       ./ci/windows/install.ps1
     displayName: 'Install dependencies'
   - powershell: |
-      ./ci/windows/script.ps1
+      $overall_code = 0
+      $fileList = Get-ChildItem -Recurse -Path ./fury -Include test_*.py | Select-Object -ExpandProperty FullName
+      foreach ($textfile in $fileList) {
+        Write-Output "Processed file: $textfile"
+        powershell -File ci/windows/script.ps1 $textfile
+        $Code1 = $LASTEXITCODE
+        if ( $Code1 -ne 0 )
+        {
+          $overall_code = 1
+        }
+      }
+      if ($env:INSTALL_TYPE -eq 'conda' -And $overall_code -ne 0) {
+        Write-Host "\043#vso[task.logissue type=warning;] Error during tests on Conda matrix"
+      }
+      else {
+        exit $overall_code
+      }
     displayName: 'Run Tests'

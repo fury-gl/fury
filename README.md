@@ -15,6 +15,7 @@
 <a href="https://anaconda.org/conda-forge/fury"><img src="https://anaconda.org/conda-forge/fury/badges/version.svg"></a>
 <a href="https://codecov.io/gh/fury-gl/fury"><img src="https://codecov.io/gh/fury-gl/fury/branch/master/graph/badge.svg"></a>
 <a href="https://app.codacy.com/app/fury-gl/fury?utm_source=github.com&utm_medium=referral&utm_content=fury-gl/fury&utm_campaign=Badge_Grade_Dashboard"><img src="https://api.codacy.com/project/badge/Grade/922600af9f94445ead5a12423b813576"></a>
+<a href="https://doi.org/10.21105/joss.03384"><img src="https://joss.theoj.org/papers/10.21105/joss.03384/status.svg"></a>
 
 </p>
 
@@ -24,8 +25,8 @@
   <a href="#installation">Installation</a> •
   <a href="#how-to-use">How to use</a> •
   <a href="#credits">Credits</a> •
-  <a href="#contribute">Contribute</a>
-
+  <a href="#contribute">Contribute</a> •
+  <a href="#credits">Citing</a>
 </p>
 
 |         |         |         |
@@ -131,3 +132,28 @@ Please, go to [contributors page](https://github.com/fury-gl/fury/graphs/contrib
 We love contributions!
 
 You've discovered a bug or something else you want to change - excellent! Create an [issue](https://github.com/fury-gl/fury/issues/new)!
+
+# Citing
+
+If you are using FURY in your work then do cite [this paper](https://doi.org/10.21105/joss.03384). By citing FURY, you are helping sustain the FURY ecosystem.
+
+    Garyfallidis, Eleftherios, Serge Koudoro, Javier Guaje, Marc-Alexandre Côté, Soham Biswas,
+    David Reagan, Nasim Anousheh, Filipi Silva, Geoffrey Fox, and Fury Contributors.
+    "FURY: advanced scientific visualization." Journal of Open Source Software 6, no. 64 (2021): 3384.
+    https://doi.org/10.21105/joss.03384
+
+
+```css
+    @article{Garyfallidis2021,
+        doi = {10.21105/joss.03384},
+        url = {https://doi.org/10.21105/joss.03384},
+        year = {2021},
+        publisher = {The Open Journal},
+        volume = {6},
+        number = {64},
+        pages = {3384},
+        author = {Eleftherios Garyfallidis and Serge Koudoro and Javier Guaje and Marc-Alexandre Côté and Soham Biswas and David Reagan and Nasim Anousheh and Filipi Silva and Geoffrey Fox and Fury Contributors},
+        title = {FURY: advanced scientific visualization},
+        journal = {Journal of Open Source Software}
+    }
+```
