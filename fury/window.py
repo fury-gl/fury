@@ -11,9 +11,10 @@ from fury import __version__ as fury_version
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
-                      InteractorStyleImage, InteractorStyleTrackballCamera,
-                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
+from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
+                      InteractorEventRecorder, InteractorStyleImage,
+                      InteractorStyleTrackballCamera, RenderWindow,
+                      RenderWindowInteractor, RenderLargeImage,
                       WindowToImageFilter, Command, numpy_support, colors)
 from fury.utils import asbytes
 from fury.shaders.base import GL_NUMBERS as _GL
@@ -23,7 +24,7 @@ except NameError:
     basestring = str
 
 
-class Scene(Renderer):
+class Scene(OpenGLRenderer):
     """Your scene class.
 
     This is an important object that is responsible for preparing objects
@@ -32,10 +33,43 @@ class Scene(Renderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
+    def __init__(self, background=(0, 0, 0), skybox=None):
+        self.__skybox = skybox
+        self.__skybox_actor = None
+        if skybox:
+            self.AutomaticLightCreationOff()
+            self.UseImageBasedLightingOn()
+            self.UseSphericalHarmonicsOff()
+            self.SetEnvironmentTexture(self.__skybox)
+            self.skybox()
 
     def background(self, color):
         """Set a background color."""
         self.SetBackground(color)
+
+    def skybox(self, visible=True, gamma_correct=True):
+        """Show or hide the skybox.
+
+        Parameters
+        ----------
+        visible : bool
+            Whether to show the skybox or not.
+        gamma_correct : bool
+            Whether to apply gamma correction to the skybox or not.
+
+        """
+        if self.__skybox:
+            if visible:
+                if self.__skybox_actor is None:
+                    self.__skybox_actor = Skybox()
+                    self.__skybox_actor.SetTexture(self.__skybox)
+                    if gamma_correct:
+                        self.__skybox_actor.GammaCorrectOn()
+                self.add(self.__skybox_actor)
+            else:
+                self.rm(self.__skybox_actor)
+        else:
+            warn('Scene created without a skybox. Nothing to show or hide.')
 
     def add(self, *actors):
         """Add an actor to the scene."""
@@ -559,7 +593,43 @@ class ShowManager(object):
         self.destroy_timers()
         self.timers.clear()
 
+    def save_screenshot(self, fname, magnification=1, size=None, stereo=None):
+        """Save a screenshot of the current window in the specified filename.
 
+        Parameters
+        ----------
+        fname : str or None
+            File name where to save the screenshot.
+        magnification : int, optional
+            Applies a magnification factor to the scene before taking the
+            screenshot which improves the quality. A value greater than 1
+            increases the quality of the image. However, the output size will
+            be larger. For example, 200x200 image with magnification of 2 will
+            result in a 400x400 image. Default is 1.
+        size : tuple of 2 ints, optional
+            Size of the output image in pixels. If None, the size of the scene
+            will be used. If magnification > 1, then the size will be
+            determined by the magnification factor. Default is None.
+        stereo : str, optional
+            Set the type of stereo for the screenshot. Supported values are:
+
+                * 'opengl': OpenGL frame-sequential stereo. Referred to as
+                  'CrystalEyes' by VTK.
+                * 'anaglyph': For use with red/blue glasses. See VTK docs to
+                  use different colors.
+                * 'interlaced': Line interlaced.
+                * 'checkerboard': Checkerboard interlaced.
+                * 'left': Left eye only.
+                * 'right': Right eye only.
+                * 'horizontal': Side-by-side.
+
+        """
+        if size is None:
+            size = self.size
+        if stereo is None:
+            stereo = self.stereo.lower()
+        record(scene=self.scene, out_path=fname, magnification=magnification,
+               size=size, stereo=stereo)
 
 
 def show(scene, title='FURY', size=(300, 300), png_magnify=1,
@@ -667,11 +737,14 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     az_ang : float, optional
         Azimuthal angle of camera rotation.
     magnification : int, optional
-        How much to magnify the saved frame. Default is 1.
+        How much to magnify the saved frame. Default is 1. A value greater
+        than 1 increases the quality of the image. However, the output
+        size will be larger. For example, 200x200 image with magnification
+        of 2 will be a 400x400 image.
     size : (int, int)
         ``(width, height)`` of the window. Default is (300, 300).
     screen_clip: bool
-        Clip the the png based on screen resolution. Default is False.
+        Clip the png based on screen resolution. Default is False.
     reset_camera : bool
         If True Call ``scene.reset_camera()``. Otherwise you need to set the
          camera before calling this function.
@@ -703,9 +776,11 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
 
     """
     if scene is None:
-        scene = Renderer()
+        scene = Scene()
 
     renWin = RenderWindow()
+
+    renWin.SetOffScreenRendering(1)
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])

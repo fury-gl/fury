@@ -22,19 +22,17 @@ Let's start by importing the necessary modules:
 from fury import actor, material, window
 import numpy as np
 
-"""
-Now set up a new scene.
-"""
+###############################################################################
+# Now set up a new scene.
 
 scene = window.Scene()
 scene.background((.9, .9, .9))
 
-"""
-Let's define the parameters needed for our demo. In this demo we will see the
-effect of each one of the 10 parameters defined by the Principled shader.
-For interpretability and usability purposes, each parameter is limited to
-values between the range 0 to 1.
-"""
+###############################################################################
+# Let's define the parameters needed for our demo. In this demo we will see the
+# effect of each one of the 10 parameters defined by the Principled shader.
+# For interpretability and usability purposes, each parameter is limited to
+# values between the range 0 to 1.
 
 material_params = [
     [(1, 1, 1), {'subsurface': 0, 'subsurface_color': [.8, .8, .8]}],
@@ -47,10 +45,9 @@ material_params = [
     [(0, 1, 1), {'clearcoat_gloss': 0, 'clearcoat': 1}]
 ]
 
-"""
-We can start to add our actors to the scene and see how different values of the
-parameters produce interesting effects.
-"""
+###############################################################################
+# We can start to add our actors to the scene and see how different values of
+# the parameters produce interesting effects.
 
 for i in range(10):
     center = [[0, -5 * i, 0]]
@@ -63,9 +60,8 @@ for i in range(10):
         material.manifest_principled(sphere, **material_params[i][1])
         scene.add(sphere)
 
-"""
-Finally, let's add some labels to guide us through our visualization.
-"""
+###############################################################################
+# Finally, let's add some labels to guide us through our visualization.
 
 labels = ['Subsurface', 'Metallic', 'Specular', 'Specular Tint', 'Roughness',
           'Anisotropic', 'Sheen', 'Sheen Tint', 'Clearcoat', 'Clearcoat Gloss']
@@ -82,9 +78,8 @@ for j in range(11):
                         scale=(.8, .8, .8), color=(0, 0, 0))
     scene.add(label)
 
-"""
-And visualize our demo.
-"""
+###############################################################################
+# And visualize our demo.
 
 interactive = False
 if interactive:

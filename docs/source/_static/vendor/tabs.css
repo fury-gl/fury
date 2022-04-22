@@ -1,0 +1,153 @@
+.uikit-tab-wrapper-mobile {
+    display: flex;
+    flex-direction: row;
+}
+
+.tabs-section {
+    display: flex;
+    flex-direction: column;
+}
+
+.tabs-section .container {
+    display: flex;
+    flex-direction: column;
+}
+
+.tabs-title {
+    display: flex;
+    justify-content: center;
+    letter-spacing: 1.5px;
+    font-size: 27px;
+    margin: 30px 0;
+}
+
+.visualization, .data-science, .scientific-domains, .machine-learning, .array-libraries {
+    max-width: 900px;
+    margin: 15px auto;
+}
+
+.scientific-domains > table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.uk-tab > li {
+    padding: 0 10px;
+}
+
+.uk-nav > li > a {
+    height: 35px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    color: rgb(108, 122, 137);
+}
+
+#tabs-content > li {
+    width: 90vw;
+    max-width: 900px;
+    margin: 50px auto;
+}
+
+@media only screen and (max-width: 1200px) {
+    .tabs-section {
+        margin: 30px 10px;
+    }
+
+    .tabs-title {
+        margin: 30px;
+    }
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap: 20px;
+}
+
+.grid-container > div {
+    /* White, with 80% opacity */
+    background-color: rgba(255, 255, 255, 0.8);
+    text-align: middle;
+}
+
+@media only screen and (max-width: 600px) {
+    .grid-container {
+        display: block;
+    }
+}
+
+/* Visualization */
+.visualization-images > img {
+    border-radius: 10px;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-gap: 10px;
+}
+
+.image-grid > div {
+    background-color: rgb(238, 238, 238);
+    border: 2px solid rgb(255, 255, 255);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+/* Scientific Domains */
+td, th {
+    font-size: 0.8rem;
+    padding: 8px;
+}
+
+td > a {
+    font-size: 0.8rem;
+}
+
+tr.highlight-th {
+    border-top: 1px solid rgb(238, 238, 238);
+    font-size: 0.8rem;
+}
+
+td.bold-text {
+    font-weight: bold;
+    text-align: center;
+}
+
+img.cell-layout {
+    border-radius: 10px;
+    width: 50px;
+    height: 50px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    filter: invert(11%) sepia(86%) saturate(4861%) hue-rotate(10deg) brightness(84%) contrast(121%);
+}
+
+td.center-text {
+    text-align: center;
+    line-height: 35%;
+}
+
+td.full-center-text {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 45%;
+}
+
+td.lastrow-center-text {
+    text-align: center;
+    line-height: 35%;
+    border-bottom: 1px solid rgb(255, 255, 255);
+}
+
+/* Array Libraries */
+img.first-column-layout {
+    height: 30px;
+}
+
+td.left-text {
+    vertical-align: middle;
+}

@@ -6,8 +6,8 @@ import numpy.testing as npt
 import pytest
 
 from fury.decorators import skip_osx
-from fury.io import (load_polydata, save_polydata, load_image, save_image,
-                     load_sprite_sheet)
+from fury.io import (load_cubemap_texture, load_polydata, save_polydata,
+                     load_image, save_image, load_sprite_sheet, load_text)
 from fury.lib import numpy_support, PolyData, ImageData
 from fury.utils import numpy_to_vtk_points
 from fury.testing import assert_greater
@@ -38,6 +38,7 @@ def test_save_and_load_polydata():
     npt.assert_raises(IOError, save_polydata, PolyData(), "test.vti")
     npt.assert_raises(IOError, save_polydata, PolyData(), "test.obj")
     npt.assert_raises(IOError, load_polydata, "test.vti")
+    npt.assert_raises(FileNotFoundError, load_polydata, "does-not-exist.obj")
 
 
 def test_save_and_load_options():
@@ -158,6 +159,30 @@ def test_pillow():
             npt.assert_equal(data.dtype, data2.dtype)
 
 
+def test_load_cubemap_texture():
+    l_ext = ['jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff']
+    for ext in l_ext:
+        with InTemporaryDirectory() as odir:
+            data = np.random.randint(0, 255, size=(50, 50, 3), dtype=np.uint8)
+            fname_path = pjoin(odir, f'test.{ext}')
+            save_image(data, fname_path)
+
+            fnames = [fname_path] * 5
+            npt.assert_raises(IOError, load_cubemap_texture, fnames)
+
+            fnames = [fname_path] * 6
+            texture = load_cubemap_texture(fnames)
+            npt.assert_equal(texture.GetCubeMap(), True)
+            npt.assert_equal(texture.GetMipmap(), True)
+            npt.assert_equal(texture.GetInterpolate(), 1)
+            npt.assert_equal(texture.GetNumberOfInputPorts(), 6)
+            npt.assert_equal(texture.GetInputDataObject(0, 0).GetDimensions(),
+                             (50, 50, 1))
+
+            fnames = [fname_path] * 7
+            npt.assert_raises(IOError, load_cubemap_texture, fnames)
+
+
 def test_load_sprite_sheet():
     sprite_URL = 'https://raw.githubusercontent.com/'\
                  'antrikshmisri/DATA/master/fury/0yKFTBQ.png'
@@ -177,3 +202,20 @@ def test_load_sprite_sheet():
 
         for vtk_sprite in list(vtktype_sprites.values()):
             npt.assert_equal(isinstance(vtk_sprite, ImageData), True)
+
+
+def test_load_text():
+    with InTemporaryDirectory() as tdir:
+        test_file_name = 'test.txt'
+
+        # Test file does not exist
+        npt.assert_raises(IOError, load_text, test_file_name)
+
+        # Saving file with content
+        test_file_contents = 'This is some test text.'
+        test_fname = os.path.join(tdir, test_file_name)
+        test_file = open(test_fname, 'w')
+        test_file.write(test_file_contents)
+        test_file.close()
+
+        npt.assert_string_equal(load_text(test_fname), test_file_contents)

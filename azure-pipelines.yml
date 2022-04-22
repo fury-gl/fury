@@ -12,6 +12,8 @@ jobs:
     vmIMage: 'VS2017-Win2016'
   variables:
     AZURE_CI_WINDOWS: 'true'
+    LIBGL_ALWAYS_SOFTWARE: true
+    LIBGL_ALWAYS_INDIRECT: false
   strategy:
     maxParallel: 4
     matrix:
