@@ -1110,7 +1110,7 @@ class Button2D(UI):
         return abs(size[:2])
 
     def _build_icons(self, icon_fnames):
-        """Convert file names to vtkImageDataGeometryFilters.
+        """Convert file names to ImageData.
 
         A pre-processing step to prevent re-read of file names during every
         state change.
@@ -1123,7 +1123,7 @@ class Button2D(UI):
         Returns
         -------
         icons : List
-            A list of corresponding vtkImageDataGeometryFilters.
+            A list of corresponding ImageData.
 
         """
         icons = []
@@ -1268,7 +1268,7 @@ class Button2D(UI):
 
         Parameters
         ----------
-        icon : imageDataGeometryFilter
+        icon : imageData
 
         """
         self.texture = set_input(self.texture, icon)

@@ -10,14 +10,32 @@ to simulate orbital motion.
 """
 
 import numpy as np
-from fury import window, actor, utils, io
+from fury import window, actor, utils, io, ui
 import itertools
-from fury.data import read_viz_textures, fetch_viz_textures
+from fury.data import read_viz_textures, fetch_viz_textures, read_viz_icons
 
 ##############################################################################
 # Create a scene to start.
 
 scene = window.Scene()
+
+# Create a panel and the start/pause buttons
+
+panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
+panel.center = (400, 50)
+
+pause_button = ui.Button2D(
+    icon_fnames=[("square", read_viz_icons(fname="pause2.png"))]
+)
+start_button = ui.Button2D(
+    icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
+)
+
+# Add the buttons on the panel
+
+panel.add_element(pause_button, (0.25, 0.33))
+panel.add_element(start_button, (0.66, 0.33))
+
 
 ##############################################################################
 # Define information relevant for each planet actor including its
@@ -153,6 +171,7 @@ scene.set_camera(position=(-20, 60, 100))
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
+scene.add(panel)
 
 ##############################################################################
 # Next, let's focus on creating the animation.
@@ -241,6 +260,21 @@ def timer_callback(_obj, _event):
 
     if cnt == 2000:
         showm.exit()
+
+##############################################################################
+# We add a callback to each button to perform some action.
+
+
+def start_animation(i_ren, _obj, _button):
+    showm.add_timer_callback(True, 10, timer_callback)
+
+
+def pause_animation(i_ren, _obj, _button):
+    showm.destroy_timers()
+
+
+start_button.on_left_mouse_button_clicked = start_animation
+pause_button.on_left_mouse_button_clicked = pause_animation
 
 
 ##############################################################################
