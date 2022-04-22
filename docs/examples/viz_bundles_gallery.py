@@ -36,7 +36,7 @@ def lmm_plot(p_vals, bundle_label, title, p_vals_thrs=.05, thrs_colors='red',
     ax.add_artist(thr_leg)
     log_p_vals = -np.log10(p_vals)
     legend = ax.bar(x, log_p_vals, color=bar_color, label=bundle_label)
-    ax.legend(handles=[legend], loc='upper left')
+    #ax.legend(handles=[legend], loc='upper left')
     ax.set_ylim(ylim)
     ax.set_ylabel('-log10(p-value)')
     ax.set_xlabel('Segment Number')
@@ -96,12 +96,20 @@ if __name__ == '__main__':
             if p_values[j] < buan_thr:
                 colors[ind == j] = buan_highlights[i]
 
-        fig, ax = lmm_plot(p_values, label, 'FA', p_vals_thrs=[.05, .01],
-                           thrs_colors=[buan_highlights[i], 'black'],
-                           bar_color=mean_color)
-        #fig.show()
+        """
+        with plt.rc_context({'axes.facecolor': 'black',
+                             'axes.labelcolor': 'white', 'text.color': 'white',
+                             'xtick.color': 'white', 'ytick.color': 'white'}):
+        """
+        with plt.style.context('dark_background'):
+            fig, ax = lmm_plot(p_values, label, 'FA', p_vals_thrs=[.05, .01],
+                               thrs_colors=[buan_highlights[i], 'white'],
+                               bar_color=mean_color)
+            #fig.show()
+
         buffer = BytesIO()
-        fig.savefig(buffer, dpi=60)
+        fig.savefig(buffer, dpi='figure', bbox_inches='tight',
+                    transparent=True)
         buffer.seek(0)
         img = Image.open(buffer)
         img_arr = np.asarray(img)
