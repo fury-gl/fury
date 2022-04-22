@@ -11,8 +11,48 @@ from fury.lib import (numpy_support, PNGReader, BMPReader, JPEGReader,
                       XMLPolyDataReader, PLYReader, STLReader,
                       OBJReader, MNIObjectReader, PolyDataWriter,
                       XMLPolyDataWriter, PLYWriter, STLWriter,
-                      MNIObjectWriter)
+                      MNIObjectWriter, ImageFlip, Texture)
 from fury.utils import set_input
+
+
+def load_cubemap_texture(fnames, interpolate_on=True, mipmap_on=True):
+    """Load a cube map texture from a list of 6 images.
+
+    Parameters
+    ----------
+    fnames : list of strings
+        List of 6 filenames with bmp, jpg, jpeg, png, tif or tiff extensions.
+    interpolate_on : bool, optional
+    mipmap_on : bool, optional
+
+    Returns
+    -------
+    output : vtkTexture
+        Cube map texture.
+
+    """
+    if len(fnames) != 6:
+        raise IOError("Expected 6 filenames, got {}".format(len(fnames)))
+    texture = Texture()
+    texture.CubeMapOn()
+    for idx, fn in enumerate(fnames):
+        if not os.path.isfile(fn):
+            raise FileNotFoundError(fn)
+        else:
+            # Read the images
+            vtk_img = load_image(fn, as_vtktype=True)
+            # Flip the image horizontally
+            img_flip = ImageFlip()
+            img_flip.SetInputData(vtk_img)
+            img_flip.SetFilteredAxis(1)  # flip y axis
+            img_flip.Update()
+            # Add the image to the cube map
+            texture.SetInputDataObject(idx, img_flip.GetOutput())
+    if interpolate_on:
+        texture.InterpolateOn()
+    if mipmap_on:
+        texture.MipmapOn()
+    return texture
 
 
 def load_image(filename, as_vtktype=False, use_pillow=True):
@@ -61,6 +101,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                     raise RuntimeError('Unknown image mode {}'
                                        .format(pil_image.mode))
                 image = np.asarray(pil_image)
+            image = np.flipud(image)
 
         if as_vtktype:
             if image.ndim not in [2, 3]:
@@ -76,11 +117,11 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                                 0, 0)
             vtk_image.SetSpacing(1.0, 1.0, 1.0)
             vtk_image.SetOrigin(0.0, 0.0, 0.0)
-            arr_tmp = np.flipud(image)
-            arr_tmp = arr_tmp.reshape(image.shape[1] * image.shape[0], depth)
-            arr_tmp = np.ascontiguousarray(arr_tmp, dtype=image.dtype)
+
+            image = image.reshape(image.shape[1] * image.shape[0], depth)
+            image = np.ascontiguousarray(image, dtype=image.dtype)
             vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
-            uchar_array = numpy_support.numpy_to_vtk(arr_tmp, deep=True,
+            uchar_array = numpy_support.numpy_to_vtk(image, deep=True,
                                                      array_type=vtk_array_type)
             vtk_image.GetPointData().SetScalars(uchar_array)
             image = vtk_image
@@ -113,11 +154,30 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
         components = vtk_array.GetNumberOfComponents()
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
-        image = np.flipud(image)
 
     if is_url:
         os.remove(filename)
     return reader.GetOutput() if as_vtktype else image
+
+
+def load_text(file):
+    """Load a text file.
+
+    Parameters
+    ----------
+    file: str
+        Path to the text file.
+
+    Returns
+    -------
+    text: str
+        Text contained in the file.
+    """
+    if not os.path.isfile(file):
+        raise IOError('File {} does not exist.'.format(file))
+    with open(file) as f:
+        text = f.read()
+    return text
 
 
 def save_image(arr, filename, compression_quality=75,
@@ -161,6 +221,7 @@ def save_image(arr, filename, compression_quality=75,
                       format(filename, extension))
 
     if use_pillow:
+        arr = np.flipud(arr)
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality)
         return
@@ -169,7 +230,6 @@ def save_image(arr, filename, compression_quality=75,
         arr = arr[..., None]
 
     shape = arr.shape
-    arr = np.flipud(arr)
     if extension.lower() in ['.png', ]:
         arr = arr.astype(np.uint8)
     arr = arr.reshape((shape[1] * shape[0], shape[2]))
@@ -197,13 +257,14 @@ def save_image(arr, filename, compression_quality=75,
         writer.ProgressiveOn()
         writer.SetQuality(compression_quality)
     if extension.lower() in [".tif", ".tiff"]:
-        if not compression_type:
-            writer.SetCompressionToNoCompression()
-        elif compression_type.lower() == 'lzw':
-            writer.SetCompressionToLZW()
-        elif compression_type.lower() == 'deflation':
-            writer.SetCompressionToDeflate()
+        compression_type = compression_type or 'nocompression'
+        l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
 
+        if compression_type.lower() in l_compression:
+            comp_id = l_compression.index(compression_type.lower())
+            writer.SetCompression(comp_id)
+        else:
+            writer.SetCompressionToDeflate()
     writer.Write()
 
 
@@ -221,6 +282,11 @@ def load_polydata(file_name):
     output : vtkPolyData
 
     """
+
+    # Check if file actually exists
+    if not os.path.isfile(file_name):
+        raise FileNotFoundError(file_name)
+
     file_extension = file_name.split(".")[-1].lower()
 
     poly_reader = {"vtk": PolyDataReader,
