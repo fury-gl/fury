@@ -1,6 +1,6 @@
 <div id="footer-columns" class="footer-columns">
     <div class="footer-logo-column">
-        <img id="footer-logo" src="_static/images/logo.svg" alt=" logo. ">
+        <img id="footer-logo" src="{{ pathto('_static/images/logo.svg', 1) }}" alt=" logo. ">
     </div>
     <div class="link-column">
         <div class="footer-column">
@@ -8,10 +8,10 @@
                 <h5 class="footer-h5">About</h5>
             </div>
             <ul class="link-list" style="padding-left: 0px;">
-                <li class="link-list"><a class="footer-link" href="community.html#contributors"><i class="fa fa-angle-double-right"></i>Developers</a></li>
+                <li class="link-list"><a class="footer-link" href="{{ pathto('community.html#contributors', 1) }}"><i class="fa fa-angle-double-right"></i>Developers</a></li>
                 <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i class="fa fa-angle-double-right"></i>Support</a></li>
-                <li class="link-list"><a class="footer-link" href="installation.html"><i class="fa fa-angle-double-right"></i>Download</a></li>
-                <li class="link-list"><a class="footer-link" href="auto_tutorials/index.html"><i class="fa fa-angle-double-right"></i>Tutorials</a></li>
+                <li class="link-list"><a class="footer-link" href="{{ pathto('installation.html', 1) }}"><i class="fa fa-angle-double-right"></i>Download</a></li>
+                <li class="link-list"><a class="footer-link" href="{{ pathto('auto_tutorials/index.html', 1) }}"><i class="fa fa-angle-double-right"></i>Tutorials</a></li>
             </ul>
         </div>
     </div>
