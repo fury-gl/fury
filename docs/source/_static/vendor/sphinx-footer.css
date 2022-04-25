@@ -4,8 +4,9 @@
 	color: white;
 }
 
-#footer ul {
+#footer-columns ul {
 	padding-left: 0px;
+  list-style-type: none;
 }
 
 .footer-link {
@@ -17,7 +18,7 @@
 .footer {
     background-color: rgb(153, 0, 0);
     padding: 3rem 1.5rem 6rem; }
-  
+
 .footer-column {
     display: block;
     flex-basis: 0;
