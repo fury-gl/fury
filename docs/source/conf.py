@@ -165,8 +165,8 @@ html_theme_options = {
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
-
-}
+  "footer_items": ["custom-footer.html"]
+  }
 
 html_additional_pages = {
     'video': 'home-video-page.html',
