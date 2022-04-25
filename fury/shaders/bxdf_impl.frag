@@ -113,4 +113,4 @@ color += emissiveColor;
 
 // Gamma correction
 color = pow(color, vec3(1. / 2.2));
-//fragOutput0 = vec4(color, opacity);
+fragOutput0 = vec4(color, opacity);

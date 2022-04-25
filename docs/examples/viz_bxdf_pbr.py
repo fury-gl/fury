@@ -23,9 +23,8 @@ def change_slice_subsurface(slider):
 
 
 def change_slice_metallic(slider):
-    global obj_actor, principled_params
+    global principled_params
     principled_params['metallic'] = slider.value
-    obj_actor.GetProperty().SetMetallic(slider.value)
 
 
 def change_slice_specular(slider):
@@ -40,9 +39,8 @@ def change_slice_specular_tint(slider):
 
 
 def change_slice_roughness(slider):
-    global obj_actor, principled_params
+    global principled_params
     principled_params['roughness'] = slider.value
-    obj_actor.GetProperty().SetRoughness(slider.value)
 
 
 def change_slice_anisotropic(slider):
@@ -168,11 +166,13 @@ def obj_model(model='glyptotek.vtk', colors=None):
 
 
 def obj_spheres(radii=2, theta=32, phi=32):
-    centers = [[-5, 5, 0], [0, 5, 0], [5, 5, 0], [-5, 0, 0], [0, 0, 0],
-               [5, 0, 0], [-5, -5, 0], [0, -5, 0], [5, -5, 0]]
+    centers = np.array([[-5, 5, 0], [0, 5, 0], [5, 5, 0], [-5, 0, 0],
+                        [0, 0, 0], [5, 0, 0], [-5, -5, 0], [0, -5, 0],
+                        [5, -5, 0]])
     colors = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 1, 1], [1, 0, 1], [1, 1, 0],
               [0, 0, 0], [.5, .5, .5], [1, 1, 1]]
-    return actor.sphere(centers, colors, radii=radii, theta=theta, phi=phi)
+    return actor.sphere(centers, colors, radii=radii, theta=theta, phi=phi,
+                        use_primitive=False)
 
 
 def obj_surface():
