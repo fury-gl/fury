@@ -191,6 +191,15 @@ def get_hemisphere_actor(fname, colors=None, auto_normals='vtk'):
     return get_actor_from_polydata(polydata)
 
 
+def key_pressed(obj, event):
+    global show_m
+    key = obj.GetKeySym()
+    if key == 's' or key == 'S':
+        print('Saving image...')
+        show_m.save_screenshot('screenshot.png', magnification=4)
+        print('Image saved.')
+
+
 def points_from_gzipped_gifti(fname):
     with gzip.open(fname) as f:
         as_bytes = f.read()
@@ -309,15 +318,15 @@ if __name__ == '__main__':
     left_nodes_actor = actor.sphere(left_coordinates, (1, 0, 0), opacity=.25)
     right_nodes_actor = actor.sphere(right_coordinates, (1, 0, 0), opacity=.25)
     
-    scene.add(left_nodes_actor)
-    scene.add(right_nodes_actor)
+    #scene.add(left_nodes_actor)
+    #scene.add(right_nodes_actor)
 
     edges = [[left_coordinates[i], right_coordinates[i]] for i in range(
             len(left_coordinates))]
     edges_actor = actor.streamtube(edges, (1, 0, 0), linewidth=.5,
                                    opacity=.25)
 
-    scene.add(edges_actor)
+    #scene.add(edges_actor)
 
     left_max_op_vals = -np.nanmin(left_sulc_points)
     left_min_op_vals = -np.nanmax(left_sulc_points)
@@ -355,10 +364,10 @@ if __name__ == '__main__':
                                             colors=right_colors)
 
     principled_params = {'subsurface': 0, 'subsurface_color': [0, 0, 0],
-                         'metallic': 0, 'specular': 0, 'specular_tint': 0,
-                         'roughness': 0, 'anisotropic': 0,
-                         'anisotropic_direction': [0, 1, .5], 'sheen': 1,
-                         'sheen_tint': 1, 'clearcoat': 0, 'clearcoat_gloss': 0}
+                         'metallic': .25, 'specular': 0, 'specular_tint': 0,
+                         'roughness': .5, 'anisotropic': 0,
+                         'anisotropic_direction': [0, 1, .5], 'sheen': 0,
+                         'sheen_tint': 0, 'clearcoat': 0, 'clearcoat_gloss': 0}
 
     left_principled = manifest_principled(
         left_hemi_actor, **principled_params)
@@ -578,11 +587,10 @@ if __name__ == '__main__':
 
     scene.add(control_panel)
 
+    show_m.iren.AddObserver('KeyPressEvent', key_pressed)
+
     size = scene.GetSize()
 
     show_m.add_window_callback(win_callback)
 
     show_m.start()
-
-    #window.record(scene, out_path='sheen_atlas_2.png', size=(1920, 1080),
-    #              magnification=4)
