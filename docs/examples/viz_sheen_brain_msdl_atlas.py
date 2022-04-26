@@ -1,3 +1,6 @@
+import gzip
+import numpy as np
+
 from datetime import timedelta
 from dipy.io.image import load_nifti
 from fury import actor, ui, window
@@ -17,9 +20,6 @@ from nilearn import datasets, surface
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.input_data import NiftiMapsMasker
 from time import time
-
-import gzip
-import numpy as np
 
 
 def change_slice_subsurface(slider):

@@ -1,3 +1,6 @@
+import gzip
+import numpy as np
+
 from datetime import timedelta
 from fury import actor, ui, window
 from fury.colormap import distinguishable_colormap
@@ -14,9 +17,6 @@ from nibabel import gifti
 from nilearn import datasets, surface
 from nilearn.connectome import ConnectivityMeasure
 from time import time
-
-import gzip
-import numpy as np
 
 
 def change_slice_subsurface(slider):
