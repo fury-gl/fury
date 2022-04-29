@@ -339,7 +339,7 @@ def test_streamtube_and_line_actors():
 
     shader_obj = c3.GetShaderProperty()
     mapper_code = shader_obj.GetGeometryShaderCode()
-    file_code = shaders.load("line.geom")
+    file_code = shaders.import_fury_shader('line.geom')
     npt.assert_equal(mapper_code, file_code)
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
