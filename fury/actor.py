@@ -1478,6 +1478,48 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     return aPolyVertexActor
 
 
+def __color_check(dots, colors=None):
+    """
+    Returns a VTK scalar array containing colors information for each one of
+    the dots according to the policy defined by the parameter colors.
+
+    Parameters
+    ----------
+    dots : (N, 3) array or ndarray
+        points coordinates array.
+    colors : None or tuple (3D or 4D) or array/ndarray (N, 3 or 4)
+        If None a predefined color is used for each dot.
+        If one tuple of color is used. Then all dots will have the same color.
+        If an array (N, 3 or 4) is given, where N is equal to the number of
+        points. Then every point is colored with a different RGB(A) color.
+
+    Returns
+    -------
+    color_array : vtkDataArray
+        vtk scalar array with name 'colors'.
+    global_opacity : float
+        returns 1 if the colors array doesn't contain opacity otherwise -1.
+
+    """
+    num_dots = len(dots)
+    global_opacity = 1
+    if colors is None:
+        # Automatic RGB colors
+        colors = np.asarray((255, 255, 255))
+        color_array = numpy_to_vtk_colors(np.tile(colors, (num_dots, 1)))
+    elif type(colors) is tuple:
+        global_opacity = 1 if len(colors) == 3 else -1
+        colors = np.asarray(colors)
+        color_array = numpy_to_vtk_colors(np.tile(colors, (num_dots, 1)))
+    else:
+        colors = np.asarray(colors)
+        global_opacity = 1 if colors.shape[1] == 3 else -1
+        color_array = numpy_to_vtk_colors(colors)
+    color_array.SetName('colors')
+
+    return color_array, global_opacity
+
+
 def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
     """Visualize points as sphere glyphs
 
