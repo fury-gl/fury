@@ -1519,16 +1519,16 @@ def __color_check(dots, colors=None):
     global_opacity = 1
     if colors is None:
         # Automatic RGB colors
-        colors = np.asarray((255, 255, 255))
-        color_array = numpy_to_vtk_colors(np.tile(colors, (num_dots, 1)))
+        colors = np.asarray((1, 1, 1))
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (num_dots, 1)))
     elif type(colors) is tuple:
         global_opacity = 1 if len(colors) == 3 else -1
         colors = np.asarray(colors)
-        color_array = numpy_to_vtk_colors(np.tile(colors, (num_dots, 1)))
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (num_dots, 1)))
     else:
         colors = np.asarray(colors)
         global_opacity = 1 if colors.shape[1] == 3 else -1
-        color_array = numpy_to_vtk_colors(colors)
+        color_array = numpy_to_vtk_colors(255 * colors)
     color_array.SetName('colors')
 
     return color_array, global_opacity

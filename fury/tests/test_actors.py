@@ -742,9 +742,13 @@ def test_tensor_slicer(interactive=False):
 
 
 def test_dots(interactive=False):
+    # Test three points with different colors and opacities
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0,  1],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .3]])
 
-    dots_actor = actor.dots(points, color=(0, 255, 0))
+    dots_actor = actor.dot(points, colors=colors)
 
     scene = window.Scene()
     scene.add(dots_actor)
@@ -756,27 +760,45 @@ def test_dots(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    extent = scene.GetActors().GetLastActor().GetBounds()
-    npt.assert_equal(extent, (0.0, 1.0, 0.0, 1.0, 0.0, 0.0))
-
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 255, 0))
+    report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [False]*3)
 
-    # Test one point
-    points = np.array([0, 0, 0])
-    dot_actor = actor.dots(points, color=(0, 0, 255))
+    # Test three points with one color and opacity
+    points = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
+    colors = (1, 0, 0)
+    dot_actor = actor.dot(points, colors=colors, opacity=.5)
 
     scene.clear()
     scene.add(dot_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    if interactive:
+        window.show(scene, reset_camera=False)
+
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 0, 255))
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [False]*1)
+
+    # Test one point with no specified color
+    points = np.array([[1, 0, 0]])
+    dot_actor = actor.dot(points)
+
+    scene.clear()
+    scene.add(dot_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene, reset_camera=False)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr, colors=(1, 1, 1))
     npt.assert_equal(report.objects, 1)
+    npt.assert_equal(report.colors_found, [False]*1)
 
 
 def test_points(interactive=False):
