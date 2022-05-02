@@ -31,6 +31,8 @@ diffuse = evaluateDiffuse(roughness, albedo, dotNV, dotNV, dotNV);
 //diffuse *= (1. - F);
 diffuse *= (1. - metallic) * (1. - F);
 
+//fragOutput0 = vec4(diffuse, opacity);
+
 Lo += diffuse;
 
 // Subsurface
@@ -43,7 +45,7 @@ Lo = mix(Lo, subsurfaceV3, subsurface);
 vec3 sheenV3 = evaluateSheen(sheen, sheenTint, albedo, dotNV);
 float len = length(sheenV3);
 //fragOutput0 = vec4(sheenV3, opacity);
-fragOutput0 = vec4(sheenV3, len);
+//fragOutput0 = vec4(sheenV3, len);
 /*
 if(len < 0.1)
 {
@@ -84,6 +86,8 @@ specular = evaluateMicrofacetAnisotropic(specularIntensity, specularTint,
     metallic, anisotropic, roughness, albedo, 1., dotNV, dotTV, dotBV, dotNV,
     dotTV, dotBV, dotNV, dotTV, dotBV);
 
+//fragOutput0 = vec4(specular, opacity);
+
 Lo += specular;
 
 // Clearcoat + Clearcoat Gloss
@@ -91,6 +95,8 @@ float coatDotNV = clamp(dot(N, V), 1e-5, 1.0);
 
 float clearcoatF = evaluateClearcoat(clearcoat, clearcoatGloss, max(dotNV, .0),
         dotNV, dotNV, dotNV);
+
+//fragOutput0 = vec4(clearcoatF, clearcoatF, clearcoatF, opacity);
 
 Lo += clearcoatF;
 
