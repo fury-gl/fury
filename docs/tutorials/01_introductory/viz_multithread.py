@@ -17,14 +17,15 @@ import time
 
 
 # Preparing to draw some spheres
-xyz = 10 * (np.random.random(100, 3)-0.5)
-colors = np.random.random(100, 4)
+xyz = 10 * (np.random.random((100, 3))-0.5)
+colors = np.random.random((100, 4))
 radii = np.random.random(100) + 0.5
 
 scene = window.Scene()
 sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
-                            radii=radii)
+                            radii=radii,
+                            use_primitive = False)
 scene.add(sphere_actor)
 
 
@@ -43,10 +44,9 @@ scene.ResetCamera()
 
 # Create a function to print a counter to the console
 def print_counter():
-    counter = 0
     print("")
     for i in range(100):
-        print("\rCounter: %d" % counter, end="")
+        print("\rCounter: %d" % i, end="")
         message = "Let's count up to 100 and exit :" + str(i+1)
         tb.message = message
         time.sleep(0.05)

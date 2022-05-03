@@ -9,14 +9,15 @@ from fury import actor, window
 
 
 def test_multithreading():
-    xyz = 10 * (np.random.rand(100, 3)-0.5)
-    colors = np.random.rand(100, 4)
-    radii = np.random.rand(100) + 0.5
+    xyz = 10 * (np.random.random((100, 3))-0.5)
+    colors = np.random.random((100, 4))
+    radii = np.random.random(100) + 0.5
 
     scene = window.Scene()
     sphere_actor = actor.sphere(centers=xyz,
                                 colors=colors,
-                                radii=radii)
+                                radii=radii,
+                                use_primitive = False)
     scene.add(sphere_actor)
 
     # Preparing the show manager as usual
