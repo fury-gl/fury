@@ -4,7 +4,7 @@ Multithreading Example
 =======================================================
 
 The goal of this demo is to show how to use different threads
-to interact with fury. In particular, the main thread is used
+to interact with FURY. In particular, the main thread is used
 to update interactions and render the scene, while thread A
 rotates the camera, thread B prints a counter, and thread C
 adds and removes elements from the scene.
@@ -17,9 +17,9 @@ import time
 
 
 # Preparing to draw some spheres
-xyz = 10 * (np.random.rand(100, 3)-0.5)
-colors = np.random.rand(100, 4)
-radii = np.random.rand(100) + 0.5
+xyz = 10 * (np.random.random(100, 3)-0.5)
+colors = np.random.random(100, 4)
+radii = np.random.random(100) + 0.5
 
 scene = window.Scene()
 sphere_actor = actor.sphere(centers=xyz,
@@ -50,15 +50,17 @@ def print_counter():
         message = "Let's count up to 100 and exit :" + str(i+1)
         tb.message = message
         time.sleep(0.05)
-        if(showm.is_done()):
+        if showm.is_done():
             break
     showm.exit()
     print("")
 
 # Create a function to rotate the camera
+
+
 def rotate_camera():
     for i in range(100):
-        if(showm.lock_current()):
+        if showm.lock_current():
             scene.azimuth(0.01 * i)
             showm.release_current()
             time.sleep(0.05)
@@ -66,11 +68,13 @@ def rotate_camera():
             break
 
 # Create a function to add or remove the axes and increase its scale
+
+
 def add_remove_axes():
     current_axes = None
     for i in range(100):
-        if(showm.lock_current()):
-            if(current_axes is None):
+        if showm.lock_current():
+            if current_axes is None:
                 current_axes = actor.axes(scale=(0.20 * i, 0.20 * i, 0.20 * i))
                 scene.add(current_axes)
             else:

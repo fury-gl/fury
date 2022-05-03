@@ -488,7 +488,7 @@ class ShowManager(object):
         -------
         sucessful : bool
             Returns if the lock was acquired."""
-        if(self.is_done()):
+        if self.is_done():
             return False
         else:
             try:
@@ -506,7 +506,7 @@ class ShowManager(object):
 
     def wait(self):
         """ Wait for thread to finish. """
-        if(self.thread):
+        if self.thread:
             self.thread.join()
 
     def record_events(self):
