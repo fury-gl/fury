@@ -36,6 +36,7 @@ class Scene(OpenGLRenderer):
     but also it provides access to all the functionality
     available in ``vtkRenderer`` if necessary.
     """
+
     def __init__(self, background=(0, 0, 0), skybox=None):
         self.__skybox = skybox
         self.__skybox_actor = None
@@ -433,7 +434,7 @@ class ShowManager(object):
                 self.window.SetWindowName(self.title + " " + fury_version)
             else:
                 self.window.SetWindowName(self.title)
-            if(multithreaded):
+            if multithreaded:
                 while self.iren.GetDone() is False:
                     start_time = time.perf_counter()
                     self.lock()
@@ -659,8 +660,8 @@ class ShowManager(object):
     def exit(self):
         """Close window and terminate interactor."""
         # if is_osx and self.timers:
-            # OSX seems to not destroy correctly timers
-            # segfault 11 appears sometimes if we do not do it manually.
+        # OSX seems to not destroy correctly timers
+        # segfault 11 appears sometimes if we do not do it manually.
 
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
@@ -967,7 +968,7 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False, stereo='off',
              multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0, render_window = None):
+             occlusion_ratio=0.0, render_window=None):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -1026,7 +1027,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
         if order_transparent:
             antialiasing(scene, render_window, multi_samples, max_peels,
-                        occlusion_ratio)
+                         occlusion_ratio)
 
         render_window.Render()
 
@@ -1351,11 +1352,5 @@ def release_context(window):
     window : vtkRenderWindow
 
     """
-    # Once release current context is available:
-    # https://gitlab.kitware.com/vtk/vtk/-/merge_requests/8418
-    try:
-        window.ReleaseCurrent()
-    except AttributeError:
-        if(platform == "win32"):
-            from OpenGL.WGL import wglMakeCurrent
-            wglMakeCurrent(window.GetGenericDisplayId(), None)
+    window.ReleaseCurrent()
+    
