@@ -25,7 +25,7 @@ scene = window.Scene()
 sphere_actor = actor.sphere(centers=xyz,
                             colors=colors,
                             radii=radii,
-                            use_primitive = False)
+                            use_primitive=False)
 scene.add(sphere_actor)
 
 

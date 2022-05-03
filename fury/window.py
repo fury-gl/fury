@@ -490,14 +490,13 @@ class ShowManager(object):
             Returns if the lock was acquired."""
         if self.is_done():
             return False
-        else:
-            try:
-                self.window
-                self.lock()
-                self.window.MakeCurrent()
-                return True
-            except AttributeError:
-                return False
+        try:
+            self.window
+            self.lock()
+            self.window.MakeCurrent()
+            return True
+        except AttributeError:
+            return False
 
     def release_current(self):
         """Release the window context and lock of the render window."""
@@ -1353,4 +1352,3 @@ def release_context(window):
 
     """
     window.ReleaseCurrent()
-    
