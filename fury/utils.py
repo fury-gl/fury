@@ -1369,3 +1369,46 @@ def update_surface_actor_colors(actor, colors):
     """
     actor.GetMapper().GetInput().GetPointData().\
         SetScalars(numpy_to_vtk_colors(255*colors))
+
+
+def color_check(actors, colors=None):
+    """
+    Returns a VTK scalar array containing colors information for each one of
+    the actors according to the policy defined by the parameter colors.
+
+    Parameters
+    ----------
+    actors : (N, 3) array or ndarray
+        points coordinates array.
+    colors : None or tuple (3D or 4D) or array/ndarray (N, 3 or 4)
+        If None a predefined color is used for each actor.
+        If one tuple of color is used. Then all actors will have the same color.
+        If an array (N, 3 or 4) is given, where N is equal to the number of
+        points. Then every point is colored with a different RGB(A) color.
+
+    Returns
+    -------
+    color_array : vtkDataArray
+        vtk scalar array with name 'colors'.
+    global_opacity : float
+        returns 1 if the colors array doesn't contain opacity otherwise -1.
+
+    """
+    global_opacity = 1
+    if colors is None:
+        # Automatic RGB colors
+        colors = np.asarray((1, 1, 1))
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (len(actors), 1)))
+    elif type(colors) is tuple:
+        global_opacity = 1 if len(colors) == 3 else -1
+        colors = np.asarray(colors)
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (len(actors), 1)))
+    else:
+        colors = np.asarray(colors)
+        if colors.shape[1] == 4:
+            opacities = np.unique(colors[:, 3])
+            global_opacity = opacities[0] if len(opacities) == 1 else -1
+        color_array = numpy_to_vtk_colors(255 * colors)
+    color_array.SetName('colors')
+
+    return color_array, global_opacity

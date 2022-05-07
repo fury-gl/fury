@@ -741,7 +741,7 @@ def test_tensor_slicer(interactive=False):
     # TODO: Add colorfa test here as previous test moved to DIPY.
 
 
-def test_dots(interactive=False):
+def test_dot(interactive=False):
     # Test three points with different colors and opacities
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0,  1],
@@ -761,13 +761,14 @@ def test_dots(interactive=False):
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=colors)
+    expected_colors = np.floor(colors[:, 3] * 255) * colors[:, :3]
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
     npt.assert_equal(report.objects, 3)
-    npt.assert_equal(report.colors_found, [False]*3)
 
     # Test three points with one color and opacity
     points = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
-    colors = (1, 0, 0)
+    colors = (0, 1, 0)
     dot_actor = actor.dot(points, colors=colors, opacity=.5)
 
     scene.clear()
@@ -779,9 +780,10 @@ def test_dots(interactive=False):
         window.show(scene, reset_camera=False)
 
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=colors)
+    expected_colors = np.ceil(.5 * 255) * np.array([colors])
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
     npt.assert_equal(report.objects, 3)
-    npt.assert_equal(report.colors_found, [False]*1)
 
     # Test one point with no specified color
     points = np.array([[1, 0, 0]])
@@ -796,9 +798,10 @@ def test_dots(interactive=False):
         window.show(scene, reset_camera=False)
 
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=(1, 1, 1))
+    expected_colors = np.array([[1, 1, 1]]) * 255
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
     npt.assert_equal(report.objects, 1)
-    npt.assert_equal(report.colors_found, [False]*1)
 
 
 def test_points(interactive=False):

@@ -32,7 +32,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors)
+                        fix_winding_order, numpy_to_vtk_colors, color_check)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -1466,7 +1466,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
         vtk_faces.InsertNextCell(1)
         vtk_faces.InsertCellPoint(idd)
 
-    color_tuple = __color_check(points, colors)
+    color_tuple = color_check(points, colors)
     color_array, global_opacity = color_tuple
 
     # Create a polydata object
@@ -1490,48 +1490,6 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     poly_actor.GetProperty().SetPointSize(dot_size)
 
     return poly_actor
-
-
-def __color_check(dots, colors=None):
-    """
-    Returns a VTK scalar array containing colors information for each one of
-    the dots according to the policy defined by the parameter colors.
-
-    Parameters
-    ----------
-    dots : (N, 3) array or ndarray
-        points coordinates array.
-    colors : None or tuple (3D or 4D) or array/ndarray (N, 3 or 4)
-        If None a predefined color is used for each dot.
-        If one tuple of color is used. Then all dots will have the same color.
-        If an array (N, 3 or 4) is given, where N is equal to the number of
-        points. Then every point is colored with a different RGB(A) color.
-
-    Returns
-    -------
-    color_array : vtkDataArray
-        vtk scalar array with name 'colors'.
-    global_opacity : float
-        returns 1 if the colors array doesn't contain opacity otherwise -1.
-
-    """
-    num_dots = len(dots)
-    global_opacity = 1
-    if colors is None:
-        # Automatic RGB colors
-        colors = np.asarray((1, 1, 1))
-        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (num_dots, 1)))
-    elif type(colors) is tuple:
-        global_opacity = 1 if len(colors) == 3 else -1
-        colors = np.asarray(colors)
-        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (num_dots, 1)))
-    else:
-        colors = np.asarray(colors)
-        global_opacity = 1 if colors.shape[1] == 3 else -1
-        color_array = numpy_to_vtk_colors(255 * colors)
-    color_array.SetName('colors')
-
-    return color_array, global_opacity
 
 
 def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
