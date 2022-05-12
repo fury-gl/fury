@@ -720,7 +720,7 @@ def test_color_check():
                        [0, 1, 0, .5],
                        [0, 0, 1, .5]])
 
-    color_tuple = color_check(points, colors)
+    color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -729,7 +729,7 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    color_tuple = color_check(points, colors)
+    color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(colors * 255))
@@ -738,16 +738,16 @@ def test_color_check():
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 1, 1, .5)
 
-    color_tuple = color_check(points, colors)
+    color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
-    npt.assert_equal(global_opacity, -1)
+    npt.assert_equal(global_opacity, .5)
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
     colors = (1, 0, 0)
 
-    color_tuple = color_check(points, colors)
+    color_tuple = color_check(len(points), colors)
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
@@ -755,7 +755,7 @@ def test_color_check():
 
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
 
-    color_tuple = color_check(points)
+    color_tuple = color_check(len(points))
     color_array, global_opacity = color_tuple
 
     npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
