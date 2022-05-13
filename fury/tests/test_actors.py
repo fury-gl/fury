@@ -769,7 +769,7 @@ def test_dot(interactive=False):
     # Test three points with one color and opacity
     points = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
     colors = (0, 1, 0)
-    dot_actor = actor.dot(points, colors=colors, opacity=.5)
+    dot_actor = actor.dot(points, colors=colors, opacity=.8)
 
     scene.clear()
     scene.add(dot_actor)
@@ -780,7 +780,7 @@ def test_dot(interactive=False):
         window.show(scene, reset_camera=False)
 
     arr = window.snapshot(scene)
-    expected_colors = np.ceil(.5 * 255) * np.array([colors])
+    expected_colors = np.floor(.8 * 255) * np.array([colors])
     report = window.analyze_snapshot(arr, colors=expected_colors)
     npt.assert_equal(report.colors_found, [True])
     npt.assert_equal(report.objects, 3)
