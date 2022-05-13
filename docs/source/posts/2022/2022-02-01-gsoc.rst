@@ -1,0 +1,20 @@
+Contribute to FURY via Google Summer of Code 2022
+=================================================
+
+.. post:: February 1 2022
+   :author: skoudoro
+   :tags: google
+   :category: gsoc
+
+
+FURY is participating in the `Google Summer of Code 2022 <https://summerofcode.withgoogle.com>`_ under the umbrella of the `Python Software Foundation <https://python-gsoc.org/>`_.
+
+FURY is a free and open source software library for scientific visualization and 3D animations. FURY contains many tools for visualizing a series of scientific data including graph and imaging data.
+
+A list of project ideas and application info is on our `GitHub Wiki <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2022-(GSOC2022)>`_.
+
+If you are interested in talking to us about projects, applications join us to our `discord community <https://discord.gg/aXRZmmM>`_ or drop us a line on our `mailing list <https://mail.python.org/mailman3/lists/fury.python.org>`_.
+
+Be part of our community and Enjoy your summer of code!
+
+Serge K.

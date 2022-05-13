@@ -1,8 +1,7 @@
-from fury import actor, window
+from fury import actor, window, utils
 from fury.actors.peak import (PeakActor, _orientation_colors,
                               _peaks_colors_from_points, _points_to_vtk_cells)
 from fury.lib import numpy_support
-
 
 import numpy as np
 import numpy.testing as npt
@@ -144,6 +143,30 @@ def test__points_to_vtk_cells():
     desired = [2, 0, 1, 2, 2, 3, 2, 4, 5]
     npt.assert_array_equal(actual, desired)
     npt.assert_equal(vtk_cells.GetNumberOfCells(), 3)
+
+
+def test_symmetric_param():
+    dirs000 = np.array([[1, 0, 0], [0, -1, 0]])
+    dirs001 = np.array([[1, 1, 0], [-1, 1, 0]])
+
+    peak_dirs = np.zeros((1, 1, 2, 2, 3))
+    peak_dirs[0, 0, 0, :, :] = dirs000
+    peak_dirs[0, 0, 1, :, :] = dirs001
+
+    valid_mask = np.abs(peak_dirs).max(axis=(-2, -1)) > 0
+    indices = np.nonzero(valid_mask)
+
+    peak_actor_asym = PeakActor(peak_dirs, indices, symmetric=False)
+    actor_points = utils.vertices_from_actor(peak_actor_asym)
+    desired_points = np.array([[0, 0, 0], [1, 0, 0], [0, 0, 0], [0, -1, 0],
+                               [0, 0, 1], [1, 1, 1], [0, 0, 1], [-1, 1, 1]])
+    npt.assert_array_equal(actor_points, desired_points)
+
+    peak_actor_sym = PeakActor(peak_dirs, indices)
+    actor_points = utils.vertices_from_actor(peak_actor_sym)
+    desired_points = np.array([[-1, 0, 0], [1, 0, 0], [0, 1, 0], [0, -1, 0],
+                               [-1, -1, 1], [1, 1, 1], [1, -1, 1], [-1, 1, 1]])
+    npt.assert_array_equal(actor_points, desired_points)
 
 
 def test_colors(interactive=False):

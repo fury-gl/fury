@@ -2,6 +2,8 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
+from fury.ui.core import UI
+from fury.ui.containers import Panel2D
 from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         get_polydata_tangents, map_coordinates_3d_4d,
                         normals_from_actor, normals_to_actor,
@@ -14,7 +16,7 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors,
-                        apply_affine_to_actor)
+                        apply_affine_to_actor, is_ui)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
@@ -712,3 +714,47 @@ def test_update_surface_actor_colors():
     # Checking if the colors passed to the function and colors assigned are
     # same.
     npt.assert_equal(colors, surface_colors)
+
+
+class DummyActor:
+    def __init__(self, act):
+        self._act = act
+
+    @property
+    def act(self):
+        return self._act
+
+    def add_to_scene(self, ren):
+        """ Adds the items of this container to a given scene. """
+        return ren
+
+
+class DummyUI(UI):
+    def __init__(self, act):
+        super(DummyUI, self).__init__()
+        self.act = act
+
+    def _setup(self):
+        pass
+
+    def _get_actors(self):
+        return []
+
+    def _add_to_scene(self, scene):
+        return scene
+
+    def _get_size(self):
+        return (5, 5)
+
+    def _set_position(self, coords):
+        return coords
+
+
+def test_is_ui():
+    panel = Panel2D(position=(0, 0), size=(100, 100))
+    valid_ui = DummyUI(act=[])
+    invalid_ui = DummyActor(act="act")
+
+    npt.assert_equal(True, is_ui(panel))
+    npt.assert_equal(True, is_ui(valid_ui))
+    npt.assert_equal(False, is_ui(invalid_ui))
