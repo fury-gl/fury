@@ -1496,6 +1496,12 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     return poly_actor
 
 
+dots = deprecate_with_version(message="dots function has been renamed"
+                                       " dot",
+                               since="0.7.1",
+                               until="0.9.0")(dot)
+
+
 def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
     """Visualize points as sphere glyphs
 
