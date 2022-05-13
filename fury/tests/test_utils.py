@@ -14,7 +14,7 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors,
-                        apply_affine_to_actor, color_check)
+                        apply_affine_to_actor)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
@@ -712,51 +712,3 @@ def test_update_surface_actor_colors():
     # Checking if the colors passed to the function and colors assigned are
     # same.
     npt.assert_equal(colors, surface_colors)
-
-
-def test_color_check():
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = np.array([[1, 0, 0, .5],
-                       [0, 1, 0, .5],
-                       [0, 0, 1, .5]])
-
-    color_tuple = color_check(len(points), colors)
-    color_array, global_opacity = color_tuple
-
-    npt.assert_equal(color_array, np.floor(colors * 255))
-    npt.assert_equal(global_opacity, .5)
-
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-
-    color_tuple = color_check(len(points), colors)
-    color_array, global_opacity = color_tuple
-
-    npt.assert_equal(color_array, np.floor(colors * 255))
-    npt.assert_equal(global_opacity, 1)
-
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 1, 1, .5)
-
-    color_tuple = color_check(len(points), colors)
-    color_array, global_opacity = color_tuple
-
-    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
-    npt.assert_equal(global_opacity, .5)
-
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-    colors = (1, 0, 0)
-
-    color_tuple = color_check(len(points), colors)
-    color_array, global_opacity = color_tuple
-
-    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
-    npt.assert_equal(global_opacity, 1)
-
-    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
-
-    color_tuple = color_check(len(points))
-    color_array, global_opacity = color_tuple
-
-    npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
-    npt.assert_equal(global_opacity, 1)
