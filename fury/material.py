@@ -1,7 +1,8 @@
 import warnings
 
 
-from fury.shaders import add_shader_callback, load, shader_to_actor
+from fury.shaders import (add_shader_callback, import_fury_shader,
+                          shader_to_actor)
 from fury.lib import VTK_OBJECT, calldata_type
 
 
@@ -277,8 +278,8 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
 
         add_shader_callback(actor, uniforms_callback)
 
-        fs_dec_code = load('bxdf_dec.frag')
-        fs_impl_code = load('bxdf_impl.frag')
+        fs_dec_code = import_fury_shader('bxdf_dec.frag')
+        fs_impl_code = import_fury_shader('bxdf_impl.frag')
 
         shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
         shader_to_actor(actor, 'fragment', impl_code=fs_impl_code,
