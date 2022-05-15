@@ -6,7 +6,7 @@ from functools import partial
 import numpy as np
 
 from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          compose_shader, import_fury_shader, load,
+                          compose_shader, import_fury_shader,
                           replace_shader_in_actor, shader_to_actor)
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
@@ -762,7 +762,8 @@ def line(lines, colors=None, opacity=1, linewidth=1,
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
 
-        replace_shader_in_actor(actor, "geometry", load("line.geom"))
+        replace_shader_in_actor(actor, 'geometry',
+                                import_fury_shader('line.geom'))
         add_shader_callback(actor, callback)
 
     if fake_tube:
@@ -1341,7 +1342,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
 
 
 def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
-         linewidth=1, lookup_colormap=None):
+         linewidth=1, lookup_colormap=None, symmetric=True):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1362,6 +1363,10 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     Returns
     -------
@@ -1417,7 +1422,7 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
 
     return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
                      colors=colors, lookup_colormap=lookup_colormap,
-                     linewidth=linewidth)
+                     linewidth=linewidth, symmetric=symmetric)
 
 
 def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
@@ -2980,10 +2985,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     attribute_to_actor(box_actor, rep_scales, 'scale')
     attribute_to_actor(box_actor, rep_directions, 'direction')
 
-    vs_dec_code = load("sdf_dec.vert")
-    vs_impl_code = load("sdf_impl.vert")
-    fs_dec_code = load("sdf_dec.frag")
-    fs_impl_code = load("sdf_impl.frag")
+    vs_dec_code = import_fury_shader('sdf_dec.vert')
+    vs_impl_code = import_fury_shader('sdf_impl.vert')
+    fs_dec_code = import_fury_shader('sdf_dec.frag')
+    fs_impl_code = import_fury_shader('sdf_impl.frag')
 
     shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
@@ -3039,19 +3044,19 @@ def markers(
         'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
         'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
 
-    vs_dec_code = load("billboard_dec.vert")
-    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
-    vs_impl_code = load("billboard_impl.vert")
-    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
+    vs_dec_code = import_fury_shader('billboard_dec.vert')
+    vs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.vert")}'
+    vs_impl_code = import_fury_shader('billboard_impl.vert')
+    vs_impl_code += f'\n{import_fury_shader("marker_billboard_impl.vert")}'
 
-    fs_dec_code = load('billboard_dec.frag')
-    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
-    fs_impl_code = load('billboard_impl.frag')
+    fs_dec_code = import_fury_shader('billboard_dec.frag')
+    fs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.frag")}'
+    fs_impl_code = import_fury_shader('billboard_impl.frag')
 
     if marker == '3d':
-        fs_impl_code += f'{load("billboard_spheres_impl.frag")}'
+        fs_impl_code += f'{import_fury_shader("billboard_spheres_impl.frag")}'
     else:
-        fs_impl_code += f'{load("marker_billboard_impl.frag")}'
+        fs_impl_code += f'{import_fury_shader("marker_billboard_impl.frag")}'
         if isinstance(marker, str):
             list_of_markers = np.ones(n_markers)*marker2id[marker]
         else:

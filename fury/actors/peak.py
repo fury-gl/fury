@@ -1,7 +1,8 @@
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
-from fury.shaders import attribute_to_actor, load, shader_to_actor
+from fury.shaders import (attribute_to_actor, import_fury_shader,
+                          shader_to_actor)
 from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points)
 from fury.lib import (numpy_support, Actor, Command, CellArray,
                       PolyDataMapper, PolyData, VTK_OBJECT, calldata_type)
@@ -40,11 +41,16 @@ class PeakActor(Actor):
         :func:`fury.actor.colormap_lookup_table`.
     linewidth : float, optional
         Line thickness. Default is 1.
+    symmetric: bool, optional
+        If True, peaks are drawn for both peaks_dirs and -peaks_dirs. Else,
+        peaks are only drawn for directions given by peaks_dirs. Default is
+        True.
 
     """
 
     def __init__(self, directions, indices, values=None, affine=None,
-                 colors=None, lookup_colormap=None, linewidth=1):
+                 colors=None, lookup_colormap=None, linewidth=1,
+                 symmetric=True):
         if affine is not None:
             w_pos = apply_affine(affine, np.asarray(indices).T)
 
@@ -70,8 +76,14 @@ class PeakActor(Actor):
                     pv = values[center][direction]
                 else:
                     pv = 1.
-                point_i = directions[center][direction] * pv + xyz
-                point_e = -directions[center][direction] * pv + xyz
+
+                if symmetric:
+                    point_i = directions[center][direction] * pv + xyz
+                    point_e = -directions[center][direction] * pv + xyz
+                else:
+                    point_i = directions[center][direction] * pv + xyz
+                    point_e = xyz
+
                 diff = point_e - point_i
                 points_array[line_count * pnts_per_line, :] = point_e
                 points_array[line_count * pnts_per_line + 1, :] = point_i
@@ -105,10 +117,10 @@ class PeakActor(Actor):
         attribute_to_actor(self, centers_array, 'center')
         attribute_to_actor(self, diffs_array, 'diff')
 
-        vs_dec_code = load('peak_dec.vert')
-        vs_impl_code = load('peak_impl.vert')
-        fs_dec_code = load('peak_dec.frag')
-        fs_impl_code = load('peak_impl.frag')
+        vs_dec_code = import_fury_shader('peak_dec.vert')
+        vs_impl_code = import_fury_shader('peak_impl.vert')
+        fs_dec_code = import_fury_shader('peak_dec.frag')
+        fs_impl_code = import_fury_shader('peak_impl.frag')
 
         shader_to_actor(self, 'vertex', decl_code=vs_dec_code,
                         impl_code=vs_impl_code)
