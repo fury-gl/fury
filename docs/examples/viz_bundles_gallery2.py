@@ -14,6 +14,7 @@ from fury.shaders import shader_to_actor
 from fury.utils import (normals_from_actor, numpy_to_vtk_colors, rotate,
                         tangents_from_direction_of_anisotropy,
                         tangents_to_actor, update_polydata_normals)
+from vtkmodules.vtkRenderingCore import vtkLight as Light
 
 
 def change_slice_metallic(slider):
@@ -221,6 +222,26 @@ if __name__ == '__main__':
     pbr_params = manifest_pbr(obj_actor, metallic=.25, anisotropy=1)
 
     scene.add(obj_actor)
+
+    light = Light()
+    light.SetLightTypeToSceneLight()
+    light.SetPositional(True)
+    light.SetPosition(-35, 5, 0)
+    #light.SetConeAngle(10)
+    light.SetFocalPoint(-35, -5, 0)
+    #light.SetColor(0, 1, 0)
+    light.SetDiffuseColor(1, 0, 0)
+    light.SetAmbientColor(0, 1, 0)
+    light.SetSpecularColor(0, 0, 1)
+    light.SetIntensity(.75)
+    scene.AddLight(light)
+
+    #light_pink = Light()
+    #light_pink.SetPositional(True)
+    #light_pink.SetPosition(4, 5, 1)
+    #light_pink.SetColor(1, 0, 1)
+    #light_pink.SetIntensity(.6)
+    #scene.AddLight(light_pink)
 
     emissive_color = (1, 0, 0)
     emissive_sphere = actor.sphere(np.array([[-35, -5, 0]]), emissive_color,
