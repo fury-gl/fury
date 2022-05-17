@@ -31,8 +31,7 @@ def test_multithreading():
 
     def callback1():
         for i in range(100):
-
-            if(showm.lock_current()):
+            if showm.lock_current():
                 # scene.azimuth(0.01 * i)
                 rotate(sphere_actor, rotation=(0.01 * i, 1, 0, 0))
                 vsa[:] = 1.01 * vsa[:]
