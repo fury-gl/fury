@@ -27,10 +27,10 @@ xyz = pcd_data[:, :3]
 pcd = o3d.geometry.PointCloud()
 pcd.points = o3d.utility.Vector3dVector(xyz)
 
-rgb = pcd_data[:, 3:]
-pcd.colors = o3d.utility.Vector3dVector(rgb / 255)
+rgb = pcd_data[:, 3:] / 255
+pcd.colors = o3d.utility.Vector3dVector(rgb)
 
-pcd_actor = actor.point_cloud(xyz, colors=rgb)
+pcd_actor = actor.dot(xyz, colors=rgb)
 
 scene.add(pcd_actor)
 
@@ -38,7 +38,7 @@ scene.reset_camera()
 scene.zoom(1.3)
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 # Normals estimation
 pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(
@@ -50,7 +50,7 @@ pcd_actor_colors = array_from_actor(pcd_actor, array_name='colors')
 pcd_actor_colors[:, :] = (normals + 1) / 2 * 255
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 # NOTE: This might take some time
 pcd.orient_normals_consistent_tangent_plane(10)
@@ -60,7 +60,7 @@ normals = np.asarray(pcd.normals)
 pcd_actor_colors[:, :] = (normals + 1) / 2 * 255
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 scene.clear()
 
@@ -83,7 +83,7 @@ mesh_actor = get_actor_from_polydata(polydata)
 scene.add(mesh_actor)
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 den = np.asarray(den)
 den_colors = plt.get_cmap('viridis')(
@@ -93,7 +93,7 @@ den_colors = den_colors[:, :3]
 set_polydata_colors(polydata, den_colors * 255)
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
 scene.clear()
 
@@ -110,6 +110,6 @@ mesh_actor = get_actor_from_polydata(polydata)
 scene.add(mesh_actor)
 
 # TODO: Replace with SS
-# window.show(scene, reset_camera=False)
+#window.show(scene, reset_camera=False)
 
-# save_polydata(polydata, 'glyptotek.vtk')
+#save_polydata(polydata, 'glyptotek.vtk')
