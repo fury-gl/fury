@@ -30,7 +30,6 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
-                        set_polydata_colors, set_polydata_normals,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors, color_check)
