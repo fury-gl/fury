@@ -1497,7 +1497,7 @@ def dot(points, colors=None, opacity=None, dot_size=5):
 
 
 dots = deprecate_with_version(message="dots function has been renamed dot",
-                              since="0.7.1",
+                              since="0.8.1",
                               until="0.9.0")(dot)
 
 
