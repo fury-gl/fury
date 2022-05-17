@@ -1,11 +1,11 @@
 # These are dependencies of various sphinx extensions for documentation.
-sphinx>=2.1
+sphinx>=4.3
 ipython
 matplotlib
 sphinx-copybutton
-sphinx-gallery>=0.4.0
+sphinx-gallery>=0.10.0
 pillow
-sphinx_rtd_theme
+pydata-sphinx-theme
 networkx
 ablog >= 0.10.5
 pybullet>=2.7.0

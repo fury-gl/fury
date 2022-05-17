@@ -725,7 +725,7 @@ class ImageContainer2D(UI):
     ----------
     size: (float, float)
         Image size (width, height) in pixels.
-    img : vtkImageDataGeometryFilters
+    img : ImageData
         The image loaded from the specified path.
 
     """
@@ -857,7 +857,7 @@ class ImageContainer2D(UI):
 
         Parameters
         ----------
-        img : imageDataGeometryFilter
+        img : imageData
 
         """
         self.texture = set_input(self.texture, img)

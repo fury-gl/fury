@@ -1,19 +1,67 @@
 """Module for testing primitive."""
+import pytest
 import numpy as np
 import numpy.testing as npt
-from fury.utils import (map_coordinates_3d_4d,
-                        vtk_matrix_to_numpy,
+from fury.ui.core import UI
+from fury.ui.containers import Panel2D
+from fury.utils import (add_polydata_numeric_field, get_polydata_field,
+                        get_polydata_tangents, map_coordinates_3d_4d,
+                        normals_from_actor, normals_to_actor,
+                        set_polydata_tangents, tangents_from_actor,
+                        tangents_from_direction_of_anisotropy,
+                        tangents_to_actor, vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
                         rotate, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds, update_surface_actor_colors)
+                        get_bounds, update_surface_actor_colors,
+                        apply_affine_to_actor, color_check, is_ui)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
-                      UnsignedCharArray)
+                      UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
 import fury.primitive as fp
+
+
+def test_apply_affine_to_actor(interactive=False):
+    text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
+                             vertical_justification='top')
+
+    text_act2 = TextActor3D()
+    text_act2.SetInput("ALIGN TOP RIGHT")
+    text_act2.GetTextProperty().SetFontFamilyToArial()
+    text_act2.GetTextProperty().SetFontSize(24)
+    text_act2.SetScale((1./24.*12,)*3)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    text_bounds = [0, 0, 0, 0]
+    text_act2.GetBoundingBox(text_bounds)
+    initial_bounds = text_act2.GetBounds()
+
+    affine = np.eye(4)
+    affine[:3, -1] += (-text_bounds[1], 0, 0)
+    affine[:3, -1] += (0, -text_bounds[3], 0)
+    affine[:3, -1] *= text_act2.GetScale()
+    apply_affine_to_actor(text_act2, affine)
+    text_act2.GetBoundingBox(text_bounds)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    updated_bounds = text_act2.GetBounds()
+    original_bounds = text_act.GetBounds()
+    npt.assert_array_almost_equal(updated_bounds, original_bounds, decimal=0)
+
+    def compare(x, y):
+        return np.isclose(x, y, rtol=1)
+    npt.assert_array_compare(compare, updated_bounds, original_bounds)
 
 
 def test_map_coordinates_3d_4d():
@@ -117,6 +165,91 @@ def test_polydata_polygon(interactive=False):
         npt.assert_equal(report.objects, 1)
 
 
+def test_add_polydata_numeric_field():
+    my_polydata = PolyData()
+    poly_field_data = my_polydata.GetFieldData()
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    bool_data = True
+    add_polydata_numeric_field(my_polydata, 'Test Bool', bool_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Bool').GetValue(0),
+                     bool_data)
+    poly_field_data.RemoveArray('Test Bool')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    int_data = 1
+    add_polydata_numeric_field(my_polydata, 'Test Int', int_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Int').GetValue(0),
+                     int_data)
+    poly_field_data.RemoveArray('Test Int')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    float_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Float', float_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(poly_field_data.GetArray('Test Float').GetValue(0),
+                            float_data)
+    poly_field_data.RemoveArray('Test Float')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    double_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Double', double_data,
+                               array_type=VTK_DOUBLE)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Double').GetValue(0),
+                     double_data)
+    poly_field_data.RemoveArray('Test Double')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    array_data = [-1, 0, 1]
+    add_polydata_numeric_field(my_polydata, 'Test Array', array_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test Array')),
+        array_data)
+    poly_field_data.RemoveArray('Test Array')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    ndarray_data = np.array([[-.1, -.1], [0, 0], [.1, .1]])
+    add_polydata_numeric_field(my_polydata, 'Test NDArray', ndarray_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test NDArray')),
+        ndarray_data)
+
+
+def test_get_polydata_field():
+    my_polydata = PolyData()
+    field_data = get_polydata_field(my_polydata, 'Test')
+    npt.assert_equal(field_data, None)
+    data = 1
+    field_name = 'Test'
+    vtk_data = numpy_support.numpy_to_vtk(data)
+    vtk_data.SetName(field_name)
+    my_polydata.GetFieldData().AddArray(vtk_data)
+    field_data = get_polydata_field(my_polydata, field_name)
+    npt.assert_equal(field_data, data)
+
+
+def test_get_polydata_tangents():
+    my_polydata = PolyData()
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    my_polydata.GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_array_equal(tangents, array)
+
+
+def test_set_polydata_tangents():
+    my_polydata = PolyData()
+    poly_point_data = my_polydata.GetPointData()
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 0)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    set_polydata_tangents(my_polydata, array)
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+
+
 def test_asbytes():
     text = [b'test', 'test']
 
@@ -202,6 +335,31 @@ def test_vtk_matrix_to_numpy():
     npt.assert_equal(numpy_to_vtk_matrix(None), None)
     npt.assert_raises(ValueError, numpy_to_vtk_matrix, np.array([A, A]))
 
+
+def test_numpy_to_vtk_image_data():
+    array = np.array([[[1, 2, 3],
+                       [4, 5, 6]],
+                      [[7, 8, 9],
+                       [10, 11, 12]],
+                      [[21, 22, 23],
+                       [24, 25, 26]],
+                      [[27, 28, 29],
+                       [210, 211, 212]]])
+
+    # converting numpy array to vtk_image_data
+    vtk_image_data = utils.numpy_to_vtk_image_data(array)
+
+    # extracting the image data from vtk_image_data
+    w, h, depth = vtk_image_data.GetDimensions()
+    vtk_img_array = vtk_image_data.GetPointData().GetScalars()
+    elements = vtk_img_array.GetNumberOfComponents()
+
+    # converting vtk array to numpy array
+    numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
+    npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
+
+    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data,
+                      np.array([1, 2, 3]))
 
 def test_get_grid_cell_position():
 
@@ -361,6 +519,58 @@ def test_vertices_from_actor(interactive=False):
     npt.assert_equal(isinstance(l_array_vtk, UnsignedCharArray), True)
 
 
+def test_normals_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    normals = normals_from_actor(my_actor)
+    npt.assert_equal(normals, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetNormals(
+        numpy_support.numpy_to_vtk(array, deep=True))
+    normals = normals_from_actor(my_actor)
+    npt.assert_array_equal(normals, array)
+
+
+def test_normals_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Normals'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    normals_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Normals'), True)
+    normals = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Normals'))
+    npt.assert_array_equal(normals, array)
+
+
+def test_tangents_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_array_equal(tangents, array)
+
+
+def test_tangents_from_direction_of_anisotropy():
+    normals = np.array([[-1., 0., 0.], [0., 0., 1.]])
+    doa = (0., 1., 0.)
+    expected = np.array([[0., 0., 1.], [1., 0., 0.]])
+    actual = tangents_from_direction_of_anisotropy(normals, doa)
+    npt.assert_array_equal(actual, expected)
+
+
+def test_tangents_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    tangents_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+    tangents = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Tangents'))
+    npt.assert_array_equal(tangents, array)
+
+
 def test_get_actor_from_primitive():
     vertices, triangles = fp.prim_frustum()
     colors = np.array([1, 0, 0])
@@ -504,3 +714,95 @@ def test_update_surface_actor_colors():
     # Checking if the colors passed to the function and colors assigned are
     # same.
     npt.assert_equal(colors, surface_colors)
+
+
+class DummyActor:
+    def __init__(self, act):
+        self._act = act
+
+    @property
+    def act(self):
+        return self._act
+
+    def add_to_scene(self, ren):
+        """ Adds the items of this container to a given scene. """
+        return ren
+
+
+class DummyUI(UI):
+    def __init__(self, act):
+        super(DummyUI, self).__init__()
+        self.act = act
+
+    def _setup(self):
+        pass
+
+    def _get_actors(self):
+        return []
+
+    def _add_to_scene(self, scene):
+        return scene
+
+    def _get_size(self):
+        return (5, 5)
+
+    def _set_position(self, coords):
+        return coords
+
+
+def test_color_check():
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0, .5],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .5]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 1, 1, .5)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 0, 0)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+
+    color_tuple = color_check(len(points))
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+
+def test_is_ui():
+    panel = Panel2D(position=(0, 0), size=(100, 100))
+    valid_ui = DummyUI(act=[])
+    invalid_ui = DummyActor(act="act")
+
+    npt.assert_equal(True, is_ui(panel))
+    npt.assert_equal(True, is_ui(valid_ui))
+    npt.assert_equal(False, is_ui(invalid_ui))

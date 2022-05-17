@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        python-version: [3.7, 3.8, 3.9]
         os: [ubuntu-latest, macos-latest]
         platform: [x64]
         install_type: [pip, ]  # conda]
@@ -54,7 +54,7 @@ jobs:
       TRAVIS_BRANCH: ${{ github.head_ref }}               # Keep backward compatibilty with Travis
       TRAVIS_PULL_REQUEST: ${{ github.event.number }}     # Keep backward compatibilty with Travis
       TRAVIS_BUILD_DIR: ${{ github.workspace }}           # Keep backward compatibilty with Travis
-      DISPLAY: :99
+      DISPLAY: :99.0
       GH_REF: github.com/fury-gl/fury-website.git
       ENV_DIR: ${{ github.workspace }}/envs
       INSTALL_TYPE: ${{ matrix.install_type }}
@@ -62,6 +62,10 @@ jobs:
       EXTRA_PIP_FLAGS: ${{ matrix.pip-flags }}
       OPTION_FLAGS: ${{ matrix.option-flags }}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      LIBGL_ALWAYS_SOFTWARE: true
+      LIBGL_ALWAYS_INDIRECT: false
+      # LIBGL_DEBUG : 1        # coming from https://docs.mesa3d.org/envvars.html
+      # MESA_DEBUG: 1,context  # coming from https://docs.mesa3d.org/envvars.html
 
     steps:
     - uses: actions/checkout@v2
@@ -90,6 +94,7 @@ jobs:
     - name: Setup Environment variables
       run: |
         if [ "macos-latest" == "${{ matrix.os }}" ]; then echo "TRAVIS_OS_NAME=osx" >> $GITHUB_ENV; else echo "TRAVIS_OS_NAME="${{ matrix.os }}"" >> $GITHUB_ENV; fi
+        if [ "ubuntu-latest" == "${{ matrix.os }}" ]; then echo "MPLBACKEND=TKAgg" >> $GITHUB_ENV; fi
         if [ "schedule" == "${{ github.event_name }}" ]; then echo "TRAVIS_EVENT_TYPE=cron" >> $GITHUB_ENV; else echo "TRAVIS_EVENT_TYPE="${{ github.event_name }}"" >> $GITHUB_ENV; fi
         if [ "OPTIONAL_DEPS" == "${{ matrix.depends }}" ]; then echo "OPTIONAL_DEPS=1" >> $GITHUB_ENV; else echo "OPTIONAL_DEPS=0" >> $GITHUB_ENV; fi
         python3 -c "import os; print(os.environ['OPTION_FLAGS'])"
@@ -110,14 +115,24 @@ jobs:
     - name: Start Xvfb
       if: startsWith(matrix.os,'ubuntu')
       run: |
-        sudo apt-get install libgl1-mesa-dev xvfb
-        Xvfb :99 +extension GLX -screen 0 1024x768x24 2>&1 >/dev/null &
+        sudo apt update
+        if [ "ubuntu-18.04" == "${{ matrix.os }}" ]; then
+          sudo apt-get install -y libgl1-mesa-dev xvfb;
+        else
+          sudo apt-get install -y libgl1-mesa-glx xvfb;
+        fi
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1  &
+        sleep 3
     - name: Install dependencies
       run: |
         bash ci/travis/install.sh
     - name: Install FURY and Test it!
       run: |
         bash ci/travis/script.sh
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    # - name: Setup tmate session
+    #   if: ${{ failure() }}
+    #   uses: mxschmitt/action-tmate@v3
     - name: Deploy docs
       if: success() && github.ref == 'refs/heads/master'
       run: |

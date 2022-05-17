@@ -1,213 +1,30 @@
-{% if pagename == 'index' %}
-<!DOCTYPE html>
-<html lang="en">
-<head prefix="og: https://fury.gl">
-  <meta charset="utf-8">
-  <title>{{ project|striptags|e }}</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Canonical links -->
-  {% if theme_canonical_url %}
-    <link rel="canonical" href="{{ theme_canonical_url }}{{ pagename }}.html"/>
-  {% endif %}
-  <!-- Alternative links -->
-    <link rel="alternative" hreflang="en" href="{{ theme_canonical_url }}{{ pagename }}.html">
+{% extends "!page.html" %}
+{% block footer %} {{ super() }}
+<link rel="stylesheet" href="{{ pathto('_static/css/blog.css', 1) }}" type="text/css">
+<link rel="stylesheet" href="{{ pathto('_static/vendor/vars.css', 1) }}" />
+<link rel="stylesheet" href="{{ pathto('_static/vendor/styles.css', 1) }}" />
+<link rel="stylesheet" href="{{ pathto('_static/vendor/sphinx-footer.css', 1) }}" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css"
+  integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog=="
+  crossorigin="anonymous" />
+<style>
+  /* Sidebar header (and topbar for mobile) */
+  .wy-side-nav-search,
+  .wy-nav-top {
+    background: #990000;
+  }
 
-  <!-- Icon -->
-  <link rel="apple-touch-icon" sizes="57x57" href="{{ pathto('_static/icon/apple-touch-icon-57x57', 1) }}">
-  <link rel="apple-touch-icon" sizes="114x114" href="{{ pathto('_static/icon/apple-touch-icon-114x114', 1) }}">
-  <link rel="apple-touch-icon" sizes="72x72" href="{{ pathto('_static/icon/apple-touch-icon-72x72', 1) }}">
-  <link rel="apple-touch-icon" sizes="144x144" href="{{ pathto('_static/icon/apple-touch-icon-144x144', 1) }}">
-  <link rel="apple-touch-icon" sizes="60x60" href="{{ pathto('_static/icon/apple-touch-icon-60x60', 1) }}">
-  <link rel="apple-touch-icon" sizes="120x120" href="{{ pathto('_static/icon/apple-touch-icon-120x120', 1) }}">
-  <link rel="apple-touch-icon" sizes="76x76" href="{{ pathto('_static/icon/apple-touch-icon-76x76', 1) }}">
-  <link rel="apple-touch-icon" sizes="152x152" href="{{ pathto('_static/icon/apple-touch-icon-152x152', 1) }}">
-  <link rel="icon" type="image/png" href="{{ pathto('_static/icon/favicon-196x196', 1) }}" sizes="196x196">
-  <link rel="icon" type="image/png" href="{{ pathto('_static/icon/favicon-160x160', 1) }}" sizes="160x160">
-  <link rel="icon" type="image/png" href="{{ pathto('_static/icon/favicon-96x96', 1) }}" sizes="96x96">
-  <link rel="icon" type="image/png" href="{{ pathto('_static/icon/favicon-16x16', 1) }}" sizes="16x16">
-  <link rel="icon" type="image/png" href="{{ pathto('_static/icon/favicon-32x32', 1) }}" sizes="32x32">
-  <meta name="msapplication-TileColor" content="#990000">
-  <meta name="msapplication-TileImage" content="{{ pathto('_static/icon/mstile-144x144', 1) }}">
-  <!-- CSS -->
-  <!-- build:css build/css/fury.css -->
-  <link rel="stylesheet" href="{{ pathto('_static/css/fury.css', 1) }}" type="text/css">
-  <!-- endbuild -->
-  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-  <!-- RSS -->
-  <link rel="alternate" href="{{ pathto('_static/atom.xml', 1) }}" title="{{ project|striptags|e }}">
-  <!-- Open Graph -->
-  <meta name="description" content="FURY - Scientific Visualization and Game Engine">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="{{ project|striptags|e }}">
-  <meta property="og:url" content="{{ theme_canonical_url }}{{ pagename }}.html">
-  <meta property="og:site_name" content="{{ project|striptags|e }}">
-  <meta property="og:description" content="FURY - Free Unified Rendering in Python">
-  <meta property="og:locale" content="en">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="{{ project|striptags|e }}">
-  <meta name="twitter:description" content="Free Unified Rendering in Python">
-  <!-- Google Analytics -->
-
-  <!-- <script>
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-90338862-1', 'auto');
-    ga('send', 'pageview');
-  </script> -->
-</head>
-
-<body>
-  <div id="container">
-    <header id="header" class="wrapper">
-      <div id="header-inner" class="inner">
-        <h1 id="logo-wrap">
-            <a href="{{logo}}" id="logo">Fury</a>
-        </h1>
-        <nav id="main-nav">
-            <a href="{{ pathto('getting_started')}}" class="main-nav-link">Docs</a>
-            <a href="{{ pathto('reference/index')}}" class="main-nav-link">API</a>
-            <a href="{{ pathto('auto_tutorials/index')}}" class="main-nav-link">Tutorial</a>
-            <a href="{{ pathto('auto_examples/index')}}" class="main-nav-link">Demos</a>
-            <a href="{{ pathto('blog')}}" class="main-nav-link">Blog</a>
-            <a href="{{ pathto('community')}}" class="main-nav-link">Community</a>
-            <a href="https://github.com/fury-gl/fury" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
-        </nav>
-        <a id="mobile-nav-toggle">
-            <span class="mobile-nav-toggle-bar"></span>
-            <span class="mobile-nav-toggle-bar"></span>
-            <span class="mobile-nav-toggle-bar"></span>
-        </a>
-      </div>
-    </header>
-    <header id="banner" class="wrapper">
-      <div class="inner">
-        <h2 id="banner-title">FURY</h2>
-        <div id="banner-start">
-            <span id="banner-start-command" class="txt-rotate"
-            data-period="2000"
-            data-rotate='["pip install fury", "conda install -c conda-forge fury"]'></span>
-        </div>
-      </div>
-    </header>
-    <div id="content-wrap">
-      <div class="wrapper">
-        <div class="inner">
-          <ul id="intro-feature-list">
-            <li class="intro-feature-wrap">
-              <div class="intro-feature">
-                <div class="intro-feature-icon">
-                  <i class="fa fa-cloud-download"></i>
-                </div>
-                <h3 class="intro-feature-title">
-                  <a href="https://pypi.org/project/fury/" class="link" target="_blank" rel="noopener">Releases</a>
-                  <img style="padding-left: 25px" src="https://img.shields.io/pypi/v/fury.svg">
-                </h3>
-                <p class="intro-feature-desc">Fury is a Python library available for scientific visualization. The library is available via <a href="https://pypi.org/project/fury/" class="link" target="_blank" rel="noopener">PyPi</a> or <a href="" class="link" target="_blank" rel="noopener">Anaconda</a> package system</p>
-              </div>
-            </li>
-            <li class="intro-feature-wrap">
-              <div class="intro-feature">
-                <div class="intro-feature-icon">
-                  <i class="fa fa-life-ring"></i>
-                </div>
-                <h3 class="intro-feature-title">
-                  <a href="" class="link" target="_blank" rel="noopener">Free</a>
-                </h3>
-                <p class="intro-feature-desc">FURY is totally free and it will be always free</p>
-              </div>
-            </li>
-            <li class="intro-feature-wrap">
-              <div class="intro-feature">
-                <div class="intro-feature-icon">
-                  <i class="fa fa-graduation-cap"></i>
-                </div>
-                <h3 class="intro-feature-title">
-                  <a href="{{ pathto('community')}}" class="link" target="_blank" rel="noopener">Community</a>
-                </h3>
-                <p class="intro-feature-desc">Join FURY family and share your knowledge</p>
-              </div>
-            </li>
-            <li class="intro-feature-wrap">
-              <div class="intro-feature">
-                <div class="intro-feature-icon">
-                  <i class="fa fa-comments-o"></i>
-                </div>
-                <h3 class="intro-feature-title">
-                  <a href="" class="link" target="_blank" rel="noopener">Easy to Use</a>
-                </h3>
-                <p class="intro-feature-desc">FURY is designed to be really easy to use.</p>
-              </div>
-            </li>
-          </ul>
-          <div id="intro-get-started-wrap">
-            <a href="{{ pathto('getting_started')}}" id="intro-get-started-link" target="_blank" rel="noopener">Getting Started</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer id="footer" class="wrapper">
-      <div class="inner">
-        <div id="footer-copyright"> {{copyright|e}}</div>
-        <div id="footer-links">
-          <a href="https://github.com/fury-gl/fury" class="footer-link" target="_blank"><i class="fa fa-github-alt"></i></a>
-        </div>
-      </div>
-    </footer>
-  </div>
-  <div id="mobile-nav-dimmer"></div>
-  <nav id="mobile-nav">
-    <div id="mobile-nav-inner">
-      <ul id="mobile-nav-list">
-        <a href="{{ pathto('getting_started')}}" class="mobile-nav-link">Docs</a>
-        <a href="{{ pathto('reference/index')}}" class="mobile-nav-link">API</a>
-        <a href="{{ pathto('auto_tutorials/index')}}" class="mobile-nav-link">Tutorial</a>
-        <a href="{{ pathto('auto_examples/index')}}" class="mobile-nav-link">Demos</a>
-        <a href="{{ pathto('blog')}}" class="main-nav-link">Blog</a>
-        <a href="{{ pathto('community')}}" class="mobile-nav-link">Community</a>
-        <a href="https://github.com/fury-gl/fury" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
-        <li class="mobile-nav-item">
-          <a href="https://github.com/fury-gl/fury" class="mobile-nav-link" rel="external" target="_blank">GitHub</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-  <!-- Scripts -->
-  <!-- build:js build/js/main.js-->
-  <script src="{{ pathto('_static/js/mobile_nav.js', 1) }}"></script>
-  <script src="{{ pathto('_static/js/fury.js', 1) }}"></script>
-  <!-- endbuild -->
-  <script src="https://cdn.jsdelivr.net/retinajs/1.3.0/retina.min.js" async></script>
-</body>
-</html>
-{% else %}
-
-  {% extends "!page.html" %}
-  {% block footer %} {{ super() }}
-    <link rel="stylesheet" href="{{ pathto('_static/css/blog.css', 1) }}" type="text/css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
-    <style>
-    /* Sidebar header (and topbar for mobile) */
-    .wy-side-nav-search, .wy-nav-top {
-        background: #990000;
-    }
-    /* Sidebar */
-    .wy-nav-side {
-        background: #4A3C31;
-    }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/@widgetbot/crate@3" async defer>
-      new Crate({
-        server: '695048505902891009',
-        channel: '695305679682011217',
-        shard: 'https://e.widgetbot.io',
-        // glyph: ['https://i0.wp.com/www.puclpodcast.com/wp-content/uploads/2014/03/discord-chat-link-button.jpg?w=681&ssl=1', '100%'],
-      })
-    </script>
-  {% endblock %}
-{% endif %}
+  /* Sidebar */
+  .wy-nav-side {
+    background: #4A3C31;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@widgetbot/crate@3" async defer>
+  new Crate({
+    server: '695048505902891009',
+    channel: '695305679682011217',
+    shard: 'https://e.widgetbot.io',
+    // glyph: ['https://i0.wp.com/www.puclpodcast.com/wp-content/uploads/2014/03/discord-chat-link-button.jpg?w=681&ssl=1', '100%'],
+  })
+</script>
+{% endblock %}

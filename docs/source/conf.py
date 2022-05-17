@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.abspath('./ext'))
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = '2.1'
+needs_sphinx = '4.3'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -69,7 +69,6 @@ numpydoc_show_class_members = False
 # Add any paths that contain templates here, relative to this directory.
 import ablog
 templates_path = ['_templates', ablog.get_html_templates_path(), ]
-
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -152,32 +151,56 @@ todo_include_todos = False
 #     "version_dropdown": True,
 #     "version_json": "_static/versions.json",
 # }
-html_theme = 'sphinx_rtd_theme'
-import sphinx_rtd_theme
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), ]
+import pydata_sphinx_theme
+html_theme = 'pydata_sphinx_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
 # html_theme_options = {}
+html_theme_options = {
+  "navigation_depth": 1,
+  "logo_link": 'index.html',
+  "navbar_start": ["custom-title.html"],
+  "navbar_center": '',
+  "navbar_end": 'custom-navbar.html',
+  "footer_items": ["custom-footer.html"]
+  }
+
+html_additional_pages = {
+    'video': 'home-video-page.html',
+    'index': 'home.html'
+    }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_css_files = [
+    'css/custom.css',
+]
+
+# html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
+
+html_logo = '_static/images/logo.svg'
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
+# html_sidebars = {
+#     '**': [
+#         'relations.html',  # needs 'show_related': True theme option to display
+#         'searchbox.html',
+#         'versions.html',
+#     ]
+# }
 html_sidebars = {
-    '**': [
-        'relations.html',  # needs 'show_related': True theme option to display
-        'searchbox.html',
-        'versions.html',
-    ]
+    # "**": ["search-field", 'globaltoc.html',"sidebar-nav-bs"]
+    "**": ["search-field", 'globaltoc.html']
 }
 # html_sidebars = {
 #     "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"],
@@ -289,10 +312,11 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable', None),
-    'matplotlib': ('https://matplotlib.org', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
     'dipy': ('https://dipy.org/documentation/latest',
              'https://dipy.org/documentation/latest/objects.inv/'),
+    'scikit-learn': ('https://scikit-learn.org/stable/', None),
 }

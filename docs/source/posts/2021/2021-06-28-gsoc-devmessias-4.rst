@@ -63,6 +63,7 @@ below presents the sketch of the abstract class
 
 
 .. code-block:: python
+
    from abc import ABC, abstractmethod
 
    GenericImageBufferManager(ABC):
@@ -206,7 +207,7 @@ week <https://blogs.python-gsoc.org/en/demvessiass-blog/weekly-check-in-3-15/>`_
 check-in there is an open issue related to SharedMemory in python.
 This"bug" happens in the streaming system through the following scenario
 
-.. code-block:: bash 
+.. code-block:: bash
 
    1-Process A creates a shared memory X
    2-Process A creates a subprocess B using popen (shell=False)
@@ -214,7 +215,7 @@ This"bug" happens in the streaming system through the following scenario
    4-Process B closes X
    5-Process A kills B
    4-Process A closes  X
-   5-Process A unlink() the shared memory resource 
+   5-Process A unlink() the shared memory resource
 
 In python, this scenario translates to
 
@@ -253,7 +254,7 @@ Network Layout (Helios-FURY)
 **Pull
 request**\ `fury-gl/helios/pull/1 <https://github.com/fury-gl/helios/pull/1/>`__
 
-Finally, the first version of FURY network layout is working as you can 
+Finally, the first version of FURY network layout is working as you can
 see in the video below.
 
 In addition, this already can be used with the streaming system allowing
@@ -286,4 +287,3 @@ Refs:
    https://github.com/python/cpython/pull/21516 (accessed Jun. 28,
    2021).
 
-  

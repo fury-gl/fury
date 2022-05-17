@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <meta name="description" content="FURY - Your go-to scientific visualization library." />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>FURY</title>
+
+
+
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,900" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/pydata-sphinx-theme.css" />
+    <link rel="stylesheet" type="text/css" href="_static/vendor/style.css" />
+    <link rel="stylesheet" type="text/css" href="_static/vendor/icons.css" />
+
+
+
+
+
+    <link rel="icon" href="images/favicon.ico" />
+
+
+    <link rel="stylesheet" href="_static/css/util.css" />
+    <link rel="stylesheet" href="_static/vendor/vars.css" />
+    <link rel="stylesheet" href="_static/vendor/styles.css" />
+    <link rel="stylesheet" href="_static/vendor/content.css" />
+    <link rel="stylesheet" href="_static/vendor/news.css" />
+    <link rel="stylesheet" href="_static/vendor/keyfeatures.css" />
+    <link rel="stylesheet" href="_static/vendor/tables.css" />
+    <link rel="stylesheet" href="_static/vendor/videos.css" />
+    <link rel="stylesheet" href="_static/vendor/posts.css" />
+    <link rel="stylesheet" href="_static/vendor/teams.css" />
+    <link rel="stylesheet" href="_static/vendor/code-highlight.css" />
+    <link rel="stylesheet" href="_static/vendor/installtext.css" />
+    <link rel="stylesheet" href="_static/vendor/gallery.css" />
+    <link rel="stylesheet" href="_static/vendor/features.css" />
+    <link rel="stylesheet" href="_static/vendor/fa.css" />
+    <link rel="stylesheet" href="_static/vendor/tabs.css" />
+    <link rel="stylesheet" href="_static/vendor/new-promotions.css" />
+    <link rel="stylesheet" href="_static/css/main.css" />
+
+
+
+
+
+
+
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="_static/images/logo.svg" />
+
+    <meta name="twitter:title" content="FURY" />
+    <meta name="twitter:description" content="FURY - Your go-to scientific visualization library." />
+
+</head>
+
+<body>
+
+
+
+
+
+
+    <nav id="nav" class="navbar is-fresh is-transparent no-shadow" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+
+
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                    data-target="navbar-menu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbar-menu" class="navbar-menu is-static">
+
+                <div class="navbar-end">
+                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                        Installation
+                    </a>
+                    <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
+                        Demos
+                    </a>
+                    <a href="reference/index.html" id="navbar-item" class="navbar-item is-secondary">
+                        API
+                    </a>
+                    <a href="community.html" id="navbar-item" class="navbar-item is-secondary">
+                        Community
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <nav id="navbar-clone" class="navbar is-fresh is-transparent" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a id="navbar-item" class="navbar-item" href="index.html">
+                    <img id="navbar-logo" src="_static/images/logo.svg" alt="%!s(&lt;nil&gt;) logo">
+                    <div id="navbar-logo-text">FURY</div>
+                </a>
+
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                    data-target="cloned-navbar-menu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="cloned-navbar-menu" class="navbar-menu is-fixed">
+
+                <div class="navbar-end">
+                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                        Installation
+                    </a>
+                    <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
+                        Demos
+                    </a>
+                    <a href="reference/index.html" id="navbar-item" class="navbar-item is-secondary">
+                        API
+                    </a>
+                    <a href="community.html" id="navbar-item" class="navbar-item is-secondary">
+                        Community
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-title-content">
+                    <div class="hero-title">
+                        <img class="hero-logo" src="_static/images/text-logo.png" alt="FURY logo. ">
+                        <img class="hero-logo" src="_static/images/logo.svg" alt="FURY logo. ">
+                    </div>
+                    <div class="flex-column">
+
+                        <div class="hero-subtitle">
+                            A free and open-source software library for Scientific Visualization and 3D animations. Learn how to use the rendering equation
+                            \begin{equation}
+                            L_o\left( x, \omega_o\right) = L_e\left( x, \omega_o\right) + \int_{\Omega} L_i\left( x, \omega_i\right)  f_r\left(\omega_i, x,  \omega_o\right) \left(\omega_i\cdot n\right) d\omega_i
+                            \end{equation}
+                            and other powerful techniques to create the most advanced effects and give new life to your data.
+                        </div>
+
+
+                        <div class="hero-cta">
+                            <a href="getting_started.html"><button class="cta-button">Get started</button></a>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <section class="gallery">
+        <div class="container">
+            <h1 class="gallery-title">FURY in action</h1>
+            <div class="gallery-box-container">
+                <div class="gallery-box-content gallery-underline">
+                    <div class="gallery-box-title">Shaders</div>
+                    <img src="_static/images/horse.gif" alt="">
+                    <div class="gallery-box-text">Shaders are simple programs that describe the traits of either a
+                        vertex or a pixel. Vertex shaders describe the attributes (position, texture coordinates,
+                        colors, etc.) of a vertex, while pixel shaders describe the traits (color, z-depth and alpha
+                        value) of a pixel.</div>
+                    </div>
+                <div class="gallery-box-content gallery-underline">
+                    <div class="gallery-box-title">Physically based rendering</div>
+                    <img src="_static/images/physical.gif" alt="">
+                    <div class="gallery-box-text">Physically based rendering (PBR) is a computer graphics approach that seeks to render images in a way that models the flow of light in the real world. Many PBR pipelines aim to achieve photorealism. This video demonstrates Anisotropic specular reflection in FURY.</div>
+                </div>
+                <div class="gallery-box-content gallery-underline">
+                    <div class="gallery-box-title">large networks</div>
+                    <img src="_static/images/4.gif" alt="">
+                    <div class="gallery-box-text">A large network can be visualized by presenting its interesting parts
+                        preferably combined with one or several 'maps' in a multiview display. The main view displays a
+                        selected part in details, while the 'maps' provide the user with information about the position
+                        of the part inside the network.</div>
+                    </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+    <div id="container">
+        <header id="banner" class="wrapper">
+            <div class="inner">
+                <h1 id="banner-title">Install FURY And Start Using It!</h1>
+                    <div id="banner-start">
+                        <span id="banner-start-command" class="txt-rotate" data-period="2000"
+                            data-rotate='["pip install fury", "conda install -c conda-forge fury"]'></span>
+                    </div>
+            </div>
+        </header>
+    </div>
+
+
+    <!-- <div class="section section--promotions">
+
+        <a name="latest-unity" id="latest-unity"></a>
+
+        <section id="latest-unity--2" class="component-promotions component component-view-mode-default">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-7">
+                        <h2 class="component-promotions__title"><a href="/blog.html" class="news-title">Latest from FURY</a></h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="row">
+
+                    <div class="col-xs-12 col-md-8 promotions-list-large">
+
+
+
+
+
+                        <a style="background-image: url('_static/images/promo1.jpg')"
+                            href="https://blog.unity.com/news/welcome-weta-digital"
+                            data-tile-id="promotion:45748ff8-5173-49ac-af2a-67cb9cb6d9a5"
+                            data-tile-name="Welcome Weta Digital!|https://blog.unity.com/news/welcome-weta-digital"
+                            data-tile-position="promotion:1"
+                            data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2021-11/unityxweta-promo%20%281%29.jpg?itok=_4XfiHth"
+                            class="component-promotion-large">
+                            <div class="component-promotion-large__data">
+                                <div class="component-promotion-large__title h2">
+                                    Welcome Weta Digital!
+                                </div>
+                                <div class="component-promotion-large__summary">
+                                    Bringing highly sophisticated VFX tools to millions of creators around the world.
+                                </div>
+                            </div>
+                        </a>
+
+
+
+
+                    </div>
+
+                    <div class="col-xs-12 col-md-4 promotions-list-medium">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6 col-md-12 views-row">
+
+
+
+
+
+                                <a style="background-image: url('_static/images/promo2.jpg')"
+                                    href="/releases/release-overview"
+                                    data-tile-id="promotion:2529aa68-2d40-4732-8db5-7565ccbc995f"
+                                    data-tile-name="Unity’s newest releases|/releases/release-overview"
+                                    data-tile-position="promotion:2"
+                                    data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2021-03/lts-tech-hero-unity%20%281%29.jpg?itok=nK-MORfW"
+                                    class="component-promotion-medium">
+                                    <div class="component-promotion-medium__data">
+                                        <div class="component-promotion-medium__title h5">
+                                            Unity’s newest releases
+                                        </div>
+                                        <div class="component-promotion-medium__summary">
+                                            Unity 2020 LTS and Unity 2021.2 Tech Stream are now available
+                                        </div>
+                                    </div>
+                                </a>
+
+
+
+
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-12 views-row">
+
+
+
+
+
+                                <a style="background-image: url('_static/images/promo3.jpg')"
+                                    href="https://create.unity3d.com/industrial-success-hub" target="_self"
+                                    data-tile-id="promotion:2663e9a5-9c95-4d72-94a1-42bd6f6c60c1"
+                                    data-tile-name="Industrial Success Hub|https://create.unity3d.com/industrial-success-hub"
+                                    data-tile-position="promotion:3"
+                                    data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2021-11/%7B4cecf49d-8994-4825-959c-94482c411d75%7D_%7B2c8cae08-e688-4cfd-ac71-6e1daaca20e9%7D_Immersive-training-for-plants-and-job-sites_1280x720%20%281%29_0.jpg?itok=fPeyPlin"
+                                    class="component-promotion-medium">
+                                    <div class="component-promotion-medium__data">
+                                        <div class="component-promotion-medium__title h5">
+                                            Industrial Success Hub
+                                        </div>
+                                        <div class="component-promotion-medium__summary">
+                                            Your Unity Industrial journey begins here
+                                        </div>
+                                    </div>
+                                </a>
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12">
+                        <div class="promotions-list-compact">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-4 views-row">
+
+
+
+
+
+                                    <a href="https://create.unity.com/more-momentum"
+                                        data-tile-id="promotion:60280268-2205-44d7-9bc5-cbda2260da05"
+                                        data-tile-name="More momentum|https://create.unity.com/more-momentum"
+                                        data-tile-position="promotion:4"
+                                        data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2021-11/mm-homepage-banner-810x455.jpg?itok=v7g9kJs0"
+                                        class="component-promotion-compact" style="height: 171px;">
+                                        <div class="component-promotion-compact__image">
+
+                                            <div> <img
+                                                    src="_static/images/promo1.jpg"
+                                                    width="140" height="140" alt="More momentum banner." loading="lazy">
+
+
+                                            </div>
+
+                                        </div>
+                                        <div class="component-promotion-compact__data">
+                                            <div class="component-promotion-compact__title">
+                                                More momentum
+                                            </div>
+                                            <div class="component-promotion-compact__summary">
+                                                Get more momentum on your next project with Unity’s full suite of DevOps
+                                                tools.
+                                            </div>
+                                        </div>
+                                    </a>
+
+
+
+
+                                </div>
+                                <div class="col-xs-12 col-sm-4 views-row">
+
+
+
+
+
+                                    <a href="https://blogs.unity3d.com/2020/08/28/unlock-access-to-over-a-billion-new-players-for-your-android-mobile-game/"
+                                        data-tile-id="promotion:1c785cea-b5ad-4a21-b4fc-d2482bca7f5d"
+                                        data-tile-name="Unity Distribution Portal|https://blogs.unity3d.com/2020/08/28/unlock-access-to-over-a-billion-new-players-for-your-android-mobile-game/"
+                                        data-tile-position="promotion:5"
+                                        data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2020-08/udp-blog-header.jpg?itok=yZ-B4-3p"
+                                        class="component-promotion-compact" style="height: 171px;">
+                                        <div class="component-promotion-compact__image">
+
+                                            <div> <img
+                                                    src="_static/images/promo2.jpg"
+                                                    width="140" height="140" loading="lazy">
+
+
+                                            </div>
+
+                                        </div>
+                                        <div class="component-promotion-compact__data">
+                                            <div class="component-promotion-compact__title">
+                                                Unity Distribution Portal
+                                            </div>
+                                            <div class="component-promotion-compact__summary">
+                                                Distribute your Android game globally from a single hub.
+                                            </div>
+                                        </div>
+                                    </a>
+
+
+
+
+                                </div>
+                                <div class="col-xs-12 col-sm-4 views-row">
+
+
+
+
+
+                                    <a href="/education/distance-learning"
+                                        data-tile-id="promotion:7c01177c-1c2c-4407-937f-ba0586631bd7"
+                                        data-tile-name="Resources for Teaching Unity|/education/distance-learning"
+                                        data-tile-position="promotion:6"
+                                        data-tile-creative="https://unity.com/sites/default/files/styles/16_9_l_scale_width/public/2020-08/Join-Educators-Live-1920x1000_0.jpg?itok=VcUslCH7"
+                                        class="component-promotion-compact" style="height: 171px;">
+                                        <div class="component-promotion-compact__image">
+
+                                            <div> <img
+                                                    src="_static/images/promo3.jpg"
+                                                    width="140" height="140" loading="lazy">
+
+
+                                            </div>
+
+                                        </div>
+                                        <div class="component-promotion-compact__data">
+                                            <div class="component-promotion-compact__title">
+                                                Resources for Teaching Unity
+                                            </div>
+                                            <div class="component-promotion-compact__summary">
+                                                Get free resources and support for educators and schools impacted by
+                                                COVID-19.
+                                            </div>
+                                        </div>
+                                    </a>
+
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+    </div> -->
+
+
+    <!-- <div class="news-container">
+        <div class="news-title"><a href="/news"> Scientific Python Hugo theme released!</a></div>
+
+        <div class="news-date"><a href="/news">2021-10-18</a></div>
+
+    </div>
+
+
+
+    <section class="keyfeatures">
+        <div class="container">
+            <h1 class="gallery-title">Features</h1>
+            <div class="keyfeatures-box-container">
+                <div class="keyfeatures-box-content keyfeatures-underline">
+                    <p>
+                        <div class="keyfeatures-box-title">Releases</div>
+                        <div class="keyfeatures-box-text">Fury is a Python library available for scientific
+                            visualization. The library is available via <a
+                                href="https://pypi.org/project/fury/">PyPi</a> or Anaconda package system</div>
+                    </p>
+                </div>
+                <div class="keyfeatures-box-content keyfeatures-underline">
+                    <p>
+                        <div class="keyfeatures-box-title">Free</div>
+                        <div class="keyfeatures-box-text">FURY is totally free and it will be always free</div>
+                    </p>
+                </div>
+                <div class="keyfeatures-box-content keyfeatures-underline">
+                    <p>
+                        <div class="keyfeatures-box-title">Community</div>
+                        <div class="keyfeatures-box-text">Join FURY family <a
+                                href="https://fury.gl/latest/community.html">here</a> and share your knowledge</div>
+                    </p>
+                </div>
+                <div class="keyfeatures-box-content keyfeatures-underline">
+                    <p>
+                        <div class="keyfeatures-box-title">Easy to Use</div>
+                        <div class="keyfeatures-box-text">FURY is designed to be really easy to use</div>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+
+
+
+
+
+
+
+
+
+
+    <section class="p-t-20 tabs-section">
+        <div class="container">
+            <!-- <h1 class="tabs-title">Scientific Domains</h1> -->
+            <div class="uikit-tab-wrapper">
+                <ul class="uk-flex-center uk-nav" uk-tab>
+                    <li class="uk-active"><a href="#">Scientific Domains</a></li>
+                    <li><a href="#">Physics Simulation</a></li>
+                    <li><a href="#">Molecular Dynamics</a></li>
+                    <li><a href="#">Neuroscience</a></li>
+                    <li><a href="#">Additional Features</a></li>
+                </ul>
+                <ul id="tabs-content" class="uk-switcher uk-margin">
+                    <li class="scientific-domains">
+
+                        <table>
+                            <tr class="highlight-th">
+                                <td class="bold-text">Engineering</td>
+                                <td class="bold-text">Physics</td>
+                                <td class="bold-text">Chemistry</td>
+                                <td class="bold-text">Astronomy</td>
+                            </tr>
+                            <tr>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/physics.svg" alt="">
+                                </td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
+                            </tr>
+                            <tr class="highlight-th">
+                                <td class="bold-text">Aerospace</td>
+                                <td class="bold-text">Biology</td>
+                                <td class="bold-text">Data science</td>
+                                <td class="bold-text">Network science</td>
+                            </tr>
+                            <tr>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/biology.svg" alt="">
+                                </td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
+                            </tr>
+                            <tr class="highlight-th">
+                                <td class="bold-text">Mathematics</td>
+                            </tr>
+                            <tr>
+                                <td><img class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
+                                <td class="bold-text">and</td>
+                                <td class="bold-text">many more ...</td>
+                            </tr>
+
+                        </table>
+                    </li>
+                    <li class="physics-simulation">
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div class="image-grid">
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_domino.gif" alt="physics domino" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_bricks_multi_actor.gif" alt="physics bricks" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://raw.githubusercontent.com/fury-gl/fury-communication-assets/main/physics_collision.gif" alt="physic collision" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/brownian_motion.gif" alt="brownian motion" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/em_wave.gif" alt="Em wave" align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/helical_path.gif" alt="Helical path" align="middle"></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <p>FURY allows you to create easily  multiple physics animations.</p>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="molecular-dynamics">
+                        <div class="col-sm">
+                            <p class="txt-center">Some Molecular Dynamics applications using FURY.</p>
+                        </div>
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://furiousatoms.com/_static/images/fullerene_1.png" alt="fullrene Modellin" align="middle"></a>
+                                    </div>
+                                    <div class="row p-t-5">
+                                        <div class="col-sm">
+                                            <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_ribbons.gif" alt="Molecular Ribbon" align="middle"></a>
+                                        </div>
+                                        <div class="col-sm">
+                                            <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_surface.gif" alt="Molecular Surface" align="middle"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="neuroscience">
+                        <div class="col-sm">
+                            <p class="txt-center">Built with FURY: Neuroscience application examples </p>
+                        </div>
+                        <div class="grid-container">
+                            <div class="visualization-images">
+                                <div class="image-grid">
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/50577357/155691603-161e0546-f150-4389-badd-72e207a10063.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://user-images.githubusercontent.com/9929496/115797697-82d5a100-a3a2-11eb-89b4-d9995930ce47.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="fury-pybullet.html"><img src="https://github.com/dipy/dipy_data/raw/master/AF_L_highlighted.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://github.com/dipy/dipy_data/raw/master/eudx_tracking.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/contour_from_roi_tutorial.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                    <div>
+                                        <a href="auto_examples/index.html#demos"><img src="https://dipy.org/documentation/1.5.0/_images/slices.png" alt="Brain bundle " align="middle"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="other-features">
+                        <div class="keyfeatures-box-container">
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Releases</div>
+                                    <div class="keyfeatures-box-text">FURY is a Python library available for scientific
+                                        visualization. The library is available via <a
+                                        href="https://pypi.org/project/fury/">PyPi</a> or Anaconda package system</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Free</div>
+                                    <div class="keyfeatures-box-text">FURY is totally free and it will be always free</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Community</div>
+                                    <div class="keyfeatures-box-text">Join FURY family <a
+                                        href="https://fury.gl/latest/community.html">here</a> and share your knowledge</div>
+                                </p>
+                            </div>
+                            <div class="keyfeatures-box-content keyfeatures-underline">
+                                <p>
+                                    <div class="keyfeatures-box-title">Easy to Use</div>
+                                    <div class="keyfeatures-box-text">FURY is designed to be really easy to use</div>
+                                </p>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+
+
+    <div id="backtotop"><a href="#" id="backtotop-color"></a></div>
+
+
+
+
+
+
+    <footer id="footer" class="footer">
+        <div class="container">
+            <div id="footer-columns" class="columns">
+                <div class="footer-logo-column">
+                    <img id="footer-logo" src="_static/images/logo.svg" alt=" logo. ">
+                </div>
+                <div class="link-column">
+                    <div class="footer-column">
+                        <div class="footer-header">
+                            <h5>About</h5>
+                        </div>
+                        <ul class="link-list">
+                            <li class="link-list"><a class="footer-link" href="community.html#contributors"><i class="fa fa-angle-double-right"></i>Developers</a></li>
+                            <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i class="fa fa-angle-double-right"></i>Support</a></li>
+                            <li class="link-list"><a class="footer-link" href="installation.html"><i class="fa fa-angle-double-right"></i>Download</a></li>
+                            <li class="link-list"><a class="footer-link" href="auto_tutorials/index.html"><i class="fa fa-angle-double-right"></i>Tutorials</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="link-column">
+                    <div class="footer-column">
+                        <div class="footer-header">
+                            <h5>Friends</h5>
+                        </div>
+                        <ul class="">
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://dipy.org/"><i class="fa fa-angle-double-right"></i>DIPY</a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://heliosnetwork.io/"><i class="fa fa-angle-double-right"></i>Helios</a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://furiousatoms.com/"><i class="fa fa-angle-double-right"></i>Furious Atoms</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="link-column">
+                    <div class="footer-column">
+                        <div class="footer-header">
+                            <h5>Support</h5>
+                        </div>
+                        <ul class="">
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://engineering.indiana.edu/"><i class="fa fa-angle-double-right"></i>
+                                    The department of Intelligent Systems Engineering of Indiana University
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625"><i class="fa fa-angle-double-right"></i>
+                                NSF NCN - Engineered NanoBIO - NSF award #1720625
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://summerofcode.withgoogle.com/"><i class="fa fa-angle-double-right"></i>
+                                    Google Summer of Code Program
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-actions">
+
+
+                    <nav class="level is-mobile">
+                        <div class="social-media-icons">
+                            <a class="level-item" href="https://github.com/fury-gl/fury"
+                                aria-label="https://github.com/fury-gl/fury">
+                                <span class="icon"><i class="fab fa-github-alt" style="color: white;"></i></span>
+                            </a>
+                            <a class="level-item" href="https://twitter.com/fury_engine"
+                            aria-label="https://twitter.com/fury_engine">
+                            <span class="icon"><i class="fab fa-twitter" style="color: white;"></i></span>
+                        </a>
+                        </div>
+                    </nav>
+                    <div class="copyright">&copy; {{copyright}}. All rights reserved.</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="_static/js/fresh.js"></script>
+    <script src="_static/js/jquery.panelslider.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/js/uikit.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/css/uikit.min.css" />
+    <script src="https://unpkg.com/thebe@0.8.2/lib/index.js"></script>
+
+    <script src="_static/js/shortcuts.js"></script>
+    <script src="_static/js/installtext.js"></script>
+    <script type="text/javascript">
+        setupShortcuts(maxLevel = 2);
+    </script>
+    <script type="text/javascript">
+        textRotate();
+    </script>
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>
