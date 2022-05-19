@@ -183,6 +183,10 @@ if __name__ == '__main__':
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
+    coords_min = np.min(bundle.get_data(), axis=0)
+    coords_max = np.max(bundle.get_data(), axis=0)
+    coords_avg = np.rint((coords_min + coords_max) / 2).astype(int)
+
     num_lines = len(bundle)
     lines_range = range(num_lines)
     points_per_line = [len(bundle[i]) for i in lines_range]
@@ -224,24 +228,19 @@ if __name__ == '__main__':
     scene.add(obj_actor)
 
     light = Light()
-    light.SetLightTypeToSceneLight()
+    #light.SetLightTypeToSceneLight()
+    light.SetLightTypeToHeadlight()
+    #light.SetLightTypeToCameraLight()
     light.SetPositional(True)
-    light.SetPosition(-35, 5, 0)
-    #light.SetConeAngle(10)
-    light.SetFocalPoint(-35, -5, 0)
-    #light.SetColor(0, 1, 0)
+    light.SetPosition(coords_avg[0], -coords_avg[1] * 4, -10)
+    light.SetConeAngle(5)
+    light.SetFocalPoint(coords_avg)
+    light.SetColor(1, 1, 1)
     light.SetDiffuseColor(1, 0, 0)
     light.SetAmbientColor(0, 1, 0)
     light.SetSpecularColor(0, 0, 1)
-    light.SetIntensity(.75)
+    light.SetIntensity(.1)
     scene.AddLight(light)
-
-    #light_pink = Light()
-    #light_pink.SetPositional(True)
-    #light_pink.SetPosition(4, 5, 1)
-    #light_pink.SetColor(1, 0, 1)
-    #light_pink.SetIntensity(.6)
-    #scene.AddLight(light_pink)
 
     emissive_color = (1, 0, 0)
     emissive_sphere = actor.sphere(np.array([[-35, -5, 0]]), emissive_color,
