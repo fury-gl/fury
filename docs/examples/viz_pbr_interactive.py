@@ -14,7 +14,7 @@ from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
 from fury.utils import (normals_from_actor, tangents_to_actor,
                         tangents_from_direction_of_anisotropy)
-
+import numpy as np
 
 ###############################################################################
 # The following functions will help us to manage the sliders events.
@@ -124,7 +124,8 @@ scene = window.Scene(skybox=cubemap)
 # With the scene created, we can then populate it. In this demo we will only
 # add a sphere actor.
 
-sphere = actor.sphere([[0, 0, 0]], (.7, .7, .7), radii=2, theta=64, phi=64)
+sphere = actor.sphere(np.array([[0, 0, 0]]), (.7, .7, .7), radii=2, theta=64,
+                      phi=64, use_primitive=False)
 
 ###############################################################################
 # The direction of anisotropy (DoA) defines the direction at which all the
