@@ -117,7 +117,7 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
-    if isinstance(data, list) or isinstance(data, np.ndarray):
+    if isinstance(data, (list, np.ndarray)):
         offset_dtype = np.uint64
     else:
         offset_dtype = data._offsets.dtype
