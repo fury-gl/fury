@@ -11,11 +11,16 @@ rendered polygons comes at the cost of performance as it decreases the number
 of frames per second (FPS) which might compromise the real-time interactivity
 of a visualization.
 
+Billboarding is a technique that changes an object's orientation so that it
+always faces a specific direction, in most cases the camera. This technique
+became popular in games and applications that have a high polygonal quota
+requirement.
+
 Signed Distance Functions (SDFs) are mathematical functions that describe sets
 in a metric space.
 
-This tutorial, describes the motivation behind the billboard actor and how it
-can be used to create impostors using SDFs.
+This tutorial, exemplifies why FURY's billboard actor is a suitable option when
+and how it can be used to create impostors using SDFs.
 
 Let's start by importing the necessary modules:
 """
@@ -51,7 +56,7 @@ interactive = False
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_regular_spheres.png")
+window.record(scene, size=(600, 600), out_path='viz_regular_spheres.png')
 
 ###############################################################################
 spheres_actor.GetProperty().SetRepresentationToWireframe()
@@ -60,7 +65,7 @@ spheres_actor.GetProperty().SetRepresentationToWireframe()
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_low_res_wireframe.png")
+window.record(scene, size=(600, 600), out_path='viz_low_res_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -72,7 +77,7 @@ scene.add(spheres_actor)
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_hi_res_wireframe.png")
+window.record(scene, size=(600, 600), out_path='viz_hi_res_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -84,7 +89,7 @@ scene.add(billboards_actor)
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_billboards_wireframe.png")
+window.record(scene, size=(600, 600), out_path='viz_billboards_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -116,7 +121,7 @@ scene.add(spheres_actor)
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_billboards_circles.png")
+window.record(scene, size=(600, 600), out_path='viz_billboards_circles.png')
 
 ###############################################################################
 scene.clear()
@@ -176,4 +181,4 @@ scene.add(spheres_actor)
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_billboards_spheres.png")
+window.record(scene, size=(600, 600), out_path='viz_billboards_spheres.png')
