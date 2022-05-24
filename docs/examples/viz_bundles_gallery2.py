@@ -14,7 +14,8 @@ from fury.shaders import shader_to_actor
 from fury.utils import (normals_from_actor, numpy_to_vtk_colors, rotate,
                         tangents_from_direction_of_anisotropy,
                         tangents_to_actor, update_polydata_normals)
-from vtkmodules.vtkRenderingCore import vtkLight as Light
+from vtkmodules.vtkRenderingCore import (vtkLight as Light,
+                                         vtkLightActor as LightActor)
 
 
 def change_slice_metallic(slider):
@@ -78,6 +79,36 @@ def change_slice_coat_ior(slider):
     pbr_params.coat_ior = slider.value
 
 
+def change_slice_position_x(slider):
+    global light_params
+    light_params['position'][0] = slider.value
+    light.SetPosition(light_params['position'])
+
+
+def change_slice_position_y(slider):
+    global light_params
+    light_params['position'][1] = slider.value
+    light.SetPosition(light_params['position'])
+
+
+def change_slice_position_z(slider):
+    global light_params
+    light_params['position'][2] = slider.value
+    light.SetPosition(light_params['position'])
+
+
+def change_slice_cone_angle(slider):
+    global light_params
+    light_params['cone_angle'] = slider.value
+    light.SetConeAngle(light_params['cone_angle'])
+
+
+def change_slice_intensity(slider):
+    global light_params
+    light_params['intensity'] = slider.value
+    light.SetIntensity(light_params['intensity'])
+
+
 def get_cubemap_from_ndarrays(array, flip=True):
     texture = Texture()
     texture.CubeMapOn()
@@ -113,16 +144,18 @@ def read_texture(fname):
 
 
 def win_callback(obj, event):
-    global control_panel, size
+    global control_panel, light_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
         control_panel.re_align(size_change)
+        light_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global control_panel, doa, obj_actor, control_panel, pbr_params, size
+    global control_panel, doa, light, light_panel, light_params, obj_actor, \
+        pbr_params, size
 
     fetch_viz_cubemaps()
 
@@ -184,7 +217,11 @@ if __name__ == '__main__':
     bundle = sft.streamlines
 
     coords_min = np.min(bundle.get_data(), axis=0)
+    coords_min_int = np.rint(coords_min).astype(int)
     coords_max = np.max(bundle.get_data(), axis=0)
+    coords_max_int = np.rint(coords_max).astype(int)
+    coords_abs_max = np.max(np.abs(np.stack((coords_min_int, coords_max_int),
+                                            axis=0)), axis=0)
     coords_avg = np.rint((coords_min + coords_max) / 2).astype(int)
 
     num_lines = len(bundle)
@@ -227,20 +264,35 @@ if __name__ == '__main__':
 
     scene.add(obj_actor)
 
+    light_params = {
+        'position': [-coords_abs_max[0], coords_abs_max[1], coords_abs_max[2]],
+        'focal_point': coords_avg, 'cone_angle': 60, 'intensity': .1}
+
+    light_ambient_color = (1, 1, 1)
+    light_diffuse_color = (1, 1, 1)
+    light_specular_color = (1, 1, 1)
+
     light = Light()
-    #light.SetLightTypeToSceneLight()
-    light.SetLightTypeToHeadlight()
+    light.SetLightTypeToSceneLight()
+    #light.SetLightTypeToHeadlight()
     #light.SetLightTypeToCameraLight()
     light.SetPositional(True)
-    light.SetPosition(coords_avg[0], -coords_avg[1] * 4, -10)
-    light.SetConeAngle(5)
-    light.SetFocalPoint(coords_avg)
-    light.SetColor(1, 1, 1)
-    light.SetDiffuseColor(1, 0, 0)
-    light.SetAmbientColor(0, 1, 0)
-    light.SetSpecularColor(0, 0, 1)
-    light.SetIntensity(.1)
+    light.SetPosition(light_params['position'])
+    light.SetFocalPoint(light_params['focal_point'])
+    light.SetConeAngle(light_params['cone_angle'])
+    light.SetIntensity(light_params['intensity'])
+    #light.SetColor(1, 1, 1)
+    light.SetAmbientColor(light_ambient_color)
+    light.SetDiffuseColor(light_diffuse_color)
+    light.SetSpecularColor(light_specular_color)
+
     scene.AddLight(light)
+
+    light_actor = LightActor()
+    light_actor.SetLight(light)
+    #light_actor.GetFrustumProperty().SetColor(1, 1, 1)
+
+    scene.add(light_actor)
 
     emissive_color = (1, 0, 0)
     emissive_sphere = actor.sphere(np.array([[-35, -5, 0]]), emissive_color,
@@ -374,6 +426,66 @@ if __name__ == '__main__':
     control_panel.add_element(slider_slice_coat_ior, (.44, .05))
 
     scene.add(control_panel)
+
+    light_panel = ui.Panel2D(
+        (400, 500), position=(5, 510), color=(.25, .25, .25), opacity=.75,
+        align='right')
+
+    slider_label_position_x = ui.TextBlock2D(text='Position X', font_size=16)
+    slider_label_position_y = ui.TextBlock2D(text='Position Y', font_size=16)
+    slider_label_position_z = ui.TextBlock2D(text='Position Z', font_size=16)
+    slider_label_focal_point_x = ui.TextBlock2D(
+        text='Focal Point X', font_size=16)
+    slider_label_focal_point_y = ui.TextBlock2D(
+        text='Focal Point Y', font_size=16)
+    slider_label_focal_point_z = ui.TextBlock2D(
+        text='Focal Point Z', font_size=16)
+    slider_label_cone_angle = ui.TextBlock2D(text='Cone Angle', font_size=16)
+    slider_label_intensity = ui.TextBlock2D(text='Intensity', font_size=16)
+
+    light_panel.add_element(slider_label_position_x, (.01, .95))
+    light_panel.add_element(slider_label_position_y, (.01, .86))
+    light_panel.add_element(slider_label_position_z, (.01, .77))
+    light_panel.add_element(slider_label_focal_point_x, (.01, .68))
+    light_panel.add_element(slider_label_focal_point_y, (.01, .59))
+    light_panel.add_element(slider_label_focal_point_z, (.01, .5))
+    light_panel.add_element(slider_label_cone_angle, (.01, .41))
+    light_panel.add_element(slider_label_intensity, (.01, .32))
+
+    slider_slice_position_x = ui.LineSlider2D(
+        initial_value=light_params['position'][0],
+        min_value=-coords_abs_max[0], max_value=coords_abs_max[0], length=195,
+        text_template='{value:.0f}')
+    slider_slice_position_y = ui.LineSlider2D(
+        initial_value=light_params['position'][1],
+        min_value=-coords_abs_max[1], max_value=coords_abs_max[1], length=195,
+        text_template='{value:.0f}')
+    slider_slice_position_z = ui.LineSlider2D(
+        initial_value=light_params['position'][2],
+        min_value=-coords_abs_max[2], max_value=coords_abs_max[2], length=195,
+        text_template='{value:.0f}')
+
+    slider_slice_cone_angle = ui.LineSlider2D(
+        initial_value=light_params['cone_angle'], max_value=89, length=195,
+        text_template='{value:.0f}')
+
+    slider_slice_intensity = ui.LineSlider2D(
+        initial_value=light_params['intensity'], max_value=1, length=195,
+        text_template='{value:.1f}')
+
+    slider_slice_position_x.on_change = change_slice_position_x
+    slider_slice_position_y.on_change = change_slice_position_y
+    slider_slice_position_z.on_change = change_slice_position_z
+    slider_slice_cone_angle.on_change = change_slice_cone_angle
+    slider_slice_intensity.on_change = change_slice_intensity
+
+    light_panel.add_element(slider_slice_position_x, (.44, .95))
+    light_panel.add_element(slider_slice_position_y, (.44, .86))
+    light_panel.add_element(slider_slice_position_z, (.44, .77))
+    light_panel.add_element(slider_slice_cone_angle, (.44, .41))
+    light_panel.add_element(slider_slice_intensity, (.44, .32))
+
+    scene.add(light_panel)
 
     size = scene.GetSize()
 
