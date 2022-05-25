@@ -1,7 +1,8 @@
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
-from fury.shaders import attribute_to_actor, load, shader_to_actor
+from fury.shaders import (attribute_to_actor, import_fury_shader,
+                          shader_to_actor)
 from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points)
 from fury.lib import (numpy_support, Actor, Command, CellArray,
                       PolyDataMapper, PolyData, VTK_OBJECT, calldata_type)
@@ -116,10 +117,10 @@ class PeakActor(Actor):
         attribute_to_actor(self, centers_array, 'center')
         attribute_to_actor(self, diffs_array, 'diff')
 
-        vs_dec_code = load('peak_dec.vert')
-        vs_impl_code = load('peak_impl.vert')
-        fs_dec_code = load('peak_dec.frag')
-        fs_impl_code = load('peak_impl.frag')
+        vs_dec_code = import_fury_shader('peak_dec.vert')
+        vs_impl_code = import_fury_shader('peak_impl.vert')
+        fs_dec_code = import_fury_shader('peak_dec.frag')
+        fs_impl_code = import_fury_shader('peak_impl.frag')
 
         shader_to_actor(self, 'vertex', decl_code=vs_dec_code,
                         impl_code=vs_impl_code)

@@ -347,6 +347,8 @@ def test_load():
     dummy_file.write(dummy_file_contents)
     dummy_file.close()
 
+    npt.assert_warns(DeprecationWarning, load, dummy_file_name)
+
     npt.assert_string_equal(load(dummy_file_name), dummy_file_contents)
 
     os.remove(os.path.join(SHADERS_DIR, dummy_file_name))

@@ -339,7 +339,7 @@ def test_streamtube_and_line_actors():
 
     shader_obj = c3.GetShaderProperty()
     mapper_code = shader_obj.GetGeometryShaderCode()
-    file_code = shaders.load("line.geom")
+    file_code = shaders.import_fury_shader('line.geom')
     npt.assert_equal(mapper_code, file_code)
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
@@ -741,10 +741,14 @@ def test_tensor_slicer(interactive=False):
     # TODO: Add colorfa test here as previous test moved to DIPY.
 
 
-def test_dots(interactive=False):
+def test_dot(interactive=False):
+    # Test three points with different colors and opacities
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0,  1],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .3]])
 
-    dots_actor = actor.dots(points, color=(0, 255, 0))
+    dots_actor = actor.dot(points, colors=colors)
 
     scene = window.Scene()
     scene.add(dots_actor)
@@ -756,26 +760,47 @@ def test_dots(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    extent = scene.GetActors().GetLastActor().GetBounds()
-    npt.assert_equal(extent, (0.0, 1.0, 0.0, 1.0, 0.0, 0.0))
-
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 255, 0))
+    expected_colors = np.floor(colors[:, 3] * 255) * colors[:, :3]
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
     npt.assert_equal(report.objects, 3)
 
-    # Test one point
-    points = np.array([0, 0, 0])
-    dot_actor = actor.dots(points, color=(0, 0, 255))
+    # Test three points with one color and opacity
+    points = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
+    colors = (0, 1, 0)
+    dot_actor = actor.dot(points, colors=colors, opacity=.8)
 
     scene.clear()
     scene.add(dot_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    if interactive:
+        window.show(scene, reset_camera=False)
+
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 0, 255))
+    expected_colors = np.floor(.8 * 255) * np.array([colors])
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
+    npt.assert_equal(report.objects, 3)
+
+    # Test one point with no specified color
+    points = np.array([[1, 0, 0]])
+    dot_actor = actor.dot(points)
+
+    scene.clear()
+    scene.add(dot_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene, reset_camera=False)
+
+    arr = window.snapshot(scene)
+    expected_colors = np.array([[1, 1, 1]]) * 255
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
     npt.assert_equal(report.objects, 1)
 
 

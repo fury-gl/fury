@@ -2,6 +2,7 @@ import os
 
 from functools import partial
 from fury import enable_warnings
+from fury.deprecator import deprecate_with_version
 from fury.io import load_text
 from fury.lib import (VTK_OBJECT, Command, DataObject, Shader, calldata_type,
                       numpy_support)
@@ -9,7 +10,7 @@ from fury.lib import (VTK_OBJECT, Command, DataObject, Shader, calldata_type,
 
 SHADERS_DIR = os.path.join(os.path.dirname(__file__))
 
-SHADERS_EXTS = ['.vert', '.tesc', '.tese', '.geom', '.frag', '.comp']
+SHADERS_EXTS = ['.glsl', '.vert', '.tesc', '.tese', '.geom', '.frag', '.comp']
 
 SHADERS_TYPE = {"vertex": Shader.Vertex, "geometry": Shader.Geometry,
                 "fragment": Shader.Fragment}
@@ -126,6 +127,9 @@ def load_shader(shader_file):
     return load_text(shader_file)
 
 
+@deprecate_with_version(
+    message='Load function has been reimplemented as import_fury_shader.',
+    since='0.8.1', until='0.9.0')
 def load(filename):
     """Load a Fury shader file.
 
