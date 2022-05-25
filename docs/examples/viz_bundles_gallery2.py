@@ -97,6 +97,24 @@ def change_slice_position_z(slider):
     light.SetPosition(light_params['position'])
 
 
+def change_slice_focal_point_x(slider):
+    global light_params
+    light_params['focal_point'][0] = slider.value
+    light.SetFocalPoint(light_params['focal_point'])
+
+
+def change_slice_focal_point_y(slider):
+    global light_params
+    light_params['focal_point'][1] = slider.value
+    light.SetFocalPoint(light_params['focal_point'])
+
+
+def change_slice_focal_point_z(slider):
+    global light_params
+    light_params['focal_point'][2] = slider.value
+    light.SetFocalPoint(light_params['focal_point'])
+
+
 def change_slice_cone_angle(slider):
     global light_params
     light_params['cone_angle'] = slider.value
@@ -107,6 +125,60 @@ def change_slice_intensity(slider):
     global light_params
     light_params['intensity'] = slider.value
     light.SetIntensity(light_params['intensity'])
+
+
+def change_slice_ambient_color_r(slider):
+    global light_params
+    light_params['ambient_color'][0] = slider.value
+    light.SetAmbientColor(light_params['ambient_color'])
+
+
+def change_slice_ambient_color_g(slider):
+    global light_params
+    light_params['ambient_color'][1] = slider.value
+    light.SetAmbientColor(light_params['ambient_color'])
+
+
+def change_slice_ambient_color_b(slider):
+    global light_params
+    light_params['ambient_color'][2] = slider.value
+    light.SetAmbientColor(light_params['ambient_color'])
+
+
+def change_slice_diffuse_color_r(slider):
+    global light_params
+    light_params['diffuse_color'][0] = slider.value
+    light.SetDiffuseColor(light_params['diffuse_color'])
+
+
+def change_slice_diffuse_color_g(slider):
+    global light_params
+    light_params['diffuse_color'][1] = slider.value
+    light.SetDiffuseColor(light_params['diffuse_color'])
+
+
+def change_slice_diffuse_color_b(slider):
+    global light_params
+    light_params['diffuse_color'][2] = slider.value
+    light.SetDiffuseColor(light_params['diffuse_color'])
+
+
+def change_slice_specular_color_r(slider):
+    global light_params
+    light_params['specular_color'][0] = slider.value
+    light.SetSpecularColor(light_params['specular_color'])
+
+
+def change_slice_specular_color_g(slider):
+    global light_params
+    light_params['specular_color'][1] = slider.value
+    light.SetSpecularColor(light_params['specular_color'])
+
+
+def change_slice_specular_color_b(slider):
+    global light_params
+    light_params['specular_color'][2] = slider.value
+    light.SetSpecularColor(light_params['specular_color'])
 
 
 def get_cubemap_from_ndarrays(array, flip=True):
@@ -144,17 +216,17 @@ def read_texture(fname):
 
 
 def win_callback(obj, event):
-    global control_panel, light_panel, size
+    global light_panel, pbr_panel, size
     if size != obj.GetSize():
         size_old = size
         size = obj.GetSize()
         size_change = [size[0] - size_old[0], 0]
-        control_panel.re_align(size_change)
         light_panel.re_align(size_change)
+        pbr_panel.re_align(size_change)
 
 
 if __name__ == '__main__':
-    global control_panel, doa, light, light_panel, light_params, obj_actor, \
+    global doa, light, light_panel, light_params, obj_actor, pbr_panel, \
         pbr_params, size
 
     fetch_viz_cubemaps()
@@ -265,12 +337,10 @@ if __name__ == '__main__':
     scene.add(obj_actor)
 
     light_params = {
-        'position': [-coords_abs_max[0], coords_abs_max[1], coords_abs_max[2]],
-        'focal_point': coords_avg, 'cone_angle': 60, 'intensity': .1}
-
-    light_ambient_color = (1, 1, 1)
-    light_diffuse_color = (1, 1, 1)
-    light_specular_color = (1, 1, 1)
+        'position': [coords_avg[0], coords_max_int[1], 0],
+        'focal_point': coords_avg, 'cone_angle': 80, 'intensity': .25,
+        'ambient_color': [0, 0, 0], 'diffuse_color': [1, 1, 1],
+        'specular_color': [0, 0, 0]}
 
     light = Light()
     light.SetLightTypeToSceneLight()
@@ -282,9 +352,9 @@ if __name__ == '__main__':
     light.SetConeAngle(light_params['cone_angle'])
     light.SetIntensity(light_params['intensity'])
     #light.SetColor(1, 1, 1)
-    light.SetAmbientColor(light_ambient_color)
-    light.SetDiffuseColor(light_diffuse_color)
-    light.SetSpecularColor(light_specular_color)
+    light.SetAmbientColor(light_params['ambient_color'])
+    light.SetDiffuseColor(light_params['diffuse_color'])
+    light.SetSpecularColor(light_params['specular_color'])
 
     scene.AddLight(light)
 
@@ -328,10 +398,181 @@ if __name__ == '__main__':
                                 reset_camera=False, order_transparent=True)
     show_m.initialize()
 
-    control_panel = ui.Panel2D(
-        (400, 500), position=(5, 5), color=(.25, .25, .25), opacity=.75,
+    light_panel = ui.Panel2D(
+        (380, 820), position=(5, 5), color=(.25, .25, .25), opacity=.75,
         align='right')
 
+    panel_label_light = ui.TextBlock2D(text='Light', font_size=18, bold=True)
+    slider_label_position_x = ui.TextBlock2D(text='Position X', font_size=16)
+    slider_label_position_y = ui.TextBlock2D(text='Position Y', font_size=16)
+    slider_label_position_z = ui.TextBlock2D(text='Position Z', font_size=16)
+    slider_label_focal_point_x = ui.TextBlock2D(
+        text='Focal Point X', font_size=16)
+    slider_label_focal_point_y = ui.TextBlock2D(
+        text='Focal Point Y', font_size=16)
+    slider_label_focal_point_z = ui.TextBlock2D(
+        text='Focal Point Z', font_size=16)
+    slider_label_cone_angle = ui.TextBlock2D(text='Cone Angle', font_size=16)
+    slider_label_intensity = ui.TextBlock2D(text='Intensity', font_size=16)
+    slider_label_ambient_color_r = ui.TextBlock2D(
+        text='Ambient Color R', font_size=16)
+    slider_label_ambient_color_g = ui.TextBlock2D(
+        text='Ambient Color G', font_size=16)
+    slider_label_ambient_color_b = ui.TextBlock2D(
+        text='Ambient Color B', font_size=16)
+    slider_label_diffuse_color_r = ui.TextBlock2D(
+        text='Diffuse Color R', font_size=16)
+    slider_label_diffuse_color_g = ui.TextBlock2D(
+        text='Diffuse Color G', font_size=16)
+    slider_label_diffuse_color_b = ui.TextBlock2D(
+        text='Diffuse Color B', font_size=16)
+    slider_label_specular_color_r = ui.TextBlock2D(
+        text='Specular Color R', font_size=16)
+    slider_label_specular_color_g = ui.TextBlock2D(
+        text='Specular Color G', font_size=16)
+    slider_label_specular_color_b = ui.TextBlock2D(
+        text='Specular Color B', font_size=16)
+
+    label_pad_x = .04
+
+    light_panel.add_element(panel_label_light, (.01, .97))
+    light_panel.add_element(slider_label_position_x, (label_pad_x, .91))
+    light_panel.add_element(slider_label_position_y, (label_pad_x, .86))
+    light_panel.add_element(slider_label_position_z, (label_pad_x, .80))
+    light_panel.add_element(slider_label_focal_point_x, (label_pad_x, .75))
+    light_panel.add_element(slider_label_focal_point_y, (label_pad_x, .69))
+    light_panel.add_element(slider_label_focal_point_z, (label_pad_x, .64))
+    light_panel.add_element(slider_label_cone_angle, (label_pad_x, .58))
+    light_panel.add_element(slider_label_intensity, (label_pad_x, .53))
+    light_panel.add_element(slider_label_ambient_color_r, (label_pad_x, .47))
+    light_panel.add_element(slider_label_ambient_color_g, (label_pad_x, .42))
+    light_panel.add_element(slider_label_ambient_color_b, (label_pad_x, .36))
+    light_panel.add_element(slider_label_diffuse_color_r, (label_pad_x, .31))
+    light_panel.add_element(slider_label_diffuse_color_g, (label_pad_x, .25))
+    light_panel.add_element(slider_label_diffuse_color_b, (label_pad_x, .20))
+    light_panel.add_element(slider_label_specular_color_r, (label_pad_x, .14))
+    light_panel.add_element(slider_label_specular_color_g, (label_pad_x, .09))
+    light_panel.add_element(slider_label_specular_color_b, (label_pad_x, .03))
+
+    slider_length = 200
+    slider_slice_position_x = ui.LineSlider2D(
+        initial_value=light_params['position'][0],
+        min_value=-coords_abs_max[0], max_value=coords_abs_max[0],
+        length=slider_length, text_template='{value:.0f}')
+    slider_slice_position_y = ui.LineSlider2D(
+        initial_value=light_params['position'][1],
+        min_value=-coords_abs_max[1], max_value=coords_abs_max[1],
+        length=slider_length, text_template='{value:.0f}')
+    slider_slice_position_z = ui.LineSlider2D(
+        initial_value=light_params['position'][2],
+        min_value=-coords_abs_max[2], max_value=coords_abs_max[2],
+        length=slider_length, text_template='{value:.0f}')
+
+    slider_slice_focal_point_x = ui.LineSlider2D(
+        initial_value=light_params['focal_point'][0],
+        min_value=coords_min_int[0], max_value=coords_max_int[0],
+        length=slider_length, text_template='{value:.0f}')
+    slider_slice_focal_point_y = ui.LineSlider2D(
+        initial_value=light_params['focal_point'][1],
+        min_value=coords_min_int[1], max_value=coords_max_int[1],
+        length=slider_length, text_template='{value:.0f}')
+    slider_slice_focal_point_z = ui.LineSlider2D(
+        initial_value=light_params['focal_point'][2],
+        min_value=coords_min_int[2], max_value=coords_max_int[2],
+        length=slider_length, text_template='{value:.0f}')
+
+    slider_slice_cone_angle = ui.LineSlider2D(
+        initial_value=light_params['cone_angle'], max_value=89,
+        length=slider_length, text_template='{value:.0f}')
+
+    slider_slice_intensity = ui.LineSlider2D(
+        initial_value=light_params['intensity'], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+
+    slider_slice_ambient_color_r = ui.LineSlider2D(
+        initial_value=light_params['ambient_color'][0], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_ambient_color_g = ui.LineSlider2D(
+        initial_value=light_params['ambient_color'][1], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_ambient_color_b = ui.LineSlider2D(
+        initial_value=light_params['ambient_color'][2], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_diffuse_color_r = ui.LineSlider2D(
+        initial_value=light_params['diffuse_color'][0], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_diffuse_color_g = ui.LineSlider2D(
+        initial_value=light_params['diffuse_color'][1], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_diffuse_color_b = ui.LineSlider2D(
+        initial_value=light_params['diffuse_color'][2], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_specular_color_r = ui.LineSlider2D(
+        initial_value=light_params['specular_color'][0], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_specular_color_g = ui.LineSlider2D(
+        initial_value=light_params['specular_color'][1], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+    slider_slice_specular_color_b = ui.LineSlider2D(
+        initial_value=light_params['specular_color'][2], max_value=1,
+        length=slider_length, text_template='{value:.1f}')
+
+    slider_slice_position_x.on_change = change_slice_position_x
+    slider_slice_position_y.on_change = change_slice_position_y
+    slider_slice_position_z.on_change = change_slice_position_z
+    slider_slice_focal_point_x.on_change = change_slice_focal_point_x
+    slider_slice_focal_point_y.on_change = change_slice_focal_point_y
+    slider_slice_focal_point_z.on_change = change_slice_focal_point_z
+    slider_slice_cone_angle.on_change = change_slice_cone_angle
+    slider_slice_intensity.on_change = change_slice_intensity
+    slider_slice_ambient_color_r.on_change = change_slice_ambient_color_r
+    slider_slice_ambient_color_g.on_change = change_slice_ambient_color_g
+    slider_slice_ambient_color_b.on_change = change_slice_ambient_color_b
+    slider_slice_diffuse_color_r.on_change = change_slice_diffuse_color_r
+    slider_slice_diffuse_color_g.on_change = change_slice_diffuse_color_g
+    slider_slice_diffuse_color_b.on_change = change_slice_diffuse_color_b
+    slider_slice_specular_color_r.on_change = change_slice_specular_color_r
+    slider_slice_specular_color_g.on_change = change_slice_specular_color_g
+    slider_slice_specular_color_b.on_change = change_slice_specular_color_b
+
+    light_slice_pad_x = .4
+    light_panel.add_element(slider_slice_position_x, (light_slice_pad_x, .91))
+    light_panel.add_element(slider_slice_position_y, (light_slice_pad_x, .86))
+    light_panel.add_element(slider_slice_position_z, (light_slice_pad_x, .80))
+    light_panel.add_element(
+        slider_slice_focal_point_x, (light_slice_pad_x, .75))
+    light_panel.add_element(
+        slider_slice_focal_point_y, (light_slice_pad_x, .69))
+    light_panel.add_element(
+        slider_slice_focal_point_z, (light_slice_pad_x, .64))
+    light_panel.add_element(slider_slice_cone_angle, (light_slice_pad_x, .58))
+    light_panel.add_element(slider_slice_intensity, (light_slice_pad_x, .53))
+    light_panel.add_element(
+        slider_slice_ambient_color_r, (light_slice_pad_x, .47))
+    light_panel.add_element(
+        slider_slice_ambient_color_g, (light_slice_pad_x, .42))
+    light_panel.add_element(
+        slider_slice_ambient_color_b, (light_slice_pad_x, .36))
+    light_panel.add_element(
+        slider_slice_diffuse_color_r, (light_slice_pad_x, .31))
+    light_panel.add_element(
+        slider_slice_diffuse_color_g, (light_slice_pad_x, .25))
+    light_panel.add_element(
+        slider_slice_diffuse_color_b, (light_slice_pad_x, .20))
+    light_panel.add_element(
+        slider_slice_specular_color_r, (light_slice_pad_x, .14))
+    light_panel.add_element(
+        slider_slice_specular_color_g, (light_slice_pad_x, .09))
+    light_panel.add_element(
+        slider_slice_specular_color_b, (light_slice_pad_x, .03))
+
+    scene.add(light_panel)
+
+    pbr_panel = ui.Panel2D(
+        (420, 500), position=(1495, 5), color=(.25, .25, .25), opacity=.75,
+        align='right')
+
+    panel_label_pbr = ui.TextBlock2D(text='PBR', font_size=18, bold=True)
     slider_label_metallic = ui.TextBlock2D(text='Metallic', font_size=16)
     slider_label_roughness = ui.TextBlock2D(text='Roughness', font_size=16)
     slider_label_anisotropy = ui.TextBlock2D(text='Anisotropy', font_size=16)
@@ -350,53 +591,57 @@ if __name__ == '__main__':
     slider_label_base_ior = ui.TextBlock2D(text='Base IoR', font_size=16)
     slider_label_coat_ior = ui.TextBlock2D(text='Coat IoR', font_size=16)
 
-    control_panel.add_element(slider_label_metallic, (.01, .95))
-    control_panel.add_element(slider_label_roughness, (.01, .86))
-    control_panel.add_element(slider_label_anisotropy, (.01, .77))
-    control_panel.add_element(slider_label_anisotropy_rotation, (.01, .68))
-    control_panel.add_element(slider_label_anisotropy_direction_x, (.01, .59))
-    control_panel.add_element(slider_label_anisotropy_direction_y, (.01, .5))
-    control_panel.add_element(slider_label_anisotropy_direction_z, (.01, .41))
-    control_panel.add_element(slider_label_coat_strength, (.01, .32))
-    control_panel.add_element(slider_label_coat_roughness, (.01, .23))
-    control_panel.add_element(slider_label_base_ior, (.01, .14))
-    control_panel.add_element(slider_label_coat_ior, (.01, .05))
+    pbr_panel.add_element(panel_label_pbr, (.01, .95))
+    pbr_panel.add_element(slider_label_metallic, (label_pad_x, .87))
+    pbr_panel.add_element(slider_label_roughness, (label_pad_x, .79))
+    pbr_panel.add_element(slider_label_anisotropy, (label_pad_x, .70))
+    pbr_panel.add_element(slider_label_anisotropy_rotation, (label_pad_x, .62))
+    pbr_panel.add_element(
+        slider_label_anisotropy_direction_x, (label_pad_x, .54))
+    pbr_panel.add_element(
+        slider_label_anisotropy_direction_y, (label_pad_x, .46))
+    pbr_panel.add_element(
+        slider_label_anisotropy_direction_z, (label_pad_x, .38))
+    pbr_panel.add_element(slider_label_coat_strength, (label_pad_x, .30))
+    pbr_panel.add_element(slider_label_coat_roughness, (label_pad_x, .21))
+    pbr_panel.add_element(slider_label_base_ior, (label_pad_x, .13))
+    pbr_panel.add_element(slider_label_coat_ior, (label_pad_x, .05))
 
     slider_slice_metallic = ui.LineSlider2D(
-        initial_value=pbr_params.metallic, max_value=1, length=195,
+        initial_value=pbr_params.metallic, max_value=1, length=slider_length,
         text_template='{value:.1f}')
     slider_slice_roughness = ui.LineSlider2D(
-        initial_value=pbr_params.roughness, max_value=1, length=195,
+        initial_value=pbr_params.roughness, max_value=1, length=slider_length,
         text_template='{value:.1f}')
     slider_slice_anisotropy = ui.LineSlider2D(
-        initial_value=pbr_params.anisotropy, max_value=1, length=195,
+        initial_value=pbr_params.anisotropy, max_value=1, length=slider_length,
         text_template='{value:.1f}')
     slider_slice_anisotropy_rotation = ui.LineSlider2D(
-        initial_value=pbr_params.anisotropy_rotation, max_value=1, length=195,
-        text_template='{value:.1f}')
+        initial_value=pbr_params.anisotropy_rotation, max_value=1,
+        length=slider_length, text_template='{value:.1f}')
     slider_slice_coat_strength = ui.LineSlider2D(
-        initial_value=pbr_params.coat_strength, max_value=1, length=195,
-        text_template='{value:.1f}')
+        initial_value=pbr_params.coat_strength, max_value=1,
+        length=slider_length, text_template='{value:.1f}')
     slider_slice_coat_roughness = ui.LineSlider2D(
-        initial_value=pbr_params.coat_roughness, max_value=1, length=195,
-        text_template='{value:.1f}')
+        initial_value=pbr_params.coat_roughness, max_value=1,
+        length=slider_length, text_template='{value:.1f}')
 
     slider_slice_anisotropy_direction_x = ui.LineSlider2D(
-        initial_value=doa[0], min_value=-1, max_value=1, length=195,
+        initial_value=doa[0], min_value=-1, max_value=1, length=slider_length,
         text_template='{value:.1f}')
     slider_slice_anisotropy_direction_y = ui.LineSlider2D(
-        initial_value=doa[1], min_value=-1, max_value=1, length=195,
+        initial_value=doa[1], min_value=-1, max_value=1, length=slider_length,
         text_template='{value:.1f}')
     slider_slice_anisotropy_direction_z = ui.LineSlider2D(
-        initial_value=doa[2], min_value=-1, max_value=1, length=195,
+        initial_value=doa[2], min_value=-1, max_value=1, length=slider_length,
         text_template='{value:.1f}')
 
     slider_slice_base_ior = ui.LineSlider2D(
         initial_value=pbr_params.base_ior, min_value=1, max_value=2.3,
-        length=195, text_template='{value:.02f}')
+        length=slider_length, text_template='{value:.02f}')
     slider_slice_coat_ior = ui.LineSlider2D(
         initial_value=pbr_params.coat_ior, min_value=1, max_value=2.3,
-        length=195, text_template='{value:.02f}')
+        length=slider_length, text_template='{value:.02f}')
 
     slider_slice_metallic.on_change = change_slice_metallic
     slider_slice_roughness.on_change = change_slice_roughness
@@ -413,79 +658,24 @@ if __name__ == '__main__':
     slider_slice_base_ior.on_change = change_slice_base_ior
     slider_slice_coat_ior.on_change = change_slice_coat_ior
 
-    control_panel.add_element(slider_slice_metallic, (.44, .95))
-    control_panel.add_element(slider_slice_roughness, (.44, .86))
-    control_panel.add_element(slider_slice_anisotropy, (.44, .77))
-    control_panel.add_element(slider_slice_anisotropy_rotation, (.44, .68))
-    control_panel.add_element(slider_slice_anisotropy_direction_x, (.44, .59))
-    control_panel.add_element(slider_slice_anisotropy_direction_y, (.44, .5))
-    control_panel.add_element(slider_slice_anisotropy_direction_z, (.44, .41))
-    control_panel.add_element(slider_slice_coat_strength, (.44, .32))
-    control_panel.add_element(slider_slice_coat_roughness, (.44, .23))
-    control_panel.add_element(slider_slice_base_ior, (.44, .14))
-    control_panel.add_element(slider_slice_coat_ior, (.44, .05))
+    pbr_slice_pad_x = .46
+    pbr_panel.add_element(slider_slice_metallic, (pbr_slice_pad_x, .87))
+    pbr_panel.add_element(slider_slice_roughness, (pbr_slice_pad_x, .79))
+    pbr_panel.add_element(slider_slice_anisotropy, (pbr_slice_pad_x, .70))
+    pbr_panel.add_element(
+        slider_slice_anisotropy_rotation, (pbr_slice_pad_x, .62))
+    pbr_panel.add_element(
+        slider_slice_anisotropy_direction_x, (pbr_slice_pad_x, .54))
+    pbr_panel.add_element(
+        slider_slice_anisotropy_direction_y, (pbr_slice_pad_x, .46))
+    pbr_panel.add_element(
+        slider_slice_anisotropy_direction_z, (pbr_slice_pad_x, .38))
+    pbr_panel.add_element(slider_slice_coat_strength, (pbr_slice_pad_x, .30))
+    pbr_panel.add_element(slider_slice_coat_roughness, (pbr_slice_pad_x, .21))
+    pbr_panel.add_element(slider_slice_base_ior, (pbr_slice_pad_x, .13))
+    pbr_panel.add_element(slider_slice_coat_ior, (pbr_slice_pad_x, .05))
 
-    scene.add(control_panel)
-
-    light_panel = ui.Panel2D(
-        (400, 500), position=(5, 510), color=(.25, .25, .25), opacity=.75,
-        align='right')
-
-    slider_label_position_x = ui.TextBlock2D(text='Position X', font_size=16)
-    slider_label_position_y = ui.TextBlock2D(text='Position Y', font_size=16)
-    slider_label_position_z = ui.TextBlock2D(text='Position Z', font_size=16)
-    slider_label_focal_point_x = ui.TextBlock2D(
-        text='Focal Point X', font_size=16)
-    slider_label_focal_point_y = ui.TextBlock2D(
-        text='Focal Point Y', font_size=16)
-    slider_label_focal_point_z = ui.TextBlock2D(
-        text='Focal Point Z', font_size=16)
-    slider_label_cone_angle = ui.TextBlock2D(text='Cone Angle', font_size=16)
-    slider_label_intensity = ui.TextBlock2D(text='Intensity', font_size=16)
-
-    light_panel.add_element(slider_label_position_x, (.01, .95))
-    light_panel.add_element(slider_label_position_y, (.01, .86))
-    light_panel.add_element(slider_label_position_z, (.01, .77))
-    light_panel.add_element(slider_label_focal_point_x, (.01, .68))
-    light_panel.add_element(slider_label_focal_point_y, (.01, .59))
-    light_panel.add_element(slider_label_focal_point_z, (.01, .5))
-    light_panel.add_element(slider_label_cone_angle, (.01, .41))
-    light_panel.add_element(slider_label_intensity, (.01, .32))
-
-    slider_slice_position_x = ui.LineSlider2D(
-        initial_value=light_params['position'][0],
-        min_value=-coords_abs_max[0], max_value=coords_abs_max[0], length=195,
-        text_template='{value:.0f}')
-    slider_slice_position_y = ui.LineSlider2D(
-        initial_value=light_params['position'][1],
-        min_value=-coords_abs_max[1], max_value=coords_abs_max[1], length=195,
-        text_template='{value:.0f}')
-    slider_slice_position_z = ui.LineSlider2D(
-        initial_value=light_params['position'][2],
-        min_value=-coords_abs_max[2], max_value=coords_abs_max[2], length=195,
-        text_template='{value:.0f}')
-
-    slider_slice_cone_angle = ui.LineSlider2D(
-        initial_value=light_params['cone_angle'], max_value=89, length=195,
-        text_template='{value:.0f}')
-
-    slider_slice_intensity = ui.LineSlider2D(
-        initial_value=light_params['intensity'], max_value=1, length=195,
-        text_template='{value:.1f}')
-
-    slider_slice_position_x.on_change = change_slice_position_x
-    slider_slice_position_y.on_change = change_slice_position_y
-    slider_slice_position_z.on_change = change_slice_position_z
-    slider_slice_cone_angle.on_change = change_slice_cone_angle
-    slider_slice_intensity.on_change = change_slice_intensity
-
-    light_panel.add_element(slider_slice_position_x, (.44, .95))
-    light_panel.add_element(slider_slice_position_y, (.44, .86))
-    light_panel.add_element(slider_slice_position_z, (.44, .77))
-    light_panel.add_element(slider_slice_cone_angle, (.44, .41))
-    light_panel.add_element(slider_slice_intensity, (.44, .32))
-
-    scene.add(light_panel)
+    scene.add(pbr_panel)
 
     size = scene.GetSize()
 
