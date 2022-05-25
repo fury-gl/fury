@@ -1,11 +1,11 @@
 My journey till getting accepted into GSoC22
 ================================================================================
 
-  
-..post:: May 23 2022
-  :author:: Mohamed Abouagour
-  :tags:: google
-  :category:: gsoc
+
+.. post:: May 23 2022
+   :author: Mohamed Abouagour 
+   :tags: google
+   :category: gsoc
 
 A Little About Myself
 ~~~~~~~~~~~~~~~~~~~~~
