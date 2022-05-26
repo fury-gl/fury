@@ -17,7 +17,7 @@ I've been around computers since 2008 when I had my first PC with 128MB RAM and 
 Around 2013, I had some questions about how games are made and how to make them myself!.
 There was no one to answer these questions for me.
 
-My English wasn't any good and the game development Arabic community was very hard to find on the internet. But eventually, I came across a forum with some people speaking about some stuff such as game engines, 3D models, textures, animations, and a lot of fun stuff. That made sense back then and answered some of my questions. Then It was time to get involved with this amazing community. I was lucky enough to start with 3ds Max 2009 Edition, with that little view cube begging me to touch it. It was just love at first sight).
+My English wasn't any good and the game development Arabic community was very hard to find on the internet. But eventually, I came across a forum with some people speaking about some stuff such as game engines, 3D models, textures, animations, and a lot of fun stuff. That made sense back then and answered some of my questions. Then It was time to get involved with this amazing community. I was lucky enough to start with 3ds Max 2009 Edition, with that little view cube begging me to touch it. It was just love at first sight.
 
 I learned enough to model a basic house with no interior or a low poly human face.
 
@@ -89,4 +89,4 @@ The Keyframe animation system was the perfect fit! I’ve been around keyframes 
 The day I got accepted
 ~~~~~~~~~~~~~~~~~~~~~~
 I made it my mission for the day to keep watching the email for any changes. When It got 8:00 pm in the Cairo timezone, I didn't see any changes. So I started searching for any news whatsoever and I couldn't find any. 
-The GSoC dashboard doesn't say anything (story of my life. I didn't even get any promotions or spam mails that day). That's when I gave up. but, something doesn't feel right! right? I went again to check the dashboard to find that my proposal is accepted. but I can't even believe it. I'd better not jump to conclusions and wait for the official email before celebrating. shortly after, I received the official email It was a whole new feeling I never experienced ever before! I reached a whole new level of happiness.
+The GSoC dashboard doesn't say anything (story of my life. I didn't even get any promotions or spam mails that day). That's when I gave up. but, something doesn't feel right! right? I went again to check the dashboard to find that my proposal is accepted. I couldn't even believe it. I'd better not jump to conclusions and wait for the official email before celebrating. shortly after, I received the official email. It was a whole new feeling I had never experienced ever before! I reached a whole new level of happiness.
