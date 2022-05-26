@@ -45,7 +45,7 @@ I started preparing my notes and the shaders I wrote during that summer, only fo
 
 So, no Numpy, no PyGLM, fixed pipelines, no custom shaders, and each vertex had to be sent individually to the GPU.
 
-At first, I got disappointed, but while developing the game, I had a lot of optimization challenges that made me have fun figuring out how to still make the 3D game I’ve always wanted to make!.
+At first, I got disappointed, but while developing the game, I had a lot of optimization challenges that made me have fun figuring out how to still make the 3D game I’ve always wanted to make!
 
 I searched on GitHub for similar projects to the one I’m trying to make, and did not find any 3D FPS game using this version of OpenGL (at least not listed publicly). 
 
