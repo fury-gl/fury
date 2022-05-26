@@ -88,5 +88,5 @@ The Keyframe animation system was the perfect fit! I’ve been around keyframes 
 
 The day I got accepted
 ~~~~~~~~~~~~~~~~~~~~~~
-I made it my mission for the day to keep watching the email for any changes. When It got 8:00 pm in the Cairo timezone I didn't see any changes. So I started searching for any news whatsoever and I couldn't find any. 
+I made it my mission for the day to keep watching the email for any changes. When It got 8:00 pm in the Cairo timezone, I didn't see any changes. So I started searching for any news whatsoever and I couldn't find any. 
 The GSoC dashboard doesn't say anything (story of my life. I didn't even get any promotions or spam mails that day). That's when I gave up. but, something doesn't feel right! right? I went again to check the dashboard to find that my proposal is accepted. but I can't even believe it. I'd better not jump to conclusions and wait for the official email before celebrating. shortly after, I received the official email It was a whole new feeling I never experienced ever before! I reached a whole new level of happiness.
