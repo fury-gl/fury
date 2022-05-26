@@ -10,7 +10,7 @@ Pre-GSoC Journey
 The Beginning of Programming
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Hello Guys!! I am Praneeth Shetty, currently pursuing Bachelors of Engineering in Computer Engineering and here is my journey from where I started to the selection into GSoC22.
+Hello Guys!! I am Praneeth Shetty, currently pursuing Bachelor of Engineering in Computer Engineering, and here is my journey from where I started to the selection into GSoC22.
 
 My programming journey started way back in 7th std, where we had a subject called Information Technology in which the last two lessons were based on HTML and Javascript. I loved to create simple pages in HTML but was struggling to learn Javascript as it felt a bit complex at the start.
 I would practice these programs in our computer lab whenever we would have our practical lab (once or twice a month).
