@@ -1593,11 +1593,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
-    if type(radii) in [float, int]:
-        scales = np.array([1, 1, 1]) * radii
-    else:
-        scales = np.array([1, 1, 1]) * radii[:, None]
-
+    scales = radii
     directions = (1, 0, 0)
 
     if faces is None and vertices is None:
