@@ -50,7 +50,7 @@ material_params = [
 # the parameters produce interesting effects.
 
 for i in range(10):
-    center = [[0, -5 * i, 0]]
+    center = np.array([[0, -5 * i, 0]])
     for j in range(11):
         center[0][0] = -25 + 5 * j
         sphere = actor.sphere(center, colors=material_params[i][0], radii=2,
