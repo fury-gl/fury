@@ -1,8 +1,20 @@
 """UI components module."""
 
-__all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
-           "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+__all__ = [
+    "TextBox2D",
+    "LineSlider2D",
+    "LineDoubleSlider2D",
+    "RingSlider2D",
+    "RangeSlider",
+    "Checkbox",
+    "Option",
+    "RadioButton",
+    "ComboBox2D",
+    "ListBox2D",
+    "ListBoxItem2D",
+    "FileMenu2D",
+    "ScrollBar",
+]
 
 import os
 from collections import OrderedDict
@@ -48,10 +60,20 @@ class TextBox2D(UI):
         Flag which says whether the textbox has just been initialized.
     """
 
-    def __init__(self, width, height, text="Enter Text", position=(100, 10),
-                 color=(0, 0, 0), font_size=18, font_family='Arial',
-                 justification='left', bold=False,
-                 italic=False, shadow=False):
+    def __init__(
+        self,
+        width,
+        height,
+        text="Enter Text",
+        position=(100, 10),
+        color=(0, 0, 0),
+        font_size=18,
+        font_family="Arial",
+        justification="left",
+        bold=False,
+        italic=False,
+        shadow=False,
+    ):
         """Init this UI element.
 
         Parameters
@@ -186,7 +208,7 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if key_char != '' and key_char in printable:
+        if key_char != "" and key_char in printable:
             self.add_character(key_char)
         elif key.lower() == "return":
             self.render_text(False)
@@ -241,12 +263,11 @@ class TextBox2D(UI):
             return
         if character.lower() == "space":
             character = " "
-        self.message = (self.message[:self.caret_pos] +
-                        character +
-                        self.message[self.caret_pos:])
+        self.message = (
+            self.message[: self.caret_pos] + character + self.message[self.caret_pos :]
+        )
         self.move_caret_right()
-        if (self.window_right -
-                self.window_left == self.height * self.width - 1):
+        if self.window_right - self.window_left == self.height * self.width - 1:
             self.left_move_right()
         self.right_move_right()
 
@@ -254,13 +275,13 @@ class TextBox2D(UI):
         """Remove a character and moves window and caret accordingly."""
         if self.caret_pos == 0:
             return
-        self.message = (self.message[:self.caret_pos - 1] +
-                        self.message[self.caret_pos:])
+        self.message = (
+            self.message[: self.caret_pos - 1] + self.message[self.caret_pos :]
+        )
         self.move_caret_left()
         if len(self.message) < self.height * self.width - 1:
             self.right_move_left()
-        if (self.window_right -
-                self.window_left == self.height * self.width - 1):
+        if self.window_right - self.window_left == self.height * self.width - 1:
             if self.window_left > 0:
                 self.left_move_left()
                 self.right_move_left()
@@ -269,8 +290,7 @@ class TextBox2D(UI):
         """Handle left button press."""
         self.move_caret_left()
         if self.caret_pos == self.window_left - 1:
-            if (self.window_right -
-                    self.window_left == self.height * self.width - 1):
+            if self.window_right - self.window_left == self.height * self.width - 1:
                 self.left_move_left()
                 self.right_move_left()
 
@@ -278,8 +298,7 @@ class TextBox2D(UI):
         """Handle right button press."""
         self.move_caret_right()
         if self.caret_pos == self.window_right + 1:
-            if (self.window_right -
-                    self.window_left == self.height * self.width - 1):
+            if self.window_right - self.window_left == self.height * self.width - 1:
                 self.left_move_right()
                 self.right_move_right()
 
@@ -293,12 +312,12 @@ class TextBox2D(UI):
 
         """
         if show_caret:
-            ret_text = (self.message[:self.caret_pos] +
-                        "_" +
-                        self.message[self.caret_pos:])
+            ret_text = (
+                self.message[: self.caret_pos] + "_" + self.message[self.caret_pos :]
+            )
         else:
             ret_text = self.message
-        ret_text = ret_text[self.window_left:self.window_right + 1]
+        ret_text = ret_text[self.window_left : self.window_right + 1]
         return ret_text
 
     def render_text(self, show_caret=True):
@@ -383,12 +402,23 @@ class LineSlider2D(UI):
         Color of the handle when it is pressed.
     """
 
-    def __init__(self, center=(0, 0),
-                 initial_value=50, min_value=0, max_value=100,
-                 length=200, line_width=5,
-                 inner_radius=0, outer_radius=10, handle_side=20,
-                 font_size=16, orientation="horizontal", text_alignment='',
-                 text_template="{value:.1f} ({ratio:.0%})", shape="disk"):
+    def __init__(
+        self,
+        center=(0, 0),
+        initial_value=50,
+        min_value=0,
+        max_value=100,
+        length=200,
+        line_width=5,
+        inner_radius=0,
+        outer_radius=10,
+        handle_side=20,
+        font_size=16,
+        orientation="horizontal",
+        text_alignment="",
+        text_template="{value:.1f} ({ratio:.0%})",
+        shape="disk",
+    ):
         """Init this UI element.
 
         Parameters
@@ -430,27 +460,32 @@ class LineSlider2D(UI):
         """
         self.shape = shape
         self.orientation = orientation.lower().strip()
-        self.align_dict = {'horizontal': ['top', 'bottom'],
-                           'vertical': ['left', 'right']}
+        self.align_dict = {
+            "horizontal": ["top", "bottom"],
+            "vertical": ["left", "right"],
+        }
         self.default_color = (1, 1, 1)
         self.active_color = (0, 0, 1)
         self.alignment = text_alignment.lower()
         super(LineSlider2D, self).__init__()
 
         if self.orientation == "horizontal":
-            self.alignment = 'bottom' if not self.alignment else self.alignment
+            self.alignment = "bottom" if not self.alignment else self.alignment
             self.track.width = length
             self.track.height = line_width
         elif self.orientation == "vertical":
-            self.alignment = 'left' if not self.alignment else self.alignment
+            self.alignment = "left" if not self.alignment else self.alignment
             self.track.width = line_width
             self.track.height = length
         else:
             raise ValueError("Unknown orientation")
 
         if self.alignment not in self.align_dict[self.orientation]:
-            raise ValueError("Unknown alignment: choose from '{}' or '{}'".
-                             format(*self.align_dict[self.orientation]))
+            raise ValueError(
+                "Unknown alignment: choose from '{}' or '{}'".format(
+                    *self.align_dict[self.orientation]
+                )
+            )
 
         if shape == "disk":
             self.handle.inner_radius = inner_radius
@@ -489,17 +524,14 @@ class LineSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification="center",
-                                vertical_justification="top")
+        self.text = TextBlock2D(justification="center", vertical_justification="top")
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-        self.track.on_left_mouse_button_released = \
-            self.handle_release_callback
+        self.track.on_left_mouse_button_released = self.handle_release_callback
         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
-        self.handle.on_left_mouse_button_released = \
-            self.handle_release_callback
+        self.handle.on_left_mouse_button_released = self.handle_release_callback
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -539,26 +571,30 @@ class LineSlider2D(UI):
             Absolute pixel coordinates (x, y).
         """
         # Offset the slider line by the handle's radius.
-        track_position = coords + self.handle.size / 2.
+        track_position = coords + self.handle.size / 2.0
         if self.orientation == "horizontal":
             # Offset the slider line height by half the slider line width.
-            track_position[1] -= self.track.size[1] / 2.
+            track_position[1] -= self.track.size[1] / 2.0
         else:
             # Offset the slider line width by half the slider line height.
-            track_position[0] += self.track.size[0] / 2.
+            track_position[0] += self.track.size[0] / 2.0
 
         self.track.position = track_position
         self.handle.position = self.handle.position.astype(float)
         self.handle.position += coords - self.position
         # Position the text below the handle.
         if self.orientation == "horizontal":
-            align = 35 if self.alignment == 'top' else -10
-            self.text.position = (self.handle.center[0],
-                                  self.handle.position[1] + align)
+            align = 35 if self.alignment == "top" else -10
+            self.text.position = (
+                self.handle.center[0],
+                self.handle.position[1] + align,
+            )
         else:
-            align = 70 if self.alignment == 'right' else -35
-            self.text.position = (self.handle.position[0] + align,
-                                  self.handle.center[1] + 2)
+            align = 70 if self.alignment == "right" else -35
+            self.text.position = (
+                self.handle.position[0] + align,
+                self.handle.center[1] + 2,
+            )
 
     @property
     def bottom_y_position(self):
@@ -736,11 +772,22 @@ class LineDoubleSlider2D(UI):
         Color of the handles when they are pressed.
     """
 
-    def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
-                 handle_side=20, center=(450, 300), length=200,
-                 initial_values=(0, 100), min_value=0, max_value=100,
-                 font_size=16, text_template="{value:.1f}",
-                 orientation="horizontal", shape="disk"):
+    def __init__(
+        self,
+        line_width=5,
+        inner_radius=0,
+        outer_radius=10,
+        handle_side=20,
+        center=(450, 300),
+        length=200,
+        initial_values=(0, 100),
+        min_value=0,
+        max_value=100,
+        font_size=16,
+        text_template="{value:.1f}",
+        orientation="horizontal",
+        shape="disk",
+    ):
         """Init this UI element.
 
         Parameters
@@ -841,28 +888,27 @@ class LineDoubleSlider2D(UI):
         self.handles[1].color = self.default_color
 
         # Slider Text
-        self.text = [TextBlock2D(justification="center",
-                                 vertical_justification="top"),
-                     TextBlock2D(justification="center",
-                                 vertical_justification="top")
-                     ]
+        self.text = [
+            TextBlock2D(justification="center", vertical_justification="top"),
+            TextBlock2D(justification="center", vertical_justification="top"),
+        ]
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-        self.handles[0].on_left_mouse_button_dragged = \
-            self.handle_move_callback
-        self.handles[1].on_left_mouse_button_dragged = \
-            self.handle_move_callback
-        self.handles[0].on_left_mouse_button_released = \
-            self.handle_release_callback
-        self.handles[1].on_left_mouse_button_released = \
-            self.handle_release_callback
+        self.handles[0].on_left_mouse_button_dragged = self.handle_move_callback
+        self.handles[1].on_left_mouse_button_dragged = self.handle_move_callback
+        self.handles[0].on_left_mouse_button_released = self.handle_release_callback
+        self.handles[1].on_left_mouse_button_released = self.handle_release_callback
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return (self.track.actors + self.handles[0].actors +
-                self.handles[1].actors + self.text[0].actors +
-                self.text[1].actors)
+        return (
+            self.track.actors
+            + self.handles[0].actors
+            + self.handles[1].actors
+            + self.text[0].actors
+            + self.text[1].actors
+        )
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -901,13 +947,13 @@ class LineDoubleSlider2D(UI):
 
         """
         # Offset the slider line by the handle's radius.
-        track_position = coords + self.handles[0].size / 2.
+        track_position = coords + self.handles[0].size / 2.0
         if self.orientation == "horizontal":
             # Offset the slider line height by half the slider line width.
-            track_position[1] -= self.track.size[1] / 2.
+            track_position[1] -= self.track.size[1] / 2.0
         else:
             # Offset the slider line width by half the slider line height.
-            track_position[0] -= self.track.size[0] / 2.
+            track_position[0] -= self.track.size[0] / 2.0
         self.track.position = track_position
 
         self.handles[0].position = self.handles[0].position.astype(float)
@@ -918,16 +964,24 @@ class LineDoubleSlider2D(UI):
 
         if self.orientation == "horizontal":
             # Position the text below the handles.
-            self.text[0].position = (self.handles[0].center[0],
-                                     self.handles[0].position[1] - 20)
-            self.text[1].position = (self.handles[1].center[0],
-                                     self.handles[1].position[1] - 20)
+            self.text[0].position = (
+                self.handles[0].center[0],
+                self.handles[0].position[1] - 20,
+            )
+            self.text[1].position = (
+                self.handles[1].center[0],
+                self.handles[1].position[1] - 20,
+            )
         else:
             # Position the text to the left of the handles.
-            self.text[0].position = (self.handles[0].center[0] - 35,
-                                     self.handles[0].position[1])
-            self.text[1].position = (self.handles[1].center[0] - 35,
-                                     self.handles[1].position[1])
+            self.text[0].position = (
+                self.handles[0].center[0] - 35,
+                self.handles[0].position[1],
+            )
+            self.text[1].position = (
+                self.handles[1].center[0] - 35,
+                self.handles[1].position[1],
+            )
 
     @property
     def bottom_y_position(self):
@@ -1005,33 +1059,35 @@ class LineDoubleSlider2D(UI):
 
             if disk_number == 0 and x_position >= self.handles[1].center[0]:
                 x_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1] - 1))
+                    self.value_to_ratio(self._values[1] - 1)
+                )
 
             if disk_number == 1 and x_position <= self.handles[0].center[0]:
                 x_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[0] + 1))
+                    self.value_to_ratio(self._values[0] + 1)
+                )
 
             x_position = max(x_position, self.left_x_position)
             x_position = min(x_position, self.right_x_position)
 
-            self.handles[disk_number].center = \
-                (x_position, self.track.center[1])
+            self.handles[disk_number].center = (x_position, self.track.center[1])
         else:
             y_position = position[1]
 
             if disk_number == 0 and y_position >= self.handles[1].center[1]:
                 y_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[1] - 1))
+                    self.value_to_ratio(self._values[1] - 1)
+                )
 
             if disk_number == 1 and y_position <= self.handles[0].center[1]:
                 y_position = self.ratio_to_coord(
-                    self.value_to_ratio(self._values[0] + 1))
+                    self.value_to_ratio(self._values[0] + 1)
+                )
 
             y_position = max(y_position, self.bottom_y_position)
             y_position = min(y_position, self.top_y_position)
 
-            self.handles[disk_number].center = \
-                (self.track.center[0], y_position)
+            self.handles[disk_number].center = (self.track.center[0], y_position)
         self.update(disk_number)
 
     @property
@@ -1202,14 +1258,15 @@ class LineDoubleSlider2D(UI):
         # Compute the ratio determined by the position of the slider disk.
         if self.orientation == "horizontal":
             self._ratio[disk_number] = self.coord_to_ratio(
-                self.handles[disk_number].center[0])
+                self.handles[disk_number].center[0]
+            )
         else:
             self._ratio[disk_number] = self.coord_to_ratio(
-                self.handles[disk_number].center[1])
+                self.handles[disk_number].center[1]
+            )
 
         # Compute the selected value considering min_value and max_value.
-        self._values[disk_number] = self.ratio_to_value(
-            self._ratio[disk_number])
+        self._values[disk_number] = self.ratio_to_value(self._ratio[disk_number])
 
         # Update text.
         text = self.format_text(disk_number)
@@ -1218,11 +1275,13 @@ class LineDoubleSlider2D(UI):
         if self.orientation == "horizontal":
             self.text[disk_number].position = (
                 self.handles[disk_number].center[0],
-                self.text[disk_number].position[1])
+                self.text[disk_number].position[1],
+            )
         else:
             self.text[disk_number].position = (
                 self.text[disk_number].position[0],
-                self.handles[disk_number].center[1])
+                self.handles[disk_number].center[1],
+            )
         self.on_change(self)
 
     def handle_move_callback(self, i_ren, vtkactor, _slider):
@@ -1288,12 +1347,19 @@ class RingSlider2D(UI):
         Color of the handle when it is pressed.
     """
 
-    def __init__(self, center=(0, 0),
-                 initial_value=180, min_value=0, max_value=360,
-                 slider_inner_radius=40, slider_outer_radius=44,
-                 handle_inner_radius=0, handle_outer_radius=10,
-                 font_size=16,
-                 text_template="{ratio:.0%}"):
+    def __init__(
+        self,
+        center=(0, 0),
+        initial_value=180,
+        min_value=0,
+        max_value=360,
+        slider_inner_radius=40,
+        slider_outer_radius=44,
+        handle_inner_radius=0,
+        handle_outer_radius=10,
+        font_size=16,
+        text_template="{ratio:.0%}",
+    ):
         """Init this UI element.
 
         Parameters
@@ -1362,17 +1428,14 @@ class RingSlider2D(UI):
         self.handle.color = self.default_color
 
         # Slider Text
-        self.text = TextBlock2D(justification="center",
-                                vertical_justification="middle")
+        self.text = TextBlock2D(justification="center", vertical_justification="middle")
 
         # Add default events listener for this UI component.
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.handle_move_callback
-        self.track.on_left_mouse_button_released = \
-            self.handle_release_callback
+        self.track.on_left_mouse_button_released = self.handle_release_callback
         self.handle.on_left_mouse_button_dragged = self.handle_move_callback
-        self.handle.on_left_mouse_button_released = \
-            self.handle_release_callback
+        self.handle.on_left_mouse_button_released = self.handle_release_callback
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -1400,14 +1463,14 @@ class RingSlider2D(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.track.position = coords + self.handle.size / 2.
+        self.track.position = coords + self.handle.size / 2.0
         self.handle.position += coords - self.position
         # Position the text in the center of the slider's track.
-        self.text.position = coords + self.size / 2.
+        self.text.position = coords + self.size / 2.0
 
     @property
     def mid_track_radius(self):
-        return (self.track.inner_radius + self.track.outer_radius) / 2.
+        return (self.track.inner_radius + self.track.outer_radius) / 2.0
 
     @property
     def value(self):
@@ -1441,15 +1504,16 @@ class RingSlider2D(UI):
         self.update()
 
     def format_text(self):
-        """Return formatted text to display along the slider. """
+        """Return formatted text to display along the slider."""
         if callable(self.text_template):
             return self.text_template(self)
 
-        return self.text_template.format(ratio=self.ratio, value=self.value,
-                                         angle=np.rad2deg(self.angle))
+        return self.text_template.format(
+            ratio=self.ratio, value=self.value, angle=np.rad2deg(self.angle)
+        )
 
     def update(self):
-        """Update the slider. """
+        """Update the slider."""
 
         # Compute the ratio determined by the position of the slider disk.
         self._ratio = self.angle / TWO_PI
@@ -1552,11 +1616,23 @@ class RangeSlider(UI):
         The line slider which sets the value
     """
 
-    def __init__(self, line_width=5, inner_radius=0, outer_radius=10,
-                 handle_side=20, range_slider_center=(450, 400),
-                 value_slider_center=(450, 300), length=200, min_value=0,
-                 max_value=100, font_size=16, range_precision=1,
-                 orientation="horizontal", value_precision=2, shape="disk"):
+    def __init__(
+        self,
+        line_width=5,
+        inner_radius=0,
+        outer_radius=10,
+        handle_side=20,
+        range_slider_center=(450, 400),
+        value_slider_center=(450, 300),
+        length=200,
+        min_value=0,
+        max_value=100,
+        font_size=16,
+        range_precision=1,
+        orientation="horizontal",
+        value_precision=2,
+        shape="disk",
+    ):
         """Init this class instance.
 
         Parameters
@@ -1603,10 +1679,8 @@ class RangeSlider(UI):
         self.shape = shape
         self.orientation = orientation.lower()
 
-        self.range_slider_text_template = \
-            "{value:." + str(range_precision) + "f}"
-        self.value_slider_text_template = \
-            "{value:." + str(value_precision) + "f}"
+        self.range_slider_text_template = "{value:." + str(range_precision) + "f}"
+        self.value_slider_text_template = "{value:." + str(value_precision) + "f}"
 
         self.range_slider_center = range_slider_center
         self.value_slider_center = value_slider_center
@@ -1614,37 +1688,45 @@ class RangeSlider(UI):
 
     def _setup(self):
         """Setup this UI component."""
-        self.range_slider = \
-            LineDoubleSlider2D(line_width=self.line_width,
-                               inner_radius=self.inner_radius,
-                               outer_radius=self.outer_radius,
-                               handle_side=self.handle_side,
-                               center=self.range_slider_center,
-                               length=self.length, min_value=self.min_value,
-                               max_value=self.max_value,
-                               initial_values=(self.min_value,
-                                               self.max_value),
-                               font_size=self.font_size, shape=self.shape,
-                               orientation=self.orientation,
-                               text_template=self.range_slider_text_template)
+        self.range_slider = LineDoubleSlider2D(
+            line_width=self.line_width,
+            inner_radius=self.inner_radius,
+            outer_radius=self.outer_radius,
+            handle_side=self.handle_side,
+            center=self.range_slider_center,
+            length=self.length,
+            min_value=self.min_value,
+            max_value=self.max_value,
+            initial_values=(self.min_value, self.max_value),
+            font_size=self.font_size,
+            shape=self.shape,
+            orientation=self.orientation,
+            text_template=self.range_slider_text_template,
+        )
 
-        self.value_slider = \
-            LineSlider2D(line_width=self.line_width, length=self.length,
-                         inner_radius=self.inner_radius,
-                         outer_radius=self.outer_radius,
-                         handle_side=self.handle_side,
-                         center=self.value_slider_center,
-                         min_value=self.min_value, max_value=self.max_value,
-                         initial_value=(self.min_value + self.max_value) / 2,
-                         font_size=self.font_size, shape=self.shape,
-                         orientation=self.orientation,
-                         text_template=self.value_slider_text_template)
+        self.value_slider = LineSlider2D(
+            line_width=self.line_width,
+            length=self.length,
+            inner_radius=self.inner_radius,
+            outer_radius=self.outer_radius,
+            handle_side=self.handle_side,
+            center=self.value_slider_center,
+            min_value=self.min_value,
+            max_value=self.max_value,
+            initial_value=(self.min_value + self.max_value) / 2,
+            font_size=self.font_size,
+            shape=self.shape,
+            orientation=self.orientation,
+            text_template=self.value_slider_text_template,
+        )
 
         # Add default events listener for this UI component.
-        self.range_slider.handles[0].on_left_mouse_button_dragged = \
-            self.range_slider_handle_move_callback
-        self.range_slider.handles[1].on_left_mouse_button_dragged = \
-            self.range_slider_handle_move_callback
+        self.range_slider.handles[
+            0
+        ].on_left_mouse_button_dragged = self.range_slider_handle_move_callback
+        self.range_slider.handles[
+            1
+        ].on_left_mouse_button_dragged = self.range_slider_handle_move_callback
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -1679,14 +1761,12 @@ class RangeSlider(UI):
         """
         position = i_ren.event.position
         if obj == self.range_slider.handles[0].actors[0]:
-            self.range_slider.handles[0].color = \
-                self.range_slider.active_color
+            self.range_slider.handles[0].color = self.range_slider.active_color
             self.range_slider.set_position(position, 0)
             self.value_slider.min_value = self.range_slider.left_disk_value
             self.value_slider.update()
         elif obj == self.range_slider.handles[1].actors[0]:
-            self.range_slider.handles[1].color = \
-                self.range_slider.active_color
+            self.range_slider.handles[1].color = self.range_slider.active_color
             self.range_slider.set_position(position, 1)
             self.value_slider.max_value = self.range_slider.right_disk_value
             self.value_slider.update()
@@ -1739,12 +1819,9 @@ class Option(UI):
         """Setup this UI component."""
         # Option's button
         self.button_icons = []
-        self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
-        self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
-        self.button = Button2D(icon_fnames=self.button_icons,
-                               size=self.button_size)
+        self.button_icons.append(("unchecked", read_viz_icons(fname="stop2.png")))
+        self.button_icons.append(("checked", read_viz_icons(fname="checkmark.png")))
+        self.button = Button2D(icon_fnames=self.button_icons, size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
 
@@ -1785,9 +1862,8 @@ class Option(UI):
             Absolute pixel coordinates (x, y).
 
         """
-        num_newlines = self.label.count('\n')
-        self.button.position = coords + \
-            (0, num_newlines * self.font_size * 0.5)
+        num_newlines = self.label.count("\n")
+        self.button.position = coords + (0, num_newlines * self.font_size * 0.5)
         offset = (self.button.size[0] + self.button_label_gap, 0)
         self.text.position = coords + offset
 
@@ -1824,8 +1900,15 @@ class Checkbox(UI):
         Distance between two adjacent options
     """
 
-    def __init__(self, labels, checked_labels=(), padding=1, font_size=18,
-                 font_family='Arial', position=(0, 0)):
+    def __init__(
+        self,
+        labels,
+        checked_labels=(),
+        padding=1,
+        font_size=18,
+        font_family="Arial",
+        position=(0, 0),
+    ):
         """Init this class instance.
 
         Parameters
@@ -1859,14 +1942,19 @@ class Checkbox(UI):
         button_y = self.position[1]
         for label in self.labels:
 
-            option = Option(label=label,
-                            font_size=self.font_size,
-                            position=(self.position[0], button_y),
-                            checked=(label in self.checked_labels))
+            option = Option(
+                label=label,
+                font_size=self.font_size,
+                position=(self.position[0], button_y),
+                checked=(label in self.checked_labels),
+            )
 
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-            button_y = button_y + self.font_size * \
-                (label.count('\n') + 1) * (line_spacing + 0.1) + self.padding
+            button_y = (
+                button_y
+                + self.font_size * (label.count("\n") + 1) * (line_spacing + 0.1)
+                + self.padding
+            )
             self.options[label] = option
 
             # Set callback
@@ -1892,8 +1980,7 @@ class Checkbox(UI):
 
     def _get_size(self):
         option_width, option_height = self.options.values()[0].get_size()
-        height = len(self.labels) * (option_height + self.padding) \
-            - self.padding
+        height = len(self.labels) * (option_height + self.padding) - self.padding
         return np.asarray([option_width, height])
 
     def _handle_option_change(self, option):
@@ -1923,14 +2010,17 @@ class Checkbox(UI):
         for option_no, option in enumerate(self.options.values()):
             option.position = (coords[0], button_y)
             line_spacing = option.text.actor.GetTextProperty().GetLineSpacing()
-            button_y = (button_y + self.font_size
-                        * (self.labels[option_no].count('\n') + 1)
-                        * (line_spacing + 0.1) + self.padding)
+            button_y = (
+                button_y
+                + self.font_size
+                * (self.labels[option_no].count("\n") + 1)
+                * (line_spacing + 0.1)
+                + self.padding
+            )
 
     @property
     def font_size(self):
-        """ Gets the font size of text.
-        """
+        """Gets the font size of text."""
         return self._font_size
 
     @property
@@ -1954,8 +2044,15 @@ class RadioButton(Checkbox):
 
     """
 
-    def __init__(self, labels, checked_labels, padding=1, font_size=18,
-                 font_family='Arial', position=(0, 0)):
+    def __init__(
+        self,
+        labels,
+        checked_labels,
+        padding=1,
+        font_size=18,
+        font_family="Arial",
+        position=(0, 0),
+    ):
         """Init class instance.
 
         Parameters
@@ -1978,11 +2075,14 @@ class RadioButton(Checkbox):
             err_msg = "Only one option can be pre-selected for radio buttons."
             raise ValueError(err_msg)
 
-        super(RadioButton, self).__init__(labels=labels, position=position,
-                                          padding=padding,
-                                          font_size=font_size,
-                                          font_family=font_family,
-                                          checked_labels=checked_labels)
+        super(RadioButton, self).__init__(
+            labels=labels,
+            position=position,
+            padding=padding,
+            font_size=font_size,
+            font_family=font_family,
+            checked_labels=checked_labels,
+        )
 
     def _handle_option_change(self, option):
         for option_ in self.options.values():
@@ -2006,15 +2106,25 @@ class ComboBox2D(UI):
         Container for item list.
     """
 
-    def __init__(self, items=[], position=(0, 0), size=(300, 200),
-                 placeholder="Choose selection...", draggable=True,
-                 selection_text_color=(0, 0, 0), selection_bg_color=(1, 1, 1),
-                 menu_text_color=(0.2, 0.2, 0.2),
-                 selected_color=(0.9, 0.6, 0.6),
-                 unselected_color=(0.6, 0.6, 0.6),
-                 scroll_bar_active_color=(0.6, 0.2, 0.2),
-                 scroll_bar_inactive_color=(0.9, 0.0, 0.0), menu_opacity=1.,
-                 reverse_scrolling=False, font_size=20, line_spacing=1.4):
+    def __init__(
+        self,
+        items=[],
+        position=(0, 0),
+        size=(300, 200),
+        placeholder="Choose selection...",
+        draggable=True,
+        selection_text_color=(0, 0, 0),
+        selection_bg_color=(1, 1, 1),
+        menu_text_color=(0.2, 0.2, 0.2),
+        selected_color=(0.9, 0.6, 0.6),
+        unselected_color=(0.6, 0.6, 0.6),
+        scroll_bar_active_color=(0.6, 0.2, 0.2),
+        scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+        menu_opacity=1.0,
+        reverse_scrolling=False,
+        font_size=20,
+        line_spacing=1.4,
+    ):
         """Init class Instance.
 
         Parameters
@@ -2070,13 +2180,14 @@ class ComboBox2D(UI):
         self.menu_opacity = menu_opacity
 
         # Define subcomponent sizes.
-        self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
-        self.drop_menu_size = (size[0], int(0.7*size[1]))
-        self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
+        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
+        self.drop_menu_size = (size[0], int(0.7 * size[1]))
+        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
 
         self._icon_files = [
-            ('left', read_viz_icons(fname='circle-left.png')),
-            ('down', read_viz_icons(fname='circle-down.png'))]
+            ("left", read_viz_icons(fname="circle-left.png")),
+            ("down", read_viz_icons(fname="circle-down.png")),
+        ]
 
         super(ComboBox2D, self).__init__()
         self.position = position
@@ -2089,21 +2200,30 @@ class ComboBox2D(UI):
         Create Button for toggling drop down menu.
         """
         self.selection_box = TextBlock2D(
-            size=self.text_block_size, color=self.sel_text_color,
-            bg_color=self.sel_bg_color, text=self._selection)
+            size=self.text_block_size,
+            color=self.sel_text_color,
+            bg_color=self.sel_bg_color,
+            text=self._selection,
+        )
 
         self.drop_down_button = Button2D(
-            icon_fnames=self._icon_files, size=self.drop_button_size)
+            icon_fnames=self._icon_files, size=self.drop_button_size
+        )
 
         self.drop_down_menu = ListBox2D(
-            values=self.items, multiselection=False,
-            font_size=self.font_size, line_spacing=self.line_spacing,
-            text_color=self.menu_txt_color, selected_color=self.selected_color,
+            values=self.items,
+            multiselection=False,
+            font_size=self.font_size,
+            line_spacing=self.line_spacing,
+            text_color=self.menu_txt_color,
+            selected_color=self.selected_color,
             unselected_color=self.unselected_color,
             scroll_bar_active_color=self.scroll_active_color,
             scroll_bar_inactive_color=self.scroll_inactive_color,
             background_opacity=self.menu_opacity,
-            reverse_scrolling=self.reverse_scrolling, size=self.drop_menu_size)
+            reverse_scrolling=self.reverse_scrolling,
+            size=self.drop_menu_size,
+        )
 
         self.drop_down_menu.set_visibility(False)
 
@@ -2113,41 +2233,52 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
         if self.draggable:
-            self.drop_down_button.on_left_mouse_button_dragged =\
+            self.drop_down_button.on_left_mouse_button_dragged = (
                 self.left_button_dragged
-            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
-                = self.left_button_dragged
-            self.selection_box.on_left_mouse_button_dragged =\
+            )
+            self.drop_down_menu.panel.background.on_left_mouse_button_dragged = (
                 self.left_button_dragged
-            self.selection_box.background.on_left_mouse_button_dragged =\
+            )
+            self.selection_box.on_left_mouse_button_dragged = self.left_button_dragged
+            self.selection_box.background.on_left_mouse_button_dragged = (
                 self.left_button_dragged
+            )
 
-            self.drop_down_button.on_left_mouse_button_pressed =\
+            self.drop_down_button.on_left_mouse_button_pressed = (
                 self.left_button_pressed
-            self.drop_down_menu.panel.background.on_left_mouse_button_pressed\
-                = self.left_button_pressed
-            self.selection_box.on_left_mouse_button_pressed =\
+            )
+            self.drop_down_menu.panel.background.on_left_mouse_button_pressed = (
                 self.left_button_pressed
-            self.selection_box.background.on_left_mouse_button_pressed =\
+            )
+            self.selection_box.on_left_mouse_button_pressed = self.left_button_pressed
+            self.selection_box.background.on_left_mouse_button_pressed = (
                 self.left_button_pressed
+            )
         else:
-            self.panel.background.on_left_mouse_button_dragged =\
+            self.panel.background.on_left_mouse_button_dragged = (
                 lambda i_ren, _obj, _comp: i_ren.force_render
-            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
-                = lambda i_ren, _obj, _comp: i_ren.force_render
+            )
+            self.drop_down_menu.panel.background.on_left_mouse_button_dragged = (
+                lambda i_ren, _obj, _comp: i_ren.force_render
+            )
 
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
             slot.add_callback(
-                slot.textblock.actor, "LeftButtonPressEvent",
-                self.select_option_callback)
+                slot.textblock.actor,
+                "LeftButtonPressEvent",
+                self.select_option_callback,
+            )
 
             slot.add_callback(
-                slot.background.actor, "LeftButtonPressEvent",
-                self.select_option_callback)
+                slot.background.actor,
+                "LeftButtonPressEvent",
+                self.select_option_callback,
+            )
 
-            self.drop_down_button.on_left_mouse_button_clicked = \
+            self.drop_down_button.on_left_mouse_button_clicked = (
                 self.menu_toggle_callback
+            )
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
@@ -2166,9 +2297,9 @@ class ComboBox2D(UI):
         """
         self.panel.resize(size)
 
-        self.text_block_size = (int(0.8*size[0]), int(0.3*size[1]))
-        self.drop_menu_size = (size[0], int(0.7*size[1]))
-        self.drop_button_size = (int(0.2*size[0]), int(0.3*size[1]))
+        self.text_block_size = (int(0.8 * size[0]), int(0.3 * size[1]))
+        self.drop_menu_size = (size[0], int(0.7 * size[1]))
+        self.drop_button_size = (int(0.2 * size[0]), int(0.3 * size[1]))
 
         self.panel.update_element(self.selection_box, (0.001, 0.7))
         self.panel.update_element(self.drop_down_button, (0.8, 0.7))
@@ -2250,8 +2381,7 @@ class ComboBox2D(UI):
         self._selection_ID = self.items.index(self._selection)
 
         self.selection_box.message = self._selection
-        clip_overflow(self.selection_box,
-                      self.selection_box.background.size[0])
+        clip_overflow(self.selection_box, self.selection_box.background.size[0])
         self.drop_down_menu.set_visibility(False)
         self._menu_visibility = False
 
@@ -2294,6 +2424,202 @@ class ComboBox2D(UI):
         i_ren.force_render()
 
 
+class ScrollBar(UI):
+    """UI component that allows the user to add scroll bar to a list.
+    Attributes
+    ----------
+    on_change: function
+        Callback function for when the viewed items have changed.
+    """
+
+    def __init__(
+        self,
+        size,
+        content_span,
+        view_span,
+        track_color=(1, 1, 1),
+        reverse_scrolling=False,
+        active_color=(0.9, 0.2, 0.2),
+        inactive_color=(0.6, 0.0, 0.0),
+        orientation="vertical",
+        track_opacity=1.0,
+        position=(0, 0),
+    ):
+
+        """
+        Parameters
+        ----------
+        size : (int, int)
+            Size of the scrollbar in height & width.
+        content_span : int
+            Span of the entire content.
+        view_span : int
+            Span of the viewable area to display the content.
+        track_color : tuple of 3 floats
+            Color of the scrollbar track.
+        reverse_scrolling : {True, False}
+            If True, scrolling up will move the list of files down.
+        active_color : tuple of 3 floats
+            Color of the scrollbar when in use.
+        inactive_color : tuple of 3 floats
+            Color of the scrollbar when not in use.
+        orientation : {"vertical", "horizontal"}
+            The orientation of the scrollbar.
+        opacity : float
+            Opacity of scrollbar.
+        position : (int, int, int)
+            Lower-left position of the UI component.
+        """
+        self._scroll_ratio = content_span / view_span
+        self.orientation = orientation.lower()
+        self.reverse_scrolling = reverse_scrolling
+
+        self.track_size = size
+
+        super(ScrollBar, self).__init__(position)
+
+        self.track_color = track_color
+        self.active_color = active_color
+        self.inactive_color = inactive_color
+        self.track_opacity = track_opacity
+        self.bar.color = self.inactive_color
+
+        # Hooks for user to update content.
+        self.on_scroll = lambda ui: None
+
+    def _setup(self):
+        self.track = Rectangle2D()
+        self.bar = Rectangle2D()
+        self.track.resize(self.track_size)
+        if self.orientation == "vertical":
+            bar_size = np.array(
+                (self.track_size[0], self._scroll_ratio * self.track_size[1])
+            )
+            self.bar.resize(bar_size)
+        else:
+            bar_size = np.array(
+                (self._scroll_ratio * self.track_size[0], self.track_size[1])
+            )
+            self.bar.resize(bar_size)
+
+        self.track.on_left_mouse_button_pressed = self.track_click_callback
+        self.track.on_left_mouse_button_dragged = self.scrolling_callback
+        self.track.on_left_mouse_button_released = self.release_callback
+
+        self.bar.on_left_mouse_button_dragged = self.scrolling_callback
+        self.bar.on_left_mouse_button_released = self.release_callback
+
+    def set_position(self, position):
+        if self.orientation == "horizontal":
+            x_position = position[0]
+            x_position = max(x_position, self.track.position[0] + self.bar.size[0] // 2)
+            x_position = min(
+                x_position,
+                self.track.position[0] + self.track.size[0] - self.bar.size[0] // 2,
+            )
+            self.bar.center = (x_position, self.track.center[1])
+        else:
+            y_position = position[1]
+            y_position = max(y_position, self.track.position[1] + self.bar.size[1] // 2)
+            y_position = min(
+                y_position,
+                self.track.position[1] + self.track.size[1] - self.bar.size[1] // 2,
+            )
+            self.bar.center = (self.track.center[0], y_position)
+
+    def scrolling_callback(self, i_ren, _obj, _rect_obj):
+        """Callback to change the color of the bar when it is clicked.
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+        obj: :class:`vtkActor`
+            The picked actor
+        _rect_obj: :class:`Rectangle2D`
+        """
+        self.bar.color = self.active_color
+        position = i_ren.event.position
+        self.set_position(position)
+        self.on_scroll(self)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def release_callback(self, i_ren, _obj, _rect_obj):
+        """Callback to change the color of the bar when it is released.
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+        obj: :class:`vtkActor`
+            The picked actor
+        rect_obj: :class:`Rectangle2D`
+        """
+        self.bar.color = self.inactive_color
+        i_ren.force_render()
+
+    def track_click_callback(self, i_ren, _obj, _rec_obj):
+        position = i_ren.event.position
+        self.set_position(position)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def resize(self, size):
+        """Resize scrollbar."""
+        self.track.resize(size)
+        self.bar.resize(self._scroll_ratio * size)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.track.actors + self.bar.actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+        Parameters
+        ----------
+        scene : scene
+        """
+        scene.add(self.track, self.bar)
+
+    def _get_size(self):
+        return self.track.size
+
+    def _set_position(self, coords):
+        """Position the lower-left corner of this UI component.
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.track.position = coords
+        if self.orientation == "vertical":
+            self.bar.position = coords + self.track.size - self.bar.size
+        else:
+            self.bar.position = coords
+
+    @property
+    def scroll_ratio(self):
+        return self._scroll_ratio
+
+    @scroll_ratio.setter
+    def scroll_ratio(self, ratio):
+        self._scroll_ratio = ratio
+        self.bar.resize(ratio * self.size)
+
+    @property
+    def track_color(self):
+        return self.track.color
+
+    @track_color.setter
+    def track_color(self, color):
+        self.track.color = color
+
+    @property
+    def track_opacity(self):
+        return self.track.opacity
+
+    @track_opacity.setter
+    def track_opacity(self, opacity):
+        self.track.opacity = opacity
+
+
 class ListBox2D(UI):
     """UI component that allows the user to select items from a list.
 
@@ -2303,15 +2629,22 @@ class ListBox2D(UI):
         Callback function for when the selected items have changed.
     """
 
-    def __init__(self, values, position=(0, 0), size=(100, 300),
-                 multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4,
-                 text_color=(0.2, 0.2, 0.2),
-                 selected_color=(0.9, 0.6, 0.6),
-                 unselected_color=(0.6, 0.6, 0.6),
-                 scroll_bar_active_color=(0.6, 0.2, 0.2),
-                 scroll_bar_inactive_color=(0.9, 0.0, 0.0),
-                 background_opacity=1.):
+    def __init__(
+        self,
+        values,
+        position=(0, 0),
+        size=(100, 300),
+        multiselection=True,
+        reverse_scrolling=False,
+        font_size=20,
+        line_spacing=1.4,
+        text_color=(0.2, 0.2, 0.2),
+        selected_color=(0.9, 0.6, 0.6),
+        unselected_color=(0.6, 0.6, 0.6),
+        scroll_bar_active_color=(0.6, 0.2, 0.2),
+        scroll_bar_inactive_color=(0.9, 0.0, 0.0),
+        background_opacity=1.0,
+    ):
         """Init class instance.
 
         Parameters
@@ -2363,8 +2696,9 @@ class ListBox2D(UI):
         denom = len(self.values) - self.nb_slots
         if not denom:
             denom += 1
-        self.scroll_step_size = (self.slot_height * self.nb_slots -
-                                 self.scroll_bar.height) / denom
+        self.scroll_step_size = (
+            self.slot_height * self.nb_slots - self.scroll_bar.height
+        ) / denom
 
         self.scroll_bar_active_color = scroll_bar_active_color
         self.scroll_bar_inactive_color = scroll_bar_inactive_color
@@ -2393,39 +2727,40 @@ class ListBox2D(UI):
         self.panel = Panel2D(size=size, color=(1, 1, 1))
 
         # Add a scroll bar
-        scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
-            / len(self.values)
-        self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+        scroll_bar_height = (
+            self.nb_slots * (size[1] - 2 * self.margin) / len(self.values)
+        )
+        self.scroll_bar = Rectangle2D(size=(int(size[0] / 20), scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
-            self.scroll_bar, size - self.scroll_bar.size - self.margin)
+            self.scroll_bar, size - self.scroll_bar.size - self.margin
+        )
 
         # Initialisation of empty text actors
-        self.slot_width = size[0] - self.scroll_bar.size[0] - \
-            2 * self.margin - self.margin
+        self.slot_width = (
+            size[0] - self.scroll_bar.size[0] - 2 * self.margin - self.margin
+        )
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
             y -= self.slot_height
-            item = ListBoxItem2D(list_box=self,
-                                 size=(self.slot_width, self.slot_height),
-                                 text_color=self.text_color,
-                                 selected_color=self.selected_color,
-                                 unselected_color=self.unselected_color,
-                                 background_opacity=self.background_opacity)
+            item = ListBoxItem2D(
+                list_box=self,
+                size=(self.slot_width, self.slot_height),
+                text_color=self.text_color,
+                selected_color=self.selected_color,
+                unselected_color=self.unselected_color,
+                background_opacity=self.background_opacity,
+            )
             item.textblock.font_size = font_size
             self.slots.append(item)
             self.panel.add_element(item, (x, y + self.margin))
 
         # Add default events listener for this UI component.
-        self.scroll_bar.on_left_mouse_button_pressed = \
-            self.scroll_click_callback
-        self.scroll_bar.on_left_mouse_button_released = \
-            self.scroll_release_callback
-        self.scroll_bar.on_left_mouse_button_dragged = \
-            self.scroll_drag_callback
+        self.scroll_bar.on_left_mouse_button_pressed = self.scroll_click_callback
+        self.scroll_bar.on_left_mouse_button_released = self.scroll_release_callback
+        self.scroll_bar.on_left_mouse_button_dragged = self.scroll_drag_callback
 
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
@@ -2433,21 +2768,23 @@ class ListBox2D(UI):
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
 
-        self.add_callback(self.panel.background.actor, up_event,
-                          self.up_button_callback)
-        self.add_callback(self.panel.background.actor, down_event,
-                          self.down_button_callback)
+        self.add_callback(
+            self.panel.background.actor, up_event, self.up_button_callback
+        )
+        self.add_callback(
+            self.panel.background.actor, down_event, self.down_button_callback
+        )
 
         # Handle mouse wheel events on the slots.
         for slot in self.slots:
-            self.add_callback(slot.background.actor, up_event,
-                              self.up_button_callback)
-            self.add_callback(slot.background.actor, down_event,
-                              self.down_button_callback)
-            self.add_callback(slot.textblock.actor, up_event,
-                              self.up_button_callback)
-            self.add_callback(slot.textblock.actor, down_event,
-                              self.down_button_callback)
+            self.add_callback(slot.background.actor, up_event, self.up_button_callback)
+            self.add_callback(
+                slot.background.actor, down_event, self.down_button_callback
+            )
+            self.add_callback(slot.textblock.actor, up_event, self.up_button_callback)
+            self.add_callback(
+                slot.textblock.actor, down_event, self.down_button_callback
+            )
 
     def resize(self, size):
         pass
@@ -2497,12 +2834,14 @@ class ListBox2D(UI):
             self.view_offset -= 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-            self.scroll_bar.center = (self.scroll_bar.center[0],
-                                      self.scroll_bar.center[1] +
-                                      self.scroll_step_size)
+            self.scroll_bar.center = (
+                self.scroll_bar.center[0],
+                self.scroll_bar.center[1] + self.scroll_step_size,
+            )
             self.panel.element_offsets[scroll_bar_idx] = (
                 self.scroll_bar,
-                (self.scroll_bar.position - self.panel.position))
+                (self.scroll_bar.position - self.panel.position),
+            )
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
@@ -2523,18 +2862,20 @@ class ListBox2D(UI):
             self.view_offset += 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-            self.scroll_bar.center = (self.scroll_bar.center[0],
-                                      self.scroll_bar.center[1] -
-                                      self.scroll_step_size)
+            self.scroll_bar.center = (
+                self.scroll_bar.center[0],
+                self.scroll_bar.center[1] - self.scroll_step_size,
+            )
             self.panel.element_offsets[scroll_bar_idx] = (
                 self.scroll_bar,
-                (self.scroll_bar.position - self.panel.position))
+                (self.scroll_bar.position - self.panel.position),
+            )
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
     def scroll_click_callback(self, i_ren, _obj, _rect_obj):
-        """ Callback to change the color of the bar when it is clicked.
+        """Callback to change the color of the bar when it is clicked.
 
         Parameters
         ----------
@@ -2575,35 +2916,35 @@ class ListBox2D(UI):
 
         """
         position = i_ren.event.position
-        offset = int((position[1] - self.scroll_init_position) /
-                     self.scroll_step_size)
+        offset = int((position[1] - self.scroll_init_position) / self.scroll_step_size)
         if offset > 0 and self.view_offset > 0:
             offset = min(offset, self.view_offset)
 
-        elif offset < 0 and (
-                self.view_offset + self.nb_slots < len(self.values)):
-            offset = min(-offset,
-                         len(self.values) - self.nb_slots - self.view_offset)
-            offset = - offset
+        elif offset < 0 and (self.view_offset + self.nb_slots < len(self.values)):
+            offset = min(-offset, len(self.values) - self.nb_slots - self.view_offset)
+            offset = -offset
         else:
             return
 
         self.view_offset -= offset
         self.update()
         scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
-        self.scroll_bar.center = (self.scroll_bar.center[0],
-                                  self.scroll_bar.center[1] +
-                                  offset * self.scroll_step_size)
+        self.scroll_bar.center = (
+            self.scroll_bar.center[0],
+            self.scroll_bar.center[1] + offset * self.scroll_step_size,
+        )
 
         self.scroll_init_position += offset * self.scroll_step_size
 
         self.panel.element_offsets[scroll_bar_idx] = (
-            self.scroll_bar, (self.scroll_bar.position - self.panel.position))
+            self.scroll_bar,
+            (self.scroll_bar.position - self.panel.position),
+        )
         i_ren.force_render()
         i_ren.event.abort()
 
     def update(self):
-        """Refresh listbox's content. """
+        """Refresh listbox's content."""
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
         values_to_show = self.values[view_start:view_end]
@@ -2621,7 +2962,7 @@ class ListBox2D(UI):
                 slot.deselect()
 
         # Flush remaining slots.
-        for slot in self.slots[len(values_to_show):]:
+        for slot in self.slots[len(values_to_show) :]:
             slot.element = None
             slot.set_visibility(False)
             slot.deselect()
@@ -2632,16 +2973,17 @@ class ListBox2D(UI):
         """
         self.scroll_bar.set_visibility(True)
 
-        self.scroll_bar.height = self.nb_slots * \
-            (self.panel_size[1] - 2 * self.margin) / len(self.values)
+        self.scroll_bar.height = (
+            self.nb_slots * (self.panel_size[1] - 2 * self.margin) / len(self.values)
+        )
 
-        self.scroll_step_size = (self.slot_height * self.nb_slots -
-                                 self.scroll_bar.height) \
-            / (len(self.values) - self.nb_slots)
+        self.scroll_step_size = (
+            self.slot_height * self.nb_slots - self.scroll_bar.height
+        ) / (len(self.values) - self.nb_slots)
 
         self.panel.update_element(
-            self.scroll_bar, self.panel_size - self.scroll_bar.size -
-            self.margin)
+            self.scroll_bar, self.panel_size - self.scroll_bar.size - self.margin
+        )
 
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
@@ -2672,9 +3014,7 @@ class ListBox2D(UI):
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
-            for i in range(self.last_selection_idx,
-                           selection_idx + step,
-                           step):
+            for i in range(self.last_selection_idx, selection_idx + step, step):
                 self.selected.append(self.values[i])
 
         elif self.multiselection and multiselect:
@@ -2696,11 +3036,15 @@ class ListBox2D(UI):
 class ListBoxItem2D(UI):
     """The text displayed in a listbox."""
 
-    def __init__(self, list_box, size,
-                 text_color=(1.0, 0.0, 0.0),
-                 selected_color=(0.4, 0.4, 0.4),
-                 unselected_color=(0.9, 0.9, 0.9),
-                 background_opacity=1.):
+    def __init__(
+        self,
+        list_box,
+        size,
+        text_color=(1.0, 0.0, 0.0),
+        selected_color=(0.4, 0.4, 0.4),
+        unselected_color=(0.9, 0.9, 0.9),
+        background_opacity=1.0,
+    ):
         """Init ListBox Item instance.
 
         Parameters
@@ -2734,14 +3078,17 @@ class ListBoxItem2D(UI):
         label (TextBlock2D).
         """
         self.background = Rectangle2D()
-        self.textblock = TextBlock2D(justification="left",
-                                     vertical_justification="middle")
+        self.textblock = TextBlock2D(
+            justification="left", vertical_justification="middle"
+        )
 
         # Add default events listener for this UI component.
-        self.add_callback(self.textblock.actor, "LeftButtonPressEvent",
-                          self.left_button_clicked)
-        self.add_callback(self.background.actor, "LeftButtonPressEvent",
-                          self.left_button_clicked)
+        self.add_callback(
+            self.textblock.actor, "LeftButtonPressEvent", self.left_button_clicked
+        )
+        self.add_callback(
+            self.background.actor, "LeftButtonPressEvent", self.left_button_clicked
+        )
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -2771,8 +3118,10 @@ class ListBoxItem2D(UI):
         self.textblock.position = coords
         # Center background underneath the text.
         position = coords
-        self.background.position = (position[0],
-                                    position[1] - self.background.size[1] / 2.)
+        self.background.position = (
+            position[0],
+            position[1] - self.background.size[1] / 2.0,
+        )
 
     def deselect(self):
         self.background.color = self.unselected_color
@@ -2825,9 +3174,17 @@ class FileMenu2D(UI):
 
     """
 
-    def __init__(self, directory_path, extensions=None, position=(0, 0),
-                 size=(100, 300), multiselection=True, reverse_scrolling=False,
-                 font_size=20, line_spacing=1.4):
+    def __init__(
+        self,
+        directory_path,
+        extensions=None,
+        position=(0, 0),
+        size=(100, 300),
+        multiselection=True,
+        reverse_scrolling=False,
+        font_size=20,
+        line_spacing=1.4,
+    ):
         """Init class instance.
 
         Parameters
@@ -2872,12 +3229,17 @@ class FileMenu2D(UI):
         self.directory_contents = self.get_all_file_names()
         content_names = [x[0] for x in self.directory_contents]
         self.listbox = ListBox2D(
-            values=content_names, multiselection=self.multiselection,
-            font_size=self.font_size, line_spacing=self.line_spacing,
-            reverse_scrolling=self.reverse_scrolling, size=self.menu_size)
+            values=content_names,
+            multiselection=self.multiselection,
+            font_size=self.font_size,
+            line_spacing=self.line_spacing,
+            reverse_scrolling=self.reverse_scrolling,
+            size=self.menu_size,
+        )
 
-        self.add_callback(self.listbox.scroll_bar.actor, "MouseMoveEvent",
-                          self.scroll_callback)
+        self.add_callback(
+            self.listbox.scroll_bar.actor, "MouseMoveEvent", self.scroll_callback
+        )
 
         # Handle mouse wheel events on the panel.
         up_event = "MouseWheelForwardEvent"
@@ -2885,25 +3247,29 @@ class FileMenu2D(UI):
         if self.reverse_scrolling:
             up_event, down_event = down_event, up_event  # Swap events
 
-        self.add_callback(self.listbox.panel.background.actor, up_event,
-                          self.scroll_callback)
-        self.add_callback(self.listbox.panel.background.actor, down_event,
-                          self.scroll_callback)
+        self.add_callback(
+            self.listbox.panel.background.actor, up_event, self.scroll_callback
+        )
+        self.add_callback(
+            self.listbox.panel.background.actor, down_event, self.scroll_callback
+        )
 
         # Handle mouse wheel events on the slots.
         for slot in self.listbox.slots:
-            self.add_callback(slot.background.actor, up_event,
-                              self.scroll_callback)
-            self.add_callback(slot.background.actor, down_event,
-                              self.scroll_callback)
-            self.add_callback(slot.textblock.actor, up_event,
-                              self.scroll_callback)
-            self.add_callback(slot.textblock.actor, down_event,
-                              self.scroll_callback)
-            slot.add_callback(slot.textblock.actor, "LeftButtonPressEvent",
-                              self.directory_click_callback)
-            slot.add_callback(slot.background.actor, "LeftButtonPressEvent",
-                              self.directory_click_callback)
+            self.add_callback(slot.background.actor, up_event, self.scroll_callback)
+            self.add_callback(slot.background.actor, down_event, self.scroll_callback)
+            self.add_callback(slot.textblock.actor, up_event, self.scroll_callback)
+            self.add_callback(slot.textblock.actor, down_event, self.scroll_callback)
+            slot.add_callback(
+                slot.textblock.actor,
+                "LeftButtonPressEvent",
+                self.directory_click_callback,
+            )
+            slot.add_callback(
+                slot.background.actor,
+                "LeftButtonPressEvent",
+                self.directory_click_callback,
+            )
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3004,8 +3370,9 @@ class FileMenu2D(UI):
         they show. Blue for directories and green for files.
         """
         for idx, slot in enumerate(self.listbox.slots):
-            list_idx = min(self.listbox.view_offset + idx,
-                           len(self.directory_contents)-1)
+            list_idx = min(
+                self.listbox.view_offset + idx, len(self.directory_contents) - 1
+            )
             if self.directory_contents[list_idx][1] == "directory":
                 slot.textblock.color = (0, 0.6, 0)
             elif self.directory_contents[list_idx][1] == "file":
@@ -3038,8 +3405,9 @@ class FileMenu2D(UI):
 
         """
         if (listboxitem.element, "directory") in self.directory_contents:
-            new_directory_path = os.path.join(self.current_directory,
-                                              listboxitem.element)
+            new_directory_path = os.path.join(
+                self.current_directory, listboxitem.element
+            )
             if os.access(new_directory_path, os.R_OK):
                 self.current_directory = new_directory_path
                 self.directory_contents = self.get_all_file_names()
