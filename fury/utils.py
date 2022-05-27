@@ -263,7 +263,6 @@ def lines_to_vtk_polydata(lines, colors=None):
         points_array = lines._data
     else:
         points_array = np.vstack(lines)
-    print(points_array.shape)
 
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
