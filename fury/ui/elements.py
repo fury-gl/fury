@@ -2491,16 +2491,7 @@ class ScrollBar(UI):
         self.track = Rectangle2D()
         self.bar = Rectangle2D()
         self.track.resize(self.track_size)
-        if self.orientation == "vertical":
-            bar_size = np.array(
-                (self.track_size[0], self._scroll_ratio * self.track_size[1])
-            )
-            self.bar.resize(bar_size)
-        else:
-            bar_size = np.array(
-                (self._scroll_ratio * self.track_size[0], self.track_size[1])
-            )
-            self.bar.resize(bar_size)
+        self.resize(self.track_size)
 
         self.track.on_left_mouse_button_pressed = self.track_click_callback
         self.track.on_left_mouse_button_dragged = self.scrolling_callback
@@ -2564,7 +2555,11 @@ class ScrollBar(UI):
     def resize(self, size):
         """Resize scrollbar."""
         self.track.resize(size)
-        self.bar.resize(self._scroll_ratio * size)
+        if self.orientation == "vertical":
+            self.bar.resize((self.track.width, self._scroll_ratio * self.track.height))
+            self._set_position(self.track.position)
+        else:
+            self.bar.resize((self._scroll_ratio * self.track.width, self.track.height))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
