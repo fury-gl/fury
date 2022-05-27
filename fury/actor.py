@@ -2375,7 +2375,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
-    >>> l = actor.label(text='Hello')
+    >>> l = actor.vector_text(text='Hello')
     >>> scene.add(l)
     >>> #window.show(scene)
 

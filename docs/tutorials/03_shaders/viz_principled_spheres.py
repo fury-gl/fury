@@ -68,13 +68,13 @@ labels = ['Subsurface', 'Metallic', 'Specular', 'Specular Tint', 'Roughness',
 
 for i in range(10):
     pos = [-40, -5 * i, 0]
-    label = actor.label(labels[i], pos=pos, scale=(.8, .8, .8),
+    label = actor.vector_text(labels[i], pos=pos, scale=(.8, .8, .8),
                         color=(0, 0, 0))
     scene.add(label)
 
 for j in range(11):
     pos = [-26 + 5 * j, 5, 0]
-    label = actor.label(str(np.round(j * 0.1, decimals=1)), pos=pos,
+    label = actor.vector_text(str(np.round(j * 0.1, decimals=1)), pos=pos,
                         scale=(.8, .8, .8), color=(0, 0, 0))
     scene.add(label)
 
