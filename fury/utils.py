@@ -1,4 +1,3 @@
-from nibabel.streamlines.array_sequence import ArraySequence
 import numpy as np
 from scipy.ndimage import map_coordinates
 
