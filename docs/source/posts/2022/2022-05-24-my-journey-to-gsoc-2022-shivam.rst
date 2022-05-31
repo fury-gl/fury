@@ -8,7 +8,7 @@ My Journey to GSoC 2022
 
 
 About Myself
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 Hi! I'm Shivam, currently pursuing my bachelor's (expected 2024) in Production and Industrial engineering from the Indian Institute of Technology (IIT) Roorkee.
 
@@ -45,8 +45,7 @@ Code contributions:
 6. [https://github.com/fury-gl/fury/pull/559]
 
 The Day
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+~~~~~~~
 May 18: I was a bit anxious since on May 18th the GSoC website was showing my proposal for glTF integration had been rejected. (p.s. maybe it was a bug of some sort that they fixed later on).
 
 May 20: I woke up very early in the morning and started checking the contributor's profile. I kept checking for new emails but didn't receive any emails that day. "The result will be announced at 11:30 PM, isn't it? " My dad said, It was 8:00 AM IST. I called my friends in the night to join me on discord, I was talking to them and refreshing the GSoC site at the same time. One of my friends shouted that he got selected in NumFocus. I refreshed the page again, my proposal for glTF Integration was accepted. I can't express what I felt at that moment. I told my friends and my parents, they were happy for me and I got a lot of blessings :). I received an official email the next day.
