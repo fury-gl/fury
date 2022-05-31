@@ -1,14 +1,14 @@
 My Journey to GSoC 2022
 =======================
 
-..  post:: May 24 2022
-    :author:: Shivam Sahu
-    :tags:: google
-    :category:: gsoc
+.. post:: May 24 2022
+    :author: Shivam Sahu
+    :tags: google
+    :category: gsoc
 
 
 About Myself
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Hi! I'm Shivam, currently pursuing my bachelor's (expected 2024) in Production and Industrial engineering from the Indian Institute of Technology (IIT) Roorkee.
 
@@ -45,8 +45,7 @@ Code contributions:
 6. [https://github.com/fury-gl/fury/pull/559]
 
 The Day
-~~~~~~~
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 May 18: I was a bit anxious since on May 18th the GSoC website was showing my proposal for glTF integration had been rejected. (p.s. maybe it was a bug of some sort that they fixed later on).
 
