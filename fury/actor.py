@@ -1539,7 +1539,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
 
 def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1, use_primitive=True):
+           vertices=None, faces=None, opacity=1, use_primitive=False):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
