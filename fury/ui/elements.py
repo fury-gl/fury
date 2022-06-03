@@ -2,7 +2,8 @@
 
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
+           "Visualizer"]
 
 import os
 from collections import OrderedDict
@@ -1740,9 +1741,9 @@ class Option(UI):
         # Option's button
         self.button_icons = []
         self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
+                                  read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
+                                  read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons,
                                size=self.button_size)
 
@@ -2396,7 +2397,7 @@ class ListBox2D(UI):
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+                                            scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
@@ -3052,3 +3053,72 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class Visualizer(UI):
+    def __init__(self, position):
+        super(Visualizer, self).__init__(position)
+        self.actor_list = []
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create a Canvas(Panel2D).
+        """
+        self.canvas = Panel2D((400, 400))
+        self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
+        self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.canvas
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.current_scene = scene
+        self.canvas.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.canvas.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.canvas.position = (coords)
+
+    def resize(self, size):
+        """Resize the UI.
+        """
+        pass
+
+    def create_line(self, pos, in_process=False):
+        print("Mouse position: ", pos)
+        if not in_process:
+            line = Rectangle2D(size=(2, 2), position=pos)
+            self.actor_list.append(line)
+            self.current_scene.add(line)
+            self.canvas.add_element(line, pos-self.canvas.position)
+        else:
+            cur_line = self.actor_list[-1]
+            # print(cur_line.position,pos,pos - cur_line.position)
+            size = pos - cur_line.position
+            cur_line.resize(size)
+
+    def left_button_pressed(self,  i_ren, _obj, element):
+        self.create_line(i_ren.event.position)
+        i_ren.force_render()
+
+    def left_button_dragged(self,  i_ren, _obj, element):
+        self.create_line(i_ren.event.position, True)
+        i_ren.force_render()
