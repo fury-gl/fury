@@ -14,10 +14,12 @@ from string import printable
 import numpy as np
 
 from fury.data import read_viz_icons
+from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
+from fury.utils import set_input
 
 
 class TextBox2D(UI):
@@ -3102,8 +3104,24 @@ class Visualizer(UI):
         """
         pass
 
+    def rotate_point(self, x, y, deg):
+        new_x = np.cos(deg) * x - y * np.sin(deg)
+        new_y = np.sin(deg) * x + y * np.cos(deg)
+        return new_x, new_y
+
+    def rotate_line(self, line, deg):
+        for i in range(4):
+            cur_x, cur_y = line._points.GetPoint(i)[:2]
+            new_x, new_y = self.rotate_point(cur_x, cur_y, deg)
+            line._points.SetPoint(i, new_x, new_y, 0.0)
+
+        line._polygonPolyData.SetPoints(line._points)
+        mapper = PolyDataMapper2D()
+        mapper = set_input(mapper, line._polygonPolyData)
+
+        line.actor.SetMapper(mapper)
+
     def create_line(self, pos, in_process=False):
-        print("Mouse position: ", pos)
         if not in_process:
             line = Rectangle2D(size=(2, 2), position=pos)
             self.actor_list.append(line)
@@ -3111,9 +3129,15 @@ class Visualizer(UI):
             self.canvas.add_element(line, pos-self.canvas.position)
         else:
             cur_line = self.actor_list[-1]
-            # print(cur_line.position,pos,pos - cur_line.position)
+
             size = pos - cur_line.position
-            cur_line.resize(size)
+
+            hyp = np.hypot(size[0], size[1])
+            hyp = hyp * -1 if size[0] < 0 else hyp
+            cur_line.resize((hyp, 2))
+
+            deg = np.arctan(size[1]/size[0])
+            self.rotate_line(cur_line, deg)
 
     def left_button_pressed(self,  i_ren, _obj, element):
         self.create_line(i_ren.event.position)
