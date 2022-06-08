@@ -3057,19 +3057,150 @@ class FileMenu2D(UI):
         i_ren.event.abort()
 
 
-class Visualizer(UI):
-    def __init__(self, position):
-        super(Visualizer, self).__init__(position)
-        self.actor_list = []
+class Shape2D(UI):
+
+    def __init__(self, shape_type, position=(0, 0)):
+        self.shape_type = shape_type
+        super(Shape2D, self).__init__(position)
 
     def _setup(self):
         """Setup this UI component.
 
         Create a Canvas(Panel2D).
         """
-        self.canvas = Panel2D((400, 400))
+        if self.shape_type == "line":
+            self.shape = Rectangle2D(size=(2, 2))
+        elif self.shape_type == "quad":
+            self.shape = Rectangle2D(size=(2, 2))
+        elif self.shape_type == "circle":
+            self.shape = Disk2D(outer_radius=2)
+        else:
+            raise IOError("Unknown shape type: {}.".format(self.shape_type))
+        
+        self.shape.on_left_mouse_button_pressed = self.left_button_pressed
+        self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+        
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.shape
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.shape.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.shape.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        if self.shape_type == "circle":
+            self.shape.center = coords
+        else:
+            self.shape.position = coords
+
+    def rotate_point(self, x, y, deg):
+        new_x = np.cos(deg) * x - y * np.sin(deg)
+        new_y = np.sin(deg) * x + y * np.cos(deg)
+        return new_x, new_y
+
+    def rotate_line(self, deg):
+        line_actor = self.shape
+
+        for i in range(4):
+            cur_x, cur_y = line_actor._points.GetPoint(i)[:2]
+            new_x, new_y = self.rotate_point(cur_x, cur_y, deg)
+            line_actor._points.SetPoint(i, new_x, new_y, 0.0)
+
+        line_actor._polygonPolyData.SetPoints(line_actor._points)
+        mapper = PolyDataMapper2D()
+        mapper = set_input(mapper, line_actor._polygonPolyData)
+
+        line_actor.actor.SetMapper(mapper)
+
+    def resize(self, size):
+        """Resize the UI.
+        """
+        if self.shape_type == "line":
+            hyp = np.hypot(size[0], size[1]) * (-1 if size[0] < 0 else 1)
+            self.shape.resize((hyp, 2))
+            self.rotate_line(deg = np.arctan(size[1]/size[0]))
+
+        elif self.shape_type == "quad":
+            self.shape.resize(size)
+
+        elif self.shape_type == "circle":
+            hyp = np.hypot(size[0], size[1])
+            self.shape.outer_radius = hyp
+
+
+    def left_button_pressed(self, i_ren, _obj, shape):
+        click_pos = np.array(i_ren.event.position)
+        self._drag_offset = click_pos - self.position
+        i_ren.event.abort()
+
+    def left_button_dragged(self, i_ren, _obj, shape):
+        if self._drag_offset is not None:
+            click_position = np.array(i_ren.event.position)
+            new_position = click_position - self._drag_offset
+            self.position = new_position
+        i_ren.force_render()
+
+
+class Visualizer(UI):
+    def __init__(self, size=(400,400) ,position=(0,0)):
+        self.panel_size = size
+        super(Visualizer, self).__init__(position)
+        self.shape_list = []
+        self.current_mode = "selection"
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create a Canvas(Panel2D).
+        """
+        self.canvas = Panel2D(size=self.panel_size)
         self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
+
+        mode_data = {
+            "line": "pencil.png",
+            "quad": "stop2.png",
+            "circle": "circle-up.png"
+        }
+        
+        mode_panel_size = (len(mode_data) * 40 , 40)
+        self.mode_panel = Panel2D(size=mode_panel_size,color=(0.5,0.5,0.5))
+        btn_pos = np.array([0,0])
+        padding = 5
+
+        for mode in mode_data:
+            btn = Button2D(icon_fnames=[(mode,read_viz_icons(fname=mode_data[mode]))])
+
+            def mode_selector(i_ren, _obj, btn):
+                self.current_mode = btn.icon_names[0]
+
+            btn.on_left_mouse_button_pressed = mode_selector
+
+            self.mode_panel.add_element(btn, btn_pos+padding)
+            btn_pos[0] += btn.size[0]+padding
+        
+        self.canvas.add_element(self.mode_panel,(0,0))
+
+        self.mode_text = TextBlock2D(text="Mode: selection")
+        self.canvas.add_element(self.mode_text, (0.0,0.95))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3104,45 +3235,33 @@ class Visualizer(UI):
         """
         pass
 
-    def rotate_point(self, x, y, deg):
-        new_x = np.cos(deg) * x - y * np.sin(deg)
-        new_y = np.sin(deg) * x + y * np.cos(deg)
-        return new_x, new_y
+    @property
+    def current_mode(self):
+        return self._current_mode
 
-    def rotate_line(self, line, deg):
-        for i in range(4):
-            cur_x, cur_y = line._points.GetPoint(i)[:2]
-            new_x, new_y = self.rotate_point(cur_x, cur_y, deg)
-            line._points.SetPoint(i, new_x, new_y, 0.0)
-
-        line._polygonPolyData.SetPoints(line._points)
-        mapper = PolyDataMapper2D()
-        mapper = set_input(mapper, line._polygonPolyData)
-
-        line.actor.SetMapper(mapper)
-
-    def create_line(self, pos, in_process=False):
+    @current_mode.setter
+    def current_mode(self, mode):
+        self._current_mode = mode
+        self.mode_text.message = "Mode: {}".format(mode)
+    
+    def create_shape(self, shape_type, cur_position, in_process = False):
         if not in_process:
-            line = Rectangle2D(size=(2, 2), position=pos)
-            self.actor_list.append(line)
-            self.current_scene.add(line)
-            self.canvas.add_element(line, pos-self.canvas.position)
+            shape = Shape2D(shape_type = shape_type, position = cur_position)
+            self.shape_list.append(shape)
+            self.current_scene.add(shape)
+            self.canvas.add_element(shape, cur_position - self.canvas.position)
+
         else:
-            cur_line = self.actor_list[-1]
-
-            size = pos - cur_line.position
-
-            hyp = np.hypot(size[0], size[1])
-            hyp = hyp * -1 if size[0] < 0 else hyp
-            cur_line.resize((hyp, 2))
-
-            deg = np.arctan(size[1]/size[0])
-            self.rotate_line(cur_line, deg)
+            cur_shape = self.shape_list[-1]
+            size = cur_position - cur_shape.position
+            cur_shape.resize(size)
 
     def left_button_pressed(self,  i_ren, _obj, element):
-        self.create_line(i_ren.event.position)
-        i_ren.force_render()
+        if self.current_mode != "selection":
+            self.create_shape(self.current_mode, i_ren.event.position)
+        i_ren.event.abort()
 
     def left_button_dragged(self,  i_ren, _obj, element):
-        self.create_line(i_ren.event.position, True)
+        if self.current_mode != "selection":
+            self.create_shape(self.current_mode, i_ren.event.position, True)
         i_ren.force_render()
