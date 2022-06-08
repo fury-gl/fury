@@ -35,7 +35,7 @@ panel.add_element(text_block, (0.3, 0.3))
 
 scene = window.Scene()
 
-label_actor = actor.label(text='Test')
+label_actor = actor.vector_text(text='Test')
 
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
