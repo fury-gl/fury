@@ -3058,8 +3058,19 @@ class FileMenu2D(UI):
 
 
 class Shape2D(UI):
+    """Create and Manage 2D Shapes.
+    """
 
     def __init__(self, shape_type, position=(0, 0)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        shape_type : string
+            Type of shape to be created.
+        position : (float, float)
+            (x, y) in pixels.
+        """
         self.shape_type = shape_type
         super(Shape2D, self).__init__(position)
 
@@ -3159,6 +3170,15 @@ class Shape2D(UI):
 
 class Visualizer(UI):
     def __init__(self, size=(400, 400), position=(0, 0)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Width and height in pixels of this UI component.
+        position : (float, float)
+            (x, y) in pixels.
+        """
         self.panel_size = size
         super(Visualizer, self).__init__(position)
         self.shape_list = []
