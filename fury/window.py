@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
@@ -362,6 +363,8 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self.fps = 0
+        self._last_render_time = 0
 
         if self.reset_camera:
             self.scene.ResetCamera()
@@ -403,10 +406,13 @@ class ShowManager(object):
 
     def render(self):
         """Render only once."""
+        self.fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._last_render_time = time.perf_counter()
         self.window.Render()
 
     def start(self):
         """Start interaction."""
+        # self._last_render_time = time.perf_counter()
         try:
             self.render()
             if self.title.upper() == "FURY":
@@ -433,6 +439,11 @@ class ShowManager(object):
         self.window.Finalize()
         del self.iren
         del self.window
+
+    @property
+    def frame_rate(self):
+        """Returns FPS."""
+        return self.fps
 
     def record_events(self):
         """Record events during the interaction.
