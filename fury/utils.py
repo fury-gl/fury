@@ -118,9 +118,11 @@ def numpy_to_vtk_cells(data, is_coords=True):
 
     """
     if isinstance(data, (list, np.ndarray)):
-        offset_dtype = np.uint64
+        offset_dtype = np.int64
     else:
         offset_dtype = data._offsets.dtype
+        if offset_dtype.kind == 'u':
+            offset_dtype = np.dtype(offset_dtype.name[1:])
     data = np.array(data, dtype=object)
     nb_cells = len(data)
 
