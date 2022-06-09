@@ -23,6 +23,8 @@ from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
 import fury.primitive as fp
 
+from fury.optpkg import optional_package
+dipy, have_dipy, _ = optional_package('dipy')
 
 def test_apply_affine_to_actor(interactive=False):
     text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
@@ -806,3 +808,18 @@ def test_is_ui():
     npt.assert_equal(True, is_ui(panel))
     npt.assert_equal(True, is_ui(valid_ui))
     npt.assert_equal(False, is_ui(invalid_ui))
+
+
+def test_empty_list_to_polydata():
+    lines = [[]]
+    _, _ = utils.lines_to_vtk_polydata(lines)
+
+def test_empty_array_to_polydata():
+    lines = np.array([[]])
+    _, _ = utils.lines_to_vtk_polydata(lines)
+
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def test_empty_array_sequence_to_polydata():
+    from dipy.tracking.streamline import Streamlines
+    lines = Streamlines()
+    _, _ = utils.lines_to_vtk_polydata(lines)

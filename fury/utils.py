@@ -258,7 +258,7 @@ def lines_to_vtk_polydata(lines, colors=None):
 
     """
     # Get the 3d points_array
-    if not isinstance(lines, (np.ndarray, list)):
+    if lines.__class__.__name__ == 'ArraySequence':
         points_array = lines._data
     else:
         points_array = np.vstack(lines)
