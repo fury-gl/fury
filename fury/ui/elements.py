@@ -3130,8 +3130,8 @@ class Shape2D(UI):
         line_actor = self.shape
 
         for i in range(4):
-            cur_x, cur_y = line_actor._points.GetPoint(i)[:2]
-            new_x, new_y = self.rotate_point(cur_x, cur_y, deg)
+            current_x, current_y = line_actor._points.GetPoint(i)[:2]
+            new_x, new_y = self.rotate_point(current_x, current_y, deg)
             line_actor._points.SetPoint(i, new_x, new_y, 0.0)
 
         line_actor._polygonPolyData.SetPoints(line_actor._points)
@@ -3262,17 +3262,17 @@ class DrawPanel(UI):
         self._current_mode = mode
         self.mode_text.message = "Mode: {}".format(mode)
 
-    def create_shape(self, shape_type, cur_position, in_process=False):
+    def create_shape(self, shape_type, current_position, in_process=False):
         if not in_process:
-            shape = Shape2D(shape_type=shape_type, position=cur_position)
+            shape = Shape2D(shape_type=shape_type, position=current_position)
             self.shape_list.append(shape)
             self.current_scene.add(shape)
-            self.canvas.add_element(shape, cur_position - self.canvas.position)
+            self.canvas.add_element(shape, current_position - self.canvas.position)
 
         else:
-            cur_shape = self.shape_list[-1]
-            size = cur_position - cur_shape.position
-            cur_shape.resize(size)
+            current_shape = self.shape_list[-1]
+            size = current_position - current_shape.position
+            current_shape.resize(size)
 
     def left_button_pressed(self,  i_ren, _obj, element):
         if self.current_mode != "selection":
