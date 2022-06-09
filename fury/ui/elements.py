@@ -3,7 +3,7 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "DrawPanel"]
+           "Shape2D", "DrawPanel"]
 
 import os
 from collections import OrderedDict
@@ -3222,7 +3222,7 @@ class DrawPanel(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.canvas
+        return self.canvas.actors
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
