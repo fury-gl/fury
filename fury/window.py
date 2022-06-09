@@ -570,6 +570,7 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)
