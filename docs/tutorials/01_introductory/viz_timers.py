@@ -45,7 +45,7 @@ counter = itertools.count()
 def timer_callback(_obj, _event):
     global timer_id
     cnt = next(counter)
-    tb.message = "Let's count up to 100 and exit :" + str(cnt)
+    tb.message = "Let's count up to 300 and exit :" + str(cnt)
     showm.scene.azimuth(0.05 * cnt)
     sphere_actor.GetProperty().SetOpacity(cnt/100.)
     showm.render()
