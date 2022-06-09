@@ -3,7 +3,7 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "Visualizer"]
+           "DrawPanel"]
 
 import os
 from collections import OrderedDict
@@ -3168,7 +3168,7 @@ class Shape2D(UI):
         i_ren.force_render()
 
 
-class Visualizer(UI):
+class DrawPanel(UI):
     def __init__(self, size=(400, 400), position=(0, 0)):
         """Init this UI element.
 
@@ -3180,7 +3180,7 @@ class Visualizer(UI):
             (x, y) in pixels.
         """
         self.panel_size = size
-        super(Visualizer, self).__init__(position)
+        super(DrawPanel, self).__init__(position)
         self.shape_list = []
         self.current_mode = "selection"
 
