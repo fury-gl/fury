@@ -117,6 +117,12 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
+    if isinstance(data, (list, np.ndarray)):
+        offsets_dtype = np.int64
+    else:
+        offsets_dtype = np.dtype(data._offsets.dtype)
+        if offsets_dtype.kind == 'u':
+            offsets_dtype = np.dtype(offsets_dtype.name[1:])
     data = np.array(data, dtype=object)
     nb_cells = len(data)
 
@@ -136,10 +142,10 @@ def numpy_to_vtk_cells(data, is_coords=True):
             connectivity += list(range(current_position, end_position))
             current_position = end_position
 
-    connectivity = np.array(connectivity, np.intp)
-    offset = np.array(offset, dtype=connectivity.dtype)
+    connectivity = np.array(connectivity, offsets_dtype)
+    offset = np.array(offset, dtype=offsets_dtype)
 
-    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    vtk_array_type = numpy_support.get_vtk_array_type(offsets_dtype)
     cell_array.SetData(
         numpy_support.numpy_to_vtk(offset, deep=True,
                                    array_type=vtk_array_type),
