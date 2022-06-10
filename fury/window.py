@@ -412,7 +412,6 @@ class ShowManager(object):
 
     def start(self):
         """Start interaction."""
-        # self._last_render_time = time.perf_counter()
         try:
             self.render()
             if self.title.upper() == "FURY":
