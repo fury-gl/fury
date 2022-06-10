@@ -3061,18 +3061,22 @@ class Shape2D(UI):
     """Create and Manage 2D Shapes.
     """
 
-    def __init__(self, shape_type, position=(0, 0)):
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
         """Init this UI element.
 
         Parameters
         ----------
         shape_type : string
             Type of shape to be created.
+        drawpanel : DrawPanel
+            Reference to the main canvas on which is it drawn.
         position : (float, float), optional
             (x, y) in pixels.
         """
         self.shape_type = shape_type.lower()
+        self.drawpanel = drawpanel
         super(Shape2D, self).__init__(position)
+        self.shape.color = np.random.random(3)
 
     def _setup(self):
         """Setup this UI component.
@@ -3080,9 +3084,9 @@ class Shape2D(UI):
         Create a Shape.
         """
         if self.shape_type == "line":
-            self.shape = Rectangle2D(size=(2, 2))
+            self.shape = Rectangle2D(size=(3, 3))
         elif self.shape_type == "quad":
-            self.shape = Rectangle2D(size=(2, 2))
+            self.shape = Rectangle2D(size=(3, 3))
         elif self.shape_type == "circle":
             self.shape = Disk2D(outer_radius=2)
         else:
@@ -3103,6 +3107,7 @@ class Shape2D(UI):
         scene : scene
 
         """
+        self._scene = scene
         self.shape.add_to_scene(scene)
 
     def _get_size(self):
@@ -3145,7 +3150,7 @@ class Shape2D(UI):
         """
         if self.shape_type == "line":
             hyp = np.hypot(size[0], size[1])
-            self.shape.resize((hyp, 2))
+            self.shape.resize((hyp, 3))
             self.rotate_line(deg=np.arctan2(size[1], size[0]))
 
         elif self.shape_type == "quad":
@@ -3156,16 +3161,26 @@ class Shape2D(UI):
             self.shape.outer_radius = hyp
 
     def left_button_pressed(self, i_ren, _obj, shape):
-        click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - self.position
-        i_ren.event.abort()
+        mode = self.drawpanel.current_mode
+        if mode == "selection":
+            click_pos = np.array(i_ren.event.position)
+            self._drag_offset = click_pos - self.position
+            i_ren.event.abort()
+        elif mode == "delete":
+            self._scene.rm(self.shape.actor)
+            i_ren.force_render()
+        else:
+            self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
 
     def left_button_dragged(self, i_ren, _obj, shape):
-        if self._drag_offset is not None:
-            click_position = np.array(i_ren.event.position)
-            new_position = click_position - self._drag_offset
-            self.position = new_position
-        i_ren.force_render()
+        if self.drawpanel.current_mode == "selection":
+            if self._drag_offset is not None:
+                click_position = np.array(i_ren.event.position)
+                new_position = click_position - self._drag_offset
+                self.position = new_position
+            i_ren.force_render()
+        else:
+            self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
 
 
 class DrawPanel(UI):
@@ -3275,7 +3290,8 @@ class DrawPanel(UI):
 
     def create_shape(self, shape_type, current_position, in_process=False):
         if not in_process:
-            shape = Shape2D(shape_type=shape_type, position=current_position)
+            shape = Shape2D(shape_type=shape_type, drawpanel=self,
+                            position=current_position)
             self.shape_list.append(shape)
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
