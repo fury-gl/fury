@@ -13,7 +13,7 @@ from fury import ui, window
 #########################################################################
 # We then create a DrawPanel Object.
 
-drawing_canvas = ui.DrawPanel(size=(550,550),position=(25,25))
+drawing_canvas = ui.DrawPanel(size=(550, 550), position=(25, 25))
 
 ###############################################################################
 # Show Manager
