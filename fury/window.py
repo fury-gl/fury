@@ -363,7 +363,7 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
-        self.fps = 0
+        self._fps = 0
         self._last_render_time = 0
 
         if self.reset_camera:
@@ -442,8 +442,8 @@ class ShowManager(object):
 
     @property
     def frame_rate(self):
-        """Returns FPS."""
-        return self.fps
+        """Returns number of frames per second."""
+        return self._fps
 
     def record_events(self):
         """Record events during the interaction.
