@@ -809,9 +809,6 @@ def test_ui_draw_panel(interactive=False):
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    drawpanel.current_mode = "line"
-    npt.assert_equal("Mode: line", drawpanel.mode_text.message)
-
     current_size = (610, 610)
     show_manager = window.ShowManager(
         size=current_size, title="DrawPanel UI Example")
