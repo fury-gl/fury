@@ -3146,7 +3146,7 @@ class Shape2D(UI):
         if self.shape_type == "line":
             hyp = np.hypot(size[0], size[1])
             self.shape.resize((hyp, 2))
-            self.rotate_line(deg=np.arctan2(size[1],size[0]))
+            self.rotate_line(deg=np.arctan2(size[1], size[0]))
 
         elif self.shape_type == "quad":
             self.shape.resize(size)
@@ -3169,6 +3169,9 @@ class Shape2D(UI):
 
 
 class DrawPanel(UI):
+    """The main Canvas(Panel2D) on which everything would be drawn.
+    """
+
     def __init__(self, size=(400, 400), position=(0, 0)):
         """Init this UI element.
 
@@ -3193,19 +3196,30 @@ class DrawPanel(UI):
         self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
 
+        # Using for Testing Purpose
+
+        # Attribution
+        # https://www.flaticon.com/free-icons/cursor Cursor icons created by Pixel perfect
+        # https://www.flaticon.com/free-icons/line Line icons created by Dreamstale
+        # https://www.flaticon.com/free-icons/polygon Polygon icons created by Bharat Icons
+        # https://www.flaticon.com/free-icons/circle Circle icons created by Freepik
+        # https://www.flaticon.com/free-icons/delete Delete icons created by bqlqn
+
         mode_data = {
-            "line": "pencil.png",
-            "quad": "stop2.png",
-            "circle": "circle-up.png"
+            "selection": "https://cdn-icons-png.flaticon.com/512/1828/1828365.png",
+            "line": "https://cdn-icons-png.flaticon.com/512/1014/1014919.png",
+            "quad": "https://cdn-icons-png.flaticon.com/512/7168/7168063.png",
+            "circle": "https://cdn-icons-png.flaticon.com/512/481/481078.png",
+            "delete": "https://cdn-icons-png.flaticon.com/512/3096/3096673.png"
         }
 
-        mode_panel_size = (len(mode_data) * 40, 40)
+        padding = 5
+        mode_panel_size = (len(mode_data) * 35 + 2 * padding, 40)
         self.mode_panel = Panel2D(size=mode_panel_size, color=(0.5, 0.5, 0.5))
         btn_pos = np.array([0, 0])
-        padding = 5
 
         for mode, fname in mode_data.items():
-            btn = Button2D(icon_fnames=[(mode, read_viz_icons(fname=fname))])
+            btn = Button2D(icon_fnames=[(mode, fname)])
 
             def mode_selector(i_ren, _obj, btn):
                 self.current_mode = btn.icon_names[0]
@@ -3281,11 +3295,11 @@ class DrawPanel(UI):
             current_shape.resize(size)
 
     def left_button_pressed(self,  i_ren, _obj, element):
-        if self.current_mode != None:
+        if self.current_mode in ["line", "quad", "circle"]:
             self.create_shape(self.current_mode, i_ren.event.position)
         i_ren.force_render()
 
     def left_button_dragged(self,  i_ren, _obj, element):
-        if self.current_mode != None:
+        if self.current_mode in ["line", "quad", "circle"]:
             self.create_shape(self.current_mode, i_ren.event.position, True)
         i_ren.force_render()
