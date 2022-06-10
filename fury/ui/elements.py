@@ -3144,9 +3144,9 @@ class Shape2D(UI):
         """Resize the UI.
         """
         if self.shape_type == "line":
-            hyp = np.hypot(size[0], size[1]) * (-1 if size[0] < 0 else 1)
+            hyp = np.hypot(size[0], size[1])
             self.shape.resize((hyp, 2))
-            self.rotate_line(deg=np.arctan(size[1]/size[0]))
+            self.rotate_line(deg=np.arctan2(size[1],size[0]))
 
         elif self.shape_type == "quad":
             self.shape.resize(size)
