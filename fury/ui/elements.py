@@ -3196,21 +3196,12 @@ class DrawPanel(UI):
         self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
 
-        # Using for Testing Purpose
-
-        # Attribution
-        # https://www.flaticon.com/free-icons/cursor Cursor icons created by Pixel perfect
-        # https://www.flaticon.com/free-icons/line Line icons created by Dreamstale
-        # https://www.flaticon.com/free-icons/polygon Polygon icons created by Bharat Icons
-        # https://www.flaticon.com/free-icons/circle Circle icons created by Freepik
-        # https://www.flaticon.com/free-icons/delete Delete icons created by bqlqn
-
         mode_data = {
-            "selection": "https://cdn-icons-png.flaticon.com/512/1828/1828365.png",
-            "line": "https://cdn-icons-png.flaticon.com/512/1014/1014919.png",
-            "quad": "https://cdn-icons-png.flaticon.com/512/7168/7168063.png",
-            "circle": "https://cdn-icons-png.flaticon.com/512/481/481078.png",
-            "delete": "https://cdn-icons-png.flaticon.com/512/3096/3096673.png"
+            "selection": "arrow-up.png",
+            "line": "pencil.png",
+            "quad": "stop2.png",
+            "circle": "circle-up.png",
+            "delete": "cross.png"
         }
 
         padding = 5
@@ -3219,7 +3210,7 @@ class DrawPanel(UI):
         btn_pos = np.array([0, 0])
 
         for mode, fname in mode_data.items():
-            btn = Button2D(icon_fnames=[(mode, fname)])
+            btn = Button2D(icon_fnames=[(mode, read_viz_icons(fname=fname))])
 
             def mode_selector(i_ren, _obj, btn):
                 self.current_mode = btn.icon_names[0]
