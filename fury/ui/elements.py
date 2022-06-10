@@ -3068,10 +3068,10 @@ class Shape2D(UI):
         ----------
         shape_type : string
             Type of shape to be created.
-        position : (float, float)
+        position : (float, float), optional
             (x, y) in pixels.
         """
-        self.shape_type = shape_type
+        self.shape_type = shape_type.lower()
         super(Shape2D, self).__init__(position)
 
     def _setup(self):
@@ -3176,13 +3176,13 @@ class DrawPanel(UI):
         ----------
         size : (int, int)
             Width and height in pixels of this UI component.
-        position : (float, float)
+        position : (float, float), optional
             (x, y) in pixels.
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
         self.shape_list = []
-        self.current_mode = "selection"
+        self.current_mode = ""
 
     def _setup(self):
         """Setup this UI component.
@@ -3204,8 +3204,8 @@ class DrawPanel(UI):
         btn_pos = np.array([0, 0])
         padding = 5
 
-        for mode in mode_data:
-            btn = Button2D(icon_fnames=[(mode, read_viz_icons(fname=mode_data[mode]))])
+        for mode, fname in mode_data.items():
+            btn = Button2D(icon_fnames=[(mode, read_viz_icons(fname=fname))])
 
             def mode_selector(i_ren, _obj, btn):
                 self.current_mode = btn.icon_names[0]
@@ -3217,7 +3217,7 @@ class DrawPanel(UI):
 
         self.canvas.add_element(self.mode_panel, (0, 0))
 
-        self.mode_text = TextBlock2D(text="Mode: selection")
+        self.mode_text = TextBlock2D(text="Mode: ")
         self.canvas.add_element(self.mode_text, (0.0, 0.95))
 
         self.iren = None
@@ -3249,7 +3249,7 @@ class DrawPanel(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.canvas.position = (coords)
+        self.canvas.position = coords
 
     def resize(self, size):
         """Resize the UI.
@@ -3263,7 +3263,7 @@ class DrawPanel(UI):
     @current_mode.setter
     def current_mode(self, mode):
         self._current_mode = mode
-        self.mode_text.message = "Mode: {}".format(mode)
+        self.mode_text.message = f"Mode: {mode}"
         if self.iren is not None:
             self.iren.force_render()
 
