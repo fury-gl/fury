@@ -3220,6 +3220,8 @@ class DrawPanel(UI):
         self.mode_text = TextBlock2D(text="Mode: selection")
         self.canvas.add_element(self.mode_text, (0.0, 0.95))
 
+        self.iren = None
+
     def _get_actors(self):
         """Get the actors composing this UI component."""
         return self.canvas.actors
@@ -3233,6 +3235,7 @@ class DrawPanel(UI):
 
         """
         self.current_scene = scene
+        self.iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
         self.canvas.add_to_scene(scene)
 
     def _get_size(self):
@@ -3261,6 +3264,8 @@ class DrawPanel(UI):
     def current_mode(self, mode):
         self._current_mode = mode
         self.mode_text.message = "Mode: {}".format(mode)
+        if self.iren is not None:
+            self.iren.force_render()
 
     def create_shape(self, shape_type, current_position, in_process=False):
         if not in_process:
@@ -3277,7 +3282,7 @@ class DrawPanel(UI):
     def left_button_pressed(self,  i_ren, _obj, element):
         if self.current_mode != "selection":
             self.create_shape(self.current_mode, i_ren.event.position)
-        i_ren.event.abort()
+        i_ren.force_render()
 
     def left_button_dragged(self,  i_ren, _obj, element):
         if self.current_mode != "selection":
