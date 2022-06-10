@@ -406,7 +406,7 @@ class ShowManager(object):
 
     def render(self):
         """Render only once."""
-        self.fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
         self._last_render_time = time.perf_counter()
         self.window.Render()
 
