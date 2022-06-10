@@ -3181,8 +3181,8 @@ class DrawPanel(UI):
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
+        self.current_mode = None
         self.shape_list = []
-        self.current_mode = ""
 
     def _setup(self):
         """Setup this UI component.
@@ -3217,7 +3217,7 @@ class DrawPanel(UI):
 
         self.canvas.add_element(self.mode_panel, (0, 0))
 
-        self.mode_text = TextBlock2D(text="Mode: ")
+        self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
         self.canvas.add_element(self.mode_text, (0.0, 0.95))
 
         self.iren = None
@@ -3263,7 +3263,8 @@ class DrawPanel(UI):
     @current_mode.setter
     def current_mode(self, mode):
         self._current_mode = mode
-        self.mode_text.message = f"Mode: {mode}"
+        if mode is not None:
+            self.mode_text.message = f"Mode: {mode}"
         if self.iren is not None:
             self.iren.force_render()
 
@@ -3280,11 +3281,11 @@ class DrawPanel(UI):
             current_shape.resize(size)
 
     def left_button_pressed(self,  i_ren, _obj, element):
-        if self.current_mode != "selection":
+        if self.current_mode != None:
             self.create_shape(self.current_mode, i_ren.event.position)
         i_ren.force_render()
 
     def left_button_dragged(self,  i_ren, _obj, element):
-        if self.current_mode != "selection":
+        if self.current_mode != None:
             self.create_shape(self.current_mode, i_ren.event.position, True)
         i_ren.force_render()
