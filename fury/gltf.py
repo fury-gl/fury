@@ -5,15 +5,15 @@ import json as j
 import os
 from dataclasses import dataclass
 from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip, PolyData
-from fury import window, transform, utils
+import window, transform, utils
 
 comp_type = {
-    '5120': {'size': 1, 'dtype': np.byte},
-    '5121': {'size': 1, 'dtype': np.ubyte},
-    '5122': {'size': 2, 'dtype': np.short},
-    '5123': {'size': 2, 'dtype': np.ushort},
-    '5125': {'size': 4, 'dtype': np.uint},
-    '5126': {'size': 4, 'dtype': np.float32}
+    5120: {'size': 1, 'dtype': np.byte},
+    5121: {'size': 1, 'dtype': np.ubyte},
+    5122: {'size': 2, 'dtype': np.short},
+    5123: {'size': 2, 'dtype': np.ushort},
+    5125: {'size': 4, 'dtype': np.uint},
+    5126: {'size': 4, 'dtype': np.float32}
 }
 
 acc_type = {
@@ -45,16 +45,34 @@ class Mesh:
 
 @dataclass
 class Material:
+    pbrMetallicRoughness: dict = None
+    occlusionTexture: dict = None
+    normalTexture: dict = None
+    emissiveTexture: dict = None
+    emissiveFactor: list[int] = None
+    alphaMode: str = None
+    alphaCutoff: float = None
+    doubleSided: bool = False
+    name: str = None
+    # vtkTextures and Materials
     baseColorTexture: Texture = None
     metallicRoughnessTexture: Texture = None
-    normalTexture: Texture = None
-    name: str = None
+
 
 
 @dataclass
 class Primitive:
-    polydata: PolyData
+    attributes: dict = None
+    indices: int = None
+    mode: int = 4
+    target: any = None
+    polydata: PolyData = None
     material: Material = None
+
+    @classmethod
+    def set_polydata(cls, polydata):
+        cls.polydata = polydata
+        return Primitive(polydata=polydata)
 
 
 @dataclass
@@ -80,13 +98,63 @@ class Camera:
     orthographic: Orthographic = None
 
 
+@dataclass
+class Accessor:
+    componentType: int
+    type: str
+    bufferView: int = None
+    byteOffset: int = 0
+    normalized: bool = False
+    count: int = False
+    max: list = False
+    min: list = False
+    sparse: any = None
+    name: str = None
+
+
+@dataclass
+class BufferView:
+    buffer: int
+    byteLength: int
+    byteOffset: int = 0
+    byteStride: int = None
+    target: int = None
+    name: str = None
+
+
+@dataclass
+class Buffer:
+    byteLength: int
+    uri: str = None
+    name: str = None
+
+
+@dataclass
+class glTF:
+    scene: int
+    scenes: dict
+    accessors: list[Accessor] = None
+    animations: dict = None
+    asset: dict = None
+    bufferViews: list[BufferView] = None
+    buffers: list[Buffer] = None
+    cameras: list[Camera] = None
+    images: dict = None
+    materials: list[Material] = None
+    meshes: list[Mesh] = None
+    nodes: list[Node] = None
+    samplers: dict = None
+    skins: dict = None
+    textures: dict = None
+
+
 class glTFImporter():
 
     
     def __init__(self, filename):
 
         fp = open(filename)
-        self.json = j.load(fp)
+        self.json = glTF(** j.load(fp))
         fp.close()
 
         gltf = filename.split('/')[-1:][0]
@@ -102,17 +170,16 @@ class glTFImporter():
         self.get_nodes(0)
 
     
-    def get_nodes(self, scene_id):
-        scene = self.json['scenes'][scene_id]
+    def get_nodes(self, scene_id=0):
+        scene = self.json.scenes[scene_id]
         nodes = scene.get('nodes')
 
         for node_id in nodes:
-            print(f'Node: {node_id}')
             self.transverse_node(node_id, self.init_transform)
 
     
     def transverse_node(self, nextnode_id, matrix):
-        node = Node(** self.json['nodes'][nextnode_id])
+        node = Node(** self.json.nodes[nextnode_id])
 
         matnode = np.identity(4)
         if not (node.matrix is None):
@@ -138,8 +205,8 @@ class glTFImporter():
 
         if not node.mesh is None:
             mesh_id = node.mesh
+            self.meshes[mesh_id] = Mesh(** self.json.meshes[mesh_id])
             mesh = self.load_mesh(mesh_id, next_matrix)
-            self.meshes[mesh_id] = mesh
             self.transforms[mesh_id] = next_matrix
 
         if not node.camera is None:
@@ -153,16 +220,19 @@ class glTFImporter():
 
     
     def load_mesh(self, mesh_id, transform_mat):
-        primitives = self.json['meshes'][mesh_id]['primitives']
+        primitives = self.meshes[mesh_id].primitives
 
         for primitive in primitives:
+            
+            primitive = Primitive(** primitive)
+            attributes = primitive.attributes
 
-            position_id = primitive['attributes'].get('POSITION')
-            normal_id = primitive['attributes'].get('NORMAL')
-            texcoord_id = primitive['attributes'].get('TEXCOORD_0')
-            color_id = primitive['attributes'].get('COLOR_0')
-            indices_id = primitive.get('indices')
-            material_id = primitive.get('material')
+            position_id = attributes.get('POSITION')
+            normal_id = attributes.get('NORMAL')
+            texcoord_id = attributes.get('TEXCOORD_0')
+            color_id = attributes.get('COLOR_0')
+            indices_id = primitive.indices
+            material_id = primitive.material
 
             vertices = self.get_acc_data(position_id)
             vertices = transform.apply_transfomation(vertices, transform_mat.T)
@@ -187,25 +257,26 @@ class glTFImporter():
                 material = self.get_materials(material_id)
                 self.materials[mesh_id] = material
 
-            prim = Primitive(polydata)
+            prim = Primitive.set_polydata(polydata)
             self.primitives.append(prim)
 
     
     def get_acc_data(self, acc_id):
 
-        accessor = self.json['accessors'][acc_id]
+        accessor = Accessor(** self.json.accessors[acc_id])
 
-        buffview_id = accessor.get('bufferView')
-        acc_byte_offset = accessor.get('byteOffset', 0)
-        d_type = comp_type.get(str(accessor['componentType']))
-        a_type = acc_type.get(accessor['type'])
+        buffview_id = accessor.bufferView
+        acc_byte_offset = accessor.byteOffset
+        d_type = comp_type.get(accessor.componentType)
+        a_type = acc_type.get(accessor.type)
 
-        buffview = self.json['bufferViews'][buffview_id]
+        buffview = BufferView(** self.json.bufferViews[buffview_id])
 
-        buff_id = buffview['buffer']
-        byte_offset = buffview.get('byteOffset', 0)
-        byte_length = buffview['byteLength']
-        byte_stride = buffview.get('byteStride', a_type * d_type['size'])
+        buff_id = buffview.buffer
+        byte_offset = buffview.byteOffset
+        byte_length = buffview.byteLength
+        byte_stride = buffview.byteStride
+        byte_stride = byte_stride if byte_stride else (a_type * d_type['size'])
 
         total_byte_offset = byte_offset + acc_byte_offset
         byte_length = byte_length - acc_byte_offset
@@ -213,9 +284,10 @@ class glTFImporter():
         return self.get_buff_array(buff_id, d_type['dtype'], byte_length, total_byte_offset, byte_stride)
 
     
-    def get_buff_array(self, buff_id, d_type, byte_length, byte_offset, byte_stride=6):
+    def get_buff_array(self, buff_id, d_type, byte_length, byte_offset, byte_stride):
 
-        uri = self.json["buffers"][buff_id]['uri']
+        buffer = Buffer(** self.json.buffers[buff_id])
+        uri = buffer.uri
         dtype = np.dtype('B')
 
         if d_type == np.short or d_type == np.ushort:
@@ -245,34 +317,33 @@ class glTFImporter():
         except IOError:
             print('Failed to read ! Error in opening file')
 
-    
+
     def get_materials(self, mat_id):
 
-        print(f'Fetching Material...{mat_id}')
-        material = self.json.get('materials')[mat_id]
+        material = Material(** self.json.materials[mat_id])
         bct, mrt, nt = None, None, None
 
-        if 'pbrMetallicRoughness' in material:
-            pbr = material['pbrMetallicRoughness']
+        pbr = material.pbrMetallicRoughness
 
-            if 'baseColorTexture' in pbr:
-                bct = pbr['baseColorTexture']['index']
-                bct = self.get_texture(bct)
+        if 'baseColorTexture' in pbr:
+            bct = pbr.get('baseColorTexture')['index']
+            bct = self.get_texture(bct)
 
-            if 'metallicRoughnesstexture' in pbr:
-                mrt = pbr['metallicRoughnessTexture']['index']
-                mrt = self.get_texture(mrt)
-        if 'normalTexture' in material:
-            nt = material['normalTexture']['index']
+        if 'metallicRoughnesstexture' in pbr:
+            mrt = pbr.get('metallicRoughnessTexture')['index']
+            mrt = self.get_texture(mrt)
+
+        if not material.normalTexture is None:
+            nt = material.normalTexture['index']
             nt = self.get_texture(nt)
 
-        return Material(bct, mrt, nt)
+        return Material(baseColorTexture=bct, metallicRoughnessTexture=mrt)
 
     
     def get_texture(self, tex_id):
 
-        textures = self.json.get('textures')
-        images = self.json.get('images')
+        textures = self.json.textures
+        images = self.json.images
 
         reader_type = {
             '.jpg': JPEGReader,
@@ -298,33 +369,5 @@ class glTFImporter():
 
     
     def load_camera(self, camera_id, node_id):
-        camera = Camera(** self.json['cameras'][camera_id])
-
-        if camera.type == 'perspective':
-            cam_data = camera.perspective
-            pers = Perspective(** cam_data)
-        else:
-            cam_data = camera.orthographic
-
-
-# testing ---------------------------------------------------------------------
-
-filename = 'local-glTF/glTF-samples/milk-truck/CesiumMilkTruck.gltf'
-importer = glTFImporter(filename)
-scene = window.Scene()
-
-for pd in importer.primitives:
-    actor = utils.get_actor_from_polydata(pd.polydata)
-    material = importer.materials
-    if material != {}:
-        btexture = material[0].baseColorTexture
-        actor.SetTexture(btexture)
-
-    scene.add(actor)
-
-
-current_size = (1024, 720)
-showm = window.ShowManager(scene, size=current_size)
-
-showm.start()
-# -----------------------------------------------------------------------------
+        camera = Camera(** self.json.cameras[camera_id])
+        self.cameras[node_id] = camera

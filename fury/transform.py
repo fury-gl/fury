@@ -318,6 +318,20 @@ def scale(scales):
 
 
 def apply_transfomation(vertices, transformation):
+    """ Multiplying transformation matrix with vertices
+
+    Parameters
+    ------------
+    vertices : ndarray (n, 3)
+        verices of the mesh
+    transformation : ndarray (4, 4)
+        transformation matrix
+
+    Returns
+    ---------
+    vertices : ndarray (n, 3)
+        transformed vertices of the mesh
+    """
     shape = vertices.shape
     t = np.full((shape[0], 1), 1)
     vertices = np.concatenate((vertices, t), axis=1)
