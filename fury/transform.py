@@ -213,7 +213,7 @@ def translate(translation):
     ------------
     translation : ndarray
         translation in x, y and z directions.
-    
+
     Returns
     ---------
     translation : ndarray (4, 4)
@@ -252,11 +252,11 @@ def rotate(quat):
     ------------
     quat : ndarray (4, )
         rotation quaternion.
-    
+
     Returns
     ---------
     rotation_mat : ndarray (4, 4)
-        Transformation matrix of shape (4, 4) to rotate a vector. 
+        Transformation matrix of shape (4, 4) to rotate a vector.
 
     Examples
     ---------

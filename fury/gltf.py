@@ -1,13 +1,11 @@
 import numpy as np
 import base64
-import numpy as np
 import json as j
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip, PolyData
 from fury import window, transform, utils
 from io import BytesIO
-import cv2
 
 
 comp_type = {
@@ -60,7 +58,6 @@ class Material:
     # vtkTextures and Materials
     baseColorTexture: Texture = None
     metallicRoughnessTexture: Texture = None
-
 
 
 @dataclass
@@ -133,9 +130,14 @@ class Buffer:
 
 
 @dataclass
+class Scene:
+    nodes: list[int] = [0]
+
+
+@dataclass
 class glTF:
     scene: int
-    scenes: dict
+    scenes: list[Scene]
     accessors: list[Accessor] = None
     animations: dict = None
     asset: dict = None
@@ -153,7 +155,6 @@ class glTF:
 
 class glTFImporter:
 
-    
     def __init__(self, filename):
 
         fp = open(filename)
@@ -169,24 +170,22 @@ class glTFImporter:
         self.primitives = []
         self.cameras = {}
         self.transforms = {}
-        self.actors =[]
+        self.actors = []
         self.init_transform = np.identity(4)
         self.get_nodes(0)
 
-    
     def get_actors(self):
         for polydatas in self.primitives:
             actor = utils.get_actor_from_polydata(polydatas.polydata)
-            
+
             if bool(self.materials):
                 baseColorTexture = self.materials[0].baseColorTexture
                 actor.SetTexture(baseColorTexture)
-            
+
             self.actors.append(actor)
-            
+
         return self.actors
 
-    
     def get_nodes(self, scene_id=0):
         scene = self.json.scenes[scene_id]
         nodes = scene.get('nodes')
@@ -194,7 +193,6 @@ class glTFImporter:
         for node_id in nodes:
             self.transverse_node(node_id, self.init_transform)
 
-    
     def transverse_node(self, nextnode_id, matrix):
         node = Node(** self.json.nodes[nextnode_id])
 
@@ -203,44 +201,43 @@ class glTFImporter:
             matnode = np.array(node.matrix)
             matnode = matnode.reshape(-1, 4)
         else:
-            if not node.translation is None:
+            if not (node.translation is None):
                 trans = node.translation
                 T = transform.translate(trans)
                 matnode = np.dot(matnode, T)
 
-            if not node.rotation is None:
+            if not (node.rotation is None):
                 rot = node.rotation
                 R = transform.rotate(rot)
                 matnode = np.dot(matnode, R)
 
-            if not node.scale is None:
+            if not (node.scale is None):
                 scales = node.scale
                 S = transform.scale(scales)
                 matnode = np.dot(matnode, S)
 
         next_matrix = np.dot(matrix, matnode)
 
-        if not node.mesh is None:
+        if not (node.mesh is None):
             mesh_id = node.mesh
             self.meshes[mesh_id] = Mesh(** self.json.meshes[mesh_id])
-            mesh = self.load_mesh(mesh_id, next_matrix)
+            self.load_mesh(mesh_id, next_matrix)
             self.transforms[mesh_id] = next_matrix
 
-        if not node.camera is None:
+        if not (node.camera is None):
             camera_id = node.camera
             # Todo -->
-            camera = self.load_camera(camera_id, nextnode_id)
+            self.load_camera(camera_id, nextnode_id)
 
         if node.children:
             for child_id in node.children:
                 self.transverse_node(child_id, next_matrix)
 
-    
     def load_mesh(self, mesh_id, transform_mat):
         primitives = self.meshes[mesh_id].primitives
 
         for primitive in primitives:
-            
+
             primitive = Primitive(** primitive)
             attributes = primitive.attributes
 
@@ -263,7 +260,8 @@ class glTFImporter:
 
             if not (texcoord_id is None):
                 uv = self.get_acc_data(texcoord_id)
-                polydata.GetPointData().SetTCoords(utils.numpy_support.numpy_to_vtk(uv))
+                polydata.GetPointData().SetTCoords(
+                    utils.numpy_support.numpy_to_vtk(uv))
 
             if not (color_id is None):
                 color = self.get_acc_data(color_id)
@@ -277,7 +275,6 @@ class glTFImporter:
             prim = Primitive.set_polydata(polydata)
             self.primitives.append(prim)
 
-    
     def get_acc_data(self, acc_id):
 
         accessor = Accessor(** self.json.accessors[acc_id])
@@ -298,10 +295,11 @@ class glTFImporter:
         total_byte_offset = byte_offset + acc_byte_offset
         byte_length = byte_length - acc_byte_offset
 
-        return self.get_buff_array(buff_id, d_type['dtype'], byte_length, total_byte_offset, byte_stride)
+        return self.get_buff_array(buff_id, d_type['dtype'], byte_length,
+                                   total_byte_offset, byte_stride)
 
-    
-    def get_buff_array(self, buff_id, d_type, byte_length, byte_offset, byte_stride):
+    def get_buff_array(self, buff_id, d_type, byte_length,
+                       byte_offset, byte_stride):
 
         buffer = Buffer(** self.json.buffers[buff_id])
         uri = buffer.uri
@@ -334,7 +332,6 @@ class glTFImporter:
         except IOError:
             print('Failed to read ! Error in opening file')
 
-
     def get_materials(self, mat_id):
 
         material = Material(** self.json.materials[mat_id])
@@ -350,13 +347,12 @@ class glTFImporter:
             mrt = pbr.get('metallicRoughnessTexture')['index']
             mrt = self.get_texture(mrt)
 
-        if not material.normalTexture is None:
+        if not (material.normalTexture is None):
             nt = material.normalTexture['index']
             nt = self.get_texture(nt)
 
         return Material(baseColorTexture=bct, metallicRoughnessTexture=mrt)
 
-    
     def get_texture(self, tex_id):
 
         textures = self.json.textures
@@ -367,21 +363,21 @@ class glTFImporter:
             '.jpeg': JPEGReader,
             '.png': PNGReader
         }
-        filename = images[textures[tex_id]['source']]['uri']
+        file = images[textures[tex_id]['source']]['uri']
 
-        if filename.startswith('data:image'):
-            buff_data = filename.split(',')[1]
+        if file.startswith('data:image'):
+            buff_data = file.split(',')[1]
             buff_data = base64.b64decode(buff_data)
 
-            extension = '.png' if filename.startswith('data:image/png') else '.jpg'
+            extension = '.png' if file.startswith('data:image/png') else '.jpg'
             image_path = os.path.join(self.pwd, "b64texture.png")
             with open(image_path, "wb") as image_file:
                 image_file.write(buff_data)
 
         else:
-            extension = os.path.splitext(os.path.basename(filename).lower())[1]
-            image_path = os.path.join(self.pwd, filename)
-        
+            extension = os.path.splitext(os.path.basename(file).lower())[1]
+            image_path = os.path.join(self.pwd, file)
+
         reader = reader_type.get(extension)()
         reader.SetFileName(image_path)
         reader.Update()
@@ -397,7 +393,6 @@ class glTFImporter:
 
         return atexture
 
-    
     def load_camera(self, camera_id, node_id):
         camera = Camera(** self.json.cameras[camera_id])
         self.cameras[node_id] = camera

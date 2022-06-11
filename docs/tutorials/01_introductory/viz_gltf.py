@@ -1,6 +1,6 @@
 """
 =======================
-Visualizing a glTF file 
+Visualizing a glTF file
 =======================
 In this tutorial, we will show how to display a glTF file in a scene.
 """
