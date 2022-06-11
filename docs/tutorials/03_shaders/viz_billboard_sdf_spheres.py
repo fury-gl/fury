@@ -16,10 +16,15 @@ always faces a specific direction, in most cases the camera. This technique
 became popular in games and applications that have a high polygonal quota
 requirement.
 
-Signed Distance Functions (SDFs) are mathematical functions that describe sets
-in a metric space.
+Signed Distance Functions (SDFs) are mathematical functions that take as input
+a point in a metric space and return the distance from that point to the
+boundary of the function. Depending on whether the point is contained within
+this boundary or outside it, the function will return negative or positive
+values [1, 2]. For visualization purposes, the task is to display only the
+points within the boundary or in other words, those whose distance to the
+boundary is either negative or positive depending on the definition of the SDF.
 
-This tutorial, exemplifies why FURY's billboard actor is a suitable option when
+This tutorial exemplifies why FURY's billboard actor is a suitable option when
 and how it can be used to create impostors using SDFs.
 
 Let's start by importing the necessary modules:
