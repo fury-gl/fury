@@ -5,7 +5,10 @@ import json as j
 import os
 from dataclasses import dataclass
 from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip, PolyData
-import window, transform, utils
+from fury import window, transform, utils
+from io import BytesIO
+import cv2
+
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
@@ -148,7 +151,7 @@ class glTF:
     textures: dict = None
 
 
-class glTFImporter():
+class glTFImporter:
 
     
     def __init__(self, filename):
@@ -166,8 +169,22 @@ class glTFImporter():
         self.primitives = []
         self.cameras = {}
         self.transforms = {}
+        self.actors =[]
         self.init_transform = np.identity(4)
         self.get_nodes(0)
+
+    
+    def get_actors(self):
+        for polydatas in self.primitives:
+            actor = utils.get_actor_from_polydata(polydatas.polydata)
+            
+            if bool(self.materials):
+                baseColorTexture = self.materials[0].baseColorTexture
+                actor.SetTexture(baseColorTexture)
+            
+            self.actors.append(actor)
+            
+        return self.actors
 
     
     def get_nodes(self, scene_id=0):
@@ -212,7 +229,7 @@ class glTFImporter():
         if not node.camera is None:
             camera_id = node.camera
             # Todo -->
-            camera = self.load_camera(camera_id, node_id)
+            camera = self.load_camera(camera_id, nextnode_id)
 
         if node.children:
             for child_id in node.children:
@@ -347,13 +364,26 @@ class glTFImporter():
 
         reader_type = {
             '.jpg': JPEGReader,
+            '.jpeg': JPEGReader,
             '.png': PNGReader
         }
         filename = images[textures[tex_id]['source']]['uri']
-        extension = os.path.splitext(os.path.basename(filename).lower())[1]
 
+        if filename.startswith('data:image'):
+            buff_data = filename.split(',')[1]
+            buff_data = base64.b64decode(buff_data)
+
+            extension = '.png' if filename.startswith('data:image/png') else '.jpg'
+            image_path = os.path.join(self.pwd, "b64texture.png")
+            with open(image_path, "wb") as image_file:
+                image_file.write(buff_data)
+
+        else:
+            extension = os.path.splitext(os.path.basename(filename).lower())[1]
+            image_path = os.path.join(self.pwd, filename)
+        
         reader = reader_type.get(extension)()
-        reader.SetFileName(os.path.join(self.pwd, filename))
+        reader.SetFileName(image_path)
         reader.Update()
 
         flip = ImageFlip()
