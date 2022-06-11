@@ -3171,8 +3171,8 @@ class Shape2D(UI):
         if self.drawpanel.current_mode == "selection":
             if self._drag_offset is not None:
                 click_position = np.array(i_ren.event.position)
-                new_position = click_position - self._drag_offset
-                self.position = new_position
+                new_position = click_position - self._drag_offset - self.drawpanel.canvas.position
+                self.drawpanel.canvas.update_element(self, new_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
@@ -3182,7 +3182,7 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn.
     """
 
-    def __init__(self, size=(400, 400), position=(0, 0)):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=True):
         """Init this UI element.
 
         Parameters
@@ -3191,9 +3191,13 @@ class DrawPanel(UI):
             Width and height in pixels of this UI component.
         position : (float, float), optional
             (x, y) in pixels.
+        is_draggable : bool, optional
+            Whether the background canvas will be draggble or not.
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
+        self.is_draggable = is_draggable
+        self.iren = None
         self.current_mode = None
         self.shape_list = []
 
@@ -3234,8 +3238,6 @@ class DrawPanel(UI):
 
         self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
         self.canvas.add_element(self.mode_text, (0.0, 0.95))
-
-        self.iren = None
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3297,11 +3299,20 @@ class DrawPanel(UI):
             current_shape.resize(size)
 
     def left_button_pressed(self,  i_ren, _obj, element):
+        if self.is_draggable and self.current_mode == "selection":
+            click_pos = np.array(i_ren.event.position)
+            self._drag_offset = click_pos - self.position
+            i_ren.event.abort()
         if self.current_mode in ["line", "quad", "circle"]:
             self.create_shape(self.current_mode, i_ren.event.position)
         i_ren.force_render()
 
     def left_button_dragged(self,  i_ren, _obj, element):
+        if self.is_draggable and self.current_mode == "selection":
+            if self._drag_offset is not None:
+                click_position = np.array(i_ren.event.position)
+                new_position = click_position - self._drag_offset
+                self.position = new_position
         if self.current_mode in ["line", "quad", "circle"]:
             self.create_shape(self.current_mode, i_ren.event.position, True)
         i_ren.force_render()
