@@ -10,7 +10,6 @@ from collections import OrderedDict
 from numbers import Number
 from string import printable
 
-
 import numpy as np
 
 from fury.data import read_viz_icons
@@ -19,7 +18,7 @@ from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
-from fury.utils import set_input
+from fury.utils import set_input, set_polydata_vertices, vertices_from_actor
 
 
 class TextBox2D(UI):
@@ -3126,24 +3125,20 @@ class Shape2D(UI):
         else:
             self.shape.position = coords
 
-    def rotate_point(self, x, y, deg):
-        new_x = np.cos(deg) * x - y * np.sin(deg)
-        new_y = np.sin(deg) * x + y * np.cos(deg)
-        return new_x, new_y
+    def rotate(self, angle):
+        """Rotate the vertices of the UI component using specific angle.
 
-    def rotate_line(self, deg):
-        line_actor = self.shape
-
-        for i in range(4):
-            current_x, current_y = line_actor._points.GetPoint(i)[:2]
-            new_x, new_y = self.rotate_point(current_x, current_y, deg)
-            line_actor._points.SetPoint(i, new_x, new_y, 0.0)
-
-        line_actor._polygonPolyData.SetPoints(line_actor._points)
-        mapper = PolyDataMapper2D()
-        mapper = set_input(mapper, line_actor._polygonPolyData)
-
-        line_actor.actor.SetMapper(mapper)
+        Parameters
+        ----------
+        angle: float
+            Value by which the vertices are rotated in radian.
+        """
+        points_arr = vertices_from_actor(self.shape.actor)
+        rotation_matrix = np.array(
+            [[np.cos(angle), np.sin(angle), 0], [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
+        self.shape.actor.GetMapper().Update()
 
     def resize(self, size):
         """Resize the UI.
@@ -3151,7 +3146,7 @@ class Shape2D(UI):
         if self.shape_type == "line":
             hyp = np.hypot(size[0], size[1])
             self.shape.resize((hyp, 3))
-            self.rotate_line(deg=np.arctan2(size[1], size[0]))
+            self.rotate(angle=np.arctan2(size[1], size[0]))
 
         elif self.shape_type == "quad":
             self.shape.resize(size)
