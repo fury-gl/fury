@@ -323,7 +323,7 @@ def apply_transfomation(vertices, transformation):
     Parameters
     ------------
     vertices : ndarray (n, 3)
-        verices of the mesh
+        vertices of the mesh
     transformation : ndarray (4, 4)
         transformation matrix
 

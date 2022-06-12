@@ -2,7 +2,8 @@ import numpy as np
 import base64
 import json as j
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, fields, field
+from typing import Any, Dict, List, Optional
 from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip, PolyData
 from fury import window, transform, utils
 from io import BytesIO
@@ -27,47 +28,41 @@ acc_type = {
 
 @dataclass
 class Node:
-    name: str = None
-    camera: int = None
-    skin: int = None
-    mesh: int = None
-    matrix: np.ndarray = None
-    rotation: np.ndarray = None
-    translation: np.ndarray = None
-    scale: np.ndarray = None
-    children: np.ndarray = None
-
-
-@dataclass
-class Mesh:
-    primitives: np.ndarray
-    name: str = None
+    name: Optional[str] = None
+    camera: Optional[int] = None
+    skin: Optional[int] = None
+    mesh: Optional[int] = None
+    matrix: Optional[np.ndarray] = None
+    rotation: Optional[np.ndarray] = None
+    translation: Optional[np.ndarray] = None
+    scale: Optional[np.ndarray] = None
+    children: Optional[np.ndarray] = None
 
 
 @dataclass
 class Material:
-    pbrMetallicRoughness: dict = None
-    occlusionTexture: dict = None
-    normalTexture: dict = None
-    emissiveTexture: dict = None
-    emissiveFactor: list[int] = None
-    alphaMode: str = None
-    alphaCutoff: float = None
-    doubleSided: bool = False
-    name: str = None
+    pbrMetallicRoughness: Optional[Dict] = None
+    occlusionTexture: Optional[Dict] = None
+    normalTexture: Optional[Dict] = None
+    emissiveTexture: Optional[Dict] = None
+    emissiveFactor: Optional[List[int]] = None
+    alphaMode: Optional[str] = None
+    alphaCutoff: Optional[float] = None
+    doubleSided: Optional[bool] = False
+    name: Optional[str] = None
     # vtkTextures and Materials
-    baseColorTexture: Texture = None
-    metallicRoughnessTexture: Texture = None
+    baseColorTexture: Optional[Texture] = None
+    metallicRoughnessTexture: Optional[Texture] = None
 
 
 @dataclass
 class Primitive:
-    attributes: dict = None
-    indices: int = None
-    mode: int = 4
-    target: any = None
-    polydata: PolyData = None
-    material: Material = None
+    attributes: Optional[dict] = None
+    indices: Optional[int] = None
+    mode: Optional[int] = 4
+    targets: Optional[Any] = None
+    material: Optional[int] = None
+    polydata: Optional[PolyData] = None  # Custom Attribute
 
     @classmethod
     def set_polydata(cls, polydata):
@@ -76,81 +71,88 @@ class Primitive:
 
 
 @dataclass
+class Mesh:
+    primitives: List[Primitive] = field(default_factory=list)
+    weights: Optional[List[float]] = None
+    name: Optional[str] = None
+
+
+@dataclass
 class Perspective:
-    aspectRatio: float = None
-    yfov: float = None
-    zfar: float = None
-    znear: float = None
+    aspectRatio: Optional[float] = None
+    yfov: Optional[float] = None
+    zfar: Optional[float] = None
+    znear: Optional[float] = None
 
 
 @dataclass
 class Orthographic:
-    xmag: float = None
-    ymag: float = None
-    zfar: float = None
-    znear: float = None
+    xmag: Optional[float] = None
+    ymag: Optional[float] = None
+    zfar: Optional[float] = None
+    znear: Optional[float] = None
 
 
 @dataclass
 class Camera:
     type: str
-    perspective: Perspective = None
-    orthographic: Orthographic = None
+    perspective: Optional[Perspective] = None
+    orthographic: Optional[Orthographic] = None
 
 
 @dataclass
 class Accessor:
     componentType: int
     type: str
-    bufferView: int = None
-    byteOffset: int = 0
-    normalized: bool = False
-    count: int = False
-    max: list = False
-    min: list = False
-    sparse: any = None
-    name: str = None
+    bufferView: Optional[int] = None
+    byteOffset: Optional[int] = 0
+    normalized: Optional[bool] = False
+    count: Optional[int] = None
+    max: Optional[List[float]] = field(default_factory=list)
+    min: Optional[List[float]] = field(default_factory=list)
+    sparse: Optional[Any] = None
+    name: Optional[str] = None
 
 
 @dataclass
 class BufferView:
     buffer: int
     byteLength: int
-    byteOffset: int = 0
-    byteStride: int = None
-    target: int = None
-    name: str = None
+    byteOffset: Optional[int] = 0
+    byteStride: Optional[int] = None
+    target: Optional[int] = None
+    name: Optional[str] = None
 
 
 @dataclass
 class Buffer:
     byteLength: int
-    uri: str = None
-    name: str = None
+    uri: Optional[str] = None
+    name: Optional[str] = None
 
 
 @dataclass
 class Scene:
-    nodes: list[int] = [0]
+    nodes: List[int] = field(default_factory=list)
 
 
 @dataclass
 class glTF:
     scene: int
-    scenes: list[Scene]
-    accessors: list[Accessor] = None
-    animations: dict = None
-    asset: dict = None
-    bufferViews: list[BufferView] = None
-    buffers: list[Buffer] = None
-    cameras: list[Camera] = None
-    images: dict = None
-    materials: list[Material] = None
-    meshes: list[Mesh] = None
-    nodes: list[Node] = None
-    samplers: dict = None
-    skins: dict = None
-    textures: dict = None
+    scenes: List[Scene] = field(default_factory=list)
+    accessors: Optional[List[Accessor]] = None
+    animations: Optional[Dict] = None
+    asset: Optional[Dict] = None
+    bufferViews: Optional[List[BufferView]] = None
+    buffers: Optional[List[Buffer]] = None
+    cameras: Optional[List[Camera]] = None
+    images: Optional[Dict] = None
+    materials: Optional[List[Material]] = None
+    meshes: Optional[List[Mesh]] = None
+    nodes: Optional[List[Node]] = None
+    samplers: Optional[Dict] = None
+    skins: Optional[Dict] = None
+    textures: Optional[Dict] = None
 
 
 class glTFImporter:
@@ -396,3 +398,14 @@ class glTFImporter:
     def load_camera(self, camera_id, node_id):
         camera = Camera(** self.json.cameras[camera_id])
         self.cameras[node_id] = camera
+
+
+filename = 'local-glTF/glTF-samples/duck/Duck.gltf'
+importer = glTFImporter(filename)
+actors = importer.get_actors()
+
+scene = window.Scene()
+for actor in actors:
+    scene.add(actor)
+
+window.show(scene, size=(1280, 720))
