@@ -600,6 +600,9 @@ def test_frame_rate():
     showm.add_timer_callback(True, 10, timer_callback)
     showm.start()
 
+    assert_greater(len(frame_rates), 0)
+    assert_greater(len(render_times), 0)
+
     actual_fps = sum(frame_rates)/len(frame_rates)
     ideal_fps = 1 / (sum(render_times) / len(render_times))
 
