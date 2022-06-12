@@ -1,6 +1,4 @@
-import time
-from threading import Thread
-from fury.utils import remove_observer_from_actor, rotate, update_actor, vertices_from_actor,shallow_copy
+from fury.utils import remove_observer_from_actor
 import os
 import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -12,11 +10,6 @@ from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win
 from fury import shaders
-
-from fury.lib import (Renderer, Volume, Actor2D, InteractorEventRecorder,
-                      InteractorStyleImage, InteractorStyleTrackballCamera,
-                      RenderWindow, RenderWindowInteractor, RenderLargeImage,
-                      WindowToImageFilter, Command)
 
 
 def test_scene():
@@ -571,3 +564,7 @@ def test_opengl_state_add_remove_and_check():
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
     npt.assert_equal(after_remove_depth_test_observer, True)
 
+
+# test_opengl_state_add_remove_and_check()
+# test_opengl_state_simple()
+# test_record()
