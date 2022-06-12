@@ -19,7 +19,7 @@ comp_type = {
 }
 
 acc_type = {
-    'SCALAR': 3,
+    'SCALAR': 1,
     'VEC2': 2,
     'VEC3': 3,
     'VEC4': 4
@@ -157,7 +157,7 @@ class glTF:
 
 class glTFImporter:
 
-    def __init__(self, filename):
+    def __init__(self, filename, apply_normals=False):
 
         fp = open(filename)
         self.json = glTF(** j.load(fp))
@@ -165,6 +165,7 @@ class glTFImporter:
 
         gltf = filename.split('/')[-1:][0]
         self.pwd = filename[:-len(gltf)]
+        self.apply_normals = apply_normals
 
         self.materials = {}
         self.nodes = {}
@@ -256,8 +257,12 @@ class glTFImporter:
             polydata = utils.PolyData()
             utils.set_polydata_vertices(polydata, vertices)
 
+            if not (normal_id is None) and self.apply_normals:
+                normals = self.get_acc_data(normal_id)
+                utils.set_polydata_normals(polydata, normals)
+
             if not (indices_id is None):
-                indices = self.get_acc_data(indices_id)
+                indices = self.get_acc_data(indices_id).reshape(-1, 3)
                 utils.set_polydata_triangles(polydata, indices)
 
             if not (texcoord_id is None):
@@ -283,19 +288,20 @@ class glTFImporter:
 
         buffview_id = accessor.bufferView
         acc_byte_offset = accessor.byteOffset
+        count = accessor.count
         d_type = comp_type.get(accessor.componentType)
+        d_size = d_type['size']
         a_type = acc_type.get(accessor.type)
 
         buffview = BufferView(** self.json.bufferViews[buffview_id])
 
         buff_id = buffview.buffer
         byte_offset = buffview.byteOffset
-        byte_length = buffview.byteLength
         byte_stride = buffview.byteStride
-        byte_stride = byte_stride if byte_stride else (a_type * d_type['size'])
+        byte_stride = byte_stride if byte_stride else (a_type * d_size)
+        byte_length = count * d_size * a_type
 
         total_byte_offset = byte_offset + acc_byte_offset
-        byte_length = byte_length - acc_byte_offset
 
         return self.get_buff_array(buff_id, d_type['dtype'], byte_length,
                                    total_byte_offset, byte_stride)
