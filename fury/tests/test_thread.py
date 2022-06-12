@@ -9,21 +9,22 @@ from fury import actor, window
 
 
 def test_multithreading():
-    xyz = 10 * (np.random.random((100, 3))-0.5)
+    xyz = 10 * (np.random.random((100, 3)) - 0.5)
     colors = np.random.random((100, 4))
     radii = np.random.random(100) + 0.5
 
     scene = window.Scene()
-    sphere_actor = actor.sphere(centers=xyz,
-                                colors=colors,
-                                radii=radii,
+    sphere_actor = actor.sphere(centers = xyz,
+                                colors = colors,
+                                radii = radii,
                                 use_primitive = False)
     scene.add(sphere_actor)
 
     # Preparing the show manager as usual
     showm = window.ShowManager(scene,
-                            size=(900, 768), reset_camera=False,
-                            order_transparent=True)
+                               size = (900, 768),
+                               reset_camera = False,
+                               order_transparent = True)
 
     showm.initialize()
 
@@ -32,7 +33,6 @@ def test_multithreading():
     def callback1():
         for i in range(100):
             if showm.lock_current():
-                # scene.azimuth(0.01 * i)
                 rotate(sphere_actor, rotation=(0.01 * i, 1, 0, 0))
                 vsa[:] = 1.01 * vsa[:]
                 update_actor(sphere_actor)
@@ -43,13 +43,13 @@ def test_multithreading():
                 break
 
         if not showm.is_done():
-            arr = window.snapshot(scene,render_window=showm.window,fname="test.png")
+            arr = window.snapshot(scene, render_window = showm.window, fname = "test.png")
             showm.exit()
             npt.assert_equal(np.sum(arr) > 1, True)
 
 
-    thread_a = Thread(target=callback1)
+    thread_a = Thread(target = callback1)
     thread_a.start()
 
-    showm.start(multithreaded=True)
+    showm.start(multithreaded = True)
     thread_a.join()
