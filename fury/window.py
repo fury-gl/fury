@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from sys import platform
 import time
 from threading import Lock
 import gzip
@@ -481,7 +480,7 @@ class ShowManager(object):
         self.mutex.release()
 
     def lock_current(self):
-        """Lock the render window and acuiqre the current context and
+        """Lock the render window and acquire the current context and
         check if the lock was sucessfully acquired.
 
         Returns
@@ -490,8 +489,9 @@ class ShowManager(object):
             Returns if the lock was acquired."""
         if self.is_done():
             return False
+        if not hasattr(self, 'window'):
+            return False
         try:
-            self.window
             self.lock()
             self.window.MakeCurrent()
             return True
