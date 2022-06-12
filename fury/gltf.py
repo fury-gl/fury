@@ -398,14 +398,3 @@ class glTFImporter:
     def load_camera(self, camera_id, node_id):
         camera = Camera(** self.json.cameras[camera_id])
         self.cameras[node_id] = camera
-
-
-filename = 'local-glTF/glTF-samples/duck/Duck.gltf'
-importer = glTFImporter(filename)
-actors = importer.get_actors()
-
-scene = window.Scene()
-for actor in actors:
-    scene.add(actor)
-
-window.show(scene, size=(1280, 720))
