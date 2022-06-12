@@ -77,7 +77,7 @@ def test_frame_rate_and_anti_aliasing():
     def timer_callback(_obj, _event):
         cnt = next(counter)
         if cnt % 1 == 0:
-            fps = np.round(scene.frame_rate, 0)
+            fps = np.round(showm.frame_rate, 0)
             frh.fpss.append(fps)
             msg = "FPS " + str(fps) + ' ' + str(cnt)
             tb.message = msg
