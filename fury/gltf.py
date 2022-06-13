@@ -202,7 +202,7 @@ class glTFImporter:
         matnode = np.identity(4)
         if not (node.matrix is None):
             matnode = np.array(node.matrix)
-            matnode = matnode.reshape(-1, 4)
+            matnode = matnode.reshape(-1, 4).T
         else:
             if not (node.translation is None):
                 trans = node.translation
@@ -378,7 +378,7 @@ class glTFImporter:
             buff_data = base64.b64decode(buff_data)
 
             extension = '.png' if file.startswith('data:image/png') else '.jpg'
-            image_path = os.path.join(self.pwd, "b64texture.png")
+            image_path = os.path.join(self.pwd, str("b64texture"+extension))
             with open(image_path, "wb") as image_file:
                 image_file.write(buff_data)
 
