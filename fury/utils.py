@@ -390,6 +390,27 @@ def get_polydata_vertices(polydata):
     return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
 
 
+def get_polydata_tcoord(polydata):
+    """Get texture coordinates (ndarrays Nx2 float) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 2)
+        Tcoords, represented as 2D ndarrays. None if there are no texture
+        in the vtk polydata.
+
+    """
+    vtk_tcoord = polydata.GetPointData().GetTCoords()
+    if vtk_tcoord is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tcoord)
+
+
 def get_polydata_normals(polydata):
     """Get vertices normal (ndarrays Nx3 int) from a vtk polydata.
 
