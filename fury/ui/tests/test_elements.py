@@ -780,13 +780,13 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
-def test_ui_shape_2d():
-    line = ui.Shape2D("line", (150, 150))
-    quad = ui.Shape2D("quad", (300, 300))
-    circle = ui.Shape2D("circle", (150, 300))
+def test_ui_draw_shape():
+    line = ui.DrawShape("line", (150, 150))
+    quad = ui.DrawShape("quad", (300, 300))
+    circle = ui.DrawShape("circle", (150, 300))
 
     with npt.assert_raises(IOError):
-        ui.Shape2D("poly")
+        ui.DrawShape("poly")
 
     line.resize((100, 5))
     quad.resize((300, 300))
@@ -794,7 +794,7 @@ def test_ui_shape_2d():
 
     current_size = (800, 800)
     show_manager = window.ShowManager(
-        size=current_size, title="Shape2D UI Example")
+        size=current_size, title="DrawShape UI Example")
     show_manager.scene.add(line, quad, circle)
 
 

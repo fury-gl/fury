@@ -3,7 +3,7 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "Shape2D", "DrawPanel"]
+           "DrawShape", "DrawPanel"]
 
 import os
 from collections import OrderedDict
@@ -3056,7 +3056,7 @@ class FileMenu2D(UI):
         i_ren.event.abort()
 
 
-class Shape2D(UI):
+class DrawShape(UI):
     """Create and Manage 2D Shapes.
     """
 
@@ -3072,9 +3072,10 @@ class Shape2D(UI):
         position : (float, float), optional
             (x, y) in pixels.
         """
+        self.shape = None
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
-        super(Shape2D, self).__init__(position)
+        super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
     def _setup(self):
@@ -3285,10 +3286,10 @@ class DrawPanel(UI):
         if self.iren is not None:
             self.iren.force_render()
 
-    def create_shape(self, shape_type, current_position, in_process=False):
+    def draw_shape(self, shape_type, current_position, in_process=False):
         if not in_process:
-            shape = Shape2D(shape_type=shape_type, drawpanel=self,
-                            position=current_position)
+            shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                              position=current_position)
             self.shape_list.append(shape)
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
@@ -3304,7 +3305,7 @@ class DrawPanel(UI):
             self._drag_offset = click_pos - self.position
             i_ren.event.abort()
         if self.current_mode in ["line", "quad", "circle"]:
-            self.create_shape(self.current_mode, i_ren.event.position)
+            self.draw_shape(self.current_mode, i_ren.event.position)
         i_ren.force_render()
 
     def left_button_dragged(self,  i_ren, _obj, element):
@@ -3314,5 +3315,5 @@ class DrawPanel(UI):
                 new_position = click_position - self._drag_offset
                 self.position = new_position
         if self.current_mode in ["line", "quad", "circle"]:
-            self.create_shape(self.current_mode, i_ren.event.position, True)
+            self.draw_shape(self.current_mode, i_ren.event.position, True)
         i_ren.force_render()
