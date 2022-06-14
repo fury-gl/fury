@@ -3183,7 +3183,7 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn.
     """
 
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=True):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
         """Init this UI element.
 
         Parameters
@@ -3212,11 +3212,11 @@ class DrawPanel(UI):
         self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
 
         mode_data = {
-            "selection": "arrow-up.png",
-            "line": "pencil.png",
-            "quad": "stop2.png",
-            "circle": "circle-up.png",
-            "delete": "cross.png"
+            "selection": ["selection.png", "selection-pressed.png"],
+            "line": ["line.png", "line-pressed.png"],
+            "quad": ["stop2.png", "quad-pressed.png"],
+            "circle": ["circle.png", "circle-pressed.png"],
+            "delete": ["cross.png", "cross-pressed.png"]
         }
 
         padding = 5
@@ -3225,10 +3225,15 @@ class DrawPanel(UI):
         btn_pos = np.array([0, 0])
 
         for mode, fname in mode_data.items():
-            btn = Button2D(icon_fnames=[(mode, read_viz_icons(fname=fname))])
+            icon_files = []
+            icon_files.append((mode, read_viz_icons(fname=fname[0])))
+            icon_files.append((mode+"-pressed", read_viz_icons(fname=fname[1])))
+            btn = Button2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
+                self.update_button_icons(self.current_mode, btn.icon_names[0])
                 self.current_mode = btn.icon_names[0]
+                i_ren.force_render()
 
             btn.on_left_mouse_button_pressed = mode_selector
 
@@ -3287,6 +3292,17 @@ class DrawPanel(UI):
             self.iren.force_render()
 
     def draw_shape(self, shape_type, current_position, in_process=False):
+        """Draws the required shape at the given position.
+
+        Parameters
+        ----------
+        shape_type: string
+            Type of shape - line, quad, circle.
+        current_position: (float,float)
+            Lower left corner position for the shape.
+        in_process: bool, optional
+            Checks whether in process or not.
+        """
         if not in_process:
             shape = DrawShape(shape_type=shape_type, drawpanel=self,
                               position=current_position)
@@ -3298,6 +3314,22 @@ class DrawPanel(UI):
             current_shape = self.shape_list[-1]
             size = current_position - current_shape.position
             current_shape.resize(size)
+
+    def update_button_icons(self, last_mode, current_mode):
+        """Updates the button icon.
+
+        Parameters
+        ----------
+        last_mode: string
+            Previous mode of the UI.
+        current_mode: string
+            Current mode of the UI.
+        """
+        if last_mode == current_mode:
+            return
+        for btn in self.mode_panel._elements[1:]:
+            if btn.icon_names[0] == last_mode or btn.icon_names[0] == current_mode:
+                btn.next_icon()
 
     def left_button_pressed(self,  i_ren, _obj, element):
         if self.is_draggable and self.current_mode == "selection":
