@@ -3198,7 +3198,6 @@ class DrawPanel(UI):
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
         self.is_draggable = is_draggable
-        self.iren = None
         self.current_mode = None
         self.shape_list = []
 
@@ -3258,7 +3257,6 @@ class DrawPanel(UI):
 
         """
         self.current_scene = scene
-        self.iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
         self.canvas.add_to_scene(scene)
 
     def _get_size(self):
@@ -3288,8 +3286,6 @@ class DrawPanel(UI):
         self._current_mode = mode
         if mode is not None:
             self.mode_text.message = f"Mode: {mode}"
-        if self.iren is not None:
-            self.iren.force_render()
 
     def draw_shape(self, shape_type, current_position, in_process=False):
         """Draws the required shape at the given position.
