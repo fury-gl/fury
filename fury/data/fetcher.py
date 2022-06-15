@@ -292,7 +292,7 @@ def fetch_viz_gltf(name=None, mode='glTF'):
 
     if type(name) == list:
         for element in name:
-            fetch_gltf_models(element)
+            fetch_viz_gltf(element)
     else:
         url = GITHUB_API_URL + name + '/' + mode
         request = urlopen(url).read()
