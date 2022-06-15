@@ -18,7 +18,7 @@ from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
-from fury.utils import set_input, set_polydata_vertices, vertices_from_actor
+from fury.utils import set_input, set_polydata_vertices, vertices_from_actor, update_actor
 
 
 class TextBox2D(UI):
@@ -3067,7 +3067,7 @@ class DrawShape(UI):
         ----------
         shape_type : string
             Type of shape to be created.
-        drawpanel : DrawPanel
+        drawpanel : DrawPanel, optional
             Reference to the main canvas on which is it drawn.
         position : (float, float), optional
             (x, y) in pixels.
@@ -3139,7 +3139,7 @@ class DrawShape(UI):
             [[np.cos(angle), np.sin(angle), 0], [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
         new_points_arr = np.matmul(points_arr, rotation_matrix)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
-        self.shape.actor.GetMapper().Update()
+        update_actor(self.shape.actor)
 
     def resize(self, size):
         """Resize the UI.
@@ -3188,7 +3188,7 @@ class DrawPanel(UI):
 
         Parameters
         ----------
-        size : (int, int)
+        size : (int, int), optional
             Width and height in pixels of this UI component.
         position : (float, float), optional
             (x, y) in pixels.
