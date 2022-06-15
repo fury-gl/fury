@@ -4,6 +4,7 @@ import os
 import sys
 import contextlib
 import warnings
+import json
 
 from os.path import join as pjoin
 from hashlib import sha256
@@ -12,7 +13,7 @@ from shutil import copyfileobj
 import tarfile
 import zipfile
 
-from urllib.request import urlopen
+from urllib.request import urlopen, urlretrieve
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -38,6 +39,9 @@ TEXTURE_DATA_URL = \
 
 DMRI_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/dmri/"
+
+GITHUB_API_URL = \
+    "https://api.github.com/repos/KhronosGroup/glTF-Sample-Models/contents/2.0/"  # noqa
 
 
 class FetcherError(Exception):
@@ -182,7 +186,8 @@ def fetch_data(files, folder, data_size=None):
     for f in files:
         url, sha = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha.lower()):
+        if os.path.exists(fullpath) and \
+           (_get_file_sha(fullpath) == sha.lower()):
             continue
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
@@ -265,6 +270,47 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     fetcher.__name__ = name
     fetcher.__doc__ = doc
     return fetcher
+
+
+def fetch_viz_gltf(name=None, mode='glTF'):
+    """Downloads glTF samples from Khronos Group Github.
+
+    Parameter
+    -----------
+    name: str, list, optional
+        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
+        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+        Default: None, Downloads essential glTF samples for tests.
+
+    mode: str, optional
+        Type of glTF format.
+        You can choose from different options (e.g. glTF, glTF-Embedded, etc)
+        Default: glTF, `.bin` and texture files are stored separately.
+    """
+    if name is None:
+        name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
+
+    if type(name) == list:
+        for element in name:
+            fetch_gltf_models(element)
+    else:
+        url = GITHUB_API_URL + name + '/' + mode
+        request = urlopen(url).read()
+        request = json.loads(request)
+        name = pjoin('glTF', name)
+        folder = pjoin(fury_home, name)
+
+        if not os.path.exists(folder):
+            print("Creating new folder ", folder)
+            os.makedirs(folder)
+
+            for file in request:
+                download_url = file['download_url']
+                filename = download_url.split('/')[-1]
+                fullpath = os.path.join(folder, filename)
+                print('Downloading file: ', filename)
+
+                urlretrieve(download_url, filename=fullpath)
 
 
 fetch_viz_cubemaps = _make_fetcher(
@@ -502,3 +548,28 @@ def read_viz_dmri(fname):
     """
     folder = pjoin(fury_home, 'dmri')
     return pjoin(folder, fname)
+
+
+def read_viz_gltf(fname):
+    """Read specific gltf sample.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the model.
+        This should be found in folder HOME/.fury/models/glTF/.
+
+    Returns
+    --------
+    path : str
+        Complete path of models.
+    """
+    folder = pjoin(fury_home, 'glTF')
+    sample = pjoin(folder, fname)
+
+    if not os.path.exists(sample):
+        raise ValueError('Model doesnot exists.')
+
+    for filename in os.listdir(sample):
+        if filename.endswith('.gltf'):
+            return pjoin(sample, filename)
