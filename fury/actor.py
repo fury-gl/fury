@@ -1599,12 +1599,13 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     if faces is None and vertices is None:
         vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
 
+    normals = vertices
     res = fp.repeat_primitive(vertices, faces,
                               directions=directions, centers=centers,
-                              colors=colors, scales=scales)
-    big_verts, big_faces, big_colors, _ = res
+                              colors=colors, scales=scales, normals=normals)
+    big_verts, big_faces, big_colors, _, big_normals = res
     sphere_actor = get_actor_from_primitive(
-            big_verts, big_faces, big_colors)
+            big_verts, big_faces, big_colors, big_normals)
     sphere_actor.GetProperty().SetOpacity(opacity)
     return sphere_actor
 
