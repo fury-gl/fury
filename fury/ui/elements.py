@@ -3230,7 +3230,6 @@ class DrawPanel(UI):
             btn = Button2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
-                self.update_button_icons(self.current_mode, btn.icon_names[0])
                 self.current_mode = btn.icon_names[0]
                 i_ren.force_render()
 
@@ -3283,6 +3282,7 @@ class DrawPanel(UI):
 
     @current_mode.setter
     def current_mode(self, mode):
+        self.update_button_icons(mode)
         self._current_mode = mode
         if mode is not None:
             self.mode_text.message = f"Mode: {mode}"
@@ -3311,7 +3311,7 @@ class DrawPanel(UI):
             size = current_position - current_shape.position
             current_shape.resize(size)
 
-    def update_button_icons(self, last_mode, current_mode):
+    def update_button_icons(self, current_mode):
         """Updates the button icon.
 
         Parameters
@@ -3321,10 +3321,10 @@ class DrawPanel(UI):
         current_mode: string
             Current mode of the UI.
         """
-        if last_mode == current_mode:
-            return
         for btn in self.mode_panel._elements[1:]:
-            if btn.icon_names[0] == last_mode or btn.icon_names[0] == current_mode:
+            if btn.icon_names[0] == current_mode:
+                btn.next_icon()
+            elif btn.current_icon_id == 1:
                 btn.next_icon()
 
     def left_button_pressed(self,  i_ren, _obj, element):
