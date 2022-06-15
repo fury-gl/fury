@@ -14,6 +14,7 @@ import tarfile
 import zipfile
 
 from urllib.request import urlopen, urlretrieve
+from urllib.error import HTTPError
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -295,8 +296,14 @@ def fetch_viz_gltf(name=None, mode='glTF'):
             fetch_viz_gltf(element)
     else:
         url = GITHUB_API_URL + name + '/' + mode
-        request = urlopen(url).read()
-        request = json.loads(request)
+        try:
+            request = urlopen(url).read()
+            request = json.loads(request)
+        except HTTPError as e:
+            print("Model %s does not exist, Please check name and mode" %
+                  (name))
+            return None
+
         name = pjoin('glTF', name)
         folder = pjoin(fury_home, name)
 
@@ -304,12 +311,13 @@ def fetch_viz_gltf(name=None, mode='glTF'):
             print("Creating new folder ", folder)
             os.makedirs(folder)
 
-            for file in request:
-                download_url = file['download_url']
-                filename = download_url.split('/')[-1]
-                fullpath = os.path.join(folder, filename)
-                print('Downloading file: ', filename)
+        for file in request:
+            download_url = file['download_url']
+            filename = download_url.split('/')[-1]
+            fullpath = os.path.join(folder, filename)
 
+            if not os.path.exists(fullpath):
+                print('Downloading file: ', filename)
                 urlretrieve(download_url, filename=fullpath)
 
 
@@ -568,7 +576,7 @@ def read_viz_gltf(fname):
     sample = pjoin(folder, fname)
 
     if not os.path.exists(sample):
-        raise ValueError('Model doesnot exists.')
+        raise ValueError('Model does not exists.')
 
     for filename in os.listdir(sample):
         if filename.endswith('.gltf'):
