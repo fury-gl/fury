@@ -23,5 +23,18 @@ drawing_canvas = ui.DrawPanel(size=(550, 550), position=(25, 25))
 
 current_size = (600, 600)
 showm = window.ShowManager(size=current_size, title="DrawPanel UI Example")
+
 showm.scene.add(drawing_canvas)
-showm.start()
+
+interactive = False
+
+if interactive:
+    showm.start()
+else:
+    # If the UI isn't interactive, then adding a circle to the canvas
+    drawing_canvas.current_mode = "circle"
+    drawing_canvas.draw_shape(shape_type="circle", current_position=(275, 275))
+    drawing_canvas.shape_list[-1].resize((50, 50))
+
+    window.record(showm.scene, size=current_size,
+                  out_path="viz_drawpanel.png")
