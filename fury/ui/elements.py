@@ -3199,6 +3199,10 @@ class DrawPanel(UI):
         super(DrawPanel, self).__init__(position)
         self.is_draggable = is_draggable
         self.current_mode = None
+
+        if is_draggable:
+            self.current_mode = "selection"
+
         self.shape_list = []
 
     def _setup(self):
