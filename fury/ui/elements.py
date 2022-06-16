@@ -3217,9 +3217,9 @@ class DrawPanel(UI):
         mode_data = {
             "selection": ["selection.png", "selection-pressed.png"],
             "line": ["line.png", "line-pressed.png"],
-            "quad": ["stop2.png", "quad-pressed.png"],
+            "quad": ["quad.png", "quad-pressed.png"],
             "circle": ["circle.png", "circle-pressed.png"],
-            "delete": ["cross.png", "cross-pressed.png"]
+            "delete": ["delete.png", "delete-pressed.png"]
         }
 
         padding = 5
@@ -3229,8 +3229,8 @@ class DrawPanel(UI):
 
         for mode, fname in mode_data.items():
             icon_files = []
-            icon_files.append((mode, read_viz_icons(fname=fname[0])))
-            icon_files.append((mode+"-pressed", read_viz_icons(fname=fname[1])))
+            icon_files.append((mode, read_viz_icons(style="new_icons", fname=fname[0])))
+            icon_files.append((mode+"-pressed", read_viz_icons(style="new_icons", fname=fname[1])))
             btn = Button2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
