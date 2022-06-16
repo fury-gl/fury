@@ -301,20 +301,22 @@ fetch_viz_icons = _make_fetcher(
 
 fetch_viz_new_icons = _make_fetcher(
     "fetch_viz_new_icons",
-    pjoin(fury_home, "icons\icomoon"),
+    pjoin(fury_home, "icons", "new_icons"),
     NEW_ICONS_DATA_URL,
-    ["circle-pressed.png", "circle.png", "cross-pressed.png", "line-pressed.png",
-        "line.png", "quad-pressed.png", "selection-pressed.png", "selection.png"],
-    ["circle-pressed.png", "circle.png", "cross-pressed.png", "line-pressed.png",
-        "line.png", "quad-pressed.png", "selection-pressed.png", "selection.png"],
-    ['cd859f244df1ba719c65c869c3faf6b8563abf82f457730adbfbd7ca72ddb7bc',
-     '5896bdc9ff9b3d1054134d7d9a854677ce9fa4e64f494f156bb2e3f0e863f207',
-     '937c46c25bc38b62021b01c97a4ee3cde5f7c8c4a6d0db75bf4e4cace2af1226',
-     '8d1ac2bb7c5baa34e68578daad85f64ef824be7bcb828cac18e52833d4cbf4c9',
-     'e6d833b6d958129e12ff0f6087282ce92cd43c6dafce03f185746ecca89e42a9',
-     '5fd43f1c2d37bf9af05d9fc591172684ac51ba236980cd1b0795b0225b9247e2',
-     '54618fdc4589f0a039d531c07a110ed9bc57a256bb15a3b5429cf60e950887c3',
-     'cd573f5e4bf4a91a3b21f6124a95ffb3c036f926f8fec1fd0180f5d27d8f48c0', ],
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png", "line-pressed.png",
+        "line.png", "quad-pressed.png", "quad.png", "selection-pressed.png", "selection.png"],
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png", "line-pressed.png",
+        "line.png", "quad-pressed.png", "quad.png", "selection-pressed.png", "selection.png"],
+    ['CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC',
+     '5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207',
+     '937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226',
+     '476E00A0A5373E1CCDA4AF8E7C9158E0AC9B46B540CE410C6EA47D97F364A0CD',
+     '8D1AC2BB7C5BAA34E68578DAAD85F64EF824BE7BCB828CAC18E52833D4CBF4C9',
+     'E6D833B6D958129E12FF0F6087282CE92CD43C6DAFCE03F185746ECCA89E42A9',
+     '5FD43F1C2D37BF9AF05D9FC591172684AC51BA236980CD1B0795B0225B9247E2',
+     'A2DA0CB963401C174919E1D8028AA6F0CB260A736FD26421DB5AB08E9F3C4FDF',
+     '54618FDC4589F0A039D531C07A110ED9BC57A256BB15A3B5429CF60E950887C3',
+     'CD573F5E4BF4A91A3B21F6124A95FFB3C036F926F8FEC1FD0180F5D27D8F48C0'],
     doc=" Download the new icons for draw panel"
     )
 
@@ -462,9 +464,11 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Complete path of icon.
 
     """
-    if not os.path.isdir(pjoin(fury_home, 'icons')):
-        fetch_viz_icons()
-        fetch_viz_new_icons()
+    if not os.path.isdir(pjoin(fury_home, 'icons', style)):
+        if style == "icomoon":
+            fetch_viz_icons()
+        elif style == "new_icons":
+            fetch_viz_new_icons()
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
 
