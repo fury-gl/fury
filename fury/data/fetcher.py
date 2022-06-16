@@ -300,11 +300,11 @@ def fetch_viz_gltf(name=None, mode='glTF'):
             request = urlopen(url).read()
             request = json.loads(request)
         except HTTPError as e:
-            print("Model %s does not exist, Please check name and mode" %
-                  (name))
+            print("Model {} does not exist, Please check name and mode"
+                  .format(name))
             return None
 
-        name = pjoin('glTF', name)
+        name = pjoin(* ['glTF', name, mode])
         folder = pjoin(fury_home, name)
 
         if not os.path.exists(folder):
@@ -317,7 +317,7 @@ def fetch_viz_gltf(name=None, mode='glTF'):
             fullpath = os.path.join(folder, filename)
 
             if not os.path.exists(fullpath):
-                print('Downloading file: ', filename)
+                print('Downloading file: {}'.format(filename))
                 urlretrieve(download_url, filename=fullpath)
 
 
@@ -558,7 +558,7 @@ def read_viz_dmri(fname):
     return pjoin(folder, fname)
 
 
-def read_viz_gltf(fname):
+def read_viz_gltf(fname, type='glTF'):
     """Read specific gltf sample.
 
     Parameters
@@ -573,11 +573,26 @@ def read_viz_gltf(fname):
         Complete path of models.
     """
     folder = pjoin(fury_home, 'glTF')
-    sample = pjoin(folder, fname)
+    sample = pjoin(*[folder, fname, type])
 
     if not os.path.exists(sample):
         raise ValueError('Model does not exists.')
 
     for filename in os.listdir(sample):
-        if filename.endswith('.gltf'):
+        if filename.endswith('.gltf') or filename.endswith('.glb'):
             return pjoin(sample, filename)
+
+
+def get_model_names():
+    """Get list of all model names available in glTF-samples repository
+
+    Returns
+    ---------
+    model_names : list
+        Lists the name of glTF sample from
+        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+    """
+    models = urlopen(GITHUB_API_URL).read()
+    models = json.loads(models)
+    model_names = [model['name'] for model in models if model['size'] == 0]
+    return model_names
