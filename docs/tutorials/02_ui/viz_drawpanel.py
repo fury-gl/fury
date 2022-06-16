@@ -9,6 +9,12 @@ create Various shapes and transform them.
 First, some imports.
 """
 from fury import ui, window
+from fury.data import fetch_viz_new_icons
+
+##############################################################################
+# First we need to fetch some icons that are needed for DrawPanel.
+
+fetch_viz_new_icons()
 
 #########################################################################
 # We then create a DrawPanel Object.

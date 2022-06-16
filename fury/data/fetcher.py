@@ -24,6 +24,9 @@ else:
 UW_RW_URL = \
     "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
+NEW_ICONS_DATA_URL = \
+    "https://raw.githubusercontent.com/ganimtron-10/fury-data/master/new_icons/"
+
 CUBEMAP_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
 
@@ -296,6 +299,24 @@ fetch_viz_icons = _make_fetcher(
     unzip=True
     )
 
+fetch_viz_new_icons = _make_fetcher(
+    "fetch_viz_new_icons",
+    pjoin(fury_home, "icons\icomoon"),
+    NEW_ICONS_DATA_URL,
+    ["circle-pressed.png", "circle.png", "cross-pressed.png", "line-pressed.png",
+        "line.png", "quad-pressed.png", "selection-pressed.png", "selection.png"],
+    ["circle-pressed.png", "circle.png", "cross-pressed.png", "line-pressed.png",
+        "line.png", "quad-pressed.png", "selection-pressed.png", "selection.png"],
+    ['cd859f244df1ba719c65c869c3faf6b8563abf82f457730adbfbd7ca72ddb7bc',
+     '5896bdc9ff9b3d1054134d7d9a854677ce9fa4e64f494f156bb2e3f0e863f207',
+     '937c46c25bc38b62021b01c97a4ee3cde5f7c8c4a6d0db75bf4e4cace2af1226',
+     '8d1ac2bb7c5baa34e68578daad85f64ef824be7bcb828cac18e52833d4cbf4c9',
+     'e6d833b6d958129e12ff0f6087282ce92cd43c6dafce03f185746ecca89e42a9',
+     '5fd43f1c2d37bf9af05d9fc591172684ac51ba236980cd1b0795b0225b9247e2',
+     '54618fdc4589f0a039d531c07a110ed9bc57a256bb15a3b5429cf60e950887c3',
+     'cd573f5e4bf4a91a3b21f6124a95ffb3c036f926f8fec1fd0180f5d27d8f48c0', ],
+    doc=" Download the new icons for draw panel"
+    )
 
 fetch_viz_wiki_nw = _make_fetcher(
     "fetch_viz_wiki_nw",
@@ -443,6 +464,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
     """
     if not os.path.isdir(pjoin(fury_home, 'icons')):
         fetch_viz_icons()
+        fetch_viz_new_icons()
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
 
