@@ -558,7 +558,7 @@ def read_viz_dmri(fname):
     return pjoin(folder, fname)
 
 
-def read_viz_gltf(fname, type='glTF'):
+def read_viz_gltf(fname, mode=None):
     """Read specific gltf sample.
 
     Parameters
@@ -567,13 +567,24 @@ def read_viz_gltf(fname, type='glTF'):
         Name of the model.
         This should be found in folder HOME/.fury/models/glTF/.
 
+    mode : str, optional
+        Model type (e.g. glTF-Binary, glTF-Embedded, etc)
+
     Returns
     --------
     path : str
         Complete path of models.
     """
     folder = pjoin(fury_home, 'glTF')
-    sample = pjoin(*[folder, fname, type])
+    model = pjoin(folder, fname)
+
+    if mode is None:
+        types = os.listdir(model)
+        if len(types) == 0:
+            raise ValueError('Model does not exist.')
+        mode = types[-1]
+
+    sample = pjoin(model, mode)
 
     if not os.path.exists(sample):
         raise ValueError('Model does not exists.')
@@ -583,7 +594,7 @@ def read_viz_gltf(fname, type='glTF'):
             return pjoin(sample, filename)
 
 
-def get_model_names():
+def list_gltf_samples():
     """Get list of all model names available in glTF-samples repository
 
     Returns
