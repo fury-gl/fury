@@ -3301,6 +3301,11 @@ class DrawPanel(UI):
         ----------
         position: (float,float)
             current position of the shape.
+
+        Returns
+        -------
+        float
+            Minimum distance from the boundary.
         """
         distance_list = []
         # calculate distance from element to left and lower boundary
@@ -3359,6 +3364,11 @@ class DrawPanel(UI):
         ----------
         mouse_position: (float,float)
             Current mouse position.
+
+        Returns
+        -------
+        list(float)
+            New clipped position.
         """
         return np.clip(mouse_position, self.canvas.position,
                        self.canvas.position + self.canvas.size)
