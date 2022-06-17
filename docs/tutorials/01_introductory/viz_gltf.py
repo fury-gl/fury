@@ -7,7 +7,7 @@ In this tutorial, we will show how to display a glTF file in a scene.
 
 import os
 from fury import utils, window, actor
-from fury.gltf import glTFImporter
+from fury.gltf import glTF
 from urllib.request import urlretrieve
 
 ##############################################################################
@@ -30,7 +30,7 @@ urlretrieve(url, filename=filename)
 # Note: You can always manulally create actor from polydata, and apply texture
 # or materials manually afterwards.
 
-importer = glTFImporter(filename)
+importer = glTF(filename, apply_normals=True)
 actors = importer.get_actors()
 
 ##############################################################################
@@ -39,7 +39,7 @@ actors = importer.get_actors()
 for actor in actors:
     scene.add(actor)
 
-interactive = True
+interactive = False
 
 if interactive:
     window.show(scene, size=(1280, 720))

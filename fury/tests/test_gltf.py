@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import numpy.testing as npt
-from fury.gltf import glTFImporter
+from fury.gltf import glTF
 from urllib.request import urlretrieve
 from fury import window, io, utils
 from fury.lib import Texture
@@ -23,18 +23,17 @@ def _get_gltf(url=None):
 
 def test_load_gltf():
     filename = _get_gltf()
-    importer = glTFImporter(filename)
-    primitives = importer.primitives
-    polydata = primitives[0].polydata
-    vertices = utils.get_polydata_vertices(polydata)
-    triangles = utils.get_polydata_triangles(polydata)
+    importer = glTF(filename)
+    polydatas = importer.polydatas
+    vertices = utils.get_polydata_vertices(polydatas[0])
+    triangles = utils.get_polydata_triangles(polydatas[0])
 
     npt.assert_equal(vertices.shape, (2399, 3))
     npt.assert_equal(triangles.shape, (4212, 3))
     os.remove(filename)
 
     scene = window.Scene()
-    scene.add(utils.get_actor_from_polydata(polydata))
+    scene.add(utils.get_actor_from_polydata(polydatas[0]))
     display = window.snapshot(scene)
     res = window.analyze_snapshot(display)
     npt.assert_equal(res.objects, 1)
@@ -43,7 +42,7 @@ def test_load_gltf():
 
 def test_load_texture():
     filename = _get_gltf()
-    importer = glTFImporter(filename)
+    importer = glTF(filename)
     actor = importer.get_actors()[0]
 
     scene = window.Scene()
@@ -59,7 +58,7 @@ def test_load_texture():
 def test_vertex_colors():
     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxVertexColors/glTF-Embedded/BoxVertexColors.gltf'  # noqa
     file = _get_gltf(url)
-    importer = glTFImporter(file)
+    importer = glTF(file)
     actor = importer.get_actors()[0]
     scene = window.Scene()
     scene.add(actor)
@@ -75,7 +74,7 @@ def test_vertex_colors():
 def test_orientation():
     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxTextured/glTF-Embedded/BoxTextured.gltf'  # noqa
     file = _get_gltf(url)
-    importer = glTFImporter(file)
+    importer = glTF(file)
     actor = importer.get_actors()[0]
 
     scene = window.Scene()
