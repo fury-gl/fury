@@ -3075,6 +3075,7 @@ class DrawShape(UI):
         self.shape = None
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
+        self.max_size = None
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3154,6 +3155,8 @@ class DrawShape(UI):
 
         elif self.shape_type == "circle":
             hyp = np.hypot(size[0], size[1])
+            if self.max_size and hyp > self.max_size:
+                hyp = self.max_size
             self.shape.outer_radius = hyp
 
     def left_button_pressed(self, i_ren, _obj, shape):
@@ -3171,8 +3174,8 @@ class DrawShape(UI):
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
             if self._drag_offset is not None:
-                click_position = np.array(i_ren.event.position)
-                new_position = click_position - self._drag_offset - self.drawpanel.canvas.position
+                click_position = i_ren.event.position
+                new_position = click_position - self._drag_offset - self.drawpanel.position
                 self.drawpanel.canvas.update_element(self, new_position)
             i_ren.force_render()
         else:
@@ -3291,6 +3294,22 @@ class DrawPanel(UI):
         if mode is not None:
             self.mode_text.message = f"Mode: {mode}"
 
+    def cal_min_boundary_distance(self, position):
+        """Calculate the minimum distance between the current position and canvas boundary.
+
+        Parameters
+        ----------
+        position: (float,float)
+            current position of the shape.
+        """
+        distance_list = []
+        # calculate distance from element to left and lower boundary
+        distance_list.extend(position - self.canvas.position)
+        # calculate distance from element to upper and right boundary
+        distance_list.extend(self.canvas.position + self.canvas.size - position)
+
+        return min(distance_list)
+
     def draw_shape(self, shape_type, current_position, in_process=False):
         """Draws the required shape at the given position.
 
@@ -3306,6 +3325,8 @@ class DrawPanel(UI):
         if not in_process:
             shape = DrawShape(shape_type=shape_type, drawpanel=self,
                               position=current_position)
+            if shape_type == "circle":
+                shape.max_size = self.cal_min_boundary_distance(current_position)
             self.shape_list.append(shape)
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
@@ -3331,21 +3352,37 @@ class DrawPanel(UI):
             elif btn.current_icon_id == 1:
                 btn.next_icon()
 
-    def left_button_pressed(self,  i_ren, _obj, element):
+    def clamp_mouse_position(self, mouse_position):
+        """Restricts the mouse position to the canvas boundary.
+
+        Parameters
+        ----------
+        mouse_position: (float,float)
+            Current mouse position.
+        """
+        return np.clip(mouse_position, self.canvas.position,
+                       self.canvas.position + self.canvas.size)
+
+    def handle_mouse_click(self, position):
         if self.is_draggable and self.current_mode == "selection":
-            click_pos = np.array(i_ren.event.position)
-            self._drag_offset = click_pos - self.position
+            self._drag_offset = position - self.position
             i_ren.event.abort()
         if self.current_mode in ["line", "quad", "circle"]:
-            self.draw_shape(self.current_mode, i_ren.event.position)
+            self.draw_shape(self.current_mode, position)
+
+    def left_button_pressed(self,  i_ren, _obj, element):
+        self.handle_mouse_click(i_ren.event.position)
         i_ren.force_render()
 
-    def left_button_dragged(self,  i_ren, _obj, element):
+    def handle_mouse_drag(self, position):
         if self.is_draggable and self.current_mode == "selection":
             if self._drag_offset is not None:
-                click_position = np.array(i_ren.event.position)
-                new_position = click_position - self._drag_offset
+                new_position = position - self._drag_offset
                 self.position = new_position
         if self.current_mode in ["line", "quad", "circle"]:
-            self.draw_shape(self.current_mode, i_ren.event.position, True)
+            self.draw_shape(self.current_mode, position, True)
+
+    def left_button_dragged(self,  i_ren, _obj, element):
+        mouse_position = self.clamp_mouse_position(i_ren.event.position)
+        self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
