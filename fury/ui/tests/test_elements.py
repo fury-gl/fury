@@ -803,13 +803,13 @@ def test_ui_draw_panel(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (610, 610)
+    current_size = (620, 620)
     show_manager = window.ShowManager(
         size=current_size, title="DrawPanel UI Example")
     show_manager.scene.add(drawpanel)
