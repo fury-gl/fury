@@ -15,6 +15,8 @@ import zipfile
 
 from urllib.request import urlopen, urlretrieve
 from urllib.error import HTTPError
+import asyncio
+import aiohttp
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -273,7 +275,20 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     return fetcher
 
 
-def fetch_viz_gltf(name=None, mode='glTF'):
+async def _request(url, session):
+    async with session.get(url) as response:
+        return await response.json()
+
+
+async def _download(url, filename, session):
+    if not os.path.exists(filename):
+        print(f'Downloading: {filename}')
+        async with session.get(url) as response:
+            with open(filename, mode='wb') as f:
+                f.write(await response.read())
+
+
+async def fetch_viz_gltf(name=None, mode='glTF'):
     """Downloads glTF samples from Khronos Group Github.
 
     Parameter
@@ -285,40 +300,38 @@ def fetch_viz_gltf(name=None, mode='glTF'):
 
     mode: str, optional
         Type of glTF format.
-        You can choose from different options (e.g. glTF, glTF-Embedded, etc)
+        You can choose from different options
+        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
         Default: glTF, `.bin` and texture files are stored separately.
     """
     if name is None:
         name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
-    if type(name) == list:
-        for element in name:
-            fetch_viz_gltf(element)
+    if isinstance(name, list):
+        await asyncio.gather(
+            *[fetch_viz_gltf(element) for element in name]
+        )
     else:
-        url = GITHUB_API_URL + name + '/' + mode
-        try:
-            request = urlopen(url).read()
-            request = json.loads(request)
-        except HTTPError as e:
-            print("Model {} does not exist, Please check name and mode"
-                  .format(name))
-            return None
+        url = f'{GITHUB_API_URL}{name}/{mode}'
 
-        name = pjoin(* ['glTF', name, mode])
-        folder = pjoin(fury_home, name)
+        async with aiohttp.ClientSession() as session:
+            request = await _request(url, session)
 
-        if not os.path.exists(folder):
-            print("Creating new folder ", folder)
-            os.makedirs(folder)
+            name = pjoin('glTF', name)
+            name = pjoin(name, mode)
+            folder = pjoin(fury_home, name)
 
-        for file in request:
-            download_url = file['download_url']
-            filename = download_url.split('/')[-1]
-            fullpath = os.path.join(folder, filename)
+            if not os.path.exists(folder):
+                print("Creating new folder ", folder)
+                os.makedirs(folder)
 
-            if not os.path.exists(fullpath):
-                print('Downloading file: {}'.format(filename))
-                urlretrieve(download_url, filename=fullpath)
+            d_urls = [file['download_url'] for file in request]
+            f_names = [pjoin(folder, url.split('/')[-1]) for url in d_urls]
+            zip_url = zip(d_urls, f_names)
+
+            await asyncio.gather(
+                *[_download(url, fname, session) for url, fname in zip_url]
+            )
 
 
 fetch_viz_cubemaps = _make_fetcher(
@@ -594,7 +607,7 @@ def read_viz_gltf(fname, mode=None):
             return pjoin(sample, filename)
 
 
-def list_gltf_samples():
+def list_gltf_sample_models():
     """Get list of all model names available in glTF-samples repository
 
     Returns
