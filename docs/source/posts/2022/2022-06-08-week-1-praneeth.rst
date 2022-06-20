@@ -18,12 +18,12 @@ I started with a simple ``Panel2D`` (which is basically a movable rectangle on w
 Then I modified the event callback to create a ``Rectangle2D`` at that current mouse position(Now you would ask, Why ``Rectangle2D``?? We wanted to change the width of the line, which wasn't possible with the regular line). This would create a rectangle at that point but it was having static size.
 So I had to then calculate the distance between the first point where the mouse was clicked and the current position to resize it accordingly. 
 
-.. image:: C:/Users/ganim/OneDrive/Documents/ShareX/Screenshots/2022-06/Drawpanel_linecreation_1.gif
+.. image:: https://user-images.githubusercontent.com/64432063/174661567-76251ce9-380f-4a41-a572-65865d028a9c.gif
 
 This thing creates a Rectangle, not a line. So I had to think of some other approach.
 The first thing that came to my mind was to keep the width of the rectangle constant and apply some rotation to the rectangle according to the mouse position and this worked!
 
-.. image:: C:/Users/ganim/OneDrive/Documents/ShareX/Screenshots/2022-06/Drawpanel_linerotation.gif
+.. image:: https://user-images.githubusercontent.com/64432063/174661632-98e1c4ec-31a2-4c4d-8e52-7bf2a47592c7.gif
 
 As previously we created an interactive rectangle(unintentionally), I thought it would be great if I could add different modes for creating different shapes(ie. line, rectangle, circle as these shapes already existed in the UI System).
 
@@ -33,7 +33,7 @@ Considering this I implemented a class to create and manage these shapes and a p
 
 https://github.com/fury-gl/fury/pull/599
 
-.. image:: C:/Users/ganim/OneDrive/Documents/ShareX/Screenshots/2022-06/DrawPanel_Demo.gif
+.. image:: https://user-images.githubusercontent.com/64432063/174661680-8a5120ff-ec88-4739-945b-b87074f9742b.gif
 
 
 Did you get stuck anywhere?
