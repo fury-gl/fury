@@ -37,7 +37,6 @@ What is coming up next week?
 If the implemented timeline is good to go, I will write the associated tests, finish up any missing methods, and document it properly.
 I will probably continue implementing the other interpolation methods as well.
 
-|
 Did you get stuck anywhere?
 ---------------------------
 
