@@ -47,7 +47,7 @@ class glTF:
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
 
-            if bool(self.materials):
+            if self.materials[i] is not None:
                 baseColorTexture = self.materials[i]['baseColorTexture']
                 actor.SetTexture(baseColorTexture)
 
