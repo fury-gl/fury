@@ -43,7 +43,7 @@ TEXTURE_DATA_URL = \
 DMRI_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/dmri/"
 
-GITHUB_API_URL = \
+GLTF_DATA_URL = \
     "https://api.github.com/repos/KhronosGroup/glTF-Sample-Models/contents/2.0/"  # noqa
 
 
@@ -276,43 +276,56 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
 
 
 async def _request(url, session):
+    """An asynchronous function to get the request data as json.
+
+    Parameters
+    ----------
+    url : string
+        The URL from which _request gets the response
+    session : ClientSession
+        Aiohttp client session.
+
+    Returns
+    -------
+    response : dictionary
+        The response of url request.
+    """
     async with session.get(url) as response:
         return await response.json()
 
 
-async def _download(url, filename, session):
+async def _download(url, filename, session, size=None):
+    """An asynchronous function to download file from url.
+
+    Parameters
+    ----------
+    url : string
+        The URL of the downloadable file
+    filename : string
+        Name of the downloaded file (e.g. BoxTextured.gltf)
+    session : ClientSession
+        Aiohttp client session
+
+    """
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
         async with session.get(url) as response:
             with open(filename, mode='wb') as f:
-                f.write(await response.read())
+                data = await response.read()
+                f.write(data)
 
 
-async def fetch_viz_gltf(name=None, mode='glTF'):
-    """Downloads glTF samples from Khronos Group Github.
+async def _get_viz_gltf(name, mode):
 
-    Parameter
-    -----------
-    name: str, list, optional
-        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
-        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
-        Default: None, Downloads essential glTF samples for tests.
-
-    mode: str, optional
-        Type of glTF format.
-        You can choose from different options
-        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
-        Default: glTF, `.bin` and texture files are stored separately.
-    """
     if name is None:
         name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
     if isinstance(name, list):
         await asyncio.gather(
-            *[fetch_viz_gltf(element) for element in name]
+            *[_get_viz_gltf(element, mode) for element in name]
         )
     else:
-        url = f'{GITHUB_API_URL}{name}/{mode}'
+        url = f'{GLTF_DATA_URL}{name}/{mode}'
 
         async with aiohttp.ClientSession() as session:
             request = await _request(url, session)
@@ -332,6 +345,25 @@ async def fetch_viz_gltf(name=None, mode='glTF'):
             await asyncio.gather(
                 *[_download(url, fname, session) for url, fname in zip_url]
             )
+
+
+def fetch_viz_gltf(name=None, mode='glTF'):
+    """Download glTF samples from Khronos Group Github.
+
+    Parameters
+    ----------
+    name: str, list, optional
+        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
+        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+        Default: None, Downloads essential glTF samples for tests.
+
+    mode: str, optional
+        Type of glTF format.
+        You can choose from different options
+        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+        Default: glTF, `.bin` and texture files are stored separately.
+    """
+    asyncio.run(_get_viz_gltf(name, mode))
 
 
 fetch_viz_cubemaps = _make_fetcher(
@@ -608,7 +640,7 @@ def read_viz_gltf(fname, mode=None):
 
 
 def list_gltf_sample_models():
-    """Get list of all model names available in glTF-samples repository
+    """Returns all model names available in the glTF-samples repository
 
     Returns
     ---------
@@ -616,7 +648,17 @@ def list_gltf_sample_models():
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
     """
-    models = urlopen(GITHUB_API_URL).read()
+    models = urlopen(GLTF_DATA_URL).read()
     models = json.loads(models)
     model_names = [model['name'] for model in models if model['size'] == 0]
-    return model_names
+    default_models = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
+
+    if model_names:
+        result = [model in model_names for model in default_models]
+        for i, exist in enumerate(result):
+            if not exist:
+                print(f'Model {default_models[i]} not found!')
+        return model_names
+    else:
+        print('Failed to get models list')
+        return None
