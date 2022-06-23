@@ -26,7 +26,7 @@ I continued implementing the Timeline class. Added some functionalities accordin
 
 
 Reviewed Bruno's PR `#424`_ as Filip advised to help me figure out how to change uniforms' values during runtime. I found it straightforward. I also found a similar method already used in some tutorials and experiments to set the time uniform, which is based on the same idea. They both are using shaders callback functions.
-Going through the VTk's documentations, I found a more efficient way to do this. It's newly implemented in VTK 9, does not require callbacks, and is easy to use on individual actors. I had to verify first that Fury does not support an older version of VTK and it does not. I tested it and ran into some issues so As Filip instructed I don't waste a lot of time with uniforms so I postponed it for the next week.
+Going through the VTK's documentations, I found a more efficient way to do this. It's newly implemented in VTK 9, does not require callbacks, and is easy to use on individual actors. I had to verify first that Fury does not support an older version of VTK and it does not. I tested it and ran into some issues so As Filip instructed I don't waste a lot of time with uniforms so I postponed it for the next week.
 
 Also, when I was attending Shivam's meeting, he showed us a smooth glTF model which differed from the last time I saw it. When I asked him he said he applied the normal. Him saying that reminded me of how we can use normals to smooth shade a shapes. I applied this trick to the sphere actor in this PR `#604`_ and worked as expected.
 
