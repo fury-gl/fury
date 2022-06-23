@@ -43,5 +43,10 @@ Did you get stuck anywhere?
 ---------------------------
 
 * ``var: list[int]`` was causing the error ``TypeError: 'type' object is not subscriptable`` since the ability to use the [] operator on types like list was added in 3.9+. I had to modify the dataclasses and use ``Typing.List`` insted.
-* Texture in actors weren't applied correctly. I tried flipping the texture image by 90 degrees using gimp and the texture worked nicely. The reason for this issue was the coordinate system of glTF texture format which has origin (0, 0) at top-left and (1, 1) in the bottom-right corner, Where as in vtkTexture we want coordinate (0, 0) and (1, 1) at bottom-left and top-right corner respectively.
+* Texture in actors weren't applied correctly. I tried flipping the texture image by 90 degrees using gimp and the texture worked nicely. The reason for this issue was the coordinate system of glTF texture format which has origin (0, 0) at top-left and (1, 1) in the bottom-right corner, Where as in vtkTexture we want coordinate (0, 0) and (1, 1) at bottom-left and top-right corner respectively. Here's an example of the issue:
+
+.. image:: https://raw.githubusercontent.com/xtanion/Blog-Images/main/-1_orig.jpg
+   :width: 500
+   :align: center
+
 * Praneeth told me that some models with multiple nodes and multiple meshes weren't loading correctly. The reason for it was the way SCALAR data was extracted from the binary blob, I had to change some variables in `get_accessor_data` method and everything started to work just fine. 
