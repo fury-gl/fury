@@ -616,7 +616,7 @@ def read_viz_gltf(fname, mode=None):
         Model type (e.g. glTF-Binary, glTF-Embedded, etc)
 
     Returns
-    --------
+    -------
     path : str
         Complete path of models.
     """
@@ -640,7 +640,7 @@ def read_viz_gltf(fname, mode=None):
 
 
 def list_gltf_sample_models():
-    """Returns all model names available in the glTF-samples repository
+    """Returns all model name from the glTF-samples repository
 
     Returns
     ---------
