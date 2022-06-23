@@ -25,7 +25,7 @@ UW_RW_URL = \
     "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
 
 NEW_ICONS_DATA_URL = \
-    "https://raw.githubusercontent.com/ganimtron-10/fury-data/master/new_icons/"
+    "https://raw.githubusercontent.com/ganimtron-10/fury-data/master/icons/new_icons/"
 
 CUBEMAP_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
