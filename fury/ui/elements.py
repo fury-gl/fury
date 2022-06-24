@@ -3145,6 +3145,13 @@ class DrawShape(UI):
         self.cal_bounding_box(self.position)
 
     def cal_bounding_box(self, position):
+        """Calculates the min and max position of the bounding box.
+
+        Parameters
+        ----------
+        position : (float, float)
+            (x, y) in pixels.
+        """
         vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
@@ -3167,6 +3174,18 @@ class DrawShape(UI):
         self._bounding_box_offset = position - self._bounding_box_min
 
     def clamp_position(self, position):
+        """Clamps the given position according to the DrawPanel canvas.
+
+        Parameters
+        ----------
+        position : (float, float)
+            (x, y) in pixels.
+
+        Returns
+        -------
+        new_position: ndarray(int)
+            New position for the shape.
+        """
         self.cal_bounding_box(position)
         new_position = np.clip(self._bounding_box_min,
                                [0, 0], self.drawpanel.size - self._bounding_box_size)
