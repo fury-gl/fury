@@ -275,15 +275,15 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     return fetcher
 
 
-async def _request(url, session):
+async def _request(session, url):
     """An asynchronous function to get the request data as json.
 
     Parameters
     ----------
-    url : string
-        The URL from which _request gets the response
     session : ClientSession
         Aiohttp client session.
+    url : string
+        The URL from which _request gets the response
 
     Returns
     -------
@@ -291,10 +291,13 @@ async def _request(url, session):
         The response of url request.
     """
     async with session.get(url) as response:
+        if not response.status == 200:
+            raise aiohttp.InvalidURL(url)
+
         return await response.json()
 
 
-async def _download(url, filename, session, size=None):
+async def _download(session, url, filename, size=None):
     """An asynchronous function to download file from url.
 
     Parameters
@@ -310,25 +313,43 @@ async def _download(url, filename, session, size=None):
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
         async with session.get(url) as response:
+            block = 100
+            size = response.content_length if not size else size
+            copied = 0
             with open(filename, mode='wb') as f:
-                data = await response.read()
-                f.write(data)
+                async for chunk in response.content.iter_chunked(block):
+                    f.write(chunk)
+                    copied += len(chunk)
+                    progress = float(copied)/float(size)
+                    update_progressbar(progress, size)
 
 
-async def _get_viz_gltf(name, mode):
+async def _fetch_gltf(name, mode):
+    """An asynchronous function to fetch glTF samples.
+
+    Parameters
+    ----------
+    name: str, list
+        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
+
+    mode: str
+        Type of the glTF format.
+        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+    """
 
     if name is None:
         name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
     if isinstance(name, list):
-        await asyncio.gather(
-            *[_get_viz_gltf(element, mode) for element in name]
+        f_names = await asyncio.gather(
+            *[_fetch_gltf(element, mode) for element in name]
         )
+        return f_names
     else:
         url = f'{GLTF_DATA_URL}{name}/{mode}'
 
         async with aiohttp.ClientSession() as session:
-            request = await _request(url, session)
+            request = await _request(session, url)
 
             name = pjoin('glTF', name)
             name = pjoin(name, mode)
@@ -339,15 +360,19 @@ async def _get_viz_gltf(name, mode):
                 os.makedirs(folder)
 
             d_urls = [file['download_url'] for file in request]
-            f_names = [pjoin(folder, url.split('/')[-1]) for url in d_urls]
-            zip_url = zip(d_urls, f_names)
+            sizes = [file['size'] for file in request]
+            f_names = [url.split('/')[-1] for url in d_urls]
+            f_paths = [pjoin(folder, name) for name in f_names]
+            zip_url = zip(d_urls, f_paths, sizes)
 
             await asyncio.gather(
-                *[_download(url, fname, session) for url, fname in zip_url]
+                *[_download(session, url, name, s) for url, name, s in zip_url]
             )
 
+        return f_names, folder
 
-def fetch_viz_gltf(name=None, mode='glTF'):
+
+def fetch_gltf(name=None, mode='glTF'):
     """Download glTF samples from Khronos Group Github.
 
     Parameters
@@ -363,7 +388,8 @@ def fetch_viz_gltf(name=None, mode='glTF'):
         (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
         Default: glTF, `.bin` and texture files are stored separately.
     """
-    asyncio.run(_get_viz_gltf(name, mode))
+    filenames = asyncio.run(_fetch_gltf(name, mode))
+    return filenames
 
 
 fetch_viz_cubemaps = _make_fetcher(
@@ -643,7 +669,7 @@ def list_gltf_sample_models():
     """Returns all model name from the glTF-samples repository
 
     Returns
-    ---------
+    -------
     model_names : list
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
@@ -653,12 +679,11 @@ def list_gltf_sample_models():
     model_names = [model['name'] for model in models if model['size'] == 0]
     default_models = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
-    if model_names:
-        result = [model in model_names for model in default_models]
-        for i, exist in enumerate(result):
-            if not exist:
-                print(f'Model {default_models[i]} not found!')
-        return model_names
-    else:
+    if not model_names:
         print('Failed to get models list')
         return None
+    result = [model in model_names for model in default_models]
+    for i, exist in enumerate(result):
+        if not exist:
+            print(f'Default Model: {default_models[i]} not found!')
+    return model_names
