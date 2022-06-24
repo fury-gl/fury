@@ -3142,6 +3142,37 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
+        self.cal_bounding_box(self.position)
+
+    def cal_bounding_box(self, position):
+        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+
+        min_x, min_y = vertices[0]
+        max_x, max_y = vertices[0]
+
+        for x, y in vertices:
+            if x < min_x:
+                min_x = x
+            if y < min_y:
+                min_y = y
+            if x > max_x:
+                max_x = x
+            if y > max_y:
+                max_y = y
+
+        self._bounding_box_min = [min_x, min_y]
+        self._bounding_box_max = [max_x, max_y]
+        self._bounding_box_size = [max_x-min_x, max_y-min_y]
+
+        self._bounding_box_offset = position - self._bounding_box_min
+
+    def clamp_position(self, position):
+        self.cal_bounding_box(position)
+        new_position = np.clip(self._bounding_box_min,
+                               [0, 0], self.drawpanel.size - self._bounding_box_size)
+        new_position = new_position + self._bounding_box_offset
+        return new_position.astype(int)
+
     def resize(self, size):
         """Resize the UI.
         """
@@ -3159,6 +3190,8 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
+        self.cal_bounding_box(self.position)
+
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
@@ -3175,7 +3208,7 @@ class DrawShape(UI):
         if self.drawpanel.current_mode == "selection":
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                new_position = click_position - self._drag_offset - self.drawpanel.position
+                new_position = self.clamp_position(click_position)
                 self.drawpanel.canvas.update_element(self, new_position)
             i_ren.force_render()
         else:
@@ -3376,7 +3409,6 @@ class DrawPanel(UI):
     def handle_mouse_click(self, position):
         if self.is_draggable and self.current_mode == "selection":
             self._drag_offset = position - self.position
-            i_ren.event.abort()
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
