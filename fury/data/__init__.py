@@ -11,6 +11,7 @@ from fury.data.fetcher import (fetch_viz_cubemaps, read_viz_cubemap,
                                fetch_gltf, read_viz_gltf,
                                list_gltf_sample_models)
 
+
 DATA_DIR = pjoin(dirname(__file__), 'files')
 
 __all__ = ['DATA_DIR', 'fetch_viz_cubemaps', 'read_viz_cubemap',

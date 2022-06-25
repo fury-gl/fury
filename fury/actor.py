@@ -1539,7 +1539,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
 
 def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1, use_primitive=True):
+           vertices=None, faces=None, opacity=1, use_primitive=False):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1593,7 +1593,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
-    scales = np.multiply(radii, [1, 1, 1])
+    scales = radii
     directions = (1, 0, 0)
 
     if faces is None and vertices is None:
@@ -2375,7 +2375,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
-    >>> l = actor.label(text='Hello')
+    >>> l = actor.vector_text(text='Hello')
     >>> scene.add(l)
     >>> #window.show(scene)
 
