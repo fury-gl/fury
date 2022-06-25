@@ -18,7 +18,8 @@ from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
-from fury.utils import set_input, set_polydata_vertices, vertices_from_actor, update_actor
+from fury.utils import (set_polydata_vertices, vertices_from_actor,
+                        update_actor)
 
 
 class TextBox2D(UI):
@@ -3398,8 +3399,6 @@ class DrawPanel(UI):
 
         Parameters
         ----------
-        last_mode: string
-            Previous mode of the UI.
         current_mode: string
             Current mode of the UI.
         """
