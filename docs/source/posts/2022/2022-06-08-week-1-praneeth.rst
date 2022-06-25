@@ -15,7 +15,7 @@ What did you do this week?
 
 I started with a simple ``Panel2D`` (which is basically a movable rectangle on which we can add other UI elements) as a background and then assigned its mouse click callback to print “**Clicked!**” to verify the event triggering.
 
-Then I modified the event callback to create a ``Rectangle2D`` at that current mouse position(Now you would ask, Why ``Rectangle2D``?? We wanted to change the width of the line, which wasn't possible with the regular line). This would create a rectangle at that point but it was having static size.
+Then I modified the event callback to create a ``Rectangle2D`` at that current mouse position(Now you would ask, Why ``Rectangle2D``?? We wanted to change the width of the line, which wasn't possible with the regular line). This would create a rectangle at that point but it had size.
 So I had to then calculate the distance between the first point where the mouse was clicked and the current position to resize it accordingly. 
 
 .. image:: https://user-images.githubusercontent.com/64432063/174661567-76251ce9-380f-4a41-a572-65865d028a9c.gif
