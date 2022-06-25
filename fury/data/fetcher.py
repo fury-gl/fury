@@ -13,8 +13,7 @@ from shutil import copyfileobj
 import tarfile
 import zipfile
 
-from urllib.request import urlopen, urlretrieve
-from urllib.error import HTTPError
+from urllib.request import urlopen
 import asyncio
 import aiohttp
 
@@ -302,13 +301,14 @@ async def _download(session, url, filename, size=None):
 
     Parameters
     ----------
+    session : ClientSession
+        Aiohttp client session
     url : string
         The URL of the downloadable file
     filename : string
         Name of the downloaded file (e.g. BoxTextured.gltf)
-    session : ClientSession
-        Aiohttp client session
-
+    size : int, optional
+        Length of the content in bytes
     """
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')

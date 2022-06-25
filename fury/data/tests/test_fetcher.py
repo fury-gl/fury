@@ -1,11 +1,9 @@
-from fury.data import *
-import numpy as np
-import numpy.testing as npt
 import os
 from os.path import join as pjoin
-from aiohttp import InvalidURL
 import json
-
+import numpy.testing as npt
+from aiohttp import InvalidURL
+from fury.data import (fetch_gltf, read_viz_gltf)
 
 if 'FURY_HOME' in os.environ:
     fury_home = os.environ['FURY_HOME']
