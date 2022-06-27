@@ -378,7 +378,7 @@ class ShowManager(object):
         if self.order_transparent:
             occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples=0, max_peels=max_peels,
+                         multi_samples=multi_samples, max_peels=max_peels,
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
@@ -570,6 +570,7 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)

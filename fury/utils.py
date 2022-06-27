@@ -6,7 +6,7 @@ from fury.lib import (numpy_support, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
                       Transform, AlgorithmOutput, VTK_INT, VTK_UNSIGNED_CHAR,
-                      TransformPolyDataFilter, IdTypeArray)
+                      TransformPolyDataFilter)
 
 
 def remove_observer_from_actor(actor, id):
@@ -117,6 +117,12 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
+    if isinstance(data, (list, np.ndarray)):
+        offsets_dtype = np.int64
+    else:
+        offsets_dtype = np.dtype(data._offsets.dtype)
+        if offsets_dtype.kind == 'u':
+            offsets_dtype = np.dtype(offsets_dtype.name[1:])
     data = np.array(data, dtype=object)
     nb_cells = len(data)
 
@@ -136,10 +142,10 @@ def numpy_to_vtk_cells(data, is_coords=True):
             connectivity += list(range(current_position, end_position))
             current_position = end_position
 
-    connectivity = np.array(connectivity, np.intp)
-    offset = np.array(offset, dtype=connectivity.dtype)
+    connectivity = np.array(connectivity, offsets_dtype)
+    offset = np.array(offset, dtype=offsets_dtype)
 
-    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    vtk_array_type = numpy_support.get_vtk_array_type(offsets_dtype)
     cell_array.SetData(
         numpy_support.numpy_to_vtk(offset, deep=True,
                                    array_type=vtk_array_type),
@@ -258,7 +264,10 @@ def lines_to_vtk_polydata(lines, colors=None):
 
     """
     # Get the 3d points_array
-    points_array = np.vstack(lines)
+    if lines.__class__.__name__ == 'ArraySequence':
+        points_array = lines._data
+    else:
+        points_array = np.vstack(lines)
 
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
@@ -278,49 +287,53 @@ def lines_to_vtk_polydata(lines, colors=None):
     lines_range = range(nb_lines)
     points_per_line = [len(lines[i]) for i in lines_range]
     points_per_line = np.array(points_per_line, np.intp)
+
     color_is_scalar = False
-    if colors is None or colors is False:
-        # set automatic rgb colors
-        cols_arr = line_colors(lines)
-        colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
-        vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
-    else:
-        cols_arr = np.asarray(colors)
-        if cols_arr.dtype == object:  # colors is a list of colors
-            vtk_colors = numpy_to_vtk_colors(255 * np.vstack(colors))
+    if points_array.size:
+        if colors is None or colors is False:
+            # set automatic rgb colors
+            cols_arr = line_colors(lines)
+            colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
+            vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
         else:
-            if len(cols_arr) == nb_points:
-                if cols_arr.ndim == 1:  # values for every point
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
-                                                            deep=True)
+            cols_arr = np.asarray(colors)
+            if cols_arr.dtype == object:  # colors is a list of colors
+                vtk_colors = numpy_to_vtk_colors(255 * np.vstack(colors))
+            else:
+                if len(cols_arr) == nb_points:
+                    if cols_arr.ndim == 1:  # values for every point
+                        vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
+                                                                deep=True)
+                        color_is_scalar = True
+                    elif cols_arr.ndim == 2:  # map color to each point
+                        vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
+
+                elif cols_arr.ndim == 1:
+                    if len(cols_arr) == nb_lines:  # values for every streamline
+                        cols_arrx = []
+                        for (i, value) in enumerate(colors):
+                            cols_arrx += lines[i].shape[0]*[value]
+                        cols_arrx = np.array(cols_arrx)
+                        vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
+                                                                deep=True)
+                        color_is_scalar = True
+                    else:  # the same colors for all points
+                        vtk_colors = numpy_to_vtk_colors(
+                            np.tile(255 * cols_arr, (nb_points, 1)))
+
+                elif cols_arr.ndim == 2:  # map color to each line
+                    colors_mapper = np.repeat(lines_range, points_per_line,
+                                              axis=0)
+                    vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
+                else:  # colormap
+                    #  get colors for each vertex
+                    cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                     color_is_scalar = True
-                elif cols_arr.ndim == 2:  # map color to each point
-                    vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
 
-            elif cols_arr.ndim == 1:
-                if len(cols_arr) == nb_lines:  # values for every streamline
-                    cols_arrx = []
-                    for (i, value) in enumerate(colors):
-                        cols_arrx += lines[i].shape[0]*[value]
-                    cols_arrx = np.array(cols_arrx)
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
-                                                            deep=True)
-                    color_is_scalar = True
-                else:  # the same colors for all points
-                    vtk_colors = numpy_to_vtk_colors(
-                        np.tile(255 * cols_arr, (nb_points, 1)))
+        vtk_colors.SetName("colors")
+        poly_data.GetPointData().SetScalars(vtk_colors)
 
-            elif cols_arr.ndim == 2:  # map color to each line
-                colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
-                vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
-            else:  # colormap
-                #  get colors for each vertex
-                cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
-                vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
-                color_is_scalar = True
-
-    vtk_colors.SetName("colors")
-    poly_data.GetPointData().SetScalars(vtk_colors)
     return poly_data, color_is_scalar
 
 
