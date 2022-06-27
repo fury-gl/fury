@@ -16,14 +16,14 @@ and Keyframe animations were related so we discussed on that too.
 
 I read documentation of various glTF loading libraries (``pygltflib``, ``panda3D-gltf`` and ``pyrender``) in python and tried to understand how do they work.
 I started creating a basic glTF loader, it was using dataclasses to store json data. I created polydata for each primitive in a mesh, each polydata will contain the vertices, triangles, normals.
-To apply textures properly, I had to apply texture coordinates to polydata and flip the baseTexture along X axis by 90 degrees.
+To apply textures properly, I had to apply texture coordinates to polydata and flip the texture along X axis by 90 degrees.
 
 
 What did you do this week?
 --------------------------
 
 After discussing on pros and cons of various gltf libraries we decided to use ``pygltflib`` to handle json to python dataclass conversion.
-This week I reshaped PR `#600 <https://github.com/fury-gl/fury/pull/600/>`_ to use pygltflib. I also modified the code to handle multiple baseTextures.
+This week I reshaped PR `#600 <https://github.com/fury-gl/fury/pull/600/>`_ to use pygltflib. I also modified the code to handle multiple base textures.
 While experimenting with textures, I accidentally applied normals to the polydata and discovered that it makes the surface look much smoother, however in few models it results in a darker model which reflects almost no light. So I made it optional for now to apply normals in a model.
 
 I also created a basic fetcher (PR `#602 <https://github.com/fury-gl/fury/pull/602/>`_) to get glTF models from Khronos group's gltff sample repository.
@@ -35,8 +35,9 @@ I am also working on exporting scene to a gltf file. Using `pygltflib` I am conv
 What is coming up next week?
 ----------------------------
 
-Completing exporting gltf from a scene.
-TBD
+Create a PR for the fetcher function, add tests, fix bugs and merge it by the end of the week.
+Fix the colors issue in the glTf exporter.
+Add texture and camera in glTF exporter and create a PR for it.
 
 
 Did you get stuck anywhere?
