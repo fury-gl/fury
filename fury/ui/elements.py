@@ -3228,7 +3228,8 @@ class DrawShape(UI):
         if self.drawpanel.current_mode == "selection":
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                new_position = self.clamp_position(click_position)
+                relative_canvas_position = click_position - self._drag_offset - self.drawpanel.position
+                new_position = self.clamp_position(relative_canvas_position)
                 self.drawpanel.canvas.update_element(self, new_position)
             i_ren.force_render()
         else:
