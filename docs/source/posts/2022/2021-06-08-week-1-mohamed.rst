@@ -1,4 +1,4 @@
-First week of coding!
+Week 1: Implementing a basic Keyframe animation API
 =====================
 
 .. post:: June 19 2022
@@ -18,7 +18,7 @@ We also discussed how important the code review is and how to do a proper code r
 What did you do this week?
 --------------------------
 
-I continued implementing the Timeline class. Added some functionalities according to what we discussed in the weekly meeting, such as handling Fury Actors, adding, removing, translating, scaling them according to the keyframes. Then made two tutorials for it with simple UI to control the playback of the animation.
+I continued implementing the `Timeline` class. Added some functionalities according to what we discussed in the weekly meeting, such as handling Fury Actors, adding, removing, translating, scaling them according to the keyframes. Then made two tutorials for it with simple UI to control the playback of the animation.
 
   .. raw:: html
 
@@ -34,7 +34,7 @@ Also, when I was attending Shivam's meeting, he showed us a smooth glTF model wh
 What is coming up next week?
 ----------------------------
 
-If the implemented timeline is good to go, I will write the associated tests, finish up any missing methods, and document it properly.
+If the implemented `Timeline` is good to go, I will write the associated tests, finish up any missing methods, and document it properly.
 I will probably continue implementing the other interpolation methods as well.
 
 Did you get stuck anywhere?
