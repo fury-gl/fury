@@ -1,5 +1,5 @@
-First week of coding!
-=====================
+Week 1 - A Basic glTF Importer
+==============================
 
 .. post:: June 20 2022
    :author: Shivam Anand
@@ -10,7 +10,7 @@ First week of coding!
 What did you do during the Community Bonding Period?
 ----------------------------------------------------
 
-In the community bonding period I met with my mentor Serge Koudoro, along with other mentors in FURY and gsoc contributers.
+In the community bonding period I met with my mentor Serge Koudoro, along with other mentors in FURY and gsoc contributors.
 We discussed about my project and set up project timeline on github projects section. As my project (glTF Integration)
 and Keyframe animations were related so we discussed on that too.
 
@@ -22,21 +22,21 @@ To apply textures properly, I had to apply texture coordinates to polydata and f
 What did you do this week?
 --------------------------
 
-After discussing on pros and cons of various gltf libraries we decided to use ``pygltflib`` to handle json to python dataclass conversion.
+After discussing on pros and cons of various glTF libraries we decided to use ``pygltflib`` to handle json to python dataclass conversion.
 This week I reshaped PR `#600 <https://github.com/fury-gl/fury/pull/600/>`_ to use pygltflib. I also modified the code to handle multiple base textures.
 While experimenting with textures, I accidentally applied normals to the polydata and discovered that it makes the surface look much smoother, however in few models it results in a darker model which reflects almost no light. So I made it optional for now to apply normals in a model.
 
-I also created a basic fetcher (PR `#602 <https://github.com/fury-gl/fury/pull/602/>`_) to get glTF models from Khronos group's gltff sample repository.
+I also created a basic fetcher (PR `#602 <https://github.com/fury-gl/fury/pull/602/>`_) to get glTF models from Khronos group's glTF sample repository.
 I also made this function asynchronous, as Serge suggested me to use asyncio and aiohttp to make the API callbacks asynchronous and it decreased the downloading time of multiple models.
 
-I am also working on exporting scene to a gltf file. Using `pygltflib` I am converting the python dataclass to a json like structure.
+I am also working on exporting scene to a glTF file. Using `pygltflib` I am converting the python dataclass to a json like structure.
 
 
 What is coming up next week?
 ----------------------------
 
 Create a PR for the fetcher function, add tests, fix bugs and merge it by the end of the week.
-Fix the colors issue in the glTf exporter.
+Fix the colors issue in the glTF exporter.
 Add texture and camera in glTF exporter and create a PR for it.
 
 
