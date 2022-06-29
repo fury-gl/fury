@@ -31,6 +31,15 @@ def test_ui_textbox(recording=False):
     another_textbox_test = ui.TextBox2D(height=3, width=10, text="Enter Text")
     another_textbox_test.set_message("Enter Text")
 
+    # Checking whether textbox went out of focus
+    is_off_focused = [False]
+
+    def _off_focus(textbox):
+        is_off_focused[0] = True
+
+    # Set up a callback when textbox went out of focus
+    textbox_test.off_focus = _off_focus
+
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(textbox_test)
@@ -49,6 +58,8 @@ def test_ui_textbox(recording=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
+
+    npt.assert_equal(is_off_focused[0], True)
 
 
 def test_ui_line_slider_2d_horizontal_bottom(recording=False):

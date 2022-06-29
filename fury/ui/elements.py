@@ -100,6 +100,8 @@ class TextBox2D(UI):
         self.caret_pos = 0
         self.init = True
 
+        self.off_focus = lambda ui: None
+
     def _setup(self):
         """Setup this UI component.
 
@@ -186,11 +188,12 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if key_char != '' and key_char in printable:
-            self.add_character(key_char)
-        elif key.lower() == "return":
+        if key.lower() == "return":
             self.render_text(False)
+            self.off_focus(self)
             return True
+        elif key_char != '' and key_char in printable:
+            self.add_character(key_char)
         if key.lower() == "backspace":
             self.remove_character()
         elif key.lower() == "left":
@@ -1740,9 +1743,9 @@ class Option(UI):
         # Option's button
         self.button_icons = []
         self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
+                                  read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
+                                  read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons,
                                size=self.button_size)
 
@@ -2396,7 +2399,7 @@ class ListBox2D(UI):
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+                                            scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
