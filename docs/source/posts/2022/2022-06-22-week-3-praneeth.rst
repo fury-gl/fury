@@ -22,11 +22,11 @@ Instead of spending too much time on this, I thought it would be great to switch
 But then the question arises `How to efficiently take data from the user?`, `Which data format would be easy to compute and best for user experience?` and so on.
 
 Alongside I was trying to create polylines but whenever I wanted to start the creation of the second line the dragging event wasn't triggered as each dragging event required a left mouse click event associated with it. 
-I tried to manually do that but it didn't work.
+I tried to do that manually but it didn't work.
 
 Did you get stuck anywhere?
 ---------------------------
-As I mentioned when I translate the shapes it would go out of the canvas bounds. Here the problem was with the reference point by which I was calculating all the transformations it changed depending on various cases as shown below.
+As I mentioned when I translated the shapes it would go out of the canvas bounds. Here the problem was with the reference point by which I was calculating all the transformations it changed depending on various cases as shown below.
 
 .. image:: https://user-images.githubusercontent.com/64432063/176093855-6129cc25-d03d-45ba-872e-c8d2c6329a1e.gif
     :width: 400
