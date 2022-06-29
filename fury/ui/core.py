@@ -519,6 +519,9 @@ class BorderTexture(UI):
         self.texture_arr = np.array([[[255, 255, 255]]])
         self.actor = texture_2d(self.texture_arr.astype("u1"))
 
+        # Add default events listener to the VTK actor.
+        self.handle_events(self.actor)
+
     def resize(self, size):
         """Resize BorderTexture.
 
