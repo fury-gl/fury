@@ -1,4 +1,3 @@
-
 """
 =====================
 Keyframe animation
@@ -10,7 +9,7 @@ Keyframe animation explained with a simple tutorial
 
 import numpy as np
 from fury import actor, window, ui
-from fury.animation import Timeline, StepInterpolator, LinearInterpolator, LABInterpolator, CubicSplineInterpolator
+from fury.animation import Timeline, CubicSplineInterpolator
 from fury.data import read_viz_icons
 
 scene = window.Scene()
@@ -23,7 +22,6 @@ showm.initialize()
 # creating the UI panel to hold the playback buttons
 panel = ui.Panel2D(size=(250, 40), color=(1, 1, 1), align="right")
 panel.center = (460, 40)
-
 
 # creating 3 buttons to control the animation
 pause_btn = ui.Button2D(
@@ -43,6 +41,7 @@ panel.add_element(stop_btn, (0.75, 0.15))
 
 # creating the actor to be animated
 cube = actor.cube(np.array([[0, 0, 0]]), np.array([[1, 1, 1]]))
+
 
 # making a function to update the animation
 def timer_callback(_obj, _event):
@@ -87,7 +86,7 @@ timeline.translate(9, np.array([12, 11, 0]))
 # timeline.set_scale_interpolator(StepInterpolator)
 
 # Adding scale keyframes to the timeline at times 0, 3, 6, 15
-timeline.scale(0, np.array([1, 1,  1]))
+timeline.scale(0, np.array([1, 1, 1]))
 timeline.scale(3, np.array([3, 3, 3]))
 timeline.scale(6, np.array([2, 2, 2]))
 timeline.scale(15, np.array([5, 5, 5]))
@@ -102,12 +101,9 @@ timeline.set_keyframes(17, {
     "scale": np.array([1, 1, 1])
 })
 
-
 timeline.set_position_interpolator(CubicSplineInterpolator)
-
 
 # Adding the callback function that updates the animation
 showm.add_timer_callback(True, 10, timer_callback)
 
 showm.start()
-
