@@ -6,7 +6,7 @@ from functools import partial
 import numpy as np
 
 from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          compose_shader, import_fury_shader, load,
+                          compose_shader, import_fury_shader,
                           replace_shader_in_actor, shader_to_actor)
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
@@ -32,7 +32,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors)
+                        fix_winding_order, numpy_to_vtk_colors, color_check)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -762,7 +762,8 @@ def line(lines, colors=None, opacity=1, linewidth=1,
             if program is not None:
                 program.SetUniformf("linewidth", linewidth)
 
-        replace_shader_in_actor(actor, "geometry", load("line.geom"))
+        replace_shader_in_actor(actor, 'geometry',
+                                import_fury_shader('line.geom'))
         add_shader_callback(actor, callback)
 
     if fake_tube:
@@ -1424,15 +1425,21 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
                      linewidth=linewidth, symmetric=symmetric)
 
 
-def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
-    """Create one or more 3d points.
+def dot(points, colors=None, opacity=None, dot_size=5):
+    """
+    Create one or more 3d points.
 
     Parameters
     ----------
     points : ndarray, (N, 3)
-    color : tuple (3,)
+        dots positions
+    colors : ndarray (N,3) or (N, 4) or tuple (3,) or tuple (4,)
+        RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     opacity : float, optional
-        Takes values from 0 (fully transparent) to 1 (opaque)
+        Takes values from 0 (fully transparent) to 1 (opaque).
+        If a value is given, each dot will have the same opacity otherwise
+        opacity is set to 1 by default, or is defined by Alpha parameter
+        in colors if given.
     dot_size : int
 
     Returns
@@ -1444,42 +1451,55 @@ def dots(points, color=(1, 0, 0), opacity=1, dot_size=5):
     :func:`fury.actor.point`
 
     """
-    if points.ndim == 2:
-        points_no = points.shape[0]
-    else:
-        points_no = 1
+    if points.ndim != 2:
+        raise ValueError('Invalid points. The shape of the structure must be '
+                         '(Nx3). Your data has {} dimensions.'
+                         .format(points.ndim))
 
-    polyVertexPoints = Points()
-    polyVertexPoints.SetNumberOfPoints(points_no)
-    aPolyVertex = PolyVertex()
-    aPolyVertex.GetPointIds().SetNumberOfIds(points_no)
+    if points.shape[1] != 3:
+        raise ValueError('Invalid points. The shape of the last dimension '
+                         'must be 3. Your data has a last dimension of {}.'
+                         .format(points.shape[1]))
 
-    cnt = 0
-    if points.ndim > 1:
-        for point in points:
-            polyVertexPoints.InsertPoint(cnt, point[0], point[1], point[2])
-            aPolyVertex.GetPointIds().SetId(cnt, cnt)
-            cnt += 1
-    else:
-        polyVertexPoints.InsertPoint(cnt, points[0], points[1], points[2])
-        aPolyVertex.GetPointIds().SetId(cnt, cnt)
-        cnt += 1
+    vtk_vertices = Points()
+    vtk_faces = CellArray()
 
-    aPolyVertexGrid = UnstructuredGrid()
-    aPolyVertexGrid.Allocate(1, 1)
-    aPolyVertexGrid.InsertNextCell(aPolyVertex.GetCellType(),
-                                   aPolyVertex.GetPointIds())
+    # Add points
+    for i in range(len(points)):
+        p = points[i]
+        idd = vtk_vertices.InsertNextPoint(p)
+        vtk_faces.InsertNextCell(1)
+        vtk_faces.InsertCellPoint(idd)
 
-    aPolyVertexGrid.SetPoints(polyVertexPoints)
-    aPolyVertexMapper = DataSetMapper()
-    aPolyVertexMapper.SetInputData(aPolyVertexGrid)
-    aPolyVertexActor = Actor()
-    aPolyVertexActor.SetMapper(aPolyVertexMapper)
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
 
-    aPolyVertexActor.GetProperty().SetColor(color)
-    aPolyVertexActor.GetProperty().SetOpacity(opacity)
-    aPolyVertexActor.GetProperty().SetPointSize(dot_size)
-    return aPolyVertexActor
+    # Create a polydata object
+    polydata = PolyData()
+    polydata.SetPoints(vtk_vertices)
+    polydata.SetVerts(vtk_faces)
+    polydata.GetPointData().SetScalars(color_array)
+
+    # Visualize
+    mapper = PolyDataMapper()
+    mapper.SetInputData(polydata)
+
+    # Create an actor
+    poly_actor = Actor()
+    poly_actor.SetMapper(mapper)
+
+    if opacity is not None:
+        poly_actor.GetProperty().SetOpacity(opacity)
+    elif global_opacity >= 0:
+        poly_actor.GetProperty().SetOpacity(global_opacity)
+    poly_actor.GetProperty().SetPointSize(dot_size)
+
+    return poly_actor
+
+
+dots = deprecate_with_version(message="dots function has been renamed dot",
+                              since="0.8.1",
+                              until="0.9.0")(dot)
 
 
 def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
@@ -1501,7 +1521,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
     See Also
     --------
-    :func:`fury.actor.dots`
+    :func:`fury.actor.dot`
     :func:`fury.actor.sphere`
 
     Examples
@@ -1519,7 +1539,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
 
 
 def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1, use_primitive=True):
+           vertices=None, faces=None, opacity=1, use_primitive=False):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1573,7 +1593,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
-    scales = np.multiply(radii, [1, 1, 1])
+    scales = radii
     directions = (1, 0, 0)
 
     if faces is None and vertices is None:
@@ -2355,7 +2375,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     --------
     >>> from fury import window, actor
     >>> scene = window.Scene()
-    >>> l = actor.label(text='Hello')
+    >>> l = actor.vector_text(text='Hello')
     >>> scene.add(l)
     >>> #window.show(scene)
 
@@ -2984,10 +3004,10 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     attribute_to_actor(box_actor, rep_scales, 'scale')
     attribute_to_actor(box_actor, rep_directions, 'direction')
 
-    vs_dec_code = load("sdf_dec.vert")
-    vs_impl_code = load("sdf_impl.vert")
-    fs_dec_code = load("sdf_dec.frag")
-    fs_impl_code = load("sdf_impl.frag")
+    vs_dec_code = import_fury_shader('sdf_dec.vert')
+    vs_impl_code = import_fury_shader('sdf_impl.vert')
+    fs_dec_code = import_fury_shader('sdf_dec.frag')
+    fs_impl_code = import_fury_shader('sdf_impl.frag')
 
     shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
                     decl_code=vs_dec_code)
@@ -3043,19 +3063,19 @@ def markers(
         'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
         'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
 
-    vs_dec_code = load("billboard_dec.vert")
-    vs_dec_code += f'\n{load("marker_billboard_dec.vert")}'
-    vs_impl_code = load("billboard_impl.vert")
-    vs_impl_code += f'\n{load("marker_billboard_impl.vert")}'
+    vs_dec_code = import_fury_shader('billboard_dec.vert')
+    vs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.vert")}'
+    vs_impl_code = import_fury_shader('billboard_impl.vert')
+    vs_impl_code += f'\n{import_fury_shader("marker_billboard_impl.vert")}'
 
-    fs_dec_code = load('billboard_dec.frag')
-    fs_dec_code += f'\n{load("marker_billboard_dec.frag")}'
-    fs_impl_code = load('billboard_impl.frag')
+    fs_dec_code = import_fury_shader('billboard_dec.frag')
+    fs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.frag")}'
+    fs_impl_code = import_fury_shader('billboard_impl.frag')
 
     if marker == '3d':
-        fs_impl_code += f'{load("billboard_spheres_impl.frag")}'
+        fs_impl_code += f'{import_fury_shader("billboard_spheres_impl.frag")}'
     else:
-        fs_impl_code += f'{load("marker_billboard_impl.frag")}'
+        fs_impl_code += f'{import_fury_shader("marker_billboard_impl.frag")}'
         if isinstance(marker, str):
             list_of_markers = np.ones(n_markers)*marker2id[marker]
         else:

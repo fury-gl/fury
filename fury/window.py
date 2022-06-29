@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import gzip
+import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
@@ -260,10 +261,10 @@ class Scene(OpenGLRenderer):
         return self.GetActiveCamera().GetDirectionOfProjection()
 
     @property
-    def frame_rate(self):
-        rtis = self.GetLastRenderTimeInSeconds()
-        fps = 1.0 / rtis
-        return fps
+    def last_render_time(self):
+        """Returns the last render time in seconds."""
+
+        return self.GetLastRenderTimeInSeconds()
 
     def fxaa_on(self):
         self.SetUseFXAA(True)
@@ -362,6 +363,8 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self._fps = 0
+        self._last_render_time = 0
 
         if self.reset_camera:
             self.scene.ResetCamera()
@@ -378,7 +381,7 @@ class ShowManager(object):
         if self.order_transparent:
             occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples=0, max_peels=max_peels,
+                         multi_samples=multi_samples, max_peels=max_peels,
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
@@ -404,6 +407,9 @@ class ShowManager(object):
     def render(self):
         """Render only once."""
         self.window.Render()
+        # calculate the FPS
+        self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._last_render_time = time.perf_counter()
 
     def start(self):
         """Start interaction."""
@@ -433,6 +439,11 @@ class ShowManager(object):
         self.window.Finalize()
         del self.iren
         del self.window
+
+    @property
+    def frame_rate(self):
+        """Returns number of frames per second."""
+        return self._fps
 
     def record_events(self):
         """Record events during the interaction.
@@ -570,6 +581,7 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)
