@@ -10,20 +10,9 @@ import numpy as np
 from fury.actor import texture_2d, texture_update
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
-from fury.lib import (
-    PolyData,
-    PolyDataMapper2D,
-    Polygon,
-    Points,
-    CellArray,
-    Actor2D,
-    TextActor,
-    Texture,
-    TexturedActor2D,
-    Property2D,
-    FloatArray,
-    DiskSource,
-)
+from fury.lib import (PolyData, PolyDataMapper2D, Polygon, Points, CellArray,
+                      Actor2D, TextActor, Texture, TexturedActor2D, Property2D,
+                      FloatArray, DiskSource)
 from fury.utils import set_input
 
 
@@ -170,10 +159,8 @@ class UI(object, metaclass=abc.ABCMeta):
 
         for callback in self._callbacks:
             if not isinstance(iren, CustomInteractorStyle):
-                msg = (
-                    "The ShowManager requires `CustomInteractorStyle` in"
-                    " order to use callbacks."
-                )
+                msg = ("The ShowManager requires `CustomInteractorStyle` in"
+                       " order to use callbacks.")
                 raise TypeError(msg)
 
             if callback[0] == self._scene:
@@ -235,7 +222,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @property
     def center(self):
-        return self.position + self.size / 2.0
+        return self.position + self.size / 2.
 
     @center.setter
     def center(self, coords):
@@ -253,7 +240,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
         new_center = np.array(coords)
         size = np.array(self.size)
-        new_lower_left_corner = new_center - size / 2.0
+        new_lower_left_corner = new_center - size / 2.
         self.position = new_lower_left_corner
 
     def set_visibility(self, visibility):
@@ -262,24 +249,18 @@ class UI(object, metaclass=abc.ABCMeta):
             actor.SetVisibility(visibility)
 
     def handle_events(self, actor):
-        self.add_callback(
-            actor, "LeftButtonPressEvent", self.left_button_click_callback
-        )
-        self.add_callback(
-            actor, "LeftButtonReleaseEvent", self.left_button_release_callback
-        )
-        self.add_callback(
-            actor, "RightButtonPressEvent", self.right_button_click_callback
-        )
-        self.add_callback(
-            actor, "RightButtonReleaseEvent", self.right_button_release_callback
-        )
-        self.add_callback(
-            actor, "MiddleButtonPressEvent", self.middle_button_click_callback
-        )
-        self.add_callback(
-            actor, "MiddleButtonReleaseEvent", self.middle_button_release_callback
-        )
+        self.add_callback(actor, "LeftButtonPressEvent",
+                          self.left_button_click_callback)
+        self.add_callback(actor, "LeftButtonReleaseEvent",
+                          self.left_button_release_callback)
+        self.add_callback(actor, "RightButtonPressEvent",
+                          self.right_button_click_callback)
+        self.add_callback(actor, "RightButtonReleaseEvent",
+                          self.right_button_release_callback)
+        self.add_callback(actor, "MiddleButtonPressEvent",
+                          self.middle_button_click_callback)
+        self.add_callback(actor, "MiddleButtonReleaseEvent",
+                          self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
         self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
 
@@ -324,19 +305,15 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @staticmethod
     def mouse_move_callback(i_ren, obj, self):
-        left_pressing_or_dragging = (
-            self.left_button_state == "pressing" or self.left_button_state == "dragging"
-        )
+        left_pressing_or_dragging = (self.left_button_state == "pressing" or
+                                     self.left_button_state == "dragging")
 
-        right_pressing_or_dragging = (
-            self.right_button_state == "pressing"
-            or self.right_button_state == "dragging"
-        )
+        right_pressing_or_dragging = (self.right_button_state == "pressing" or
+                                      self.right_button_state == "dragging")
 
-        middle_pressing_or_dragging = (
-            self.middle_button_state == "pressing"
-            or self.middle_button_state == "dragging"
-        )
+        middle_pressing_or_dragging = \
+            (self.middle_button_state == "pressing" or
+             self.middle_button_state == "dragging")
 
         if left_pressing_or_dragging:
             self.left_button_state = "dragging"
@@ -356,7 +333,8 @@ class UI(object, metaclass=abc.ABCMeta):
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI."""
 
-    def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1), opacity=1.0):
+    def __init__(self, size=(0, 0), position=(0, 0), color=(1, 1, 1),
+                 opacity=1.0):
         """Initialize a rectangle.
 
         Parameters
@@ -624,9 +602,8 @@ class BorderTexture(UI):
 class Disk2D(UI):
     """A 2D disk UI component."""
 
-    def __init__(
-        self, outer_radius, inner_radius=0, center=(0, 0), color=(1, 1, 1), opacity=1.0
-    ):
+    def __init__(self, outer_radius, inner_radius=0, center=(0, 0),
+                 color=(1, 1, 1), opacity=1.0):
         """Initialize a 2D Disk.
 
         Parameters
@@ -792,21 +769,10 @@ class TextBlock2D(UI):
         Size (width, height) in pixels of the text bounding box.
     """
 
-    def __init__(
-        self,
-        text="Text Block",
-        font_size=18,
-        font_family="Arial",
-        justification="left",
-        vertical_justification="bottom",
-        bold=False,
-        italic=False,
-        shadow=False,
-        size=None,
-        color=(1, 1, 1),
-        bg_color=None,
-        position=(0, 0),
-    ):
+    def __init__(self, text="Text Block", font_size=18, font_family='Arial',
+                 justification='left', vertical_justification="bottom",
+                 bold=False, italic=False, shadow=False, size=None,
+                 color=(1, 1, 1), bg_color=None, position=(0, 0)):
         """Init class instance.
 
         Parameters
@@ -940,11 +906,8 @@ class TextBlock2D(UI):
             self.actor.GetSize(self.scene, bb_size)
             bg_size = self.background.size
             if bb_size[0] > bg_size[0] or bb_size[1] > bg_size[1]:
-                warn(
-                    "Font size exceeds background bounding box."
-                    " Font Size will not be updated.",
-                    RuntimeWarning,
-                )
+                warn("Font size exceeds background bounding box."
+                     " Font Size will not be updated.", RuntimeWarning)
                 self.actor.SetTextScaleModeToProp()
                 self.actor.SetPosition2(*bg_size)
 
@@ -960,7 +923,7 @@ class TextBlock2D(UI):
         return self.actor.GetTextProperty().GetFontFamilyAsString()
 
     @font_family.setter
-    def font_family(self, family="Arial"):
+    def font_family(self, family='Arial'):
         """Set font family.
 
         Currently Arial and Courier are supported.
@@ -970,9 +933,9 @@ class TextBlock2D(UI):
         family : str
             The font family.
         """
-        if family == "Arial":
+        if family == 'Arial':
             self.actor.GetTextProperty().SetFontFamilyToArial()
-        elif family == "Courier":
+        elif family == 'Courier':
             self.actor.GetTextProperty().SetFontFamilyToCourier()
         else:
             raise ValueError("Font not supported yet: {}.".format(family))
@@ -987,11 +950,11 @@ class TextBlock2D(UI):
             Text justification.
         """
         justification = self.actor.GetTextProperty().GetJustificationAsString()
-        if justification == "Left":
+        if justification == 'Left':
             return "left"
-        elif justification == "Centered":
+        elif justification == 'Centered':
             return "center"
-        elif justification == "Right":
+        elif justification == 'Right':
             return "right"
 
     @justification.setter
@@ -1005,11 +968,11 @@ class TextBlock2D(UI):
 
         """
         text_property = self.actor.GetTextProperty()
-        if justification == "left":
+        if justification == 'left':
             text_property.SetJustificationToLeft()
-        elif justification == "center":
+        elif justification == 'center':
             text_property.SetJustificationToCentered()
-        elif justification == "right":
+        elif justification == 'right':
             text_property.SetJustificationToRight()
         else:
             msg = "Text can only be justified left, right and center."
@@ -1027,11 +990,11 @@ class TextBlock2D(UI):
         """
         text_property = self.actor.GetTextProperty()
         vjustification = text_property.GetVerticalJustificationAsString()
-        if vjustification == "Bottom":
+        if vjustification == 'Bottom':
             return "bottom"
-        elif vjustification == "Centered":
+        elif vjustification == 'Centered':
             return "middle"
-        elif vjustification == "Top":
+        elif vjustification == 'Top':
             return "top"
 
     @vertical_justification.setter
@@ -1045,11 +1008,11 @@ class TextBlock2D(UI):
 
         """
         text_property = self.actor.GetTextProperty()
-        if vertical_justification == "bottom":
+        if vertical_justification == 'bottom':
             text_property.SetVerticalJustificationToBottom()
-        elif vertical_justification == "middle":
+        elif vertical_justification == 'middle':
             text_property.SetVerticalJustificationToCentered()
-        elif vertical_justification == "top":
+        elif vertical_justification == 'top':
             text_property.SetVerticalJustificationToTop()
         else:
             msg = "Vertical justification must be: bottom, middle or top."
@@ -1205,11 +1168,9 @@ class TextBlock2D(UI):
                 self.actor.GetSize(self.scene, size)
                 return size
             else:
-                warn(
-                    "TextBlock2D must be added to the scene before "
-                    "querying its size while TextScaleMode is set to None.",
-                    RuntimeWarning,
-                )
+                warn("TextBlock2D must be added to the scene before "
+                     "querying its size while TextScaleMode is set to None.",
+                     RuntimeWarning)
 
         return self.actor.GetPosition2()
 

@@ -22,8 +22,8 @@ def test_ui_button_panel(recording=False):
     fetch_viz_icons()
 
     icon_files = []
-    icon_files.append(("stop", read_viz_icons(fname="stop2.png")))
-    icon_files.append(("play", read_viz_icons(fname="play3.png")))
+    icon_files.append(('stop', read_viz_icons(fname='stop2.png')))
+    icon_files.append(('play', read_viz_icons(fname='play3.png')))
 
     button_test = ui.Button2D(icon_fnames=icon_files)
     button_test.center = (20, 20)
@@ -52,67 +52,51 @@ def test_ui_button_panel(recording=False):
 
     # TextBlock
     text_block_test = ui.TextBlock2D()
-    text_block_test.message = "TextBlock"
+    text_block_test.message = 'TextBlock'
     text_block_test.color = (0, 0, 0)
 
     # Panel
-    panel = ui.Panel2D(
-        size=(300, 150),
-        position=(290, 15),
-        color=(1, 1, 1),
-        align="right",
-        has_border=True,
-    )
+    panel = ui.Panel2D(size=(300, 150),
+                       position=(290, 15),
+                       color=(1, 1, 1), align="right",
+                       has_border=True)
 
-    non_bordered_panel = ui.Panel2D(size=(100, 100), has_border=False)
+    non_bordered_panel = ui.Panel2D(size=(100, 100),
+                                    has_border=False)
 
-    npt.assert_equal(hasattr(non_bordered_panel, "borders"), False)
+    npt.assert_equal(hasattr(non_bordered_panel, 'borders'), False)
 
     panel.add_element(rectangle_test, (290, 135))
     panel.add_element(button_test, (0.1, 0.1))
     panel.add_element(text_block_test, (0.7, 0.7))
-    npt.assert_raises(
-        ValueError, panel.add_element, another_rectangle_test, (10.0, 0.5)
-    )
-    npt.assert_raises(
-        ValueError, panel.add_element, another_rectangle_test, (-0.5, 0.5)
-    )
+    npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
+                      (10., 0.5))
+    npt.assert_raises(ValueError, panel.add_element, another_rectangle_test,
+                      (-0.5, 0.5))
 
-    npt.assert_equal(
-        panel.border_width,
-        [
-            0.0,
-        ]
-        * 4,
-    )
-    npt.assert_equal(
-        panel.border_color,
-        [
-            np.asarray([1, 1, 1]),
-        ]
-        * 4,
-    )
+    npt.assert_equal(panel.border_width, [0.0, ]*4)
+    npt.assert_equal(panel.border_color, [np.asarray([1, 1, 1]), ]*4)
 
-    panel.border_width = ["bottom", 10.0]
+    panel.border_width = ['bottom', 10.0]
     npt.assert_equal(panel.border_width[3], 10.0)
-    npt.assert_equal(panel.borders["bottom"].height, 10.0)
+    npt.assert_equal(panel.borders['bottom'].height, 10.0)
 
-    panel.border_width = ["right", 10.0]
+    panel.border_width = ['right', 10.0]
     npt.assert_equal(panel.border_width[1], 10.0)
-    npt.assert_equal(panel.borders["right"].width, 10.0)
+    npt.assert_equal(panel.borders['right'].width, 10.0)
 
     with npt.assert_raises(ValueError):
-        panel.border_width = ["invalid_label", 10.0]
+        panel.border_width = ['invalid_label', 10.0]
 
-    panel.border_color = ["bottom", (0.4, 0.5, 0.6)]
+    panel.border_color = ['bottom', (0.4, 0.5, 0.6)]
     npt.assert_equal(panel.border_color[3], (0.4, 0.5, 0.6))
 
     with npt.assert_raises(ValueError):
-        panel.border_color = ["invalid_label", (0.4, 0.5, 0.6)]
+        panel.border_color = ['invalid_label', (0.4, 0.5, 0.6)]
 
     new_size = (400, 400)
     panel.resize(new_size)
-    npt.assert_equal(panel.borders["bottom"].width, 400.0)
+    npt.assert_equal(panel.borders['bottom'].width, 400.0)
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(button_test)
@@ -140,7 +124,6 @@ def test_ui_button_panel(recording=False):
         # rf = '/home/elef/Devel/fury/fury/data/files/checking.log.gz'
         show_manager.play_events_from_file(recording_filename)
         # recorder.iren.GetRenderWindow().Finalize()
-       
 
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
@@ -244,9 +227,10 @@ def test_text_block_2d():
     _check_property(text_block, "message", ["", "Hello World", "Line\nBreak"])
     _check_property(text_block, "justification", ["left", "center", "right"])
     _check_property(text_block, "position", [(350, 350), (0.5, 0.5)])
-    _check_property(text_block, "color", [(0.0, 0.5, 1.0)])
-    _check_property(text_block, "background_color", [(0.0, 0.5, 1.0), None])
-    _check_property(text_block, "vertical_justification", ["top", "middle", "bottom"])
+    _check_property(text_block, "color", [(0., 0.5, 1.)])
+    _check_property(text_block, "background_color", [(0., 0.5, 1.), None])
+    _check_property(text_block, "vertical_justification",
+                    ["top", "middle", "bottom"])
     _check_property(text_block, "font_family", ["Arial", "Courier"])
 
     with npt.assert_raises(ValueError):
@@ -275,14 +259,8 @@ def test_text_block_2d_justification():
     grid_right = (right, middle), (1, grid_size[1])
     grid_middle = (center, middle), (grid_size[0], 1)
     grid_center = (center, middle), (1, grid_size[1])
-    grid_specs = [
-        grid_top,
-        grid_bottom,
-        grid_left,
-        grid_right,
-        grid_middle,
-        grid_center,
-    ]
+    grid_specs = [grid_top, grid_bottom, grid_left, grid_right,
+                  grid_middle, grid_center]
     for spec in grid_specs:
         line = ui.Rectangle2D(size=spec[1], color=line_color)
         line.center = spec[0]
@@ -291,107 +269,53 @@ def test_text_block_2d_justification():
     font_size = 60
     bg_color = (1, 1, 1)
     texts = []
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(left, top),
-            font_size=font_size,
-            color=(1, 0, 0),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="top",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(center, top),
-            font_size=font_size,
-            color=(0, 1, 0),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="top",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(right, top),
-            font_size=font_size,
-            color=(0, 0, 1),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="top",
-        )
-    ]
+    texts += [ui.TextBlock2D("HH", position=(left, top),
+                             font_size=font_size,
+                             color=(1, 0, 0), bg_color=bg_color,
+                             justification="left",
+                             vertical_justification="top")]
+    texts += [ui.TextBlock2D("HH", position=(center, top),
+                             font_size=font_size,
+                             color=(0, 1, 0), bg_color=bg_color,
+                             justification="center",
+                             vertical_justification="top")]
+    texts += [ui.TextBlock2D("HH", position=(right, top),
+                             font_size=font_size,
+                             color=(0, 0, 1), bg_color=bg_color,
+                             justification="right",
+                             vertical_justification="top")]
 
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(left, middle),
-            font_size=font_size,
-            color=(1, 1, 0),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="middle",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(center, middle),
-            font_size=font_size,
-            color=(0, 1, 1),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="middle",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(right, middle),
-            font_size=font_size,
-            color=(1, 0, 1),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="middle",
-        )
-    ]
+    texts += [ui.TextBlock2D("HH", position=(left, middle),
+                             font_size=font_size,
+                             color=(1, 1, 0), bg_color=bg_color,
+                             justification="left",
+                             vertical_justification="middle")]
+    texts += [ui.TextBlock2D("HH", position=(center, middle),
+                             font_size=font_size,
+                             color=(0, 1, 1), bg_color=bg_color,
+                             justification="center",
+                             vertical_justification="middle")]
+    texts += [ui.TextBlock2D("HH", position=(right, middle),
+                             font_size=font_size,
+                             color=(1, 0, 1), bg_color=bg_color,
+                             justification="right",
+                             vertical_justification="middle")]
 
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(left, bottom),
-            font_size=font_size,
-            color=(0.5, 0, 1),
-            bg_color=bg_color,
-            justification="left",
-            vertical_justification="bottom",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(center, bottom),
-            font_size=font_size,
-            color=(1, 0.5, 0),
-            bg_color=bg_color,
-            justification="center",
-            vertical_justification="bottom",
-        )
-    ]
-    texts += [
-        ui.TextBlock2D(
-            "HH",
-            position=(right, bottom),
-            font_size=font_size,
-            color=(0, 1, 0.5),
-            bg_color=bg_color,
-            justification="right",
-            vertical_justification="bottom",
-        )
-    ]
+    texts += [ui.TextBlock2D("HH", position=(left, bottom),
+                             font_size=font_size,
+                             color=(0.5, 0, 1), bg_color=bg_color,
+                             justification="left",
+                             vertical_justification="bottom")]
+    texts += [ui.TextBlock2D("HH", position=(center, bottom),
+                             font_size=font_size,
+                             color=(1, 0.5, 0), bg_color=bg_color,
+                             justification="center",
+                             vertical_justification="bottom")]
+    texts += [ui.TextBlock2D("HH", position=(right, bottom),
+                             font_size=font_size,
+                             color=(0, 1, 0.5), bg_color=bg_color,
+                             justification="right",
+                             vertical_justification="bottom")]
 
     show_manager.scene.add(*texts)
 
@@ -433,13 +357,9 @@ def test_text_block_2d_size():
     window_size = (700, 700)
     show_manager = window.ShowManager(size=window_size)
 
-    text_block_3 = ui.TextBlock2D(
-        text="FURY\nFURY\nFURY\nHello",
-        position=(150, 100),
-        bg_color=(1, 0, 0),
-        color=(0, 1, 0),
-        size=(100, 100),
-    )
+    text_block_3 = ui.TextBlock2D(text="FURY\nFURY\nFURY\nHello",
+                                  position=(150, 100), bg_color=(1, 0, 0),
+                                  color=(0, 1, 0), size=(100, 100))
 
     show_manager.scene.add(text_block_3)
     with warnings.catch_warnings(record=True) as w:
