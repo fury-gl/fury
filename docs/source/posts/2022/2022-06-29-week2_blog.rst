@@ -1,7 +1,7 @@
 Week 2 - Improving Fetcher and Exporting glTF
 =============================================
 
-.. post:: June 20 2022
+.. post:: June 29 2022
    :author: Shivam Anand
    :tags: google
    :category: gsoc
