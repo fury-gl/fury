@@ -108,23 +108,26 @@ scene.add(linear_text)
 scene.add(hsv_text)
 scene.add(step_text)
 
-k_frames = [
-    (0, [1, 0, 0]),
-    (3, [0, 1, 0]),
-    (10, [0.24, 0.1, 0.6])]
 
-for k in k_frames:
-    # Adding color keyframes to the linearly interpolated timeline
-    timeline_linear_color.set_color(k[0], np.array(k[1]))
+# Adding color keyframes to the linearly interpolated timeline
+timeline_linear_color.set_color(0, np.array([1, 0, 0]))
+timeline_linear_color.set_color(5, np.array([0, 1, 0]))
+timeline_linear_color.set_color(10, np.array([0.24, 0.1, 0.6]))
 
-    # Adding color keyframes to the LAB interpolator
-    timeline_LAB_color.set_color(k[0], np.array(k[1]))
+# Adding color keyframes to the LAB interpolator
+timeline_LAB_color.set_color(0, np.array([1.0, 0, 0]))
+timeline_LAB_color.set_color(5, np.array([0, 1.0, 0]))
+timeline_LAB_color.set_color(10, np.array([0.24, 0.1, 0.6]))
 
-    # Adding color keyframes to the LAB interpolator
-    timeline_HSV_color.set_color(k[0], np.array(k[1]))
+# Adding color keyframes to the LAB interpolator
+timeline_HSV_color.set_color(0, np.array([1.0, 0, 0]))
+timeline_HSV_color.set_color(5, np.array([0, 1.0, 0]))
+timeline_HSV_color.set_color(10, np.array([0.24, 0.1, 0.6]))
 
-    # Adding color keyframes to the LAB interpolator
-    timeline_step_color.set_color(k[0], np.array(k[1]))
+# Adding color keyframes to the step interpolator
+timeline_step_color.set_color(0, np.array([1.0, 0, 0]))
+timeline_step_color.set_color(5, np.array([0, 1.0, 0]))
+timeline_step_color.set_color(10, np.array([0.24, 0.1, 0.6]))
 
 
 # Changing the default scale interpolator to be a step interpolator
