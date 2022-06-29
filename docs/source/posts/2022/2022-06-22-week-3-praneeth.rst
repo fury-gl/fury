@@ -11,9 +11,9 @@ Week 3 - Dealing with Problems
 What did you do this week?
 --------------------------
 This week was full of researching, playing around with things, prototyping ideas, etc.
-I started with last week's clamping issue and managed to solve this issue while drawing shapes by clipping the mouse position according to canvas size but it didn't solve the problem with translating these shapes. I tried solving this using various approaches but if one thing would get fixed other things would raise a new error.
+I started with last week's clamping issue and managed to solve this issue while drawing shapes by clipping the mouse position according to canvas size, but it didn't solve the problem with translating these shapes. I tried solving this using various approaches, but if one thing would get fixed, other things would raise a new error.
 
-Instead of spending too much time on this, I thought it would be great to switch to other work and discuss this problem with the mentors. So I started to create a basic prototype for the properties panel which would be used to manipulate different properties of the selected shape.
+Instead of spending too much time on this, I thought it would be great to switch to other work and discuss this problem with the mentors. So I started to create a basic prototype for the properties panel, which would be used to manipulate different properties of the selected shape.
 
 .. image:: https://user-images.githubusercontent.com/64432063/176094716-6be012b8-36c5-43e7-a981-612dbd37ab09.gif
     :width: 300
@@ -26,7 +26,7 @@ I tried to manually do that but it didn't work.
 
 Did you get stuck anywhere?
 ---------------------------
-As I mentioned when I translate the shapes it would go out of the canvas bounds, here the problem was with the reference point by which I was calculating all the transformations it changed depending on various cases as shown below.
+As I mentioned when I translate the shapes it would go out of the canvas bounds. Here the problem was with the reference point by which I was calculating all the transformations it changed depending on various cases as shown below.
 
 .. image:: https://user-images.githubusercontent.com/64432063/176093855-6129cc25-d03d-45ba-872e-c8d2c6329a1e.gif
     :width: 400
