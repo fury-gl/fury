@@ -1,12 +1,9 @@
-import numpy as np
 import base64
-import json as j
 import os
+import numpy as np
 from pygltflib import GLTF2
-from typing import Any, Dict, List, Optional
-from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip, PolyData
+from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip
 from fury import window, transform, utils
-from io import BytesIO
 
 
 comp_type = {
@@ -66,34 +63,33 @@ class glTF:
         node = self.gltf.nodes[nextnode_id]
 
         matnode = np.identity(4)
-        if not (node.matrix is None):
+        if node.matrix is not None:
             matnode = np.array(node.matrix)
             matnode = matnode.reshape(-1, 4).T
         else:
-            if not (node.translation is None):
+            if node.translation is not None:
                 trans = node.translation
                 T = transform.translate(trans)
                 matnode = np.dot(matnode, T)
 
-            if not (node.rotation is None):
+            if node.rotation is not None:
                 rot = node.rotation
                 R = transform.rotate(rot)
                 matnode = np.dot(matnode, R)
 
-            if not (node.scale is None):
+            if node.scale is not None:
                 scales = node.scale
                 S = transform.scale(scales)
                 matnode = np.dot(matnode, S)
 
         next_matrix = np.dot(matrix, matnode)
 
-        if not (node.mesh is None):
+        if node.mesh is not None:
             mesh_id = node.mesh
             self.load_mesh(mesh_id, next_matrix)
 
-        if not (node.camera is None):
+        if node.camera is not None:
             camera_id = node.camera
-            # Todo -->
             self.load_camera(camera_id, nextnode_id)
 
         if node.children:
@@ -113,26 +109,26 @@ class glTF:
             polydata = utils.PolyData()
             utils.set_polydata_vertices(polydata, vertices)
 
-            if not (attributes.NORMAL is None) and self.apply_normals:
+            if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
                 utils.set_polydata_normals(polydata, normals)
 
-            if not (attributes.TEXCOORD_0 is None):
+            if attributes.TEXCOORD_0 is not None:
                 uv = self.get_acc_data(attributes.TEXCOORD_0)
                 polydata.GetPointData().SetTCoords(
                     utils.numpy_support.numpy_to_vtk(uv))
 
-            if not (attributes.COLOR_0 is None):
+            if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
                 color = color[:, :-1]*255
                 utils.set_polydata_colors(polydata, color)
 
-            if not (primitive.indices is None):
+            if primitive.indices is not None:
                 indices = self.get_acc_data(primitive.indices).reshape(-1, 3)
                 utils.set_polydata_triangles(polydata, indices)
 
             material = None
-            if not (primitive.material is None):
+            if primitive.material is not None:
                 material = self.get_materials(primitive.material)
 
             self.polydatas.append(polydata)
@@ -167,7 +163,6 @@ class glTF:
 
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
-        dtype = np.dtype('B')
 
         if d_type == np.short or d_type == np.ushort:
             byte_length = int(byte_length/2)
@@ -197,7 +192,7 @@ class glTF:
             print('Failed to read ! Error in opening file')
 
     def get_materials(self, mat_id):
-        # Todo ---> currenty get's basecolortexture only
+        # TODO: currenty get's basecolortexture only
 
         material = self.gltf.materials[mat_id]
         bct, mrt, nt = None, None, None
