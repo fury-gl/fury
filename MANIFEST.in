@@ -15,3 +15,4 @@ include fury/_version.py
 # include path/to/data_file
 include fury/data/files/*
 include fury/shaders/*
+include fury/stream/server/www/*

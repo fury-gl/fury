@@ -147,7 +147,11 @@
                     <div class="flex-column">
 
                         <div class="hero-subtitle">
-                            A free and open-source software library for Scientific Visualization & 3D animations.
+                            A free and open-source software library for Scientific Visualization and 3D animations. Learn how to use the rendering equation
+                            \begin{equation}
+                            L_o\left( x, \omega_o\right) = L_e\left( x, \omega_o\right) + \int_{\Omega} L_i\left( x, \omega_i\right)  f_r\left(\omega_i, x,  \omega_o\right) \left(\omega_i\cdot n\right) d\omega_i
+                            \end{equation}
+                            and other powerful techniques to create the most advanced effects and give new life to your data.
                         </div>
 
 
@@ -631,7 +635,7 @@
                             <div class="keyfeatures-box-content keyfeatures-underline">
                                 <p>
                                     <div class="keyfeatures-box-title">Releases</div>
-                                    <div class="keyfeatures-box-text">Fury is a Python library available for scientific
+                                    <div class="keyfeatures-box-text">FURY is a Python library available for scientific
                                         visualization. The library is available via <a
                                         href="https://pypi.org/project/fury/">PyPi</a> or Anaconda package system</div>
                                 </p>
@@ -718,6 +722,9 @@
                             <li class="link-list"><a class="footer-link" target="_blank" href="https://engineering.indiana.edu/"><i class="fa fa-angle-double-right"></i>
                                     The department of Intelligent Systems Engineering of Indiana University
                             </a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://www.nsf.gov/awardsearch/showAward?AWD_ID=1720625"><i class="fa fa-angle-double-right"></i>
+                                NSF NCN - Engineered NanoBIO - NSF award #1720625
+                            </a></li>
                             <li class="link-list"><a class="footer-link" target="_blank" href="https://summerofcode.withgoogle.com/"><i class="fa fa-angle-double-right"></i>
                                     Google Summer of Code Program
                             </a></li>
@@ -746,7 +753,7 @@
     </footer>
 
 
-
+    <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="_static/js/fresh.js"></script>
@@ -767,6 +774,16 @@
     </script>
     <script type="text/javascript">
         textRotate();
+    </script>
+    <script>
+        MathJax = {
+          tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
     </script>
 
 

@@ -165,8 +165,8 @@ html_theme_options = {
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
-
-}
+  "footer_items": ["custom-footer.html"]
+  }
 
 html_additional_pages = {
     'video': 'home-video-page.html',
@@ -313,7 +313,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'dipy': ('https://dipy.org/documentation/latest',

@@ -16,13 +16,15 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors,
-                        apply_affine_to_actor, is_ui)
+                        apply_affine_to_actor, color_check, is_ui)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
                       CellArray, Polygon, Actor2D, DoubleArray,
                       UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
 import fury.primitive as fp
 
+from fury.optpkg import optional_package
+dipy, have_dipy, _ = optional_package('dipy')
 
 def test_apply_affine_to_actor(interactive=False):
     text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
@@ -750,6 +752,54 @@ class DummyUI(UI):
         return coords
 
 
+def test_color_check():
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0, .5],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .5]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 1, 1, .5)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 0, 0)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+
+    color_tuple = color_check(len(points))
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+
 def test_is_ui():
     panel = Panel2D(position=(0, 0), size=(100, 100))
     valid_ui = DummyUI(act=[])
@@ -758,3 +808,18 @@ def test_is_ui():
     npt.assert_equal(True, is_ui(panel))
     npt.assert_equal(True, is_ui(valid_ui))
     npt.assert_equal(False, is_ui(invalid_ui))
+
+
+def test_empty_list_to_polydata():
+    lines = [[]]
+    _, _ = utils.lines_to_vtk_polydata(lines)
+
+def test_empty_array_to_polydata():
+    lines = np.array([[]])
+    _, _ = utils.lines_to_vtk_polydata(lines)
+
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def test_empty_array_sequence_to_polydata():
+    from dipy.tracking.streamline import Streamlines
+    lines = Streamlines()
+    _, _ = utils.lines_to_vtk_polydata(lines)
