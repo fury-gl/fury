@@ -1,5 +1,5 @@
-Week 2: Adding interpolators and using shaders
-==============================================
+Week 2: Implementing non-linear and color interpolators
+=======================================================
 
 .. post:: June 28 2022
    :author: Mohamed Abouagour
