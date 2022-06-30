@@ -3069,7 +3069,7 @@ class DrawShape(UI):
         shape_type : string
             Type of shape to be created.
         drawpanel : DrawPanel, optional
-            Reference to the main canvas on which is it drawn.
+            Reference to the main canvas on which it is drawn.
         position : (float, float), optional
             (x, y) in pixels.
         """
@@ -3271,6 +3271,9 @@ class DrawPanel(UI):
         self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
         self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
 
+        # Todo
+        # Convert mode_data into a private variable and make it read-only at first
+        # Then add the ability to insert user-defined mode
         mode_data = {
             "selection": ["selection.png", "selection-pressed.png"],
             "line": ["line.png", "line-pressed.png"],
@@ -3280,6 +3283,8 @@ class DrawPanel(UI):
         }
 
         padding = 5
+        # Todo
+        # Add this size to __init__
         mode_panel_size = (len(mode_data) * 35 + 2 * padding, 40)
         self.mode_panel = Panel2D(size=mode_panel_size, color=(0.5, 0.5, 0.5))
         btn_pos = np.array([0, 0])
