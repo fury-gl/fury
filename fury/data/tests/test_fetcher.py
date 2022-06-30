@@ -33,6 +33,7 @@ def tests_fetch_gltf():
     npt.assert_raises(ValueError, fetch_gltf, ['Duck'], 'GLTF')
 
     fetch_gltf()
+    list_gltf = os.listdir(folder)
     default_list = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
     results = [model in list_gltf for model in default_list]
     npt.assert_equal(results, [True, True, True, True])
