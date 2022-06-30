@@ -3138,7 +3138,8 @@ class DrawShape(UI):
         """
         points_arr = vertices_from_actor(self.shape.actor)
         rotation_matrix = np.array(
-            [[np.cos(angle), np.sin(angle), 0], [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+            [[np.cos(angle), np.sin(angle), 0],
+             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
         new_points_arr = np.matmul(points_arr, rotation_matrix)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
@@ -3188,8 +3189,8 @@ class DrawShape(UI):
             New position for the shape.
         """
         self.cal_bounding_box(position)
-        new_position = np.clip(self._bounding_box_min,
-                               [0, 0], self.drawpanel.size - self._bounding_box_size)
+        new_position = np.clip(self._bounding_box_min, [0, 0],
+                               self.drawpanel.size - self._bounding_box_size)
         new_position = new_position + self._bounding_box_offset
         return new_position.astype(int)
 
@@ -3228,7 +3229,8 @@ class DrawShape(UI):
         if self.drawpanel.current_mode == "selection":
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                relative_canvas_position = click_position - self._drag_offset - self.drawpanel.position
+                relative_canvas_position = click_position - \
+                    self._drag_offset - self.drawpanel.position
                 new_position = self.clamp_position(relative_canvas_position)
                 self.drawpanel.canvas.update_element(self, new_position)
             i_ren.force_render()
@@ -3268,11 +3270,13 @@ class DrawPanel(UI):
         Create a Canvas(Panel2D).
         """
         self.canvas = Panel2D(size=self.panel_size)
-        self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
-        self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
+        self.canvas.background.on_left_mouse_button_pressed = \
+            self.left_button_pressed
+        self.canvas.background.on_left_mouse_button_dragged = \
+            self.left_button_dragged
 
         # Todo
-        # Convert mode_data into a private variable and make it read-only at first
+        # Convert mode_data into a private variable and make it read-only
         # Then add the ability to insert user-defined mode
         mode_data = {
             "selection": ["selection.png", "selection-pressed.png"],
@@ -3291,8 +3295,10 @@ class DrawPanel(UI):
 
         for mode, fname in mode_data.items():
             icon_files = []
-            icon_files.append((mode, read_viz_icons(style="new_icons", fname=fname[0])))
-            icon_files.append((mode+"-pressed", read_viz_icons(style="new_icons", fname=fname[1])))
+            icon_files.append((mode, read_viz_icons(style="new_icons",
+                                                    fname=fname[0])))
+            icon_files.append((mode+"-pressed",
+                               read_viz_icons(style="new_icons", fname=fname[1])))
             btn = Button2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
