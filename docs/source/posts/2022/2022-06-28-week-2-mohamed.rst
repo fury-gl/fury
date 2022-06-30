@@ -12,17 +12,17 @@ What did you do this week?
 
 - Implemented some other general interpolators such as n-th degree spline and cubic spline interpolators. Also implemented HSV and LAB color interpolators.
 
-    PRs `#612`_ and  `#612`_
+    PRs `#612`_ and `#613`_
 
 
   .. raw:: html
 
-        <iframe id=""player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/174503916-7ce0554b-9943-43e3-9d5c-c97c9ce48eaf.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/174503916-7ce0554b-9943-43e3-9d5c-c97c9ce48eaf.mp4" frameborder="0"></iframe>
 
 
   .. raw:: html
 
-        <iframe id=""player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/176550105-81f23462-43a5-44b1-84ce-3bbd4196f5be.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/176550105-81f23462-43a5-44b1-84ce-3bbd4196f5be.mp4" frameborder="0"></iframe>
 
 
 
@@ -30,7 +30,7 @@ What did you do this week?
 
   .. raw:: html
 
-        <iframe id=""player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/176545652-19160248-f1d3-4fff-952c-4512ab889055.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/176545652-19160248-f1d3-4fff-952c-4512ab889055.mp4" frameborder="0"></iframe>
 
 
 - Managed to do the transformation on the GPU side using GLSL using matrices. And did some digging about how and when we interpolate the camera and also how to do this on the GPU side.
@@ -41,8 +41,8 @@ What is coming up next week?
 
 This week I will do the following
 
-- Allow Fury actors to maintain the number of primitives as an object property so that it can be used to manipulate only a subset of primitives in a single actor.
-- Change the structure of the Animation API to a newer one designed by Filip to solve performance issues when creating a large number of timelines.
+- Allow FURY actors to maintain the number of primitives as an object property so that it can be used to manipulate only a subset of primitives in a single actor.
+- Change the structure of the Animation API to a newer one designed by Filipi to solve performance issues when creating a large number of timelines.
 - Implement the Bézier curve interpolation.
 
 
