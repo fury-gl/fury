@@ -1,5 +1,5 @@
 {
-    "__comments__": "2022-06-26, url",
+    "__comments__": "2022-06-26, generated using: https://github.com/xtanion/fury/blob/gltf-json-gen/fury/data/fetcher.py#L330",
     "2CylinderEngine/glTF-Binary": [
         {
             "download_url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/2CylinderEngine/glTF-Binary/2CylinderEngine.glb",
