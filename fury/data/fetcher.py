@@ -6,7 +6,7 @@ import contextlib
 import warnings
 import json
 
-from os.path import join as pjoin
+from os.path import join as pjoin, dirname
 from hashlib import sha256
 from shutil import copyfileobj
 
@@ -349,25 +349,29 @@ async def _fetch_gltf(name, mode):
         )
         return f_names
     else:
-        url = f'{GLTF_DATA_URL}{name}/{mode}'
+        path = f'{name}/{mode}'
+        DATA_DIR = pjoin(dirname(__file__), 'files')
+        with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+            models = json.loads(f.read())
+
+        urls = models.get(path, None)
+
+        if urls is None:
+            raise ValueError(
+                "Model name and mode combination doesn't exist")
+
+        path = pjoin('glTF', path)
+        folder = pjoin(fury_home, path)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        d_urls = [file['download_url'] for file in urls]
+        sizes = [file['size'] for file in urls]
+        f_names = [url.split('/')[-1] for url in d_urls]
+        f_paths = [pjoin(folder, name) for name in f_names]
+        zip_url = zip(d_urls, f_paths, sizes)
 
         async with aiohttp.ClientSession() as session:
-            request = await _request(session, url)
-
-            name = pjoin('glTF', name)
-            name = pjoin(name, mode)
-            folder = pjoin(fury_home, name)
-
-            if not os.path.exists(folder):
-                print("Creating new folder ", folder)
-                os.makedirs(folder)
-
-            d_urls = [file['download_url'] for file in request]
-            sizes = [file['size'] for file in request]
-            f_names = [url.split('/')[-1] for url in d_urls]
-            f_paths = [pjoin(folder, name) for name in f_names]
-            zip_url = zip(d_urls, f_paths, sizes)
-
             await asyncio.gather(
                 *[_download(session, url, name, s) for url, name, s in zip_url]
             )
