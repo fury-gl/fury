@@ -705,9 +705,18 @@ def list_gltf_sample_models():
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
     """
-    models = urlopen(GLTF_DATA_URL).read()
-    models = json.loads(models)
-    model_names = [model['name'] for model in models if model['size'] == 0]
+    DATA_DIR = pjoin(dirname(__file__), 'files')
+    with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+        models = json.loads(f.read())
+    models = models.keys()
+    model_modes = [model.split('/')[0] for model in models]
+
+    model_names = []
+    for name in model_modes:
+        if name not in model_names:
+            model_names.append(name)
+    model_names = model_names[1:]  # removing __comments__
+
     default_models = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
     if not model_names:

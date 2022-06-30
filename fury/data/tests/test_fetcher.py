@@ -53,20 +53,7 @@ def tests_fetch_gltf():
 
 
 def test_list_gltf_sample_models():
-    gltf_path = pjoin(fury_home, 'glTF')
-    list_json = pjoin(gltf_path, 'list.json')
-    if not os.path.exists(list_json):
-        json_data = urlopen(f'{GLTF_DATA_URL}').read()
-        with open(list_json, 'wb') as f:
-            f.write(json_data)
-
-    with open(list_json, 'r') as r:
-        data = json.load(r)
-    model_names = [model['name'] for model in data if model['size'] == 0]
     fetch_names = list_gltf_sample_models()
-    npt.assert_equal(len(fetch_names), len(model_names))
-    npt.assert_array_equal(model_names, fetch_names)
-
     default_list = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
     result = [model in fetch_names for model in default_list]
     npt.assert_equal(result, [True, True, True, True])
