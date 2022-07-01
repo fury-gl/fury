@@ -316,8 +316,8 @@ async def _download(session, url, filename, size=None):
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
         async with session.get(url) as response:
-            block = 100
             size = response.content_length if not size else size
+            block = size
             copied = 0
             with open(filename, mode='wb') as f:
                 async for chunk in response.content.iter_chunked(block):
@@ -360,6 +360,7 @@ async def _fetch_gltf(name, mode):
             raise ValueError(
                 "Model name and mode combination doesn't exist")
 
+        path = pjoin(name, mode)
         path = pjoin('glTF', path)
         folder = pjoin(fury_home, path)
         if not os.path.exists(folder):
