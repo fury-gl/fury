@@ -12,7 +12,7 @@ from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate
+from fury.utils import shallow_copy, rotate, get_primitives_count_from_actor
 from fury.testing import assert_greater, assert_greater_equal
 from fury.primitive import prim_sphere
 
@@ -1492,3 +1492,12 @@ def test_marker_actor(interactive=False):
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
 
+
+def test_actors_primitives_count():
+    centers = np.array([[1, 1, 1], [2, 2, 2]])
+    box_actor = actor.box(centers)
+    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
+    box_actor = actor.sphere(centers, (1, 0, 0))
+    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
+    box_actor = actor.sphere(centers, (1, 0, 0), use_primitive=True)
+    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
