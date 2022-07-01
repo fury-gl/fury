@@ -509,6 +509,34 @@ def add_polydata_numeric_field(polydata, field_name, field_data,
     return polydata
 
 
+def add_primitives_count_to_actor(actor, primitives_count):
+    """Get primitives count from actor.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+    primitives_count : int
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    add_polydata_numeric_field(polydata, "prim_count", 88, array_type=VTK_INT)
+
+
+def get_primitives_count_from_actor(actor):
+    """Get primitives count from actor.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+
+    Returns
+    -------
+    primitives count : int
+    """
+    polydata = actor.GetMapper().GetInput()
+    return get_polydata_field(polydata, 'prim_count')[0]
+
+
 def set_polydata_triangles(polydata, triangles):
     """Set polydata triangles with a numpy array (ndarrays Nx3 int).
 
