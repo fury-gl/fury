@@ -1,5 +1,5 @@
 Week 1: Implementing a basic Keyframe animation API
-=====================
+===================================================
 
 .. post:: June 19 2022
    :author: Mohamed Abouagour
