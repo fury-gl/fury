@@ -510,7 +510,7 @@ def add_polydata_numeric_field(polydata, field_name, field_data,
 
 
 def add_primitives_count_to_actor(actor, primitives_count):
-    """Get primitives count from actor.
+    """Add primitives count to actor's polydata.
 
     Parameters
     ----------
@@ -519,11 +519,12 @@ def add_primitives_count_to_actor(actor, primitives_count):
 
     """
     polydata = actor.GetMapper().GetInput()
-    add_polydata_numeric_field(polydata, "prim_count", 88, array_type=VTK_INT)
+    add_polydata_numeric_field(polydata, "prim_count", primitives_count,
+                               array_type=VTK_INT)
 
 
 def get_primitives_count_from_actor(actor):
-    """Get primitives count from actor.
+    """Get primitives count from actor's polydata.
 
     Parameters
     ----------
@@ -700,7 +701,7 @@ def get_actor_from_polydata(polydata):
 
 
 def get_actor_from_primitive(vertices, triangles, colors=None,
-                             normals=None, backface_culling=True):
+                             normals=None, backface_culling=True, prim_count=1):
     """Get actor from a vtkPolyData.
 
     Parameters
@@ -718,7 +719,8 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         culling of polygons based on orientation of normal with respect to
         camera. If backface culling is True, polygons facing away from camera
         are not drawn. Default: True
-
+    prim_count: bool
+        primitives count inside the actor
 
     Returns
     -------
@@ -743,6 +745,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     current_actor = get_actor_from_polydata(pd)
     current_actor.GetProperty().SetBackfaceCulling(backface_culling)
+    add_primitives_count_to_actor(current_actor, prim_count)
     return current_actor
 
 
@@ -813,6 +816,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     actor = Actor()
     actor.SetMapper(mapper)
+    add_primitives_count_to_actor(actor, len(centers))
     return actor
 
 
