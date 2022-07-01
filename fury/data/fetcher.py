@@ -338,6 +338,13 @@ async def _fetch_gltf(name, mode):
     mode: str
         Type of the glTF format.
         (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+
+    Returns
+    -------
+    f_names : list
+        list of fetched all file names.
+    folder : str
+        Path to the fetched files.
     """
 
     if name is None:
@@ -395,6 +402,11 @@ def fetch_gltf(name=None, mode='glTF'):
         You can choose from different options
         (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
         Default: glTF, `.bin` and texture files are stored separately.
+
+    Returns
+    -------
+    filenames : tuple
+        tuple of feteched filenames (list) and folder (str) path.
     """
     filenames = asyncio.run(_fetch_gltf(name, mode))
     return filenames
