@@ -16,6 +16,7 @@ import zipfile
 from urllib.request import urlopen
 import asyncio
 import aiohttp
+import platform
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -408,6 +409,8 @@ def fetch_gltf(name=None, mode='glTF'):
     filenames : tuple
         tuple of feteched filenames (list) and folder (str) path.
     """
+    if platform.system().lower() == "windows":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     filenames = asyncio.run(_fetch_gltf(name, mode))
     return filenames
 
