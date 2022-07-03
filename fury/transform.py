@@ -215,13 +215,13 @@ def translate(translation):
         translation in x, y and z directions.
 
     Returns
-    ---------
+    -------
     translation : ndarray (4, 4)
         Numpy array of shape 4,4 containing translation parameter in the last
         column of the matrix.
 
     Examples
-    ---------
+    --------
     >>> import numpy as np
     >>> tran = np.array([0.3, 0.2, 0.25])
     >>> transform = translate(tran)
@@ -249,17 +249,17 @@ def rotate(quat):
     """Return transformation matrix for rotation quaternion.
 
     Parameters
-    ------------
+    ----------
     quat : ndarray (4, )
         rotation quaternion.
 
     Returns
-    ---------
+    -------
     rotation_mat : ndarray (4, 4)
         Transformation matrix of shape (4, 4) to rotate a vector.
 
     Examples
-    ---------
+    --------
     >>> import numpy as np
     >>> quat = np.array([0.259, 0.0, 0.0, 0.966])
     >>> rotation = rotate(quat)
@@ -286,18 +286,18 @@ def scale(scales):
     """Return transformation matrix for scales array.
 
     Parameters
-    ------------
+    ----------
     scales : ndarray
         scales in x, y and z directions.
 
     Returns
-    ---------
+    -------
     scale_mat : ndarray (4, 4)
         Numpy array of shape 4,4 containing elements of scale matrix along
         the diagonal.
 
     Examples
-    ---------
+    --------
     >>> import numpy as np
     >>> scales = np.array([2.0, 1.0, 0.5])
     >>> transform = scale(scales)
@@ -321,14 +321,14 @@ def apply_transfomation(vertices, transformation):
     """ Multiplying transformation matrix with vertices
 
     Parameters
-    ------------
+    ----------
     vertices : ndarray (n, 3)
         vertices of the mesh
     transformation : ndarray (4, 4)
         transformation matrix
 
     Returns
-    ---------
+    -------
     vertices : ndarray (n, 3)
         transformed vertices of the mesh
     """

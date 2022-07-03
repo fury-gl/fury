@@ -24,6 +24,15 @@ acc_type = {
 
 
 class glTF:
+    """Read and generate actors from glTF files.
+
+    Parameters
+    ----------
+    filename : str
+        Path of the gltf file
+    apply_normals : bool, optional
+        If `True` applies normals to the mesh.
+    """
 
     def __init__(self, filename, apply_normals=False):
 
@@ -41,6 +50,13 @@ class glTF:
         self.get_nodes(0)
 
     def get_actors(self):
+        """Generates actors from glTF file.
+
+        Returns
+        -------
+        actors : list
+            List of vtkActors with texture.
+        """
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
 
@@ -53,6 +69,13 @@ class glTF:
         return self.actors
 
     def get_nodes(self, scene_id=0):
+        """Loopes over nodes in a scene.
+
+        Parameters
+        ----------
+        scene_id : int, optional
+            scene index of the the glTF.
+        """
         scene = self.gltf.scenes[scene_id]
         nodes = scene.nodes
 
@@ -60,6 +83,15 @@ class glTF:
             self.transverse_node(node_id, self.init_transform)
 
     def transverse_node(self, nextnode_id, matrix):
+        """Loads mesh and generates transformation matrix.
+
+        Parameters
+        ----------
+        nextnode_id : int
+            Index of the node
+        matrix : ndarray (4, 4)
+            Transformation matrix
+        """
         node = self.gltf.nodes[nextnode_id]
 
         matnode = np.identity(4)
@@ -97,6 +129,15 @@ class glTF:
                 self.transverse_node(child_id, next_matrix)
 
     def load_mesh(self, mesh_id, transform_mat):
+        """Loads the mesh data from accessor and applies the transformation.
+
+        Parameters
+        ----------
+        mesh_id : int
+            Mesh index to be loaded
+        transform_mat : ndarray (4, 4)
+            Transformation matrix.
+        """
         primitives = self.gltf.meshes[mesh_id].primitives
 
         for primitive in primitives:
@@ -135,6 +176,18 @@ class glTF:
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
+        """Gets the correct data from buffer uing accessors and bufferviews.
+
+        Parameters
+        ----------
+        acc_id : int
+            Accessor index
+
+        Returns
+        -------
+        buffer_array : ndarray
+            Numpy array extracted from the buffer.
+        """
 
         accessor = self.gltf.accessors[acc_id]
 
@@ -160,6 +213,26 @@ class glTF:
 
     def get_buff_array(self, buff_id, d_type, byte_length,
                        byte_offset, byte_stride):
+        """Extracts the mesh data from buffer.
+
+        Parameters
+        ----------
+        buff_id : int
+            Buffer Index
+        d_type : type
+            Element data type
+        byte_length : int
+            The lenght of the buffer data
+        byte_offset : int
+            The offset into the buffer in bytes
+        byte_stride : int
+            The stride, in bytes
+
+        Returns
+        -------
+        out_arr : ndarray
+            Numpy array of size byte_length from buffer.
+        """
 
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
@@ -192,7 +265,13 @@ class glTF:
             print('Failed to read ! Error in opening file')
 
     def get_materials(self, mat_id):
-        # TODO: currenty get's basecolortexture only
+        """Gets the textures data
+
+        Parameters
+        ----------
+        mat_id : int
+            Material index
+        """
 
         material = self.gltf.materials[mat_id]
         bct, mrt, nt = None, None, None
@@ -206,6 +285,18 @@ class glTF:
         return {'baseColorTexture': bct}
 
     def get_texture(self, tex_id):
+        """Reads and converts image into vtk texture
+
+        Parameters
+        ----------
+        tex_id : int
+            Texture index
+
+        Returns
+        -------
+        atexture : vtkTexture
+            Returns flipped vtk texture from image. 
+        """
 
         texture = self.gltf.textures[tex_id].source
         images = self.gltf.images
@@ -245,6 +336,13 @@ class glTF:
 
         return atexture
 
-    def load_camera(self, camera_id, node_id):
+    def load_camera(self, node_id):
+        """Loads the camera data of a node
+
+        Parameters
+        ----------
+        node_id : int
+            Node index of the camera.
+        """
         camera = self.gltf.cameras
         self.cameras[node_id] = camera
