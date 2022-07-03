@@ -122,7 +122,7 @@ class glTF:
 
         if node.camera is not None:
             camera_id = node.camera
-            self.load_camera(camera_id, nextnode_id)
+            self.load_camera(nextnode_id)
 
         if node.children:
             for child_id in node.children:
@@ -145,7 +145,7 @@ class glTF:
             attributes = primitive.attributes
 
             vertices = self.get_acc_data(attributes.POSITION)
-            vertices = transform.apply_transfomation(vertices, transform_mat.T)
+            vertices = transform.apply_transfomation(vertices, transform_mat)
 
             polydata = utils.PolyData()
             utils.set_polydata_vertices(polydata, vertices)
@@ -346,3 +346,11 @@ class glTF:
         """
         camera = self.gltf.cameras
         self.cameras[node_id] = camera
+
+
+model = glTF('local-glTF/glTF-samples/engine2cyl/engine.gltf')
+actors = model.get_actors()
+scene = window.Scene()
+for actor in actors:
+    scene.add(actor)
+window.show(scene, size=(600, 600))

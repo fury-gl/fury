@@ -336,7 +336,8 @@ def apply_transfomation(vertices, transformation):
     t = np.full((shape[0], 1), 1)
     vertices = np.concatenate((vertices, t), axis=1)
 
-    vertices = np.dot(vertices, transformation)
+    vertices = np.dot(transformation, vertices.T)
+    vertices = vertices.T
     vertices = vertices[:, :shape[1]]
 
     return vertices
