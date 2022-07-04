@@ -2,27 +2,14 @@ import numpy as np
 import os
 import numpy.testing as npt
 from fury.gltf import glTF
-from urllib.request import urlretrieve
-from fury import window, io, utils
-from fury.lib import Texture
-from fury.testing import assert_greater, assert_greater_equal
-
-
-def _get_gltf(url=None):
-
-    if url is None:
-        url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Embedded/Duck.gltf'  # noqa
-
-    filename = url.split('/')
-    filename = filename[len(filename)-1]
-    if not os.path.exists(filename):
-        urlretrieve(url, filename=filename)
-
-    return filename
+from fury import window, utils
+from fury.data import fetch_gltf, read_viz_gltf
+from fury.testing import assert_greater
 
 
 def test_load_gltf():
-    filename = _get_gltf()
+    fetch_gltf('Duck')
+    filename = read_viz_gltf('Duck')
     importer = glTF(filename)
     polydatas = importer.polydatas
     vertices = utils.get_polydata_vertices(polydatas[0])
@@ -41,7 +28,8 @@ def test_load_gltf():
 
 
 def test_load_texture():
-    filename = _get_gltf()
+    fetch_gltf('Duck')
+    filename = read_viz_gltf('Duck')
     importer = glTF(filename)
     actor = importer.get_actors()[0]
 
@@ -56,8 +44,8 @@ def test_load_texture():
 
 
 def test_vertex_colors():
-    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxVertexColors/glTF-Embedded/BoxVertexColors.gltf'  # noqa
-    file = _get_gltf(url)
+    fetch_gltf('BoxVertexColors')
+    file = read_viz_gltf('BoxVertexColors')
     importer = glTF(file)
     actor = importer.get_actors()[0]
     scene = window.Scene()
@@ -72,8 +60,8 @@ def test_vertex_colors():
 
 
 def test_orientation():
-    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BoxTextured/glTF-Embedded/BoxTextured.gltf'  # noqa
-    file = _get_gltf(url)
+    fetch_gltf('BoxTextured', 'glTF-Embedded')
+    file = read_viz_gltf('BoxTextured', 'glTF-Embedded')
     importer = glTF(file)
     actor = importer.get_actors()[0]
 
@@ -93,10 +81,3 @@ def test_orientation():
 
     assert_greater(lower, upper)
     scene.clear()
-    _remove_test_files()
-
-
-def _remove_test_files():
-    filename = _get_gltf()
-    os.remove(filename)
-    os.remove('b64texture.png')
