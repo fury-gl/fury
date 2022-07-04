@@ -295,7 +295,7 @@ class glTF:
         Returns
         -------
         atexture : vtkTexture
-            Returns flipped vtk texture from image. 
+            Returns flipped vtk texture from image.
         """
 
         texture = self.gltf.textures[tex_id].source
@@ -346,11 +346,3 @@ class glTF:
         """
         camera = self.gltf.cameras
         self.cameras[node_id] = camera
-
-
-model = glTF('local-glTF/glTF-samples/engine2cyl/engine.gltf')
-actors = model.get_actors()
-scene = window.Scene()
-for actor in actors:
-    scene.add(actor)
-window.show(scene, size=(600, 600))
