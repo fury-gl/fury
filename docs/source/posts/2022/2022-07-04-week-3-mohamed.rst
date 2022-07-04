@@ -24,7 +24,7 @@ What did you do this week?
 
 - Composed the playback panel as a single component `PlaybackPanel` (slider does not function yet).
 
-- As we tried to come up with a way to do keyframe animations on a partial subset of the actor's primitives not all of them, we found that there is no currently implemented way to get the primitives count of a single actor. So I made this PR `#613`_ so that the primitives' count is saved inside the polydata of the actor as suggested by Filipi and Javier so that the primitives' count can be used to distinguish the vertices of different primitives.
+- As we tried to come up with a way to do keyframe animations on a partial subset of the actor's primitives not all of them, we found that there is no currently implemented way to get the primitives count of a single actor. So I made this PR `#617`_ so that the primitives' count is saved inside the polydata of the actor as suggested by Filipi and Javier so that the primitives' count can be used to distinguish the vertices of different primitives.
 
 
 What is coming up next week?
