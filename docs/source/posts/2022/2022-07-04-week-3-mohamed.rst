@@ -16,7 +16,7 @@ What did you do this week?
 
   .. raw:: html
 
-        <iframe id="player" type="text/html" width="440" height="390" src="https://user-images.githubusercontent.com/63170874/177091785-d46817f1-f81e-4ee8-889b-0a7f799261ce.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html"  width="900" height="768" src="https://user-images.githubusercontent.com/63170874/177091785-d46817f1-f81e-4ee8-889b-0a7f799261ce.mp4" frameborder="0"></iframe>
 
 
 
