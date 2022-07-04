@@ -76,6 +76,6 @@ def test_read_viz_gltf():
     npt.assert_raises(ValueError, read_viz_gltf, 'Box')
 
     filenames, path = fetch_gltf('Box')
-    out_path = read_viz_gltf('Box').split('/')
+    out_path = read_viz_gltf('Box').split(os.sep)
     mode = out_path[-2:][0]
     npt.assert_equal(mode, 'glTF')
