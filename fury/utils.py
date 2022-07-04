@@ -719,8 +719,8 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         culling of polygons based on orientation of normal with respect to
         camera. If backface culling is True, polygons facing away from camera
         are not drawn. Default: True
-    prim_count: bool
-        primitives count inside the actor
+    prim_count: int
+        primitives count to be associated with the actor
 
     Returns
     -------
