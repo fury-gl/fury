@@ -6,7 +6,7 @@ import contextlib
 import warnings
 import json
 
-from os.path import join as pjoin
+from os.path import join as pjoin, dirname
 from hashlib import sha256
 from shutil import copyfileobj
 
@@ -16,6 +16,7 @@ import zipfile
 from urllib.request import urlopen
 import asyncio
 import aiohttp
+import platform
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -316,8 +317,8 @@ async def _download(session, url, filename, size=None):
     if not os.path.exists(filename):
         print(f'Downloading: {filename}')
         async with session.get(url) as response:
-            block = 100
             size = response.content_length if not size else size
+            block = size
             copied = 0
             with open(filename, mode='wb') as f:
                 async for chunk in response.content.iter_chunked(block):
@@ -338,6 +339,13 @@ async def _fetch_gltf(name, mode):
     mode: str
         Type of the glTF format.
         (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+
+    Returns
+    -------
+    f_names : list
+        list of fetched all file names.
+    folder : str
+        Path to the fetched files.
     """
 
     if name is None:
@@ -349,25 +357,30 @@ async def _fetch_gltf(name, mode):
         )
         return f_names
     else:
-        url = f'{GLTF_DATA_URL}{name}/{mode}'
+        path = f'{name}/{mode}'
+        DATA_DIR = pjoin(dirname(__file__), 'files')
+        with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+            models = json.loads(f.read())
+
+        urls = models.get(path, None)
+
+        if urls is None:
+            raise ValueError(
+                "Model name and mode combination doesn't exist")
+
+        path = pjoin(name, mode)
+        path = pjoin('glTF', path)
+        folder = pjoin(fury_home, path)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        d_urls = [file['download_url'] for file in urls]
+        sizes = [file['size'] for file in urls]
+        f_names = [url.split('/')[-1] for url in d_urls]
+        f_paths = [pjoin(folder, name) for name in f_names]
+        zip_url = zip(d_urls, f_paths, sizes)
 
         async with aiohttp.ClientSession() as session:
-            request = await _request(session, url)
-
-            name = pjoin('glTF', name)
-            name = pjoin(name, mode)
-            folder = pjoin(fury_home, name)
-
-            if not os.path.exists(folder):
-                print("Creating new folder ", folder)
-                os.makedirs(folder)
-
-            d_urls = [file['download_url'] for file in request]
-            sizes = [file['size'] for file in request]
-            f_names = [url.split('/')[-1] for url in d_urls]
-            f_paths = [pjoin(folder, name) for name in f_names]
-            zip_url = zip(d_urls, f_paths, sizes)
-
             await asyncio.gather(
                 *[_download(session, url, name, s) for url, name, s in zip_url]
             )
@@ -390,7 +403,14 @@ def fetch_gltf(name=None, mode='glTF'):
         You can choose from different options
         (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
         Default: glTF, `.bin` and texture files are stored separately.
+
+    Returns
+    -------
+    filenames : tuple
+        tuple of feteched filenames (list) and folder (str) path.
     """
+    if platform.system().lower() == "windows":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     filenames = asyncio.run(_fetch_gltf(name, mode))
     return filenames
 
@@ -701,9 +721,18 @@ def list_gltf_sample_models():
         Lists the name of glTF sample from
         https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
     """
-    models = urlopen(GLTF_DATA_URL).read()
-    models = json.loads(models)
-    model_names = [model['name'] for model in models if model['size'] == 0]
+    DATA_DIR = pjoin(dirname(__file__), 'files')
+    with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+        models = json.loads(f.read())
+    models = models.keys()
+    model_modes = [model.split('/')[0] for model in models]
+
+    model_names = []
+    for name in model_modes:
+        if name not in model_names:
+            model_names.append(name)
+    model_names = model_names[1:]  # removing __comments__
+
     default_models = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
 
     if not model_names:

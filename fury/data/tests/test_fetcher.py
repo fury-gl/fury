@@ -3,7 +3,6 @@ from os.path import join as pjoin
 import json
 from urllib.request import urlopen
 import numpy.testing as npt
-from aiohttp import InvalidURL
 from fury.data import (fetch_gltf, read_viz_gltf, list_gltf_sample_models)
 
 if 'FURY_HOME' in os.environ:
@@ -30,8 +29,14 @@ def tests_fetch_gltf():
     results = [model in list_gltf for model in models_list]
 
     npt.assert_equal(results, [True, True])
-    npt.assert_raises(InvalidURL, fetch_gltf, ['duck'])
-    npt.assert_raises(InvalidURL, fetch_gltf, ['Duck'], 'GLTF')
+    npt.assert_raises(ValueError, fetch_gltf, ['duck'])
+    npt.assert_raises(ValueError, fetch_gltf, ['Duck'], 'GLTF')
+
+    fetch_gltf()
+    list_gltf = os.listdir(folder)
+    default_list = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
+    results = [model in list_gltf for model in default_list]
+    npt.assert_equal(results, [True, True, True, True])
 
     items = os.listdir(boxtex)
     npt.assert_array_equal(len(items), 3)
@@ -39,9 +44,6 @@ def tests_fetch_gltf():
     filenames, path = fetch_gltf('Box', 'glTF-Binary')
     npt.assert_equal(len(filenames), 1)
     npt.assert_equal(os.listdir(path), filenames)
-
-    filename = read_viz_gltf('Box', 'glTF-Binary')
-    npt.assert_equal(filename, pjoin(path, filenames[0]))
 
     gltf = pjoin(boxtex, 'BoxTextured.gltf')
     with open(gltf, 'r') as f:
@@ -51,20 +53,29 @@ def tests_fetch_gltf():
 
 
 def test_list_gltf_sample_models():
-    gltf_path = pjoin(fury_home, 'glTF')
-    list_json = pjoin(gltf_path, 'list.json')
-    if not os.path.exists(list_json):
-        json_data = urlopen(f'{GLTF_DATA_URL}').read()
-        with open(list_json, 'wb') as f:
-            f.write(json_data)
-
-    with open(list_json, 'r') as r:
-        data = json.load(r)
-    model_names = [model['name'] for model in data if model['size'] == 0]
     fetch_names = list_gltf_sample_models()
-    npt.assert_equal(len(fetch_names), len(model_names))
-    npt.assert_array_equal(model_names, fetch_names)
-
     default_list = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
     result = [model in fetch_names for model in default_list]
     npt.assert_equal(result, [True, True, True, True])
+
+
+def test_read_viz_gltf():
+    gltf_dir = pjoin(fury_home, 'glTF')
+    filenames, path = fetch_gltf('Box', 'glTF-Binary')
+    filename = read_viz_gltf('Box', 'glTF-Binary')
+    npt.assert_equal(filename, pjoin(path, filenames[0]))
+
+    npt.assert_raises(ValueError, read_viz_gltf, 'FURY', 'glTF')
+
+    box_gltf = pjoin(gltf_dir, 'Box')
+    for path in os.listdir(box_gltf):
+        mode = pjoin(box_gltf, path)
+        for file in os.listdir(mode):
+            os.remove(pjoin(mode, file))
+        os.rmdir(mode)
+    npt.assert_raises(ValueError, read_viz_gltf, 'Box')
+
+    filenames, path = fetch_gltf('Box')
+    out_path = read_viz_gltf('Box').split(os.sep)
+    mode = out_path[-2:][0]
+    npt.assert_equal(mode, 'glTF')
