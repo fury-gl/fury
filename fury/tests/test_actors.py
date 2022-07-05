@@ -1495,9 +1495,9 @@ def test_marker_actor(interactive=False):
 
 def test_actors_primitives_count():
     centers = np.array([[1, 1, 1], [2, 2, 2]])
-    box_actor = actor.box(centers)
-    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
-    box_actor = actor.sphere(centers, (1, 0, 0))
-    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
-    box_actor = actor.sphere(centers, (1, 0, 0), use_primitive=True)
-    npt.assert_equal(get_primitives_count_from_actor(box_actor), len(centers))
+    sphere_actor = actor.box(centers)
+    npt.assert_equal(get_primitives_count_from_actor(sphere_actor), len(centers))
+    sphere_actor = actor.sphere(centers, (1, 0, 0))
+    npt.assert_equal(get_primitives_count_from_actor(sphere_actor), len(centers))
+    prim_sphere_actor = actor.sphere(centers, (1, 0, 0), use_primitive=True)
+    npt.assert_equal(get_primitives_count_from_actor(prim_sphere_actor), len(centers))
