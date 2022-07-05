@@ -24,32 +24,31 @@ acc_type = {
 
 
 class glTF:
-    """Read and generate actors from glTF files.
-
-    Parameters
-    ----------
-    filename : str
-        Path of the gltf file
-    apply_normals : bool, optional
-        If `True` applies normals to the mesh.
-    """
 
     def __init__(self, filename, apply_normals=False):
+        """Read and generate actors from glTF files.
+
+        Parameters
+        ----------
+        filename : str
+            Path of the gltf file
+        apply_normals : bool, optional
+            If `True` applies normals to the mesh.
+        """
 
         self.gltf = GLTF2().load(filename)
 
-        gltf_path = filename.split('/')[-1:][0]
-        self.pwd = filename[:-len(gltf_path)]
-        self.apply_normals = apply_normals  # temporary variable
+        self.pwd = os.path.dirname(filename)
+        self.apply_normals = apply_normals
 
         self.cameras = {}
-        self.actors = []
+        self.actors_list = []
         self.materials = []
         self.polydatas = []
         self.init_transform = np.identity(4)
-        self.get_nodes(0)
+        self.inspect_scene(0)
 
-    def get_actors(self):
+    def actors(self):
         """Generates actors from glTF file.
 
         Returns
@@ -61,15 +60,15 @@ class glTF:
             actor = utils.get_actor_from_polydata(polydata)
 
             if self.materials[i] is not None:
-                baseColorTexture = self.materials[i]['baseColorTexture']
-                actor.SetTexture(baseColorTexture)
+                base_col_tex = self.materials[i]['baseColorTexture']
+                actor.SetTexture(base_col_tex)
 
-            self.actors.append(actor)
+            self.actors_list.append(actor)
 
-        return self.actors
+        return self.actors_list
 
-    def get_nodes(self, scene_id=0):
-        """Loopes over nodes in a scene.
+    def inspect_scene(self, scene_id=0):
+        """Loops over nodes in a scene.
 
         Parameters
         ----------
@@ -101,18 +100,18 @@ class glTF:
         else:
             if node.translation is not None:
                 trans = node.translation
-                T = transform.translate(trans)
-                matnode = np.dot(matnode, T)
+                translate = transform.translate(trans)
+                matnode = np.dot(matnode, translate)
 
             if node.rotation is not None:
                 rot = node.rotation
-                R = transform.rotate(rot)
-                matnode = np.dot(matnode, R)
+                rotate = transform.rotate(rot)
+                matnode = np.dot(matnode, rotate)
 
             if node.scale is not None:
                 scales = node.scale
-                S = transform.scale(scales)
-                matnode = np.dot(matnode, S)
+                scale = transform.scale(scales)
+                matnode = np.dot(matnode, scale)
 
         next_matrix = np.dot(matrix, matnode)
 
@@ -155,9 +154,8 @@ class glTF:
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
-                uv = self.get_acc_data(attributes.TEXCOORD_0)
-                polydata.GetPointData().SetTCoords(
-                    utils.numpy_support.numpy_to_vtk(uv))
+                tcoords = self.get_acc_data(attributes.TEXCOORD_0)
+                utils.set_polydata_tcoords(polydata, tcoords)
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
@@ -261,20 +259,26 @@ class glTF:
             out_arr = out_arr.reshape(-1, byte_stride)
             return out_arr
 
-        except IOError:
-            print('Failed to read ! Error in opening file')
+        except IOError as e:
+            print(f'Failed to read ! Error in opening file: {e}')
 
     def get_materials(self, mat_id):
-        """Gets the textures data
+        """Gets the materials data
 
         Parameters
         ----------
         mat_id : int
             Material index
+
+        Returns
+        -------
+        materials : dict
+            Dictionary of all textures.
+
         """
 
         material = self.gltf.materials[mat_id]
-        bct, mrt, nt = None, None, None
+        bct = None
 
         pbr = material.pbrMetallicRoughness
 
