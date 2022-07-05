@@ -55,22 +55,22 @@ scene.add(spheres_actor)
 ###############################################################################
 # Let's visualize the recently created actors. The following variable can be
 # set to **True** to launch an interactive window.
-interactive = False
+interactive = True
 
 ###############################################################################
-if interactive:
-    window.show(scene)
+#if interactive:
+#    window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_regular_spheres.png')
+#window.record(scene, size=(600, 600), out_path='viz_regular_spheres.png')
 
 ###############################################################################
 spheres_actor.GetProperty().SetRepresentationToWireframe()
 
 ###############################################################################
-if interactive:
-    window.show(scene)
+#if interactive:
+#    window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_low_res_wireframe.png')
+#window.record(scene, size=(600, 600), out_path='viz_low_res_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -79,10 +79,10 @@ spheres_actor = actor.sphere(centers, colors, radii=scales, phi=16, theta=16,
 spheres_actor.GetProperty().SetRepresentationToWireframe()
 scene.add(spheres_actor)
 
-if interactive:
-    window.show(scene)
+#if interactive:
+#    window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_hi_res_wireframe.png')
+#window.record(scene, size=(600, 600), out_path='viz_hi_res_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -91,10 +91,10 @@ billboards_actor.GetProperty().SetRepresentationToWireframe()
 scene.add(billboards_actor)
 
 ###############################################################################
-if interactive:
-    window.show(scene)
+#if interactive:
+#    window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_billboards_wireframe.png')
+#window.record(scene, size=(600, 600), out_path='viz_billboards_wireframe.png')
 
 ###############################################################################
 scene.clear()
@@ -103,30 +103,36 @@ scene.clear()
 sd_sphere = import_fury_shader(os.path.join('sdf', 'sd_sphere.frag'))
 
 ###############################################################################
-sphere_radius = 'float sphereRadius = 1;'
+sphere_radius = 'const float RADIUS = 1.;'
 
 ###############################################################################
-sdf_impl = \
+sphere_dist = 'float dist = sdSphere(point, RADIUS);'
+
+###############################################################################
+sdf_eval = \
 """
-if (sdSphere(point, sphereRadius) < 0)
+if (dist < 0)
     fragOutput0 = vec4(color, opacity);
 else
     discard;
 """
 
 ###############################################################################
-fs_impl = compose_shader([sphere_radius, sdf_impl])
+fs_dec = compose_shader([sphere_radius, sd_sphere])
+
+###############################################################################
+fs_impl = compose_shader([sphere_dist, sdf_eval])
 
 ###############################################################################
 spheres_actor = actor.billboard(centers, colors=colors, scales=scales,
-                                fs_dec=sd_sphere, fs_impl=fs_impl)
+                                fs_dec=fs_dec, fs_impl=fs_impl)
 scene.add(spheres_actor)
 
 ###############################################################################
-if interactive:
-    window.show(scene)
+#if interactive:
+#    window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_billboards_circles.png')
+#window.record(scene, size=(600, 600), out_path='viz_billboards_circles.png')
 
 ###############################################################################
 scene.clear()
@@ -140,21 +146,19 @@ sd_sphere_normal = \
 """
 float map(vec3 p)
 {
-    return sdSphere(p, 1);
+    return sdSphere(p, RADIUS);
 }
 """
 
 ###############################################################################
-fs_dec = compose_shader([sd_sphere, sd_sphere_normal, central_diffs_normal])
+fs_dec = compose_shader([sphere_radius, sd_sphere, sd_sphere_normal,
+                         central_diffs_normal])
 
 ###############################################################################
 illum_impl = \
 """
 // SDF evaluation
-float dist = sdSphere(point, sphereRadius);
-
-if (dist > 0)
-    discard;
+opacity *= 1 - step(0, dist);
 
 // Absolute value of the distance
 float absDist = abs(dist);
@@ -175,7 +179,7 @@ fragOutput0 = vec4(ambientColor + diffuse + specular, opacity);
 """
 
 ###############################################################################
-fs_impl = compose_shader([sphere_radius, illum_impl])
+fs_impl = compose_shader([sphere_dist, illum_impl])
 
 ###############################################################################
 spheres_actor = actor.billboard(centers, colors=colors, scales=scales,
@@ -186,4 +190,4 @@ scene.add(spheres_actor)
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path='viz_billboards_spheres.png')
+#window.record(scene, size=(600, 600), out_path='viz_billboards_spheres.png')
