@@ -1,12 +1,12 @@
 import numpy as np
 import numpy.testing as npt
+from scipy.ndimage import center_of_mass
 
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
                             _AXES2TUPLE, _TUPLE2AXES, translate,
                             rotate, scale, apply_transfomation)
 from fury import primitive, window, utils
 from fury.testing import assert_greater
-from scipy.ndimage import center_of_mass
 
 
 def _make_pts():
