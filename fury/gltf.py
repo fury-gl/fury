@@ -1,9 +1,10 @@
 import base64
 import os
 import numpy as np
-from pygltflib import GLTF2
+from pygltflib import *
+from fury.lib import Texture as vtkTexture
 from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip
-from fury import window, transform, utils
+from fury import window, transform, utils, actor
 
 
 comp_type = {
@@ -346,3 +347,293 @@ class glTF:
         """
         camera = self.gltf.cameras
         self.cameras[node_id] = camera
+
+
+def generate_gltf(scene, name='default'):
+    """Generate gltf from FURY scene.
+
+    Parameters
+    ----------
+    scene : Scene
+        FURY scene object.
+    name : str, optional
+        Name of the model to be saved
+    """
+    gltf = GLTF2()
+    name = name.split('.')[0] if name.endswith('.gltf') else name
+    buffer_file = open(f'{name}.bin', 'wb')
+    primitives = []
+    buffer_size = 0
+    bview_count = 0
+
+    for actor in scene.GetActors():
+        prim, size, count = _connect_primitives(gltf, actor, buffer_file,
+                                                buffer_size, bview_count)
+        primitives.append(prim)
+        buffer_size += size
+        bview_count += count
+
+    print(bview_count)
+    buffer_file.close()
+    add_mesh(gltf, primitives)
+    add_buffer(gltf, size, f'{name}.bin')
+    camera = scene.camera()
+    cam_id = None
+    if camera:
+        add_camera(gltf, camera)
+        cam_id = 0
+    add_node(gltf, mesh=0, camera=cam_id)
+    add_scene(gltf, 0)
+    print(gltf.meshes)
+    gltf.save('some.gltf')
+
+
+def _connect_primitives(gltf, actor, buff_file, boffset, count):
+
+    polydata = actor.GetMapper().GetInput()
+    colors = utils.colors_from_actor(actor)
+    if colors is not None:
+        polydata = utils.set_polydata_colors(polydata, colors)
+
+    vertices = utils.get_polydata_vertices(polydata)
+    indices = utils.get_polydata_triangles(polydata)
+    colors = utils.get_polydata_colors(polydata)
+    normals = utils.get_polydata_normals(polydata)
+    tcoords = utils.get_polydata_tcoord(polydata)
+
+    vertex, index, normal, tcoord, color = (None, None, None,
+                                            None, None)
+    if indices is not None:
+        indices = indices.reshape((-1, ))
+        amax = [np.max(indices)]
+        amin = [np.min(indices)]
+
+        indices = indices.astype(np.ushort)
+        blength = len(indices)*2
+        buff_file.write(indices.tobytes())
+        add_bufferview(gltf, 0, boffset, blength)
+        add_accessor(gltf, count, 0, UNSIGNED_SHORT,
+                     len(indices), SCALAR)
+        boffset += blength
+        index = count
+        count += 1
+
+    if vertices is not None:
+        print(vertices.shape)
+        amax = np.max(vertices, 0).tolist()
+        amin = np.min(vertices, 0).tolist()
+        vertices = vertices.reshape((-1, )).astype(np.float32)
+        blength = len(vertices)*4
+        buff_file.write(vertices.tobytes())
+        add_bufferview(gltf, 0, boffset, blength)
+        add_accessor(gltf, count, 0, FLOAT, len(vertices)//3,
+                     VEC3, amax, amin)
+        boffset += blength
+        vertex = count
+        count += 1
+
+    if normals is not None:
+        amax = np.max(normals, 0).tolist()
+        amin = np.min(normals, 0).tolist()
+        normals = normals.reshape((-1, ))
+        blength = len(normals)*4
+        buff_file.write(normals.tobytes())
+        add_bufferview(gltf, 0, boffset, blength)
+        add_accessor(gltf, count, 0, FLOAT, len(normals)//3,
+                     VEC3, amax, amin)
+        boffset += blength
+        normal = count
+        count += 1
+
+    if tcoords is not None:
+        amax = np.max(tcoords, 0).tolist()
+        amin = np.min(tcoords, 0).tolist()
+        tcoords = tcoords.reshape((-1, )).astype(np.float32)
+        blength = len(tcoords)*4
+        buff_file.write(tcoords.tobytes())
+        add_bufferview(gltf, 0, boffset, blength)
+        add_accessor(gltf, count, 0, FLOAT, len(tcoords)//2,
+                     VEC2)
+        boffset += blength
+        tcoord = count
+        count += 1
+        # vtk_image = actor.GetTexture().GetInput()
+        add_material(gltf, 0, image_path)
+
+    if colors is not None:
+        shape = colors.shape[0]
+        colors = np.concatenate((colors, np.full((shape, 1), 255.)), axis=1)
+        colors = colors/255
+        colors = colors.reshape((-1, )).astype(np.float32)
+        blength = len(colors)*4
+        buff_file.write(colors.tobytes())
+        add_bufferview(gltf, 0, boffset, blength)
+        add_accessor(gltf, count, 0, FLOAT, shape, VEC4)
+        boffset += blength
+        color = count
+        count += 1
+    material = None if tcoords is None else 0
+    prim = add_prim(vertex, index, color, tcoord, normal, material)
+    return prim, boffset, count
+
+
+def add_scene(gltf, *nodes):
+    scene = Scene()
+    scene.nodes = [node for node in nodes]
+    gltf.scenes.append(scene)
+
+
+def add_node(gltf, mesh=None, camera=None):
+    node = Node()
+    if mesh is not None:
+        node.mesh = mesh
+    if camera is not None:
+        node.camera = camera
+    gltf.nodes.append(node)
+
+
+def add_mesh(gltf, prims):
+    mesh = Mesh()
+    for prim in prims:
+        mesh.primitives.append(prim)
+
+    gltf.meshes.append(mesh)
+
+
+def add_camera(gltf, camera, aspec_ratio=1.0):
+    orthographic = camera.GetParallelProjection()
+    cam = Camera()
+    if orthographic:
+        cam.type = "orthographic"
+    else:
+        clip_range = camera.GetClippingRange()
+        angle = camera.GetViewAngle()
+        ratio = aspec_ratio
+        pers = Perspective()
+        pers.aspectRatio = aspec_ratio
+        pers.znear, pers.zfar = clip_range
+        pers.yfov = angle*np.pi/180
+        cam.type = "perspective"
+        cam.perspective = pers
+    gltf.cameras.append(cam)
+
+
+def add_prim(verts, indices, cols, tcoords, normals, mat):
+    # for each actor we'll have a primitive
+    prim = Primitive()
+    attr = Attributes()
+    attr.POSITION = verts
+    attr.NORMAL = normals
+    attr.TEXCOORD_0 = tcoords
+    attr.COLOR_0 = cols
+    prim.attributes = attr
+    prim.indices = indices
+    if mat:
+        prim.material = mat
+    return prim
+
+
+def add_material(gltf, bct: int, uri: str):
+    material = Material()
+    texture = Texture()
+    image = Image()
+    pbr = PbrMetallicRoughness()
+    tinfo = TextureInfo()
+    tinfo.index = bct
+    pbr.baseColorTexture = tinfo
+    pbr.metallicFactor = 0.0  # setting default
+    material.pbrMetallicRoughness = pbr
+    # texture.sampler = 0
+    texture.source = bct
+    image.uri = uri
+    gltf.materials.append(material)
+    gltf.textures.append(texture)
+    gltf.images.append(image)
+
+
+def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
+    accessor = Accessor()
+    accessor.bufferView = bv
+    accessor.byteOffset = bo
+    accessor.componentType = ct
+    accessor.count = cnt
+    accessor.type = atype
+    if (max is not None) and (min is not None):
+        accessor.max = max
+        accessor.min = min
+    gltf.accessors.append(accessor)
+
+
+def add_bufferview(gltf, buff, bo, bl, bs=None, target=None):
+    buffer_view = BufferView()
+    buffer_view.buffer = buff
+    buffer_view.byteOffset = bo
+    buffer_view.byteLength = bl
+    buffer_view.byteStride = bs
+    gltf.bufferViews.append(buffer_view)
+
+
+def add_buffer(gltf, byteLength, uri):
+    buffer = Buffer()
+    buffer.uri = uri
+    buffer.byteLength = byteLength
+    gltf.buffers.append(buffer)
+
+
+# Example ---------------------------------------------------------------------
+
+centers = np.zeros((3, 3))
+directions = np.array([1, 1, 0])
+colors = np.array([1, 1, 1])
+tcoord = np.array([[6., 0.],
+                   [5., 0.],
+                   [6., 1.],
+                   [5., 1.],
+                   [4., 0.],
+                   [5., 0.],
+                   [4., 1.],
+                   [5., 1.],
+                   [2., 0.],
+                   [1., 0.],
+                   [2., 1.],
+                   [1., 1.],
+                   [3., 0.],
+                   [4., 0.],
+                   [3., 1.],
+                   [4., 1.],
+                   [3., 0.],
+                   [2., 0.],
+                   [3., 1.],
+                   [2., 1.],
+                   [0., 0.],
+                   [0., 1.],
+                   [1., 0.],
+                   [1., 1.]])
+
+cube = actor.cube(centers, colors=colors)
+image_path = 'CesiumLogoFlat.png'
+reader = PNGReader()
+reader.SetFileName(image_path)
+reader.Update()
+
+flip = ImageFlip()
+flip.SetInputConnection(reader.GetOutputPort())
+flip.SetFilteredAxis(1)
+atexture = vtkTexture()
+atexture.InterpolateOn()
+atexture.EdgeClampOn()
+atexture.SetInputConnection(flip.GetOutputPort())
+cube.SetTexture(atexture)
+scene = window.Scene()
+
+cube.GetMapper().GetInput().GetPointData().SetTCoords(
+    utils.numpy_support.numpy_to_vtk(tcoord))
+scene.add(cube)
+scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
+                 view_up=(0.0, 0.0, 1.0))
+window.show(scene)
+cube2 = actor.cone(np.add(centers, np.array([2, 0, 0])), directions,
+                   colors)
+scene.add(cube2)
+
+generate_gltf(scene)
