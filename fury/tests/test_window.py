@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 import pytest
+import itertools
 from fury import actor, window, io
 from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
@@ -564,6 +565,50 @@ def test_opengl_state_add_remove_and_check():
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
     npt.assert_equal(after_remove_depth_test_observer, True)
 
+
+def test_frame_rate():
+    xyz = 1000 * np.random.rand(10, 3)
+    colors = np.random.rand(10, 4)
+    radii = np.random.rand(10) * 50 + 0.5
+    scene = window.Scene()
+    sphere_actor = actor.sphere(centers=xyz,
+                                colors=colors,
+                                radii=radii)
+    scene.add(sphere_actor)
+
+    showm = window.ShowManager(scene,
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
+    showm.initialize()
+    counter = itertools.count()
+    frame_rates = []
+    render_times = []
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        frame_rates.append(showm.frame_rate)
+
+        showm.scene.azimuth(0.05 * cnt)
+        sphere_actor.GetProperty().SetOpacity(cnt / 100.)
+
+        showm.render()
+        render_times.append(scene.last_render_time)
+
+        if cnt > 100:
+            showm.exit()
+
+    showm.add_timer_callback(True, 10, timer_callback)
+    showm.start()
+
+    assert_greater(len(frame_rates), 0)
+    assert_greater(len(render_times), 0)
+
+    actual_fps = sum(frame_rates)/len(frame_rates)
+    ideal_fps = 1 / (sum(render_times) / len(render_times))
+
+    assert_greater(actual_fps, 0)
+    assert_greater(ideal_fps, 0)
+    assert_greater(ideal_fps, actual_fps)
 
 # test_opengl_state_add_remove_and_check()
 # test_opengl_state_simple()
