@@ -210,7 +210,7 @@ def translate(translation):
     """Return transformation matrix for translation array.
 
     Parameters
-    ------------
+    ----------
     translation : ndarray
         translation in x, y and z directions.
 
@@ -333,8 +333,8 @@ def apply_transfomation(vertices, transformation):
         transformed vertices of the mesh
     """
     shape = vertices.shape
-    t = np.full((shape[0], 1), 1)
-    vertices = np.concatenate((vertices, t), axis=1)
+    temp = np.full((shape[0], 1), 1)
+    vertices = np.concatenate((vertices, temp), axis=1)
 
     vertices = np.dot(transformation, vertices.T)
     vertices = vertices.T
