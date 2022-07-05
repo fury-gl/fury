@@ -3,7 +3,7 @@ import os
 import numpy as np
 from pygltflib import *
 from fury.lib import Texture as vtkTexture
-from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip
+from fury.lib import PNGReader, JPEGReader, ImageFlip
 from fury import window, transform, utils, actor
 
 
@@ -291,7 +291,7 @@ class glTF:
         Parameters
         ----------
         tex_id : int
-            Texture index
+            vtkTexture index
 
         Returns
         -------
@@ -330,7 +330,7 @@ class glTF:
         flip.SetInputConnection(reader.GetOutputPort())
         flip.SetFilteredAxis(1)  # flip along Y axis
 
-        atexture = Texture()
+        atexture = vtkTexture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
         atexture.SetInputConnection(flip.GetOutputPort())
@@ -373,7 +373,6 @@ def generate_gltf(scene, name='default'):
         buffer_size += size
         bview_count += count
 
-    print(bview_count)
     buffer_file.close()
     add_mesh(gltf, primitives)
     add_buffer(gltf, size, f'{name}.bin')
@@ -384,8 +383,7 @@ def generate_gltf(scene, name='default'):
         cam_id = 0
     add_node(gltf, mesh=0, camera=cam_id)
     add_scene(gltf, 0)
-    print(gltf.meshes)
-    gltf.save('some.gltf')
+    gltf.save(f'{name}.gltf')
 
 
 def _connect_primitives(gltf, actor, buff_file, boffset, count):
@@ -419,7 +417,6 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         count += 1
 
     if vertices is not None:
-        print(vertices.shape)
         amax = np.max(vertices, 0).tolist()
         amin = np.min(vertices, 0).tolist()
         vertices = vertices.reshape((-1, )).astype(np.float32)
@@ -528,7 +525,7 @@ def add_prim(verts, indices, cols, tcoords, normals, mat):
     attr.COLOR_0 = cols
     prim.attributes = attr
     prim.indices = indices
-    if mat:
+    if mat is not None:
         prim.material = mat
     return prim
 
@@ -573,67 +570,8 @@ def add_bufferview(gltf, buff, bo, bl, bs=None, target=None):
     gltf.bufferViews.append(buffer_view)
 
 
-def add_buffer(gltf, byteLength, uri):
+def add_buffer(gltf, byte_length, uri):
     buffer = Buffer()
     buffer.uri = uri
-    buffer.byteLength = byteLength
+    buffer.byteLength = byte_length
     gltf.buffers.append(buffer)
-
-
-# Example ---------------------------------------------------------------------
-
-centers = np.zeros((3, 3))
-directions = np.array([1, 1, 0])
-colors = np.array([1, 1, 1])
-tcoord = np.array([[6., 0.],
-                   [5., 0.],
-                   [6., 1.],
-                   [5., 1.],
-                   [4., 0.],
-                   [5., 0.],
-                   [4., 1.],
-                   [5., 1.],
-                   [2., 0.],
-                   [1., 0.],
-                   [2., 1.],
-                   [1., 1.],
-                   [3., 0.],
-                   [4., 0.],
-                   [3., 1.],
-                   [4., 1.],
-                   [3., 0.],
-                   [2., 0.],
-                   [3., 1.],
-                   [2., 1.],
-                   [0., 0.],
-                   [0., 1.],
-                   [1., 0.],
-                   [1., 1.]])
-
-cube = actor.cube(centers, colors=colors)
-image_path = 'CesiumLogoFlat.png'
-reader = PNGReader()
-reader.SetFileName(image_path)
-reader.Update()
-
-flip = ImageFlip()
-flip.SetInputConnection(reader.GetOutputPort())
-flip.SetFilteredAxis(1)
-atexture = vtkTexture()
-atexture.InterpolateOn()
-atexture.EdgeClampOn()
-atexture.SetInputConnection(flip.GetOutputPort())
-cube.SetTexture(atexture)
-scene = window.Scene()
-
-cube.GetMapper().GetInput().GetPointData().SetTCoords(
-    utils.numpy_support.numpy_to_vtk(tcoord))
-scene.add(cube)
-scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 1.0))
-window.show(scene)
-cube2 = actor.cone(np.add(centers, np.array([2, 0, 0])), directions,
-                   colors)
-scene.add(cube2)
-
-generate_gltf(scene)
