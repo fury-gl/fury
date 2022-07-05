@@ -615,6 +615,21 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
     return polydata
 
 
+def set_polydata_tcoords(polydata, tcoords):
+    """Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tcoords : texture coordinates, represented as 2D ndarrays (Nx2)
+        (one per vertex range (0, 1))
+    """
+    vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True,
+                                             array_type=VTK_FLOAT)
+    polydata.GetPointData().SetTCoords(vtk_tcoords)
+    return polydata
+
+
 def update_polydata_normals(polydata):
     """Generate and update polydata normals.
 
