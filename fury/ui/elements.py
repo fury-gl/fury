@@ -2,21 +2,24 @@
 
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D"]
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
+           "DrawShape", "DrawPanel"]
 
 import os
 from collections import OrderedDict
 from numbers import Number
 from string import printable
 
-
 import numpy as np
 
 from fury.data import read_viz_icons
+from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
+from fury.utils import (set_polydata_vertices, vertices_from_actor,
+                        update_actor)
 
 
 class TextBox2D(UI):
@@ -99,6 +102,8 @@ class TextBox2D(UI):
         self.window_right = 0
         self.caret_pos = 0
         self.init = True
+
+        self.off_focus = lambda ui: None
 
     def _setup(self):
         """Setup this UI component.
@@ -186,11 +191,12 @@ class TextBox2D(UI):
         ----------
         character : str
         """
-        if key_char != '' and key_char in printable:
-            self.add_character(key_char)
-        elif key.lower() == "return":
+        if key.lower() == "return":
             self.render_text(False)
+            self.off_focus(self)
             return True
+        elif key_char != '' and key_char in printable:
+            self.add_character(key_char)
         if key.lower() == "backspace":
             self.remove_character()
         elif key.lower() == "left":
@@ -1740,9 +1746,9 @@ class Option(UI):
         # Option's button
         self.button_icons = []
         self.button_icons.append(('unchecked',
-                                 read_viz_icons(fname="stop2.png")))
+                                  read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
-                                 read_viz_icons(fname="checkmark.png")))
+                                  read_viz_icons(fname="checkmark.png")))
         self.button = Button2D(icon_fnames=self.button_icons,
                                size=self.button_size)
 
@@ -2396,7 +2402,7 @@ class ListBox2D(UI):
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
             / len(self.values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
-                                      scroll_bar_height))
+                                            scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
@@ -3052,3 +3058,406 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class DrawShape(UI):
+    """Create and Manage 2D Shapes.
+    """
+
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        shape_type : string
+            Type of shape to be created.
+        drawpanel : DrawPanel, optional
+            Reference to the main canvas on which it is drawn.
+        position : (float, float), optional
+            (x, y) in pixels.
+        """
+        self.shape = None
+        self.shape_type = shape_type.lower()
+        self.drawpanel = drawpanel
+        self.max_size = None
+        super(DrawShape, self).__init__(position)
+        self.shape.color = np.random.random(3)
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create a Shape.
+        """
+        if self.shape_type == "line":
+            self.shape = Rectangle2D(size=(3, 3))
+        elif self.shape_type == "quad":
+            self.shape = Rectangle2D(size=(3, 3))
+        elif self.shape_type == "circle":
+            self.shape = Disk2D(outer_radius=2)
+        else:
+            raise IOError("Unknown shape type: {}.".format(self.shape_type))
+
+        self.shape.on_left_mouse_button_pressed = self.left_button_pressed
+        self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.shape
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self._scene = scene
+        self.shape.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.shape.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        if self.shape_type == "circle":
+            self.shape.center = coords
+        else:
+            self.shape.position = coords
+
+    def rotate(self, angle):
+        """Rotate the vertices of the UI component using specific angle.
+
+        Parameters
+        ----------
+        angle: float
+            Value by which the vertices are rotated in radian.
+        """
+        points_arr = vertices_from_actor(self.shape.actor)
+        rotation_matrix = np.array(
+            [[np.cos(angle), np.sin(angle), 0],
+             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
+        update_actor(self.shape.actor)
+
+        self.cal_bounding_box(self.position)
+
+    def cal_bounding_box(self, position):
+        """Calculates the min and max position of the bounding box.
+
+        Parameters
+        ----------
+        position : (float, float)
+            (x, y) in pixels.
+        """
+        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+
+        min_x, min_y = vertices[0]
+        max_x, max_y = vertices[0]
+
+        for x, y in vertices:
+            if x < min_x:
+                min_x = x
+            if y < min_y:
+                min_y = y
+            if x > max_x:
+                max_x = x
+            if y > max_y:
+                max_y = y
+
+        self._bounding_box_min = [min_x, min_y]
+        self._bounding_box_max = [max_x, max_y]
+        self._bounding_box_size = [max_x-min_x, max_y-min_y]
+
+        self._bounding_box_offset = position - self._bounding_box_min
+
+    def clamp_position(self, position):
+        """Clamps the given position according to the DrawPanel canvas.
+
+        Parameters
+        ----------
+        position : (float, float)
+            (x, y) in pixels.
+
+        Returns
+        -------
+        new_position: ndarray(int)
+            New position for the shape.
+        """
+        self.cal_bounding_box(position)
+        new_position = np.clip(self._bounding_box_min, [0, 0],
+                               self.drawpanel.size - self._bounding_box_size)
+        new_position = new_position + self._bounding_box_offset
+        return new_position.astype(int)
+
+    def resize(self, size):
+        """Resize the UI.
+        """
+        if self.shape_type == "line":
+            hyp = np.hypot(size[0], size[1])
+            self.shape.resize((hyp, 3))
+            self.rotate(angle=np.arctan2(size[1], size[0]))
+
+        elif self.shape_type == "quad":
+            self.shape.resize(size)
+
+        elif self.shape_type == "circle":
+            hyp = np.hypot(size[0], size[1])
+            if self.max_size and hyp > self.max_size:
+                hyp = self.max_size
+            self.shape.outer_radius = hyp
+
+        self.cal_bounding_box(self.position)
+
+    def left_button_pressed(self, i_ren, _obj, shape):
+        mode = self.drawpanel.current_mode
+        if mode == "selection":
+            click_pos = np.array(i_ren.event.position)
+            self._drag_offset = click_pos - self.position
+            i_ren.event.abort()
+        elif mode == "delete":
+            self._scene.rm(self.shape.actor)
+            i_ren.force_render()
+        else:
+            self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
+
+    def left_button_dragged(self, i_ren, _obj, shape):
+        if self.drawpanel.current_mode == "selection":
+            if self._drag_offset is not None:
+                click_position = i_ren.event.position
+                relative_canvas_position = click_position - \
+                    self._drag_offset - self.drawpanel.position
+                new_position = self.clamp_position(relative_canvas_position)
+                self.drawpanel.canvas.update_element(self, new_position)
+            i_ren.force_render()
+        else:
+            self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
+
+
+class DrawPanel(UI):
+    """The main Canvas(Panel2D) on which everything would be drawn.
+    """
+
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        size : (int, int), optional
+            Width and height in pixels of this UI component.
+        position : (float, float), optional
+            (x, y) in pixels.
+        is_draggable : bool, optional
+            Whether the background canvas will be draggble or not.
+        """
+        self.panel_size = size
+        super(DrawPanel, self).__init__(position)
+        self.is_draggable = is_draggable
+        self.current_mode = None
+
+        if is_draggable:
+            self.current_mode = "selection"
+
+        self.shape_list = []
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create a Canvas(Panel2D).
+        """
+        self.canvas = Panel2D(size=self.panel_size)
+        self.canvas.background.on_left_mouse_button_pressed = \
+            self.left_button_pressed
+        self.canvas.background.on_left_mouse_button_dragged = \
+            self.left_button_dragged
+
+        # Todo
+        # Convert mode_data into a private variable and make it read-only
+        # Then add the ability to insert user-defined mode
+        mode_data = {
+            "selection": ["selection.png", "selection-pressed.png"],
+            "line": ["line.png", "line-pressed.png"],
+            "quad": ["quad.png", "quad-pressed.png"],
+            "circle": ["circle.png", "circle-pressed.png"],
+            "delete": ["delete.png", "delete-pressed.png"]
+        }
+
+        padding = 5
+        # Todo
+        # Add this size to __init__
+        mode_panel_size = (len(mode_data) * 35 + 2 * padding, 40)
+        self.mode_panel = Panel2D(size=mode_panel_size, color=(0.5, 0.5, 0.5))
+        btn_pos = np.array([0, 0])
+
+        for mode, fname in mode_data.items():
+            icon_files = []
+            icon_files.append((mode, read_viz_icons(style="new_icons",
+                                                    fname=fname[0])))
+            icon_files.append((mode+"-pressed",
+                               read_viz_icons(style="new_icons", fname=fname[1])))
+            btn = Button2D(icon_fnames=icon_files)
+
+            def mode_selector(i_ren, _obj, btn):
+                self.current_mode = btn.icon_names[0]
+                i_ren.force_render()
+
+            btn.on_left_mouse_button_pressed = mode_selector
+
+            self.mode_panel.add_element(btn, btn_pos+padding)
+            btn_pos[0] += btn.size[0]+padding
+
+        self.canvas.add_element(self.mode_panel, (0, 0))
+
+        self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
+        self.canvas.add_element(self.mode_text, (0.0, 0.95))
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.canvas.actors
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self.current_scene = scene
+        self.canvas.add_to_scene(scene)
+
+    def _get_size(self):
+        return self.canvas.size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.canvas.position = coords
+
+    def resize(self, size):
+        """Resize the UI.
+        """
+        pass
+
+    @property
+    def current_mode(self):
+        return self._current_mode
+
+    @current_mode.setter
+    def current_mode(self, mode):
+        self.update_button_icons(mode)
+        self._current_mode = mode
+        if mode is not None:
+            self.mode_text.message = f"Mode: {mode}"
+
+    def cal_min_boundary_distance(self, position):
+        """Calculate the minimum distance between the current position and canvas boundary.
+
+        Parameters
+        ----------
+        position: (float,float)
+            current position of the shape.
+
+        Returns
+        -------
+        float
+            Minimum distance from the boundary.
+        """
+        distance_list = []
+        # calculate distance from element to left and lower boundary
+        distance_list.extend(position - self.canvas.position)
+        # calculate distance from element to upper and right boundary
+        distance_list.extend(self.canvas.position + self.canvas.size - position)
+
+        return min(distance_list)
+
+    def draw_shape(self, shape_type, current_position, in_process=False):
+        """Draws the required shape at the given position.
+
+        Parameters
+        ----------
+        shape_type: string
+            Type of shape - line, quad, circle.
+        current_position: (float,float)
+            Lower left corner position for the shape.
+        in_process: bool, optional
+            Checks whether in process or not.
+        """
+        if not in_process:
+            shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                              position=current_position)
+            if shape_type == "circle":
+                shape.max_size = self.cal_min_boundary_distance(current_position)
+            self.shape_list.append(shape)
+            self.current_scene.add(shape)
+            self.canvas.add_element(shape, current_position - self.canvas.position)
+
+        else:
+            current_shape = self.shape_list[-1]
+            size = current_position - current_shape.position
+            current_shape.resize(size)
+
+    def update_button_icons(self, current_mode):
+        """Updates the button icon.
+
+        Parameters
+        ----------
+        current_mode: string
+            Current mode of the UI.
+        """
+        for btn in self.mode_panel._elements[1:]:
+            if btn.icon_names[0] == current_mode:
+                btn.next_icon()
+            elif btn.current_icon_id == 1:
+                btn.next_icon()
+
+    def clamp_mouse_position(self, mouse_position):
+        """Restricts the mouse position to the canvas boundary.
+
+        Parameters
+        ----------
+        mouse_position: (float,float)
+            Current mouse position.
+
+        Returns
+        -------
+        list(float)
+            New clipped position.
+        """
+        return np.clip(mouse_position, self.canvas.position,
+                       self.canvas.position + self.canvas.size)
+
+    def handle_mouse_click(self, position):
+        if self.is_draggable and self.current_mode == "selection":
+            self._drag_offset = position - self.position
+        if self.current_mode in ["line", "quad", "circle"]:
+            self.draw_shape(self.current_mode, position)
+
+    def left_button_pressed(self,  i_ren, _obj, element):
+        self.handle_mouse_click(i_ren.event.position)
+        i_ren.force_render()
+
+    def handle_mouse_drag(self, position):
+        if self.is_draggable and self.current_mode == "selection":
+            if self._drag_offset is not None:
+                new_position = position - self._drag_offset
+                self.position = new_position
+        if self.current_mode in ["line", "quad", "circle"]:
+            self.draw_shape(self.current_mode, position, True)
+
+    def left_button_dragged(self,  i_ren, _obj, element):
+        mouse_position = self.clamp_mouse_position(i_ren.event.position)
+        self.handle_mouse_drag(mouse_position)
+        i_ren.force_render()
