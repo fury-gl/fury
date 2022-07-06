@@ -387,6 +387,26 @@ def generate_gltf(scene, name='default'):
 
 
 def _connect_primitives(gltf, actor, buff_file, boffset, count):
+    """Creates Accessor, BufferViews and writes primitive data to a binary file
+
+    Parameters
+    ----------
+    gltf : Pygltflib.GLTF2
+    actor : Actor
+        the fury actor
+    buff_file : file
+        filename.bin opened in `wb` mode
+    count : int
+        BufferView count
+    
+    Returns
+    -------
+    prim : Pygltflib.Primitive
+    byteoffset : int
+        Offset size of a primitive
+    count : int
+        BufferView count after adding the primitive.
+    """
 
     polydata = actor.GetMapper().GetInput()
     colors = utils.colors_from_actor(actor)
