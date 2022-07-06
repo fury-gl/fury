@@ -87,6 +87,9 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
     if use_pillow:
         with Image.open(filename) as pil_image:
+            if pil_image.mode in ['P']:
+                pil_image = pil_image.convert('RGB')
+
             if pil_image.mode in ['RGBA', 'RGB', 'L']:
                 image = np.asarray(pil_image)
             elif pil_image.mode.startswith('I;16'):
