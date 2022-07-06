@@ -757,6 +757,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     pd = PolyData()
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
+    set_polydata_primitives_count(pd, prim_count)
     if isinstance(colors, np.ndarray):
         if len(colors) != len(vertices):
             msg = "Vertices and Colors should have the same size."
@@ -771,7 +772,6 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     current_actor = get_actor_from_polydata(pd)
     current_actor.GetProperty().SetBackfaceCulling(backface_culling)
-    set_actor_primitives_count(current_actor, prim_count)
     return current_actor
 
 
@@ -810,6 +810,8 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
+    set_polydata_primitives_count(polydata_centers, len(centers))
+
     if directions is not None:
         polydata_centers.GetPointData().AddArray(directions_fa)
         polydata_centers.GetPointData().SetActiveVectors('directions')
@@ -842,7 +844,6 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     actor = Actor()
     actor.SetMapper(mapper)
-    set_actor_primitives_count(actor, len(centers))
     return actor
 
 
