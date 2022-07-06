@@ -1,9 +1,10 @@
+# TODO: Materials, Lights, Animations
 import base64
 import os
 import numpy as np
 from pygltflib import GLTF2
-from fury.lib import PNGReader, Texture, JPEGReader, ImageFlip
-from fury import window, transform, utils
+from fury.lib import Texture
+from fury import transform, utils, io
 
 
 comp_type = {
@@ -305,11 +306,6 @@ class glTF:
         texture = self.gltf.textures[tex_id].source
         images = self.gltf.images
 
-        reader_type = {
-            '.jpg': JPEGReader,
-            '.jpeg': JPEGReader,
-            '.png': PNGReader
-        }
         file = images[texture].uri
 
         if file.startswith('data:image'):
@@ -322,21 +318,14 @@ class glTF:
                 image_file.write(buff_data)
 
         else:
-            extension = os.path.splitext(os.path.basename(file).lower())[1]
             image_path = os.path.join(self.pwd, file)
 
-        reader = reader_type.get(extension)()
-        reader.SetFileName(image_path)
-        reader.Update()
-
-        flip = ImageFlip()
-        flip.SetInputConnection(reader.GetOutputPort())
-        flip.SetFilteredAxis(1)  # flip along Y axis
-
+        rgb = io.load_image(image_path)
+        grid = utils.rgb_to_vtk(rgb)
         atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
-        atexture.SetInputConnection(flip.GetOutputPort())
+        atexture.SetInputDataObject(grid)
 
         return atexture
 
