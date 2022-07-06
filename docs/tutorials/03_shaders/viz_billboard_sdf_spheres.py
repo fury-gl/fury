@@ -155,7 +155,7 @@ fs_dec = compose_shader([sphere_radius, sd_sphere, sd_sphere_normal,
                          central_diffs_normal])
 
 ###############################################################################
-illum_impl = \
+light_impl = \
 """
 // SDF evaluation
 opacity *= 1 - step(0, dist);
@@ -165,21 +165,14 @@ float absDist = abs(dist);
 
 // Normal of a point on the surface of the sphere
 vec3 normal = centralDiffsNormals(vec3(point.xy, absDist), .0001);
-
-// Calculate the diffuse factor and diffuse color
-df = max(0, normal.z);
-diffuse = df * diffuseColor * lightColor0;
-
-// Calculate the specular factor and specular color
-sf = pow(df, specularPower);
-specular = sf * specularColor * lightColor0;
-
-// Using Blinn-Phong model
-fragOutput0 = vec4(ambientColor + diffuse + specular, opacity);
 """
 
 ###############################################################################
-fs_impl = compose_shader([sphere_dist, illum_impl])
+blinn_phong_model = import_fury_shader(os.path.join('lighting',
+                                                    'blinn_phong_model.frag'))
+
+###############################################################################
+fs_impl = compose_shader([sphere_dist, light_impl, blinn_phong_model])
 
 ###############################################################################
 spheres_actor = actor.billboard(centers, colors=colors, scales=scales,
