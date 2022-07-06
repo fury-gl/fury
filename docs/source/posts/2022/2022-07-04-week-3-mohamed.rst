@@ -33,9 +33,9 @@ What is coming up next week?
 This week I will do the following
 
 - Finish up the ``PlaybackPanel``.
-- Implement all other interpolators in GLSL (color interpolators included)
+- Implement all other interpolators in GLSL (color interpolators included).
 - Start Implementing slerp interpolation using quaternions in both Python and GLSL.
-- Add tests for the Previous work.
+- Add tests for the previous work.
 - Now that I made some progress with the keyframe animation API, I should be able to make a mergeable PR!
 
 
