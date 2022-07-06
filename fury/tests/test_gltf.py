@@ -31,7 +31,7 @@ def test_load_texture():
     fetch_gltf('Duck')
     filename = read_viz_gltf('Duck')
     importer = glTF(filename)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
 
     scene = window.Scene()
     scene.add(actor)
@@ -47,7 +47,7 @@ def test_vertex_colors():
     fetch_gltf('BoxVertexColors')
     file = read_viz_gltf('BoxVertexColors')
     importer = glTF(file)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
     scene = window.Scene()
     scene.add(actor)
     display = window.snapshot(scene)
@@ -63,7 +63,7 @@ def test_orientation():
     fetch_gltf('BoxTextured', 'glTF-Embedded')
     file = read_viz_gltf('BoxTextured', 'glTF-Embedded')
     importer = glTF(file)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
 
     scene = window.Scene()
     scene.add(actor)
