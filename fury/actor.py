@@ -33,7 +33,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors, color_check,
-                        set_actor_primitives_count)
+                        set_actor_primitives_count, set_polydata_primitives_count)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -588,6 +588,10 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
+    # set primitives count
+    prim_count = len(lines)
+    set_polydata_primitives_count(poly_data, prim_count)
+
     # Set Normals
     poly_normals = set_input(PolyDataNormals(), next_input)
     poly_normals.ComputeCellNormalsOn()
@@ -644,9 +648,6 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     actor.GetProperty().SetInterpolationToPhong()
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().SetOpacity(opacity)
-
-    prim_count = len(lines)
-    set_actor_primitives_count(actor, prim_count)
 
     return actor
 
@@ -725,6 +726,10 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
 
+    # set primitives count
+    prim_count = len(lines)
+    set_polydata_primitives_count(poly_data, prim_count)
+
     # use spline interpolation
     if (spline_subdiv is not None) and (spline_subdiv > 0):
         spline_filter = set_input(SplineFilter(), next_input)
@@ -759,9 +764,6 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     actor.SetMapper(poly_mapper)
     actor.GetProperty().SetLineWidth(linewidth)
     actor.GetProperty().SetOpacity(opacity)
-
-    prim_count = len(lines)
-    set_actor_primitives_count(actor, prim_count)
 
     if depth_cue:
         def callback(_caller, _event, calldata=None):
@@ -1487,6 +1489,10 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     polydata.SetVerts(vtk_faces)
     polydata.GetPointData().SetScalars(color_array)
 
+    # set primitives count
+    prim_count = len(points)
+    set_polydata_primitives_count(polydata, prim_count)
+
     # Visualize
     mapper = PolyDataMapper()
     mapper.SetInputData(polydata)
@@ -1494,9 +1500,6 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     # Create an actor
     poly_actor = Actor()
     poly_actor.SetMapper(mapper)
-
-    prim_count = len(points)
-    set_actor_primitives_count(poly_actor, prim_count)
 
     if opacity is not None:
         poly_actor.GetProperty().SetOpacity(opacity)
