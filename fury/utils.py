@@ -509,7 +509,34 @@ def add_polydata_numeric_field(polydata, field_name, field_data,
     return polydata
 
 
-def add_primitives_count_to_actor(actor, primitives_count):
+def set_polydata_primitives_count(polydata, primitives_count):
+    """Add primitives count to polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+    primitives_count : int
+
+    """
+    add_polydata_numeric_field(polydata, "prim_count", primitives_count,
+                               array_type=VTK_INT)
+
+
+def get_polydata_primitives_count(polydata):
+    """Get primitives count from actor's polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+
+    Returns
+    -------
+    primitives count : int
+    """
+    return get_polydata_field(polydata, 'prim_count')[0]
+
+
+def set_actor_primitives_count(actor, primitives_count):
     """Add primitives count to actor's polydata.
 
     Parameters
@@ -519,11 +546,10 @@ def add_primitives_count_to_actor(actor, primitives_count):
 
     """
     polydata = actor.GetMapper().GetInput()
-    add_polydata_numeric_field(polydata, "prim_count", primitives_count,
-                               array_type=VTK_INT)
+    set_polydata_primitives_count(polydata, primitives_count)
 
 
-def get_primitives_count_from_actor(actor):
+def get_actor_primitives_count(actor):
     """Get primitives count from actor's polydata.
 
     Parameters
@@ -535,7 +561,7 @@ def get_primitives_count_from_actor(actor):
     primitives count : int
     """
     polydata = actor.GetMapper().GetInput()
-    return get_polydata_field(polydata, 'prim_count')[0]
+    return get_polydata_primitives_count(polydata)
 
 
 def set_polydata_triangles(polydata, triangles):
@@ -745,7 +771,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
 
     current_actor = get_actor_from_polydata(pd)
     current_actor.GetProperty().SetBackfaceCulling(backface_culling)
-    add_primitives_count_to_actor(current_actor, prim_count)
+    set_actor_primitives_count(current_actor, prim_count)
     return current_actor
 
 
@@ -816,7 +842,7 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     actor = Actor()
     actor.SetMapper(mapper)
-    add_primitives_count_to_actor(actor, len(centers))
+    set_actor_primitives_count(actor, len(centers))
     return actor
 
 
