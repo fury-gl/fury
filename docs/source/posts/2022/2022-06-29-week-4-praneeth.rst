@@ -10,7 +10,7 @@ Week 4 - Fixing the Clamping Issue
 
 What did you do this week?
 --------------------------
-Phew!! This week was a tedious week for me as parallelly my End-Sem exams also started. So as usual I started from where I left off last week, *The Clamping Issue*. As per the discussion with the mentors, we decided to use the *AABB bounding box* method to calculate the bounding box around the shape and then reposition or transform respectively as now we had a fixed reference point. So after doing some calculations with the mouse positions and the bounding box points at last I was able to successfully clamp all the shapes.
+Phew!! This week was a tedious week for me as parallelly my End-Sem exams also started. So as usual I started from where I left off last week, *The Clamping Issue*. As per the discussion with the mentors, we decided to use the *AABB bounding box* method to calculate the bounding box around the shape and then reposition or transform respectively, as now we had a fixed reference point. So after doing some calculations with the mouse positions and the bounding box points at last, I was able to clamp all the shapes sucessfully.
 
 `DrawPanel UI <https://github.com/fury-gl/fury/pull/599>`_
 
@@ -25,7 +25,7 @@ While testing these changes, I found an issue that whenever we just do a single 
     :width: 400
     :align: center 
 
-This was due to the difference between the global mouse click position and the canvas position. Which was then fixed by converting the mouse click position to the relative canvas position.
+This was due to the difference between the global mouse click position and the canvas position, which was then fixed by converting the mouse click position to the relative canvas position.
 
 Along with this, I tried to add some control points using `Disk2D` for the shape so that we can use them later on to transform the shapes.
 
@@ -35,7 +35,7 @@ Along with this, I tried to add some control points using `Disk2D` for the shape
     :width: 300
     :align: center
 
-Also to enhance the visualization of the bounding box, I added a box border covering the shapes.
+Also, to enhance the visualization of the bounding box, I added a box border covering the shapes.
 
 `Bounding Box Borders <https://github.com/ganimtron-10/fury/tree/bb-border>`_
 
