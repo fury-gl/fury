@@ -28,6 +28,7 @@ import fury.primitive as fp
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
 
+
 def test_apply_affine_to_actor(interactive=False):
     text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
                              vertical_justification='top')
