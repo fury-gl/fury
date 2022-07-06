@@ -860,3 +860,17 @@ def test_get_actor_primitives_count():
     add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
     prim_count = get_actor_primitives_count(act)
     npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count():
+    # testing on actor
+    act = actor.axes()
+    set_actor_primitives_count(act, 3)
+    prim_count = get_actor_primitives_count(act)
+    npt.assert_equal(prim_count, 3)
+
+    # testing on polydata
+    polydata = PolyData()
+    set_polydata_primitives_count(polydata, 4)
+    prim_count = get_polydata_primitives_count(polydata)
+    npt.assert_equal(prim_count, 4)
