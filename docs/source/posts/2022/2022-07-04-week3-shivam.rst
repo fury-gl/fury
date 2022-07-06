@@ -10,11 +10,11 @@ Week 3 - Fixing fetcher, adding tests and docs
 What did you do this week?
 --------------------------
 
-- The first task for this week was to fix the glTF fetcher, We noticed that while running tests it reaches the API limit. So we decided to use a JSON file that contains the download URLs for all models.
+- The first task for this week was to fix the glTF fetcher. We noticed that while running tests it reaches the API limit. So we decided to use a JSON file that contains the download URLs for all models.
 
 - Created a function to generate JSON files with download URLs for all models, which can be found `here <https://github.com/xtanion/fury/blob/gltf-json-gen/fury/data/fetcher.py#L330>`_.
 
-- Modified the tests and ``fetcher.py`` to download using the JSON URLs and Merged the PR `#616 <https://github.com/fury-gl/fury/pull/616>`_.
+- Modified the tests and ``fetcher.py`` to download using the JSON URLs and merged the PR `#616 <https://github.com/fury-gl/fury/pull/616>`_.
 
 - Added docstring for all functions in `#600 <https://github.com/fury-gl/fury/pull/600>`_. Wrote tests for transformation functions.
 
