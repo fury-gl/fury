@@ -1562,6 +1562,9 @@ def test_actors_primitives_count():
     line_actor = actor.line(np.array(lines))
     npt.assert_equal(get_actor_primitives_count(line_actor), len(centers))
 
+    streamtube_actor = actor.streamtube(np.array(lines))
+    npt.assert_equal(get_actor_primitives_count(streamtube_actor), len(centers))
+
     dots_actor = actor.dots(centers)
     npt.assert_equal(get_actor_primitives_count(dots_actor), len(centers))
 
