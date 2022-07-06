@@ -3099,6 +3099,19 @@ class DrawShape(UI):
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+        # self.shape.on_left_mouse_button_released = self.left_button_released
+
+        self.rotation_slider = RingSlider2D(center=(200, 200), initial_value=0,
+                                            text_template="{angle:5.1f}°")
+        self.rotation_slider.set_visibility(False)
+
+        def rotate_cube(slider):
+            angle = slider.value
+            previous_angle = slider.previous_value
+            rotation_angle = angle - previous_angle
+            self.rotate(np.deg2rad(rotation_angle))
+
+        self.rotation_slider.on_change = rotate_cube
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3114,6 +3127,7 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
+        self.rotation_slider.add_to_scene(scene)
 
     def _get_size(self):
         return self.shape.size
@@ -3159,6 +3173,8 @@ class DrawShape(UI):
         angle: float
             Value by which the vertices are rotated in radian.
         """
+        if self.shape_type == "circle":
+            return
         points_arr = vertices_from_actor(self.shape.actor)
         rotation_matrix = np.array(
             [[np.cos(angle), np.sin(angle), 0],
@@ -3168,6 +3184,12 @@ class DrawShape(UI):
         update_actor(self.shape.actor)
 
         self.cal_bounding_box(self.position)
+
+    def show_rotation_slider(self):
+        self.rotation_slider.set_visibility(True)
+        self.rotation_slider.center = [self.position[0] +
+                                       self.size[0] + self.rotation_slider.size[0]/2, self.position[1]]
+        print(self.rotation_slider.center)
 
     def cal_bounding_box(self, position):
         """Calculates the min, max position and the size of the bounding box.
@@ -3236,17 +3258,22 @@ class DrawShape(UI):
 
         self.cal_bounding_box(self.position)
 
+    def remove(self):
+        self._scene.rm(self.shape.actor)
+        self._scene.rm(*self.rotation_slider.actors)
+
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.position
+            self.show_rotation_slider()
             i_ren.event.abort()
         elif mode == "delete":
-            self._scene.rm(self.shape.actor)
-            i_ren.force_render()
+            self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
+        i_ren.force_render()
 
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
@@ -3259,6 +3286,10 @@ class DrawShape(UI):
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
+
+    # def left_button_released(self, i_ren, _obj, shape):
+    #     self.rotation_slider.set_visibility(False)
+    #     i_ren.force_render()
 
 
 class DrawPanel(UI):
