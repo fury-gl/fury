@@ -165,6 +165,9 @@ float absDist = abs(dist);
 
 // Normal of a point on the surface of the sphere
 vec3 normal = centralDiffsNormals(vec3(point.xy, absDist), .0001);
+
+// Light attenuation of a point on the SDF surface
+float lightAttenuation = normal.z;
 """
 
 ###############################################################################

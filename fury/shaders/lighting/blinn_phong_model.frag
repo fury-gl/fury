@@ -1,5 +1,5 @@
 // Calculate the diffuse factor and diffuse color
-df = max(0, normal.z);
+df = max(0, lightAttenuation);
 diffuse = df * diffuseColor * lightColor0;
 
 // Calculate the specular factor and specular color
