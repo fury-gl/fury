@@ -9,7 +9,7 @@ from fury.testing import assert_greater
 
 def test_load_gltf():
     fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck')
+    filename = read_viz_gltf('Duck', 'glTF')
     importer = glTF(filename)
     polydatas = importer.polydatas
     vertices = utils.get_polydata_vertices(polydatas[0])
@@ -29,7 +29,7 @@ def test_load_gltf():
 
 def test_load_texture():
     fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck')
+    filename = read_viz_gltf('Duck', 'glTF')
     importer = glTF(filename)
     actor = importer.actors()[0]
 
@@ -45,7 +45,7 @@ def test_load_texture():
 
 def test_vertex_colors():
     fetch_gltf('BoxVertexColors')
-    file = read_viz_gltf('BoxVertexColors')
+    file = read_viz_gltf('BoxVertexColors', 'glTF')
     importer = glTF(file)
     actor = importer.actors()[0]
     scene = window.Scene()

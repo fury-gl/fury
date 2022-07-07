@@ -36,6 +36,8 @@ class glTF:
         apply_normals : bool, optional
             If `True` applies normals to the mesh.
         """
+        if filename in ['', None]:
+            raise IOError('Filename cannot be empty or None!')
 
         self.gltf = GLTF2().load(filename)
 
@@ -122,7 +124,7 @@ class glTF:
 
         if node.camera is not None:
             camera_id = node.camera
-            self.load_camera(nextnode_id)
+            self.load_camera(nextnode_id, camera_id)
 
         if node.children:
             for child_id in node.children:
@@ -329,13 +331,15 @@ class glTF:
 
         return atexture
 
-    def load_camera(self, node_id):
+    def load_camera(self, node_id, camera_id):
         """Loads the camera data of a node
 
         Parameters
         ----------
         node_id : int
             Node index of the camera.
+        camera_id : int
+            Camera index of a node.
         """
-        camera = self.gltf.cameras
+        camera = self.gltf.cameras[camera_id]
         self.cameras[node_id] = camera
