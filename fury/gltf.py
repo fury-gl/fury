@@ -3,7 +3,7 @@ import base64
 import os
 import numpy as np
 from pygltflib import GLTF2
-from fury.lib import Texture
+from fury.lib import Texture, Camera
 from fury import transform, utils, io
 
 
@@ -124,7 +124,7 @@ class glTF:
 
         if node.camera is not None:
             camera_id = node.camera
-            self.load_camera(nextnode_id, camera_id)
+            self.load_camera(camera_id, next_matrix)
 
         if node.children:
             for child_id in node.children:
@@ -331,15 +331,39 @@ class glTF:
 
         return atexture
 
-    def load_camera(self, node_id, camera_id):
+    def load_camera(self, camera_id, transform_mat):
         """Loads the camera data of a node
 
         Parameters
         ----------
-        node_id : int
-            Node index of the camera.
         camera_id : int
             Camera index of a node.
+        transform_mat : ndarray (4, 4)
+            Transformation matrix of the camera.
         """
         camera = self.gltf.cameras[camera_id]
-        self.cameras[node_id] = camera
+        vtk_cam = Camera()
+        position = vtk_cam.GetPosition()
+        position = np.asarray([position])
+
+        new_position = transform.apply_transfomation(position, transform_mat)
+        vtk_cam.SetPosition(tuple(new_position[0]))
+
+        if camera.type == "orthographic":
+            orthographic = camera.orthographic
+            vtk_cam.ParallelProjectionOn()
+            zfar = orthographic.zfar
+            znear = orthographic.znear
+            vtk_cam.SetClippingRange(znear, zfar)
+        else:
+            perspective = camera.perspective
+            vtk_cam.ParallelProjectionOff()
+            zfar = perspective.zfar if perspective.zfar else 1000.0
+            znear = perspective.znear
+            vtk_cam.SetClippingRange(znear, zfar)
+            angle = perspective.yfov*180/np.pi if perspective.yfov else 30.0
+            vtk_cam.SetViewAngle(angle)
+            if perspective.aspectRatio:
+                vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
+
+        self.cameras[camera_id] = vtk_cam

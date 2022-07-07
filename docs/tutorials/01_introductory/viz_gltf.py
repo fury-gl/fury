@@ -33,7 +33,13 @@ actors = gltf_obj.actors()
 
 scene.add(*actors)
 
-interactive = True
+##############################################################################
+# Applyig camera
+
+camera = gltf_obj.cameras[0]
+scene.SetActiveCamera(camera)
+
+interactive = False
 
 if interactive:
     window.show(scene, size=(1280, 720))
