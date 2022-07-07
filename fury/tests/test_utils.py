@@ -17,12 +17,14 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors,
                         apply_affine_to_actor, color_check, is_ui,
-                        set_actor_primitives_count, get_actor_primitives_count,
-                        set_polydata_primitives_count, get_polydata_primitives_count)
+                        primitives_count_to_actor, primitives_count_from_actor,
+                        set_polydata_primitives_count,
+                        get_polydata_primitives_count)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
-                      CellArray, Polygon, Actor2D, DoubleArray,
-                      UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT, Actor, PolyDataMapper, VTK_INT)
+                      CellArray, Polygon, Actor2D, DoubleArray, VTK_INT,
+                      UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
+
 import fury.primitive as fp
 
 from fury.optpkg import optional_package
@@ -848,7 +850,7 @@ def test_get_polydata_primitives_count():
 
 def test_set_actor_primitives_count():
     act = actor.axes()
-    set_actor_primitives_count(act, 1)
+    primitives_count_to_actor(act, 1)
     polydata = act.GetMapper().GetInput()
     prim_count = get_polydata_field(polydata, 'prim_count')[0]
     npt.assert_equal(prim_count, 1)
@@ -858,15 +860,15 @@ def test_get_actor_primitives_count():
     act = actor.axes()
     polydata = act.GetMapper().GetInput()
     add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
-    prim_count = get_actor_primitives_count(act)
+    prim_count = primitives_count_from_actor(act)
     npt.assert_equal(prim_count, 1)
 
 
 def test_primitives_count():
     # testing on actor
     act = actor.axes()
-    set_actor_primitives_count(act, 3)
-    prim_count = get_actor_primitives_count(act)
+    primitives_count_to_actor(act, 3)
+    prim_count = primitives_count_from_actor(act)
     npt.assert_equal(prim_count, 3)
 
     # testing on polydata

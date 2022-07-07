@@ -22,7 +22,8 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       PolyDataNormals, Assembly, LODActor, VTK_UNSIGNED_CHAR,
                       PolyDataMapper2D, ScalarBarActor, PolyVertex, CellArray,
                       UnstructuredGrid, DataSetMapper, ConeSource, ArrowSource,
-                      SphereSource, CylinderSource, DiskSource, TexturedSphereSource,
+                      SphereSource, CylinderSource, DiskSource,
+                      TexturedSphereSource,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
@@ -33,7 +34,7 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors, color_check,
-                        set_actor_primitives_count, set_polydata_primitives_count)
+                        set_polydata_primitives_count)
 
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
@@ -1035,9 +1036,6 @@ def _color_fa(fa, evecs):
         raise ValueError("Wrong number of dimensions for evecs")
 
     return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
-
-
-
 
 
 def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
