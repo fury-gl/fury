@@ -94,7 +94,7 @@ def repeat_primitive_function(func, centers, func_args=[],
 
 
 def repeat_primitive(vertices, faces, centers, directions=None,
-                     colors=(1, 0, 0), scales=1, have_tiled_verts=False):
+                     colors=(1, 0, 0), scales=1, normals=None, have_tiled_verts=False):
     """Repeat Vertices and triangles of a specific primitive shape.
 
     It could be seen as a glyph.
@@ -113,6 +113,8 @@ def repeat_primitive(vertices, faces, centers, directions=None,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1]
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The height of the cone.
+    normals : ndarray
+        normals corresponding to vertices
     have_tiled_verts : bool
         option to control if we need to duplicate vertices of a shape or not
 
@@ -151,6 +153,11 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     big_triangles = np.array(np.tile(faces,
                                      (centers.shape[0], 1)),
                              dtype=np.int32)
+    # repeat normals
+    big_normals = None
+    if normals is not None:
+        big_normals = np.array(np.tile(normals, (centers.shape[0], 1)))
+
     big_triangles += np.repeat(np.arange(0,
                                          centers.shape[0] * unit_verts_size,
                                          step=unit_verts_size),
@@ -208,7 +215,7 @@ def repeat_primitive(vertices, faces, centers, directions=None,
     big_centers = np.repeat(centers, unit_verts_size, axis=0)
     big_vertices += big_centers
 
-    return big_vertices, big_triangles, big_colors, big_centers
+    return big_vertices, big_triangles, big_colors, big_centers, big_normals
 
 
 def prim_square():

@@ -205,7 +205,7 @@ def test_repeat_primitive():
                               directions=dirs,
                               colors=colors)
 
-    big_verts, big_faces, big_colors, big_centers = res
+    big_verts, big_faces, big_colors, big_centers, _ = res
 
     npt.assert_equal(big_verts.shape[0], verts.shape[0] * centers.shape[0])
     npt.assert_equal(big_faces.shape[0], faces.shape[0] * centers.shape[0])
@@ -244,6 +244,6 @@ def test_repeat_primitive_function():
                                        directions=dirs,
                                        colors=colors)
 
-    # big_verts, big_faces, big_colors, big_centers = res
+    # big_verts, big_faces, big_colors, big_centers, big_normals = res
 
     # npt.assert_equal(big_verts.shape[0],  verts.shape[0] * centers.shape[0])
