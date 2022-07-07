@@ -536,7 +536,7 @@ def get_polydata_primitives_count(polydata):
     return get_polydata_field(polydata, 'prim_count')[0]
 
 
-def set_actor_primitives_count(actor, primitives_count):
+def primitives_count_to_actor(actor, primitives_count):
     """Add primitives count to actor's polydata.
 
     Parameters
@@ -549,7 +549,7 @@ def set_actor_primitives_count(actor, primitives_count):
     set_polydata_primitives_count(polydata, primitives_count)
 
 
-def get_actor_primitives_count(actor):
+def primitives_count_from_actor(actor):
     """Get primitives count from actor's polydata.
 
     Parameters
