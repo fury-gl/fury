@@ -1497,6 +1497,7 @@ def test_actors_primitives_count():
     centers = np.array([[1, 1, 1], [2, 2, 2]])
     directions = np.array([[1, 0, 0], [1, 0, 0]])
     colors = np.array([[1, 0, 0], [1, 0, 0]])
+    lines = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
 
     box_actor = actor.box(centers)
     npt.assert_equal(primitives_count_from_actor(box_actor), len(centers))
@@ -1571,7 +1572,6 @@ def test_actors_primitives_count():
     cylinder_actor = actor.cylinder(centers, directions, colors)
     npt.assert_equal(primitives_count_from_actor(cylinder_actor), len(centers))
 
-    lines = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
     line_actor = actor.line(np.array(lines))
     npt.assert_equal(primitives_count_from_actor(line_actor), len(lines))
 
