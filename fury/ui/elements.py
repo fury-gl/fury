@@ -3080,6 +3080,7 @@ class DrawShape(UI):
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
+        self.is_selected = True
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3168,6 +3169,19 @@ class DrawShape(UI):
         self.cal_bounding_box(self.position)
         new_lower_left_corner = new_center - self._bounding_box_size / 2.
         self.position = new_lower_left_corner + self._bounding_box_offset
+
+    @property
+    def is_selected(self):
+        return self._is_selected
+
+    @is_selected.setter
+    def is_selected(self, value):
+        self._is_selected = value
+        self.selection_change()
+
+    def selection_change(self):
+        if not self.is_selected:
+            self.rotation_slider.set_visibility(False)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3273,6 +3287,8 @@ class DrawShape(UI):
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.drawpanel.update_shape_selection(self)
+
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.position
             self.show_rotation_slider()
@@ -3461,6 +3477,7 @@ class DrawPanel(UI):
             if shape_type == "circle":
                 shape.max_size = self.cal_min_boundary_distance(current_position)
             self.shape_list.append(shape)
+            self.update_shape_selection(shape)
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
@@ -3468,6 +3485,13 @@ class DrawPanel(UI):
             current_shape = self.shape_list[-1]
             size = current_position - current_shape.position
             current_shape.resize(size)
+
+    def update_shape_selection(self, selected_shape):
+        for shape in self.shape_list:
+            if selected_shape == shape:
+                shape.is_selected = True
+            else:
+                shape.is_selected = False
 
     def update_button_icons(self, current_mode):
         """Updates the button icon.
