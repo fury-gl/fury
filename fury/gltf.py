@@ -490,7 +490,7 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         color = count
         count += 1
     material = None if tcoords is None else 0
-    prim = add_prim(vertex, index, color, tcoord, normal, material)
+    prim = get_prim(vertex, index, color, tcoord, normal, material)
     return prim, boffset, count
 
 
@@ -510,6 +510,15 @@ def add_node(gltf, mesh=None, camera=None):
 
 
 def add_mesh(gltf, prims):
+    """Creates mesh and adds primitive.
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object.
+    prims : list
+        List of Primitive object.
+    """
     mesh = Mesh()
     for prim in prims:
         mesh.primitives.append(prim)
@@ -517,7 +526,16 @@ def add_mesh(gltf, prims):
     gltf.meshes.append(mesh)
 
 
-def add_camera(gltf, camera, aspec_ratio=1.0):
+def add_camera(gltf, camera):
+    """Creates and adds camera.
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object.
+    camera : vtkCamera
+        scene camera.
+    """
     orthographic = camera.GetParallelProjection()
     cam = Camera()
     if orthographic:
@@ -525,9 +543,10 @@ def add_camera(gltf, camera, aspec_ratio=1.0):
     else:
         clip_range = camera.GetClippingRange()
         angle = camera.GetViewAngle()
-        ratio = aspec_ratio
+        ratio = camera.GetExplicitAspectRatio()
+        aspect_ratio = ratio if ratio else 1.0
         pers = Perspective()
-        pers.aspectRatio = aspec_ratio
+        pers.aspectRatio = aspect_ratio
         pers.znear, pers.zfar = clip_range
         pers.yfov = angle*np.pi/180
         cam.type = "perspective"
@@ -535,7 +554,29 @@ def add_camera(gltf, camera, aspec_ratio=1.0):
     gltf.cameras.append(cam)
 
 
-def add_prim(verts, indices, cols, tcoords, normals, mat):
+def get_prim(verts, indices, cols, tcoords, normals, mat):
+    """Returns a Primitive object.
+    
+    Parameters
+    ----------
+    verts : int
+        Accessor index for the vertices data.
+    indices : int
+        Accessor index for the triangles data.
+    cols : int
+        Accessor index for the colors data.
+    tcoords : int
+        Accessor index for the texture coordinates data.
+    normals : int
+        Accessor index for the normals data.
+    mat : int
+        Materials index.
+
+    Returns
+    -------
+    prim : Primitive
+        ppygltflib primitive object.
+    """
     # for each actor we'll have a primitive
     prim = Primitive()
     attr = Attributes()
@@ -551,6 +592,17 @@ def add_prim(verts, indices, cols, tcoords, normals, mat):
 
 
 def add_material(gltf, bct: int, uri: str):
+    """Adds Materials, Images and Textures
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object.
+    bct : int
+        BaseColorTexture index.
+    uri : str
+        BaseColorTexture uri. 
+    """
     material = Material()
     texture = Texture()
     image = Image()
@@ -569,6 +621,27 @@ def add_material(gltf, bct: int, uri: str):
 
 
 def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
+    """Adds accessor in the gltf.
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object
+    bv : int
+        BufferView Index
+    bo : int
+        ByteOffset of the accessor
+    ct : type
+        Type of a single component 
+    cnt : int
+        Elements count of the accessor
+    atype : type
+        Type of the accessor (SCALAR, VEC2, VEC3, VEC4)
+    max : ndarray
+        Maximum elements of an array
+    min : ndarray
+        Minimum elemnts of an array
+    """
     accessor = Accessor()
     accessor.bufferView = bv
     accessor.byteOffset = bo
@@ -581,9 +654,25 @@ def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
     gltf.accessors.append(accessor)
 
 
-def add_bufferview(gltf, buff, bo, bl, bs=None, target=None):
+def add_bufferview(gltf, buffer, bo, bl, bs=None):
+    """Adds bufferview in the gltf.
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object
+    buffer : int
+        Buffer index
+    bo : int
+        Byte offset of the bufferview
+    bl : int
+        Byte length ie, Length of the data we want to get from
+        the buffer
+    bs : int
+        Byte stride of the bufferview.
+    """
     buffer_view = BufferView()
-    buffer_view.buffer = buff
+    buffer_view.buffer = buffer
     buffer_view.byteOffset = bo
     buffer_view.byteLength = bl
     buffer_view.byteStride = bs
@@ -591,6 +680,17 @@ def add_bufferview(gltf, buff, bo, bl, bs=None, target=None):
 
 
 def add_buffer(gltf, byte_length, uri):
+    """Adds buffer int the gltf
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object 
+    byte_length : int
+        Length of the buffer
+    uri : str
+        Path to the external `.bin` file.
+    """
     buffer = Buffer()
     buffer.uri = uri
     buffer.byteLength = byte_length
