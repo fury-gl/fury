@@ -10,8 +10,8 @@ cube = actor.cube(centers, colors=colors)
 scene = window.Scene()
 scene.add(cube)
 
-cone = actor.cone(np.add(centers, np.array([2, 0, 0])), directions,
-                  colors)
+cone = actor.sphere(np.add(centers, np.array([2, 0, 0])),
+                    colors)
 scene.add(cone)
 scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
                  view_up=(0.0, 0.0, 1.0))

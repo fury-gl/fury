@@ -398,7 +398,7 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         filename.bin opened in `wb` mode
     count : int
         BufferView count
-    
+
     Returns
     -------
     prim : Pygltflib.Primitive
@@ -426,8 +426,11 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         amax = [np.max(indices)]
         amin = [np.min(indices)]
 
+        ctype = comp_type.get(5123)
+        atype = acc_type.get(SCALAR)
+
         indices = indices.astype(np.ushort)
-        blength = len(indices)*2
+        blength = len(indices)*ctype['size']
         buff_file.write(indices.tobytes())
         add_bufferview(gltf, 0, boffset, blength)
         add_accessor(gltf, count, 0, UNSIGNED_SHORT,
@@ -439,11 +442,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
     if vertices is not None:
         amax = np.max(vertices, 0).tolist()
         amin = np.min(vertices, 0).tolist()
-        vertices = vertices.reshape((-1, )).astype(np.float32)
-        blength = len(vertices)*4
+
+        ctype = comp_type.get(5126)
+        atype = acc_type.get(VEC3)
+
+        vertices = vertices.reshape((-1, )).astype(ctype['dtype'])
+        blength = len(vertices)*ctype['size']
         buff_file.write(vertices.tobytes())
         add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(vertices)//3,
+        add_accessor(gltf, count, 0, FLOAT, len(vertices)//atype,
                      VEC3, amax, amin)
         boffset += blength
         vertex = count
@@ -452,11 +459,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
     if normals is not None:
         amax = np.max(normals, 0).tolist()
         amin = np.min(normals, 0).tolist()
+
+        ctype = comp_type.get(5126)
+        atype = acc_type.get(VEC3)
+
         normals = normals.reshape((-1, ))
-        blength = len(normals)*4
+        blength = len(normals)*ctype['size']
         buff_file.write(normals.tobytes())
         add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(normals)//3,
+        add_accessor(gltf, count, 0, FLOAT, len(normals)//atype,
                      VEC3, amax, amin)
         boffset += blength
         normal = count
@@ -465,11 +476,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
     if tcoords is not None:
         amax = np.max(tcoords, 0).tolist()
         amin = np.min(tcoords, 0).tolist()
-        tcoords = tcoords.reshape((-1, )).astype(np.float32)
-        blength = len(tcoords)*4
+
+        ctype = comp_type.get(5126)
+        atype = acc_type.get('VEC2')
+
+        tcoords = tcoords.reshape((-1, )).astype(ctype['dtype'])
+        blength = len(tcoords)*ctype['size']
         buff_file.write(tcoords.tobytes())
         add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(tcoords)//2,
+        add_accessor(gltf, count, 0, FLOAT, len(tcoords)//atype,
                      VEC2)
         boffset += blength
         tcoord = count
@@ -478,11 +493,14 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         add_material(gltf, 0, image_path)
 
     if colors is not None:
+        ctype = comp_type.get(5126)
+        atype = acc_type.get(VEC3)
+
         shape = colors.shape[0]
         colors = np.concatenate((colors, np.full((shape, 1), 255.)), axis=1)
         colors = colors/255
-        colors = colors.reshape((-1, )).astype(np.float32)
-        blength = len(colors)*4
+        colors = colors.reshape((-1, )).astype(ctype['dtype'])
+        blength = len(colors)*ctype['size']
         buff_file.write(colors.tobytes())
         add_bufferview(gltf, 0, boffset, blength)
         add_accessor(gltf, count, 0, FLOAT, shape, VEC4)
