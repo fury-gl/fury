@@ -3190,6 +3190,8 @@ class DrawShape(UI):
         self.cal_bounding_box(self.position)
 
     def show_rotation_slider(self):
+        """Display the RingSlider2D to allow rotation of shape from the center.
+        """
         self.rotation_slider.set_visibility(True)
         self.cal_bounding_box(self.position)
         self.rotation_slider.center = self.center + \
@@ -3263,6 +3265,8 @@ class DrawShape(UI):
         self.cal_bounding_box(self.position)
 
     def remove(self):
+        """Removes the Shape and all related actors.
+        """
         self._scene.rm(self.shape.actor)
         self._scene.rm(*self.rotation_slider.actors)
 
