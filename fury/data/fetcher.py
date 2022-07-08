@@ -698,9 +698,10 @@ def read_viz_gltf(fname, mode=None):
 
     if mode is None:
         types = os.listdir(model)
-        if len(types) == 0:
+        types.sort()
+        if len(types) == 0 or types is None:
             raise ValueError('Model does not exist.')
-        mode = types[-1]
+        mode = types[0]
 
     sample = pjoin(model, mode)
 

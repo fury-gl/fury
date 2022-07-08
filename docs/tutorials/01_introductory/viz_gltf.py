@@ -17,15 +17,15 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('Duck', 'glTF')
+fetch_gltf('Duck', 'glTF-Embedded')
+filename = read_viz_gltf('Duck')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
 # Note: You can always manually create actor from polydata, and apply texture
 # or materials manually afterwards.
 
-gltf_obj = glTF(filename, apply_normals=True)
+gltf_obj = glTF(filename)
 actors = gltf_obj.actors()
 
 ##############################################################################
