@@ -3192,7 +3192,8 @@ class DrawShape(UI):
     def show_rotation_slider(self):
         self.rotation_slider.set_visibility(True)
         self.cal_bounding_box(self.position)
-        self.rotation_slider.center = self.center + [self.rotation_slider.size[0], 0]
+        self.rotation_slider.center = self.center + \
+            [(self._bounding_box_size[0] + self.rotation_slider.size[0])/2, 0]
 
     def cal_bounding_box(self, position):
         """Calculates the min, max position and the size of the bounding box.
