@@ -1,7 +1,8 @@
 import base64
 import os
 import numpy as np
-from pygltflib import *
+import pygltflib as gltflib
+from pygltflib.utils import gltf2glb, glb2gltf
 from fury.lib import Texture as vtkTexture
 from fury.lib import PNGReader, JPEGReader, ImageFlip
 from fury import window, transform, utils, actor
@@ -37,7 +38,12 @@ class glTF:
 
     def __init__(self, filename, apply_normals=False):
 
-        self.gltf = GLTF2().load(filename)
+        name, extension = os.path.splitext(filename)
+
+        if extension == '.glb':
+            glb2gltf(filename)
+
+        self.gltf = gltflib.GLTF2().load(f'{name}.gltf')
 
         gltf_path = filename.split('/')[-1:][0]
         self.pwd = filename[:-len(gltf_path)]
@@ -349,7 +355,7 @@ class glTF:
         self.cameras[node_id] = camera
 
 
-def generate_gltf(scene, name='default'):
+def export_scene(scene, filename='default.gltf'):
     """Generate gltf from FURY scene.
 
     Parameters
@@ -359,35 +365,42 @@ def generate_gltf(scene, name='default'):
     name : str, optional
         Name of the model to be saved
     """
-    gltf = GLTF2()
-    name = name.split('.')[0] if name.endswith('.gltf') else name
+    gltf_obj = gltflib.GLTF2()
+    name, extension = os.path.splitext(filename)
+
+    if extension not in ['.gltf', '.glb']:
+        raise IOError('Filename should be .gltf or .glb')
+
     buffer_file = open(f'{name}.bin', 'wb')
     primitives = []
     buffer_size = 0
     bview_count = 0
 
-    for actor in scene.GetActors():
-        prim, size, count = _connect_primitives(gltf, actor, buffer_file,
+    for act in scene.GetActors():
+        prim, size, count = _connect_primitives(gltf_obj, act, buffer_file,
                                                 buffer_size, bview_count)
         primitives.append(prim)
         buffer_size += size
         bview_count += count
 
     buffer_file.close()
-    add_mesh(gltf, primitives)
-    add_buffer(gltf, size, f'{name}.bin')
+    write_mesh(gltf_obj, primitives)
+    write_buffer(gltf_obj, size, f'{name}.bin')
     camera = scene.camera()
     cam_id = None
     if camera:
-        add_camera(gltf, camera)
+        write_camera(gltf_obj, camera)
         cam_id = 0
-    add_node(gltf, mesh=0, camera=cam_id)
-    add_scene(gltf, 0)
-    gltf.save(f'{name}.gltf')
+    write_node(gltf_obj, mesh=0, camera=cam_id)
+    write_scene(gltf_obj, [0])
+
+    gltf_obj.save(f'{name}.gltf')
+    if extension == '.glb':
+        gltf2glb(f'{name}.gltf', destination=filename)
 
 
 def _connect_primitives(gltf, actor, buff_file, boffset, count):
-    """Creates Accessor, BufferViews and writes primitive data to a binary file
+    """Create Accessor, BufferViews and writes primitive data to a binary file
 
     Parameters
     ----------
@@ -426,15 +439,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         amax = [np.max(indices)]
         amin = [np.min(indices)]
 
-        ctype = comp_type.get(5123)
-        atype = acc_type.get(SCALAR)
+        ctype = comp_type.get(gltflib.UNSIGNED_SHORT)
+        atype = acc_type.get(gltflib.SCALAR)
 
         indices = indices.astype(np.ushort)
         blength = len(indices)*ctype['size']
         buff_file.write(indices.tobytes())
-        add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, UNSIGNED_SHORT,
-                     len(indices), SCALAR)
+        write_bufferview(gltf, 0, boffset, blength)
+        write_accessor(gltf, count, 0, gltflib.UNSIGNED_SHORT,
+                       len(indices), gltflib.SCALAR)
         boffset += blength
         index = count
         count += 1
@@ -443,15 +456,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         amax = np.max(vertices, 0).tolist()
         amin = np.min(vertices, 0).tolist()
 
-        ctype = comp_type.get(5126)
-        atype = acc_type.get(VEC3)
+        ctype = comp_type.get(gltflib.FLOAT)
+        atype = acc_type.get(gltflib.VEC3)
 
         vertices = vertices.reshape((-1, )).astype(ctype['dtype'])
         blength = len(vertices)*ctype['size']
         buff_file.write(vertices.tobytes())
-        add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(vertices)//atype,
-                     VEC3, amax, amin)
+        write_bufferview(gltf, 0, boffset, blength)
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices)//atype,
+                       gltflib.VEC3, amax, amin)
         boffset += blength
         vertex = count
         count += 1
@@ -460,15 +473,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         amax = np.max(normals, 0).tolist()
         amin = np.min(normals, 0).tolist()
 
-        ctype = comp_type.get(5126)
-        atype = acc_type.get(VEC3)
+        ctype = comp_type.get(gltflib.FLOAT)
+        atype = acc_type.get(gltflib.VEC3)
 
         normals = normals.reshape((-1, ))
         blength = len(normals)*ctype['size']
         buff_file.write(normals.tobytes())
-        add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(normals)//atype,
-                     VEC3, amax, amin)
+        write_bufferview(gltf, 0, boffset, blength)
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(normals)//atype,
+                       gltflib.VEC3, amax, amin)
         boffset += blength
         normal = count
         count += 1
@@ -477,33 +490,33 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         amax = np.max(tcoords, 0).tolist()
         amin = np.min(tcoords, 0).tolist()
 
-        ctype = comp_type.get(5126)
-        atype = acc_type.get('VEC2')
+        ctype = comp_type.get(gltflib.FLOAT)
+        atype = acc_type.get(gltflib.VEC2)
 
         tcoords = tcoords.reshape((-1, )).astype(ctype['dtype'])
         blength = len(tcoords)*ctype['size']
         buff_file.write(tcoords.tobytes())
-        add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, len(tcoords)//atype,
-                     VEC2)
+        write_bufferview(gltf, 0, boffset, blength)
+        write_accessor(gltf, count, 0, gltflib.FLOAT, len(tcoords)//atype,
+                       gltflib.VEC2)
         boffset += blength
         tcoord = count
         count += 1
         # vtk_image = actor.GetTexture().GetInput()
-        add_material(gltf, 0, image_path)
+        write_material(gltf, 0, image_path)
 
     if colors is not None:
-        ctype = comp_type.get(5126)
-        atype = acc_type.get(VEC3)
+        ctype = comp_type.get(gltflib.FLOAT)
+        atype = acc_type.get(gltflib.VEC3)
 
         shape = colors.shape[0]
         colors = np.concatenate((colors, np.full((shape, 1), 255.)), axis=1)
-        colors = colors/255
+        colors = colors / 255
         colors = colors.reshape((-1, )).astype(ctype['dtype'])
         blength = len(colors)*ctype['size']
         buff_file.write(colors.tobytes())
-        add_bufferview(gltf, 0, boffset, blength)
-        add_accessor(gltf, count, 0, FLOAT, shape, VEC4)
+        write_bufferview(gltf, 0, boffset, blength)
+        write_accessor(gltf, count, 0, gltflib.FLOAT, shape, gltflib.VEC4)
         boffset += blength
         color = count
         count += 1
@@ -512,14 +525,34 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
     return prim, boffset, count
 
 
-def add_scene(gltf, *nodes):
-    scene = Scene()
-    scene.nodes = [node for node in nodes]
+def write_scene(gltf, nodes):
+    """Create scene
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object
+    nodes : list
+        List of node indices.
+    """
+    scene = gltflib.Scene()
+    scene.nodes = nodes
     gltf.scenes.append(scene)
 
 
-def add_node(gltf, mesh=None, camera=None):
-    node = Node()
+def write_node(gltf, mesh=None, camera=None):
+    """Create node
+
+    Parameters
+    ----------
+    gltf : GLTF2
+        Pygltflib GLTF2 object
+    mesh : int, optional
+        Mesh index
+    camera : int, optional
+        Camera index.
+    """
+    node = gltflib.Node()
     if mesh is not None:
         node.mesh = mesh
     if camera is not None:
@@ -527,25 +560,25 @@ def add_node(gltf, mesh=None, camera=None):
     gltf.nodes.append(node)
 
 
-def add_mesh(gltf, prims):
-    """Creates mesh and adds primitive.
+def write_mesh(gltf, primitives):
+    """Create mesh and add primitive.
 
     Parameters
     ----------
     gltf : GLTF2
         Pygltflib GLTF2 object.
-    prims : list
+    primitives : list
         List of Primitive object.
     """
-    mesh = Mesh()
-    for prim in prims:
+    mesh = gltflib.Mesh()
+    for prim in primitives:
         mesh.primitives.append(prim)
 
     gltf.meshes.append(mesh)
 
 
-def add_camera(gltf, camera):
-    """Creates and adds camera.
+def write_camera(gltf, camera):
+    """Create and add camera.
 
     Parameters
     ----------
@@ -555,7 +588,7 @@ def add_camera(gltf, camera):
         scene camera.
     """
     orthographic = camera.GetParallelProjection()
-    cam = Camera()
+    cam = gltflib.Camera()
     if orthographic:
         cam.type = "orthographic"
     else:
@@ -563,18 +596,18 @@ def add_camera(gltf, camera):
         angle = camera.GetViewAngle()
         ratio = camera.GetExplicitAspectRatio()
         aspect_ratio = ratio if ratio else 1.0
-        pers = Perspective()
+        pers = gltflib.Perspective()
         pers.aspectRatio = aspect_ratio
         pers.znear, pers.zfar = clip_range
-        pers.yfov = angle*np.pi/180
+        pers.yfov = angle * np.pi/180
         cam.type = "perspective"
         cam.perspective = pers
     gltf.cameras.append(cam)
 
 
 def get_prim(verts, indices, cols, tcoords, normals, mat):
-    """Returns a Primitive object.
-    
+    """Return a Primitive object.
+
     Parameters
     ----------
     verts : int
@@ -593,11 +626,10 @@ def get_prim(verts, indices, cols, tcoords, normals, mat):
     Returns
     -------
     prim : Primitive
-        ppygltflib primitive object.
+        pygltflib primitive object.
     """
-    # for each actor we'll have a primitive
-    prim = Primitive()
-    attr = Attributes()
+    prim = gltflib.Primitive()
+    attr = gltflib.Attributes()
     attr.POSITION = verts
     attr.NORMAL = normals
     attr.TEXCOORD_0 = tcoords
@@ -609,8 +641,8 @@ def get_prim(verts, indices, cols, tcoords, normals, mat):
     return prim
 
 
-def add_material(gltf, bct: int, uri: str):
-    """Adds Materials, Images and Textures
+def write_material(gltf, bct: int, uri: str):
+    """Write Material, Images and Textures
 
     Parameters
     ----------
@@ -619,18 +651,18 @@ def add_material(gltf, bct: int, uri: str):
     bct : int
         BaseColorTexture index.
     uri : str
-        BaseColorTexture uri. 
+        BaseColorTexture uri.
     """
-    material = Material()
-    texture = Texture()
-    image = Image()
-    pbr = PbrMetallicRoughness()
-    tinfo = TextureInfo()
+    material = gltflib.Material()
+    texture = gltflib.Texture()
+    image = gltflib.Image()
+    pbr = gltflib.PbrMetallicRoughness()
+    tinfo = gltflib.TextureInfo()
     tinfo.index = bct
     pbr.baseColorTexture = tinfo
-    pbr.metallicFactor = 0.0  # setting default
+    pbr.metallicFactor = 0.0
     material.pbrMetallicRoughness = pbr
-    # texture.sampler = 0
+    texture.sampler = 0
     texture.source = bct
     image.uri = uri
     gltf.materials.append(material)
@@ -638,8 +670,8 @@ def add_material(gltf, bct: int, uri: str):
     gltf.images.append(image)
 
 
-def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
-    """Adds accessor in the gltf.
+def write_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
+    """Write accessor in the gltf.
 
     Parameters
     ----------
@@ -655,12 +687,12 @@ def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
         Elements count of the accessor
     atype : type
         Type of the accessor (SCALAR, VEC2, VEC3, VEC4)
-    max : ndarray
+    max : ndarray, optional
         Maximum elements of an array
-    min : ndarray
-        Minimum elemnts of an array
+    min : ndarray, optional
+        Minimum elements of an array
     """
-    accessor = Accessor()
+    accessor = gltflib.Accessor()
     accessor.bufferView = bv
     accessor.byteOffset = bo
     accessor.componentType = ct
@@ -672,8 +704,8 @@ def add_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
     gltf.accessors.append(accessor)
 
 
-def add_bufferview(gltf, buffer, bo, bl, bs=None):
-    """Adds bufferview in the gltf.
+def write_bufferview(gltf, buffer, bo, bl, bs=None):
+    """Write bufferview in the gltf.
 
     Parameters
     ----------
@@ -686,10 +718,10 @@ def add_bufferview(gltf, buffer, bo, bl, bs=None):
     bl : int
         Byte length ie, Length of the data we want to get from
         the buffer
-    bs : int
+    bs : int, optional
         Byte stride of the bufferview.
     """
-    buffer_view = BufferView()
+    buffer_view = gltflib.BufferView()
     buffer_view.buffer = buffer
     buffer_view.byteOffset = bo
     buffer_view.byteLength = bl
@@ -697,19 +729,19 @@ def add_bufferview(gltf, buffer, bo, bl, bs=None):
     gltf.bufferViews.append(buffer_view)
 
 
-def add_buffer(gltf, byte_length, uri):
-    """Adds buffer int the gltf
+def write_buffer(gltf, byte_length, uri):
+    """Write buffer int the gltf
 
     Parameters
     ----------
     gltf : GLTF2
-        Pygltflib GLTF2 object 
+        Pygltflib GLTF2 object
     byte_length : int
         Length of the buffer
     uri : str
         Path to the external `.bin` file.
     """
-    buffer = Buffer()
+    buffer = gltflib.Buffer()
     buffer.uri = uri
     buffer.byteLength = byte_length
     gltf.buffers.append(buffer)
