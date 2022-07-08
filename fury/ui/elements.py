@@ -3099,19 +3099,23 @@ class DrawShape(UI):
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
-        # self.shape.on_left_mouse_button_released = self.left_button_released
+        self.shape.on_left_mouse_button_released = self.left_button_released
 
-        self.rotation_slider = RingSlider2D(center=(200, 200), initial_value=0,
-                                            text_template="{angle:5.1f}°")
+        self.rotation_slider = RingSlider2D()
         self.rotation_slider.set_visibility(False)
 
-        def rotate_cube(slider):
+        def rotate_shape(slider):
             angle = slider.value
             previous_angle = slider.previous_value
             rotation_angle = angle - previous_angle
-            self.rotate(np.deg2rad(rotation_angle))
 
-        self.rotation_slider.on_change = rotate_cube
+            self.cal_bounding_box(self.position)
+            current_center = self.center
+            self.center = (0, 0)
+            self.rotate(np.deg2rad(rotation_angle))
+            self.center = current_center
+
+        self.rotation_slider.on_change = rotate_shape
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3187,9 +3191,8 @@ class DrawShape(UI):
 
     def show_rotation_slider(self):
         self.rotation_slider.set_visibility(True)
-        self.rotation_slider.center = [self.position[0] +
-                                       self.size[0] + self.rotation_slider.size[0]/2, self.position[1]]
-        print(self.rotation_slider.center)
+        self.cal_bounding_box(self.position)
+        self.rotation_slider.center = self.center + [self.rotation_slider.size[0], 0]
 
     def cal_bounding_box(self, position):
         """Calculates the min, max position and the size of the bounding box.
@@ -3277,6 +3280,7 @@ class DrawShape(UI):
 
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
+            self.rotation_slider.set_visibility(False)
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
                 relative_canvas_position = click_position - \
@@ -3287,9 +3291,9 @@ class DrawShape(UI):
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
 
-    # def left_button_released(self, i_ren, _obj, shape):
-    #     self.rotation_slider.set_visibility(False)
-    #     i_ren.force_render()
+    def left_button_released(self, i_ren, _obj, shape):
+        self.show_rotation_slider()
+        i_ren.force_render()
 
 
 class DrawPanel(UI):
