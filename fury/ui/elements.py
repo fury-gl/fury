@@ -3131,6 +3131,26 @@ class DrawShape(UI):
         else:
             self.shape.position = coords
 
+    @property
+    def center(self):
+        self.cal_bounding_box(self.position)
+        return self._bounding_box_min + self._bounding_box_size/2
+
+    @center.setter
+    def center(self, coords):
+        """Position the center of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+
+        """
+        new_center = np.array(coords)
+        self.cal_bounding_box(self.position)
+        new_lower_left_corner = new_center - self._bounding_box_size / 2.
+        self.position = new_lower_left_corner + self._bounding_box_offset
+
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
 
@@ -3150,7 +3170,7 @@ class DrawShape(UI):
         self.cal_bounding_box(self.position)
 
     def cal_bounding_box(self, position):
-        """Calculates the min and max position of the bounding box.
+        """Calculates the min, max position and the size of the bounding box.
 
         Parameters
         ----------
@@ -3172,9 +3192,9 @@ class DrawShape(UI):
             if y > max_y:
                 max_y = y
 
-        self._bounding_box_min = [min_x, min_y]
-        self._bounding_box_max = [max_x, max_y]
-        self._bounding_box_size = [max_x-min_x, max_y-min_y]
+        self._bounding_box_min = np.asarray([min_x, min_y])
+        self._bounding_box_max = np.asarray([max_x, max_y])
+        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
 
         self._bounding_box_offset = position - self._bounding_box_min
 
