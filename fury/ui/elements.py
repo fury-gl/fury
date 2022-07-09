@@ -3177,7 +3177,7 @@ class DrawShape(UI):
 
     @is_selected.setter
     def is_selected(self, value):
-        if value == True:
+        if value:
             self.drawpanel.current_shape = self
         self._is_selected = value
         self.selection_change()
