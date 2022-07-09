@@ -3102,7 +3102,8 @@ class DrawShape(UI):
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
         self.shape.on_left_mouse_button_released = self.left_button_released
 
-        self.rotation_slider = RingSlider2D()
+        self.rotation_slider = RingSlider2D(initial_value=0,
+                                            text_template="{angle:5.1f}°")
         self.rotation_slider.set_visibility(False)
 
         def rotate_shape(slider):
@@ -3208,10 +3209,10 @@ class DrawShape(UI):
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
         """
-        self.rotation_slider.set_visibility(True)
         self.cal_bounding_box(self.position)
         self.rotation_slider.center = self.center + \
             [(self._bounding_box_size[0] + self.rotation_slider.size[0])/2, 0]
+        self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, position):
         """Calculates the min, max position and the size of the bounding box.
