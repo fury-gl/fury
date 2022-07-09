@@ -3176,6 +3176,8 @@ class DrawShape(UI):
 
     @is_selected.setter
     def is_selected(self, value):
+        if value == True:
+            self.drawpanel.current_shape = self
         self._is_selected = value
         self.selection_change()
 
@@ -3342,6 +3344,7 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
+        self.current_shape = None
 
     def _setup(self):
         """Setup this UI component.
@@ -3482,9 +3485,9 @@ class DrawPanel(UI):
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
         else:
-            current_shape = self.shape_list[-1]
-            size = current_position - current_shape.position
-            current_shape.resize(size)
+            self.current_shape = self.shape_list[-1]
+            size = current_position - self.current_shape.position
+            self.current_shape.resize(size)
 
     def update_shape_selection(self, selected_shape):
         for shape in self.shape_list:
@@ -3524,8 +3527,10 @@ class DrawPanel(UI):
                        self.canvas.position + self.canvas.size)
 
     def handle_mouse_click(self, position):
-        if self.is_draggable and self.current_mode == "selection":
-            self._drag_offset = position - self.position
+        if self.current_mode == "selection":
+            if self.is_draggable:
+                self._drag_offset = position - self.position
+            self.current_shape.is_selected = False
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
