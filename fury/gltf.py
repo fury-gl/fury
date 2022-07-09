@@ -2,7 +2,8 @@
 import base64
 import os
 import numpy as np
-from pygltflib import GLTF2
+import pygltflib as gltflib
+from pygltflib.utils import glb2gltf
 from fury.lib import Texture, Camera
 from fury import transform, utils, io
 
@@ -39,7 +40,15 @@ class glTF:
         if filename in ['', None]:
             raise IOError('Filename cannot be empty or None!')
 
-        self.gltf = GLTF2().load(filename)
+        name, extension = os.path.splitext(filename)
+
+        if extension == '.glb':
+            fname_gltf = f'{name}.gltf'
+            if not os.path.exists(fname_gltf):
+                glb2gltf(filename)
+                filename = fname_gltf
+
+        self.gltf = gltflib.GLTF2().load(filename)
 
         self.pwd = os.path.dirname(filename)
         self.apply_normals = apply_normals
@@ -306,11 +315,14 @@ class glTF:
         """
 
         texture = self.gltf.textures[tex_id].source
-        images = self.gltf.images
+        image = self.gltf.images[texture]
 
-        file = images[texture].uri
+        file = image.uri
+        bv_index = image.bufferView
+        if file is None:
+            mimetype = image.mimeType
 
-        if file.startswith('data:image'):
+        if file is not None and file.startswith('data:image'):
             buff_data = file.split(',')[1]
             buff_data = base64.b64decode(buff_data)
 
@@ -318,6 +330,20 @@ class glTF:
             image_path = os.path.join(self.pwd, str("b64texture"+extension))
             with open(image_path, "wb") as image_file:
                 image_file.write(buff_data)
+
+        elif bv_index is not None:
+            bv = self.gltf.bufferViews[bv_index]
+            buffer = bv.buffer
+            bo = bv.byteOffset
+            bl = bv.byteLength
+            uri = self.gltf.buffers[buffer].uri
+            with open(os.path.join(self.pwd, uri), 'rb') as f:
+                f.seek(bo)
+                img_binary = f.read(bl)
+            extension = '.png' if mimetype == 'images/png' else '.jpg'
+            image_path = os.path.join(self.pwd, str("bvtexture"+extension))
+            with open(image_path, "wb") as image_file:
+                image_file.write(img_binary)
 
         else:
             image_path = os.path.join(self.pwd, file)
