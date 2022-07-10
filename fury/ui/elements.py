@@ -3153,7 +3153,7 @@ class DrawShape(UI):
 
     @property
     def center(self):
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box()
         return self._bounding_box_min + self._bounding_box_size/2
 
     @center.setter
@@ -3167,7 +3167,6 @@ class DrawShape(UI):
 
         """
         new_center = np.array(coords)
-        self.cal_bounding_box(self.position)
         new_lower_left_corner = new_center - self._bounding_box_size / 2.
         self.position = new_lower_left_corner + self._bounding_box_offset
 
@@ -3204,7 +3203,7 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box(update_value=True)
 
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
@@ -3222,6 +3221,8 @@ class DrawShape(UI):
         position : (float, float)
             (x, y) in pixels.
         """
+        if position is None:
+            position = self.position
         vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
@@ -3237,30 +3238,31 @@ class DrawShape(UI):
             if y > max_y:
                 max_y = y
 
-        self._bounding_box_min = np.asarray([min_x, min_y])
-        self._bounding_box_max = np.asarray([max_x, max_y])
-        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
+        if update_value:
+            self._bounding_box_min = np.asarray([min_x, min_y])
+            self._bounding_box_max = np.asarray([max_x, max_y])
+            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
 
-        self._bounding_box_offset = position - self._bounding_box_min
+            self._bounding_box_offset = position - self._bounding_box_min
 
-    def clamp_position(self, position):
-        """Clamps the given position according to the DrawPanel canvas.
+    def clamp_position(self, center=None):
+        """Clamps the given center according to the DrawPanel canvas.
 
         Parameters
         ----------
-        position : (float, float)
+        center : (float, float)
             (x, y) in pixels.
 
         Returns
         -------
-        new_position: ndarray(int)
-            New position for the shape.
+        new_center: ndarray(int)
+            New center for the shape.
         """
-        self.cal_bounding_box(position)
-        new_position = np.clip(self._bounding_box_min, [0, 0],
-                               self.drawpanel.size - self._bounding_box_size)
-        new_position = new_position + self._bounding_box_offset
-        return new_position.astype(int)
+        if center is None:
+            center = self.center
+        new_center = np.clip(center, self._bounding_box_size/2,
+                             self.drawpanel.size - self._bounding_box_size/2)
+        return new_center.astype(int)
 
     def resize(self, size):
         """Resize the UI.
@@ -3279,7 +3281,7 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box(update_value=True)
 
     def remove(self):
         """Removes the Shape and all related actors.
@@ -3307,10 +3309,11 @@ class DrawShape(UI):
             self.rotation_slider.set_visibility(False)
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                relative_canvas_position = click_position - \
+                relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
-                new_position = self.clamp_position(relative_canvas_position)
-                self.drawpanel.canvas.update_element(self, new_position)
+                new_center = self.clamp_position(center=relative_center_position)
+                self.drawpanel.canvas.update_element(self, new_center, "center")
+                self.cal_bounding_box(update_value=True)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
