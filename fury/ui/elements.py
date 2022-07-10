@@ -3167,9 +3167,9 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box(update_value=True)
 
-    def cal_bounding_box(self, position):
+    def cal_bounding_box(self, update_value=False, position=None):
         """Calculates the min, max position and the size of the bounding box.
 
         Parameters
@@ -3177,6 +3177,8 @@ class DrawShape(UI):
         position : (float, float)
             (x, y) in pixels.
         """
+        if position is None:
+            position = self.position
         vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
@@ -3192,11 +3194,12 @@ class DrawShape(UI):
             if y > max_y:
                 max_y = y
 
-        self._bounding_box_min = np.asarray([min_x, min_y])
-        self._bounding_box_max = np.asarray([max_x, max_y])
-        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
+        if update_value:
+            self._bounding_box_min = np.asarray([min_x, min_y])
+            self._bounding_box_max = np.asarray([max_x, max_y])
+            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
 
-        self._bounding_box_offset = position - self._bounding_box_min
+            self._bounding_box_offset = position - self._bounding_box_min
 
     def clamp_position(self, position):
         """Clamps the given position according to the DrawPanel canvas.
@@ -3234,7 +3237,7 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box(update_value=True)
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
