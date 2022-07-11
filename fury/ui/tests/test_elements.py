@@ -825,6 +825,12 @@ def test_ui_draw_panel(interactive=False):
         size=current_size, title="DrawPanel UI Example")
     show_manager.scene.add(drawpanel)
 
+    # Recorded events:
+    #  1. Check all mode selection button
+    #  2. Creation and clamping of shapes
+    #  3. Transformation and clamping of shapes
+    #  4. Rotation and clamping of shape
+
     if interactive:
         show_manager.record_events_to_file(recording_filename)
         print(list(event_counter.events_counts.items()))
