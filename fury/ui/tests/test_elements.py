@@ -792,9 +792,9 @@ def test_ui_combobox_2d(interactive=False):
 
 
 def test_ui_draw_shape():
-    line = ui.DrawShape("line", (150, 150))
-    quad = ui.DrawShape("quad", (300, 300))
-    circle = ui.DrawShape("circle", (150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
         ui.DrawShape("poly")
