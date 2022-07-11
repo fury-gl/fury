@@ -3151,6 +3151,13 @@ class DrawShape(UI):
             self.shape.position = coords
 
     def update_shape_position(self, center_position):
+        """Updates the center position of this shape on the canvas.
+
+        Parameters
+        ----------
+        center_position: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
         new_center = self.clamp_position(center=center_position)
         self.drawpanel.canvas.update_element(self, new_center, "center")
         self.cal_bounding_box(update_value=True)
