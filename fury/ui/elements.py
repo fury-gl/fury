@@ -3111,11 +3111,10 @@ class DrawShape(UI):
             previous_angle = slider.previous_value
             rotation_angle = angle - previous_angle
 
-            self.cal_bounding_box(self.position)
             current_center = self.center
             self.center = (0, 0)
             self.rotate(np.deg2rad(rotation_angle))
-            self.center = current_center
+            self.update_shape_position(current_center - self.drawpanel.position)
 
         self.rotation_slider.on_change = rotate_shape
 
@@ -3151,6 +3150,11 @@ class DrawShape(UI):
         else:
             self.shape.position = coords
 
+    def update_shape_position(self, center_position):
+        new_center = self.clamp_position(center=center_position)
+        self.drawpanel.canvas.update_element(self, new_center, "center")
+        self.cal_bounding_box(update_value=True)
+
     @property
     def center(self):
         self.cal_bounding_box()
@@ -3167,7 +3171,7 @@ class DrawShape(UI):
 
         """
         new_center = np.array(coords)
-        new_lower_left_corner = new_center - self._bounding_box_size / 2.
+        new_lower_left_corner = new_center - self._bounding_box_size / 2
         self.position = new_lower_left_corner + self._bounding_box_offset
 
     @property
@@ -3208,7 +3212,6 @@ class DrawShape(UI):
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
         """
-        self.cal_bounding_box(self.position)
         self.rotation_slider.center = self.center + \
             [(self._bounding_box_size[0] + self.rotation_slider.size[0])/2, 0]
         self.rotation_slider.set_visibility(True)
@@ -3295,7 +3298,7 @@ class DrawShape(UI):
             self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
-            self._drag_offset = click_pos - self.position
+            self._drag_offset = click_pos - self.center
             self.show_rotation_slider()
             i_ren.event.abort()
         elif mode == "delete":
@@ -3311,9 +3314,7 @@ class DrawShape(UI):
                 click_position = i_ren.event.position
                 relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
-                new_center = self.clamp_position(center=relative_center_position)
-                self.drawpanel.canvas.update_element(self, new_center, "center")
-                self.cal_bounding_box(update_value=True)
+                self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
