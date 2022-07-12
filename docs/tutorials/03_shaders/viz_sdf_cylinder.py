@@ -125,33 +125,33 @@ attribute_to_actor(box_actor, rep_directions, 'direction')
 # Vertex shaders perform basic processing of each individual vertex.
 
 sdf_cylinder_vert_dec = \
-    '''
-    
-    /* SDF vertex shader declaration */
-    
-    //VTK::ValuePass::Dec
-    
-    in vec3 center;
-    in vec3 direction;
-    
-    out vec4 vertexMCVSOutput;
-    out vec3 centerWCVSOutput;
-    out vec3 directionVSOutput;
-    
-    '''
+'''
+  
+/* SDF vertex shader declaration */
+  
+//VTK::ValuePass::Dec
+
+in vec3 center;
+in vec3 direction;
+
+out vec4 vertexMCVSOutput;
+out vec3 centerWCVSOutput;
+out vec3 directionVSOutput;
+
+'''
 
 sdf_cylinder_vert_impl = \
-    '''
-    
-    /* SDF vertex shader implementation */
-    
-    //VTK::ValuePass::Impl
-    
-    vertexMCVSOutput = vertexMC;
-    centerWCVSOutput = center;
-    directionVSOutput = direction;
-    
-    '''
+'''
+
+/* SDF vertex shader implementation */
+
+//VTK::ValuePass::Impl
+
+vertexMCVSOutput = vertexMC;
+centerWCVSOutput = center;
+directionVSOutput = direction;
+
+'''
 
 ###############################################################################
 # Fragment shaders run on each of the pixels that the object occupies on the
@@ -159,114 +159,121 @@ sdf_cylinder_vert_impl = \
 # is generated.
 
 sdf_cylinder_frag_dec = \
-    '''
-    /* SDF fragment shader declaration */
-    
-    //VTK::ValuePass::Dec
-    in vec4 vertexMCVSOutput;
-    
-    in vec3 centerWCVSOutput;
-    in vec3 directionVSOutput;
-    
-    uniform mat4 MCVCMatrix;
-    
-    
-    // A rotation matrix is used to transform our position vectors
-    // around a given 3D axis
-    mat4 rotationAxisAngle( vec3 v, float angle )
-    {
-        float s = sin(angle);
-        float c = cos(angle);
-        float ic = 1.0 - c;
-    
-        return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
-                     v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
-                     v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
-                     0.0,                0.0,                0.0,                1.0 );
+'''
+/* SDF fragment shader declaration */
+
+//VTK::ValuePass::Dec
+in vec4 vertexMCVSOutput;
+
+in vec3 centerWCVSOutput;
+in vec3 directionVSOutput;
+
+uniform mat4 MCVCMatrix;
+
+
+// A rotation matrix is used to transform our position vectors
+// around a given 3D axis
+mat4 rotationAxisAngle( vec3 v, float angle )
+{
+    float s = sin(angle);
+    float c = cos(angle);
+    float ic = 1.0 - c;
+
+    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
+                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
+                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
+                 0.0,                0.0,                0.0,                1.0 );
+}
+
+
+// SDF for the cylinder
+float sdCylinder( vec3 p, float h, float r )
+{
+    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r);
+    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+
+// This is used on calculations for surface normals of the cylinder
+float map( in vec3 position )
+{
+    mat4 rot = rotationAxisAngle( normalize(directionVSOutput), 90);
+
+    // this allows us to accommodate more than one object in the world space
+    vec3 pos = (rot*vec4(position - centerWCVSOutput, 0.0)).xyz;
+
+    // distance to the cylinder
+    return sdCylinder(pos, 0.6, 0.8);
+}
+  
+  
+// We need surface normals when doing lighting of the scene
+vec3 calculateNormal( in vec3 position )
+{
+    vec2 e = vec2(0.001, 0.0);
+    return normalize( vec3( map(position + e.xyy) - map(position - e.xyy),
+                            map(position + e.yxy) - map(position - e.yxy),
+                            map(position + e.yyx) - map(position - e.yyx)));
+}
+
+
+// Ray Marching
+float castRay( in vec3 ro, vec3 rd )
+{
+    float t = 0.0;
+    for(int i=0; i < 4000; i++){
+        vec3 position = ro + t * rd;
+        float  h = map(position);
+        t += h;
+           if ( t > 20.0 || h < 0.001) break;
     }
-    
-    
-    // SDF for the cylinder
-    float sdCylinder( vec3 p, float h, float r )
-    {
-        vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r);
-        return min(max(d.x,d.y),0.0) + length(max(d,0.0));
-    }
-    
-    
-    // This is used on calculations for surface normals of the cylinder
-    float map( in vec3 position )
-    {
-        mat4 rot = rotationAxisAngle( normalize(directionVSOutput), 90);
-    
-        // this allows us to accommodate more than one object in the world space
-        vec3 pos = (rot*vec4(position - centerWCVSOutput, 0.0)).xyz;
-    
-        // distance to the cylinder
-        return sdCylinder(pos, 0.6, 0.8);
-    }
-    
-    
-    // We need surface normals when doing lighting of the scene
-    vec3 calculateNormal( in vec3 position )
-    {
-        vec2 e = vec2(0.001, 0.0);
-        return normalize( vec3( map(position + e.xyy) - map(position - e.xyy),
-                                map(position + e.yxy) - map(position - e.yxy),
-                                map(position + e.yyx) - map(position - e.yyx)));
-    }
-    
-    
-    // Ray Marching
-    float castRay( in vec3 ro, vec3 rd )
-    {
-        float t = 0.0;
-        for(int i=0; i < 4000; i++){
-            vec3 position = ro + t * rd;
-            float  h = map(position);
-            t += h;
-    
-            if ( t > 20.0 || h < 0.001) break;
-        }
-        return t;
-    }
-    '''
+    return t;
+}
+'''
 
 sdf_cylinder_frag_impl = \
-    '''
-    /* SDF fragment shader implementation */
+'''
+/* SDF fragment shader implementation */
+//VKT::Light::Impl
+
+vec3 point = vertexMCVSOutput.xyz;
+
+// ray origin
+vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
+
+vec3 col = vertexColorVSOutput.rgb;
+
+// ray direction
+vec3 rd = normalize(point - ro.xyz);
+
+// light direction
+vec3 ld = normalize(ro.xyz - point);
+
+ro += vec4((point - ro.xyz),0.0);
+
+float t = castRay(ro.xyz, rd);
+
+if(t < 20.0)
+{
+    vec3 position = ro.xyz + t * rd;
+    vec3 norm = calculateNormal(position);
+    float lightAttenuation = dot(ld, norm);
     
-    //VKT::Light::Impl
+    // calculate the diffuse factor and diffuse color
+    df = max(0, lightAttenuation);
+    diffuse = df * diffuseColor * lightColor0;
+        
+    // calculate the specular factor and specular color
+    sf = pow(df, specularPower);
+    specular = sf * specularColor * lightColor0;
     
-    vec3 point = vertexMCVSOutput.xyz;
-    
-    // ray origin
-    vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
-    
-    vec3 col = vertexColorVSOutput.rgb;
-    
-    // ray direction
-    vec3 rd = normalize(point - ro.xyz);
-    
-    ro += vec4((point - ro.xyz),0.0);
-    
-    // light direction
-    vec3 ld = vec3(1.0, 1.0, 1.0);
-    
-    float t = castRay(ro.xyz, rd);
-    
-    if(t < 20.0)
-    {
-        vec3 position = ro.xyz + t * rd;
-        vec3 norm = calculateNormal(position);
-        float light = dot(ld, norm);
-    
-        fragOutput0 = vec4(col * light, 1.0);
-    }
-    else{
-        discard;
-    }
-    '''
+    // Blinn-Phong illumination model
+    fragOutput0 = vec4(ambientColor + diffuse + specular, opacity);
+}
+else{
+    discard;
+}
+'''
 
 ###############################################################################
 # Finally, we add shader code implementation to the box_actor. We use
