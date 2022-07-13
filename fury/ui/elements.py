@@ -3529,7 +3529,7 @@ class PlaybackPanel(UI):
         def on_progress_change(slider):
             val = slider.value
             if np.isnan(val):
-               val = 0
+                val = self.get_max_value()
             self.text.message = \
                 time.strftime('%H:%M:%S', time.gmtime(val))
             self.on_progress_bar_changed(slider.value)
@@ -3564,6 +3564,16 @@ class PlaybackPanel(UI):
             Progress slider current value.
         """
         return self._progress_bar.value
+
+    def get_max_value(self):
+        """Get max time value.
+
+        Returns
+        -------
+        float
+            max time value.
+        """
+        return self._progress_bar.max_value
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
