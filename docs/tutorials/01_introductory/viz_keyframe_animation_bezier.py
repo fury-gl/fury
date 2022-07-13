@@ -3,11 +3,9 @@
 Keyframe animation
 =====================
 
-Keyframe animation explained with a simple tutorial
+Keyframe animation using cubic Bezier interpolator.
 
 """
-import random
-
 import numpy as np
 from fury import actor, window
 from fury.animation import Timeline, CubicBezierInterpolator
