@@ -353,6 +353,7 @@ class Timeline(Container):
         typ = 'attribs'
         if is_camera:
             typ = 'camera'
+            self._camera = self._scene.camera()
 
         if attrib not in self._data['keyframes'][typ]:
             self._data['keyframes'][typ][attrib] = {}
@@ -738,5 +739,5 @@ class Timeline(Container):
         if self._has_playback_panel:
             ren.add(self.playback_panel)
         [ren.add(timeline) for timeline in self._timelines]
-        self._camera = ren.camera()
+        self._scene = ren
 

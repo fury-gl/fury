@@ -45,8 +45,6 @@ timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
 
 # Main timeline to control all the timelines
 main_timeline = Timeline(playback_panel=Timeline)
-main_timeline.set_camera_position(0, np.array([2, 0, 17]))
-main_timeline.set_camera_focal(0, np.array([2, 0, 0]))
 
 # Adding timelines to the main Timeline
 main_timeline.add_timeline(timeline_linear_color)
