@@ -21,7 +21,7 @@ So previously it was just displaying the properties but now after the update, it
     :width: 300
 
 Then I worked with the bounding box to make it visible whenever a shape is selected.
-For this I used the existing functionality of the ``Panel2D`` actor to create borders around the bounding box.
+For this, I used the existing functionality of the ``Panel2D`` actor to create borders around the bounding box.
 
 `Bounding Box <https://github.com/ganimtron-10/fury/tree/bb-border>`_
 
@@ -29,7 +29,7 @@ For this I used the existing functionality of the ``Panel2D`` actor to create bo
     :align: center
     :width: 300
 
-Also along with this, I managed to add the `polyline` feature on user interactions. This creation isn't that smooth but works as intended.
+Also along with this, I managed to add the `polyline` feature on user interactions. This creation isn't that smooth, but works as intended.
 
 `Poly Line <https://github.com/ganimtron-10/fury/tree/polyline>`_
 
