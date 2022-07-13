@@ -1499,85 +1499,43 @@ def test_actors_primitives_count():
     colors = np.array([[1, 0, 0], [1, 0, 0]])
     lines = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
 
-    box_actor = actor.box(centers)
-    npt.assert_equal(primitives_count_from_actor(box_actor), len(centers))
+    args_1 = {'centers': centers}
+    args_2 = {**args_1, 'colors': colors}
+    args_3 = {**args_2, 'directions': directions}
 
-    square_actor = actor.square(centers)
-    npt.assert_equal(primitives_count_from_actor(square_actor), len(centers))
+    cen_c = len(centers)
+    lin_c = len(lines)
 
-    sphere_actor = actor.sphere(centers, colors)
-    npt.assert_equal(primitives_count_from_actor(sphere_actor), len(centers))
-
-    prim_sphere_actor = actor.sphere(centers, colors, use_primitive=False)
-    npt.assert_equal(primitives_count_from_actor(prim_sphere_actor),
-                     len(centers))
-
-    prim_sphere_actor = actor.sphere(centers, colors, use_primitive=True)
-    npt.assert_equal(primitives_count_from_actor(prim_sphere_actor),
-                     len(centers))
-
-    sdf_actor = actor.sdf(centers, (1, 0, 0))
-    npt.assert_equal(primitives_count_from_actor(sdf_actor), len(centers))
-
-    billboard_actor = actor.billboard(centers)
-    npt.assert_equal(primitives_count_from_actor(billboard_actor),
-                     len(centers))
-
-    superquadric_actor = actor.superquadric(centers)
-    npt.assert_equal(primitives_count_from_actor(superquadric_actor),
-                     len(centers))
-
-    markers_actor = actor.markers(centers)
-    npt.assert_equal(primitives_count_from_actor(markers_actor), len(centers))
-
-    octagonalprism_actor = actor.octagonalprism(centers)
-    npt.assert_equal(primitives_count_from_actor(octagonalprism_actor),
-                     len(centers))
-
-    frustum_actor = actor.frustum(centers)
-    npt.assert_equal(primitives_count_from_actor(frustum_actor),
-                     len(centers))
-
-    pentagonalprism_actor = actor.pentagonalprism(centers)
-    npt.assert_equal(primitives_count_from_actor(pentagonalprism_actor),
-                     len(centers))
-
-    triangularprism_actor = actor.triangularprism(centers)
-    npt.assert_equal(primitives_count_from_actor(triangularprism_actor),
-                     len(centers))
-
-    prim_rhombicuboctahedron = actor.rhombicuboctahedron(centers)
-    npt.assert_equal(primitives_count_from_actor(prim_rhombicuboctahedron),
-                     len(centers))
-
-    cone_actor = actor.cone(centers, directions, colors, use_primitive=False)
-    npt.assert_equal(primitives_count_from_actor(cone_actor), len(centers))
-
-    prim_cone_actor = actor.cone(centers, directions, colors,
-                                 use_primitive=True)
-    npt.assert_equal(primitives_count_from_actor(prim_cone_actor),
-                     len(centers))
-
-    arrow_actor = actor.arrow(centers, directions, colors,
-                              repeat_primitive=True)
-    npt.assert_equal(primitives_count_from_actor(arrow_actor), len(centers))
-
-    arrow_actor = actor.arrow(centers, directions, colors,
-                              repeat_primitive=False)
-    npt.assert_equal(primitives_count_from_actor(arrow_actor), len(centers))
-
-    disk_actor = actor.disk(centers, directions, colors)
-    npt.assert_equal(primitives_count_from_actor(disk_actor), len(centers))
-
-    cylinder_actor = actor.cylinder(centers, directions, colors)
-    npt.assert_equal(primitives_count_from_actor(cylinder_actor), len(centers))
-
-    line_actor = actor.line(np.array(lines))
-    npt.assert_equal(primitives_count_from_actor(line_actor), len(lines))
-
-    streamtube_actor = actor.streamtube(np.array(lines))
-    npt.assert_equal(primitives_count_from_actor(streamtube_actor), len(lines))
-
-    dots_actor = actor.dots(centers)
-    npt.assert_equal(primitives_count_from_actor(dots_actor), len(centers))
-
+    actors_test_cases = [
+        [actor.box, args_1, cen_c],
+        [actor.rectangle, args_1, cen_c],
+        [actor.square, args_1, cen_c],
+        [actor.cube, args_1, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': True}, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': False}, cen_c],
+        [actor.sdf, args_1, cen_c],
+        [actor.billboard, args_1, cen_c],
+        [actor.superquadric, args_1, cen_c],
+        [actor.markers, args_1, cen_c],
+        [actor.octagonalprism, args_1, cen_c],
+        [actor.frustum, args_1, cen_c],
+        [actor.pentagonalprism, args_1, cen_c],
+        [actor.triangularprism, args_1, cen_c],
+        [actor.rhombicuboctahedron, args_1, cen_c],
+        [actor.cylinder, args_3, cen_c],
+        [actor.disk, args_3, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': False}, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': True}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': False}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': True}, cen_c],
+        [actor.dots, {'points': centers}, cen_c],
+        [actor.point, {'points': centers, 'colors': colors}, cen_c],
+        [actor.line, {'lines': lines}, lin_c],
+        [actor.streamtube, {'lines': lines}, lin_c],
+    ]
+    for test_case in actors_test_cases:
+        act_func = test_case[0]
+        args = test_case[1]
+        primitives_count = test_case[2]
+        act = act_func(**args)
+        npt.assert_equal(primitives_count_from_actor(act), primitives_count)
