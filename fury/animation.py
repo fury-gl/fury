@@ -14,26 +14,28 @@ class Interpolator(object):
         super(Interpolator, self).__init__()
         self.keyframes = keyframes
         self.timestamps = []
+        self.min_timestamp = 0
+        self.max_timestamp = 0
         self.setup()
 
     def setup(self):
         self.timestamps = np.sort(np.array(list(self.keyframes)), axis=None)
+        self.min_timestamp = self.timestamps[0]
+        self.max_timestamp = self.timestamps[-1]
 
     def _get_nearest_smaller_timestamp(self, t, include_last=False):
-        try:
+        if t > self.min_timestamp:
             if include_last:
                 return self.timestamps[self.timestamps <= t].max()
             return self.timestamps[:-1][self.timestamps[:-1] <= t].max()
-        except:
-            return self.timestamps[0]
+        return self.min_timestamp
 
     def _get_nearest_larger_timestamp(self, t, include_first=False):
-        try:
+        if t < self.max_timestamp:
             if include_first:
                 return self.timestamps[self.timestamps > t].min()
             return self.timestamps[1:][self.timestamps[1:] > t].min()
-        except:
-            return self.timestamps[-1]
+        return self.timestamps[-1]
 
     def get_neighbour_timestamps(self, t):
         t1 = self._get_nearest_smaller_timestamp(t)
@@ -635,7 +637,7 @@ class Timeline(Container):
             t = self.get_current_timestamp()
             if t >= self._max_timestamp:
                 self.pause()
-        if self._has_playback_panel and not force:
+        if self._has_playback_panel and not force and t < self._max_timestamp:
             self.playback_panel.set_time(t)
         if self.playing or force:
             if self.is_interpolatable('position', is_camera=True):
