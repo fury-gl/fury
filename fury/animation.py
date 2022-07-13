@@ -48,7 +48,7 @@ class Interpolator(object):
         else:
             k1 = {"t": t_s, "data": self.keyframes[t_s]['value']}
             k2 = {"t": t_e, "data": self.keyframes[t_e]['value']}
-        if isinstance(self, BezierInterpolator):
+        if isinstance(self, CubicBezierInterpolator):
             k1["cp"] = self.keyframes['post_cp'][t_s]
             k2["cp"] = self.keyframes['pre_cp'][t_e]
         return {"start": k1, "end": k2}
@@ -171,7 +171,7 @@ class CubicSplineInterpolator(SplineInterpolator):
         self.id = 7
 
 
-class BezierInterpolator(Interpolator):
+class CubicBezierInterpolator(Interpolator):
     """Cubic bezier interpolator for keyframes.
 
     This is a general cubic bezier interpolator to be used for any shape of
@@ -179,11 +179,11 @@ class BezierInterpolator(Interpolator):
     """
 
     def __init__(self, keyframes):
-        super(BezierInterpolator, self).__init__(keyframes)
+        super(CubicBezierInterpolator, self).__init__(keyframes)
         self.id = 2
 
     def setup(self):
-        super(BezierInterpolator, self).setup()
+        super(CubicBezierInterpolator, self).setup()
         for ts in self.timestamps:
             if self.keyframes[ts]['pre_cp'] is None:
                 self.keyframes[ts]['pre_cp'] = self.keyframes[ts]['value']
@@ -262,7 +262,6 @@ class Timeline(Container):
 
     def __init__(self, actors=None, playback_panel=False):
         super().__init__()
-        self._is_camera_animated = False
         self._data = {
             'keyframes': {
                 'attribs': {},
