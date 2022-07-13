@@ -3,9 +3,10 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "DrawShape", "DrawPanel"]
+           "DrawShape", "DrawPanel", "PlaybackPanel"]
 
 import os
+import time
 from collections import OrderedDict
 from numbers import Number
 from string import printable
@@ -3461,3 +3462,126 @@ class DrawPanel(UI):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
+
+
+class PlaybackPanel(UI):
+    """A playback controller that can do essential functionalities.
+       such as play, pause, stop, and seek.
+    """
+
+    def __init__(self):
+        super(PlaybackPanel, self).__init__()
+
+    def _setup(self):
+        """Setup this Panel component.
+
+        """
+        # time display text
+        self.text = TextBlock2D(position=(800, 10))
+        # creating 3 buttons to control the animation
+
+        self.panel = Panel2D(size=(150, 30), color=(1, 1, 1), align="right",
+                             has_border=True, border_color=(0, 0.3, 0),
+                             border_width=2)
+        self.panel.position = (5, 5)
+
+        self._pause_btn = Button2D(
+            icon_fnames=[("square", read_viz_icons(fname="pause2.png"))]
+        )
+        self._stop_btn = Button2D(
+            icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
+        )
+        self._play_btn = Button2D(
+            icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
+        )
+
+        self._progress_bar = LineSlider2D(center=(400 + 150 / 2, 20),
+                                          initial_value=0,
+                                          orientation='horizontal',
+                                          min_value=0, max_value=100,
+                                          text_alignment='bottom', length=600,
+                                          line_width=9)
+
+        self.panel.add_element(self._pause_btn, (0.15, 0.04))
+        self.panel.add_element(self._play_btn, (0.45, 0.04))
+        self.panel.add_element(self._stop_btn, (0.7, 0.04))
+
+        # callback functions
+        self.on_play_button_clicked = lambda: None
+        self.on_pause_button_clicked = lambda: None
+        self.on_stop_button_clicked = lambda: None
+        self.on_progress_bar_changed = lambda x: None
+
+        def play(i_ren, _obj, _button):
+            self.on_play_button_clicked()
+
+        def pause(i_ren, _obj, _button):
+            self.on_pause_button_clicked()
+
+        def stop(i_ren, _obj, _button):
+            self.on_stop_button_clicked()
+
+        # using the adapters created above
+        self._play_btn.on_left_mouse_button_clicked = play
+        self._pause_btn.on_left_mouse_button_clicked = pause
+        self._stop_btn.on_left_mouse_button_clicked = stop
+
+        def on_progress_change(slider):
+            self.text.message = \
+                time.strftime('%H:%M:%S', time.gmtime(self.get_value()))
+            self.on_progress_bar_changed(slider.value)
+        self._progress_bar.on_change = on_progress_change
+
+    def set_time(self, value):
+        """Set progress slider value.
+
+        Parameters
+        ----------
+        value: float
+            Current time to be set.
+        """
+        self._progress_bar.value = value
+
+    def set_max_time(self, value):
+        """Set max progress slider time value.
+
+        Parameters
+        ----------
+        value: float
+            Max time for the progress slider.
+        """
+        self._progress_bar.max_value = value
+
+    def get_value(self):
+        """Get current time of the progress slider.
+
+        Returns
+        -------
+        float
+            Progress slider current value.
+        """
+        return self._progress_bar.value
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.panel.actors, self._progress_bar
+
+    def _add_to_scene(self, _scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        _scene : scene
+
+        """
+        self.panel.add_to_scene(_scene)
+        self._progress_bar.add_to_scene(_scene)
+        self.text.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        # TODO: after making this playback dynamic in size, this should be set
+        ...
+
+    def _get_size(self):
+        # TODO: same as `_set_position`
+        ...
