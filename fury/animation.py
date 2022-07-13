@@ -283,6 +283,7 @@ class Timeline(Container):
         self.speed = 1
         self._timelines = []
         self._camera = None
+        self._scene = None
         self._last_timestamp = 0
         self._last_started_at = 0
         self.playing = False
@@ -513,10 +514,10 @@ class Timeline(Container):
 
     def set_camera_focal_interpolator(self, interpolator):
         self.set_camera_interpolator("focal", interpolator)
-        
+
     def get_property_value(self, attrib, t):
         return self._data['interpolators']['attribs'][attrib].interpolate(t)
-    
+
     def get_camera_property_value(self, attrib, t):
         return self._data['interpolators']['camera'][attrib].interpolate(t)
 
@@ -673,7 +674,6 @@ class Timeline(Container):
 
         [tl.update_animation(t, force=True) for tl in self._timelines]
 
-
     def play(self):
         """Play the animation"""
         self.update_max_timestamp()
@@ -742,4 +742,3 @@ class Timeline(Container):
             ren.add(self.playback_panel)
         [ren.add(timeline) for timeline in self._timelines]
         self._scene = ren
-
