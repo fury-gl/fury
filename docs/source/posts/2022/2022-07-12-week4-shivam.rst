@@ -12,7 +12,7 @@ What did you do this week?
 This week I had to travel back to my college since the summer vacations have ended.
 I had a coding session with Serge this week, we modified the exporter function and looked at some bugs I faced.
 
-We managed to use the ``io.load_io`` function. There was a strange issue with loading png files. I had to convert the PIL ``Image`` to a ``rgb`` format and It fixed the issue, turns out png images are stored as ``P`` (pallet) mode.
+We managed to use the ``io.load_io`` function. There was a strange issue with loading png files. I had to convert the PIL ``Image`` to ``RGB`` format and it fixed the issue, turns out png images are stored as ``P`` (pallet) mode.
 
 I also added the ``glb`` format support to the importer. While loading a ``.glb`` model, I noticed that the image data is also stored in the buffer and there can be a ``bufferview`` index to get the buffer.
 
