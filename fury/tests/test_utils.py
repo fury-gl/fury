@@ -129,11 +129,36 @@ def test_polydata_polygon(interactive=False):
                             [1.0, 0.0, 1.0],
                             [1.0, 1.0, 0.0],
                             [1.0, 1.0, 1.0]])
+    my_tcoords = np.array([[6., 0.],
+                           [5., 0.],
+                           [6., 1.],
+                           [5., 1.],
+                           [4., 0.],
+                           [5., 0.],
+                           [4., 1.],
+                           [5., 1.],
+                           [2., 0.],
+                           [1., 0.],
+                           [2., 1.],
+                           [1., 1.],
+                           [3., 0.],
+                           [4., 0.],
+                           [3., 1.],
+                           [4., 1.],
+                           [3., 0.],
+                           [2., 0.],
+                           [3., 1.],
+                           [2., 1.],
+                           [0., 0.],
+                           [0., 1.],
+                           [1., 0.],
+                           [1., 1.]])
     colors = my_vertices * 255
     my_polydata = PolyData()
 
     utils.set_polydata_vertices(my_polydata, my_vertices)
     utils.set_polydata_triangles(my_polydata, my_triangles)
+    utils.set_polydata_tcoords(my_polydata, my_tcoords)
 
     npt.assert_equal(len(my_vertices), my_polydata.GetNumberOfPoints())
     npt.assert_equal(len(my_triangles), my_polydata.GetNumberOfCells())
@@ -141,9 +166,11 @@ def test_polydata_polygon(interactive=False):
 
     res_triangles = utils.get_polydata_triangles(my_polydata)
     res_vertices = utils.get_polydata_vertices(my_polydata)
+    res_tcoords = utils.get_polydata_tcoord(my_polydata)
 
     npt.assert_array_equal(my_vertices, res_vertices)
     npt.assert_array_equal(my_triangles, res_triangles)
+    npt.assert_array_equal(my_tcoords, res_tcoords)
 
     utils.set_polydata_colors(my_polydata, colors)
     npt.assert_equal(utils.get_polydata_colors(my_polydata), colors)
