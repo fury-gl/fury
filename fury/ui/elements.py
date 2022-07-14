@@ -2,7 +2,7 @@
 
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
-           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
+           "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",  "PolyLine",
            "DrawShape", "DrawPanel"]
 
 import os
@@ -3058,6 +3058,99 @@ class FileMenu2D(UI):
                 self.set_slot_colors()
         i_ren.force_render()
         i_ren.event.abort()
+
+
+class PolyLine(UI):
+    """Create a Polyline.
+    """
+
+    def __init__(self, points_data=None, line_width=1, color=(1, 1, 1)):
+        """Init this UI element.
+
+        Parameters
+        ----------
+        position : (float, float), optional
+            (x, y) in pixels.
+        """
+        if points_data is None:
+            self.points = []
+        self.points = points_data
+        self.line_width = line_width
+        self.lines = []
+        self.previous_point = None
+        self.current_point = None
+        self.in_process = False
+        self.color = color
+        super(PolyLine, self).__init__()
+
+    def _setup(self):
+        """Setup this UI component.
+
+        Create a Polyline.
+        """
+        for i in range(len(self.points) - 1):
+            self.add_point(self.points[i], initialize=True)
+        self.add_point(self.points[-1], initialize=True)
+        self.lines.pop()
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        pass
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        self._scene = scene
+        scene.add(*self.lines)
+
+    def _get_size(self):
+        pass
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        pass
+
+    def resize(self, size):
+        hyp = np.hypot(size[0], size[1])
+        self.lines[-1].resize((hyp, self.line_width))
+        self.rotate(angle=np.arctan2(size[1], size[0]))
+
+    def rotate(self, angle):
+        """Rotate the vertices of the UI component using specific angle.
+
+        Parameters
+        ----------
+        angle: float
+            Value by which the vertices are rotated in radian.
+        """
+        points_arr = vertices_from_actor(self.lines[-1].actor)
+        rotation_matrix = np.array(
+            [[np.cos(angle), np.sin(angle), 0],
+             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        set_polydata_vertices(self.lines[-1]._polygonPolyData, new_points_arr)
+        update_actor(self.lines[-1].actor)
+
+    def add_point(self, point, initialize=False):
+        if self.previous_point is not None:
+            self.resize(np.asarray(point) - self.current_point)
+        line = Rectangle2D((self.line_width, self.line_width), position=point, color=self.color)
+        self.lines.append(line)
+        if not initialize:
+            self._scene.add(line)
+        self.previous_point = self.current_point if self.current_point is not None else point
+        self.current_point = point
 
 
 class DrawShape(UI):
