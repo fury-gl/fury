@@ -33,24 +33,31 @@ import numpy as np
 # Now we define some properties of our actors, use them to create a set of
 # cylinders, and add them to the scene.
 
-centers = np.array([[-3, 0, -2], [-3, -3, -2], [0, 0, 2], [0, -3, 2],
-                    [3, 0, 0], [3, -3, 0]])
-dirs = np.array([[0, 1, 1], [0, 1, 1], [0, .5, .8], [0, .5, 1], [0, .8, .2],
-                 [0, .3, 1]])
-colors = np.array([[0, 0, 1], [0, 1, 0], [1, 1, 1], [1, 0, 0], [1, 1, 0],
-                   [1, 0, 1]])
+centers = np.array([[-3.2, .9, .4], [-3.5, -.5, 1], [-2.1, 0, .4],
+                    [-.2, .9, .4], [-.5, -.5, 1], [.9, 0, .4],
+                    [2.8, .9, 1.4], [2.5, -.5, 2], [3.9, 0, 1.4]])
+dirs = np.array([[-.2, .9, .4], [-.5, -.5, 1], [.9, 0, .4], [-.2, .9, .4],
+                 [-.5, -.5, 1], [.9, 0, .4], [-.2, .9, .4], [-.5, -.5, 1],
+                 [.9, 0, .4]])
+colors = np.array([[1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 1, 0],
+                   [0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
 
 ###############################################################################
 # In order to see how cylinders are made, we set different resolutions (number
 # of sides used to define the bases of the cylinder) to see how it changes the
 # surface of the primitive.
 
-cylinders_8 = actor.cylinder(centers[:2], dirs[:2], colors[:2], radius=.4,
-                             heights=1.5, capped=True, resolution=8)
-cylinders_16 = actor.cylinder(centers[2:4], dirs[2:4], colors[2:4], radius=.4,
-                              heights=1.5, capped=True, resolution=16)
-cylinders_32 = actor.cylinder(centers[4:6], dirs[4:6], colors[4:6], radius=.4,
-                              heights=1.5, capped=True, resolution=32)
+radius = .5
+height = 1
+
+cylinders_8 = actor.cylinder(centers[:3], dirs[:3], colors[:3], radius=radius,
+                             heights=height, capped=True, resolution=8)
+cylinders_16 = actor.cylinder(centers[3: 6], dirs[3: 6], colors[3: 6],
+                              radius=radius, heights=height, capped=True,
+                              resolution=16)
+cylinders_32 = actor.cylinder(centers[6: 9], dirs[6: 9], colors[6: 9],
+                              radius=radius, heights=height, capped=True,
+                              resolution=32)
 
 ###############################################################################
 # Next, we set up a new scene to add and visualize the actors created.
@@ -61,7 +68,7 @@ scene.add(cylinders_8)
 scene.add(cylinders_16)
 scene.add(cylinders_32)
 
-interactive = True
+interactive = False
 
 if interactive:
     window.show(scene)
@@ -78,6 +85,9 @@ cylinders_32.GetProperty().SetRepresentationToWireframe()
 if interactive:
     window.show(scene)
 
+###############################################################################
+# Then we clean the scene to render the boxes.
+
 window.record(scene, size=(600, 600), out_path='viz_poly_cylinder_geom.png')
 
 scene.clear()
@@ -85,10 +95,10 @@ scene.clear()
 ###############################################################################
 # Cylinder using SDF
 # ================
-# Signed Distance Functions (SDFs) are mathematical functions that determines
-# the distance from a point in space to a surface. We will use the ray marching
-# algorithm to render the SDF primitive using shaders. Raymarching is a
-# technique where you step along a ray in order to find intersections with
+# We will use the ray marching algorithm to render the SDF primitive using
+# shaders. Signed Distance Functions (SDFs) are mathematical functions that
+# determine the distance from a point in space to a surface. Ray marching is
+# a technique where you step along a ray in order to find intersections with
 # solid geometry. Objects in the scene are defined by SDF, and because we
 # don’t use polygonal meshes it is possible to define perfectly smooth
 # surfaces and allows a faster rendering in comparison to polygon-based
@@ -96,8 +106,7 @@ scene.clear()
 
 ###############################################################################
 # Now we create cylinders using box actor and SDF implementation on shaders.
-# For this, we first create a box actor and associate the centers and
-# directions data to each of the 8 vertices that make up the box.
+# For this, we first create a box actor.
 
 box_actor = actor.box(centers=centers, directions=dirs, colors=colors,
                       scales=2)
@@ -112,6 +121,11 @@ window.record(scene, size=(600, 600), out_path='viz_sdf_cylinder_box.png')
 
 scene.clear()
 
+###############################################################################
+# Now we use attribute_to_actor to link a NumPy array, with the centers and
+# directions data, with a vertex attribute. We do this to pass the data to
+# the vertex shader, with the corresponding attribute name.
+
 rep_directions = np.repeat(dirs, 8, axis=0)
 rep_centers = np.repeat(centers, 8, axis=0)
 
@@ -119,17 +133,14 @@ attribute_to_actor(box_actor, rep_centers, 'center')
 attribute_to_actor(box_actor, rep_directions, 'direction')
 
 ###############################################################################
-# We split the shader code into 4 different variables which correspond to
-# vertex and fragment shader declaration and implementation.
+# Then we have the shader code implementation corresponding to vertex and
+# fragment shader. Here we are passing data to the fragment shader through
+# the vertex shader.
 #
 # Vertex shaders perform basic processing of each individual vertex.
 
 sdf_cylinder_vert_dec = \
 '''
-  
-/* SDF vertex shader declaration */
-  
-//VTK::ValuePass::Dec
 
 in vec3 center;
 in vec3 direction;
@@ -143,10 +154,6 @@ out vec3 directionVSOutput;
 sdf_cylinder_vert_impl = \
 '''
 
-/* SDF vertex shader implementation */
-
-//VTK::ValuePass::Impl
-
 vertexMCVSOutput = vertexMC;
 centerWCVSOutput = center;
 directionVSOutput = direction;
@@ -154,15 +161,18 @@ directionVSOutput = direction;
 '''
 
 ###############################################################################
-# Fragment shaders run on each of the pixels that the object occupies on the
-# screen.  For each sample of the pixels covered by a primitive, a ‘fragment’
-# is generated.
+# Fragment shaders are used to define the colors of each pixel being processed,
+# the program runs on each of the pixels that the object occupies on the screen.
+#
+# Vertex shaders also allow us to have control over details of position,
+# movement, lighting, and color in a scene. In this case, we are using vertex
+# shader not just to define the colors of the cylinders but to manipulate its
+# position in world space, rotation with respect to the box, and lighting of
+# the scene.
 
 sdf_cylinder_frag_dec = \
 '''
-/* SDF fragment shader declaration */
 
-//VTK::ValuePass::Dec
 in vec4 vertexMCVSOutput;
 
 in vec3 centerWCVSOutput;
@@ -233,8 +243,6 @@ float castRay( in vec3 ro, vec3 rd )
 
 sdf_cylinder_frag_impl = \
 '''
-/* SDF fragment shader implementation */
-//VKT::Light::Impl
 
 vec3 point = vertexMCVSOutput.xyz;
 
