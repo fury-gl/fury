@@ -35,10 +35,11 @@ actors = gltf_obj.actors()
 scene.add(*actors)
 
 ##############################################################################
-# Applyig camera
+# Applying camera
 
-camera = gltf_obj.cameras[0]
-scene.SetActiveCamera(camera)
+cameras = gltf_obj.cameras
+if cameras:
+    scene.SetActiveCamera(cameras[0])
 
 interactive = False
 
