@@ -128,7 +128,8 @@ class SplineInterpolator(Interpolator):
 
     def setup(self):
         super(SplineInterpolator, self).setup()
-        points = np.asarray(self.get_points())
+        points = np.asarray([self.keyframes[i]['value'] for i in
+                             self.timestamps])
 
         if len(points) < (self.degree + 1):
             raise ValueError(f"Minimum {self.degree + 1} "
@@ -142,9 +143,6 @@ class SplineInterpolator(Interpolator):
             self.linear_lengths.append(
                 math.sqrt((x[1] - y[1]) * (x[1] - y[1]) +
                           (x[0] - y[0]) * (x[0] - y[0])))
-
-    def get_points(self):
-        return [self.keyframes[i]['value'] for i in self.timestamps]
 
     def interpolate(self, t):
 
