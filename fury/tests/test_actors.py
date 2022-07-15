@@ -1528,7 +1528,7 @@ def test_actors_primitives_count():
         [actor.cone, {**args_3, 'use_primitive': True}, cen_c],
         [actor.arrow, {**args_3, 'repeat_primitive': False}, cen_c],
         [actor.arrow, {**args_3, 'repeat_primitive': True}, cen_c],
-        [actor.dots, {'points': centers}, cen_c],
+        [actor.dot, {'points': centers}, cen_c],
         [actor.point, {'points': centers, 'colors': colors}, cen_c],
         [actor.line, {'lines': lines}, lin_c],
         [actor.streamtube, {'lines': lines}, lin_c],
