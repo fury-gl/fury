@@ -12,7 +12,7 @@ What did you do this week?
 --------------------------
 This week I tried to create a base for some upcoming new features.
 The first thing I updated was the Properties panel which I prototyped in `Week 3 <https://blogs.python-gsoc.org/en/ganimtron_10s-blog/week-3-dealing-with-problems/>`_.
-So previously it was just displaying the properties but now after the update, it is able to modify the properties(such as `color`, `position`, and `rotation`) too. This was a quick change to test the callbacks.
+So previously, it was just displaying the properties but now after the update, it is able to modify the properties(such as `color`, `position`, and `rotation`) too. This was a quick change to test the callbacks.
 
 `Properties Panel: <https://github.com/ganimtron-10/fury/tree/properties-panel>`_
 
@@ -29,7 +29,7 @@ For this, I used the existing functionality of the ``Panel2D`` actor to create b
     :align: center
     :width: 300
 
-Also along with this, I managed to add the `polyline` feature on user interactions. This creation isn't that smooth, but works as intended.
+Also along with this, I managed to add the `polyline` feature on user interactions. This creation isn't that smooth but works as intended.
 
 `Poly Line <https://github.com/ganimtron-10/fury/tree/polyline>`_
 
@@ -40,7 +40,7 @@ Also along with this, I managed to add the `polyline` feature on user interactio
 
 Did you get stuck anywhere?
 ---------------------------
-Handling interactions for the `polyline` was complicated. I wasn't able to invoke the `left_mouse_click` event, then as  I was trying to invoke the events internally it started creating multiple copies of the same line.
+Handling interactions for the `polyline` was complicated. I wasn't able to invoke the `left_mouse_click` event, then as  I was trying to invoke the events internally, it started creating multiple copies of the same line.
 
 
 What is coming up next?
