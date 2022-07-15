@@ -3327,8 +3327,9 @@ class DrawShape(UI):
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
 
     def left_button_released(self, i_ren, _obj, shape):
-        self.show_rotation_slider()
-        i_ren.force_render()
+        if self.drawpanel.current_mode == "selection":
+            self.show_rotation_slider()
+            i_ren.force_render()
 
 
 class DrawPanel(UI):
