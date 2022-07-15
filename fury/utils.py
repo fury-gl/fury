@@ -403,6 +403,27 @@ def get_polydata_vertices(polydata):
     return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
 
 
+def get_polydata_tcoord(polydata):
+    """Get texture coordinates (ndarrays Nx2 float) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 2)
+        Tcoords, represented as 2D ndarrays. None if there are no texture
+        in the vtk polydata.
+
+    """
+    vtk_tcoord = polydata.GetPointData().GetTCoords()
+    if vtk_tcoord is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tcoord)
+
+
 def get_polydata_normals(polydata):
     """Get vertices normal (ndarrays Nx3 int) from a vtk polydata.
 
@@ -591,6 +612,21 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
     vtk_colors.SetNumberOfComponents(nb_components)
     vtk_colors.SetName(array_name)
     polydata.GetPointData().SetScalars(vtk_colors)
+    return polydata
+
+
+def set_polydata_tcoords(polydata, tcoords):
+    """Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tcoords : texture coordinates, represented as 2D ndarrays (Nx2)
+        (one per vertex range (0, 1))
+    """
+    vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True,
+                                             array_type=VTK_FLOAT)
+    polydata.GetPointData().SetTCoords(vtk_tcoords)
     return polydata
 
 
