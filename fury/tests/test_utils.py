@@ -848,7 +848,7 @@ def test_get_polydata_primitives_count():
     npt.assert_equal(prim_count, 1)
 
 
-def test_set_actor_primitives_count():
+def test_primitives_count_to_actor():
     act = actor.axes()
     primitives_count_to_actor(act, 1)
     polydata = act.GetMapper().GetInput()
@@ -856,7 +856,7 @@ def test_set_actor_primitives_count():
     npt.assert_equal(prim_count, 1)
 
 
-def test_get_actor_primitives_count():
+def test_primitives_count_from_actor():
     act = actor.axes()
     polydata = act.GetMapper().GetInput()
     add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
