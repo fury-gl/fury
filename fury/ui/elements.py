@@ -3070,10 +3070,12 @@ class DrawShapeGroup:
             self.remove(shape)
         else:
             self.grouped_shapes.append(shape)
+            shape.set_bb_border_visibility(True)
         print(self.grouped_shapes)
 
     def remove(self, shape):
         self.grouped_shapes.remove(shape)
+        shape.set_bb_border_visibility(False)
         print(self.grouped_shapes)
 
     def clear(self, shape):
@@ -3134,8 +3136,14 @@ class DrawShape(UI):
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
 
+        self.bb_border = Panel2D(size=(1, 1), has_border=True, border_width=3, opacity=0)
+        self.bb_border.background.on_left_mouse_button_dragged = lambda i_ren, _ob, _ele: self.left_button_dragged(
+            i_ren, _ob, self)
+        self.set_bb_border_visibility(False)
+
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+        # self.shape.on_left_mouse_button_released = self.left_button_released
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3151,6 +3159,7 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
+        self.bb_border.add_to_scene(scene)
 
     def _get_size(self):
         return self.shape.size
@@ -3168,6 +3177,15 @@ class DrawShape(UI):
         else:
             self.shape.position = coords
 
+    def update_bb_border(self):
+        self.cal_bounding_box(self.position)
+        self.bb_border.position = self._bounding_box_min
+        self.bb_border.resize(self._bounding_box_size)
+
+    def set_bb_border_visibility(self, value):
+        self.update_bb_border()
+        self.bb_border.set_visibility(value)
+
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
 
@@ -3184,7 +3202,12 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-    self.cal_bounding_box(self.position)
+        self.update_bb_border()
+
+    def remove(self):
+        self._scene.rm(self.shape.actor)
+        for actor in self.bb_border.actors:
+            self._scene.rm(actor)
 
     def cal_bounding_box(self, position):
         """Calculates the min and max position of the bounding box.
@@ -3256,16 +3279,17 @@ class DrawShape(UI):
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.set_bb_border_visibility(True)
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.position
             i_ren.event.abort()
         elif mode == "delete":
-            self._scene.rm(self.shape.actor)
-            i_ren.force_render()
+            self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
+        i_ren.force_render()
 
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
@@ -3275,9 +3299,14 @@ class DrawShape(UI):
                     self._drag_offset - self.drawpanel.position
                 new_position = self.clamp_position(relative_canvas_position)
                 self.drawpanel.canvas.update_element(self, new_position)
+                self.update_bb_border()
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
+
+    # def left_button_released(self, i_ren, _obj, shape):
+    #     self.set_bb_border_visibility(False)
+    #     i_ren.force_render()
 
 
 class DrawPanel(UI):
@@ -3491,8 +3520,11 @@ class DrawPanel(UI):
                        self.canvas.position + self.canvas.size)
 
     def handle_mouse_click(self, position):
-        if self.is_draggable and self.current_mode == "selection":
-            self._drag_offset = position - self.position
+        if self.current_mode == "selection":
+            for shape in self.shape_list:
+                shape.set_bb_border_visibility(False)
+            if self.draggable:
+                self._drag_offset = position - self.position
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
