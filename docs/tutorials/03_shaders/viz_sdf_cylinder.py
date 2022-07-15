@@ -109,7 +109,7 @@ scene.clear()
 # For this, we first create a box actor.
 
 box_actor = actor.box(centers=centers, directions=dirs, colors=colors,
-                      scales=2)
+                      scales=(height, radius*2, radius*2))
 
 box_actor.GetProperty().SetRepresentationToWireframe()
 scene.add(box_actor)
@@ -128,9 +128,13 @@ scene.clear()
 
 rep_directions = np.repeat(dirs, 8, axis=0)
 rep_centers = np.repeat(centers, 8, axis=0)
+rep_radii = np.repeat(np.repeat(radius, 9), 8, axis=0)
+rep_heights = np.repeat(np.repeat(height, 9), 8, axis=0)
 
 attribute_to_actor(box_actor, rep_centers, 'center')
 attribute_to_actor(box_actor, rep_directions, 'direction')
+attribute_to_actor(box_actor, rep_radii, 'radius')
+attribute_to_actor(box_actor, rep_heights, 'height')
 
 ###############################################################################
 # Then we have the shader code implementation corresponding to vertex and
@@ -144,10 +148,14 @@ sdf_cylinder_vert_dec = \
 
 in vec3 center;
 in vec3 direction;
+in float height;
+in float radius;
 
 out vec4 vertexMCVSOutput;
 out vec3 centerWCVSOutput;
 out vec3 directionVSOutput;
+out float heightVSOutput;
+out float radiusVSOutput;
 
 '''
 
@@ -157,6 +165,8 @@ sdf_cylinder_vert_impl = \
 vertexMCVSOutput = vertexMC;
 centerWCVSOutput = center;
 directionVSOutput = direction;
+heightVSOutput = height;
+radiusVSOutput = radius;
 
 '''
 
@@ -177,43 +187,77 @@ in vec4 vertexMCVSOutput;
 
 in vec3 centerWCVSOutput;
 in vec3 directionVSOutput;
+in float heightVSOutput;
+in float radiusVSOutput;
 
 uniform mat4 MCVCMatrix;
 
 
-// A rotation matrix is used to transform our position vectors
-// around a given 3D axis
-mat4 rotationAxisAngle( vec3 v, float angle )
+// A rotation matrix is used to transform our position vectors in order to
+// align the direction of cylinder with respect to the box
+mat4 rotationMatrix(vec3 u, vec3 v)
 {
-    float s = sin(angle);
-    float c = cos(angle);
-    float ic = 1.0 - c;
+    // Cross product is the first step to find R
+    vec3 w = cross(u, v);
+    float wn = length(w);
 
-    return mat4( v.x*v.x*ic + c,     v.y*v.x*ic - s*v.z, v.z*v.x*ic + s*v.y, 0.0,
-                 v.x*v.y*ic + s*v.z, v.y*v.y*ic + c,     v.z*v.y*ic - s*v.x, 0.0,
-                 v.x*v.z*ic - s*v.y, v.y*v.z*ic + s*v.x, v.z*v.z*ic + c,     0.0,
-                 0.0,                0.0,                0.0,                1.0 );
+    // Check that cross product is OK and vectors u, v are not collinear
+    // (norm(w)>0.0)
+    if(isnan(wn) || wn < 0.0)
+    {
+        float normUV = length(u - v);
+        // This is the case of two antipodal vectors:
+        // ** former checking assumed norm(u) == norm(v)
+        if(normUV > length(u))
+            return mat4(-1);
+        return mat4(1);
+    }
+
+    // if everything ok, normalize w
+    w = w / wn;
+
+    // vp is in plane of u,v,  perpendicular to u
+    vec3 vp = (v - dot(u, v) * u);
+    vp = vp / length(vp);
+    
+    // (u vp w) is an orthonormal basis
+    mat3 Pt = mat3(u, vp, w);
+    mat3 P = transpose(Pt);
+
+    float cosa = clamp(dot(u, v), -1, 1);
+    float sina = sqrt(1 - pow(cosa, 2));
+
+    mat3 R = mat3(mat2(cosa, sina, -sina, cosa));
+    mat3 Rp = Pt * (R * P);
+
+    // make sure that you don't return any Nans
+    bool anyNanCheckRp0 = any(isnan(Rp[0]));
+    bool anyNanCheckRp1 = any(isnan(Rp[1]));
+    bool anyNanCheckRp2 = any(isnan(Rp[2]));
+    if(anyNanCheckRp0 || anyNanCheckRp1 || anyNanCheckRp2)
+        return mat4(1);
+
+    return mat4(Rp);
 }
 
 
 // SDF for the cylinder
-float sdCylinder( vec3 p, float h, float r )
+float sdCylinder( vec3 p, float r, float h )
 {
-    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(h,r);
+    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
     return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
-
 
 // This is used on calculations for surface normals of the cylinder
 float map( in vec3 position )
 {
-    mat4 rot = rotationAxisAngle( normalize(directionVSOutput), 90);
+    mat4 rot = rotationMatrix(normalize(directionVSOutput), normalize(vec3(0, 1, 0)));
 
     // this allows us to accommodate more than one object in the world space
     vec3 pos = (rot*vec4(position - centerWCVSOutput, 0.0)).xyz;
 
     // distance to the cylinder
-    return sdCylinder(pos, 0.6, 0.8);
+    return sdCylinder(pos, radiusVSOutput, heightVSOutput/2);
 }
   
   
