@@ -13,7 +13,7 @@ from fury import ui, window
 # We then create a Polyline Object.
 
 polyline = ui.PolyLine(points_data=[(100, 100), (100, 150),
-                       (200, 200), (590, 230), (230, 50), (100, 100)])
+                       (200, 200), (590, 230), (230, 50), (100, 100)], line_width=3)
 
 ###############################################################################
 # Show Manager
