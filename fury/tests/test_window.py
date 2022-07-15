@@ -9,7 +9,7 @@ import itertools
 from fury import actor, window, io
 from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
-from fury.decorators import skip_osx, skip_win
+from fury.decorators import skip_osx, skip_win, skip_linux
 from fury import shaders
 
 
@@ -566,6 +566,8 @@ def test_opengl_state_add_remove_and_check():
     npt.assert_equal(after_remove_depth_test_observer, True)
 
 
+@pytest.mark.skipif(skip_linux, reason="Segfault on Linux that need to be"
+                                       "introspected. See #603 and #578")
 def test_frame_rate():
     xyz = 1000 * np.random.rand(10, 3)
     colors = np.random.rand(10, 4)

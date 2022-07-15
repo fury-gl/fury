@@ -1,11 +1,11 @@
+# TODO: Materials, Lights, Animations
 import base64
 import os
 import numpy as np
 import pygltflib as gltflib
-from pygltflib.utils import gltf2glb, glb2gltf
-from fury.lib import Texture as vtkTexture
-from fury.lib import PNGReader, JPEGReader, ImageFlip
-from fury import window, transform, utils, actor
+from pygltflib.utils import glb2gltf, gltf2glb
+from fury.lib import Texture, Camera
+from fury import transform, utils, io
 
 
 comp_type = {
@@ -26,62 +26,69 @@ acc_type = {
 
 
 class glTF:
-    """Read and generate actors from glTF files.
-
-    Parameters
-    ----------
-    filename : str
-        Path of the gltf file
-    apply_normals : bool, optional
-        If `True` applies normals to the mesh.
-    """
 
     def __init__(self, filename, apply_normals=False):
+        """Read and generate actors from glTF files.
+
+        Parameters
+        ----------
+        filename : str
+            Path of the gltf file
+        apply_normals : bool, optional
+            If `True` applies normals to the mesh.
+
+        """
+        if filename in ['', None]:
+            raise IOError('Filename cannot be empty or None!')
 
         name, extension = os.path.splitext(filename)
 
         if extension == '.glb':
-            glb2gltf(filename)
+            fname_gltf = f'{name}.gltf'
+            if not os.path.exists(fname_gltf):
+                glb2gltf(filename)
+                filename = fname_gltf
 
-        self.gltf = gltflib.GLTF2().load(f'{name}.gltf')
+        self.gltf = gltflib.GLTF2().load(filename)
 
-        gltf_path = filename.split('/')[-1:][0]
-        self.pwd = filename[:-len(gltf_path)]
-        self.apply_normals = apply_normals  # temporary variable
+        self.pwd = os.path.dirname(filename)
+        self.apply_normals = apply_normals
 
         self.cameras = {}
-        self.actors = []
+        self.actors_list = []
         self.materials = []
         self.polydatas = []
         self.init_transform = np.identity(4)
-        self.get_nodes(0)
+        self.inspect_scene(0)
 
-    def get_actors(self):
-        """Generates actors from glTF file.
+    def actors(self):
+        """Generate actors from glTF file.
 
         Returns
         -------
         actors : list
             List of vtkActors with texture.
+
         """
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
 
             if self.materials[i] is not None:
-                baseColorTexture = self.materials[i]['baseColorTexture']
-                actor.SetTexture(baseColorTexture)
+                base_col_tex = self.materials[i]['baseColorTexture']
+                actor.SetTexture(base_col_tex)
 
-            self.actors.append(actor)
+            self.actors_list.append(actor)
 
-        return self.actors
+        return self.actors_list
 
-    def get_nodes(self, scene_id=0):
-        """Loopes over nodes in a scene.
+    def inspect_scene(self, scene_id=0):
+        """Loop over nodes in a scene.
 
         Parameters
         ----------
         scene_id : int, optional
             scene index of the the glTF.
+
         """
         scene = self.gltf.scenes[scene_id]
         nodes = scene.nodes
@@ -90,7 +97,7 @@ class glTF:
             self.transverse_node(node_id, self.init_transform)
 
     def transverse_node(self, nextnode_id, matrix):
-        """Loads mesh and generates transformation matrix.
+        """Load mesh and generates transformation matrix.
 
         Parameters
         ----------
@@ -98,6 +105,7 @@ class glTF:
             Index of the node
         matrix : ndarray (4, 4)
             Transformation matrix
+
         """
         node = self.gltf.nodes[nextnode_id]
 
@@ -108,18 +116,18 @@ class glTF:
         else:
             if node.translation is not None:
                 trans = node.translation
-                T = transform.translate(trans)
-                matnode = np.dot(matnode, T)
+                translate = transform.translate(trans)
+                matnode = np.dot(matnode, translate)
 
             if node.rotation is not None:
                 rot = node.rotation
-                R = transform.rotate(rot)
-                matnode = np.dot(matnode, R)
+                rotate = transform.rotate(rot)
+                matnode = np.dot(matnode, rotate)
 
             if node.scale is not None:
                 scales = node.scale
-                S = transform.scale(scales)
-                matnode = np.dot(matnode, S)
+                scale = transform.scale(scales)
+                matnode = np.dot(matnode, scale)
 
         next_matrix = np.dot(matrix, matnode)
 
@@ -129,14 +137,14 @@ class glTF:
 
         if node.camera is not None:
             camera_id = node.camera
-            self.load_camera(nextnode_id)
+            self.load_camera(camera_id, next_matrix)
 
         if node.children:
             for child_id in node.children:
                 self.transverse_node(child_id, next_matrix)
 
     def load_mesh(self, mesh_id, transform_mat):
-        """Loads the mesh data from accessor and applies the transformation.
+        """Load the mesh data from accessor and applies the transformation.
 
         Parameters
         ----------
@@ -144,6 +152,7 @@ class glTF:
             Mesh index to be loaded
         transform_mat : ndarray (4, 4)
             Transformation matrix.
+
         """
         primitives = self.gltf.meshes[mesh_id].primitives
 
@@ -162,9 +171,8 @@ class glTF:
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
-                uv = self.get_acc_data(attributes.TEXCOORD_0)
-                polydata.GetPointData().SetTCoords(
-                    utils.numpy_support.numpy_to_vtk(uv))
+                tcoords = self.get_acc_data(attributes.TEXCOORD_0)
+                utils.set_polydata_tcoords(polydata, tcoords)
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
@@ -183,7 +191,7 @@ class glTF:
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
-        """Gets the correct data from buffer uing accessors and bufferviews.
+        """Get the correct data from buffer uing accessors and bufferviews.
 
         Parameters
         ----------
@@ -194,8 +202,8 @@ class glTF:
         -------
         buffer_array : ndarray
             Numpy array extracted from the buffer.
-        """
 
+        """
         accessor = self.gltf.accessors[acc_id]
 
         buffview_id = accessor.bufferView
@@ -220,7 +228,7 @@ class glTF:
 
     def get_buff_array(self, buff_id, d_type, byte_length,
                        byte_offset, byte_stride):
-        """Extracts the mesh data from buffer.
+        """Extract the mesh data from buffer.
 
         Parameters
         ----------
@@ -239,8 +247,8 @@ class glTF:
         -------
         out_arr : ndarray
             Numpy array of size byte_length from buffer.
-        """
 
+        """
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
 
@@ -268,20 +276,25 @@ class glTF:
             out_arr = out_arr.reshape(-1, byte_stride)
             return out_arr
 
-        except IOError:
-            print('Failed to read ! Error in opening file')
+        except IOError as e:
+            print(f'Failed to read ! Error in opening file: {e}')
 
     def get_materials(self, mat_id):
-        """Gets the textures data
+        """Get the materials data.
 
         Parameters
         ----------
         mat_id : int
             Material index
-        """
 
+        Returns
+        -------
+        materials : dict
+            Dictionary of all textures.
+
+        """
         material = self.gltf.materials[mat_id]
-        bct, mrt, nt = None, None, None
+        bct = None
 
         pbr = material.pbrMetallicRoughness
 
@@ -292,30 +305,28 @@ class glTF:
         return {'baseColorTexture': bct}
 
     def get_texture(self, tex_id):
-        """Reads and converts image into vtk texture
+        """Read and convert image into vtk texture.
 
         Parameters
         ----------
         tex_id : int
-            vtkTexture index
+            Texture index
 
         Returns
         -------
-        atexture : vtkTexture
+        atexture : Texture
             Returns flipped vtk texture from image.
+
         """
-
         texture = self.gltf.textures[tex_id].source
-        images = self.gltf.images
+        image = self.gltf.images[texture]
 
-        reader_type = {
-            '.jpg': JPEGReader,
-            '.jpeg': JPEGReader,
-            '.png': PNGReader
-        }
-        file = images[texture].uri
+        file = image.uri
+        bv_index = image.bufferView
+        if file is None:
+            mimetype = image.mimeType
 
-        if file.startswith('data:image'):
+        if file is not None and file.startswith('data:image'):
             buff_data = file.split(',')[1]
             buff_data = base64.b64decode(buff_data)
 
@@ -324,35 +335,69 @@ class glTF:
             with open(image_path, "wb") as image_file:
                 image_file.write(buff_data)
 
+        elif bv_index is not None:
+            bv = self.gltf.bufferViews[bv_index]
+            buffer = bv.buffer
+            bo = bv.byteOffset
+            bl = bv.byteLength
+            uri = self.gltf.buffers[buffer].uri
+            with open(os.path.join(self.pwd, uri), 'rb') as f:
+                f.seek(bo)
+                img_binary = f.read(bl)
+            extension = '.png' if mimetype == 'images/png' else '.jpg'
+            image_path = os.path.join(self.pwd, str("bvtexture"+extension))
+            with open(image_path, "wb") as image_file:
+                image_file.write(img_binary)
+
         else:
-            extension = os.path.splitext(os.path.basename(file).lower())[1]
             image_path = os.path.join(self.pwd, file)
 
-        reader = reader_type.get(extension)()
-        reader.SetFileName(image_path)
-        reader.Update()
-
-        flip = ImageFlip()
-        flip.SetInputConnection(reader.GetOutputPort())
-        flip.SetFilteredAxis(1)  # flip along Y axis
-
-        atexture = vtkTexture()
+        rgb = io.load_image(image_path)
+        grid = utils.rgb_to_vtk(rgb)
+        atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
-        atexture.SetInputConnection(flip.GetOutputPort())
+        atexture.SetInputDataObject(grid)
 
         return atexture
 
-    def load_camera(self, node_id):
-        """Loads the camera data of a node
+    def load_camera(self, camera_id, transform_mat):
+        """Load the camera data of a node.
 
         Parameters
         ----------
-        node_id : int
-            Node index of the camera.
+        camera_id : int
+            Camera index of a node.
+        transform_mat : ndarray (4, 4)
+            Transformation matrix of the camera.
+
         """
-        camera = self.gltf.cameras
-        self.cameras[node_id] = camera
+        camera = self.gltf.cameras[camera_id]
+        vtk_cam = Camera()
+        position = vtk_cam.GetPosition()
+        position = np.asarray([position])
+
+        new_position = transform.apply_transfomation(position, transform_mat)
+        vtk_cam.SetPosition(tuple(new_position[0]))
+
+        if camera.type == "orthographic":
+            orthographic = camera.orthographic
+            vtk_cam.ParallelProjectionOn()
+            zfar = orthographic.zfar
+            znear = orthographic.znear
+            vtk_cam.SetClippingRange(znear, zfar)
+        else:
+            perspective = camera.perspective
+            vtk_cam.ParallelProjectionOff()
+            zfar = perspective.zfar if perspective.zfar else 1000.0
+            znear = perspective.znear
+            vtk_cam.SetClippingRange(znear, zfar)
+            angle = perspective.yfov*180/np.pi if perspective.yfov else 30.0
+            vtk_cam.SetViewAngle(angle)
+            if perspective.aspectRatio:
+                vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
+
+        self.cameras[camera_id] = vtk_cam
 
 
 def export_scene(scene, filename='default.gltf'):

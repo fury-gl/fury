@@ -9,7 +9,7 @@ from fury.testing import assert_greater
 
 def test_load_gltf():
     fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck')
+    filename = read_viz_gltf('Duck', 'glTF')
     importer = glTF(filename)
     polydatas = importer.polydatas
     vertices = utils.get_polydata_vertices(polydatas[0])
@@ -29,9 +29,9 @@ def test_load_gltf():
 
 def test_load_texture():
     fetch_gltf('Duck')
-    filename = read_viz_gltf('Duck')
+    filename = read_viz_gltf('Duck', 'glTF')
     importer = glTF(filename)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
 
     scene = window.Scene()
     scene.add(actor)
@@ -45,9 +45,9 @@ def test_load_texture():
 
 def test_vertex_colors():
     fetch_gltf('BoxVertexColors')
-    file = read_viz_gltf('BoxVertexColors')
+    file = read_viz_gltf('BoxVertexColors', 'glTF')
     importer = glTF(file)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
     scene = window.Scene()
     scene.add(actor)
     display = window.snapshot(scene)
@@ -63,7 +63,7 @@ def test_orientation():
     fetch_gltf('BoxTextured', 'glTF-Embedded')
     file = read_viz_gltf('BoxTextured', 'glTF-Embedded')
     importer = glTF(file)
-    actor = importer.get_actors()[0]
+    actor = importer.actors()[0]
 
     scene = window.Scene()
     scene.add(actor)

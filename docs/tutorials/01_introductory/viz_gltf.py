@@ -21,17 +21,25 @@ fetch_gltf('Duck', 'glTF')
 filename = read_viz_gltf('Duck')
 
 ##############################################################################
-# Initialize the glTFImporter and get actors using `get_actors` method.
+# Initialize the glTF object and get actors using `actors` method.
 # Note: You can always manually create actor from polydata, and apply texture
 # or materials manually afterwards.
+# Experimental: For smooth mesh/actor you can set `apply_normals=True`.
 
-gltf_obj = glTF(filename, apply_normals=True)
-actors = gltf_obj.get_actors()
+gltf_obj = glTF(filename)
+actors = gltf_obj.actors()
 
 ##############################################################################
 # Add all the actor from list of actors to the scene.
 
 scene.add(*actors)
+
+##############################################################################
+# Applying camera
+
+cameras = gltf_obj.cameras
+if cameras:
+    scene.SetActiveCamera(cameras[0])
 
 interactive = False
 

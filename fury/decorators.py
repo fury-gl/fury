@@ -4,6 +4,7 @@ import re
 import platform
 
 
+skip_linux = is_linux = platform.system().lower() == "linux"
 skip_osx = is_osx = platform.system().lower() == "darwin"
 skip_win = is_win = platform.system().lower() == "windows"
 is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
