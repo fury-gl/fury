@@ -108,6 +108,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
+        self.on_key_release = lambda i_ren, obj, element: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -261,7 +262,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self.add_callback(actor, "MiddleButtonReleaseEvent",
                           self.middle_button_release_callback)
         self.add_callback(actor, "MouseMoveEvent", self.mouse_move_callback)
-        self.add_callback(actor, "KeyPressEvent", self.key_press_callback)
+        self.add_callback(actor, "KeyPressEvent", self.on_key_press_callback)
+        self.add_callback(actor, "KeyReleaseEvent", self.on_key_release_callback)
 
     @staticmethod
     def left_button_click_callback(i_ren, obj, self):
@@ -325,8 +327,12 @@ class UI(object, metaclass=abc.ABCMeta):
             self.on_middle_mouse_button_dragged(i_ren, obj, self)
 
     @staticmethod
-    def key_press_callback(i_ren, obj, self):
+    def on_key_press_callback(i_ren, obj, self):
         self.on_key_press(i_ren, obj, self)
+
+    @staticmethod
+    def on_key_release_callback(i_ren, obj, self):
+        self.on_key_release(i_ren, obj, self)
 
 
 class Rectangle2D(UI):
