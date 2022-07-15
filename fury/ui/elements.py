@@ -3147,7 +3147,7 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(self.position)
+    self.cal_bounding_box(self.position)
 
     def cal_bounding_box(self, position):
         """Calculates the min and max position of the bounding box.
@@ -3219,6 +3219,8 @@ class DrawShape(UI):
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            if self.drawpanel.key_status["Control_L"]:
+                self.drawpanel.shape_group.add(self)
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.position
             i_ren.event.abort()
@@ -3266,6 +3268,12 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
+        self.shape_group = DrawShapeGroup()
+        self.key_status = {
+            "Control_L": False,
+            "Shift_L": False,
+            "Alt_L": False
+        }
 
     def _setup(self):
         """Setup this UI component.
@@ -3277,6 +3285,10 @@ class DrawPanel(UI):
             self.left_button_pressed
         self.canvas.background.on_left_mouse_button_dragged = \
             self.left_button_dragged
+        self.canvas.background.on_key_press = \
+            self.key_press
+        self.canvas.background.on_key_release = \
+            self.key_release
 
         # Todo
         # Convert mode_data into a private variable and make it read-only
@@ -3331,6 +3343,8 @@ class DrawPanel(UI):
 
         """
         self.current_scene = scene
+        iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
+        iren.add_active_prop(self.canvas.actors[0])
         self.canvas.add_to_scene(scene)
 
     def _get_size(self):
@@ -3461,3 +3475,16 @@ class DrawPanel(UI):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
+
+    def key_press(self, i_ren, _obj, _drawpanel):
+        self.key_status[i_ren.event.key] = True
+
+    def key_release(self, i_ren, _obj, _drawpanel):
+        # key = i_ren.event.key
+        # if key == "Shift_L":
+        #     self.key_status[key] = False
+        # elif key == "Control_L":
+        #     self.key_status[key] = False
+        # elif key == "Alt_L":
+        #     self.key_status[key] = False
+        self.key_status[i_ren.event.key] = False
