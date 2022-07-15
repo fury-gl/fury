@@ -3060,6 +3060,43 @@ class FileMenu2D(UI):
         i_ren.event.abort()
 
 
+class DrawShapeGroup:
+    def __init__(self):
+        self.grouped_shapes = []
+        self._position = None
+
+    def add(self, shape):
+        if shape in self.grouped_shapes:
+            self.remove(shape)
+        else:
+            self.grouped_shapes.append(shape)
+        print(self.grouped_shapes)
+
+    def remove(self, shape):
+        self.grouped_shapes.remove(shape)
+        print(self.grouped_shapes)
+
+    def clear(self, shape):
+        self.grouped_shapes = []
+        print(self.grouped_shapes)
+
+    def is_empty(self):
+        return bool(len(self.grouped_shapes))
+        print(self.grouped_shapes)
+
+    @property
+    def position(self):
+        return self._position
+        print(self.grouped_shapes)
+
+    @property
+    def position(self, value):
+        offset = np.asarray(self._position) - value
+        for shape in self.grouped_shapes:
+            shape.position += offset
+        print(self.grouped_shapes)
+
+
 class DrawShape(UI):
     """Create and Manage 2D Shapes.
     """
