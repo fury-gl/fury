@@ -626,7 +626,6 @@ def hex_to_rgb(color):
     return(np.array([r, g, b]))
 
 
-# Implementation of this function is taken from scikit-image package.
 def rgb2hsv(rgb):
     """RGB to HSV color space conversion.
     Parameters
@@ -639,6 +638,13 @@ def rgb2hsv(rgb):
     -------
     out : (..., 3, ...) ndarray
         The image in HSV format. Same dimensions as input.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
     """
     input_is_one_pixel = rgb.ndim == 1
     if input_is_one_pixel:
@@ -687,7 +693,6 @@ def rgb2hsv(rgb):
     return out
 
 
-# Implementation of this function is taken from scikit-image package.
 def hsv2rgb(hsv):
     """HSV to RGB color space conversion.
 
@@ -701,6 +706,14 @@ def hsv2rgb(hsv):
     -------
     out : (..., 3, ...) ndarray
         The image in RGB format. Same dimensions as input.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
 
     hi = np.floor(hsv[..., 0] * 6)
@@ -729,7 +742,6 @@ xyz_from_rgb = np.array([[0.412453, 0.357580, 0.180423],
 rgb_from_xyz = linalg.inv(xyz_from_rgb)
 
 
-# Implementation of this function is taken from scikit-image package.
 def xyz2rgb(xyz):
     """XYZ to RGB color space conversion.
 
@@ -743,6 +755,13 @@ def xyz2rgb(xyz):
     -------
     out : (..., 3, ...) ndarray
         The image in RGB format. Same dimensions as input.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
 
     """
     arr = xyz @ rgb_from_xyz.T.astype(xyz.dtype)
@@ -753,7 +772,6 @@ def xyz2rgb(xyz):
     return arr
 
 
-# Implementation of this function is taken from scikit-image package.
 def rgb2xyz(rgb):
     """RGB to XYZ color space conversion.
 
@@ -767,6 +785,14 @@ def rgb2xyz(rgb):
     -------
     out : (..., 3, ...) ndarray
         The image in XYZ format. Same dimensions as input.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
     rgb = rgb.astype(np.float)
     mask = rgb > 0.04045
@@ -776,7 +802,9 @@ def rgb2xyz(rgb):
 
 
 # XYZ coordinates of the illuminants, scaled to [0, 1]. For each illuminant I.
-# These data are taken from scikit-image package.
+# Original Implementation of this object is from scikit-image package.
+# it can be found at:
+# https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
 illuminants = \
     {"A": {'2': (1.098466069456375, 1, 0.3558228003436005),
            '10': (1.111420406956693, 1, 0.3519978321919493),
@@ -804,7 +832,6 @@ illuminants = \
            'R': (1.0, 1.0, 1.0)}}
 
 
-# Implementation of this function is taken from scikit-image package.
 def get_xyz_coords(illuminant, observer):
     """Get the XYZ coordinates of the given illuminant and observer [1]_.
 
@@ -820,6 +847,14 @@ def get_xyz_coords(illuminant, observer):
     out : array
         Array with 3 elements containing the XYZ coordinates of the given
         illuminant.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
     """
     illuminant = illuminant.upper()
     observer = observer.upper()
@@ -830,7 +865,6 @@ def get_xyz_coords(illuminant, observer):
                          f'(`{illuminant}`, `{observer}`)')
 
 
-# Implementation of this function is taken from scikit-image package.
 def xyz2lab(xyz, illuminant="D65", observer="2"):
     """XYZ to CIE-LAB color space conversion.
 
@@ -849,6 +883,14 @@ def xyz2lab(xyz, illuminant="D65", observer="2"):
     -------
     out : (..., 3, ...) ndarray
         The image in CIE-LAB format. Same dimensions as input.
+        
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
 
     xyz_ref_white = get_xyz_coords(illuminant, observer)
@@ -871,7 +913,6 @@ def xyz2lab(xyz, illuminant="D65", observer="2"):
     return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
 
 
-# Implementation of this function is taken from scikit-image package.
 def lab2xyz(lab, illuminant="D65", observer="2"):
     """CIE-LAB to XYZcolor space conversion.
 
@@ -889,6 +930,13 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
     out : (..., 3, ...) ndarray
         The image in XYZ format. Same dimensions as input.
 
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
     L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
     y = (L + 16.) / 116.
@@ -913,7 +961,6 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
     return out
 
 
-# Implementation of this function is taken from scikit-image package.
 def rgb2lab(rgb, illuminant="D65", observer="2"):
     """Conversion from the sRGB color space (IEC 61966-2-1:1999)
     to the CIE Lab colorspace under the given illuminant and observer.
@@ -932,11 +979,18 @@ def rgb2lab(rgb, illuminant="D65", observer="2"):
     -------
     out : (..., 3, ...) ndarray
         The image in Lab format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
     return xyz2lab(rgb2xyz(rgb), illuminant, observer)
 
 
-# Implementation of this function is taken from scikit-image package.
 def lab2rgb(lab, illuminant="D65", observer="2"):
     """Lab to RGB color space conversion.
 
@@ -954,5 +1008,13 @@ def lab2rgb(lab, illuminant="D65", observer="2"):
     -------
     out : (..., 3, ...) ndarray
         The image in RGB format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    
     """
     return xyz2rgb(lab2xyz(lab, illuminant, observer))
