@@ -4,7 +4,8 @@ import os
 import numpy as np
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
-from fury.lib import Texture, Camera
+from PIL import Image
+from fury.lib import Texture, Camera, numpy_support
 from fury import transform, utils, io
 
 
@@ -423,10 +424,10 @@ def export_scene(scene, filename='default.gltf'):
 
     for act in scene.GetActors():
         prim, size, count = _connect_primitives(gltf_obj, act, buffer_file,
-                                                buffer_size, bview_count)
+                                                buffer_size, bview_count, name)
         primitives.append(prim)
-        buffer_size += size
-        bview_count += count
+        buffer_size = size
+        bview_count = count
 
     buffer_file.close()
     write_mesh(gltf_obj, primitives)
@@ -444,7 +445,7 @@ def export_scene(scene, filename='default.gltf'):
         gltf2glb(f'{name}.gltf', destination=filename)
 
 
-def _connect_primitives(gltf, actor, buff_file, boffset, count):
+def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
     """Create Accessor, BufferViews and writes primitive data to a binary file
 
     Parameters
@@ -456,6 +457,8 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         filename.bin opened in `wb` mode
     count : int
         BufferView count
+    name : str
+        Prefix of the gltf filename
 
     Returns
     -------
@@ -547,7 +550,15 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count):
         boffset += blength
         tcoord = count
         count += 1
-        # vtk_image = actor.GetTexture().GetInput()
+        vtk_image = actor.GetTexture().GetInput()
+        rows, cols, _ = vtk_image.GetDimensions()
+        scalars = vtk_image.GetPointData().GetScalars()
+        np_im = numpy_support.vtk_to_numpy(scalars)
+        np_im = np.reshape(np_im, (rows, cols, -1))
+
+        img = Image.fromarray(np_im)
+        image_path = f'{name}BaseColorTexture.png'
+        img.save(image_path)
         write_material(gltf, 0, image_path)
 
     if colors is not None:
@@ -707,7 +718,6 @@ def write_material(gltf, bct: int, uri: str):
     pbr.baseColorTexture = tinfo
     pbr.metallicFactor = 0.0
     material.pbrMetallicRoughness = pbr
-    texture.sampler = 0
     texture.source = bct
     image.uri = uri
     gltf.materials.append(material)
