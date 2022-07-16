@@ -1,10 +1,14 @@
-// Calculate the diffuse factor and diffuse color
-df = max(0, lightAttenuation);
-diffuse = df * diffuseColor * lightColor0;
+vec3 blinnPhongIllumModel(float la, vec3 lc, vec3 dc, float sp, vec3 sc,
+                          vec3 ac)
+{
+    // Calculate the diffuse factor and adjust the diffuse color
+    float df = max(0, la);
+    dc *= df * lc;
 
-// Calculate the specular factor and specular color
-sf = pow(df, specularPower);
-specular = sf * specularColor * lightColor0;
+    // Calculate the specular factor and adjust the specular color
+    float sf = pow(df, sp);
+    sc *= sf * lc;
 
-// Blinn-Phong illumination model
-fragOutput0 = vec4(ambientColor + diffuse + specular, opacity);
+    // Blinn-Phong illumination model
+    return vec3(ac + dc + sc);
+}

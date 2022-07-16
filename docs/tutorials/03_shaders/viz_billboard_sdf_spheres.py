@@ -151,8 +151,12 @@ float map(vec3 p)
 """
 
 ###############################################################################
+blinn_phong_model = import_fury_shader(os.path.join('lighting',
+                                                    'blinn_phong_model.frag'))
+
+###############################################################################
 fs_dec = compose_shader([sphere_radius, sd_sphere, sd_sphere_normal,
-                         central_diffs_normal])
+                         central_diffs_normal, blinn_phong_model])
 
 ###############################################################################
 light_impl = \
@@ -168,14 +172,14 @@ vec3 normal = centralDiffsNormals(vec3(point.xy, absDist), .0001);
 
 // Light attenuation of a point on the SDF surface
 float lightAttenuation = normal.z;
+color = blinnPhongIllumModel(
+                lightAttenuation, lightColor0, diffuseColor,
+                specularPower, specularColor, ambientColor);
+fragOutput0 = vec4(color, opacity);
 """
 
 ###############################################################################
-blinn_phong_model = import_fury_shader(os.path.join('lighting',
-                                                    'blinn_phong_model.frag'))
-
-###############################################################################
-fs_impl = compose_shader([sphere_dist, light_impl, blinn_phong_model])
+fs_impl = compose_shader([sphere_dist, light_impl])
 
 ###############################################################################
 spheres_actor = actor.billboard(centers, colors=colors, scales=scales,
