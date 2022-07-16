@@ -1609,6 +1609,15 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     return sphere_actor
 
 
+def geom_quad(centers, colors):
+    current_actor = dot(centers, colors)
+    replace_shader_in_actor(current_actor, 'geometry',
+                            import_fury_shader('billboard.geom'))
+    shader_to_actor(current_actor, 'vertex',
+                    " gl_Position = vertexMC; return;", block='prim_id')
+    return current_actor
+
+
 def cylinder(centers, directions, colors, radius=0.05, heights=1,
              capped=False, resolution=6, vertices=None, faces=None):
     """Visualize one or many cylinder with different features.
