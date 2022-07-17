@@ -1,8 +1,8 @@
 import numpy as np
 from fury import window, actor
 
-centers = np.random.random([500, 3]) * 100
-colors = np.random.random([500, 3])
+centers = np.random.random([30, 3]) * 20
+colors = np.random.random([30, 3])
 
 scene = window.Scene()
 showm = window.ShowManager(scene, size=(1000, 768))
