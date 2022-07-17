@@ -33,8 +33,8 @@ fury_text = actor.vector_text("FURY",
 # opacity is set to 0 at time 28 and set to one at time 31.
 # Linear interpolator is always used by default.
 text_timeline = Timeline(fury_text)
-text_timeline.set_opacity(28, 0)
-text_timeline.set_opacity(31, 1)
+text_timeline.set_opacity(29, 0)
+text_timeline.set_opacity(35, 1)
 
 # The timeline contains the text actor is added to the main Timeline
 # so that we only update this main timeline only without explicitly updating
