@@ -241,11 +241,32 @@ class Slerp(Interpolator):
                                                   degrees=True)
         self._slerp = transform.Slerp(timestamps, rotations)
 
+    @staticmethod
+    def _quaternion2euler(x, y, z, w):
+        ysqr = y * y
+
+        t0 = +2.0 * (w * x + y * z)
+        t1 = +1.0 - 2.0 * (x * x + ysqr)
+        X = np.degrees(np.arctan2(t0, t1))
+
+        t2 = +2.0 * (w * y - z * x)
+
+        t2 = np.clip(t2, a_min=-1.0, a_max=1.0)
+        Y = np.degrees(np.arcsin(t2))
+
+        t3 = 2.0 * (w * z + x * y)
+        t4 = 1.0 - 2.0 * (ysqr + z * z)
+        Z = np.degrees(np.arctan2(t3, t4))
+
+        return X, Y, Z
+
     def interpolate(self, t):
         min_t = self.timestamps[0]
         max_t = self.timestamps[-1]
         t = min_t if t < min_t else max_t if t > max_t else t
-        return self._slerp(t).as_euler('xyz', degrees=True)
+        v = self._slerp(t)
+        q = v.as_quat()
+        return self._quaternion2euler(*q)
 
 
 class ColorInterpolator(Interpolator):

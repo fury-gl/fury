@@ -293,4 +293,4 @@ def test_timeline():
         npt.assert_equal(tl.get_rotation(tl.current_timestamp),
                          cube.GetOrientation())
 
-    
+
