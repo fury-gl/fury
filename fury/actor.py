@@ -2383,6 +2383,17 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
+def billboard_gs(centers, colors, scales=(1, 1, 1)):
+    current_actor = dot(centers, colors)
+    replace_shader_in_actor(current_actor, 'geometry',
+                            import_fury_shader('billboard.geom'))
+    shader_to_actor(current_actor, 'vertex',
+                    impl_code="gl_Position = vertexMC;\nreturn;",
+                    block='prim_id')
+    current_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    return current_actor
+
+
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
                 color=(1, 1, 1)):
     """Create a label actor.
