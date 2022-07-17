@@ -204,6 +204,38 @@ class CubicBezierInterpolator(Interpolator):
         return res
 
 
+class Slerp(Interpolator):
+    """Spherical based rotation keyframes interpolator.
+
+    A rotation interpolator to be used for rotation keyframes.
+
+    Attributes
+    ----------
+    keyframes : dict
+        Rotation keyframes to be interpolated at any time.
+    """
+
+    def __init__(self, keyframes):
+        self._slerp = None
+        super(Slerp, self).__init__(keyframes)
+
+    def setup(self):
+        super(Slerp, self).setup()
+        timestamps, euler_rots = [], []
+        for ts in self.keyframes:
+            timestamps.append(ts)
+            euler_rots.append(self.keyframes.get(ts).get('value'))
+        rotations = transform.Rotation.from_euler('xyz', euler_rots,
+                                                  degrees=True)
+        self._slerp = transform.Slerp(timestamps, rotations)
+
+    def interpolate(self, t):
+        min_t = self.timestamps[0]
+        max_t = self.timestamps[-1]
+        t = min_t if t < min_t else max_t if t > max_t else t
+        return self._slerp(t).as_euler('xyz', degrees=True)
+
+
 class ColorInterpolator(Interpolator):
     def __init__(self, keyframes, rgb_to_space, space_to_rgb):
         self.rgb_to_space = rgb_to_space
