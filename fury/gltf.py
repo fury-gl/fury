@@ -737,7 +737,7 @@ def write_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
     bo : int
         ByteOffset of the accessor
     ct : type
-        Type of a single component 
+        Type of a single component
     cnt : int
         Elements count of the accessor
     atype : type
