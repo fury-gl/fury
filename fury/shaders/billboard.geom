@@ -1,11 +1,7 @@
 //VTK::System::Dec
 //VTK::PositionVC::Dec
-uniform float linewidth;
 uniform mat4 MCDCMatrix;
 uniform mat4 MCVCMatrix;
-uniform mat4 MCWCMatrix;
-uniform mat4 VCMCMatrix;
-uniform float scale;
 
 //VTK::PrimID::Dec
 
@@ -25,24 +21,33 @@ uniform float scale;
 layout (points) in;
 layout (triangle_strip, max_vertices = 4) out;
 
+const mat4 coordinates = mat4 (vec4 (-1, -1, 0, 0),
+                               vec4 (1, -1, 0, 0),
+                               vec4 (-1, 1, 0, 0),
+                               vec4 (1, 1, 0, 0)
+                               );
+
 void main() {
 
+    // trick to multiply inv(MCVCMatrix) * all four offsets
+    mat4 c = inverse(MCVCMatrix) * coordinates ;
 
-
-    const vec2 coordinates [] = vec2 [] (vec2 (-0.5f, -0.5f),
-                                   vec2 (0.5f, -0.5f),
-                                   vec2 (-0.5f, 0.5f),
-                                   vec2 (0.5f, 0.5f)
-                                   );
-
+    // Adding the center to the offsets
     for (int j = 0; j < 4; j++) {
-        gl_Position = MCDCMatrix * ( (gl_in [0].gl_Position ) +  VCMCMatrix * vec4(coordinates[j], 0, 0));
-        vertexColorGSOutput = vertexColorVSOutput[0];
+        c[j] += gl_in [0].gl_Position;
+    }
+
+    // transferring all four vertices into device coords
+    mat4 vertices = MCDCMatrix *  c;
+
+    // send same color for the whole billboard
+    vertexColorGSOutput = vertexColorVSOutput[0];
+
+    // emit four vertices needed to draw a billboard using triangle strips
+    for (int j = 0; j < 4; j++) {
+        gl_Position = vertices[j];
         EmitVertex ();
         }
     EndPrimitive();
-
-
-
 
 }

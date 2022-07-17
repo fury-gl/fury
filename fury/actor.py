@@ -1609,12 +1609,14 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     return sphere_actor
 
 
-def geom_quad(centers, colors):
+def billboard_gs(centers, colors, scales=(1, 1, 1)):
     current_actor = dot(centers, colors)
     replace_shader_in_actor(current_actor, 'geometry',
                             import_fury_shader('billboard.geom'))
     shader_to_actor(current_actor, 'vertex',
-                    " gl_Position = vertexMC; return;", block='prim_id')
+                    impl_code="gl_Position = vertexMC;\nreturn;",
+                    block='prim_id')
+    current_actor.GetMapper().SetVBOShiftScaleMethod(False)
     return current_actor
 
 
