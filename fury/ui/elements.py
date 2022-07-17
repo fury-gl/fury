@@ -3529,33 +3529,37 @@ class PlaybackPanel(UI):
         def on_progress_change(slider):
             val = slider.value
             if np.isnan(val):
-                val = self.get_max_value()
+                val = self.final_time
             self.text.message = \
                 time.strftime('%H:%M:%S', time.gmtime(val))
             self.on_progress_bar_changed(slider.value)
+
         self._progress_bar.on_change = on_progress_change
 
-    def set_time(self, value):
-        """Set progress slider value.
+    @property
+    def final_time(self):
+        """Set final progress slider time value.
+
+        Returns
+        -------
+        float
+            Final time for the progress slider.
+        """
+        return self._progress_bar.max_value
+
+    @final_time.setter
+    def final_time(self, t):
+        """Set final progress slider time value.
 
         Parameters
         ----------
-        value: float
-            Current time to be set.
+        t: float
+            Final time for the progress slider.
         """
-        self._progress_bar.value = value
+        self._progress_bar.max_value = t
 
-    def set_max_time(self, value):
-        """Set max progress slider time value.
-
-        Parameters
-        ----------
-        value: float
-            Max time for the progress slider.
-        """
-        self._progress_bar.max_value = value
-
-    def get_value(self):
+    @property
+    def current_time(self):
         """Get current time of the progress slider.
 
         Returns
@@ -3565,15 +3569,16 @@ class PlaybackPanel(UI):
         """
         return self._progress_bar.value
 
-    def get_max_value(self):
-        """Get max time value.
+    @current_time.setter
+    def current_time(self, t):
+        """Set progress slider value.
 
-        Returns
+        Parameters
         -------
-        float
-            max time value.
+        t: float
+            Current time to be set.
         """
-        return self._progress_bar.max_value
+        self._progress_bar.value = t
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
