@@ -6,7 +6,7 @@ from fury import utils
 from fury.actor import Container
 from fury.colormap import rgb2hsv, hsv2rgb, rgb2lab, lab2rgb, xyz2rgb, rgb2xyz
 from fury.ui.elements import PlaybackPanel
-from vtkmodules.vtkRenderingCore import vtkActor
+from fury.lib import Actor
 
 
 class Interpolator(object):
@@ -1150,7 +1150,7 @@ class Timeline(Container):
             for a in item:
                 self.add(a)
             return
-        elif isinstance(item, vtkActor):
+        elif isinstance(item, Actor):
             self.add_actor(item)
         elif isinstance(item, Timeline):
             self.add_timeline(item)
