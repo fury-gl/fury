@@ -367,21 +367,21 @@ class Timeline(Container):
             }
         }
         self.loop = False
-        self.reversePlaying = False
         self._last_started_at = 0
         self._last_timestamp = 0
         self._current_timestamp = 0
-        self.speed = 1
+        self._speed = 1
         self._timelines = []
         self._camera = None
         self._scene = None
         self._last_timestamp = 0
         self._last_started_at = 0
         self._playing = False
-        self.speed = 2
         self._current_timestamp = 0
         self._has_playback_panel = playback_panel
         self._final_timestamp = 0
+        self._needs_update = False
+        self._reverse_playing = False
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -716,7 +716,7 @@ class Timeline(Container):
         self.set_camera_interpolator("focal", interpolator)
 
     def get_property_value(self, attrib, t):
-        
+
         return self._data.get('interpolators').get('attribs').get(
             attrib).interpolate(t)
 
@@ -725,6 +725,24 @@ class Timeline(Container):
             attrib).interpolate(t)
 
     def set_position(self, timestamp, position, pre_cp=None, post_cp=None):
+        """Set the camera focal position interpolator.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        position: ndarray, shape (1, 3)
+            Position value
+        pre_cp: ndarray, shape (1, 3), optional
+            The pre control point for the given position.
+        post_cp: ndarray, shape (1, 3), optional
+            The post control point for the given position.
+
+        Notes
+        -----
+        `pre_cp` and `post_cp` only needed when using the cubic bezier
+        interpolation method.
+        """
         self.set_keyframe('position', timestamp, position, pre_cp, post_cp)
 
     def set_position_keyframes(self, keyframes):
@@ -838,7 +856,7 @@ class Timeline(Container):
         self.clear()
 
     def update_animation(self, t=None, force=False):
-        """Update the timelines"""
+        """Updates the timeline animations"""
         if t is None:
             t = self.current_timestamp
             if t >= self._final_timestamp:
@@ -882,7 +900,7 @@ class Timeline(Container):
                 for act in self.get_actors():
                     act.vcolors[:] = color * 255
                     utils.update_actor(act)
-
+        # Also update all child Timelines.
         [tl.update_animation(t, force=True) for tl in self._timelines]
 
     def play(self):
@@ -948,19 +966,31 @@ class Timeline(Container):
         """
         return self._final_timestamp
 
-    def seek(self, t):
-        """Change the current timestamp of the Timeline"""
+    def seek(self, timestamp):
+        """Sets the current timestamp of the Timeline.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to seek.
+
+        """
         if self.playing:
-            self._last_started_at = time.perf_counter() - t
+            self._last_started_at = time.perf_counter() - timestamp
         else:
-            self._last_timestamp = t
+            self._last_timestamp = timestamp
             self.update_animation(force=True)
 
-    def seek_percent(self, p):
-        """Change the current timestamp of the animation given a value from
-        0 to 100
+    def seek_percent(self, percent):
+        """Seek a percentage of the Timeline's final timestamp.
+
+        Parameters
+        ----------
+        percent: float
+            Value from 1 to 100.
+
         """
-        t = p * self._final_timestamp / 100
+        t = percent * self._final_timestamp / 100
         self.seek(t)
 
     @property
@@ -1011,9 +1041,28 @@ class Timeline(Container):
 
         return not self.playing and self._last_timestamp is not None
 
-    def set_speed(self, speed):
-        """Set the speed of the timeline"""
-        self.speed = speed
+    @property
+    def speed(self):
+        """Returns the speed of the timeline.
+
+        Returns
+        -------
+        float
+            The speed of the timeline's playback.
+        """
+        return self._speed
+
+    @speed.setter
+    def speed(self, speed):
+        """Set the speed of the timeline.
+
+        Parameters
+        ----------
+        speed: float
+            The speed of the timeline's playback.
+
+        """
+        self._speed = speed
 
     def add_to_scene(self, ren):
         super(Timeline, self).add_to_scene(ren)
