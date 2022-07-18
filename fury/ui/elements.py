@@ -2405,6 +2405,7 @@ class ListBox2D(UI):
                                             scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
         self.panel.add_element(
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
