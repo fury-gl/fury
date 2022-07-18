@@ -174,7 +174,8 @@ def test_color_interpolators():
     ]
 
     for interp in color_interps:
-        npt.assert_almost_equal(interp.interpolate(-999), interp.interpolate(1))
+        npt.assert_almost_equal(interp.interpolate(-999),
+                                interp.interpolate(1))
         npt.assert_almost_equal(interp.interpolate(999), interp.interpolate(2))
 
     for interps in combinations(color_interps, 2):
@@ -238,10 +239,11 @@ def test_timeline():
 
     for t in [-10, 0, 2.2, 7, 100]:
         tl.playback_panel.current_time = t
-        assert_equal(tl.current_timestamp, tl.playback_panel.current_time)
+        npt.assert_almost_equal(tl.current_timestamp,
+                                tl.playback_panel.current_time)
 
         if 0 <= t <= tl.final_timestamp:
-            assert_equal(tl.current_timestamp, t)
+            npt.assert_almost_equal(tl.current_timestamp, t)
 
     tl.play()
     t_before = tl.current_timestamp
@@ -256,7 +258,7 @@ def test_timeline():
     npt.assert_almost_equal(tl.current_timestamp, t_before)
 
     tl.stop()
-    npt.assert_almost_equal(tl.stopped)
+    assert_true(tl.stopped)
     npt.assert_almost_equal(tl.current_timestamp, 0)
 
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
@@ -275,7 +277,7 @@ def test_timeline():
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
     npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
 
-    npt.assert_equal(tl.get_color(7), np.array([1, 0, 1]))
+    npt.assert_almost_equal(tl.get_color(7), np.array([1, 0, 1]))
     tl.set_color(25, np.array([0.2, 0.2, 0.5]))
     assert_not_equal(tl.get_color(7), np.array([1, 0, 1]))
     assert_not_equal(tl.get_color(25), np.array([0.2, 0.2, 0.5]))
@@ -286,11 +288,9 @@ def test_timeline():
     tl.update_animation()
 
     if not shaders:
-        npt.assert_equal(tl.get_position(tl.current_timestamp),
-                         cube.GetPosition())
-        npt.assert_equal(tl.get_scale(tl.current_timestamp),
-                         cube.GetScale())
-        npt.assert_equal(tl.get_rotation(tl.current_timestamp),
-                         cube.GetOrientation())
-
-
+        npt.assert_almost_equal(tl.get_position(tl.current_timestamp),
+                                cube.GetPosition())
+        npt.assert_almost_equal(tl.get_scale(tl.current_timestamp),
+                                cube.GetScale())
+        npt.assert_almost_equal(tl.get_rotation(tl.current_timestamp),
+                                cube.GetOrientation())
