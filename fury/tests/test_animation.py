@@ -253,14 +253,14 @@ def test_timeline():
     t_before = tl.current_timestamp
     assert_true(tl.paused)
     time.sleep(0.1)
-    assert_equal(tl.current_timestamp, t_before)
+    npt.assert_almost_equal(tl.current_timestamp, t_before)
 
     tl.stop()
-    assert_true(tl.stopped)
-    assert_equal(tl.current_timestamp, 0)
+    npt.assert_almost_equal(tl.stopped)
+    npt.assert_almost_equal(tl.current_timestamp, 0)
 
-    npt.assert_equal(tl.get_position(0), np.array([0, 0, 0]))
-    npt.assert_equal(tl.get_position(7), np.array([4, 2, 20]))
+    npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
+    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
 
     tl.set_position_interpolator(LinearInterpolator)
     tl.set_position_interpolator(CubicBezierInterpolator)
