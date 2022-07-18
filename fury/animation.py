@@ -367,21 +367,19 @@ class Timeline(Container):
                 'camera': {}
             }
         }
-        self.loop = False
         self._last_timestamp = 0
         self._current_timestamp = 0
         self._speed = 1
         self._timelines = []
         self._camera = None
         self._scene = None
-        self._last_timestamp = 0
         self._last_started_time = 0
         self._playing = False
-        self._current_timestamp = 0
         self._has_playback_panel = playback_panel
         self._final_timestamp = 0
         self._needs_update = False
         self._reverse_playing = False
+        self._loop = False
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -434,14 +432,14 @@ class Timeline(Container):
             The name of the attribute.
         timestamp: float
             Timestamp of the keyframe.
-        value: float
+        value: ndarray
             Value of the keyframe at the given timestamp.
         is_camera: bool
             Indicated whether setting a camera property or general property.
-        pre_cp: float
+        pre_cp: ndarray, shape (1, M), optional
             The control point in case of using `cubic Bezier interpolator` when
             time exceeds this timestamp.
-        post_cp: float
+        post_cp: ndarray, shape (1, M), optional
             The control point in case of using `cubic Bezier interpolator` when
             time precedes this timestamp.
         """
@@ -467,7 +465,7 @@ class Timeline(Container):
         else:
             interpolators.get(typ).get(attrib).setup()
 
-        if timestamp > self._final_timestamp:
+        if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
             if self._has_playback_panel:
                 final_t = self.update_final_timestamp()
@@ -745,7 +743,7 @@ class Timeline(Container):
             attrib).interpolate(timestamp)
 
     def set_position(self, timestamp, position, pre_cp=None, post_cp=None):
-        """Set the camera focal position interpolator.
+        """Set a position keyframe at a specific timestamp.
 
         Parameters
         ----------
@@ -783,13 +781,40 @@ class Timeline(Container):
         self.set_keyframes('position', keyframes)
 
     def set_rotation(self, timestamp, euler):
+        """Set a rotation keyframe at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        euler: ndarray, shape(1, 3)
+            Euler angles that describes the rotation.
+        """
         self.set_keyframe('rotation', timestamp, euler)
 
     def set_rotation_as_vector(self, timestamp, vector):
+        """Set a rotation keyframe at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        vector: ndarray, shape(1, 3)
+            Directional vector that describes the rotation.
+        """
         euler = transform.Rotation.from_rotvec(vector).as_euler('xyz', True)
         self.set_keyframe('rotation', timestamp, euler)
 
     def set_scale(self, timestamp, scalar):
+        """Set a scale keyframe at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        vector: ndarray, shape(1, 3)
+            Directional vector that describes the rotation.
+        """
         self.set_keyframe('scale', timestamp, scalar)
 
     def set_scale_keyframes(self, keyframes):
@@ -834,33 +859,152 @@ class Timeline(Container):
         self.set_keyframe('opacity', timestamp, opacity)
 
     def set_opacity_keyframes(self, keyframes):
+        """Set a dict of opacity keyframes at once.
+        Should be in the following form:
+        {timestamp_1: opacity_1, timestamp_2: opacity_2}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 1) or float or int)
+            A dict with timestamps as keys and opacities as values.
+
+        Notes
+        -----
+        Opacity values should be between 0 and 1.
+
+        Examples
+        --------
+        >>> opacity = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
+        >>> Timeline.set_scale_keyframes(opacity)
+        """
         self.set_keyframes('opacity', keyframes)
 
     def get_position(self, t):
+        """Returns the interpolated position.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate position at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated position.
+        """
         return self.get_value('position', t)
 
     def get_rotation(self, t):
+        """Returns the interpolated rotation.
+
+        Parameters
+        ----------
+        t: float
+            the time to interpolate rotation at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated rotation.
+        """
         return self.get_value('rotation', t)
 
     def get_scale(self, t):
+        """Returns the interpolated scale.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate scale at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated scale.
+        """
         return self.get_value('scale', t)
 
     def get_color(self, t):
+        """Returns the interpolated color.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate color value at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated color.
+        """
         return self.get_value('color', t)
 
     def get_opacity(self, t):
+        """Returns the opacity value.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate opacity at.
+
+        Returns
+        -------
+        ndarray(1, 1):
+            The interpolated opacity.
+        """
         return self.get_value('opacity', t)
 
     def set_camera_position(self, timestamp, position):
+        """Returns the camera position.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate opacity at.
+
+        Returns
+        -------
+        ndarray(1, 1):
+            The interpolated opacity.
+        """
         self.set_camera_keyframe('position', timestamp, position)
 
     def set_camera_position_keyframes(self, keyframes):
+        """Set a dict of camera position keyframes at once.
+        Should be in the following form:
+        {timestamp_1: position_1, timestamp_2: position_2}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 3))
+            A dict with timestamps as keys and opacities as values.
+
+        Examples
+        --------
+        >>> pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
+        >>> Timeline.set_camera_position_keyframes(pos)
+        """
         self.set_camera_keyframes('position', keyframes)
 
     def set_camera_focal(self, timestamp, position):
         self.set_camera_keyframe('focal', timestamp, position)
 
     def set_camera_focal_keyframes(self, keyframes):
+        """Set multiple camera focal position keyframes at once.
+        Should be in the following form:
+        {timestamp_1: focal_1, timestamp_2: focal_1, ...}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 3))
+            A dict with timestamps as keys and camera focal positions as
+            values.
+
+        Examples
+        --------
+        >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
+        >>> Timeline.set_camera_focal_keyframes(focal_pos)
+        """
         self.set_camera_keyframes('focal', keyframes)
 
     def set_camera_view_up(self, timestamp, direction):
@@ -870,21 +1014,114 @@ class Timeline(Container):
         self.set_camera_keyframe('rotation', timestamp, direction)
 
     def set_camera_view_up_keyframes(self, keyframes):
+        """Set multiple camera view up direction keyframes.
+        Should be in the following form:
+        {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 3))
+            A dict with timestamps as keys and camera view up vectors as
+            values.
+
+        Examples
+        --------
+        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
+        >>> Timeline.set_camera_view_up_keyframes(pos)
+        """
         self.set_camera_keyframes('view_up', keyframes)
 
     def get_camera_position(self, t):
+        """Returns the interpolated camera position.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate camera position value at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera position.
+
+        Notes
+        -----
+        The returned position does not necessarily reflect the current camera
+        position, but te expected one.
+        """
         return self.get_camera_value('position', t)
 
     def get_camera_focal(self, t):
+        """Returns the interpolated camera's focal position.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera's focal position.
+
+        Notes
+        -----
+        The returned focal position does not necessarily reflect the current
+        camera's focal position, but the expected one.
+        """
         return self.get_camera_value('focal', t)
 
     def get_camera_view_up(self, t):
+        """Returns the interpolated camera's view-up directional vector.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera view-up directional vector.
+
+        Notes
+        -----
+        The returned focal position does not necessarily reflect the actual
+        camera view up directional vector, but the expected one.
+        """
         return self.get_camera_value('view_up', t)
 
     def get_camera_rotation(self, t):
+        """Returns the interpolated rotation for the camera expressed
+        in euler angles.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera's rotation.
+
+        Notes
+        -----
+        The returned focal position does not necessarily reflect the actual
+        camera view up directional vector, but the expected one.
+        """
         return self.get_camera_value('rotation', t)
 
     def add(self, item):
+        """Adds an item to the Timeline.
+        This item can be an actor, Timeline, list of actors, or a list of
+        Timelines.
+
+        Parameters
+        ----------
+        item: Timeline, vtkActor, list(Timeline), or list(vtkActor)
+            Actor/s to be animated by the timeline.
+        """
         if isinstance(item, list):
             for a in item:
                 self.add(a)
@@ -898,9 +1135,27 @@ class Timeline(Container):
                              f"the timeline.")
 
     def add_timeline(self, timeline):
+        """Adds an actor or list of actors to the Timeline.
+
+        Parameters
+        ----------
+        timeline: Timeline or list(Timeline)
+            Actor/s to be animated by the timeline.
+        """
+        if isinstance(timeline, list):
+            for a in timeline:
+                self.add_timeline(a)
+            return
         self._timelines.append(timeline)
 
     def add_actor(self, actor):
+        """Adds an actor or list of actors to the Timeline.
+
+        Parameters
+        ----------
+        actor: vtkActor or list(vtkActor)
+            Actor/s to be animated by the timeline.
+        """
         if isinstance(actor, list):
             for a in actor:
                 self.add_actor(a)
@@ -909,26 +1164,52 @@ class Timeline(Container):
         super(Timeline, self).add(actor)
 
     def get_actors(self):
+        """Returns a list of actors.
+
+        Returns
+        -------
+        list:
+            List of actors controlled by the Timeline.
+        """
         return self.items
 
     def get_timelines(self):
+        """Returns a list of child Timelines.
+
+        Returns
+        -------
+        list:
+            List of child Timelines of this Timeline.
+        """
         return self._timelines
 
     def remove_timelines(self):
+        """Removes all child Timelines from the Timeline"""
         self._timelines.clear()
 
     def remove_actor(self, actor):
+        """Removes an actor from the Timeline.
+
+        Parameters
+        ----------
+        actor: vtkActor
+            Actor to be removed from the timeline.
+        """
         self._items.remove(actor)
 
     def remove_actors(self):
+        """Removes all actors from the Timeline"""
         self.clear()
 
     def update_animation(self, t=None, force=False):
         """Updates the timeline animations"""
         if t is None:
             t = self.current_timestamp
-            if t >= self._final_timestamp:
-                self.pause()
+            if t > self._final_timestamp:
+                if self._loop:
+                    self.seek(0)
+                else:
+                    self.pause()
         if self._has_playback_panel and not force and \
                 t < self._final_timestamp:
             self.playback_panel.current_time = t
