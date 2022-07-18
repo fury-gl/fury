@@ -638,7 +638,7 @@ def rgb2hsv(rgb):
     -------
     out : (..., 3, ...) ndarray
         The image in HSV format. Same dimensions as input.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
@@ -706,14 +706,14 @@ def hsv2rgb(hsv):
     -------
     out : (..., 3, ...) ndarray
         The image in RGB format. Same dimensions as input.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
 
     hi = np.floor(hsv[..., 0] * 6)
@@ -755,7 +755,7 @@ def xyz2rgb(xyz):
     -------
     out : (..., 3, ...) ndarray
         The image in RGB format. Same dimensions as input.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
@@ -785,14 +785,14 @@ def rgb2xyz(rgb):
     -------
     out : (..., 3, ...) ndarray
         The image in XYZ format. Same dimensions as input.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
     rgb = rgb.astype(np.float)
     mask = rgb > 0.04045
@@ -847,7 +847,7 @@ def get_xyz_coords(illuminant, observer):
     out : array
         Array with 3 elements containing the XYZ coordinates of the given
         illuminant.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
@@ -883,14 +883,14 @@ def xyz2lab(xyz, illuminant="D65", observer="2"):
     -------
     out : (..., 3, ...) ndarray
         The image in CIE-LAB format. Same dimensions as input.
-        
+
     Notes
     -----
     Original Implementation from scikit-image package.
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
 
     xyz_ref_white = get_xyz_coords(illuminant, observer)
@@ -936,7 +936,7 @@ def lab2xyz(lab, illuminant="D65", observer="2"):
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
     L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
     y = (L + 16.) / 116.
@@ -986,7 +986,7 @@ def rgb2lab(rgb, illuminant="D65", observer="2"):
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
     return xyz2lab(rgb2xyz(rgb), illuminant, observer)
 
@@ -1015,6 +1015,6 @@ def lab2rgb(lab, illuminant="D65", observer="2"):
     it can be found at:
     https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
     This implementation might have been modified.
-    
+
     """
     return xyz2rgb(lab2xyz(lab, illuminant, observer))
