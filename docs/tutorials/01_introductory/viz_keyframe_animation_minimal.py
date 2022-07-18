@@ -47,7 +47,7 @@ scene.camera().SetPosition(0, 0, 90)
 # Adding timelines to the main Timeline
 
 
-# making a function to update the animation
+# making a function to update the animation and render the scene
 def timer_callback(_obj, _event):
     timeline.update_animation()
     showm.render()
