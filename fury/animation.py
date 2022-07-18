@@ -50,14 +50,15 @@ class Interpolator(object):
     def get_neighbour_keyframes(self, t):
         t_s, t_e = self.get_neighbour_timestamps(t)
         if isinstance(self, ColorInterpolator):
-            k1 = {"t": t_s, "data": self.space_keyframes[t_s]}
-            k2 = {"t": t_e, "data": self.space_keyframes[t_e]}
+            k1 = {"t": t_s, "data": self.space_keyframes.get(t_s)}
+            k2 = {"t": t_e, "data": self.space_keyframes.get(t_e)}
         else:
-            k1 = {"t": t_s, "data": self.keyframes[t_s]['value']}
-            k2 = {"t": t_e, "data": self.keyframes[t_e]['value']}
+            k1 = {"t": t_s, "data": self.keyframes.get(t_s).get('value')}
+            k2 = {"t": t_e, "data": self.keyframes.get(t_e).get('value')}
+
         if isinstance(self, CubicBezierInterpolator):
-            k1["cp"] = self.keyframes['post_cp'][t_s]
-            k2["cp"] = self.keyframes['pre_cp'][t_e]
+            k1["cp"] = self.keyframes.get('post_cp').get(t_s)
+            k2["cp"] = self.keyframes.get('pre_cp').get(t_e)
         return {"start": k1, "end": k2}
 
     @staticmethod
@@ -367,7 +368,6 @@ class Timeline(Container):
             }
         }
         self.loop = False
-        self._last_started_at = 0
         self._last_timestamp = 0
         self._current_timestamp = 0
         self._speed = 1
@@ -375,7 +375,7 @@ class Timeline(Container):
         self._camera = None
         self._scene = None
         self._last_timestamp = 0
-        self._last_started_at = 0
+        self._last_started_time = 0
         self._playing = False
         self._current_timestamp = 0
         self._has_playback_panel = playback_panel
@@ -419,13 +419,14 @@ class Timeline(Container):
             Current timestamp to be set.
         """
         if self.playing:
-            self._last_started_at = time.perf_counter() - timestamp
+            self._last_started_time = \
+                time.perf_counter() - timestamp / self.speed
         else:
             self._last_timestamp = timestamp
 
     def set_keyframe(self, attrib, timestamp, value, pre_cp=None,
                      post_cp=None, is_camera=False):
-        """Set a keyframe for a certain property.
+        """Set a keyframe for a certain attribute.
 
         Parameters
         ----------
@@ -473,12 +474,12 @@ class Timeline(Container):
                 self.playback_panel.final_time = final_t
 
     def set_keyframes(self, attrib, keyframes, is_camera=False):
-        """Set multiple keyframes for a certain property.
+        """Set multiple keyframes for a certain attribute.
 
         Parameters
         ----------
         attrib: str
-            The name of the property.
+            The name of the attribute.
         keyframes: dict
             A dict object containing keyframes to be set.
         is_camera: bool
@@ -715,14 +716,33 @@ class Timeline(Container):
         """
         self.set_camera_interpolator("focal", interpolator)
 
-    def get_property_value(self, attrib, t):
+    def get_value(self, attrib, timestamp):
+        """Returns the value of an attribute at any given timestamp.
 
+        Parameters
+        ----------
+        attrib: str
+            The attribute name.
+        timestamp: float
+            The timestamp to interpolate at.
+        """
         return self._data.get('interpolators').get('attribs').get(
-            attrib).interpolate(t)
+            attrib).interpolate(timestamp)
 
-    def get_camera_property_value(self, attrib, t):
+    def get_camera_value(self, attrib, timestamp):
+        """Returns the value of an attribute interpolated at any given
+        timestamp.
+
+        Parameters
+        ----------
+        attrib: str
+            The attribute name.
+        timestamp: float
+            The timestamp to interpolate at.
+
+        """
         return self._data.get('interpolators').get('camera').get(
-            attrib).interpolate(t)
+            attrib).interpolate(timestamp)
 
     def set_position(self, timestamp, position, pre_cp=None, post_cp=None):
         """Set the camera focal position interpolator.
@@ -746,6 +766,20 @@ class Timeline(Container):
         self.set_keyframe('position', timestamp, position, pre_cp, post_cp)
 
     def set_position_keyframes(self, keyframes):
+        """Set a dict of position keyframes at once.
+        Should be in the following form:
+        {timestamp_1: position_1, timestamp_2: position_2}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 3))
+            A dict with timestamps as keys and positions as values.
+
+        Examples
+        --------
+        >>> pos_keyframes = {1, np.array([0, 0, 0]), 3, np.array([50, 6, 6])}
+        >>> Timeline.set_position_keyframes(pos_keyframes)
+        """
         self.set_keyframes('position', keyframes)
 
     def set_rotation(self, timestamp, euler):
@@ -759,12 +793,40 @@ class Timeline(Container):
         self.set_keyframe('scale', timestamp, scalar)
 
     def set_scale_keyframes(self, keyframes):
+        """Set a dict of scale keyframes at once.
+        Should be in the following form:
+        {timestamp_1: scale_1, timestamp_2: scale_2}
+
+        Parameters
+        ----------
+        keyframes: dict(float: ndarray, shape(1, 3))
+            A dict with timestamps as keys and scales as values.
+
+        Examples
+        --------
+        >>> scale_keyframes = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
+        >>> Timeline.set_scale_keyframes(scale_keyframes)
+        """
         self.set_keyframes('scale', keyframes)
 
     def set_color(self, timestamp, color):
         self.set_keyframe('color', timestamp, color)
 
     def set_color_keyframes(self, keyframes):
+        """Set a dict of color keyframes at once.
+        Should be in the following form:
+        {timestamp_1: color_1, timestamp_2: color_2}
+
+        Parameters
+        ----------
+        keyframes: dict
+            A dict with timestamps as keys and color as values.
+
+        Examples
+        --------
+        >>> color_keyframes = {1, np.array([1, 0, 1]), 3, np.array([0, 0, 1])}
+        >>> Timeline.set_color_keyframes(color_keyframes)
+        """
         self.set_keyframes('color', keyframes)
 
     def set_opacity(self, timestamp, opacity):
@@ -775,19 +837,19 @@ class Timeline(Container):
         self.set_keyframes('opacity', keyframes)
 
     def get_position(self, t):
-        return self.get_property_value('position', t)
+        return self.get_value('position', t)
 
     def get_rotation(self, t):
-        return self.get_property_value('rotation', t)
+        return self.get_value('rotation', t)
 
     def get_scale(self, t):
-        return self.get_property_value('scale', t)
+        return self.get_value('scale', t)
 
     def get_color(self, t):
-        return self.get_property_value('color', t)
+        return self.get_value('color', t)
 
     def get_opacity(self, t):
-        return self.get_property_value('opacity', t)
+        return self.get_value('opacity', t)
 
     def set_camera_position(self, timestamp, position):
         self.set_camera_keyframe('position', timestamp, position)
@@ -804,17 +866,23 @@ class Timeline(Container):
     def set_camera_view_up(self, timestamp, direction):
         self.set_camera_keyframe('view_up', timestamp, direction)
 
+    def set_camera_rotation(self, timestamp, direction):
+        self.set_camera_keyframe('rotation', timestamp, direction)
+
     def set_camera_view_up_keyframes(self, keyframes):
         self.set_camera_keyframes('view_up', keyframes)
 
     def get_camera_position(self, t):
-        return self.get_camera_property_value('position', t)
+        return self.get_camera_value('position', t)
 
     def get_camera_focal(self, t):
-        return self.get_camera_property_value('focal', t)
+        return self.get_camera_value('focal', t)
 
     def get_camera_view_up(self, t):
-        return self.get_camera_property_value('view_up', t)
+        return self.get_camera_value('view_up', t)
+
+    def get_camera_rotation(self, t):
+        return self.get_camera_value('rotation', t)
 
     def add(self, item):
         if isinstance(item, list):
@@ -877,6 +945,10 @@ class Timeline(Container):
                 cam_up = self.get_camera_view_up(t)
                 self._camera.SetViewUp(cam_up)
 
+            if self.is_interpolatable('rotation', is_camera=True):
+                cam_up = self.get_camera_rotation(t)
+                self._camera.Set(cam_up)
+
             if self.is_interpolatable('position'):
                 position = self.get_position(t)
                 self.SetPosition(position)
@@ -907,7 +979,8 @@ class Timeline(Container):
         """Play the animation"""
         self.update_final_timestamp()
         if not self.playing:
-            self._last_started_at = time.perf_counter() - self._last_timestamp
+            self._last_started_time = \
+                time.perf_counter() - self._last_timestamp / self.speed
             self._playing = True
 
     def pause(self):
@@ -939,7 +1012,7 @@ class Timeline(Container):
         """
         if self.playing:
             self._last_timestamp = (time.perf_counter() -
-                                    self._last_started_at) * 1
+                                    self._last_started_time) * self.speed
         return self._last_timestamp
 
     @current_timestamp.setter
@@ -976,7 +1049,8 @@ class Timeline(Container):
 
         """
         if self.playing:
-            self._last_started_at = time.perf_counter() - timestamp
+            self._last_started_time = \
+                time.perf_counter() - timestamp / self.speed
         else:
             self._last_timestamp = timestamp
             self.update_animation(force=True)
