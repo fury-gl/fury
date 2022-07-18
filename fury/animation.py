@@ -955,19 +955,52 @@ class Timeline(Container):
         return self.get_value('opacity', t)
 
     def set_camera_position(self, timestamp, position):
-        """Returns the camera position.
+        """Sets the camera position keyframe.
 
         Parameters
         ----------
-        t: float
+        timestamp: float
             The time to interpolate opacity at.
-
-        Returns
-        -------
-        ndarray(1, 1):
-            The interpolated opacity.
+        position: ndarray, shape(1, 3)
+            The camera position
         """
         self.set_camera_keyframe('position', timestamp, position)
+
+    def set_camera_focal(self, timestamp, position):
+        """Sets camera's focal position keyframe.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to interpolate opacity at.
+        position: ndarray, shape(1, 3)
+            The camera position
+        """
+        self.set_camera_keyframe('focal', timestamp, position)
+
+    def set_camera_view_up(self, timestamp, direction):
+        """Sets the camera view-up direction keyframe.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to interpolate at.
+        direction: ndarray, shape(1, 3)
+            The camera view-up direction
+        """
+        self.set_camera_keyframe('view_up', timestamp, direction)
+
+    def set_camera_rotation(self, timestamp, euler):
+        """Sets the camera rotation keyframe.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to interpolate at.
+        euler: ndarray, shape(1, 3)
+            The euler angles describing the camera rotation.
+        """
+        self.set_camera_keyframe('rotation', timestamp, euler)
 
     def set_camera_position_keyframes(self, keyframes):
         """Set a dict of camera position keyframes at once.
@@ -985,9 +1018,6 @@ class Timeline(Container):
         >>> Timeline.set_camera_position_keyframes(pos)
         """
         self.set_camera_keyframes('position', keyframes)
-
-    def set_camera_focal(self, timestamp, position):
-        self.set_camera_keyframe('focal', timestamp, position)
 
     def set_camera_focal_keyframes(self, keyframes):
         """Set multiple camera focal position keyframes at once.
@@ -1007,12 +1037,6 @@ class Timeline(Container):
         """
         self.set_camera_keyframes('focal', keyframes)
 
-    def set_camera_view_up(self, timestamp, direction):
-        self.set_camera_keyframe('view_up', timestamp, direction)
-
-    def set_camera_rotation(self, timestamp, direction):
-        self.set_camera_keyframe('rotation', timestamp, direction)
-
     def set_camera_view_up_keyframes(self, keyframes):
         """Set multiple camera view up direction keyframes.
         Should be in the following form:
@@ -1027,7 +1051,7 @@ class Timeline(Container):
         Examples
         --------
         >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
-        >>> Timeline.set_camera_view_up_keyframes(pos)
+        >>> Timeline.set_camera_view_up_keyframes(view_ups)
         """
         self.set_camera_keyframes('view_up', keyframes)
 
