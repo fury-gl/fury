@@ -174,8 +174,8 @@ def test_color_interpolators():
     ]
 
     for interp in color_interps:
-        npt.assert_equal(interp.interpolate(-999), interp.interpolate(1))
-        npt.assert_equal(interp.interpolate(999), interp.interpolate(2))
+        npt.assert_almost_equal(interp.interpolate(-999), interp.interpolate(1))
+        npt.assert_almost_equal(interp.interpolate(999), interp.interpolate(2))
 
     for interps in combinations(color_interps, 2):
         for timestamp in data.keys():

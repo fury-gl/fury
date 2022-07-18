@@ -280,7 +280,7 @@ class Slerp(Interpolator):
         t = min_t if t < min_t else max_t if t > max_t else t
         v = self._slerp(t)
         q = v.as_quat()
-        return self._quaternion2euler(*q)
+        return self.quaternion2euler(*q)
 
 
 class ColorInterpolator(Interpolator):
