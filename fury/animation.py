@@ -1,4 +1,3 @@
-import math
 import time
 import numpy as np
 from scipy import interpolate
@@ -234,6 +233,11 @@ class Slerp(Interpolator):
     ----------
     keyframes : dict
         Rotation keyframes to be interpolated at any time.
+
+    Notes
+    -----
+    Rotation keyframes must be in the form of Euler degrees.
+
     """
 
     def __init__(self, keyframes):
@@ -252,19 +256,19 @@ class Slerp(Interpolator):
 
     @staticmethod
     def _quaternion2euler(x, y, z, w):
-        ysqr = y * y
+        y_2 = y ** 2
 
-        t0 = +2.0 * (w * x + y * z)
-        t1 = +1.0 - 2.0 * (x * x + ysqr)
+        t0 = 2.0 * (w * x + y * z)
+        t1 = 1.0 - 2.0 * (x * x + y_2)
         X = np.degrees(np.arctan2(t0, t1))
 
-        t2 = +2.0 * (w * y - z * x)
+        t2 = 2.0 * (w * y - z * x)
 
         t2 = np.clip(t2, a_min=-1.0, a_max=1.0)
         Y = np.degrees(np.arcsin(t2))
 
         t3 = 2.0 * (w * z + x * y)
-        t4 = 1.0 - 2.0 * (ysqr + z * z)
+        t4 = 1.0 - 2.0 * (y_2 + z * z)
         Z = np.degrees(np.arctan2(t3, t4))
 
         return X, Y, Z
@@ -564,7 +568,7 @@ class Timeline(Container):
                 interpolator(keyframes)
 
     def is_interpolatable(self, attrib, is_camera=False):
-        """Checks if a property is interpolatable.
+        """Checks whether a property is interpolatable.
 
         Parameters
         ----------
@@ -576,7 +580,7 @@ class Timeline(Container):
         Returns
         -------
         bool
-            Interpolatable state.
+            True if the property is interpolatable by the Timeline.
 
         Notes
         -------
@@ -591,31 +595,128 @@ class Timeline(Container):
         return attrib in self._data.get('interpolators').get(typ)
 
     def set_camera_interpolator(self, attrib, interpolator):
+        """Set the interpolator for a specific camera property.
 
+        Parameters
+        ----------
+        attrib: str
+            The name of the camera property.
+            The already handeled properties are position, focal, and view_up.
+
+        interpolator: class
+            The interpolator that handles the camera property interpolation
+            between keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_camera_interpolator('focal', LinearInterpolator)
+        """
         self.set_interpolator(attrib, interpolator, is_camera=True)
 
     def set_position_interpolator(self, interpolator):
+        """Set the position interpolator for all eactors inside the
+        timeline.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the position interpolation between
+            keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_position_interpolator(CubicBezierInterpolator)
+        """
         self.set_interpolator('position', interpolator)
 
     def set_scale_interpolator(self, interpolator):
+        """Set the scale interpolator for all the actors inside the
+        timeline.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the scale interpolation between
+            keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_scale_interpolator(StepInterpolator)
+        """
         self.set_interpolator('scale', interpolator)
 
     def set_rotation_interpolator(self, interpolator):
+        """Set the scale interpolator for all the actors inside the
+        timeline.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the rotation (orientation)
+            interpolation between keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_rotation_interpolator(Slerp)
+        """
         self.set_interpolator('rotation', interpolator)
 
     def set_color_interpolator(self, interpolator):
+        """Set the color interpolator for all the actors inside the
+        timeline.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the color interpolation between
+            color keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_color_interpolator(LABInterpolator)
+        """
         self.set_interpolator('color', interpolator)
 
     def set_opacity_interpolator(self, interpolator):
+        """Set the opacity interpolator for all the actors inside the
+        timeline.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the opacity interpolation between
+            keyframes.
+
+        Examples
+        ---------
+        >>> Timeline.set_opacity_interpolator(StepInterpolator)
+        """
         self.set_interpolator('opacity', interpolator)
 
     def set_camera_position_interpolator(self, interpolator):
+        """Set the camera position interpolator.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the interpolation of camera
+            position keyframes.
+        """
         self.set_camera_interpolator("position", interpolator)
 
     def set_camera_focal_interpolator(self, interpolator):
+        """Set the camera focal position interpolator.
+
+        Parameters
+        ----------
+        interpolator: class
+            The interpolator class to handle the interpolation of camera
+            focal position keyframes.
+        """
         self.set_camera_interpolator("focal", interpolator)
 
     def get_property_value(self, attrib, t):
+        
         return self._data.get('interpolators').get('attribs').get(
             attrib).interpolate(t)
 
@@ -629,8 +730,12 @@ class Timeline(Container):
     def set_position_keyframes(self, keyframes):
         self.set_keyframes('position', keyframes)
 
-    def set_rotation(self, timestamp, quat):
-        self.set_keyframe('rotation', timestamp, quat)
+    def set_rotation(self, timestamp, euler):
+        self.set_keyframe('rotation', timestamp, euler)
+
+    def set_rotation_as_vector(self, timestamp, vector):
+        euler = transform.Rotation.from_rotvec(vector).as_euler('xyz', True)
+        self.set_keyframe('rotation', timestamp, euler)
 
     def set_scale(self, timestamp, scalar):
         self.set_keyframe('scale', timestamp, scalar)
@@ -806,7 +911,14 @@ class Timeline(Container):
 
     @property
     def current_timestamp(self):
-        """Get current timestamp of the animation"""
+        """Get current timestamp of the Timeline.
+
+        Returns
+        ----------
+        float
+            The current time of the Timeline.
+
+        """
         if self.playing:
             self._last_timestamp = (time.perf_counter() -
                                     self._last_started_at) * 1
@@ -814,16 +926,30 @@ class Timeline(Container):
 
     @current_timestamp.setter
     def current_timestamp(self, timestamp):
-        """Set current timestamp of the animation"""
+        """Set current timestamp of the Timeline.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to set as current time of the Timeline.
+
+        """
         self.seek(timestamp)
 
     @property
     def final_timestamp(self):
-        """Get current timestamp of the animation"""
+        """Get the final timestamp of the Timeline.
+
+        Returns
+        ----------
+        float
+            The final time of the Timeline.
+
+        """
         return self._final_timestamp
 
     def seek(self, t):
-        """Change the current timestamp of the animation"""
+        """Change the current timestamp of the Timeline"""
         if self.playing:
             self._last_started_at = time.perf_counter() - t
         else:
@@ -839,41 +965,50 @@ class Timeline(Container):
 
     @property
     def playing(self):
-        """Get the playing state of the timeline.
+        """Return whether the Timeline is playing.
 
         Returns
         -------
         bool
-            The playing state.
+            Timeline is playing if True.
         """
         return self._playing
 
     @playing.setter
     def playing(self, playing):
-        """Sets the playing state of the timeline.
+        """Sets the playing state of the Timeline.
 
         Parameters
         ----------
         playing: bool
             The playing state to be set.
+
         """
         self._playing = playing
 
     @property
     def stopped(self):
-        """Get the playing state of the timeline.
+        """Return whether the Timeline is stopped.
 
         Returns
         -------
         bool
-            The playing state.
+            Timeline is stopped if True.
 
         """
         return not self.playing and not self._last_timestamp
 
     @property
     def paused(self):
-        """Get the paused status of the timeline"""
+        """Return whether the Timeline is paused.
+
+        Returns
+        -------
+        bool
+            Timeline is paused if True.
+
+        """
+
         return not self.playing and self._last_timestamp is not None
 
     def set_speed(self, speed):
