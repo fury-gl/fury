@@ -62,7 +62,7 @@ class Interpolator(object):
         return {"start": k1, "end": k2}
 
     @staticmethod
-    def _lerp(v1, v2, t1, t2, t):
+    def lerp(v1, v2, t1, t2, t):
         if t1 == t2:
             return v1
         v = v2 - v1
@@ -70,7 +70,7 @@ class Interpolator(object):
         return dt * v + v1
 
     @staticmethod
-    def _get_time_delta(t, t1, t2):
+    def get_time_delta(t, t1, t2):
         return 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
 
 
@@ -114,7 +114,7 @@ class LinearInterpolator(Interpolator):
         t2 = self._get_nearest_larger_timestamp(t)
         p1 = self.keyframes.get(t1).get('value')
         p2 = self.keyframes.get(t2).get('value')
-        return self._lerp(p1, p2, t1, t2, t)
+        return self.lerp(p1, p2, t1, t2, t)
 
 
 class SplineInterpolator(Interpolator):
@@ -154,7 +154,7 @@ class SplineInterpolator(Interpolator):
         t2 = self._get_nearest_larger_timestamp(t)
 
         mi_index = np.where(self.timestamps == t1)[0][0]
-        dt = self._get_time_delta(t, t1, t2)
+        dt = self.get_time_delta(t, t1, t2)
         sect = sum(self.linear_lengths[:mi_index])
         ts = (sect + dt * (self.linear_lengths[mi_index])) / sum(
             self.linear_lengths)
@@ -219,7 +219,7 @@ class CubicBezierInterpolator(Interpolator):
         p1 = self.keyframes.get(t1).get('post_cp')
         p2 = self.keyframes.get(t2).get('pre_cp')
         p3 = self.keyframes.get(t2).get('value')
-        dt = self._get_time_delta(t, t1, t2)
+        dt = self.get_time_delta(t, t1, t2)
         res = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
               (1 - dt) * dt ** 2 * p2 + dt ** 3 * p3
         return res
@@ -256,7 +256,7 @@ class Slerp(Interpolator):
         self._slerp = transform.Slerp(timestamps, rotations)
 
     @staticmethod
-    def _quaternion2euler(x, y, z, w):
+    def quaternion2euler(x, y, z, w):
         y_2 = y ** 2
 
         t0 = 2.0 * (w * x + y * z)
@@ -315,7 +315,7 @@ class ColorInterpolator(Interpolator):
         t1, t2 = self.get_neighbour_timestamps(t)
         p1 = self.space_keyframes.get(t1)
         p2 = self.space_keyframes.get(t2)
-        lab_val = self._lerp(p1, p2, t1, t2, t)
+        lab_val = self.lerp(p1, p2, t1, t2, t)
         return self.space_to_rgb(lab_val)
 
 
