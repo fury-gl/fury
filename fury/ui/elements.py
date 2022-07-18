@@ -2631,6 +2631,7 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
             slot.set_visibility(False)
+            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
@@ -2816,6 +2817,8 @@ class ListBoxItem2D(UI):
         self.list_box.select(self, multiselect, range_select)
         i_ren.force_render()
 
+    def resize(self, size):
+        self.background.resize(size)
 
 class FileMenu2D(UI):
     """A menu to select files in the current folder.
