@@ -9,7 +9,7 @@ from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 
 
-class Interpolator(object):
+class Interpolator:
     def __init__(self, keyframes):
         super(Interpolator, self).__init__()
         self.keyframes = keyframes
