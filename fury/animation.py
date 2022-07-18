@@ -18,6 +18,7 @@ class Interpolator:
         self.final_timestamp = 0
         self._unity_kf = True
         self.setup()
+        self.id = -1
 
     def setup(self):
         self.timestamps = np.sort(np.array(list(self.keyframes)), axis=None)
@@ -72,6 +73,14 @@ class Interpolator:
     @staticmethod
     def get_time_delta(t, t1, t2):
         return 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
+    
+    @property
+    def id(self):
+        return self.id
+    
+    @id.setter
+    def id(self, id):
+        self.id = id
 
 
 class StepInterpolator(Interpolator):
