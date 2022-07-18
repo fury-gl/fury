@@ -80,7 +80,7 @@ class Interpolator:
     
     @id.setter
     def id(self, id):
-        self.id = id
+        self._id = id
 
 
 class StepInterpolator(Interpolator):
