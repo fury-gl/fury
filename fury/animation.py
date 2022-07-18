@@ -73,6 +73,7 @@ class Interpolator(object):
     def _get_time_delta(t, t1, t2):
         return 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
 
+
 class StepInterpolator(Interpolator):
     """Step interpolator for keyframes.
 
@@ -200,9 +201,17 @@ class CubicBezierInterpolator(Interpolator):
             # keyframe at timestamp
             kf_ts = self.keyframes.get(ts)
             if 'pre_cp' not in kf_ts or kf_ts.get('pre_cp') is None:
-                kf_ts['pre_cp'] = self.keyframes.get(ts).get('value')
+                kf_ts['pre_cp'] = kf_ts.get('value')
+            else:
+                kf_ts['pre_cp'] = np.array(kf_ts.get('pre_cp'))
+
             if 'post_cp' not in kf_ts or kf_ts.get('post_cp') is None:
-                kf_ts['post_cp'] = self.keyframes.get(ts).get('value')
+                kf_ts['post_cp'] = kf_ts.get('value')
+            else:
+                kf_ts['post_cp'] = np.array(kf_ts.get('post_cp'))
+
+            # TODO: make it an option to deduce the control point if the
+            #  other control point exists
 
     def interpolate(self, t):
         t1, t2 = self.get_neighbour_timestamps(t)
@@ -442,8 +451,8 @@ class Timeline(Container):
         attrib_keyframes = self._data.get('keyframes').get(typ).get(attrib)
         attrib_keyframes[timestamp] = {
             'value': np.array(value).astype(np.float),
-            'pre_cp': np.array(pre_cp).astype(np.float),
-            'post_cp': np.array(post_cp).astype(np.float)
+            'pre_cp': pre_cp,
+            'post_cp': post_cp
         }
         interpolators = self._data.get('interpolators')
         if attrib not in interpolators.get(typ):
