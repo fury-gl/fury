@@ -663,8 +663,6 @@ class LineSlider2D(UI):
         else:
             self.text.position = (self.text.position[0], disk_position_y)
 
-        self.on_change(self)
-
     def track_click_callback(self, i_ren, _vtkactor, _slider):
         """Update disk position and grab the focus.
 
@@ -678,6 +676,7 @@ class LineSlider2D(UI):
         """
         position = i_ren.event.position
         self.set_position(position)
+        self.on_change(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -695,6 +694,7 @@ class LineSlider2D(UI):
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
+        self.on_change(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
