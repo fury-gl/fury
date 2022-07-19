@@ -657,6 +657,24 @@ Text Overflow of List Box 2D"]]
     assert_arrays_equal(selected_values, expected)
 
 
+def test_ui_listbox_2d_visibility():
+    l1 = ui.ListBox2D(values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+                      position=(12, 10), size=(100, 100))
+    l2 = ui.ListBox2D(values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+                      position=(10, 10), size=(100, 300))
+
+    def assert_listbox(list_box, expected_scroll_bar_height):
+        view_end = list_box.view_offset + list_box.nb_slots
+        assert list_box.scroll_bar.height == expected_scroll_bar_height
+        for slot in list_box.slots[view_end:]:
+            assert slot.size[1] == list_box.slot_height
+
+    assert_listbox(l1, 40.0)
+
+    # Assert that for list 2 the slots and scrollbars aren't visible.
+    assert_listbox(l2, 0)
+
+
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
