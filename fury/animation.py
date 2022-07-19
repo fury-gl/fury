@@ -596,9 +596,6 @@ class Timeline(Container):
         True means that it's safe to use `Interpolator.interpolate(t)` for the
         specified property. And False means the opposite.
 
-        Examples
-        ---------
-        >>> Timeline.set_interpolator('position', LinearInterpolator)
         """
         typ = 'camera' if is_camera else 'attribs'
         return attrib in self._data.get('interpolators').get(typ)
