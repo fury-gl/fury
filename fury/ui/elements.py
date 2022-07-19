@@ -3527,11 +3527,6 @@ class PlaybackPanel(UI):
         self._stop_btn.on_left_mouse_button_clicked = stop
 
         def on_progress_change(slider):
-            val = slider.value
-            if np.isnan(val):
-                val = self.final_time
-            self.text.message = \
-                time.strftime('%H:%M:%S', time.gmtime(val))
             self.on_progress_bar_changed(slider.value)
 
         self._progress_bar.on_change = on_progress_change
@@ -3578,6 +3573,9 @@ class PlaybackPanel(UI):
         t: float
             Current time to be set.
         """
+        t = np.clip(t, 0, self.final_time)
+        self.text.message = \
+            time.strftime('%H:%M:%S', time.gmtime(t))
         self._progress_bar.value = t
 
     def _get_actors(self):
