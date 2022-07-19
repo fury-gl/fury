@@ -238,12 +238,18 @@ def test_timeline():
     assert_true(isinstance(tl.playback_panel, PlaybackPanel))
 
     for t in [-10, 0, 2.2, 7, 100]:
-        tl.playback_panel.current_time = t
-        npt.assert_almost_equal(tl.current_timestamp,
-                                tl.playback_panel.current_time)
+        tl.seek(t)
+        assert_less_equal(tl.current_timestamp, tl.final_timestamp)
+        assert_greater_equal(tl.current_timestamp, 0)
+
+        assert_greater_equal(tl.current_timestamp,
+                             tl.playback_panel.current_time)
 
         if 0 <= t <= tl.final_timestamp:
             npt.assert_almost_equal(tl.current_timestamp, t)
+            # check if seeking a certain time affects the time slider's value.
+            npt.assert_almost_equal(tl.current_timestamp,
+                                    tl.playback_panel.current_time)
 
     tl.play()
     t_before = tl.current_timestamp

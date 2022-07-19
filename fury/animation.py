@@ -1359,6 +1359,12 @@ class Timeline(Container):
             The time to seek.
 
         """
+        # assuring timestamp value is in the timeline range
+        if timestamp < 0:
+            timestamp = 0
+        elif timestamp > self.final_timestamp:
+            timestamp = self.final_timestamp
+
         if self.playing:
             self._last_started_time = \
                 time.perf_counter() - timestamp / self.speed
