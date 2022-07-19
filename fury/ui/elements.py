@@ -2622,6 +2622,8 @@ class ListBox2D(UI):
             if slot.textblock.scene is not None:
                 clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
+            if slot.size[1] != self.slot_height:
+                slot.resize((self.slot_width, self.slot_height))
             if slot.element in self.selected:
                 slot.select()
             else:
@@ -2653,6 +2655,7 @@ class ListBox2D(UI):
 
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
 
     def clear_selection(self):
         del self.selected[:]
