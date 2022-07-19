@@ -473,6 +473,8 @@ class LineSlider2D(UI):
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
 
         self.value = initial_value
         self.update()
@@ -612,6 +614,7 @@ class LineSlider2D(UI):
     def value(self, value):
         value_range = self.max_value - self.min_value
         self.ratio = (value - self.min_value) / value_range
+        self.on_value_changed(self)
 
     @property
     def ratio(self):
@@ -678,6 +681,7 @@ class LineSlider2D(UI):
         """
         position = i_ren.event.position
         self.set_position(position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -695,6 +699,7 @@ class LineSlider2D(UI):
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -816,6 +821,11 @@ class LineDoubleSlider2D(UI):
         self.text[1].font_size = font_size
         self.text_template = text_template
 
+        # Offer some standard hooks to the user.
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
         # Setting the handle positions will also update everything.
         self._values = [initial_values[0], initial_values[1]]
         self._ratio = [None, None]
@@ -863,6 +873,7 @@ class LineDoubleSlider2D(UI):
             self.handle_release_callback
         self.handles[1].on_left_mouse_button_released = \
             self.handle_release_callback
+
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -1090,6 +1101,7 @@ class LineDoubleSlider2D(UI):
 
         """
         self.left_disk_ratio = self.value_to_ratio(left_disk_value)
+        self.on_value_changed(self)
 
     @property
     def right_disk_value(self):
@@ -1106,6 +1118,7 @@ class LineDoubleSlider2D(UI):
             New value for the right disk.
         """
         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
+        self.on_value_changed(self)
 
     @property
     def bottom_disk_ratio(self):
@@ -1193,9 +1206,6 @@ class LineDoubleSlider2D(UI):
 
         return self.text_template.format(value=self._values[disk_number])
 
-    def on_change(self, slider):
-        pass
-
     def update(self, disk_number):
         """Update the slider.
 
@@ -1249,6 +1259,7 @@ class LineDoubleSlider2D(UI):
         elif vtkactor == self.handles[1].actors[0]:
             self.set_position(position, 1)
             self.handles[1].color = self.active_color
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -1345,6 +1356,8 @@ class RingSlider2D(UI):
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
 
         self._value = initial_value
         self.value = initial_value
@@ -1423,6 +1436,7 @@ class RingSlider2D(UI):
     def value(self, value):
         value_range = self.max_value - self.min_value
         self.ratio = (value - self.min_value) / value_range
+        self.on_value_changed(self)
 
     @property
     def previous_value(self):
@@ -1505,6 +1519,7 @@ class RingSlider2D(UI):
         """
         click_position = i_ren.event.position
         self.move_handle(click_position=click_position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -1522,6 +1537,7 @@ class RingSlider2D(UI):
         click_position = i_ren.event.position
         self.handle.color = self.active_color
         self.move_handle(click_position=click_position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
