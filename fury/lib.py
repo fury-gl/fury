@@ -88,6 +88,7 @@ Follower = rcvtk.vtkFollower
 TextActor = rcvtk.vtkTextActor
 TextActor3D = rcvtk.vtkTextActor3D
 Property2D = rcvtk.vtkProperty2D
+Camera = rcvtk.vtkCamera
 
 ##############################################################
 #  vtkRenderingFreeType Module
