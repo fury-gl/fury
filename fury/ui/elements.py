@@ -2065,7 +2065,6 @@ class ComboBox2D(UI):
         self._selection = placeholder
         self._menu_visibility = False
         self._selection_ID = None
-        self.draggable = draggable
         self.sel_text_color = selection_text_color
         self.sel_bg_color = selection_bg_color
         self.menu_txt_color = menu_text_color
@@ -2084,7 +2083,7 @@ class ComboBox2D(UI):
             ('left', read_viz_icons(fname='circle-left.png')),
             ('down', read_viz_icons(fname='circle-down.png'))]
 
-        super(ComboBox2D, self).__init__()
+        super(ComboBox2D, self).__init__(draggable=draggable)
         self.position = position
 
     def _setup(self):
@@ -2118,29 +2117,12 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
-        if self.draggable:
-            self.drop_down_button.on_left_mouse_button_dragged =\
-                self.left_button_dragged
-            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
-                = self.left_button_dragged
-            self.selection_box.on_left_mouse_button_dragged =\
-                self.left_button_dragged
-            self.selection_box.background.on_left_mouse_button_dragged =\
-                self.left_button_dragged
-
-            self.drop_down_button.on_left_mouse_button_pressed =\
-                self.left_button_pressed
-            self.drop_down_menu.panel.background.on_left_mouse_button_pressed\
-                = self.left_button_pressed
-            self.selection_box.on_left_mouse_button_pressed =\
-                self.left_button_pressed
-            self.selection_box.background.on_left_mouse_button_pressed =\
-                self.left_button_pressed
-        else:
-            self.panel.background.on_left_mouse_button_dragged =\
-                lambda i_ren, _obj, _comp: i_ren.force_render
-            self.drop_down_menu.panel.background.on_left_mouse_button_dragged\
-                = lambda i_ren, _obj, _comp: i_ren.force_render
+        self._draggable_components.extend([
+            self.drop_down_button,
+            self.drop_down_menu.panel.background,
+            self.selection_box,
+            self.selection_box.background
+        ])
 
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:
@@ -2286,18 +2268,6 @@ class ComboBox2D(UI):
 
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
-
-    def left_button_pressed(self, i_ren, _obj, _sub_component):
-        click_pos = np.array(i_ren.event.position)
-        self._click_position = click_pos
-        i_ren.event.abort()  # Stop propagating the event.
-
-    def left_button_dragged(self, i_ren, _obj, _sub_component):
-        click_position = np.array(i_ren.event.position)
-        change = click_position - self._click_position
-        self.panel.position += change
-        self._click_position = click_position
-        i_ren.force_render()
 
 
 class ListBox2D(UI):

@@ -71,7 +71,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, position=(0, 0)):
+    def __init__(self, position=(0, 0), draggable=False):
         """Init scene.
 
         Parameters
@@ -84,6 +84,8 @@ class UI(object, metaclass=abc.ABCMeta):
         self._scene = object()
         self._position = np.array([0, 0])
         self._callbacks = []
+        self._draggable = draggable
+        self._draggable_components = []
 
         self._setup()  # Setup needed actors and sub UI components.
         self.position = position
@@ -108,6 +110,20 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_double_clicked = lambda i_ren, obj, element: None
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
+        self._set_draggable()  # Setup draggable components.
+
+    def _set_draggable(self):
+        for component in self._draggable_components:
+            if self._draggable:
+                component.on_left_mouse_button_dragged =\
+                    self._left_button_dragged
+                component.on_left_mouse_button_pressed =\
+                    self._left_button_pressed
+            else:
+                component.on_left_mouse_button_dragged = \
+                    lambda i_ren, _obj, _comp: i_ren.force_render
+                component.on_left_mouse_button_pressed = \
+                    lambda i_ren, _obj, _comp: i_ren.force_render
 
     @abc.abstractmethod
     def _setup(self):
@@ -328,6 +344,17 @@ class UI(object, metaclass=abc.ABCMeta):
     def key_press_callback(i_ren, obj, self):
         self.on_key_press(i_ren, obj, self)
 
+    def _left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()  # Stop propagating the event.
+
+    def _left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
 
 class Rectangle2D(UI):
     """A 2D rectangle sub-classed from UI."""
