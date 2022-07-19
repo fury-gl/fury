@@ -2117,12 +2117,13 @@ class ComboBox2D(UI):
         self.panel.add_element(self.drop_down_button, (0.8, 0.7))
         self.panel.add_element(self.drop_down_menu, (0, 0))
 
-        self._draggable_components.extend([
+        self.set_draggable_components(
             self.drop_down_button,
             self.drop_down_menu.panel.background,
             self.selection_box,
-            self.selection_box.background
-        ])
+            self.selection_box.background,
+            boundary_component=self.panel
+        )
 
         # Handle mouse wheel events on the slots.
         for slot in self.drop_down_menu.slots:

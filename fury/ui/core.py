@@ -86,6 +86,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self._callbacks = []
         self._draggable = draggable
         self._draggable_components = []
+        self._boundary_component = None
 
         self._setup()  # Setup needed actors and sub UI components.
         self.position = position
@@ -124,6 +125,10 @@ class UI(object, metaclass=abc.ABCMeta):
                     lambda i_ren, _obj, _comp: i_ren.force_render
                 component.on_left_mouse_button_pressed = \
                     lambda i_ren, _obj, _comp: i_ren.force_render
+
+    def set_draggable_components(self, *components, boundary_component=None):
+        self._draggable_components.extend(components)
+        self._boundary_component = boundary_component
 
     @abc.abstractmethod
     def _setup(self):
@@ -352,7 +357,7 @@ class UI(object, metaclass=abc.ABCMeta):
     def _left_button_dragged(self, i_ren, _obj, _sub_component):
         click_position = np.array(i_ren.event.position)
         change = click_position - self._click_position
-        self.panel.position += change
+        self._boundary_component.position += change
         self._click_position = click_position
         i_ren.force_render()
 
