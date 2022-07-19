@@ -1237,9 +1237,9 @@ class Timeline(Container):
                 if self._loop:
                     self.seek(0)
                 else:
+                    self.seek(self.final_timestamp)
                     self.pause()
-        if self._has_playback_panel and not force and \
-                t < self._final_timestamp:
+        if self._has_playback_panel and (self.playing or force):
             self.playback_panel.current_time = t
         if self.playing or force:
             if self.is_interpolatable('position', is_camera=True):
