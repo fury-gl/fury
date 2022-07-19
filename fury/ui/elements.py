@@ -3476,9 +3476,7 @@ class PlaybackPanel(UI):
         """Setup this Panel component.
 
         """
-        # time display text
         self.text = TextBlock2D(position=(800, 10))
-        # creating 3 buttons to control the animation
 
         self.panel = Panel2D(size=(150, 30), color=(1, 1, 1), align="right",
                              has_border=True, border_color=(0, 0.3, 0),
@@ -3522,9 +3520,9 @@ class PlaybackPanel(UI):
             self.on_stop_button_clicked()
 
         # using the adapters created above
-        self._play_btn.on_left_mouse_button_clicked = play
-        self._pause_btn.on_left_mouse_button_clicked = pause
-        self._stop_btn.on_left_mouse_button_clicked = stop
+        self._play_btn.on_left_mouse_button_pressed = play
+        self._pause_btn.on_left_mouse_button_pressed = pause
+        self._stop_btn.on_left_mouse_button_pressed = stop
 
         def on_progress_change(slider):
             self.on_progress_bar_changed(slider.value)
@@ -3580,7 +3578,7 @@ class PlaybackPanel(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.panel.actors, self._progress_bar
+        return self.panel, self._progress_bar
 
     def _add_to_scene(self, _scene):
         """Add all subcomponents or VTK props that compose this UI component.
