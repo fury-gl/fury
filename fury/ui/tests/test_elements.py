@@ -14,11 +14,15 @@ from fury import window, actor, ui
 from fury.data import DATA_DIR
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
-from fury.testing import assert_arrays_equal, assert_greater, EventCounter
-
+from fury.testing import assert_arrays_equal, assert_greater, EventCounter, \
+    assert_true, assert_equal, assert_not_equal, assert_greater_equal, \
+    assert_less_equal
 
 # @pytest.mark.skipif(True, reason="Need investigation. Incorrect "
 #                                  "number of event for each vtk version")
+from fury.ui import PlaybackPanel
+
+
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -834,3 +838,67 @@ def test_ui_draw_panel(interactive=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
+
+
+def test_playback_panel(interactive=False):
+    global playing, paused, stopped, ts
+
+    playing = stopped = paused = True
+    ts = 0
+
+    current_size = (900, 620)
+    show_manager = window.ShowManager(
+        size=current_size, title="PlaybackPanel UI Example")
+
+    filename = "test_playback_panel"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+
+    def play():
+        global playing
+        playing = True
+
+    def pause():
+        global paused
+        paused = True
+
+    def stop():
+        global stopped
+        stopped = True
+
+    def change_t(value):
+        global ts
+        ts = value
+        assert_greater_equal(playback.current_time, 0)
+        assert_less_equal(playback.current_time, playback.final_time)
+        assert_equal(playback.current_time, ts)
+
+    playback = PlaybackPanel()
+    playback.on_play_button_clicked = play
+    playback.on_pause_button_clicked = pause
+    playback.on_stop_button_clicked = stop
+    playback.on_progress_bar_changed = change_t
+
+    show_manager.scene.add(playback)
+    event_counter = EventCounter()
+    event_counter.monitor(playback)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_true(playing)
+    assert_true(paused)
+    assert_true(stopped)
+    assert_equal(playback.current_time, ts)
+    assert_greater(playback.current_time, 0)
+    assert_not_equal(playback.current_time_str, '00:00:00')
+    playback.current_time = 5
+    assert_equal(playback.current_time, 5)
+    assert_equal(playback.current_time_str, '00:00:05')
