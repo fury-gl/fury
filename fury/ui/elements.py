@@ -3114,6 +3114,7 @@ class DrawShape(UI):
             current_center = self.center
             self.center = (0, 0)
             self.rotate(np.deg2rad(rotation_angle))
+            self.center = (0, 0)
             self.update_shape_position(current_center - self.drawpanel.position)
 
         self.rotation_slider.on_change = rotate_shape
@@ -3165,7 +3166,7 @@ class DrawShape(UI):
     @property
     def center(self):
         self.cal_bounding_box()
-        return self._bounding_box_min + self._bounding_box_size/2
+        return self._bounding_box_min + self._bounding_box_size//2
 
     @center.setter
     def center(self, coords):
@@ -3178,7 +3179,7 @@ class DrawShape(UI):
 
         """
         new_center = np.array(coords)
-        new_lower_left_corner = new_center - self._bounding_box_size / 2
+        new_lower_left_corner = new_center - self._bounding_box_size // 2
         self.position = new_lower_left_corner + self._bounding_box_offset
 
     @property
@@ -3270,8 +3271,8 @@ class DrawShape(UI):
         """
         if center is None:
             center = self.center
-        new_center = np.clip(center, self._bounding_box_size/2,
-                             self.drawpanel.size - self._bounding_box_size/2)
+        new_center = np.clip(center, self._bounding_box_size//2,
+                             self.drawpanel.size - self._bounding_box_size//2)
         return new_center.astype(int)
 
     def resize(self, size):
