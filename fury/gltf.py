@@ -88,7 +88,7 @@ class glTF:
         Parameters
         ----------
         scene_id : int, optional
-            scene index of the the glTF.
+            scene index of the glTF.
 
         """
         scene = self.gltf.scenes[scene_id]
@@ -192,7 +192,7 @@ class glTF:
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
-        """Get the correct data from buffer uing accessors and bufferviews.
+        """Get the correct data from buffer using accessors and bufferviews.
 
         Parameters
         ----------
@@ -437,7 +437,7 @@ def export_scene(scene, filename='default.gltf'):
     if camera:
         write_camera(gltf_obj, camera)
         cam_id = 0
-    write_node(gltf_obj, mesh=0, camera=cam_id)
+    write_node(gltf_obj, mesh_id=0, camera_id=cam_id)
     write_scene(gltf_obj, [0])
 
     gltf_obj.save(f'{name}.gltf')
