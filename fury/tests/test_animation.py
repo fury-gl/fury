@@ -291,7 +291,8 @@ def test_timeline():
     cube = actor.cube(np.array([[0, 0, 0]]))
     tl.add_actor(cube)
 
-    tl.update_animation()
+    # using force since the animation is not playing
+    tl.update_animation(force=True)
 
     if not shaders:
         npt.assert_almost_equal(tl.get_position(tl.current_timestamp),
