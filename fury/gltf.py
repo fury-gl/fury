@@ -445,7 +445,7 @@ def export_scene(scene, filename='default.gltf'):
         gltf2glb(f'{name}.gltf', destination=filename)
 
 
-def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
+def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
     """Create Accessor, BufferViews and writes primitive data to a binary file
 
     Parameters
@@ -455,6 +455,8 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         the fury actor
     buff_file : file
         filename.bin opened in `wb` mode
+    byteoffset : int
+        offset of the bufferview
     count : int
         BufferView count
     name : str
@@ -508,10 +510,10 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         indices = indices.astype(np.ushort)
         blength = len(indices)*ctype['size']
         buff_file.write(indices.tobytes())
-        write_bufferview(gltf, 0, boffset, blength)
+        write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.UNSIGNED_SHORT,
                        len(indices), gltflib.SCALAR)
-        boffset += blength
+        byteoffset += blength
         index = count
         count += 1
 
@@ -525,10 +527,10 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         vertices = vertices.reshape((-1, )).astype(ctype['dtype'])
         blength = len(vertices)*ctype['size']
         buff_file.write(vertices.tobytes())
-        write_bufferview(gltf, 0, boffset, blength)
+        write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices)//atype,
                        gltflib.VEC3, amax, amin)
-        boffset += blength
+        byteoffset += blength
         vertex = count
         count += 1
 
@@ -542,10 +544,10 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         normals = normals.reshape((-1, ))
         blength = len(normals)*ctype['size']
         buff_file.write(normals.tobytes())
-        write_bufferview(gltf, 0, boffset, blength)
+        write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, len(normals)//atype,
                        gltflib.VEC3, amax, amin)
-        boffset += blength
+        byteoffset += blength
         normal = count
         count += 1
 
@@ -559,10 +561,10 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         tcoords = tcoords.reshape((-1, )).astype(ctype['dtype'])
         blength = len(tcoords)*ctype['size']
         buff_file.write(tcoords.tobytes())
-        write_bufferview(gltf, 0, boffset, blength)
+        write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, len(tcoords)//atype,
                        gltflib.VEC2)
-        boffset += blength
+        byteoffset += blength
         tcoord = count
         count += 1
         vtk_image = actor.GetTexture().GetInput()
@@ -586,14 +588,14 @@ def _connect_primitives(gltf, actor, buff_file, boffset, count, name):
         colors = colors.reshape((-1, )).astype(ctype['dtype'])
         blength = len(colors)*ctype['size']
         buff_file.write(colors.tobytes())
-        write_bufferview(gltf, 0, boffset, blength)
+        write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, shape, gltflib.VEC4)
-        boffset += blength
+        byteoffset += blength
         color = count
         count += 1
     material = None if tcoords is None else 0
     prim = get_prim(vertex, index, color, tcoord, normal, material, mode)
-    return prim, boffset, count
+    return prim, byteoffset, count
 
 
 def write_scene(gltf, nodes):
@@ -611,23 +613,23 @@ def write_scene(gltf, nodes):
     gltf.scenes.append(scene)
 
 
-def write_node(gltf, mesh=None, camera=None):
+def write_node(gltf, mesh_id=None, camera_id=None):
     """Create node
 
     Parameters
     ----------
     gltf : GLTF2
         Pygltflib GLTF2 object
-    mesh : int, optional
+    mesh_id : int, optional
         Mesh index
-    camera : int, optional
+    camera_id : int, optional
         Camera index.
     """
     node = gltflib.Node()
-    if mesh is not None:
-        node.mesh = mesh
-    if camera is not None:
-        node.camera = camera
+    if mesh_id is not None:
+        node.mesh = mesh_id
+    if camera_id is not None:
+        node.camera = camera_id
     gltf.nodes.append(node)
 
 
@@ -676,22 +678,22 @@ def write_camera(gltf, camera):
     gltf.cameras.append(cam)
 
 
-def get_prim(verts, indices, cols, tcoords, normals, mat, mode=4):
+def get_prim(vertex, index, color, tcoord, normal, material, mode=4):
     """Return a Primitive object.
 
     Parameters
     ----------
-    verts : int
+    vertex : int
         Accessor index for the vertices data.
-    indices : int
+    index : int
         Accessor index for the triangles data.
-    cols : int
+    color : int
         Accessor index for the colors data.
-    tcoords : int
+    tcoord : int
         Accessor index for the texture coordinates data.
-    normals : int
+    normal : int
         Accessor index for the normals data.
-    mat : int
+    material : int
         Materials index.
     mode : int, optional
         The topology type of primitives to render.
@@ -704,14 +706,14 @@ def get_prim(verts, indices, cols, tcoords, normals, mat, mode=4):
     """
     prim = gltflib.Primitive()
     attr = gltflib.Attributes()
-    attr.POSITION = verts
-    attr.NORMAL = normals
-    attr.TEXCOORD_0 = tcoords
-    attr.COLOR_0 = cols
+    attr.POSITION = vertex
+    attr.NORMAL = normal
+    attr.TEXCOORD_0 = tcoord
+    attr.COLOR_0 = color
     prim.attributes = attr
-    prim.indices = indices
-    if mat is not None:
-        prim.material = mat
+    prim.indices = index
+    if material is not None:
+        prim.material = material
     prim.mode = mode
     return prim
 
