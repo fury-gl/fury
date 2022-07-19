@@ -71,13 +71,13 @@ class Interpolator:
         return dt * v + v1
 
     @staticmethod
-    def get_time_delta(t, t1, t2):
+    def get_time_tau(t, t1, t2):
         return 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
-    
+
     @property
     def id(self):
         return self.id
-    
+
     @id.setter
     def id(self, id):
         self._id = id
@@ -163,7 +163,7 @@ class SplineInterpolator(Interpolator):
         t2 = self._get_nearest_larger_timestamp(t)
 
         mi_index = np.where(self.timestamps == t1)[0][0]
-        dt = self.get_time_delta(t, t1, t2)
+        dt = self.get_time_tau(t, t1, t2)
         sect = sum(self.linear_lengths[:mi_index])
         ts = (sect + dt * (self.linear_lengths[mi_index])) / sum(
             self.linear_lengths)
@@ -184,9 +184,9 @@ class CubicSplineInterpolator(SplineInterpolator):
 
 
 class CubicBezierInterpolator(Interpolator):
-    """Cubic bezier interpolator for keyframes.
+    """Cubic Bézier interpolator for keyframes.
 
-    This is a general cubic bezier interpolator to be used for any shape of
+    This is a general cubic Bézier interpolator to be used for any shape of
     keyframes data.
 
     Attributes
@@ -197,7 +197,7 @@ class CubicBezierInterpolator(Interpolator):
     Notes
     -----
     If no control points are set in the keyframes, The cubic
-    Bezier interpolator will almost as the linear interpolator
+    Bézier interpolator will almost behave as a linear interpolator.
     """
 
     def __init__(self, keyframes):
@@ -228,7 +228,7 @@ class CubicBezierInterpolator(Interpolator):
         p1 = self.keyframes.get(t1).get('post_cp')
         p2 = self.keyframes.get(t2).get('pre_cp')
         p3 = self.keyframes.get(t2).get('value')
-        dt = self.get_time_delta(t, t1, t2)
+        dt = self.get_time_tau(t, t1, t2)
         res = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
               (1 - dt) * dt ** 2 * p2 + dt ** 3 * p3
         return res
@@ -296,8 +296,9 @@ class ColorInterpolator(Interpolator):
     """Color keyframes interpolator.
 
     A color interpolator to be used for color keyframes.
-    Given two functions, one to convert from rgb space to the interpolation
-    space, the other is to
+    Given two functions, one is to convert from RGB space to the interpolation
+    space, the other is to convert from that space back to the RGB space.
+
     Attributes
     ----------
     keyframes : dict
@@ -305,8 +306,8 @@ class ColorInterpolator(Interpolator):
 
     Notes
     -----
-    If no control points are set in the keyframes, The cubic
-    Bezier interpolator will almost as the linear interpolator
+    If no control points are set in the keyframes, The cubic Bézier
+    interpolator will almost behave as a linear interpolator.
     """
 
     def __init__(self, keyframes, rgb_to_space, space_to_rgb):
@@ -359,9 +360,9 @@ class Timeline(Container):
     group of models.
     It's used to handle multiple attributes and properties of Fury actors such
     as transformations, color, and scale.
-    It also accepts custom data and interpolates them such as temperature.
-    Linear interpolation is used by default to interpolate data between main
-    keyframes.
+    It also accepts custom data and interpolates them, such as temperature.
+    Linear interpolation is used by default to interpolate data between the
+    main keyframes.
     """
 
     def __init__(self, actors=None, playback_panel=False):
@@ -402,7 +403,7 @@ class Timeline(Container):
             self.add_actor(actors)
 
     def update_final_timestamp(self):
-        """Calculate and Get the final timestamp of all keyframes.
+        """Calculates and returns the final timestamp of all keyframes.
 
         Returns
         -------
@@ -418,7 +419,7 @@ class Timeline(Container):
         return self._final_timestamp
 
     def set_timestamp(self, timestamp):
-        """Set current timestamp of the animation.
+        """Set the current timestamp of the animation.
 
         Parameters
         ----------
@@ -446,10 +447,10 @@ class Timeline(Container):
         is_camera: bool
             Indicated whether setting a camera property or general property.
         pre_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bezier interpolator` when
+            The control point in case of using `cubic Bézier interpolator` when
             time exceeds this timestamp.
         post_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bezier interpolator` when
+            The control point in case of using `cubic Bézier interpolator` when
             time precedes this timestamp.
         """
         typ = 'attribs'
@@ -494,7 +495,7 @@ class Timeline(Container):
 
         Notes
         ---------
-        Cubic Bezier control points are not supported yet in this setter.
+        Cubic Bézier curve control points are not supported yet in this setter.
 
         Examples
         ---------
@@ -518,10 +519,10 @@ class Timeline(Container):
         value: float
             Value of the keyframe at the given timestamp.
         pre_cp: float
-            The control point in case of using `cubic Bezier interpolator` when
+            The control point in case of using `cubic Bézier interpolator` when
             time exceeds this timestamp.
         post_cp: float
-            The control point in case of using `cubic Bezier interpolator` when
+            The control point in case of using `cubic Bézier interpolator` when
             time precedes this timestamp.
         """
         self.set_keyframe(attrib, timestamp, value, pre_cp, post_cp, True)
@@ -538,7 +539,7 @@ class Timeline(Container):
 
         Notes
         ---------
-        Cubic Bezier control points are not supported yet in this setter.
+        Cubic Bézier curve control points are not supported yet in this setter.
 
         Examples
         ---------
@@ -592,7 +593,7 @@ class Timeline(Container):
 
         Notes
         -------
-        True means that it's safe to use interpolator.interpolate(t) for the
+        True means that it's safe to use `Interpolator.interpolate(t)` for the
         specified property. And False means the opposite.
 
         Examples
@@ -609,7 +610,7 @@ class Timeline(Container):
         ----------
         attrib: str
             The name of the camera property.
-            The already handeled properties are position, focal, and view_up.
+            The already handled properties are position, focal, and view_up.
 
         interpolator: class
             The interpolator that handles the camera property interpolation
@@ -622,14 +623,13 @@ class Timeline(Container):
         self.set_interpolator(attrib, interpolator, is_camera=True)
 
     def set_position_interpolator(self, interpolator):
-        """Set the position interpolator for all eactors inside the
+        """Set the position interpolator for all actors inside the
         timeline.
 
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the position interpolation between
-            keyframes.
+            The interpolator that would handle the position keyframes.
 
         Examples
         ---------
@@ -644,8 +644,7 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the scale interpolation between
-            keyframes.
+            TThe interpolator that would handle the scale keyframes.
 
         Examples
         ---------
@@ -660,8 +659,8 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the rotation (orientation)
-            interpolation between keyframes.
+            The interpolator that would handle the rotation (orientation)
+            keyframes.
 
         Examples
         ---------
@@ -676,8 +675,7 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the color interpolation between
-            color keyframes.
+            The interpolator that would handle the color keyframes.
 
         Examples
         ---------
@@ -692,8 +690,7 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the opacity interpolation between
-            keyframes.
+            The interpolator that would handle the opacity keyframes.
 
         Examples
         ---------
@@ -707,7 +704,7 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the interpolation of camera
+            The interpolator that would handle the interpolation of the camera
             position keyframes.
         """
         self.set_camera_interpolator("position", interpolator)
@@ -718,7 +715,7 @@ class Timeline(Container):
         Parameters
         ----------
         interpolator: class
-            The interpolator class to handle the interpolation of camera
+            The interpolator that would handle the interpolation of the camera
             focal position keyframes.
         """
         self.set_camera_interpolator("focal", interpolator)
@@ -797,7 +794,7 @@ class Timeline(Container):
         timestamp: float
             Timestamp of the keyframe
         euler: ndarray, shape(1, 3)
-            Euler angles that describes the rotation.
+            Euler angles that describe the rotation.
         """
         self.set_keyframe('rotation', timestamp, euler)
 
@@ -819,10 +816,11 @@ class Timeline(Container):
 
         Parameters
         ----------
+        scalar
         timestamp: float
             Timestamp of the keyframe
-        vector: ndarray, shape(1, 3)
-            Directional vector that describes the rotation.
+        scalar: ndarray, shape(1, 3)
+            Scale keyframe value associated with the timestamp.
         """
         self.set_keyframe('scale', timestamp, scalar)
 
@@ -1331,7 +1329,7 @@ class Timeline(Container):
 
     @current_timestamp.setter
     def current_timestamp(self, timestamp):
-        """Set current timestamp of the Timeline.
+        """Set the current timestamp of the Timeline.
 
         Parameters
         ----------
@@ -1383,7 +1381,7 @@ class Timeline(Container):
 
     @property
     def playing(self):
-        """Return whether the Timeline is playing.
+        """Returns whether the Timeline is playing.
 
         Returns
         -------
@@ -1406,7 +1404,7 @@ class Timeline(Container):
 
     @property
     def stopped(self):
-        """Return whether the Timeline is stopped.
+        """Returns whether the Timeline is stopped.
 
         Returns
         -------
@@ -1418,7 +1416,7 @@ class Timeline(Container):
 
     @property
     def paused(self):
-        """Return whether the Timeline is paused.
+        """Returns whether the Timeline is paused.
 
         Returns
         -------
