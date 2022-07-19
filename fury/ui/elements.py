@@ -3080,7 +3080,6 @@ class DrawShape(UI):
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
-        self.is_selected = True
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3097,6 +3096,9 @@ class DrawShape(UI):
             self.shape = Disk2D(outer_radius=2)
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
+
+        self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
+        self.set_bb_box_visibility(False)
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3133,6 +3135,7 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
+        scene.add(*[border.actor for border in self.bb_box])
         self.rotation_slider.add_to_scene(scene)
 
     def _get_size(self):
@@ -3162,6 +3165,7 @@ class DrawShape(UI):
         new_center = self.clamp_position(center=center_position)
         self.drawpanel.canvas.update_element(self, new_center, "center")
         self.cal_bounding_box(update_value=True)
+        self.set_bb_box_visibility(True)
 
     @property
     def center(self):
@@ -3194,8 +3198,30 @@ class DrawShape(UI):
         self.selection_change()
 
     def selection_change(self):
-        if not self.is_selected:
+        if self.is_selected:
+            self.show_rotation_slider()
+            self.set_bb_box_visibility(True)
+        else:
             self.rotation_slider.set_visibility(False)
+            self.set_bb_box_visibility(False)
+
+    def set_bb_box_visibility(self, value):
+        if value:
+            border_width = 3
+            points = [self._bounding_box_min-(0, border_width),
+                      [self._bounding_box_max[0], self._bounding_box_min[1]],
+                      self._bounding_box_min - border_width,
+                      [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
+            size = [(self._bounding_box_size[0]+border_width, border_width),
+                    (border_width, self._bounding_box_size[1]+border_width),
+                    (border_width, self._bounding_box_size[1] + border_width),
+                    (self._bounding_box_size[0]+border_width, border_width)]
+            for i in range(4):
+                self.bb_box[i].position = points[i]
+                self.bb_box[i].resize(size[i])
+
+        for border in self.bb_box:
+            border.set_visibility(value)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3294,22 +3320,32 @@ class DrawShape(UI):
 
         self.cal_bounding_box(update_value=True)
 
+    def bring_to_top(self):
+        self.remove()
+        self._add_to_scene(self._scene)
+        self.drawpanel.shape_list.append(self)
+
     def remove(self):
         """Removes the Shape and all related actors.
         """
+        print(self.drawpanel.shape_list)
+        self.drawpanel.shape_list.remove(self)
         self._scene.rm(self.shape.actor)
+        self._scene.rm(*[border.actor for border in self.bb_box])
         self._scene.rm(*self.rotation_slider.actors)
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.bring_to_top()
+
             self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.center
-            self.show_rotation_slider()
             i_ren.event.abort()
         elif mode == "delete":
+            # print(self.drawpanel.shape_list)
             self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
@@ -3330,7 +3366,7 @@ class DrawShape(UI):
     def left_button_released(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
             self.show_rotation_slider()
-            i_ren.force_render()
+        i_ren.force_render()
 
 
 class DrawPanel(UI):
@@ -3494,7 +3530,7 @@ class DrawPanel(UI):
             if shape_type == "circle":
                 shape.max_size = self.cal_min_boundary_distance(current_position)
             self.shape_list.append(shape)
-            self.update_shape_selection(shape)
+            self.current_shape = shape
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
@@ -3541,10 +3577,11 @@ class DrawPanel(UI):
                        self.canvas.position + self.canvas.size)
 
     def handle_mouse_click(self, position):
+        if self.current_shape:
+            self.current_shape.is_selected = False
         if self.current_mode == "selection":
             if self.is_draggable:
                 self._drag_offset = position - self.position
-            self.current_shape.is_selected = False
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
