@@ -90,7 +90,6 @@ class Panel2D(UI):
             *self.borders.values() if self.has_border else [],
             boundary_component=self
         )
-        self._draggable_components.append(self.background)
 
     def _get_actors(self):
         """Get the actors composing this UI component."""

@@ -1,4 +1,4 @@
-"""Test helpers fonction ."""
+"""Test helper functions."""
 import numpy.testing as npt
 
 from fury import window, ui
