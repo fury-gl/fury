@@ -3525,9 +3525,12 @@ class PlaybackPanel(UI):
         self._stop_btn.on_left_mouse_button_pressed = stop
 
         def on_progress_change(slider):
-            self.on_progress_bar_changed(slider.value)
+            t = slider.value
+            self.on_progress_bar_changed(t)
+            self.current_time = t
 
         self._progress_bar.on_change = on_progress_change
+        self.current_time = 0
 
     @property
     def final_time(self):
@@ -3571,10 +3574,37 @@ class PlaybackPanel(UI):
         t: float
             Current time to be set.
         """
-        t = np.clip(t, 0, self.final_time)
-        self.text.message = \
-            time.strftime('%H:%M:%S', time.gmtime(t))
         self._progress_bar.value = t
+        self.current_time_str = t
+
+    @property
+    def current_time_str(self):
+        """Returns current time as a string.
+
+        Returns
+        -------
+        str
+            Current time formatted as a string in the form:`HH:MM:SS`.
+
+        """
+        return self.text.message
+
+    @current_time_str.setter
+    def current_time_str(self, t):
+        """Set time counter.
+
+        Parameters
+        ----------
+        t: float
+            Time to be set in the text counter.
+
+        Notes
+        -----
+        This should only be used when the `current_value` is not being set
+        since setting`current_value` automatically sets this property as well.
+        """
+        t = np.clip(t, 0, self.final_time)
+        self.text.message = time.strftime('%H:%M:%S', time.gmtime(t))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
