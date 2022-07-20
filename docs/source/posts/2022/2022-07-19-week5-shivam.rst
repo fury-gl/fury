@@ -21,7 +21,7 @@ What is coming up next week?
 This week I'll be working on the following:
 
 - Get the exporting PR merged by this week. 
-- Loading the animations (simple, morph, and skeletal) data as dictionaries from the glTF model so that It can be sent to the timeline.
+- Loading the animations (simple, morph, and skeletal) data as dictionaries from the glTF model so that it can be sent to the timeline.
 - Try different examples on Mohamed's PR and try running glTF animations if time permits.
 
 
