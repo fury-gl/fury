@@ -484,7 +484,6 @@ class Timeline(Container):
                 final_t = self.update_final_timestamp()
                 self.playback_panel.final_time = final_t
 
-        self.update_animation(force=True)
         if timestamp > 0:
             self.update_animation(force=True)
 
