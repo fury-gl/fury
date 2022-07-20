@@ -2405,6 +2405,7 @@ class ListBox2D(UI):
                                             scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
         self.panel.add_element(
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
@@ -2621,6 +2622,8 @@ class ListBox2D(UI):
             if slot.textblock.scene is not None:
                 clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
+            if slot.size[1] != self.slot_height:
+                slot.resize((self.slot_width, self.slot_height))
             if slot.element in self.selected:
                 slot.select()
             else:
@@ -2630,6 +2633,7 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
             slot.set_visibility(False)
+            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
@@ -2651,6 +2655,7 @@ class ListBox2D(UI):
 
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
 
     def clear_selection(self):
         del self.selected[:]
@@ -2815,6 +2820,8 @@ class ListBoxItem2D(UI):
         self.list_box.select(self, multiselect, range_select)
         i_ren.force_render()
 
+    def resize(self, size):
+        self.background.resize(size)
 
 class FileMenu2D(UI):
     """A menu to select files in the current folder.
