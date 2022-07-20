@@ -60,8 +60,14 @@ for i in range(50):
 
     main_timeline.add_timeline(timeline)
 
-# adding actors to the scene
-scene.add(main_timeline, arrow, plan, fury_text)
+# adding static actors to the timeline.
+# Note: adding actors as static actors just ensures that they get added to the
+# scene along with the Timeline and will not be controlled nor animated by the
+# timeline.
+main_timeline.add_actor([arrow, plan, fury_text], static=True)
+
+# Only the main Timeline is added to the scene.
+scene.add(main_timeline)
 
 # camera position animation
 main_timeline.set_camera_position(0, np.array([3, 3, 3]))

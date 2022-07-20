@@ -381,6 +381,7 @@ class Timeline(Container):
         self._current_timestamp = 0
         self._speed = 1
         self._timelines = []
+        self._static_actors = []
         self._camera = None
         self._scene = None
         self._last_started_time = 0
@@ -390,6 +391,7 @@ class Timeline(Container):
         self._needs_update = False
         self._reverse_playing = False
         self._loop = False
+        
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -401,6 +403,7 @@ class Timeline(Container):
             self.playback_panel.on_pause = self.pause
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
+            self.add_actor(self.playback_panel, static=True)
 
         if actors is not None:
             self.add_actor(actors)
@@ -416,7 +419,7 @@ class Timeline(Container):
 
         self._final_timestamp = max(self._final_timestamp,
                                     max([0] + [tl.update_final_timestamp() for
-                                               tl in self._timelines]))
+                                               tl in self.timelines]))
         if self.has_playback_panel:
             self.playback_panel.final_time = self._final_timestamp
         return self._final_timestamp
@@ -1190,22 +1193,29 @@ class Timeline(Container):
             return
         self._timelines.append(timeline)
 
-    def add_actor(self, actor):
+    def add_actor(self, actor, static=False):
         """Adds an actor or list of actors to the Timeline.
 
         Parameters
         ----------
         actor: vtkActor or list(vtkActor)
             Actor/s to be animated by the timeline.
+        static: bool
+            Indicated whether the actor should be animated and controlled by
+            the timeline or just a static actor that gets added to the scene
+            along with the Timeline.
         """
         if isinstance(actor, list):
             for a in actor:
-                self.add_actor(a)
-            return
-        actor.vcolors = utils.colors_from_actor(actor)
-        super(Timeline, self).add(actor)
+                self.add_actor(a, static=static)
+        elif static:
+            self._static_actors.append(actor)
+        else:
+            actor.vcolors = utils.colors_from_actor(actor)
+            super(Timeline, self).add(actor)
 
-    def get_actors(self):
+    @property
+    def actors(self):
         """Returns a list of actors.
 
         Returns
@@ -1215,7 +1225,8 @@ class Timeline(Container):
         """
         return self.items
 
-    def get_timelines(self):
+    @property
+    def timelines(self):
         """Returns a list of child Timelines.
 
         Returns
@@ -1224,6 +1235,29 @@ class Timeline(Container):
             List of child Timelines of this Timeline.
         """
         return self._timelines
+
+    def add_static_actor(self, actor):
+        """Adds an actor or list of actors as static actor/s which will not be
+        controlled nor animated by the Timeline. All static actors will be
+        added to the scene when the Timeline is added to the scene.
+
+        Parameters
+        ----------
+        actor: vtkActor or list(vtkActor)
+            Static actor/s.
+        """
+        self.add_actor(actor, static=True)
+
+    @property
+    def static_actors(self):
+        """Returns a list of static actors.
+
+        Returns
+        -------
+        list:
+            List of static actors.
+        """
+        return self._static_actors
 
     def remove_timelines(self):
         """Removes all child Timelines from the Timeline"""
@@ -1280,25 +1314,25 @@ class Timeline(Container):
 
             if self.is_interpolatable('scale'):
                 scale = self.get_scale(t)
-                [act.SetScale(scale) for act in self.get_actors()]
+                [act.SetScale(scale) for act in self.actors]
 
             if self.is_interpolatable('opacity'):
                 scale = self.get_opacity(t)
                 [act.GetProperty().SetOpacity(scale) for
-                 act in self.get_actors()]
+                 act in self.actors]
 
             if self.is_interpolatable('rotation'):
                 euler = self.get_rotation(t)
                 [act.SetOrientation(euler) for
-                 act in self.get_actors()]
+                 act in self.actors]
 
             if self.is_interpolatable('color'):
                 color = self.get_color(t)
-                for act in self.get_actors():
+                for act in self.actors:
                     act.vcolors[:] = color * 255
                     utils.update_actor(act)
         # Also update all child Timelines.
-        [tl.update_animation(t, force=True) for tl in self._timelines]
+        [tl.update_animation(t, force=True) for tl in self.timelines]
 
     def play(self):
         """Play the animation"""
@@ -1475,7 +1509,6 @@ class Timeline(Container):
         
     def add_to_scene(self, ren):
         super(Timeline, self).add_to_scene(ren)
-        if self.has_playback_panel:
-            ren.add(self.playback_panel)
-        [ren.add(timeline) for timeline in self._timelines]
+        [ren.add(static_act) for static_act in self._static_actors]
+        [ren.add(timeline) for timeline in self.timelines]
         self._scene = ren
