@@ -551,7 +551,7 @@ class Timeline(Container):
         self.set_keyframes(attrib, keyframes, is_camera=True)
 
     def set_interpolator(self, attrib, interpolator, is_camera=False,
-                         spline_degree=2):
+                         spline_degree=None):
         """Set keyframes interpolator for a certain property
 
         Parameters
@@ -575,8 +575,11 @@ class Timeline(Container):
             typ = 'camera'
         if attrib in self._data.get('keyframes').get(typ):
             keyframes = self._data.get('keyframes').get(typ).get(attrib)
-            self._data.get('interpolators').get(typ)[attrib] = \
-                interpolator(keyframes)
+            if spline_degree is not None and interpolator is SplineInterpolator:
+                interp = interpolator(keyframes, spline_degree)
+            else:
+                interp = interpolator(keyframes)
+            self._data.get('interpolators').get(typ)[attrib] = interp
 
     def is_interpolatable(self, attrib, is_camera=False):
         """Checks whether a property is interpolatable.
@@ -621,7 +624,7 @@ class Timeline(Container):
         """
         self.set_interpolator(attrib, interpolator, is_camera=True)
 
-    def set_position_interpolator(self, interpolator):
+    def set_position_interpolator(self, interpolator, spline_degree=None):
         """Set the position interpolator for all actors inside the
         timeline.
 
@@ -630,11 +633,16 @@ class Timeline(Container):
         interpolator: class
             The interpolator that would handle the position keyframes.
 
+        spline_degree: int
+            The degree of the spline interpolation in case of setting
+            the `SplineInterpolator`.
+
         Examples
         ---------
-        >>> Timeline.set_position_interpolator(CubicBezierInterpolator)
+        >>> Timeline.set_position_interpolator(SplineInterpolator, 5)
         """
-        self.set_interpolator('position', interpolator)
+        self.set_interpolator('position', interpolator,
+                              spline_degree=spline_degree)
 
     def set_scale_interpolator(self, interpolator):
         """Set the scale interpolator for all the actors inside the
@@ -1242,6 +1250,7 @@ class Timeline(Container):
                     self.seek(self.final_timestamp)
                     self.pause()
         if self._has_playback_panel and (self.playing or force):
+            self.update_final_timestamp()
             self.playback_panel.current_time = t
         if self.playing or force:
             if self.is_interpolatable('position', is_camera=True):
@@ -1288,7 +1297,6 @@ class Timeline(Container):
 
     def play(self):
         """Play the animation"""
-        self.update_final_timestamp()
         if not self.playing:
             self._last_started_time = \
                 time.perf_counter() - self._last_timestamp / self.speed
