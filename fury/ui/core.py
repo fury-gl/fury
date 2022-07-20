@@ -1291,16 +1291,23 @@ class Icon2D(UI):
 
 
 class Button2D(UI):
-    def __init__(self, position=(0, 0), size=(50, 20)):
+    def __init__(self, icon_fnames, label="Button", label_font='Arial', label_color=(0, 0, 0),
+                 bg_color=(1, 1, 1), bg_opacity=1.0, position=(0, 0), size=(50, 20)):
         self._init_size = size
+        self._icon_fnames = icon_fnames
         super().__init__(position)
         self.resize(size)
+        self.label = label
+        self.label_font = label_font
+        self.label_color = label_color
+        self.bg_color = bg_color
+        self.bg_opacity = bg_opacity
 
     def _setup(self):
         self._sub_component_offsets = {}
-        self._icon = Icon2D([("square", read_viz_icons(fname="stop2.png"))])
+        self._icon = Icon2D(self._icon_fnames)
         self._background = Rectangle2D()
-        self._text_block = TextBlock2D(color=(0, 0, 0))
+        self._text_block = TextBlock2D()
 
         self._update_sub_components(self._init_size)
 
@@ -1335,3 +1342,34 @@ class Button2D(UI):
         self._text_block.resize((0.7 * size[0], size[1]))
         self._update_sub_components(size)
 
+    @property
+    def label(self):
+        return self._text_block.message
+
+    @label.setter
+    def label(self, text):
+        self._text_block.message = text
+
+    @property
+    def label_font(self):
+        return self._text_block.font_family
+
+    @label_font.setter
+    def label_font(self, font):
+        self._text_block.font_family = font
+
+    @property
+    def label_color(self):
+        return self._text_block.color
+
+    @label_color.setter
+    def label_color(self, color):
+        self._text_block.color = color
+
+    @property
+    def bg_color(self):
+        return self._background.color
+
+    @bg_color.setter
+    def bg_color(self, color):
+        self._background.color = color
