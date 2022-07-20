@@ -1310,6 +1310,32 @@ class Button2D(UI):
         self._text_block = TextBlock2D()
 
         self._update_sub_components(self._init_size)
+        self.on_click = lambda ui: None
+        self.on_hover = lambda ui: None
+
+        self._background.on_left_mouse_button_pressed = self.left_button_pressed
+        self._icon.on_left_mouse_button_pressed = self.left_button_pressed
+        self._text_block.on_left_mouse_button_pressed = self.left_button_pressed
+
+        self._background.on_left_mouse_button_released = self.left_button_released
+        self._icon.on_left_mouse_button_released = self.left_button_released
+        self._text_block.on_left_mouse_button_released = self.left_button_released
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        self._background.color = (1, 0, 0)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def left_button_released(self, i_ren, _obj, _sub_component):
+        self.on_click(self)
+        self._background.color = (1, 1, 1)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def mouse_hovered(self, i_ren, _obj, _sub_component):
+        self.on_hover(self)
+        i_ren.force_render()
+        i_ren.event.abort()
 
     def _update_sub_components(self, size):
         self._background_icon_offset = np.array((0, 0)) * size
