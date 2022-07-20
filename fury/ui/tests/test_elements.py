@@ -841,9 +841,9 @@ def test_ui_draw_panel(interactive=False):
 
 
 def test_playback_panel(interactive=False):
-    global playing, paused, stopped, ts
+    global playing, paused, stopped, loop, ts
 
-    playing = stopped = paused = True
+    playing = stopped = paused = loop = False
     ts = 0
 
     current_size = (900, 620)
@@ -866,6 +866,10 @@ def test_playback_panel(interactive=False):
         global stopped
         stopped = True
 
+    def loop_toggle(value):
+        global loop
+        loop = True
+
     def change_t(value):
         global ts
         ts = value
@@ -877,6 +881,7 @@ def test_playback_panel(interactive=False):
     playback.on_play = play
     playback.on_pause = pause
     playback.on_stop = stop
+    playback.on_loop_toggle = loop_toggle
     playback.on_progress_bar_changed = change_t
 
     show_manager.scene.add(playback)

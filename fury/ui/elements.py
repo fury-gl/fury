@@ -3525,9 +3525,11 @@ class PlaybackPanel(UI):
             else:
                 self.pause()
             self.on_play_pause_toggle(self._playing)
+            i_ren.force_render()
 
         def stop(i_ren, _obj, _button):
             self.stop()
+            i_ren.force_render()
 
         def loop_toggle(i_ren, _obj, _button):
             self._loop = not self._loop
@@ -3536,6 +3538,7 @@ class PlaybackPanel(UI):
             else:
                 self.play_once()
             self.on_loop_toggle(self._loop)
+            i_ren.force_render()
 
         # using the adapters created above
         self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
@@ -3649,7 +3652,7 @@ class PlaybackPanel(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.panel, self._progress_bar
+        return self.panel.actors, self._progress_bar.actors, self.text
 
     def _add_to_scene(self, _scene):
         """Add all subcomponents or VTK props that compose this UI component.
