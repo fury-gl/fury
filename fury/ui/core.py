@@ -1,12 +1,13 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D"]
+__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Icon2D", "Button2D"]
 
 import abc
 from warnings import warn
 
 import numpy as np
 
+from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
 from fury.lib import (PolyData, PolyDataMapper2D, Polygon, Points, CellArray,
@@ -1070,8 +1071,8 @@ class TextBlock2D(UI):
         return self.actor.GetPosition2()
 
 
-class Button2D(UI):
-    """A 2D overlay button and is of type vtkTexturedActor2D.
+class Icon2D(UI):
+    """A 2D icon and is of type vtkTexturedActor2D.
 
     Currently supports::
 
@@ -1093,7 +1094,7 @@ class Button2D(UI):
             Width and height in pixels of the button.
 
         """
-        super(Button2D, self).__init__(position)
+        super(Icon2D, self).__init__(position)
 
         self.icon_extents = dict()
         self.icons = self._build_icons(icon_fnames)
@@ -1287,3 +1288,50 @@ class Button2D(UI):
         """
         self.next_icon_id()
         self.set_icon(self.icons[self.current_icon_id][1])
+
+
+class Button2D(UI):
+    def __init__(self, position=(0, 0), size=(50, 20)):
+        self._init_size = size
+        super().__init__(position)
+        self.resize(size)
+
+    def _setup(self):
+        self._sub_component_offsets = {}
+        self._icon = Icon2D([("square", read_viz_icons(fname="stop2.png"))])
+        self._background = Rectangle2D()
+        self._text_block = TextBlock2D(color=(0, 0, 0))
+
+        self._update_sub_components(self._init_size)
+
+    def _update_sub_components(self, size):
+        self._background_icon_offset = np.array((0, 0)) * size
+        self._text_offset = np.array((0.3, 0)) * size
+
+        self._background.position = self.position + self._background_icon_offset
+        self._icon.position = self.position + self._background_icon_offset
+        self._text_block.position = self.position + self._text_offset
+
+    def _get_actors(self):
+        return [self._background, self._icon, self._text_block]
+
+    def _add_to_scene(self, _scene):
+        self._background.add_to_scene(_scene)
+        self._icon.add_to_scene(_scene)
+        self._text_block.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        coords = np.array(_coords)
+        self._background.position = coords + self._background_icon_offset
+        self._icon.position = coords + self._background_icon_offset
+        self._text_block.position = coords + self._text_offset
+
+    def _get_size(self):
+        return self._background.size
+
+    def resize(self, size):
+        self._background.resize(size)
+        self._icon.resize((0.3 * size[0], size[1]))
+        self._text_block.resize((0.7 * size[0], size[1]))
+        self._update_sub_components(size)
+

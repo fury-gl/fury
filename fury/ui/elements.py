@@ -17,7 +17,7 @@ from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import TWO_PI, clip_overflow
-from fury.ui.core import Button2D
+from fury.ui.core import Icon2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
 
@@ -1749,8 +1749,8 @@ class Option(UI):
                                   read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
                                   read_viz_icons(fname="checkmark.png")))
-        self.button = Button2D(icon_fnames=self.button_icons,
-                               size=self.button_size)
+        self.button = Icon2D(icon_fnames=self.button_icons,
+                             size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
 
@@ -2098,7 +2098,7 @@ class ComboBox2D(UI):
             size=self.text_block_size, color=self.sel_text_color,
             bg_color=self.sel_bg_color, text=self._selection)
 
-        self.drop_down_button = Button2D(
+        self.drop_down_button = Icon2D(
             icon_fnames=self._icon_files, size=self.drop_button_size)
 
         self.drop_down_menu = ListBox2D(
@@ -3302,7 +3302,7 @@ class DrawPanel(UI):
                                                     fname=fname[0])))
             icon_files.append((mode+"-pressed",
                                read_viz_icons(style="new_icons", fname=fname[1])))
-            btn = Button2D(icon_fnames=icon_files)
+            btn = Icon2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
                 self.current_mode = btn.icon_names[0]

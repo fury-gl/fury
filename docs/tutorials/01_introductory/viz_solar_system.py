@@ -24,10 +24,10 @@ scene = window.Scene()
 panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
 panel.center = (400, 50)
 
-pause_button = ui.Button2D(
+pause_button = ui.Icon2D(
     icon_fnames=[("square", read_viz_icons(fname="pause2.png"))]
 )
-start_button = ui.Button2D(
+start_button = ui.Icon2D(
     icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
 )
 

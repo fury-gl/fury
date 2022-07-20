@@ -25,7 +25,7 @@ def test_ui_button_panel(recording=False):
     icon_files.append(('stop', read_viz_icons(fname='stop2.png')))
     icon_files.append(('play', read_viz_icons(fname='play3.png')))
 
-    button_test = ui.Button2D(icon_fnames=icon_files)
+    button_test = ui.Icon2D(icon_fnames=icon_files)
     button_test.center = (20, 20)
 
     def make_invisible(i_ren, _obj, button):
