@@ -385,7 +385,7 @@ class Timeline(Container):
         self._scene = None
         self._last_started_time = 0
         self._playing = False
-        self._has_playback_panel = playback_panel
+        self.playback_panel = None
         self._final_timestamp = 0
         self._needs_update = False
         self._reverse_playing = False
@@ -393,10 +393,13 @@ class Timeline(Container):
 
         # Handle actors while constructing the timeline.
         if playback_panel:
+            def set_loop(loop):
+                self._loop = loop
             self.playback_panel = PlaybackPanel()
-            self.playback_panel.on_play_button_clicked = self.play
-            self.playback_panel.on_stop_button_clicked = self.stop
-            self.playback_panel.on_pause_button_clicked = self.pause
+            self.playback_panel.on_play = self.play
+            self.playback_panel.on_stop = self.stop
+            self.playback_panel.on_pause = self.pause
+            self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
 
         if actors is not None:
@@ -414,7 +417,7 @@ class Timeline(Container):
         self._final_timestamp = max(self._final_timestamp,
                                     max([0] + [tl.update_final_timestamp() for
                                                tl in self._timelines]))
-        if self._has_playback_panel:
+        if self.has_playback_panel:
             self.playback_panel.final_time = self._final_timestamp
         return self._final_timestamp
 
@@ -477,7 +480,7 @@ class Timeline(Container):
 
         if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
-            if self._has_playback_panel:
+            if self.has_playback_panel:
                 final_t = self.update_final_timestamp()
                 self.playback_panel.final_time = final_t
 
@@ -1248,8 +1251,9 @@ class Timeline(Container):
                     self.seek(0)
                 else:
                     self.seek(self.final_timestamp)
-                    self.pause()
-        if self._has_playback_panel and (self.playing or force):
+                    # Doing this will pause both the timeline and the panel.
+                    self.playback_panel.pause()
+        if self.has_playback_panel and (self.playing or force):
             self.update_final_timestamp()
             self.playback_panel.current_time = t
         if self.playing or force:
@@ -1298,6 +1302,7 @@ class Timeline(Container):
     def play(self):
         """Play the animation"""
         if not self.playing:
+            self.update_final_timestamp()
             self._last_started_time = \
                 time.perf_counter() - self._last_timestamp / self.speed
             self._playing = True
@@ -1463,9 +1468,13 @@ class Timeline(Container):
         """
         self._speed = speed
 
+    @property
+    def has_playback_panel(self):
+        return self.playback_panel is not None
+        
     def add_to_scene(self, ren):
         super(Timeline, self).add_to_scene(ren)
-        if self._has_playback_panel:
+        if self.has_playback_panel:
             ren.add(self.playback_panel)
         [ren.add(timeline) for timeline in self._timelines]
         self._scene = ren

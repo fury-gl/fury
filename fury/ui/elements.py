@@ -3471,6 +3471,16 @@ class PlaybackPanel(UI):
 
     def __init__(self):
         super(PlaybackPanel, self).__init__()
+        self._playing = False
+        self._loop = False
+
+        # callback functions
+        self.on_play_pause_toggle = lambda state: None
+        self.on_play = lambda: None
+        self.on_pause = lambda: None
+        self.on_stop = lambda: None
+        self.on_loop_toggle = lambda is_looping: None
+        self.on_progress_bar_changed = lambda x: None
 
     def _setup(self):
         """Setup this Panel component.
@@ -3483,14 +3493,18 @@ class PlaybackPanel(UI):
                              border_width=2)
         self.panel.position = (5, 5)
 
-        self._pause_btn = Button2D(
-            icon_fnames=[("square", read_viz_icons(fname="pause2.png"))]
-        )
+        play_pause_icons = [("play", read_viz_icons(fname="play3.png")),
+                            ("pause", read_viz_icons(fname="pause2.png"))]
+
+        loop_icons = [("once", read_viz_icons(fname="checkmark.png")),
+                      ("loop", read_viz_icons(fname="infinite.png"))]
+
+        self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
+
+        self._loop_btn = Button2D(icon_fnames=loop_icons)
+
         self._stop_btn = Button2D(
-            icon_fnames=[("square", read_viz_icons(fname="stop2.png"))]
-        )
-        self._play_btn = Button2D(
-            icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
+            icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
         )
 
         self._progress_bar = LineSlider2D(center=(400 + 150 / 2, 20),
@@ -3500,29 +3514,33 @@ class PlaybackPanel(UI):
                                           text_alignment='bottom', length=600,
                                           line_width=9)
 
-        self.panel.add_element(self._pause_btn, (0.15, 0.04))
-        self.panel.add_element(self._play_btn, (0.45, 0.04))
-        self.panel.add_element(self._stop_btn, (0.7, 0.04))
+        self.panel.add_element(self._play_pause_btn, (0.1, 0.04))
+        self.panel.add_element(self._stop_btn, (0.4, 0.04))
+        self.panel.add_element(self._loop_btn, (0.73, 0.04))
 
-        # callback functions
-        self.on_play_button_clicked = lambda: None
-        self.on_pause_button_clicked = lambda: None
-        self.on_stop_button_clicked = lambda: None
-        self.on_progress_bar_changed = lambda x: None
-
-        def play(i_ren, _obj, _button):
-            self.on_play_button_clicked()
-
-        def pause(i_ren, _obj, _button):
-            self.on_pause_button_clicked()
+        def play_pause_toggle(i_ren, _obj, _button):
+            self._playing = not self._playing
+            if self._playing:
+                self.play()
+            else:
+                self.pause()
+            self.on_play_pause_toggle(self._playing)
 
         def stop(i_ren, _obj, _button):
-            self.on_stop_button_clicked()
+            self.stop()
+
+        def loop_toggle(i_ren, _obj, _button):
+            self._loop = not self._loop
+            if self._loop:
+                self.loop()
+            else:
+                self.play_once()
+            self.on_loop_toggle(self._loop)
 
         # using the adapters created above
-        self._play_btn.on_left_mouse_button_pressed = play
-        self._pause_btn.on_left_mouse_button_pressed = pause
+        self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
         self._stop_btn.on_left_mouse_button_pressed = stop
+        self._loop_btn.on_left_mouse_button_pressed = loop_toggle
 
         def on_progress_change(slider):
             t = slider.value
@@ -3531,6 +3549,29 @@ class PlaybackPanel(UI):
 
         self._progress_bar.on_change = on_progress_change
         self.current_time = 0
+
+    def play(self):
+        self._playing = True
+        self._play_pause_btn.set_icon_by_name('pause')
+        self.on_play()
+
+    def stop(self):
+        self._playing = False
+        self._play_pause_btn.set_icon_by_name('play')
+        self.on_stop()
+
+    def pause(self):
+        self._playing = False
+        self._play_pause_btn.set_icon_by_name('play')
+        self.on_pause()
+
+    def loop(self):
+        self._loop = True
+        self._loop_btn.set_icon_by_name('loop')
+
+    def play_once(self):
+        self._loop = False
+        self._loop_btn.set_icon_by_name('once')
 
     @property
     def final_time(self):

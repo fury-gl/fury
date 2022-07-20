@@ -854,7 +854,6 @@ def test_playback_panel(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-
     def play():
         global playing
         playing = True
@@ -875,9 +874,9 @@ def test_playback_panel(interactive=False):
         assert_equal(playback.current_time, ts)
 
     playback = PlaybackPanel()
-    playback.on_play_button_clicked = play
-    playback.on_pause_button_clicked = pause
-    playback.on_stop_button_clicked = stop
+    playback.on_play = play
+    playback.on_pause = pause
+    playback.on_stop = stop
     playback.on_progress_bar_changed = change_t
 
     show_manager.scene.add(playback)
