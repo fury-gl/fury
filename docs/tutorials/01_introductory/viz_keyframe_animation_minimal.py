@@ -18,13 +18,13 @@ showm = window.ShowManager(scene,
                            order_transparent=True)
 showm.initialize()
 
-boxes = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
+arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 # Creating a timeline to animate the actor
 timeline = Timeline(playback_panel=Timeline)
 # Adding the sphere actor to the timeline
 # This could've been done during initialization.
-timeline.add_actor(boxes)
+timeline.add_actor(arrow)
 
 # Adding some position keyframes
 timeline.set_position(0, np.array([0, 0, 0]))
