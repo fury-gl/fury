@@ -1,6 +1,4 @@
-from fury.utils import remove_observer_from_actor
 import os
-import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
@@ -11,6 +9,7 @@ from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
 from fury.decorators import skip_osx, skip_win, skip_linux
 from fury import shaders
+from fury.utils import remove_observer_from_actor
 
 
 def test_scene():
