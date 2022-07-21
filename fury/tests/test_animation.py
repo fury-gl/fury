@@ -1,10 +1,9 @@
 import time
-
-import numpy as np
 import numpy.testing as npt
 
 from fury import actor
-from fury.animation import Timeline, LinearInterpolator, StepInterpolator, \
+from fury.animation.timeline import Timeline
+from fury.animation.interpolator import LinearInterpolator, StepInterpolator, \
     CubicSplineInterpolator, CubicBezierInterpolator, SplineInterpolator, \
     HSVInterpolator, LABInterpolator, XYZInterpolator, Slerp
 from itertools import combinations

@@ -3,6 +3,7 @@ import numpy as np
 from scipy.spatial import transform
 from fury import utils
 from fury.actor import Container
+from fury.animation.interpolator import LinearInterpolator, SplineInterpolator
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 

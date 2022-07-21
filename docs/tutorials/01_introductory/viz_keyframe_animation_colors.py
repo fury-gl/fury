@@ -9,7 +9,8 @@ Color interpolation explained
 
 import numpy as np
 from fury import actor, window
-from fury.animation import Timeline, StepInterpolator, \
+from fury.animation.timeline import Timeline
+from fury.animation.interpolator import StepInterpolator, \
     LABInterpolator, HSVInterpolator, XYZInterpolator
 
 scene = window.Scene()

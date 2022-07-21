@@ -9,7 +9,8 @@ Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 
 import numpy as np
 from fury import actor, window
-from fury.animation import Timeline, SplineInterpolator
+from fury.animation.timeline import Timeline
+from fury.animation.interpolator import SplineInterpolator
 
 # Creating the scene
 scene = window.Scene()

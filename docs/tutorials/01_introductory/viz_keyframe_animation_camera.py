@@ -9,7 +9,8 @@ in this tutorial
 """
 import numpy as np
 from fury import actor, window
-from fury.animation import Timeline, CubicSplineInterpolator
+from fury.animation.timeline import Timeline
+from fury.animation.interpolator import CubicSplineInterpolator
 
 scene = window.Scene()
 
