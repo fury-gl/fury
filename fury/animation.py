@@ -396,12 +396,17 @@ class Timeline(Container):
         if playback_panel:
             def set_loop(loop):
                 self._loop = loop
+
+            def set_speed(speed):
+                self.speed = speed
+
             self.playback_panel = PlaybackPanel()
             self.playback_panel.on_play = self.play
             self.playback_panel.on_stop = self.stop
             self.playback_panel.on_pause = self.pause
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
+            self.playback_panel.on_speed_changed = set_speed
             self.add_actor(self.playback_panel, static=True)
 
         if actors is not None:
@@ -1296,7 +1301,7 @@ class Timeline(Container):
                     translation = np.identity(4)
                     translation[:3, 3] = pos
                     rot = self.get_camera_rotation(t)
-                    rot = transform.Rotation\
+                    rot = transform.Rotation \
                         .from_euler('xyz', rot, degrees=True).as_matrix()
                     rot = np.array([[*rot[0], 0],
                                     [*rot[1], 0],
@@ -1518,7 +1523,12 @@ class Timeline(Container):
             The speed of the timeline's playback.
 
         """
+        current = self.current_timestamp
+        if speed <= 0:
+            return
         self._speed = speed
+        self._last_started_time = time.perf_counter()
+        self.current_timestamp = current
 
     @property
     def has_playback_panel(self):
