@@ -408,7 +408,7 @@ def export_scene(scene, filename='default.gltf'):
     ----------
     scene : Scene
         FURY scene object.
-    name : str, optional
+    filename : str, optional
         Name of the model to be saved
     """
     gltf_obj = gltflib.GLTF2()
@@ -493,7 +493,7 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
     if ispoints:
         mode = 0
     elif islines:
-        mode = 1
+        mode = 3
     elif istraingles:
         mode = 4
 
