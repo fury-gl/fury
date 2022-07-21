@@ -100,9 +100,11 @@ jobs:
         use-only-tar-bz2: true
     - name: Install Dependencies
       run: ci/install_dependencies.sh
+    - name: Install FURY
+      run: ci/install.sh
     - name: Setup Headless
       run: ci/setup_headless.sh
-    - name: Install FURY and Test it!
+    - name: Run the tests!
       run: |
         if [ "${{ matrix.use-pre }}" == "true" ]; then
           ci/run_tests.sh || echo "::warning::Experimental Job so failure ignored!"
