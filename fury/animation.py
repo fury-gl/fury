@@ -1316,8 +1316,8 @@ class Timeline(Container):
                 if self.is_interpolatable('view_up', is_camera=True):
                     cam_up = self.get_camera_view_up(t)
                     self._camera.SetViewUp(cam_up)
-                else:
-                    self._camera.SetClippingRange(0.1, 100)
+                elif not self.is_interpolatable('view_up', is_camera=True):
+                    # to preserve up-view as default after user interaction
                     self._camera.SetViewUp(0, 1, 0)
 
             elif 'camera' in self._data.get('keyframes') and self._scene:
