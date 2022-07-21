@@ -16,8 +16,9 @@ We start by importing the necessary modules:
 """
 
 from fury import actor, window
-from fury.shaders import compose_shader, shader_to_actor, attribute_to_actor
+from fury.shaders import compose_shader, shader_to_actor, attribute_to_actor, import_fury_shader
 
+import os
 import numpy as np
 
 ###############################################################################
@@ -41,14 +42,13 @@ dirs = np.array([[-.2, .9, .4], [-.5, -.5, 1], [.9, 0, .4], [-.2, .9, .4],
                  [.9, 0, .4]])
 colors = np.array([[1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 1, 0],
                    [0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
+radius = .5
+height = 1
 
 ###############################################################################
 # In order to see how cylinders are made, we set different resolutions (number
 # of sides used to define the bases of the cylinder) to see how it changes the
 # surface of the primitive.
-
-radius = .5
-height = 1
 
 cylinders_8 = actor.cylinder(centers[:3], dirs[:3], colors[:3], radius=radius,
                              heights=height, capped=True, resolution=8)
@@ -85,10 +85,10 @@ cylinders_32.GetProperty().SetRepresentationToWireframe()
 if interactive:
     window.show(scene)
 
+window.record(scene, size=(600, 600), out_path='viz_poly_cylinder_geom.png')
+
 ###############################################################################
 # Then we clean the scene to render the boxes.
-
-window.record(scene, size=(600, 600), out_path='viz_poly_cylinder_geom.png')
 
 scene.clear()
 
@@ -96,35 +96,26 @@ scene.clear()
 # Cylinder using SDF
 # ================
 # We will use the ray marching algorithm to render the SDF primitive using
-# shaders. Signed Distance Functions (SDFs) are mathematical functions that
-# determine the distance from a point in space to a surface. Ray marching is
-# a technique where you step along a ray in order to find intersections with
-# solid geometry. Objects in the scene are defined by SDF, and because we
-# don’t use polygonal meshes it is possible to define perfectly smooth
-# surfaces and allows a faster rendering in comparison to polygon-based
-# modeling.
+# shaders. Ray marching is a technique where you step along a ray in order to
+# find intersections with solid geometry. Objects in the scene are defined by
+# SDF, and because we don’t use polygonal meshes it is possible to define
+# perfectly smooth surfaces and allows a faster rendering in comparison to
+# polygon-based modeling.
 
 ###############################################################################
 # Now we create cylinders using box actor and SDF implementation on shaders.
 # For this, we first create a box actor.
 
 box_actor = actor.box(centers=centers, directions=dirs, colors=colors,
-                      scales=(height, radius*2, radius*2))
-
-box_actor.GetProperty().SetRepresentationToWireframe()
-scene.add(box_actor)
-
-if interactive:
-    window.show(scene)
-
-window.record(scene, size=(600, 600), out_path='viz_sdf_cylinder_box.png')
-
-scene.clear()
+                      scales=(height, radius * 2, radius * 2))
 
 ###############################################################################
 # Now we use attribute_to_actor to link a NumPy array, with the centers and
 # directions data, with a vertex attribute. We do this to pass the data to
 # the vertex shader, with the corresponding attribute name.
+#
+# We need to associate the data to each of the 8 vertices that make up the box
+# since we handle the processing of individual vertices in the vertex shader.
 
 rep_directions = np.repeat(dirs, 8, axis=0)
 rep_centers = np.repeat(centers, 8, axis=0)
@@ -143,202 +134,159 @@ attribute_to_actor(box_actor, rep_heights, 'height')
 #
 # Vertex shaders perform basic processing of each individual vertex.
 
-sdf_cylinder_vert_dec = \
-'''
+vs_dec = \
+    '''
+    in vec3 center;
+    in vec3 direction;
+    in float height;
+    in float radius;
 
-in vec3 center;
-in vec3 direction;
-in float height;
-in float radius;
+    out vec4 vertexMCVSOutput;
+    out vec3 centerMCVSOutput;
+    out vec3 directionVSOutput;
+    out float heightVSOutput;
+    out float radiusVSOutput;
+    '''
 
-out vec4 vertexMCVSOutput;
-out vec3 centerWCVSOutput;
-out vec3 directionVSOutput;
-out float heightVSOutput;
-out float radiusVSOutput;
+vs_impl = \
+    '''
+    vertexMCVSOutput = vertexMC;
+    centerMCVSOutput = center;
+    directionVSOutput = direction;
+    heightVSOutput = height;
+    radiusVSOutput = radius;
+    '''
 
-'''
+###############################################################################
+# Then we add the vertex shader code to the box_actor. We use shader_to_actor
+# to apply our implementation to the shader creation process, this function
+# joins our code to the shader template that FURY has by default.
 
-sdf_cylinder_vert_impl = \
-'''
-
-vertexMCVSOutput = vertexMC;
-centerWCVSOutput = center;
-directionVSOutput = direction;
-heightVSOutput = height;
-radiusVSOutput = radius;
-
-'''
+shader_to_actor(box_actor, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 
 ###############################################################################
 # Fragment shaders are used to define the colors of each pixel being processed,
-# the program runs on each of the pixels that the object occupies on the screen.
+# the program runs on each of the pixels that the object occupies on the
+# screen.
 #
-# Vertex shaders also allow us to have control over details of position,
-# movement, lighting, and color in a scene. In this case, we are using vertex
-# shader not just to define the colors of the cylinders but to manipulate its
-# position in world space, rotation with respect to the box, and lighting of
-# the scene.
+# Vertex shaders also allow us to have control over details of movement,
+# lighting, and color in a scene. In this case, we are using vertex shader not
+# just to define the colors of the cylinders but to manipulate its position in
+# world space, rotation with respect to the box, and lighting of the scene.
 
-sdf_cylinder_frag_dec = \
-'''
+fs_vars_dec = \
+    '''
+    in vec4 vertexMCVSOutput;
+    in vec3 centerMCVSOutput;
+    in vec3 directionVSOutput;
+    in float heightVSOutput;
+    in float radiusVSOutput;
 
-in vec4 vertexMCVSOutput;
-
-in vec3 centerWCVSOutput;
-in vec3 directionVSOutput;
-in float heightVSOutput;
-in float radiusVSOutput;
-
-uniform mat4 MCVCMatrix;
-
-
-// A rotation matrix is used to transform our position vectors in order to
-// align the direction of cylinder with respect to the box
-mat4 rotationMatrix(vec3 u, vec3 v)
-{
-    // Cross product is the first step to find R
-    vec3 w = cross(u, v);
-    float wn = length(w);
-
-    // Check that cross product is OK and vectors u, v are not collinear
-    // (norm(w)>0.0)
-    if(isnan(wn) || wn < 0.0)
-    {
-        float normUV = length(u - v);
-        // This is the case of two antipodal vectors:
-        // ** former checking assumed norm(u) == norm(v)
-        if(normUV > length(u))
-            return mat4(-1);
-        return mat4(1);
-    }
-
-    // if everything ok, normalize w
-    w = w / wn;
-
-    // vp is in plane of u,v,  perpendicular to u
-    vec3 vp = (v - dot(u, v) * u);
-    vp = vp / length(vp);
-    
-    // (u vp w) is an orthonormal basis
-    mat3 Pt = mat3(u, vp, w);
-    mat3 P = transpose(Pt);
-
-    float cosa = clamp(dot(u, v), -1, 1);
-    float sina = sqrt(1 - pow(cosa, 2));
-
-    mat3 R = mat3(mat2(cosa, sina, -sina, cosa));
-    mat3 Rp = Pt * (R * P);
-
-    // make sure that you don't return any Nans
-    bool anyNanCheckRp0 = any(isnan(Rp[0]));
-    bool anyNanCheckRp1 = any(isnan(Rp[1]));
-    bool anyNanCheckRp2 = any(isnan(Rp[2]));
-    if(anyNanCheckRp0 || anyNanCheckRp1 || anyNanCheckRp2)
-        return mat4(1);
-
-    return mat4(Rp);
-}
-
-
-// SDF for the cylinder
-float sdCylinder( vec3 p, float r, float h )
-{
-    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
-    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
-}
-
-// This is used on calculations for surface normals of the cylinder
-float map( in vec3 position )
-{
-    mat4 rot = rotationMatrix(normalize(directionVSOutput), normalize(vec3(0, 1, 0)));
-
-    // this allows us to accommodate more than one object in the world space
-    vec3 pos = (rot*vec4(position - centerWCVSOutput, 0.0)).xyz;
-
-    // distance to the cylinder
-    return sdCylinder(pos, radiusVSOutput, heightVSOutput/2);
-}
-  
-  
-// We need surface normals when doing lighting of the scene
-vec3 calculateNormal( in vec3 position )
-{
-    vec2 e = vec2(0.001, 0.0);
-    return normalize( vec3( map(position + e.xyy) - map(position - e.xyy),
-                            map(position + e.yxy) - map(position - e.yxy),
-                            map(position + e.yyx) - map(position - e.yyx)));
-}
-
-
-// Ray Marching
-float castRay( in vec3 ro, vec3 rd )
-{
-    float t = 0.0;
-    for(int i=0; i < 4000; i++){
-        vec3 position = ro + t * rd;
-        float  h = map(position);
-        t += h;
-           if ( t > 20.0 || h < 0.001) break;
-    }
-    return t;
-}
-'''
-
-sdf_cylinder_frag_impl = \
-'''
-
-vec3 point = vertexMCVSOutput.xyz;
-
-// ray origin
-vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
-
-vec3 col = vertexColorVSOutput.rgb;
-
-// ray direction
-vec3 rd = normalize(point - ro.xyz);
-
-// light direction
-vec3 ld = normalize(ro.xyz - point);
-
-ro += vec4((point - ro.xyz),0.0);
-
-float t = castRay(ro.xyz, rd);
-
-if(t < 20.0)
-{
-    vec3 position = ro.xyz + t * rd;
-    vec3 norm = calculateNormal(position);
-    float lightAttenuation = dot(ld, norm);
-    
-    // calculate the diffuse factor and diffuse color
-    df = max(0, lightAttenuation);
-    diffuse = df * diffuseColor * lightColor0;
-        
-    // calculate the specular factor and specular color
-    sf = pow(df, specularPower);
-    specular = sf * specularColor * lightColor0;
-    
-    // Blinn-Phong illumination model
-    fragOutput0 = vec4(ambientColor + diffuse + specular, opacity);
-}
-else{
-    discard;
-}
-'''
+    uniform mat4 MCVCMatrix;
+    '''
 
 ###############################################################################
-# Finally, we add shader code implementation to the box_actor. We use
-# shader_to_actor to apply our implementation to the shader creation process,
-# this function joins our code to the shader template that FURY has by default.
+# We use this function to generate an appropriate rotation matrix which help us
+# to transform our position vectors in order to align the direction of
+# cylinder with respect to the box.
 
-shader_to_actor(box_actor, "vertex", impl_code=sdf_cylinder_vert_impl,
-                decl_code=sdf_cylinder_vert_dec)
-shader_to_actor(box_actor, "fragment", decl_code=sdf_cylinder_frag_dec)
-shader_to_actor(box_actor, "fragment", impl_code=sdf_cylinder_frag_impl,
-                block="light")
+vec_to_vec_rot_mat = import_fury_shader(
+    os.path.join('utils', 'vec_to_vec_rot_mat.glsl'))
 
-box_actor.GetProperty().SetRepresentationToSurface()
+###############################################################################
+# We calculate the distance using the SDF function for the cylinder.
+
+sd_cylinder = import_fury_shader(os.path.join('sdf', 'sd_cylinder.frag'))
+
+###############################################################################
+# This is used on calculations for surface normals of the cylinder.
+
+sdf_map = \
+    '''
+    float map(in vec3 position)
+    {
+        // the sdCylinder function creates vertical cylinders by default, that
+        // is the cylinder is created pointing in the up direction (0, 1, 0).
+        // We want to rotate that vector to be aligned with the box's direction
+        mat4 rot = vec2VecRotMat(normalize(directionVSOutput),
+                                 normalize(vec3(0, 1, 0)));
+
+        // this allows us to accommodate more than one object in the world space
+        vec3 pos = (rot * vec4(position - centerMCVSOutput, 0.0)).xyz;
+
+        // distance to the cylinder
+        return sdCylinder(pos, radiusVSOutput, heightVSOutput / 2);
+    }
+    '''
+
+###############################################################################
+# We use central differences technique for computing surface normals.
+
+central_diffs_normal = import_fury_shader(os.path.join('sdf',
+                                                       'central_diffs.frag'))
+
+###############################################################################
+# We use cast_ray for the implementation of Ray Marching.
+
+cast_ray = import_fury_shader(os.path.join('ray_marching', 'cast_ray.frag'))
+
+###############################################################################
+# For the illumination of the scene we use the Blinn-Phong model.
+
+blinn_phong_model = import_fury_shader(os.path.join('lighting',
+                                                    'blinn_phong_model.frag'))
+
+###############################################################################
+# Now we use compose_shader to join our pieces of GLSL shader code.
+
+fs_dec = compose_shader([fs_vars_dec, vec_to_vec_rot_mat, sd_cylinder, sdf_map,
+                         central_diffs_normal, cast_ray, blinn_phong_model])
+
+shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
+
+###############################################################################
+# Here we have the implementation of all the previous code with all the
+# necessary variables and functions to build the cylinders.
+
+sdf_cylinder_frag_impl = \
+    '''
+    vec3 point = vertexMCVSOutput.xyz;
+
+    // ray origin
+    vec4 ro = -MCVCMatrix[3] * MCVCMatrix;  // camera position in world space
+
+    // ray direction
+    vec3 rd = normalize(point - ro.xyz);
+
+    // light direction
+    vec3 ld = normalize(ro.xyz - point);
+
+    ro += vec4((point - ro.xyz), 0);
+
+    float t = castRay(ro.xyz, rd);
+
+    if(t < 20.0)
+    {
+        vec3 position = ro.xyz + t * rd;
+        vec3 normal = centralDiffsNormals(position, .0001);
+        float lightAttenuation = dot(ld, normal);
+        vec3 color = blinnPhongIllumModel(
+                        lightAttenuation, lightColor0, diffuseColor, 
+                        specularPower, specularColor, ambientColor);
+        fragOutput0 = vec4(color, opacity);
+    }
+    else
+    {
+        discard;
+    }
+    '''
+
+shader_to_actor(box_actor, 'fragment', impl_code=sdf_cylinder_frag_impl,
+                block='light')
+
+###############################################################################
+# Finally, we visualize the cylinders made using SDF
+
 scene.add(box_actor)
 
 if interactive:
