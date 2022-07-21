@@ -34,13 +34,13 @@ jobs:
         include:
           - os: ubuntu-latest
             python-version: 3.9
-            install_type: pip
+            install-type: pip
             depends: OPTIONAL_DEPS
             coverage: true
             use-pre: false
           - os: ubuntu-latest
             python-version: 3.9
-            install_type: pip
+            install-type: pip
             depends: OPTIONAL_DEPS
             use-pre: true
             coverage: false
