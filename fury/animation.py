@@ -377,6 +377,7 @@ class Timeline(Container):
                 'camera': {}
             }
         }
+        self.playback_panel = None
         self._last_timestamp = 0
         self._current_timestamp = 0
         self._speed = 1
@@ -386,12 +387,10 @@ class Timeline(Container):
         self._scene = None
         self._last_started_time = 0
         self._playing = False
-        self.playback_panel = None
         self._final_timestamp = 0
         self._needs_update = False
         self._reverse_playing = False
         self._loop = False
-
 
         # Handle actors while constructing the timeline.
         if playback_panel:
