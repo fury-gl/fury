@@ -391,7 +391,7 @@ class Timeline(Container):
         self._needs_update = False
         self._reverse_playing = False
         self._loop = False
-        
+
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -462,7 +462,6 @@ class Timeline(Container):
         typ = 'attribs'
         if is_camera:
             typ = 'camera'
-            self._camera = self._scene.camera()
 
         keyframes = self._data.get('keyframes')
         if attrib not in keyframes.get(typ):
@@ -1019,7 +1018,7 @@ class Timeline(Container):
         timestamp: float
             The time to interpolate at.
         euler: ndarray, shape(1, 3)
-            The euler angles describing the camera rotation.
+            The euler angles describing the camera rotation in degrees.
         """
         self.set_camera_keyframe('rotation', timestamp, euler)
 
@@ -1292,21 +1291,40 @@ class Timeline(Container):
             self.update_final_timestamp()
             self.playback_panel.current_time = t
         if self.playing or force:
-            if self.is_interpolatable('position', is_camera=True):
-                cam_pos = self.get_camera_position(t)
-                self._camera.SetPosition(cam_pos)
+            if self._camera is not None:
+                if self.is_interpolatable('rotation', is_camera=True):
+                    pos = self._camera.GetPosition()
+                    translation = np.identity(4)
+                    translation[:3, 3] = pos
+                    rot = self.get_camera_rotation(t)
+                    rot = transform.Rotation\
+                        .from_euler('xyz', rot, degrees=True).as_matrix()
+                    rot = np.array([[*rot[0], 0],
+                                    [*rot[1], 0],
+                                    [*rot[2], 0],
+                                    [0, 0, 0, 1]])
+                    rot = translation @ rot @ np.linalg.inv(translation)
+                    self._camera.SetModelTransformMatrix(rot.flatten())
 
-            if self.is_interpolatable('focal', is_camera=True):
-                cam_foc = self.get_camera_focal(t)
-                self._camera.SetFocalPoint(cam_foc)
+                if self.is_interpolatable('position', is_camera=True):
+                    cam_pos = self.get_camera_position(t)
+                    self._camera.SetPosition(cam_pos)
 
-            if self.is_interpolatable('view_up', is_camera=True):
-                cam_up = self.get_camera_view_up(t)
-                self._camera.SetViewUp(cam_up)
+                if self.is_interpolatable('focal', is_camera=True):
+                    cam_foc = self.get_camera_focal(t)
+                    self._camera.SetFocalPoint(cam_foc)
 
-            if self.is_interpolatable('rotation', is_camera=True):
-                cam_up = self.get_camera_rotation(t)
-                self._camera.Set(cam_up)
+                if self.is_interpolatable('view_up', is_camera=True):
+                    cam_up = self.get_camera_view_up(t)
+                    self._camera.SetViewUp(cam_up)
+                else:
+                    self._camera.SetClippingRange(0.1, 100)
+                    self._camera.SetViewUp(0, 1, 0)
+
+            elif 'camera' in self._data.get('keyframes') and self._scene:
+                self._camera = self._scene.camera()
+                self.update_animation(force=True)
+                return
 
             if self.is_interpolatable('position'):
                 position = self.get_position(t)
@@ -1331,8 +1349,8 @@ class Timeline(Container):
                 for act in self.actors:
                     act.vcolors[:] = color * 255
                     utils.update_actor(act)
-        # Also update all child Timelines.
-        [tl.update_animation(t, force=True) for tl in self.timelines]
+            # Also update all child Timelines.
+            [tl.update_animation(t, force=True) for tl in self.timelines]
 
     def play(self):
         """Play the animation"""
@@ -1506,7 +1524,7 @@ class Timeline(Container):
     @property
     def has_playback_panel(self):
         return self.playback_panel is not None
-        
+
     def add_to_scene(self, ren):
         super(Timeline, self).add_to_scene(ren)
         [ren.add(static_act) for static_act in self._static_actors]
