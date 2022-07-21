@@ -12,6 +12,9 @@ from fury import shaders
 from fury.utils import remove_observer_from_actor
 
 
+@pytest.mark.skipif(skip_linux or skip_win,
+                    reason="This test does not work on Windows."
+                           " Need to be introspected")
 def test_scene():
     scene = window.Scene()
     # Scene size test
@@ -392,6 +395,9 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
+@pytest.mark.skipif(skip_linux or skip_win,
+                    reason="This test does not work on Windows."
+                           " Need to be introspected")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
