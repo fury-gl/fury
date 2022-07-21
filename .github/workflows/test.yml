@@ -105,9 +105,9 @@ jobs:
     - name: Install FURY and Test it!
       run: |
         if [ "${{ matrix.use-pre }}" == "true" ]; then
-          tools/ci/run_tests.sh || echo "::warning::Experimental Job so failure ignored!"
+          ci/run_tests.sh || echo "::warning::Experimental Job so failure ignored!"
         else
-          tools/ci/run_tests.sh
+          ci/run_tests.sh
         fi
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     # - name: Setup tmate session
