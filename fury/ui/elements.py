@@ -3473,6 +3473,7 @@ class PlaybackPanel(UI):
         super(PlaybackPanel, self).__init__()
         self._playing = False
         self._loop = False
+        self._speed = 1
 
         # callback functions
         self.on_play_pause_toggle = lambda state: None
@@ -3481,14 +3482,20 @@ class PlaybackPanel(UI):
         self.on_stop = lambda: None
         self.on_loop_toggle = lambda is_looping: None
         self.on_progress_bar_changed = lambda x: None
+        self.on_speed_up = lambda x: None
+        self.on_slow_down = lambda x: None
+        self.on_speed_changed = lambda x: None
 
     def _setup(self):
         """Setup this Panel component.
 
         """
-        self.text = TextBlock2D(position=(800, 10))
+        self.time_text = TextBlock2D(position=(820, 10))
+        self.speed_text = TextBlock2D(text='1', position=(0, 0), font_size=21,
+                                      color=(0.2, 0.2, 0.2), bold=True,
+                                      justification='center')
 
-        self.panel = Panel2D(size=(150, 30), color=(1, 1, 1), align="right",
+        self.panel = Panel2D(size=(190, 30), color=(1, 1, 1), align="right",
                              has_border=True, border_color=(0, 0.3, 0),
                              border_width=2)
         self.panel.position = (5, 5)
@@ -3507,16 +3514,31 @@ class PlaybackPanel(UI):
             icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
         )
 
-        self._progress_bar = LineSlider2D(center=(400 + 150 / 2, 20),
+        self._speed_up_btn = Button2D(
+            icon_fnames=[("plus", read_viz_icons(fname="plus.png"))],
+            size=(15, 15)
+        )
+
+        self._slow_down_btn = Button2D(
+            icon_fnames=[("minus", read_viz_icons(fname="minus.png"))],
+            size=(15, 15)
+        )
+
+        self._progress_bar = LineSlider2D(center=(512, 20),
                                           initial_value=0,
                                           orientation='horizontal',
                                           min_value=0, max_value=100,
-                                          text_alignment='bottom', length=600,
+                                          text_alignment='bottom', length=590,
                                           line_width=9)
 
-        self.panel.add_element(self._play_pause_btn, (0.1, 0.04))
-        self.panel.add_element(self._stop_btn, (0.4, 0.04))
-        self.panel.add_element(self._loop_btn, (0.73, 0.04))
+        start = 0.04
+        w = 0.2
+        self.panel.add_element(self._play_pause_btn, (start, 0.04))
+        self.panel.add_element(self._stop_btn, (start + w, 0.04))
+        self.panel.add_element(self._loop_btn, (start + 2*w, 0.04))
+        self.panel.add_element(self._speed_up_btn, (start + 0.85, 0.3))
+        self.panel.add_element(self._slow_down_btn, (start + 0.65, 0.3))
+        self.panel.add_element(self.speed_text, (start + 0.79, 0.14))
 
         def play_pause_toggle(i_ren, _obj, _button):
             self._playing = not self._playing
@@ -3529,6 +3551,24 @@ class PlaybackPanel(UI):
 
         def stop(i_ren, _obj, _button):
             self.stop()
+            i_ren.force_render()
+
+        def speed_up(i_ren, _obj, _button):
+            inc = 0.1
+            if self.speed >= 1:
+                inc = 1
+            self.speed += inc
+            self.on_speed_up(self._speed)
+            self.on_speed_changed(self._speed)
+            i_ren.force_render()
+
+        def slow_down(i_ren, _obj, _button):
+            dec = 1
+            if self.speed <= 1:
+                dec = 0.1
+            self.speed -= dec
+            self.on_slow_down(self._speed)
+            self.on_speed_changed(self._speed)
             i_ren.force_render()
 
         def loop_toggle(i_ren, _obj, _button):
@@ -3544,6 +3584,8 @@ class PlaybackPanel(UI):
         self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
         self._stop_btn.on_left_mouse_button_pressed = stop
         self._loop_btn.on_left_mouse_button_pressed = loop_toggle
+        self._speed_up_btn.on_left_mouse_button_pressed = speed_up
+        self._slow_down_btn.on_left_mouse_button_pressed = slow_down
 
         def on_progress_change(slider):
             t = slider.value
@@ -3631,7 +3673,7 @@ class PlaybackPanel(UI):
             Current time formatted as a string in the form:`HH:MM:SS`.
 
         """
-        return self.text.message
+        return self.time_text.message
 
     @current_time_str.setter
     def current_time_str(self, t):
@@ -3640,7 +3682,7 @@ class PlaybackPanel(UI):
         Parameters
         ----------
         t: float
-            Time to be set in the text counter.
+            Time to be set in the time_text counter.
 
         Notes
         -----
@@ -3648,11 +3690,38 @@ class PlaybackPanel(UI):
         since setting`current_value` automatically sets this property as well.
         """
         t = np.clip(t, 0, self.final_time)
-        self.text.message = time.strftime('%H:%M:%S', time.gmtime(t))
+        self.time_text.message = time.strftime('%H:%M:%S', time.gmtime(t))
+
+    @property
+    def speed(self):
+        """Returns current speed.
+
+        Returns
+        -------
+        str
+            Current time formatted as a string in the form:`HH:MM:SS`.
+
+        """
+        return self._speed
+
+    @speed.setter
+    def speed(self, speed):
+        """Set time counter.
+
+        Parameters
+        ----------
+        speed: float
+            Speed value to be set in the speed_text counter.
+        """
+        if speed <= 0:
+            speed = 1
+        self._speed = speed
+        self.speed_text.message = ("%.1f" % speed).lstrip('0') if speed < 1 \
+            else str(int(speed))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.panel.actors, self._progress_bar.actors, self.text
+        return self.panel.actors, self._progress_bar.actors, self.time_text
 
     def _add_to_scene(self, _scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3664,7 +3733,7 @@ class PlaybackPanel(UI):
         """
         self.panel.add_to_scene(_scene)
         self._progress_bar.add_to_scene(_scene)
-        self.text.add_to_scene(_scene)
+        self.time_text.add_to_scene(_scene)
 
     def _set_position(self, _coords):
         # TODO: after making this playback dynamic in size, this should be set
