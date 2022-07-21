@@ -10,7 +10,7 @@ Week 6 - Supporting Rotation of the Shapes from the Center
 
 What did you do this week?
 --------------------------
-This week I started implementing a new feature that would help us to rotate the shapes from the center using `RingSlider2D`. I already had a `rotate` function that rotates the shape around its pivot vertex, so I updated it to support rotation from the center.
+This week I started implementing a new feature that would help us to rotate the shapes from the center using ``RingSlider2D``. I already had a `rotate` function that rotates the shape around its pivot vertex, so I updated it to support rotation from the center.
 
 `Rotation from center <https://github.com/fury-gl/fury/pull/623>`_
 
@@ -18,7 +18,7 @@ This week I started implementing a new feature that would help us to rotate the 
     :align: center
     :width: 300
 
-Then I tried to group the shapes to transform and modify them all at once. For this, I had to investigate more about the key press and release events. Then I managed to select and deselect shapes by holding the `Ctrl` key.
+Then I tried to group the shapes to transform and modify them all at once. For this, I had to investigate more about the key press and release events. Then I managed to select and deselect shapes by holding the ``Ctrl`` key.
 
 `Grouping Shapes <https://github.com/ganimtron-10/fury/tree/grouping-shapes>`_
 
