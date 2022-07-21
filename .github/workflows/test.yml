@@ -37,6 +37,7 @@ jobs:
             install_type: pip
             depends: OPTIONAL_DEPS
             coverage: true
+            use-pre: false
           - os: ubuntu-latest
             python-version: 3.9
             install_type: pip
@@ -48,8 +49,8 @@ jobs:
       DEPENDS: ${{ matrix.depends }}
       PYTHON_VERSION: ${{ matrix.python-version }}
       VENV_ARGS: "--python=python"
-      USE_PRE: ${{ inputs.use-pre }}
-      COVERAGE: ${{ inputs.coverage }}
+      USE_PRE: ${{ matrix.use-pre }}
+      COVERAGE: ${{ matrix.coverage }}
       PRE_WHEELS: "https://pypi.anaconda.org/scipy-wheels-nightly/simple"
       OMP_NUM_THREADS: 1
 
