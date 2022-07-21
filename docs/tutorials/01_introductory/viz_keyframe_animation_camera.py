@@ -64,7 +64,7 @@ for i in range(50):
 # Note: adding actors as static actors just ensures that they get added to the
 # scene along with the Timeline and will not be controlled nor animated by the
 # timeline.
-main_timeline.add_actor([arrow, plan, fury_text], static=True)
+main_timeline.add_static_actor([arrow, plan, fury_text])
 
 # Only the main Timeline is added to the scene.
 scene.add(main_timeline)
