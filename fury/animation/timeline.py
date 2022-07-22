@@ -1002,7 +1002,8 @@ class Timeline(Container):
                     pos = self._camera.GetPosition()
                     translation = np.identity(4)
                     translation[:3, 3] = pos
-                    rot = self.get_camera_rotation(t)
+                    # camera axis is reverted
+                    rot = - self.get_camera_rotation(t)
                     rot = transform.Rotation \
                         .from_euler('xyz', rot, degrees=True).as_matrix()
                     rot = np.array([[*rot[0], 0],
