@@ -2621,6 +2621,14 @@ class Container(object):
             else:
                 ren.add(item)
 
+    def remove_from_scene(self, ren):
+        """ Removes the items of this container from a given scene. """
+        for item in self.items:
+            if isinstance(item, Container):
+                item.remove_from_scene(ren)
+            else:
+                ren.rm(item)
+
     def GetBounds(self):
         """ Get the bounds of the container. """
         bounds = np.zeros(6)    # x1, x2, y1, y2, z1, z2
