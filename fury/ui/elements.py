@@ -3619,7 +3619,7 @@ class PlaybackPanel(UI):
             self.on_progress_bar_changed(t)
             self.current_time = t
 
-        self._progress_bar.on_change = on_progress_change
+        self._progress_bar.on_moving_slider = on_progress_change
         self.current_time = 0
 
     def play(self):
