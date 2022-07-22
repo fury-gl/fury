@@ -474,6 +474,8 @@ class LineSlider2D(UI):
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
 
         self.value = initial_value
         self.update()
@@ -613,6 +615,7 @@ class LineSlider2D(UI):
     def value(self, value):
         value_range = self.max_value - self.min_value
         self.ratio = (value - self.min_value) / value_range
+        self.on_value_changed(self)
 
     @property
     def ratio(self):
@@ -664,6 +667,8 @@ class LineSlider2D(UI):
         else:
             self.text.position = (self.text.position[0], disk_position_y)
 
+        self.on_change(self)
+
     def track_click_callback(self, i_ren, _vtkactor, _slider):
         """Update disk position and grab the focus.
 
@@ -677,7 +682,7 @@ class LineSlider2D(UI):
         """
         position = i_ren.event.position
         self.set_position(position)
-        self.on_change(self)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -695,7 +700,7 @@ class LineSlider2D(UI):
         self.handle.color = self.active_color
         position = i_ren.event.position
         self.set_position(position)
-        self.on_change(self)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -817,6 +822,11 @@ class LineDoubleSlider2D(UI):
         self.text[1].font_size = font_size
         self.text_template = text_template
 
+        # Offer some standard hooks to the user.
+        self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
+
         # Setting the handle positions will also update everything.
         self._values = [initial_values[0], initial_values[1]]
         self._ratio = [None, None]
@@ -864,6 +874,7 @@ class LineDoubleSlider2D(UI):
             self.handle_release_callback
         self.handles[1].on_left_mouse_button_released = \
             self.handle_release_callback
+
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -1091,6 +1102,7 @@ class LineDoubleSlider2D(UI):
 
         """
         self.left_disk_ratio = self.value_to_ratio(left_disk_value)
+        self.on_value_changed(self)
 
     @property
     def right_disk_value(self):
@@ -1107,6 +1119,7 @@ class LineDoubleSlider2D(UI):
             New value for the right disk.
         """
         self.right_disk_ratio = self.value_to_ratio(right_disk_value)
+        self.on_value_changed(self)
 
     @property
     def bottom_disk_ratio(self):
@@ -1194,9 +1207,6 @@ class LineDoubleSlider2D(UI):
 
         return self.text_template.format(value=self._values[disk_number])
 
-    def on_change(self, slider):
-        pass
-
     def update(self, disk_number):
         """Update the slider.
 
@@ -1250,6 +1260,7 @@ class LineDoubleSlider2D(UI):
         elif vtkactor == self.handles[1].actors[0]:
             self.set_position(position, 1)
             self.handles[1].color = self.active_color
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -1346,6 +1357,8 @@ class RingSlider2D(UI):
 
         # Offer some standard hooks to the user.
         self.on_change = lambda ui: None
+        self.on_value_changed = lambda ui: None
+        self.on_moving_slider = lambda ui: None
 
         self._value = initial_value
         self.value = initial_value
@@ -1424,6 +1437,7 @@ class RingSlider2D(UI):
     def value(self, value):
         value_range = self.max_value - self.min_value
         self.ratio = (value - self.min_value) / value_range
+        self.on_value_changed(self)
 
     @property
     def previous_value(self):
@@ -1506,6 +1520,7 @@ class RingSlider2D(UI):
         """
         click_position = i_ren.event.position
         self.move_handle(click_position=click_position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -1523,6 +1538,7 @@ class RingSlider2D(UI):
         click_position = i_ren.event.position
         self.handle.color = self.active_color
         self.move_handle(click_position=click_position)
+        self.on_moving_slider(self)
         i_ren.force_render()
         i_ren.event.abort()  # Stop propagating the event.
 
@@ -2406,6 +2422,7 @@ class ListBox2D(UI):
                                             scroll_bar_height))
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
         self.panel.add_element(
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
 
@@ -2622,6 +2639,8 @@ class ListBox2D(UI):
             if slot.textblock.scene is not None:
                 clip_overflow(slot.textblock, self.slot_width)
             slot.set_visibility(True)
+            if slot.size[1] != self.slot_height:
+                slot.resize((self.slot_width, self.slot_height))
             if slot.element in self.selected:
                 slot.select()
             else:
@@ -2631,6 +2650,7 @@ class ListBox2D(UI):
         for slot in self.slots[len(values_to_show):]:
             slot.element = None
             slot.set_visibility(False)
+            slot.resize((self.slot_width, 0))
             slot.deselect()
 
     def update_scrollbar(self):
@@ -2652,6 +2672,7 @@ class ListBox2D(UI):
 
         if len(self.values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
+            self.scroll_bar.height = 0
 
     def clear_selection(self):
         del self.selected[:]
@@ -2816,6 +2837,8 @@ class ListBoxItem2D(UI):
         self.list_box.select(self, multiselect, range_select)
         i_ren.force_render()
 
+    def resize(self, size):
+        self.background.resize(size)
 
 class FileMenu2D(UI):
     """A menu to select files in the current folder.

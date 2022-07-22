@@ -905,7 +905,7 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False, stereo='off',
              multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0):
+             occlusion_ratio=0.0, dpi=(72, 72)):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -942,6 +942,9 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
         Occlusion ration for depth peeling (Default 0 - exact image).
+    dpi : float or (float, float)
+        Dots per inch (dpi) for saved image.
+        Single values are applied as dpi for both dimensions.
 
     Returns
     -------
@@ -979,7 +982,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     if fname is None:
         return arr
 
-    save_image(arr, fname)
+    save_image(arr, fname, dpi=dpi)
     return arr
 
 
