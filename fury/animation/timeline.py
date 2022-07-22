@@ -1246,3 +1246,4 @@ class Timeline(Container):
         [ren.add(timeline) for timeline in self.timelines]
         self._scene = ren
         self._added_to_scene = True
+        self.update_animation(force=True)
