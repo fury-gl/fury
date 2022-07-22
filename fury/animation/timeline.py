@@ -46,6 +46,9 @@ class Timeline(Container):
         self._needs_update = False
         self._reverse_playing = False
         self._loop = False
+        self._added_to_scene = True
+        self._add_to_scene_time = 0
+        self._remove_from_scene_time = None
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -193,6 +196,43 @@ class Timeline(Container):
             time precedes this timestamp.
         """
         self.set_keyframe(attrib, timestamp, value, pre_cp, post_cp, True)
+
+    def is_inside_scene_at(self, timestamp):
+        if self._remove_from_scene_time is not None and \
+                timestamp >= self._remove_from_scene_time:
+            return False
+        elif timestamp >= self._add_to_scene_time:
+            return True
+        return False
+
+    def add_to_scene_at(self, timestamp):
+        """Set timestamp for adding Timeline to scene event.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the event.
+        """
+        self._add_to_scene_time = timestamp
+
+    def remove_from_scene_at(self, timestamp):
+        """Set timestamp for removing Timeline to scene event.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the event.
+        """
+        self._remove_from_scene_time = timestamp
+
+    def handle_scene_event(self, in_scene):
+        if self._scene is not None:
+            if in_scene and not self._added_to_scene:
+                super(Timeline, self).add_to_scene(self._scene)
+                self._added_to_scene = True
+            elif not in_scene and self._added_to_scene:
+                super(Timeline, self).remove_from_scene(self._scene)
+                self._added_to_scene = False
 
     def set_camera_keyframes(self, attrib, keyframes):
         """Set multiple keyframes for a certain camera property
@@ -935,7 +975,7 @@ class Timeline(Container):
         """Removes all actors from the Timeline"""
         self.clear()
 
-    def update_animation(self, t=None, force=False):
+    def update_animation(self, t=None, force=False, _in_scene=None):
         """Updates the timeline animations"""
         if t is None:
             t = self.current_timestamp
@@ -949,6 +989,13 @@ class Timeline(Container):
         if self.has_playback_panel and (self.playing or force):
             self.update_final_timestamp()
             self.playback_panel.current_time = t
+
+        # handling in/out of scene events
+        in_scene = self.is_inside_scene_at(t)
+        if _in_scene is not None:
+            in_scene = _in_scene and in_scene
+        self.handle_scene_event(in_scene)
+
         if self.playing or force:
             if self._camera is not None:
                 if self.is_interpolatable('rotation', is_camera=True):
@@ -985,31 +1032,34 @@ class Timeline(Container):
                 self.update_animation(force=True)
                 return
 
-            if self.is_interpolatable('position'):
-                position = self.get_position(t)
-                self.SetPosition(position)
+            # actors properties
+            if in_scene:
+                if self.is_interpolatable('position'):
+                    position = self.get_position(t)
+                    self.SetPosition(position)
 
-            if self.is_interpolatable('scale'):
-                scale = self.get_scale(t)
-                [act.SetScale(scale) for act in self.actors]
+                if self.is_interpolatable('scale'):
+                    scale = self.get_scale(t)
+                    [act.SetScale(scale) for act in self.actors]
 
-            if self.is_interpolatable('opacity'):
-                scale = self.get_opacity(t)
-                [act.GetProperty().SetOpacity(scale) for
-                 act in self.actors]
+                if self.is_interpolatable('opacity'):
+                    scale = self.get_opacity(t)
+                    [act.GetProperty().SetOpacity(scale) for
+                     act in self.actors]
 
-            if self.is_interpolatable('rotation'):
-                euler = self.get_rotation(t)
-                [act.SetOrientation(euler) for
-                 act in self.actors]
+                if self.is_interpolatable('rotation'):
+                    euler = self.get_rotation(t)
+                    [act.SetOrientation(euler) for
+                     act in self.actors]
 
-            if self.is_interpolatable('color'):
-                color = self.get_color(t)
-                for act in self.actors:
-                    act.vcolors[:] = color * 255
-                    utils.update_actor(act)
-            # Also update all child Timelines.
-            [tl.update_animation(t, force=True) for tl in self.timelines]
+                if self.is_interpolatable('color'):
+                    color = self.get_color(t)
+                    for act in self.actors:
+                        act.vcolors[:] = color * 255
+                        utils.update_actor(act)
+                # Also update all child Timelines.
+            [tl.update_animation(t, force=True, _in_scene=in_scene)
+             for tl in self.timelines]
 
     def play(self):
         """Play the animation"""
@@ -1194,3 +1244,4 @@ class Timeline(Container):
         [ren.add(static_act) for static_act in self._static_actors]
         [ren.add(timeline) for timeline in self.timelines]
         self._scene = ren
+        self._added_to_scene = True
