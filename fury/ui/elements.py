@@ -3536,9 +3536,9 @@ class PlaybackPanel(UI):
         self.panel.add_element(self._play_pause_btn, (start, 0.04))
         self.panel.add_element(self._stop_btn, (start + w, 0.04))
         self.panel.add_element(self._loop_btn, (start + 2*w, 0.04))
-        self.panel.add_element(self._speed_up_btn, (start + 0.85, 0.3))
-        self.panel.add_element(self._slow_down_btn, (start + 0.65, 0.3))
-        self.panel.add_element(self.speed_text, (start + 0.79, 0.14))
+        self.panel.add_element(self._slow_down_btn, (start + 0.63, 0.3))
+        self.panel.add_element(self.speed_text, (start + 0.78, 0.14))
+        self.panel.add_element(self._speed_up_btn, (start + 0.86, 0.3))
 
         def play_pause_toggle(i_ren, _obj, _button):
             self._playing = not self._playing
@@ -3554,19 +3554,23 @@ class PlaybackPanel(UI):
             i_ren.force_render()
 
         def speed_up(i_ren, _obj, _button):
-            inc = 0.1
-            if self.speed >= 1:
-                inc = 1
-            self.speed += inc
+            inc = 1
+            if self.speed < 0.1:
+                inc = 0.01
+            elif self.speed < 1:
+                inc = 0.1
+            self.speed = round(self.speed + inc, 5)
             self.on_speed_up(self._speed)
             self.on_speed_changed(self._speed)
             i_ren.force_render()
 
         def slow_down(i_ren, _obj, _button):
             dec = 1
-            if self.speed <= 1:
+            if self.speed <= 0.1:
+                dec = 0.01
+            elif self.speed <= 1:
                 dec = 0.1
-            self.speed -= dec
+            self.speed = round(self.speed - dec, 5)
             self.on_slow_down(self._speed)
             self.on_speed_changed(self._speed)
             i_ren.force_render()
@@ -3716,7 +3720,8 @@ class PlaybackPanel(UI):
         if speed < 0:
             speed = 0
         self._speed = speed
-        self.speed_text.message = ("%.1f" % speed).lstrip('0') if speed < 1 \
+        self.speed_text.message = ("%.2f" % speed).lstrip('0') if speed < 0.1 \
+            else ("%.1f" % speed).lstrip('0') if speed <= 1 \
             else str(int(speed))
 
     def _get_actors(self):
