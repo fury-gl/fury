@@ -3717,8 +3717,8 @@ class PlaybackPanel(UI):
         speed: float
             Speed value to be set in the speed_text counter.
         """
-        if speed < 0:
-            speed = 0
+        if speed <= 0:
+            speed = 0.01
         self._speed = speed
         self.speed_text.message = ("%.2f" % speed).lstrip('0') if speed < 0.1 \
             else ("%.1f" % speed).lstrip('0') if speed <= 1 \
