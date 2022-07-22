@@ -52,7 +52,6 @@ jobs:
       USE_PRE: ${{ matrix.use-pre }}
       COVERAGE: ${{ matrix.coverage }}
       PRE_WHEELS: "https://pypi.anaconda.org/scipy-wheels-nightly/simple"
-      OMP_NUM_THREADS: 1
 
     steps:
     - uses: actions/checkout@v3
