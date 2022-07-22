@@ -26,11 +26,11 @@ Then I tried to group the shapes to transform and modify them all at once. For t
     :align: center
     :width: 300
 
-I improved the `polyline` feature by adding a separate class to manage the creation and manipulation of the lines but still, I was facing the same issue with the dragging event, which initialized a new object every time a new line was created.
+I improved the `polyline` feature by adding a separate class to manage the creation and manipulation of the lines but still; I was facing the same issue with the dragging event, which initialized a new object every time a new line was created.
 
 Did you get stuck anywhere?
 ---------------------------
-Rotation from the center wasn't working because the shape wasn't pivoted at the lower left corner due to which it was hard to calculate the center using it. To handle this I created an interface between the actual pivot point and the center of the bounding box which made it easy to calculate and set the positions.
+Rotation from the center wasn't working because the shape wasn't pivoted at the lower left corner due to which it was hard to calculate the center using it. To handle this, I created an interface between the actual pivot point and the center of the bounding box, which made it easy to calculate and set the positions.
 
 Also, I wasn't able to find a way by which I could manually call the dragging event without a preceding click event which was required for the `polyline`` feature.
 
