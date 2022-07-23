@@ -20,7 +20,8 @@ showm = window.ShowManager(scene,
                            order_transparent=True)
 showm.initialize()
 
-# creating the actors to be animated
+###############################################################################
+# Initializing positions of the cubes that will be color-animated.
 cubes_pos = np.array([
     [[-2, 0, 0]],
     [[0, 0, 0]],
@@ -29,6 +30,7 @@ cubes_pos = np.array([
     [[6, 0, 0]],
 ])
 
+###############################################################################
 # Static labels for different interpolators (for show)
 linear_text = actor.vector_text("Linear", (-2.64, -1, 0))
 lab_text = actor.vector_text("LAB", (-0.37, -1, 0))
@@ -37,24 +39,32 @@ xyz_text = actor.vector_text("XYZ", (3.6, -1, 0))
 step_text = actor.vector_text("Step", (5.7, -1, 0))
 scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 
-# Creating a timeline to animate the actor
+###############################################################################
+# Main timeline to control all the timelines (one for each color interpolation
+# method)
+main_timeline = Timeline(playback_panel=Timeline)
+
+###############################################################################
+# Creating a timeline to animate the actor.
+# Also cube actor is provided for each timeline to handle as follows:
+# ``Timeline(actor)``, ``Timeline(list_of_actors)``, or actors can be added
+# later using ``Timeline.add()`` or ``timeline.add_actor()``
 timeline_linear_color = Timeline(actor.cube(cubes_pos[0]))
 timeline_LAB_color = Timeline(actor.cube(cubes_pos[1]))
 timeline_HSV_color = Timeline(actor.cube(cubes_pos[2]))
 timeline_XYZ_color = Timeline(actor.cube(cubes_pos[3]))
 timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
 
-# Main timeline to control all the timelines
-main_timeline = Timeline(playback_panel=Timeline)
-
-# Adding timelines to the main Timeline
+###############################################################################
+# Adding timelines to the main Timeline.
 main_timeline.add_timeline([timeline_linear_color,
                             timeline_LAB_color,
                             timeline_HSV_color,
                             timeline_XYZ_color,
                             timeline_step_color])
 
-# Adding color keyframes to the linearly interpolated timeline
+###############################################################################
+# Adding color keyframes to the linearly (for now) interpolated timelines
 for t in range(0, 20, 5):
     x = np.random.random(3)
     timeline_linear_color.set_color(t, np.array(x))
@@ -63,6 +73,7 @@ for t in range(0, 20, 5):
     timeline_XYZ_color.set_color(t, np.array(x))
     timeline_step_color.set_color(t, np.array(x))
 
+###############################################################################
 # Changing the default scale interpolator to be a step interpolator
 # The default is linear interpolator for color keyframes
 timeline_HSV_color.set_color_interpolator(HSVInterpolator)
@@ -71,15 +82,18 @@ timeline_step_color.set_color_interpolator(StepInterpolator)
 timeline_XYZ_color.set_color_interpolator(XYZInterpolator)
 
 
-# making a function to update the animation
+###############################################################################
+# Adding the main timeline to the scene
+scene.add(main_timeline)
+
+
+###############################################################################
+# making a function to update the animation and render the scene
 def timer_callback(_obj, _event):
     main_timeline.update_animation()
     showm.render()
 
 
-scene.add(main_timeline)
-
-# Adding the callback function that updates the animation
 showm.add_timer_callback(True, 10, timer_callback)
 
 showm.start()
