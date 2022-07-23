@@ -3112,9 +3112,7 @@ class DrawShape(UI):
             rotation_angle = angle - previous_angle
 
             current_center = self.center
-            self.center = (0, 0)
             self.rotate(np.deg2rad(rotation_angle))
-            self.center = (0, 0)
             self.update_shape_position(current_center - self.drawpanel.position)
 
         self.rotation_slider.on_change = rotate_shape
@@ -3250,9 +3248,9 @@ class DrawShape(UI):
                 max_y = y
 
         if update_value:
-            self._bounding_box_min = np.asarray([min_x, min_y])
-            self._bounding_box_max = np.asarray([max_x, max_y])
-            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
+            self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+            self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
 
             self._bounding_box_offset = position - self._bounding_box_min
 
