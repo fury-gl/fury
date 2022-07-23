@@ -1,4 +1,5 @@
 import os
+import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from urllib.request import urlretrieve
 
@@ -87,6 +88,9 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
     if use_pillow:
         with Image.open(filename) as pil_image:
+            if pil_image.mode in ['P']:
+                pil_image = pil_image.convert('RGB')
+
             if pil_image.mode in ['RGBA', 'RGB', 'L']:
                 image = np.asarray(pil_image)
             elif pil_image.mode.startswith('I;16'):
@@ -181,7 +185,7 @@ def load_text(file):
 
 
 def save_image(arr, filename, compression_quality=75,
-               compression_type='deflation', use_pillow=True):
+               compression_type='deflation', use_pillow=True, dpi=(72, 72)):
     """Save a 2d or 3d image.
 
     Expect an image with the following shape: (H, W) or (H, W, 1) or
@@ -201,10 +205,16 @@ def save_image(arr, filename, compression_quality=75,
         select between: None, lzw, deflation (default)
     use_pillow : bool, optional
         Use imageio python library to save the files.
+    dpi : float or (float, float)
+        Dots per inch (dpi) for saved image.
+        Single values are applied as dpi for both dimensions.
 
     """
     if arr.ndim > 3:
         raise IOError("Image Dimensions should be <=3")
+
+    if isinstance(dpi, (float, int)):
+        dpi = (dpi, dpi)
 
     d_writer = {".png": PNGWriter,
                 ".bmp": BMPWriter,
@@ -223,49 +233,49 @@ def save_image(arr, filename, compression_quality=75,
     if use_pillow:
         arr = np.flipud(arr)
         im = Image.fromarray(arr)
-        im.save(filename, quality=compression_quality)
-        return
+        im.save(filename, quality=compression_quality, dpi=dpi)
+    else:
+        warnings.warn(UserWarning('DPI value is ignored while saving images via vtk.'))
+        if arr.ndim == 2:
+            arr = arr[..., None]
 
-    if arr.ndim == 2:
-        arr = arr[..., None]
+        shape = arr.shape
+        if extension.lower() in ['.png', ]:
+            arr = arr.astype(np.uint8)
+        arr = arr.reshape((shape[1] * shape[0], shape[2]))
+        arr = np.ascontiguousarray(arr, dtype=arr.dtype)
+        vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
+        vtk_array = numpy_support.numpy_to_vtk(num_array=arr,
+                                               deep=True,
+                                               array_type=vtk_array_type)
 
-    shape = arr.shape
-    if extension.lower() in ['.png', ]:
-        arr = arr.astype(np.uint8)
-    arr = arr.reshape((shape[1] * shape[0], shape[2]))
-    arr = np.ascontiguousarray(arr, dtype=arr.dtype)
-    vtk_array_type = numpy_support.get_vtk_array_type(arr.dtype)
-    vtk_array = numpy_support.numpy_to_vtk(num_array=arr,
-                                           deep=True,
-                                           array_type=vtk_array_type)
+        # Todo, look the following link for managing png 16bit
+        # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
+        vtk_data = ImageData()
+        vtk_data.SetDimensions(shape[1], shape[0], shape[2])
+        vtk_data.SetExtent(0, shape[1] - 1,
+                           0, shape[0] - 1,
+                           0, 0)
+        vtk_data.SetSpacing(1.0, 1.0, 1.0)
+        vtk_data.SetOrigin(0.0, 0.0, 0.0)
+        vtk_data.GetPointData().SetScalars(vtk_array)
 
-    # Todo, look the following link for managing png 16bit
-    # https://stackoverflow.com/questions/15667947/vtkpngwriter-printing-out-black-images
-    vtk_data = ImageData()
-    vtk_data.SetDimensions(shape[1], shape[0], shape[2])
-    vtk_data.SetExtent(0, shape[1] - 1,
-                       0, shape[0] - 1,
-                       0, 0)
-    vtk_data.SetSpacing(1.0, 1.0, 1.0)
-    vtk_data.SetOrigin(0.0, 0.0, 0.0)
-    vtk_data.GetPointData().SetScalars(vtk_array)
+        writer = d_writer.get(extension)()
+        writer.SetFileName(filename)
+        writer.SetInputData(vtk_data)
+        if extension.lower() in [".jpg", ".jpeg"]:
+            writer.ProgressiveOn()
+            writer.SetQuality(compression_quality)
+        if extension.lower() in [".tif", ".tiff"]:
+            compression_type = compression_type or 'nocompression'
+            l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
 
-    writer = d_writer.get(extension)()
-    writer.SetFileName(filename)
-    writer.SetInputData(vtk_data)
-    if extension.lower() in [".jpg", ".jpeg"]:
-        writer.ProgressiveOn()
-        writer.SetQuality(compression_quality)
-    if extension.lower() in [".tif", ".tiff"]:
-        compression_type = compression_type or 'nocompression'
-        l_compression = ['nocompression', 'packbits', 'jpeg', 'deflate', 'lzw']
-
-        if compression_type.lower() in l_compression:
-            comp_id = l_compression.index(compression_type.lower())
-            writer.SetCompression(comp_id)
-        else:
-            writer.SetCompressionToDeflate()
-    writer.Write()
+            if compression_type.lower() in l_compression:
+                comp_id = l_compression.index(compression_type.lower())
+                writer.SetCompression(comp_id)
+            else:
+                writer.SetCompressionToDeflate()
+        writer.Write()
 
 
 def load_polydata(file_name):

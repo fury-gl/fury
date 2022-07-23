@@ -5,14 +5,13 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import pytest
 import numpy as np
 import numpy.testing as npt
-from scipy.ndimage.measurements import center_of_mass
-from scipy.signal import convolve
+from scipy.ndimage import center_of_mass
 
 from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate
+from fury.utils import shallow_copy, rotate, primitives_count_from_actor
 from fury.testing import assert_greater, assert_greater_equal
 from fury.primitive import prim_sphere
 
@@ -339,7 +338,7 @@ def test_streamtube_and_line_actors():
 
     shader_obj = c3.GetShaderProperty()
     mapper_code = shader_obj.GetGeometryShaderCode()
-    file_code = shaders.load("line.geom")
+    file_code = shaders.import_fury_shader('line.geom')
     npt.assert_equal(mapper_code, file_code)
 
     npt.assert_equal(c3.GetProperty().GetRenderLinesAsTubes(), True)
@@ -741,10 +740,14 @@ def test_tensor_slicer(interactive=False):
     # TODO: Add colorfa test here as previous test moved to DIPY.
 
 
-def test_dots(interactive=False):
+def test_dot(interactive=False):
+    # Test three points with different colors and opacities
     points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0,  1],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .3]])
 
-    dots_actor = actor.dots(points, color=(0, 255, 0))
+    dots_actor = actor.dot(points, colors=colors)
 
     scene = window.Scene()
     scene.add(dots_actor)
@@ -756,26 +759,47 @@ def test_dots(interactive=False):
 
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
 
-    extent = scene.GetActors().GetLastActor().GetBounds()
-    npt.assert_equal(extent, (0.0, 1.0, 0.0, 1.0, 0.0, 0.0))
-
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 255, 0))
+    expected_colors = np.floor(colors[:, 3] * 255) * colors[:, :3]
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True, True, True])
     npt.assert_equal(report.objects, 3)
 
-    # Test one point
-    points = np.array([0, 0, 0])
-    dot_actor = actor.dots(points, color=(0, 0, 255))
+    # Test three points with one color and opacity
+    points = np.array([[1, 0, 0], [0, 0, 1], [0, 1, 0]])
+    colors = (0, 1, 0)
+    dot_actor = actor.dot(points, colors=colors, opacity=.8)
 
     scene.clear()
     scene.add(dot_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    if interactive:
+        window.show(scene, reset_camera=False)
+
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr,
-                                     colors=(0, 0, 255))
+    expected_colors = np.floor(.8 * 255) * np.array([colors])
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
+    npt.assert_equal(report.objects, 3)
+
+    # Test one point with no specified color
+    points = np.array([[1, 0, 0]])
+    dot_actor = actor.dot(points)
+
+    scene.clear()
+    scene.add(dot_actor)
+    scene.reset_camera()
+    scene.reset_clipping_range()
+
+    if interactive:
+        window.show(scene, reset_camera=False)
+
+    arr = window.snapshot(scene)
+    expected_colors = np.array([[1, 1, 1]]) * 255
+    report = window.analyze_snapshot(arr, colors=expected_colors)
+    npt.assert_equal(report.colors_found, [True])
     npt.assert_equal(report.objects, 1)
 
 
@@ -1467,3 +1491,50 @@ def test_marker_actor(interactive=False):
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
 
+
+def test_actors_primitives_count():
+    centers = np.array([[1, 1, 1], [2, 2, 2]])
+    directions = np.array([[1, 0, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [1, 0, 0]])
+    lines = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
+
+    args_1 = {'centers': centers}
+    args_2 = {**args_1, 'colors': colors}
+    args_3 = {**args_2, 'directions': directions}
+
+    cen_c = len(centers)
+    lin_c = len(lines)
+
+    actors_test_cases = [
+        [actor.box, args_1, cen_c],
+        [actor.rectangle, args_1, cen_c],
+        [actor.square, args_1, cen_c],
+        [actor.cube, args_1, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': True}, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': False}, cen_c],
+        [actor.sdf, args_1, cen_c],
+        [actor.billboard, args_1, cen_c],
+        [actor.superquadric, args_1, cen_c],
+        [actor.markers, args_1, cen_c],
+        [actor.octagonalprism, args_1, cen_c],
+        [actor.frustum, args_1, cen_c],
+        [actor.pentagonalprism, args_1, cen_c],
+        [actor.triangularprism, args_1, cen_c],
+        [actor.rhombicuboctahedron, args_1, cen_c],
+        [actor.cylinder, args_3, cen_c],
+        [actor.disk, args_3, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': False}, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': True}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': False}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': True}, cen_c],
+        [actor.dot, {'points': centers}, cen_c],
+        [actor.point, {'points': centers, 'colors': colors}, cen_c],
+        [actor.line, {'lines': lines}, lin_c],
+        [actor.streamtube, {'lines': lines}, lin_c],
+    ]
+    for test_case in actors_test_cases:
+        act_func = test_case[0]
+        args = test_case[1]
+        primitives_count = test_case[2]
+        act = act_func(**args)
+        npt.assert_equal(primitives_count_from_actor(act), primitives_count)
