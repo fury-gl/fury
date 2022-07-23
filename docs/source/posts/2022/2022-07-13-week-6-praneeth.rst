@@ -10,7 +10,7 @@ Week 6 - Supporting Rotation of the Shapes from the Center
 
 What did you do this week?
 --------------------------
-This week I started implementing a new feature that would help us to rotate the shapes from the center using ``RingSlider2D``. I already had a `rotate` function that rotates the shape around its pivot vertex, so I updated it to support rotation from the center.
+This week I started implementing a new feature to rotate the shapes from the center using ``RingSlider2D``. I already had a `rotate` function that rotates the shape around its pivot vertex, so I updated it to support rotation from the center.
 
 `Rotation from center <https://github.com/fury-gl/fury/pull/623>`_
 
@@ -30,7 +30,13 @@ I improved the `polyline` feature by adding a separate class to manage the creat
 
 Did you get stuck anywhere?
 ---------------------------
-Rotation from the center wasn't working because the shape wasn't pivoted at the lower left corner due to which it was hard to calculate the center using it. To handle this, I created an interface between the actual pivot point and the center of the bounding box, which made it easy to calculate and set the positions.
+It was difficult to rotate the shape from the center because the pivot(or the reference point) of the shape wasn't consistent. As you can see below it changed depending on how the shape was created.
+
+.. image:: https://user-images.githubusercontent.com/64432063/176093855-6129cc25-d03d-45ba-872e-c8d2c6329a1e.gif
+    :width: 400
+    :align: center
+
+To handle this, I created an interface between the actual pivot point and the center of the bounding box, which made it easy to calculate and set the positions.
 
 Also, I wasn't able to find a way by which I could manually call the dragging event without a preceding click event which was required for the `polyline`` feature.
 
