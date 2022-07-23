@@ -3,7 +3,7 @@
 Keyframe animation: Camera and opacity
 ======================================
 
-Camera keyframe animation explained in this tutorial.
+Camera and opacity keyframe animation explained in this tutorial.
 """
 
 import numpy as np

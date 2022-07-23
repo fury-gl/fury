@@ -1,9 +1,9 @@
 """
-=====================
+==================
 Keyframe animation
-=====================
+==================
 
-Color interpolation explained
+Color animation explained
 
 """
 
@@ -48,11 +48,11 @@ timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
 main_timeline = Timeline(playback_panel=Timeline)
 
 # Adding timelines to the main Timeline
-main_timeline.add_timeline(timeline_linear_color)
-main_timeline.add_timeline(timeline_LAB_color)
-main_timeline.add_timeline(timeline_HSV_color)
-main_timeline.add_timeline(timeline_step_color)
-main_timeline.add_timeline(timeline_XYZ_color)
+main_timeline.add_timeline([timeline_linear_color,
+                            timeline_LAB_color,
+                            timeline_HSV_color,
+                            timeline_XYZ_color,
+                            timeline_step_color])
 
 # Adding color keyframes to the linearly interpolated timeline
 for t in range(0, 20, 5):
