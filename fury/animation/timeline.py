@@ -49,6 +49,7 @@ class Timeline(Container):
         self._added_to_scene = True
         self._add_to_scene_time = 0
         self._remove_from_scene_time = None
+        self._is_camera_animated = False
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -124,6 +125,7 @@ class Timeline(Container):
         typ = 'attribs'
         if is_camera:
             typ = 'camera'
+            self._is_camera_animated = True
 
         keyframes = self._data.get('keyframes')
         if attrib not in keyframes.get(typ):
@@ -1028,7 +1030,7 @@ class Timeline(Container):
                     # to preserve up-view as default after user interaction
                     self._camera.SetViewUp(0, 1, 0)
 
-            elif 'camera' in self._data.get('keyframes') and self._scene:
+            elif self._is_camera_animated and self._scene:
                 self._camera = self._scene.camera()
                 self.update_animation(force=True)
                 return
