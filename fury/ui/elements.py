@@ -3165,7 +3165,6 @@ class DrawShape(UI):
 
     @property
     def center(self):
-        self.cal_bounding_box()
         return self._bounding_box_min + self._bounding_box_size//2
 
     @center.setter
@@ -3181,6 +3180,7 @@ class DrawShape(UI):
         new_center = np.array(coords)
         new_lower_left_corner = new_center - self._bounding_box_size // 2
         self.position = new_lower_left_corner + self._bounding_box_offset
+        self.cal_bounding_box(update_value=True)
 
     @property
     def is_selected(self):
