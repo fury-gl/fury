@@ -3744,7 +3744,7 @@ class PlaybackPanel(UI):
             speed = 0.01
         self._speed = speed
         self.speed_text.message = ("%.2f" % speed).lstrip('0') if speed < 0.1 \
-            else ("%.1f" % speed).lstrip('0') if speed <= 1 \
+            else ("%.1f" % speed).lstrip('0') if speed < 1 \
             else str(int(speed))
 
     def _get_actors(self):
