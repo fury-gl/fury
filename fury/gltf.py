@@ -718,14 +718,14 @@ def get_prim(vertex, index, color, tcoord, normal, material, mode=4):
     return prim
 
 
-def write_material(gltf, bct: int, uri: str):
+def write_material(gltf, basecolortexture: int, uri: str):
     """Write Material, Images and Textures
 
     Parameters
     ----------
     gltf : GLTF2
         Pygltflib GLTF2 object.
-    bct : int
+    basecolortexture : int
         BaseColorTexture index.
     uri : str
         BaseColorTexture uri.
@@ -735,33 +735,35 @@ def write_material(gltf, bct: int, uri: str):
     image = gltflib.Image()
     pbr = gltflib.PbrMetallicRoughness()
     tinfo = gltflib.TextureInfo()
-    tinfo.index = bct
+    tinfo.index = basecolortexture
     pbr.baseColorTexture = tinfo
     pbr.metallicFactor = 0.0
     material.pbrMetallicRoughness = pbr
-    texture.source = bct
+    texture.source = basecolortexture
     image.uri = uri
     gltf.materials.append(material)
     gltf.textures.append(texture)
     gltf.images.append(image)
 
 
-def write_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
+def write_accessor(gltf, bufferview, byte_offset, comp_type,
+                   count, accssor_type, max=None, min=None):
     """Write accessor in the gltf.
 
     Parameters
     ----------
     gltf : GLTF2
-        Pygltflib GLTF2 object
-    bv : int
+        Pygltflib GLTF2 objecomp_type
+
+                      bufferview : int
         BufferView Index
-    bo : int
+    byte_offset : int
         ByteOffset of the accessor
-    ct : type
+    comp_type : type
         Type of a single component
-    cnt : int
+    count : int
         Elements count of the accessor
-    atype : type
+    accssor_type : type
         Type of the accessor (SCALAR, VEC2, VEC3, VEC4)
     max : ndarray, optional
         Maximum elements of an array
@@ -769,18 +771,19 @@ def write_accessor(gltf, bv, bo, ct, cnt, atype, max=None, min=None):
         Minimum elements of an array
     """
     accessor = gltflib.Accessor()
-    accessor.bufferView = bv
-    accessor.byteOffset = bo
-    accessor.componentType = ct
-    accessor.count = cnt
-    accessor.type = atype
+    accessor.bufferView = bufferview
+    accessor.byteOffset = byte_offset
+    accessor.componentType = comp_type
+    accessor.count = count
+    accessor.type = accssor_type
     if (max is not None) and (min is not None):
         accessor.max = max
         accessor.min = min
     gltf.accessors.append(accessor)
 
 
-def write_bufferview(gltf, buffer, bo, bl, bs=None):
+def write_bufferview(gltf, buffer, byte_offset, byte_length,
+                     byte_stride=None):
     """Write bufferview in the gltf.
 
     Parameters
@@ -789,19 +792,19 @@ def write_bufferview(gltf, buffer, bo, bl, bs=None):
         Pygltflib GLTF2 object
     buffer : int
         Buffer index
-    bo : int
+    byte_offset : int
         Byte offset of the bufferview
-    bl : int
+    byte_length : int
         Byte length ie, Length of the data we want to get from
         the buffer
-    bs : int, optional
+    byte_stride : int, optional
         Byte stride of the bufferview.
     """
     buffer_view = gltflib.BufferView()
     buffer_view.buffer = buffer
-    buffer_view.byteOffset = bo
-    buffer_view.byteLength = bl
-    buffer_view.byteStride = bs
+    buffer_view.byteOffset = byte_offset
+    buffer_view.byteLength = byte_length
+    buffer_view.byteStride = byte_stride
     gltf.bufferViews.append(buffer_view)
 
 
