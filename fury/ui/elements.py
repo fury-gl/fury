@@ -3072,7 +3072,6 @@ class PolyLine(UI):
         position : (float, float), optional
             (x, y) in pixels.
         """
-        print("create Polyline")
         self.points = points_data
         if points_data is None:
             self.points = [(0, 0)]
@@ -3639,7 +3638,6 @@ class DrawPanel(UI):
             Checks whether in process or not.
         """
         if not in_process:
-            print("creating new")
             shape = DrawShape(shape_type=shape_type, drawpanel=self,
                               position=current_position)
             if shape_type == "circle":
@@ -3650,7 +3648,6 @@ class DrawPanel(UI):
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
         else:
-            self.current_shape = self.shape_list[-1]
             size = current_position - self.current_shape.position
             self.current_shape.resize(size)
 
