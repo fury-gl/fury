@@ -1067,6 +1067,8 @@ class Timeline(Container):
     def play(self):
         """Play the animation"""
         if not self.playing:
+            if self.current_timestamp >= self.final_timestamp:
+                self.current_timestamp = 0
             self.update_final_timestamp()
             self._last_started_time = \
                 time.perf_counter() - self._last_timestamp / self.speed
