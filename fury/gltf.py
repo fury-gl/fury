@@ -59,6 +59,8 @@ class glTF:
         self.materials = []
         self.polydatas = []
         self.init_transform = np.identity(4)
+        self.animations = []
+        self.node_transform = {}
         self.inspect_scene(0)
 
     def actors(self):
@@ -95,6 +97,8 @@ class glTF:
 
         for node_id in nodes:
             self.transverse_node(node_id, self.init_transform)
+        for animation in self.gltf.animations:
+            self.transverse_channels(animation)
 
     def transverse_node(self, nextnode_id, matrix):
         """Load mesh and generates transformation matrix.
@@ -398,3 +402,32 @@ class glTF:
                 vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
 
         self.cameras[camera_id] = vtk_cam
+
+    def transverse_channels(self, animation: gltflib.Animation):
+        for channel in animation.channels:
+            sampler = animation.samplers[channel.sampler]
+            node_id = channel.target.node
+            anim_data = self.get_sampler_data(sampler)
+            self.node_transform[node_id] = anim_data
+
+    def get_sampler_data(self, sampler: gltflib.Sampler):
+        """Gets the timeline and transformation data from sampler.
+
+        Parameters
+        ----------
+        sampler : glTFlib.Sampler
+            pygltflib sampler object.
+
+        Returns
+        -------
+        sampler_data : dict
+            dictionary of data containing timestamps, node transformations and
+            interpolation type.
+        """
+        time_array = self.get_acc_data(sampler.input)
+        transform_array = self.get_acc_data(sampler.output)
+        interpolation = sampler.interpolation
+
+        return {'input': time_array,
+                'output': transform_array,
+                'interpolation': interpolation}

@@ -17,8 +17,8 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('Duck')
+fetch_gltf('BoxAnimated', 'glTF')
+filename = read_viz_gltf('BoxAnimated')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -38,10 +38,11 @@ scene.add(*actors)
 # Applying camera
 
 cameras = gltf_obj.cameras
+print(gltf_obj.node_transform)
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
-interactive = False
+interactive = True
 
 if interactive:
     window.show(scene, size=(1280, 720))
