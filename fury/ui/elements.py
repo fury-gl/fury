@@ -3218,8 +3218,9 @@ class DrawShape(UI):
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
         """
+        offset = (self._bounding_box_size[0] + self.rotation_slider.size[0])/2
         self.rotation_slider.center = self.center + \
-            [(self._bounding_box_size[0] + self.rotation_slider.size[0])/2, 0]
+            [offset if self.center[0] < self.drawpanel.center[0] else -offset, 0]
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, update_value=False, position=None):
