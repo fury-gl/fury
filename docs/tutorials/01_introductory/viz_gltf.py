@@ -47,7 +47,7 @@ print(gltf_obj.node_transform)
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
-interactive = True
+interactive = False
 
 if interactive:
     window.show(scene, size=(1280, 720))
