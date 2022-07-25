@@ -81,7 +81,6 @@ timeline_LAB_color.set_color_interpolator(LABInterpolator)
 timeline_step_color.set_color_interpolator(StepInterpolator)
 timeline_XYZ_color.set_color_interpolator(XYZInterpolator)
 
-
 ###############################################################################
 # Adding the main timeline to the scene
 scene.add(main_timeline)
@@ -96,4 +95,10 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 10, timer_callback)
 
-showm.start()
+interactive = False
+
+if interactive:
+    showm.start()
+
+window.record(scene, out_path='viz_keyframe_animation_colors.png',
+              size=(900, 768))
