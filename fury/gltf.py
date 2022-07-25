@@ -57,10 +57,11 @@ class glTF:
         self.cameras = {}
         self.actors_list = []
         self.materials = []
+        self.nodes = []
         self.polydatas = []
         self.init_transform = np.identity(4)
         self.animations = []
-        self.node_transform = {}
+        self.node_transform = []
         self.inspect_scene(0)
 
     def actors(self):
@@ -100,7 +101,7 @@ class glTF:
         for animation in self.gltf.animations:
             self.transverse_channels(animation)
 
-    def transverse_node(self, nextnode_id, matrix):
+    def transverse_node(self, nextnode_id, matrix, parent=None):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -109,9 +110,16 @@ class glTF:
             Index of the node
         matrix : ndarray (4, 4)
             Transformation matrix
+        parent : list, optional
+            List of indices of parent nodes
+            Default: None.
 
         """
         node = self.gltf.nodes[nextnode_id]
+        if parent is None:
+            parent = [nextnode_id]
+        else:
+            parent.append(nextnode_id)
 
         matnode = np.identity(4)
         if node.matrix is not None:
@@ -137,7 +145,9 @@ class glTF:
 
         if node.mesh is not None:
             mesh_id = node.mesh
-            self.load_mesh(mesh_id, next_matrix)
+            # print(parent)
+            # self.nodes.append(parent)
+            self.load_mesh(mesh_id, next_matrix, parent)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -145,9 +155,9 @@ class glTF:
 
         if node.children:
             for child_id in node.children:
-                self.transverse_node(child_id, next_matrix)
+                self.transverse_node(child_id, next_matrix, parent)
 
-    def load_mesh(self, mesh_id, transform_mat):
+    def load_mesh(self, mesh_id, transform_mat, parent):
         """Load the mesh data from accessor and applies the transformation.
 
         Parameters
@@ -192,6 +202,7 @@ class glTF:
                 material = self.get_materials(primitive.material)
 
             self.polydatas.append(polydata)
+            self.nodes.append(parent)
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
@@ -404,19 +415,28 @@ class glTF:
         self.cameras[camera_id] = vtk_cam
 
     def transverse_channels(self, animation: gltflib.Animation):
+        """Loops over animation channels and sets animation data.
+
+        Parameters
+        ----------
+        animation : glTflib.Animation
+            pygltflib animation object.
+        """
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]
             node_id = channel.target.node
-            anim_data = self.get_sampler_data(sampler)
-            self.node_transform[node_id] = anim_data
+            anim_data = self.get_sampler_data(sampler, node_id)
+            self.node_transform.append(anim_data)
 
-    def get_sampler_data(self, sampler: gltflib.Sampler):
+    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int):
         """Gets the timeline and transformation data from sampler.
 
         Parameters
         ----------
         sampler : glTFlib.Sampler
             pygltflib sampler object.
+        node_id : int
+            Node index of the current animation channel.
 
         Returns
         -------
@@ -428,6 +448,8 @@ class glTF:
         transform_array = self.get_acc_data(sampler.output)
         interpolation = sampler.interpolation
 
-        return {'input': time_array,
-                'output': transform_array,
-                'interpolation': interpolation}
+        return {
+            'node': node_id,
+            'input': time_array,
+            'output': transform_array,
+            'interpolation': interpolation}
