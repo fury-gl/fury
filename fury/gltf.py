@@ -145,8 +145,6 @@ class glTF:
 
         if node.mesh is not None:
             mesh_id = node.mesh
-            # print(parent)
-            # self.nodes.append(parent)
             self.load_mesh(mesh_id, next_matrix, parent)
 
         if node.camera is not None:
@@ -425,10 +423,12 @@ class glTF:
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]
             node_id = channel.target.node
-            anim_data = self.get_sampler_data(sampler, node_id)
+            path = channel.target.path
+            anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
 
-    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int):
+    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
+                         transform_type):
         """Gets the timeline and transformation data from sampler.
 
         Parameters
@@ -437,6 +437,8 @@ class glTF:
             pygltflib sampler object.
         node_id : int
             Node index of the current animation channel.
+        transform_type : str
+            Property of the node to be transformed.
 
         Returns
         -------
@@ -452,4 +454,5 @@ class glTF:
             'node': node_id,
             'input': time_array,
             'output': transform_array,
-            'interpolation': interpolation}
+            'interpolation': interpolation,
+            'property': transform_type}

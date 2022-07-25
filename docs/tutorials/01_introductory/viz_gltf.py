@@ -30,6 +30,11 @@ gltf_obj = glTF(filename)
 actors = gltf_obj.actors()
 
 ##############################################################################
+# get the animation data
+
+transformation = gltf_obj.node_transform
+
+##############################################################################
 # Add all the actor from list of actors to the scene.
 
 scene.add(*actors)
