@@ -16,20 +16,20 @@ What did you do this week?
 
 - Added more hooks to the 2D sliders to cover two more states: ``on_value_changed`` and ``on_moving_slider`` `#634`_.
 
-- Fixed camera rotation, and view-up issue when interacting with the scene.
-
 - Provided the ability to add static actors to the ``Timeline``, which might be needed in the animation part of shivam's glTF project.
 
-    If an ``actor`` is added to the ``Timeline`` as a static actor, it won't be animated by the ``Timeline``, but it will get added to the scene along with the ``Timeline`` when the ``Timeline`` is added to the scene.
+  - If an ``actor`` is added to the ``Timeline`` as a static actor, it won't be animated by the ``Timeline``, but it will get added to the scene along with the ``Timeline`` when the ``Timeline`` is added to the scene.
 
 - Implemented a custom evaluator for the ``Timeline``'s properties.
 
-    A custom evaluator uses a user-provided function that takes time as input and evaluates the property at that time. This feature is yet to be discussed more in today's meeting.
+  - A custom evaluator uses a user-provided function that takes time as input and evaluates the property at that time. This feature is yet to be discussed more in today's meeting.
+
+- Fixed camera rotation, and view-up issue when interacting with the scene.
 
 
 What is coming up next week?
 ----------------------------
-Next week's work is yet to be determined in today's meeting.
+Next week's work is yet to be determined.
 
 
 Did you get stuck anywhere?
