@@ -17,6 +17,11 @@ What did you do this week?
 
 - Created a `tutorial <https://github.com/xtanion/fury/blob/gltf-anim-merge-kf/docs/tutorials/01_introductory/viz_simple_gltf_animation.py>`_ using keyframe animations (`#626`_.) and adding multiple ``timelines`` into a main ``timeline`` as suggested by Mohamed.
 
+  .. raw:: html
+
+        <iframe id="player" type="text/html"   width="550" height="400" src="https://user-images.githubusercontent.com/74976752/180841262-7356204e-2097-4ea4-ab71-39f04a1e7a07.mp4" frameborder="0"></iframe>
+
+
 
 What is coming up next week?
 ----------------------------
