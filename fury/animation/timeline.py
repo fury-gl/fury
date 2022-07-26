@@ -20,7 +20,7 @@ class Timeline(Container):
     main keyframes.
     """
 
-    def __init__(self, actors=None, playback_panel=False):
+    def __init__(self, actors=None, playback_panel=False, length=None):
         super().__init__()
         self._data = {
             'keyframes': {
@@ -79,10 +79,12 @@ class Timeline(Container):
         float
             final timestamp that can be reached inside the Timeline.
         """
-
-        self._final_timestamp = max(self._final_timestamp,
-                                    max([0] + [tl.update_final_timestamp() for
-                                               tl in self.timelines]))
+        if self._length is None:
+            self._final_timestamp = max(self.final_timestamp,
+                                        max([0] + [tl.update_final_timestamp()
+                                                   for tl in self.timelines]))
+        else:
+            self._final_timestamp = self._length
         if self.has_playback_panel:
             self.playback_panel.final_time = self._final_timestamp
         return self._final_timestamp
