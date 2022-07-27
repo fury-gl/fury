@@ -792,9 +792,9 @@ def test_ui_combobox_2d(interactive=False):
 
 
 def test_ui_draw_shape():
-    line = ui.DrawShape("line", (150, 150))
-    quad = ui.DrawShape("quad", (300, 300))
-    circle = ui.DrawShape("circle", (150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
         ui.DrawShape("poly")
@@ -824,6 +824,12 @@ def test_ui_draw_panel(interactive=False):
     show_manager = window.ShowManager(
         size=current_size, title="DrawPanel UI Example")
     show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Check all mode selection button
+    #  2. Creation and clamping of shapes
+    #  3. Transformation and clamping of shapes
+    #  4. Rotation and clamping of shape
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)
