@@ -17,8 +17,8 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('BoxAnimated', 'glTF')
-filename = read_viz_gltf('BoxAnimated')
+fetch_gltf('CesiumMan', 'glTF')
+filename = read_viz_gltf('CesiumMan')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -43,7 +43,7 @@ scene.add(*actors)
 # Applying camera
 
 cameras = gltf_obj.cameras
-print(gltf_obj.node_transform)
+
 if cameras:
     scene.SetActiveCamera(cameras[0])
 

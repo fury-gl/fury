@@ -21,7 +21,8 @@ acc_type = {
     'SCALAR': 1,
     'VEC2': 2,
     'VEC3': 3,
-    'VEC4': 4
+    'VEC4': 4,
+    'MAT4': 16 
 }
 
 
@@ -151,6 +152,10 @@ class glTF:
             camera_id = node.camera
             self.load_camera(camera_id, next_matrix)
 
+        if node.skin is not None:
+            skin_id = node.skin
+            self.get_skin_data(skin_id)
+
         if node.children:
             for child_id in node.children:
                 self.transverse_node(child_id, next_matrix, parent)
@@ -194,6 +199,12 @@ class glTF:
             if primitive.indices is not None:
                 indices = self.get_acc_data(primitive.indices).reshape(-1, 3)
                 utils.set_polydata_triangles(polydata, indices)
+
+            if attributes.JOINTS_0 is not None:
+                joints = self.get_acc_data(attributes.JOINTS_0)
+
+            if attributes.WEIGHTS_0 is not None:
+                weights = self.get_acc_data(attributes.WEIGHTS_0)
 
             material = None
             if primitive.material is not None:
@@ -456,3 +467,10 @@ class glTF:
             'output': transform_array,
             'interpolation': interpolation,
             'property': transform_type}
+
+    def get_skin_data(self, skin_id):
+        skin = self.gltf.skins[skin_id]
+        inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
+        inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
+        joint_nodes = skin.joints
+        root_node = skin.skeleton
