@@ -1,4 +1,6 @@
 import time
+import warnings
+
 import numpy as np
 from scipy.spatial import transform
 from fury import utils
@@ -20,7 +22,7 @@ class Timeline(Container):
     main keyframes.
     """
 
-    def __init__(self, actors=None, playback_panel=False, length=None):
+    def __init__(self, actors=None, playback_panel=False):
         super().__init__()
         self._data = {
             'keyframes': {
@@ -502,17 +504,29 @@ class Timeline(Container):
         """
         self.set_keyframes('position', keyframes)
 
-    def set_rotation(self, timestamp, euler):
+    def set_rotation(self, timestamp, rotation, ):
         """Set a rotation keyframe at a specific timestamp.
 
         Parameters
         ----------
         timestamp: float
             Timestamp of the keyframe
-        euler: ndarray, shape(1, 3)
-            Euler angles that describe the rotation.
+        rotation: ndarray, shape(1, 3) or shape(1, 4)
+            Rotation data in euler degrees with shape(1, 3) or in quaternions
+            with shape(1, 4).
         """
-        self.set_keyframe('rotation', timestamp, euler)
+        no_components = len(np.array(rotation).flatten())
+        if no_components == 4:
+            self.set_keyframe('rotation', timestamp, rotation)
+        elif no_components == 3:
+            # user is expected to set rotation order by default as setting
+            # orientation of a `vtkActor` z->x->y.
+            rotation = transform.Rotation.from_euler('zxy', rotation[[2, 0, 1]],
+                                                     degrees=True).as_quat()
+            self.set_keyframe('rotation', timestamp, rotation)
+        else:
+            warnings.warn(f'Keyframe with {no_components} components is not a '
+                          f'valid rotation data. Skipped!')
 
     def set_rotation_as_vector(self, timestamp, vector):
         """Set a rotation keyframe at a specific timestamp.
@@ -630,7 +644,10 @@ class Timeline(Container):
         ndarray(1, 3):
             The interpolated rotation.
         """
-        return self.get_value('rotation', t)
+        q = self.get_value('rotation', t)
+        r = transform.Rotation.from_quat(q)
+        degrees = r.as_euler('zxy', degrees=True)[[1, 2, 0]]
+        return degrees
 
     def get_scale(self, t):
         """Returns the interpolated scale.
