@@ -189,8 +189,8 @@ def test_color_interpolators():
 
 
 def test_slerp():
-    data = {1: {'value': np.array([90, 0, 0])},
-            2: {'value': np.array([0, 0, 180])}}
+    data = {1: {'value': np.array([0, 0, 0, 1])},
+            2: {'value': np.array([0, 0.7071068, 0, 0.7071068])}}
 
     interp_slerp = Slerp(data)
     interp_lerp = LinearInterpolator(data)
