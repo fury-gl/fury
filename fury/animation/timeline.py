@@ -3,9 +3,10 @@ import warnings
 
 import numpy as np
 from scipy.spatial import transform
-from fury import utils
+from fury import utils, actor
 from fury.actor import Container
-from fury.animation.interpolator import LinearInterpolator, SplineInterpolator
+from fury.animation.interpolator import LinearInterpolator, \
+    SplineInterpolator, CustomInterpolator
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 
@@ -22,7 +23,9 @@ class Timeline(Container):
     main keyframes.
     """
 
-    def __init__(self, actors=None, playback_panel=False):
+    def __init__(self, actors=None, playback_panel=False, length=None,
+                 motion_path_res=0):
+
         super().__init__()
         self._data = {
             'keyframes': {
@@ -44,6 +47,7 @@ class Timeline(Container):
         self._scene = None
         self._last_started_time = 0
         self._playing = False
+        self._length = length
         self._final_timestamp = 0
         self._needs_update = False
         self._reverse_playing = False
@@ -52,6 +56,8 @@ class Timeline(Container):
         self._add_to_scene_time = 0
         self._remove_from_scene_time = None
         self._is_camera_animated = False
+        self.motion_path_res = motion_path_res
+        self._motion_path_actor = None
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -90,6 +96,35 @@ class Timeline(Container):
         if self.has_playback_panel:
             self.playback_panel.final_time = self._final_timestamp
         return self._final_timestamp
+
+    def update_motion_path(self, res=None):
+        if res is None:
+            res = self.motion_path_res
+        lines = []
+        colors = []
+        if self.is_interpolatable('position'):
+            ts = np.linspace(0, self.final_timestamp, res)
+            [lines.append(self.get_position(t).tolist()) for t in ts]
+            if self.is_interpolatable('color'):
+                [colors.append(self.get_color(t)) for t in ts]
+            elif len(self.items) == 1:
+                colors = sum([i.vcolors[0] / 255 for i in self.items]) / \
+                         len(self.items)
+            else:
+                colors = [1, 1, 1]
+        if len(lines) > 0:
+            lines = np.array([lines])
+            if colors is []:
+                colors = np.array([colors])
+
+            mpa = actor.line(lines, colors=colors, opacity=0.6)
+            if self._scene:
+                # remove old motion path actor
+                if self._motion_path_actor is not None:
+                    self._scene.rm(self._motion_path_actor)
+                self._scene.add(mpa)
+            self._motion_path_actor = mpa
+        [tl.update_motion_path(res) for tl in self.timelines]
 
     def set_timestamp(self, timestamp):
         """Set the current timestamp of the animation.
@@ -156,6 +191,7 @@ class Timeline(Container):
 
         if timestamp > 0:
             self.update_animation(force=True)
+        self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes, is_camera=False):
         """Set multiple keyframes for a certain attribute.
@@ -521,7 +557,8 @@ class Timeline(Container):
         elif no_components == 3:
             # user is expected to set rotation order by default as setting
             # orientation of a `vtkActor` z->x->y.
-            rotation = transform.Rotation.from_euler('zxy', rotation[[2, 0, 1]],
+            rotation = transform.Rotation.from_euler('zxy',
+                                                     rotation[[2, 0, 1]],
                                                      degrees=True).as_quat()
             self.set_keyframe('rotation', timestamp, rotation)
         else:
@@ -1270,3 +1307,5 @@ class Timeline(Container):
         self._scene = ren
         self._added_to_scene = True
         self.update_animation(force=True)
+        if self._motion_path_actor:
+            ren.add(self._motion_path_actor)
