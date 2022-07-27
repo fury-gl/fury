@@ -3132,8 +3132,9 @@ class PolyLine(UI):
         # update other points
 
     def resize(self, size):
+        offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
-        self.current_line.resize((hyp, self.line_width))
+        self.current_line.resize((hyp - offset_from_mouse, self.line_width))
         self.rotate(angle=np.arctan2(size[1], size[0]))
 
     def rotate(self, angle):
@@ -3173,8 +3174,19 @@ class PolyLine(UI):
 
         self.current_line = new_line
         self.lines.append(new_line)
+        self.points.append(point)
         if interactive:
             self._scene.add(new_line)
+
+    @property
+    def color(self):
+        color = self.current_line.color
+        return np.asarray(color)
+
+    @color.setter
+    def color(self, color):
+        for line in self.lines:
+            line.actor.GetProperty().SetColor(*color)
 
     def left_button_pressed(self, i_ren, _obj, line):
         # click_pos = np.array(i_ren.event.position)
@@ -3233,6 +3245,8 @@ class DrawShape(UI):
             self.shape = Disk2D(outer_radius=2)
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
+
+        self.cal_bounding_box(update_value=True)
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3367,11 +3381,13 @@ class DrawShape(UI):
         position : (float, float)
             (x, y) in pixels.
         """
+        if position is None:
+            position = self.position
+
         if self.shape_type == "polyline":
             vertices = self.shape.calculate_vertices()
-        elif position is None:
-            position = self.position
-        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+        else:
+            vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
         max_x, max_y = vertices[0]
@@ -3503,6 +3519,7 @@ class DrawPanel(UI):
 
         self.shape_list = []
         self.current_shape = None
+        self.is_creating_polyline = False
 
     def _setup(self):
         """Setup this UI component.
@@ -3516,8 +3533,9 @@ class DrawPanel(UI):
             self.left_button_dragged
         self.canvas.background.on_left_mouse_button_released = \
             self.left_button_released
-        self.canvas.background.on_right_mouse_button_pressed = \
-            self.right_button_pressed
+        self.canvas.background.on_right_mouse_button_released = \
+            self.right_button_released
+        self.canvas.background.on_mouse_move = self.mouse_move
 
         # Todo
         # Convert mode_data into a private variable and make it read-only
@@ -3535,7 +3553,7 @@ class DrawPanel(UI):
         # Todo
         # Add this size to __init__
         mode_panel_size = (len(mode_data) * 35 + 2 * padding, 40)
-        self.mode_panel = Panel2D(size=mode_panel_size, color=(0.5, 0.5, 0.5))
+        self.mode_panel = Panel2D(size=mode_panel_size, color=(0.7, 0.7, 0.7))
         btn_pos = np.array([0, 0])
 
         for mode, fname in mode_data.items():
@@ -3573,6 +3591,8 @@ class DrawPanel(UI):
 
         """
         self.current_scene = scene
+        iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
+        iren.add_active_prop(self.canvas.background.actor)
         self.canvas.add_to_scene(scene)
 
     def _get_size(self):
@@ -3693,14 +3713,22 @@ class DrawPanel(UI):
             if self.is_draggable:
                 self._drag_offset = position - self.position
             self.current_shape.is_selected = False
-        if self.current_mode in ["line", "quad", "circle"]:
-            self.draw_shape(self.current_mode, position)
+        if self.current_mode in self.shape_types:
+            # if self.current_mode == "polyline" and not self.is_creating_polyline:
+            #     self.is_creating_polyline = True
+            # self.draw_shape(self.current_mode, position)
+            if not self.is_creating_polyline:
+                if self.current_mode == "polyline":
+                    self.is_creating_polyline = True
+                self.draw_shape(self.current_mode, position)
 
     def left_button_pressed(self,  i_ren, _obj, element):
         self.handle_mouse_click(i_ren.event.position)
         i_ren.force_render()
 
     def handle_mouse_drag(self, position):
+        if self.current_mode == "polyline":
+            return
         if self.is_draggable and self.current_mode == "selection":
             if self._drag_offset is not None:
                 new_position = position - self._drag_offset
@@ -3713,16 +3741,31 @@ class DrawPanel(UI):
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
 
-    def left_button_released(self, i_ren, _obj, element):
-        if self.current_mode == "polyline":
-            self.shape_list[-1].shape.add_point(i_ren.event.position, interactive=True)
-
-            i_ren.add_active_prop(self.canvas.background.actor)
-            self.canvas.background.left_button_state = "dragging"
-            self.mouse_move_callback(i_ren, _obj, element)
+    def mouse_move(self, i_ren, _obj, element):
+        if self.is_creating_polyline:
+            current_line = self.current_shape.shape.current_line
+            if np.linalg.norm(self.clamp_mouse_position(i_ren.event.position)
+                              - self.current_shape.shape.lines[0].position) < 10:
+                self.current_shape.shape.resize(
+                    self.current_shape.shape.lines[0].position - current_line.position)
+            else:
+                self.current_shape.shape.resize(self.clamp_mouse_position(
+                    i_ren.event.position) - current_line.position)
         i_ren.force_render()
 
-    def right_button_pressed(self,  i_ren, _obj, element):
-        i_ren.remove_active_prop(self.canvas.background.actor)
-        self.canvas.background.left_button_state = "released"
+    def left_button_released(self, i_ren, _obj, element):
+        if self.is_creating_polyline:
+            self.current_shape.shape.add_point(i_ren.event.position, True)
+        # if self.current_mode == "polyline":
+        #     self.shape_list[-1].shape.add_point(i_ren.event.position, interactive=True)
+
+        #     i_ren.add_active_prop(self.canvas.background.actor)
+        #     self.canvas.background.left_button_state = "dragging"
+        #     self.mouse_move_callback(i_ren, _obj, element)
+        i_ren.force_render()
+
+    def right_button_released(self,  i_ren, _obj, element):
+        # i_ren.remove_active_prop(self.canvas.background.actor)
+        # i_ren.force_render()
+        self.is_creating_polyline = False
         i_ren.force_render()
