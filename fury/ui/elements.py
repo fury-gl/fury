@@ -3070,12 +3070,12 @@ class DrawShapeGroup:
             self.remove(shape)
         else:
             self.grouped_shapes.append(shape)
-            shape.set_bb_border_visibility(True)
+            shape.set_bb_box_visibility(True)
         print(self.grouped_shapes)
 
     def remove(self, shape):
         self.grouped_shapes.remove(shape)
-        shape.set_bb_border_visibility(False)
+        shape.set_bb_box_visibility(False)
         print(self.grouped_shapes)
 
     def clear(self, shape):
@@ -3381,6 +3381,7 @@ class DrawShape(UI):
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.set_bb_box_visibility(True)
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
             self.bring_to_top()
