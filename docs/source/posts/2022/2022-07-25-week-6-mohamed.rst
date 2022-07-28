@@ -14,9 +14,15 @@ What did you do this week?
 
 - Updated the old tutorials' syntax to match the other tutorials and added a new tutorial on position animation using spline interpolation. Added unit tests for the ``PlaybackPanel`` and the newly added color converters in ``colormap.py``.
 
-- Added more hooks to the 2D sliders to cover two more states: ``on_value_changed`` and ``on_moving_slider`` `#634`_.
+- Added more hooks to the 2D sliders to cover two more states:
 
-- Provided the ability to add static actors to the ``Timeline``, which might be needed in the animation part of Shivam's glTF project.
+  1. ``on_value_changed``, which gets called whenever the value of the slider is changed without interacting with the slider.
+
+  2. ``on_moving_slider``, which gets called when the position of the slider is changed by user interaction. `#634`_.
+
+  - The reason for adding these two hooks is that there was only the ``on_change`` hook, which always gets called when the value of the slider is changed without considering how the value is changed, hence, the functionality of the slider was limited.
+
+- Provided the ability to add static actors to the ``Timeline``, which might be needed in the animation part of Shivam's glTF project `#634`_.
 
   - If an ``actor`` is added to the ``Timeline`` as a static actor, it won't be animated by the ``Timeline``, but it will get added to the scene along with the ``Timeline``.
 
@@ -29,11 +35,14 @@ What did you do this week?
 
 What is coming up next week?
 ----------------------------
-Next week's work is yet to be determined.
-
+- Make a tutorial on how to implement a new custom Interpolator to work with the ``Timeline``.
+- Add motion path visualization feature for both position and color properties.
+- Add custom evaluation functions directly, without using the ``CustomInterpolator``.
+- Implement an already existing complex interpolator using closures instead of classes.
 
 Did you get stuck anywhere?
 ---------------------------
 I didn't get stuck this week.
 
 .. _`#634`: https://github.com/fury-gl/fury/pull/634
+.. _`#643`: https://github.com/fury-gl/fury/pull/643
