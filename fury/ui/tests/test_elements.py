@@ -199,7 +199,7 @@ def test_ui_2d_line_slider_hooks(recording=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d = ui.LineSlider2D(center=(300, 300))
-    
+
     event_counter = EventCounter()
     event_counter.monitor(line_slider_2d)
 
@@ -469,6 +469,23 @@ def test_ui_range_slider(interactive=False):
                                           title="FURY Line Double Slider")
         show_manager.scene.add(range_slider_test_horizontal)
         show_manager.scene.add(range_slider_test_vertical)
+        show_manager.start()
+
+
+def test_ui_slider_value_range(interactive=False):
+    sliders = []
+    sliders.append(ui.LineSlider2D(min_value=0, max_value=0, center=(200, 450)))
+    sliders.append(ui.LineDoubleSlider2D(min_value=0, max_value=0, center=(200, 200)))
+    sliders.append(ui.RingSlider2D(min_value=0, max_value=0, center=(200, 300)))
+    sliders.append(ui.RangeSlider(min_value=0, max_value=0))
+
+    current_size = (600, 600)
+    show_manager = window.ShowManager(size=current_size,
+                                      title="FURY Sliders Value Range Test")
+
+    show_manager.scene.add(*sliders)
+
+    if interactive:
         show_manager.start()
 
 
