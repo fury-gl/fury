@@ -22,7 +22,7 @@ What did you do this week?
 
   - The reason for adding these two hooks is that there was only the ``on_change`` hook, which always gets called when the value of the slider is changed without considering how the value is changed, hence, the functionality of the slider was limited.
 
-- Provided the ability to add static actors to the ``Timeline``, which might be needed in the animation part of Shivam's glTF project `#634`_.
+- Provided the ability to add static actors to the ``Timeline``, which might be needed in the animation part of Shivam's glTF project `#643`_.
 
   - If an ``actor`` is added to the ``Timeline`` as a static actor, it won't be animated by the ``Timeline``, but it will get added to the scene along with the ``Timeline``.
 
