@@ -613,9 +613,7 @@ class LineSlider2D(UI):
     @value.setter
     def value(self, value):
         value_range = self.max_value - self.min_value
-        if value_range == 0:
-            value_range = 1
-        self.ratio = (value - self.min_value) / value_range
+        self.ratio = (value - self.min_value) / value_range if value_range else 0
         self.on_value_changed(self)
 
     @property
@@ -972,9 +970,7 @@ class LineDoubleSlider2D(UI):
 
         """
         value_range = self.max_value - self.min_value
-        if value_range == 0:
-            value_range = 1
-        return (value - self.min_value) / value_range
+        return (value - self.min_value) / value_range if value_range else 0
 
     def ratio_to_coord(self, ratio):
         """Convert the ratio to the absolute coordinate.
@@ -1438,9 +1434,7 @@ class RingSlider2D(UI):
     @value.setter
     def value(self, value):
         value_range = self.max_value - self.min_value
-        if value_range == 0:
-            value_range = 1
-        self.ratio = (value - self.min_value) / value_range
+        self.ratio = (value - self.min_value) / value_range if value_range else 0
         self.on_value_changed(self)
 
     @property
