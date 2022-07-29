@@ -1,11 +1,12 @@
 import time
 import warnings
-
+import inspect
 import numpy as np
 from scipy.spatial import transform
 from fury import utils, actor
 from fury.actor import Container
-from fury.animation.interpolator import LinearInterpolator, SplineInterpolator
+from fury.animation.interpolator import LinearInterpolator, \
+    BSplineInterpolator, Interpolator
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 
@@ -306,35 +307,67 @@ class Timeline(Container):
         self.set_keyframes(attrib, keyframes, is_camera=True)
 
     def set_interpolator(self, attrib, interpolator, is_camera=False,
-                         spline_degree=None):
+                         **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
         ----------
         attrib: str
             The name of the property.
-        interpolator: class
-            The interpolator to be used to interpolate keyframes.
+        interpolator: class or function or function
+            The interpolator class or evaluation function to be used to 
+            interpolate/evaluate keyframes.
         is_camera: bool, optional
             Indicated whether dealing with a camera property or general
             property.
+
+        Other Parameters
+        ----------------
         spline_degree: int, optional
             The degree of the spline in case of setting a spline interpolator.
+        
+        Notes
+        -----
+        If this evaluator is used to evaluate the value of actor's
+        properties such as position, scale, color, rotation, or opacity, it has
+        to return a value thathas the same shape as the evaluated property,
+        i.e.: for scale, it has to return an array with shape 1x3, and for
+        opacity, it has to return a 1x1, an int, or a float value.
 
         Examples
         ---------
         >>> Timeline.set_interpolator('position', LinearInterpolator)
+        
+        >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
+        >>> Timeline.set_interpolator('position', pos_fun)
         """
         typ = 'attribs'
         if is_camera:
             typ = 'camera'
-        if attrib in self._data.get('keyframes').get(typ):
-            keyframes = self._data.get('keyframes').get(typ).get(attrib)
-            if spline_degree is not None and interpolator is SplineInterpolator:
-                interp = interpolator(keyframes, spline_degree)
-            else:
-                interp = interpolator(keyframes)
-            self._data.get('interpolators').get(typ)[attrib] = interp
+        if attrib not in self._data.get('keyframes').get(typ):
+            self._data.get('keyframes').get(typ)[attrib] = {}
+        keyframes = self._data.get('keyframes').get(typ).get(attrib)
+
+        if kwargs.get('spline_degree') and interpolator is BSplineInterpolator:
+            degree = kwargs.get('spline_degree')
+            interp = interpolator(keyframes, degree)
+        elif inspect.isfunction(interpolator):
+
+            class CustomEvaluator(Interpolator):
+                def __init__(self, eval_func):
+                    super(CustomEvaluator, self).__init__({})
+                    self.eval_func = eval_func
+
+                def setup(self):
+                    ...
+
+                def interpolate(self, t):
+                    return self.eval_func(t)
+
+            interp = CustomEvaluator(interpolator)
+        else:
+            interp = interpolator(keyframes)
+        self._data.get('interpolators').get(typ)[attrib] = interp
 
     def is_interpolatable(self, attrib, is_camera=False):
         """Checks whether a property is interpolatable.
@@ -369,9 +402,9 @@ class Timeline(Container):
             The name of the camera property.
             The already handled properties are position, focal, and view_up.
 
-        interpolator: class
-            The interpolator that handles the camera property interpolation
-            between keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that handles the
+            camera property interpolation between keyframes.
 
         Examples
         ---------
@@ -385,8 +418,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the position keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle the
+             position keyframes.
 
         spline_degree: int
             The degree of the spline interpolation in case of setting
@@ -394,7 +428,7 @@ class Timeline(Container):
 
         Examples
         ---------
-        >>> Timeline.set_position_interpolator(SplineInterpolator, 5)
+        >>> Timeline.set_position_interpolator(BSplineInterpolator, 5)
         """
         self.set_interpolator('position', interpolator,
                               spline_degree=spline_degree)
@@ -405,8 +439,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            TThe interpolator that would handle the scale keyframes.
+        interpolator: class or function
+            TThe interpolator class or evaluation function that would handle
+            the scale keyframes.
 
         Examples
         ---------
@@ -420,9 +455,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the rotation (orientation)
-            keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle the
+            rotation (orientation) keyframes.
 
         Examples
         ---------
@@ -436,8 +471,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the color keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle
+            the color keyframes.
 
         Examples
         ---------
@@ -451,8 +487,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the opacity keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle
+            the opacity keyframes.
 
         Examples
         ---------
@@ -465,9 +502,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the interpolation of the camera
-            position keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle the
+            interpolation of the camera position keyframes.
         """
         self.set_camera_interpolator("position", interpolator)
 
@@ -476,9 +513,9 @@ class Timeline(Container):
 
         Parameters
         ----------
-        interpolator: class
-            The interpolator that would handle the interpolation of the camera
-            focal position keyframes.
+        interpolator: class or function
+            The interpolator class or evaluation function that would handle the
+            interpolation of the camera focal position keyframes.
         """
         self.set_camera_interpolator("focal", interpolator)
 
@@ -705,23 +742,33 @@ class Timeline(Container):
         """
         return self.get_value('position', t)
 
-    def get_rotation(self, t):
+    def get_rotation(self, t, as_quat=False):
         """Returns the interpolated rotation.
 
         Parameters
         ----------
         t: float
             the time to interpolate rotation at.
+        as_quat: bool
+            Returned rotation will be as quaternion if True.
 
         Returns
         -------
         ndarray(1, 3):
-            The interpolated rotation.
+            The interpolated rotation as Euler degrees by default.
         """
-        q = self.get_value('rotation', t)
-        r = transform.Rotation.from_quat(q)
-        degrees = r.as_euler('zxy', degrees=True)[[1, 2, 0]]
-        return degrees
+        rot = self.get_value('rotation', t)
+        if len(rot) == 4:
+            if as_quat:
+                return rot
+            r = transform.Rotation.from_quat(rot)
+            degrees = r.as_euler('zxy', degrees=True)[[1, 2, 0]]
+            return degrees
+        elif not as_quat:
+            return rot
+        return transform.Rotation.from_euler('zxy',
+                                             rot[[2, 0, 1]],
+                                             degrees=True).as_quat()
 
     def get_scale(self, t):
         """Returns the interpolated scale.

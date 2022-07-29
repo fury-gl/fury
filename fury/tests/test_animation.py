@@ -4,7 +4,7 @@ import numpy.testing as npt
 from fury import actor
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import LinearInterpolator, StepInterpolator, \
-    CubicSplineInterpolator, CubicBezierInterpolator, SplineInterpolator, \
+    CubicBSplineInterpolator, CubicBezierInterpolator, BSplineInterpolator, \
     HSVInterpolator, LABInterpolator, XYZInterpolator, Slerp
 from itertools import combinations
 from fury.testing import *
@@ -80,7 +80,7 @@ def test_cubic_spline_interpolator():
             3: {'value': np.array([5, 5, 5])},
             4: {'value': np.array([7, 7, 7])}}
 
-    interpolator = CubicSplineInterpolator(data)
+    interpolator = CubicBSplineInterpolator(data)
 
     pos1 = interpolator.interpolate(2)
     npt.assert_almost_equal(pos1, data.get(2).get('value'))
@@ -152,7 +152,7 @@ def test_cubic_bezier_interpolator():
 def test_n_spline_interpolator():
     data = {i: {'value': np.random.random(3) * 10} for i in range(10)}
 
-    interps = [SplineInterpolator(data, degree=i) for i in range(1, 6)]
+    interps = [BSplineInterpolator(data, degree=i) for i in range(1, 6)]
 
     for i in interps:
         npt.assert_equal(i.interpolate(-999), i.interpolate(0))
@@ -272,8 +272,8 @@ def test_timeline():
     tl.set_position_interpolator(LinearInterpolator)
     tl.set_position_interpolator(CubicBezierInterpolator)
     tl.set_position_interpolator(StepInterpolator)
-    tl.set_position_interpolator(CubicSplineInterpolator)
-    tl.set_position_interpolator(SplineInterpolator)
+    tl.set_position_interpolator(CubicBSplineInterpolator)
+    tl.set_position_interpolator(BSplineInterpolator)
     tl.set_rotation_interpolator(StepInterpolator)
     tl.set_scale_interpolator(LinearInterpolator)
     tl.set_opacity_interpolator(StepInterpolator)
