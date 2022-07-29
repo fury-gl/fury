@@ -603,7 +603,6 @@ class Timeline(Container):
 
         Parameters
         ----------
-        scalar
         timestamp: float
             Timestamp of the keyframe
         scalar: ndarray, shape(1, 3)
@@ -629,6 +628,15 @@ class Timeline(Container):
         self.set_keyframes('scale', keyframes)
 
     def set_color(self, timestamp, color, **kwargs):
+        """Set color keyframe at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        color: ndarray, shape(1, 3)
+            Color keyframe value associated with the timestamp.
+        """
         self.set_keyframe('color', timestamp, color, **kwargs)
 
     def set_color_keyframes(self, keyframes):
@@ -649,7 +657,15 @@ class Timeline(Container):
         self.set_keyframes('color', keyframes)
 
     def set_opacity(self, timestamp, opacity, **kwargs):
-        """Value from 0 to 1"""
+        """Set opacity keyframe at a specific timestamp.
+
+        Parameters
+        ----------
+        timestamp: float
+            Timestamp of the keyframe
+        opacity: ndarray, shape(1, 3)
+            Opacity keyframe value associated with the timestamp.
+        """
         self.set_keyframe('opacity', timestamp, opacity, **kwargs)
 
     def set_opacity_keyframes(self, keyframes):
