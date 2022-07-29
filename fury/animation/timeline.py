@@ -554,7 +554,7 @@ class Timeline(Container):
         """
         self.set_keyframes('position', keyframes)
 
-    def set_rotation(self, timestamp, rotation):
+    def set_rotation(self, timestamp, rotation, **kwargs):
         """Set a rotation keyframe at a specific timestamp.
 
         Parameters
@@ -572,19 +572,20 @@ class Timeline(Container):
         """
         no_components = len(np.array(rotation).flatten())
         if no_components == 4:
-            self.set_keyframe('rotation', timestamp, rotation)
+            self.set_keyframe('rotation', timestamp, rotation, **kwargs)
         elif no_components == 3:
             # user is expected to set rotation order by default as setting
             # orientation of a `vtkActor` ordered as z->x->y.
+            rotation = np.asarray(rotation, dtype=float)
             rotation = transform.Rotation.from_euler('zxy',
                                                      rotation[[2, 0, 1]],
                                                      degrees=True).as_quat()
-            self.set_keyframe('rotation', timestamp, rotation)
+            self.set_keyframe('rotation', timestamp, rotation, **kwargs)
         else:
             warnings.warn(f'Keyframe with {no_components} components is not a '
                           f'valid rotation data. Skipped!')
 
-    def set_rotation_as_vector(self, timestamp, vector):
+    def set_rotation_as_vector(self, timestamp, vector, **kwargs):
         """Set a rotation keyframe at a specific timestamp.
 
         Parameters
@@ -594,10 +595,10 @@ class Timeline(Container):
         vector: ndarray, shape(1, 3)
             Directional vector that describes the rotation.
         """
-        euler = transform.Rotation.from_rotvec(vector).as_euler('xyz', True)
-        self.set_keyframe('rotation', timestamp, euler)
+        quat = transform.Rotation.from_rotvec(vector).as_quat()
+        self.set_keyframe('rotation', timestamp, quat, **kwargs)
 
-    def set_scale(self, timestamp, scalar):
+    def set_scale(self, timestamp, scalar, **kwargs):
         """Set a scale keyframe at a specific timestamp.
 
         Parameters
@@ -608,7 +609,7 @@ class Timeline(Container):
         scalar: ndarray, shape(1, 3)
             Scale keyframe value associated with the timestamp.
         """
-        self.set_keyframe('scale', timestamp, scalar)
+        self.set_keyframe('scale', timestamp, scalar, **kwargs)
 
     def set_scale_keyframes(self, keyframes):
         """Set a dict of scale keyframes at once.
@@ -627,8 +628,8 @@ class Timeline(Container):
         """
         self.set_keyframes('scale', keyframes)
 
-    def set_color(self, timestamp, color):
-        self.set_keyframe('color', timestamp, color)
+    def set_color(self, timestamp, color, **kwargs):
+        self.set_keyframe('color', timestamp, color, **kwargs)
 
     def set_color_keyframes(self, keyframes):
         """Set a dict of color keyframes at once.
@@ -647,9 +648,9 @@ class Timeline(Container):
         """
         self.set_keyframes('color', keyframes)
 
-    def set_opacity(self, timestamp, opacity):
+    def set_opacity(self, timestamp, opacity, **kwargs):
         """Value from 0 to 1"""
-        self.set_keyframe('opacity', timestamp, opacity)
+        self.set_keyframe('opacity', timestamp, opacity, **kwargs)
 
     def set_opacity_keyframes(self, keyframes):
         """Set a dict of opacity keyframes at once.
@@ -750,7 +751,7 @@ class Timeline(Container):
         """
         return self.get_value('opacity', t)
 
-    def set_camera_position(self, timestamp, position):
+    def set_camera_position(self, timestamp, position, **kwargs):
         """Sets the camera position keyframe.
 
         Parameters
@@ -760,9 +761,9 @@ class Timeline(Container):
         position: ndarray, shape(1, 3)
             The camera position
         """
-        self.set_camera_keyframe('position', timestamp, position)
+        self.set_camera_keyframe('position', timestamp, position, **kwargs)
 
-    def set_camera_focal(self, timestamp, position):
+    def set_camera_focal(self, timestamp, position, **kwargs):
         """Sets camera's focal position keyframe.
 
         Parameters
@@ -772,9 +773,9 @@ class Timeline(Container):
         position: ndarray, shape(1, 3)
             The camera position
         """
-        self.set_camera_keyframe('focal', timestamp, position)
+        self.set_camera_keyframe('focal', timestamp, position, **kwargs)
 
-    def set_camera_view_up(self, timestamp, direction):
+    def set_camera_view_up(self, timestamp, direction, **kwargs):
         """Sets the camera view-up direction keyframe.
 
         Parameters
@@ -784,19 +785,25 @@ class Timeline(Container):
         direction: ndarray, shape(1, 3)
             The camera view-up direction
         """
-        self.set_camera_keyframe('view_up', timestamp, direction)
+        self.set_camera_keyframe('view_up', timestamp, direction, **kwargs)
 
-    def set_camera_rotation(self, timestamp, euler):
+    def set_camera_rotation(self, timestamp, rotation, **kwargs):
         """Sets the camera rotation keyframe.
 
         Parameters
         ----------
         timestamp: float
             The time to interpolate at.
-        euler: ndarray, shape(1, 3)
-            The euler angles describing the camera rotation in degrees.
+        rotation: ndarray, shape(1, 3) or shape(1, 4)
+            Rotation data in euler degrees with shape(1, 3) or in quaternions
+            with shape(1, 4).
+
+        Notes
+        -----
+        Euler rotations are executed by rotating first around Z then around X,
+        and finally around Y.
         """
-        self.set_camera_keyframe('rotation', timestamp, euler)
+        self.set_rotation(timestamp, rotation, is_camera=True, **kwargs)
 
     def set_camera_position_keyframes(self, keyframes):
         """Set a dict of camera position keyframes at once.
