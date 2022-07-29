@@ -179,7 +179,6 @@ class Timeline(Container):
             **{par: np.array(val).astype(float) for par, val in kwargs.items()
                if val is not None}
         }
-        print( attrib_keyframes[timestamp])
         interpolators = self._data.get('interpolators')
         if attrib not in interpolators.get(typ):
             interpolators.get(typ)[attrib] = \
@@ -214,19 +213,24 @@ class Timeline(Container):
 
         Notes
         ---------
-        Cubic Bézier curve control points are not supported yet in this setter.
+        Keyframes can be on any of the following forms:
+        >>> key_frames_simple = {1: [1, 2, 1], 2: [3, 4, 5]}
+        >>> key_frames_bezier = {1: {'value': [1, 2, 1]},
+        >>>                       2: {'value': [3, 4, 5], 'pre_cp': [1, 2, 3]}}
 
         Examples
         ---------
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Timeline.set_keyframes('position', pos_keyframes)
         """
-        for t in keyframes:
+        for t, data in keyframes.items():
             keyframe = keyframes.get(t)
-            self.set_keyframe(attrib, t, keyframe, is_camera=is_camera)
+            if isinstance(keyframe, dict):
+                self.set_keyframe(attrib, t, **keyframe, is_camera=is_camera)
+            else:
+                self.set_keyframe(attrib, t, keyframe, is_camera=is_camera)
 
-    def set_camera_keyframe(self, attrib, timestamp, value, pre_cp=None,
-                            post_cp=None):
+    def set_camera_keyframe(self, attrib, timestamp, value, **kwargs):
         """Set a keyframe for a camera property
 
         Parameters
@@ -237,14 +241,10 @@ class Timeline(Container):
             Timestamp of the keyframe.
         value: float
             Value of the keyframe at the given timestamp.
-        pre_cp: float
-            The control point in case of using `cubic Bézier interpolator` when
-            time exceeds this timestamp.
-        post_cp: float
-            The control point in case of using `cubic Bézier interpolator` when
-            time precedes this timestamp.
+        **kwargs: dict, optional
+            Additional keyword arguments passed to `set_keyframe`.
         """
-        self.set_keyframe(attrib, timestamp, value, pre_cp, post_cp, True)
+        self.set_keyframe(attrib, timestamp, value, is_camera=True, **kwargs)
 
     def is_inside_scene_at(self, timestamp):
         if self._remove_from_scene_time is not None and \
@@ -509,7 +509,7 @@ class Timeline(Container):
         return self._data.get('interpolators').get('camera').get(
             attrib).interpolate(timestamp)
 
-    def set_position(self, timestamp, position, pre_cp=None, post_cp=None):
+    def set_position(self, timestamp, position, **kwargs):
         """Set a position keyframe at a specific timestamp.
 
         Parameters
@@ -518,18 +518,24 @@ class Timeline(Container):
             Timestamp of the keyframe
         position: ndarray, shape (1, 3)
             Position value
-        pre_cp: ndarray, shape (1, 3), optional
-            The pre control point for the given position.
-        post_cp: ndarray, shape (1, 3), optional
-            The post control point for the given position.
+
+        Other Parameters
+        ----------------
+        pre_cp: float
+            The control point in case of using `cubic Bézier interpolator` when
+            time exceeds this timestamp.
+        post_cp: float
+            The control point in case of using `cubic Bézier interpolator` when
+            time precedes this timestamp.
+        tangent: ndarray, shape (1, M), optional
+            The tangent for the cubic spline curve.
 
         Notes
         -----
         `pre_cp` and `post_cp` only needed when using the cubic bezier
         interpolation method.
         """
-        self.set_keyframe('position', timestamp, position, pre_cp=pre_cp,
-                          post_cp=post_cp)
+        self.set_keyframe('position', timestamp, position, **kwargs)
 
     def set_position_keyframes(self, keyframes):
         """Set a dict of position keyframes at once.
@@ -548,7 +554,7 @@ class Timeline(Container):
         """
         self.set_keyframes('position', keyframes)
 
-    def set_rotation(self, timestamp, rotation, ):
+    def set_rotation(self, timestamp, rotation):
         """Set a rotation keyframe at a specific timestamp.
 
         Parameters
@@ -558,13 +564,18 @@ class Timeline(Container):
         rotation: ndarray, shape(1, 3) or shape(1, 4)
             Rotation data in euler degrees with shape(1, 3) or in quaternions
             with shape(1, 4).
+
+        Notes
+        -----
+        Euler rotations are executed by rotating first around Z then around X,
+        and finally around Y.
         """
         no_components = len(np.array(rotation).flatten())
         if no_components == 4:
             self.set_keyframe('rotation', timestamp, rotation)
         elif no_components == 3:
             # user is expected to set rotation order by default as setting
-            # orientation of a `vtkActor` z->x->y.
+            # orientation of a `vtkActor` ordered as z->x->y.
             rotation = transform.Rotation.from_euler('zxy',
                                                      rotation[[2, 0, 1]],
                                                      degrees=True).as_quat()
