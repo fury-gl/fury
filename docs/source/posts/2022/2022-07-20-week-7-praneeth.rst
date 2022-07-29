@@ -31,7 +31,7 @@ The tests were failing in the `ubuntu` and the `mac os` because the mouse click 
     :width: 400
     :align: center
 
-I also tried to implement a freehand drawing mode by adding ``Disk2D`` as points. But as you can see there are many flaws in this.
+I also tried to implement a freehand drawing mode by adding ``Disk2D`` as points. But as you can see below, there are many flaws in this.
 
 - First of all, we add many ``Disk2D`` objects which make it memory consuming process.
 - If the mouse moves very fast then we can see the gaps between two points.
@@ -44,10 +44,10 @@ I also tried to implement a freehand drawing mode by adding ``Disk2D`` as points
 
 Did you get stuck anywhere?
 ---------------------------
-It was hard to debug why the tests were failing in ``ubuntu`` and ``mac os``.
+It was hard to debug why the tests were failing in ``ubuntu`` and ``mac os``. I tried investing it by installing ubuntu and got nothing but then while implementing the new selection approach it automatically got fixed.
 
 What is coming up next?
 -----------------------
-Working on the polyline feature and getting PR `#623`_ merged.
+Getting PR `#623`_ merged and working on the polyline feature.
 
 .. _`#623`: https://github.com/fury-gl/fury/pull/623
