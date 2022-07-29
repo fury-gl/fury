@@ -57,6 +57,7 @@ class Timeline(Container):
         self._is_camera_animated = False
         self.motion_path_res = motion_path_res
         self._motion_path_actor = None
+        self._parent_timeline = None
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -989,6 +990,7 @@ class Timeline(Container):
             for a in timeline:
                 self.add_timeline(a)
             return
+        timeline._parent_timeline = self
         self._timelines.append(timeline)
 
     def add_actor(self, actor, static=False):
@@ -1011,6 +1013,10 @@ class Timeline(Container):
         else:
             actor.vcolors = utils.colors_from_actor(actor)
             super(Timeline, self).add(actor)
+
+    @property
+    def parent_timeline(self):
+        return self._parent_timeline
 
     @property
     def actors(self):
@@ -1160,6 +1166,9 @@ class Timeline(Container):
                 # Also update all child Timelines.
             [tl.update_animation(t, force=True, _in_scene=in_scene)
              for tl in self.timelines]
+            # update clipping range
+            if self.parent_timeline is None and self._scene:
+                self._scene.reset_clipping_range()
 
     def play(self):
         """Play the animation"""
