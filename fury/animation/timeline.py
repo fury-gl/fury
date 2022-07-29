@@ -139,8 +139,8 @@ class Timeline(Container):
         else:
             self._last_timestamp = timestamp
 
-    def set_keyframe(self, attrib, timestamp, value, pre_cp=None,
-                     post_cp=None, is_camera=False):
+    def set_keyframe(self, attrib, timestamp, value, is_camera=False,
+                     **kwargs):
         """Set a keyframe for a certain attribute.
 
         Parameters
@@ -151,29 +151,35 @@ class Timeline(Container):
             Timestamp of the keyframe.
         value: ndarray
             Value of the keyframe at the given timestamp.
-        is_camera: bool
+        is_camera: bool, optional
             Indicated whether setting a camera property or general property.
+
+        Other Parameters
+        ----------------
         pre_cp: ndarray, shape (1, M), optional
             The control point in case of using `cubic Bézier interpolator` when
             time exceeds this timestamp.
         post_cp: ndarray, shape (1, M), optional
             The control point in case of using `cubic Bézier interpolator` when
             time precedes this timestamp.
+        tangent: ndarray, shape (1, M), optional
+            The tangent for the cubic spline curve.
         """
         typ = 'attribs'
         if is_camera:
             typ = 'camera'
             self._is_camera_animated = True
-
         keyframes = self._data.get('keyframes')
         if attrib not in keyframes.get(typ):
             keyframes.get(typ)[attrib] = {}
         attrib_keyframes = self._data.get('keyframes').get(typ).get(attrib)
+
         attrib_keyframes[timestamp] = {
-            'value': np.array(value).astype(np.float),
-            'pre_cp': pre_cp,
-            'post_cp': post_cp
+            'value': np.array(value).astype(float),
+            **{par: np.array(val).astype(float) for par, val in kwargs.items()
+               if val is not None}
         }
+        print( attrib_keyframes[timestamp])
         interpolators = self._data.get('interpolators')
         if attrib not in interpolators.get(typ):
             interpolators.get(typ)[attrib] = \
@@ -522,7 +528,8 @@ class Timeline(Container):
         `pre_cp` and `post_cp` only needed when using the cubic bezier
         interpolation method.
         """
-        self.set_keyframe('position', timestamp, position, pre_cp, post_cp)
+        self.set_keyframe('position', timestamp, position, pre_cp=pre_cp,
+                          post_cp=post_cp)
 
     def set_position_keyframes(self, keyframes):
         """Set a dict of position keyframes at once.
