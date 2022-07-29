@@ -190,7 +190,9 @@ class Timeline(Container):
 
         if timestamp > 0:
             self.update_animation(force=True)
-        self.update_motion_path()
+        # update motion path
+        if self.motion_path_res:
+            self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes, is_camera=False):
         """Set multiple keyframes for a certain attribute.
