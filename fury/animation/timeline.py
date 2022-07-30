@@ -22,10 +22,26 @@ class Timeline(Container):
     It also accepts custom data and interpolates them, such as temperature.
     Linear interpolation is used by default to interpolate data between the
     main keyframes.
+
+    Attributes
+    ----------
+    actors : str
+        a formatted string to print out what the animal says
+    playback_panel : bool, optional
+        If True, the timeline will have a playback panel set, which can be used
+        to control the playback of the timeline.
+    length : float or int, default: None, optional
+        the fixed length of the timeline. If set to None, the timeline will get
+         its length from the keyframes.
+    loop : bool, optional
+        the number of legs the animal has (default 4)
+    motion_path_res : int, default: None
+        the number of line segments used to visualizer the timeline's motion
+         path.
     """
 
     def __init__(self, actors=None, playback_panel=False, length=None,
-                 motion_path_res=0, loop=False):
+                 loop=False, motion_path_res=None):
 
         super().__init__()
         self._data = defaultdict(dict)
@@ -91,7 +107,7 @@ class Timeline(Container):
             self.playback_panel.final_time = self._final_timestamp
         return self._final_timestamp
 
-    def update_motion_path(self, res=None):
+    def update_motion_path(self):
         res = self._motion_path_res
         tl = self
         while not res and isinstance(tl._parent_timeline, Timeline):
