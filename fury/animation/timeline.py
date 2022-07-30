@@ -25,7 +25,7 @@ class Timeline(Container):
     """
 
     def __init__(self, actors=None, playback_panel=False, length=None,
-                 motion_path_res=0):
+                 motion_path_res=0, loop=False):
 
         super().__init__()
         self._data = defaultdict(dict)
@@ -44,7 +44,7 @@ class Timeline(Container):
         self._final_timestamp = 0
         self._needs_update = False
         self._reverse_playing = False
-        self._loop = False
+        self._loop = loop
         self._added_to_scene = True
         self._add_to_scene_time = 0
         self._remove_from_scene_time = None
