@@ -349,7 +349,7 @@ class Timeline(Container):
         attrib: str
             The name of the property.
         interpolator: function
-            The generator function of the interpolator to be used to 
+            The generator function of the interpolator to be used to
             interpolate/evaluate keyframes.
         is_camera: bool, optional
             Indicated whether dealing with a camera property or general
@@ -363,7 +363,7 @@ class Timeline(Container):
         ----------------
         spline_degree: int, optional
             The degree of the spline in case of setting a spline interpolator.
-        
+
         Notes
         -----
         If this evaluator is used to evaluate the value of actor's
@@ -375,7 +375,7 @@ class Timeline(Container):
         Examples
         ---------
         >>> Timeline.set_interpolator('position', linear_interpolator)
-        
+
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
         >>> Timeline.set_interpolator('position', pos_fun)
         """
@@ -432,7 +432,7 @@ class Timeline(Container):
             camera property interpolation between keyframes.
         time_only: bool, optional
             `True` if `interpolator` is time-only based function.
-            
+
         Examples
         ---------
         >>> Timeline.set_camera_interpolator('focal', linear_interpolator)
