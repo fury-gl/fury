@@ -56,7 +56,7 @@ class Timeline(Container):
         self._add_to_scene_time = 0
         self._remove_from_scene_time = None
         self._is_camera_animated = False
-        self.motion_path_res = motion_path_res
+        self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._parent_timeline = None
 
@@ -99,8 +99,13 @@ class Timeline(Container):
         return self._final_timestamp
 
     def update_motion_path(self, res=None):
-        if res is None:
-            res = self.motion_path_res
+        res = self._motion_path_res
+        tl = self
+        while not res and isinstance(tl._parent_timeline, Timeline):
+            tl = tl._parent_timeline
+            res = tl._motion_path_res
+        if not res:
+            return
         lines = []
         colors = []
         if self.is_interpolatable('position'):
@@ -197,9 +202,9 @@ class Timeline(Container):
 
         if timestamp > 0:
             self.update_animation(force=True)
+
         # update motion path
-        if self.motion_path_res:
-            self.update_motion_path()
+        self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes, is_camera=False):
         """Set multiple keyframes for a certain attribute.
@@ -1038,6 +1043,7 @@ class Timeline(Container):
                 self.add_timeline(a)
             return
         timeline._parent_timeline = self
+        timeline.update_motion_path()
         self._timelines.append(timeline)
 
     def add_actor(self, actor, static=False):
