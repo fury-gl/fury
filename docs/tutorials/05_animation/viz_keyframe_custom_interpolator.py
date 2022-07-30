@@ -117,12 +117,12 @@ showm.initialize()
 # Cubic spline keyframes data same as the one you get from glTF file.
 # ===================================================================
 
-#              t   in tangent      position                   out tangent
+#              t   in tangent     position                   out tangent
 translation = [[0, [0., 0., 0.],  [3.3051798, 6.640117, 0.], [1., 0., 0.]],
-               [1, [0., 0., 0.],  [3.3051798, 10., 0.],      [-1., 0., 0.]],
-               [2, [-1., 0., 0.], [3.3051798, 6., 0.],       [0., 0., 0.]],
-               [3, [0., 0., 0.],  [3.3051798, 10., 0.],      [1., 0., 1.]],
-               [4, [0, 1., 0.],   [3.3051798, 6., 0.],       [0., 0., 0.]]]
+               [1, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
+               [2, [-1., 0., 0.], [3.3051798, 6., 0.],       [1., 0., 0.]],
+               [3, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
+               [4, [0, -1., 0.],  [3.3051798, 6., 0.],       [0., 0., 0.]]]
 
 ###############################################################################
 # Initializing a ``Timeline`` and adding sphere actor to it.
@@ -161,7 +161,7 @@ def timer_callback(_obj, _event):
 # Adding the callback function that updates the animation
 showm.add_timer_callback(True, 10, timer_callback)
 
-interactive = False
+interactive = 1
 
 if interactive:
     showm.start()
