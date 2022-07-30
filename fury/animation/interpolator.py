@@ -1,326 +1,148 @@
 import numpy as np
-from scipy import interpolate
+from scipy.interpolate import splprep, splev
 from scipy.spatial import transform
 from fury.colormap import rgb2hsv, hsv2rgb, rgb2lab, lab2rgb, xyz2rgb, rgb2xyz
+from fury.animation.helpers import get_previous_timestamp, get_next_timestamp,\
+    get_time_tau, get_timestamps_from_keyframes, get_distances,\
+    get_values_from_keyframes, lerp
 
 
-class Interpolator:
-    def __init__(self, keyframes):
-        super(Interpolator, self).__init__()
-        self.keyframes = keyframes
-        self.timestamps = []
-        self.min_timestamp = 0
-        self.final_timestamp = 0
-        self._unity_kf = True
-        self.setup()
-        self.id = -1
+def spline_interpolator(keyframes, degree):
+    if len(keyframes) < (degree + 1):
+        raise ValueError(f"Minimum {degree + 1} "
+                         f"keyframes must be set in order to use "
+                         f"{degree}-degree spline")
+    timestamps = get_timestamps_from_keyframes(keyframes)
 
-    def setup(self):
-        self.timestamps = np.sort(np.array(list(self.keyframes)), axis=None)
-        self.min_timestamp = self.timestamps[0]
-        self.final_timestamp = self.timestamps[-1]
-        if len(self.timestamps) == 1:
-            self._unity_kf = True
-        else:
-            self._unity_kf = False
+    values = get_values_from_keyframes(keyframes)
+    distances = get_distances(values)
+    distances_sum = sum(distances)
+    cumulative_dist_sum = np.cumsum([0] + distances)
+    tck = splprep(values.T, k=degree, full_output=1, s=0)[0][0]
 
-    def _get_nearest_smaller_timestamp(self, t, include_last=False):
-        if t > self.min_timestamp:
-            if include_last:
-                return self.timestamps[self.timestamps <= t].max()
-            return self.timestamps[:-1][self.timestamps[:-1] <= t].max()
-        return self.min_timestamp
+    def interpolate(t):
+        t0 = get_previous_timestamp(timestamps, t)
+        t1 = get_next_timestamp(timestamps, t)
+        mi_index = np.where(timestamps == t0)[0][0]
+        dt = get_time_tau(t, t0, t1)
+        section = cumulative_dist_sum[mi_index]
+        ts = (section + dt * distances[mi_index]) / distances_sum
+        return np.array(splev(ts, tck))
 
-    def _get_nearest_larger_timestamp(self, t, include_first=False):
-        if t < self.final_timestamp:
-            if include_first:
-                return self.timestamps[self.timestamps > t].min()
-            return self.timestamps[1:][self.timestamps[1:] > t].min()
-        return self.timestamps[-1]
-
-    def get_neighbour_timestamps(self, t):
-        t1 = self._get_nearest_smaller_timestamp(t)
-        t2 = self._get_nearest_larger_timestamp(t)
-        return t1, t2
-
-    def get_neighbour_keyframes(self, t):
-        t_s, t_e = self.get_neighbour_timestamps(t)
-        if isinstance(self, ColorInterpolator):
-            k1 = {"t": t_s, "data": self.space_keyframes.get(t_s)}
-            k2 = {"t": t_e, "data": self.space_keyframes.get(t_e)}
-        else:
-            k1 = {"t": t_s, "data": self.keyframes.get(t_s).get('value')}
-            k2 = {"t": t_e, "data": self.keyframes.get(t_e).get('value')}
-
-        if isinstance(self, CubicBezierInterpolator):
-            k1["cp"] = self.keyframes.get('post_cp').get(t_s)
-            k2["cp"] = self.keyframes.get('pre_cp').get(t_e)
-        return {"start": k1, "end": k2}
-
-    @staticmethod
-    def lerp(v1, v2, t1, t2, t):
-        if t1 == t2:
-            return v1
-        v = v2 - v1
-        dt = 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
-        return dt * v + v1
-
-    @staticmethod
-    def get_time_tau(t, t1, t2):
-        return 0 if t <= t1 else 1 if t >= t2 else (t - t1) / (t2 - t1)
-
-    @property
-    def id(self):
-        return self.id
-
-    @id.setter
-    def id(self, id):
-        self._id = id
+    return interpolate
 
 
-class StepInterpolator(Interpolator):
-    """Step interpolator for keyframes.
-
-    This is a simple step interpolator to be used for any shape of
-    keyframes data.
-    """
-
-    def __init__(self, keyframes):
-        super(StepInterpolator, self).__init__(keyframes)
-        self.id = 0
-
-    def setup(self):
-        super(StepInterpolator, self).setup()
-
-    def interpolate(self, t):
-        t_lower = self._get_nearest_smaller_timestamp(t, include_last=True)
-        return self.keyframes.get(t_lower).get('value')
+def cubic_spline_interpolator(keyframes):
+    return spline_interpolator(keyframes, degree=3)
 
 
-class LinearInterpolator(Interpolator):
-    """Linear interpolator for keyframes.
+def step_interpolator(keyframes):
+    timestamps = get_timestamps_from_keyframes(keyframes)
 
-    This is a general linear interpolator to be used for any shape of
-    keyframes data.
-    """
+    def interpolate(t):
+        previous_t = get_previous_timestamp(timestamps, t, include_last=True)
+        return keyframes.get(previous_t).get('value')
 
-    def __init__(self, keyframes=None):
-        if keyframes is None:
-            keyframes = {}
-        super(LinearInterpolator, self).__init__(keyframes)
-        self.id = 1
-
-    def interpolate(self, t):
-        if self._unity_kf:
-            t = self.timestamps[0]
-            return self.keyframes.get(t).get('value')
-        t1 = self._get_nearest_smaller_timestamp(t)
-        t2 = self._get_nearest_larger_timestamp(t)
-        p1 = self.keyframes.get(t1).get('value')
-        p2 = self.keyframes.get(t2).get('value')
-        return self.lerp(p1, p2, t1, t2, t)
+    return interpolate
 
 
-class SplineInterpolator(Interpolator):
-    """N-th degree spline interpolator for keyframes.
+def linear_interpolator(keyframes):
+    timestamps = get_timestamps_from_keyframes(keyframes)
+    is_single = len(keyframes) == 1
 
-    This is a general n-th degree spline interpolator to be used for any shape
-    of keyframes data.
-    """
+    def interpolate(t):
+        if is_single:
+            t = timestamps[0]
+            return keyframes.get(t).get('value')
+        t0 = get_previous_timestamp(timestamps, t)
+        t1 = get_next_timestamp(timestamps, t)
+        p0 = keyframes.get(t0).get('value')
+        p1 = keyframes.get(t1).get('value')
+        return lerp(p0, p1, t0, t1, t)
 
-    def __init__(self, keyframes, degree=3):
-        self.degree = degree
-        self.tck = []
-        self.linear_lengths = []
-        super(SplineInterpolator, self).__init__(keyframes)
-        self.id = 6
-
-    def setup(self):
-        super(SplineInterpolator, self).setup()
-        points = np.asarray([self.keyframes.get(t).get('value') for t in
-                             self.timestamps])
-
-        if len(points) < (self.degree + 1):
-            raise ValueError(f"Minimum {self.degree + 1} "
-                             f"keyframes must be set in order to use "
-                             f"{self.degree}-degree spline")
-
-        self.tck = interpolate.splprep(points.T, k=self.degree, full_output=1,
-                                       s=0)[0][0]
-        self.linear_lengths = []
-        for x, y in zip(points, points[1:]):
-            self.linear_lengths.append(np.linalg.norm(x - y))
-
-    def interpolate(self, t):
-
-        t1 = self._get_nearest_smaller_timestamp(t)
-        t2 = self._get_nearest_larger_timestamp(t)
-
-        mi_index = np.where(self.timestamps == t1)[0][0]
-        dt = self.get_time_tau(t, t1, t2)
-        sect = sum(self.linear_lengths[:mi_index])
-        ts = (sect + dt * (self.linear_lengths[mi_index])) / sum(
-            self.linear_lengths)
-        return np.array(interpolate.splev(ts, self.tck))
+    return interpolate
 
 
-class CubicSplineInterpolator(SplineInterpolator):
-    """Cubic spline interpolator for keyframes.
+def cubic_bezier_interpolator(keyframes):
+    timestamps = get_timestamps_from_keyframes(keyframes)
 
-    This is a general cubic spline interpolator to be used for any shape of
-    keyframes data.
-    """
+    for ts in timestamps:
+        # keyframe at timestamp
+        kf_ts = keyframes.get(ts)
+        if kf_ts.get('pre_cp') is None:
+            kf_ts['pre_cp'] = kf_ts.get('value')
 
-    def __init__(self, keyframes):
-        super(CubicSplineInterpolator, self).__init__(keyframes, degree=3)
-        self.id = 7
+        if kf_ts.get('post_cp') is None:
+            kf_ts['post_cp'] = kf_ts.get('value')
 
-
-class CubicBezierInterpolator(Interpolator):
-    """Cubic Bézier interpolator for keyframes.
-
-    This is a general cubic Bézier interpolator to be used for any shape of
-    keyframes data.
-
-    Attributes
-    ----------
-    keyframes : dict
-        Keyframes to be interpolated at any time.
-
-    Notes
-    -----
-    If no control points are set in the keyframes, The cubic
-    Bézier interpolator will almost behave as a linear interpolator.
-    """
-
-    def __init__(self, keyframes):
-        super(CubicBezierInterpolator, self).__init__(keyframes)
-        self.id = 2
-
-    def setup(self):
-        super(CubicBezierInterpolator, self).setup()
-        for ts in self.timestamps:
-            # keyframe at timestamp
-            kf_ts = self.keyframes.get(ts)
-            if 'pre_cp' not in kf_ts or kf_ts.get('pre_cp') is None:
-                kf_ts['pre_cp'] = kf_ts.get('value')
-            else:
-                kf_ts['pre_cp'] = np.array(kf_ts.get('pre_cp'))
-
-            if 'post_cp' not in kf_ts or kf_ts.get('post_cp') is None:
-                kf_ts['post_cp'] = kf_ts.get('value')
-            else:
-                kf_ts['post_cp'] = np.array(kf_ts.get('post_cp'))
-
-            # TODO: make it an option to deduce the control point if the
-            #  other control point exists
-
-    def interpolate(self, t):
-        t1, t2 = self.get_neighbour_timestamps(t)
-        p0 = self.keyframes.get(t1).get('value')
-        p1 = self.keyframes.get(t1).get('post_cp')
-        p2 = self.keyframes.get(t2).get('pre_cp')
-        p3 = self.keyframes.get(t2).get('value')
-        dt = self.get_time_tau(t, t1, t2)
-        res = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
+    def interpolate(t):
+        t0 = get_previous_timestamp(timestamps, t)
+        t1 = get_next_timestamp(timestamps, t)
+        k0 = keyframes.get(t0)
+        k1 = keyframes.get(t1)
+        p0 = k0.get('value')
+        p1 = k0.get('post_cp')
+        p2 = k1.get('pre_cp')
+        p3 = k1.get('value')
+        dt = get_time_tau(t, t0, t1)
+        val = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
               (1 - dt) * dt ** 2 * p2 + dt ** 3 * p3
-        return res
+        return val
+
+    return interpolate
 
 
-class Slerp(Interpolator):
-    """Spherical based rotation keyframes interpolator.
+def slerp(keyframes):
+    timestamps = get_timestamps_from_keyframes(keyframes)
 
-    A rotation interpolator to be used for rotation keyframes.
+    quat_rots = []
+    for ts in timestamps:
+        quat_rots.append(keyframes.get(ts).get('value'))
+    rotations = transform.Rotation.from_quat(quat_rots)
+    slerp_interp = transform.Slerp(timestamps, rotations)
+    min_t = timestamps[0]
+    max_t = timestamps[-1]
 
-    Attributes
-    ----------
-    keyframes : dict
-        Rotation keyframes to be interpolated at any time.
-
-    Notes
-    -----
-    Rotation keyframes must be in the form of Euler degrees.
-
-    """
-
-    def __init__(self, keyframes):
-        self._slerp = None
-        super(Slerp, self).__init__(keyframes)
-
-    def setup(self):
-        super(Slerp, self).setup()
-        timestamps, quat_rots = [], []
-        for ts in self.keyframes:
-            timestamps.append(ts)
-            quat_rots.append(self.keyframes.get(ts).get('value'))
-        rotations = transform.Rotation.from_quat(quat_rots)
-        self._slerp = transform.Slerp(timestamps, rotations)
-
-    def interpolate(self, t):
-        min_t = self.timestamps[0]
-        max_t = self.timestamps[-1]
+    def interpolate(t):
         t = min_t if t < min_t else max_t if t > max_t else t
-        v = self._slerp(t)
+        v = slerp_interp(t)
         q = v.as_quat()
         return q
 
-
-class ColorInterpolator(Interpolator):
-    """Color keyframes interpolator.
-
-    A color interpolator to be used for color keyframes.
-    Given two functions, one is to convert from RGB space to the interpolation
-    space, the other is to convert from that space back to the RGB space.
-
-    Attributes
-    ----------
-    keyframes : dict
-        Keyframes to be interpolated at any time.
-
-    Notes
-    -----
-    If no control points are set in the keyframes, The cubic Bézier
-    interpolator will almost behave as a linear interpolator.
-    """
-
-    def __init__(self, keyframes, rgb_to_space, space_to_rgb):
-        self.rgb_to_space = rgb_to_space
-        self.space_to_rgb = space_to_rgb
-        self.space_keyframes = {}
-        super(ColorInterpolator, self).__init__(keyframes)
-
-    def setup(self):
-        super(ColorInterpolator, self).setup()
-        for ts, keyframe in self.keyframes.items():
-            self.space_keyframes[ts] = self.rgb_to_space(keyframe.get('value'))
-
-    def interpolate(self, t):
-        t1, t2 = self.get_neighbour_timestamps(t)
-        p1 = self.space_keyframes.get(t1)
-        p2 = self.space_keyframes.get(t2)
-        lab_val = self.lerp(p1, p2, t1, t2, t)
-        return self.space_to_rgb(lab_val)
+    return interpolate
 
 
-class HSVInterpolator(ColorInterpolator):
+def color_interpolator(keyframes, rgb2space, space2rgb):
+    timestamps = get_timestamps_from_keyframes(keyframes)
+    space_keyframes = {}
+    is_single = len(keyframes) == 1
+    for ts, keyframe in keyframes.items():
+        space_keyframes[ts] = rgb2space(keyframe.get('value'))
+
+    def interpolate(t):
+        if is_single:
+            t = timestamps[0]
+            return keyframes.get(t).get('value')
+        t0 = get_previous_timestamp(timestamps, t)
+        t1 = get_next_timestamp(timestamps, t)
+        c0 = space_keyframes.get(t0)
+        c1 = space_keyframes.get(t1)
+        space_color_val = lerp(c0, c1, t0, t1, t)
+        return space2rgb(space_color_val)
+
+    return interpolate
+
+
+def hsv_color_interpolator(keyframes):
+    """HSV interpolator for color keyframes """
+    return color_interpolator(keyframes, rgb2hsv, hsv2rgb)
+
+
+def lab_color_interpolator(keyframes):
     """LAB interpolator for color keyframes """
-
-    def __init__(self, keyframes):
-        super().__init__(keyframes, rgb2hsv, hsv2rgb)
-        self.id = 3
+    return color_interpolator(keyframes, rgb2lab, lab2rgb)
 
 
-class XYZInterpolator(ColorInterpolator):
+def xyz_color_interpolator(keyframes):
     """XYZ interpolator for color keyframes """
-
-    def __init__(self, keyframes):
-        super().__init__(keyframes, rgb2xyz, xyz2rgb)
-        self.id = 4
-
-
-class LABInterpolator(ColorInterpolator):
-    """LAB interpolator for color keyframes """
-
-    def __init__(self, keyframes):
-        super().__init__(keyframes, rgb2lab, lab2rgb)
-        self.id = 5
+    return color_interpolator(keyframes, rgb2xyz, xyz2rgb)
