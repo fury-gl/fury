@@ -157,6 +157,8 @@ def test_n_spline_interpolator():
     for i in interps:
         npt.assert_equal(i.interpolate(-999), i.interpolate(0))
         npt.assert_equal(i.interpolate(999), i.interpolate(10))
+        for t in range(10):
+            npt.assert_almost_equal(i.interpolate(t), data.get(t).get('value'))
         for t in range(-100, 100, 1):
             i.interpolate(t / 10)
 
