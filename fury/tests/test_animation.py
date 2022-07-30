@@ -1,12 +1,14 @@
 import time
+from itertools import combinations
+
 import numpy.testing as npt
 
 from fury import actor
+from fury.animation.interpolator import linear_interpolator, \
+    step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
+    spline_interpolator, hsv_color_interpolator, lab_color_interpolator, \
+    xyz_color_interpolator, slerp
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import LinearInterpolator, StepInterpolator, \
-    CubicSplineInterpolator, CubicBezierInterpolator, SplineInterpolator, \
-    HSVInterpolator, LABInterpolator, XYZInterpolator, Slerp
-from itertools import combinations
 from fury.testing import *
 from fury.ui import PlaybackPanel
 
@@ -20,28 +22,28 @@ def test_step_interpolator():
             2: {'value': np.array([0, 0, 0])},
             3: {'value': np.array([5, 5, 5])}}
 
-    interpolator = StepInterpolator(data)
+    interpolator = step_interpolator(data)
 
-    pos1 = interpolator.interpolate(2)
-    pos2 = interpolator.interpolate(2.9)
+    pos1 = interpolator(2)
+    pos2 = interpolator(2.9)
     npt.assert_equal(pos1, pos2)
 
-    pos3 = interpolator.interpolate(3)
+    pos3 = interpolator(3)
     assert_not_equal(pos3, pos2)
 
-    pos_initial = interpolator.interpolate(1)
-    pos_final = interpolator.interpolate(3)
+    pos_initial = interpolator(1)
+    pos_final = interpolator(3)
 
     # test when time exceeds or precedes the interpolation range
-    npt.assert_equal(interpolator.interpolate(-999), pos_initial)
-    npt.assert_equal(interpolator.interpolate(999), pos_final)
+    npt.assert_equal(interpolator(-999), pos_initial)
+    npt.assert_equal(interpolator(999), pos_final)
 
     for t in range(-10, 40, 1):
-        npt.assert_equal(interpolator.interpolate(t / 10).shape,
+        npt.assert_equal(interpolator(t / 10).shape,
                          data.get(1).get('value').shape)
 
     for ts, pos in data.items():
-        npt.assert_equal(interpolator.interpolate(ts),
+        npt.assert_equal(interpolator(ts),
                          data.get(ts).get('value'))
 
 
@@ -50,28 +52,28 @@ def test_linear_interpolator():
             2: {'value': np.array([0, 0, 0])},
             3: {'value': np.array([5, 5, 5])}}
 
-    interpolator = LinearInterpolator(data)
+    interpolator = linear_interpolator(data)
 
-    pos1 = interpolator.interpolate(2)
-    pos2 = interpolator.interpolate(2.1)
+    pos1 = interpolator(2)
+    pos2 = interpolator(2.1)
     assert_not_equal(pos1, pos2)
 
     npt.assert_equal(pos1, data.get(2).get('value'))
 
     for ts, pos in data.items():
-        npt.assert_equal(interpolator.interpolate(ts),
+        npt.assert_equal(interpolator(ts),
                          data.get(ts).get('value'))
 
     for t in range(-10, 40, 1):
-        npt.assert_equal(interpolator.interpolate(t / 10).shape,
+        npt.assert_equal(interpolator(t / 10).shape,
                          data.get(1).get('value').shape)
 
-    pos_initial = interpolator.interpolate(1)
-    pos_final = interpolator.interpolate(3)
+    pos_initial = interpolator(1)
+    pos_final = interpolator(3)
 
     # test when time exceeds or precedes the interpolation range
-    npt.assert_equal(interpolator.interpolate(-999), pos_initial)
-    npt.assert_equal(interpolator.interpolate(999), pos_final)
+    npt.assert_equal(interpolator(-999), pos_initial)
+    npt.assert_equal(interpolator(999), pos_final)
 
 
 def test_cubic_spline_interpolator():
@@ -80,25 +82,25 @@ def test_cubic_spline_interpolator():
             3: {'value': np.array([5, 5, 5])},
             4: {'value': np.array([7, 7, 7])}}
 
-    interpolator = CubicSplineInterpolator(data)
+    interpolator = cubic_spline_interpolator(data)
 
-    pos1 = interpolator.interpolate(2)
+    pos1 = interpolator(2)
     npt.assert_almost_equal(pos1, data.get(2).get('value'))
 
     for ts, pos in data.items():
-        npt.assert_almost_equal(interpolator.interpolate(ts),
+        npt.assert_almost_equal(interpolator(ts),
                                 data.get(ts).get('value'))
 
     for t in range(-10, 40, 1):
-        npt.assert_almost_equal(interpolator.interpolate(t / 10).shape,
+        npt.assert_almost_equal(interpolator(t / 10).shape,
                                 data.get(1).get('value').shape)
 
-    pos_initial = interpolator.interpolate(1)
-    pos_final = interpolator.interpolate(4)
+    pos_initial = interpolator(1)
+    pos_final = interpolator(4)
 
     # test when time exceeds or precedes the interpolation range
-    npt.assert_almost_equal(interpolator.interpolate(-999), pos_initial)
-    npt.assert_almost_equal(interpolator.interpolate(999), pos_final)
+    npt.assert_almost_equal(interpolator(-999), pos_initial)
+    npt.assert_almost_equal(interpolator(999), pos_final)
 
 
 def test_cubic_bezier_interpolator():
@@ -113,54 +115,54 @@ def test_cubic_bezier_interpolator():
     }
 
     # with control points
-    interp_1 = CubicBezierInterpolator(data_1)
+    interp_1 = cubic_bezier_interpolator(data_1)
     # without control points
-    interp_2 = CubicBezierInterpolator(data_2)
+    interp_2 = cubic_bezier_interpolator(data_2)
     # linear interpolator
-    interp_linear = LinearInterpolator(data_2)
+    interp_linear = linear_interpolator(data_2)
 
-    assert_not_equal(interp_1.interpolate(1.5), interp_2.interpolate(1.5))
+    assert_not_equal(interp_1(1.5), interp_2(1.5))
 
-    npt.assert_equal(interp_1.interpolate(1.5), interp_linear.interpolate(1.5))
-    assert_not_equal(interp_1.interpolate(1.2), interp_linear.interpolate(1.2))
-    assert_not_equal(interp_2.interpolate(1.5), interp_linear.interpolate(1.5))
+    npt.assert_equal(interp_1(1.5), interp_linear(1.5))
+    assert_not_equal(interp_1(1.2), interp_linear(1.2))
+    assert_not_equal(interp_2(1.5), interp_linear(1.5))
 
     # start and end points
-    npt.assert_equal(interp_1.interpolate(1), interp_2.interpolate(1))
-    npt.assert_equal(interp_1.interpolate(2), interp_2.interpolate(2))
+    npt.assert_equal(interp_1(1), interp_2(1))
+    npt.assert_equal(interp_1(2), interp_2(2))
 
     for ts, pos in data_1.items():
         expected = data_1.get(ts).get('value')
-        npt.assert_almost_equal(interp_1.interpolate(ts), expected)
-        npt.assert_almost_equal(interp_2.interpolate(ts), expected)
+        npt.assert_almost_equal(interp_1(ts), expected)
+        npt.assert_almost_equal(interp_2(ts), expected)
 
     for t in range(-10, 40, 1):
-        npt.assert_almost_equal(interp_1.interpolate(t / 10).shape,
+        npt.assert_almost_equal(interp_1(t / 10).shape,
                                 data_1.get(1).get('value').shape)
 
-    pos_initial = interp_1.interpolate(1)
-    pos_final = interp_2.interpolate(2)
+    pos_initial = interp_1(1)
+    pos_final = interp_2(2)
 
     # test when time exceeds or precedes the interpolation range
-    npt.assert_almost_equal(interp_1.interpolate(-999), pos_initial)
-    npt.assert_almost_equal(interp_2.interpolate(-999), pos_initial)
+    npt.assert_almost_equal(interp_1(-999), pos_initial)
+    npt.assert_almost_equal(interp_2(-999), pos_initial)
 
-    npt.assert_almost_equal(interp_1.interpolate(999), pos_final)
-    npt.assert_almost_equal(interp_2.interpolate(999), pos_final)
+    npt.assert_almost_equal(interp_1(999), pos_final)
+    npt.assert_almost_equal(interp_2(999), pos_final)
 
 
 def test_n_spline_interpolator():
     data = {i: {'value': np.random.random(3) * 10} for i in range(10)}
 
-    interps = [SplineInterpolator(data, degree=i) for i in range(1, 6)]
+    interps = [spline_interpolator(data, degree=i) for i in range(1, 6)]
 
     for i in interps:
-        npt.assert_equal(i.interpolate(-999), i.interpolate(0))
-        npt.assert_equal(i.interpolate(999), i.interpolate(10))
+        npt.assert_equal(i(-999), i(0))
+        npt.assert_equal(i(999), i(10))
         for t in range(10):
-            npt.assert_almost_equal(i.interpolate(t), data.get(t).get('value'))
+            npt.assert_almost_equal(i(t), data.get(t).get('value'))
         for t in range(-100, 100, 1):
-            i.interpolate(t / 10)
+            i(t / 10)
 
 
 def test_color_interpolators():
@@ -168,50 +170,50 @@ def test_color_interpolators():
             2: {'value': np.array([0.5, 0, 1])}}
 
     color_interps = [
-        HSVInterpolator(data),
-        LinearInterpolator(data),
-        LABInterpolator(data),
-        XYZInterpolator(data),
+        hsv_color_interpolator(data),
+        linear_interpolator(data),
+        lab_color_interpolator(data),
+        xyz_color_interpolator(data),
     ]
 
     for interp in color_interps:
-        npt.assert_almost_equal(interp.interpolate(-999),
-                                interp.interpolate(1))
-        npt.assert_almost_equal(interp.interpolate(999), interp.interpolate(2))
+        npt.assert_almost_equal(interp(-999),
+                                interp(1))
+        npt.assert_almost_equal(interp(999), interp(2))
 
     for interps in combinations(color_interps, 2):
         for timestamp in data.keys():
-            npt.assert_almost_equal(interps[0].interpolate(timestamp),
-                                    interps[1].interpolate(timestamp))
+            npt.assert_almost_equal(interps[0](timestamp),
+                                    interps[1](timestamp))
         # excluded main keyframes
         for timestamp in range(101, 200, 1):
             timestamp /= 100
-            assert_not_equal(interps[0].interpolate(timestamp),
-                             interps[1].interpolate(timestamp))
+            assert_not_equal(interps[0](timestamp),
+                             interps[1](timestamp))
 
 
 def test_slerp():
     data = {1: {'value': np.array([0, 0, 0, 1])},
             2: {'value': np.array([0, 0.7071068, 0, 0.7071068])}}
 
-    interp_slerp = Slerp(data)
-    interp_lerp = LinearInterpolator(data)
+    interp_slerp = slerp(data)
+    interp_lerp = linear_interpolator(data)
 
-    npt.assert_equal(interp_slerp.interpolate(-999),
-                     interp_slerp.interpolate(1))
-    npt.assert_equal(interp_slerp.interpolate(999),
-                     interp_slerp.interpolate(2))
+    npt.assert_equal(interp_slerp(-999),
+                     interp_slerp(1))
+    npt.assert_equal(interp_slerp(999),
+                     interp_slerp(2))
 
-    npt.assert_almost_equal(interp_slerp.interpolate(1),
-                            interp_lerp.interpolate(1))
-    npt.assert_almost_equal(interp_slerp.interpolate(2),
-                            interp_lerp.interpolate(2))
-    assert_not_equal(interp_slerp.interpolate(1.5),
-                     interp_lerp.interpolate(1.5))
+    npt.assert_almost_equal(interp_slerp(1),
+                            interp_lerp(1))
+    npt.assert_almost_equal(interp_slerp(2),
+                            interp_lerp(2))
+    assert_not_equal(interp_slerp(1.5),
+                     interp_lerp(1.5))
 
     for timestamp in range(-100, 100, 1):
         timestamp /= 10
-        interp_slerp.interpolate(timestamp)
+        interp_slerp(timestamp)
 
 
 def test_timeline():
@@ -271,15 +273,15 @@ def test_timeline():
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
     npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
 
-    tl.set_position_interpolator(LinearInterpolator)
-    tl.set_position_interpolator(CubicBezierInterpolator)
-    tl.set_position_interpolator(StepInterpolator)
-    tl.set_position_interpolator(CubicSplineInterpolator)
-    tl.set_position_interpolator(SplineInterpolator)
-    tl.set_rotation_interpolator(StepInterpolator)
-    tl.set_scale_interpolator(LinearInterpolator)
-    tl.set_opacity_interpolator(StepInterpolator)
-    tl.set_color_interpolator(LinearInterpolator)
+    tl.set_position_interpolator(linear_interpolator)
+    tl.set_position_interpolator(cubic_bezier_interpolator)
+    tl.set_position_interpolator(step_interpolator)
+    tl.set_position_interpolator(cubic_spline_interpolator)
+    tl.set_position_interpolator(spline_interpolator, degree=2)
+    tl.set_rotation_interpolator(step_interpolator)
+    tl.set_scale_interpolator(linear_interpolator)
+    tl.set_opacity_interpolator(step_interpolator)
+    tl.set_color_interpolator(linear_interpolator)
 
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
     npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
