@@ -23,7 +23,7 @@ cube = actor.cube(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating a timeline to animate the actor
-timeline = Timeline(playback_panel=Timeline, length=2 * np.pi)
+timeline = Timeline(playback_panel=Timeline, length=2 * np.pi, loop=True)
 
 ###############################################################################
 # Adding the sphere actor to the timeline
