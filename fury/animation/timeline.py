@@ -7,8 +7,7 @@ import numpy as np
 from scipy.spatial import transform
 from fury import utils, actor
 from fury.actor import Container
-from fury.animation.interpolator import LinearInterpolator, \
-    BSplineInterpolator, Interpolator
+from fury.animation.interpolator import LinearInterpolator
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 
