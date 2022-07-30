@@ -10,7 +10,7 @@ Minimal tutorial of making keyframe-based animation in FURY.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import CubicBSplineInterpolator, Slerp
+from fury.animation.interpolator import CubicSplineInterpolator, Slerp
 
 scene = window.Scene()
 
@@ -39,7 +39,7 @@ timeline.set_position(9, np.array([10, 0, 20]))
 
 ###############################################################################
 # change the position interpolator to Cubic spline interpolator.
-timeline.set_position_interpolator(CubicBSplineInterpolator)
+timeline.set_position_interpolator(CubicSplineInterpolator)
 
 ###############################################################################
 # Adding some rotation keyframes.

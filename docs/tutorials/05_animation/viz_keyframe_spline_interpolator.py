@@ -10,7 +10,7 @@ Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import BSplineInterpolator
+from fury.animation.interpolator import SplineInterpolator
 
 scene = window.Scene()
 
@@ -57,7 +57,7 @@ spline_tl.set_position_keyframes(position_keyframes)
 
 ###############################################################################
 # Setting 5th degree spline interpolator for position keyframes.
-spline_tl.set_position_interpolator(BSplineInterpolator, 5)
+spline_tl.set_position_interpolator(SplineInterpolator, 5)
 
 ###############################################################################
 # Adding everything to a main ``Timeline`` to control the two timelines.
