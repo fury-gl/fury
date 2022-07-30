@@ -1425,8 +1425,8 @@ class Timeline(Container):
         super(Timeline, self).add_to_scene(ren)
         [ren.add(static_act) for static_act in self._static_actors]
         [ren.add(timeline) for timeline in self.timelines]
+        if self._motion_path_actor:
+            ren.add(self._motion_path_actor)
         self._scene = ren
         self._added_to_scene = True
         self.update_animation(force=True)
-        if self._motion_path_actor:
-            ren.add(self._motion_path_actor)
