@@ -163,7 +163,7 @@ def timer_callback(_obj, _event):
 # Adding the callback function that updates the animation
 showm.add_timer_callback(True, 10, timer_callback)
 
-interactive = 1
+interactive = False
 
 if interactive:
     showm.start()
