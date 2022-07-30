@@ -9,7 +9,6 @@ Keyframe animation using custom interpolator.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import Interpolator
 
 
 ###############################################################################
@@ -42,39 +41,33 @@ from fury.animation.interpolator import Interpolator
 # First we create a class that must take a dict object that contains the
 # animation keyframes when initialized as follows:
 #
-# >>> class CubicSplineInterpolator(Interpolator):
+# >>> class cubic_spline_interpolator(Interpolator):
 # >>>     def __init__(self, keyframes):
-# >>>         super(CubicSplineInterpolator, self).__init__(keyframes)
+# >>>         super(cubic_spline_interpolator, self).__init__(keyframes)
 #
-# Note: Also any other additional arguments are ok, see `SplineInterpolator`
+# Note: Also any other additional arguments are ok, see `spline_interpolator`
 # Second step is to implement the `interpolate` method (must have the name
 # `interpolate`) that only takes the current time as input.
 
-class TanCubicSplineInterpolator(Interpolator):
-    def __init__(self, keyframes):
-        # The super init call is essential for setting up timestamps and
-        # storing the keyframes as a property.
-        super(TanCubicSplineInterpolator, self).__init__(keyframes)
-        # here we have keyframes as set using `Timeline.set_keyframe` or any
-        # other keyframe setter method.
-        # keyframes can be on the following form:
-        # {
-        # 1: {'value': ndarray, 'in_tangent': ndarray, 'out_tangent': ndarray},
-        # 2: {'value': np.array([1, 2, 3], 'in_tangent': ndarray},
-        # }
-        # See here, we might get incomplete data (out_tangent) in the second
-        # keyframe. In this case we need to have a default behaviour dealing
-        # with these missing data.
-        # Setting the tangent to a zero vector in this case is the best choice
-        for time in self.keyframes:
-            data = self.keyframes.get(time)
-            value = data.get('value')
-            if data.get('in_tangent') is None:
-                data['in_tangent'] = np.zeros_like(value)
-            if data.get('in_tangent') is None:
-                data['in_tangent'] = np.zeros_like(value)
+def tan_cubic_spline_interpolator(keyframes):
+    # keyframes should be on the following form:
+    # {
+    # 1: {'value': ndarray, 'in_tangent': ndarray, 'out_tangent': ndarray},
+    # 2: {'value': np.array([1, 2, 3], 'in_tangent': ndarray},
+    # }
+    # See here, we might get incomplete data (out_tangent) in the second
+    # keyframe. In this case we need to have a default behaviour dealing
+    # with these missing data.
+    # Setting the tangent to a zero vector in this case is the best choice
+    for time in keyframes:
+        data = keyframes.get(time)
+        value = data.get('value')
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
 
-    def interpolate(self, t):
+    def interpolate(t):
         # `get_neighbour_timestamps` method takes time as input and returns
         # the surrounding timestamps.
         t0, t1 = self.get_neighbour_timestamps(t)
@@ -143,7 +136,7 @@ for keyframe_data in translation:
 
 ###############################################################################
 # Set the new interpolator to interpolate position keyframes
-timeline.set_position_interpolator(TanCubicSplineInterpolator)
+timeline.set_position_interpolator(tan_cubic_spline_interpolator)
 
 ###############################################################################
 # adding the timeline and the static actors to the scene.

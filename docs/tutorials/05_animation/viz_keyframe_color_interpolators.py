@@ -10,8 +10,8 @@ Color animation explained
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import StepInterpolator, \
-    LABInterpolator, HSVInterpolator, XYZInterpolator
+from fury.animation.interpolator import step_interpolator, \
+    lab_color_interpolator, hsv_color_interpolator, xyz_color_interpolator
 
 scene = window.Scene()
 
@@ -76,10 +76,10 @@ for t in range(0, 20, 5):
 ###############################################################################
 # Changing the default scale interpolator to be a step interpolator
 # The default is linear interpolator for color keyframes
-timeline_HSV_color.set_color_interpolator(HSVInterpolator)
-timeline_LAB_color.set_color_interpolator(LABInterpolator)
-timeline_step_color.set_color_interpolator(StepInterpolator)
-timeline_XYZ_color.set_color_interpolator(XYZInterpolator)
+timeline_HSV_color.set_color_interpolator(hsv_color_interpolator)
+timeline_LAB_color.set_color_interpolator(lab_color_interpolator)
+timeline_step_color.set_color_interpolator(step_interpolator)
+timeline_XYZ_color.set_color_interpolator(xyz_color_interpolator)
 
 ###############################################################################
 # Adding the main timeline to the scene

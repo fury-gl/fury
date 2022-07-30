@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial import transform
 from fury import utils, actor
 from fury.actor import Container
-from fury.animation.interpolator import LinearInterpolator
+from fury.animation.interpolator import linear_interpolator
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor
 
@@ -168,7 +168,7 @@ class Timeline(Container):
             data[attrib] = {
                 'keyframes': defaultdict(dict),
                 'interpolator': {
-                    'base': LinearInterpolator,
+                    'base': linear_interpolator,
                     'func': None,
                     'args': defaultdict()
                 },
@@ -218,9 +218,10 @@ class Timeline(Container):
         if update_interpolator:
             interp = attrib_data.get('interpolator')
             interp_base = interp.get('base')
-            interp_args = interp.get('args')
-            new_interp = interp_base(keyframes, **interp_args)
-            interp['func'] = new_interp.interpolate
+            if interp_base is not None:
+                interp_args = interp.get('args')
+                new_interp = interp_base(keyframes, **interp_args)
+                interp['func'] = new_interp
 
         if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
@@ -340,19 +341,23 @@ class Timeline(Container):
         self.set_keyframes(attrib, keyframes, is_camera=True)
 
     def set_interpolator(self, attrib, interpolator, is_camera=False,
-                         **kwargs):
+                         time_only=False, **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
         ----------
         attrib: str
             The name of the property.
-        interpolator: class or function
-            The interpolator class or evaluation function to be used to 
+        interpolator: function
+            The generator function of the interpolator to be used to 
             interpolate/evaluate keyframes.
         is_camera: bool, optional
             Indicated whether dealing with a camera property or general
             property.
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function such as:
+            >>> def get_position(t):
+            >>>     return np.array([np.sin(t), np.cos(t) * 5, 5])
 
         Other Parameters
         ----------------
@@ -369,7 +374,7 @@ class Timeline(Container):
 
         Examples
         ---------
-        >>> Timeline.set_interpolator('position', LinearInterpolator)
+        >>> Timeline.set_interpolator('position', linear_interpolator)
         
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
         >>> Timeline.set_interpolator('position', pos_fun)
@@ -378,13 +383,14 @@ class Timeline(Container):
         attrib_data = self._get_attribute_data(attrib, is_camera=is_camera)
         keyframes = attrib_data.get('keyframes')
         interp_data = attrib_data.get('interpolator')
-        if inspect.isfunction(interpolator):
+        if time_only:
+            interp_data['base'] = None
             interp_data['func'] = interpolator
         else:
             interp_data['base'] = interpolator
             interp_data['args'] = kwargs
             new_interp = interpolator(keyframes, **kwargs)
-            interp_data['func'] = new_interp.interpolate
+            interp_data['func'] = new_interp
         # update motion path
         self.update_motion_path()
 
@@ -412,7 +418,7 @@ class Timeline(Container):
         data = self._camera_data if is_camera else self._data
         return attrib in data
 
-    def set_camera_interpolator(self, attrib, interpolator):
+    def set_camera_interpolator(self, attrib, interpolator, time_only=False):
         """Set the interpolator for a specific camera property.
 
         Parameters
@@ -421,124 +427,141 @@ class Timeline(Container):
             The name of the camera property.
             The already handled properties are position, focal, and view_up.
 
-        interpolator: class or function
-            The interpolator class or evaluation function that handles the
+        interpolator: function
+            The generator function of the interpolator that handles the
             camera property interpolation between keyframes.
-
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
+            
         Examples
         ---------
-        >>> Timeline.set_camera_interpolator('focal', LinearInterpolator)
+        >>> Timeline.set_camera_interpolator('focal', linear_interpolator)
         """
-        self.set_interpolator(attrib, interpolator, is_camera=True)
+        self.set_interpolator(attrib, interpolator, is_camera=True,
+                              time_only=time_only)
 
-    def set_position_interpolator(self, interpolator, **kwargs):
+    def set_position_interpolator(self, interpolator, time_only=False,
+                                  **kwargs):
         """Set the position interpolator for all actors inside the
         timeline.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle the
+        interpolator: function
+            The generator function of the interpolator that would handle the
              position keyframes.
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
 
         Other Parameters
         ----------------
-        spline_degree: int
+        degree: int
             The degree of the spline interpolation in case of setting
-            the `SplineInterpolator`.
+            the `spline_interpolator`.
 
         Examples
         ---------
-        >>> Timeline.set_position_interpolator(BSplineInterpolator,
-        >>>                                    spline_degree=5)
+        >>> Timeline.set_position_interpolator(spline_interpolator, degree=5)
         """
-        self.set_interpolator('position', interpolator, **kwargs)
+        self.set_interpolator('position', interpolator,
+                              time_only=time_only, **kwargs)
 
-    def set_scale_interpolator(self, interpolator):
+    def set_scale_interpolator(self, interpolator, time_only=False):
         """Set the scale interpolator for all the actors inside the
         timeline.
 
         Parameters
         ----------
-        interpolator: class or function
-            TThe interpolator class or evaluation function that would handle
+        interpolator: function
+            TThe generator function of the interpolator that would handle
             the scale keyframes.
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
 
         Examples
         ---------
-        >>> Timeline.set_scale_interpolator(StepInterpolator)
+        >>> Timeline.set_scale_interpolator(step_interpolator)
         """
-        self.set_interpolator('scale', interpolator)
+        self.set_interpolator('scale', interpolator, time_only=time_only)
 
-    def set_rotation_interpolator(self, interpolator):
+    def set_rotation_interpolator(self, interpolator, time_only=False):
         """Set the scale interpolator for all the actors inside the
         timeline.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle the
+        interpolator: function
+            The generator function of the interpolator that would handle the
             rotation (orientation) keyframes.
-
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
         Examples
         ---------
-        >>> Timeline.set_rotation_interpolator(Slerp)
+        >>> Timeline.set_rotation_interpolator(slerp)
         """
-        self.set_interpolator('rotation', interpolator)
+        self.set_interpolator('rotation', interpolator, time_only=time_only)
 
-    def set_color_interpolator(self, interpolator):
+    def set_color_interpolator(self, interpolator, time_only=False):
         """Set the color interpolator for all the actors inside the
         timeline.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle
+        interpolator: function
+            The generator function of the interpolator that would handle
             the color keyframes.
-
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
         Examples
         ---------
-        >>> Timeline.set_color_interpolator(LABInterpolator)
+        >>> Timeline.set_color_interpolator(lab_color_interpolator)
         """
-        self.set_interpolator('color', interpolator)
+        self.set_interpolator('color', interpolator, time_only=time_only)
 
-    def set_opacity_interpolator(self, interpolator):
+    def set_opacity_interpolator(self, interpolator, time_only=False):
         """Set the opacity interpolator for all the actors inside the
         timeline.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle
+        interpolator: function
+            The generator function of the interpolator that would handle
             the opacity keyframes.
-
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
         Examples
         ---------
-        >>> Timeline.set_opacity_interpolator(StepInterpolator)
+        >>> Timeline.set_opacity_interpolator(step_interpolator)
         """
-        self.set_interpolator('opacity', interpolator)
+        self.set_interpolator('opacity', interpolator, time_only=time_only)
 
-    def set_camera_position_interpolator(self, interpolator):
+    def set_camera_position_interpolator(self, interpolator, time_only=False):
         """Set the camera position interpolator.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle the
+        interpolator: function
+            The generator function of the interpolator that would handle the
             interpolation of the camera position keyframes.
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
         """
-        self.set_camera_interpolator("position", interpolator)
+        self.set_camera_interpolator("position", interpolator,
+                                     time_only=time_only)
 
-    def set_camera_focal_interpolator(self, interpolator):
+    def set_camera_focal_interpolator(self, interpolator, time_only=False):
         """Set the camera focal position interpolator.
 
         Parameters
         ----------
-        interpolator: class or function
-            The interpolator class or evaluation function that would handle the
+        interpolator: function
+            The generator function of the interpolator that would handle the
             interpolation of the camera focal position keyframes.
+        time_only: bool, optional
+            `True` if `interpolator` is time-only based function.
         """
-        self.set_camera_interpolator("focal", interpolator)
+        self.set_camera_interpolator("focal", interpolator,
+                                     time_only=time_only)
 
     def get_value(self, attrib, timestamp):
         """Returns the value of an attribute at any given timestamp.

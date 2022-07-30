@@ -10,7 +10,7 @@ Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import SplineInterpolator
+from fury.animation.interpolator import spline_interpolator
 
 scene = window.Scene()
 
@@ -45,7 +45,7 @@ linear_tl.add(sphere_linear)
 linear_tl.set_position_keyframes(position_keyframes)
 
 ###############################################################################
-# Note: LinearInterpolator is used by default. So, no need to set it for the
+# Note: linear_interpolator is used by default. So, no need to set it for the
 # first (linear position) timeline.
 
 ###############################################################################
@@ -57,7 +57,7 @@ spline_tl.set_position_keyframes(position_keyframes)
 
 ###############################################################################
 # Setting 5th degree spline interpolator for position keyframes.
-spline_tl.set_position_interpolator(SplineInterpolator, 5)
+spline_tl.set_position_interpolator(spline_interpolator, degree=5)
 
 ###############################################################################
 # Adding everything to a main ``Timeline`` to control the two timelines.
@@ -65,7 +65,7 @@ spline_tl.set_position_interpolator(SplineInterpolator, 5)
 #
 ###############################################################################
 # Creating a timeline with a playback panel
-main_timeline = Timeline(playback_panel=Timeline)
+main_timeline = Timeline(playback_panel=Timeline, motion_path_res=100)
 
 ###############################################################################
 # Add visualization dots actor to the timeline as a static actor.

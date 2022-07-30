@@ -9,7 +9,7 @@ Keyframe animation using cubic Bezier interpolator.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import CubicBezierInterpolator
+from fury.animation.interpolator import cubic_bezier_interpolator
 
 ###############################################################################
 # Position interpolation using cubic Bezier curve
@@ -77,12 +77,13 @@ timeline.add_actor(sphere)
 
 timeline.set_position(0, np.array(points[0]), post_cp=np.array(points[1]))
 timeline.set_position(5, np.array(points[3]), pre_cp=np.array(points[2]))
-timeline.set_position_interpolator(CubicBezierInterpolator)
+timeline.set_position_interpolator(cubic_bezier_interpolator)
 
 
 ###############################################################################
 # adding the timeline and the static actors to the scene.
-scene.add(timeline, pts_actor, cps_actor, cline_actor)
+scene.add(pts_actor, cps_actor, cline_actor)
+scene.add(timeline)
 
 
 ###############################################################################
@@ -166,7 +167,7 @@ for keyframe in keyframes:
 
 ###############################################################################
 # changing position interpolation into cubic bezier interpolation
-timeline.set_position_interpolator(CubicBezierInterpolator)
+timeline.set_position_interpolator(cubic_bezier_interpolator)
 
 ###############################################################################
 # adding actors to the scene

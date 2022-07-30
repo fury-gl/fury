@@ -52,11 +52,13 @@ def scale_eval(t):
 
 
 ###############################################################################
-# Setting evaluator functions is the same as setting interpolators.
-timeline.set_position_interpolator(pos_eval)
-timeline.set_rotation_interpolator(rotation_eval)
-timeline.set_color_interpolator(color_eval)
-timeline.set_interpolator('scale', scale_eval)
+# Setting evaluator functions is the same as setting interpolators, but with
+# one extra argument: `time_only=True` since these functions does not need
+# keyframes as input.
+timeline.set_position_interpolator(pos_eval, time_only=True)
+timeline.set_rotation_interpolator(rotation_eval, time_only=True)
+timeline.set_color_interpolator(color_eval, time_only=True)
+timeline.set_interpolator('scale', scale_eval, time_only=True)
 
 ###############################################################################
 # Main timeline to control all the timelines.
@@ -78,7 +80,7 @@ def timer_callback(_obj, _event):
 # Adding the callback function that updates the animation.
 showm.add_timer_callback(True, 10, timer_callback)
 
-interactive = False
+interactive = 1
 
 if interactive:
     showm.start()

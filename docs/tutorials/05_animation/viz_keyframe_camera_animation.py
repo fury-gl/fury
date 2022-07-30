@@ -9,7 +9,7 @@ Camera and opacity keyframe animation explained in this tutorial.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import CubicSplineInterpolator
+from fury.animation.interpolator import cubic_spline_interpolator
 
 ###############################################################################
 # The Plan
@@ -109,7 +109,7 @@ for i in range(50):
 
     ###########################################################################
     # change the position interpolator to cubic spline interpolator.
-    timeline.set_position_interpolator(CubicSplineInterpolator)
+    timeline.set_position_interpolator(cubic_spline_interpolator)
 
     ###########################################################################
     # Finally, the ``Timeline`` is added to the ``main_timeline``.
@@ -156,8 +156,8 @@ main_timeline.set_camera_position_keyframes(camera_positions)
 
 ###############################################################################
 # Change camera position and focal interpolators
-main_timeline.set_camera_position_interpolator(CubicSplineInterpolator)
-main_timeline.set_camera_focal_interpolator(CubicSplineInterpolator)
+main_timeline.set_camera_position_interpolator(cubic_spline_interpolator)
+main_timeline.set_camera_focal_interpolator(cubic_spline_interpolator)
 
 ###############################################################################
 # Only the main Timeline is added to the scene.
