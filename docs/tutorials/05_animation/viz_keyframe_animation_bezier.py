@@ -147,7 +147,7 @@ for keyframe in keyframes:
 
     ###########################################################################
     # setting position keyframe
-    timeline.set_position(t, pos, pre_control_point, post_control_point)
+    timeline.set_position(t, pos, pre_cp=pre_control_point, post_cp=post_control_point)
 
     ###########################################################################
     # visualizing position keyframe
