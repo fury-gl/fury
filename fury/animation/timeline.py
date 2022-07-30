@@ -61,7 +61,7 @@ class Timeline(Container):
             def set_speed(speed):
                 self.speed = speed
 
-            self.playback_panel = PlaybackPanel()
+            self.playback_panel = PlaybackPanel(loop=self._loop)
             self.playback_panel.on_play = self.play
             self.playback_panel.on_stop = self.stop
             self.playback_panel.on_pause = self.pause

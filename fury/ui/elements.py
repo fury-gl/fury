@@ -3492,10 +3492,11 @@ class PlaybackPanel(UI):
        such as play, pause, stop, and seek.
     """
 
-    def __init__(self):
+    def __init__(self, loop=False):
         super(PlaybackPanel, self).__init__()
         self._playing = False
-        self._loop = False
+        self._loop = None
+        self.loop() if loop else self.play_once()
         self._speed = 1
 
         # callback functions
