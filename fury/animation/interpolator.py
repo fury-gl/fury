@@ -128,9 +128,8 @@ class SplineInterpolator(Interpolator):
     of keyframes data.
     """
 
-    def __init__(self, keyframes, degree=3, smoothness=3):
+    def __init__(self, keyframes, degree=3):
         self.degree = degree
-        self.smoothness = smoothness
         self.tck = []
         self.linear_lengths = []
         super(SplineInterpolator, self).__init__(keyframes)
@@ -147,7 +146,7 @@ class SplineInterpolator(Interpolator):
                              f"{self.degree}-degree spline")
 
         self.tck = interpolate.splprep(points.T, k=self.degree, full_output=1,
-                                       s=self.smoothness)[0][0]
+                                       s=0)[0][0]
         self.linear_lengths = []
         for x, y in zip(points, points[1:]):
             self.linear_lengths.append(np.linalg.norm(x - y))
@@ -172,9 +171,8 @@ class CubicSplineInterpolator(SplineInterpolator):
     keyframes data.
     """
 
-    def __init__(self, keyframes, smoothness=3):
-        super(CubicSplineInterpolator, self).__init__(keyframes, degree=3,
-                                                      smoothness=smoothness)
+    def __init__(self, keyframes):
+        super(CubicSplineInterpolator, self).__init__(keyframes, degree=3)
         self.id = 7
 
 
