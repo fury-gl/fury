@@ -3086,18 +3086,6 @@ class DrawShapeGroup:
         return bool(len(self.grouped_shapes))
         print(self.grouped_shapes)
 
-    @property
-    def position(self):
-        return self._position
-        print(self.grouped_shapes)
-
-    @property
-    def position(self, value):
-        offset = np.asarray(self._position) - value
-        for shape in self.grouped_shapes:
-            shape.position += offset
-        print(self.grouped_shapes)
-
 
 class DrawShape(UI):
     """Create and Manage 2D Shapes.
@@ -3365,12 +3353,6 @@ class DrawShape(UI):
 
         self.cal_bounding_box(update_value=True)
 
-    def bring_to_top(self):
-        # self.remove()
-        # self._add_to_scene(self._scene)
-        # self.drawpanel.shape_list.append(self)
-        pass
-
     def remove(self):
         """Removes the Shape and all related actors.
         """
@@ -3387,8 +3369,6 @@ class DrawShape(UI):
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
             else:
-                self.bring_to_top()
-
                 self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
