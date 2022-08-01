@@ -3086,6 +3086,10 @@ class DrawShapeGroup:
         return bool(len(self.grouped_shapes))
         print(self.grouped_shapes)
 
+    def update_position(self, offset):
+        for shape in self.grouped_shapes:
+            shape.update_shape_position(shape.center + offset)
+
 
 class DrawShape(UI):
     """Create and Manage 2D Shapes.
@@ -3388,6 +3392,10 @@ class DrawShape(UI):
                 click_position = i_ren.event.position
                 relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
+
+                self.drawpanel.shape_group.update_position(
+                        relative_center_position - self.center)
+
                 self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
