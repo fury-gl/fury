@@ -3153,9 +3153,7 @@ class DrawShape(UI):
             rotation_angle = angle - previous_angle
 
             current_center = self.center
-            self.center = (0, 0)
             self.rotate(np.deg2rad(rotation_angle))
-            self.center = (0, 0)
             self.update_shape_position(current_center - self.drawpanel.position)
 
         self.rotation_slider.on_change = rotate_shape
@@ -3208,7 +3206,6 @@ class DrawShape(UI):
 
     @property
     def center(self):
-        self.cal_bounding_box()
         return self._bounding_box_min + self._bounding_box_size//2
 
     @center.setter
@@ -3224,6 +3221,7 @@ class DrawShape(UI):
         new_center = np.array(coords)
         new_lower_left_corner = new_center - self._bounding_box_size // 2
         self.position = new_lower_left_corner + self._bounding_box_offset
+        self.cal_bounding_box(update_value=True)
 
     @property
     def is_selected(self):
@@ -3290,8 +3288,11 @@ class DrawShape(UI):
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
         """
-        self.rotation_slider.center = self.center + \
-            [(self._bounding_box_size[0] + self.rotation_slider.size[0])/2, 0]
+        self._scene.rm(*self.rotation_slider.actors)
+        self.rotation_slider.add_to_scene(self._scene)
+        slider_position = self.drawpanel.position + \
+            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2, self.rotation_slider.size[1]/2]
+        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, update_value=False, position=None):
@@ -3320,9 +3321,9 @@ class DrawShape(UI):
                 max_y = y
 
         if update_value:
-            self._bounding_box_min = np.asarray([min_x, min_y])
-            self._bounding_box_max = np.asarray([max_x, max_y])
-            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y])
+            self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+            self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
 
             self._bounding_box_offset = position - self._bounding_box_min
 
