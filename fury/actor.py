@@ -1609,17 +1609,6 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     return sphere_actor
 
 
-def billboard_gs(centers, colors, scales=(1, 1, 1)):
-    current_actor = dot(centers, colors)
-    replace_shader_in_actor(current_actor, 'geometry',
-                            import_fury_shader('billboard.geom'))
-    shader_to_actor(current_actor, 'vertex',
-                    impl_code="gl_Position = vertexMC;\nreturn;",
-                    block='prim_id')
-    current_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    return current_actor
-
-
 def cylinder(centers, directions, colors, radius=0.05, heights=1,
              capped=False, resolution=6, vertices=None, faces=None):
     """Visualize one or many cylinder with different features.
@@ -2296,8 +2285,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return spq_actor
 
 
-def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
-              gs_prog=None, fs_dec=None, fs_impl=None):
+def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
+              vs_impl=None, gs_prog=None, fs_dec=None, fs_impl=None):
     """Create a billboard actor.
 
     Billboards are 2D elements placed in a 3D world. They offer possibility to
@@ -2311,6 +2300,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The scale of the billboards.
+    using_gs : bool, optional
+        Whether to use geometry shader or not.
     vs_dec : str or list of str, optional
         Vertex Shader code that contains all variable/function declarations.
     vs_impl : str or list of str, optional
@@ -2329,6 +2320,23 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     billboard_actor: Actor
 
     """
+    if using_gs:
+        bb_actor = dot(centers, colors)
+        replace_shader_in_actor(bb_actor, 'geometry',
+                                import_fury_shader('gs_billboard.geom'))
+        shader_to_actor(bb_actor, 'vertex',
+                        impl_code=import_fury_shader('gs_billboard_impl.vert'),
+                        decl_code=import_fury_shader('gs_billboard_dec.vert'),
+                        block='prim_id')
+
+        shader_to_actor(bb_actor, 'fragment',
+                        decl_code=import_fury_shader('gs_billboard_dec.frag'),
+                        block='prim_id')
+
+        attribute_to_actor(bb_actor, scales.flatten(), 'scale')
+        bb_actor.GetProperty().BackfaceCullingOff()
+        bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+        return bb_actor
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
                               scales=scales)
