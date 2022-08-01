@@ -25,7 +25,7 @@ What did you do this week?
 What is coming up next week?
 ----------------------------
 - Document the new closure-based interpolators. And make some slight renaming changes that we discussed in today's meeting.
-- Add tests to the functions inside `fury/animation/helpers.py`.
+- Add tests to the functions inside `fury/animation/helpers.py`_.
 - Make changes to the geometry-shader-based billboard to make it more like the quad-based billboard actor while maintaining the new features.
 - Integrate the already-implemented shader functionality to the new ``Timeline`` in a separate draft or PR.
 
