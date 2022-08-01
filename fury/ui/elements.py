@@ -3070,12 +3070,12 @@ class DrawShapeGroup:
             self.remove(shape)
         else:
             self.grouped_shapes.append(shape)
-            shape.set_bb_box_visibility(True)
+            shape.is_selected = True
         print(self.grouped_shapes)
 
     def remove(self, shape):
         self.grouped_shapes.remove(shape)
-        shape.set_bb_box_visibility(False)
+        shape.is_selected = False
         print(self.grouped_shapes)
 
     def clear(self, shape):
@@ -3365,9 +3365,10 @@ class DrawShape(UI):
         self.cal_bounding_box(update_value=True)
 
     def bring_to_top(self):
-        self.remove()
-        self._add_to_scene(self._scene)
-        self.drawpanel.shape_list.append(self)
+        # self.remove()
+        # self._add_to_scene(self._scene)
+        # self.drawpanel.shape_list.append(self)
+        pass
 
     def remove(self):
         """Removes the Shape and all related actors.
@@ -3384,9 +3385,10 @@ class DrawShape(UI):
             self.set_bb_box_visibility(True)
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
-            self.bring_to_top()
+            else:
+                self.bring_to_top()
 
-            self.drawpanel.update_shape_selection(self)
+                self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.center
