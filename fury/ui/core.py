@@ -1,6 +1,6 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D"]
+__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D", "ColorPicker"]
 
 import abc
 from warnings import warn
