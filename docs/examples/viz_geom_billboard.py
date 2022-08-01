@@ -17,4 +17,9 @@ shader_to_actor(geom_squares, 'fragment',
 
 scene.add(geom_squares)
 
-showm.start()
+
+interactive = False
+if interactive:
+    showm.start()
+
+window.record(scene, size=(600, 600), out_path="viz_billboard_sphere_gs.png")
