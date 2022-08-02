@@ -3065,12 +3065,36 @@ class DrawShapeGroup:
         self.grouped_shapes = []
         self._position = None
 
+        # Group rotation slider
+        self.group_rotation_slider = RingSlider2D(initial_value=0,
+                                                  text_template="{angle:5.1f}°")
+
+        self.group_rotation_slider.set_visibility(False)
+
+        def update_rotation(slider):
+            print("update rotation")
+            angle = slider.value
+            previous_angle = slider.previous_value
+            rotation_angle = angle - previous_angle
+
+            for shape in self.grouped_shapes:
+                current_center = shape.center
+                shape.rotate(np.deg2rad(rotation_angle))
+                shape.update_shape_position(current_center - shape.drawpanel.position)
+
+        self.group_rotation_slider.on_change = update_rotation
+
     def add(self, shape):
         if shape in self.grouped_shapes:
             self.remove(shape)
         else:
             self.grouped_shapes.append(shape)
             shape.is_selected = True
+            shape.rotation_slider.set_visibility(False)
+
+            self.group_rotation_slider.center = shape.rotation_slider.center
+            self.group_rotation_slider.set_visibility(True)
+
         print(self.grouped_shapes)
 
     def remove(self, shape):
@@ -3083,12 +3107,14 @@ class DrawShapeGroup:
         print(self.grouped_shapes)
 
     def is_empty(self):
-        return bool(len(self.grouped_shapes))
-        print(self.grouped_shapes)
+        return not bool(len(self.grouped_shapes))
 
     def update_position(self, offset):
         for shape in self.grouped_shapes:
             shape.update_shape_position(shape.center + offset)
+
+    def add_rotation_slider(self, scene):
+        scene.add(self.group_rotation_slider)
 
 
 class DrawShape(UI):
@@ -3137,6 +3163,9 @@ class DrawShape(UI):
 
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
+        slider_position = self.drawpanel.position + \
+            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2, self.rotation_slider.size[1]/2]
+        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(False)
 
         def rotate_shape(slider):
@@ -3282,9 +3311,6 @@ class DrawShape(UI):
         """
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2, self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, update_value=False, position=None):
@@ -3393,7 +3419,8 @@ class DrawShape(UI):
                 relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
 
-                self.drawpanel.shape_group.update_position(
+                if not self.drawpanel.shape_group.is_empty():
+                    self.drawpanel.shape_group.update_position(
                         relative_center_position - self.center)
 
                 self.update_shape_position(relative_center_position)
@@ -3402,7 +3429,7 @@ class DrawShape(UI):
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
 
     def left_button_released(self, i_ren, _obj, shape):
-        if self.drawpanel.current_mode == "selection":
+        if self.drawpanel.current_mode == "selection" and self.drawpanel.shape_group.is_empty():
             self.show_rotation_slider()
         i_ren.force_render()
 
@@ -3511,6 +3538,7 @@ class DrawPanel(UI):
         iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
         iren.add_active_prop(self.canvas.actors[0])
         self.canvas.add_to_scene(scene)
+        self.shape_group.add_rotation_slider(scene)
 
     def _get_size(self):
         return self.canvas.size
