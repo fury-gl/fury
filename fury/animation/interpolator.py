@@ -8,6 +8,25 @@ from fury.animation.helpers import get_previous_timestamp, get_next_timestamp,\
 
 
 def spline_interpolator(keyframes, degree):
+    """N-th degree spline interpolator for keyframes.
+
+    This is a general n-th degree spline interpolator to be used for any shape
+    of keyframes data.
+
+    Parameters
+    ----------
+    keyframes: dict
+        Keyframe data containing timestamps and values to form the spline
+        curve. Data should be on the following format:
+        >>> {1: {'value': np.array([...])}, 2: {'value': np.array([...])}}
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+
+    """
     if len(keyframes) < (degree + 1):
         raise ValueError(f"Minimum {degree + 1} "
                          f"keyframes must be set in order to use "
@@ -33,10 +52,49 @@ def spline_interpolator(keyframes, degree):
 
 
 def cubic_spline_interpolator(keyframes):
+    """Cubic spline interpolator for keyframes.
+
+    This is a general cubic spline interpolator to be used for any shape of
+    keyframes data.
+
+    Parameters
+    ----------
+    keyframes: dict
+        Keyframe data containing timestamps and values to form the cubic spline
+        curve.
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+
+    See Also
+    --------
+    spline_interpolator
+
+    """
     return spline_interpolator(keyframes, degree=3)
 
 
 def step_interpolator(keyframes):
+    """Step interpolator for keyframes.
+
+    This is a simple step interpolator to be used for any shape of
+    keyframes data.
+
+    Parameters
+    ----------
+    keyframes: dict
+        Keyframe data containing timestamps and values to form the spline
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+    """
+
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     def interpolate(t):
@@ -47,6 +105,22 @@ def step_interpolator(keyframes):
 
 
 def linear_interpolator(keyframes):
+    """Linear interpolator for keyframes.
+
+    This is a general linear interpolator to be used for any shape of
+    keyframes data.
+
+    Parameters
+    ----------
+    keyframes: dict
+        Keyframe data to be linearly interpolated.
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
     is_single = len(keyframes) == 1
 
@@ -64,6 +138,28 @@ def linear_interpolator(keyframes):
 
 
 def cubic_bezier_interpolator(keyframes):
+    """Cubic Bézier interpolator for keyframes.
+
+    This is a general cubic Bézier interpolator to be used for any shape of
+    keyframes data.
+
+    Parameters
+    ----------
+    keyframes : dict
+        Keyframes to be interpolated at any time.
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+
+    Notes
+    -----
+    If no control points are set in the keyframes, The cubic
+    Bézier interpolator will almost behave as a linear interpolator.
+    """
+
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     for ts in timestamps:
@@ -93,6 +189,26 @@ def cubic_bezier_interpolator(keyframes):
 
 
 def slerp(keyframes):
+    """Spherical based rotation keyframes interpolator.
+
+    A rotation interpolator to be used for rotation keyframes.
+
+    Parameters
+    ----------
+    keyframes : dict
+        Rotation keyframes to be interpolated at any time.
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+
+    Notes
+    -----
+    Rotation keyframes must be in the form of quaternions.
+
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     quat_rots = []
@@ -113,6 +229,28 @@ def slerp(keyframes):
 
 
 def color_interpolator(keyframes, rgb2space, space2rgb):
+    """Custom-space color interpolator.
+
+    Interpolate values linearly inside a custom color space.
+
+    Parameters
+    ----------
+    keyframes : dict
+        Rotation keyframes to be interpolated at any time.
+    rgb2space: function
+        A functions that takes color value in rgb and returns that color
+         converted to the targeted space.
+    space2rgb: function
+        A functions that takes color value in the targeted space and returns
+        that color in rgb space.
+
+    Returns
+    -------
+    function
+        The interpolation function that takes time and returns interpolated
+        value at that time.
+
+    """
     timestamps = get_timestamps_from_keyframes(keyframes)
     space_keyframes = {}
     is_single = len(keyframes) == 1
@@ -134,15 +272,30 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
 
 
 def hsv_color_interpolator(keyframes):
-    """HSV interpolator for color keyframes """
+    """HSV interpolator for color keyframes
+
+    See Also
+    --------
+    color_interpolator
+    """
     return color_interpolator(keyframes, rgb2hsv, hsv2rgb)
 
 
 def lab_color_interpolator(keyframes):
-    """LAB interpolator for color keyframes """
+    """LAB interpolator for color keyframes
+
+    See Also
+    --------
+    color_interpolator
+    """
     return color_interpolator(keyframes, rgb2lab, lab2rgb)
 
 
 def xyz_color_interpolator(keyframes):
-    """XYZ interpolator for color keyframes """
+    """XYZ interpolator for color keyframes
+    
+    See Also
+    --------
+    color_interpolator
+    """
     return color_interpolator(keyframes, rgb2xyz, xyz2rgb)
