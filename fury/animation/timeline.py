@@ -282,12 +282,15 @@ class Timeline(Container):
         self.set_keyframe(attrib, timestamp, value, is_camera=True, **kwargs)
 
     def is_inside_scene_at(self, timestamp):
-        if self._remove_from_scene_time is not None and \
-                timestamp >= self._remove_from_scene_time:
-            return False
-        elif timestamp >= self._add_to_scene_time:
-            return True
-        return False
+        parent = self.parent_timeline
+        parent_in_scene = True
+        if parent is not None:
+            parent_in_scene = parent._added_to_scene
+
+        if self.is_interpolatable('in_scene'):
+            return parent_in_scene and self.get_value('in_scene', timestamp)
+
+        return parent_in_scene
 
     def add_to_scene_at(self, timestamp):
         """Set timestamp for adding Timeline to scene event.
@@ -297,7 +300,11 @@ class Timeline(Container):
         timestamp: float
             Timestamp of the event.
         """
-        self._add_to_scene_time = timestamp
+        if not self.is_interpolatable('in_scene'):
+            self.set_keyframe('in_scene', timestamp, True)
+            self.set_interpolator('in_scene', step_interpolator)
+        else:
+            self.set_keyframe('in_scene', timestamp, True)
 
     def remove_from_scene_at(self, timestamp):
         """Set timestamp for removing Timeline to scene event.
@@ -307,14 +314,19 @@ class Timeline(Container):
         timestamp: float
             Timestamp of the event.
         """
-        self._remove_from_scene_time = timestamp
+        if not self.is_interpolatable('in_scene'):
+            self.set_keyframe('in_scene', timestamp, False)
+            self.set_interpolator('in_scene', step_interpolator)
+        else:
+            self.set_keyframe('in_scene', timestamp, False)
 
-    def handle_scene_event(self, in_scene):
+    def handle_scene_event(self, timestamp):
+        should_be_in_scene = self.is_inside_scene_at(timestamp)
         if self._scene is not None:
-            if in_scene and not self._added_to_scene:
+            if should_be_in_scene and not self._added_to_scene:
                 super(Timeline, self).add_to_scene(self._scene)
                 self._added_to_scene = True
-            elif not in_scene and self._added_to_scene:
+            elif not should_be_in_scene and self._added_to_scene:
                 super(Timeline, self).remove_from_scene(self._scene)
                 self._added_to_scene = False
 
@@ -1120,7 +1132,7 @@ class Timeline(Container):
             super(Timeline, self).add(actor)
 
     @property
-    def parent_timeline(self):
+    def parent_timeline(self) -> 'Timeline':
         return self._parent_timeline
 
     @property
@@ -1186,7 +1198,7 @@ class Timeline(Container):
         """Removes all actors from the Timeline"""
         self.clear()
 
-    def update_animation(self, t=None, force=False, _in_scene=None):
+    def update_animation(self, t=None, force=False):
         """Updates the timeline animations
         
         Parameters
@@ -1214,9 +1226,7 @@ class Timeline(Container):
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(t)
-        if _in_scene is not None:
-            in_scene = _in_scene and in_scene
-        self.handle_scene_event(in_scene)
+        self.handle_scene_event(t)
 
         if self.playing or force:
             if self._camera is not None:
@@ -1280,7 +1290,7 @@ class Timeline(Container):
                         act.vcolors[:] = color * 255
                         utils.update_actor(act)
                 # Also update all child Timelines.
-            [tl.update_animation(t, force=True, _in_scene=in_scene)
+            [tl.update_animation(t, force=True)
              for tl in self.timelines]
             # update clipping range
             if self.parent_timeline is None and self._scene:
