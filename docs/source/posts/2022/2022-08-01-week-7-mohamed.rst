@@ -1,5 +1,5 @@
 Week 7: Billboard spheres and implementing interpolators using closures
-==========================================================
+=======================================================================
 
 .. post:: August 1 2022
    :author: Mohamed Abouagour
@@ -16,7 +16,7 @@ What did you do this week?
 
 - Fixed rotation issue that Shivam discovered while using the ``Timeline`` to animate glTF models. So, rotation in VTK is done by rotating first around Z-axis, then X-axis, then finally around Y-axis, which was not the order I was using to convert from quaternions to Euler degrees.
 
-- Made changes requested by Javier and Filibi on the billboards using geometry shader `PR`_, and made an example of how to use this billboard to show an impostor sphere which looks almost like a real high poly sphere. Also benchmarked using this version of billboard vs using a quad-based billboard, and how they both affect the FPS of the animation.
+- Made changes requested by Javier and Filipi on the billboards using geometry shader `PR`_, and made an example of how to use this billboard to show an impostor sphere which looks almost like a real high poly sphere. Also benchmarked using this version of billboard vs using a quad-based billboard, and how they both affect the FPS of the animation.
 
     .. raw:: html
 
