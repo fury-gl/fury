@@ -293,7 +293,7 @@ def lab_color_interpolator(keyframes):
 
 def xyz_color_interpolator(keyframes):
     """XYZ interpolator for color keyframes
-    
+
     See Also
     --------
     color_interpolator

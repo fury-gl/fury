@@ -53,12 +53,12 @@ def scale_eval(t):
 
 ###############################################################################
 # Setting evaluator functions is the same as setting interpolators, but with
-# one extra argument: `time_only=True` since these functions does not need
+# one extra argument: `is_evaluator=True` since these functions does not need
 # keyframes as input.
-timeline.set_position_interpolator(pos_eval, time_only=True)
-timeline.set_rotation_interpolator(rotation_eval, time_only=True)
-timeline.set_color_interpolator(color_eval, time_only=True)
-timeline.set_interpolator('scale', scale_eval, time_only=True)
+timeline.set_position_interpolator(pos_eval, is_evaluator=True)
+timeline.set_rotation_interpolator(rotation_eval, is_evaluator=True)
+timeline.set_color_interpolator(color_eval, is_evaluator=True)
+timeline.set_interpolator('scale', scale_eval, is_evaluator=True)
 
 ###############################################################################
 # Main timeline to control all the timelines.
