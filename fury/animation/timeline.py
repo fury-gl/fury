@@ -430,7 +430,7 @@ class Timeline(Container):
         data = self._camera_data if is_camera else self._data
         return attrib in data
 
-    def set_camera_interpolator(self, attrib, interpolator, 
+    def set_camera_interpolator(self, attrib, interpolator,
                                 is_evaluator=False):
         """Set the interpolator for a specific camera property.
 
@@ -516,7 +516,7 @@ class Timeline(Container):
         ---------
         >>> Timeline.set_rotation_interpolator(slerp)
         """
-        self.set_interpolator('rotation', interpolator, 
+        self.set_interpolator('rotation', interpolator,
                               is_evaluator=is_evaluator)
 
     def set_color_interpolator(self, interpolator, is_evaluator=False):
@@ -553,7 +553,7 @@ class Timeline(Container):
         ---------
         >>> Timeline.set_opacity_interpolator(step_interpolator)
         """
-        self.set_interpolator('opacity', interpolator, 
+        self.set_interpolator('opacity', interpolator,
                               is_evaluator=is_evaluator)
 
     def set_camera_position_interpolator(self, interpolator, is_evaluator=False):
@@ -1200,7 +1200,7 @@ class Timeline(Container):
 
     def update_animation(self, t=None, force=False):
         """Updates the timeline animations
-        
+
         Parameters
         ----------
         t: float or int, optional, default: None
@@ -1209,7 +1209,7 @@ class Timeline(Container):
         force: bool, optional, default: False
             If 'True', the animation will be updating even if the `Timeline` is
             paused or stopped.
-         
+
         """
         if t is None:
             t = self.current_timestamp
