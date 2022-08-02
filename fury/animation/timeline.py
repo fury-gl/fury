@@ -1187,7 +1187,18 @@ class Timeline(Container):
         self.clear()
 
     def update_animation(self, t=None, force=False, _in_scene=None):
-        """Updates the timeline animations"""
+        """Updates the timeline animations
+        
+        Parameters
+        ----------
+        t: float or int, optional, default: None
+            Time to update animation at, if `None`, current time of the
+            `Timeline` will be used.
+        force: bool, optional, default: False
+            If 'True', the animation will be updating even if the `Timeline` is
+            paused or stopped.
+         
+        """
         if t is None:
             t = self.current_timestamp
             if t > self._final_timestamp:
@@ -1453,9 +1464,16 @@ class Timeline(Container):
 
     @property
     def has_playback_panel(self):
+        """Returns whether the `Timeline` has a playback panel.
+
+        Returns
+        -------
+        bool: 'True' if the `Timeline` has a playback panel. otherwise, 'False'
+        """
         return self.playback_panel is not None
 
     def add_to_scene(self, ren):
+        """Add Timeline and all actors and sub Timelines to the scene"""
         super(Timeline, self).add_to_scene(ren)
         [ren.add(static_act) for static_act in self._static_actors]
         [ren.add(timeline) for timeline in self.timelines]
