@@ -23,7 +23,7 @@ def spline_interpolator(keyframes, degree):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     """
@@ -66,7 +66,7 @@ def cubic_spline_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     See Also
@@ -91,7 +91,7 @@ def step_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
     """
 
@@ -118,7 +118,7 @@ def linear_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
     """
     timestamps = get_timestamps_from_keyframes(keyframes)
@@ -151,7 +151,7 @@ def cubic_bezier_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     Notes
@@ -201,7 +201,7 @@ def slerp(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     Notes
@@ -238,16 +238,16 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
     keyframes : dict
         Rotation keyframes to be interpolated at any time.
     rgb2space: function
-        A functions that takes color value in rgb and returns that color
+        A functions that take color value in rgb and return that color
          converted to the targeted space.
     space2rgb: function
-        A functions that takes color value in the targeted space and returns
+        A functions that take color value in the targeted space and returns
         that color in rgb space.
 
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     """
