@@ -3089,18 +3089,18 @@ class PolyLine(UI):
 
         Create a Polyline.
         """
-        line = Rectangle2D((self.line_width, self.line_width), position=self.points[0])
+        # line = Rectangle2D((.05, .05), position=self.points[0])
 
-        line.on_left_mouse_button_pressed = self.left_button_pressed
-        line.on_left_mouse_button_dragged = self.left_button_dragged
+        # line.on_left_mouse_button_pressed = self.left_button_pressed
+        # line.on_left_mouse_button_dragged = self.left_button_dragged
 
-        self.current_line = line
-        self.lines.append(line)
+        # self.current_line = line
+        # self.lines.append(line)
 
-        if len(self.points) > 2:
-            for point in self.points[1:]:
-                self.add_point(point)
-            self.lines.pop()
+        # if len(self.points) > 2:
+        #     for point in self.points[1:]:
+        #         self.add_point(point)
+        #     self.lines.pop()
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3115,7 +3115,7 @@ class PolyLine(UI):
 
         """
         self._scene = scene
-        scene.add(*self.lines)
+        # scene.add(*self.lines)
 
     def _get_size(self):
         pass
@@ -3128,7 +3128,7 @@ class PolyLine(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.lines[0].position = coords
+        # self.lines[0].position = coords
         # update other points
 
     def resize(self, size):
@@ -3166,7 +3166,8 @@ class PolyLine(UI):
         return vertices
 
     def add_point(self, point, interactive=False):
-        self.resize(np.asarray(point) - self.current_line.position)
+        if self.current_line:
+            self.resize(np.asarray(point) - self.current_line.position)
 
         new_line = Rectangle2D((self.line_width, self.line_width), position=point, color=self.color)
         new_line.on_left_mouse_button_pressed = self.left_button_pressed
@@ -3180,11 +3181,11 @@ class PolyLine(UI):
 
     @property
     def color(self):
-        color = self.current_line.color
-        return np.asarray(color)
+        return np.asarray(self._color)
 
     @color.setter
     def color(self, color):
+        self._color = color
         for line in self.lines:
             line.actor.GetProperty().SetColor(*color)
 
@@ -3386,6 +3387,8 @@ class DrawShape(UI):
 
         if self.shape_type == "polyline":
             vertices = self.shape.calculate_vertices()
+            if not vertices:
+                return
         else:
             vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
@@ -3744,6 +3747,8 @@ class DrawPanel(UI):
     def mouse_move(self, i_ren, _obj, element):
         if self.is_creating_polyline:
             current_line = self.current_shape.shape.current_line
+            if not current_line:
+                return
             if np.linalg.norm(self.clamp_mouse_position(i_ren.event.position)
                               - self.current_shape.shape.lines[0].position) < 10:
                 self.current_shape.shape.resize(
