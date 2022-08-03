@@ -217,15 +217,10 @@ class Timeline(Container):
 
         if update_interpolator:
             interp = attrib_data.get('interpolator')
-            interp_base = interp.get('base')
-            if interp_base is not None:
-                interp_args = interp.get('args')
-                # try:
-                #     new_interp = interp_base(keyframes, **interp_args)
-                # except AttributeError:
-                #     new_interp = linear_interpolator(keyframes)
-                new_interp = interp_base(keyframes, **interp_args)
-                interp['func'] = new_interp
+            interp_base = interp.get('base', linear_interpolator)
+            args = interp.get('args', {})
+            self.set_interpolator(linear_interpolator, attrib,
+                                  is_camera=is_camera, kwargs=args)
 
         if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
@@ -406,10 +401,12 @@ class Timeline(Container):
         else:
             interp_data['base'] = interpolator
             interp_data['args'] = kwargs
-            if not len(keyframes):
+            # Maintain interpolator base incase new keyframes are added.
+            if len(keyframes) == 0:
                 return
             new_interp = interpolator(keyframes, **kwargs)
             interp_data['func'] = new_interp
+
         # update motion path
         self.update_motion_path()
 
