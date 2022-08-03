@@ -1,10 +1,10 @@
 from itertools import combinations
+import numpy as np
 import numpy.testing as npt
 from fury.animation.interpolator import linear_interpolator, \
     step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
     spline_interpolator, hsv_color_interpolator, lab_color_interpolator, \
     xyz_color_interpolator, slerp
-from fury.testing import *
 
 
 def assert_not_equal(x, y):
