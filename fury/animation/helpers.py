@@ -11,7 +11,7 @@ def get_previous_timestamp(timestamps, current_time, include_last=False):
     current_time : float or int
         The time to get previous timestamp for.
     include_last: bool, optional, default: False
-        If 'True`, even the last timestamp will be considered a valid previous 
+        If `True`, even the last timestamp will be considered a valid previous
         timestamp.
 
     Returns
@@ -36,7 +36,7 @@ def get_next_timestamp(timestamps, current_time, include_first=False):
     current_time : float or int
         The time to get previous timestamp for.
     include_first: bool, optional, default: False
-        If 'True`, even the first timestamp will be considered a valid next 
+        If `True`, even the first timestamp will be considered a valid next
         timestamp.
 
     Returns
