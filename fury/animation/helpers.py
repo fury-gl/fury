@@ -2,7 +2,7 @@ import numpy as np
 
 
 def get_previous_timestamp(timestamps, current_time, include_last=False):
-    """Returns the maximum previous timestamp of a given time.
+    """Return the maximum previous timestamp of a given time.
 
     Parameters
     ----------
@@ -27,7 +27,7 @@ def get_previous_timestamp(timestamps, current_time, include_last=False):
 
 
 def get_next_timestamp(timestamps, current_time, include_first=False):
-    """Returns the minimum next timestamp of a given time.
+    """Return the minimum next timestamp of a given time.
 
     Parameters
     ----------
@@ -51,7 +51,7 @@ def get_next_timestamp(timestamps, current_time, include_first=False):
 
 
 def get_timestamps_from_keyframes(keyframes):
-    """Returns a sorted array of timestamps given dict of keyframes.
+    """Return a sorted array of timestamps given dict of keyframes.
 
     Parameters
     ----------
@@ -67,7 +67,7 @@ def get_timestamps_from_keyframes(keyframes):
 
 
 def get_values_from_keyframes(keyframes):
-    """Returns an array of keyframes values sorted using timestamps.
+    """Return an array of keyframes values sorted using timestamps.
 
     Parameters
     ----------
@@ -79,12 +79,12 @@ def get_values_from_keyframes(keyframes):
     ndarray
         Array of sorted values extracted from the keyframes.
     """
-    return np.asarray([keyframes.get(t).get('value') for t in
+    return np.asarray([keyframes.get(t, {}).get('value', None) for t in
                        sorted(keyframes.keys())])
 
 
 def get_time_tau(t, t0, t1):
-    """Returns a capped time tau between 0 and 1.
+    """Return a capped time tau between 0 and 1.
 
     Parameters
     ----------
@@ -104,7 +104,7 @@ def get_time_tau(t, t0, t1):
 
 
 def lerp(v0, v1, t0, t1, t):
-    """Returns a linearly interpolated value.
+    """Return a linearly interpolated value.
 
     Parameters
     ----------
@@ -131,8 +131,8 @@ def lerp(v0, v1, t0, t1, t):
     return dt * v + v0
 
 
-def get_distances(points):
-    """Returns a list of euclidean distances of a list of points or values.
+def euclidean_distances(points):
+    """Return a list of euclidean distances of a list of points or values.
 
     Parameters
     ----------
@@ -144,7 +144,4 @@ def get_distances(points):
     list
         A List of euclidean distance between each consecutive points or values.
     """
-    distances = []
-    for x, y in zip(points, points[1:]):
-        distances.append(np.linalg.norm(x - y))
-    return distances
+    return [np.linalg.norm(x - y) for x, y in zip(points, points[1:])]
