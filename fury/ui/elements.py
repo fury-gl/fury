@@ -3501,7 +3501,7 @@ class ColorPicker(UI):
         position : (float, float)
                 Coordinates (x, y) of the lower-left corner of the sqaure.
         """
-        super(ColorPicker, self).__init__(position)
+        super(ColorPicker, self).__init__()
         self.side = side
         self.pointer.position = self.ColorSelectionSquare.center
         self.position = position
