@@ -21,6 +21,7 @@ What did you do this week?
 
         <iframe id="player" type="text/html"   width="640" height="360" src="https://user-images.githubusercontent.com/74976752/182166133-585d06ef-55ff-48db-8ce7-98b377ebf8ec.mp4" frameborder="0"></iframe>
 
+Expected animation: `Interpolation Test Sample <https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/InterpolationTest>`_ 
 
 - Created functions to return a list of animation timelines and apply them to the main timeline for keyframe animations.
 
