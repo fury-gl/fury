@@ -215,6 +215,9 @@ def slerp(keyframes):
     for ts in timestamps:
         quat_rots.append(keyframes.get(ts).get('value'))
     rotations = transform.Rotation.from_quat(quat_rots)
+    # if only one keyframe specified, linear interpolator is used.
+    if len(timestamps) == 1:
+        return linear_interpolator(keyframes)
     slerp_interp = transform.Slerp(timestamps, rotations)
     min_t = timestamps[0]
     max_t = timestamps[-1]
