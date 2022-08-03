@@ -1356,7 +1356,7 @@ class ColorPicker(UI):
         return self.ColorSelectionSquare.actors + self.HueBar +\
             self.pointer.actors
 
-     def _add_to_scene(self, scene):
+    def _add_to_scene(self, scene):
           """Add all subcomponents or VTK props that compose this UI component.
 
           Parameters
