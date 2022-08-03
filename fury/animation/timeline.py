@@ -88,7 +88,7 @@ class Timeline(Container):
             self.add_actor(actors)
 
     def update_final_timestamp(self):
-        """Calculates and returns the final timestamp of all keyframes.
+        """Calculate and return the final timestamp of all keyframes.
 
         Returns
         -------
@@ -587,7 +587,7 @@ class Timeline(Container):
                                      is_evaluator=is_evaluator)
 
     def get_value(self, attrib, timestamp):
-        """Returns the value of an attribute at any given timestamp.
+        """Return the value of an attribute at any given timestamp.
 
         Parameters
         ----------
@@ -600,7 +600,7 @@ class Timeline(Container):
             get('func')(timestamp)
 
     def get_camera_value(self, attrib, timestamp):
-        """Returns the value of an attribute interpolated at any given
+        """Return the value of an attribute interpolated at any given
         timestamp.
 
         Parameters
@@ -797,7 +797,7 @@ class Timeline(Container):
         self.set_keyframes('opacity', keyframes)
 
     def get_position(self, t):
-        """Returns the interpolated position.
+        """Return the interpolated position.
 
         Parameters
         ----------
@@ -812,7 +812,7 @@ class Timeline(Container):
         return self.get_value('position', t)
 
     def get_rotation(self, t, as_quat=False):
-        """Returns the interpolated rotation.
+        """Return the interpolated rotation.
 
         Parameters
         ----------
@@ -840,7 +840,7 @@ class Timeline(Container):
                                              degrees=True).as_quat()
 
     def get_scale(self, t):
-        """Returns the interpolated scale.
+        """Return the interpolated scale.
 
         Parameters
         ----------
@@ -855,7 +855,7 @@ class Timeline(Container):
         return self.get_value('scale', t)
 
     def get_color(self, t):
-        """Returns the interpolated color.
+        """Return the interpolated color.
 
         Parameters
         ----------
@@ -870,7 +870,7 @@ class Timeline(Container):
         return self.get_value('color', t)
 
     def get_opacity(self, t):
-        """Returns the opacity value.
+        """Return the opacity value.
 
         Parameters
         ----------
@@ -885,7 +885,7 @@ class Timeline(Container):
         return self.get_value('opacity', t)
 
     def set_camera_position(self, timestamp, position, **kwargs):
-        """Sets the camera position keyframe.
+        """Set the camera position keyframe.
 
         Parameters
         ----------
@@ -897,7 +897,7 @@ class Timeline(Container):
         self.set_camera_keyframe('position', timestamp, position, **kwargs)
 
     def set_camera_focal(self, timestamp, position, **kwargs):
-        """Sets camera's focal position keyframe.
+        """Set camera's focal position keyframe.
 
         Parameters
         ----------
@@ -909,7 +909,7 @@ class Timeline(Container):
         self.set_camera_keyframe('focal', timestamp, position, **kwargs)
 
     def set_camera_view_up(self, timestamp, direction, **kwargs):
-        """Sets the camera view-up direction keyframe.
+        """Set the camera view-up direction keyframe.
 
         Parameters
         ----------
@@ -921,7 +921,7 @@ class Timeline(Container):
         self.set_camera_keyframe('view_up', timestamp, direction, **kwargs)
 
     def set_camera_rotation(self, timestamp, rotation, **kwargs):
-        """Sets the camera rotation keyframe.
+        """Set the camera rotation keyframe.
 
         Parameters
         ----------
@@ -992,7 +992,7 @@ class Timeline(Container):
         self.set_camera_keyframes('view_up', keyframes)
 
     def get_camera_position(self, t):
-        """Returns the interpolated camera position.
+        """Return the interpolated camera position.
 
         Parameters
         ----------
@@ -1012,7 +1012,7 @@ class Timeline(Container):
         return self.get_camera_value('position', t)
 
     def get_camera_focal(self, t):
-        """Returns the interpolated camera's focal position.
+        """Return the interpolated camera's focal position.
 
         Parameters
         ----------
@@ -1032,7 +1032,7 @@ class Timeline(Container):
         return self.get_camera_value('focal', t)
 
     def get_camera_view_up(self, t):
-        """Returns the interpolated camera's view-up directional vector.
+        """Return the interpolated camera's view-up directional vector.
 
         Parameters
         ----------
@@ -1052,7 +1052,7 @@ class Timeline(Container):
         return self.get_camera_value('view_up', t)
 
     def get_camera_rotation(self, t):
-        """Returns the interpolated rotation for the camera expressed
+        """Return the interpolated rotation for the camera expressed
         in euler angles.
 
         Parameters
@@ -1137,7 +1137,7 @@ class Timeline(Container):
 
     @property
     def actors(self):
-        """Returns a list of actors.
+        """Return a list of actors.
 
         Returns
         -------
@@ -1148,7 +1148,7 @@ class Timeline(Container):
 
     @property
     def timelines(self):
-        """Returns a list of child Timelines.
+        """Return a list of child Timelines.
 
         Returns
         -------
@@ -1158,7 +1158,7 @@ class Timeline(Container):
         return self._timelines
 
     def add_static_actor(self, actor):
-        """Adds an actor or list of actors as static actor/s which will not be
+        """Add an actor or list of actors as static actor/s which will not be
         controlled nor animated by the Timeline. All static actors will be
         added to the scene when the Timeline is added to the scene.
 
@@ -1171,7 +1171,7 @@ class Timeline(Container):
 
     @property
     def static_actors(self):
-        """Returns a list of static actors.
+        """Return a list of static actors.
 
         Returns
         -------
@@ -1181,11 +1181,11 @@ class Timeline(Container):
         return self._static_actors
 
     def remove_timelines(self):
-        """Removes all child Timelines from the Timeline"""
+        """Remove all child Timelines from the Timeline"""
         self._timelines.clear()
 
     def remove_actor(self, actor):
-        """Removes an actor from the Timeline.
+        """Remove an actor from the Timeline.
 
         Parameters
         ----------
@@ -1195,11 +1195,11 @@ class Timeline(Container):
         self._items.remove(actor)
 
     def remove_actors(self):
-        """Removes all actors from the Timeline"""
+        """Remove all actors from the Timeline"""
         self.clear()
 
     def update_animation(self, t=None, force=False):
-        """Updates the timeline animations
+        """Update the timeline animations
 
         Parameters
         ----------
@@ -1307,18 +1307,18 @@ class Timeline(Container):
             self._playing = True
 
     def pause(self):
-        """Pauses the animation"""
+        """Pause the animation"""
         self._last_timestamp = self.current_timestamp
         self._playing = False
 
     def stop(self):
-        """Stops the animation"""
+        """Stop the animation"""
         self._last_timestamp = 0
         self._playing = False
         self.update_animation(force=True)
 
     def restart(self):
-        """Restarts the animation"""
+        """Restart the animation"""
         self._last_timestamp = 0
         self._playing = True
         self.update_animation(force=True)
@@ -1328,7 +1328,7 @@ class Timeline(Container):
         """Get current timestamp of the Timeline.
 
         Returns
-        ----------
+        -------
         float
             The current time of the Timeline.
 
@@ -1355,7 +1355,7 @@ class Timeline(Container):
         """Get the final timestamp of the Timeline.
 
         Returns
-        ----------
+        -------
         float
             The final time of the Timeline.
 
@@ -1363,7 +1363,7 @@ class Timeline(Container):
         return self._final_timestamp
 
     def seek(self, timestamp):
-        """Sets the current timestamp of the Timeline.
+        """Set the current timestamp of the Timeline.
 
         Parameters
         ----------
@@ -1398,7 +1398,7 @@ class Timeline(Container):
 
     @property
     def playing(self):
-        """Returns whether the Timeline is playing.
+        """Return whether the Timeline is playing.
 
         Returns
         -------
@@ -1421,7 +1421,7 @@ class Timeline(Container):
 
     @property
     def stopped(self):
-        """Returns whether the Timeline is stopped.
+        """Return whether the Timeline is stopped.
 
         Returns
         -------
@@ -1433,7 +1433,7 @@ class Timeline(Container):
 
     @property
     def paused(self):
-        """Returns whether the Timeline is paused.
+        """Return whether the Timeline is paused.
 
         Returns
         -------
@@ -1446,7 +1446,7 @@ class Timeline(Container):
 
     @property
     def speed(self):
-        """Returns the speed of the timeline.
+        """Return the speed of the timeline.
 
         Returns
         -------
@@ -1474,7 +1474,7 @@ class Timeline(Container):
 
     @property
     def has_playback_panel(self):
-        """Returns whether the `Timeline` has a playback panel.
+        """Return whether the `Timeline` has a playback panel.
 
         Returns
         -------
