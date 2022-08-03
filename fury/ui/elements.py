@@ -3101,6 +3101,7 @@ class PolyLine(UI):
         #     for point in self.points[1:]:
         #         self.add_point(point)
         #     self.lines.pop()
+        pass
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3190,8 +3191,8 @@ class PolyLine(UI):
             line.actor.GetProperty().SetColor(*color)
 
     def left_button_pressed(self, i_ren, _obj, line):
-        # click_pos = np.array(i_ren.event.position)
-        # self._drag_offset = click_pos - self.position
+        click_pos = np.array(i_ren.event.position)
+        self._drag_offset = click_pos - self.position
         # i_ren.event.abort()  # Stop propagating the event.
         self.on_left_mouse_button_pressed(i_ren, _obj, line)
 
