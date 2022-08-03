@@ -219,8 +219,8 @@ class Timeline(Container):
             interp = attrib_data.get('interpolator')
             interp_base = interp.get('base', linear_interpolator)
             args = interp.get('args', {})
-            self.set_interpolator(linear_interpolator, attrib,
-                                  is_camera=is_camera, kwargs=args)
+            self.set_interpolator(attrib, interp_base,
+                                  is_camera=is_camera, **args)
 
         if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
