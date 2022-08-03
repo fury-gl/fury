@@ -3072,7 +3072,6 @@ class DrawShapeGroup:
         self.group_rotation_slider.set_visibility(False)
 
         def update_rotation(slider):
-            print("update rotation")
             angle = slider.value
             previous_angle = slider.previous_value
             rotation_angle = angle - previous_angle
