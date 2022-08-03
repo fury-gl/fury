@@ -17,7 +17,7 @@ def test_helper_functions():
     values = helpers.get_values_from_keyframes(keyframes)
     npt.assert_array_equal(values, np.array([i['value'] for i in
                                              keyframes.values()]))
-    distance = helpers.get_distances(values)
+    distance = helpers.euclidean_distances(values)
     expected_distances = np.array([1, 1])
     npt.assert_equal(distance, expected_distances)
 

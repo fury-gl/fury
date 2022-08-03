@@ -3,7 +3,7 @@ from scipy.interpolate import splprep, splev
 from scipy.spatial import transform
 from fury.colormap import rgb2hsv, hsv2rgb, rgb2lab, lab2rgb, xyz2rgb, rgb2xyz
 from fury.animation.helpers import get_previous_timestamp, get_next_timestamp,\
-    get_time_tau, get_timestamps_from_keyframes, get_distances,\
+    get_time_tau, get_timestamps_from_keyframes, euclidean_distances,\
     get_values_from_keyframes, lerp
 
 
@@ -34,7 +34,7 @@ def spline_interpolator(keyframes, degree):
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     values = get_values_from_keyframes(keyframes)
-    distances = get_distances(values)
+    distances = euclidean_distances(values)
     distances_sum = sum(distances)
     cumulative_dist_sum = np.cumsum([0] + distances)
     tck = splprep(values.T, k=degree, full_output=1, s=0)[0][0]
