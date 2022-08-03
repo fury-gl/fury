@@ -3,7 +3,8 @@ import warnings
 from collections import defaultdict
 from fury import utils, actor
 from fury.actor import Container
-from fury.animation.interpolator import *
+from fury.animation.interpolator import spline_interpolator, \
+    step_interpolator, linear_interpolator
 import numpy as np
 from scipy.spatial import transform
 from fury.ui.elements import PlaybackPanel
@@ -219,6 +220,10 @@ class Timeline(Container):
             interp_base = interp.get('base')
             if interp_base is not None:
                 interp_args = interp.get('args')
+                # try:
+                #     new_interp = interp_base(keyframes, **interp_args)
+                # except AttributeError:
+                #     new_interp = linear_interpolator(keyframes)
                 new_interp = interp_base(keyframes, **interp_args)
                 interp['func'] = new_interp
 
@@ -393,14 +398,16 @@ class Timeline(Container):
         """
 
         attrib_data = self._get_attribute_data(attrib, is_camera=is_camera)
-        keyframes = attrib_data.get('keyframes')
-        interp_data = attrib_data.get('interpolator')
+        keyframes = attrib_data.get('keyframes', {})
+        interp_data = attrib_data.get('interpolator', {})
         if is_evaluator:
             interp_data['base'] = None
             interp_data['func'] = interpolator
         else:
             interp_data['base'] = interpolator
             interp_data['args'] = kwargs
+            if not len(keyframes):
+                return
             new_interp = interpolator(keyframes, **kwargs)
             interp_data['func'] = new_interp
         # update motion path
@@ -428,7 +435,7 @@ class Timeline(Container):
 
         """
         data = self._camera_data if is_camera else self._data
-        return attrib in data
+        return bool(data.get(attrib, {}).get('interpolator', {}).get('func'))
 
     def set_camera_interpolator(self, attrib, interpolator,
                                 is_evaluator=False):
@@ -556,7 +563,8 @@ class Timeline(Container):
         self.set_interpolator('opacity', interpolator,
                               is_evaluator=is_evaluator)
 
-    def set_camera_position_interpolator(self, interpolator, is_evaluator=False):
+    def set_camera_position_interpolator(self, interpolator,
+                                         is_evaluator=False):
         """Set the camera position interpolator.
 
         Parameters
@@ -596,7 +604,7 @@ class Timeline(Container):
         timestamp: float
             The timestamp to interpolate at.
         """
-        return self._data.get(attrib).get('interpolator').\
+        return self._data.get(attrib).get('interpolator'). \
             get('func')(timestamp)
 
     def get_camera_value(self, attrib, timestamp):
@@ -611,7 +619,7 @@ class Timeline(Container):
             The timestamp to interpolate at.
 
         """
-        return self._camera_data.get(attrib).get('interpolator').\
+        return self._camera_data.get(attrib).get('interpolator'). \
             get('func')(timestamp)
 
     def set_position(self, timestamp, position, **kwargs):
@@ -1268,7 +1276,7 @@ class Timeline(Container):
             if in_scene:
                 if self.is_interpolatable('position'):
                     position = self.get_position(t)
-                    self.SetPosition(position)
+                    [act.SetPosition(position) for act in self.actors]
 
                 if self.is_interpolatable('scale'):
                     scale = self.get_scale(t)
