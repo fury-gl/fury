@@ -3,7 +3,7 @@ from scipy.interpolate import splprep, splev
 from scipy.spatial import transform
 from fury.colormap import rgb2hsv, hsv2rgb, rgb2lab, lab2rgb, xyz2rgb, rgb2xyz
 from fury.animation.helpers import get_previous_timestamp, get_next_timestamp,\
-    get_time_tau, get_timestamps_from_keyframes, get_distances,\
+    get_time_tau, get_timestamps_from_keyframes, euclidean_distances,\
     get_values_from_keyframes, lerp
 
 
@@ -23,7 +23,7 @@ def spline_interpolator(keyframes, degree):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     """
@@ -34,7 +34,7 @@ def spline_interpolator(keyframes, degree):
     timestamps = get_timestamps_from_keyframes(keyframes)
 
     values = get_values_from_keyframes(keyframes)
-    distances = get_distances(values)
+    distances = euclidean_distances(values)
     distances_sum = sum(distances)
     cumulative_dist_sum = np.cumsum([0] + distances)
     tck = splprep(values.T, k=degree, full_output=1, s=0)[0][0]
@@ -66,7 +66,7 @@ def cubic_spline_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     See Also
@@ -91,7 +91,7 @@ def step_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
     """
 
@@ -118,7 +118,7 @@ def linear_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
     """
     timestamps = get_timestamps_from_keyframes(keyframes)
@@ -151,7 +151,7 @@ def cubic_bezier_interpolator(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     Notes
@@ -201,7 +201,7 @@ def slerp(keyframes):
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     Notes
@@ -215,6 +215,9 @@ def slerp(keyframes):
     for ts in timestamps:
         quat_rots.append(keyframes.get(ts).get('value'))
     rotations = transform.Rotation.from_quat(quat_rots)
+    # if only one keyframe specified, linear interpolator is used.
+    if len(timestamps) == 1:
+        return linear_interpolator(keyframes)
     slerp_interp = transform.Slerp(timestamps, rotations)
     min_t = timestamps[0]
     max_t = timestamps[-1]
@@ -238,16 +241,16 @@ def color_interpolator(keyframes, rgb2space, space2rgb):
     keyframes : dict
         Rotation keyframes to be interpolated at any time.
     rgb2space: function
-        A functions that takes color value in rgb and returns that color
+        A functions that take color value in rgb and return that color
          converted to the targeted space.
     space2rgb: function
-        A functions that takes color value in the targeted space and returns
+        A functions that take color value in the targeted space and returns
         that color in rgb space.
 
     Returns
     -------
     function
-        The interpolation function that takes time and returns interpolated
+        The interpolation function that take time and return interpolated
         value at that time.
 
     """

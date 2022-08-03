@@ -1,6 +1,7 @@
+import numpy as np
 import numpy.testing as npt
 import fury.animation.helpers as helpers
-from fury.testing import *
+import fury.testing as ft
 
 
 def test_helper_functions():
@@ -17,7 +18,7 @@ def test_helper_functions():
     values = helpers.get_values_from_keyframes(keyframes)
     npt.assert_array_equal(values, np.array([i['value'] for i in
                                              keyframes.values()]))
-    distance = helpers.get_distances(values)
+    distance = helpers.euclidean_distances(values)
     expected_distances = np.array([1, 1])
     npt.assert_equal(distance, expected_distances)
 
@@ -35,21 +36,21 @@ def test_helper_functions():
                                                    include_last=True)
         npt.assert_(prev_ts_2 in timestamps, "Timestamp is not valid")
 
-        assert_greater(next_ts, prev_ts)
-        assert_greater_equal(next_ts, prev_ts_2)
-        assert_greater_equal(next_ts_2, prev_ts_2)
-        assert_greater_equal(next_ts, prev_ts_2)
-        assert_not_equal(next_ts, prev_ts)
+        ft.assert_greater(next_ts, prev_ts)
+        ft.assert_greater_equal(next_ts, prev_ts_2)
+        ft.assert_greater_equal(next_ts_2, prev_ts_2)
+        ft.assert_greater_equal(next_ts, prev_ts_2)
+        ft.assert_not_equal(next_ts, prev_ts)
 
         for i in range(-100, 100, 1):
             i /= 10
             tt = helpers.get_time_tau(i, prev_ts, next_ts)
-            assert_greater_equal(tt, 0)
-            assert_less_equal(tt, 1)
+            ft.assert_greater_equal(tt, 0)
+            ft.assert_less_equal(tt, 1)
 
             # lerp
             v1 = keyframes.get(prev_ts).get('value')
             v2 = keyframes.get(next_ts).get('value')
 
             interp_value = helpers.lerp(v1, v2, prev_ts, next_ts, i)
-            assert_arrays_equal(tt * (v2-v1) + v1, interp_value)
+            ft.assert_arrays_equal(tt * (v2-v1) + v1, interp_value)

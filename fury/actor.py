@@ -2613,21 +2613,21 @@ class Container(object):
         self.layout.apply(self._items)
         self._need_update = False
 
-    def add_to_scene(self, ren):
+    def add_to_scene(self, scene):
         """ Adds the items of this container to a given scene. """
         for item in self.items:
             if isinstance(item, Container):
-                item.add_to_scene(ren)
+                item.add_to_scene(scene)
             else:
-                ren.add(item)
+                scene.add(item)
 
-    def remove_from_scene(self, ren):
+    def remove_from_scene(self, scene):
         """ Removes the items of this container from a given scene. """
         for item in self.items:
             if isinstance(item, Container):
-                item.remove_from_scene(ren)
+                item.remove_from_scene(scene)
             else:
-                ren.rm(item)
+                scene.rm(item)
 
     def GetBounds(self):
         """ Get the bounds of the container. """

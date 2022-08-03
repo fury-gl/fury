@@ -1,11 +1,12 @@
 import time
+import numpy as np
 import numpy.testing as npt
 from fury import actor
 from fury.animation.interpolator import linear_interpolator, \
     step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
     spline_interpolator
 from fury.animation.timeline import Timeline
-from fury.testing import *
+import fury.testing as ft
 from fury.ui import PlaybackPanel
 
 
@@ -35,14 +36,14 @@ def test_timeline():
     tl.set_color(0, np.array([1, 0, 1]))
 
     # test playback panel
-    assert_true(isinstance(tl.playback_panel, PlaybackPanel))
+    ft.assert_true(isinstance(tl.playback_panel, PlaybackPanel))
 
     for t in [-10, 0, 2.2, 7, 100]:
         tl.seek(t)
-        assert_less_equal(tl.current_timestamp, tl.final_timestamp)
-        assert_greater_equal(tl.current_timestamp, 0)
+        ft.assert_less_equal(tl.current_timestamp, tl.final_timestamp)
+        ft.assert_greater_equal(tl.current_timestamp, 0)
 
-        assert_greater_equal(tl.current_timestamp,
+        ft.assert_greater_equal(tl.current_timestamp,
                              tl.playback_panel.current_time)
 
         if 0 <= t <= tl.final_timestamp:
@@ -55,16 +56,16 @@ def test_timeline():
     t_before = tl.current_timestamp
     time.sleep(0.1)
     assert_not_equal(tl.current_timestamp, t_before)
-    assert_true(tl.playing)
+    ft.assert_true(tl.playing)
 
     tl.pause()
     t_before = tl.current_timestamp
-    assert_true(tl.paused)
+    ft.assert_true(tl.paused)
     time.sleep(0.1)
     npt.assert_almost_equal(tl.current_timestamp, t_before)
 
     tl.stop()
-    assert_true(tl.stopped)
+    ft.assert_true(tl.stopped)
     npt.assert_almost_equal(tl.current_timestamp, 0)
 
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
