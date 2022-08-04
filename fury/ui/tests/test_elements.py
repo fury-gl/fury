@@ -474,10 +474,11 @@ def test_ui_range_slider(interactive=False):
 
 def test_ui_slider_value_range(interactive=False):
     sliders = []
-    sliders.append(ui.LineSlider2D(min_value=0, max_value=0, center=(200, 450)))
-    sliders.append(ui.LineDoubleSlider2D(min_value=0, max_value=0, center=(200, 200)))
-    sliders.append(ui.RingSlider2D(min_value=0, max_value=0, center=(200, 300)))
-    sliders.append(ui.RangeSlider(min_value=0, max_value=0))
+    with npt.assert_no_warnings():
+        sliders.append(ui.LineSlider2D(min_value=0, max_value=0, center=(200, 450)))
+        sliders.append(ui.LineDoubleSlider2D(min_value=0, max_value=0, center=(200, 200)))
+        sliders.append(ui.RingSlider2D(min_value=0, max_value=0, center=(200, 300)))
+        sliders.append(ui.RangeSlider(min_value=0, max_value=0))
 
     current_size = (600, 600)
     show_manager = window.ShowManager(size=current_size,
