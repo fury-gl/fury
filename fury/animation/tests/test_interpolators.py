@@ -40,6 +40,22 @@ def test_step_interpolator():
         npt.assert_equal(interpolator(ts),
                          data.get(ts).get('value'))
 
+    interp = step_interpolator({})
+    try:
+        interp(1)
+        raise "This shouldn't work since no keyframes were provided!"
+    except IndexError:
+        ...
+
+    data = {1: {'value': np.array([1, 2, 3])}}
+    interp = step_interpolator(data)
+    npt.assert_equal(interp(-100), np.array([1, 2, 3]))
+    npt.assert_equal(interp(100), np.array([1, 2, 3]))
+
+    data = {1: {'value': None}}
+    interp = step_interpolator(data)
+    npt.assert_equal(interp(-100), None)
+
 
 def test_linear_interpolator():
     data = {1: {'value': np.array([1, 2, 3])},
@@ -69,6 +85,26 @@ def test_linear_interpolator():
     npt.assert_equal(interpolator(-999), pos_initial)
     npt.assert_equal(interpolator(999), pos_final)
 
+    interp = linear_interpolator({})
+    try:
+        interp(1)
+        raise "This shouldn't work since no keyframes were provided!"
+    except IndexError:
+        ...
+
+    data = {1: {'value': np.array([1, 2, 3])}}
+    interp = linear_interpolator(data)
+    npt.assert_equal(interp(-100), np.array([1, 2, 3]))
+    npt.assert_equal(interp(100), np.array([1, 2, 3]))
+
+    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    interp = linear_interpolator(data)
+    try:
+        interp(1)
+        raise "This shouldn't work since invalid keyframes were provided!"
+    except TypeError:
+        ...
+
 
 def test_cubic_spline_interpolator():
     data = {1: {'value': np.array([1, 2, 3])},
@@ -95,6 +131,20 @@ def test_cubic_spline_interpolator():
     # test when time exceeds or precedes the interpolation range
     npt.assert_almost_equal(interpolator(-999), pos_initial)
     npt.assert_almost_equal(interpolator(999), pos_final)
+
+    try:
+        cubic_spline_interpolator({})
+        raise "At least 4 keyframes must be provided!"
+    except ValueError:
+        ...
+
+    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])},
+            3: {'value': None}, 4: {'value': None}}
+    try:
+        cubic_spline_interpolator(data)
+        raise "Interpolator should not work with invalid data!"
+    except TypeError:
+        ...
 
 
 def test_cubic_bezier_interpolator():
@@ -144,6 +194,27 @@ def test_cubic_bezier_interpolator():
     npt.assert_almost_equal(interp_1(999), pos_final)
     npt.assert_almost_equal(interp_2(999), pos_final)
 
+    interp = cubic_bezier_interpolator({})
+
+    try:
+        interp(1)
+        raise "This shouldn't work since no keyframes were provided!"
+    except IndexError:
+        ...
+
+    data = {1: {'value': np.array([1, 2, 3])}}
+    interp = cubic_bezier_interpolator(data)
+    npt.assert_equal(interp(-10), np.array([1, 2, 3]))
+    npt.assert_equal(interp(100), np.array([1, 2, 3]))
+
+    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    interp = cubic_bezier_interpolator(data)
+    try:
+        interp(1)
+        raise "This shouldn't work since no keyframes were provided!"
+    except TypeError:
+        ...
+
 
 def test_n_spline_interpolator():
     data = {i: {'value': np.random.random(3) * 10} for i in range(10)}
@@ -157,6 +228,19 @@ def test_n_spline_interpolator():
             npt.assert_almost_equal(i(t), data.get(t).get('value'))
         for t in range(-100, 100, 1):
             i(t / 10)
+    try:
+        spline_interpolator({}, 5)
+        raise "At least 6 keyframes must be provided!"
+    except ValueError:
+        ...
+
+    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])},
+            3: {'value': None}, 4: {'value': None}}
+    try:
+        spline_interpolator(data, 2)
+        raise "Interpolator should not work with invalid data!"
+    except TypeError:
+        ...
 
 
 def test_color_interpolators():
@@ -184,6 +268,33 @@ def test_color_interpolators():
             timestamp /= 100
             assert_not_equal(interps[0](timestamp),
                              interps[1](timestamp))
+        color_interps_functions = [
+            hsv_color_interpolator,
+            linear_interpolator,
+            lab_color_interpolator,
+            xyz_color_interpolator,
+        ]
+        for interpolator in color_interps_functions:
+            interp = interpolator({})
+            try:
+                interp(1)
+                raise "This shouldn't work since no keyframes were provided!"
+            except IndexError:
+                ...
+
+            data = {1: {'value': np.array([1, 2, 3])}}
+            interp = interpolator(data)
+            npt.assert_equal(interp(-10), np.array([1, 2, 3]))
+            npt.assert_equal(interp(10), np.array([1, 2, 3]))
+
+            data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+            try:
+                interpolator(data)
+                raise "This shouldn't work since invalid keyframes " \
+                      "were provided! and hence cant be converted to " \
+                      "targeted color space."
+            except (TypeError, AttributeError,):
+                ...
 
 
 def test_slerp():
@@ -208,3 +319,23 @@ def test_slerp():
     for timestamp in range(-100, 100, 1):
         timestamp /= 10
         interp_slerp(timestamp)
+
+    try:
+        interp = slerp({})
+        interp(1)
+        raise "This shouldn't work since no keyframes were provided!"
+    except ValueError:
+        ...
+
+    data = {1: {'value': np.array([1, 2, 3, 1])}}
+    interp = slerp(data)
+    npt.assert_equal(interp(-100), np.array([1, 2, 3, 1]))
+    npt.assert_equal(interp(100), np.array([1, 2, 3, 1]))
+
+    data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])}}
+    try:
+        interp = slerp(data)
+        interp(1)
+        raise "This shouldn't work since invalid keyframes were provided!"
+    except ValueError:
+        ...
