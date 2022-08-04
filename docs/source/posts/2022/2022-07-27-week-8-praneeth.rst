@@ -25,6 +25,7 @@ I had to look for some ways by which we could make the icons look smoother. For 
 Did you get stuck anywhere?
 ---------------------------
 It took some time to get settled with all the things as my college reopened.
+I was trying to use shaders with the UI elements to implement the freehand drawing, but then my mentors suggested me to look more into the tracer widget in the VTK.
 
 What is coming up next?
 -----------------------
