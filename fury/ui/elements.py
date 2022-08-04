@@ -20,6 +20,8 @@ from fury.ui.helpers import TWO_PI, clip_overflow
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
+# this line was changed
+from fury.lib import ScalarBarActor, LookupTable, UnsignedCharArray, VTK_VERSION
 
 
 class TextBox2D(UI):
@@ -3492,7 +3494,7 @@ class ColorPicker(UI):
         a square that selects the saturation and value for the selected hue.
     """
 
-    def __init__(self, side=100, position=(0, 0)):
+    def __init__(self, position=(0, 0)):
         """ Initialize the color picker.
         Parameters
         ----------
@@ -3501,8 +3503,8 @@ class ColorPicker(UI):
         position : (float, float)
                 Coordinates (x, y) of the lower-left corner of the sqaure.
         """
-        super(ColorPicker, self).__init__()
-        self.side = side
+        super(ColorPicker, self).__init__(position)
+        self.side = 100
         self.pointer.position = self.ColorSelectionSquare.center
         self.position = position
         self.current_hue = 0
@@ -3515,11 +3517,12 @@ class ColorPicker(UI):
         """ Setup this UI component.
         """
         # Setup the hue bar
-        self.HueBar = vtk.vtkScalarBarActor()
+        # this line was changed
+        self.HueBar = ScalarBarActor()
         self.HueBar.GetPositionCoordinate().SetCoordinateSystemToDisplay()
         self.HueBar.GetPosition2Coordinate().SetCoordinateSystemToDisplay()
         self.HueBar.SetNumberOfLabels(0)
-        hueLut = vtk.vtkLookupTable()
+        hueLut = LookupTable()  # this line was changed
         hueLut.SetTableRange(0, 1)
         hueLut.SetHueRange(0, 1)
         hueLut.SetSaturationRange(1, 1)
@@ -3529,7 +3532,7 @@ class ColorPicker(UI):
         self.add_callback(self.HueBar, "MouseMoveEvent",
                           self.hue_select_callback)
         # Setup colors for the square
-        colors = vtk.vtkUnsignedCharArray()
+        colors = UnsignedCharArray()  # this line was changed
         colors.SetNumberOfComponents(3)
         colors.SetName("Colors")
         colors.InsertNextTuple3(*self.hsv2rgb(0, 0, 0))
@@ -3540,8 +3543,8 @@ class ColorPicker(UI):
         self.ColorSelectionSquare = Rectangle2D()
         self.ColorSelectionSquare._polygonPolyData.GetPointData().\
             SetScalars(colors)
-        if VTK_MAJOR_VERSION <= 5:
-            self.ColorSelectionSquare._polygonPolyData.Update()
+        # if int(VTK_VERSION) <= 5:
+        # self.ColorSelectionSquare._polygonPolyData.Update()
         self.ColorSelectionSquare.on_left_mouse_button_dragged = \
             self.color_select_callback
         # Setup the circle pointer
@@ -3560,8 +3563,8 @@ class ColorPicker(UI):
         ----------
         scene : scene
         """
-        self.ColorSelectionSquare.add(scene)
-        self.pointer.add(scene)
+        self.ColorSelectionSquare._add_to_scene(scene)  # this line was changed
+        self.pointer._add_to_scene(scene)  # this line was changed
         scene.add(self.HueBar)
     # def _add_to_renderer(self, ren):
     #     """ Add all subcomponents or VTK props that compose this UI component.
@@ -3595,7 +3598,7 @@ class ColorPicker(UI):
 
     @current_hue.setter
     def current_hue(self, hue):
-        colors = vtk.vtkUnsignedCharArray()
+        colors = UnsignedCharArray()  # this line was changed
         colors.SetNumberOfComponents(3)
         colors.SetName("Colors")
         colors.InsertNextTuple3(*self.hsv2rgb(hue, 0, 0))
@@ -3604,8 +3607,8 @@ class ColorPicker(UI):
         colors.InsertNextTuple3(*self.hsv2rgb(hue, 0, 1))
         self.ColorSelectionSquare._polygonPolyData.GetPointData().\
             SetScalars(colors)
-        if VTK_MAJOR_VERSION <= 5:
-            self.ColorSelectionSquare._polygonPolyData.Update()
+        # if int(VTK_VERSION) <= 5:  # this line was changed
+        # self.ColorSelectionSquare._polygonPolyData.Update()
 
     def rgb2hsv(self, R, G, B):
         """ Function to convert given RGB value to HSV
