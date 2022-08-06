@@ -9,8 +9,8 @@ uniform mat4 MCVCMatrix;
 //out vec4 vertexColorGSOutput;
 in float scaleVSOutput[];
 out float scaleGSOutput;
-out vec3 center;
-out vec3 point;
+out vec3 centerGSOutput;
+out vec3 pointGSOutput;
 //VTK::Color::Dec
 //VTK::Normal::Dec
 //VTK::Light::Dec
