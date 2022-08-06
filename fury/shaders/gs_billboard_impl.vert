@@ -1,3 +1,3 @@
 gl_Position = vertexMC;
-v_scale = scale;
+scaleVSOutput = scale;
 return;

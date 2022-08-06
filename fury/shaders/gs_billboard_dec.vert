@@ -1,2 +1,2 @@
 in float scale;
-out float v_scale;
+out float scaleVSOutput;
