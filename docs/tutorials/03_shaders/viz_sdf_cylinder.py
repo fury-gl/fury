@@ -16,7 +16,8 @@ We start by importing the necessary modules:
 """
 
 from fury import actor, window
-from fury.shaders import compose_shader, shader_to_actor, attribute_to_actor, import_fury_shader
+from fury.shaders import compose_shader, shader_to_actor, attribute_to_actor,\
+    import_fury_shader
 
 import os
 import numpy as np
@@ -88,7 +89,8 @@ if interactive:
 window.record(scene, size=(600, 600), out_path='viz_poly_cylinder_geom.png')
 
 ###############################################################################
-# Then we clean the scene to render the boxes.
+# Then we clean the scene to render the boxes we will use to render our
+# SDF-based actors.
 
 scene.clear()
 
@@ -169,7 +171,7 @@ shader_to_actor(box_actor, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 # the program runs on each of the pixels that the object occupies on the
 # screen.
 #
-# Vertex shaders also allow us to have control over details of movement,
+# Fragment shaders also allow us to have control over details of movement,
 # lighting, and color in a scene. In this case, we are using vertex shader not
 # just to define the colors of the cylinders but to manipulate its position in
 # world space, rotation with respect to the box, and lighting of the scene.
@@ -211,10 +213,9 @@ sdf_map = \
         mat4 rot = vec2VecRotMat(normalize(directionVSOutput),
                                  normalize(vec3(0, 1, 0)));
 
-        // this allows us to accommodate more than one object in the world space
         vec3 pos = (rot * vec4(position - centerMCVSOutput, 0.0)).xyz;
 
-        // distance to the cylinder
+        // distance to the cylinder's boundary
         return sdCylinder(pos, radiusVSOutput, heightVSOutput / 2);
     }
     '''
@@ -285,7 +286,7 @@ shader_to_actor(box_actor, 'fragment', impl_code=sdf_cylinder_frag_impl,
                 block='light')
 
 ###############################################################################
-# Finally, we visualize the cylinders made using SDF
+# Finally, we visualize the cylinders made using ray marching and SDFs.
 
 scene.add(box_actor)
 
