@@ -8,7 +8,7 @@ vec3 rd = normalize(point - ro.xyz);
 // light direction is the front vector of the camera.
 vec3 lightDir = normalize(vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2][2]));
 //ro += vec4((point - ro.xyz),0.0);
-float d = sphIntersect(ro.xyz, rd, vec4(center, scale));
+float d = sphIntersect(ro.xyz, rd, center, scaleGSOutput);
 
 if(d!= -1){
     vec3 intersection = ro.xyz + rd * d;
