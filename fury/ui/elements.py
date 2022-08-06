@@ -3679,8 +3679,21 @@ class DrawPanel(UI):
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
 
+    def handle_keys(self, key, key_char):
+        mode_from_key = {
+            "s": "selection",
+            "l": "line",
+            "q": "quad",
+            "c": "circle",
+            "d": "delete",
+        }
+        if key.lower() in mode_from_key.keys():
+            self.current_mode = mode_from_key[key.lower()]
+
     def key_press(self, i_ren, _obj, _drawpanel):
+        self.handle_keys(i_ren.event.key, i_ren.event.key_char)
         self.key_status[i_ren.event.key] = True
+        i_ren.force_render()
 
     def key_release(self, i_ren, _obj, _drawpanel):
         # key = i_ren.event.key
