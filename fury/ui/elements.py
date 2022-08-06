@@ -874,7 +874,6 @@ class LineDoubleSlider2D(UI):
         self.handles[1].on_left_mouse_button_released = \
             self.handle_release_callback
 
-
     def _get_actors(self):
         """Get the actors composing this UI component."""
         return (self.track.actors + self.handles[0].actors +
@@ -2839,6 +2838,7 @@ class ListBoxItem2D(UI):
     def resize(self, size):
         self.background.resize(size)
 
+
 class FileMenu2D(UI):
     """A menu to select files in the current folder.
 
@@ -3186,7 +3186,8 @@ class DrawShape(UI):
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
         slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2, self.rotation_slider.size[1]/2]
+            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
+             self.rotation_slider.size[1]/2]
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(False)
 
