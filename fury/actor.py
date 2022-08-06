@@ -2361,8 +2361,12 @@ def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
                         decl_code=import_fury_shader('gs_billboard_dec.vert'),
                         block='prim_id')
 
+        fs_dec = compose_shader([import_fury_shader('gs_billboard_dec.frag'),
+                                 import_fury_shader('lighting/blinn_phong_mod'
+                                                    'el.frag'),
+                                 import_fury_shader('sdf/sph_intersect.frag')])
         shader_to_actor(bb_actor, 'fragment',
-                        decl_code=import_fury_shader('gs_billboard_dec.frag'),
+                        decl_code=fs_dec,
                         block='prim_id')
 
         attribute_to_actor(bb_actor, scales.flatten(), 'scale')
