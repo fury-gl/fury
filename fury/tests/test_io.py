@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 import pytest
+from PIL import Image
 
 from fury.decorators import skip_osx
 from fury.io import (load_cubemap_texture, load_polydata, save_polydata,
@@ -153,10 +154,36 @@ def test_pillow():
 
         for opt1, opt2 in [(True, True), (False, True), (True, False),
                            (False, False)]:
-            save_image(data, fname_path, use_pillow=opt1)
+            if not opt1:
+                with pytest.warns(UserWarning):
+                    save_image(data, fname_path, use_pillow=opt1)
+            else:
+                save_image(data, fname_path, use_pillow=opt1)
             data2 = load_image(fname_path, use_pillow=opt2)
             npt.assert_array_almost_equal(data, data2)
             npt.assert_equal(data.dtype, data2.dtype)
+
+        dpi_tolerance = 0.01
+
+        save_image(data, fname_path, use_pillow=True)
+        img_dpi = Image.open(fname_path).info.get('dpi')
+        assert abs(72 - img_dpi[0]) < dpi_tolerance
+        assert abs(72 - img_dpi[1]) < dpi_tolerance
+
+        save_image(data, fname_path, use_pillow=True, dpi=300)
+        img_dpi = Image.open(fname_path).info.get('dpi')
+        assert abs(300 - img_dpi[0]) < dpi_tolerance
+        assert abs(300 - img_dpi[1]) < dpi_tolerance
+
+        save_image(data, fname_path, use_pillow=True, dpi=(45, 45))
+        img_dpi = Image.open(fname_path).info.get('dpi')
+        assert abs(45 - img_dpi[0]) < dpi_tolerance
+        assert abs(45 - img_dpi[1]) < dpi_tolerance
+
+        save_image(data, fname_path, use_pillow=True, dpi=(300, 72))
+        img_dpi = Image.open(fname_path).info.get('dpi')
+        assert abs(300 - img_dpi[0]) < dpi_tolerance
+        assert abs(72 - img_dpi[1]) < dpi_tolerance
 
 
 def test_load_cubemap_texture():
