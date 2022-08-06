@@ -2373,37 +2373,38 @@ def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
         bb_actor.GetProperty().BackfaceCullingOff()
         bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
         return bb_actor
-    verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scales=scales)
+    else:
+        verts, faces = fp.prim_square()
+        res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                                  scales=scales)
 
-    big_verts, big_faces, big_colors, big_centers = res
+        big_verts, big_faces, big_colors, big_centers = res
 
-    prim_count = len(centers)
-    bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                        prim_count=prim_count)
-    bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    bb_actor.GetProperty().BackfaceCullingOff()
-    attribute_to_actor(bb_actor, big_centers, 'center')
+        prim_count = len(centers)
+        bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
+                                            prim_count=prim_count)
+        bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+        bb_actor.GetProperty().BackfaceCullingOff()
+        attribute_to_actor(bb_actor, big_centers, 'center')
 
-    vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
-                                  compose_shader(vs_dec)])
-    vs_impl_code = compose_shader([compose_shader(vs_impl) +
-                                   import_fury_shader('billboard_impl.vert')])
-    gs_code = compose_shader(gs_prog)
-    fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
-                                  compose_shader(fs_dec)])
-    fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
-                                   compose_shader(fs_impl)])
+        vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
+                                      compose_shader(vs_dec)])
+        vs_impl_code = compose_shader([compose_shader(vs_impl) +
+                                       import_fury_shader('billboard_impl.vert')])
+        gs_code = compose_shader(gs_prog)
+        fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
+                                      compose_shader(fs_dec)])
+        fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
+                                       compose_shader(fs_impl)])
 
-    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
-                    decl_code=vs_dec_code)
-    replace_shader_in_actor(bb_actor, 'geometry', gs_code)
-    shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
-                    block='light')
+        shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
+                        decl_code=vs_dec_code)
+        replace_shader_in_actor(bb_actor, 'geometry', gs_code)
+        shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
+        shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
+                        block='light')
 
-    return bb_actor
+        return bb_actor
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
