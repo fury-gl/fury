@@ -3433,8 +3433,7 @@ class DrawShape(UI):
             self.set_bb_box_visibility(True)
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
-            else:
-                self.drawpanel.shape_group.clear()
+            elif not self.drawpanel.shape_group.is_present(self):
                 self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
