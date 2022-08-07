@@ -3112,12 +3112,13 @@ class DrawShapeGroup:
         else:
             if self.is_empty():
                 shape.drawpanel.update_shape_selection(shape)
+                self.add_rotation_slider(self._scene)
+                self.group_rotation_slider.set_visibility(True)
             self.grouped_shapes.append(shape)
             shape.is_selected = True
             shape.rotation_slider.set_visibility(False)
 
             self.group_rotation_slider.center = shape.rotation_slider.center
-            self.group_rotation_slider.set_visibility(True)
 
         print(self.grouped_shapes)
 
@@ -3129,7 +3130,7 @@ class DrawShapeGroup:
     def clear(self):
         if self.is_empty():
             return
-        self.group_rotation_slider.set_visibility(False)
+        self._scene.rm(*self.group_rotation_slider.actors)
         for shape in self.grouped_shapes:
             shape.is_selected = False
         self.grouped_shapes = []
@@ -3148,6 +3149,7 @@ class DrawShapeGroup:
             shape.update_shape_position(shape.center + offset)
 
     def add_rotation_slider(self, scene):
+        self._scene = scene
         scene.add(self.group_rotation_slider)
 
 
