@@ -1,24 +1,27 @@
-from fury.shaders import shader_to_actor, import_fury_shader
+from fury.shaders import import_fury_shader, compose_shader
 import numpy as np
 from fury import window, actor, ui, utils
 import itertools
 
-centers = np.random.random([3000, 3]) * 50
+centers = np.random.random([3000, 3]) * 12
 colors = np.random.random([3000, 3])
 scales = np.random.random(3000)
 
 scene = window.Scene()
+
 showm = window.ShowManager(scene, size=(1000, 768))
 
-geom_squares = actor.billboard(centers, colors=colors, scales=scales,
-                               using_gs=True)
+fs_dec = compose_shader([import_fury_shader('lighting/blinn_phong_model.frag'),
+                         import_fury_shader('sdf/sph_intersect.frag')])
 
-shader_to_actor(geom_squares, 'fragment',
-                impl_code=import_fury_shader('gs_billboard_sphere_impl.frag'))
+fs_impl = compose_shader([import_fury_shader('gs_billboard_sphere_impl.frag')])
+
+geom_squares = actor.billboard(centers, colors=colors, scales=scales,
+                               using_gs=True, fs_dec=fs_dec, fs_impl=fs_impl)
 
 scene.add(geom_squares)
 
-interactive = False
+interactive = True
 if interactive:
     showm.start()
 
@@ -38,13 +41,22 @@ scales = np.random.random(no_components) * no_components ** 0.5
 
 using_geometry_shader = True
 
-geom_squares = actor.billboard(centers, colors=colors, scales=scales,
-                               using_gs=using_geometry_shader)
 
+fs_dec = ""
+fs_impl = ""
 if using_geometry_shader:
-    shader_to_actor(geom_squares, 'fragment',
-                    impl_code=import_fury_shader(
-                        'gs_billboard_sphere_impl.frag'))
+    fs_dec = compose_shader(
+        [import_fury_shader('lighting/blinn_phong_model.frag'),
+         import_fury_shader('sdf/sph_intersect.frag')])
+
+    fs_impl = compose_shader(
+        [import_fury_shader('gs_billboard_sphere_impl.frag')])
+
+
+geom_squares = actor.billboard(centers, colors=colors, scales=scales,
+                               using_gs=using_geometry_shader, fs_dec=fs_dec,
+                               fs_impl=fs_impl)
+
 
 vcolors = utils.colors_from_actor(geom_squares)
 vscales = utils.array_from_actor(geom_squares, 'scale')
