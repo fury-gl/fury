@@ -2323,7 +2323,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return spq_actor
 
 
-def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
+def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
               vs_impl=None, gs_prog=None, fs_dec=None, fs_impl=None):
     """Create a billboard actor.
 
@@ -2338,15 +2338,14 @@ def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
         RGB or RGBA (for opacity) R, G, B and A should be at the range [0, 1].
     scales : ndarray, shape (N) or (N,3) or float or int, optional
         The scale of the billboards.
-    using_gs : bool, optional
-        Whether to use geometry shader or not.
     vs_dec : str or list of str, optional
         Vertex Shader code that contains all variable/function declarations.
     vs_impl : str or list of str, optional
         Vertex Shaders code that contains all variable/function
         implementations.
-    gs_prog : str, optional
-        Geometry Shader program.
+    gs_prog : str, optional, default: 'gs_generated'
+        Geometry Shader program. If set to 'gs_generated', an already
+        implemented geometry shader code will be used.
     fs_dec : str or list of str, optional
         Fragment Shaders code that contains all variable/function declarations.
     fs_impl : str or list of str, optional
@@ -2358,7 +2357,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
     billboard_actor: Actor
 
     """
-    if using_gs:
+    if gs_prog.lower() == 'gs_generated':
         bb_actor = dot(centers, colors)
 
         replace_shader_in_actor(bb_actor, 'geometry',
@@ -2380,8 +2379,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, using_gs=False, vs_dec=None,
             [import_fury_shader('gs_billboard_dec.frag'),
              compose_shader(fs_dec)])
         shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-        shader_to_actor(bb_actor, 'fragment', impl_code=
-        compose_shader(fs_impl), block='light')
+        shader_to_actor(bb_actor, 'fragment',
+                        impl_code=compose_shader(fs_impl), block='light')
 
         attribute_to_actor(bb_actor, scales.flatten(), 'scale')
         bb_actor.GetProperty().BackfaceCullingOff()
