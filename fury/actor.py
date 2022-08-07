@@ -2343,8 +2343,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
     vs_impl : str or list of str, optional
         Vertex Shaders code that contains all variable/function
         implementations.
-    gs_prog : str, optional, default: 'gs_generated'
-        Geometry Shader program. If set to 'gs_generated', an already
+    gs_prog : str, optional, default: None
+        Geometry Shader program. If set to 'default', an already
         implemented geometry shader code will be used.
     fs_dec : str or list of str, optional
         Fragment Shaders code that contains all variable/function declarations.
@@ -2357,7 +2357,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
     billboard_actor: Actor
 
     """
-    if gs_prog.lower() == 'gs_generated':
+    if gs_prog and gs_prog.lower() == 'default':
         bb_actor = dot(centers, colors)
 
         replace_shader_in_actor(bb_actor, 'geometry',

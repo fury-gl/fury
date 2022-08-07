@@ -17,7 +17,7 @@ fs_dec = compose_shader([import_fury_shader('lighting/blinn_phong_model.frag'),
 fs_impl = compose_shader([import_fury_shader('gs_billboard_sphere_impl.frag')])
 
 geom_squares = actor.billboard(centers, colors=colors, scales=scales,
-                               using_gs=True, fs_dec=fs_dec, fs_impl=fs_impl)
+                               gs_prog='default', fs_dec=fs_dec, fs_impl=fs_impl)
 
 scene.add(geom_squares)
 
@@ -44,6 +44,7 @@ using_geometry_shader = True
 
 fs_dec = ""
 fs_impl = ""
+
 if using_geometry_shader:
     fs_dec = compose_shader(
         [import_fury_shader('lighting/blinn_phong_model.frag'),
@@ -52,10 +53,9 @@ if using_geometry_shader:
     fs_impl = compose_shader(
         [import_fury_shader('gs_billboard_sphere_impl.frag')])
 
-
+gs_prog = 'default' if using_geometry_shader else None
 geom_squares = actor.billboard(centers, colors=colors, scales=scales,
-                               using_gs=using_geometry_shader, fs_dec=fs_dec,
-                               fs_impl=fs_impl)
+                               fs_dec=fs_dec, fs_impl=fs_impl, gs_prog=gs_prog)
 
 
 vcolors = utils.colors_from_actor(geom_squares)
