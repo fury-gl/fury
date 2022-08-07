@@ -22,8 +22,8 @@ showm.initialize()
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('InterpolationTest', 'glTF')
-filename = read_viz_gltf('InterpolationTest')
+fetch_gltf('CesiumMilkTruck', 'glTF')
+filename = read_viz_gltf('CesiumMilkTruck')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.

@@ -27,6 +27,7 @@ acc_type = {
     'VEC4': 4,
     'MAT4': 16
 }
+temp = []
 
 
 class glTF:
@@ -80,24 +81,12 @@ class glTF:
         """
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
-            # set orientation in vtk zxy (as_euler('zxy')[[1, 2, 0]])
-            # maybe we can use SetuserMatrix
-            # https://vtk.org/doc/nightly/html/classvtkProp3D.html
-            # TODO: apply transformations here.
             transform_mat = self.transformations[i]
+            position, rot, scale = transform.trs_from_matrix(transform_mat)
 
-            # the fillipi method (doesn't work, same as pre-applying transform)
-            # vertices = utils.vertices_from_actor(actor)
-            # vertices[:] = transform.apply_transfomation(
-            #     vertices, transform_mat)
-            # utils.update_actor(actor)
-            # utils.compute_bounds(actor)
-
-            vtk_transform = Transform()
-            vtk_transform.SetMatrix(utils.numpy_to_vtk_matrix(transform_mat))
-            actor.SetUserTransform(vtk_transform)
-            utils.update_actor(actor)
-            utils.compute_bounds(actor)
+            actor.SetPosition(position)
+            actor.SetScale(scale)
+            actor.RotateWXYZ(*rot)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -143,7 +132,6 @@ class glTF:
             parent = [nextnode_id]
         else:
             parent.append(nextnode_id)
-
         matnode = np.identity(4)
         if node.matrix is not None:
             matnode = np.array(node.matrix)
@@ -228,7 +216,7 @@ class glTF:
                 material = self.get_materials(primitive.material)
 
             self.polydatas.append(polydata)
-            self.nodes.append(parent)
+            self.nodes.append(parent[:])
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
@@ -490,7 +478,7 @@ class glTF:
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
-        print(inv_bind_matrix)
+        # print(inv_bind_matrix)
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
@@ -504,13 +492,13 @@ class glTF:
         interpolators = {
             'LINEAR': linear_interpolator,
             'STEP': step_interpolator,
-            'CUBICSPLINE': linear_interpolator
+            'CUBICSPLINE': tan_cubic_spline_interpolator
         }
 
         rotation_interpolators = {
             'LINEAR': slerp,
             'STEP': step_interpolator,
-            'CUBICSPLINE': linear_interpolator
+            'CUBICSPLINE': tan_cubic_spline_interpolator
         }
 
         timelines = []
@@ -529,16 +517,34 @@ class glTF:
                     interpolator = interpolators.get(interpolation_type)
                     rot_interp = rotation_interpolators.get(
                                        interpolation_type)
+                    timeshape = timestamp.shape
+                    transhape = transform.shape
+                    if transforms['interpolation'] == 'CUBICSPLINE':
+                        transform = transform.reshape(
+                            (timeshape[0], -1, transhape[1]))
 
                     for time, trs in zip(timestamp, transform):
+                        in_tan, out_tan = None, None
+                        if trs.ndim == 2:
+                            cubicspline = trs
+                            in_tan = cubicspline[0]
+                            trs = cubicspline[1]
+                            out_tan = cubicspline[2]
+
                         if prop == 'rotation':
-                            timeline.set_rotation(time[0], trs)
+                            timeline.set_rotation(time[0], trs,
+                                                  in_tangent=in_tan,
+                                                  out_tangent=out_tan)
                             timeline.set_rotation_interpolator(rot_interp)
                         if prop == 'translation':
-                            timeline.set_position(time[0], trs)
+                            timeline.set_position(time[0], trs,
+                                                  in_tangent=in_tan,
+                                                  out_tangent=out_tan)
                             timeline.set_position_interpolator(interpolator)
                         if prop == 'scale':
-                            timeline.set_scale(time[0], trs)
+                            timeline.set_scale(time[0], trs,
+                                               in_tangent=in_tan,
+                                               out_tangent=out_tan)
                             timeline.set_scale_interpolator(interpolator)
                 else:
                     timeline.add_static_actor(actors[i])

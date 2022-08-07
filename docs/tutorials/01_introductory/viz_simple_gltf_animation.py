@@ -119,6 +119,7 @@ for transform in transforms:
                     timeline.set_scale_interpolator(interp)
             main_timeline.add_timeline(timeline)
         else:
+            print('Adding static actor')
             main_timeline.add_static_actor(actors[i])
 
 scene.add(main_timeline)

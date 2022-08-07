@@ -13,12 +13,11 @@ from fury.data import fetch_gltf, read_viz_gltf
 # Create a scene.
 
 scene = window.Scene()
-scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
 fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('Duck')
+filename = read_viz_gltf('CesiumMilkTruck')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -26,7 +25,7 @@ filename = read_viz_gltf('Duck')
 # or materials manually afterwards.
 # Experimental: For smooth mesh/actor you can set `apply_normals=True`.
 
-gltf_obj = glTF(filename)
+gltf_obj = glTF(filename, apply_normals=True)
 actors = gltf_obj.actors()
 
 ##############################################################################
@@ -41,7 +40,7 @@ cameras = gltf_obj.cameras
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
-interactive = False
+interactive = True
 
 if interactive:
     window.show(scene, size=(1280, 720))

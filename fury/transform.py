@@ -341,3 +341,21 @@ def apply_transfomation(vertices, transformation):
     vertices = vertices[:, :shape[1]]
 
     return vertices
+
+
+def trs_from_matrix(transform):
+    translate = transform[:, -1:].reshape((-1, ))[:-1]
+
+    temp = transform[:, :3][:3]
+    sx = np.linalg.norm(temp[:, :1])
+    sy = np.linalg.norm(temp[:, 1:-1])
+    sz = np.linalg.norm(temp[:, -1:])
+    scale = np.array([sx, sy, sz])
+
+    rot_matrix = temp / scale[None, :]
+    rotation = Rot.from_matrix(rot_matrix)
+    rot_vec = rotation.as_rotvec()
+    angle = np.linalg.norm(rot_vec)
+    rotation = [np.rad2deg(angle), *rot_vec]
+
+    return translate, rotation, scale
