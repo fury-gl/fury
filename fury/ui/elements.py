@@ -3107,9 +3107,11 @@ class DrawShapeGroup:
         self.group_rotation_slider.on_change = update_rotation
 
     def add(self, shape):
-        if shape in self.grouped_shapes:
+        if self.is_present(shape):
             self.remove(shape)
         else:
+            if self.is_empty():
+                shape.drawpanel.update_shape_selection(shape)
             self.grouped_shapes.append(shape)
             shape.is_selected = True
             shape.rotation_slider.set_visibility(False)
@@ -3124,9 +3126,17 @@ class DrawShapeGroup:
         shape.is_selected = False
         print(self.grouped_shapes)
 
-    def clear(self, shape):
+    def clear(self):
+        self.group_rotation_slider.set_visibility(False)
+        for shape in self.grouped_shapes:
+            shape.is_selected = False
         self.grouped_shapes = []
         print(self.grouped_shapes)
+
+    def is_present(self, shape):
+        if shape in self.grouped_shapes:
+            return True
+        return False
 
     def is_empty(self):
         return not bool(len(self.grouped_shapes))
@@ -3442,11 +3452,13 @@ class DrawShape(UI):
                 relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
 
-                if not self.drawpanel.shape_group.is_empty():
+                if self.drawpanel.shape_group.is_present(self):
                     self.drawpanel.shape_group.update_position(
                         relative_center_position - self.center)
-
-                self.update_shape_position(relative_center_position)
+                else:
+                    if not self.drawpanel.shape_group.is_empty():
+                        self.drawpanel.shape_group.clear()
+                    self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
@@ -3680,6 +3692,8 @@ class DrawPanel(UI):
     def handle_mouse_click(self, position):
         if self.current_shape:
             self.current_shape.is_selected = False
+        if not self.shape_group.is_empty():
+            self.shape_group.clear()
         if self.current_mode == "selection":
             if self.is_draggable:
                 self._drag_offset = position - self.position
