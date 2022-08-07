@@ -3758,8 +3758,8 @@ class PlaybackPanel(UI):
 
     def _set_position(self, _coords):
         # TODO: after making this playback dynamic in size, this should be set
-        ...
+        super(PlaybackPanel, self)._set_position(_coords)
 
     def _get_size(self):
         # TODO: same as `_set_position`
-        ...
+        super(PlaybackPanel, self)._get_size()
