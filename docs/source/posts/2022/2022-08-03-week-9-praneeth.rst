@@ -20,7 +20,7 @@ Then I updated the implementation of the Grouping Shapes feature to support the 
 
 After this, I worked on the `PolyLine` and removed the extra point being added to the start of the `PolyLine` whenever a new instance was created.
 
-.. image:: 
+.. image:: https://user-images.githubusercontent.com/64432063/183280803-5d7ae350-f080-478d-8a2f-a71460037ea4.gif
     :width: 400
     :align: center
 
