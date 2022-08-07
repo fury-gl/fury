@@ -1,7 +1,5 @@
 
 
-//float d = distance(point, center);
-
 vec4 ro = -MCVCMatrix[3] * MCVCMatrix;
 vec3 rd = normalize(pointGSOutput - ro.xyz);
 
@@ -10,7 +8,12 @@ vec3 lightDir = normalize(vec3(MCVCMatrix[0][2], MCVCMatrix[1][2], MCVCMatrix[2]
 //ro += vec4((point - ro.xyz),0.0);
 float d = sphIntersect(ro.xyz, rd, centerGSOutput, scaleGSOutput);
 
-if(d!= -1){
+//float fDist = length(vec2(dFdx(d), dFdy(d)));
+//float alpha = (( -0.5 + d) / max(fDist, 0.0001) - 0.5);
+
+if(d >= 0){
+//if(alpha >= 0){
+//    alpha = clamp(alpha, 0, 1);
     vec3 intersection = ro.xyz + rd * d;
     vec3 normal = normalize(intersection - centerGSOutput);
 
