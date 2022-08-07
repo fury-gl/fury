@@ -44,12 +44,12 @@ void main() {
 
     // send same color for the whole billboard
     vertexColorGSOutput = vertexColorVSOutput[0];
-    center = gl_in [0].gl_Position.xyz;
+    centerGSOutput = gl_in [0].gl_Position.xyz;
     scaleGSOutput = scaleVSOutput[0];
     // emit four vertices needed to draw a billboard using triangle strips
     for (int j = 0; j < 4; j++) {
         gl_Position = vertices[j];
-        point = c[j].xyz;
+        pointGSOutput = c[j].xyz;
         EmitVertex ();
         }
     EndPrimitive();
