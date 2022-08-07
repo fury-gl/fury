@@ -3127,6 +3127,8 @@ class DrawShapeGroup:
         print(self.grouped_shapes)
 
     def clear(self):
+        if self.is_empty():
+            return
         self.group_rotation_slider.set_visibility(False)
         for shape in self.grouped_shapes:
             shape.is_selected = False
@@ -3432,6 +3434,7 @@ class DrawShape(UI):
             if self.drawpanel.key_status["Control_L"]:
                 self.drawpanel.shape_group.add(self)
             else:
+                self.drawpanel.shape_group.clear()
                 self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
@@ -3456,8 +3459,7 @@ class DrawShape(UI):
                     self.drawpanel.shape_group.update_position(
                         relative_center_position - self.center)
                 else:
-                    if not self.drawpanel.shape_group.is_empty():
-                        self.drawpanel.shape_group.clear()
+                    self.drawpanel.shape_group.clear()
                     self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
