@@ -275,7 +275,7 @@ def test_skybox():
     # Test removing automatically shown skybox
     test_tex = Texture()
     test_tex.CubeMapOn()
-    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
+    checker_arr = np.array([[1, 1], [1, 1]], dtype=np.uint8) * 255
     for i in range(6):
         vtk_img = ImageData()
         vtk_img.SetDimensions(2, 2, 1)
@@ -294,16 +294,13 @@ def test_skybox():
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
     ss = window.snapshot(scene)
-    #npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
-    #npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    npt.assert_array_equal(ss[150, 150, :], [0, 0, 255])
     scene.yaw(90)
     ss = window.snapshot(scene)
-    #npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
-    #npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
+    npt.assert_array_equal(ss[150, 150, :], [255, 0, 0])
     scene.pitch(90)
     ss = window.snapshot(scene)
-    #npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    #npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
+    npt.assert_array_equal(ss[150, 150, :], [0, 255, 0])
     # Test skybox is not added twice
     scene.skybox()
     report = window.analyze_scene(scene)
