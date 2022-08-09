@@ -133,6 +133,7 @@ class glTF:
         else:
             parent.append(nextnode_id)
         matnode = np.identity(4)
+
         if node.matrix is not None:
             matnode = np.array(node.matrix)
             matnode = matnode.reshape(-1, 4).T
@@ -158,13 +159,15 @@ class glTF:
             mesh_id = node.mesh
             self.load_mesh(mesh_id, next_matrix, parent)
 
+        if node.skin is not None:
+            skin_id = node.skin
+            joints, ibms = self.get_skin_data(skin_id)
+            for joint, ibm_matrix in zip(joints, ibms):
+                self.transverse_node(joint, ibm_matrix, parent)
+
         if node.camera is not None:
             camera_id = node.camera
             self.load_camera(camera_id, next_matrix)
-
-        if node.skin is not None:
-            skin_id = node.skin
-            self.get_skin_data(skin_id)
 
         if node.children:
             for child_id in node.children:
@@ -210,6 +213,13 @@ class glTF:
             if primitive.indices is not None:
                 indices = self.get_acc_data(primitive.indices).reshape(-1, 3)
                 utils.set_polydata_triangles(polydata, indices)
+            
+            if attributes.JOINTS_0 is not None:
+                vertex_joints = self.get_acc_data(attributes.JOINTS_0)
+                vertex_joints = vertex_joints.reshape(-1, 4)
+                print(vertex_joints)
+                vertex_weight = self.get_acc_data(attributes.WEIGHTS_0)
+                print(vertex_weight)
 
             material = None
             if primitive.material is not None:
@@ -478,7 +488,9 @@ class glTF:
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
-        # print(inv_bind_matrix)
+        print(f'ibm:\n{inv_bind_matrix}')
+        joint_nodes = skin.joints
+        return joint_nodes, inv_bind_matrix
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
