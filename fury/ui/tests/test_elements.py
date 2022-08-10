@@ -199,7 +199,7 @@ def test_ui_2d_line_slider_hooks(recording=False):
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
     line_slider_2d = ui.LineSlider2D(center=(300, 300))
-    
+
     event_counter = EventCounter()
     event_counter.monitor(line_slider_2d)
 
@@ -470,6 +470,55 @@ def test_ui_range_slider(interactive=False):
         show_manager.scene.add(range_slider_test_horizontal)
         show_manager.scene.add(range_slider_test_vertical)
         show_manager.start()
+
+
+def test_ui_slider_value_range():
+    with npt.assert_no_warnings():
+        # LineSlider2D
+        line_slider = ui.LineSlider2D(min_value=0, max_value=0)
+        assert_equal(line_slider.value, 0)
+        assert_equal(line_slider.min_value, 0)
+        assert_equal(line_slider.max_value, 0)
+        line_slider.value = 100
+        assert_equal(line_slider.value, 0)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        line_slider = ui.LineSlider2D(min_value=0, max_value=100)
+        line_slider.value = 105
+        assert_equal(line_slider.value, 100)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        # LineDoubleSlider2D
+        line_double_slider = ui.LineDoubleSlider2D(min_value=0, max_value=0)
+        assert_equal(line_double_slider.left_disk_value, 0)
+        assert_equal(line_double_slider.right_disk_value, 0)
+        line_double_slider.left_disk_value = 100
+        assert_equal(line_double_slider.left_disk_value, 0)
+        line_double_slider.right_disk_value = -100
+        assert_equal(line_double_slider.right_disk_value, 0)
+
+        line_double_slider = ui.LineDoubleSlider2D(min_value=50, max_value=100)
+        line_double_slider.right_disk_value = 150
+        assert_equal(line_double_slider.right_disk_value, 100)
+        line_double_slider.left_disk_value = -150
+        assert_equal(line_double_slider.left_disk_value, 50)
+
+        # RingSlider2D
+        ring_slider = ui.RingSlider2D(initial_value=0, min_value=0, max_value=0)
+        assert_equal(ring_slider.value, 0)
+        assert_equal(ring_slider.previous_value, 0)
+        ring_slider.value = 180
+        assert_equal(ring_slider.value, 0)
+        ring_slider.value = -180
+        assert_equal(ring_slider.value, 0)
+
+        # RangeSlider
+        range_slider_2d = ui.RangeSlider(min_value=0, max_value=0)
+        assert_equal(range_slider_2d.value_slider.value, 0)
+        range_slider_2d.value_slider.value = 100
+        assert_equal(range_slider_2d.value_slider.value, 0)
 
 
 def test_ui_option(interactive=False):
