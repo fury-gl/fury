@@ -3126,8 +3126,6 @@ class DrawShapeGroup:
 
             self.group_rotation_slider.center = shape.rotation_slider.center
 
-        print(self.grouped_shapes)
-
     def remove(self, shape):
         """Remove shape from the group.
 
@@ -3138,7 +3136,6 @@ class DrawShapeGroup:
         """
         self.grouped_shapes.remove(shape)
         shape.is_selected = False
-        print(self.grouped_shapes)
 
     def clear(self):
         """Remove all the shapes from the group.
@@ -3150,7 +3147,6 @@ class DrawShapeGroup:
         for shape in self.grouped_shapes:
             shape.is_selected = False
         self.grouped_shapes = []
-        print(self.grouped_shapes)
 
     def is_present(self, shape):
         """Check whether the shape is present in the group.
