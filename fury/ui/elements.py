@@ -3086,7 +3086,6 @@ class FileMenu2D(UI):
 class DrawShapeGroup:
     def __init__(self):
         self.grouped_shapes = []
-        self._position = None
 
         # Group rotation slider
         self.group_rotation_slider = RingSlider2D(initial_value=0,
@@ -3107,6 +3106,13 @@ class DrawShapeGroup:
         self.group_rotation_slider.on_change = update_rotation
 
     def add(self, shape):
+        """Add shape to the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
         if self.is_present(shape):
             self.remove(shape)
         else:
@@ -3123,11 +3129,21 @@ class DrawShapeGroup:
         print(self.grouped_shapes)
 
     def remove(self, shape):
+        """Remove shape from the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
         self.grouped_shapes.remove(shape)
         shape.is_selected = False
         print(self.grouped_shapes)
 
     def clear(self):
+        """Remove all the shapes from the group.
+
+        """
         if self.is_empty():
             return
         self._scene.rm(*self.group_rotation_slider.actors)
@@ -3137,18 +3153,43 @@ class DrawShapeGroup:
         print(self.grouped_shapes)
 
     def is_present(self, shape):
+        """Check whether the shape is present in the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
         if shape in self.grouped_shapes:
             return True
         return False
 
     def is_empty(self):
+        """Return whether the group is empty or not.
+
+        """
         return not bool(len(self.grouped_shapes))
 
     def update_position(self, offset):
+        """Update the position of all the shapes in the group.
+
+        Parameters
+        ----------
+        offset : (float, float)
+            Distance by which each shape is to be translated.
+
+        """
         for shape in self.grouped_shapes:
             shape.update_shape_position(shape.center + offset)
 
     def add_rotation_slider(self, scene):
+        """Add rotation slider to the scene.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
         self._scene = scene
         scene.add(self.group_rotation_slider)
 
