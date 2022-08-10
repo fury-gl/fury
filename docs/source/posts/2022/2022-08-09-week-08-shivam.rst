@@ -1,0 +1,33 @@
+Week 8 - Fixing animation bugs
+==============================
+.. post:: August 10 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+
+This week I had to fix the transformation issue in glTF animation. As discussed in last meeting I disabled vertex transformation
+and applied the transformation after the actor is formed.
+
+- Creating transformation matrix as it is.
+- Extract translation, Rotation and Scale matrice from the transformation matrix.
+
+I also started investigating more on the skinning animation.
+
+- I created functions to extract and apply the ``InvertBindMatrices`` to the vertices.
+- Also applying the ``globalTransformMatrices`` to the mesh.
+
+
+What is coming up next week?
+----------------------------
+
+- Skeletal animations support
+
+
+Did you get stuck anywhere?
+---------------------------
+
+- Even after applying transformation to the actor, after it's created. Some models did not behave as intended. We still need to figure this issue out and fix it.
