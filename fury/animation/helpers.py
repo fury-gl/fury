@@ -19,7 +19,7 @@ def get_previous_timestamp(timestamps, current_time, include_last=False):
     float or int
         The previous timestamp
     """
-    
+
     for timestamp in timestamps[::-1] if include_last else timestamps[-2::-1]:
         if timestamp <= current_time:
             return timestamp
@@ -44,7 +44,7 @@ def get_next_timestamp(timestamps, current_time, include_first=False):
     float or int
         The next timestamp
     """
-    for timestamp in timestamps[::-1] if include_first else timestamps[1:]:
+    for timestamp in timestamps[:] if include_first else timestamps[1:]:
         if timestamp > current_time:
             return timestamp
     return timestamps[-1]

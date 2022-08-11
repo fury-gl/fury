@@ -1085,7 +1085,7 @@ def test_playback_panel(interactive=False):
     assert_true(stopped)
     assert_equal(playback.current_time, ts)
     assert_greater(playback.current_time, 0)
-    assert_not_equal(playback.current_time_str, '00:00:00')
+    assert_not_equal(playback.current_time_str, '00:00.00')
     playback.current_time = 5
     assert_equal(playback.current_time, 5)
-    assert_equal(playback.current_time_str, '00:00:05')
+    assert_equal(playback.current_time_str, '00:05.00')

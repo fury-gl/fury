@@ -65,7 +65,7 @@ spline_tl.set_position_interpolator(spline_interpolator, degree=5)
 #
 ###############################################################################
 # Creating a timeline with a playback panel
-main_timeline = Timeline(playback_panel=Timeline, motion_path_res=100)
+main_timeline = Timeline(playback_panel=True, motion_path_res=100)
 
 ###############################################################################
 # Add visualization dots actor to the timeline as a static actor.

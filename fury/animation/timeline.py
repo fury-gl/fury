@@ -219,8 +219,8 @@ class Timeline(Container):
             interp = attrib_data.get('interpolator')
             interp_base = interp.get('base', linear_interpolator)
             args = interp.get('args', {})
-            self.set_interpolator(linear_interpolator, attrib,
-                                  is_camera=is_camera, kwargs=args)
+            self.set_interpolator(attrib, interp_base,
+                                  is_camera=is_camera, **args)
 
         if timestamp > self.final_timestamp:
             self._final_timestamp = timestamp
@@ -378,11 +378,11 @@ class Timeline(Container):
 
         Notes
         -----
-        If this evaluator is used to evaluate the value of actor's
-        properties such as position, scale, color, rotation, or opacity, it has
-        to return a value thathas the same shape as the evaluated property,
-        i.e.: for scale, it has to return an array with shape 1x3, and for
-        opacity, it has to return a 1x1, an int, or a float value.
+        If an evaluator is used to set the values of actor's properties such as
+        position, scale, color, rotation, or opacity, it has to return a value
+        with the same shape as the evaluated property, i.e.: for scale, it
+        has to return an array with shape 1x3, and for opacity, it has to
+        return a 1x1, an int, or a float value.
 
         Examples
         ---------

@@ -3492,8 +3492,9 @@ class PlaybackPanel(UI):
        such as play, pause, stop, and seek.
     """
 
-    def __init__(self, loop=False):
+    def __init__(self, loop=False, position=(0, 0)):
         super(PlaybackPanel, self).__init__()
+        self.position = position
         self._playing = False
         self._loop = None
         self.loop() if loop else self.play_once()
@@ -3552,8 +3553,8 @@ class PlaybackPanel(UI):
                                           initial_value=0,
                                           orientation='horizontal',
                                           min_value=0, max_value=100,
-                                          text_alignment='bottom', length=590,
-                                          line_width=9)
+                                          text_alignment='top', length=590,
+                                          text_template='', line_width=9)
 
         start = 0.04
         w = 0.2
@@ -3710,7 +3711,14 @@ class PlaybackPanel(UI):
         since setting`current_value` automatically sets this property as well.
         """
         t = np.clip(t, 0, self.final_time)
-        self.time_text.message = time.strftime('%H:%M:%S', time.gmtime(t))
+        if self.final_time < 3600:
+            m, s = divmod(t, 60)
+            t_str = r'%02d:%05.2f' % (m, s)
+        else:
+            m, s = divmod(t, 60)
+            h, m = divmod(m, 60)
+            t_str = r'%02d:%02d:%02d' % (h, m, s)
+        self.time_text.message = t_str
 
     @property
     def speed(self):
@@ -3757,9 +3765,12 @@ class PlaybackPanel(UI):
         self.time_text.add_to_scene(_scene)
 
     def _set_position(self, _coords):
-        # TODO: after making this playback dynamic in size, this should be set
-        ...
+        x, y = _coords
+        self.panel.position = (x + 5, y + 5)
+        self._progress_bar.center = (x + 512, y + 20)
+
+        self.time_text.position = (x + self._progress_bar.track.width + 230,
+                                   y + 10)
 
     def _get_size(self):
-        # TODO: same as `_set_position`
-        ...
+        return self.panel.size + self._progress_bar.size + self.time_text.size
