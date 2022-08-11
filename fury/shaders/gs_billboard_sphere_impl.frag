@@ -16,7 +16,8 @@ if(d >= 0){
 //    alpha = clamp(alpha, 0, 1);
     vec3 intersection = ro.xyz + rd * d;
     vec3 normal = normalize(intersection - centerGSOutput);
-
+    vec3 specularColor = specularIntensity * specularColorUniform;
+    float specularPower = specularPowerUniform;
     vec3 ambientColor = ambientIntensity * vertexColorGSOutput.rgb;
     vec3 diffuseColor = diffuseIntensity * vertexColorGSOutput.rgb ;
 
@@ -26,7 +27,7 @@ if(d >= 0){
     vec3 light = vec3(1, 1, 1);
     vec3 color = blinnPhongIllumModel(
                 lightAttenuation, light, diffuseColor,
-                specularPowerUniform, specularColorUniform, ambientColor);
+                specularPower, specularColor, ambientColor);
 
     fragOutput0 = vec4(color, opacity);
     vec4 dep = MCDCMatrix * vec4(intersection, 1);

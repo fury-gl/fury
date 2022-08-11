@@ -5,3 +5,4 @@ uniform mat4 MCDCMatrix;
 uniform mat4 MCVCMatrix;
 uniform vec3 specularColorUniform;
 uniform float specularPowerUniform;
+uniform float specularIntensity;
