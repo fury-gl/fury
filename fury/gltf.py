@@ -492,6 +492,21 @@ class glTF:
         joint_nodes = skin.joints
         return joint_nodes, inv_bind_matrix
 
+    def apply_skin_matrix(self, vertex, weights, joint_matrix):
+        """Applies the skinnig matrix, that transforms the vertices.
+
+        Parameters
+        ----------
+        joint_matrix: ndarray (4, 4)
+            (4*4) shaped tranformation matrices for each node/joint.
+        """
+        total_loc_pos = np.array([0, 0, 0, 0])
+        for i in range(len(weights)):
+            local_position = transform.apply_transfomation(vertex,
+                                                           joint_matrix)
+            total_loc_pos += np.dot(local_position, weights)
+        print(total_loc_pos)
+
     def get_animation_timelines(self):
         """Returns list of animation timeline.
 
