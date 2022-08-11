@@ -2393,6 +2393,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
                 spec_power = bb_actor.GetProperty().GetSpecularPower()
                 spec_intensity = bb_actor.GetProperty().GetSpecular()
                 program.SetUniform3f('specularColorUniform', spec_color)
+                program.SetUniform3f('lightColor0', (1, 1, 1))
                 program.SetUniformf('specularPowerUniform', spec_power)
                 program.SetUniformf('specularIntensity', spec_intensity)
 

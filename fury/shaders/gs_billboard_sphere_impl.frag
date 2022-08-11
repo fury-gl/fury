@@ -24,9 +24,8 @@ if(d >= 0){
     float opacity = opacityUniform * vertexColorGSOutput.a;
     float lightAttenuation =  max(dot(normal, lightDir), 0.0);
     // lightColor0, specularPowerUniform, specularColorUniform are not provided for points and lines bu VTK.
-    vec3 light = vec3(1, 1, 1);
     vec3 color = blinnPhongIllumModel(
-                lightAttenuation, light, diffuseColor,
+                lightAttenuation, lightColor0, diffuseColor,
                 specularPower, specularColor, ambientColor);
 
     fragOutput0 = vec4(color, opacity);
