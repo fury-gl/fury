@@ -12,11 +12,6 @@ from fury import shaders
 from fury.utils import remove_observer_from_actor
 
 
-"""
-@pytest.mark.skipif(True,  # skip_linux or skip_win,
-                    reason="This test does not work on Windows."
-                           " Need to be introspected")
-"""
 def test_scene():
     scene = window.Scene()
     # Scene size test
@@ -79,19 +74,17 @@ def test_scene():
                      'Focal Point (0.00, 0.00, 0.00)\n   '
                      'View Up (0.00, 1.00, 0.00)')
     npt.assert_equal(err.getvalue().strip(), '')
-    # Test skybox
+    # Tests for skybox functionality
+    # Test scene created without skybox
     scene = window.Scene()
-    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
     npt.assert_equal(scene.GetAutomaticLightCreation(), 1)
-    npt.assert_equal(scene.GetSphericalHarmonics(), None)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
+    npt.assert_equal(scene.GetUseSphericalHarmonics(), True)
     npt.assert_equal(scene.GetEnvironmentTexture(), None)
-    test_tex = Texture()
-    scene = window.Scene(skybox=test_tex)
-    npt.assert_equal(scene.GetUseImageBasedLighting(), True)
-    npt.assert_equal(scene.GetAutomaticLightCreation(), 0)
-    npt.assert_equal(scene.GetSphericalHarmonics(), None)
-    npt.assert_equal(scene.GetEnvironmentTexture(), test_tex)
-    # Test automatically shown skybox
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 0)
+    npt.assert_warns(UserWarning, scene.skybox)
+    # Test scene created with skybox
     test_tex = Texture()
     test_tex.CubeMapOn()
     checker_arr = np.array([[1, 1], [1, 1]], dtype=np.uint8) * 255
@@ -122,19 +115,6 @@ def test_scene():
                      (2, 2, 1))
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
-    """
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
-    """
 
 
 def test_active_camera():
@@ -329,36 +309,6 @@ def test_skybox():
     scene.skybox(visible=False)
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 0)
-    """
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[150, 150, :], [0, 0, 255])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[150, 150, :], [255, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[150, 150, :], [0, 255, 0])
-    # Test skybox is not added twice
-    scene.skybox()
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
-    # Test make skybox invisible
-    scene.skybox(visible=False)
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 0)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    # Test make skybox visible again
-    scene.skybox(visible=True)
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
-    """
 
 
 def test_save_screenshot():
