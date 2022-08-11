@@ -2385,7 +2385,20 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         attribute_to_actor(bb_actor, scales.flatten(), 'scale')
         bb_actor.GetProperty().BackfaceCullingOff()
         bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+
+        def update_uniforms(_caller, _event, calldata=None):
+            program = calldata
+            if program is not None:
+                spec_color = bb_actor.GetProperty().GetSpecularColor()
+                spec_power = bb_actor.GetProperty().GetSpecularPower()
+                spec_intensity = bb_actor.GetProperty().GetSpecular()
+                program.SetUniform3f('specularColorUniform', spec_color)
+                program.SetUniformf('specularPowerUniform', spec_power)
+                program.SetUniformf('specularIntensity', spec_intensity)
+
+        add_shader_callback(bb_actor, update_uniforms)
         return bb_actor
+
     else:
         verts, faces = fp.prim_square()
         res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
