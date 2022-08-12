@@ -68,6 +68,9 @@ class glTF:
         self.init_transform = np.identity(4)
         self.animations = []
         self.node_transform = []
+        self.keyframe_transforms = []
+        self.joints_0 = []
+        self.weights_0 = []
         self.inspect_scene(0)
 
     def actors(self):
@@ -217,9 +220,10 @@ class glTF:
             if attributes.JOINTS_0 is not None:
                 vertex_joints = self.get_acc_data(attributes.JOINTS_0)
                 vertex_joints = vertex_joints.reshape(-1, 4)
-                print(vertex_joints)
+                # add None if weights and joints do not exist
+                self.joints_0.append(vertex_joints)
                 vertex_weight = self.get_acc_data(attributes.WEIGHTS_0)
-                print(vertex_weight)
+                self.weights_0.append(vertex_weight)
 
             material = None
             if primitive.material is not None:
@@ -492,20 +496,81 @@ class glTF:
         joint_nodes = skin.joints
         return joint_nodes, inv_bind_matrix
 
-    def apply_skin_matrix(self, vertex, weights, joint_matrix):
+    def generate_tmatrix(self, transf, prop):
+        if prop == 'translation':
+            matrix = transform.translate(transf)
+        elif prop == 'rotation':
+            matrix = transform.rotate(transf)
+        elif prop == 'scale':
+            matrix = transform.scale(transf)
+        return matrix
+
+    def apply_skin_matrix(self, vertices,
+                          joint_matrix, timestamp=None):
         """Applies the skinnig matrix, that transforms the vertices.
 
-        Parameters
-        ----------
-        joint_matrix: ndarray (4, 4)
-            (4*4) shaped tranformation matrices for each node/joint.
+        NOTE: vertices has joint_matrix applied already.
+        Returns
+        -------
+        vertices : ndarray
+            Modified vertices
         """
-        total_loc_pos = np.array([0, 0, 0, 0])
-        for i in range(len(weights)):
-            local_position = transform.apply_transfomation(vertex,
-                                                           joint_matrix)
-            total_loc_pos += np.dot(local_position, weights)
-        print(total_loc_pos)
+        # self.precalculate_transforms()
+        # keyframe_transfoms = self.keyframe_transforms
+        weights = self.weights_0[0]
+        joints = self.joints_0[0]
+
+        # vertices = transform.apply_transfomation(vertices, joint_matrix)
+        for i, xyz in enumerate(vertices):
+            # length of weight = 4 always
+            print(i)
+            if i>=5:
+                vweight = weights[i]
+                pos = np.array([0, 0, 0])
+                temp = transform.apply_transfomation(
+                        np.array([xyz]), joint_matrix)[0]
+                for j in range(len(vweight)-1):
+                    # print(weights[j])
+                    pos = np.add(pos, temp*vweight[j])
+                print(pos)
+                vertices[i] = pos
+        return vertices
+       
+    def get_skin_timelines(self):
+        """Returns list of animation timeline.
+
+        Returns
+        -------
+        timelines : List
+            List of timelines containing actors.
+        """
+        # actors = self.actors()
+
+        timelines = []
+        for transforms in self.node_transform:
+            target_node = transforms['node']
+            # print(transforms)
+            print(f'target node: {target_node}')
+            for i, nodes in enumerate(self.nodes):
+                timeline = Timeline(playback_panel=True)
+                print(f'nodes: {nodes}')
+
+                # if target_node in nodes:
+                # timeline.add_actor(actors[i])
+                timestamp = transforms['input']
+                transform = transforms['output']
+                prop = transforms['property']
+
+                for time, trs in zip(timestamp, transform):
+                    matrix = self.generate_tmatrix(trs, prop)
+                    print(matrix)
+                    timeline.set_keyframe('transform', time[0], matrix)
+                # else:
+                #     print('adding static actor')
+                #     timeline.add_static_actor(actors[i])
+
+                timelines.append(timeline)
+        return timelines
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
@@ -531,6 +596,7 @@ class glTF:
         timelines = []
         for transforms in self.node_transform:
             target_node = transforms['node']
+            print(transforms)
             for i, nodes in enumerate(self.nodes):
                 timeline = Timeline()
 
@@ -584,6 +650,15 @@ class glTF:
         """
         main_timeline = Timeline(playback_panel=True)
         timelines = self.get_animation_timelines()
+        for timeline in timelines:
+            main_timeline.add_timeline(timeline)
+        return main_timeline
+    
+    def get_skin_timeline(self):
+        """Returns main timeline with all animations.
+        """
+        main_timeline = Timeline(playback_panel=True)
+        timelines = self.get_skin_timelines()
         for timeline in timelines:
             main_timeline.add_timeline(timeline)
         return main_timeline
