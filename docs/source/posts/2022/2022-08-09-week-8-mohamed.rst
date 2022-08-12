@@ -12,7 +12,7 @@ What did you do this week?
 
 - First, I made some modifications to the main animation PR. Then as Filipi requested, I integrated the vertex shader That I was implementing a few weeks ago to work with the new improved version of the ``Timeline``.
 
-- As for how keyframes are sent to the GPU, the method being used is to send the needed keyframes for each draw. This is heavy because we only roll out the interpolation part, which with linear or step interpolation won't make any difference! Instead, I tested hard-setting all the keyframes as a constant variable by manipulating the shader program's string. This also was slow to initialize, and the shader was getting bigger and slower to bind and unbind. to solve this problem, I made a uniform that holds all the keyframes of the animation and sent data as vectors with was faster than string manipulation, also it was faster to render since data are now stored directly in memory and the shader program was a lot more compact. But this method had an issue; uniforms do not keep data stored as expected! If two or more actors have the same uniform name in their shader program. And only one of them was set, the other actor will get this value as well. A way around this is to change the names of the uniforms so that they maintain their data.
+- As for how keyframes are sent to the GPU, the method being used is to send the needed keyframes for each draw. This is heavy because we only roll out the interpolation part, which with linear or step interpolation won't make any difference! Instead, I tested hard-setting all the keyframes as a constant variable by manipulating the shader program's string. This also was slow to initialize, and the shader was getting bigger and slower to bind and unbind. To solve this problem, I made a uniform that holds all the keyframes of the animation and sent data as vectors with was faster than string manipulation, also it was faster to render since data are now stored directly in memory and the shader program was a lot more compact. But this method had an issue; uniforms do not keep data stored as expected! If two or more actors have the same uniform name in their shader program. And only one of them was set, the other actor will get this value as well. A way around this is to change the names of the uniforms so that they maintain their data.
 
 - Tested animating 160K billboard spheres animation but this time using translation as well. And they performed very well.
 
@@ -24,7 +24,7 @@ What did you do this week?
 What is coming up next week?
 ----------------------------
 
-- Fix issues I encountered this week working with GLSL shades.
+- Fix issues I encountered this week working with GLSL shaders.
 
 - Implement slerp in GLSL as well as figure out a way to optimize sending keyframes to the shader program.
 
@@ -34,4 +34,4 @@ What is coming up next week?
 Did you get stuck anywhere?
 ---------------------------
 
-I had two issues, one mentioned above which was uniforms not being abler to hold data. The second one is that VTK does not send specular-related uniforms and ``lightColor0`` to the ``point`` primitive, which are needed for light calculations.
+I had two issues, one mentioned above which was uniforms not being able to hold data. The second one is that VTK does not send specular-related uniforms and ``lightColor0`` to the ``point`` primitive, which are needed for light calculations.
