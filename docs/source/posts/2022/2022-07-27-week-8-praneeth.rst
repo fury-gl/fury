@@ -1,5 +1,5 @@
 ========================================
-Week 8 - Working on the PolyLine feature
+Week 8 - Working on the polyline feature
 ========================================
 
 .. post:: July 27 2022
