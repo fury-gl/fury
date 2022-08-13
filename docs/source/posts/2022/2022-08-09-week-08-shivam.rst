@@ -12,7 +12,7 @@ What did you do this week?
 This week I had to fix the transformation issue in glTF animation. As discussed in the last meeting, I disabled vertex transformation and applied the transformation after the actor was formed.
 
 - Creating transformation matrix using the TRS data from nodes.
-- Extract Translation, Rotation, and Scale matrice from the transformation matrix.
+- Extract Translation, Rotation, and Scale matrices from the transformation matrix.
 
   .. raw:: html
 
