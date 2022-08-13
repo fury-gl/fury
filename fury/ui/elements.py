@@ -3522,6 +3522,7 @@ class DrawPanel(UI):
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
+        self.shape_group = DrawShapeGroup()
         self.is_draggable = is_draggable
         self.current_mode = None
 
@@ -3529,7 +3530,6 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
-        self.shape_group = DrawShapeGroup()
         self.key_status = {
             "Control_L": False,
             "Shift_L": False,
@@ -3638,6 +3638,7 @@ class DrawPanel(UI):
         self._current_mode = mode
         if mode is not None:
             self.mode_text.message = f"Mode: {mode}"
+        self.shape_group.clear()
 
     def cal_min_boundary_distance(self, position):
         """Calculate the minimum distance between the current position and canvas boundary.
