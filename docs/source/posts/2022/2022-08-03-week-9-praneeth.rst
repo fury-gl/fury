@@ -10,9 +10,9 @@ Week 9 - Grouping and Transforming Shapes
 
 What did you do this week?
 --------------------------
-I started this week by creating a quick PR `#645 <https://github.com/fury-gl/fury/pull/645>`_ for the UI sliders. The sliders raised ``ZeroDivsionError`` when the min and max values were the same. To solve this I handled the case where the value_range becomes zero and then manually set the handle position to zero.
+I started this week by creating a quick PR `#645 <https://github.com/fury-gl/fury/pull/645>`_ for the UI sliders. The sliders raised ``ZeroDivsionError`` when the min and max values were the same. To solve this, I handled the case where the value_range becomes zero and then manually set the handle position to zero.
 
-Then I updated the implementation of the Grouping Shapes feature to support the translation and rotation of the shapes grouped together as you can see below.
+Then I updated the implementation of the Grouping Shapes feature to support the translation and rotation of the shapes grouped together, as you can see below.
 
 .. image:: https://user-images.githubusercontent.com/64432063/183248609-4281087c-c930-4141-907a-5a906732524a.gif
     :width: 400
@@ -26,8 +26,9 @@ After this, I worked on the `PolyLine` and removed the extra point being added t
 
 Did you get stuck anywhere?
 ---------------------------
-No, Everything went well.
+No, everything went well.
 
 What is coming up next?
 -----------------------
-Completing pending PRs and searching various approaches to implement the freehand drawing.
+Completing the PR `#623 <https://github.com/fury-gl/fury/pull/623>`_ and `#653 <https://github.com/fury-gl/fury/pull/653>`_.
+Searching different approaches for implementing the freehand drawing.
