@@ -3,9 +3,9 @@
 Make a Cylinder using polygons vs SDF
 ===============================================================================
 This tutorial is intended to show two ways of primitives creation with the use
-of polygons, and SDFs. We will use cylinders as an example since they have a
-simpler polygonal representation. Hence, it allows us to see better the
-difference between using one or the other method.
+of polygons, and Signed Distance Functions (SDFs). We will use cylinders as an
+example since they have a simpler polygonal representation. Hence, it allows us
+to see better the difference between using one or the other method.
 
 For the cylinder representation with polygons, we will use cylinder actor
 implementation on FURY, and for the visualization using SDFs, we will
@@ -24,7 +24,7 @@ import numpy as np
 
 ###############################################################################
 # Cylinder using polygons
-# ================
+# =======================
 # Polygons-based modeling, use smaller components namely triangles or polygons
 # to represent 3D objects. Each polygon is defined by the position of its
 # vertices and its connecting edges. In order to get a better representation
@@ -96,13 +96,17 @@ scene.clear()
 
 ###############################################################################
 # Cylinder using SDF
-# ================
+# ==================
+# Signed Distance Functions are mathematical functions that take as input a
+# point in a metric space and return the distance from that point to the
+# boundary of an object.
+#
 # We will use the ray marching algorithm to render the SDF primitive using
 # shaders. Ray marching is a technique where you step along a ray in order to
 # find intersections with solid geometry. Objects in the scene are defined by
 # SDF, and because we don’t use polygonal meshes it is possible to define
 # perfectly smooth surfaces and allows a faster rendering in comparison to
-# polygon-based modeling.
+# polygon-based modeling (more details in [Hart1996]_).
 
 ###############################################################################
 # Now we create cylinders using box actor and SDF implementation on shaders.
@@ -272,7 +276,7 @@ sdf_cylinder_frag_impl = \
         vec3 normal = centralDiffsNormals(position, .0001);
         float lightAttenuation = dot(ld, normal);
         vec3 color = blinnPhongIllumModel(
-                        lightAttenuation, lightColor0, diffuseColor, 
+                        lightAttenuation, lightColor0, diffuseColor,
                         specularPower, specularColor, ambientColor);
         fragOutput0 = vec4(color, opacity);
     }
@@ -294,3 +298,12 @@ if interactive:
     window.show(scene)
 
 window.record(scene, size=(600, 600), out_path='viz_sdf_cylinder.png')
+
+###############################################################################
+# References
+# ----------
+# .. [Hart1996] Hart, John C. "Sphere tracing: A geometric method for the
+#                 antialiased ray tracing of implicit surfaces." The Visual
+#                 Computer 12.10 (1996): 527-545.
+#
+# .. include:: ../links_names.inc
