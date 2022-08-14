@@ -3064,7 +3064,7 @@ class PolyLine(UI):
     """Create a Polyline.
     """
 
-    def __init__(self, points_data=None, line_width=3, color=(1, 1, 1)):
+    def __init__(self, points_data=[], line_width=3, color=(1, 1, 1)):
         """Init this UI element.
 
         Parameters
@@ -3072,16 +3072,13 @@ class PolyLine(UI):
         position : (float, float), optional
             (x, y) in pixels.
         """
-        self.points = points_data
-        if points_data is None:
-            self.points = [(0, 0)]
+        self.points_data = points_data
+        self.points = []
         self.line_width = line_width
         self.lines = []
         self.previous_point = None
-        self.current_point = None
-        self.in_process = False
-        self.color = color
         self.current_line = None
+        self.color = color
         super(PolyLine, self).__init__()
 
     def _setup(self):
@@ -3089,23 +3086,16 @@ class PolyLine(UI):
 
         Create a Polyline.
         """
-        # line = Rectangle2D((.05, .05), position=self.points[0])
+        if len(self.points_data) < 2:
+            return
 
-        # line.on_left_mouse_button_pressed = self.left_button_pressed
-        # line.on_left_mouse_button_dragged = self.left_button_dragged
-
-        # self.current_line = line
-        # self.lines.append(line)
-
-        # if len(self.points) > 2:
-        #     for point in self.points[1:]:
-        #         self.add_point(point)
-        #     self.lines.pop()
-        pass
+        for ptn in self.points_data:
+            self.add_point(ptn)
+        self.add_point(self.points_data[0])
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        pass
+        return self.lines
 
     def _add_to_scene(self, scene):
         """Add all subcomponents or VTK props that compose this UI component.
@@ -3116,7 +3106,7 @@ class PolyLine(UI):
 
         """
         self._scene = scene
-        # scene.add(*self.lines)
+        scene.add(*self.lines)
 
     def _get_size(self):
         pass
@@ -3129,8 +3119,7 @@ class PolyLine(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        # self.lines[0].position = coords
-        # update other points
+        pass
 
     def resize(self, size):
         offset_from_mouse = 2
@@ -3177,6 +3166,7 @@ class PolyLine(UI):
         self.current_line = new_line
         self.lines.append(new_line)
         self.points.append(point)
+        self.previous_point = point
         if interactive:
             self._scene.add(new_line)
 
@@ -3191,8 +3181,8 @@ class PolyLine(UI):
             line.actor.GetProperty().SetColor(*color)
 
     def left_button_pressed(self, i_ren, _obj, line):
-        click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - self.position
+        # click_pos = np.array(i_ren.event.position)
+        # self._drag_offset = click_pos - self.position
         # i_ren.event.abort()  # Stop propagating the event.
         self.on_left_mouse_button_pressed(i_ren, _obj, line)
 
@@ -3388,7 +3378,7 @@ class DrawShape(UI):
 
         if self.shape_type == "polyline":
             vertices = self.shape.calculate_vertices()
-            if not vertices:
+            if not vertices.any():
                 return
         else:
             vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
@@ -3762,6 +3752,7 @@ class DrawPanel(UI):
     def left_button_released(self, i_ren, _obj, element):
         if self.is_creating_polyline:
             self.current_shape.shape.add_point(i_ren.event.position, True)
+            self.current_shape.cal_bounding_box(update_value=True)
         # if self.current_mode == "polyline":
         #     self.shape_list[-1].shape.add_point(i_ren.event.position, interactive=True)
 
