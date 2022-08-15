@@ -110,7 +110,7 @@ def timer_callback(_obj, _event):
 
 timer_id = showm.add_timer_callback(True, 1, timer_callback)
 
-interactive = True
+interactive = False
 
 if interactive:
     showm.start()
