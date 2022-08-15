@@ -14,7 +14,7 @@ actors = gltf_obj.actors()
 vertices = utils.vertices_from_actor(actors[0])
 clone = np.copy(vertices)
 # timeline = gltf_obj.get_skin_timeline()
-timelines = gltf_obj.get_skin_timelines()[0]
+timelines = gltf_obj.get_skin_timelines()
 timelines.add_actor(actors[0])
 print(len(timelines))
 
@@ -25,16 +25,19 @@ showm.initialize()
 
 scene.add(timelines)
 
-print(f'vertices: {vertices}')
-print(f'weights: {gltf_obj.weights_0}')
+bones = gltf_obj.bones[0]
+print(f'bones: {bones}')
 
 
 def timer_callback(_obj, _event):
     timelines.update_animation()
-    # if timelines[0].is_interpolatable('transform'):
-    deform = timelines.get_value('transform', timelines.current_timestamp)
-    # print(deform)
-    vertices[:] = gltf_obj.apply_skin_matrix(clone, deform)
+    joint_matrices = []
+    for i, bone in enumerate(bones):
+        if timelines.is_interpolatable(f'transform{i}'):
+            deform = timelines.get_value(f'transform{i}', timelines.current_timestamp)
+            joint_matrices.append(deform)
+    print(clone)
+    vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices, bones)
     utils.update_actor(actors[0])
     showm.render()
 
