@@ -2427,6 +2427,12 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     texta.GetProperty().SetColor(color)
     texta.SetPosition(pos)
 
+    def add_to_scene(scene):
+        texta.SetCamera(scene.GetActiveCamera())
+        scene.AddActor(texta)
+
+    texta.add_to_scene = add_to_scene
+
     return texta
 
 
