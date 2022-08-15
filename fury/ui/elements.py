@@ -3266,6 +3266,7 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
+        self.drawing_lines = []
 
     def _setup(self):
         """Setup this UI component.
@@ -3286,6 +3287,7 @@ class DrawPanel(UI):
             "line": ["line.png", "line-pressed.png"],
             "quad": ["quad.png", "quad-pressed.png"],
             "circle": ["circle.png", "circle-pressed.png"],
+            "drawing": ["drawing.png", "drawing-pressed.png"],
             "delete": ["delete.png", "delete-pressed.png"]
         }
 
@@ -3439,7 +3441,15 @@ class DrawPanel(UI):
         return np.clip(mouse_position, self.canvas.position,
                        self.canvas.position + self.canvas.size)
 
+    def add_line(self, position, color=(1, 1, 1)):
+        line = DrawShape(shape_type="line", drawpanel=self, position=position)
+        line.shape.color = color
+        self.drawing_lines.append(line)
+        self.current_scene.add(line)
+
     def handle_mouse_click(self, position):
+        if self.current_mode == "drawing":
+            self.add_line(position)
         if self.is_draggable and self.current_mode == "selection":
             self._drag_offset = position - self.position
         if self.current_mode in ["line", "quad", "circle"]:
@@ -3450,6 +3460,13 @@ class DrawPanel(UI):
         i_ren.force_render()
 
     def handle_mouse_drag(self, position):
+        if self.current_mode == "drawing":
+            last_position = self.drawing_lines[-1].position
+            offset = position - last_position
+            if any(offset):
+                self.drawing_lines[-1].resize(offset)
+                self.add_line(position)
+
         if self.is_draggable and self.current_mode == "selection":
             if self._drag_offset is not None:
                 new_position = position - self._drag_offset
