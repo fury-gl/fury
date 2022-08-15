@@ -14,11 +14,11 @@ showm = window.ShowManager(scene,
 showm.initialize()
 
 centers = np.random.random([50, 3]) * 20
-# centers = np.zeros([50, 3])
 colors = np.random.random([50, 3])
-scales = (np.random.random(50) + 1) / 2
+directions = np.random.random([50, 3])
+scales = (np.random.random(50) + 1) * 2
 
-spheres = actor.sphere(centers, colors, scales)
+spheres = actor.cube(centers, directions, colors=colors, scales=scales)
 
 
 class PartialActor:
@@ -42,13 +42,15 @@ class PartialActor:
         self.orig_vert = np.copy(act.vertices[self.mask])
         vertices = self.orig_vert.reshape([self.no_vertices, 3])
         self.center = np.mean(vertices, axis=0)
+        self.position = np.array([0, 0, 0])
         self.orig_vert_centered = self.orig_vert - self.center
 
     def SetPositions(self, positions):
         self.actor.vertices[self.mask] = self.orig_vert + np.repeat(
-            positions, self.vertices_per_prim, axis=0)
+            positions, self.vertices_per_prim, axis=0) + self.position
 
     def SetPosition(self, position):
+        self.position = position
         self.actor.vertices[self.mask] = self.orig_vert + np.tile(
             position, (self.no_vertices, 1))
 
@@ -57,27 +59,31 @@ class PartialActor:
 
 
 sub_spheres = PartialActor(spheres, [1, 4, 5, 8, 16, 7, 4])
-
 timeline = Timeline(sub_spheres, playback_panel=True)
+
+sub_spheres_2 = PartialActor(spheres, [0, 2, 3, 6])
+timeline_2 = Timeline(sub_spheres_2)
+
+timeline.add(timeline_2)
 
 ###############################################################################
 # Generating random position keyframes
 for t in range(0, 30, 1):
     ###########################################################################
     # Generating random position values
-    positions = np.random.uniform(-1, 1, [sub_spheres.no_primitives, 3]) * 20
+    positions = np.random.uniform(-1, 1, [sub_spheres.no_primitives, 3]) * 30
 
     ###########################################################################
     # Generating bezier control points.
     cp_dir = np.random.uniform(-1, 1, [sub_spheres.no_primitives, 3])
-    pre_cps = positions + cp_dir * random.randrange(0, 35)
-    post_cps = positions - cp_dir * random.randrange(0, 35)
+    pre_cps = positions + cp_dir * random.randrange(0, 15)
+    post_cps = positions - cp_dir * random.randrange(0, 15)
 
     ###########################################################################
     # Adding custom keyframe. Here I called it `centers`.
-    # timeline.set_keyframe('centers', t, positions, pre_cp=pre_cps,
-    #                       post_cp=post_cps)
-    timeline.set_position(t, np.random.uniform(-20, 20, [3]))
+    timeline.set_keyframe('centers', t, positions, pre_cp=pre_cps,
+                          post_cp=post_cps)
+    timeline_2.set_position(t, np.random.uniform(-100, 100, 3))
 
 ###############################################################################
 # Setting the interpolator to cubic bezier interpolator for `centers`.
@@ -95,8 +101,8 @@ def timer_callback(_obj, _event):
 
     ###########################################################################
     # setting centers from timeline
-    # c = timeline.get_current_value('centers')
-    # sub_spheres.SetPositions(c)
+    c = timeline.get_current_value('centers')
+    sub_spheres.SetPositions(c)
     update_actor(spheres)
 
     showm.render()
