@@ -8,7 +8,7 @@ import numpy as np
 from fury.shaders import (add_shader_callback, attribute_to_actor,
                           compose_shader, import_fury_shader,
                           replace_shader_in_actor, shader_to_actor)
-from fury import layout
+from fury import layout, utils
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
@@ -2386,6 +2386,10 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         bb_actor.GetProperty().BackfaceCullingOff()
         bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
+        bb_actor.centers = utils.vertices_from_actor(bb_actor)
+        bb_actor.colors = utils.colors_from_actor(bb_actor)
+        bb_actor.scales = utils.array_from_actor(bb_actor, 'scale')
+
         def update_uniforms(_caller, _event, calldata=None):
             program = calldata
             if program is not None:
@@ -2396,6 +2400,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
                 program.SetUniform3f('lightColor0', (1, 1, 1))
                 program.SetUniformf('specularPowerUniform', spec_power)
                 program.SetUniformf('specularIntensity', spec_intensity)
+                utils.update_actor(bb_actor)
 
         add_shader_callback(bb_actor, update_uniforms)
         return bb_actor
