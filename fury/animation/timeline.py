@@ -604,6 +604,17 @@ class Timeline(Container):
         return self._data.get(attrib).get('interpolator'). \
             get('func')(timestamp)
 
+    def get_current_value(self, attrib):
+        """Return the value of an attribute at current time.
+
+        Parameters
+        ----------
+        attrib: str
+            The attribute name.
+        """
+        return self._data.get(attrib).get('interpolator'). \
+            get('func')(self.current_timestamp)
+
     def get_camera_value(self, attrib, timestamp):
         """Return the value of an attribute interpolated at any given
         timestamp.
@@ -1134,6 +1145,7 @@ class Timeline(Container):
             self._static_actors.append(actor)
         else:
             actor.vcolors = utils.colors_from_actor(actor)
+                actor.vcolors = utils.colors_from_actor(actor)
             super(Timeline, self).add(actor)
 
     @property
