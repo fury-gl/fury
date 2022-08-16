@@ -12,13 +12,13 @@ What did you do this week?
 
 - Made two tutorials that show two approaches on how to animate primitives of the same FURY actor using the ``Timeline``.
 
-- Tried sending all keyframes at once as uniforms, but I faced a performance issue doing this.
-
-- Set uniforms that are not being sent by VTK for the billboard actor.
-
     .. raw:: html
 
         <iframe id="player" type="text/html"   width="440" height="390" src="https://user-images.githubusercontent.com/63170874/184627836-6b022832-043b-4c28-85b3-d5911808e1a4.mp4" frameborder="0"></iframe>
+
+- Tried sending all keyframes at once as uniforms, but I faced a performance issue doing this.
+
+- Set uniforms that are not being sent by VTK for the billboard actor.
 
 What is coming up next week?
 ----------------------------
