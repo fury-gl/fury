@@ -194,12 +194,10 @@ class Timeline(Container):
 
         Other Parameters
         ----------------
-        pre_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bézier interpolator` when
-            time exceeds this timestamp.
-        post_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bézier interpolator` when
-            time precedes this timestamp.
+        in_cp: ndarray, shape (1, M), optional
+            The in control point in case of using cubic Bézier interpolator.
+        out_cp: ndarray, shape (1, M), optional
+            The out control point in case of using cubic Bézier interpolator.
         in_tangent: ndarray, shape (1, M), optional
             The in tangent at that position for the cubic spline curve.
         out_tangent: ndarray, shape (1, M), optional
@@ -251,7 +249,7 @@ class Timeline(Container):
         Keyframes can be on any of the following forms:
         >>> key_frames_simple = {1: [1, 2, 1], 2: [3, 4, 5]}
         >>> key_frames_bezier = {1: {'value': [1, 2, 1]},
-        >>>                       2: {'value': [3, 4, 5], 'pre_cp': [1, 2, 3]}}
+        >>>                       2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
 
         Examples
         ---------
@@ -604,6 +602,17 @@ class Timeline(Container):
         return self._data.get(attrib).get('interpolator'). \
             get('func')(timestamp)
 
+    def get_current_value(self, attrib):
+        """Return the value of an attribute at current time.
+
+        Parameters
+        ----------
+        attrib: str
+            The attribute name.
+        """
+        return self._data.get(attrib).get('interpolator'). \
+            get('func')(self.current_timestamp)
+
     def get_camera_value(self, attrib, timestamp):
         """Return the value of an attribute interpolated at any given
         timestamp.
@@ -631,10 +640,10 @@ class Timeline(Container):
 
         Other Parameters
         ----------------
-        pre_cp: float
+        in_cp: float
             The control point in case of using `cubic Bézier interpolator` when
             time exceeds this timestamp.
-        post_cp: float
+        out_cp: float
             The control point in case of using `cubic Bézier interpolator` when
             time precedes this timestamp.
         in_tangent: ndarray, shape (1, M), optional
@@ -644,7 +653,7 @@ class Timeline(Container):
 
         Notes
         -----
-        `pre_cp` and `post_cp` only needed when using the cubic bezier
+        `in_cp` and `out_cp` only needed when using the cubic bezier
         interpolation method.
         """
         self.set_keyframe('position', timestamp, position, **kwargs)

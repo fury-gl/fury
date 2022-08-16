@@ -75,8 +75,8 @@ timeline.add_actor(sphere)
 # Note: If a control point is not provided or set `None`, this control point
 # will be the same as the position itself.
 
-timeline.set_position(0, np.array(points[0]), post_cp=np.array(points[1]))
-timeline.set_position(5, np.array(points[3]), pre_cp=np.array(points[2]))
+timeline.set_position(0, np.array(points[0]), out_cp=np.array(points[1]))
+timeline.set_position(5, np.array(points[3]), in_cp=np.array(points[2]))
 timeline.set_position_interpolator(cubic_bezier_interpolator)
 
 
@@ -148,7 +148,7 @@ for keyframe in keyframes:
 
     ###########################################################################
     # setting position keyframe
-    timeline.set_position(t, pos, pre_cp=pre_control_point, post_cp=post_control_point)
+    timeline.set_position(t, pos, in_cp=pre_control_point, out_cp=post_control_point)
 
     ###########################################################################
     # visualizing position keyframe

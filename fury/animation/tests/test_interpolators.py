@@ -153,9 +153,9 @@ def test_cubic_bezier_interpolator():
 
     data_2 = {
         1: {'value': np.array([-2, 0, 0]),
-            'post_cp': np.array([-15, 6, 0])},
+            'out_cp': np.array([-15, 6, 0])},
         2: {'value': np.array([18, 0, 0]),
-            'pre_cp': np.array([27, 18, 0])}
+            'in_cp': np.array([27, 18, 0])}
     }
 
     # with control points

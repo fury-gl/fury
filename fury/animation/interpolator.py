@@ -165,11 +165,11 @@ def cubic_bezier_interpolator(keyframes):
     for ts in timestamps:
         # keyframe at timestamp
         kf_ts = keyframes.get(ts)
-        if kf_ts.get('pre_cp') is None:
-            kf_ts['pre_cp'] = kf_ts.get('value')
+        if kf_ts.get('in_cp') is None:
+            kf_ts['in_cp'] = kf_ts.get('value')
 
-        if kf_ts.get('post_cp') is None:
-            kf_ts['post_cp'] = kf_ts.get('value')
+        if kf_ts.get('out_cp') is None:
+            kf_ts['out_cp'] = kf_ts.get('value')
 
     def interpolate(t):
         t0 = get_previous_timestamp(timestamps, t)
@@ -177,8 +177,8 @@ def cubic_bezier_interpolator(keyframes):
         k0 = keyframes.get(t0)
         k1 = keyframes.get(t1)
         p0 = k0.get('value')
-        p1 = k0.get('post_cp')
-        p2 = k1.get('pre_cp')
+        p1 = k0.get('out_cp')
+        p2 = k1.get('in_cp')
         p3 = k1.get('value')
         dt = get_time_tau(t, t0, t1)
         val = (1 - dt) ** 3 * p0 + 3 * (1 - dt) ** 2 * dt * p1 + 3 * \
