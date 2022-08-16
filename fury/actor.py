@@ -2448,7 +2448,6 @@ def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
         direction /= np.linalg.norm(direction)
         normal_vec = np.cross(orig_dir, direction)
         angle = np.arccos(np.dot(orig_dir, direction))
-        print(np.dot(orig_dir, direction))
         t.RotateWXYZ(np.rad2deg(angle), *normal_vec)
 
     t.Scale(*scale)
