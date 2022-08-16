@@ -27,7 +27,7 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText)
+                      Follower, VectorText, TransformPolyDataFilter)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
@@ -2383,8 +2383,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-                color=(1, 1, 1)):
+def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
+                scale=(0.2, 0.2, 0.2), color=(1, 1, 1), align_center=False):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2395,10 +2395,15 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
         Text for the label.
     pos : (3,) array_like, optional
         Left down position of the label.
+    direction : (3,) array_like, optional, default: None
+        The direction of the label. If None, label will follow the camera.
     scale : (3,) array_like
         Changes the size of the label.
     color : (3,) array_like
         Label color as ``(r,g,b)`` tuple.
+    align_center : bool, default: True
+        If `True`, the anchor of the actor will be the center of the text.
+        If `False`, the anchor will be at the left bottom of the text.
 
     Returns
     -------
@@ -2416,22 +2421,46 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     """
     atext = VectorText()
     atext.SetText(text)
-
     textm = PolyDataMapper()
+
+    t = Transform()
+    t.PostMultiply()
+
     textm.SetInputConnection(atext.GetOutputPort())
 
-    texta = Follower()
+    if align_center:
+        t.Translate(-np.array(textm.GetCenter()))
+
+    if direction is None:
+        texta = Follower()
+
+        def add_to_scene(scene):
+            texta.SetCamera(scene.GetActiveCamera())
+            scene.AddActor(texta)
+        texta.add_to_scene = add_to_scene
+
+    else:
+        texta = Actor()
+        textm.SetInputConnection(atext.GetOutputPort())
+
+        orig_dir = [0, 0, 1]
+        direction = np.array(direction, dtype=float)
+        direction /= np.linalg.norm(direction)
+        normal_vec = np.cross(orig_dir, direction)
+        angle = np.arccos(np.dot(orig_dir, direction))
+        print(np.dot(orig_dir, direction))
+        t.RotateWXYZ(np.rad2deg(angle), *normal_vec)
+
+    t.Scale(*scale)
+
+    plan = TransformPolyDataFilter()
+    plan.SetTransform(t)
+
+    plan.SetInputConnection(atext.GetOutputPort())
+    textm.SetInputConnection(plan.GetOutputPort())
+
     texta.SetMapper(textm)
-    texta.SetScale(scale)
-
     texta.GetProperty().SetColor(color)
-    texta.SetPosition(pos)
-
-    def add_to_scene(scene):
-        texta.SetCamera(scene.GetActiveCamera())
-        scene.AddActor(texta)
-
-    texta.add_to_scene = add_to_scene
 
     return texta
 
