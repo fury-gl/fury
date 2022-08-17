@@ -122,7 +122,7 @@ class Timeline(Container):
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable('color'):
                 [colors.append(self.get_color(t)) for t in ts]
-            elif len(self.items) == 1:
+            elif len(self.items) >= 1:
                 colors = sum([i.vcolors[0] / 255 for i in self.items]) / \
                          len(self.items)
             else:
