@@ -7,7 +7,7 @@ from pygltflib.utils import glb2gltf
 from fury.lib import Texture, Camera, Transform
 from fury import transform, utils, io
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import (linear_interpolator,
+from fury.animation.interpolator import (linear_interpolator, lerp,
                                          step_interpolator, slerp)
 from fury.animation import helpers
 
@@ -531,6 +531,7 @@ class glTF:
             pos = np.array([0, 0, 0])
             for j, bone in enumerate(bones):
                 # print(weights[j])
+                # try appply inv bind matrix
                 temp = transform.apply_transfomation(
                         np.array([xyz]), joint_matrices[j])[0]
                 pos = np.add(pos, temp*vweight[j])
@@ -690,4 +691,34 @@ def tan_cubic_spline_interpolator(keyframes):
         t3 = t2 * dt
         return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
                 -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+    return interpolate
+
+
+def transformation_interpolator(keyframes):
+    timestamps = helpers.get_timestamps_from_keyframes(keyframes)
+    for time in keyframes:
+        data = keyframes.get(time)
+        if data.get('in_matrix1') is None:
+            data['in_matrix1'] = np.identity(4)
+        if data.get('out_matrix1') is None:
+            data['out_matrix1'] = np.identity(4)
+        if data.get('in_matrix2') is None:
+            data['in_matrix2'] = np.identity(4)
+        if data.get('out_matrix2') is None:
+            data['out_matrix2'] = np.identity(4)
+    
+    def interpolate(t):
+        t0 = helpers.get_previous_timestamp(timestamps, t)
+        t1 = helpers.get_next_timestamp(timestamps, t)
+
+        mat_0 = keyframes.get(t0).get('in_matrix1')
+        mat_1 = keyframes.get(t1).get('out_matrix1')
+
+        mat_2 = keyframes.get(t0).get('in_matrix2')
+        mat_3 = keyframes.get(t1).get('out_matrix2')
+
+        out_1 = lerp(mat_0, mat_1, t0, t1, t)
+        out_2 = lerp(mat_2, mat_3, t0, t1, t)
+
+        return (out_1, out_2)
     return interpolate
