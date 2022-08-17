@@ -1,6 +1,6 @@
 Week 9 - First working skeletal animation prototype
 ===================================================
-.. post:: August 16 2022
+.. post:: August 17 2022
    :author: Shivam Anand
    :tags: google
    :category: gsoc
@@ -21,7 +21,7 @@ What did you do this week?
 What is coming up next week?
 ----------------------------
 
-- Generalising the skinning code to work with other models as well.
+- Generalising the skinning code to work with other models as well (it supports only the ``SimpleSkin`` model as of now).
 - Creating a custom interpolator to interpolate more than 4 matrices at once.
 
 
