@@ -3159,7 +3159,7 @@ class DrawShape(UI):
         """
         new_center = self.clamp_position(center=center_position)
         self.drawpanel.canvas.update_element(self, new_center, "center")
-        self.cal_bounding_box(update_value=True)
+        self.cal_bounding_box()
 
     @property
     def center(self):
@@ -3178,7 +3178,7 @@ class DrawShape(UI):
         new_center = np.array(coords)
         new_lower_left_corner = new_center - self._bounding_box_size // 2
         self.position = new_lower_left_corner + self._bounding_box_offset
-        self.cal_bounding_box(update_value=True)
+        self.cal_bounding_box()
 
     @property
     def is_selected(self):
@@ -3213,7 +3213,7 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(update_value=True)
+        self.cal_bounding_box()
 
     def show_rotation_slider(self):
         """Display the RingSlider2D to allow rotation of shape from the center.
@@ -3225,7 +3225,7 @@ class DrawShape(UI):
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
-    def cal_bounding_box(self, update_value=False, position=None):
+    def cal_bounding_box(self, position=None):
         """Calculates the min, max position and the size of the bounding box.
 
         Parameters
@@ -3250,12 +3250,11 @@ class DrawShape(UI):
             if y > max_y:
                 max_y = y
 
-        if update_value:
-            self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-            self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-            self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
+        self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+        self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
 
-            self._bounding_box_offset = position - self._bounding_box_min
+        self._bounding_box_offset = position - self._bounding_box_min
 
     def clamp_position(self, center=None):
         """Clamps the given center according to the DrawPanel canvas.
@@ -3293,7 +3292,7 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
-        self.cal_bounding_box(update_value=True)
+        self.cal_bounding_box()
 
     def remove(self):
         """Removes the Shape and all related actors.
