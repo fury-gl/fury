@@ -3150,7 +3150,7 @@ class DrawShape(UI):
             self.shape.position = coords
 
     def update_shape_position(self, center_position):
-        """Updates the center position of this shape on the canvas.
+        """Update the center position on the canvas.
 
         Parameters
         ----------
@@ -3226,7 +3226,7 @@ class DrawShape(UI):
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, position=None):
-        """Calculates the min, max position and the size of the bounding box.
+        """Calculate the min, max position and the size of the bounding box.
 
         Parameters
         ----------
@@ -3257,7 +3257,7 @@ class DrawShape(UI):
         self._bounding_box_offset = position - self._bounding_box_min
 
     def clamp_position(self, center=None):
-        """Clamps the given center according to the DrawPanel canvas.
+        """Clamp the given center according to the DrawPanel canvas.
 
         Parameters
         ----------
@@ -3295,7 +3295,7 @@ class DrawShape(UI):
         self.cal_bounding_box()
 
     def remove(self):
-        """Removes the Shape and all related actors.
+        """Remove the Shape and all related actors.
         """
         self._scene.rm(self.shape.actor)
         self._scene.rm(*self.rotation_slider.actors)
@@ -3477,7 +3477,7 @@ class DrawPanel(UI):
         return min(distance_list)
 
     def draw_shape(self, shape_type, current_position, in_process=False):
-        """Draws the required shape at the given position.
+        """Draw the required shape at the given position.
 
         Parameters
         ----------
@@ -3511,7 +3511,7 @@ class DrawPanel(UI):
                 shape.is_selected = False
 
     def update_button_icons(self, current_mode):
-        """Updates the button icon.
+        """Update the button icon.
 
         Parameters
         ----------
@@ -3525,7 +3525,7 @@ class DrawPanel(UI):
                 btn.next_icon()
 
     def clamp_mouse_position(self, mouse_position):
-        """Restricts the mouse position to the canvas boundary.
+        """Restrict the mouse position to the canvas boundary.
 
         Parameters
         ----------
