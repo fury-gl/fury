@@ -185,7 +185,7 @@ class Timeline(Container):
             The name of the attribute.
         timestamp: float
             Timestamp of the keyframe.
-        value: ndarray
+        value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
         is_camera: bool, optional
             Indicated whether setting a camera property or general property.
@@ -272,7 +272,7 @@ class Timeline(Container):
             The name of the attribute.
         timestamp: float
             Timestamp of the keyframe.
-        value: float
+        value: value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
         **kwargs: dict, optional
             Additional keyword arguments passed to `set_keyframe`.
