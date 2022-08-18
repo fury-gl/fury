@@ -10,7 +10,7 @@ Week 9: Animating primitives of the same actor
 What did you do this week?
 --------------------------
 
-- Made two tutorials that show two approaches on how to animate primitives of the same FURY actor using the ``Timeline``.
+- Made two tutorials in this `PR`_ that show two approaches on how to animate primitives of the same FURY actor using the ``Timeline``.
 
     .. raw:: html
 
@@ -28,4 +28,7 @@ What is coming up next week?
 
 Did you get stuck anywhere?
 ---------------------------
-I had some issues but didn't get stuck.
+I had some issues trying to get shaders to behave   but didn't get stuck.
+
+
+.. _`PR`: https://github.com/fury-gl/fury/pull/660
