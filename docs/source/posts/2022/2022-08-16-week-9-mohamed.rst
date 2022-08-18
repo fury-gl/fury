@@ -20,15 +20,20 @@ What did you do this week?
 
 - Set uniforms that are not being sent by VTK for the billboard actor.
 
+
 What is coming up next week?
 ----------------------------
+
 - Alter the ``Timeline`` to use matrices instead of setting values directly to allow hierarchical transformation.
 
 - Improve the API of the ``PartialActor`` to act almost like a normal actor.
 
+
 Did you get stuck anywhere?
 ---------------------------
-I had some issues trying to get shaders to behave   but didn't get stuck.
+
+I had some issues trying to get shader’s uniforms to hold their data, and solving this issue led to another issue, which was a performance issue.
+
 
 
 .. _`PR`: https://github.com/fury-gl/fury/pull/660
