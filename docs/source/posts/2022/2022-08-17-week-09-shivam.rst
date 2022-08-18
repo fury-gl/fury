@@ -9,13 +9,13 @@ Week 9 - First working skeletal animation prototype
 What did you do this week?
 --------------------------
 
-- This week I had the first working example of skeletal animation ready. I was able to render the ``SimpleSkin`` model. Here's a quick preview:
+- This week I had the first working `example`_ of skeletal animation ready. I was able to render the `SimpleSkin`_ model. Here's a quick preview:
 
     .. raw:: html
 
         <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/184981715-a83a8a36-f2bf-4ff1-9366-0c302dcf3f9b.mp4" frameborder="0"></iframe>
 
-- I wrote a custom interpolator (just like the tangent cubic spline interpolator) for interpolating two transformation matrices.
+- I wrote a custom `interpolator`_ (just like the tangent cubic spline interpolator) for interpolating two transformation matrices.
 
 
 What is coming up next week?
@@ -29,3 +29,8 @@ Did you get stuck anywhere?
 ---------------------------
 
 No, I didn't get stuck this week.
+
+
+.. _`SimpleSkin`: https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/SimpleSkin
+.. _`example`: https://github.com/xtanion/fury/blob/gltf-skin-test/docs/tutorials/01_introductory/viz_skinning.py
+.. _`interpolator`: https://github.com/xtanion/fury/blob/gltf-skin-test/fury/gltf.py#L693
