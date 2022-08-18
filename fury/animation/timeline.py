@@ -665,7 +665,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and positions as values.
 
         Examples
@@ -738,7 +738,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and scales as values.
 
         Examples
@@ -959,7 +959,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and opacities as values.
 
         Examples
@@ -976,7 +976,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and camera focal positions as
             values.
 
@@ -994,7 +994,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and camera view up vectors as
             values.
 
