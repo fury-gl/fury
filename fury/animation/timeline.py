@@ -256,8 +256,7 @@ class Timeline(Container):
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Timeline.set_keyframes('position', pos_keyframes)
         """
-        for t, data in keyframes.items():
-            keyframe = keyframes.get(t)
+        for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
                 self.set_keyframe(attrib, t, **keyframe, is_camera=is_camera)
             else:
