@@ -1289,8 +1289,8 @@ class Timeline(Container):
                     [act.SetScale(scale) for act in self.actors]
 
                 if self.is_interpolatable('opacity'):
-                    scale = self.get_opacity(t)
-                    [act.GetProperty().SetOpacity(scale) for
+                    opacity = self.get_opacity(t)
+                    [act.GetProperty().SetOpacity(opacity) for
                      act in self.actors]
 
                 if self.is_interpolatable('rotation'):
