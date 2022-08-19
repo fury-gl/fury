@@ -170,7 +170,8 @@ class glTF:
             self.bones.append(joints)  # for each skin will contain nodes
             self.ibms.append(ibms)
             for joint, ibm_matrix in zip(joints, ibms):
-                self.transverse_node(joint, ibm_matrix, parent)
+                print(joint, ibm_matrix)
+                self.transverse_node(joint, ibm_matrix.T, parent)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -495,8 +496,9 @@ class glTF:
     def get_skin_data(self, skin_id):
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
+        # print(inv_bind_matrix)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
-        print(f'ibm:\n{inv_bind_matrix}')
+        # print(f'ibm:\n{inv_bind_matrix}')
         joint_nodes = skin.joints
         return joint_nodes, inv_bind_matrix
 
@@ -564,6 +566,7 @@ class glTF:
                         matrix = self.generate_tmatrix(trs, prop)
                         # print(matrix)
                         timeline.set_keyframe(f'transform{i}', time[0], matrix)
+                        # timeline.set_interpolator(f'transform{i}', slerp)
                 else:
                     transform = np.identity(4)
                     timeline.set_keyframe(f'transform{i}', 0, transform)
