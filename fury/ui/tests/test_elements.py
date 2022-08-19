@@ -15,11 +15,15 @@ from fury.data import DATA_DIR
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter, \
-    assert_equal
+    assert_true, assert_equal, assert_not_equal, assert_greater_equal, \
+    assert_less_equal
 
 
 # @pytest.mark.skipif(True, reason="Need investigation. Incorrect "
 #                                  "number of event for each vtk version")
+from fury.ui import PlaybackPanel
+
+
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -478,6 +482,55 @@ def test_ui_range_slider(interactive=False):
         show_manager.scene.add(range_slider_test_horizontal)
         show_manager.scene.add(range_slider_test_vertical)
         show_manager.start()
+
+
+def test_ui_slider_value_range():
+    with npt.assert_no_warnings():
+        # LineSlider2D
+        line_slider = ui.LineSlider2D(min_value=0, max_value=0)
+        assert_equal(line_slider.value, 0)
+        assert_equal(line_slider.min_value, 0)
+        assert_equal(line_slider.max_value, 0)
+        line_slider.value = 100
+        assert_equal(line_slider.value, 0)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        line_slider = ui.LineSlider2D(min_value=0, max_value=100)
+        line_slider.value = 105
+        assert_equal(line_slider.value, 100)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        # LineDoubleSlider2D
+        line_double_slider = ui.LineDoubleSlider2D(min_value=0, max_value=0)
+        assert_equal(line_double_slider.left_disk_value, 0)
+        assert_equal(line_double_slider.right_disk_value, 0)
+        line_double_slider.left_disk_value = 100
+        assert_equal(line_double_slider.left_disk_value, 0)
+        line_double_slider.right_disk_value = -100
+        assert_equal(line_double_slider.right_disk_value, 0)
+
+        line_double_slider = ui.LineDoubleSlider2D(min_value=50, max_value=100)
+        line_double_slider.right_disk_value = 150
+        assert_equal(line_double_slider.right_disk_value, 100)
+        line_double_slider.left_disk_value = -150
+        assert_equal(line_double_slider.left_disk_value, 50)
+
+        # RingSlider2D
+        ring_slider = ui.RingSlider2D(initial_value=0, min_value=0, max_value=0)
+        assert_equal(ring_slider.value, 0)
+        assert_equal(ring_slider.previous_value, 0)
+        ring_slider.value = 180
+        assert_equal(ring_slider.value, 0)
+        ring_slider.value = -180
+        assert_equal(ring_slider.value, 0)
+
+        # RangeSlider
+        range_slider_2d = ui.RangeSlider(min_value=0, max_value=0)
+        assert_equal(range_slider_2d.value_slider.value, 0)
+        range_slider_2d.value_slider.value = 100
+        assert_equal(range_slider_2d.value_slider.value, 0)
 
 
 def test_ui_option(interactive=False):
@@ -1105,3 +1158,71 @@ def test_ui_spinbox(interactive=False):
     spinbox.resize((450, 200))
     npt.assert_equal((315, 160), spinbox.textbox_size)
     npt.assert_equal((90, 60), spinbox.button_size)
+
+
+def test_playback_panel(interactive=False):
+    global playing, paused, stopped, loop, ts
+
+    playing = stopped = paused = loop = False
+    ts = 0
+
+    current_size = (900, 620)
+    show_manager = window.ShowManager(
+        size=current_size, title="PlaybackPanel UI Example")
+
+    filename = "test_playback_panel"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    def play():
+        global playing
+        playing = True
+
+    def pause():
+        global paused
+        paused = True
+
+    def stop():
+        global stopped
+        stopped = True
+
+    def loop_toggle(value):
+        global loop
+        loop = True
+
+    def change_t(value):
+        global ts
+        ts = value
+        assert_greater_equal(playback.current_time, 0)
+        assert_less_equal(playback.current_time, playback.final_time)
+        assert_equal(playback.current_time, ts)
+
+    playback = PlaybackPanel()
+    playback.on_play = play
+    playback.on_pause = pause
+    playback.on_stop = stop
+    playback.on_loop_toggle = loop_toggle
+    playback.on_progress_bar_changed = change_t
+
+    show_manager.scene.add(playback)
+    event_counter = EventCounter()
+    event_counter.monitor(playback)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_true(playing)
+    assert_true(paused)
+    assert_true(stopped)
+    assert_equal(playback.current_time, ts)
+    assert_greater(playback.current_time, 0)
+    assert_not_equal(playback.current_time_str, '00:00.00')
+    playback.current_time = 5
+    assert_equal(playback.current_time, 5)
+    assert_equal(playback.current_time_str, '00:05.00')
