@@ -16,15 +16,20 @@ from fury.utils import (add_polydata_numeric_field, get_polydata_field,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
                         get_bounds, update_surface_actor_colors,
-                        apply_affine_to_actor, color_check, is_ui)
+                        apply_affine_to_actor, color_check, is_ui,
+                        primitives_count_to_actor, primitives_count_from_actor,
+                        set_polydata_primitives_count,
+                        get_polydata_primitives_count)
 from fury import actor, window, utils
 from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
-                      CellArray, Polygon, Actor2D, DoubleArray,
+                      CellArray, Polygon, Actor2D, DoubleArray, VTK_INT,
                       UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
+
 import fury.primitive as fp
 
 from fury.optpkg import optional_package
 dipy, have_dipy, _ = optional_package('dipy')
+
 
 def test_apply_affine_to_actor(interactive=False):
     text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
@@ -129,11 +134,36 @@ def test_polydata_polygon(interactive=False):
                             [1.0, 0.0, 1.0],
                             [1.0, 1.0, 0.0],
                             [1.0, 1.0, 1.0]])
+    my_tcoords = np.array([[6., 0.],
+                           [5., 0.],
+                           [6., 1.],
+                           [5., 1.],
+                           [4., 0.],
+                           [5., 0.],
+                           [4., 1.],
+                           [5., 1.],
+                           [2., 0.],
+                           [1., 0.],
+                           [2., 1.],
+                           [1., 1.],
+                           [3., 0.],
+                           [4., 0.],
+                           [3., 1.],
+                           [4., 1.],
+                           [3., 0.],
+                           [2., 0.],
+                           [3., 1.],
+                           [2., 1.],
+                           [0., 0.],
+                           [0., 1.],
+                           [1., 0.],
+                           [1., 1.]])
     colors = my_vertices * 255
     my_polydata = PolyData()
 
     utils.set_polydata_vertices(my_polydata, my_vertices)
     utils.set_polydata_triangles(my_polydata, my_triangles)
+    utils.set_polydata_tcoords(my_polydata, my_tcoords)
 
     npt.assert_equal(len(my_vertices), my_polydata.GetNumberOfPoints())
     npt.assert_equal(len(my_triangles), my_polydata.GetNumberOfCells())
@@ -141,9 +171,11 @@ def test_polydata_polygon(interactive=False):
 
     res_triangles = utils.get_polydata_triangles(my_polydata)
     res_vertices = utils.get_polydata_vertices(my_polydata)
+    res_tcoords = utils.get_polydata_tcoord(my_polydata)
 
     npt.assert_array_equal(my_vertices, res_vertices)
     npt.assert_array_equal(my_triangles, res_triangles)
+    npt.assert_array_equal(my_tcoords, res_tcoords)
 
     utils.set_polydata_colors(my_polydata, colors)
     npt.assert_equal(utils.get_polydata_colors(my_polydata), colors)
@@ -814,12 +846,60 @@ def test_empty_list_to_polydata():
     lines = [[]]
     _, _ = utils.lines_to_vtk_polydata(lines)
 
+
 def test_empty_array_to_polydata():
     lines = np.array([[]])
     _, _ = utils.lines_to_vtk_polydata(lines)
+
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
     lines = Streamlines()
     _, _ = utils.lines_to_vtk_polydata(lines)
+
+
+def test_set_polydata_primitives_count():
+    polydata = PolyData()
+
+    set_polydata_primitives_count(polydata, 1)
+    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    npt.assert_equal(prim_count, 1)
+
+
+def test_get_polydata_primitives_count():
+    polydata = PolyData()
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
+
+    prim_count = get_polydata_primitives_count(polydata)
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count_to_actor():
+    act = actor.axes()
+    primitives_count_to_actor(act, 1)
+    polydata = act.GetMapper().GetInput()
+    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count_from_actor():
+    act = actor.axes()
+    polydata = act.GetMapper().GetInput()
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
+    prim_count = primitives_count_from_actor(act)
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count():
+    # testing on actor
+    act = actor.axes()
+    primitives_count_to_actor(act, 3)
+    prim_count = primitives_count_from_actor(act)
+    npt.assert_equal(prim_count, 3)
+
+    # testing on polydata
+    polydata = PolyData()
+    set_polydata_primitives_count(polydata, 4)
+    prim_count = get_polydata_primitives_count(polydata)
+    npt.assert_equal(prim_count, 4)

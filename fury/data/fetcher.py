@@ -676,7 +676,7 @@ def read_viz_dmri(fname):
     return pjoin(folder, fname)
 
 
-def read_viz_gltf(fname, mode=None):
+def read_viz_gltf(fname, mode='glTF'):
     """Read specific gltf sample.
 
     Parameters
@@ -687,6 +687,7 @@ def read_viz_gltf(fname, mode=None):
 
     mode : str, optional
         Model type (e.g. glTF-Binary, glTF-Embedded, etc)
+        Default : glTF
 
     Returns
     -------
@@ -696,16 +697,10 @@ def read_viz_gltf(fname, mode=None):
     folder = pjoin(fury_home, 'glTF')
     model = pjoin(folder, fname)
 
-    if mode is None:
-        types = os.listdir(model)
-        if len(types) == 0:
-            raise ValueError('Model does not exist.')
-        mode = types[-1]
-
     sample = pjoin(model, mode)
 
     if not os.path.exists(sample):
-        raise ValueError('Model does not exists.')
+        raise ValueError(f'Model {sample} does not exists.')
 
     for filename in os.listdir(sample):
         if filename.endswith('.gltf') or filename.endswith('.glb'):

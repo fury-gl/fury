@@ -403,6 +403,27 @@ def get_polydata_vertices(polydata):
     return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
 
 
+def get_polydata_tcoord(polydata):
+    """Get texture coordinates (ndarrays Nx2 float) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 2)
+        Tcoords, represented as 2D ndarrays. None if there are no texture
+        in the vtk polydata.
+
+    """
+    vtk_tcoord = polydata.GetPointData().GetTCoords()
+    if vtk_tcoord is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tcoord)
+
+
 def get_polydata_normals(polydata):
     """Get vertices normal (ndarrays Nx3 int) from a vtk polydata.
 
@@ -509,6 +530,61 @@ def add_polydata_numeric_field(polydata, field_name, field_data,
     return polydata
 
 
+def set_polydata_primitives_count(polydata, primitives_count):
+    """Add primitives count to polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+    primitives_count : int
+
+    """
+    add_polydata_numeric_field(polydata, "prim_count", primitives_count,
+                               array_type=VTK_INT)
+
+
+def get_polydata_primitives_count(polydata):
+    """Get primitives count from actor's polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+
+    Returns
+    -------
+    primitives count : int
+    """
+    return get_polydata_field(polydata, 'prim_count')[0]
+
+
+def primitives_count_to_actor(actor, primitives_count):
+    """Add primitives count to actor's polydata.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+    primitives_count : int
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    set_polydata_primitives_count(polydata, primitives_count)
+
+
+def primitives_count_from_actor(actor):
+    """Get primitives count from actor's polydata.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+
+    Returns
+    -------
+    primitives count : int
+    """
+    polydata = actor.GetMapper().GetInput()
+    return get_polydata_primitives_count(polydata)
+
+
 def set_polydata_triangles(polydata, triangles):
     """Set polydata triangles with a numpy array (ndarrays Nx3 int).
 
@@ -594,6 +670,21 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
     return polydata
 
 
+def set_polydata_tcoords(polydata, tcoords):
+    """Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tcoords : texture coordinates, represented as 2D ndarrays (Nx2)
+        (one per vertex range (0, 1))
+    """
+    vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True,
+                                             array_type=VTK_FLOAT)
+    polydata.GetPointData().SetTCoords(vtk_tcoords)
+    return polydata
+
+
 def update_polydata_normals(polydata):
     """Generate and update polydata normals.
 
@@ -672,7 +763,7 @@ def get_actor_from_polydata(polydata):
 
 
 def get_actor_from_primitive(vertices, triangles, colors=None,
-                             normals=None, backface_culling=True):
+                             normals=None, backface_culling=True, prim_count=1):
     """Get actor from a vtkPolyData.
 
     Parameters
@@ -690,7 +781,8 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         culling of polygons based on orientation of normal with respect to
         camera. If backface culling is True, polygons facing away from camera
         are not drawn. Default: True
-
+    prim_count: int, optional
+        primitives count to be associated with the actor
 
     Returns
     -------
@@ -701,6 +793,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     pd = PolyData()
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
+    set_polydata_primitives_count(pd, prim_count)
     if isinstance(colors, np.ndarray):
         if len(colors) != len(vertices):
             msg = "Vertices and Colors should have the same size."
@@ -753,6 +846,8 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
+    set_polydata_primitives_count(polydata_centers, len(centers))
+
     if directions is not None:
         polydata_centers.GetPointData().AddArray(directions_fa)
         polydata_centers.GetPointData().SetActiveVectors('directions')
