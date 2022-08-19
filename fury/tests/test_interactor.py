@@ -14,6 +14,9 @@ import numpy.testing as npt
 import pytest
 
 
+@pytest.mark.skipif(skip_win,
+                    reason="This test does not work on Windows."
+                           " Need to be introspected")
 def test_custom_interactor_style_events(recording=False):
     print("Using VTK {}".format(VTK_VERSION))
     filename = "test_custom_interactor_style_events.log.gz"
