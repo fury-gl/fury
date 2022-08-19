@@ -3771,13 +3771,6 @@ class DrawPanel(UI):
         i_ren.force_render()
 
     def key_release(self, i_ren, _obj, _drawpanel):
-        # key = i_ren.event.key
-        # if key == "Shift_L":
-        #     self.key_status[key] = False
-        # elif key == "Control_L":
-        #     self.key_status[key] = False
-        # elif key == "Alt_L":
-        #     self.key_status[key] = False
         self.key_status[i_ren.event.key] = False
 
 
