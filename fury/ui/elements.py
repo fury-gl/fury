@@ -3233,8 +3233,7 @@ class DrawShape(UI):
         position : (float, float)
             (x, y) in pixels.
         """
-        if position is None:
-            position = self.position
+        position = self.position if position is None else position
         vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
@@ -3269,8 +3268,7 @@ class DrawShape(UI):
         new_center: ndarray(int)
             New center for the shape.
         """
-        if center is None:
-            center = self.center
+        center = self.center if center is None else center
         new_center = np.clip(center, self._bounding_box_size//2,
                              self.drawpanel.size - self._bounding_box_size//2)
         return new_center.astype(int)
