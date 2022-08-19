@@ -6,6 +6,7 @@ from dipy.data.fetcher import get_bundle_atlas_hcp842
 from fury import actor, ui, window
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
+from fury.shaders import shader_to_actor
 from fury.utils import (normals_from_actor,
                         tangents_from_direction_of_anisotropy,
                         tangents_to_actor, vertices_from_actor)
@@ -68,8 +69,9 @@ if __name__ == '__main__':
     bundle = sft.streamlines
 
     # Bundle actor
-    obj_actor = actor.streamtube(bundle, linewidth=.25)
+    #obj_actor = actor.streamtube(bundle, linewidth=.25)
 
+    """
     # Wireframe representation for streamtubes
     obj_actor.GetProperty().SetRepresentationToWireframe()
 
@@ -111,5 +113,28 @@ if __name__ == '__main__':
                      range(len(vertices))]
     tangent_actor = actor.line(tangent_lines, colors=(1, 0, 0))
     scene.add(tangent_actor)
+    """
+
+    tmp_line_idx = 107  # Shortest line
+    #tmp_line_idx = 146  # Longest line
+    tmp_line = bundle[tmp_line_idx]
+
+    obj_actor = actor.line([tmp_line])
+
+    # TODO: Find consecutive line segments
+    #   TODO: Calculate line segments distance
+    #   TODO: Check line actor
+    # TODO: Calculate tangents using line segments
+    # TODO: Get shader code
+    #   TODO: Check tangents availability
+
+    fs_impl = \
+    """
+    error
+    """
+    shader_to_actor(obj_actor, 'fragment', block='light', impl_code=fs_impl,
+                    debug=True)
+
+    scene.add(obj_actor)
 
     window.show(scene)
