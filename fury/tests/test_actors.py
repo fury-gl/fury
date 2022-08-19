@@ -5,8 +5,7 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import pytest
 import numpy as np
 import numpy.testing as npt
-from scipy.ndimage.measurements import center_of_mass
-from scipy.signal import convolve
+from scipy.ndimage import center_of_mass
 
 from fury import shaders
 from fury import actor, window, primitive as fp

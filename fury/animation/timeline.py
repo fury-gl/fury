@@ -122,7 +122,7 @@ class Timeline(Container):
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable('color'):
                 [colors.append(self.get_color(t)) for t in ts]
-            elif len(self.items) == 1:
+            elif len(self.items) >= 1:
                 colors = sum([i.vcolors[0] / 255 for i in self.items]) / \
                          len(self.items)
             else:
@@ -185,7 +185,7 @@ class Timeline(Container):
             The name of the attribute.
         timestamp: float
             Timestamp of the keyframe.
-        value: ndarray
+        value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
         is_camera: bool, optional
             Indicated whether setting a camera property or general property.
@@ -194,12 +194,10 @@ class Timeline(Container):
 
         Other Parameters
         ----------------
-        pre_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bézier interpolator` when
-            time exceeds this timestamp.
-        post_cp: ndarray, shape (1, M), optional
-            The control point in case of using `cubic Bézier interpolator` when
-            time precedes this timestamp.
+        in_cp: ndarray, shape (1, M), optional
+            The in control point in case of using cubic Bézier interpolator.
+        out_cp: ndarray, shape (1, M), optional
+            The out control point in case of using cubic Bézier interpolator.
         in_tangent: ndarray, shape (1, M), optional
             The in tangent at that position for the cubic spline curve.
         out_tangent: ndarray, shape (1, M), optional
@@ -251,15 +249,14 @@ class Timeline(Container):
         Keyframes can be on any of the following forms:
         >>> key_frames_simple = {1: [1, 2, 1], 2: [3, 4, 5]}
         >>> key_frames_bezier = {1: {'value': [1, 2, 1]},
-        >>>                       2: {'value': [3, 4, 5], 'pre_cp': [1, 2, 3]}}
+        >>>                       2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
 
         Examples
         ---------
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Timeline.set_keyframes('position', pos_keyframes)
         """
-        for t, data in keyframes.items():
-            keyframe = keyframes.get(t)
+        for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
                 self.set_keyframe(attrib, t, **keyframe, is_camera=is_camera)
             else:
@@ -274,7 +271,7 @@ class Timeline(Container):
             The name of the attribute.
         timestamp: float
             Timestamp of the keyframe.
-        value: float
+        value: value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
         **kwargs: dict, optional
             Additional keyword arguments passed to `set_keyframe`.
@@ -642,10 +639,10 @@ class Timeline(Container):
 
         Other Parameters
         ----------------
-        pre_cp: float
+        in_cp: float
             The control point in case of using `cubic Bézier interpolator` when
             time exceeds this timestamp.
-        post_cp: float
+        out_cp: float
             The control point in case of using `cubic Bézier interpolator` when
             time precedes this timestamp.
         in_tangent: ndarray, shape (1, M), optional
@@ -655,7 +652,7 @@ class Timeline(Container):
 
         Notes
         -----
-        `pre_cp` and `post_cp` only needed when using the cubic bezier
+        `in_cp` and `out_cp` only needed when using the cubic bezier
         interpolation method.
         """
         self.set_keyframe('position', timestamp, position, **kwargs)
@@ -667,7 +664,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and positions as values.
 
         Examples
@@ -740,7 +737,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and scales as values.
 
         Examples
@@ -961,7 +958,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and opacities as values.
 
         Examples
@@ -978,7 +975,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and camera focal positions as
             values.
 
@@ -996,7 +993,7 @@ class Timeline(Container):
 
         Parameters
         ----------
-        keyframes: dict(float: ndarray, shape(1, 3))
+        keyframes: dict
             A dict with timestamps as keys and camera view up vectors as
             values.
 
@@ -1292,8 +1289,8 @@ class Timeline(Container):
                     [act.SetScale(scale) for act in self.actors]
 
                 if self.is_interpolatable('opacity'):
-                    scale = self.get_opacity(t)
-                    [act.GetProperty().SetOpacity(scale) for
+                    opacity = self.get_opacity(t)
+                    [act.GetProperty().SetOpacity(opacity) for
                      act in self.actors]
 
                 if self.is_interpolatable('rotation'):

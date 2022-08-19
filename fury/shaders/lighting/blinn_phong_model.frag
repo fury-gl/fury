@@ -1,5 +1,4 @@
-vec3 blinnPhongIllumModel(float la, vec3 lc, vec3 dc, float sp, vec3 sc,
-                          vec3 ac)
+vec3 blinnPhongIllumModel(float la, vec3 lc, vec3 dc, float sp, vec3 sc, vec3 ac)
 {
     // Calculate the diffuse factor and adjust the diffuse color
     float df = max(0, la);
