@@ -3087,6 +3087,7 @@ class FileMenu2D(UI):
 class DrawShapeGroup:
     def __init__(self):
         self.grouped_shapes = []
+        self._scene = None
 
         # Group rotation slider
         self.group_rotation_slider = RingSlider2D(initial_value=0,
@@ -3187,7 +3188,6 @@ class DrawShapeGroup:
         scene : scene
 
         """
-        self._scene = scene
         scene.add(self.group_rotation_slider)
 
 
@@ -3604,7 +3604,7 @@ class DrawPanel(UI):
         iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
         iren.add_active_prop(self.canvas.actors[0])
         self.canvas.add_to_scene(scene)
-        self.shape_group.add_rotation_slider(scene)
+        self.shape_group._scene = scene
 
     def _get_size(self):
         return self.canvas.size
