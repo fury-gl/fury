@@ -3453,7 +3453,6 @@ class DrawShape(UI):
     def remove(self):
         """Remove the Shape and all related actors.
         """
-        print(self.drawpanel.shape_list)
         self.drawpanel.shape_list.remove(self)
         self._scene.rm(self.shape.actor)
         self._scene.rm(*[border.actor for border in self.bb_box])
@@ -3472,7 +3471,6 @@ class DrawShape(UI):
             self._drag_offset = click_pos - self.center
             i_ren.event.abort()
         elif mode == "delete":
-            # print(self.drawpanel.shape_list)
             self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
