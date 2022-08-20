@@ -7,6 +7,10 @@ from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
 from fury.lib import Texture, Camera, numpy_support
 from fury import transform, utils, io
+from fury.animation.timeline import Timeline
+from fury.animation.interpolator import (linear_interpolator, lerp,
+                                         step_interpolator, slerp)
+from fury.animation import helpers
 
 
 comp_type = {
@@ -60,6 +64,7 @@ class glTF:
         self.actors_list = []
         self.materials = []
         self.nodes = []
+        self.transformations = []
         self.polydatas = []
         self.init_transform = np.identity(4)
         self.animations = []
@@ -77,6 +82,12 @@ class glTF:
         """
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
+            transform_mat = self.transformations[i]
+            position, rot, scale = transform.trs_from_matrix(transform_mat)
+
+            actor.SetPosition(position)
+            actor.SetScale(scale)
+            actor.RotateWXYZ(*rot)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -179,7 +190,8 @@ class glTF:
             attributes = primitive.attributes
 
             vertices = self.get_acc_data(attributes.POSITION)
-            vertices = transform.apply_transfomation(vertices, transform_mat)
+            # vertices = transform.apply_transfomation(vertices, transform_mat)
+            self.transformations.append(transform_mat)
 
             polydata = utils.PolyData()
             utils.set_polydata_vertices(polydata, vertices)
@@ -212,7 +224,7 @@ class glTF:
                 material = self.get_materials(primitive.material)
 
             self.polydatas.append(polydata)
-            self.nodes.append(parent)
+            self.nodes.append(parent[:])
             self.materials.append(material)
 
     def get_acc_data(self, acc_id):
@@ -475,6 +487,119 @@ class glTF:
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
         joint_nodes = skin.joints
         root_node = skin.skeleton
+
+    def get_animation_timelines(self):
+        """Returns list of animation timeline.
+
+        Returns
+        -------
+        timelines : List
+            List of timelines containing actors.
+        """
+        actors = self.actors()
+        interpolators = {
+            'LINEAR': linear_interpolator,
+            'STEP': step_interpolator,
+            'CUBICSPLINE': tan_cubic_spline_interpolator
+        }
+
+        rotation_interpolators = {
+            'LINEAR': slerp,
+            'STEP': step_interpolator,
+            'CUBICSPLINE': tan_cubic_spline_interpolator
+        }
+
+        timelines = []
+        for transforms in self.node_transform:
+            target_node = transforms['node']
+            print(transforms)
+            for i, nodes in enumerate(self.nodes):
+                timeline = Timeline()
+
+                if target_node in nodes:
+                    timeline.add_actor(actors[i])
+                    timestamp = transforms['input']
+                    transform = transforms['output']
+                    prop = transforms['property']
+                    interpolation_type = transforms['interpolation']
+
+                    interpolator = interpolators.get(interpolation_type)
+                    rot_interp = rotation_interpolators.get(
+                                       interpolation_type)
+                    timeshape = timestamp.shape
+                    transhape = transform.shape
+                    if transforms['interpolation'] == 'CUBICSPLINE':
+                        transform = transform.reshape(
+                            (timeshape[0], -1, transhape[1]))
+
+                    for time, trs in zip(timestamp, transform):
+                        in_tan, out_tan = None, None
+                        if trs.ndim == 2:
+                            cubicspline = trs
+                            in_tan = cubicspline[0]
+                            trs = cubicspline[1]
+                            out_tan = cubicspline[2]
+
+                        if prop == 'rotation':
+                            timeline.set_rotation(time[0], trs,
+                                                  in_tangent=in_tan,
+                                                  out_tangent=out_tan)
+                            timeline.set_rotation_interpolator(rot_interp)
+                        if prop == 'translation':
+                            timeline.set_position(time[0], trs,
+                                                  in_tangent=in_tan,
+                                                  out_tangent=out_tan)
+                            timeline.set_position_interpolator(interpolator)
+                        if prop == 'scale':
+                            timeline.set_scale(time[0], trs,
+                                               in_tangent=in_tan,
+                                               out_tangent=out_tan)
+                            timeline.set_scale_interpolator(interpolator)
+                else:
+                    timeline.add_static_actor(actors[i])
+
+                timelines.append(timeline)
+        return timelines
+
+    def get_main_timeline(self):
+        """Returns main timeline with all animations.
+        """
+        main_timeline = Timeline(playback_panel=True)
+        timelines = self.get_animation_timelines()
+        for timeline in timelines:
+            main_timeline.add_timeline(timeline)
+        return main_timeline
+
+
+def tan_cubic_spline_interpolator(keyframes):
+
+    timestamps = helpers.get_timestamps_from_keyframes(keyframes)
+    for time in keyframes:
+        data = keyframes.get(time)
+        value = data.get('value')
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
+
+    def interpolate(t):
+        t0 = helpers.get_previous_timestamp(timestamps, t)
+        t1 = helpers.get_next_timestamp(timestamps, t)
+
+        dt = helpers.get_time_tau(t, t0, t1)
+
+        time_delta = t1 - t0
+
+        p0 = keyframes.get(t0).get('value')
+        tan_0 = keyframes.get(t0).get('out_tangent') * time_delta
+        p1 = keyframes.get(t1).get('value')
+        tan_1 = keyframes.get(t1).get('in_tangent') * time_delta
+        # cubic spline equation using tangents
+        t2 = dt * dt
+        t3 = t2 * dt
+        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
+                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+    return interpolate
 
 
 def export_scene(scene, filename='default.gltf'):
