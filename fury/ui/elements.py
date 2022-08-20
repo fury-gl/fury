@@ -614,7 +614,7 @@ class LineSlider2D(UI):
     @value.setter
     def value(self, value):
         value_range = self.max_value - self.min_value
-        self.ratio = (value - self.min_value) / value_range
+        self.ratio = (value - self.min_value) / value_range if value_range else 0
         self.on_value_changed(self)
 
     @property
@@ -875,7 +875,6 @@ class LineDoubleSlider2D(UI):
         self.handles[1].on_left_mouse_button_released = \
             self.handle_release_callback
 
-
     def _get_actors(self):
         """Get the actors composing this UI component."""
         return (self.track.actors + self.handles[0].actors +
@@ -972,7 +971,7 @@ class LineDoubleSlider2D(UI):
 
         """
         value_range = self.max_value - self.min_value
-        return (value - self.min_value) / value_range
+        return (value - self.min_value) / value_range if value_range else 0
 
     def ratio_to_coord(self, ratio):
         """Convert the ratio to the absolute coordinate.
@@ -1436,7 +1435,7 @@ class RingSlider2D(UI):
     @value.setter
     def value(self, value):
         value_range = self.max_value - self.min_value
-        self.ratio = (value - self.min_value) / value_range
+        self.ratio = (value - self.min_value) / value_range if value_range else 0
         self.on_value_changed(self)
 
     @property
@@ -2839,6 +2838,7 @@ class ListBoxItem2D(UI):
 
     def resize(self, size):
         self.background.resize(size)
+
 
 class FileMenu2D(UI):
     """A menu to select files in the current folder.
