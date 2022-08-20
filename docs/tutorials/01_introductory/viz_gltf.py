@@ -17,8 +17,8 @@ scene.SetBackground(0.1, 0.1, 0.4)
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('CesiumMan', 'glTF')
-filename = read_viz_gltf('CesiumMan')
+fetch_gltf('Duck', 'glTF')
+filename = read_viz_gltf('Duck')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -30,11 +30,6 @@ gltf_obj = glTF(filename)
 actors = gltf_obj.actors()
 
 ##############################################################################
-# get the animation data
-
-transformation = gltf_obj.node_transform
-
-##############################################################################
 # Add all the actor from list of actors to the scene.
 
 scene.add(*actors)
@@ -43,7 +38,6 @@ scene.add(*actors)
 # Applying camera
 
 cameras = gltf_obj.cameras
-
 if cameras:
     scene.SetActiveCamera(cameras[0])
 
