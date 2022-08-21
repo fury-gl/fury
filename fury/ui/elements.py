@@ -3163,12 +3163,14 @@ class PolyLine(UI):
         new_line.on_left_mouse_button_pressed = self.left_button_pressed
         new_line.on_left_mouse_button_dragged = self.left_button_dragged
 
+        control_point = Disk2D(5, center=point)
+
         self.current_line = new_line
         self.lines.append(new_line)
         self.points.append(point)
         self.previous_point = point
         if add_to_scene:
-            self._scene.add(new_line)
+            self._scene.add(new_line, control_point)
 
     @property
     def color(self):
