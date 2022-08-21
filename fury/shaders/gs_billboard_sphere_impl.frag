@@ -31,6 +31,5 @@ if(d >= 0){
     fragOutput0 = vec4(color, opacity);
     vec4 dep = MCDCMatrix * vec4(intersection, 1);
     gl_FragDepth = (dep.z / dep.w + 1.0) / 2.0;
-    return;
 }
 else discard;

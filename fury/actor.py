@@ -2372,8 +2372,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
 
         shader_to_actor(bb_actor, 'vertex',
                         impl_code=vs_impl_code,
-                        decl_code=vs_dec_code,
-                        block='prim_id')
+                        decl_code=vs_dec_code)
 
         fs_dec_code = compose_shader(
             [import_fury_shader('gs_billboard_dec.frag'),
