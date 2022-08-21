@@ -77,7 +77,7 @@ def main_pos(t):
 
 
 def child_pos(t):
-    return np.array([0, np.cos(t * 20), 0]) * 3
+    return np.array([np.cos(t * 20), np.cos(t * 20), np.cos(t * 20)]) * 3
 
 
 def grand_child_pos(t):
