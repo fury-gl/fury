@@ -8,7 +8,7 @@ from fury.animation.interpolator import spline_interpolator, \
 import numpy as np
 from scipy.spatial import transform
 from fury.ui.elements import PlaybackPanel
-from fury.lib import Actor
+from fury.lib import Actor, Transform
 
 
 class Timeline(Container):
@@ -67,6 +67,7 @@ class Timeline(Container):
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._parent_timeline = None
+        self._transform = Transform()
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -1242,6 +1243,11 @@ class Timeline(Container):
         self.handle_scene_event(t)
 
         if self.playing or force:
+            if isinstance(self._parent_timeline, Timeline):
+                self._transform.DeepCopy(self._parent_timeline._transform)
+            else:
+                self._transform.Identity()
+
             if self._camera is not None:
                 if self.is_interpolatable('rotation', is_camera=True):
                     pos = self._camera.GetPosition()
@@ -1281,11 +1287,7 @@ class Timeline(Container):
             if in_scene:
                 if self.is_interpolatable('position'):
                     position = self.get_position(t)
-                    [act.SetPosition(position) for act in self.actors]
-
-                if self.is_interpolatable('scale'):
-                    scale = self.get_scale(t)
-                    [act.SetScale(scale) for act in self.actors]
+                    self._transform.Translate(*position)
 
                 if self.is_interpolatable('opacity'):
                     opacity = self.get_opacity(t)
@@ -1293,16 +1295,26 @@ class Timeline(Container):
                      act in self.actors]
 
                 if self.is_interpolatable('rotation'):
-                    euler = self.get_rotation(t)
-                    [act.SetOrientation(euler) for
-                     act in self.actors]
+                    x, y, z = self.get_rotation(t)
+                    # Rotate in the same order as VTK defaults.
+                    self._transform.RotateZ(z)
+                    self._transform.RotateX(x)
+                    self._transform.RotateY(y)
+
+                if self.is_interpolatable('scale'):
+                    scale = self.get_scale(t)
+                    self._transform.Scale(*scale)
 
                 if self.is_interpolatable('color'):
                     color = self.get_color(t)
                     for act in self.actors:
                         act.vcolors[:] = color * 255
                         utils.update_actor(act)
-                # Also update all child Timelines.
+
+                # update actors' transformation matrix
+                [act.SetUserTransform(self._transform) for act in self.actors]
+
+            # Also update all child Timelines.
             [tl.update_animation(t, force=True)
              for tl in self.timelines]
             # update clipping range
