@@ -3155,7 +3155,7 @@ class PolyLine(UI):
                                  vertices_from_actor(line.actor)[:, :-1], axis=0)
         return vertices
 
-    def add_point(self, point, interactive=False):
+    def add_point(self, point, add_to_scene=False):
         if self.current_line:
             self.resize(np.asarray(point) - self.current_line.position)
 
@@ -3167,7 +3167,7 @@ class PolyLine(UI):
         self.lines.append(new_line)
         self.points.append(point)
         self.previous_point = point
-        if interactive:
+        if add_to_scene:
             self._scene.add(new_line)
 
     @property
