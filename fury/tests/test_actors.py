@@ -12,7 +12,8 @@ from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
 from fury.utils import shallow_copy, rotate, primitives_count_from_actor
-from fury.testing import assert_greater, assert_greater_equal
+from fury.testing import assert_greater, assert_greater_equal, \
+    assert_less_equal, assert_not_equal, assert_equal
 from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
@@ -829,17 +830,37 @@ def test_points(interactive=False):
 
 def test_labels(interactive=False):
     npt.assert_warns(DeprecationWarning, actor.label, "FURY Rocks")
-    text_actor = actor.vector_text("FURY Rocks")
+    text_actor = actor.vector_text("FURY Rocks", direction=None)
 
     scene = window.Scene()
     scene.add(text_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    assert text_actor.GetCamera() is scene.GetActiveCamera()
+
     if interactive:
         window.show(scene, reset_camera=False)
 
+    text_actor = actor.vector_text("FURY Rocks")
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+    center = np.array(text_actor.GetCenter())
+    [assert_greater_equal(v, 0) for v in center]
+
+    text_actor_centered = actor.vector_text("FURY Rocks", align_center=True)
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
+
+    text_actor_rot_1 = actor.vector_text("FURY Rocks", direction=(1, 1, 1))
+    text_actor_rot_2 = actor.vector_text("FURY Rocks", direction=(1, 1, 0))
+    center_1 = text_actor_rot_1.GetCenter()
+    center_2 = text_actor_rot_2.GetCenter()
+    assert_not_equal(np.linalg.norm(center_1), np.linalg.norm(center_2))
+
+    text_rot_centered = actor.vector_text("FURY Rocks", align_center=True,
+                                          direction=(1, 1, 1))
+    center_3 = text_rot_centered.GetCenter()
+    npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
 
 
 def test_spheres(interactive=False):
