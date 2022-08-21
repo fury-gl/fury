@@ -2383,8 +2383,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
-                scale=(0.2, 0.2, 0.2), color=(1, 1, 1), align_center=False):
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
+                color=(1, 1, 1), direction=(0, 0, 1), align_center=False):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2395,7 +2395,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
         Text for the label.
     pos : (3,) array_like, optional
         Left down position of the label.
-    direction : (3,) array_like, optional, default: None
+    direction : (3,) array_like, optional, default: (0, 0, 1)
         The direction of the label. If None, label will follow the camera.
     scale : (3,) array_like
         Changes the size of the label.
@@ -2423,13 +2423,10 @@ def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
     atext.SetText(text)
     textm = PolyDataMapper()
 
-    t = Transform()
-    t.PostMultiply()
+    trans_matrix = Transform()
+    trans_matrix.PostMultiply()
 
     textm.SetInputConnection(atext.GetOutputPort())
-
-    if align_center:
-        t.Translate(-np.array(textm.GetCenter()))
 
     if direction is None:
         texta = Follower()
@@ -2448,18 +2445,23 @@ def vector_text(text='Origin', pos=(0, 0, 0), direction=None,
         direction /= np.linalg.norm(direction)
         normal_vec = np.cross(orig_dir, direction)
         angle = np.arccos(np.dot(orig_dir, direction))
-        t.RotateWXYZ(np.rad2deg(angle), *normal_vec)
+        trans_matrix.RotateWXYZ(np.rad2deg(angle), *normal_vec)
 
-    t.Scale(*scale)
+    trans_matrix.Scale(*scale)
 
     plan = TransformPolyDataFilter()
-    plan.SetTransform(t)
-
     plan.SetInputConnection(atext.GetOutputPort())
+    plan.SetTransform(trans_matrix)
     textm.SetInputConnection(plan.GetOutputPort())
 
     texta.SetMapper(textm)
+
     texta.GetProperty().SetColor(color)
+
+    if align_center:
+        trans_matrix.Translate(-np.array(textm.GetCenter()))
+
+    texta.SetPosition(*pos)
 
     return texta
 
