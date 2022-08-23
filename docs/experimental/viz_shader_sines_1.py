@@ -107,6 +107,6 @@ mapper.AddShaderReplacement(
     False
 )
 
-showm.initialize()
+
 showm.add_timer_callback(True, 100, timer_callback)
 showm.start()

@@ -209,7 +209,7 @@ def test_add_shader_callback():
                 pass
 
     add_shader_callback(cube, my_cbk)
-    showm.initialize()
+    
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
 

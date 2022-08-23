@@ -23,7 +23,7 @@ scene = window.Scene()
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Cubic Bezier curve parameters
@@ -115,7 +115,7 @@ scene = window.Scene()
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Note: If a control point is set to `None`, it gets the value of the

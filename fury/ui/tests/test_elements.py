@@ -814,7 +814,6 @@ def test_ui_listbox_2d(interactive=False):
 
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY ListBox")
-        show_manager.initialize()
         show_manager.scene.add(listbox)
         show_manager.start()
 

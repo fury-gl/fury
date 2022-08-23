@@ -94,7 +94,7 @@ if __name__ == '__main__':
         scene, size=(window_size[0], window_size[1])
     )
 
-    showm.initialize()
+    
 
     stream = FuryStreamClient(
         showm, max_window_size=max_window_size,

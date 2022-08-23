@@ -1158,7 +1158,7 @@ def test_grid(_interactive=False):
 
     show_m = window.ShowManager(scene)
 
-    show_m.initialize()
+    
 
     def timer_callback(_obj, _event):
         nonlocal counter
@@ -1181,7 +1181,7 @@ def test_grid(_interactive=False):
 
     counter = itertools.count()
     show_m = window.ShowManager(scene)
-    show_m.initialize()
+    
     # show the grid with the captions
     container = grid(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),

@@ -43,7 +43,6 @@ def test_callback():
     show_manager = window.ShowManager(scene,
                                       size=current_size,
                                       title="FURY GridUI")
-    show_manager.initialize()
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)

@@ -63,7 +63,7 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    showm.initialize()
+    
     scene.add(panel)
     scene.add(st_actor)
     scene.reset_camera_tight()
@@ -110,7 +110,7 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    showm.initialize()
+    
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
@@ -151,7 +151,7 @@ def test_timer():
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
     scene.add(tb)
 
     def timer_callback(_obj, _event):
