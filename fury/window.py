@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from cmath import sin
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -10,6 +11,8 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
+from fury.deprecator import deprecate_with_version
+
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
@@ -334,20 +337,13 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
+        >>> #
         >>> # showm.render()
         >>> # showm.start()
 
@@ -400,9 +396,13 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
+    @deprecate_with_version(since='0.8.0', until='0.10.0',
+                            message="Initialize is not needed anymore and will"
+                            " be deleted on the version 0.11.0")
     def initialize(self):
         """Initialize interaction."""
-        self.iren.Initialize()
+        # self.iren.Initialize()
+        pass
 
     def render(self):
         """Render only once."""
@@ -426,7 +426,6 @@ class ShowManager(object):
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
                           interactor_style=self.interactor_style)
-            self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
@@ -478,7 +477,6 @@ class ShowManager(object):
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -529,7 +527,6 @@ class ShowManager(object):
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
-        self.initialize()
         # self.render()
         recorder.Play()
 
@@ -714,7 +711,6 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
                                multi_samples=multi_samples,
                                max_peels=max_peels,
                                occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
     show_manager.render()
     show_manager.start()
 
