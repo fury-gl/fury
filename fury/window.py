@@ -340,7 +340,6 @@ class ShowManager(object):
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> #
         >>> # showm.render()
         >>> # showm.start()
 
@@ -520,6 +519,7 @@ class ShowManager(object):
 
         recorder.SetInputString(events)
         recorder.ReadFromInputStringOn()
+        self.initialize()
         # self.render()
         recorder.Play()
 
