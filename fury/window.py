@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-from cmath import sin
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -11,7 +9,6 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 from fury.decorators import is_osx
-from fury.deprecator import deprecate_with_version
 
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
@@ -396,13 +393,9 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
-    @deprecate_with_version(since='0.8.0', until='0.10.0',
-                            message="Initialize is not needed anymore and will"
-                            " be deleted on the version 0.11.0")
     def initialize(self):
         """Initialize interaction."""
-        # self.iren.Initialize()
-        pass
+        self.iren.Initialize()
 
     def render(self):
         """Render only once."""
