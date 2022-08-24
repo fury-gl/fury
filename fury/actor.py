@@ -2385,14 +2385,21 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         bb_actor.GetProperty().BackfaceCullingOff()
         bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
+        def add_to_scene(scene):
+            bb_actor.scene = scene
+            scene.AddActor(bb_actor)
+
+        bb_actor.add_to_scene = add_to_scene
+
         def update_uniforms(_caller, _event, calldata=None):
             program = calldata
             if program is not None:
+                bb_actor.scene.UpdateLightingUniforms(program)
+                print(bb_actor.GetMapper().PrimitiveInfo())
                 spec_color = bb_actor.GetProperty().GetSpecularColor()
                 spec_power = bb_actor.GetProperty().GetSpecularPower()
                 spec_intensity = bb_actor.GetProperty().GetSpecular()
                 program.SetUniform3f('specularColorUniform', spec_color)
-                program.SetUniform3f('lightColor0', (1, 1, 1))
                 program.SetUniformf('specularPowerUniform', spec_power)
                 program.SetUniformf('specularIntensity', spec_intensity)
 
