@@ -802,7 +802,7 @@ def test_ui_draw_shape():
     line.resize((100, 5))
     line.shape.color = (.4, .2, .8)
     quad.resize((150, 150))
-    quad.shape.color = (.1, .7, .6)
+    quad.shape.color = (.3, .5, .4)
     circle.resize((25, 0))
     circle.shape.color = (.5, .3, .8)
 
@@ -810,17 +810,15 @@ def test_ui_draw_shape():
     quad_color = tuple((np.round(255 * np.array(quad.shape.color))).astype('uint8'))
     circle_color = tuple((np.round(255 * np.array(circle.shape.color))).astype('uint8'))
 
-    # TODO: Currently quad is not being analyzed. Fix this issue and update the test
-
     current_size = (800, 800)
     show_manager = window.ShowManager(
         size=current_size, title="DrawShape UI Example")
-    show_manager.scene.add(line, circle)
+    show_manager.scene.add(line, circle, quad)
 
-    arr = window.snapshot(show_manager.scene)
-    report = window.analyze_snapshot(arr, colors=[line_color, circle_color])
-    npt.assert_equal(report.objects, 2)
-    npt.assert_equal(report.colors_found, [True, True])
+    arr = window.snapshot(show_manager.scene, size=(800, 800))
+    report = window.analyze_snapshot(arr, colors=[line_color, circle_color, quad_color])
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [True, True, True])
 
 
 def test_ui_draw_panel(interactive=False):
