@@ -802,7 +802,7 @@ def test_ui_draw_shape():
     line.resize((100, 5))
     line.shape.color = (.4, .2, .8)
     quad.resize((150, 150))
-    quad.shape.color = (.3, .5, .4)
+    quad.shape.color = (.5, .5, .5)
     circle.resize((25, 0))
     circle.shape.color = (.5, .3, .8)
 
