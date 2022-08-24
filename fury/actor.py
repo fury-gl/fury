@@ -2387,7 +2387,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
                 color=(1, 1, 1), direction=(0, 0, 1), align_center=False,
-                extrusion=8.0):
+                extrusion=0.0):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2407,7 +2407,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     align_center : bool, default: True
         If `True`, the anchor of the actor will be the center of the text.
         If `False`, the anchor will be at the left bottom of the text.
-    extrusion: float
+    extrusion: float, default: 0
         Extrusion length of the text gives it a 3D look.
 
     Returns
