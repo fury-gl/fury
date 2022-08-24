@@ -4,6 +4,8 @@ import warnings
 from functools import partial
 
 import numpy as np
+from vtkmodules.vtkFiltersCore import vtkTriangleFilter
+from vtkmodules.vtkFiltersModeling import vtkLinearExtrusionFilter
 
 from fury.shaders import (add_shader_callback, attribute_to_actor,
                           compose_shader, import_fury_shader,
@@ -2384,7 +2386,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-                color=(1, 1, 1), direction=(0, 0, 1), align_center=False):
+                color=(1, 1, 1), direction=(0, 0, 1), align_center=False,
+                extrusion=8.0):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2404,6 +2407,8 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     align_center : bool, default: True
         If `True`, the anchor of the actor will be the center of the text.
         If `False`, the anchor will be at the left bottom of the text.
+    extrusion: float
+        Extrusion length of the text gives it a 3D look.
 
     Returns
     -------
@@ -2423,10 +2428,15 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     atext.SetText(text)
     textm = PolyDataMapper()
 
+    extrude = vtkLinearExtrusionFilter()
+    extrude.SetInputConnection(atext.GetOutputPort())
+    extrude.SetExtrusionTypeToNormalExtrusion()
+    extrude.SetVector(0, 0, extrusion)
+
     trans_matrix = Transform()
     trans_matrix.PostMultiply()
 
-    textm.SetInputConnection(atext.GetOutputPort())
+    textm.SetInputConnection(extrude.GetOutputPort())
 
     if direction is None:
         texta = Follower()
@@ -2450,7 +2460,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     trans_matrix.Scale(*scale)
 
     plan = TransformPolyDataFilter()
-    plan.SetInputConnection(atext.GetOutputPort())
+    plan.SetInputConnection(extrude.GetOutputPort())
     plan.SetTransform(trans_matrix)
     textm.SetInputConnection(plan.GetOutputPort())
 
