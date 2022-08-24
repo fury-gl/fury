@@ -2395,7 +2395,6 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
             program = calldata
             if program is not None:
                 bb_actor.scene.UpdateLightingUniforms(program)
-                print(bb_actor.GetMapper().PrimitiveInfo())
                 spec_color = bb_actor.GetProperty().GetSpecularColor()
                 spec_power = bb_actor.GetProperty().GetSpecularPower()
                 spec_intensity = bb_actor.GetProperty().GetSpecular()
