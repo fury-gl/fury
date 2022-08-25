@@ -2385,9 +2385,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-                color=(1, 1, 1), direction=(0, 0, 1), align_center=False,
-                extrusion=0.0):
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.1),
+                color=(1, 1, 1), direction=(0, 0, 1), align_center=False):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2431,12 +2430,10 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     extrude = vtkLinearExtrusionFilter()
     extrude.SetInputConnection(atext.GetOutputPort())
     extrude.SetExtrusionTypeToNormalExtrusion()
-    extrude.SetVector(0, 0, extrusion)
+    extrude.SetVector(0, 0, scale[2])
 
     trans_matrix = Transform()
     trans_matrix.PostMultiply()
-
-    textm.SetInputConnection(extrude.GetOutputPort())
 
     if direction is None:
         texta = Follower()
@@ -2457,7 +2454,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
         angle = np.arccos(np.dot(orig_dir, direction))
         trans_matrix.RotateWXYZ(np.rad2deg(angle), *normal_vec)
 
-    trans_matrix.Scale(*scale)
+    trans_matrix.Scale(*scale[0:2], 1)
 
     plan = TransformPolyDataFilter()
     plan.SetInputConnection(extrude.GetOutputPort())
