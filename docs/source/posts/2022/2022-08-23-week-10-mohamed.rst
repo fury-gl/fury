@@ -32,7 +32,7 @@ What is coming up next week?
 
 - Fix issues discovered by Serge in this `review`_.
 
-- Fix ``lightColor0`` being `hard-set`_ to ``(1, 1, 1)``, instead find a way to get this property the same way other polygon-based actor gets it.
+- Fix ``lightColor0`` being `hard-set`_ to ``(1, 1, 1)``. Instead, find a way to get this property the same way other polygon-based actor gets it.
 
 - Try to get PRs and issues mentioned above merged, closed or ready for a final review.
 
