@@ -857,10 +857,22 @@ def test_labels(interactive=False):
     center_2 = text_actor_rot_2.GetCenter()
     assert_not_equal(np.linalg.norm(center_1), np.linalg.norm(center_2))
 
-    text_rot_centered = actor.vector_text("FURY Rocks", align_center=True,
-                                          direction=(1, 1, 1))
-    center_3 = text_rot_centered.GetCenter()
+    # test centered
+    text_centered = actor.vector_text("FURY Rocks", align_center=True)
+
+    center_3 = text_centered.GetCenter()
     npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
+
+    text_extruded = actor.vector_text("FURY Rocks", scale=(0.2, 0.2, 1.123))
+    z_max = text_extruded.GetBounds()[-1]
+    npt.assert_almost_equal(z_max, 1.123)
+
+    text_extruded_centered = actor.vector_text("FURY Rocks",
+                                               scale=(0.2, 0.2, 1.123),
+                                               align_center=True)
+    z_min, z_max = text_extruded_centered.GetBounds()[4:]
+    npt.assert_almost_equal(z_max - z_min, 1.123)
+    npt.assert_almost_equal(z_max, - z_min)
 
 
 def test_spheres(interactive=False):
