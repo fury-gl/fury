@@ -69,11 +69,13 @@ class glTF:
         self.init_transform = np.identity(4)
         self.animations = []
         self.node_transform = []
+        self.bone_tranforms = {}
         self.keyframe_transforms = []
         self.joints_0 = []
         self.weights_0 = []
         self.bones = []
         self.ibms = []
+        self.vertices = []
         self.inspect_scene(0)
 
     def actors(self):
@@ -119,7 +121,7 @@ class glTF:
         for animation in self.gltf.animations:
             self.transverse_channels(animation)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None):
+    def transverse_node(self, nextnode_id, matrix, parent=None, isJoint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -161,6 +163,10 @@ class glTF:
 
         next_matrix = np.dot(matrix, matnode)
 
+        if isJoint:
+            # print(f'matrix of node: {nextnode_id}\n{next_matrix}')
+            self.bone_tranforms[nextnode_id] = next_matrix[:]
+
         if node.mesh is not None:
             mesh_id = node.mesh
             self.load_mesh(mesh_id, next_matrix, parent)
@@ -170,9 +176,9 @@ class glTF:
             joints, ibms = self.get_skin_data(skin_id)
             self.bones.append(joints)  # for each skin will contain nodes
             self.ibms.append(ibms)
-            for joint, ibm_matrix in zip(joints, ibms):
-                print(joint, ibm_matrix)
-                self.transverse_node(joint, ibm_matrix.T, parent)
+            # for joint, ibm_matrix in zip(joints, ibms):
+            #     print(joint, ibm_matrix)
+            self.transverse_node(joints[0], ibms[0].T, parent, isJoint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -180,7 +186,7 @@ class glTF:
 
         if node.children:
             for child_id in node.children:
-                self.transverse_node(child_id, next_matrix, parent)
+                self.transverse_node(child_id, next_matrix, parent, isJoint)
 
     def load_mesh(self, mesh_id, transform_mat, parent):
         """Load the mesh data from accessor and applies the transformation.
@@ -200,6 +206,7 @@ class glTF:
             attributes = primitive.attributes
 
             vertices = self.get_acc_data(attributes.POSITION)
+            self.vertices = vertices
             # vertices = transform.apply_transfomation(vertices, transform_mat)
             self.transformations.append(transform_mat)
 
@@ -222,11 +229,10 @@ class glTF:
             if primitive.indices is not None:
                 indices = self.get_acc_data(primitive.indices).reshape(-1, 3)
                 utils.set_polydata_triangles(polydata, indices)
-            
+
             if attributes.JOINTS_0 is not None:
                 vertex_joints = self.get_acc_data(attributes.JOINTS_0)
-                vertex_joints = vertex_joints.reshape(-1, 4)
-                # add None if weights and joints do not exist
+                print(vertex_joints)
                 self.joints_0.append(vertex_joints)
                 vertex_weight = self.get_acc_data(attributes.WEIGHTS_0)
                 self.weights_0.append(vertex_weight)
@@ -268,12 +274,13 @@ class glTF:
         byte_offset = buffview.byteOffset
         byte_stride = buffview.byteStride
         byte_stride = byte_stride if byte_stride else (a_type * d_size)
-        byte_length = count * d_size * a_type
+        byte_length = count * byte_stride
 
         total_byte_offset = byte_offset + acc_byte_offset
 
-        return self.get_buff_array(buff_id, d_type['dtype'], byte_length,
-                                   total_byte_offset, byte_stride)
+        buff_array = self.get_buff_array(buff_id, d_type['dtype'], byte_length,
+                                         total_byte_offset, byte_stride)
+        return buff_array[:, :a_type]
 
     def get_buff_array(self, buff_id, d_type, byte_length,
                        byte_offset, byte_stride):
@@ -301,11 +308,12 @@ class glTF:
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
 
-        if d_type == np.short or d_type == np.ushort:
+        if d_type == np.short or d_type == np.ushort or \
+                d_type == np.uint16:
             byte_length = int(byte_length/2)
             byte_stride = int(byte_stride/2)
 
-        elif d_type == np.float32 or d_type == np.uint16:
+        elif d_type == np.float32:
             byte_length = int(byte_length/4)
             byte_stride = int(byte_stride/4)
 
@@ -513,7 +521,7 @@ class glTF:
         return matrix
 
     def apply_skin_matrix(self, vertices,
-                          joint_matrices, bones):
+                          joint_matrices, bones, ibms=None):
         """Applies the skinnig matrix, that transforms the vertices.
 
         NOTE: vertices has joint_matrix applied already.
@@ -522,23 +530,28 @@ class glTF:
         vertices : ndarray
             Modified vertices
         """
-        # self.precalculate_transforms()
-        # keyframe_transfoms = self.keyframe_transforms
         clone = np.copy(vertices)
         weights = self.weights_0[0]
         joints = self.joints_0[0]
 
-        # vertices = transform.apply_transfomation(vertices, joint_matrix)
+        if ibms is not None:
+            for ibm in ibms:
+                clone = transform.apply_transfomation(clone, ibm)
+
         for i, xyz in enumerate(clone):
-            vweight = weights[i]
-            pos = np.array([0, 0, 0])
-            for j, bone in enumerate(bones):
-                # print(weights[j])
-                # try appply inv bind matrix
-                temp = transform.apply_transfomation(
-                        np.array([xyz]), joint_matrices[j])[0]
-                pos = np.add(pos, temp*vweight[j])
-            clone[i] = pos
+            a_joint = joints[i]
+            a_weight = weights[i]
+
+            skin_mat = \
+                a_weight[0]*joint_matrices[a_joint[0]] +\
+                a_weight[1]*joint_matrices[a_joint[1]] +\
+                a_weight[2]*joint_matrices[a_joint[2]] +\
+                a_weight[3]*joint_matrices[a_joint[3]]
+
+            xyz = transform.apply_transfomation(
+                    np.array([xyz]), skin_mat)[0]
+            clone[i] = xyz
+
         return clone
 
     def get_skin_timelines(self):
@@ -553,8 +566,10 @@ class glTF:
 
         timelines = []
         timeline = Timeline(playback_panel=True)
-        for transforms in self.node_transform:
+        for transforms in self.node_transform[:2]:
             target_node = transforms['node']
+            # print(transforms)
+            # print(self.bones[0])
 
             for i, nodes in enumerate(self.bones[0]):
                 # timeline = Timeline(playback_panel=True)
@@ -565,9 +580,8 @@ class glTF:
                     prop = transforms['property']
                     for time, trs in zip(timestamp, transform):
                         matrix = self.generate_tmatrix(trs, prop)
-                        # print(matrix)
+                        # print(f'applying transf {nodes} at time {time[0]}')
                         timeline.set_keyframe(f'transform{i}', time[0], matrix)
-                        # timeline.set_interpolator(f'transform{i}', slerp)
                 else:
                     transform = np.identity(4)
                     timeline.set_keyframe(f'transform{i}', 0, transform)
@@ -599,7 +613,6 @@ class glTF:
         timelines = []
         for transforms in self.node_transform:
             target_node = transforms['node']
-            print(transforms)
             for i, nodes in enumerate(self.nodes):
                 timeline = Timeline()
 
@@ -608,6 +621,7 @@ class glTF:
                     timestamp = transforms['input']
                     transform = transforms['output']
                     prop = transforms['property']
+                    print(prop)
                     interpolation_type = transforms['interpolation']
 
                     interpolator = interpolators.get(interpolation_type)

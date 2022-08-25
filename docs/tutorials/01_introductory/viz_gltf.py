@@ -17,7 +17,7 @@ scene = window.Scene()
 ##############################################################################
 # Retrieving the gltf model.
 fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('CesiumMilkTruck')
+filename = read_viz_gltf('FlightHelmet')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
