@@ -16,7 +16,7 @@ def assert_not_equal(x, y):
 
 def test_timeline():
     shaders = False
-    tl = Timeline(playback_panel=Timeline)
+    tl = Timeline(playback_panel=True)
     tl.set_position(0, np.array([1, 1, 1]))
     # overriding a keyframe
     tl.set_position(0, np.array([0, 0, 0]))

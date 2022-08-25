@@ -23,7 +23,7 @@ arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating a timeline to animate the actor
-timeline = Timeline(playback_panel=Timeline)
+timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Adding the sphere actor to the timeline

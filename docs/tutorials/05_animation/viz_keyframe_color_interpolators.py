@@ -42,7 +42,7 @@ scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 ###############################################################################
 # Main timeline to control all the timelines (one for each color interpolation
 # method)
-main_timeline = Timeline(playback_panel=Timeline)
+main_timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating a timeline to animate the actor.
