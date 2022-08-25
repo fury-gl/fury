@@ -1087,7 +1087,7 @@ class Timeline(Container):
         return self.get_camera_value('rotation', t)
 
     def add(self, item):
-        """Adds an item to the Timeline.
+        """Add an item to the Timeline.
         This item can be an actor, Timeline, list of actors, or a list of
         Timelines.
 
@@ -1103,13 +1103,13 @@ class Timeline(Container):
         elif isinstance(item, Actor):
             self.add_actor(item)
         elif isinstance(item, Timeline):
-            self.add_timeline(item)
+            self.add_child_timeline(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be added to "
                              f"the timeline.")
 
-    def add_timeline(self, timeline):
-        """Adds an actor or list of actors to the Timeline.
+    def add_child_timeline(self, timeline):
+        """Add child Timeline or list of Timelines.
 
         Parameters
         ----------
@@ -1118,14 +1118,14 @@ class Timeline(Container):
         """
         if isinstance(timeline, list):
             for a in timeline:
-                self.add_timeline(a)
+                self.add_child_timeline(a)
             return
         timeline._parent_timeline = self
         timeline.update_motion_path()
         self._timelines.append(timeline)
 
     def add_actor(self, actor, static=False):
-        """Adds an actor or list of actors to the Timeline.
+        """Add an actor or list of actors to the Timeline.
 
         Parameters
         ----------
@@ -1434,7 +1434,7 @@ class Timeline(Container):
 
     @playing.setter
     def playing(self, playing):
-        """Sets the playing state of the Timeline.
+        """Set the playing state of the Timeline.
 
         Parameters
         ----------
