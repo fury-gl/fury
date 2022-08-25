@@ -57,11 +57,11 @@ timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
 
 ###############################################################################
 # Adding timelines to the main Timeline.
-main_timeline.add_timeline([timeline_linear_color,
-                            timeline_LAB_color,
-                            timeline_HSV_color,
-                            timeline_XYZ_color,
-                            timeline_step_color])
+main_timeline.add_child_timeline([timeline_linear_color,
+                                  timeline_LAB_color,
+                                  timeline_HSV_color,
+                                  timeline_XYZ_color,
+                                  timeline_step_color])
 
 ###############################################################################
 # Adding color keyframes to the linearly (for now) interpolated timelines

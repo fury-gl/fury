@@ -67,6 +67,8 @@ tl_grand_child = Timeline(end)
 # Adding Timelines in hierarchical order
 tl_main.add(tl_child)
 tl_child.add(tl_grand_child)
+tl_main.add_child_timeline(tl_child)
+tl_child.add_child_timeline(tl_grand_child)
 
 
 ###############################################################################
