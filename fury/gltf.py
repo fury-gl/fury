@@ -3,15 +3,14 @@ import base64
 import os
 import numpy as np
 import pygltflib as gltflib
-from pygltflib.utils import glb2gltf, gltf2glb
+from pygltflib.utils import glb2gltf
 from PIL import Image
-from fury.lib import Texture, Camera, numpy_support
+from fury.lib import Texture, Camera
 from fury import transform, utils, io
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import (linear_interpolator, lerp,
                                          step_interpolator, slerp)
 from fury.animation import helpers
-
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
@@ -27,8 +26,9 @@ acc_type = {
     'VEC2': 2,
     'VEC3': 3,
     'VEC4': 4,
-    'MAT4': 16 
+    'MAT4': 16
 }
+temp = []
 
 
 class glTF:
@@ -69,6 +69,16 @@ class glTF:
         self.init_transform = np.identity(4)
         self.animations = []
         self.node_transform = []
+
+        # Skinning Informations
+        self.bone_tranforms = {}
+        self.keyframe_transforms = []
+        self.joints_0 = []
+        self.weights_0 = []
+        self.bones = []
+        self.ibms = []
+        self.vertices = []
+
         self.inspect_scene(0)
 
     def actors(self):
@@ -114,7 +124,7 @@ class glTF:
         for animation in self.gltf.animations:
             self.transverse_channels(animation)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None):
+    def transverse_node(self, nextnode_id, matrix, parent=None, isJoint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -133,8 +143,8 @@ class glTF:
             parent = [nextnode_id]
         else:
             parent.append(nextnode_id)
-
         matnode = np.identity(4)
+
         if node.matrix is not None:
             matnode = np.array(node.matrix)
             matnode = matnode.reshape(-1, 4).T
@@ -156,9 +166,20 @@ class glTF:
 
         next_matrix = np.dot(matrix, matnode)
 
+        if isJoint:
+            # print(f'matrix of node: {nextnode_id}\n{next_matrix}')
+            self.bone_tranforms[nextnode_id] = next_matrix[:]
+
         if node.mesh is not None:
             mesh_id = node.mesh
             self.load_mesh(mesh_id, next_matrix, parent)
+
+        if node.skin is not None:
+            skin_id = node.skin
+            joints, ibms = self.get_skin_data(skin_id)
+            self.bones.append(joints)  # for each skin will contain nodes
+            self.ibms.append(ibms)
+            self.transverse_node(joints[0], ibms[0].T, parent, isJoint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -170,7 +191,7 @@ class glTF:
 
         if node.children:
             for child_id in node.children:
-                self.transverse_node(child_id, next_matrix, parent)
+                self.transverse_node(child_id, next_matrix, parent, isJoint)
 
     def load_mesh(self, mesh_id, transform_mat, parent):
         """Load the mesh data from accessor and applies the transformation.
@@ -214,10 +235,10 @@ class glTF:
                 utils.set_polydata_triangles(polydata, indices)
 
             if attributes.JOINTS_0 is not None:
-                joints = self.get_acc_data(attributes.JOINTS_0)
-
-            if attributes.WEIGHTS_0 is not None:
-                weights = self.get_acc_data(attributes.WEIGHTS_0)
+                vertex_joints = self.get_acc_data(attributes.JOINTS_0)
+                self.joints_0.append(vertex_joints)
+                vertex_weight = self.get_acc_data(attributes.WEIGHTS_0)
+                self.weights_0.append(vertex_weight)
 
             material = None
             if primitive.material is not None:
@@ -256,12 +277,13 @@ class glTF:
         byte_offset = buffview.byteOffset
         byte_stride = buffview.byteStride
         byte_stride = byte_stride if byte_stride else (a_type * d_size)
-        byte_length = count * d_size * a_type
+        byte_length = count * byte_stride
 
         total_byte_offset = byte_offset + acc_byte_offset
 
-        return self.get_buff_array(buff_id, d_type['dtype'], byte_length,
-                                   total_byte_offset, byte_stride)
+        buff_array = self.get_buff_array(buff_id, d_type['dtype'], byte_length,
+                                         total_byte_offset, byte_stride)
+        return buff_array[:, :a_type]
 
     def get_buff_array(self, buff_id, d_type, byte_length,
                        byte_offset, byte_stride):
@@ -289,11 +311,12 @@ class glTF:
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
 
-        if d_type == np.short or d_type == np.ushort:
+        if d_type == np.short or d_type == np.ushort or \
+                d_type == np.uint16:
             byte_length = int(byte_length/2)
             byte_stride = int(byte_stride/2)
 
-        elif d_type == np.float32 or d_type == np.uint16:
+        elif d_type == np.float32:
             byte_length = int(byte_length/4)
             byte_stride = int(byte_stride/4)
 
@@ -444,6 +467,8 @@ class glTF:
         animation : glTflib.Animation
             pygltflib animation object.
         """
+        name = animation.name
+
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]
             node_id = channel.target.node
@@ -484,9 +509,89 @@ class glTF:
     def get_skin_data(self, skin_id):
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
+        # print(inv_bind_matrix)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
+        # print(f'ibm:\n{inv_bind_matrix}')
         joint_nodes = skin.joints
-        root_node = skin.skeleton
+        return joint_nodes, inv_bind_matrix
+
+    def generate_tmatrix(self, transf, prop):
+        if prop == 'translation':
+            matrix = transform.translate(transf)
+        elif prop == 'rotation':
+            matrix = transform.rotate(transf)
+        elif prop == 'scale':
+            matrix = transform.scale(transf)
+        return matrix
+
+    def apply_skin_matrix(self, vertices,
+                          joint_matrices, bones, ibms=None):
+        """Applies the skinnig matrix, that transforms the vertices.
+
+        NOTE: vertices has joint_matrix applied already.
+        Returns
+        -------
+        vertices : ndarray
+            Modified vertices
+        """
+        clone = np.copy(vertices)
+        weights = self.weights_0[0]
+        joints = self.joints_0[0]
+
+        if ibms is not None:
+            for ibm in ibms:
+                clone = transform.apply_transfomation(clone, ibm)
+
+        for i, xyz in enumerate(clone):
+            a_joint = joints[i]
+            a_weight = weights[i]
+
+            skin_mat = \
+                a_weight[0]*joint_matrices[a_joint[0]] +\
+                a_weight[1]*joint_matrices[a_joint[1]] +\
+                a_weight[2]*joint_matrices[a_joint[2]] +\
+                a_weight[3]*joint_matrices[a_joint[3]]
+
+            xyz = transform.apply_transfomation(
+                    np.array([xyz]), skin_mat)[0]
+            clone[i] = xyz
+
+        return clone
+
+    def get_skin_timelines(self):
+        """Returns list of animation timeline.
+
+        Returns
+        -------
+        timelines : List
+            List of timelines containing actors.
+        """
+        # actors = self.actors()
+
+        timelines = []
+        timeline = Timeline(playback_panel=True)
+        for transforms in self.node_transform[:2]:
+            target_node = transforms['node']
+            # print(transforms)
+            # print(self.bones[0])
+
+            for i, nodes in enumerate(self.bones[0]):
+                # timeline = Timeline(playback_panel=True)
+
+                if target_node == nodes:
+                    timestamp = transforms['input']
+                    transform = transforms['output']
+                    prop = transforms['property']
+                    for time, trs in zip(timestamp, transform):
+                        matrix = self.generate_tmatrix(trs, prop)
+                        # print(f'applying transf {nodes} at time {time[0]}')
+                        timeline.set_keyframe(f'transform{i}', time[0], matrix)
+                else:
+                    transform = np.identity(4)
+                    timeline.set_keyframe(f'transform{i}', 0, transform)
+
+        timelines.append(timeline)
+        return timeline
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
@@ -512,7 +617,7 @@ class glTF:
         timelines = []
         for transforms in self.node_transform:
             target_node = transforms['node']
-            print(transforms)
+
             for i, nodes in enumerate(self.nodes):
                 timeline = Timeline()
 
@@ -521,6 +626,7 @@ class glTF:
                     timestamp = transforms['input']
                     transform = transforms['output']
                     prop = transforms['property']
+
                     interpolation_type = transforms['interpolation']
 
                     interpolator = interpolators.get(interpolation_type)
@@ -570,6 +676,15 @@ class glTF:
             main_timeline.add_timeline(timeline)
         return main_timeline
 
+    def get_skin_timeline(self):
+        """Returns main timeline with all animations.
+        """
+        main_timeline = Timeline(playback_panel=True)
+        timelines = self.get_skin_timelines()
+        for timeline in timelines:
+            main_timeline.add_timeline(timeline)
+        return main_timeline
+
 
 def tan_cubic_spline_interpolator(keyframes):
 
@@ -599,6 +714,36 @@ def tan_cubic_spline_interpolator(keyframes):
         t3 = t2 * dt
         return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
                 -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+    return interpolate
+
+
+def transformation_interpolator(keyframes):
+    timestamps = helpers.get_timestamps_from_keyframes(keyframes)
+    for time in keyframes:
+        data = keyframes.get(time)
+        if data.get('in_matrix1') is None:
+            data['in_matrix1'] = np.identity(4)
+        if data.get('out_matrix1') is None:
+            data['out_matrix1'] = np.identity(4)
+        if data.get('in_matrix2') is None:
+            data['in_matrix2'] = np.identity(4)
+        if data.get('out_matrix2') is None:
+            data['out_matrix2'] = np.identity(4)
+
+    def interpolate(t):
+        t0 = helpers.get_previous_timestamp(timestamps, t)
+        t1 = helpers.get_next_timestamp(timestamps, t)
+
+        mat_0 = keyframes.get(t0).get('in_matrix1')
+        mat_1 = keyframes.get(t1).get('out_matrix1')
+
+        mat_2 = keyframes.get(t0).get('in_matrix2')
+        mat_3 = keyframes.get(t1).get('out_matrix2')
+
+        out_1 = lerp(mat_0, mat_1, t0, t1, t)
+        out_2 = lerp(mat_2, mat_3, t0, t1, t)
+
+        return (out_1, out_2)
     return interpolate
 
 

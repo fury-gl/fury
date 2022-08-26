@@ -14,10 +14,16 @@ from fury.data import fetch_gltf, read_viz_gltf
 
 scene = window.Scene()
 
+showm = window.ShowManager(scene,
+                           size=(900, 768), reset_camera=False,
+                           order_transparent=True)
+showm.initialize()
+
+
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('FlightHelmet')
+fetch_gltf('CesiumMilkTruck', 'glTF')
+filename = read_viz_gltf('InterpolationTest')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
@@ -25,24 +31,23 @@ filename = read_viz_gltf('FlightHelmet')
 # or materials manually afterwards.
 # Experimental: For smooth mesh/actor you can set `apply_normals=True`.
 
-gltf_obj = glTF(filename, apply_normals=True)
-actors = gltf_obj.actors()
+gltf_obj = glTF(filename)
+timeline = gltf_obj.get_main_timeline()
 
 ##############################################################################
 # Add all the actor from list of actors to the scene.
 
-scene.add(*actors)
+scene.add(timeline)
 
 ##############################################################################
 # Applying camera
 
-cameras = gltf_obj.cameras
-if cameras:
-    scene.SetActiveCamera(cameras[0])
 
-interactive = True
+def timer_callback(_obj, _event):
+    timeline.update_animation()
+    showm.render()
 
-if interactive:
-    window.show(scene, size=(1280, 720))
 
-window.record(scene, out_path='viz_gltf.png', size=(1280, 720))
+showm.add_timer_callback(True, 10, timer_callback)
+
+showm.start()
