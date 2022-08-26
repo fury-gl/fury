@@ -1,5 +1,5 @@
 Week 10 - Multi-node skinning support
-===================================
+=====================================
 
 .. post:: August 25 2022
    :author: Shivam Anand
