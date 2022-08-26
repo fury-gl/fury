@@ -3221,7 +3221,8 @@ class DrawShape(UI):
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
         slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2, self.rotation_slider.size[1]/2]
+            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
+             self.rotation_slider.size[1]/2]
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
