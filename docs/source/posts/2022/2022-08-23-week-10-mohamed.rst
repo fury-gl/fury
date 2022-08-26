@@ -1,5 +1,5 @@
-Week 9: Animating primitives of the same actor
-==============================================
+Week 10: Supporting hierarchical animating
+==========================================
 
 .. post:: August 23 2022
    :author: Mohamed Abouagour
