@@ -22,7 +22,7 @@ Here's a good `blog <https://stackoverflow.com/questions/17127994/opengl-bone-an
 
         <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/186712241-eaf8d1b3-f983-4e21-8264-c191b3eb6e4b.mp4" frameborder="0"></iframe>
 
-- Support for multiple transformations is still missing, However ``RiggedSimple`` is also working fine, Except that It doesn't interpolate translation and scaling matrices.
+- Support for multiple transformations is still missing. However ``RiggedSimple`` is also working fine, except that It doesn't interpolate translation and scaling matrices.
 
     .. raw:: html
 
@@ -33,7 +33,7 @@ Here's a good `blog <https://stackoverflow.com/questions/17127994/opengl-bone-an
 What is coming up next week?
 ----------------------------
 
-- Adding tests and Adding support for combining transformation matrices for the same time stamp.
+- Adding tests and adding support for combining transformation matrices for the same timestamp.
 - Write an Interpolator that applies skinning to the mesh internally.
 
 
