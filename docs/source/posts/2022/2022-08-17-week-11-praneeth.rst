@@ -19,7 +19,7 @@ So to overcome these I tried combining both methods. Considering points using th
     :width: 400
     :align: center
 
-While doing this I started working on how I could efficiently draw the lines and smoothen them out. My mentors referred me `this <https://github.com/rougier/python-opengl/blob/master/09-lines.rst#raw-lines>`_  to learn more about constructing and rendering lines.
+While doing this I started working on how I could efficiently draw the lines and smoothen them out. My mentors referred me `this <https://github.com/rougier/python-opengl/blob/master/09-lines.rst>`_  to learn more about constructing and rendering lines.
 
 Along with this, I updated a few tests and some small bugs in PR `#623 <https://github.com/fury-gl/fury/pull/623>`_ and `#653 <https://github.com/fury-gl/fury/pull/653>`_.
 
