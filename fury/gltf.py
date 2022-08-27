@@ -570,13 +570,10 @@ class glTF:
 
         timelines = []
         timeline = Timeline(playback_panel=True)
-        for transforms in self.node_transform[:2]:
+        for num, transforms in enumerate(self.node_transform):
             target_node = transforms['node']
-            # print(transforms)
-            # print(self.bones[0])
 
             for i, nodes in enumerate(self.bones[0]):
-                # timeline = Timeline(playback_panel=True)
 
                 if target_node == nodes:
                     timestamp = transforms['input']
@@ -584,7 +581,9 @@ class glTF:
                     prop = transforms['property']
                     for time, trs in zip(timestamp, transform):
                         matrix = self.generate_tmatrix(trs, prop)
-                        # print(f'applying transf {nodes} at time {time[0]}')
+                        if num > 0:
+                            prev_matrix = timeline.get_value(f'transform{i}', time[0])
+                            matrix = np.dot(prev_matrix, matrix)
                         timeline.set_keyframe(f'transform{i}', time[0], matrix)
                 else:
                     transform = np.identity(4)

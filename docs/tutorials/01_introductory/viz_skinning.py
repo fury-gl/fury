@@ -38,7 +38,7 @@ def timer_callback(_obj, _event):
                                          timelines.current_timestamp)
             ibm = gltf_obj.ibms[0][i].T
             ibms.append(ibm)
-            local_transform = gltf_obj.bone_tranforms[bone]
+            # deform = np.dot(deform, ibm)
             joint_matrices.append(deform)
 
     vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices,
