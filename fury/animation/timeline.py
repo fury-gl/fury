@@ -216,7 +216,8 @@ class Timeline(Container):
 
         if update_interpolator:
             interp = attrib_data.get('interpolator')
-            interp_base = interp.get('base', linear_interpolator)
+            interp_base = interp.get(
+                'base', linear_interpolator if attrib != 'rotation' else slerp)
             args = interp.get('args', {})
             self.set_interpolator(attrib, interp_base,
                                   is_camera=is_camera, **args)
