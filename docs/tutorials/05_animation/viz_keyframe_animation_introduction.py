@@ -14,8 +14,7 @@ from fury.animation.interpolator import cubic_spline_interpolator, slerp
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
+showm = window.ShowManager(scene, size=(900, 768), reset_camera=False,
                            order_transparent=True)
 showm.initialize()
 
@@ -46,10 +45,6 @@ timeline.set_position_interpolator(cubic_spline_interpolator)
 timeline.set_rotation(0, np.array([160, 50, 20]))
 timeline.set_rotation(4, np.array([60, 160, 0]))
 timeline.set_rotation(8, np.array([0, -180, 90]))
-
-###############################################################################
-# Setting the rotation interpolator to Slerp.
-timeline.set_rotation_interpolator(slerp)
 
 ###############################################################################
 # Main timeline to control all the timelines.
