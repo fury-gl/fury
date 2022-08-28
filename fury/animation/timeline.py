@@ -4,7 +4,7 @@ from collections import defaultdict
 from fury import utils, actor
 from fury.actor import Container
 from fury.animation.interpolator import spline_interpolator, \
-    step_interpolator, linear_interpolator
+    step_interpolator, linear_interpolator, slerp
 import numpy as np
 from scipy.spatial import transform
 from fury.ui.elements import PlaybackPanel
@@ -169,7 +169,8 @@ class Timeline(Container):
             data[attrib] = {
                 'keyframes': defaultdict(dict),
                 'interpolator': {
-                    'base': linear_interpolator,
+                    'base': linear_interpolator if attrib != 'rotation' else
+                    slerp,
                     'func': None,
                     'args': defaultdict()
                 },
