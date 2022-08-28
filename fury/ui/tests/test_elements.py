@@ -810,12 +810,12 @@ def test_ui_draw_shape():
     quad_color = tuple((np.round(255 * np.array(quad.shape.color))).astype('uint8'))
     circle_color = tuple((np.round(255 * np.array(circle.shape.color))).astype('uint8'))
 
-    current_size = (1280, 720)
+    current_size = (600, 600)
     show_manager = window.ShowManager(
         size=current_size, title="DrawShape UI Example")
     show_manager.scene.add(line, circle, quad)
 
-    arr = window.snapshot(show_manager.scene, size=current_size)
+    arr = window.snapshot(show_manager.scene, size=(800, 800))
     report = window.analyze_snapshot(arr, colors=[line_color, circle_color, quad_color])
     npt.assert_equal(report.objects, 3)
     npt.assert_equal(report.colors_found, [True, True, True])
