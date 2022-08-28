@@ -178,10 +178,6 @@ for t, keyframe in keyframes.items():
             scene.add(vis_cps, cline_actor)
 
 ###############################################################################
-# changing position interpolation into cubic bezier interpolation
-timeline.set_position_interpolator(cubic_bezier_interpolator)
-
-###############################################################################
 # adding actors to the scene
 scene.add(timeline)
 
