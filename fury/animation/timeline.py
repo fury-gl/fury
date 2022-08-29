@@ -174,6 +174,7 @@ class Timeline(Container):
                     'func': None,
                     'args': defaultdict()
                 },
+                'callbacks': [],
             }
         return data.get(attrib)
 
@@ -601,8 +602,9 @@ class Timeline(Container):
         timestamp: float
             The timestamp to interpolate at.
         """
-        return self._data.get(attrib).get('interpolator'). \
+        value = self._data.get(attrib, {}).get('interpolator', {}). \
             get('func')(timestamp)
+        return value
 
     def get_current_value(self, attrib):
         """Return the value of an attribute at current time.
@@ -1214,6 +1216,22 @@ class Timeline(Container):
         """Remove all actors from the Timeline"""
         self.clear()
 
+    def add_update_callback(self, property_name, cbk_func):
+        """Add a function to be called each time animation is updated
+        This function must accept only one argument which is the current value
+        of the named property.
+
+
+        Parameters
+        ----------
+        property_name: str
+            The name of the property.
+        cbk_func: function
+            The function to be called whenever the animation is updated.
+        """
+        attrib = self._get_attribute_data(property_name)
+        attrib.get('callbacks', []).append(cbk_func)
+
     def update_animation(self, t=None, force=False):
         """Update the timeline animations
 
@@ -1315,6 +1333,12 @@ class Timeline(Container):
 
                 # update actors' transformation matrix
                 [act.SetUserTransform(self._transform) for act in self.actors]
+
+            for attrib in self._data:
+                callbacks = self._data.get(attrib, {}).get('callbacks', [])
+                if callbacks is not [] and self.is_interpolatable(attrib):
+                    value = self.get_current_value(attrib)
+                    [cbk(value) for cbk in callbacks]
 
             # Also update all child Timelines.
             [tl.update_animation(t, force=True)
