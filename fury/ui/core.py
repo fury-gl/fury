@@ -109,6 +109,7 @@ class UI(object, metaclass=abc.ABCMeta):
         self.on_middle_mouse_button_dragged = lambda i_ren, obj, element: None
         self.on_key_press = lambda i_ren, obj, element: None
         self.on_key_release = lambda i_ren, obj, element: None
+        self.on_mouse_move = lambda i_ren, obj, element: None
 
     @abc.abstractmethod
     def _setup(self):
@@ -306,6 +307,7 @@ class UI(object, metaclass=abc.ABCMeta):
 
     @staticmethod
     def mouse_move_callback(i_ren, obj, self):
+        self.on_mouse_move(i_ren, obj, self)
         left_pressing_or_dragging = (self.left_button_state == "pressing" or
                                      self.left_button_state == "dragging")
 
