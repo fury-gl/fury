@@ -3104,6 +3104,7 @@ class DrawShape(UI):
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
+        self.is_selected = True
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3123,6 +3124,22 @@ class DrawShape(UI):
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+        self.shape.on_left_mouse_button_released = self.left_button_released
+
+        self.rotation_slider = RingSlider2D(initial_value=0,
+                                            text_template="{angle:5.1f}°")
+        self.rotation_slider.set_visibility(False)
+
+        def rotate_shape(slider):
+            angle = slider.value
+            previous_angle = slider.previous_value
+            rotation_angle = angle - previous_angle
+
+            current_center = self.center
+            self.rotate(np.deg2rad(rotation_angle))
+            self.update_shape_position(current_center - self.drawpanel.position)
+
+        self.rotation_slider.on_change = rotate_shape
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3138,6 +3155,7 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
+        self.rotation_slider.add_to_scene(scene)
 
     def _get_size(self):
         return self.shape.size
@@ -3155,6 +3173,52 @@ class DrawShape(UI):
         else:
             self.shape.position = coords
 
+    def update_shape_position(self, center_position):
+        """Update the center position on the canvas.
+
+        Parameters
+        ----------
+        center_position: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        new_center = self.clamp_position(center=center_position)
+        self.drawpanel.canvas.update_element(self, new_center, "center")
+        self.cal_bounding_box()
+
+    @property
+    def center(self):
+        return self._bounding_box_min + self._bounding_box_size//2
+
+    @center.setter
+    def center(self, coords):
+        """Position the center of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+
+        """
+        new_center = np.array(coords)
+        new_lower_left_corner = new_center - self._bounding_box_size // 2
+        self.position = new_lower_left_corner + self._bounding_box_offset
+        self.cal_bounding_box()
+
+    @property
+    def is_selected(self):
+        return self._is_selected
+
+    @is_selected.setter
+    def is_selected(self, value):
+        if self.drawpanel and value:
+            self.drawpanel.current_shape = self
+        self._is_selected = value
+        self.selection_change()
+
+    def selection_change(self):
+        if not self.is_selected:
+            self.rotation_slider.set_visibility(False)
+
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
 
@@ -3163,6 +3227,8 @@ class DrawShape(UI):
         angle: float
             Value by which the vertices are rotated in radian.
         """
+        if self.shape_type == "circle":
+            return
         points_arr = vertices_from_actor(self.shape.actor)
         rotation_matrix = np.array(
             [[np.cos(angle), np.sin(angle), 0],
@@ -3171,16 +3237,28 @@ class DrawShape(UI):
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box()
 
-    def cal_bounding_box(self, position):
-        """Calculates the min and max position of the bounding box.
+    def show_rotation_slider(self):
+        """Display the RingSlider2D to allow rotation of shape from the center.
+        """
+        self._scene.rm(*self.rotation_slider.actors)
+        self.rotation_slider.add_to_scene(self._scene)
+        slider_position = self.drawpanel.position + \
+            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
+             self.rotation_slider.size[1]/2]
+        self.rotation_slider.center = slider_position
+        self.rotation_slider.set_visibility(True)
+
+    def cal_bounding_box(self, position=None):
+        """Calculate the min, max position and the size of the bounding box.
 
         Parameters
         ----------
         position : (float, float)
             (x, y) in pixels.
         """
+        position = self.position if position is None else position
         vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         min_x, min_y = vertices[0]
@@ -3196,30 +3274,29 @@ class DrawShape(UI):
             if y > max_y:
                 max_y = y
 
-        self._bounding_box_min = [min_x, min_y]
-        self._bounding_box_max = [max_x, max_y]
-        self._bounding_box_size = [max_x-min_x, max_y-min_y]
+        self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+        self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
 
         self._bounding_box_offset = position - self._bounding_box_min
 
-    def clamp_position(self, position):
-        """Clamps the given position according to the DrawPanel canvas.
+    def clamp_position(self, center=None):
+        """Clamp the given center according to the DrawPanel canvas.
 
         Parameters
         ----------
-        position : (float, float)
+        center : (float, float)
             (x, y) in pixels.
 
         Returns
         -------
-        new_position: ndarray(int)
-            New position for the shape.
+        new_center: ndarray(int)
+            New center for the shape.
         """
-        self.cal_bounding_box(position)
-        new_position = np.clip(self._bounding_box_min, [0, 0],
-                               self.drawpanel.size - self._bounding_box_size)
-        new_position = new_position + self._bounding_box_offset
-        return new_position.astype(int)
+        center = self.center if center is None else center
+        new_center = np.clip(center, self._bounding_box_size//2,
+                             self.drawpanel.size - self._bounding_box_size//2)
+        return new_center.astype(int)
 
     def resize(self, size):
         """Resize the UI.
@@ -3238,31 +3315,45 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box()
+
+    def remove(self):
+        """Remove the Shape and all related actors.
+        """
+        self._scene.rm(self.shape.actor)
+        self._scene.rm(*self.rotation_slider.actors)
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.drawpanel.update_shape_selection(self)
+
             click_pos = np.array(i_ren.event.position)
-            self._drag_offset = click_pos - self.position
+            self._drag_offset = click_pos - self.center
+            self.show_rotation_slider()
             i_ren.event.abort()
         elif mode == "delete":
-            self._scene.rm(self.shape.actor)
-            i_ren.force_render()
+            self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
+        i_ren.force_render()
 
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
+            self.rotation_slider.set_visibility(False)
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                relative_canvas_position = click_position - \
+                relative_center_position = click_position - \
                     self._drag_offset - self.drawpanel.position
-                new_position = self.clamp_position(relative_canvas_position)
-                self.drawpanel.canvas.update_element(self, new_position)
+                self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
+
+    def left_button_released(self, i_ren, _obj, shape):
+        if self.drawpanel.current_mode == "selection":
+            self.show_rotation_slider()
+            i_ren.force_render()
 
 
 class DrawPanel(UI):
@@ -3290,6 +3381,7 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
+        self.current_shape = None
 
     def _setup(self):
         """Setup this UI component.
@@ -3408,7 +3500,7 @@ class DrawPanel(UI):
         return min(distance_list)
 
     def draw_shape(self, shape_type, current_position, in_process=False):
-        """Draws the required shape at the given position.
+        """Draw the required shape at the given position.
 
         Parameters
         ----------
@@ -3425,16 +3517,24 @@ class DrawPanel(UI):
             if shape_type == "circle":
                 shape.max_size = self.cal_min_boundary_distance(current_position)
             self.shape_list.append(shape)
+            self.update_shape_selection(shape)
             self.current_scene.add(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
         else:
-            current_shape = self.shape_list[-1]
-            size = current_position - current_shape.position
-            current_shape.resize(size)
+            self.current_shape = self.shape_list[-1]
+            size = current_position - self.current_shape.position
+            self.current_shape.resize(size)
+
+    def update_shape_selection(self, selected_shape):
+        for shape in self.shape_list:
+            if selected_shape == shape:
+                shape.is_selected = True
+            else:
+                shape.is_selected = False
 
     def update_button_icons(self, current_mode):
-        """Updates the button icon.
+        """Update the button icon.
 
         Parameters
         ----------
@@ -3448,7 +3548,7 @@ class DrawPanel(UI):
                 btn.next_icon()
 
     def clamp_mouse_position(self, mouse_position):
-        """Restricts the mouse position to the canvas boundary.
+        """Restrict the mouse position to the canvas boundary.
 
         Parameters
         ----------
@@ -3464,8 +3564,10 @@ class DrawPanel(UI):
                        self.canvas.position + self.canvas.size)
 
     def handle_mouse_click(self, position):
-        if self.is_draggable and self.current_mode == "selection":
-            self._drag_offset = position - self.position
+        if self.current_mode == "selection":
+            if self.is_draggable:
+                self._drag_offset = position - self.position
+            self.current_shape.is_selected = False
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
