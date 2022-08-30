@@ -3376,7 +3376,6 @@ class DrawShape(UI):
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
-        self.is_selected = True
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3550,10 +3549,6 @@ class DrawShape(UI):
         """
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self):
@@ -3867,8 +3862,8 @@ class DrawPanel(UI):
             if shape_type == "circle":
                 shape.max_size = self.cal_min_boundary_distance(current_position)
             self.shape_list.append(shape)
-            self.update_shape_selection(shape)
             self.current_scene.add(shape)
+            self.update_shape_selection(shape)
             self.canvas.add_element(shape, current_position - self.canvas.position)
 
         else:
@@ -3981,7 +3976,7 @@ class DrawPanel(UI):
     def left_button_released(self, i_ren, _obj, element):
         if self.is_creating_polyline:
             self.current_shape.shape.add_point(i_ren.event.position, True)
-            self.current_shape.cal_bounding_box(update_value=True)
+            self.current_shape.cal_bounding_box()
         # if self.current_mode == "polyline":
         #     self.shape_list[-1].shape.add_point(i_ren.event.position, interactive=True)
 
