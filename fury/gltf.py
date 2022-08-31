@@ -148,6 +148,7 @@ class glTF:
         if node.matrix is not None:
             matnode = np.array(node.matrix)
             matnode = matnode.reshape(-1, 4).T
+            # print(matnode)
         else:
             if node.translation is not None:
                 trans = node.translation
@@ -167,7 +168,7 @@ class glTF:
         next_matrix = np.dot(matrix, matnode)
 
         if isJoint:
-            # print(f'matrix of node: {nextnode_id}\n{next_matrix}')
+            print(f'matrix of node: {nextnode_id}\n{next_matrix}')
             self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if node.mesh is not None:
@@ -538,37 +539,36 @@ class glTF:
         weights = self.weights_0[0]
         joints = self.joints_0[0]
 
-        if ibms is not None:
-            for ibm in ibms:
-                clone = transform.apply_transfomation(clone, ibm)
+        # if ibms is not None:
+        #     for ibm in ibms:
+        #         clone = transform.apply_transfomation(clone, ibm)
 
         for i, xyz in enumerate(clone):
             a_joint = joints[i]
             a_weight = weights[i]
 
             skin_mat = \
-                a_weight[0]*joint_matrices[a_joint[0]] +\
-                a_weight[1]*joint_matrices[a_joint[1]] +\
-                a_weight[2]*joint_matrices[a_joint[2]] +\
-                a_weight[3]*joint_matrices[a_joint[3]]
+                np.multiply(a_weight[0], joint_matrices[a_joint[0]]) +\
+                np.multiply(a_weight[1], joint_matrices[a_joint[1]]) +\
+                np.multiply(a_weight[2], joint_matrices[a_joint[2]]) +\
+                np.multiply(a_weight[3], joint_matrices[a_joint[3]])
 
-            xyz = transform.apply_transfomation(
-                    np.array([xyz]), skin_mat)[0]
-            clone[i] = xyz
+            xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
+            # xyz = np.dot(np.append(xyz, [1.0]), skin_mat)
+            clone[i] = xyz[:3]
 
         return clone
 
-    def get_skin_timelines(self):
+    def get_skin_timeline(self):
         """Returns list of animation timeline.
 
         Returns
         -------
-        timelines : List
-            List of timelines containing actors.
+        timeline : Timeline
+            Timelines containing actors.
         """
         # actors = self.actors()
 
-        timelines = []
         timeline = Timeline(playback_panel=True)
         for num, transforms in enumerate(self.node_transform):
             target_node = transforms['node']
@@ -588,8 +588,10 @@ class glTF:
                 else:
                     transform = np.identity(4)
                     timeline.set_keyframe(f'transform{i}', 0, transform)
+    
+                # timeline.set_interpolator(f'transform{i}',
+                #                           self.skinning_interpolator)
 
-        timelines.append(timeline)
         return timeline
 
     def get_animation_timelines(self):
@@ -675,14 +677,46 @@ class glTF:
             main_timeline.add_timeline(timeline)
         return main_timeline
 
-    def get_skin_timeline(self):
-        """Returns main timeline with all animations.
-        """
-        main_timeline = Timeline(playback_panel=True)
-        timelines = self.get_skin_timelines()
-        for timeline in timelines:
-            main_timeline.add_timeline(timeline)
-        return main_timeline
+    def skinning_interpolator(self, keyframes):
+
+        timestamps = helpers.get_timestamps_from_keyframes(keyframes)
+        for time in keyframes:
+            data = keyframes.get(time)
+            if data.get('value') is None:
+                data['value'] = np.identity(4)
+
+        def interpolate(t):
+            actor = self.actors()[0]
+            vertices = utils.vertices_from_actor(actor)
+            clone = np.copy(vertices)
+            bones = self.bones[0]
+            inverse_binds = []
+            parent_transforms = self.bone_tranforms
+            t0 = helpers.get_previous_timestamp(timestamps, t)
+            t1 = helpers.get_next_timestamp(timestamps, t)
+
+            joint_matrices = []
+
+            for i, bone in enumerate(bones):
+                in_mat = keyframes.get(t0).get('value')
+                out_mat = keyframes.get(t1).get('value')
+
+                deform = lerp(in_mat, out_mat, t0, t1, t)
+                parent_transform = parent_transforms[bone]
+                ibm = self.ibms[0][i].T
+                inverse_binds.append(ibm)
+
+                joint_mat = np.dot(parent_transform, deform)
+                joint_mat = np.dot(joint_mat, ibm)
+                joint_matrices.append(joint_mat)
+
+            vertices[:] = self.apply_skin_matrix(clone, joint_matrices, bones)
+            utils.update_actor(actor)
+            utils.compute_bounds(actor)
+            # print('updating actor')
+            return vertices
+
+        return interpolate
 
 
 def tan_cubic_spline_interpolator(keyframes):
