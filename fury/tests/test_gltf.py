@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import numpy.testing as npt
+import itertools
 from fury.gltf import glTF, export_scene
 from fury import window, utils, actor
 from fury.data import fetch_gltf, read_viz_gltf
@@ -138,3 +139,46 @@ def test_export_gltf():
                                   colors=[(108, 173, 223), (92, 135, 39)],
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True])
+
+
+def test_simple_animation():
+    fetch_gltf('BoxAnimated', 'glTF')
+    file = read_viz_gltf('BoxAnimated')
+    gltf_obj = glTF(file)
+    timeline = gltf_obj.get_main_timeline()
+
+    scene = window.Scene()
+    showm = window.ShowManager(scene, size=(900, 768))
+    showm.initialize()
+
+    scene.add(timeline)
+    # timeline.play()
+    counter = itertools.count()
+
+    # timestamp animation seek
+    timeline.seek(0.0)
+    showm.save_screenshot('keyframe1.png')
+
+    timeline.seek(2.57)
+    showm.save_screenshot('keyframe2.png')
+    res1 = window.analyze_snapshot('keyframe1.png', colors=(255, 255, 255))
+    res2 = window.analyze_snapshot('keyframe2.png', colors=(255, 255, 255))
+
+    assert_greater(res2.objects, res1.objects)
+    npt.assert_equal(res1.colors_found, [True])
+    npt.assert_equal(res2.colors_found, [True])
+
+    # animation test
+
+    # def timer_callback(_obj, _event):
+    #     cnt = next(counter)
+    #     timeline.update_animation()
+        
+    #     if cnt > 600:
+    #         showm.exit()
+    #     showm.render()
+    # showm.add_timer_callback(True, 10, timer_callback)
+    # showm.start()
+
+
+test_simple_animation()
