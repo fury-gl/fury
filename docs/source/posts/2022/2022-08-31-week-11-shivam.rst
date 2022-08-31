@@ -1,4 +1,4 @@
-Week 11 - Multiple transformations support and adding tests 
+Week 11 - Multiple transformations support and add tests 
 ===========================================================
 
 .. post:: August 31 2022
@@ -9,17 +9,17 @@ Week 11 - Multiple transformations support and adding tests
 What did you do this week?
 --------------------------
 
-As decieded in last week, I added support for multiple aimations at same timestamp. But this didn't solve the animation problems of ``RiggedSimple`` model.
+As decided last week, I added support for multiple animations at the same timestamp. But this didn't solve the animation problems of ``RiggedSimple`` model.
 
-- I figured out that I was not applying the the global transform of joints in the skinning matrix causing the joints to move to a new position. I referred to this `answer by irradicator<https://www.gamedev.net/forums/topic/703803-gltf-skinning-matrix-calculation/>`.
+- I figured out that I was not applying the global transform of joints in the skinning matrix causing the joints to move to a new position. I referred to this `answer by irradicator <https://www.gamedev.net/forums/topic/703803-gltf-skinning-matrix-calculation/>`_.
 
-- We had to invert the multiplication order  (ie, ``np.dot(skin_mat, vertex)`` instead of ``np.dot(vertex, skin_mat)``) for this model. We still need to figure out from where do we get the multiplication order of the two.
+- We had to invert the multiplication order  (ie, ``np.dot(skin_mat, vertex)`` instead of ``np.dot(vertex, skin_mat)``) for this model. We still need to figure out from where we get the multiplication order of the two.
 
     .. raw:: html
 
-        <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/186712256-af02c902-f60f-43b9-b257-f706c999557e.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/187798821-7306cb13-dfc8-477c-8f86-1f5a6181f08a.mp4" frameborder="0"></iframe>
 
-- I also tried to create a custom Interpolator that does all calulations required for vartex skinning, However we couldn't get this working. I got a few suggestions from Mohamed in our meeting, I'll try to implement those.
+- I also tried to create a custom Interpolator that does all calculations required for vertex skinning. However, we couldn't get this working. I got a few suggestions from Mohamed in our meeting, I'll try to implement those.
 
 - Added tests for animations.
 
@@ -29,7 +29,7 @@ What is coming up next week?
 
 - Adding more tests.
 - Fixing the Interpolator.
-- Order of multiplication in skinning matrix.
+- Order of multiplication in the skinning matrix.
 
 Did you get stuck anywhere?
 ---------------------------
