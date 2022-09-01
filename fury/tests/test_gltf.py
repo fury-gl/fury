@@ -152,8 +152,6 @@ def test_simple_animation():
     showm.initialize()
 
     scene.add(timeline)
-    # timeline.play()
-    counter = itertools.count()
 
     # timestamp animation seek
     timeline.seek(0.0)
@@ -168,17 +166,53 @@ def test_simple_animation():
     npt.assert_equal(res1.colors_found, [True])
     npt.assert_equal(res2.colors_found, [True])
 
+
+def test_kf_transforms():
     # animation test
+    fetch_gltf('SimpleSkin', 'glTF')
+    file = read_viz_gltf('SimpleSkin')
+    gltf_obj = glTF(file)
+    timeline = gltf_obj.get_main_timeline()
+
+    #checking weights and joints
+    weights = np.array([[1.00,  0.00,  0.0, 0.0],
+                        [1.00,  0.00,  0.0, 0.0],
+                        [0.75,  0.25,  0.0, 0.0],
+                        [0.75,  0.25,  0.0, 0.0],
+                        [0.50,  0.50,  0.0, 0.0],
+                        [0.50,  0.50,  0.0, 0.0],
+                        [0.25,  0.75,  0.0, 0.0],
+                        [0.25,  0.75,  0.0, 0.0],
+                        [0.00,  1.00,  0.0, 0.0],
+                        [0.00,  1.00,  0.0, 0.0]])
+    joints = np.array([[0, 0, 0, 0],
+                       [0, 0, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0],
+                       [0, 1, 0, 0]])
+    npt.assert_equal(weights, gltf_obj.weights_0[0])
+    npt.assert_equal(joints, gltf_obj.joints_0[0])
+
+    scene = window.Scene()
+    showm = window.ShowManager(scene, size=(900, 768))
+    showm.initialize()
+
+    scene.add(timeline)
+    # timeline.play()
+    # counter = itertools.count()
+    # timeline.play()
 
     # def timer_callback(_obj, _event):
     #     cnt = next(counter)
     #     timeline.update_animation()
-        
-    #     if cnt > 600:
+    #     # causes seg fault
+    #     if cnt > 100:
     #         showm.exit()
     #     showm.render()
     # showm.add_timer_callback(True, 10, timer_callback)
     # showm.start()
-
-
-test_simple_animation()
