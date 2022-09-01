@@ -2403,7 +2403,6 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
                 program.SetUniformf('specularIntensity', spec_intensity)
 
         add_shader_callback(bb_actor, update_uniforms)
-        return bb_actor
 
     else:
         verts, faces = fp.prim_square()
@@ -2415,8 +2414,6 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         prim_count = len(centers)
         bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
                                             prim_count=prim_count)
-        bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
-        bb_actor.GetProperty().BackfaceCullingOff()
         attribute_to_actor(bb_actor, big_centers, 'center')
 
         vs_dec_code = compose_shader(
@@ -2440,7 +2437,9 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
                         block='light')
 
-        return bb_actor
+    bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    bb_actor.GetProperty().BackfaceCullingOff()
+    return bb_actor
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
