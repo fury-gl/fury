@@ -14,7 +14,7 @@ This week I didn't do much work.
 
 - Fixed some issues in the hierarchical order animation support `PR`_ that we discussed during last week's meeting (mostly naming issues).
 
-- Explained the introductory tutorial a little. But it is not good suitable beginners. So, I will spend time improving tutorials this week.
+- Explained the introductory tutorial a little. But it is not suitable for beginners. So, I will spend time improving tutorials this week.
 
 - Added extrusion to `vector_text`_ to allow the z-scaling to be functional.
 
@@ -29,7 +29,7 @@ What is coming up next week?
 
 - Find out how to get the ``Scene`` from the actor instead of manually assigning it.
 
-- If I have time, I will try implement recording animation as GIF or as a video.
+- If I have time, I will try to implement recording animation as GIF or as a video.
 
 
 Did you get stuck anywhere?
