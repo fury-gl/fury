@@ -1,4 +1,4 @@
-Week 11 - Multiple transformations support and add tests 
+Week 11 - Multiple transformations support and adding tests 
 ===========================================================
 
 .. post:: August 31 2022
