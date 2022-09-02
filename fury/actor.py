@@ -2324,7 +2324,7 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
 
 
 def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
-              vs_impl=None, gs_prog='default', fs_dec=None, fs_impl=None):
+              vs_impl=None, gs_prog=None, fs_dec=None, fs_impl=None):
     """Create a billboard actor.
 
     Billboards are 2D elements placed in a 3D world. They offer possibility to
