@@ -123,3 +123,38 @@ def check_overflow(textblock, width, overflow_postfix='',
             if side == 'left':
                 textblock.message = textblock.message[::-1]
             return mid_ptr
+
+
+def cal_2d_bounding_box(vertices):
+    """Calculate the min, max position and the size of the bounding box.
+
+    Parameters
+    ----------
+    vertices : ndarray
+        vertices of the actors.
+    """
+
+    if vertices.ndim != 2 and vertices.shape[1] not in [2, 3]:
+        raise IOError("vertices should be a 2D array with shape (n,2) or (n,3).")
+
+    if vertices.shape[1] == 3:
+        vertices = vertices[:, :-1]
+
+    min_x, min_y = vertices[0]
+    max_x, max_y = vertices[0]
+
+    for x, y in vertices:
+        if x < min_x:
+            min_x = x
+        if y < min_y:
+            min_y = y
+        if x > max_x:
+            max_x = x
+        if y > max_y:
+            max_y = y
+
+    bounding_box_min = np.asarray([min_x, min_y], dtype="int")
+    bounding_box_max = np.asarray([max_x, max_y], dtype="int")
+    bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
+
+    return bounding_box_min, bounding_box_max, bounding_box_size
