@@ -3429,10 +3429,10 @@ class DrawPanel(UI):
             self.mode_panel.add_element(btn, btn_pos+padding)
             btn_pos[0] += btn.size[0]+padding
 
-        self.canvas.add_element(self.mode_panel, (0, 0))
+        self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
-        self.canvas.add_element(self.mode_text, (0.0, 0.95))
+        self.canvas.add_element(self.mode_text, (0.0, 1.0))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3460,7 +3460,7 @@ class DrawPanel(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.canvas.position = coords
+        self.canvas.position = coords + [0, self.mode_panel.size[1]]
 
     def resize(self, size):
         """Resize the UI.
