@@ -3255,8 +3255,8 @@ class DrawShape(UI):
         """
         vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
-        self._bounding_box_min, self._bounding_box_max, self._bounding_box_size = cal_2d_bounding_box(
-            vertices)
+        self._bounding_box_min, self._bounding_box_max, \
+            self._bounding_box_size = cal_2d_bounding_box(vertices)
 
         self._bounding_box_offset = self.position - self._bounding_box_min
 
