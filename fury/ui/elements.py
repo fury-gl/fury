@@ -17,7 +17,7 @@ from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
-from fury.ui.helpers import TWO_PI, clip_overflow
+from fury.ui.helpers import TWO_PI, clip_overflow, cal_2d_bounding_box
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
@@ -3250,35 +3250,15 @@ class DrawShape(UI):
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
-    def cal_bounding_box(self, position=None):
+    def cal_bounding_box(self):
         """Calculate the min, max position and the size of the bounding box.
-
-        Parameters
-        ----------
-        position : (float, float)
-            (x, y) in pixels.
         """
-        position = self.position if position is None else position
-        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+        vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
+        self._bounding_box_min, self._bounding_box_max, self._bounding_box_size = cal_2d_bounding_box(
+            vertices)
 
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-
-        self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-        self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
-
-        self._bounding_box_offset = position - self._bounding_box_min
+        self._bounding_box_offset = self.position - self._bounding_box_min
 
     def clamp_position(self, center=None):
         """Clamp the given center according to the DrawPanel canvas.
