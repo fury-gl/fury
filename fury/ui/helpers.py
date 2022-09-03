@@ -125,7 +125,7 @@ def check_overflow(textblock, width, overflow_postfix='',
             return mid_ptr
 
 
-def cal_2d_bounding_box(vertices):
+def cal_bounding_box_2d(vertices):
     """Calculate the min, max position and the size of the bounding box.
 
     Parameters

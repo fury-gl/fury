@@ -17,7 +17,7 @@ from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
-from fury.ui.helpers import TWO_PI, clip_overflow, cal_2d_bounding_box
+from fury.ui.helpers import TWO_PI, clip_overflow, cal_bounding_box_2d
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
@@ -3256,7 +3256,7 @@ class DrawShape(UI):
         vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
         self._bounding_box_min, self._bounding_box_max, \
-            self._bounding_box_size = cal_2d_bounding_box(vertices)
+            self._bounding_box_size = cal_bounding_box_2d(vertices)
 
         self._bounding_box_offset = self.position - self._bounding_box_min
 
