@@ -134,7 +134,7 @@ def cal_bounding_box_2d(vertices):
         vertices of the actors.
     """
 
-    if vertices.ndim != 2 and vertices.shape[1] not in [2, 3]:
+    if vertices.ndim != 2 or vertices.shape[1] not in [2, 3]:
         raise IOError("vertices should be a 2D array with shape (n,2) or (n,3).")
 
     if vertices.shape[1] == 3:
@@ -170,7 +170,7 @@ def rotate_2d(vertices, angle):
     angle: float
         Value by which the vertices are rotated in radian.
     """
-    if vertices.ndim != 2 and vertices.shape[1] != 3:
+    if vertices.ndim != 2 or vertices.shape[1] != 3:
         raise IOError("vertices should be a 2D array with shape (n,3).")
 
     rotation_matrix = np.array(
