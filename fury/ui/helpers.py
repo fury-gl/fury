@@ -158,3 +158,24 @@ def cal_bounding_box_2d(vertices):
     bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
 
     return bounding_box_min, bounding_box_max, bounding_box_size
+
+
+def rotate_2d(vertices, angle):
+    """Rotate the given vertices by an angle.
+
+    Parameters
+    ----------
+    vertices : ndarray
+        vertices of the actors.
+    angle: float
+        Value by which the vertices are rotated in radian.
+    """
+    if vertices.ndim != 2 and vertices.shape[1] != 3:
+        raise IOError("vertices should be a 2D array with shape (n,3).")
+
+    rotation_matrix = np.array(
+        [[np.cos(angle), np.sin(angle), 0],
+         [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+    new_vertices = np.matmul(vertices, rotation_matrix)
+
+    return new_vertices
