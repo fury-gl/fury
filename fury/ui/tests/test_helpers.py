@@ -4,7 +4,7 @@ import numpy.testing as npt
 
 from fury import window, ui
 from fury.ui.helpers import (clip_overflow, wrap_overflow, check_overflow,
-                             cal_bounding_box_2d)
+                             cal_bounding_box_2d, rotate_2d)
 
 
 def test_clip_overflow():
@@ -111,5 +111,17 @@ def test_cal_bounding_box_2d():
     npt.assert_equal([8, 16], bb_size)
 
     with npt.assert_raises(IOError):
-        vertices = np.array([[[0, 0]], [[0, 0]]])
+        vertices = np.array([[[0, 0], [0, 0]], [[0, 0], [0, 0]]])
         bb_min, bb_max, bb_size = cal_bounding_box_2d(vertices)
+
+
+def test_rotate_2d():
+    vertices = np.array([[1, 1, 0], [10, 10, 0]])
+    new_vertices = rotate_2d(vertices, np.deg2rad(90))
+
+    npt.assert_equal(np.array([[-1., 1., 0.], [-10., 10., 0.]],
+                     dtype="float32"), new_vertices.astype("float32"))
+
+    with npt.assert_raises(IOError):
+        vertices = np.array([[0, 0], [0, 0]])
+        new_vertices = rotate_2d(vertices, np.deg2rad(90))
