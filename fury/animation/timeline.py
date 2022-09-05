@@ -4,11 +4,11 @@ from collections import defaultdict
 from fury import utils, actor
 from fury.actor import Container
 from fury.animation.interpolator import spline_interpolator, \
-    step_interpolator, linear_interpolator
+    step_interpolator, linear_interpolator, slerp
 import numpy as np
 from scipy.spatial import transform
 from fury.ui.elements import PlaybackPanel
-from fury.lib import Actor
+from fury.lib import Actor, Transform
 
 
 class Timeline(Container):
@@ -67,6 +67,7 @@ class Timeline(Container):
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._parent_timeline = None
+        self._transform = Transform()
 
         # Handle actors while constructing the timeline.
         if playback_panel:
@@ -168,10 +169,12 @@ class Timeline(Container):
             data[attrib] = {
                 'keyframes': defaultdict(dict),
                 'interpolator': {
-                    'base': linear_interpolator,
+                    'base': linear_interpolator if attrib != 'rotation' else
+                    slerp,
                     'func': None,
                     'args': defaultdict()
                 },
+                'callbacks': [],
             }
         return data.get(attrib)
 
@@ -215,7 +218,8 @@ class Timeline(Container):
 
         if update_interpolator:
             interp = attrib_data.get('interpolator')
-            interp_base = interp.get('base', linear_interpolator)
+            interp_base = interp.get(
+                'base', linear_interpolator if attrib != 'rotation' else slerp)
             args = interp.get('args', {})
             self.set_interpolator(attrib, interp_base,
                                   is_camera=is_camera, **args)
@@ -598,8 +602,9 @@ class Timeline(Container):
         timestamp: float
             The timestamp to interpolate at.
         """
-        return self._data.get(attrib).get('interpolator'). \
+        value = self._data.get(attrib, {}).get('interpolator', {}). \
             get('func')(timestamp)
+        return value
 
     def get_current_value(self, attrib):
         """Return the value of an attribute at current time.
@@ -1086,7 +1091,7 @@ class Timeline(Container):
         return self.get_camera_value('rotation', t)
 
     def add(self, item):
-        """Adds an item to the Timeline.
+        """Add an item to the Timeline.
         This item can be an actor, Timeline, list of actors, or a list of
         Timelines.
 
@@ -1102,13 +1107,13 @@ class Timeline(Container):
         elif isinstance(item, Actor):
             self.add_actor(item)
         elif isinstance(item, Timeline):
-            self.add_timeline(item)
+            self.add_child_timeline(item)
         else:
             raise ValueError(f"Object of type {type(item)} can't be added to "
                              f"the timeline.")
 
-    def add_timeline(self, timeline):
-        """Adds an actor or list of actors to the Timeline.
+    def add_child_timeline(self, timeline):
+        """Add child Timeline or list of Timelines.
 
         Parameters
         ----------
@@ -1117,14 +1122,14 @@ class Timeline(Container):
         """
         if isinstance(timeline, list):
             for a in timeline:
-                self.add_timeline(a)
+                self.add_child_timeline(a)
             return
         timeline._parent_timeline = self
         timeline.update_motion_path()
         self._timelines.append(timeline)
 
     def add_actor(self, actor, static=False):
-        """Adds an actor or list of actors to the Timeline.
+        """Add an actor or list of actors to the Timeline.
 
         Parameters
         ----------
@@ -1211,6 +1216,22 @@ class Timeline(Container):
         """Remove all actors from the Timeline"""
         self.clear()
 
+    def add_update_callback(self, property_name, cbk_func):
+        """Add a function to be called each time animation is updated
+        This function must accept only one argument which is the current value
+        of the named property.
+
+
+        Parameters
+        ----------
+        property_name: str
+            The name of the property.
+        cbk_func: function
+            The function to be called whenever the animation is updated.
+        """
+        attrib = self._get_attribute_data(property_name)
+        attrib.get('callbacks', []).append(cbk_func)
+
     def update_animation(self, t=None, force=False):
         """Update the timeline animations
 
@@ -1242,6 +1263,11 @@ class Timeline(Container):
         self.handle_scene_event(t)
 
         if self.playing or force:
+            if isinstance(self._parent_timeline, Timeline):
+                self._transform.DeepCopy(self._parent_timeline._transform)
+            else:
+                self._transform.Identity()
+
             if self._camera is not None:
                 if self.is_interpolatable('rotation', is_camera=True):
                     pos = self._camera.GetPosition()
@@ -1281,11 +1307,7 @@ class Timeline(Container):
             if in_scene:
                 if self.is_interpolatable('position'):
                     position = self.get_position(t)
-                    [act.SetPosition(position) for act in self.actors]
-
-                if self.is_interpolatable('scale'):
-                    scale = self.get_scale(t)
-                    [act.SetScale(scale) for act in self.actors]
+                    self._transform.Translate(*position)
 
                 if self.is_interpolatable('opacity'):
                     opacity = self.get_opacity(t)
@@ -1293,16 +1315,32 @@ class Timeline(Container):
                      act in self.actors]
 
                 if self.is_interpolatable('rotation'):
-                    euler = self.get_rotation(t)
-                    [act.SetOrientation(euler) for
-                     act in self.actors]
+                    x, y, z = self.get_rotation(t)
+                    # Rotate in the same order as VTK defaults.
+                    self._transform.RotateZ(z)
+                    self._transform.RotateX(x)
+                    self._transform.RotateY(y)
+
+                if self.is_interpolatable('scale'):
+                    scale = self.get_scale(t)
+                    self._transform.Scale(*scale)
 
                 if self.is_interpolatable('color'):
                     color = self.get_color(t)
                     for act in self.actors:
                         act.vcolors[:] = color * 255
                         utils.update_actor(act)
-                # Also update all child Timelines.
+
+                # update actors' transformation matrix
+                [act.SetUserTransform(self._transform) for act in self.actors]
+
+            for attrib in self._data:
+                callbacks = self._data.get(attrib, {}).get('callbacks', [])
+                if callbacks is not [] and self.is_interpolatable(attrib):
+                    value = self.get_current_value(attrib)
+                    [cbk(value) for cbk in callbacks]
+
+            # Also update all child Timelines.
             [tl.update_animation(t, force=True)
              for tl in self.timelines]
             # update clipping range
@@ -1422,7 +1460,7 @@ class Timeline(Container):
 
     @playing.setter
     def playing(self, playing):
-        """Sets the playing state of the Timeline.
+        """Set the playing state of the Timeline.
 
         Parameters
         ----------
