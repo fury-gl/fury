@@ -10,7 +10,7 @@ Minimal tutorial of making keyframe-based animation in FURY.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import cubic_spline_interpolator, slerp
+from fury.animation.interpolator import cubic_spline_interpolator
 
 scene = window.Scene()
 
