@@ -1,7 +1,7 @@
 """
-=====================
-Keyframe animation
-=====================
+============================
+Making a custom interpolator
+============================
 
 Keyframe animation using custom interpolator.
 

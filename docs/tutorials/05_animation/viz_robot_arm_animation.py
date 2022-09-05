@@ -1,7 +1,7 @@
 """
-=====================
-Keyframe animation
-=====================
+===================
+Arm Robot Animation
+===================
 
 Tutorial on making a robot arm animation in FURY.
 

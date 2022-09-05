@@ -1,7 +1,7 @@
 """
-=====================
-Keyframe animation
-=====================
+=============================
+Keyframes Spline Interpolator
+=============================
 
 Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 
@@ -60,11 +60,13 @@ spline_tl.set_position_keyframes(position_keyframes)
 spline_tl.set_position_interpolator(spline_interpolator, degree=5)
 
 ###############################################################################
-# Adding everything to a main ``Timeline`` to control the two timelines.
+# Wrapping Timelines up!
 # =============================================================================
 #
+# Adding everything to a main ``Timeline`` to control the two timelines.
+
 ###############################################################################
-# Creating a timeline with a playback panel
+# First we create a timeline with a playback panel:
 main_timeline = Timeline(playback_panel=True, motion_path_res=100)
 
 ###############################################################################

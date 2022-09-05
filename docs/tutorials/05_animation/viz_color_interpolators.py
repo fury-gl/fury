@@ -1,9 +1,10 @@
 """
-==================
-Keyframe animation
-==================
+============================
+Keyframe Color Interpolators
+============================
 
-Color animation explained
+Color animation explained in this tutorial and how to use different color
+space interpolators.
 
 """
 
