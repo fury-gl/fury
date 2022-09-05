@@ -74,20 +74,8 @@ tl_child.add_child_timeline(tl_grand_child)
 ###############################################################################
 # Creating Arm joints time dependent animation functions.
 
-def main_pos(t):
-    return np.array([np.sin(t), np.cos(t) * np.sin(t), 0]) * 30
-
-
-def child_pos(t):
-    return np.array([np.cos(t * 20), np.cos(t * 20), np.cos(t * 20)]) * 3
-
-
-def grand_child_pos(t):
-    return np.array([np.sin(t * 20), 0, 0]) * 3
-
-
 def rot_main_arm(t):
-    return np.array([np.sin(t/2) * 180, np.cos(t/2) * 180, 0])
+    return np.array([np.sin(t / 2) * 180, np.cos(t / 2) * 180, 0])
 
 
 def rot_sub_arm(t):
