@@ -2402,7 +2402,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
         Label color as ``(r,g,b)`` tuple.
     direction : (3,) array_like, optional, default: (0, 0, 1)
         The direction of the label. If None, label will follow the camera.
-    align_center : bool, default: True
+    align_center : bool, optional, default: True
         If `True`, the anchor of the actor will be the center of the text.
         If `False`, the anchor will be at the left bottom of the text.
 
