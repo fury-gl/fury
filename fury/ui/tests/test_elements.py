@@ -1070,13 +1070,13 @@ def test_ui_draw_panel_basic(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
         size=current_size, title="DrawPanel Basic UI Example")
     show_manager.scene.add(drawpanel)
@@ -1102,13 +1102,13 @@ def test_ui_draw_panel_rotation(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
         size=current_size, title="DrawPanel Rotation UI Example")
     show_manager.scene.add(drawpanel)
