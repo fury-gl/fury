@@ -3129,6 +3129,10 @@ class DrawShape(UI):
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
         self.rotation_slider.set_visibility(False)
+        slider_position = self.drawpanel.canvas.position + \
+            [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
+             self.rotation_slider.size[1]/2]
+        self.rotation_slider.center = slider_position
 
         def rotate_shape(slider):
             angle = slider.value
@@ -3137,7 +3141,7 @@ class DrawShape(UI):
 
             current_center = self.center
             self.rotate(np.deg2rad(rotation_angle))
-            self.update_shape_position(current_center - self.drawpanel.position)
+            self.update_shape_position(current_center - self.drawpanel.canvas.position)
 
         self.rotation_slider.on_change = rotate_shape
 
@@ -3244,10 +3248,6 @@ class DrawShape(UI):
         """
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self, position=None):
@@ -3295,7 +3295,7 @@ class DrawShape(UI):
         """
         center = self.center if center is None else center
         new_center = np.clip(center, self._bounding_box_size//2,
-                             self.drawpanel.size - self._bounding_box_size//2)
+                             self.drawpanel.canvas.size - self._bounding_box_size//2)
         return new_center.astype(int)
 
     def resize(self, size):
@@ -3344,7 +3344,7 @@ class DrawShape(UI):
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
                 relative_center_position = click_position - \
-                    self._drag_offset - self.drawpanel.position
+                    self._drag_offset - self.drawpanel.canvas.position
                 self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
