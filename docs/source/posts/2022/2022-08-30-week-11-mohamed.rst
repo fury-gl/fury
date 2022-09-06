@@ -10,8 +10,6 @@ Week 11: Improving tutorials a little
 What did you do this week?
 --------------------------
 
-This week I didn't do much work.
-
 - Fixed some issues in the hierarchical order animation support `PR`_ that we discussed during last week's meeting (mostly naming issues).
 
 - Explained the introductory tutorial a little. But it is not suitable for beginners. So, I will spend time improving tutorials this week.
