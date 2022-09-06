@@ -4,8 +4,6 @@ import warnings
 from functools import partial
 
 import numpy as np
-from vtkmodules.vtkFiltersCore import vtkTriangleFilter
-from vtkmodules.vtkFiltersModeling import vtkLinearExtrusionFilter
 
 from fury.shaders import (add_shader_callback, attribute_to_actor,
                           compose_shader, import_fury_shader,
@@ -29,7 +27,8 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText, TransformPolyDataFilter)
+                      Follower, VectorText, TransformPolyDataFilter,
+                      LinearExtrusionFilter)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
@@ -2385,7 +2384,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.1),
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
                 color=(1, 1, 1), direction=(0, 0, 1), align_center=False):
     """Create a label actor.
 
@@ -2397,17 +2396,15 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.1),
         Text for the label.
     pos : (3,) array_like, optional
         Left down position of the label.
-    direction : (3,) array_like, optional, default: (0, 0, 1)
-        The direction of the label. If None, label will follow the camera.
     scale : (3,) array_like
         Changes the size of the label.
     color : (3,) array_like
         Label color as ``(r,g,b)`` tuple.
+    direction : (3,) array_like, optional, default: (0, 0, 1)
+        The direction of the label. If None, label will follow the camera.
     align_center : bool, default: True
         If `True`, the anchor of the actor will be the center of the text.
         If `False`, the anchor will be at the left bottom of the text.
-    extrusion: float, default: 0
-        Extrusion length of the text gives it a 3D look.
 
     Returns
     -------
@@ -2427,7 +2424,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.1),
     atext.SetText(text)
     textm = PolyDataMapper()
 
-    extrude = vtkLinearExtrusionFilter()
+    extrude = LinearExtrusionFilter()
     extrude.SetInputConnection(atext.GetOutputPort())
     extrude.SetExtrusionTypeToNormalExtrusion()
     extrude.SetVector(0, 0, scale[2])
