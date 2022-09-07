@@ -3691,7 +3691,7 @@ class DrawPanel(UI):
 
         return min(distance_list)
 
-    def draw_shape(self, shape_type, current_position, in_process=False):
+    def draw_shape(self, shape_type, current_position):
         """Draw the required shape at the given position.
 
         Parameters
@@ -3700,23 +3700,27 @@ class DrawPanel(UI):
             Type of shape - line, quad, circle.
         current_position: (float,float)
             Lower left corner position for the shape.
-        in_process: bool, optional
-            Checks whether in process or not.
         """
-        if not in_process:
-            shape = DrawShape(shape_type=shape_type, drawpanel=self,
-                              position=current_position)
-            if shape_type == "circle":
-                shape.max_size = self.cal_min_boundary_distance(current_position)
-            self.shape_list.append(shape)
-            self.current_shape = shape
-            self.current_scene.add(shape)
-            self.canvas.add_element(shape, current_position - self.canvas.position)
+        shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                          position=current_position)
+        if shape_type == "circle":
+            shape.max_size = self.cal_min_boundary_distance(current_position)
+        self.shape_list.append(shape)
+        self.update_shape_selection(shape)
+        self.current_scene.add(shape)
+        self.canvas.add_element(shape, current_position - self.canvas.position)
 
-        else:
-            self.current_shape = self.shape_list[-1]
-            size = current_position - self.current_shape.position
-            self.current_shape.resize(size)
+    def resize_shape(self, current_position):
+        """Resize the shape.
+
+        Parameters
+        ----------
+        current_position: (float,float)
+            Lower left corner position for the shape.
+        """
+        self.current_shape = self.shape_list[-1]
+        size = current_position - self.current_shape.position
+        self.current_shape.resize(size)
 
     def update_shape_selection(self, selected_shape):
         for shape in self.shape_list:
@@ -3776,7 +3780,7 @@ class DrawPanel(UI):
                 new_position = position - self._drag_offset
                 self.position = new_position
         if self.current_mode in ["line", "quad", "circle"]:
-            self.draw_shape(self.current_mode, position, True)
+            self.resize_shape(position)
 
     def left_button_dragged(self,  i_ren, _obj, element):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
