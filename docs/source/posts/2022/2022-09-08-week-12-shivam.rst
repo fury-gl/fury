@@ -11,9 +11,13 @@ What did you do this week?
 --------------------------
 - I started this week by fixing the segmentation fault for the skinning test. I could not fix this as of now.
 
-- I imported the ``RigggedFigure`` model into the blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, We get the bones of a model in place. Here's a quick preview of bones in Blender vs Bones in FURY:
+- I imported the ``RigggedFigure`` model into the blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, We get the bones of a model in place. Here's a quick preview of bones in Blender vs bones in FURY:
 
 .. image:: https://user-images.githubusercontent.com/74976752/189194609-e55f6285-b5ed-4eb3-9e78-5fb462fb2dee.png
+    :width: 500
+    :align: center
+
+.. image:: https://user-images.githubusercontent.com/74976752/189195853-5b1f8945-9822-48f5-8d55-f13e822a43a7.png
     :width: 500
     :align: center
 
@@ -34,6 +38,10 @@ Did you get stuck anywhere?
 ---------------------------
 
 - While applying the timeline, we were getting the identity matrix for timestamp 0.0s, tho it's set to a new value before. We figured this in our meeting that it's happening due to some model's animation not starting from 0.0s.
+
+.. image:: https://user-images.githubusercontent.com/74976752/189196234-b28f86f7-223b-40e4-94bf-2ec18d914487.png
+    :width: 400
+    :align: center
 
 
 .. _`#643`: https://github.com/fury-gl/fury/pull/643/
