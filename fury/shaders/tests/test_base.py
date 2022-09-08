@@ -185,8 +185,10 @@ def generate_points():
 
 def test_add_shader_callback():
     cube = generate_cube_with_effect()
-    showm = window.ShowManager()
-    showm.scene.add(cube)
+    scene = window.Scene()
+    scene.add(cube)
+
+    showm = window.ShowManager(scene)
     class Timer(object):
         idx = 0.0
 
