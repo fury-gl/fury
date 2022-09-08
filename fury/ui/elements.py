@@ -17,7 +17,8 @@ from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
-from fury.ui.helpers import TWO_PI, clip_overflow
+from fury.ui.helpers import (TWO_PI, clip_overflow,
+                             cal_bounding_box_2d, rotate_2d)
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
@@ -3230,10 +3231,7 @@ class DrawShape(UI):
         if self.shape_type == "circle":
             return
         points_arr = vertices_from_actor(self.shape.actor)
-        rotation_matrix = np.array(
-            [[np.cos(angle), np.sin(angle), 0],
-             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        new_points_arr = rotate_2d(points_arr, angle)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
@@ -3250,35 +3248,15 @@ class DrawShape(UI):
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
-    def cal_bounding_box(self, position=None):
+    def cal_bounding_box(self):
         """Calculate the min, max position and the size of the bounding box.
-
-        Parameters
-        ----------
-        position : (float, float)
-            (x, y) in pixels.
         """
-        position = self.position if position is None else position
-        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+        vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
+        self._bounding_box_min, self._bounding_box_max, \
+            self._bounding_box_size = cal_bounding_box_2d(vertices)
 
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-
-        self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-        self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
-
-        self._bounding_box_offset = position - self._bounding_box_min
+        self._bounding_box_offset = self.position - self._bounding_box_min
 
     def clamp_position(self, center=None):
         """Clamp the given center according to the DrawPanel canvas.
