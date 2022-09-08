@@ -1,0 +1,39 @@
+Week 12 - Adding skeletaton as actors and fix global transformation 
+===================================================================
+
+.. post:: September 08 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+- I started this week by fixing the segmentation fault for the skinning test. I could not fix this as of now.
+
+- I imported the ``RigggedFigure`` model into the blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, We get the bones of a model in place. Here's a quick preview of bones in Blender vs Bones in FURY:
+
+.. image:: https://user-images.githubusercontent.com/74976752/189194609-e55f6285-b5ed-4eb3-9e78-5fb462fb2dee.png
+    :width: 500
+    :align: center
+
+- After having the bones actor, I noticed that some bones are not aligned correctly, I was happening to bones due to multiplication of the same matrix twice while calculating.
+
+- I also created a function that calculates the total transformation of a node, It eliminates the need to use ``timeline.get_value`` in ``get_skin_timeline`` function.
+
+
+What is coming up next week?
+----------------------------
+
+- Tho, it seems like I fixed everything, but the we are not getting the correct model at timestamp 0. We need to find the cause and fix it!
+
+- Cleaning the Simple Animation PR `#643`_, and merging it.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+- While applying the timeline, we were getting the identity matrix for timestamp 0.0s, tho it's set to a new value before. We figured this in our meeting that it's happening due to some model's animation not starting from 0.0s.
+
+
+.. _`#643`: https://github.com/fury-gl/fury/pull/643/
