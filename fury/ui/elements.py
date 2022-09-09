@@ -3129,10 +3129,12 @@ class DrawShape(UI):
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
         self.rotation_slider.set_visibility(False)
-        slider_position = self.drawpanel.canvas.position + \
-            [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
+
+        if self.drawpanel:
+            slider_position = self.drawpanel.canvas.position + \
+                [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
+                 self.rotation_slider.size[1]/2]
+            self.rotation_slider.center = slider_position
 
         def rotate_shape(slider):
             angle = slider.value
