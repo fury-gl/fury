@@ -2384,8 +2384,9 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
-                color=(1, 1, 1), direction=(0, 0, 1), align_center=False):
+def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
+                color=(1, 1, 1), direction=(0, 0, 1), extrusion=0.0,
+                align_center=False):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2402,6 +2403,8 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
         Label color as ``(r,g,b)`` tuple.
     direction : (3,) array_like, optional, default: (0, 0, 1)
         The direction of the label. If None, label will follow the camera.
+    extrusion : float, optional
+        The extrusion amount of the text in Z axis.
     align_center : bool, optional, default: True
         If `True`, the anchor of the actor will be the center of the text.
         If `False`, the anchor will be at the left bottom of the text.
@@ -2424,15 +2427,18 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
     atext.SetText(text)
     textm = PolyDataMapper()
 
-    extrude = LinearExtrusionFilter()
-    extrude.SetInputConnection(atext.GetOutputPort())
-    extrude.SetExtrusionTypeToNormalExtrusion()
-    extrude.SetVector(0, 0, scale[2])
+    if extrusion:
+        extruded_text = LinearExtrusionFilter()
+        extruded_text.SetInputConnection(atext.GetOutputPort())
+        extruded_text.SetExtrusionTypeToNormalExtrusion()
+        extruded_text.SetVector(0, 0, extrusion)
+        atext = extruded_text
 
     trans_matrix = Transform()
     trans_matrix.PostMultiply()
 
     if direction is None:
+        # set text to follow the camera if direction is None.
         texta = Follower()
 
         def add_to_scene(scene):
@@ -2454,7 +2460,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
     trans_matrix.Scale(*scale[0:2], 1)
 
     plan = TransformPolyDataFilter()
-    plan.SetInputConnection(extrude.GetOutputPort())
+    plan.SetInputConnection(atext.GetOutputPort())
     plan.SetTransform(trans_matrix)
     textm.SetInputConnection(plan.GetOutputPort())
 
@@ -2462,11 +2468,11 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.0),
 
     texta.GetProperty().SetColor(color)
 
-    if align_center:
+    # Set ser rotation origin to the center of the text is following the camera
+    if align_center or direction is None:
         trans_matrix.Translate(-np.array(textm.GetCenter()))
 
     texta.SetPosition(*pos)
-
     return texta
 
 

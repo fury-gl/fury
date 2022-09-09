@@ -863,16 +863,23 @@ def test_labels(interactive=False):
     center_3 = text_centered.GetCenter()
     npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
 
-    text_extruded = actor.vector_text("FURY Rocks", scale=(0.2, 0.2, 1.123))
+    text_extruded = actor.vector_text("FURY Rocks", scale=(0.2, 0.2, 0.2),
+                                      extrusion=1.123)
     z_max = text_extruded.GetBounds()[-1]
     npt.assert_almost_equal(z_max, 1.123)
 
     text_extruded_centered = actor.vector_text("FURY Rocks",
-                                               scale=(0.2, 0.2, 1.123),
-                                               align_center=True)
+                                               scale=(0.2, 0.2, 0.2),
+                                               direction=None,
+                                               align_center=True, extrusion=23)
+
     z_min, z_max = text_extruded_centered.GetBounds()[4:]
-    npt.assert_almost_equal(z_max - z_min, 1.123)
+    npt.assert_almost_equal(z_max - z_min, 23)
     npt.assert_almost_equal(z_max, - z_min)
+    # if following the camera, it should rotate around the center to prevent
+    # weirdness of the geometry.
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
 
 
 def test_spheres(interactive=False):
