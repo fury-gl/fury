@@ -2,11 +2,12 @@
 import base64
 import os
 import numpy as np
+import json
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf
 from PIL import Image
 from fury.lib import Texture, Camera
-from fury import transform, utils, io
+from fury import transform, utils, io, actor
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import (linear_interpolator, lerp,
                                          step_interpolator, slerp)
@@ -69,6 +70,7 @@ class glTF:
         self.init_transform = np.identity(4)
         self.animations = []
         self.node_transform = []
+        self.sampler_matrices = {}
 
         # Skinning Informations
         self.bone_tranforms = {}
@@ -95,9 +97,10 @@ class glTF:
             transform_mat = self.transformations[i]
             position, rot, scale = transform.trs_from_matrix(transform_mat)
 
-            actor.SetPosition(position)
-            actor.SetScale(scale)
-            actor.RotateWXYZ(*rot)
+            # We don't need this as we are already applying it in skinnning part
+            # actor.SetPosition(position)
+            # actor.SetScale(scale)
+            # actor.RotateWXYZ(*rot)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -147,8 +150,8 @@ class glTF:
 
         if node.matrix is not None:
             matnode = np.array(node.matrix)
-            matnode = matnode.reshape(-1, 4).T
             # print(matnode)
+            matnode = matnode.reshape(-1, 4).T
         else:
             if node.translation is not None:
                 trans = node.translation
@@ -166,10 +169,16 @@ class glTF:
                 matnode = np.dot(matnode, scale)
 
         next_matrix = np.dot(matrix, matnode)
+        # print(f'node: {nextnode_id}\nmatrix: \n{next_matrix}\n')
+
+        if (nextnode_id in self.gltf.skins[0].joints and
+           nextnode_id not in self.bone_tranforms):
+            self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if isJoint:
-            print(f'matrix of node: {nextnode_id}\n{next_matrix}')
-            self.bone_tranforms[nextnode_id] = next_matrix[:]
+            if not (nextnode_id in self.bone_tranforms):
+                # print(f'Not there {nextnode_id}')
+                self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if node.mesh is not None:
             mesh_id = node.mesh
@@ -180,7 +189,7 @@ class glTF:
             joints, ibms = self.get_skin_data(skin_id)
             self.bones.append(joints)  # for each skin will contain nodes
             self.ibms.append(ibms)
-            self.transverse_node(joints[0], ibms[0].T, parent, isJoint=True)
+            self.transverse_node(joints[0], np.identity(4), parent, isJoint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -476,6 +485,7 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
+            self.get_matrix_from_sampler(path, node_id, sampler)
 
     def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
                          transform_type):
@@ -506,6 +516,23 @@ class glTF:
             'output': transform_array,
             'interpolation': interpolation,
             'property': transform_type}
+
+    def get_matrix_from_sampler(self, prop, node, sampler: gltflib.Sampler):
+        time_array = self.get_acc_data(sampler.input)
+        tran_array = self.get_acc_data(sampler.output)
+        tran_matrix = []
+        if node in self.sampler_matrices:
+            prev_arr = self.sampler_matrices[node]['matrix']
+        else:
+            prev_arr = [np.identity(4) for i in range(len(time_array))]
+        for i, arr in enumerate(tran_array):
+            temp = self.generate_tmatrix(arr, prop)
+            tran_matrix.append(np.dot(prev_arr[i], temp))
+        data = {
+            'timestamps': time_array,
+            'matrix': tran_matrix
+        }
+        self.sampler_matrices[node] = data
 
     def get_skin_data(self, skin_id):
         skin = self.gltf.skins[skin_id]
@@ -579,19 +606,38 @@ class glTF:
                     timestamp = transforms['input']
                     transform = transforms['output']
                     prop = transforms['property']
+                    # timeline.set_keyframe(f'transform{nodes}', 0., transform)
                     for time, trs in zip(timestamp, transform):
                         matrix = self.generate_tmatrix(trs, prop)
                         if num > 0:
-                            prev_matrix = timeline.get_value(f'transform{i}', time[0])
+                            prev_matrix = timeline.get_value(f'transform{nodes}', time[0])
                             matrix = np.dot(prev_matrix, matrix)
-                        timeline.set_keyframe(f'transform{i}', time[0], matrix)
+                        timeline.set_keyframe(f'transform{nodes}', time[0], matrix)
+                        # print(f'timestap: {time[0]} node: {nodes}')
                 else:
+                    # print(f'target node is not nodes {target_node} {nodes}')
                     transform = np.identity(4)
-                    timeline.set_keyframe(f'transform{i}', 0, transform)
-    
-                # timeline.set_interpolator(f'transform{i}',
-                #                           self.skinning_interpolator)
+                    timeline.set_keyframe(f'transform{nodes}', 0.0, transform)
 
+        return timeline
+    
+    def get_skin_timeline2(self):
+        """Alternate version of `get_skin_timeline`
+        Using pre-multiplied matrices.
+        """
+        timeline = Timeline(playback_panel=True)
+        for target, transforms in self.sampler_matrices.items():
+            # target = transforms['node']
+            for i, bone in enumerate(self.bones[0]):
+                if target == bone:
+                    timestamps = transforms['timestamps']
+                    mertices = transforms['matrix']
+
+                    for time, matrix in zip(timestamps, mertices):
+                        timeline.set_keyframe(f'transform{bone}', time[0], matrix)
+
+                # else:
+                #     timeline.set_keyframe(f'transform{bone}', 0.0, np.identity(4))
         return timeline
 
     def get_animation_timelines(self):
@@ -717,6 +763,23 @@ class glTF:
             return vertices
 
         return interpolate
+    
+    def get_joint_actors(self, length=0.5):
+        origin = np.zeros((3, 3))
+        actors = {}
+        # print(self.bone_tranforms)
+        parent_transforms = self.bone_tranforms
+        # print(parent_transforms)
+        for bone in self.bones[0]:
+            # print(transf)
+            arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
+            verts = utils.vertices_from_actor(arrow)
+            verts[:] = transform.apply_transfomation(verts,
+                                                     parent_transforms[bone])
+            utils.update_actor(arrow)
+            actors[bone] = arrow
+            # actors[bone] = arrow
+        return actors
 
 
 def tan_cubic_spline_interpolator(keyframes):

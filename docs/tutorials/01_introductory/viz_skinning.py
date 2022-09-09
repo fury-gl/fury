@@ -35,8 +35,8 @@ def timer_callback(_obj, _event):
     joint_matrices = []
     ibms = []
     for i, bone in enumerate(bones):
-        if timeline.is_interpolatable(f'transform{i}'):
-            deform = timeline.get_value(f'transform{i}',
+        if timeline.is_interpolatable(f'transform{bone}'):
+            deform = timeline.get_value(f'transform{bone}',
                                         timeline.current_timestamp)
             ibm = gltf_obj.ibms[0][i].T
             ibms.append(ibm)

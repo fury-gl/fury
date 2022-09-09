@@ -2,6 +2,8 @@ import os
 import numpy as np
 import numpy.testing as npt
 import itertools
+from PIL import Image
+from scipy.ndimage import center_of_mass
 from fury.gltf import glTF, export_scene
 from fury import window, utils, actor
 from fury.data import fetch_gltf, read_viz_gltf
@@ -167,14 +169,14 @@ def test_simple_animation():
     npt.assert_equal(res2.colors_found, [True])
 
 
-def test_kf_transforms():
+def test_skinning():
     # animation test
     fetch_gltf('SimpleSkin', 'glTF')
     file = read_viz_gltf('SimpleSkin')
     gltf_obj = glTF(file)
-    timeline = gltf_obj.get_main_timeline()
+    timeline = gltf_obj.get_skin_timeline()
 
-    #checking weights and joints
+    # checking weights and joints
     weights = np.array([[1.00,  0.00,  0.0, 0.0],
                         [1.00,  0.00,  0.0, 0.0],
                         [0.75,  0.25,  0.0, 0.0],
@@ -198,21 +200,68 @@ def test_kf_transforms():
     npt.assert_equal(weights, gltf_obj.weights_0[0])
     npt.assert_equal(joints, gltf_obj.joints_0[0])
 
+    joints, ibms = gltf_obj.get_skin_data(0)
+    npt.assert_equal([1, 2], joints)
+    npt.assert_equal(len(ibms), 2)
+
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
     showm.initialize()
 
     scene.add(timeline)
-    # timeline.play()
-    # counter = itertools.count()
-    # timeline.play()
+    timeline.seek(1.0)
 
-    # def timer_callback(_obj, _event):
-    #     cnt = next(counter)
-    #     timeline.update_animation()
-    #     # causes seg fault
-    #     if cnt > 100:
-    #         showm.exit()
-    #     showm.render()
-    # showm.add_timer_callback(True, 10, timer_callback)
-    # showm.start()
+    timeline.seek(4.00)
+    showm.save_screenshot('keyframe2.png')
+    res1 = np.asarray(Image.open('keyframe1.png'))
+    res2 = np.asarray(Image.open('keyframe2.png'))
+    
+    avg = center_of_mass(res1)
+    print(avg)
+    avg = center_of_mass(res2)
+    print(avg)
+    timeline.play()
+    counter = itertools.count()
+
+    actor = gltf_obj.actors()[0]
+    vertices = utils.vertices_from_actor(actor)
+    clone = np.copy(vertices)
+    timeline.play()
+
+    def timer_callback(_obj, _event):
+        nonlocal timer_id
+        cnt = next(counter)
+        timeline.update_animation()
+
+        print(cnt)
+        joint_matrices = []
+        ibms = []
+        for i, bone in enumerate(gltf_obj.bones[0]):
+            if timeline.is_interpolatable(f'transform{bone}'):
+                deform = timeline.get_value(f'transform{bone}',
+                                            timeline.current_timestamp)
+                ibm = gltf_obj.ibms[0][i].T
+                ibms.append(ibm)
+
+                parent_transform = gltf_obj.bone_tranforms[bone]
+                joint_mat = np.dot(parent_transform, deform)
+                joint_mat = np.dot(joint_mat, ibm)
+                joint_matrices.append(joint_mat)
+
+        vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices,
+                                                 None)
+        utils.update_actor(actor)
+        showm.render()
+
+        if cnt == 10:
+            showm.save_screenshot('keyframe1.png')
+        if cnt == 100:
+            showm.save_screenshot('keyframe2.png')
+
+        if cnt == 150:
+            showm.destroy_timer(timer_id)
+            # showm.exit()
+
+    timer_id = showm.add_timer_callback(True, 10, timer_callback)
+    showm.destroy_timer(timer_id)
+
