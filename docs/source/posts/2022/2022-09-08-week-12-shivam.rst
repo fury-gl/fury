@@ -1,5 +1,5 @@
-Week 12 - Adding skeletaton as actors and fix global transformation 
-===================================================================
+Week 12 - Adding skeleton as actors and fix global transformation 
+=================================================================
 
 .. post:: September 08 2022
    :author: Shivam Anand
@@ -11,7 +11,7 @@ What did you do this week?
 --------------------------
 - I started this week by fixing the segmentation fault for the skinning test. I could not fix this as of now.
 
-- I imported the ``RigggedFigure`` model into the blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, We get the bones of a model in place. Here's a quick preview of bones in Blender vs bones in FURY:
+- I imported the ``RiggedFigure`` model into the Blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, we get the bones of a model in place. Here's a quick preview of bones in Blender vs bones in FURY:
 
 .. image:: https://user-images.githubusercontent.com/74976752/189194609-e55f6285-b5ed-4eb3-9e78-5fb462fb2dee.png
     :width: 500
@@ -21,15 +21,15 @@ What did you do this week?
     :width: 500
     :align: center
 
-- After having the bones actor, I noticed that some bones are not aligned correctly, I was happening to bones due to multiplication of the same matrix twice while calculating.
+- After having the bones actor, I noticed that some bones are not aligned correctly, it was happening due to multiplication of the same transformation matrix twice.
 
-- I also created a function that calculates the total transformation of a node, It eliminates the need to use ``timeline.get_value`` in ``get_skin_timeline`` function.
+- I also created a function that calculates the total transformation of a node, it eliminates the need to use ``timeline.get_value`` in ``get_skin_timeline`` function.
 
 
 What is coming up next week?
 ----------------------------
 
-- Tho, it seems like I fixed everything, but the we are not getting the correct model at timestamp 0. We need to find the cause and fix it!
+- Tho, it seems like I fixed everything, but we are not getting the correct model at timestamp 0. We need to find the cause and fix it!
 
 - Cleaning the Simple Animation PR `#643`_, and merging it.
 
