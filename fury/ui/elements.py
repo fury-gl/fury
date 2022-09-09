@@ -3183,31 +3183,17 @@ class DrawShapeGroup:
         for shape in self.grouped_shapes:
             vertices.extend(shape.position + vertices_from_actor(shape.shape.actor)[:, :-1])
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
+        bounding_box_min, bounding_box_max, \
+            bounding_box_size = cal_bounding_box_2d(vertices)
 
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-
-        _bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-        _bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-        _bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
-
-        group_center = _bounding_box_min + _bounding_box_size//2
+        group_center = bounding_box_min + bounding_box_size//2
 
         shape_offset = []
         for shape in self.grouped_shapes:
             shape_offset.append(shape.center - group_center)
 
-        new_center = np.clip(group_center + offset, self.drawpanel.position + _bounding_box_size//2,
-                             self.drawpanel.position + self.drawpanel.size - _bounding_box_size//2)
+        new_center = np.clip(group_center + offset, self.drawpanel.position + bounding_box_size//2,
+                             self.drawpanel.position + self.drawpanel.size - bounding_box_size//2)
 
         for shape, soffset in zip(self.grouped_shapes, shape_offset):
             shape.update_shape_position(new_center + soffset - self.drawpanel.position)
@@ -3259,6 +3245,8 @@ class DrawShape(UI):
             self.shape = Disk2D(outer_radius=2)
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
+
+        self.cal_bounding_box()
 
         self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
         self.set_bb_box_visibility(False)
@@ -3410,10 +3398,6 @@ class DrawShape(UI):
         """
         self._scene.rm(*self.rotation_slider.actors)
         self.rotation_slider.add_to_scene(self._scene)
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(True)
 
     def cal_bounding_box(self):
@@ -3684,10 +3668,10 @@ class DrawPanel(UI):
                           position=current_position)
         if shape_type == "circle":
             shape.max_size = self.cal_min_boundary_distance(current_position)
-        self.shape_list.append(shape)
-        self.update_shape_selection(shape)
         self.current_scene.add(shape)
         self.canvas.add_element(shape, current_position - self.canvas.position)
+        self.shape_list.append(shape)
+        self.update_shape_selection(shape)
 
     def resize_shape(self, current_position):
         """Resize the shape.
