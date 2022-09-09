@@ -25,9 +25,9 @@ To solve this, I am thinking of calculating the center of the group and clipping
     :width: 400
     :align: center
 
-As we can see above, the shapes are kind of clamping but there's some issue with positioning due to which that glitch is happening. It would be good to go once this is fixed.
+As we can see above, the shapes are kind of clamping but there's some issue with positioning. It would be good to go once this is fixed.
 
-Along this, I tried to integrate shaders with the ``Rectangle2D`` but there's something which I am missing because when I tried executing that program, it executed successfully but I am not getting the desired output. I tried debugging the code as well using the `debug` flag on the `shader_to_actor` function but still, it doesn't throw any error.
+Along this, I tried to integrate shaders with the ``Rectangle2D`` but there's something which I am missing. When I tried executing that program, it executed successfully but I am not getting the desired output. I tried debugging the code as well using the `debug` flag on the `shader_to_actor` function but still, it doesn't throw any error.
 
 Did you get stuck anywhere?
 ---------------------------
