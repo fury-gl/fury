@@ -97,10 +97,10 @@ class glTF:
             transform_mat = self.transformations[i]
             position, rot, scale = transform.trs_from_matrix(transform_mat)
 
-            # We don't need this as we are already applying it in skinnning part
-            # actor.SetPosition(position)
-            # actor.SetScale(scale)
-            # actor.RotateWXYZ(*rot)
+            # We don't need this as we are already applying it in skinnning
+            actor.SetPosition(position)
+            actor.SetScale(scale)
+            actor.RotateWXYZ(*rot)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -169,15 +169,9 @@ class glTF:
                 matnode = np.dot(matnode, scale)
 
         next_matrix = np.dot(matrix, matnode)
-        # print(f'node: {nextnode_id}\nmatrix: \n{next_matrix}\n')
-
-        if (nextnode_id in self.gltf.skins[0].joints and
-           nextnode_id not in self.bone_tranforms):
-            self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if isJoint:
             if not (nextnode_id in self.bone_tranforms):
-                # print(f'Not there {nextnode_id}')
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if node.mesh is not None:
@@ -485,7 +479,6 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            self.get_matrix_from_sampler(path, node_id, sampler)
 
     def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
                          transform_type):
@@ -517,46 +510,55 @@ class glTF:
             'interpolation': interpolation,
             'property': transform_type}
 
-    def get_matrix_from_sampler(self, prop, node, sampler: gltflib.Sampler):
-        time_array = self.get_acc_data(sampler.input)
-        tran_array = self.get_acc_data(sampler.output)
-        tran_matrix = []
-        if node in self.sampler_matrices:
-            prev_arr = self.sampler_matrices[node]['matrix']
-        else:
-            prev_arr = [np.identity(4) for i in range(len(time_array))]
-        for i, arr in enumerate(tran_array):
-            temp = self.generate_tmatrix(arr, prop)
-            tran_matrix.append(np.dot(prev_arr[i], temp))
-        data = {
-            'timestamps': time_array,
-            'matrix': tran_matrix
-        }
-        self.sampler_matrices[node] = data
-
     def get_skin_data(self, skin_id):
+        """Returns Bones and InverseBindMatrices information.
+
+        Parameters
+        ----------
+        skin_id : int
+            skin index of gltf object.
+
+        Returns
+        -------
+        joint_nodes : list
+            List of bones that form the skeleton.
+        inv_bind_matrix : ndarray
+            List containing inverse bind matrices for each node in joint_nodes.  
+        """
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
-        # print(inv_bind_matrix)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
-        # print(f'ibm:\n{inv_bind_matrix}')
         joint_nodes = skin.joints
         return joint_nodes, inv_bind_matrix
 
-    def generate_tmatrix(self, transf, prop):
+    def generate_tmatrix(self, trs, prop):
+        """Generates transformation matix given translation, rotation or scale.
+
+        Parameters
+        ----------
+        trs : ndarray (3, ) or (4, )
+            Nup arra containing t, r, or s values.
+        prop : str
+            Type of the trs parameter
+            'translation', 'rotation' or 'scale'.
+
+        Returns
+        -------
+        matrix : ndarray (4, 4)
+            A 4*4  transformation matrix.
+        """
         if prop == 'translation':
-            matrix = transform.translate(transf)
+            matrix = transform.translate(trs)
         elif prop == 'rotation':
-            matrix = transform.rotate(transf)
+            matrix = transform.rotate(trs)
         elif prop == 'scale':
-            matrix = transform.scale(transf)
+            matrix = transform.scale(trs)
         return matrix
 
     def apply_skin_matrix(self, vertices,
                           joint_matrices, bones, ibms=None):
         """Applies the skinnig matrix, that transforms the vertices.
 
-        NOTE: vertices has joint_matrix applied already.
         Returns
         -------
         vertices : ndarray
@@ -594,7 +596,6 @@ class glTF:
         timeline : Timeline
             Timelines containing actors.
         """
-        # actors = self.actors()
 
         timeline = Timeline(playback_panel=True)
         for num, transforms in enumerate(self.node_transform):
@@ -613,14 +614,12 @@ class glTF:
                             prev_matrix = timeline.get_value(f'transform{nodes}', time[0])
                             matrix = np.dot(prev_matrix, matrix)
                         timeline.set_keyframe(f'transform{nodes}', time[0], matrix)
-                        # print(f'timestap: {time[0]} node: {nodes}')
                 else:
-                    # print(f'target node is not nodes {target_node} {nodes}')
                     transform = np.identity(4)
                     timeline.set_keyframe(f'transform{nodes}', 0.0, transform)
 
         return timeline
-    
+
     def get_skin_timeline2(self):
         """Alternate version of `get_skin_timeline`
         Using pre-multiplied matrices.
@@ -763,7 +762,7 @@ class glTF:
             return vertices
 
         return interpolate
-    
+
     def get_joint_actors(self, length=0.5):
         origin = np.zeros((3, 3))
         actors = {}
