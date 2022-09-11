@@ -30,10 +30,10 @@ from fury.animation.interpolator import cubic_spline_interpolator, slerp
 # A simple dictionary object with timestamps as keys and data as values.
 
 keyframes = {
-    1: {'value': np.array([0, 0, 0])},
-    2: {'value': np.array([-4, 1, 0])},
-    5: {'value': np.array([0, 0, 12])},
-    6: {'value': np.array([25, 0, 12])}
+    1.0: {'value': np.array([0, 0, 0])},
+    2.0: {'value': np.array([-4, 1, 0])},
+    5.0: {'value': np.array([0, 0, 12])},
+    6.0: {'value': np.array([25, 0, 12])}
 }
 
 ###############################################################################
@@ -97,10 +97,10 @@ timeline.add_actor(arrow)
 # ==========================
 #
 # Adding some position keyframes
-timeline.set_position(0, np.array([0, 0, 0]))
-timeline.set_position(2, np.array([10, 10, 10]))
-timeline.set_position(5, np.array([-10, -3, -6]))
-timeline.set_position(9, np.array([10, 6, 20]))
+timeline.set_position(0.0, np.array([0, 0, 0]))
+timeline.set_position(2.0, np.array([10, 10, 10]))
+timeline.set_position(5.0, np.array([-10, -3, -6]))
+timeline.set_position(9.0, np.array([10, 6, 20]))
 
 ###############################################################################
 # Changing the default interpolator for a single property
@@ -118,8 +118,8 @@ timeline.set_position_interpolator(cubic_spline_interpolator)
 
 ###############################################################################
 # Adding some rotation keyframes.
-timeline.set_rotation(0, np.array([160, 50, 0]))
-timeline.set_rotation(8, np.array([60, 160, 0]))
+timeline.set_rotation(0.0, np.array([160, 50, 0]))
+timeline.set_rotation(8.0, np.array([60, 160, 0]))
 
 ###############################################################################
 # For Rotation keyframes, Slerp is used as the default interpolator.
@@ -144,7 +144,7 @@ def timer_callback(_obj, _event):
 # Adding the callback function that updates the animation.
 showm.add_timer_callback(True, 10, timer_callback)
 
-interactive = True
+interactive = False
 
 if interactive:
     showm.start()

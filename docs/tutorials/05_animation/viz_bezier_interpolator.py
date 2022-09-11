@@ -83,9 +83,9 @@ timeline.add_actor(sphere)
 # Note: If a control point is not provided or set `None`, this control point
 # will be the same as the position itself.
 
-timeline.set_position(0, np.array(keyframe_1.get('value')),
+timeline.set_position(0.0, np.array(keyframe_1.get('value')),
                       out_cp=np.array(keyframe_1.get('out_cp')))
-timeline.set_position(5, np.array(keyframe_2.get('value')),
+timeline.set_position(5.0, np.array(keyframe_2.get('value')),
                       in_cp=np.array(keyframe_2.get('in_cp')))
 
 ###############################################################################

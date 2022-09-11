@@ -56,7 +56,7 @@ timeline.add_actor(sphere)
 # 1- To set a single keyframe, you may use ``timeline.set_<property>(t, k)``,
 # where <property> is the name of the property to be set. I.e. setting position
 # to (1, 2, 3) at time 0.0 would be as following:
-timeline.set_position(0, np.array([1, 2, 3]))
+timeline.set_position(0.0, np.array([1, 2, 3]))
 
 ###############################################################################
 # Supported properties are: **position, rotation, scale, color, and opacity**.
@@ -64,8 +64,8 @@ timeline.set_position(0, np.array([1, 2, 3]))
 # 2- To set multiple keyframes at once, you may use
 # ``timeline.set_<property>_keyframes(keyframes)``.
 keyframes = {
-    1: np.array([0, 0, 0]),
-    3: np.array([-2, 0, 0])
+    1.0: np.array([0, 0, 0]),
+    3.0: np.array([-2, 0, 0])
 }
 
 timeline.set_position_keyframes(keyframes)

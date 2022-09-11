@@ -23,12 +23,12 @@ showm.initialize()
 # Position keyframes as a dict object containing timestamps as keys and
 # positions as values.
 position_keyframes = {
-    0: np.array([0, 0, 0]),
-    2: np.array([10, 3, 5]),
-    4: np.array([20, 14, 13]),
-    6: np.array([-20, 20, 0]),
-    8: np.array([17, -10, 15]),
-    10: np.array([0, -6, 0]),
+    0.0: np.array([0, 0, 0]),
+    2.0: np.array([10, 3, 5]),
+    4.0: np.array([20, 14, 13]),
+    6.0: np.array([-20, 20, 0]),
+    8.0: np.array([17, -10, 15]),
+    10.0: np.array([0, -6, 0]),
 }
 
 ###############################################################################
@@ -98,7 +98,7 @@ def timer_callback(_obj, _event):
 # Adding the callback function that updates the animation
 showm.add_timer_callback(True, 10, timer_callback)
 
-interactive = 1
+interactive = False
 
 if interactive:
     showm.start()
