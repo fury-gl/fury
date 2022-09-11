@@ -1304,7 +1304,8 @@ class ToolButton2D(UI):
 
 class Button2D(UI):
     def __init__(self, icon_fnames, label="Button", label_font='Arial', label_color=(0, 0, 0),
-                 bg_color=(1, 1, 1), bg_opacity=1.0, position=(0, 0), size=(50, 20)):
+                 bg_color=(1, 1, 1), bg_opacity=1.0, position=(0, 0), size=(50, 20),
+                 button_pressed_color=(1, 0, 0), button_released_color=(1, 1, 1)):
         self._init_size = size
         self._icon_fnames = icon_fnames
         super().__init__(position)
@@ -1314,6 +1315,8 @@ class Button2D(UI):
         self.label_color = label_color
         self.bg_color = bg_color
         self.bg_opacity = bg_opacity
+        self.button_pressed_color = button_pressed_color
+        self.button_released_color = button_released_color
 
     def _setup(self):
         self._sub_component_offsets = {}
@@ -1334,13 +1337,13 @@ class Button2D(UI):
         self._text_block.on_left_mouse_button_released = self.left_button_released
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
-        self._background.color = (1, 0, 0)
+        self._background.color = self.button_pressed_color
         i_ren.force_render()
         i_ren.event.abort()
 
     def left_button_released(self, i_ren, _obj, _sub_component):
         self.on_click(self)
-        self._background.color = (1, 1, 1)
+        self._background.color = self.button_released_color
         i_ren.force_render()
         i_ren.event.abort()
 
