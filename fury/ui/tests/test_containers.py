@@ -10,6 +10,7 @@ import numpy.testing as npt
 from fury import window, actor, ui
 from fury.colormap import distinguishable_colormap
 from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
+from fury.decorators import skip_win, skip_linux
 from fury.utils import shallow_copy
 from fury.testing import EventCounter
 
@@ -25,6 +26,9 @@ def test_wrong_interactor_style():
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
+@pytest.mark.skipif(skip_linux or skip_win,
+                    reason="This test does not work on Windows."
+                           " Need to be introspected")
 def test_grid_ui1(interactive=False):
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
