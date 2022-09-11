@@ -1129,7 +1129,10 @@ class Icon2D(UI):
         """
         icons = []
         for icon_name, icon_fname in icon_fnames:
-            icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
+            vtk_image = load_image(icon_fname, as_vtktype=True)
+            dim = vtk_image.GetDimensions()
+            aspect_ratio = dim[1]/dim[0]
+            icons.append((icon_name, vtk_image, aspect_ratio))
 
         return icons
 
@@ -1198,15 +1201,24 @@ class Icon2D(UI):
         """
         scene.add(self.actor)
 
-    def resize(self, size):
+    def resize(self, size, keep_aspect_ratio=True):
         """Resize the button.
 
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
-
+        keep_aspect_ratio: bool
+            Flag whether to maintain aspect ratio or not.
         """
+        if keep_aspect_ratio:
+            aspect_ratio = self.icons[self.current_icon_id][2]
+            new_y = self.icons[self.current_icon_id][2] * size[0]
+            if new_y > size[1]:
+                size = (size[1] / aspect_ratio, size[1])
+            else:
+                size = (size[0], new_y)
+
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
         self.texture_points.SetPoint(1, size[0], 0, 0.0)
