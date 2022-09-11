@@ -1,6 +1,6 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Icon2D", "Button2D"]
+__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "ToolButton2D", "Button2D"]
 
 import abc
 from warnings import warn
@@ -1071,7 +1071,7 @@ class TextBlock2D(UI):
         return self.actor.GetPosition2()
 
 
-class Icon2D(UI):
+class ToolButton2D(UI):
     """A 2D icon and is of type vtkTexturedActor2D.
 
     Currently supports::
@@ -1094,7 +1094,7 @@ class Icon2D(UI):
             Width and height in pixels of the button.
 
         """
-        super(Icon2D, self).__init__(position)
+        super(ToolButton2D, self).__init__(position)
 
         self.icon_extents = dict()
         self.icons = self._build_icons(icon_fnames)
@@ -1317,7 +1317,7 @@ class Button2D(UI):
 
     def _setup(self):
         self._sub_component_offsets = {}
-        self._icon = Icon2D(self._icon_fnames)
+        self._icon = ToolButton2D(self._icon_fnames)
         self._background = Rectangle2D()
         self._text_block = TextBlock2D()
 

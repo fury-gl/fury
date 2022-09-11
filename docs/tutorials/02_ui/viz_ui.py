@@ -74,7 +74,7 @@ panel.add_element(text2, (180, 100))
 # percentages of the panel size.
 
 
-button_example = ui.Icon2D(
+button_example = ui.ToolButton2D(
     icon_fnames=[('square', read_viz_icons(fname='stop2.png'))])
 
 icon_files = []
@@ -83,7 +83,7 @@ icon_files.append(('left', read_viz_icons(fname='circle-left.png')))
 icon_files.append(('up', read_viz_icons(fname='circle-up.png')))
 icon_files.append(('right', read_viz_icons(fname='circle-right.png')))
 
-second_button_example = ui.Icon2D(icon_fnames=icon_files)
+second_button_example = ui.ToolButton2D(icon_fnames=icon_files)
 
 panel.add_element(button_example, (0.25, 0.33))
 panel.add_element(second_button_example, (0.66, 0.33))
