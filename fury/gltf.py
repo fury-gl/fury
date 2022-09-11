@@ -1,13 +1,12 @@
-# TODO: Materials, Lights, Animations
+# TODO: Materials, Lights
 import base64
 import os
 import numpy as np
-import json
 import pygltflib as gltflib
-from pygltflib.utils import glb2gltf
+from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
-from fury.lib import Texture, Camera
-from fury import transform, utils, io, actor
+from fury.lib import Texture, Camera, numpy_support
+from fury import transform, utils, io
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import (linear_interpolator, lerp,
                                          step_interpolator, slerp)
@@ -178,20 +177,9 @@ class glTF:
             mesh_id = node.mesh
             self.load_mesh(mesh_id, next_matrix, parent)
 
-        if node.skin is not None:
-            skin_id = node.skin
-            joints, ibms = self.get_skin_data(skin_id)
-            self.bones.append(joints)  # for each skin will contain nodes
-            self.ibms.append(ibms)
-            self.transverse_node(joints[0], np.identity(4), parent, isJoint=True)
-
         if node.camera is not None:
             camera_id = node.camera
             self.load_camera(camera_id, next_matrix)
-
-        if node.skin is not None:
-            skin_id = node.skin
-            self.get_skin_data(skin_id)
 
         if node.children:
             for child_id in node.children:
