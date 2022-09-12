@@ -3105,7 +3105,7 @@ class DrawShapeGroup:
             for shape in self.grouped_shapes:
                 current_center = shape.center
                 shape.rotate(np.deg2rad(rotation_angle))
-                shape.update_shape_position(current_center - shape.drawpanel.position)
+                shape.update_shape_position(current_center - shape.drawpanel.canvas.position)
 
         self.group_rotation_slider.on_change = update_rotation
 
@@ -3184,7 +3184,7 @@ class DrawShapeGroup:
             vertices.extend(shape.position + vertices_from_actor(shape.shape.actor)[:, :-1])
 
         bounding_box_min, bounding_box_max, \
-            bounding_box_size = cal_bounding_box_2d(vertices)
+            bounding_box_size = cal_bounding_box_2d(np.asarray(vertices))
 
         group_center = bounding_box_min + bounding_box_size//2
 
