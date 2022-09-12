@@ -69,7 +69,6 @@ timeline = Timeline(playback_panel=True)
 sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 timeline.add_actor(sphere)
 
-
 ###############################################################################
 # Setting Cubic Bezier keyframes
 # ==============================
@@ -91,7 +90,6 @@ timeline.set_position(5, np.array(keyframe_2.get('value')),
 ###############################################################################
 # changing position interpolation into cubic bezier interpolation
 timeline.set_position_interpolator(cubic_bezier_interpolator)
-
 
 ###############################################################################
 # adding the timeline and the static actors to the scene.
@@ -124,10 +122,10 @@ window.record(scene, out_path='viz_keyframe_animation_bezier_1.png',
 #
 
 scene = window.Scene()
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
-showm.initialize()
+show_manager = window.ShowManager(scene,
+                                  size=(900, 768), reset_camera=False,
+                                  order_transparent=True)
+show_manager.initialize()
 
 ###############################################################################
 # Note: If a control point is set to `None`, it gets the value of the
@@ -138,7 +136,6 @@ keyframes = {
     5.0: {'value': [18, 0, 0], 'in_cp': [27, 18, 0], 'out_cp': [27, -18, 0]},
     9.0: {'value': [-5, -10, -10]}
 }
-
 
 ###############################################################################
 # Initializing the timeline
@@ -185,15 +182,15 @@ scene.add(timeline)
 # making a function to update the animation
 def timer_callback(_obj, _event):
     timeline.update_animation()
-    showm.render()
+    show_manager.render()
 
 
 ###############################################################################
 # Adding the callback function that updates the animation
-showm.add_timer_callback(True, 10, timer_callback)
+show_manager.add_timer_callback(True, 10, timer_callback)
 
 if interactive:
-    showm.start()
+    show_manager.start()
 
 window.record(scene, out_path='viz_keyframe_animation_bezier_2.png',
               size=(900, 768))
