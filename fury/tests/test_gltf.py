@@ -1,8 +1,8 @@
-import numpy as np
 import os
+import numpy as np
 import numpy.testing as npt
-from fury.gltf import glTF
-from fury import window, utils
+from fury.gltf import glTF, export_scene
+from fury import window, utils, actor
 from fury.data import fetch_gltf, read_viz_gltf
 from fury.testing import assert_greater
 
@@ -81,3 +81,60 @@ def test_orientation():
 
     assert_greater(lower, upper)
     scene.clear()
+
+
+def test_export_gltf():
+    scene = window.Scene()
+
+    centers = np.zeros((3, 3))
+    colors = np.array([1, 1, 1])
+
+    cube = actor.cube(np.add(centers, np.array([2, 0, 0])), colors=colors)
+    scene.add(cube)
+    export_scene(scene, 'test.gltf')
+    gltf_obj = glTF('test.gltf')
+    actors = gltf_obj.actors()
+    npt.assert_equal(len(actors), 1)
+
+    sphere = actor.sphere(centers, np.array([1, 0, 0]), use_primitive=False)
+    scene.add(sphere)
+    export_scene(scene, 'test.gltf')
+    gltf_obj = glTF('test.gltf')
+    actors = gltf_obj.actors()
+
+    scene.clear()
+    scene.add(*actors)
+    npt.assert_equal(len(actors), 2)
+
+    scene.set_camera(position=(150.0, 10.0, 10.0), focal_point=(0.0, 0.0, 0.0),
+                     view_up=(0.0, 0.0, 1.0))
+    export_scene(scene, 'test.gltf')
+    gltf_obj = glTF('test.gltf')
+    actors = gltf_obj.actors()
+
+    scene.clear()
+    scene.add(*actors)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display)
+    npt.assert_equal(res.objects, 1)
+
+    scene.reset_camera_tight()
+    scene.clear()
+
+    fetch_gltf('BoxTextured', 'glTF')
+    filename = read_viz_gltf('BoxTextured')
+    gltf_obj = glTF(filename)
+    box_actor = gltf_obj.actors()
+    scene.add(* box_actor)
+    export_scene(scene, 'test.gltf')
+    scene.clear()
+
+    gltf_obj = glTF('test.gltf')
+    actors = gltf_obj.actors()
+    scene.add(* actors)
+
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(108, 173, 223), (92, 135, 39)],
+                                  find_objects=False)
+    npt.assert_equal(res.colors_found, [True, True])

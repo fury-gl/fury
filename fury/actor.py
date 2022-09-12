@@ -27,7 +27,8 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText)
+                      Follower, VectorText, TransformPolyDataFilter,
+                      LinearExtrusionFilter)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
@@ -2384,7 +2385,8 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-                color=(1, 1, 1)):
+                color=(1, 1, 1), direction=(0, 0, 1), extrusion=0.0,
+                align_center=False):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2399,6 +2401,13 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
         Changes the size of the label.
     color : (3,) array_like
         Label color as ``(r,g,b)`` tuple.
+    direction : (3,) array_like, optional, default: (0, 0, 1)
+        The direction of the label. If None, label will follow the camera.
+    extrusion : float, optional
+        The extrusion amount of the text in Z axis.
+    align_center : bool, optional, default: True
+        If `True`, the anchor of the actor will be the center of the text.
+        If `False`, the anchor will be at the left bottom of the text.
 
     Returns
     -------
@@ -2416,17 +2425,54 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     """
     atext = VectorText()
     atext.SetText(text)
-
     textm = PolyDataMapper()
-    textm.SetInputConnection(atext.GetOutputPort())
 
-    texta = Follower()
+    if extrusion:
+        extruded_text = LinearExtrusionFilter()
+        extruded_text.SetInputConnection(atext.GetOutputPort())
+        extruded_text.SetExtrusionTypeToNormalExtrusion()
+        extruded_text.SetVector(0, 0, extrusion)
+        atext = extruded_text
+
+    trans_matrix = Transform()
+    trans_matrix.PostMultiply()
+
+    if direction is None:
+        # set text to follow the camera if direction is None.
+        texta = Follower()
+
+        def add_to_scene(scene):
+            texta.SetCamera(scene.GetActiveCamera())
+            scene.AddActor(texta)
+        texta.add_to_scene = add_to_scene
+
+    else:
+        texta = Actor()
+        textm.SetInputConnection(atext.GetOutputPort())
+
+        orig_dir = [0, 0, 1]
+        direction = np.array(direction, dtype=float)
+        direction /= np.linalg.norm(direction)
+        normal_vec = np.cross(orig_dir, direction)
+        angle = np.arccos(np.dot(orig_dir, direction))
+        trans_matrix.RotateWXYZ(np.rad2deg(angle), *normal_vec)
+
+    trans_matrix.Scale(*scale[0:2], 1)
+
+    plan = TransformPolyDataFilter()
+    plan.SetInputConnection(atext.GetOutputPort())
+    plan.SetTransform(trans_matrix)
+    textm.SetInputConnection(plan.GetOutputPort())
+
     texta.SetMapper(textm)
-    texta.SetScale(scale)
 
     texta.GetProperty().SetColor(color)
-    texta.SetPosition(pos)
 
+    # Set ser rotation origin to the center of the text is following the camera
+    if align_center or direction is None:
+        trans_matrix.Translate(-np.array(textm.GetCenter()))
+
+    texta.SetPosition(*pos)
     return texta
 
 
@@ -2613,13 +2659,21 @@ class Container(object):
         self.layout.apply(self._items)
         self._need_update = False
 
-    def add_to_scene(self, ren):
+    def add_to_scene(self, scene):
         """ Adds the items of this container to a given scene. """
         for item in self.items:
             if isinstance(item, Container):
-                item.add_to_scene(ren)
+                item.add_to_scene(scene)
             else:
-                ren.add(item)
+                scene.add(item)
+
+    def remove_from_scene(self, scene):
+        """ Removes the items of this container from a given scene. """
+        for item in self.items:
+            if isinstance(item, Container):
+                item.remove_from_scene(scene)
+            else:
+                scene.rm(item)
 
     def GetBounds(self):
         """ Get the bounds of the container. """

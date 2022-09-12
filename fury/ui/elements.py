@@ -3,9 +3,10 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "DrawShape", "DrawPanel"]
+           "DrawShape", "DrawPanel", "PlaybackPanel"]
 
 import os
+import time
 from collections import OrderedDict
 from numbers import Number
 from string import printable
@@ -16,7 +17,8 @@ from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
-from fury.ui.helpers import TWO_PI, clip_overflow
+from fury.ui.helpers import (TWO_PI, clip_overflow,
+                             cal_bounding_box_2d, rotate_2d)
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
@@ -3103,6 +3105,7 @@ class DrawShape(UI):
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
+        self.is_selected = True
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3122,6 +3125,28 @@ class DrawShape(UI):
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
+        self.shape.on_left_mouse_button_released = self.left_button_released
+
+        self.rotation_slider = RingSlider2D(initial_value=0,
+                                            text_template="{angle:5.1f}°")
+        self.rotation_slider.set_visibility(False)
+
+        if self.drawpanel:
+            slider_position = self.drawpanel.canvas.position + \
+                [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
+                 self.rotation_slider.size[1]/2]
+            self.rotation_slider.center = slider_position
+
+        def rotate_shape(slider):
+            angle = slider.value
+            previous_angle = slider.previous_value
+            rotation_angle = angle - previous_angle
+
+            current_center = self.center
+            self.rotate(np.deg2rad(rotation_angle))
+            self.update_shape_position(current_center - self.drawpanel.canvas.position)
+
+        self.rotation_slider.on_change = rotate_shape
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3137,6 +3162,7 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
+        self.rotation_slider.add_to_scene(scene)
 
     def _get_size(self):
         return self.shape.size
@@ -3154,6 +3180,52 @@ class DrawShape(UI):
         else:
             self.shape.position = coords
 
+    def update_shape_position(self, center_position):
+        """Update the center position on the canvas.
+
+        Parameters
+        ----------
+        center_position: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        new_center = self.clamp_position(center=center_position)
+        self.drawpanel.canvas.update_element(self, new_center, "center")
+        self.cal_bounding_box()
+
+    @property
+    def center(self):
+        return self._bounding_box_min + self._bounding_box_size//2
+
+    @center.setter
+    def center(self, coords):
+        """Position the center of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+
+        """
+        new_center = np.array(coords)
+        new_lower_left_corner = new_center - self._bounding_box_size // 2
+        self.position = new_lower_left_corner + self._bounding_box_offset
+        self.cal_bounding_box()
+
+    @property
+    def is_selected(self):
+        return self._is_selected
+
+    @is_selected.setter
+    def is_selected(self, value):
+        if self.drawpanel and value:
+            self.drawpanel.current_shape = self
+        self._is_selected = value
+        self.selection_change()
+
+    def selection_change(self):
+        if not self.is_selected:
+            self.rotation_slider.set_visibility(False)
+
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
 
@@ -3162,63 +3234,49 @@ class DrawShape(UI):
         angle: float
             Value by which the vertices are rotated in radian.
         """
+        if self.shape_type == "circle":
+            return
         points_arr = vertices_from_actor(self.shape.actor)
-        rotation_matrix = np.array(
-            [[np.cos(angle), np.sin(angle), 0],
-             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        new_points_arr = rotate_2d(points_arr, angle)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box()
 
-    def cal_bounding_box(self, position):
-        """Calculates the min and max position of the bounding box.
-
-        Parameters
-        ----------
-        position : (float, float)
-            (x, y) in pixels.
+    def show_rotation_slider(self):
+        """Display the RingSlider2D to allow rotation of shape from the center.
         """
-        vertices = position + vertices_from_actor(self.shape.actor)[:, :-1]
+        self._scene.rm(*self.rotation_slider.actors)
+        self.rotation_slider.add_to_scene(self._scene)
+        self.rotation_slider.set_visibility(True)
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
+    def cal_bounding_box(self):
+        """Calculate the min, max position and the size of the bounding box.
+        """
+        vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
+        self._bounding_box_min, self._bounding_box_max, \
+            self._bounding_box_size = cal_bounding_box_2d(vertices)
 
-        self._bounding_box_min = [min_x, min_y]
-        self._bounding_box_max = [max_x, max_y]
-        self._bounding_box_size = [max_x-min_x, max_y-min_y]
+        self._bounding_box_offset = self.position - self._bounding_box_min
 
-        self._bounding_box_offset = position - self._bounding_box_min
-
-    def clamp_position(self, position):
-        """Clamps the given position according to the DrawPanel canvas.
+    def clamp_position(self, center=None):
+        """Clamp the given center according to the DrawPanel canvas.
 
         Parameters
         ----------
-        position : (float, float)
+        center : (float, float)
             (x, y) in pixels.
 
         Returns
         -------
-        new_position: ndarray(int)
-            New position for the shape.
+        new_center: ndarray(int)
+            New center for the shape.
         """
-        self.cal_bounding_box(position)
-        new_position = np.clip(self._bounding_box_min, [0, 0],
-                               self.drawpanel.size - self._bounding_box_size)
-        new_position = new_position + self._bounding_box_offset
-        return new_position.astype(int)
+        center = self.center if center is None else center
+        new_center = np.clip(center, self._bounding_box_size//2,
+                             self.drawpanel.canvas.size - self._bounding_box_size//2)
+        return new_center.astype(int)
 
     def resize(self, size):
         """Resize the UI.
@@ -3237,31 +3295,45 @@ class DrawShape(UI):
                 hyp = self.max_size
             self.shape.outer_radius = hyp
 
-        self.cal_bounding_box(self.position)
+        self.cal_bounding_box()
+
+    def remove(self):
+        """Remove the Shape and all related actors.
+        """
+        self._scene.rm(self.shape.actor)
+        self._scene.rm(*self.rotation_slider.actors)
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
         if mode == "selection":
+            self.drawpanel.update_shape_selection(self)
+
             click_pos = np.array(i_ren.event.position)
-            self._drag_offset = click_pos - self.position
+            self._drag_offset = click_pos - self.center
+            self.show_rotation_slider()
             i_ren.event.abort()
         elif mode == "delete":
-            self._scene.rm(self.shape.actor)
-            i_ren.force_render()
+            self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
+        i_ren.force_render()
 
     def left_button_dragged(self, i_ren, _obj, shape):
         if self.drawpanel.current_mode == "selection":
+            self.rotation_slider.set_visibility(False)
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                relative_canvas_position = click_position - \
-                    self._drag_offset - self.drawpanel.position
-                new_position = self.clamp_position(relative_canvas_position)
-                self.drawpanel.canvas.update_element(self, new_position)
+                relative_center_position = click_position - \
+                    self._drag_offset - self.drawpanel.canvas.position
+                self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
+
+    def left_button_released(self, i_ren, _obj, shape):
+        if self.drawpanel.current_mode == "selection":
+            self.show_rotation_slider()
+            i_ren.force_render()
 
 
 class DrawPanel(UI):
@@ -3289,6 +3361,7 @@ class DrawPanel(UI):
             self.current_mode = "selection"
 
         self.shape_list = []
+        self.current_shape = None
 
     def _setup(self):
         """Setup this UI component.
@@ -3336,10 +3409,10 @@ class DrawPanel(UI):
             self.mode_panel.add_element(btn, btn_pos+padding)
             btn_pos[0] += btn.size[0]+padding
 
-        self.canvas.add_element(self.mode_panel, (0, 0))
+        self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
-        self.canvas.add_element(self.mode_text, (0.0, 0.95))
+        self.canvas.add_element(self.mode_text, (0.0, 1.0))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3367,7 +3440,7 @@ class DrawPanel(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.canvas.position = coords
+        self.canvas.position = coords + [0, self.mode_panel.size[1]]
 
     def resize(self, size):
         """Resize the UI.
@@ -3406,8 +3479,8 @@ class DrawPanel(UI):
 
         return min(distance_list)
 
-    def draw_shape(self, shape_type, current_position, in_process=False):
-        """Draws the required shape at the given position.
+    def draw_shape(self, shape_type, current_position):
+        """Draw the required shape at the given position.
 
         Parameters
         ----------
@@ -3415,25 +3488,37 @@ class DrawPanel(UI):
             Type of shape - line, quad, circle.
         current_position: (float,float)
             Lower left corner position for the shape.
-        in_process: bool, optional
-            Checks whether in process or not.
         """
-        if not in_process:
-            shape = DrawShape(shape_type=shape_type, drawpanel=self,
-                              position=current_position)
-            if shape_type == "circle":
-                shape.max_size = self.cal_min_boundary_distance(current_position)
-            self.shape_list.append(shape)
-            self.current_scene.add(shape)
-            self.canvas.add_element(shape, current_position - self.canvas.position)
+        shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                          position=current_position)
+        if shape_type == "circle":
+            shape.max_size = self.cal_min_boundary_distance(current_position)
+        self.shape_list.append(shape)
+        self.update_shape_selection(shape)
+        self.current_scene.add(shape)
+        self.canvas.add_element(shape, current_position - self.canvas.position)
 
-        else:
-            current_shape = self.shape_list[-1]
-            size = current_position - current_shape.position
-            current_shape.resize(size)
+    def resize_shape(self, current_position):
+        """Resize the shape.
+
+        Parameters
+        ----------
+        current_position: (float,float)
+            Lower left corner position for the shape.
+        """
+        self.current_shape = self.shape_list[-1]
+        size = current_position - self.current_shape.position
+        self.current_shape.resize(size)
+
+    def update_shape_selection(self, selected_shape):
+        for shape in self.shape_list:
+            if selected_shape == shape:
+                shape.is_selected = True
+            else:
+                shape.is_selected = False
 
     def update_button_icons(self, current_mode):
-        """Updates the button icon.
+        """Update the button icon.
 
         Parameters
         ----------
@@ -3447,7 +3532,7 @@ class DrawPanel(UI):
                 btn.next_icon()
 
     def clamp_mouse_position(self, mouse_position):
-        """Restricts the mouse position to the canvas boundary.
+        """Restrict the mouse position to the canvas boundary.
 
         Parameters
         ----------
@@ -3463,8 +3548,10 @@ class DrawPanel(UI):
                        self.canvas.position + self.canvas.size)
 
     def handle_mouse_click(self, position):
-        if self.is_draggable and self.current_mode == "selection":
-            self._drag_offset = position - self.position
+        if self.current_mode == "selection":
+            if self.is_draggable:
+                self._drag_offset = position - self.position
+            self.current_shape.is_selected = False
         if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
@@ -3478,9 +3565,298 @@ class DrawPanel(UI):
                 new_position = position - self._drag_offset
                 self.position = new_position
         if self.current_mode in ["line", "quad", "circle"]:
-            self.draw_shape(self.current_mode, position, True)
+            self.resize_shape(position)
 
     def left_button_dragged(self,  i_ren, _obj, element):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
+
+
+class PlaybackPanel(UI):
+    """A playback controller that can do essential functionalities.
+       such as play, pause, stop, and seek.
+    """
+
+    def __init__(self, loop=False, position=(0, 0)):
+        super(PlaybackPanel, self).__init__()
+        self.position = position
+        self._playing = False
+        self._loop = None
+        self.loop() if loop else self.play_once()
+        self._speed = 1
+
+        # callback functions
+        self.on_play_pause_toggle = lambda state: None
+        self.on_play = lambda: None
+        self.on_pause = lambda: None
+        self.on_stop = lambda: None
+        self.on_loop_toggle = lambda is_looping: None
+        self.on_progress_bar_changed = lambda x: None
+        self.on_speed_up = lambda x: None
+        self.on_slow_down = lambda x: None
+        self.on_speed_changed = lambda x: None
+
+    def _setup(self):
+        """Setup this Panel component.
+
+        """
+        self.time_text = TextBlock2D(position=(820, 10))
+        self.speed_text = TextBlock2D(text='1', position=(0, 0), font_size=21,
+                                      color=(0.2, 0.2, 0.2), bold=True,
+                                      justification='center', vertical_justification='middle')
+
+        self.panel = Panel2D(size=(190, 30), color=(1, 1, 1), align="right",
+                             has_border=True, border_color=(0, 0.3, 0),
+                             border_width=2)
+        self.panel.position = (5, 5)
+
+        play_pause_icons = [("play", read_viz_icons(fname="play3.png")),
+                            ("pause", read_viz_icons(fname="pause2.png"))]
+
+        loop_icons = [("once", read_viz_icons(fname="checkmark.png")),
+                      ("loop", read_viz_icons(fname="infinite.png"))]
+
+        self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
+
+        self._loop_btn = Button2D(icon_fnames=loop_icons)
+
+        self._stop_btn = Button2D(
+            icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
+        )
+
+        self._speed_up_btn = Button2D(
+            icon_fnames=[("plus", read_viz_icons(fname="plus.png"))],
+            size=(15, 15)
+        )
+
+        self._slow_down_btn = Button2D(
+            icon_fnames=[("minus", read_viz_icons(fname="minus.png"))],
+            size=(15, 15)
+        )
+
+        self._progress_bar = LineSlider2D(center=(512, 20),
+                                          initial_value=0,
+                                          orientation='horizontal',
+                                          min_value=0, max_value=100,
+                                          text_alignment='top', length=590,
+                                          text_template='', line_width=9)
+
+        start = 0.04
+        w = 0.2
+        self.panel.add_element(self._play_pause_btn, (start, 0.04))
+        self.panel.add_element(self._stop_btn, (start + w, 0.04))
+        self.panel.add_element(self._loop_btn, (start + 2*w, 0.04))
+        self.panel.add_element(self._slow_down_btn, (start + 0.63, 0.3))
+        self.panel.add_element(self.speed_text, (start + 0.78, 0.45))
+        self.panel.add_element(self._speed_up_btn, (start + 0.86, 0.3))
+
+        def play_pause_toggle(i_ren, _obj, _button):
+            self._playing = not self._playing
+            if self._playing:
+                self.play()
+            else:
+                self.pause()
+            self.on_play_pause_toggle(self._playing)
+            i_ren.force_render()
+
+        def stop(i_ren, _obj, _button):
+            self.stop()
+            i_ren.force_render()
+
+        def speed_up(i_ren, _obj, _button):
+            inc = 10 ** np.floor(np.log10(self.speed))
+            self.speed = round(self.speed + inc, 13)
+            self.on_speed_up(self._speed)
+            self.on_speed_changed(self._speed)
+            i_ren.force_render()
+
+        def slow_down(i_ren, _obj, _button):
+            dec = 10 ** np.floor(np.log10(self.speed - self.speed/10))
+            self.speed = round(self.speed - dec, 13)
+            self.on_slow_down(self._speed)
+            self.on_speed_changed(self._speed)
+            i_ren.force_render()
+
+        def loop_toggle(i_ren, _obj, _button):
+            self._loop = not self._loop
+            if self._loop:
+                self.loop()
+            else:
+                self.play_once()
+            self.on_loop_toggle(self._loop)
+            i_ren.force_render()
+
+        # using the adapters created above
+        self._play_pause_btn.on_left_mouse_button_pressed = play_pause_toggle
+        self._stop_btn.on_left_mouse_button_pressed = stop
+        self._loop_btn.on_left_mouse_button_pressed = loop_toggle
+        self._speed_up_btn.on_left_mouse_button_pressed = speed_up
+        self._slow_down_btn.on_left_mouse_button_pressed = slow_down
+
+        def on_progress_change(slider):
+            t = slider.value
+            self.on_progress_bar_changed(t)
+            self.current_time = t
+
+        self._progress_bar.on_moving_slider = on_progress_change
+        self.current_time = 0
+
+    def play(self):
+        self._playing = True
+        self._play_pause_btn.set_icon_by_name('pause')
+        self.on_play()
+
+    def stop(self):
+        self._playing = False
+        self._play_pause_btn.set_icon_by_name('play')
+        self.on_stop()
+
+    def pause(self):
+        self._playing = False
+        self._play_pause_btn.set_icon_by_name('play')
+        self.on_pause()
+
+    def loop(self):
+        self._loop = True
+        self._loop_btn.set_icon_by_name('loop')
+
+    def play_once(self):
+        self._loop = False
+        self._loop_btn.set_icon_by_name('once')
+
+    @property
+    def final_time(self):
+        """Set final progress slider time value.
+
+        Returns
+        -------
+        float
+            Final time for the progress slider.
+        """
+        return self._progress_bar.max_value
+
+    @final_time.setter
+    def final_time(self, t):
+        """Set final progress slider time value.
+
+        Parameters
+        ----------
+        t: float
+            Final time for the progress slider.
+        """
+        self._progress_bar.max_value = t
+
+    @property
+    def current_time(self):
+        """Get current time of the progress slider.
+
+        Returns
+        -------
+        float
+            Progress slider current value.
+        """
+        return self._progress_bar.value
+
+    @current_time.setter
+    def current_time(self, t):
+        """Set progress slider value.
+
+        Parameters
+        -------
+        t: float
+            Current time to be set.
+        """
+        self._progress_bar.value = t
+        self.current_time_str = t
+
+    @property
+    def current_time_str(self):
+        """Returns current time as a string.
+
+        Returns
+        -------
+        str
+            Current time formatted as a string in the form:`HH:MM:SS`.
+
+        """
+        return self.time_text.message
+
+    @current_time_str.setter
+    def current_time_str(self, t):
+        """Set time counter.
+
+        Parameters
+        ----------
+        t: float
+            Time to be set in the time_text counter.
+
+        Notes
+        -----
+        This should only be used when the `current_value` is not being set
+        since setting`current_value` automatically sets this property as well.
+        """
+        t = np.clip(t, 0, self.final_time)
+        if self.final_time < 3600:
+            m, s = divmod(t, 60)
+            t_str = r'%02d:%05.2f' % (m, s)
+        else:
+            m, s = divmod(t, 60)
+            h, m = divmod(m, 60)
+            t_str = r'%02d:%02d:%02d' % (h, m, s)
+        self.time_text.message = t_str
+
+    @property
+    def speed(self):
+        """Returns current speed.
+
+        Returns
+        -------
+        str
+            Current time formatted as a string in the form:`HH:MM:SS`.
+
+        """
+        return self._speed
+
+    @speed.setter
+    def speed(self, speed):
+        """Set time counter.
+
+        Parameters
+        ----------
+        speed: float
+            Speed value to be set in the speed_text counter.
+        """
+        if speed <= 0:
+            speed = 0.01
+        self._speed = speed
+        speed_str = f"{speed}".strip("0").rstrip('.')
+        self.speed_text.font_size = 21 if .01 <= speed < 100 else 14
+        self.speed_text.message = speed_str
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return self.panel.actors, self._progress_bar.actors, self.time_text
+
+    def _add_to_scene(self, _scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        _scene : scene
+
+        """
+        self.panel.add_to_scene(_scene)
+        self._progress_bar.add_to_scene(_scene)
+        self.time_text.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        x, y = _coords
+        self.panel.position = (x + 5, y + 5)
+        self._progress_bar.center = (x + 512, y + 20)
+
+        self.time_text.position = (x + self._progress_bar.track.width + 230,
+                                   y + 10)
+
+    def _get_size(self):
+        return self.panel.size + self._progress_bar.size + self.time_text.size
