@@ -80,6 +80,7 @@ class glTF:
         self.bones = []
         self.ibms = []
         self.vertices = []
+        self.child_timelines = []
 
         self.inspect_scene(0)
 
@@ -620,7 +621,7 @@ class glTF:
                     timeline.set_keyframe(f'transform{nodes}', 0.0, transform)
 
         return timeline
-    
+
     def get_skin_timeline2(self):
         """Alternate version of `get_skin_timeline`
         Using pre-multiplied matrices.
@@ -639,6 +640,38 @@ class glTF:
                 # else:
                 #     timeline.set_keyframe(f'transform{bone}', 0.0, np.identity(4))
         return timeline
+
+    def transverse_bones(self, bone_id, parent_timeline: Timeline):
+        """
+        bone_id : int
+            Index of the bone.
+        parent_timeline : Timeline
+            timeline of the parent bone. Should be `root_timeline` by default.
+        """
+        node = self.gltf.nodes[bone_id]
+        timeline = Timeline(playback_panel=False)
+        transforms = self.sampler_matrices[bone_id]
+        timestamps = transforms['timestamps']
+        metrices = transforms['matrix']
+
+        for time, matrix in zip(timestamps, metrices):
+            timeline.set_keyframe('transform', time[0], matrix)
+
+        if node.children:
+            for child_bone in node.children:
+                self.transverse_bones(child_bone, timeline)
+        else:
+            self.child_timelines.append(timeline)
+        parent_timeline.add(timeline)
+
+    def get_skin_timeline3(self):
+        """One timeline for each bone, contains parent transforms.
+        """
+        root_timeline = Timeline(playback_panel=True)
+        root_bone = self.gltf.skins[0].skeleton
+        root_bone = root_bone if root_bone else self.bones[0][0]
+        self.transverse_bones(root_bone, root_timeline)
+        return root_timeline
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
