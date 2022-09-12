@@ -3213,7 +3213,7 @@ class DrawShape(UI):
     """Create and Manage 2D Shapes.
     """
 
-    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3224,11 +3224,14 @@ class DrawShape(UI):
             Reference to the main canvas on which it is drawn.
         position : (float, float), optional
             (x, y) in pixels.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.shape = None
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
+        self.debug = debug
         super(DrawShape, self).__init__(position)
         self.shape.color = np.random.random(3)
 
@@ -3248,8 +3251,8 @@ class DrawShape(UI):
 
         self.cal_bounding_box()
 
-        self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
-        self.set_bb_box_visibility(False)
+        if self.debug:
+            self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3257,10 +3260,6 @@ class DrawShape(UI):
 
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(False)
 
         if self.drawpanel:
@@ -3294,8 +3293,9 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
-        scene.add(*[border.actor for border in self.bb_box])
         self.rotation_slider.add_to_scene(scene)
+        if self.debug:
+            scene.add(*[border.actor for border in self.bb_box])
 
     def _get_size(self):
         return self.shape.size
@@ -3365,22 +3365,23 @@ class DrawShape(UI):
             self.set_bb_box_visibility(False)
 
     def set_bb_box_visibility(self, value):
-        if value:
-            border_width = 3
-            points = [self._bounding_box_min-(0, border_width),
-                      [self._bounding_box_max[0], self._bounding_box_min[1]],
-                      self._bounding_box_min - border_width,
-                      [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
-            size = [(self._bounding_box_size[0]+border_width, border_width),
-                    (border_width, self._bounding_box_size[1]+border_width),
-                    (border_width, self._bounding_box_size[1] + border_width),
-                    (self._bounding_box_size[0]+border_width, border_width)]
-            for i in range(4):
-                self.bb_box[i].position = points[i]
-                self.bb_box[i].resize(size[i])
+        if self.debug:
+            if value:
+                border_width = 3
+                points = [self._bounding_box_min-(0, border_width),
+                          [self._bounding_box_max[0], self._bounding_box_min[1]],
+                          self._bounding_box_min - border_width,
+                          [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
+                size = [(self._bounding_box_size[0]+border_width, border_width),
+                        (border_width, self._bounding_box_size[1]+border_width),
+                        (border_width, self._bounding_box_size[1] + border_width),
+                        (self._bounding_box_size[0]+border_width, border_width)]
+                for i in range(4):
+                    self.bb_box[i].position = points[i]
+                    self.bb_box[i].resize(size[i])
 
-        for border in self.bb_box:
-            border.set_visibility(value)
+            for border in self.bb_box:
+                border.set_visibility(value)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3452,6 +3453,7 @@ class DrawShape(UI):
             self.shape.outer_radius = hyp
 
         self.cal_bounding_box()
+        self.set_bb_box_visibility(True)
 
     def remove(self):
         """Remove the Shape and all related actors.
@@ -3507,7 +3509,7 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn.
     """
 
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False, debug=False):
         """Init this UI element.
 
         Parameters
@@ -3518,12 +3520,15 @@ class DrawPanel(UI):
             (x, y) in pixels.
         is_draggable : bool, optional
             Whether the background canvas will be draggble or not.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
         self.shape_group = DrawShapeGroup(self)
         self.is_draggable = is_draggable
         self.current_mode = None
+        self.debug = debug
 
         if is_draggable:
             self.current_mode = "selection"
@@ -3671,7 +3676,7 @@ class DrawPanel(UI):
             Lower left corner position for the shape.
         """
         shape = DrawShape(shape_type=shape_type, drawpanel=self,
-                          position=current_position)
+                          position=current_position, debug=self.debug)
         if shape_type == "circle":
             shape.max_size = self.cal_min_boundary_distance(current_position)
         self.current_scene.add(shape)
