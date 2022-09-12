@@ -6,7 +6,7 @@ from dipy.data.fetcher import get_bundle_atlas_hcp842
 from fury import actor, ui, window
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
-from fury.shaders import shader_to_actor
+from fury.shaders import attribute_to_actor, shader_to_actor
 from fury.utils import (normals_from_actor,
                         tangents_from_direction_of_anisotropy,
                         tangents_to_actor, vertices_from_actor)
@@ -119,21 +119,68 @@ if __name__ == '__main__':
     #tmp_line_idx = 146  # Longest line
     tmp_line = bundle[tmp_line_idx]
 
-    obj_actor = actor.line([tmp_line])
+    line_length = len(tmp_line)
 
-    # TODO: Find consecutive line segments
-    #   TODO: Calculate line segments distance
-    #   TODO: Check line actor
-    # TODO: Calculate tangents using line segments
-    # TODO: Get shader code
-    #   TODO: Check tangents availability
+    # TODO: Move to function and compute them for all the lines in the bundle
+    tangents = np.empty((line_length, 3))
+    for i in range(line_length - 1):
+        dif = tmp_line[i + 1] - tmp_line[i]
+        dist = np.sqrt(np.sum(dif ** 2))
+        tangents[i, :] = dif / dist
+    tangents[line_length - 1, :] = tangents[line_length - 2, :]
 
-    fs_impl = \
     """
-    error
+    tangent_len = .1
+    tangents_endpnts = tmp_line + tangents * tangent_len
+
+    # View tangents as dots
+    #tangent_actor = actor.dot(tangents_endpnts, colors=(1, 0, 0))
+    #scene.add(tangent_actor)
+
+    # View tangents as lines
+    tangent_lines = [[tmp_line[i, :], tangents_endpnts[i, :]] for i in
+                     range(len(tmp_line))]
+    tangent_actor = actor.line(tangent_lines, colors=(1, 0, 0))
+    scene.add(tangent_actor)
     """
-    shader_to_actor(obj_actor, 'fragment', block='light', impl_code=fs_impl,
-                    debug=True)
+
+    obj_actor = actor.line([tmp_line], lod=False)
+    tangents_to_actor(obj_actor, tangents)
+    attribute_to_actor(obj_actor, tangents, 'tangent')
+
+    vs_dec_clip = \
+    """
+    uniform mat4 MCVCMatrix;
+    """
+    shader_to_actor(obj_actor, 'vertex', block='clip', decl_code=vs_dec_clip)
+
+    vs_dec_vp = \
+    """
+    in vec3 tangent;
+    
+    out vec3 tangentVSOutput;
+    
+    float square(float x)
+    {
+        return x * x;
+    }
+    """
+    vs_impl_vp = \
+    """ 
+    tangentVSOutput = tangent;
+    """
+    shader_to_actor(obj_actor, 'vertex', block='valuepass',
+                    decl_code=vs_dec_vp, impl_code=vs_impl_vp)
+
+    vs_impl_light = \
+    """
+    vec4 camPos = -MCVCMatrix[3] * MCVCMatrix;
+    vec3 lightDir = normalize(vertexMC.xyz - camPos.xyz);
+    float dotLN = sqrt(1 - square(dot(lightDir, tangent))); 
+    """
+    shader_to_actor(obj_actor, 'vertex', block='light',
+                    impl_code=vs_impl_light)#, debug=True)
+    #shader_to_actor(obj_actor, 'fragment', block='valuepass', debug=True)
 
     scene.add(obj_actor)
 
