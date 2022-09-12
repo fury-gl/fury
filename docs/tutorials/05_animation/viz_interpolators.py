@@ -18,7 +18,7 @@ Minimal tutorial of making keyframe-based animation in FURY.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import cubic_spline_interpolator, slerp
+from fury.animation.interpolator import cubic_spline_interpolator
 
 ###############################################################################
 # What are keyframes
@@ -123,6 +123,10 @@ timeline.set_rotation(8.0, np.array([60, 160, 0]))
 
 ###############################################################################
 # For Rotation keyframes, Slerp is used as the default interpolator.
+# What is Slerp?
+# Slerp (spherical linear interpolation) of quaternions results in a constant
+# speed rotation in keyframe animation.
+# Reed more about Slerp: https://en.wikipedia.org/wiki/Slerp
 
 ###############################################################################
 # Setting camera position to see the animation better.
