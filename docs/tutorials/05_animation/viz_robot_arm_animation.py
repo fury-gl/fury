@@ -9,15 +9,14 @@ Tutorial on making a robot arm animation in FURY.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.lib import Actor
-from fury.utils import vertices_from_actor, update_actor, set_actor_origin
+from fury.utils import set_actor_origin
 
 scene = window.Scene()
 
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
-
+showm.initialize()
 
 ###############################################################################
 # Creating robot arm components
