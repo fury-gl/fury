@@ -3263,6 +3263,12 @@ class DrawShape(UI):
         self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(False)
 
+        if self.drawpanel:
+            slider_position = self.drawpanel.canvas.position + \
+                [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
+                 self.rotation_slider.size[1]/2]
+            self.rotation_slider.center = slider_position
+
         def rotate_shape(slider):
             angle = slider.value
             previous_angle = slider.previous_value
@@ -3270,7 +3276,7 @@ class DrawShape(UI):
 
             current_center = self.center
             self.rotate(np.deg2rad(rotation_angle))
-            self.update_shape_position(current_center - self.drawpanel.position)
+            self.update_shape_position(current_center - self.drawpanel.canvas.position)
 
         self.rotation_slider.on_change = rotate_shape
 
@@ -3425,7 +3431,7 @@ class DrawShape(UI):
         """
         center = self.center if center is None else center
         new_center = np.clip(center, self._bounding_box_size//2,
-                             self.drawpanel.size - self._bounding_box_size//2)
+                             self.drawpanel.canvas.size - self._bounding_box_size//2)
         return new_center.astype(int)
 
     def resize(self, size):
@@ -3580,10 +3586,10 @@ class DrawPanel(UI):
             self.mode_panel.add_element(btn, btn_pos+padding)
             btn_pos[0] += btn.size[0]+padding
 
-        self.canvas.add_element(self.mode_panel, (0, 0))
+        self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
-        self.canvas.add_element(self.mode_text, (0.0, 0.95))
+        self.canvas.add_element(self.mode_text, (0.0, 1.0))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3614,7 +3620,7 @@ class DrawPanel(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.canvas.position = coords
+        self.canvas.position = coords + [0, self.mode_panel.size[1]]
 
     def resize(self, size):
         """Resize the UI.
