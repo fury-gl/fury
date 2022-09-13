@@ -8,7 +8,7 @@ from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
 from fury.material import manifest_pbr
 from fury.shaders import attribute_to_actor, shader_to_actor
-from fury.utils import (normals_from_actor,
+from fury.utils import (normals_from_actor, rotate,
                         tangents_from_direction_of_anisotropy,
                         tangents_to_actor, vertices_from_actor)
 
@@ -43,6 +43,7 @@ def change_slice_anisotropy(slider):
 
 def change_slice_anisotropy_rotation(slider):
     global pbr_params
+    print(np.round(slider.value, decimals=4))
     pbr_params.anisotropy_rotation = slider.value
 
 
@@ -135,7 +136,7 @@ if __name__ == '__main__':
                    'V.trk']
 
     # Load tractogram
-    tract_file = os.path.join(bundles_dir, tractograms[4])
+    tract_file = os.path.join(bundles_dir, tractograms[3])
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
@@ -212,6 +213,12 @@ if __name__ == '__main__':
     tangent_actor = actor.line(tangent_lines, colors=(1, 0, 0))
     scene.add(tangent_actor)
     """
+
+    # CCMid rotation
+    rotate(obj_actor, rotation=(180, 1, 0, 0))
+
+    # Actor rotation for brudslojan texture
+    #rotate(obj_actor, rotation=(-110, 0, 1, 0))
 
     pbr_params = manifest_pbr(obj_actor, metallic=.25, roughness=.5,
                               anisotropy=1)
