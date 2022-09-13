@@ -37,11 +37,6 @@ scene.add(timeline)
 bones = gltf_obj.bones[0]
 parent_transforms = gltf_obj.bone_tranforms
 
-target_bone = 2
-print(parent_transforms[target_bone], '\n')
-# print(timeline.get_value(f'transform{target_bone}', 0.0), '\n')
-# print(timeline.get_value(f'transform{target_bone}', 1.25))
-matrix2 = []
 
 def timer_callback(_obj, _event):
     timeline.update_animation()
