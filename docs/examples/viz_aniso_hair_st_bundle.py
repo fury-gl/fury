@@ -21,7 +21,7 @@ def bundle_tangents(bundle):
             dif = line[i + 1] - line[i]
             dist = np.sqrt(np.sum(dif ** 2))
             tangents.append(dif / dist)
-        tangents.append(dif/dist)
+        tangents.append(dif / dist)
     tangents = np.array(tangents)
     return tangents
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     fetch_viz_cubemaps()
 
-    #texture_name = 'skybox'
+    # texture_name = 'skybox'
     texture_name = 'brudslojan'
     textures = read_viz_cubemap(texture_name)
 
@@ -106,18 +106,18 @@ if __name__ == '__main__':
     cubemap = get_cubemap_from_ndarrays(cubemap_imgs, flip=False)
     """
 
-    #cubemap.RepeatOff()
-    #cubemap.EdgeClampOn()
+    # cubemap.RepeatOff()
+    # cubemap.EdgeClampOn()
 
     scene = window.Scene()
 
-    #scene = window.Scene(skybox=cubemap)
-    #scene.skybox(gamma_correct=False)
+    # scene = window.Scene(skybox=cubemap)
+    # scene.skybox(gamma_correct=False)
 
-    #scene.background((1, 1, 1))
+    # scene.background((1, 1, 1))
 
     # Scene rotation for brudslojan texture
-    #scene.yaw(-110)
+    # scene.yaw(-110)
 
     atlas, bundles = get_bundle_atlas_hcp842()
     bundles_dir = os.path.dirname(bundles)
@@ -130,21 +130,50 @@ if __name__ == '__main__':
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
-    # Bundle actor
-    #obj_actor = actor.streamtube(bundle, linewidth=.25)
+    obj_actor = actor.streamtube(bundle, linewidth=.25)
 
     """
+    tmp_line_idx = 107  # Shortest line
+    #tmp_line_idx = 146  # Longest line
+    tmp_line = bundle[tmp_line_idx]
+    
+    line_actor = actor.line([tmp_line], lod=False)
+    scene.add(line_actor)
+    
+    obj_actor = actor.streamtube([tmp_line], linewidth=.25)
+    """
+
     # Wireframe representation for streamtubes
-    obj_actor.GetProperty().SetRepresentationToWireframe()
+    #obj_actor.GetProperty().SetRepresentationToWireframe()
 
-    scene.add(obj_actor)
+    """
+    line_length = len(tmp_line)
 
-    # Streamtube vertices
-    vertices = vertices_from_actor(obj_actor)
+    tangents = np.empty((line_length, 3))
+    for i in range(line_length - 1):
+        dif = tmp_line[i + 1] - tmp_line[i]
+        dist = np.sqrt(np.sum(dif ** 2))
+        tangents[i, :] = dif / dist
+    tangents[line_length - 1, :] = tangents[line_length - 2, :]
+
+    vertices = tmp_line
+    """
+
+    #tangents = bundle_tangents(bundle)
+    #tangents_to_actor(obj_actor, tangents)
 
     # Streamtubes normals
     normals = normals_from_actor(obj_actor)
 
+    # Streamtube tangents from direction of anisotropy
+    doa = [0, 1, .5]
+    tangents = tangents_from_direction_of_anisotropy(normals, doa)
+    tangents_to_actor(obj_actor, tangents)
+
+    # Streamtube vertices
+    #vertices = vertices_from_actor(obj_actor)
+
+    """
     normal_len = .5
     normals_endpnts = vertices + normals * normal_len
 
@@ -157,12 +186,9 @@ if __name__ == '__main__':
                     range(len(vertices))]
     normal_actor = actor.line(normal_lines, colors=(0, 0, 1))
     scene.add(normal_actor)
+    """
 
-    # Streamtube tangents from direction of anisotropy
-    doa = [0, 1, .5]
-    tangents = tangents_from_direction_of_anisotropy(normals, doa)
-    tangents_to_actor(obj_actor, tangents)
-
+    """
     tangent_len = .5
     tangents_endpnts = vertices + tangents * tangent_len
 
@@ -177,96 +203,54 @@ if __name__ == '__main__':
     scene.add(tangent_actor)
     """
 
-    """
-    tmp_line_idx = 107  # Shortest line
-    #tmp_line_idx = 146  # Longest line
-    tmp_line = bundle[tmp_line_idx]
-
-    line_length = len(tmp_line)
-
-    # TODO: Move to function and compute them for all the lines in the bundle
-    tangents = np.empty((line_length, 3))
-    for i in range(line_length - 1):
-        dif = tmp_line[i + 1] - tmp_line[i]
-        dist = np.sqrt(np.sum(dif ** 2))
-        tangents[i, :] = dif / dist
-    tangents[line_length - 1, :] = tangents[line_length - 2, :]
-    
-    vertices = tmp_line
-    """
-
-    obj_actor = actor.line(bundle, lod=False)
-    tangents = bundle_tangents(bundle)
-
-    vertices = vertices_from_actor(obj_actor)
-
-    """
-    tangent_len = .1
-    tangents_endpnts = vertices + tangents * tangent_len
-
-    # View tangents as dots
-    #tangent_actor = actor.dot(tangents_endpnts, colors=(1, 0, 0))
-    #scene.add(tangent_actor)
-
-    # View tangents as lines
-    tangent_lines = [[vertices[i, :], tangents_endpnts[i, :]] for i in
-                     range(len(vertices))]
-    tangent_actor = actor.line(tangent_lines, colors=(1, 0, 0))
-    scene.add(tangent_actor)
-    """
-
-    #obj_actor = actor.line([tmp_line], lod=False)
-
-    tangents_to_actor(obj_actor, tangents)
-
     pbr_params = manifest_pbr(obj_actor, metallic=.25, anisotropy=1)
 
-    #attribute_to_actor(obj_actor, tangents, 'tangent')
+    # attribute_to_actor(obj_actor, tangents, 'tangent')
 
     vs_dec_clip = \
-    """
-    uniform mat4 MCVCMatrix;
-    """
-    #shader_to_actor(obj_actor, 'vertex', block='clip', decl_code=vs_dec_clip)
+        """
+        uniform mat4 MCVCMatrix;
+        """
+    # shader_to_actor(obj_actor, 'vertex', block='clip', decl_code=vs_dec_clip)
 
     vs_dec_vp = \
-    """
-    in vec3 tangent;
+        """
+        in vec3 tangent;
     
-    out vec3 tangentVSOutput;
+        out vec3 tangentVSOutput;
     
-    float square(float x)
-    {
-        return x * x;
-    }
-    """
+        float square(float x)
+        {
+            return x * x;
+        }
+        """
     vs_impl_vp = \
-    """ 
-    tangentVSOutput = tangent;
-    """
-    #shader_to_actor(obj_actor, 'vertex', block='valuepass',
+        """ 
+        tangentVSOutput = tangent;
+        """
+    # shader_to_actor(obj_actor, 'vertex', block='valuepass',
     #                decl_code=vs_dec_vp, impl_code=vs_impl_vp)
 
     vs_impl_light = \
-    """
-    vec4 camPos = -MCVCMatrix[3] * MCVCMatrix;
-    vec3 lightDir = normalize(vertexMC.xyz - camPos.xyz);
-    float dotLN = sqrt(1 - square(dot(lightDir, tangent))); 
-    """
-    #shader_to_actor(obj_actor, 'vertex', block='light',
+        """
+        vec4 camPos = -MCVCMatrix[3] * MCVCMatrix;
+        vec3 lightDir = normalize(vertexMC.xyz - camPos.xyz);
+        float dotLN = sqrt(1 - square(dot(lightDir, tangent))); 
+        """
+    # shader_to_actor(obj_actor, 'vertex', block='light',
     #                impl_code=vs_impl_light)#, debug=True)
-    #shader_to_actor(obj_actor, 'fragment', block='valuepass', debug=True)
+    # shader_to_actor(obj_actor, 'fragment', block='valuepass', debug=True)
 
     scene.add(obj_actor)
 
-    #window.show(scene)
+    # window.show(scene)
 
     show_m = window.ShowManager(scene=scene, size=(1920, 1080),
                                 reset_camera=False, order_transparent=True)
     show_m.initialize()
 
     pbr_panel = ui.Panel2D(
-        (420, 500), position=(1495, 5), color=(.25, .25, .25), opacity=.75,
+        (420, 400), position=(1495, 5), color=(.25, .25, .25), opacity=.75,
         align='right')
 
     panel_label_pbr = ui.TextBlock2D(text='PBR', font_size=18, bold=True)
@@ -284,15 +268,15 @@ if __name__ == '__main__':
 
     label_pad_x = .04
 
-    pbr_panel.add_element(panel_label_pbr, (.01, .95))
-    pbr_panel.add_element(slider_label_metallic, (label_pad_x, .87))
-    pbr_panel.add_element(slider_label_roughness, (label_pad_x, .79))
-    pbr_panel.add_element(slider_label_anisotropy, (label_pad_x, .70))
-    pbr_panel.add_element(slider_label_anisotropy_rotation, (label_pad_x, .62))
-    pbr_panel.add_element(slider_label_coat_strength, (label_pad_x, .30))
-    pbr_panel.add_element(slider_label_coat_roughness, (label_pad_x, .21))
-    pbr_panel.add_element(slider_label_base_ior, (label_pad_x, .13))
-    pbr_panel.add_element(slider_label_coat_ior, (label_pad_x, .05))
+    pbr_panel.add_element(panel_label_pbr, (.01, .925))
+    pbr_panel.add_element(slider_label_metallic, (label_pad_x, .819))
+    pbr_panel.add_element(slider_label_roughness, (label_pad_x, .713))
+    pbr_panel.add_element(slider_label_anisotropy, (label_pad_x, .606))
+    pbr_panel.add_element(slider_label_anisotropy_rotation, (label_pad_x, .5))
+    pbr_panel.add_element(slider_label_coat_strength, (label_pad_x, .394))
+    pbr_panel.add_element(slider_label_coat_roughness, (label_pad_x, .288))
+    pbr_panel.add_element(slider_label_base_ior, (label_pad_x, .181))
+    pbr_panel.add_element(slider_label_coat_ior, (label_pad_x, .075))
 
     slider_length = 200
 
@@ -332,15 +316,15 @@ if __name__ == '__main__':
     slider_slice_coat_ior.on_change = change_slice_coat_ior
 
     pbr_slice_pad_x = .46
-    pbr_panel.add_element(slider_slice_metallic, (pbr_slice_pad_x, .87))
-    pbr_panel.add_element(slider_slice_roughness, (pbr_slice_pad_x, .79))
-    pbr_panel.add_element(slider_slice_anisotropy, (pbr_slice_pad_x, .70))
+    pbr_panel.add_element(slider_slice_metallic, (pbr_slice_pad_x, .819))
+    pbr_panel.add_element(slider_slice_roughness, (pbr_slice_pad_x, .713))
+    pbr_panel.add_element(slider_slice_anisotropy, (pbr_slice_pad_x, .606))
     pbr_panel.add_element(
-        slider_slice_anisotropy_rotation, (pbr_slice_pad_x, .62))
-    pbr_panel.add_element(slider_slice_coat_strength, (pbr_slice_pad_x, .30))
-    pbr_panel.add_element(slider_slice_coat_roughness, (pbr_slice_pad_x, .21))
-    pbr_panel.add_element(slider_slice_base_ior, (pbr_slice_pad_x, .13))
-    pbr_panel.add_element(slider_slice_coat_ior, (pbr_slice_pad_x, .05))
+        slider_slice_anisotropy_rotation, (pbr_slice_pad_x, .5))
+    pbr_panel.add_element(slider_slice_coat_strength, (pbr_slice_pad_x, .394))
+    pbr_panel.add_element(slider_slice_coat_roughness, (pbr_slice_pad_x, .288))
+    pbr_panel.add_element(slider_slice_base_ior, (pbr_slice_pad_x, .181))
+    pbr_panel.add_element(slider_slice_coat_ior, (pbr_slice_pad_x, .075))
 
     scene.add(pbr_panel)
 
