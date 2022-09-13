@@ -806,10 +806,10 @@ class glTF:
         for bone in self.bones[0]:
             # print(transf)
             arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
-            verts = utils.vertices_from_actor(arrow)
-            verts[:] = transform.apply_transfomation(verts,
-                                                     parent_transforms[bone])
-            utils.update_actor(arrow)
+            # verts = utils.vertices_from_actor(arrow)
+            # verts[:] = transform.apply_transfomation(verts,
+            #                                          parent_transforms[bone])
+            # utils.update_actor(arrow)
             actors[bone] = arrow
             # actors[bone] = arrow
         return actors
