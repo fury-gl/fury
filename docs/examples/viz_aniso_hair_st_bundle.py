@@ -66,6 +66,15 @@ def change_slice_coat_ior(slider):
     pbr_params.coat_ior = slider.value
 
 
+def key_pressed(obj, event):
+    global show_m
+    key = obj.GetKeySym()
+    if key == 's' or key == 'S':
+        print('Saving image...')
+        show_m.save_screenshot('screenshot.png', magnification=4)
+        print('Image saved.')
+
+
 def win_callback(obj, event):
     global pbr_panel, size
     if size != obj.GetSize():
@@ -80,7 +89,7 @@ if __name__ == '__main__':
 
     fetch_viz_cubemaps()
 
-    # texture_name = 'skybox'
+    #texture_name = 'skybox'
     texture_name = 'brudslojan'
     textures = read_viz_cubemap(texture_name)
 
@@ -106,18 +115,18 @@ if __name__ == '__main__':
     cubemap = get_cubemap_from_ndarrays(cubemap_imgs, flip=False)
     """
 
-    # cubemap.RepeatOff()
-    # cubemap.EdgeClampOn()
+    #cubemap.RepeatOff()
+    #cubemap.EdgeClampOn()
 
     scene = window.Scene()
 
-    # scene = window.Scene(skybox=cubemap)
-    # scene.skybox(gamma_correct=False)
+    #scene = window.Scene(skybox=cubemap)
+    #scene.skybox(gamma_correct=False)
 
-    # scene.background((1, 1, 1))
+    #scene.background((1, 1, 1))
 
     # Scene rotation for brudslojan texture
-    # scene.yaw(-110)
+    #scene.yaw(-110)
 
     atlas, bundles = get_bundle_atlas_hcp842()
     bundles_dir = os.path.dirname(bundles)
@@ -130,7 +139,7 @@ if __name__ == '__main__':
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
-    obj_actor = actor.streamtube(bundle, linewidth=.25)
+    obj_actor = actor.streamtube(bundle, linewidth=.25, lod=False)#, colors=(1, 1, 1))
 
     """
     tmp_line_idx = 107  # Shortest line
@@ -140,7 +149,7 @@ if __name__ == '__main__':
     line_actor = actor.line([tmp_line], lod=False)
     scene.add(line_actor)
     
-    obj_actor = actor.streamtube([tmp_line], linewidth=.25)
+    obj_actor = actor.streamtube([tmp_line], linewidth=.25, lod=False)
     """
 
     # Wireframe representation for streamtubes
@@ -165,6 +174,7 @@ if __name__ == '__main__':
     # Streamtubes normals
     normals = normals_from_actor(obj_actor)
 
+    # TODO: Calculate from line
     # Streamtube tangents from direction of anisotropy
     doa = [0, 1, .5]
     tangents = tangents_from_direction_of_anisotropy(normals, doa)
@@ -203,47 +213,18 @@ if __name__ == '__main__':
     scene.add(tangent_actor)
     """
 
-    pbr_params = manifest_pbr(obj_actor, metallic=.25, anisotropy=1)
+    pbr_params = manifest_pbr(obj_actor, metallic=.25, roughness=.5,
+                              anisotropy=1)
 
-    # attribute_to_actor(obj_actor, tangents, 'tangent')
-
-    vs_dec_clip = \
-        """
-        uniform mat4 MCVCMatrix;
-        """
-    # shader_to_actor(obj_actor, 'vertex', block='clip', decl_code=vs_dec_clip)
-
-    vs_dec_vp = \
-        """
-        in vec3 tangent;
-    
-        out vec3 tangentVSOutput;
-    
-        float square(float x)
-        {
-            return x * x;
-        }
-        """
-    vs_impl_vp = \
-        """ 
-        tangentVSOutput = tangent;
-        """
-    # shader_to_actor(obj_actor, 'vertex', block='valuepass',
-    #                decl_code=vs_dec_vp, impl_code=vs_impl_vp)
-
-    vs_impl_light = \
-        """
-        vec4 camPos = -MCVCMatrix[3] * MCVCMatrix;
-        vec3 lightDir = normalize(vertexMC.xyz - camPos.xyz);
-        float dotLN = sqrt(1 - square(dot(lightDir, tangent))); 
-        """
-    # shader_to_actor(obj_actor, 'vertex', block='light',
-    #                impl_code=vs_impl_light)#, debug=True)
-    # shader_to_actor(obj_actor, 'fragment', block='valuepass', debug=True)
+    fs_impl = \
+    """
+    fragOutput0 = vec4(specular, opacity);
+    """
+    #shader_to_actor(obj_actor, 'fragment', block='light', impl_code=fs_impl)
 
     scene.add(obj_actor)
 
-    # window.show(scene)
+    #window.show(scene)
 
     show_m = window.ShowManager(scene=scene, size=(1920, 1080),
                                 reset_camera=False, order_transparent=True)
@@ -327,6 +308,8 @@ if __name__ == '__main__':
     pbr_panel.add_element(slider_slice_coat_ior, (pbr_slice_pad_x, .075))
 
     scene.add(pbr_panel)
+
+    show_m.iren.AddObserver('KeyPressEvent', key_pressed)
 
     size = scene.GetSize()
 
