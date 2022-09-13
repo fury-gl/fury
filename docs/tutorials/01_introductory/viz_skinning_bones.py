@@ -7,7 +7,7 @@ from fury.lib import Transform
 scene = window.Scene()
 
 fetch_gltf('SimpleSkin', 'glTF')
-filename = read_viz_gltf('RiggedFigure')
+filename = read_viz_gltf('SimpleSkin')
 
 gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
@@ -34,7 +34,7 @@ bvert_copy = np.copy(bverts)
 scene.add(* bactors.values())
 scene.add(timeline)
 
-bones = gltf_obj.bones[0]
+bones = gltf_obj.bones
 parent_transforms = gltf_obj.bone_tranforms
 
 
@@ -47,7 +47,7 @@ def timer_callback(_obj, _event):
         if timeline.is_interpolatable(f'transform{bone}'):
             deform = timeline.get_value(f'transform{bone}',
                                         timeline.current_timestamp)
-            ibm = gltf_obj.ibms[0][i].T
+            ibm = gltf_obj.ibms[bone].T
             ibms.append(ibm)
 
             parent_transform = parent_transforms[bone]
@@ -59,8 +59,7 @@ def timer_callback(_obj, _event):
             bverts[i][:] = transform.apply_transfomation(bvert_copy[i], deform)
             utils.update_actor(bactors[bone])
 
-    vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices,
-                                             bones, ibms)
+    vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices)
     utils.update_actor(actors[0])
     utils.compute_bounds(actors[0])
     showm.render()
