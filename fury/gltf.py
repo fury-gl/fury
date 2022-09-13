@@ -680,6 +680,29 @@ class glTF:
         self.transverse_bones(root_bone, root_timeline)
         return root_timeline
 
+    def get_joint_actors(self, length=0.5, with_transforms=False):
+        """Creates an arrow actor for each bone in a skinned model.
+
+        Parameters
+        ----------
+        length : float (default = 0.5)
+            Length of the arrow actor
+        with_transforms : bool (default = False)
+        """
+        origin = np.zeros((3, 3))
+        actors = {}
+        parent_transforms = self.bone_tranforms
+
+        for bone in self.bones:
+            arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
+            if with_transforms:
+                verts = utils.vertices_from_actor(arrow)
+                verts[:] = transform.apply_transfomation(
+                    verts, parent_transforms[bone])
+                utils.update_actor(arrow)
+            actors[bone] = arrow
+        return actors
+
     def get_animation_timelines(self):
         """Returns list of animation timeline.
 
@@ -796,30 +819,12 @@ class glTF:
                 joint_mat = np.dot(joint_mat, ibm)
                 joint_matrices.append(joint_mat)
 
-            vertices[:] = self.apply_skin_matrix(clone, joint_matrices, bones)
+            vertices[:] = self.apply_skin_matrix(clone, joint_matrices)
             utils.update_actor(actor)
             utils.compute_bounds(actor)
-            # print('updating actor')
             return vertices
 
         return interpolate
-    
-    def get_joint_actors(self, length=0.5, with_transforms=False):
-        origin = np.zeros((3, 3))
-        actors = {}
-        # print(self.bone_tranforms)
-        parent_transforms = self.bone_tranforms
-        # print(parent_transforms)
-        for bone in self.bones:
-            # print(transf)
-            arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
-            # verts = utils.vertices_from_actor(arrow)
-            # verts[:] = transform.apply_transfomation(verts,
-            #                                          parent_transforms[bone])
-            # utils.update_actor(arrow)
-            actors[bone] = arrow
-            # actors[bone] = arrow
-        return actors
 
 
 def tan_cubic_spline_interpolator(keyframes):

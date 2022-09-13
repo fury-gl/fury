@@ -1,16 +1,16 @@
+import copy
 import numpy as np
 from fury import window, utils, actor, transform
 from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 from fury.lib import Transform
-import copy
 
 scene = window.Scene()
 
 fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('CesiumMan')
+filename = read_viz_gltf('SimpleSkin')
 
-gltf_obj = glTF(filename, apply_normals=True)
+gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
 
 vertices = utils.vertices_from_actor(actors[0])
