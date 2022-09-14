@@ -99,9 +99,9 @@ class glTF:
             position, rot, scale = transform.trs_from_matrix(transform_mat)
 
             # We don't need this as we are already applying it in skinnning part
-            # actor.SetPosition(position)
-            # actor.SetScale(scale)
-            # actor.RotateWXYZ(*rot)
+            actor.SetPosition(position)
+            actor.SetScale(scale)
+            actor.RotateWXYZ(*rot)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -170,7 +170,6 @@ class glTF:
                 matnode = np.dot(matnode, scale)
 
         next_matrix = np.dot(matrix, matnode)
-        # print(f'node: {nextnode_id}\nmatrix: \n{next_matrix}\n')
 
         if (nextnode_id in self.gltf.skins[0].joints and
            nextnode_id not in self.bone_tranforms):
@@ -178,7 +177,6 @@ class glTF:
 
         if isJoint:
             if not (nextnode_id in self.bone_tranforms):
-                # print(f'Not there {nextnode_id}')
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if node.mesh is not None:
@@ -191,7 +189,8 @@ class glTF:
             for bone, ibm in zip(joints, ibms):
                 self.bones.append(bone)
                 self.ibms[bone] = ibm
-            self.transverse_node(joints[0], np.identity(4), parent, isJoint=True)
+            self.transverse_node(joints[0], np.identity(4), parent,
+                                 isJoint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -537,11 +536,23 @@ class glTF:
         self.sampler_matrices[node] = data
 
     def get_skin_data(self, skin_id):
+        """Gets the inverse bind matrix for each bone in the skin.
+
+        Parameters
+        ----------
+        skin_id : int
+            Index of the skin.
+
+        Returns
+        -------
+        joint_nodes : list
+            List of bones in the skin.
+        inv_bind_matrix : ndarray
+            Numpy array containing inverse bind pose for each bone.
+        """
         skin = self.gltf.skins[skin_id]
         inv_bind_matrix = self.get_acc_data(skin.inverseBindMatrices)
-        # print(inv_bind_matrix)
         inv_bind_matrix = inv_bind_matrix.reshape((-1, 4, 4))
-        # print(f'ibm:\n{inv_bind_matrix}')
         joint_nodes = skin.joints
         return joint_nodes, inv_bind_matrix
 
@@ -554,11 +565,17 @@ class glTF:
             matrix = transform.scale(transf)
         return matrix
 
-    def apply_skin_matrix(self, vertices,
-                          joint_matrices):
+    def apply_skin_matrix(self, vertices, joint_matrices):
         """Applies the skinnig matrix, that transforms the vertices.
-
         NOTE: vertices has joint_matrix applied already.
+
+        Parameters
+        ----------
+        vertices : ndarray
+            Vertices of an actor.
+        join_matrices : list
+            List  of skinning matrix to calculate the weighted transformation.
+
         Returns
         -------
         vertices : ndarray
@@ -567,10 +584,6 @@ class glTF:
         clone = np.copy(vertices)
         weights = self.weights_0[0]
         joints = self.joints_0[0]
-
-        # if ibms is not None:
-        #     for ibm in ibms:
-        #         clone = transform.apply_transfomation(clone, ibm)
 
         for i, xyz in enumerate(clone):
             a_joint = joints[i]
@@ -589,61 +602,6 @@ class glTF:
 
         return clone
 
-    def get_skin_timeline(self):
-        """Returns list of animation timeline.
-
-        Returns
-        -------
-        timeline : Timeline
-            Timelines containing actors.
-        """
-        # actors = self.actors()
-
-        timeline = Timeline(playback_panel=True)
-        for num, transforms in enumerate(self.node_transform):
-            target_node = transforms['node']
-
-            for i, nodes in enumerate(self.bones[0]):
-
-                if target_node == nodes:
-                    timestamp = transforms['input']
-                    transform = transforms['output']
-                    prop = transforms['property']
-                    # timeline.set_keyframe(f'transform{nodes}', 0., transform)
-                    for time, trs in zip(timestamp, transform):
-                        matrix = self.generate_tmatrix(trs, prop)
-                        if num > 0:
-                            prev_matrix = timeline.get_value(f'transform{nodes}', time[0])
-                            matrix = np.dot(prev_matrix, matrix)
-                        timeline.set_keyframe(f'transform{nodes}', time[0], matrix)
-                        # print(f'timestap: {time[0]} node: {nodes}')
-                else:
-                    # print(f'target node is not nodes {target_node} {nodes}')
-                    transform = np.identity(4)
-                    timeline.set_keyframe(f'transform{nodes}', 0.0, transform)
-
-        return timeline
-
-    def get_skin_timeline2(self):
-        """Alternate version of `get_skin_timeline`
-        Using pre-multiplied matrices.
-        """
-        timeline = Timeline(playback_panel=True)
-        for target, transforms in self.sampler_matrices.items():
-            # target = transforms['node']
-            for i, bone in enumerate(self.bones):
-                if target == bone:
-                    timestamps = transforms['timestamps']
-                    mertices = transforms['matrix']
-
-                    for time, matrix in zip(timestamps, mertices):
-                        timeline.set_keyframe(f'transform{bone}', 
-                                              time[0], matrix)
-
-                # else:
-                #     timeline.set_keyframe(f'transform{bone}', 0.0, np.identity(4))
-        return timeline
-
     def transverse_bones(self, bone_id, parent_timeline: Timeline):
         """
         bone_id : int
@@ -653,7 +611,6 @@ class glTF:
         """
         node = self.gltf.nodes[bone_id]
         timeline = Timeline(playback_panel=False)
-        # transforms = self.sampler_matrices[bone_id]
         if bone_id in self.sampler_matrices:
             transforms = self.sampler_matrices[bone_id]
             timestamps = transforms['timestamps']
@@ -671,8 +628,13 @@ class glTF:
             self.child_timelines.append(timeline)
         parent_timeline.add(timeline)
 
-    def get_skin_timeline3(self):
+    def get_skin_timeline(self):
         """One timeline for each bone, contains parent transforms.
+
+        Returns
+        -------
+        root_timeline : Timeline
+            A timeline containing all the child timelines for bones.
         """
         root_timeline = Timeline(playback_panel=True)
         root_bone = self.gltf.skins[0].skeleton
@@ -688,6 +650,14 @@ class glTF:
         length : float (default = 0.5)
             Length of the arrow actor
         with_transforms : bool (default = False)
+            Applies respective transformations to bone. Bones will be at origin
+            if set to `False`.
+
+        Returns
+        -------
+        actors : dict
+            Dictionary conatining bones as keys and corresponding actor as
+            values.
         """
         origin = np.zeros((3, 3))
         actors = {}
@@ -697,6 +667,8 @@ class glTF:
             arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
             if with_transforms:
                 verts = utils.vertices_from_actor(arrow)
+                actor_transf = self.transformations[0]
+                arrow_transf = np.dot(parent_transforms[bone], actor_transf)
                 verts[:] = transform.apply_transfomation(
                     verts, parent_transforms[bone])
                 utils.update_actor(arrow)
