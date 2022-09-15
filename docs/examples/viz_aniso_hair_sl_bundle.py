@@ -74,7 +74,7 @@ def win_callback(obj, event):
 
 
 if __name__ == '__main__':
-    global obj_actor, pbr_panel, pbr_params, size
+    global pbr_panel, pbr_params, size
 
     fetch_viz_cubemaps()
 
