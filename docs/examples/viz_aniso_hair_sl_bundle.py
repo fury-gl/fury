@@ -8,22 +8,7 @@ from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
 from fury.material import manifest_pbr
 from fury.shaders import attribute_to_actor, shader_to_actor
-from fury.utils import (normals_from_actor,
-                        tangents_from_direction_of_anisotropy,
-                        tangents_to_actor, vertices_from_actor)
-
-
-def bundle_tangents(bundle):
-    tangents = []
-    for line in bundle:
-        line_length = len(line)
-        for i in range(line_length - 1):
-            dif = line[i + 1] - line[i]
-            dist = np.sqrt(np.sum(dif ** 2))
-            tangents.append(dif / dist)
-        tangents.append(dif/dist)
-    tangents = np.array(tangents)
-    return tangents
+from fury.utils import tangents_to_actor, vertices_from_actor
 
 
 def change_slice_metallic(slider):
@@ -64,6 +49,19 @@ def change_slice_base_ior(slider):
 def change_slice_coat_ior(slider):
     global pbr_params
     pbr_params.coat_ior = slider.value
+
+
+def tangents_from_lines(bundle):
+    tangents = []
+    for line in bundle:
+        line_length = len(line)
+        for i in range(line_length - 1):
+            dif = line[i + 1] - line[i]
+            dist = np.sqrt(np.sum(dif ** 2))
+            tangents.append(dif / dist)
+        tangents.append(dif/dist)
+    tangents = np.array(tangents)
+    return tangents
 
 
 def win_callback(obj, event):
@@ -151,7 +149,7 @@ if __name__ == '__main__':
     vertices = tmp_line
     """
 
-    tangents = bundle_tangents(bundle)
+    tangents = tangents_from_lines(bundle)
 
     #vertices = vertices_from_actor(obj_actor)
 
