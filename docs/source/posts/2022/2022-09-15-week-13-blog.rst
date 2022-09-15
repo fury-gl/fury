@@ -1,5 +1,5 @@
 Week 13 - Multi-bone skeletal animation support 
-==============================================
+===============================================
 
 .. post:: September 15 2022
    :author: Shivam Anand
