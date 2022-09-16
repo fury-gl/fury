@@ -186,7 +186,7 @@ class glTF:
 
         if node.children:
             for child_id in node.children:
-                self.transverse_node(child_id, next_matrix, parent, isJoint)
+                self.transverse_node(child_id, next_matrix, parent, is_joint)
 
     def load_mesh(self, mesh_id, transform_mat, parent):
         """Load the mesh data from accessor and applies the transformation.
