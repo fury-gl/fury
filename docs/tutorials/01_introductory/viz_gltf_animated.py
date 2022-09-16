@@ -24,15 +24,15 @@ showm.initialize()
 
 ##############################################################################
 # Retrieving the gltf model.
-fetch_gltf('BoxAnimated', 'glTF')
-filename = read_viz_gltf('BoxAnimated')
+fetch_gltf('InterpolationTest', 'glTF')
+filename = read_viz_gltf('InterpolationTest')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.
 # Get the main_timeline (which contains multiple Timeline objects).
 
 gltf_obj = glTF(filename)
-timeline = gltf_obj.get_main_timeline()
+timeline = gltf_obj.main_timeline()
 
 ##############################################################################
 # Add the timeline to the scene (No need to add actors seperately).
@@ -42,6 +42,8 @@ scene.add(timeline)
 ##############################################################################
 # define a timer_callback that updates the timeline.
 
+interactive = False
+
 
 def timer_callback(_obj, _event):
     timeline.update_animation()
@@ -50,4 +52,8 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 10, timer_callback)
 
-showm.start()
+if interactive:
+    showm.start()
+
+window.record(scene, out_path='viz_gltf_animated.png',
+              size=(900, 768))

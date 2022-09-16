@@ -28,7 +28,6 @@ acc_type = {
     'VEC4': 4,
     'MAT4': 16
 }
-temp = []
 
 
 class glTF:
@@ -126,7 +125,7 @@ class glTF:
         for animation in self.gltf.animations:
             self.transverse_channels(animation)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None, isJoint=False):
+    def transverse_node(self, nextnode_id, matrix, parent=None, is_joint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -138,6 +137,9 @@ class glTF:
         parent : list, optional
             List of indices of parent nodes
             Default: None.
+        is_joint : Bool
+            To determine if the current node is a joint/bone of skins.
+            Default: False
 
         """
         node = self.gltf.nodes[nextnode_id]
@@ -169,8 +171,8 @@ class glTF:
 
         next_matrix = np.dot(matrix, matnode)
 
-        if isJoint:
-            if not (nextnode_id in self.bone_tranforms):
+        if is_joint:
+            if nextnode_id not in self.bone_tranforms:
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if node.mesh is not None:
@@ -572,7 +574,7 @@ class glTF:
                 timelines.append(timeline)
         return timelines
 
-    def get_main_timeline(self):
+    def main_timeline(self):
         """Returns main timeline with all animations.
         """
         main_timeline = Timeline(playback_panel=True)
