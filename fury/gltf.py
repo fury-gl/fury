@@ -8,8 +8,9 @@ from PIL import Image
 from fury.lib import Texture, Camera, numpy_support
 from fury import transform, utils, io
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import (linear_interpolator, lerp,
-                                         step_interpolator, slerp)
+from fury.animation.interpolator import (linear_interpolator,
+                                         step_interpolator, slerp,
+                                         tan_cubic_spline_interpolator)
 from fury.animation import helpers
 
 comp_type = {
@@ -582,67 +583,6 @@ class glTF:
         for timeline in timelines:
             main_timeline.add_timeline(timeline)
         return main_timeline
-
-
-def tan_cubic_spline_interpolator(keyframes):
-
-    timestamps = helpers.get_timestamps_from_keyframes(keyframes)
-    for time in keyframes:
-        data = keyframes.get(time)
-        value = data.get('value')
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
-        if data.get('in_tangent') is None:
-            data['in_tangent'] = np.zeros_like(value)
-
-    def interpolate(t):
-        t0 = helpers.get_previous_timestamp(timestamps, t)
-        t1 = helpers.get_next_timestamp(timestamps, t)
-
-        dt = helpers.get_time_tau(t, t0, t1)
-
-        time_delta = t1 - t0
-
-        p0 = keyframes.get(t0).get('value')
-        tan_0 = keyframes.get(t0).get('out_tangent') * time_delta
-        p1 = keyframes.get(t1).get('value')
-        tan_1 = keyframes.get(t1).get('in_tangent') * time_delta
-        # cubic spline equation using tangents
-        t2 = dt * dt
-        t3 = t2 * dt
-        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
-                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
-    return interpolate
-
-
-def transformation_interpolator(keyframes):
-    timestamps = helpers.get_timestamps_from_keyframes(keyframes)
-    for time in keyframes:
-        data = keyframes.get(time)
-        if data.get('in_matrix1') is None:
-            data['in_matrix1'] = np.identity(4)
-        if data.get('out_matrix1') is None:
-            data['out_matrix1'] = np.identity(4)
-        if data.get('in_matrix2') is None:
-            data['in_matrix2'] = np.identity(4)
-        if data.get('out_matrix2') is None:
-            data['out_matrix2'] = np.identity(4)
-
-    def interpolate(t):
-        t0 = helpers.get_previous_timestamp(timestamps, t)
-        t1 = helpers.get_next_timestamp(timestamps, t)
-
-        mat_0 = keyframes.get(t0).get('in_matrix1')
-        mat_1 = keyframes.get(t1).get('out_matrix1')
-
-        mat_2 = keyframes.get(t0).get('in_matrix2')
-        mat_3 = keyframes.get(t1).get('out_matrix2')
-
-        out_1 = lerp(mat_0, mat_1, t0, t1, t)
-        out_2 = lerp(mat_2, mat_3, t0, t1, t)
-
-        return (out_1, out_2)
-    return interpolate
 
 
 def export_scene(scene, filename='default.gltf'):
