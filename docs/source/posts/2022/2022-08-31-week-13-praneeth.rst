@@ -1,5 +1,5 @@
 ==========================================
-Week 13 - Seperating tests and fixing bugs
+Week 13 - Separating tests and fixing bugs
 ==========================================
 
 .. post:: August 31 2022
@@ -18,10 +18,8 @@ This week I managed to fix the translation issue in PR `#653 <https://github.com
 
 Also, the PR `#623 <https://github.com/fury-gl/fury/pull/623>`_ got merged as now the tests were passing after the update.
 
-Then there were a few changes that were required before any new feature was to be implemented.
-
 As we are now adding new features to the DrawPanel, the current tests are becoming bigger and bigger.
-Due to this creating, debugging, and managing tests is becoming harder.
+Due to this creating, debugging, and managing tests are becoming harder.
 So to keep things simple, separating the tests to validate individual parts and features of the DrawPanel. This was done in PR `#674 <https://github.com/fury-gl/fury/pull/674>`_.
 
 Along this, there was a redundant parameter called `in_progress`, which was used to keep a check whether the shapes are added to the panel or not, but it was confusing, and discarding it didn't affect the codebase. So PR `#673 <https://github.com/fury-gl/fury/pull/673>`_ removed that parameter and separated the two functions.
