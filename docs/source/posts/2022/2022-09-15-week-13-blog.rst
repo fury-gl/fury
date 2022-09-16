@@ -27,8 +27,6 @@ Here's a preview using the ``CesiumMan`` model:
 What is coming up next week?
 ----------------------------
 
-- Fixing the camera issue (As of writing this blog, it's done already)
-
 - Add tests for simple animation PR `#643`_.
 
 - Multiple actor support for skeletal animation.
