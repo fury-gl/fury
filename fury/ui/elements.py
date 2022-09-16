@@ -3213,7 +3213,8 @@ class DrawShape(UI):
     """Create and Manage 2D Shapes.
     """
 
-    def __init__(self, shape_type, drawpanel=None, position=(0, 0), debug=False):
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0), color=None,
+                 highlight_color=(.8, 0, 0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3232,8 +3233,9 @@ class DrawShape(UI):
         self.drawpanel = drawpanel
         self.max_size = None
         self.debug = debug
+        self.color = np.random.random(3) if color is None else color
+        self.highlight_color = highlight_color
         super(DrawShape, self).__init__(position)
-        self.shape.color = np.random.random(3)
 
     def _setup(self):
         """Setup this UI component.
@@ -3248,6 +3250,8 @@ class DrawShape(UI):
             self.shape = Disk2D(outer_radius=2)
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
+
+        self.shape.color = self.color
 
         self.cal_bounding_box()
 
@@ -3358,11 +3362,16 @@ class DrawShape(UI):
 
     def selection_change(self):
         if self.is_selected:
+            self.highlight(True)
             self.show_rotation_slider()
             self.set_bb_box_visibility(True)
         else:
+            self.highlight(False)
             self.rotation_slider.set_visibility(False)
             self.set_bb_box_visibility(False)
+
+    def highlight(self, value):
+        self.shape.color = self.highlight_color if value else self.color
 
     def set_bb_box_visibility(self, value):
         if self.debug:
@@ -3460,8 +3469,9 @@ class DrawShape(UI):
         """
         self.drawpanel.shape_list.remove(self)
         self._scene.rm(self.shape.actor)
-        self._scene.rm(*[border.actor for border in self.bb_box])
         self._scene.rm(*self.rotation_slider.actors)
+        if self.debug:
+            self._scene.rm(*[border.actor for border in self.bb_box])
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
@@ -3509,7 +3519,8 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn.
     """
 
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False, debug=False):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False,
+                 highlight_color=(1, .0, .0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3529,6 +3540,7 @@ class DrawPanel(UI):
         self.is_draggable = is_draggable
         self.current_mode = None
         self.debug = debug
+        self.highlight_color = highlight_color
 
         if is_draggable:
             self.current_mode = "selection"
@@ -3676,7 +3688,9 @@ class DrawPanel(UI):
             Lower left corner position for the shape.
         """
         shape = DrawShape(shape_type=shape_type, drawpanel=self,
-                          position=current_position, debug=self.debug)
+                          position=current_position,
+                          highlight_color=self.highlight_color,
+                          debug=self.debug)
         if shape_type == "circle":
             shape.max_size = self.cal_min_boundary_distance(current_position)
         self.current_scene.add(shape)
