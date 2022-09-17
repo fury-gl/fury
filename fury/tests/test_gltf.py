@@ -147,7 +147,7 @@ def test_simple_animation():
     fetch_gltf('BoxAnimated', 'glTF')
     file = read_viz_gltf('BoxAnimated')
     gltf_obj = glTF(file)
-    timeline = gltf_obj.get_main_timeline()
+    timeline = gltf_obj.main_timeline()
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
