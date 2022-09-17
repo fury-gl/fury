@@ -15,11 +15,11 @@ import numpy as np
 
 from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
-from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
+from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D, ToolButton2D
 from fury.ui.containers import Panel2D
+
 from fury.ui.helpers import (TWO_PI, clip_overflow,
                              cal_bounding_box_2d, rotate_2d)
-from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
 
@@ -1719,7 +1719,7 @@ class RangeSlider(UI):
 
 class Option(UI):
 
-    """A set of a Button2D and a TextBlock2D to act as a single option
+    """A set of a ToolButton2D and a TextBlock2D to act as a single option
     for checkboxes and radio buttons.
     Clicking the button toggles its checked/unchecked status.
 
@@ -1766,8 +1766,8 @@ class Option(UI):
                                   read_viz_icons(fname="stop2.png")))
         self.button_icons.append(('checked',
                                   read_viz_icons(fname="checkmark.png")))
-        self.button = Button2D(icon_fnames=self.button_icons,
-                               size=self.button_size)
+        self.button = ToolButton2D(icon_fnames=self.button_icons,
+                                   size=self.button_size)
 
         self.text = TextBlock2D(text=self.label, font_size=self.font_size)
 
@@ -2023,7 +2023,7 @@ class ComboBox2D(UI):
     ----------
     selection_box: :class: 'TextBox2D'
         Display selection and placeholder text.
-    drop_down_button: :class: 'Button2D'
+    drop_down_button: :class: 'ToolButton2D'
         Button to show or hide menu.
     drop_down_menu: :class: 'ListBox2D'
         Container for item list.
@@ -2115,7 +2115,7 @@ class ComboBox2D(UI):
             size=self.text_block_size, color=self.sel_text_color,
             bg_color=self.sel_bg_color, text=self._selection)
 
-        self.drop_down_button = Button2D(
+        self.drop_down_button = ToolButton2D(
             icon_fnames=self._icon_files, size=self.drop_button_size)
 
         self.drop_down_menu = ListBox2D(
@@ -3398,7 +3398,7 @@ class DrawPanel(UI):
                                                     fname=fname[0])))
             icon_files.append((mode+"-pressed",
                                read_viz_icons(style="new_icons", fname=fname[1])))
-            btn = Button2D(icon_fnames=icon_files)
+            btn = ToolButton2D(icon_fnames=icon_files)
 
             def mode_selector(i_ren, _obj, btn):
                 self.current_mode = btn.icon_names[0]
@@ -3617,20 +3617,20 @@ class PlaybackPanel(UI):
         loop_icons = [("once", read_viz_icons(fname="checkmark.png")),
                       ("loop", read_viz_icons(fname="infinite.png"))]
 
-        self._play_pause_btn = Button2D(icon_fnames=play_pause_icons)
+        self._play_pause_btn = ToolButton2D(icon_fnames=play_pause_icons)
 
-        self._loop_btn = Button2D(icon_fnames=loop_icons)
+        self._loop_btn = ToolButton2D(icon_fnames=loop_icons)
 
-        self._stop_btn = Button2D(
+        self._stop_btn = ToolButton2D(
             icon_fnames=[("stop", read_viz_icons(fname="stop2.png"))]
         )
 
-        self._speed_up_btn = Button2D(
+        self._speed_up_btn = ToolButton2D(
             icon_fnames=[("plus", read_viz_icons(fname="plus.png"))],
             size=(15, 15)
         )
 
-        self._slow_down_btn = Button2D(
+        self._slow_down_btn = ToolButton2D(
             icon_fnames=[("minus", read_viz_icons(fname="minus.png"))],
             size=(15, 15)
         )

@@ -1,12 +1,13 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D"]
+__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "ToolButton2D", "Button2D"]
 
 import abc
 from warnings import warn
 
 import numpy as np
 
+from fury.data import read_viz_icons
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
 from fury.lib import (PolyData, PolyDataMapper2D, Polygon, Points, CellArray,
@@ -1070,8 +1071,8 @@ class TextBlock2D(UI):
         return self.actor.GetPosition2()
 
 
-class Button2D(UI):
-    """A 2D overlay button and is of type vtkTexturedActor2D.
+class ToolButton2D(UI):
+    """A 2D icon and is of type vtkTexturedActor2D.
 
     Currently supports::
 
@@ -1093,7 +1094,7 @@ class Button2D(UI):
             Width and height in pixels of the button.
 
         """
-        super(Button2D, self).__init__(position)
+        super(ToolButton2D, self).__init__(position)
 
         self.icon_extents = dict()
         self.icons = self._build_icons(icon_fnames)
@@ -1128,7 +1129,10 @@ class Button2D(UI):
         """
         icons = []
         for icon_name, icon_fname in icon_fnames:
-            icons.append((icon_name, load_image(icon_fname, as_vtktype=True)))
+            vtk_image = load_image(icon_fname, as_vtktype=True)
+            dim = vtk_image.GetDimensions()
+            aspect_ratio = dim[1]/dim[0]
+            icons.append((icon_name, vtk_image, aspect_ratio))
 
         return icons
 
@@ -1197,15 +1201,24 @@ class Button2D(UI):
         """
         scene.add(self.actor)
 
-    def resize(self, size):
+    def resize(self, size, keep_aspect_ratio=True):
         """Resize the button.
 
         Parameters
         ----------
         size : (float, float)
             Button size (width, height) in pixels.
-
+        keep_aspect_ratio: bool
+            Flag whether to maintain aspect ratio or not.
         """
+        if keep_aspect_ratio:
+            aspect_ratio = self.icons[self.current_icon_id][2]
+            new_y = self.icons[self.current_icon_id][2] * size[0]
+            if new_y > size[1]:
+                size = (size[1] / aspect_ratio, size[1])
+            else:
+                size = (size[0], new_y)
+
         # Update actor.
         self.texture_points.SetPoint(0, 0, 0, 0.0)
         self.texture_points.SetPoint(1, size[0], 0, 0.0)
@@ -1287,3 +1300,117 @@ class Button2D(UI):
         """
         self.next_icon_id()
         self.set_icon(self.icons[self.current_icon_id][1])
+
+
+class Button2D(UI):
+    def __init__(self, icon_fnames, label="Button", label_font='Arial', label_color=(0, 0, 0),
+                 bg_color=(1, 1, 1), bg_opacity=1.0, position=(0, 0), size=(50, 20),
+                 button_pressed_color=(1, 0, 0), button_released_color=(1, 1, 1)):
+        self._init_size = size
+        self._icon_fnames = icon_fnames
+        super().__init__(position)
+        self.resize(size)
+        self.label = label
+        self.label_font = label_font
+        self.label_color = label_color
+        self.bg_color = bg_color
+        self.bg_opacity = bg_opacity
+        self.button_pressed_color = button_pressed_color
+        self.button_released_color = button_released_color
+
+    def _setup(self):
+        self._sub_component_offsets = {}
+        self._icon = ToolButton2D(self._icon_fnames)
+        self._background = Rectangle2D()
+        self._text_block = TextBlock2D()
+
+        self._update_sub_components(self._init_size)
+        self.on_click = lambda ui: None
+        self.on_hover = lambda ui: None
+
+        self._background.on_left_mouse_button_pressed = self.left_button_pressed
+        self._icon.on_left_mouse_button_pressed = self.left_button_pressed
+        self._text_block.on_left_mouse_button_pressed = self.left_button_pressed
+
+        self._background.on_left_mouse_button_released = self.left_button_released
+        self._icon.on_left_mouse_button_released = self.left_button_released
+        self._text_block.on_left_mouse_button_released = self.left_button_released
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        self._background.color = self.button_pressed_color
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def left_button_released(self, i_ren, _obj, _sub_component):
+        self.on_click(self)
+        self._background.color = self.button_released_color
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def mouse_hovered(self, i_ren, _obj, _sub_component):
+        self.on_hover(self)
+        i_ren.force_render()
+        i_ren.event.abort()
+
+    def _update_sub_components(self, size):
+        self._background_icon_offset = np.array((0, 0)) * size
+        self._text_offset = np.array((0.3, 0)) * size
+
+        self._background.position = self.position + self._background_icon_offset
+        self._icon.position = self.position + self._background_icon_offset
+        self._text_block.position = self.position + self._text_offset
+
+    def _get_actors(self):
+        return [self._background, self._icon, self._text_block]
+
+    def _add_to_scene(self, _scene):
+        self._background.add_to_scene(_scene)
+        self._icon.add_to_scene(_scene)
+        self._text_block.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        coords = np.array(_coords)
+        self._background.position = coords + self._background_icon_offset
+        self._icon.position = coords + self._background_icon_offset
+        self._text_block.position = coords + self._text_offset
+
+    def _get_size(self):
+        return self._background.size
+
+    def resize(self, size):
+        self._background.resize(size)
+        self._icon.resize((0.3 * size[0], size[1]))
+        self._text_block.resize((0.7 * size[0], size[1]))
+        self._update_sub_components(size)
+
+    @property
+    def label(self):
+        return self._text_block.message
+
+    @label.setter
+    def label(self, text):
+        self._text_block.message = text
+
+    @property
+    def label_font(self):
+        return self._text_block.font_family
+
+    @label_font.setter
+    def label_font(self, font):
+        self._text_block.font_family = font
+
+    @property
+    def label_color(self):
+        return self._text_block.color
+
+    @label_color.setter
+    def label_color(self, color):
+        self._text_block.color = color
+
+    @property
+    def bg_color(self):
+        return self._background.color
+
+    @bg_color.setter
+    def bg_color(self, color):
+        self._background.color = color
