@@ -1065,27 +1065,87 @@ def test_ui_draw_shape():
     npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_ui_draw_panel(interactive=False):
-    filename = "test_ui_draw_panel"
+def test_ui_draw_panel_basic(interactive=False):
+    filename = "test_ui_draw_panel_basic"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title="DrawPanel UI Example")
+        size=current_size, title="DrawPanel Basic UI Example")
     show_manager.scene.add(drawpanel)
 
     # Recorded events:
     #  1. Check all mode selection button
     #  2. Creation and clamping of shapes
     #  3. Transformation and clamping of shapes
-    #  4. Rotation and clamping of shape
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_rotation(interactive=False):
+    filename = "test_ui_draw_panel_rotation"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Rotation UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Rotation and clamping of shape
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_grouping(interactive=False):
+    filename = "test_ui_draw_panel_grouping"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Grouping UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Grouping/Ungrouping Shapes
+    #  2. Translation/Rotation of Grouped Shapes
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)

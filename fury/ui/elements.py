@@ -17,7 +17,8 @@ from fury.data import read_viz_icons
 from fury.lib import PolyDataMapper2D
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
-from fury.ui.helpers import TWO_PI, clip_overflow
+from fury.ui.helpers import (TWO_PI, clip_overflow,
+                             cal_bounding_box_2d, rotate_2d)
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
@@ -3104,7 +3105,7 @@ class DrawShapeGroup:
             for shape in self.grouped_shapes:
                 current_center = shape.center
                 shape.rotate(np.deg2rad(rotation_angle))
-                shape.update_shape_position(current_center - shape.drawpanel.position)
+                shape.update_shape_position(current_center - shape.drawpanel.canvas.position)
 
         self.group_rotation_slider.on_change = update_rotation
 
@@ -3182,31 +3183,17 @@ class DrawShapeGroup:
         for shape in self.grouped_shapes:
             vertices.extend(shape.position + vertices_from_actor(shape.shape.actor)[:, :-1])
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
+        bounding_box_min, bounding_box_max, \
+            bounding_box_size = cal_bounding_box_2d(np.asarray(vertices))
 
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-
-        _bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-        _bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-        _bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
-
-        group_center = _bounding_box_min + _bounding_box_size//2
+        group_center = bounding_box_min + bounding_box_size//2
 
         shape_offset = []
         for shape in self.grouped_shapes:
             shape_offset.append(shape.center - group_center)
 
-        new_center = np.clip(group_center + offset, self.drawpanel.position + _bounding_box_size//2,
-                             self.drawpanel.position + self.drawpanel.size - _bounding_box_size//2)
+        new_center = np.clip(group_center + offset, self.drawpanel.position + bounding_box_size//2,
+                             self.drawpanel.position + self.drawpanel.size - bounding_box_size//2)
 
         for shape, soffset in zip(self.grouped_shapes, shape_offset):
             shape.update_shape_position(new_center + soffset - self.drawpanel.position)
@@ -3360,7 +3347,8 @@ class DrawShape(UI):
     """Create and Manage 2D Shapes.
     """
 
-    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0), color=None,
+                 highlight_color=(.8, 0, 0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3371,13 +3359,17 @@ class DrawShape(UI):
             Reference to the main canvas on which it is drawn.
         position : (float, float), optional
             (x, y) in pixels.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.shape = None
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
+        self.debug = debug
+        self.color = np.random.random(3) if color is None else color
+        self.highlight_color = highlight_color
         super(DrawShape, self).__init__(position)
-        self.shape.color = np.random.random(3)
 
     def _setup(self):
         """Setup this UI component.
@@ -3395,9 +3387,12 @@ class DrawShape(UI):
         else:
             raise IOError("Unknown shape type: {}.".format(self.shape_type))
 
-        self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
-        self.set_bb_box_visibility(False)
+        self.shape.color = self.color
+
         self.cal_bounding_box()
+
+        if self.debug:
+            self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3405,11 +3400,13 @@ class DrawShape(UI):
 
         self.rotation_slider = RingSlider2D(initial_value=0,
                                             text_template="{angle:5.1f}°")
-        slider_position = self.drawpanel.position + \
-            [self.drawpanel.size[0] - self.rotation_slider.size[0]/2,
-             self.rotation_slider.size[1]/2]
-        self.rotation_slider.center = slider_position
         self.rotation_slider.set_visibility(False)
+
+        if self.drawpanel:
+            slider_position = self.drawpanel.canvas.position + \
+                [self.drawpanel.canvas.size[0] - self.rotation_slider.size[0]/2,
+                 self.rotation_slider.size[1]/2]
+            self.rotation_slider.center = slider_position
 
         def rotate_shape(slider):
             angle = slider.value
@@ -3418,7 +3415,7 @@ class DrawShape(UI):
 
             current_center = self.center
             self.rotate(np.deg2rad(rotation_angle))
-            self.update_shape_position(current_center - self.drawpanel.position)
+            self.update_shape_position(current_center - self.drawpanel.canvas.position)
 
         self.rotation_slider.on_change = rotate_shape
 
@@ -3436,8 +3433,9 @@ class DrawShape(UI):
         """
         self._scene = scene
         self.shape.add_to_scene(scene)
-        scene.add(*[border.actor for border in self.bb_box])
         self.rotation_slider.add_to_scene(scene)
+        if self.debug:
+            scene.add(*[border.actor for border in self.bb_box])
 
     def _get_size(self):
         return self.shape.size
@@ -3500,29 +3498,35 @@ class DrawShape(UI):
 
     def selection_change(self):
         if self.is_selected:
+            self.highlight(True)
             self.show_rotation_slider()
             self.set_bb_box_visibility(True)
         else:
+            self.highlight(False)
             self.rotation_slider.set_visibility(False)
             self.set_bb_box_visibility(False)
 
-    def set_bb_box_visibility(self, value):
-        if value:
-            border_width = 3
-            points = [self._bounding_box_min-(0, border_width),
-                      [self._bounding_box_max[0], self._bounding_box_min[1]],
-                      self._bounding_box_min - border_width,
-                      [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
-            size = [(self._bounding_box_size[0]+border_width, border_width),
-                    (border_width, self._bounding_box_size[1]+border_width),
-                    (border_width, self._bounding_box_size[1] + border_width),
-                    (self._bounding_box_size[0]+border_width, border_width)]
-            for i in range(4):
-                self.bb_box[i].position = points[i]
-                self.bb_box[i].resize(size[i])
+    def highlight(self, value):
+        self.shape.color = self.highlight_color if value else self.color
 
-        for border in self.bb_box:
-            border.set_visibility(value)
+    def set_bb_box_visibility(self, value):
+        if self.debug:
+            if value:
+                border_width = 3
+                points = [self._bounding_box_min-(0, border_width),
+                          [self._bounding_box_max[0], self._bounding_box_min[1]],
+                          self._bounding_box_min - border_width,
+                          [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
+                size = [(self._bounding_box_size[0]+border_width, border_width),
+                        (border_width, self._bounding_box_size[1]+border_width),
+                        (border_width, self._bounding_box_size[1] + border_width),
+                        (self._bounding_box_size[0]+border_width, border_width)]
+                for i in range(4):
+                    self.bb_box[i].position = points[i]
+                    self.bb_box[i].resize(size[i])
+
+            for border in self.bb_box:
+                border.set_visibility(value)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3535,10 +3539,7 @@ class DrawShape(UI):
         if self.shape_type == "circle":
             return
         points_arr = vertices_from_actor(self.shape.actor)
-        rotation_matrix = np.array(
-            [[np.cos(angle), np.sin(angle), 0],
-             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-        new_points_arr = np.matmul(points_arr, rotation_matrix)
+        new_points_arr = rotate_2d(points_arr, angle)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
         update_actor(self.shape.actor)
 
@@ -3553,11 +3554,6 @@ class DrawShape(UI):
 
     def cal_bounding_box(self):
         """Calculate the min, max position and the size of the bounding box.
-
-        Parameters
-        ----------
-        position : (float, float)
-            (x, y) in pixels.
         """
         if self.shape_type == "polyline":
             vertices = self.shape.calculate_vertices()
@@ -3566,22 +3562,8 @@ class DrawShape(UI):
         else:
             vertices = self.position + vertices_from_actor(self.shape.actor)[:, :-1]
 
-        min_x, min_y = vertices[0]
-        max_x, max_y = vertices[0]
-
-        for x, y in vertices:
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if x > max_x:
-                max_x = x
-            if y > max_y:
-                max_y = y
-
-        self._bounding_box_min = np.asarray([min_x, min_y], dtype="int")
-        self._bounding_box_max = np.asarray([max_x, max_y], dtype="int")
-        self._bounding_box_size = np.asarray([max_x-min_x, max_y-min_y], dtype="int")
+        self._bounding_box_min, self._bounding_box_max, \
+            self._bounding_box_size = cal_bounding_box_2d(vertices)
 
         self._bounding_box_offset = self.position - self._bounding_box_min
 
@@ -3600,7 +3582,7 @@ class DrawShape(UI):
         """
         center = self.center if center is None else center
         new_center = np.clip(center, self._bounding_box_size//2,
-                             self.drawpanel.size - self._bounding_box_size//2)
+                             self.drawpanel.canvas.size - self._bounding_box_size//2)
         return new_center.astype(int)
 
     def resize(self, size):
@@ -3624,18 +3606,22 @@ class DrawShape(UI):
             self.shape.outer_radius = hyp
 
         self.cal_bounding_box()
+        self.set_bb_box_visibility(True)
 
     def remove(self):
         """Remove the Shape and all related actors.
         """
 
         self.drawpanel.shape_list.remove(self)
+
         if self.shape_type == "polyline":
             self._scene.rm(*[l.actor for l in self.shape.lines])
         else:
             self._scene.rm(self.shape.actor)
-        self._scene.rm(*[border.actor for border in self.bb_box])
+
         self._scene.rm(*self.rotation_slider.actors)
+        if self.debug:
+            self._scene.rm(*[border.actor for border in self.bb_box])
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
@@ -3683,7 +3669,8 @@ class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn.
     """
 
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False,
+                 highlight_color=(1, .0, .0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3694,6 +3681,8 @@ class DrawPanel(UI):
             (x, y) in pixels.
         is_draggable : bool, optional
             Whether the background canvas will be draggble or not.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.panel_size = size
         self.shape_types = ["line", "polyline", "quad", "circle"]
@@ -3701,6 +3690,8 @@ class DrawPanel(UI):
         self.shape_group = DrawShapeGroup(self)
         self.is_draggable = is_draggable
         self.current_mode = None
+        self.debug = debug
+        self.highlight_color = highlight_color
 
         if is_draggable:
             self.current_mode = "selection"
@@ -3770,10 +3761,10 @@ class DrawPanel(UI):
             self.mode_panel.add_element(btn, btn_pos+padding)
             btn_pos[0] += btn.size[0]+padding
 
-        self.canvas.add_element(self.mode_panel, (0, 0))
+        self.canvas.add_element(self.mode_panel, (0, -mode_panel_size[1]))
 
         self.mode_text = TextBlock2D(text="Select appropriate drawing mode using below icon")
-        self.canvas.add_element(self.mode_text, (0.0, 0.95))
+        self.canvas.add_element(self.mode_text, (0.0, 1.0))
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3804,7 +3795,7 @@ class DrawPanel(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        self.canvas.position = coords
+        self.canvas.position = coords + [0, self.mode_panel.size[1]]
 
     def resize(self, size):
         """Resize the UI.
@@ -3844,7 +3835,7 @@ class DrawPanel(UI):
 
         return min(distance_list)
 
-    def draw_shape(self, shape_type, current_position, in_process=False):
+    def draw_shape(self, shape_type, current_position):
         """Draw the required shape at the given position.
 
         Parameters
@@ -3853,22 +3844,29 @@ class DrawPanel(UI):
             Type of shape - line, quad, circle.
         current_position: (float,float)
             Lower left corner position for the shape.
-        in_process: bool, optional
-            Checks whether in process or not.
         """
-        if not in_process:
-            shape = DrawShape(shape_type=shape_type, drawpanel=self,
-                              position=current_position)
-            if shape_type == "circle":
-                shape.max_size = self.cal_min_boundary_distance(current_position)
-            self.shape_list.append(shape)
-            self.current_scene.add(shape)
-            self.update_shape_selection(shape)
-            self.canvas.add_element(shape, current_position - self.canvas.position)
+        shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                          position=current_position,
+                          highlight_color=self.highlight_color,
+                          debug=self.debug)
+        if shape_type == "circle":
+            shape.max_size = self.cal_min_boundary_distance(current_position)
+        self.current_scene.add(shape)
+        self.canvas.add_element(shape, current_position - self.canvas.position)
+        self.shape_list.append(shape)
+        self.update_shape_selection(shape)
 
-        else:
-            size = current_position - self.current_shape.position
-            self.current_shape.resize(size)
+    def resize_shape(self, current_position):
+        """Resize the shape.
+
+        Parameters
+        ----------
+        current_position: (float,float)
+            Lower left corner position for the shape.
+        """
+        self.current_shape = self.shape_list[-1]
+        size = current_position - self.current_shape.position
+        self.current_shape.resize(size)
 
     def update_shape_selection(self, selected_shape):
         for shape in self.shape_list:
@@ -3932,8 +3930,8 @@ class DrawPanel(UI):
             if self._drag_offset is not None:
                 new_position = position - self._drag_offset
                 self.position = new_position
-        if self.current_mode in self.shape_types:
-            self.draw_shape(self.current_mode, position, True)
+        if self.current_mode in ["line", "quad", "circle"]:
+            self.resize_shape(position)
 
     def left_button_dragged(self,  i_ren, _obj, element):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
