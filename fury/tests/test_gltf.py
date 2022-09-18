@@ -43,7 +43,8 @@ def test_load_texture():
     scene.clear()
 
 
-def test_vertex_colors():
+def test_colors():
+    # vertex colors
     fetch_gltf('BoxVertexColors')
     file = read_viz_gltf('BoxVertexColors', 'glTF')
     importer = glTF(file)
@@ -56,6 +57,21 @@ def test_vertex_colors():
                                           (31, 41, 232)],
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True, True])
+    scene.clear()
+
+    # material colors
+    fetch_gltf('BoxAnimated')
+    file = read_viz_gltf('BoxAnimated', 'glTF')
+    importer = glTF(file)
+    actors = importer.actors()
+    scene.add(*actors)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(77, 136, 204)],
+                                  find_objects=True)
+
+    npt.assert_equal(res.colors_found, [True])
+    npt.assert_equal(res.objects, 1)
     scene.clear()
 
 
