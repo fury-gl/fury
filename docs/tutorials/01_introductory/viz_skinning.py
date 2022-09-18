@@ -1,9 +1,8 @@
 import copy
 import numpy as np
-from fury import window, utils, actor, transform
+from fury import window, utils, transform
 from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
-from fury.lib import Transform
 
 scene = window.Scene()
 
