@@ -1580,7 +1580,7 @@ class Timeline(Container):
             except ImportError:
                 raise ImportError('OpenCV has to be installed in order to '
                                   'save as mp4')
-            fourcc = cv2.VideoWriter.fourcc(*'MJPG')
+            fourcc = cv2.VideoWriter.fourcc(*'mp4v')
             out = cv2.VideoWriter(fname, fourcc, fps, size)
 
             for img in images:
