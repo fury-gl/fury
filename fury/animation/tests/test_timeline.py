@@ -90,7 +90,6 @@ def test_timeline():
     tl.set_color(7, np.array([0.2, 0.2, 0.5]))
     assert_not_equal(tl.get_color(7), np.array([1, 0, 1]))
     assert_not_equal(tl.get_color(25), np.array([0.2, 0.2, 0.5]))
-
     cube = actor.cube(np.array([[0, 0, 0]]))
     tl.add_actor(cube)
 
@@ -111,6 +110,8 @@ def test_timeline():
     scene.GetActiveCamera().SetPosition(0, 0, -100)
     frames = tl.record(fps=15, speed=1.0, show_panel=False)
 
-    assert_not_equal(np.mean(frames[3]), np.mean(frames[14]))
+    for i in range(2, len(frames), 2):
+        f1, f2 = frames[i], frames[i-2]
+        assert_not_equal(f1, f2)
 
     npt.assert_almost_equal(len(frames), tl.final_timestamp * 15, 0)
