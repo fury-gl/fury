@@ -109,7 +109,7 @@ def test_timeline():
     showm = ShowManager(scene)
     scene.add(tl)
     scene.GetActiveCamera().SetPosition(0, 0, -100)
-    frames = tl.record(fname='a.mp4', fps=15, speed=1.0, show_panel=False)
+    frames = tl.record(fps=15, speed=1.0, show_panel=False)
 
     for i in range(2, len(frames), 2):
         f1, f2 = frames[i], frames[i-2]
