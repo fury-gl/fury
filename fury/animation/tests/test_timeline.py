@@ -8,6 +8,7 @@ from fury.animation.interpolator import linear_interpolator, \
 from fury.animation.timeline import Timeline
 import fury.testing as ft
 from fury.ui import PlaybackPanel
+from fury.window import ShowManager, Scene
 
 
 def assert_not_equal(x, y):
@@ -16,16 +17,16 @@ def assert_not_equal(x, y):
 
 def test_timeline():
     shaders = False
-    tl = Timeline(playback_panel=Timeline)
+    tl = Timeline(playback_panel=True)
     tl.set_position(0, np.array([1, 1, 1]))
     # overriding a keyframe
     tl.set_position(0, np.array([0, 0, 0]))
     tl.set_position(3, np.array([2, 2, 2]))
-    tl.set_position(5, np.array([3, 15, 2]))
-    tl.set_position(7, np.array([4, 2, 20]))
+    tl.set_position(5, np.array([3, 0, 2]))
+    tl.set_position(7, np.array([4, 2, 0]))
 
-    tl.set_opacity(0, 0)
-    tl.set_opacity(7, 1)
+    tl.set_opacity(0.0, 0.5)
+    tl.set_opacity(7.0, 1.0)
 
     tl.set_rotation(0, np.array([90, 0, 0]))
     tl.set_rotation(7, np.array([0, 180, 0]))
@@ -69,7 +70,7 @@ def test_timeline():
     npt.assert_almost_equal(tl.current_timestamp, 0)
 
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
-    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
+    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 0]))
 
     tl.set_position_interpolator(linear_interpolator)
     tl.set_position_interpolator(cubic_bezier_interpolator)
@@ -79,13 +80,14 @@ def test_timeline():
     tl.set_rotation_interpolator(step_interpolator)
     tl.set_scale_interpolator(linear_interpolator)
     tl.set_opacity_interpolator(step_interpolator)
+    tl.set_opacity_interpolator(linear_interpolator)
     tl.set_color_interpolator(linear_interpolator)
 
     npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
-    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
+    npt.assert_almost_equal(tl.get_position(7.0), np.array([4, 2, 0]))
 
     npt.assert_almost_equal(tl.get_color(7), np.array([1, 0, 1]))
-    tl.set_color(25, np.array([0.2, 0.2, 0.5]))
+    tl.set_color(7, np.array([0.2, 0.2, 0.5]))
     assert_not_equal(tl.get_color(7), np.array([1, 0, 1]))
     assert_not_equal(tl.get_color(25), np.array([0.2, 0.2, 0.5]))
 
@@ -102,3 +104,15 @@ def test_timeline():
                                 cube.GetScale())
         npt.assert_almost_equal(tl.get_rotation(tl.current_timestamp),
                                 cube.GetOrientation())
+
+    scene = Scene()
+    showm = ShowManager(scene)
+    scene.add(tl)
+    scene.GetActiveCamera().SetPosition(0, 0, -100)
+    frames = tl.record(fname='a.mp4', fps=15, speed=1.0, show_panel=False)
+
+    for i in range(2, len(frames), 2):
+        f1, f2 = frames[i], frames[i-2]
+        assert_not_equal(np.mean(f1), np.mean(f2))
+
+    npt.assert_almost_equal(len(frames), tl.final_timestamp * 15, 0)
