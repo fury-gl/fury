@@ -7,8 +7,10 @@ from fury.animation.interpolator import spline_interpolator, \
     step_interpolator, linear_interpolator
 import numpy as np
 from scipy.spatial import transform
+from PIL import Image
 from fury.ui.elements import PlaybackPanel
-from fury.lib import Actor
+from fury.lib import Actor, WindowToImageFilter, RenderWindow, numpy_support
+from fury.window import antialiasing
 
 
 class Timeline(Container):
@@ -1494,6 +1496,100 @@ class Timeline(Container):
         bool: 'True' if the `Timeline` has a playback panel. otherwise, 'False'
         """
         return self.playback_panel is not None
+
+    def record(self, fname=None, fps=30, speed=1.0, size=(900, 768),
+               order_transparent=True, multi_samples=8,
+               max_peels=4, show_panel=False):
+        """Record the animation
+
+        Parameters
+        -----------
+        fname : str, optional, default : None
+            The file name. Save a GIF file if name ends with '.gif', or mp4
+            video if name ends with'.mp4'.
+            If None, this method will only return an array of frames.
+        fps : int, optional, default 30
+            The number of frames per second of the record.
+        size : (int, int)
+            ``(width, height)`` of the window. Default is (900, 768).
+        speed : float, optional, default 1.0
+            The speed of the animation.
+        order_transparent : bool
+            Default False. Use depth peeling to sort transparent objects.
+            If True also enables anti-aliasing.
+        multi_samples : int
+            Number of samples for anti-aliazing (Default 8).
+            For no anti-aliasing use 0.
+        max_peels : int
+            Maximum number of peels for depth peeling (Default 4).
+        show_panel : bool, optional, default False
+            Controls whether to show the playback (if True) panel of hide it
+            (if False)
+
+        Returns
+        -------
+        ndarray:
+            The recorded frames.
+
+        Notes
+        -----
+        It's recommended to use 50 or 30 fps while recording to a gif file.
+        """
+
+        duration = self.final_timestamp
+        step = speed / fps
+        frames = []
+        t = 0
+
+        if self.has_playback_panel and not show_panel:
+            self.playback_panel.hide()
+        render_window = RenderWindow()
+        render_window.SetOffScreenRendering(1)
+        render_window.AddRenderer(self._scene)
+        render_window.SetSize(*size)
+        if order_transparent:
+            antialiasing(self._scene, render_window, multi_samples, max_peels,
+                         0)
+        while t < duration:
+            self.seek(t)
+            render_window.Render()
+            window_to_image_filter = WindowToImageFilter()
+            window_to_image_filter.SetInput(render_window)
+            window_to_image_filter.Update()
+            vtk_image = window_to_image_filter.GetOutput()
+            h, w, _ = vtk_image.GetDimensions()
+            vtk_array = vtk_image.GetPointData().GetScalars()
+            components = vtk_array.GetNumberOfComponents()
+            snap = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h,
+                                                                 components)
+            frames.append(snap)
+            t += step
+
+        if fname is None:
+            return frames
+
+        images = [Image.fromarray(frame).transpose(1) for frame in frames]
+        if 'mp4' not in fname:
+            if fname[-4:] != '.gif':
+                fname += '.gif'
+            images[0].save(fname, append_images=images[1:], loop=0,
+                           duration=1000/fps, save_all=True)
+        else:
+            try:
+                import cv2
+            except ImportError:
+                raise ImportError('OpenCV has to be installed in order to '
+                                  'save as mp4')
+            fourcc = cv2.VideoWriter.fourcc(*'MJPG')
+            out = cv2.VideoWriter(fname, fourcc, fps, size)
+
+            for img in images:
+                cv_img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                out.write(cv_img)
+
+            out.release()
+        self.playback_panel.show()
+        return frames
 
     def add_to_scene(self, ren):
         """Add Timeline and all actors and sub Timelines to the scene"""
