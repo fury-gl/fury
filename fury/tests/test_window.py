@@ -625,7 +625,6 @@ def test_add_timeline_to_show_manager():
     assert_true(cube in actors)
 
 
-
 # test_opengl_state_add_remove_and_check()
 # test_opengl_state_simple()
 # test_record()
