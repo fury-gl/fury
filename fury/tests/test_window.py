@@ -5,8 +5,10 @@ import numpy.testing as npt
 import pytest
 import itertools
 from fury import actor, window, io
+from fury.animation.timeline import Timeline
 from fury.lib import ImageData, Texture, numpy_support
-from fury.testing import captured_output, assert_less_equal, assert_greater
+from fury.testing import captured_output, assert_less_equal, assert_greater, \
+    assert_true
 from fury.decorators import skip_osx, skip_win, skip_linux
 from fury import shaders
 from fury.utils import remove_observer_from_actor
@@ -604,6 +606,25 @@ def test_frame_rate():
     assert_greater(actual_fps, 0)
     assert_greater(ideal_fps, 0)
     assert_greater(ideal_fps, actual_fps)
+
+
+def test_add_timeline_to_show_manager():
+    showm = window.ShowManager()
+    showm.initialize()
+
+    cube = actor.cube(np.array([[2, 2, 3]]))
+
+    timeline = Timeline(playback_panel=True)
+    timeline.add(cube)
+    showm.add_timeline(timeline)
+
+    npt.assert_equal(len(showm._timelines), 1)
+    assert_true(showm._timeline_cbk is not None)
+
+    actors = showm.scene.GetActors()
+    assert_true(cube in actors)
+
+
 
 # test_opengl_state_add_remove_and_check()
 # test_opengl_state_simple()
