@@ -9,6 +9,7 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
+from fury.animation.timeline import Timeline
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
@@ -365,7 +366,6 @@ class ShowManager(object):
         self.timers = []
         self._fps = 0
         self._last_render_time = 0
-
         if self.reset_camera:
             self.scene.ResetCamera()
 
@@ -399,10 +399,36 @@ class ShowManager(object):
         self.style.SetInteractor(self.iren)
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
+        self._timelines = []
+        self._timeline_cbk = None
 
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
+
+    def add_timeline(self, timeline: Timeline):
+        """Add Timeline to the ShowManager.
+        Adding the Timeline to the ShowManager ensures that it gets added to
+        the scene, gets updated and rendered without any extra code.
+
+        Parameters
+        ----------
+        timeline : Timeline
+            The Timeline to be added to the ShowManager.
+        """
+
+        self.scene.add(timeline)
+        if timeline in self._timelines:
+            return
+        self._timelines.append(timeline)
+
+        if self._timeline_cbk is not None:
+            return
+
+        def animation_cbk(_obj, _event):
+            [tl.update_animation() for tl in self._timelines]
+            self.render()
+        self._timeline_cbk = self.add_timer_callback(True, 10, animation_cbk)
 
     def render(self):
         """Render only once."""
