@@ -1105,7 +1105,6 @@ class Timeline(Container):
             self.add_timeline(item)
         elif isinstance(item, PlaybackPanel):
             actors = item.actors
-            print(actors)
             self.add_actor(actors, static=True)
         else:
             raise ValueError(f"Object of type {type(item)} can't be added to "
@@ -1514,7 +1513,6 @@ class Timeline(Container):
         """Remove Timeline and all actors and sub Timelines from the scene"""
         super(Timeline, self).add_to_scene(ren)
         [ren.rm(act) for act in self.actors]
-        print(self._static_actors)
         [ren.rm(static_act) for static_act in self._static_actors]
         for tl in self.timelines:
             tl.remove_from_scene(ren)
