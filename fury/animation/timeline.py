@@ -83,7 +83,7 @@ class Timeline(Container):
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
             self.playback_panel.on_speed_changed = set_speed
-            self.add_actor(self.playback_panel, static=True)
+            self.add(self.playback_panel)
 
         if actors is not None:
             self.add_actor(actors)
@@ -1095,7 +1095,7 @@ class Timeline(Container):
         item: Timeline, vtkActor, list(Timeline), or list(vtkActor)
             Actor/s to be animated by the timeline.
         """
-        if isinstance(item, list):
+        if isinstance(item, (list, tuple)):
             for a in item:
                 self.add(a)
             return
@@ -1103,6 +1103,10 @@ class Timeline(Container):
             self.add_actor(item)
         elif isinstance(item, Timeline):
             self.add_timeline(item)
+        elif isinstance(item, PlaybackPanel):
+            actors = item.actors
+            print(actors)
+            self.add_actor(actors, static=True)
         else:
             raise ValueError(f"Object of type {type(item)} can't be added to "
                              f"the timeline.")
@@ -1135,7 +1139,7 @@ class Timeline(Container):
             the timeline or just a static actor that gets added to the scene
             along with the Timeline.
         """
-        if isinstance(actor, list):
+        if isinstance(actor, (list, tuple)):
             for a in actor:
                 self.add_actor(a, static=static)
         elif static:
@@ -1505,3 +1509,15 @@ class Timeline(Container):
         self._scene = ren
         self._added_to_scene = True
         self.update_animation(force=True)
+
+    def remove_from_scene(self, ren):
+        """Remove Timeline and all actors and sub Timelines from the scene"""
+        super(Timeline, self).add_to_scene(ren)
+        [ren.rm(act) for act in self.actors]
+        print(self._static_actors)
+        [ren.rm(static_act) for static_act in self._static_actors]
+        for tl in self.timelines:
+            tl.remove_from_scene(ren)
+        if self._motion_path_actor:
+            ren.rm(self._motion_path_actor)
+        self._added_to_scene = False
