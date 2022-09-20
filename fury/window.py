@@ -406,6 +406,10 @@ class ShowManager(object):
         """Initialize interaction."""
         self.iren.Initialize()
 
+    @property
+    def timelines(self):
+        return self._timelines
+
     def add_timeline(self, timeline: Timeline):
         """Add a Timeline to the ShowManager.
         Adding a Timeline to the ShowManager ensures that it gets added to
@@ -428,7 +432,23 @@ class ShowManager(object):
         def animation_cbk(_obj, _event):
             [tl.update_animation() for tl in self._timelines]
             self.render()
-        self._timeline_callback = self.add_timer_callback(True, 10, animation_cbk)
+        self._timeline_callback = self.add_timer_callback(True, 10,
+                                                          animation_cbk)
+
+    def remove_timeline(self, timeline: Timeline):
+        """Remove a Timeline from the ShowManager.
+        Timeline will be removed from the Scene as well as from the ShowManager
+
+        Parameters
+        ----------
+        timeline : Timeline
+            The Timeline to be removed.
+        """
+        if timeline in self.timelines:
+            timeline.remove_from_scene(self.scene)
+            self._timelines.remove(timeline)
+            if not len(self.timelines):
+                self.iren.DestroyTimer(self._timeline_callback)
 
     def render(self):
         """Render only once."""
