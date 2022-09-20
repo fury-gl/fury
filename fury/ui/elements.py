@@ -3604,7 +3604,8 @@ class PlaybackPanel(UI):
         self.time_text = TextBlock2D(position=(820, 10))
         self.speed_text = TextBlock2D(text='1', position=(0, 0), font_size=21,
                                       color=(0.2, 0.2, 0.2), bold=True,
-                                      justification='center', vertical_justification='middle')
+                                      justification='center',
+                                      vertical_justification='middle')
 
         self.panel = Panel2D(size=(190, 30), color=(1, 1, 1), align="right",
                              has_border=True, border_color=(0, 0.3, 0),
