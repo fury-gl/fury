@@ -623,6 +623,16 @@ def test_add_timeline_to_show_manager():
 
     actors = showm.scene.GetActors()
     assert_true(cube in actors)
+    actors_2d = showm.scene.GetActors2D()
+
+    [assert_true(act in actors_2d) for act in timeline.static_actors]
+
+    showm.remove_timeline(timeline)
+    actors = showm.scene.GetActors()
+    [assert_true(act not in actors) for act in timeline.static_actors]
+    assert_true(cube not in actors)
+    assert_true(showm._timeline_callback is None)
+    assert_true(showm.timelines == [])
 
 
 # test_opengl_state_add_remove_and_check()

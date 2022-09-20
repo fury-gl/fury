@@ -449,6 +449,7 @@ class ShowManager(object):
             self._timelines.remove(timeline)
             if not len(self.timelines):
                 self.iren.DestroyTimer(self._timeline_callback)
+                self._timeline_callback = None
 
     def render(self):
         """Render only once."""
