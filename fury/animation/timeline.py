@@ -1498,24 +1498,28 @@ class Timeline(Container):
         """
         return self.playback_panel is not None
 
-    def add_to_scene(self, ren):
+    def add_to_scene(self, scene):
         """Add Timeline and all actors and sub Timelines to the scene"""
-        super(Timeline, self).add_to_scene(ren)
-        [ren.add(static_act) for static_act in self._static_actors]
-        [ren.add(timeline) for timeline in self.timelines]
+        super(Timeline, self).add_to_scene(scene)
+        [scene.add(static_act) for static_act in self._static_actors]
+        [scene.add(timeline) for timeline in self.timelines]
+        if self.has_playback_panel:
+            scene.add(self.playback_panel)
         if self._motion_path_actor:
-            ren.add(self._motion_path_actor)
-        self._scene = ren
+            scene.add(self._motion_path_actor)
+        self._scene = scene
         self._added_to_scene = True
         self.update_animation(force=True)
 
-    def remove_from_scene(self, ren):
+    def remove_from_scene(self, scene):
         """Remove Timeline and all actors and sub Timelines from the scene"""
-        super(Timeline, self).add_to_scene(ren)
-        [ren.rm(act) for act in self.actors]
-        [ren.rm(static_act) for static_act in self._static_actors]
+        super(Timeline, self).add_to_scene(scene)
+        [scene.rm(act) for act in self.actors]
+        [scene.rm(static_act) for static_act in self._static_actors]
+        if self.has_playback_panel:
+            self.playback_panel.add_to_scene(scene)
         for tl in self.timelines:
-            tl.remove_from_scene(ren)
+            tl.remove_from_scene(scene)
         if self._motion_path_actor:
-            ren.rm(self._motion_path_actor)
+            scene.rm(self._motion_path_actor)
         self._added_to_scene = False
