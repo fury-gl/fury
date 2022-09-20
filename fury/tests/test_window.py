@@ -619,7 +619,7 @@ def test_add_timeline_to_show_manager():
     showm.add_timeline(timeline)
 
     npt.assert_equal(len(showm._timelines), 1)
-    assert_true(showm._timeline_cbk is not None)
+    assert_true(showm._timeline_callback is not None)
 
     actors = showm.scene.GetActors()
     assert_true(cube in actors)
