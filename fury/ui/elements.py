@@ -3213,14 +3213,14 @@ class PolyLine(UI):
     """Create a Polyline.
     """
 
-    def __init__(self, points_data=[], line_width=3, color=(1, 1, 1)):
+    def __init__(self, line_width=3, color=(1, 1, 1)):
         """Init this UI element.
         Parameters
         ----------
         position : (float, float), optional
             (x, y) in pixels.
         """
-        self.points_data = points_data
+        # self.points_data = points_data
         self.points = []
         self.line_width = line_width
         self.lines = []
@@ -3233,12 +3233,13 @@ class PolyLine(UI):
         """Setup this UI component.
         Create a Polyline.
         """
-        if len(self.points_data) < 2:
-            return
+        pass
+        # if len(self.points_data) < 2:
+        #     return
 
-        for ptn in self.points_data:
-            self.add_point(ptn)
-        self.add_point(self.points_data[0])
+        # for ptn in self.points_data:
+        #     self.add_point(ptn)
+        # self.add_point(self.points_data[0])
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3269,7 +3270,19 @@ class PolyLine(UI):
         offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
         self.current_line.resize((hyp - offset_from_mouse, self.line_width))
-        self.rotate(angle=np.arctan2(size[1], size[0]))
+        self.rotate_line(angle=np.arctan2(size[1], size[0]))
+
+    def rotate_line(self, angle):
+        """Rotate a single line using specific angle.
+        Parameters
+        ----------
+        angle: float
+            Value by which the vertices are rotated in radian.
+        """
+        points_arr = vertices_from_actor(self.current_line.actor)
+        new_points_arr = rotate_2d(points_arr, angle)
+        set_polydata_vertices(self.current_line._polygonPolyData, new_points_arr)
+        update_actor(self.current_line.actor)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3278,13 +3291,41 @@ class PolyLine(UI):
         angle: float
             Value by which the vertices are rotated in radian.
         """
-        points_arr = vertices_from_actor(self.current_line.actor)
-        rotation_matrix = np.array(
-            [[np.cos(angle), np.sin(angle), 0],
-             [-np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
-        new_points_arr = np.matmul(points_arr, rotation_matrix)
-        set_polydata_vertices(self.current_line._polygonPolyData, new_points_arr)
-        update_actor(self.current_line.actor)
+        points_arr = []
+        for ele in self.points:
+            points_arr.append([*ele, 0])
+
+        bb_min, bb_max, bb_size = cal_bounding_box_2d(self.calculate_vertices())
+        center = bb_min + bb_size//2
+
+        for val in points_arr:
+            val[0] -= center[0]
+            val[1] -= center[1]
+
+        new_points_arr = rotate_2d(np.asarray(points_arr), angle)
+
+        for val in new_points_arr:
+            val[0] += center[0]
+            val[1] += center[1]
+
+        self.update_line(new_points_arr.astype("int"))
+
+    def update_line(self, points):
+        self.remove()
+
+        if points.shape[1] == 3:
+            points = points[:, :-1]
+
+        for val in points:
+            self.add_point(val, add_to_scene=True)
+        self.resize(np.asarray(points[0]) - self.current_line.position)
+
+    def remove(self):
+        self.points = []
+        self._scene.rm(*[l.actor for l in self.lines])
+        self.lines = []
+        self.previous_point = None
+        self.current_line = None
 
     # def delete(self):
     #     self.current_line = None
@@ -3306,14 +3347,14 @@ class PolyLine(UI):
         new_line.on_left_mouse_button_pressed = self.left_button_pressed
         new_line.on_left_mouse_button_dragged = self.left_button_dragged
 
-        control_point = Disk2D(5, center=point)
+        # control_point = Disk2D(5, center=point)
 
         self.current_line = new_line
         self.lines.append(new_line)
         self.points.append(point)
         self.previous_point = point
         if add_to_scene:
-            self._scene.add(new_line, control_point)
+            self._scene.add(new_line)
 
     @property
     def color(self):
@@ -3538,6 +3579,11 @@ class DrawShape(UI):
         """
         if self.shape_type == "circle":
             return
+
+        if self.shape_type == "polyline":
+            self.shape.rotate(angle)
+            return
+
         points_arr = vertices_from_actor(self.shape.actor)
         new_points_arr = rotate_2d(points_arr, angle)
         set_polydata_vertices(self.shape._polygonPolyData, new_points_arr)
