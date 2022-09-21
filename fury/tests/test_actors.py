@@ -5,15 +5,15 @@ from tempfile import TemporaryDirectory as InTemporaryDirectory
 import pytest
 import numpy as np
 import numpy.testing as npt
-from scipy.ndimage.measurements import center_of_mass
-from scipy.signal import convolve
+from scipy.ndimage import center_of_mass
 
 from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate
-from fury.testing import assert_greater, assert_greater_equal
+from fury.utils import shallow_copy, rotate, primitives_count_from_actor
+from fury.testing import assert_greater, assert_greater_equal, \
+    assert_less_equal, assert_not_equal, assert_equal
 from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
@@ -830,17 +830,56 @@ def test_points(interactive=False):
 
 def test_labels(interactive=False):
     npt.assert_warns(DeprecationWarning, actor.label, "FURY Rocks")
-    text_actor = actor.vector_text("FURY Rocks")
+    text_actor = actor.vector_text("FURY Rocks", direction=None)
 
     scene = window.Scene()
     scene.add(text_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    assert text_actor.GetCamera() is scene.GetActiveCamera()
+
     if interactive:
         window.show(scene, reset_camera=False)
 
+    text_actor = actor.vector_text("FURY Rocks")
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+    center = np.array(text_actor.GetCenter())
+    [assert_greater_equal(v, 0) for v in center]
+
+    text_actor_centered = actor.vector_text("FURY Rocks", align_center=True)
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
+
+    text_actor_rot_1 = actor.vector_text("FURY Rocks", direction=(1, 1, 1))
+    text_actor_rot_2 = actor.vector_text("FURY Rocks", direction=(1, 1, 0))
+    center_1 = text_actor_rot_1.GetCenter()
+    center_2 = text_actor_rot_2.GetCenter()
+    assert_not_equal(np.linalg.norm(center_1), np.linalg.norm(center_2))
+
+    # test centered
+    text_centered = actor.vector_text("FURY Rocks", align_center=True)
+
+    center_3 = text_centered.GetCenter()
+    npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
+
+    text_extruded = actor.vector_text("FURY Rocks", scale=(0.2, 0.2, 0.2),
+                                      extrusion=1.123)
+    z_max = text_extruded.GetBounds()[-1]
+    npt.assert_almost_equal(z_max, 1.123)
+
+    text_extruded_centered = actor.vector_text("FURY Rocks",
+                                               scale=(0.2, 0.2, 0.2),
+                                               direction=None,
+                                               align_center=True, extrusion=23)
+
+    z_min, z_max = text_extruded_centered.GetBounds()[4:]
+    npt.assert_almost_equal(z_max - z_min, 23)
+    npt.assert_almost_equal(z_max, - z_min)
+    # if following the camera, it should rotate around the center to prevent
+    # weirdness of the geometry.
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
 
 
 def test_spheres(interactive=False):
@@ -1492,3 +1531,50 @@ def test_marker_actor(interactive=False):
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 12)
 
+
+def test_actors_primitives_count():
+    centers = np.array([[1, 1, 1], [2, 2, 2]])
+    directions = np.array([[1, 0, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [1, 0, 0]])
+    lines = np.array([[[0, 0, 0], [1, 1, 1]], [[1, 1, 1], [2, 2, 2]]])
+
+    args_1 = {'centers': centers}
+    args_2 = {**args_1, 'colors': colors}
+    args_3 = {**args_2, 'directions': directions}
+
+    cen_c = len(centers)
+    lin_c = len(lines)
+
+    actors_test_cases = [
+        [actor.box, args_1, cen_c],
+        [actor.rectangle, args_1, cen_c],
+        [actor.square, args_1, cen_c],
+        [actor.cube, args_1, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': True}, cen_c],
+        [actor.sphere, {**args_2, 'use_primitive': False}, cen_c],
+        [actor.sdf, args_1, cen_c],
+        [actor.billboard, args_1, cen_c],
+        [actor.superquadric, args_1, cen_c],
+        [actor.markers, args_1, cen_c],
+        [actor.octagonalprism, args_1, cen_c],
+        [actor.frustum, args_1, cen_c],
+        [actor.pentagonalprism, args_1, cen_c],
+        [actor.triangularprism, args_1, cen_c],
+        [actor.rhombicuboctahedron, args_1, cen_c],
+        [actor.cylinder, args_3, cen_c],
+        [actor.disk, args_3, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': False}, cen_c],
+        [actor.cone, {**args_3, 'use_primitive': True}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': False}, cen_c],
+        [actor.arrow, {**args_3, 'repeat_primitive': True}, cen_c],
+        [actor.dot, {'points': centers}, cen_c],
+        [actor.point, {'points': centers, 'colors': colors}, cen_c],
+        [actor.line, {'lines': lines}, lin_c],
+        [actor.streamtube, {'lines': lines}, lin_c],
+    ]
+    for test_case in actors_test_cases:
+        act_func = test_case[0]
+        args = test_case[1]
+        primitives_count = test_case[2]
+        act = act_func(**args)
+        npt.assert_equal(primitives_count_from_actor(act), primitives_count)

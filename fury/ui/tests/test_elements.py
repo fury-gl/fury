@@ -14,11 +14,16 @@ from fury import window, actor, ui
 from fury.data import DATA_DIR
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
-from fury.testing import assert_arrays_equal, assert_greater, EventCounter
+from fury.testing import assert_arrays_equal, assert_greater, EventCounter, \
+    assert_true, assert_equal, assert_not_equal, assert_greater_equal, \
+    assert_less_equal
 
 
 # @pytest.mark.skipif(True, reason="Need investigation. Incorrect "
 #                                  "number of event for each vtk version")
+from fury.ui import PlaybackPanel
+
+
 def test_ui_textbox(recording=False):
     filename = "test_ui_textbox"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -190,6 +195,60 @@ def test_ui_line_slider_2d_vertical_right(recording=False):
         event_counter.check_counts(expected)
 
 
+def test_ui_2d_line_slider_hooks(recording=False):
+    global changed, value_changed, slider_moved
+
+    filename = "test_ui_line_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_slider_2d = ui.LineSlider2D(center=(300, 300))
+
+    event_counter = EventCounter()
+    event_counter.monitor(line_slider_2d)
+
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Line Slider hooks")
+
+    # counters for the hooks to increment
+    changed = value_changed = slider_moved = 0
+
+    def on_line_slider_change(slider):
+        global changed
+        changed += 1
+
+    def on_line_slider_moved(slider):
+        global slider_moved
+        slider_moved += 1
+
+    def on_line_slider_value_changed(slider):
+        global value_changed
+        value_changed += 1
+
+    line_slider_2d.on_change = on_line_slider_change
+    line_slider_2d.on_moving_slider = on_line_slider_moved
+    line_slider_2d.on_value_changed = on_line_slider_value_changed
+
+    for i in range(100, -1, -1):
+        line_slider_2d.value = i
+
+    show_manager.scene.add(line_slider_2d)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_greater(changed, 0)
+    assert_greater(value_changed, 0)
+    assert_greater(slider_moved, 0)
+    assert_equal(changed, value_changed + slider_moved)
+
+
 def test_ui_line_double_slider_2d(interactive=False):
     line_double_slider_2d_horizontal_test = ui.LineDoubleSlider2D(
         center=(300, 300), shape="disk", outer_radius=15, min_value=-10,
@@ -257,6 +316,62 @@ def test_ui_line_double_slider_2d(interactive=False):
         show_manager.start()
 
 
+def test_ui_2d_line_double_slider_hooks(recording=False):
+    global changed, value_changed, slider_moved
+
+    filename = "test_ui_line_double_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    line_double_slider_2d = ui.LineDoubleSlider2D(center=(300, 300))
+
+    event_counter = EventCounter()
+    event_counter.monitor(line_double_slider_2d)
+
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Line Double Slider hooks")
+
+    # counters for the line double slider's changes
+    changed = value_changed = slider_moved = 0
+
+    def on_line_double_slider_change(slider):
+        global changed
+        changed += 1
+
+    def on_line_double_slider_moved(slider):
+        global slider_moved
+        slider_moved += 1
+
+    def on_line_double_slider_value_changed(slider):
+        global value_changed
+        value_changed += 1
+
+    line_double_slider_2d.on_change = on_line_double_slider_change
+    line_double_slider_2d.on_moving_slider = on_line_double_slider_moved
+    line_double_slider_2d.on_value_changed = \
+        on_line_double_slider_value_changed
+
+    for i in range(50, -1, -1):
+        line_double_slider_2d.left_disk_value = i
+        line_double_slider_2d.right_disk_value = 100 - i
+
+    show_manager.scene.add(line_double_slider_2d)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_greater(changed, 0)
+    assert_greater(value_changed, 0)
+    assert_greater(slider_moved, 0)
+    assert_equal(changed, value_changed + slider_moved)
+
+
 def test_ui_ring_slider_2d(recording=False):
     filename = "test_ui_ring_slider_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -294,6 +409,60 @@ def test_ui_ring_slider_2d(recording=False):
         event_counter.check_counts(expected)
 
 
+def test_ui_2d_ring_slider_hooks(recording=False):
+    global changed, value_changed, slider_moved
+
+    filename = "test_ui_ring_slider_2d_hooks"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    ring_slider_2d = ui.RingSlider2D(center=(300, 300))
+
+    event_counter = EventCounter()
+    event_counter.monitor(ring_slider_2d)
+
+    show_manager = window.ShowManager(size=(600, 600),
+                                      title="FURY Ring Slider hooks")
+
+    # counters for the ring slider changes
+    changed = value_changed = slider_moved = 0
+
+    def on_ring_slider_change(slider):
+        global changed
+        changed += 1
+
+    def on_ring_slider_moved(slider):
+        global slider_moved
+        slider_moved += 1
+
+    def on_ring_slider_value_changed(slider):
+        global value_changed
+        value_changed += 1
+
+    ring_slider_2d.on_change = on_ring_slider_change
+    ring_slider_2d.on_moving_slider = on_ring_slider_moved
+    ring_slider_2d.on_value_changed = on_ring_slider_value_changed
+
+    for i in range(360, -1, -1):
+        ring_slider_2d.value = i
+
+    show_manager.scene.add(ring_slider_2d)
+
+    if recording:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_greater(changed, 0)
+    assert_greater(value_changed, 0)
+    assert_greater(slider_moved, 0)
+    assert_equal(changed, value_changed + slider_moved)
+
+
 def test_ui_range_slider(interactive=False):
     range_slider_test_horizontal = ui.RangeSlider(shape="square")
     range_slider_test_vertical = ui.RangeSlider(shape="square",
@@ -305,6 +474,55 @@ def test_ui_range_slider(interactive=False):
         show_manager.scene.add(range_slider_test_horizontal)
         show_manager.scene.add(range_slider_test_vertical)
         show_manager.start()
+
+
+def test_ui_slider_value_range():
+    with npt.assert_no_warnings():
+        # LineSlider2D
+        line_slider = ui.LineSlider2D(min_value=0, max_value=0)
+        assert_equal(line_slider.value, 0)
+        assert_equal(line_slider.min_value, 0)
+        assert_equal(line_slider.max_value, 0)
+        line_slider.value = 100
+        assert_equal(line_slider.value, 0)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        line_slider = ui.LineSlider2D(min_value=0, max_value=100)
+        line_slider.value = 105
+        assert_equal(line_slider.value, 100)
+        line_slider.value = -100
+        assert_equal(line_slider.value, 0)
+
+        # LineDoubleSlider2D
+        line_double_slider = ui.LineDoubleSlider2D(min_value=0, max_value=0)
+        assert_equal(line_double_slider.left_disk_value, 0)
+        assert_equal(line_double_slider.right_disk_value, 0)
+        line_double_slider.left_disk_value = 100
+        assert_equal(line_double_slider.left_disk_value, 0)
+        line_double_slider.right_disk_value = -100
+        assert_equal(line_double_slider.right_disk_value, 0)
+
+        line_double_slider = ui.LineDoubleSlider2D(min_value=50, max_value=100)
+        line_double_slider.right_disk_value = 150
+        assert_equal(line_double_slider.right_disk_value, 100)
+        line_double_slider.left_disk_value = -150
+        assert_equal(line_double_slider.left_disk_value, 50)
+
+        # RingSlider2D
+        ring_slider = ui.RingSlider2D(initial_value=0, min_value=0, max_value=0)
+        assert_equal(ring_slider.value, 0)
+        assert_equal(ring_slider.previous_value, 0)
+        ring_slider.value = 180
+        assert_equal(ring_slider.value, 0)
+        ring_slider.value = -180
+        assert_equal(ring_slider.value, 0)
+
+        # RangeSlider
+        range_slider_2d = ui.RangeSlider(min_value=0, max_value=0)
+        assert_equal(range_slider_2d.value_slider.value, 0)
+        range_slider_2d.value_slider.value = 100
+        assert_equal(range_slider_2d.value_slider.value, 0)
 
 
 def test_ui_option(interactive=False):
@@ -657,6 +875,24 @@ Text Overflow of List Box 2D"]]
     assert_arrays_equal(selected_values, expected)
 
 
+def test_ui_listbox_2d_visibility():
+    l1 = ui.ListBox2D(values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+                      position=(12, 10), size=(100, 100))
+    l2 = ui.ListBox2D(values=['Violet', 'Indigo', 'Blue', 'Yellow'],
+                      position=(10, 10), size=(100, 300))
+
+    def assert_listbox(list_box, expected_scroll_bar_height):
+        view_end = list_box.view_offset + list_box.nb_slots
+        assert list_box.scroll_bar.height == expected_scroll_bar_height
+        for slot in list_box.slots[view_end:]:
+            assert slot.size[1] == list_box.slot_height
+
+    assert_listbox(l1, 40.0)
+
+    # Assert that for list 2 the slots and scrollbars aren't visible.
+    assert_listbox(l2, 0)
+
+
 def test_ui_file_menu_2d(interactive=False):
     filename = "test_ui_file_menu_2d"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
@@ -791,39 +1027,64 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on macOS."
+                                     "It works on the local machines."
+                                     "The colors provided for shapes are "
+                                     "normalized values whereas when we test"
+                                     "it, the values returned are between "
+                                     "0-255. So while conversion from one"
+                                     "representation to another, there may be"
+                                     "something which causes these issues.")
 def test_ui_draw_shape():
-    line = ui.DrawShape("line", (150, 150))
-    quad = ui.DrawShape("quad", (300, 300))
-    circle = ui.DrawShape("circle", (150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
         ui.DrawShape("poly")
 
     line.resize((100, 5))
-    quad.resize((300, 300))
+    line.shape.color = (.4, .2, .8)
+    quad.resize((150, 150))
+    quad.shape.color = (.5, .5, .5)
     circle.resize((25, 0))
+    circle.shape.color = (.5, .3, .8)
 
-    current_size = (800, 800)
+    line_color = tuple((np.round(255 * np.array(line.shape.color))).astype('uint8'))
+    quad_color = tuple((np.round(255 * np.array(quad.shape.color))).astype('uint8'))
+    circle_color = tuple((np.round(255 * np.array(circle.shape.color))).astype('uint8'))
+
+    current_size = (600, 600)
     show_manager = window.ShowManager(
         size=current_size, title="DrawShape UI Example")
-    show_manager.scene.add(line, quad, circle)
+    show_manager.scene.add(line, circle, quad)
+
+    arr = window.snapshot(show_manager.scene, size=(800, 800))
+    report = window.analyze_snapshot(arr, colors=[line_color, circle_color, quad_color])
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_ui_draw_panel(interactive=False):
-    filename = "test_ui_draw_panel"
+def test_ui_draw_panel_basic(interactive=False):
+    filename = "test_ui_draw_panel_basic"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title="DrawPanel UI Example")
+        size=current_size, title="DrawPanel Basic UI Example")
     show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Check all mode selection button
+    #  2. Creation and clamping of shapes
+    #  3. Transformation and clamping of shapes
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)
@@ -834,3 +1095,132 @@ def test_ui_draw_panel(interactive=False):
         show_manager.play_events_from_file(recording_filename)
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_rotation(interactive=False):
+    filename = "test_ui_draw_panel_rotation"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Rotation UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Rotation and clamping of shape
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_grouping(interactive=False):
+    filename = "test_ui_draw_panel_grouping"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Grouping UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Grouping/Ungrouping Shapes
+    #  2. Translation/Rotation of Grouped Shapes
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_playback_panel(interactive=False):
+    global playing, paused, stopped, loop, ts
+
+    playing = stopped = paused = loop = False
+    ts = 0
+
+    current_size = (900, 620)
+    show_manager = window.ShowManager(
+        size=current_size, title="PlaybackPanel UI Example")
+
+    filename = "test_playback_panel"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    def play():
+        global playing
+        playing = True
+
+    def pause():
+        global paused
+        paused = True
+
+    def stop():
+        global stopped
+        stopped = True
+
+    def loop_toggle(value):
+        global loop
+        loop = True
+
+    def change_t(value):
+        global ts
+        ts = value
+        assert_greater_equal(playback.current_time, 0)
+        assert_less_equal(playback.current_time, playback.final_time)
+        assert_equal(playback.current_time, ts)
+
+    playback = PlaybackPanel()
+    playback.on_play = play
+    playback.on_pause = pause
+    playback.on_stop = stop
+    playback.on_loop_toggle = loop_toggle
+    playback.on_progress_bar_changed = change_t
+
+    show_manager.scene.add(playback)
+    event_counter = EventCounter()
+    event_counter.monitor(playback)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    assert_true(playing)
+    assert_true(paused)
+    assert_true(stopped)
+    assert_equal(playback.current_time, ts)
+    assert_greater(playback.current_time, 0)
+    assert_not_equal(playback.current_time_str, '00:00.00')
+    playback.current_time = 5
+    assert_equal(playback.current_time, 5)
+    assert_equal(playback.current_time_str, '00:05.00')
