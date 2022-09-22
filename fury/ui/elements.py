@@ -3704,25 +3704,30 @@ class PlaybackPanel(UI):
         self.current_time = 0
 
     def play(self):
+        """Play the playback"""
         self._playing = True
         self._play_pause_btn.set_icon_by_name('pause')
         self.on_play()
 
     def stop(self):
+        """Stop the playback"""
         self._playing = False
         self._play_pause_btn.set_icon_by_name('play')
         self.on_stop()
 
     def pause(self):
+        """Pause the playback"""
         self._playing = False
         self._play_pause_btn.set_icon_by_name('play')
         self.on_pause()
 
     def loop(self):
+        """Set repeating mode to loop."""
         self._loop = True
         self._loop_btn.set_icon_by_name('loop')
 
     def play_once(self):
+        """Set repeating mode to repeat once."""
         self._loop = False
         self._loop_btn.set_icon_by_name('once')
 
