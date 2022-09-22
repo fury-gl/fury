@@ -6,7 +6,6 @@ __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "DrawShape", "DrawPanel", "PlaybackPanel"]
 
 import os
-import time
 from collections import OrderedDict
 from numbers import Number
 from string import printable
@@ -14,7 +13,7 @@ from string import printable
 import numpy as np
 
 from fury.data import read_viz_icons
-from fury.lib import PolyDataMapper2D, Command
+from fury.lib import Command
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import (TWO_PI, clip_overflow,
