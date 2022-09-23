@@ -412,6 +412,7 @@ class ShowManager(object):
 
     def add_timeline(self, timeline: Timeline):
         """Add a Timeline to the ShowManager.
+
         Adding a Timeline to the ShowManager ensures that it gets added to
         the scene, gets updated and rendered without any extra code.
 
@@ -421,9 +422,9 @@ class ShowManager(object):
             The Timeline to be added to the ShowManager.
         """
 
-        self.scene.add(timeline)
         if timeline in self._timelines:
             return
+        self.scene.add(timeline)
         self._timelines.append(timeline)
 
         if self._timeline_callback is not None:
@@ -437,6 +438,7 @@ class ShowManager(object):
 
     def remove_timeline(self, timeline: Timeline):
         """Remove a Timeline from the ShowManager.
+
         Timeline will be removed from the Scene as well as from the ShowManager
 
         Parameters
