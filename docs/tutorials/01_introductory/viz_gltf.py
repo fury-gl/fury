@@ -18,7 +18,7 @@ scene.SetBackground(0.1, 0.1, 0.4)
 ##############################################################################
 # Retrieving the gltf model.
 fetch_gltf('Duck', 'glTF')
-filename = read_viz_gltf('Duck')
+filename = read_viz_gltf('BrainStem')
 
 ##############################################################################
 # Initialize the glTF object and get actors using `actors` method.

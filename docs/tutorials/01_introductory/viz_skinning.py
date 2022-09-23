@@ -1,22 +1,25 @@
 import copy
 import numpy as np
-from fury import window, utils, transform
+from fury import window, transform
+from fury.utils import vertices_from_actor, update_actor, compute_bounds
 from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 
 scene = window.Scene()
 
 fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('RiggedFigure')
+filename = read_viz_gltf('BrainStem')
 
-gltf_obj = glTF(filename, apply_normals=False)
+gltf_obj = glTF(filename, apply_normals=True)
 actors = gltf_obj.actors()
 
 # Setting custom opacity to see the bones
 # for act in actors:
 #     act.GetProperty().SetOpacity(0.7)
 
-vertices = utils.vertices_from_actor(actors[0])
+vertices = [vertices_from_actor(actor) for actor in actors]
+
+# vertices = vertices_from_actor(actors[0])
 clone = np.copy(vertices)
 
 timeline = gltf_obj.get_skin_timeline()
@@ -30,7 +33,7 @@ showm.initialize()
 bactors = gltf_obj.get_joint_actors(length=0.2, with_transforms=False)
 bverts = {}
 for bone, joint_actor in bactors.items():
-    bverts[bone] = utils.vertices_from_actor(joint_actor)
+    bverts[bone] = vertices_from_actor(joint_actor)
 
 bvert_copy = copy.deepcopy(bverts)
 
@@ -56,9 +59,11 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
     bone_transform = np.dot(actor_transform, new_deform)
     bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
                                                        bone_transform)
-    utils.update_actor(bactors[bone_id])
+    update_actor(bactors[bone_id])
     if node.children:
-        for c_timeline, c_bone in zip(timeline.timelines, node.children):
+        c_timelines = timeline.timelines
+        c_bones = node.children
+        for c_timeline, c_bone in zip(c_timelines, c_bones):
             transverse_timelines(c_timeline, c_bone, timestamp,
                                  joint_matrices, new_deform)
 
@@ -67,13 +72,21 @@ def timer_callback(_obj, _event):
     timeline.update_animation()
     timestamp = timeline.current_timestamp
     joint_matrices = {}
+    root_bone = gltf_obj.gltf.skins[0].skeleton
+    root_bone = root_bone if root_bone else gltf_obj.bones[0]
 
-    for child in timeline.timelines:
+    # if not root_bone == gltf_obj.bones[0]:
+    #     timeline = timeline.timelines[0]
+    #     parent_deform = gltf_obj.nodes[root_bone]
+    for child in timeline.timelines[0].timelines:
         transverse_timelines(child, bones[0], timestamp, joint_matrices)
 
-    vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices)
-    utils.update_actor(actors[0])
-    utils.compute_bounds(actors[0])
+    # print(joint_matrices.keys())
+    for i, vertex in enumerate(vertices):
+        # print(i)
+        vertex[:] = gltf_obj.apply_skin_matrix(clone[i], joint_matrices, i)
+        update_actor(actors[i])
+        compute_bounds(actors[i])
     showm.render()
 
 

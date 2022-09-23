@@ -81,6 +81,7 @@ class glTF:
         self.ibms = {}
         self.vertices = []
         self.child_timelines = []
+        self.timeline_order = []
 
         self.inspect_scene(0)
 
@@ -106,6 +107,8 @@ class glTF:
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
                 actor.SetTexture(base_col_tex)
+                base_color = self.materials[i]['baseColor']
+                actor.GetProperty().SetColor(tuple(base_color[:3]))
 
             self.actors_list.append(actor)
 
@@ -373,8 +376,9 @@ class glTF:
         if pbr.baseColorTexture is not None:
             bct = pbr.baseColorTexture.index
             bct = self.get_texture(bct)
-
-        return {'baseColorTexture': bct}
+        colors = pbr.baseColorFactor
+        return {'baseColorTexture': bct,
+                'baseColor': colors}
 
     def get_texture(self, tex_id):
         """Read and convert image into vtk texture.
@@ -566,7 +570,7 @@ class glTF:
             matrix = transform.scale(transf)
         return matrix
 
-    def apply_skin_matrix(self, vertices, joint_matrices):
+    def apply_skin_matrix(self, vertices, joint_matrices, ac_index):
         """Applies the skinnig matrix, that transforms the vertices.
         NOTE: vertices has joint_matrix applied already.
 
@@ -583,8 +587,8 @@ class glTF:
             Modified vertices
         """
         clone = np.copy(vertices)
-        weights = self.weights_0[0]
-        joints = self.joints_0[0]
+        weights = self.weights_0[ac_index]
+        joints = self.joints_0[ac_index]
 
         for i, xyz in enumerate(clone):
             a_joint = joints[i]
@@ -622,12 +626,13 @@ class glTF:
         else:
             timeline.set_keyframe('transform', 0.0, np.identity(4))
 
+        parent_timeline.add(timeline)
+        self.timeline_order.append(bone_id)
         if node.children:
             for child_bone in node.children:
                 self.transverse_bones(child_bone, timeline)
-        else:
-            self.child_timelines.append(timeline)
-        parent_timeline.add(timeline)
+        # else:
+            # self.child_timelines.append(timeline)
 
     def get_skin_timeline(self):
         """One timeline for each bone, contains parent transforms.
@@ -640,6 +645,7 @@ class glTF:
         root_timeline = Timeline(playback_panel=True)
         root_bone = self.gltf.skins[0].skeleton
         root_bone = root_bone if root_bone else self.bones[0]
+        print(f'root bone: {root_bone}')
         self.transverse_bones(root_bone, root_timeline)
         return root_timeline
 
