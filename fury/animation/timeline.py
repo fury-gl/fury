@@ -1513,11 +1513,8 @@ class Timeline(Container):
 
     def remove_from_scene(self, scene):
         """Remove Timeline and all actors and sub Timelines from the scene"""
-        super(Timeline, self).add_to_scene(scene)
         [scene.rm(act) for act in self.actors]
         [scene.rm(static_act) for static_act in self._static_actors]
-        if self.has_playback_panel:
-            self.playback_panel.add_to_scene(scene)
         for tl in self.timelines:
             tl.remove_from_scene(scene)
         if self._motion_path_actor:
