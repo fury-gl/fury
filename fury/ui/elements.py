@@ -3213,7 +3213,7 @@ class PolyLine(UI):
     """Create a Polyline.
     """
 
-    def __init__(self, line_width=3, color=(1, 1, 1)):
+    def __init__(self, line_width=3, offset_from_mouse=2, color=(1, 1, 1)):
         """Init this UI element.
         Parameters
         ----------
@@ -3227,6 +3227,7 @@ class PolyLine(UI):
         self.previous_point = None
         self.current_line = None
         self.color = color
+        self.offset_from_mouse = offset_from_mouse
         super(PolyLine, self).__init__()
 
     def _setup(self):
@@ -3274,9 +3275,8 @@ class PolyLine(UI):
             self.update_line(np.asarray(new_points))
 
     def resize(self, size):
-        offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
-        self.current_line.resize((hyp - offset_from_mouse, self.line_width))
+        self.current_line.resize((hyp - self.offset_from_mouse, self.line_width))
         self.rotate_line(angle=np.arctan2(size[1], size[0]))
 
     def rotate_line(self, angle):
@@ -3517,6 +3517,7 @@ class DrawShape(UI):
 
     @property
     def center(self):
+        self.cal_bounding_box()
         return self._bounding_box_min + self._bounding_box_size//2
 
     @center.setter
@@ -3968,6 +3969,9 @@ class DrawPanel(UI):
         self.current_scene.add(line)
 
     def handle_mouse_click(self, position):
+        if self.current_mode == "drawing":
+            self.draw_shape("polyline", position)
+            self.current_shape.shape.offset_from_mouse = 0
         if self.current_shape:
             self.current_shape.is_selected = False
         if not self.shape_group.is_empty():
@@ -3987,11 +3991,7 @@ class DrawPanel(UI):
 
     def handle_mouse_drag(self, position):
         if self.current_mode == "drawing":
-            last_position = self.drawing_lines[-1].position
-            offset = position - last_position
-            if any(offset):
-                self.drawing_lines[-1].resize(offset)
-                self.add_line(position)
+            self.current_shape.shape.add_point(position, add_to_scene=True)
 
         if self.current_mode == "polyline":
             return
