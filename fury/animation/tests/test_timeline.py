@@ -40,13 +40,13 @@ def test_timeline():
 
     for t in [-10, 0, 2.2, 7, 100]:
         tl.seek(t)
-        ft.assert_less_equal(tl.current_timestamp, tl.final_timestamp)
+        ft.assert_less_equal(tl.current_timestamp, tl.duration)
         ft.assert_greater_equal(tl.current_timestamp, 0)
 
         ft.assert_greater_equal(tl.current_timestamp,
                              tl.playback_panel.current_time)
 
-        if 0 <= t <= tl.final_timestamp:
+        if 0 <= t <= tl.duration:
             npt.assert_almost_equal(tl.current_timestamp, t)
             # check if seeking a certain time affects the time slider's value.
             npt.assert_almost_equal(tl.current_timestamp,
@@ -93,7 +93,7 @@ def test_timeline():
     tl.add_actor(cube)
 
     # using force since the animation is not playing
-    tl.update_animation(force=True)
+    tl.update_animation(0)
 
     if not shaders:
         transform = cube.GetUserTransform()
