@@ -2380,7 +2380,7 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
         shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
         shader_to_actor(bb_actor, 'fragment',
                         impl_code=compose_shader(fs_impl), block='light')
-
+        scales = np.array(scales)
         attribute_to_actor(bb_actor, scales.flatten(), 'scale')
 
         def update_uniforms(_caller, _event, calldata=None):
