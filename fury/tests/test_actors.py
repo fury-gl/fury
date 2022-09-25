@@ -11,7 +11,9 @@ from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
 from fury.decorators import skip_osx, skip_win
-from fury.utils import shallow_copy, rotate, primitives_count_from_actor
+from fury.shaders import compose_shader, import_fury_shader
+from fury.utils import shallow_copy, rotate, primitives_count_from_actor, \
+    vertices_from_actor
 from fury.testing import assert_greater, assert_greater_equal
 from fury.primitive import prim_sphere
 
@@ -1377,6 +1379,11 @@ def test_billboard_actor(interactive=False):
 
     billboard_actor = actor.billboard(centers, colors=colors, scales=scales,
                                       fs_impl=fake_sphere)
+    polydata_vertices = vertices_from_actor(billboard_actor)
+    npt.assert_equal(len(polydata_vertices), 4 * len(centers))
+    npt.assert_equal(billboard_actor.GetMapper().GetInput().GetNumberOfPolys(),
+                     2 * len(centers))
+
     scene.add(billboard_actor)
     scene.add(actor.axes())
     if interactive:
@@ -1385,6 +1392,41 @@ def test_billboard_actor(interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=colors)
     npt.assert_equal(report.objects, 8)
+
+    fs_dec = compose_shader(
+        [import_fury_shader('lighting/blinn_phong_model.frag'),
+         import_fury_shader('sdf/sph_intersect.frag')])
+
+    fs_impl = compose_shader(
+        [import_fury_shader('gs_billboard_sphere_impl.frag')])
+
+    geom_squares = actor.billboard(np.array(centers), colors=np.array(colors),
+                                   scales=np.array(scales), gs_prog='default',
+                                   fs_dec=fs_dec, fs_impl=fs_impl)
+    scene.clear()
+    scene.add(geom_squares)
+
+    arr = window.snapshot( scene)
+    report = window.analyze_snapshot(arr, colors=colors)
+    npt.assert_equal(report.objects, 8)
+
+    polydata_vertices = vertices_from_actor(geom_squares)
+    npt.assert_array_equal(polydata_vertices, centers)
+    npt.assert_equal(len(polydata_vertices), len(centers))
+
+    # single billboard
+    poly_bb = actor.billboard(np.array([[0, 0, 0]]), colors=(1, 0, 0))
+    scene.clear()
+    scene.add(poly_bb)
+    scene.reset_camera_tight()
+    arr = window.snapshot(scene)
+    npt.assert_equal(arr.mean(axis=(0, 1)), np.array([255, 0, 0]))
+
+    geom_bb = actor.billboard(np.array([[0, 0, 0]]), gs_prog='default')
+    scene.clear()
+    scene.add(geom_bb)
+    arr = window.snapshot(scene)
+    npt.assert_equal(arr.mean(axis=(0, 1)), np.array([0, 255, 0]))
 
 
 @pytest.mark.skipif(skip_win, reason="This test does not work on Windows"
