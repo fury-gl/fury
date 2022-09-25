@@ -3264,7 +3264,14 @@ class PolyLine(UI):
         coords: (float, float)
             Absolute pixel coordinates (x, y).
         """
-        pass
+        if len(self.lines) > 0:
+            offset = coords - self.position
+
+            new_points = []
+            for val in self.points:
+                new_points.append(val + offset)
+
+            self.update_line(np.asarray(new_points))
 
     def resize(self, size):
         offset_from_mouse = 2
@@ -3311,7 +3318,8 @@ class PolyLine(UI):
         self.update_line(new_points_arr.astype("int"))
 
     def update_line(self, points):
-        self.remove()
+        if len(self.lines) > 0:
+            self.remove()
 
         if points.shape[1] == 3:
             points = points[:, :-1]
