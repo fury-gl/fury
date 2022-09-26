@@ -48,9 +48,10 @@ class Animation(Container):
         self._parent_animation = None
         self._camera = None
         self._scene = None
-        self._duration = 0
-        self._loop = loop
+        self._added_to_scene_time = 0
         self._length = length
+        self._duration = length if length else 0
+        self._loop = loop
         self._max_timestamp = 0
         self._added_to_scene = True
         self._is_camera_animated = False
@@ -1108,6 +1109,7 @@ class Animation(Container):
         animation._parent_animation = self
         animation.update_motion_path()
         self._animations.append(animation)
+        self.update_duration()
 
     def add_actor(self, actor, static=False):
         """Add an actor or list of actors to the Animation.
