@@ -34,4 +34,4 @@ No, I didn't get stuck this week.
 
 What is coming up next?
 -----------------------
-Working on rotation slider and the polyline.
+Working on the rotation slider and the polyline.
