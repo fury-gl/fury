@@ -257,7 +257,7 @@ class Timeline(Animation):
         ----------
         t: float or int, optional, default: None
             Time to update animation at.
-            IF None, The time is determined by the Timeline itseld and can be
+            IF None, The time is determined by the Timeline itself and can be
             controlled using the playback panel graphically or by the Timeline
             methods such as ``Timeline.seek(t)``.
         """
@@ -279,4 +279,3 @@ class Timeline(Animation):
                     self.pause()
         if self.playing or force:
             super(Timeline, self).update_animation(t)
-
