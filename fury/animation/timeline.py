@@ -4,20 +4,17 @@ from fury.animation.animation import Animation
 
 
 class Timeline(Animation):
-    """Keyframe animation timeline class.
+    """Keyframe animation Timeline.
 
-    This timeline is responsible for keyframe animations for a single or a
-    group of models.
-    It's used to handle multiple attributes and properties of Fury actors such
-    as transformations, color, and scale.
-    It also accepts custom data and interpolates them, such as temperature.
-    Linear interpolation is used by default to interpolate data between the
-    main keyframes.
+    Timeline is responsible for handling the playback of keyframes animations.
+    It can also act like an Animation with playback options which makes it easy
+    to control the playback, speed, state of the animation with/without a GUI
+    playback panel.
 
     Attributes
     ----------
-    actors : str
-        a formatted string to print out what the animal says
+    actors : Actor or list[Actor], optional, default: None
+        Actor/s to be animated directly by the Timeline (main Animation).
     playback_panel : bool, optional
         If True, the timeline will have a playback panel set, which can be used
         to control the playback of the timeline.
@@ -26,9 +23,12 @@ class Timeline(Animation):
          its length from the keyframes.
     loop : bool, optional
         Whether loop playing the animation or not
+    motion_path_res : int, default: None
+        the number of line segments used to visualizer the animation's motion
+        path (visualizing position).
     """
 
-    def __init__(self, actors=None, playback_panel=False, length=None,
+    def __init__(self, actors=None, playback_panel=True, length=None,
                  loop=False, motion_path_res=None):
 
         super().__init__(actors=actors, length=length, loop=loop,
@@ -39,14 +39,13 @@ class Timeline(Animation):
         self._last_started_time = 0
         self._playing = False
         self._length = length
-        self._reverse_playing = True
         self._animations = []
         self._timeline = None
         self._parent_animation = None
         # Handle actors while constructing the timeline.
         if playback_panel:
-            def set_loop(loop):
-                self._loop = loop
+            def set_loop(is_loop):
+                self._loop = is_loop
 
             def set_speed(speed):
                 self.speed = speed
@@ -116,17 +115,6 @@ class Timeline(Animation):
         """
         self.seek(timestamp)
 
-    def get_current_timestamp(self):
-        """Get last calculated current timestamp of the Timeline.
-
-        Returns
-        -------
-        float
-            The last calculated current time of the Timeline.
-
-        """
-        return self._current_timestamp
-
     def seek(self, timestamp):
         """Set the current timestamp of the Timeline.
 
@@ -167,21 +155,9 @@ class Timeline(Animation):
         Returns
         -------
         bool
-            Timeline is playing if True.
+            True if the Timeline is playing.
         """
         return self._playing
-
-    @playing.setter
-    def playing(self, playing):
-        """Set the playing state of the Timeline.
-
-        Parameters
-        ----------
-        playing: bool
-            The playing state to be set.
-
-        """
-        self._playing = playing
 
     @property
     def stopped(self):
@@ -190,7 +166,7 @@ class Timeline(Animation):
         Returns
         -------
         bool
-            Timeline is stopped if True.
+            True if Timeline is stopped.
 
         """
         return not self.playing and not self._current_timestamp
@@ -202,7 +178,7 @@ class Timeline(Animation):
         Returns
         -------
         bool
-            Timeline is paused if True.
+            True if the Timeline is paused.
 
         """
 
@@ -257,7 +233,6 @@ class Timeline(Animation):
         super(Timeline, self).add_child_animation(animation)
         if isinstance(animation, Animation):
             animation._timeline = self
-        self.update_duration()
 
     def update_duration(self):
         """Update and return the duration of the Timeline.
@@ -273,6 +248,19 @@ class Timeline(Animation):
         return self.duration
 
     def update_animation(self, t=None):
+        """Update the animation.
+
+        Update the animation and the playback of the Timeline. As well as
+        updating all animations handled by the Timeline.
+
+        Parameters
+        ----------
+        t: float or int, optional, default: None
+            Time to update animation at.
+            IF None, The time is determined by the Timeline itseld and can be
+            controlled using the playback panel graphically or by the Timeline
+            methods such as ``Timeline.seek(t)``.
+        """
         force = True
         if t is None:
             t = self.current_timestamp
@@ -291,5 +279,4 @@ class Timeline(Animation):
                     self.pause()
         if self.playing or force:
             super(Timeline, self).update_animation(t)
-        if self._scene:
-            self._scene.reset_clipping_range()
+
