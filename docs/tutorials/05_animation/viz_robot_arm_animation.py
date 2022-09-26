@@ -8,6 +8,7 @@ Tutorial on making a robot arm animation in FURY.
 """
 import numpy as np
 from fury import actor, window
+from fury.animation import Animation
 from fury.animation.timeline import Timeline
 from fury.utils import set_actor_origin
 
@@ -43,15 +44,23 @@ set_actor_origin(main_arm, np.array([-6, 0, 0]))
 set_actor_origin(sub_arm, np.array([-4, 0, 0]))
 
 ###############################################################################
-# Creating a timeline to animate the actor
-tl_main = Timeline([main_arm, joint_1], playback_panel=True, length=2 * np.pi)
-tl_child = Timeline([sub_arm, joint_2])
-tl_grand_child = Timeline(end)
+# Creating a timeline
+timeline = Timeline()
 
 ###############################################################################
-# Adding Timelines in hierarchical order
-tl_main.add_child_timeline(tl_child)
-tl_child.add_child_timeline(tl_grand_child)
+# Creating animations
+main_arm_animation = Animation([main_arm, joint_1], length=2 * np.pi)
+child_arm_animation = Animation([sub_arm, joint_2])
+drill_animation = Animation(end)
+
+###############################################################################
+# Adding the main animation to the Timeline.
+timeline.add_child_animation(main_arm_animation)
+
+###############################################################################
+# Adding other Animations in hierarchical order
+main_arm_animation.add_child_animation(child_arm_animation)
+child_arm_animation.add_child_animation(drill_animation)
 
 
 ###############################################################################
@@ -72,22 +81,22 @@ def rot_drill(t):
 ###############################################################################
 # Setting timelines (joints) relative position
 # 1- Placing the main arm on the cube static base.
-tl_main.set_position(0, np.array([0, 1.3, 0]))
+main_arm_animation.set_position(0, np.array([0, 1.3, 0]))
 
 ###############################################################################
 # 2- Translating the timeline containing the sub arm to the end of the first
 # arm.
-tl_child.set_position(0, np.array([12, 0, 0]))
+child_arm_animation.set_position(0, np.array([12, 0, 0]))
 
 ###############################################################################
 # 3- Translating the timeline containing the drill to the end of the sub arm.
-tl_grand_child.set_position(0, np.array([8, 0, 0]))
+drill_animation.set_position(0, np.array([8, 0, 0]))
 
 ###############################################################################
 # Setting rotation time-based evaluators
-tl_main.set_rotation_interpolator(rot_main_arm, is_evaluator=True)
-tl_child.set_rotation_interpolator(rot_sub_arm, is_evaluator=True)
-tl_grand_child.set_rotation_interpolator(rot_drill, is_evaluator=True)
+main_arm_animation.set_rotation_interpolator(rot_main_arm, is_evaluator=True)
+child_arm_animation.set_rotation_interpolator(rot_sub_arm, is_evaluator=True)
+drill_animation.set_rotation_interpolator(rot_drill, is_evaluator=True)
 
 ###############################################################################
 # Setting camera position to observe the robot arm.
@@ -95,13 +104,13 @@ scene.camera().SetPosition(0, 0, 90)
 
 ###############################################################################
 # Adding timelines to the main Timeline.
-scene.add(tl_main, base)
+scene.add(timeline, base)
 
 
 ###############################################################################
 # making a function to update the animation and render the scene.
 def timer_callback(_obj, _event):
-    tl_main.update_animation()
+    timeline.update_animation()
     showm.render()
 
 
