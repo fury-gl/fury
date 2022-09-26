@@ -12,10 +12,10 @@ from fury.lib import Actor, Transform
 
 
 class Animation(Container):
-    """Keyframe animation timeline class.
+    """Keyframe animation class.
 
-    This timeline is responsible for keyframe animations for a single or a
-    group of models.
+    Animation is responsible for keyframe animations for a single or a
+    group of actors.
     It's used to handle multiple attributes and properties of Fury actors such
     as transformations, color, and scale.
     It also accepts custom data and interpolates them, such as temperature.
@@ -24,19 +24,16 @@ class Animation(Container):
 
     Attributes
     ----------
-    actors : str
-        a formatted string to print out what the animal says
-    playback_panel : bool, optional
-        If True, the timeline will have a playback panel set, which can be used
-        to control the playback of the timeline.
+    actors : Actor or list[Actor], optional, default: None
+        Actor/s to be animated.
     length : float or int, default: None, optional
-        the fixed length of the timeline. If set to None, the timeline will get
-         its length from the keyframes.
+        the fixed length of the animation. If set to None, the animation will
+        get its duration from the keyframes being set.
     loop : bool, optional
-        the number of legs the animal has (default 4)
+        Whether to loop the animation (True) of play once (False).
     motion_path_res : int, default: None
-        the number of line segments used to visualizer the timeline's motion
-         path.
+        the number of line segments used to visualizer the animation's motion
+        path (visualizing position).
     """
 
     def __init__(self, actors=None, length=None, loop=False,
@@ -61,6 +58,7 @@ class Animation(Container):
         self._motion_path_actor = None
         self._transform = Transform()
 
+        # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
 
@@ -72,11 +70,12 @@ class Animation(Container):
         float
             The duration of the animation.
         """
-        curr_d = self._max_timestamp if self._length is None else self._length
-        self._duration = max(
-            curr_d, max([0] + [anim.update_duration() for anim in
-                               self.child_animations])
-        )
+        if self._length is not None:
+            self._duration = self._length
+        else:
+            self._duration = max(
+                self._max_timestamp, max([0] + [anim.update_duration() for anim
+                                                in self.child_animations]))
         return self.duration
 
     @property
@@ -95,10 +94,13 @@ class Animation(Container):
         res = self._motion_path_res
         tl = self
         while isinstance(tl._parent_animation, Animation):
+            if res:
+                break
             tl = tl._parent_animation
             res = tl._motion_path_res
         if not res:
             return
+
         lines = []
         colors = []
         if self.is_interpolatable('position'):
@@ -146,6 +148,25 @@ class Animation(Container):
                 'callbacks': [],
             }
         return data.get(attrib)
+
+    def get_keyframes(self, attrib=None, is_camera=False):
+        """Set a keyframe for a certain attribute.
+
+        Parameters
+        ----------
+        attrib: str, optional, default: None
+            The name of the attribute.
+            If None, all keyframes for all set attributes will be returned.
+        is_camera: bool, optional
+            Indicated whether setting a camera property or general property.
+        """
+        
+        data = self._get_data(is_camera=is_camera)
+        if attrib is None:
+            attribs = data.keys()
+            return {attrib: data.get(attrib, {}).get('keyframes', {}) for 
+                    attrib in attribs}
+        return data.get(attrib, {}).get('keyframes', {})
 
     def set_keyframe(self, attrib, timestamp, value, is_camera=False,
                      update_interpolator=True, **kwargs):
@@ -224,7 +245,7 @@ class Animation(Container):
         Examples
         ---------
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
-        >>> Timeline.set_keyframes('position', pos_keyframes)
+        >>> Animation.set_keyframes('position', pos_keyframes)
         """
         for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
@@ -260,7 +281,7 @@ class Animation(Container):
         return parent_in_scene
 
     def add_to_scene_at(self, timestamp):
-        """Set timestamp for adding Timeline to scene event.
+        """Set timestamp for adding Animation to scene event.
 
         Parameters
         ----------
@@ -274,7 +295,7 @@ class Animation(Container):
             self.set_keyframe('in_scene', timestamp, True)
 
     def remove_from_scene_at(self, timestamp):
-        """Set timestamp for removing Timeline to scene event.
+        """Set timestamp for removing Animation to scene event.
 
         Parameters
         ----------
@@ -287,7 +308,7 @@ class Animation(Container):
         else:
             self.set_keyframe('in_scene', timestamp, False)
 
-    def handle_scene_event(self, timestamp):
+    def _handle_scene_event(self, timestamp):
         should_be_in_scene = self.is_inside_scene_at(timestamp)
         if self._scene is not None:
             if should_be_in_scene and not self._added_to_scene:
@@ -314,7 +335,7 @@ class Animation(Container):
         Examples
         ---------
         >>> cam_pos = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
-        >>> Timeline.set_camera_keyframes('position', cam_pos)
+        >>> Animation.set_camera_keyframes('position', cam_pos)
         """
         self.set_keyframes(attrib, keyframes, is_camera=True)
 
@@ -353,10 +374,10 @@ class Animation(Container):
 
         Examples
         ---------
-        >>> Timeline.set_interpolator('position', linear_interpolator)
+        >>> Animation.set_interpolator('position', linear_interpolator)
 
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
-        >>> Timeline.set_interpolator('position', pos_fun)
+        >>> Animation.set_interpolator('position', pos_fun)
         """
 
         attrib_data = self._get_attribute_data(attrib, is_camera=is_camera)
@@ -390,7 +411,7 @@ class Animation(Container):
         Returns
         -------
         bool
-            True if the property is interpolatable by the Timeline.
+            True if the property is interpolatable by the Animation.
 
         Notes
         -------
@@ -420,15 +441,14 @@ class Animation(Container):
 
         Examples
         ---------
-        >>> Timeline.set_camera_interpolator('focal', linear_interpolator)
+        >>> Animation.set_camera_interpolator('focal', linear_interpolator)
         """
         self.set_interpolator(attrib, interpolator, is_camera=True,
                               is_evaluator=is_evaluator)
 
     def set_position_interpolator(self, interpolator, is_evaluator=False,
                                   **kwargs):
-        """Set the position interpolator for all actors inside the
-        timeline.
+        """Set the position interpolator.
 
         Parameters
         ----------
@@ -447,14 +467,13 @@ class Animation(Container):
 
         Examples
         ---------
-        >>> Timeline.set_position_interpolator(spline_interpolator, degree=5)
+        >>> Animation.set_position_interpolator(spline_interpolator, degree=5)
         """
         self.set_interpolator('position', interpolator,
                               is_evaluator=is_evaluator, **kwargs)
 
     def set_scale_interpolator(self, interpolator, is_evaluator=False):
-        """Set the scale interpolator for all the actors inside the
-        timeline.
+        """Set the scale interpolator.
 
         Parameters
         ----------
@@ -467,13 +486,12 @@ class Animation(Container):
 
         Examples
         ---------
-        >>> Timeline.set_scale_interpolator(step_interpolator)
+        >>> Animation.set_scale_interpolator(step_interpolator)
         """
         self.set_interpolator('scale', interpolator, is_evaluator=is_evaluator)
 
     def set_rotation_interpolator(self, interpolator, is_evaluator=False):
-        """Set the scale interpolator for all the actors inside the
-        timeline.
+        """Set the rotation interpolator .
 
         Parameters
         ----------
@@ -485,14 +503,13 @@ class Animation(Container):
             function that does not depend on keyframes.
         Examples
         ---------
-        >>> Timeline.set_rotation_interpolator(slerp)
+        >>> Animation.set_rotation_interpolator(slerp)
         """
         self.set_interpolator('rotation', interpolator,
                               is_evaluator=is_evaluator)
 
     def set_color_interpolator(self, interpolator, is_evaluator=False):
-        """Set the color interpolator for all the actors inside the
-        timeline.
+        """Set the color interpolator.
 
         Parameters
         ----------
@@ -504,13 +521,12 @@ class Animation(Container):
             function that does not depend on keyframes.
         Examples
         ---------
-        >>> Timeline.set_color_interpolator(lab_color_interpolator)
+        >>> Animation.set_color_interpolator(lab_color_interpolator)
         """
         self.set_interpolator('color', interpolator, is_evaluator=is_evaluator)
 
     def set_opacity_interpolator(self, interpolator, is_evaluator=False):
-        """Set the opacity interpolator for all the actors inside the
-        timeline.
+        """Set the opacity interpolator.
 
         Parameters
         ----------
@@ -522,7 +538,7 @@ class Animation(Container):
             function that does not depend on keyframes.
         Examples
         ---------
-        >>> Timeline.set_opacity_interpolator(step_interpolator)
+        >>> Animation.set_opacity_interpolator(step_interpolator)
         """
         self.set_interpolator('opacity', interpolator,
                               is_evaluator=is_evaluator)
@@ -641,7 +657,7 @@ class Animation(Container):
         Examples
         --------
         >>> pos_keyframes = {1, np.array([0, 0, 0]), 3, np.array([50, 6, 6])}
-        >>> Timeline.set_position_keyframes(pos_keyframes)
+        >>> Animation.set_position_keyframes(pos_keyframes)
         """
         self.set_keyframes('position', keyframes)
 
@@ -714,7 +730,7 @@ class Animation(Container):
         Examples
         --------
         >>> scale_keyframes = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
-        >>> Timeline.set_scale_keyframes(scale_keyframes)
+        >>> Animation.set_scale_keyframes(scale_keyframes)
         """
         self.set_keyframes('scale', keyframes)
 
@@ -743,7 +759,7 @@ class Animation(Container):
         Examples
         --------
         >>> color_keyframes = {1, np.array([1, 0, 1]), 3, np.array([0, 0, 1])}
-        >>> Timeline.set_color_keyframes(color_keyframes)
+        >>> Animation.set_color_keyframes(color_keyframes)
         """
         self.set_keyframes('color', keyframes)
 
@@ -776,7 +792,7 @@ class Animation(Container):
         Examples
         --------
         >>> opacity = {1, np.array([1, 1, 1]), 3, np.array([2, 2, 3])}
-        >>> Timeline.set_scale_keyframes(opacity)
+        >>> Animation.set_scale_keyframes(opacity)
         """
         self.set_keyframes('opacity', keyframes)
 
@@ -935,7 +951,7 @@ class Animation(Container):
         Examples
         --------
         >>> pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
-        >>> Timeline.set_camera_position_keyframes(pos)
+        >>> Animation.set_camera_position_keyframes(pos)
         """
         self.set_camera_keyframes('position', keyframes)
 
@@ -953,7 +969,7 @@ class Animation(Container):
         Examples
         --------
         >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
-        >>> Timeline.set_camera_focal_keyframes(focal_pos)
+        >>> Animation.set_camera_focal_keyframes(focal_pos)
         """
         self.set_camera_keyframes('focal', keyframes)
 
@@ -971,7 +987,7 @@ class Animation(Container):
         Examples
         --------
         >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
-        >>> Timeline.set_camera_view_up_keyframes(view_ups)
+        >>> Animation.set_camera_view_up_keyframes(view_ups)
         """
         self.set_camera_keyframes('view_up', keyframes)
 
@@ -1057,14 +1073,14 @@ class Animation(Container):
         return self.get_camera_value('rotation', t)
 
     def add(self, item):
-        """Add an item to the Timeline.
-        This item can be an actor, Timeline, list of actors, or a list of
-        Timelines.
+        """Add an item to the Animation.
+        This item can be an Actor, Animation, list of Actors, or a list of
+        Animations.
 
         Parameters
         ----------
-        item: Timeline, vtkActor, list(Timeline), or list(vtkActor)
-            Actor/s to be animated by the timeline.
+        item: Animation, vtkActor, list[Animation], or list[vtkActor]
+            Actor/s to be animated by the Animation.
         """
         if isinstance(item, list):
             for a in item:
@@ -1075,15 +1091,14 @@ class Animation(Container):
         elif isinstance(item, Animation):
             self.add_child_animation(item)
         else:
-            raise ValueError(f"Object of type {type(item)} can't be added to "
-                             f"the timeline.")
+            raise ValueError(f"Object of type {type(item)} can't be animated")
 
     def add_child_animation(self, animation):
         """Add child Animation or list of Animations.
 
         Parameters
         ----------
-        animation: Animation or list(Animation)
+        animation: Animation or list[Animation]
             Animation/s to be added.
         """
         if isinstance(animation, list):
@@ -1095,16 +1110,16 @@ class Animation(Container):
         self._animations.append(animation)
 
     def add_actor(self, actor, static=False):
-        """Add an actor or list of actors to the Timeline.
+        """Add an actor or list of actors to the Animation.
 
         Parameters
         ----------
         actor: vtkActor or list(vtkActor)
-            Actor/s to be animated by the timeline.
+            Actor/s to be animated by the Animation.
         static: bool
             Indicated whether the actor should be animated and controlled by
-            the timeline or just a static actor that gets added to the scene
-            along with the Timeline.
+            the animation or just a static actor that gets added to the scene
+            along with the Animation.
         """
         if isinstance(actor, list):
             for a in actor:
@@ -1134,7 +1149,7 @@ class Animation(Container):
         Returns
         -------
         list:
-            List of actors controlled by the Timeline.
+            List of actors controlled by the Animation.
         """
         return self.items
 
@@ -1151,8 +1166,8 @@ class Animation(Container):
 
     def add_static_actor(self, actor):
         """Add an actor or list of actors as static actor/s which will not be
-        controlled nor animated by the Timeline. All static actors will be
-        added to the scene when the Timeline is added to the scene.
+        controlled nor animated by the Animation. All static actors will be
+        added to the scene when the Animation is added to the scene.
 
         Parameters
         ----------
@@ -1207,7 +1222,10 @@ class Animation(Container):
         attrib.get('callbacks', []).append(cbk_func)
 
     def update_animation(self, t=0.0):
-        """Update the timeline animations
+        """Update the animation.
+
+        Update the animation at a certain time. This will make sure all
+        attributes are calculated and set to the actors at that given time.
 
         Parameters
         ----------
@@ -1217,7 +1235,7 @@ class Animation(Container):
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(t)
-        self.handle_scene_event(t)
+        self._handle_scene_event(t)
 
         if self._loop and t:
             t = t % self.duration
@@ -1298,21 +1316,17 @@ class Animation(Container):
                 value = self.get_value(attrib, t)
                 [cbk(value) for cbk in callbacks]
 
-        # Also update all child Timelines.
-        [anim.update_animation(t) for anim in self._animations]
+        # Also update all child Animations.
+        [animation.update_animation(t) for animation in self._animations]
 
     def add_to_scene(self, ren):
-        """Add Timeline and all actors and sub Timelines to the scene"""
+        """Add this Animation, its actors and sub Animations to the scene"""
         super(Animation, self).add_to_scene(ren)
         [ren.add(static_act) for static_act in self._static_actors]
         [ren.add(animation) for animation in self._animations]
-
-        b = np.zeros(6)
-
 
         if self._motion_path_actor:
             ren.add(self._motion_path_actor)
         self._scene = ren
         self._added_to_scene = True
         self.update_animation(0)
-
