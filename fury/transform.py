@@ -341,3 +341,38 @@ def apply_transfomation(vertices, transformation):
     vertices = vertices[:, :shape[1]]
 
     return vertices
+
+
+def transform_from_matrix(matrix):
+    """Returns translation, roation and scale arrays from transformation
+    matrix.
+
+    Parameters
+    ----------
+    matrix : ndarray (4, 4)
+        the transformation matrix of shape 4*4
+
+    Returns
+    -------
+    translate : ndarray (3, )
+        translation component from the transformation matrix
+    rotate : ndarray (4, )
+        rotation component from the transformation matrix
+    scale : ndarray (3, )
+        scale component from the transformation matrix.
+    """
+    translate = matrix[:, -1:].reshape((-1, ))[:-1]
+
+    temp = matrix[:, :3][:3]
+    sx = np.linalg.norm(temp[:, :1])
+    sy = np.linalg.norm(temp[:, 1:-1])
+    sz = np.linalg.norm(temp[:, -1:])
+    scale = np.array([sx, sy, sz])
+
+    rot_matrix = temp / scale[None, :]
+    rotation = Rot.from_matrix(rot_matrix)
+    rot_vec = rotation.as_rotvec()
+    angle = np.linalg.norm(rot_vec)
+    rotation = [np.rad2deg(angle), *rot_vec]
+
+    return translate, rotation, scale
