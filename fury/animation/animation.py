@@ -1231,16 +1231,21 @@ class Animation(Container):
 
         Parameters
         ----------
-        t: float or int, optional, default: 0.0
+        t: float or int, optional, default: None
             Time to update animation at.
         """
+        t = t if t is not None else \
+            time.perf_counter() - self._added_to_scene_time
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(t)
         self._handle_scene_event(t)
 
-        if self._loop and t:
-            t = t % self.duration
+        if self.duration:
+            if self._loop and t > 0:
+                t = t % self.duration
+            elif t > self.duration:
+                t = self.duration
         if isinstance(self._parent_animation, Animation):
             self._transform.DeepCopy(self._parent_animation._transform)
         else:
@@ -1321,6 +1326,9 @@ class Animation(Container):
         # Also update all child Animations.
         [animation.update_animation(t) for animation in self._animations]
 
+        if self._scene and self._parent_animation is None:
+            self._scene.reset_clipping_range()
+
     def add_to_scene(self, ren):
         """Add this Animation, its actors and sub Animations to the scene"""
         super(Animation, self).add_to_scene(ren)
@@ -1331,4 +1339,5 @@ class Animation(Container):
             ren.add(self._motion_path_actor)
         self._scene = ren
         self._added_to_scene = True
+        self._added_to_scene_time = time.perf_counter()
         self.update_animation(0)
