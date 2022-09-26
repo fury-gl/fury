@@ -903,3 +903,16 @@ def test_primitives_count():
     set_polydata_primitives_count(polydata, 4)
     prim_count = get_polydata_primitives_count(polydata)
     npt.assert_equal(prim_count, 4)
+
+
+def test_set_actor_origin():
+    cube = actor.cube(np.array([[0, 0, 0]]))
+    orig_vert = np.copy(vertices_from_actor(cube))
+
+    utils.set_actor_origin(cube, np.array([0.5, 0.5, 0.5]))
+    new_vert = np.copy(vertices_from_actor(cube))
+    npt.assert_array_equal(orig_vert, new_vert + np.array([0.5, 0.5, 0.5]))
+
+    utils.set_actor_origin(cube)
+    centered_cube_vertices = np.copy(vertices_from_actor(cube))
+    npt.assert_array_equal(orig_vert, centered_cube_vertices)
