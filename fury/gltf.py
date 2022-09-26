@@ -164,14 +164,14 @@ class glTF:
             attributes = primitive.attributes
 
             vertices = self.get_acc_data(attributes.POSITION)
-            vertices = transform.apply_transfomation(vertices, transform_mat)
+            vertices = transform.apply_transformation(vertices, transform_mat)
 
             polydata = utils.PolyData()
             utils.set_polydata_vertices(polydata, vertices)
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transfomation(normals, transform_mat)
+                normals = transform.apply_transformation(normals, transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -384,7 +384,7 @@ class glTF:
         position = vtk_cam.GetPosition()
         position = np.asarray([position])
 
-        new_position = transform.apply_transfomation(position, transform_mat)
+        new_position = transform.apply_transformation(position, transform_mat)
         vtk_cam.SetPosition(tuple(new_position[0]))
 
         if camera.type == "orthographic":
