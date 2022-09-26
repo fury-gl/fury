@@ -5,7 +5,7 @@ from scipy.ndimage import center_of_mass
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
                             _AXES2TUPLE, _TUPLE2AXES, translate,
                             rotate, scale, apply_transfomation,
-                            trs_from_matrix)
+                            transform_from_matrix)
 from fury import primitive, window, utils
 from fury.testing import assert_greater
 
@@ -143,7 +143,7 @@ def test_trs_from_matrix():
                        [0, 1, 0, -10],
                        [0, 0, 1, 0],
                        [0, 0, 0, 1]])
-    trans, rot, scale = trs_from_matrix(matrix)
+    trans, rot, scale = transform_from_matrix(matrix)
     npt.assert_equal(trans, np.array([10, -10, 0]))
     npt.assert_equal(scale, np.array([5, 1, 1]))
 
@@ -151,6 +151,6 @@ def test_trs_from_matrix():
                        [0,  0.1542515, 0.9880316, 0],
                        [0, -0.9880316, 0.1542515, 0],
                        [0,  0,         0,         1]])
-    trans, rot, scale = trs_from_matrix(matrix)
+    trans, rot, scale = transform_from_matrix(matrix)
     npt.assert_array_almost_equal(rot,
                                   np.array([81.126612, -1.415926, 0.0, 0.0]))

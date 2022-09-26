@@ -343,13 +343,13 @@ def apply_transfomation(vertices, transformation):
     return vertices
 
 
-def trs_from_matrix(transform):
+def transform_from_matrix(matrix):
     """Returns translation, roation and scale arrays from transformation
     matrix.
 
     Parameters
     ----------
-    transform : ndarray (4, 4)
+    matrix : ndarray (4, 4)
         the transformation matrix of shape 4*4
 
     Returns
@@ -361,9 +361,9 @@ def trs_from_matrix(transform):
     scale : ndarray (3, )
         scale component from the transformation matrix.
     """
-    translate = transform[:, -1:].reshape((-1, ))[:-1]
+    translate = matrix[:, -1:].reshape((-1, ))[:-1]
 
-    temp = transform[:, :3][:3]
+    temp = matrix[:, :3][:3]
     sx = np.linalg.norm(temp[:, :1])
     sy = np.linalg.norm(temp[:, 1:-1])
     sz = np.linalg.norm(temp[:, -1:])

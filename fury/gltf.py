@@ -94,7 +94,8 @@ class glTF:
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
             transform_mat = self.transformations[i]
-            position, rot, scale = transform.trs_from_matrix(transform_mat)
+            position, rot, scale = transform.transform_from_matrix(
+                                    transform_mat)
 
             actor.SetPosition(position)
             actor.SetScale(scale)
