@@ -68,8 +68,8 @@ class glTF:
         self.transformations = []
         self.polydatas = []
         self.init_transform = np.identity(4)
-        self.animations = []
         self.node_transform = []
+        self.animation_channels = {}
         self.sampler_matrices = {}
 
         # Skinning Informations
@@ -128,7 +128,7 @@ class glTF:
 
         for node_id in nodes:
             self.transverse_node(node_id, self.init_transform)
-        for animation in self.gltf.animations:
+        for animation in self.gltf.animations[:1]:
             self.transverse_channels(animation)
 
     def transverse_node(self, nextnode_id, matrix, parent=None, isJoint=False):
@@ -247,7 +247,9 @@ class glTF:
 
             if primitive.indices is not None:
                 indices = self.get_acc_data(primitive.indices).reshape(-1, 3)
-                utils.set_polydata_triangles(polydata, indices)
+            else:
+                indices = np.arange(0, len(vertices)).reshape((-1, 3))
+            utils.set_polydata_triangles(polydata, indices)
 
             if attributes.JOINTS_0 is not None:
                 vertex_joints = self.get_acc_data(attributes.JOINTS_0)
@@ -352,7 +354,7 @@ class glTF:
             return out_arr
 
         except IOError as e:
-            print(f'Failed to read ! Error in opening file: {e}')
+            print(f'Failed to read ! Error in opening file:')
 
     def get_materials(self, mat_id):
         """Get the materials data.
@@ -484,6 +486,7 @@ class glTF:
             pygltflib animation object.
         """
         name = animation.name
+        anim_channel = {}
 
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]
@@ -491,7 +494,10 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            self.get_matrix_from_sampler(path, node_id, sampler)
+            sampler_data = self.get_matrix_from_sampler(path, node_id,
+                                                        name, sampler)
+            anim_channel[node_id] = sampler_data
+        self.animation_channels[name] = anim_channel
 
     def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
                          transform_type):
@@ -523,7 +529,7 @@ class glTF:
             'interpolation': interpolation,
             'property': transform_type}
 
-    def get_matrix_from_sampler(self, prop, node, sampler: gltflib.Sampler):
+    def get_matrix_from_sampler(self, prop, node, name, sampler: gltflib.Sampler):
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
         tran_matrix = []
@@ -539,6 +545,7 @@ class glTF:
             'matrix': tran_matrix
         }
         self.sampler_matrices[node] = data
+        return data
 
     def get_skin_data(self, skin_id):
         """Gets the inverse bind matrix for each bone in the skin.
@@ -570,7 +577,7 @@ class glTF:
             matrix = transform.scale(transf)
         return matrix
 
-    def apply_skin_matrix(self, vertices, joint_matrices, ac_index):
+    def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
         """Applies the skinnig matrix, that transforms the vertices.
         NOTE: vertices has joint_matrix applied already.
 
@@ -587,8 +594,10 @@ class glTF:
             Modified vertices
         """
         clone = np.copy(vertices)
-        weights = self.weights_0[ac_index]
-        joints = self.joints_0[ac_index]
+        weights = self.weights_0[actor_index]
+        joints = self.joints_0[actor_index]
+        # print(weights)
+        # print(joints)
 
         for i, xyz in enumerate(clone):
             a_joint = joints[i]
@@ -600,6 +609,7 @@ class glTF:
                 np.multiply(a_weight[1], joint_matrices[a_joint[1]]) +\
                 np.multiply(a_weight[2], joint_matrices[a_joint[2]]) +\
                 np.multiply(a_weight[3], joint_matrices[a_joint[3]])
+            # print(skin_mat)
 
             xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
             # xyz = np.dot(np.append(xyz, [1.0]), skin_mat)

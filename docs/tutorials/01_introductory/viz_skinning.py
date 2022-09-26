@@ -10,17 +10,11 @@ scene = window.Scene()
 fetch_gltf('RiggedFigure', 'glTF')
 filename = read_viz_gltf('BrainStem')
 
-gltf_obj = glTF(filename, apply_normals=True)
+gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
 
-# Setting custom opacity to see the bones
-# for act in actors:
-#     act.GetProperty().SetOpacity(0.7)
-
 vertices = [vertices_from_actor(actor) for actor in actors]
-
-# vertices = vertices_from_actor(actors[0])
-clone = np.copy(vertices)
+clone = [np.copy(vert) for vert in vertices]
 
 timeline = gltf_obj.get_skin_timeline()
 timeline.add_actor(actors)
@@ -38,7 +32,6 @@ for bone, joint_actor in bactors.items():
 bvert_copy = copy.deepcopy(bverts)
 
 scene.add(timeline)
-scene.add(* bactors.values())
 
 bones = gltf_obj.bones
 parent_transforms = gltf_obj.bone_tranforms
@@ -55,11 +48,6 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
     joint_matrices[bone_id] = skin_matrix
 
     node = gltf_obj.gltf.nodes[bone_id]
-    actor_transform = gltf_obj.transformations[0]
-    bone_transform = np.dot(actor_transform, new_deform)
-    bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
-                                                       bone_transform)
-    update_actor(bactors[bone_id])
     if node.children:
         c_timelines = timeline.timelines
         c_bones = node.children
@@ -75,21 +63,22 @@ def timer_callback(_obj, _event):
     root_bone = gltf_obj.gltf.skins[0].skeleton
     root_bone = root_bone if root_bone else gltf_obj.bones[0]
 
-    # if not root_bone == gltf_obj.bones[0]:
-    #     timeline = timeline.timelines[0]
-    #     parent_deform = gltf_obj.nodes[root_bone]
-    for child in timeline.timelines[0].timelines:
-        transverse_timelines(child, bones[0], timestamp, joint_matrices)
-
-    # print(joint_matrices.keys())
+    if not root_bone == bones[0]:
+        _timeline = timeline.timelines[0]
+        parent_transform = gltf_obj.transformations[root_bone].T
+    else:
+        _timeline = timeline
+        parent_transform = np.identity(4)
+    for child in _timeline.timelines:
+        transverse_timelines(child, bones[0], timestamp,
+                             joint_matrices, parent_transform)
     for i, vertex in enumerate(vertices):
-        # print(i)
         vertex[:] = gltf_obj.apply_skin_matrix(clone[i], joint_matrices, i)
         update_actor(actors[i])
         compute_bounds(actors[i])
     showm.render()
 
 
-showm.add_timer_callback(True, 10, timer_callback)
+showm.add_timer_callback(True, 50, timer_callback)
 
 showm.start()
