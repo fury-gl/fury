@@ -397,6 +397,7 @@ class Animation(Container):
             interp_data['func'] = new_interp
 
         # update motion path
+        self.update_duration()
         self.update_motion_path()
 
     def is_interpolatable(self, attrib, is_camera=False):

@@ -38,7 +38,6 @@ class Timeline(Animation):
         self._speed = 1
         self._last_started_time = 0
         self._playing = False
-        self._length = length
         self._animations = []
         self._timeline = None
         self._parent_animation = None
