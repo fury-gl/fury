@@ -96,7 +96,6 @@ class glTF:
             transform_mat = self.transformations[i]
             position, rot, scale = transform.trs_from_matrix(transform_mat)
 
-            # We don't need this as we are already applying it in skinnning
             actor.SetPosition(position)
             actor.SetScale(scale)
             actor.RotateWXYZ(*rot)
@@ -152,7 +151,6 @@ class glTF:
 
         if node.matrix is not None:
             matnode = np.array(node.matrix)
-            # print(matnode)
             matnode = matnode.reshape(-1, 4).T
         else:
             if node.translation is not None:
@@ -206,7 +204,6 @@ class glTF:
             attributes = primitive.attributes
 
             vertices = self.get_acc_data(attributes.POSITION)
-            # vertices = transform.apply_transfomation(vertices, transform_mat)
             self.transformations.append(transform_mat)
 
             polydata = utils.PolyData()

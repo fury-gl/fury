@@ -344,6 +344,23 @@ def apply_transfomation(vertices, transformation):
 
 
 def trs_from_matrix(transform):
+    """Returns translation, roation and scale arrays from transformation
+    matrix.
+
+    Parameters
+    ----------
+    transform : ndarray (4, 4)
+        the transformation matrix of shape 4*4
+
+    Returns
+    -------
+    translate : ndarray (3, )
+        translation component from the transformation matrix
+    rotate : ndarray (4, )
+        rotation component from the transformation matrix
+    scale : ndarray (3, )
+        scale component from the transformation matrix.
+    """
     translate = transform[:, -1:].reshape((-1, ))[:-1]
 
     temp = transform[:, :3][:3]
