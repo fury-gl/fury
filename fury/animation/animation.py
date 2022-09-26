@@ -1133,16 +1133,57 @@ class Animation(Container):
             super(Animation, self).add(actor)
 
     @property
-    def timeline(self) -> 'Timeline':
+    def timeline(self):
+        """Return the Timeline handling the current animation.
+
+        Returns
+        -------
+        Timeline:
+            The Timeline handling the current animation, None, if there is no
+            associated Timeline.
+
+        """
         return self._timeline
 
     @timeline.setter
     def timeline(self, timeline):
-        """Assign the Timeline responsible for handling the animation."""
+        """Assign the Timeline responsible for handling the Animation.
+
+        Parameters
+        ----------
+
+        Timeline:
+            The Timeline handling the current animation, None, if there is no
+            associated Timeline.
+
+        """
         self._timeline = timeline
         if self._animations:
             for animation in self._animations:
                 animation.timeline = timeline
+
+    @property
+    def parent_animation(self):
+        """Return the hierarchical parent Animation for current Animation.
+
+        Returns
+        -------
+        Animation:
+            The parent Animation.
+
+        """
+        return self._parent_animation
+
+    @parent_animation.setter
+    def parent_animation(self, parent_animation):
+        """Assign a parent Animation for the current Animation.
+
+        Parameters
+        ----------
+        parent_animation: Animation
+            The parent Animation instance.
+        """
+        self._parent_animation = parent_animation
 
     @property
     def actors(self):
@@ -1223,7 +1264,7 @@ class Animation(Container):
         attrib = self._get_attribute_data(property_name)
         attrib.get('callbacks', []).append(cbk_func)
 
-    def update_animation(self, t=0.0):
+    def update_animation(self, t=None):
         """Update the animation.
 
         Update the animation at a certain time. This will make sure all
