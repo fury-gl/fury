@@ -28,7 +28,7 @@ class Timeline(Animation):
         path (visualizing position).
     """
 
-    def __init__(self, actors=None, playback_panel=True, length=None,
+    def __init__(self, actors=None, playback_panel=False, length=None,
                  loop=False, motion_path_res=None):
 
         super().__init__(actors=actors, length=length, loop=loop,

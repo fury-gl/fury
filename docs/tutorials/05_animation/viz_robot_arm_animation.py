@@ -45,7 +45,7 @@ set_actor_origin(sub_arm, np.array([-4, 0, 0]))
 
 ###############################################################################
 # Creating a timeline
-timeline = Timeline()
+timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating animations
