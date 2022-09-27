@@ -3987,15 +3987,16 @@ class DrawPanel(UI):
 
     def mouse_move(self, i_ren, _obj, element):
         if self.is_creating_polyline:
-            current_line = self.current_shape.shape.current_line
+            polyline = self.current_shape.shape
+            current_line = polyline.current_line
             if not current_line:
                 return
             if np.linalg.norm(self.clamp_mouse_position(i_ren.event.position)
-                              - self.current_shape.shape.lines[0].position) < 10:
-                self.current_shape.shape.resize_line(
-                    self.current_shape.shape.lines[0].position - current_line.position)
+                              - polyline.lines[0].position) < 10:
+                polyline.resize_line(
+                    polyline.lines[0].position - current_line.position)
             else:
-                self.current_shape.shape.resize_line(self.clamp_mouse_position(
+                polyline.resize_line(self.clamp_mouse_position(
                     i_ren.event.position) - current_line.position)
         i_ren.force_render()
 
