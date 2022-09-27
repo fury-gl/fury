@@ -4,7 +4,7 @@ from scipy.ndimage import center_of_mass
 
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
                             _AXES2TUPLE, _TUPLE2AXES, translate,
-                            rotate, scale, apply_transformation)
+                            rotate, scale, apply_transformation,
                             transform_from_matrix)
 from fury import primitive, window, utils
 from fury.testing import assert_greater
