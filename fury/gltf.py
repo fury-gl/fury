@@ -83,6 +83,10 @@ class glTF:
         self.child_timelines = []
         self.timeline_order = []
 
+        # morphing inofrmations
+        self.morph_vertices = []
+        self.morph_weights = []
+
         self.inspect_scene(0)
 
     def actors(self):
@@ -264,6 +268,10 @@ class glTF:
             self.polydatas.append(polydata)
             self.nodes.append(parent[:])
             self.materials.append(material)
+
+            if primitive.targets is not None:
+                for target in primitive.targets:
+                    self.get_morph_data(target, mesh_id)
 
     def get_acc_data(self, acc_id):
         """Get the correct data from buffer using accessors and bufferviews.
@@ -535,6 +543,10 @@ class glTF:
                                 anim_channel, sampler: gltflib.Sampler):
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
+
+        if prop == 'weights':
+            tran_array = tran_array.reshape(-1, 2)
+
         tran_matrix = []
         if node in anim_channel:
             prev_arr = anim_channel[node]['matrix']
@@ -543,13 +555,24 @@ class glTF:
 
         for i, arr in enumerate(tran_array):
             temp = self.generate_tmatrix(arr, prop)
-            tran_matrix.append(np.dot(prev_arr[i], temp))
+            if temp.shape == (4, 4):
+                tran_matrix.append(np.dot(prev_arr[i], temp))
+            else:
+                tran_matrix.append(temp)
         data = {
             'timestamps': time_array,
             'matrix': tran_matrix
         }
         self.sampler_matrices[node] = data
         return data
+    
+    def get_morph_data(self, target, mesh_id):
+        morphed_data = {}
+        weights_array = self.gltf.meshes[mesh_id].weights
+        if target.get('POSITION') is not None:
+            morphed_data = self.get_acc_data(target.get('POSITION'))
+        self.morph_vertices.append(morphed_data)
+        self.morph_weights.append(weights_array)
 
     def get_skin_data(self, skin_id):
         """Gets the inverse bind matrix for each bone in the skin.
@@ -579,6 +602,8 @@ class glTF:
             matrix = transform.rotate(transf)
         elif prop == 'scale':
             matrix = transform.scale(transf)
+        else:
+            matrix = transf
         return matrix
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
@@ -616,7 +641,8 @@ class glTF:
 
         return clone
 
-    def transverse_bones(self, bone_id, channel_name, parent_timeline: Timeline):
+    def transverse_bones(self, bone_id, channel_name,
+                         parent_timeline: Timeline):
         """
         bone_id : int
             Index of the bone.
@@ -690,6 +716,28 @@ class glTF:
                 utils.update_actor(arrow)
             actors[bone] = arrow
         return actors
+
+    def apply_morph_vertices(self, vertices, weights):
+        clone = np.copy(vertices)
+        target_vertices = np.copy(self.morph_vertices)
+        for i, weight in enumerate(weights):
+            target_vertices[i][:] = np.multiply(weight, target_vertices[i])
+        new_verts = sum(target_vertices)
+        for i, vertex in enumerate(clone):
+            clone[i][:] = vertex + new_verts[i]
+        return clone
+
+    def get_morph_timeline(self):
+        root_timeline = Timeline(playback_panel=True)
+        for data in self.animation_channels.values():
+            for transform in data.values():
+                timeline = Timeline()
+                timestamps = transform['timestamps']
+                metrices = transform['matrix']
+                for time, weights in zip(timestamps, metrices):
+                    timeline.set_keyframe('morph', time[0], weights)
+            root_timeline.add(timeline)
+        return root_timeline
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
