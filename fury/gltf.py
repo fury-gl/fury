@@ -104,6 +104,8 @@ class glTF:
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
                 actor.SetTexture(base_col_tex)
+                base_color = self.materials[i]['baseColor']
+                actor.GetProperty().SetColor(tuple(base_color[:3]))
 
             self.actors_list.append(actor)
 
@@ -212,6 +214,7 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
+                normals = transform.apply_transformation(normals, transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -354,8 +357,11 @@ class glTF:
         if pbr.baseColorTexture is not None:
             bct = pbr.baseColorTexture.index
             bct = self.get_texture(bct)
+        
+        colors = pbr.baseColorFactor
 
-        return {'baseColorTexture': bct}
+        return {'baseColorTexture': bct,
+                'baseColor': colors}
 
     def get_texture(self, tex_id):
         """Read and convert image into vtk texture.
@@ -430,7 +436,7 @@ class glTF:
         position = vtk_cam.GetPosition()
         position = np.asarray([position])
 
-        new_position = transform.apply_transfomation(position, transform_mat)
+        new_position = transform.apply_transformation(position, transform_mat)
         vtk_cam.SetPosition(tuple(new_position[0]))
 
         if camera.type == "orthographic":

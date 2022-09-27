@@ -317,7 +317,7 @@ def scale(scales):
     return scale_mat
 
 
-def apply_transfomation(vertices, transformation):
+def apply_transformation(vertices, transformation):
     """ Multiplying transformation matrix with vertices
 
     Parameters

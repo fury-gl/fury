@@ -4,7 +4,7 @@ from scipy.ndimage import center_of_mass
 
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
                             _AXES2TUPLE, _TUPLE2AXES, translate,
-                            rotate, scale, apply_transfomation,
+                            rotate, scale, apply_transformation,
                             transform_from_matrix)
 from fury import primitive, window, utils
 from fury.testing import assert_greater
@@ -81,13 +81,13 @@ def test_translate():
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
     y_translate = np.array([0.0, 1.5, 0.0])
     transform = translate(y_translate)
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
@@ -108,7 +108,7 @@ def test_scale():
     arr1 = window.snapshot(scene)
     scene.clear()
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
     arr2 = window.snapshot(scene)
@@ -128,7 +128,7 @@ def test_rotate():
     arr1 = window.snapshot(scene)
     scene.clear()
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cone = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cone)
     arr2 = window.snapshot(scene)
@@ -138,7 +138,7 @@ def test_rotate():
     assert_greater(center_of_mass(arr2), center_of_mass(arr1))
 
 
-def test_trs_from_matrix():
+def test_transform_from_matrix():
     matrix = np.array([[5, 0, 0, 10],
                        [0, 1, 0, -10],
                        [0, 0, 1, 0],
