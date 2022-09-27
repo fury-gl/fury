@@ -419,7 +419,7 @@ class Animation(Container):
         return a 1x1, an int, or a float value.
 
         Examples
-        ---------
+        --------
         >>> Animation.set_interpolator('position', linear_interpolator)
 
         >>> pos_fun = lambda t: np.array([np.sin(t), np.cos(t), 0])
@@ -487,7 +487,7 @@ class Animation(Container):
             function that does not depend on keyframes.
 
         Examples
-        ---------
+        --------
         >>> Animation.set_camera_interpolator('focal', linear_interpolator)
         """
         self.set_interpolator(attrib, interpolator, is_camera=True,
