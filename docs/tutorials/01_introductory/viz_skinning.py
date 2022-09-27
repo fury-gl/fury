@@ -6,9 +6,10 @@ from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 
 scene = window.Scene()
+bone = False
 
 fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('BrainStem')
+filename = read_viz_gltf('RiggedFigure')
 
 gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
@@ -16,22 +17,22 @@ actors = gltf_obj.actors()
 vertices = [vertices_from_actor(actor) for actor in actors]
 clone = [np.copy(vert) for vert in vertices]
 
-timeline = gltf_obj.get_skin_timeline()
+timeline = gltf_obj.get_skin_timeline()['0']
 timeline.add_actor(actors)
 
 scene = window.Scene()
 showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
                            order_transparent=True)
 showm.initialize()
-
-bactors = gltf_obj.get_joint_actors(length=0.2, with_transforms=False)
-bverts = {}
-for bone, joint_actor in bactors.items():
-    bverts[bone] = vertices_from_actor(joint_actor)
-
-bvert_copy = copy.deepcopy(bverts)
-
 scene.add(timeline)
+
+if bone:
+    bactors = gltf_obj.get_joint_actors(length=0.2, with_transforms=False)
+    bverts = {}
+    for bone, joint_actor in bactors.items():
+        bverts[bone] = vertices_from_actor(joint_actor)
+    bvert_copy = copy.deepcopy(bverts)
+    scene.add(* bactors.values())
 
 bones = gltf_obj.bones
 parent_transforms = gltf_obj.bone_tranforms
@@ -42,12 +43,20 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
     deform = timeline.get_value('transform', timestamp)
     new_deform = np.dot(parent_bone_deform, deform)
 
-    # calculating skinning metrix
+    # calculating skinning matrix
     ibm = gltf_obj.ibms[bone_id].T
     skin_matrix = np.dot(new_deform, ibm)
     joint_matrices[bone_id] = skin_matrix
 
     node = gltf_obj.gltf.nodes[bone_id]
+
+    if bone:
+        actor_transform = gltf_obj.transformations[0]
+        bone_transform = np.dot(actor_transform, new_deform)
+        bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
+                                                           bone_transform)
+        update_actor(bactors[bone_id])
+
     if node.children:
         c_timelines = timeline.timelines
         c_bones = node.children
@@ -79,6 +88,6 @@ def timer_callback(_obj, _event):
     showm.render()
 
 
-showm.add_timer_callback(True, 50, timer_callback)
+showm.add_timer_callback(True, 20, timer_callback)
 
 showm.start()

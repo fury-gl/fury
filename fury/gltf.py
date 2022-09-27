@@ -128,8 +128,8 @@ class glTF:
 
         for node_id in nodes:
             self.transverse_node(node_id, self.init_transform)
-        for animation in self.gltf.animations[:1]:
-            self.transverse_channels(animation)
+        for i, animation in enumerate(self.gltf.animations):
+            self.transverse_channels(animation, i)
 
     def transverse_node(self, nextnode_id, matrix, parent=None, isJoint=False):
         """Load mesh and generates transformation matrix.
@@ -477,7 +477,7 @@ class glTF:
 
         self.cameras[camera_id] = vtk_cam
 
-    def transverse_channels(self, animation: gltflib.Animation):
+    def transverse_channels(self, animation: gltflib.Animation, count: int):
         """Loops over animation channels and sets animation data.
 
         Parameters
@@ -486,6 +486,8 @@ class glTF:
             pygltflib animation object.
         """
         name = animation.name
+        if name is None:
+            name = str(count)
         anim_channel = {}
 
         for channel in animation.channels:
@@ -494,8 +496,8 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            sampler_data = self.get_matrix_from_sampler(path, node_id,
-                                                        name, sampler)
+            sampler_data = self.get_matrix_from_sampler(path, node_id, name,
+                                                        anim_channel, sampler)
             anim_channel[node_id] = sampler_data
         self.animation_channels[name] = anim_channel
 
@@ -529,14 +531,16 @@ class glTF:
             'interpolation': interpolation,
             'property': transform_type}
 
-    def get_matrix_from_sampler(self, prop, node, name, sampler: gltflib.Sampler):
+    def get_matrix_from_sampler(self, prop, node, name,
+                                anim_channel, sampler: gltflib.Sampler):
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
         tran_matrix = []
-        if node in self.sampler_matrices:
-            prev_arr = self.sampler_matrices[node]['matrix']
+        if node in anim_channel:
+            prev_arr = anim_channel[node]['matrix']
         else:
             prev_arr = [np.identity(4) for i in range(len(time_array))]
+
         for i, arr in enumerate(tran_array):
             temp = self.generate_tmatrix(arr, prop)
             tran_matrix.append(np.dot(prev_arr[i], temp))
@@ -579,7 +583,6 @@ class glTF:
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
         """Applies the skinnig matrix, that transforms the vertices.
-        NOTE: vertices has joint_matrix applied already.
 
         Parameters
         ----------
@@ -596,8 +599,6 @@ class glTF:
         clone = np.copy(vertices)
         weights = self.weights_0[actor_index]
         joints = self.joints_0[actor_index]
-        # print(weights)
-        # print(joints)
 
         for i, xyz in enumerate(clone):
             a_joint = joints[i]
@@ -609,15 +610,13 @@ class glTF:
                 np.multiply(a_weight[1], joint_matrices[a_joint[1]]) +\
                 np.multiply(a_weight[2], joint_matrices[a_joint[2]]) +\
                 np.multiply(a_weight[3], joint_matrices[a_joint[3]])
-            # print(skin_mat)
 
             xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
-            # xyz = np.dot(np.append(xyz, [1.0]), skin_mat)
             clone[i] = xyz[:3]
 
         return clone
 
-    def transverse_bones(self, bone_id, parent_timeline: Timeline):
+    def transverse_bones(self, bone_id, channel_name, parent_timeline: Timeline):
         """
         bone_id : int
             Index of the bone.
@@ -626,8 +625,8 @@ class glTF:
         """
         node = self.gltf.nodes[bone_id]
         timeline = Timeline(playback_panel=False)
-        if bone_id in self.sampler_matrices:
-            transforms = self.sampler_matrices[bone_id]
+        if bone_id in self.animation_channels[channel_name]:
+            transforms = self.animation_channels[channel_name][bone_id]
             timestamps = transforms['timestamps']
             metrices = transforms['matrix']
 
@@ -640,24 +639,24 @@ class glTF:
         self.timeline_order.append(bone_id)
         if node.children:
             for child_bone in node.children:
-                self.transverse_bones(child_bone, timeline)
-        # else:
-            # self.child_timelines.append(timeline)
+                self.transverse_bones(child_bone, channel_name, timeline)
 
     def get_skin_timeline(self):
         """One timeline for each bone, contains parent transforms.
 
         Returns
         -------
-        root_timeline : Timeline
+        root_timelines : Dict
             A timeline containing all the child timelines for bones.
         """
-        root_timeline = Timeline(playback_panel=True)
-        root_bone = self.gltf.skins[0].skeleton
-        root_bone = root_bone if root_bone else self.bones[0]
-        print(f'root bone: {root_bone}')
-        self.transverse_bones(root_bone, root_timeline)
-        return root_timeline
+        root_timelines = {}
+        for name in self.animation_channels.keys():
+            root_timeline = Timeline(playback_panel=True)
+            root_bone = self.gltf.skins[0].skeleton
+            root_bone = root_bone if root_bone else self.bones[0]
+            self.transverse_bones(root_bone, name, root_timeline)
+            root_timelines[name] = root_timeline
+        return root_timelines
 
     def get_joint_actors(self, length=0.5, with_transforms=False):
         """Creates an arrow actor for each bone in a skinned model.
