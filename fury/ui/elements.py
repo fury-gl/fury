@@ -3217,8 +3217,8 @@ class PolyLine(UI):
         """Init this UI element.
         Parameters
         ----------
-        position : (float, float), optional
-            (x, y) in pixels.
+        line_width : int, optional
+            Width of the individual line.
         """
         self.points = []
         self.line_width = line_width
@@ -3266,7 +3266,7 @@ class PolyLine(UI):
 
             self.update_line(np.asarray(new_points))
 
-    def resize(self, size):
+    def resize_line(self, size):
         offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
         self.current_line.resize((hyp - offset_from_mouse, self.line_width))
@@ -3324,7 +3324,7 @@ class PolyLine(UI):
 
         for val in points:
             self.add_point(val, add_to_scene=True)
-        self.resize(np.asarray(points[0]) - self.current_line.position)
+        self.resize_line(np.asarray(points[0]) - self.current_line.position)
 
     def remove(self):
         self.points = []
@@ -3342,7 +3342,7 @@ class PolyLine(UI):
 
     def add_point(self, point, add_to_scene=False):
         if self.current_line:
-            self.resize(np.asarray(point) - self.current_line.position)
+            self.resize_line(np.asarray(point) - self.current_line.position)
 
         new_line = Rectangle2D((self.line_width, self.line_width), position=point, color=self.color)
         new_line.on_left_mouse_button_pressed = self.on_left_mouse_button_pressed
@@ -3622,7 +3622,7 @@ class DrawShape(UI):
             self.rotate(angle=np.arctan2(size[1], size[0]))
 
         elif self.shape_type == "polyline":
-            self.shape.resize(size)
+            self.shape.resize_line(size)
 
         elif self.shape_type == "quad":
             self.shape.resize(size)
@@ -3992,10 +3992,10 @@ class DrawPanel(UI):
                 return
             if np.linalg.norm(self.clamp_mouse_position(i_ren.event.position)
                               - self.current_shape.shape.lines[0].position) < 10:
-                self.current_shape.shape.resize(
+                self.current_shape.shape.resize_line(
                     self.current_shape.shape.lines[0].position - current_line.position)
             else:
-                self.current_shape.shape.resize(self.clamp_mouse_position(
+                self.current_shape.shape.resize_line(self.clamp_mouse_position(
                     i_ren.event.position) - current_line.position)
         i_ren.force_render()
 
