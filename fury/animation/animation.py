@@ -185,7 +185,7 @@ class Animation(Container):
         return data.get(attrib)
 
     def get_keyframes(self, attrib=None, is_camera=False):
-        """Set a keyframe for a certain attribute.
+        """Get a keyframe for a specific or all attributes.
 
         Parameters
         ----------
