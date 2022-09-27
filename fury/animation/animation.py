@@ -1,14 +1,13 @@
 import time
 import warnings
+import numpy as np
 from collections import defaultdict
+from scipy.spatial import transform
 from fury import utils, actor
 from fury.actor import Container
+from fury.lib import Actor, Transform
 from fury.animation.interpolator import spline_interpolator, \
     step_interpolator, linear_interpolator, slerp
-import numpy as np
-from scipy.spatial import transform
-from fury.ui.elements import PlaybackPanel
-from fury.lib import Actor, Transform
 
 
 class Animation(Container):
@@ -233,18 +232,15 @@ class Animation(Container):
             The name of the attribute.
         keyframes: dict
             A dict object containing keyframes to be set.
-        is_camera: bool
+        is_camera: bool, optional
             Indicated whether setting a camera property or general property.
 
         Notes
-        ---------
+        -----
         Keyframes can be on any of the following forms:
         >>> key_frames_simple = {1: [1, 2, 1], 2: [3, 4, 5]}
         >>> key_frames_bezier = {1: {'value': [1, 2, 1]},
         >>>                       2: {'value': [3, 4, 5], 'in_cp': [1, 2, 3]}}
-
-        Examples
-        ---------
         >>> pos_keyframes = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Animation.set_keyframes('position', pos_keyframes)
         """
@@ -271,6 +267,20 @@ class Animation(Container):
         self.set_keyframe(attrib, timestamp, value, is_camera=True, **kwargs)
 
     def is_inside_scene_at(self, timestamp):
+        """Check if the Animation is set to be inside the scene at a specific
+        timestamp.
+
+        Returns
+        -------
+        bool
+            True if the Animation is set to be inside the scene at the given
+            timestamp.
+        Notes
+        -----
+        If the parent Animation is set to be out of the scene at that time, all
+        of their child animations will be out of the scene as well.
+
+        """
         parent = self._parent_animation
         parent_in_scene = True
         if parent is not None:
@@ -330,11 +340,11 @@ class Animation(Container):
             A dict object containing keyframes to be set.
 
         Notes
-        ---------
+        -----
         Cubic Bézier curve control points are not supported yet in this setter.
 
         Examples
-        ---------
+        --------
         >>> cam_pos = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
         >>> Animation.set_camera_keyframes('position', cam_pos)
         """
@@ -348,7 +358,7 @@ class Animation(Container):
         ----------
         attrib: str
             The name of the property.
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator to be used to
             interpolate/evaluate keyframes.
         is_camera: bool, optional
@@ -401,13 +411,13 @@ class Animation(Container):
         self.update_motion_path()
 
     def is_interpolatable(self, attrib, is_camera=False):
-        """Checks whether a property is interpolatable.
+        """Check whether a property is interpolatable.
 
         Parameters
         ----------
         attrib: str
             The name of the property.
-        is_camera: bool
+        is_camera: bool, optional
             Indicated whether checking a camera property or general property.
 
         Returns
@@ -416,7 +426,7 @@ class Animation(Container):
             True if the property is interpolatable by the Animation.
 
         Notes
-        -------
+        -----
         True means that it's safe to use `Interpolator.interpolate(t)` for the
         specified property. And False means the opposite.
 
@@ -434,7 +444,7 @@ class Animation(Container):
             The name of the camera property.
             The already handled properties are position, focal, and view_up.
 
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that handles the
             camera property interpolation between keyframes.
         is_evaluator: bool, optional
@@ -454,7 +464,7 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle the
              position keyframes.
         is_evaluator: bool, optional
@@ -468,7 +478,7 @@ class Animation(Container):
             the `spline_interpolator`.
 
         Examples
-        ---------
+        --------
         >>> Animation.set_position_interpolator(spline_interpolator, degree=5)
         """
         self.set_interpolator('position', interpolator,
@@ -479,7 +489,7 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             TThe generator function of the interpolator that would handle
             the scale keyframes.
         is_evaluator: bool, optional
@@ -487,7 +497,7 @@ class Animation(Container):
             function that does not depend on keyframes.
 
         Examples
-        ---------
+        --------
         >>> Animation.set_scale_interpolator(step_interpolator)
         """
         self.set_interpolator('scale', interpolator, is_evaluator=is_evaluator)
@@ -497,14 +507,15 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle the
             rotation (orientation) keyframes.
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
+
         Examples
-        ---------
+        --------
         >>> Animation.set_rotation_interpolator(slerp)
         """
         self.set_interpolator('rotation', interpolator,
@@ -515,14 +526,15 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle
             the color keyframes.
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
+
         Examples
-        ---------
+        --------
         >>> Animation.set_color_interpolator(lab_color_interpolator)
         """
         self.set_interpolator('color', interpolator, is_evaluator=is_evaluator)
@@ -532,14 +544,14 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle
             the opacity keyframes.
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
         Examples
-        ---------
+        --------
         >>> Animation.set_opacity_interpolator(step_interpolator)
         """
         self.set_interpolator('opacity', interpolator,
@@ -551,7 +563,7 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle the
             interpolation of the camera position keyframes.
         is_evaluator: bool, optional
@@ -566,7 +578,7 @@ class Animation(Container):
 
         Parameters
         ----------
-        interpolator: function
+        interpolator: callable
             The generator function of the interpolator that would handle the
             interpolation of the camera focal position keyframes.
         is_evaluator: bool, optional
@@ -1153,7 +1165,7 @@ class Animation(Container):
         Parameters
         ----------
 
-        Timeline:
+        timeline: Timeline
             The Timeline handling the current animation, None, if there is no
             associated Timeline.
 
