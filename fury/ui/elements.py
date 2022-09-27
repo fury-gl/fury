@@ -3269,7 +3269,6 @@ class PolyLine(UI):
             self.update_line(np.asarray(new_points))
 
     def resize_line(self, size):
-        offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
         self.current_line.resize((hyp - self.offset_from_mouse, self.line_width))
         self.rotate_line(angle=np.arctan2(size[1], size[0]))
