@@ -1,6 +1,6 @@
-import time
-import warnings
 import numpy as np
+from warnings import warn
+from time import perf_counter
 from collections import defaultdict
 from scipy.spatial import transform
 from fury import utils, actor
@@ -195,11 +195,11 @@ class Animation(Container):
         is_camera: bool, optional
             Indicated whether setting a camera property or general property.
         """
-        
+
         data = self._get_data(is_camera=is_camera)
         if attrib is None:
             attribs = data.keys()
-            return {attrib: data.get(attrib, {}).get('keyframes', {}) for 
+            return {attrib: data.get(attrib, {}).get('keyframes', {}) for
                     attrib in attribs}
         return data.get(attrib, {}).get('keyframes', {})
 
@@ -738,8 +738,8 @@ class Animation(Container):
                                                      degrees=True).as_quat()
             self.set_keyframe('rotation', timestamp, rotation, **kwargs)
         else:
-            warnings.warn(f'Keyframe with {no_components} components is not a '
-                          f'valid rotation data. Skipped!')
+            warn(f'Keyframe with {no_components} components is not a '
+                 f'valid rotation data. Skipped!')
 
     def set_rotation_as_vector(self, timestamp, vector, **kwargs):
         """Set a rotation keyframe at a specific timestamp.
@@ -1312,7 +1312,7 @@ class Animation(Container):
         attrib = self._get_attribute_data(property_name)
         attrib.get('callbacks', []).append(cbk_func)
 
-    def update_animation(self, t=None):
+    def update_animation(self, time=None):
         """Update the animation.
 
         Update the animation at a certain time. This will make sure all
@@ -1320,21 +1320,21 @@ class Animation(Container):
 
         Parameters
         ----------
-        t: float or int, optional, default: None
-            Time to update animation at.
+        time: float or int, optional, default: None
+            The time to update animation at.
         """
-        t = t if t is not None else \
-            time.perf_counter() - self._added_to_scene_time
+        time = time if time is not None else \
+            perf_counter() - self._added_to_scene_time
 
         # handling in/out of scene events
-        in_scene = self.is_inside_scene_at(t)
-        self._handle_scene_event(t)
+        in_scene = self.is_inside_scene_at(time)
+        self._handle_scene_event(time)
 
         if self.duration:
-            if self._loop and t > 0:
-                t = t % self.duration
-            elif t > self.duration:
-                t = self.duration
+            if self._loop and time > 0:
+                time = time % self.duration
+            elif time > self.duration:
+                time = self.duration
         if isinstance(self._parent_animation, Animation):
             self._transform.DeepCopy(self._parent_animation._transform)
         else:
@@ -1346,7 +1346,7 @@ class Animation(Container):
                 translation = np.identity(4)
                 translation[:3, 3] = pos
                 # camera axis is reverted
-                rot = -self.get_camera_rotation(t)
+                rot = -self.get_camera_rotation(time)
                 rot = transform.Rotation.from_quat(rot).as_matrix()
                 rot = np.array([[*rot[0], 0],
                                 [*rot[1], 0],
@@ -1356,15 +1356,15 @@ class Animation(Container):
                 self._camera.SetModelTransformMatrix(rot.flatten())
 
             if self.is_interpolatable('position', is_camera=True):
-                cam_pos = self.get_camera_position(t)
+                cam_pos = self.get_camera_position(time)
                 self._camera.SetPosition(cam_pos)
 
             if self.is_interpolatable('focal', is_camera=True):
-                cam_foc = self.get_camera_focal(t)
+                cam_foc = self.get_camera_focal(time)
                 self._camera.SetFocalPoint(cam_foc)
 
             if self.is_interpolatable('view_up', is_camera=True):
-                cam_up = self.get_camera_view_up(t)
+                cam_up = self.get_camera_view_up(time)
                 self._camera.SetViewUp(cam_up)
             elif not self.is_interpolatable('view_up', is_camera=True):
                 # to preserve up-view as default after user interaction
@@ -1372,33 +1372,33 @@ class Animation(Container):
 
         elif self._is_camera_animated and self._scene:
             self._camera = self._scene.camera()
-            self.update_animation(t)
+            self.update_animation(time)
             return
 
         # actors properties
         if in_scene:
             if self.is_interpolatable('position'):
-                position = self.get_position(t)
+                position = self.get_position(time)
                 self._transform.Translate(*position)
 
             if self.is_interpolatable('opacity'):
-                opacity = self.get_opacity(t)
+                opacity = self.get_opacity(time)
                 [act.GetProperty().SetOpacity(opacity) for
                  act in self.actors]
 
             if self.is_interpolatable('rotation'):
-                x, y, z = self.get_rotation(t)
+                x, y, z = self.get_rotation(time)
                 # Rotate in the same order as VTK defaults.
                 self._transform.RotateZ(z)
                 self._transform.RotateX(x)
                 self._transform.RotateY(y)
 
             if self.is_interpolatable('scale'):
-                scale = self.get_scale(t)
+                scale = self.get_scale(time)
                 self._transform.Scale(*scale)
 
             if self.is_interpolatable('color'):
-                color = self.get_color(t)
+                color = self.get_color(time)
                 for act in self.actors:
                     act.vcolors[:] = color * 255
                     utils.update_actor(act)
@@ -1409,11 +1409,11 @@ class Animation(Container):
         for attrib in self._data:
             callbacks = self._data.get(attrib, {}).get('callbacks', [])
             if callbacks is not [] and self.is_interpolatable(attrib):
-                value = self.get_value(attrib, t)
+                value = self.get_value(attrib, time)
                 [cbk(value) for cbk in callbacks]
 
         # Also update all child Animations.
-        [animation.update_animation(t) for animation in self._animations]
+        [animation.update_animation(time) for animation in self._animations]
 
         if self._scene and self._parent_animation is None:
             self._scene.reset_clipping_range()
@@ -1428,5 +1428,5 @@ class Animation(Container):
             ren.add(self._motion_path_actor)
         self._scene = ren
         self._added_to_scene = True
-        self._added_to_scene_time = time.perf_counter()
+        self._added_to_scene_time = perf_counter()
         self.update_animation(0)

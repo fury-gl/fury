@@ -1,4 +1,4 @@
-import time
+from time import perf_counter
 from fury.ui.elements import PlaybackPanel
 from fury.animation.animation import Animation
 
@@ -67,7 +67,7 @@ class Timeline(Animation):
             if self.current_timestamp >= self.duration:
                 self.current_timestamp = 0
             self._last_started_time = \
-                time.perf_counter() - self._current_timestamp / self.speed
+                perf_counter() - self._current_timestamp / self.speed
             self._playing = True
 
     def pause(self):
@@ -98,7 +98,7 @@ class Timeline(Animation):
 
         """
         if self.playing:
-            self._current_timestamp = (time.perf_counter() -
+            self._current_timestamp = (perf_counter() -
                                        self._last_started_time) * self.speed
         return self._current_timestamp
 
@@ -130,7 +130,7 @@ class Timeline(Animation):
             timestamp = self.duration
         if self.playing:
             self._last_started_time = \
-                time.perf_counter() - timestamp / self.speed
+                perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
             self.update_animation(timestamp)
@@ -208,7 +208,7 @@ class Timeline(Animation):
         if speed <= 0:
             return
         self._speed = speed
-        self._last_started_time = time.perf_counter()
+        self._last_started_time = perf_counter()
         self.current_timestamp = current
 
     @property
@@ -246,7 +246,7 @@ class Timeline(Animation):
             self.playback_panel.final_time = self.duration
         return self.duration
 
-    def update_animation(self, t=None):
+    def update_animation(self, time=None):
         """Update the animation.
 
         Update the animation and the playback of the Timeline. As well as
@@ -254,19 +254,19 @@ class Timeline(Animation):
 
         Parameters
         ----------
-        t: float or int, optional, default: None
+        time: float or int, optional, default: None
             Time to update animation at.
             IF None, The time is determined by the Timeline itself and can be
             controlled using the playback panel graphically or by the Timeline
             methods such as ``Timeline.seek(t)``.
         """
         force = True
-        if t is None:
-            t = self.current_timestamp
+        if time is None:
+            time = self.current_timestamp
             force = False
         if self.has_playback_panel:
-            self.playback_panel.current_time = t
-        if t > self.duration:
+            self.playback_panel.current_time = time
+        if time > self.duration:
             if self._loop:
                 self.seek(0)
             else:
@@ -277,4 +277,4 @@ class Timeline(Animation):
                 else:
                     self.pause()
         if self.playing or force:
-            super(Timeline, self).update_animation(t)
+            super(Timeline, self).update_animation(time)
