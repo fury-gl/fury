@@ -3217,15 +3217,15 @@ class PolyLine(UI):
         """Init this UI element.
         Parameters
         ----------
-        position : (float, float), optional
-            (x, y) in pixels.
+        line_width : int, optional
+            Width of the individual line.
         """
-        # self.points_data = points_data
         self.points = []
         self.line_width = line_width
         self.lines = []
         self.previous_point = None
         self.current_line = None
+        self.closed = False
         self.color = color
         self.offset_from_mouse = offset_from_mouse
         super(PolyLine, self).__init__()
@@ -3235,12 +3235,6 @@ class PolyLine(UI):
         Create a Polyline.
         """
         pass
-        # if len(self.points_data) < 2:
-        #     return
-
-        # for ptn in self.points_data:
-        #     self.add_point(ptn)
-        # self.add_point(self.points_data[0])
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -3274,7 +3268,8 @@ class PolyLine(UI):
 
             self.update_line(np.asarray(new_points))
 
-    def resize(self, size):
+    def resize_line(self, size):
+        offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
         self.current_line.resize((hyp - self.offset_from_mouse, self.line_width))
         self.rotate_line(angle=np.arctan2(size[1], size[0]))
@@ -3317,6 +3312,11 @@ class PolyLine(UI):
 
         self.update_line(new_points_arr.astype("int"))
 
+        bb_min, bb_max, bb_size = cal_bounding_box_2d(self.calculate_vertices())
+        new_center = bb_min + bb_size//2
+
+        self.position += (new_center - center)
+
     def update_line(self, points):
         if len(self.lines) > 0:
             self.remove()
@@ -3326,7 +3326,17 @@ class PolyLine(UI):
 
         for val in points:
             self.add_point(val, add_to_scene=True)
-        self.resize(np.asarray(points[0]) - self.current_line.position)
+
+        if self.closed:
+            self.resize_line(np.asarray(points[0]) - self.current_line.position)
+        else:
+            self.remove_last_line()
+
+    def remove_last_line(self):
+        self._scene.rm(self.current_line.actor)
+
+        self.lines.pop()
+        self.current_line = self.lines[-1]
 
     def remove(self):
         self.points = []
@@ -3334,11 +3344,6 @@ class PolyLine(UI):
         self.lines = []
         self.previous_point = None
         self.current_line = None
-
-    # def delete(self):
-    #     self.current_line = None
-    #     self.lines.pop()
-    #     self._scene.rm(self.current_line)
 
     def calculate_vertices(self):
         vertices = np.empty((0, 2), int)
@@ -3349,13 +3354,11 @@ class PolyLine(UI):
 
     def add_point(self, point, add_to_scene=False):
         if self.current_line:
-            self.resize(np.asarray(point) - self.current_line.position)
+            self.resize_line(np.asarray(point) - self.current_line.position)
 
         new_line = Rectangle2D((self.line_width, self.line_width), position=point, color=self.color)
-        new_line.on_left_mouse_button_pressed = self.left_button_pressed
-        new_line.on_left_mouse_button_dragged = self.left_button_dragged
-
-        # control_point = Disk2D(5, center=point)
+        new_line.on_left_mouse_button_pressed = self.on_left_mouse_button_pressed
+        new_line.on_left_mouse_button_dragged = self.on_left_mouse_button_dragged
 
         self.current_line = new_line
         self.lines.append(new_line)
@@ -3373,23 +3376,6 @@ class PolyLine(UI):
         self._color = color
         for line in self.lines:
             line.actor.GetProperty().SetColor(*color)
-
-    def left_button_pressed(self, i_ren, _obj, line):
-        # click_pos = np.array(i_ren.event.position)
-        # self._drag_offset = click_pos - self.position
-        # i_ren.event.abort()  # Stop propagating the event.
-        self.on_left_mouse_button_pressed(i_ren, _obj, line)
-
-    def left_button_dragged(self, i_ren, _obj, line):
-        # if self._drag_offset is not None:
-        #     click_position = np.array(i_ren.event.position)
-        #     new_position = click_position - self._drag_offset
-        #     self.position = new_position
-        # i_ren.force_render()
-        self.on_left_mouse_button_dragged(i_ren, _obj, line)
-
-    def left_button_released(self, i_ren, _obj, line):
-        self.on_left_mouse_button_released(i_ren, _obj, line)
 
 
 class DrawShape(UI):
@@ -3649,7 +3635,7 @@ class DrawShape(UI):
             self.rotate(angle=np.arctan2(size[1], size[0]))
 
         elif self.shape_type == "polyline":
-            self.shape.resize(size)
+            self.shape.resize_line(size)
 
         elif self.shape_type == "quad":
             self.shape.resize(size)
@@ -4028,34 +4014,33 @@ class DrawPanel(UI):
 
     def mouse_move(self, i_ren, _obj, element):
         if self.is_creating_polyline:
-            current_line = self.current_shape.shape.current_line
+            polyline = self.current_shape.shape
+            current_line = polyline.current_line
             if not current_line:
                 return
             if np.linalg.norm(self.clamp_mouse_position(i_ren.event.position)
-                              - self.current_shape.shape.lines[0].position) < 10:
-                self.current_shape.shape.resize(
-                    self.current_shape.shape.lines[0].position - current_line.position)
+                              - polyline.lines[0].position) < 10:
+                polyline.resize_line(
+                    polyline.lines[0].position - current_line.position)
+                polyline.closed = True
             else:
-                self.current_shape.shape.resize(self.clamp_mouse_position(
+                polyline.resize_line(self.clamp_mouse_position(
                     i_ren.event.position) - current_line.position)
+                polyline.closed = False
         i_ren.force_render()
 
     def left_button_released(self, i_ren, _obj, element):
         if self.is_creating_polyline:
             self.current_shape.shape.add_point(i_ren.event.position, True)
             self.current_shape.cal_bounding_box()
-        # if self.current_mode == "polyline":
-        #     self.shape_list[-1].shape.add_point(i_ren.event.position, interactive=True)
-
-        #     i_ren.add_active_prop(self.canvas.background.actor)
-        #     self.canvas.background.left_button_state = "dragging"
-        #     self.mouse_move_callback(i_ren, _obj, element)
         i_ren.force_render()
 
     def right_button_released(self,  i_ren, _obj, element):
-        # i_ren.remove_active_prop(self.canvas.background.actor)
-        # i_ren.force_render()
-        self.is_creating_polyline = False
+        if self.is_creating_polyline:
+            self.is_creating_polyline = False
+            polyline = self.current_shape.shape
+            if not polyline.closed:
+                polyline.remove_last_line()
         i_ren.force_render()
 
 
