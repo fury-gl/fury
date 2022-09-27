@@ -585,7 +585,7 @@ class glTF:
         main_timeline = Timeline(playback_panel=True)
         timelines = self.get_animation_timelines()
         for timeline in timelines:
-            main_timeline.add_child_timeline(timeline)
+            main_timeline.add_child_animation(timeline)
         return main_timeline
 
 
