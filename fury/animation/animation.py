@@ -127,13 +127,48 @@ class Animation(Container):
             self._motion_path_actor = mpa
 
     def _get_data(self, is_camera=False):
+        """Get animation data.
+
+        Parameters
+        ----------
+        is_camera: bool, optional, default : False
+            Specifies whether return general data or camera-related data.
+        Returns
+        -------
+        dict:
+            The animation data containing keyframes and interpolators.
+        """
         if is_camera:
             self._is_camera_animated = True
             return self._camera_data
         else:
             return self._data
 
+    def _get_camera_data(self):
+        """Get camera animation data.
+
+        Returns
+        -------
+        dict:
+            The camera animation data containing keyframes and interpolators.
+        """
+        return self._get_data(is_camera=True)
+
     def _get_attribute_data(self, attrib, is_camera=False):
+        """Get animation data for a specific attribute.
+
+        Parameters
+        ----------
+        attrib: str
+            The attribute name to get data for.
+        is_camera: bool, optional, default : False
+            Specifies whether return general data or camera-related data.
+
+        Returns
+        -------
+        dict:
+            The animation data for a specific attribute.
+        """
         data = self._get_data(is_camera=is_camera)
 
         if attrib not in data:
