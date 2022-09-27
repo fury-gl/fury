@@ -3225,6 +3225,7 @@ class PolyLine(UI):
         self.lines = []
         self.previous_point = None
         self.current_line = None
+        self.closed = False
         self.color = color
         super(PolyLine, self).__init__()
 
@@ -3324,7 +3325,17 @@ class PolyLine(UI):
 
         for val in points:
             self.add_point(val, add_to_scene=True)
-        self.resize_line(np.asarray(points[0]) - self.current_line.position)
+
+        if self.closed:
+            self.resize_line(np.asarray(points[0]) - self.current_line.position)
+        else:
+            self.remove_last_line()
+
+    def remove_last_line(self):
+        self._scene.rm(self.current_line.actor)
+
+        self.lines.pop()
+        self.current_line = self.lines[-1]
 
     def remove(self):
         self.points = []
@@ -3995,9 +4006,11 @@ class DrawPanel(UI):
                               - polyline.lines[0].position) < 10:
                 polyline.resize_line(
                     polyline.lines[0].position - current_line.position)
+                polyline.closed = True
             else:
                 polyline.resize_line(self.clamp_mouse_position(
                     i_ren.event.position) - current_line.position)
+                polyline.closed = False
         i_ren.force_render()
 
     def left_button_released(self, i_ren, _obj, element):
@@ -4007,7 +4020,11 @@ class DrawPanel(UI):
         i_ren.force_render()
 
     def right_button_released(self,  i_ren, _obj, element):
-        self.is_creating_polyline = False
+        if self.is_creating_polyline:
+            self.is_creating_polyline = False
+            polyline = self.current_shape.shape
+            if not polyline.closed:
+                polyline.remove_last_line()
         i_ren.force_render()
 
 
