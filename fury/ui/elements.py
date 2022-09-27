@@ -3317,6 +3317,11 @@ class PolyLine(UI):
 
         self.update_line(new_points_arr.astype("int"))
 
+        bb_min, bb_max, bb_size = cal_bounding_box_2d(self.calculate_vertices())
+        new_center = bb_min + bb_size//2
+
+        self.position += (new_center - center)
+
     def update_line(self, points):
         if len(self.lines) > 0:
             self.remove()
