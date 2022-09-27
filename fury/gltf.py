@@ -625,15 +625,15 @@ class glTF:
         """
         node = self.gltf.nodes[bone_id]
         timeline = Timeline(playback_panel=False)
+        orig_transform = self.bone_tranforms[bone_id]
         if bone_id in self.animation_channels[channel_name]:
             transforms = self.animation_channels[channel_name][bone_id]
             timestamps = transforms['timestamps']
             metrices = transforms['matrix']
-
             for time, matrix in zip(timestamps, metrices):
                 timeline.set_keyframe('transform', time[0], matrix)
         else:
-            timeline.set_keyframe('transform', 0.0, np.identity(4))
+            timeline.set_keyframe('transform', 0.0, orig_transform)
 
         parent_timeline.add(timeline)
         self.timeline_order.append(bone_id)
@@ -680,7 +680,7 @@ class glTF:
         parent_transforms = self.bone_tranforms
 
         for bone in self.bones:
-            arrow = actor.arrow(origin, [0, 1, 0], [1, 0, 0], scales=length)
+            arrow = actor.arrow(origin, [0, 1, 0], [1, 1, 1], scales=length)
             if with_transforms:
                 verts = utils.vertices_from_actor(arrow)
                 actor_transf = self.transformations[0]

@@ -6,7 +6,7 @@ from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 
 scene = window.Scene()
-bone = False
+show_bones = False
 
 fetch_gltf('RiggedFigure', 'glTF')
 filename = read_viz_gltf('RiggedFigure')
@@ -26,7 +26,7 @@ showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
 showm.initialize()
 scene.add(timeline)
 
-if bone:
+if show_bones:
     bactors = gltf_obj.get_joint_actors(length=0.2, with_transforms=False)
     bverts = {}
     for bone, joint_actor in bactors.items():
@@ -50,7 +50,7 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
 
     node = gltf_obj.gltf.nodes[bone_id]
 
-    if bone:
+    if show_bones:
         actor_transform = gltf_obj.transformations[0]
         bone_transform = np.dot(actor_transform, new_deform)
         bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
