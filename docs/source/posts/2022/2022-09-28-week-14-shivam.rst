@@ -21,7 +21,7 @@ What did you do this week?
 
     .. raw:: html
 
-        <iframe id="player" type="text/html"   width="1280" height="600" src="https://user-images.githubusercontent.com/74976752/192869546-06028d5d-a687-41e2-8a81-be9cc7e4f5f6.mp4" frameborder="0"></iframe>
+        <iframe id="player" type="text/html"   width="1280" height="720" src="https://user-images.githubusercontent.com/74976752/192871376-881fbdd6-2fab-4a7f-9f4f-07663d93561c.mp4" frameborder="0"></iframe>
 
 
 What is coming up next week?
