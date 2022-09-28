@@ -765,7 +765,7 @@ class glTF:
                 timelines.append(timeline)
         return timelines
 
-    def get_main_timeline(self):
+    def main_timeline(self):
         """Returns main timeline with all animations.
         """
         main_timeline = Timeline(playback_panel=True)
