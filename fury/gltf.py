@@ -487,7 +487,7 @@ class glTF:
         """
         name = animation.name
         if name is None:
-            name = str(count)
+            name = str(f'anim_{count}')
         anim_channel = {}
 
         for channel in animation.channels:

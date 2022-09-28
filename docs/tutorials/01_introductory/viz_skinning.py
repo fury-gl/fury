@@ -17,7 +17,7 @@ actors = gltf_obj.actors()
 vertices = [vertices_from_actor(actor) for actor in actors]
 clone = [np.copy(vert) for vert in vertices]
 
-timeline = gltf_obj.get_skin_timeline()['0']
+timeline = gltf_obj.get_skin_timeline()['anim_0']
 timeline.add_actor(actors)
 
 scene = window.Scene()
