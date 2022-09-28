@@ -64,8 +64,6 @@ def test_timeline():
     tl_2.set_position(12, [0, 0, 1])
     assert tl_2.duration == 12
 
-    tl = Timeline(length=2, loop=True)
-    tl.play()
-    time.sleep(3)
-    print(tl.current_timestamp)
-    assert tl.current_timestamp >= 3
+    tl = Timeline(length=12)
+    tl.set_position(1, np.array([1, 1, 1]))
+    assert tl.duration == 12
