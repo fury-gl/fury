@@ -1178,10 +1178,12 @@ class Animation(Container):
             for a in actor:
                 self.add_actor(a, static=static)
         elif static:
-            self._static_actors.append(actor)
+            if actor not in self.static_actors:
+                self._static_actors.append(actor)
         else:
-            actor.vcolors = utils.colors_from_actor(actor)
-            super(Animation, self).add(actor)
+            if actor not in self.actors:
+                actor.vcolors = utils.colors_from_actor(actor)
+                super(Animation, self).add(actor)
 
     @property
     def timeline(self):
