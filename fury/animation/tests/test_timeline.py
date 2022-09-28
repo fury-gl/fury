@@ -1,12 +1,8 @@
 import time
 import numpy as np
 import numpy.testing as npt
-from fury import actor
-from fury.animation.interpolator import linear_interpolator, \
-    step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
-    spline_interpolator
-from fury.animation.timeline import Timeline
 import fury.testing as ft
+from fury.animation import Timeline
 from fury.ui import PlaybackPanel
 
 
@@ -15,28 +11,16 @@ def assert_not_equal(x, y):
 
 
 def test_timeline():
-    shaders = False
     tl = Timeline(playback_panel=True)
     tl.set_position(0, np.array([1, 1, 1]))
     # overriding a keyframe
     tl.set_position(0, np.array([0, 0, 0]))
-    tl.set_position(3, np.array([2, 2, 2]))
-    tl.set_position(5, np.array([3, 15, 2]))
-    tl.set_position(7, np.array([4, 2, 20]))
-
-    tl.set_opacity(0, 0)
-    tl.set_opacity(7, 1)
-
-    tl.set_rotation(0, np.array([90, 0, 0]))
     tl.set_rotation(7, np.array([0, 180, 0]))
-
-    tl.set_scale(0, np.array([1, 1, 1]))
-    tl.set_scale(7, np.array([5, 5, 5]))
-
-    tl.set_color(0, np.array([1, 0, 1]))
 
     # test playback panel
     ft.assert_true(isinstance(tl.playback_panel, PlaybackPanel))
+
+    tl.update_animation()
 
     for t in [-10, 0, 2.2, 7, 100]:
         tl.seek(t)
@@ -44,7 +28,7 @@ def test_timeline():
         ft.assert_greater_equal(tl.current_timestamp, 0)
 
         ft.assert_greater_equal(tl.current_timestamp,
-                             tl.playback_panel.current_time)
+                                tl.playback_panel.current_time)
 
         if 0 <= t <= tl.duration:
             npt.assert_almost_equal(tl.current_timestamp, t)
@@ -68,38 +52,20 @@ def test_timeline():
     ft.assert_true(tl.stopped)
     npt.assert_almost_equal(tl.current_timestamp, 0)
 
-    npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
-    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
+    length = 8
+    tl_2 = Timeline(length=length)
+    tl.add_child_animation(tl_2)
+    assert tl_2 in tl.child_animations
 
-    tl.set_position_interpolator(linear_interpolator)
-    tl.set_position_interpolator(cubic_bezier_interpolator)
-    tl.set_position_interpolator(step_interpolator)
-    tl.set_position_interpolator(cubic_spline_interpolator)
-    tl.set_position_interpolator(spline_interpolator, degree=2)
-    tl.set_rotation_interpolator(step_interpolator)
-    tl.set_scale_interpolator(linear_interpolator)
-    tl.set_opacity_interpolator(step_interpolator)
-    tl.set_color_interpolator(linear_interpolator)
+    tl_2.set_position(12, [1, 2, 1])
+    assert tl_2.duration == length
 
-    npt.assert_almost_equal(tl.get_position(0), np.array([0, 0, 0]))
-    npt.assert_almost_equal(tl.get_position(7), np.array([4, 2, 20]))
+    tl_2 = Timeline()
+    tl_2.set_position(12, [0, 0, 1])
+    assert tl_2.duration == 12
 
-    npt.assert_almost_equal(tl.get_color(7), np.array([1, 0, 1]))
-    tl.set_color(25, np.array([0.2, 0.2, 0.5]))
-    assert_not_equal(tl.get_color(7), np.array([1, 0, 1]))
-    assert_not_equal(tl.get_color(25), np.array([0.2, 0.2, 0.5]))
-
-    cube = actor.cube(np.array([[0, 0, 0]]))
-    tl.add_actor(cube)
-
-    # using force since the animation is not playing
-    tl.update_animation(0)
-
-    if not shaders:
-        transform = cube.GetUserTransform()
-        npt.assert_almost_equal(tl.get_position(tl.current_timestamp),
-                                transform.GetPosition())
-        npt.assert_almost_equal(tl.get_scale(tl.current_timestamp),
-                                transform.GetScale())
-        npt.assert_almost_equal(tl.get_rotation(tl.current_timestamp),
-                                transform.GetOrientation())
+    tl = Timeline(length=2, loop=True)
+    tl.play()
+    time.sleep(3)
+    print(tl.current_timestamp)
+    assert tl.current_timestamp >= 3
