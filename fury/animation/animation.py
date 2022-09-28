@@ -3,7 +3,8 @@ from warnings import warn
 from time import perf_counter
 from collections import defaultdict
 from scipy.spatial import transform
-from fury import utils, actor
+from fury.actor import line
+from fury import utils
 from fury.actor import Container
 from fury.lib import Actor, Transform
 from fury.animation.interpolator import spline_interpolator, \
@@ -104,7 +105,7 @@ class Animation(Container):
         lines = []
         colors = []
         if self.is_interpolatable('position'):
-            ts = np.linspace(0, self._max_timestamp, res)
+            ts = np.linspace(0, self.duration, res)
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable('color'):
                 [colors.append(self.get_color(t)) for t in ts]
@@ -113,12 +114,14 @@ class Animation(Container):
                          len(self.items)
             else:
                 colors = [1, 1, 1]
+        print(lines)
+
         if len(lines) > 0:
             lines = np.array([lines])
-            if colors is []:
+            if isinstance(colors, list):
                 colors = np.array([colors])
 
-            mpa = actor.line(lines, colors=colors, opacity=0.6)
+            mpa = line(lines, colors=colors, opacity=0.6)
             if self._scene:
                 # remove old motion path actor
                 if self._motion_path_actor is not None:
@@ -1296,7 +1299,7 @@ class Animation(Container):
         """Remove all actors from the Animation"""
         self.clear()
 
-    def add_update_callback(self, property_name, cbk_func):
+    def add_update_callback(self, prop, callback):
         """Add a function to be called each time animation is updated
         This function must accept only one argument which is the current value
         of the named property.
@@ -1304,13 +1307,13 @@ class Animation(Container):
 
         Parameters
         ----------
-        property_name: str
+        prop: str
             The name of the property.
-        cbk_func: function
+        callback: function
             The function to be called whenever the animation is updated.
         """
-        attrib = self._get_attribute_data(property_name)
-        attrib.get('callbacks', []).append(cbk_func)
+        attrib = self._get_attribute_data(prop)
+        attrib.get('callbacks', []).append(callback)
 
     def update_animation(self, time=None):
         """Update the animation.
@@ -1408,7 +1411,7 @@ class Animation(Container):
 
         for attrib in self._data:
             callbacks = self._data.get(attrib, {}).get('callbacks', [])
-            if callbacks is not [] and self.is_interpolatable(attrib):
+            if callbacks != [] and self.is_interpolatable(attrib):
                 value = self.get_value(attrib, time)
                 [cbk(value) for cbk in callbacks]
 
