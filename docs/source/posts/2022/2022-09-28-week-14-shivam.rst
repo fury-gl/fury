@@ -10,18 +10,18 @@ Week 14 - Morphing is here!
 What did you do this week?
 --------------------------
 
-- This week, I started with Multiple actor support in skinning, Managed to do it
-  successfully (see brainStem Model)
+- This week, I started with Multiple actor support in skinning and managed to do it
+  successfully. Here's the preview using the BrainStem model.
 
 - Implementing multiple animation channels support (as seen in the ``Fox`` model). The ``get_skin_timelines()`` method now returns a dictionary of all animation channels with Timeline as their value.
 
 - We merged two PRs, `#689`_ (colors from Material) and `#643`_ (simple animations).
 
-- Added ability to load morphing information and create timelines from it. Here's a preview of the ``AnimatedMorphCube`` and ``AnimatedMorphSphere``models:
+- Added ability to load morphing information and create timelines from it. Here's a preview of the ``AnimatedMorphCube`` and ``AnimatedMorphSphere`` models:
 
-    .. raw:: html
+.. raw:: html
 
-        <iframe id="player" type="text/html"   width="1280" height="720" src="https://user-images.githubusercontent.com/74976752/192871376-881fbdd6-2fab-4a7f-9f4f-07663d93561c.mp4" frameborder="0"></iframe>
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/192871376-881fbdd6-2fab-4a7f-9f4f-07663d93561c.mp4" frameborder="0"></iframe>
 
 
 What is coming up next week?
@@ -31,7 +31,7 @@ What is coming up next week?
 
 - Creating a PR for morphing code.
 
-- Multi primitive(actor) support in morphing.
+- Multi primitive (actor) support in morphing.
 
 
 Did you get stuck anywhere?
