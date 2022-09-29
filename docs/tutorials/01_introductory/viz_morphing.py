@@ -16,7 +16,7 @@ actors = gltf_obj.actors()
 vertices = [vertices_from_actor(actor) for actor in actors]
 clone = [np.copy(vert) for vert in vertices]
 
-timeline = gltf_obj.get_morph_timeline()
+timeline = gltf_obj.morph_timeline()['Square']
 timeline.add_actor(actors)
 
 scene = window.Scene()
@@ -29,9 +29,9 @@ scene.add(timeline)
 def timer_callback(_obj, _event):
     timeline.update_animation()
     timestamp = timeline.current_timestamp
-    weights = timeline.timelines[0].get_value('morph', timestamp)
     for i, verts in enumerate(vertices):
-        verts[:] = gltf_obj.apply_morph_vertices(clone[i], weights)
+        weights = timeline.timelines[0].get_value('morph', timestamp)
+        verts[:] = gltf_obj.apply_morph_vertices(clone[i], weights, i)
         update_actor(actors[i])
         compute_bounds(actors[i])
     showm.render()
