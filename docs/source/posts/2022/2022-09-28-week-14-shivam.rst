@@ -13,6 +13,10 @@ What did you do this week?
 - This week, I started with Multiple actor support in skinning and managed to do it
   successfully. Here's the preview using the BrainStem model.
 
+.. raw:: html
+
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/193109340-2e37c255-139b-499f-a932-b8c0290bb481.mp4" frameborder="0"></iframe>
+
 - Implementing multiple animation channels support (as seen in the ``Fox`` model). The ``get_skin_timelines()`` method now returns a dictionary of all animation channels with Timeline as their value.
 
 - We merged two PRs, `#689`_ (colors from Material) and `#643`_ (simple animations).
