@@ -6,10 +6,10 @@ from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 
 scene = window.Scene()
-show_bones = False
+show_bones = True
 
 fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('RiggedFigure')
+filename = read_viz_gltf('RiggedSimple')
 
 gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()

@@ -625,7 +625,10 @@ class glTF:
         """
         node = self.gltf.nodes[bone_id]
         timeline = Timeline(playback_panel=False)
-        orig_transform = self.bone_tranforms[bone_id]
+        if bone_id in self.bone_tranforms.keys():
+            orig_transform = self.bone_tranforms[bone_id]
+        else:
+            orig_transform = np.identity(4)
         if bone_id in self.animation_channels[channel_name]:
             transforms = self.animation_channels[channel_name][bone_id]
             timestamps = transforms['timestamps']
