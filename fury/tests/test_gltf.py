@@ -46,7 +46,8 @@ def test_load_texture():
     scene.clear()
 
 
-def test_vertex_colors():
+def test_colors():
+    # vertex colors
     fetch_gltf('BoxVertexColors')
     file = read_viz_gltf('BoxVertexColors', 'glTF')
     importer = glTF(file)
@@ -59,6 +60,21 @@ def test_vertex_colors():
                                           (31, 41, 232)],
                                   find_objects=False)
     npt.assert_equal(res.colors_found, [True, True, True])
+    scene.clear()
+
+    # material colors
+    fetch_gltf('BoxAnimated')
+    file = read_viz_gltf('BoxAnimated', 'glTF')
+    importer = glTF(file)
+    actors = importer.actors()
+    scene.add(*actors)
+    display = window.snapshot(scene)
+    res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
+                                  colors=[(77, 136, 204)],
+                                  find_objects=True)
+
+    npt.assert_equal(res.colors_found, [True])
+    npt.assert_equal(res.objects, 1)
     scene.clear()
 
 
@@ -143,6 +159,32 @@ def test_export_gltf():
     npt.assert_equal(res.colors_found, [True, True])
 
 
+def test_simple_animation():
+    fetch_gltf('BoxAnimated', 'glTF')
+    file = read_viz_gltf('BoxAnimated')
+    gltf_obj = glTF(file)
+    timeline = gltf_obj.main_timeline()
+
+    scene = window.Scene()
+    showm = window.ShowManager(scene, size=(900, 768))
+    showm.initialize()
+
+    scene.add(timeline)
+
+    # timestamp animation seek
+    timeline.seek(0.0)
+    showm.save_screenshot('keyframe1.png')
+
+    timeline.seek(2.57)
+    showm.save_screenshot('keyframe2.png')
+    res1 = window.analyze_snapshot('keyframe1.png', colors=(255, 255, 255))
+    res2 = window.analyze_snapshot('keyframe2.png', colors=(255, 255, 255))
+
+    assert_greater(res2.objects, res1.objects)
+    npt.assert_equal(res1.colors_found, [True])
+    npt.assert_equal(res2.colors_found, [True])
+
+
 def test_skinning():
     # animation test
     fetch_gltf('SimpleSkin', 'glTF')
@@ -189,7 +231,7 @@ def test_skinning():
     showm.save_screenshot('keyframe2.png')
     res1 = np.asarray(Image.open('keyframe1.png'))
     res2 = np.asarray(Image.open('keyframe2.png'))
-    
+
     avg = center_of_mass(res1)
     print(avg)
     avg = center_of_mass(res2)
@@ -238,4 +280,3 @@ def test_skinning():
 
     timer_id = showm.add_timer_callback(True, 10, timer_callback)
     showm.destroy_timer(timer_id)
-

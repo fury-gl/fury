@@ -1027,39 +1027,94 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on macOS."
+                                     "It works on the local machines."
+                                     "The colors provided for shapes are "
+                                     "normalized values whereas when we test"
+                                     "it, the values returned are between "
+                                     "0-255. So while conversion from one"
+                                     "representation to another, there may be"
+                                     "something which causes these issues.")
 def test_ui_draw_shape():
-    line = ui.DrawShape("line", (150, 150))
-    quad = ui.DrawShape("quad", (300, 300))
-    circle = ui.DrawShape("circle", (150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
         ui.DrawShape("poly")
 
     line.resize((100, 5))
-    quad.resize((300, 300))
+    line.shape.color = (.4, .2, .8)
+    quad.resize((150, 150))
+    quad.shape.color = (.5, .5, .5)
     circle.resize((25, 0))
+    circle.shape.color = (.5, .3, .8)
 
-    current_size = (800, 800)
+    line_color = tuple((np.round(255 * np.array(line.shape.color))).astype('uint8'))
+    quad_color = tuple((np.round(255 * np.array(quad.shape.color))).astype('uint8'))
+    circle_color = tuple((np.round(255 * np.array(circle.shape.color))).astype('uint8'))
+
+    current_size = (600, 600)
     show_manager = window.ShowManager(
         size=current_size, title="DrawShape UI Example")
-    show_manager.scene.add(line, quad, circle)
+    show_manager.scene.add(line, circle, quad)
+
+    arr = window.snapshot(show_manager.scene, size=(800, 800))
+    report = window.analyze_snapshot(arr, colors=[line_color, circle_color, quad_color])
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_ui_draw_panel(interactive=False):
-    filename = "test_ui_draw_panel"
+def test_ui_draw_panel_basic(interactive=False):
+    filename = "test_ui_draw_panel_basic"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title="DrawPanel UI Example")
+        size=current_size, title="DrawPanel Basic UI Example")
     show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Check all mode selection button
+    #  2. Creation and clamping of shapes
+    #  3. Transformation and clamping of shapes
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_rotation(interactive=False):
+    filename = "test_ui_draw_panel_rotation"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Rotation UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Rotation and clamping of shape
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)
