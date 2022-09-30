@@ -29,14 +29,14 @@ class Animation(Container):
     length : float or int, default: None, optional
         the fixed length of the animation. If set to None, the animation will
         get its duration from the keyframes being set.
-    loop : bool, optional
+    loop : bool, optional, default: True
         Whether to loop the animation (True) of play once (False).
     motion_path_res : int, default: None
         the number of line segments used to visualizer the animation's motion
         path (visualizing position).
     """
 
-    def __init__(self, actors=None, length=None, loop=False,
+    def __init__(self, actors=None, length=None, loop=True,
                  motion_path_res=None):
 
         super().__init__()
@@ -1300,6 +1300,29 @@ class Animation(Container):
     def remove_actors(self):
         """Remove all actors from the Animation"""
         self.clear()
+
+    @property
+    def loop(self):
+        """Get loop condition of the current animation.
+
+        Returns
+        -------
+        bool
+            Whether the animation in loop mode (True) or play one mode (False).
+        """
+        return self._loop
+
+    @loop.setter
+    def loop(self, loop):
+        """Set the animation to loop or play once.
+
+        Parameters
+        ----------
+        loop: bool
+            The loop condition to be set. (True) to loop the animation, and
+            (False) to play only once.
+        """
+        self._loop = loop
 
     def add_update_callback(self, prop, callback):
         """Add a function to be called each time animation is updated
