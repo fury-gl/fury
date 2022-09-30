@@ -9,7 +9,7 @@ scene = window.Scene()
 show_bones = True
 
 fetch_gltf('RiggedFigure', 'glTF')
-filename = read_viz_gltf('RiggedSimple')
+filename = read_viz_gltf('RiggedFigure')
 
 gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
@@ -53,8 +53,8 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
     if show_bones:
         actor_transform = gltf_obj.transformations[0]
         bone_transform = np.dot(actor_transform, new_deform)
-        bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
-                                                           bone_transform)
+        bverts[bone_id][:] = transform.apply_transformation(bvert_copy[bone_id],
+                                                            bone_transform)
         update_actor(bactors[bone_id])
 
     if node.children:

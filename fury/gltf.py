@@ -130,7 +130,8 @@ class glTF:
         for i, animation in enumerate(self.gltf.animations):
             self.transverse_channels(animation, i)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None, is_joint=False):
+    def transverse_node(self, nextnode_id, matrix, parent=None,
+                        is_joint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -180,7 +181,7 @@ class glTF:
                nextnode_id not in self.bone_tranforms):
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
-        if isJoint:
+        if is_joint:
             if not (nextnode_id in self.bone_tranforms):
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
@@ -195,7 +196,7 @@ class glTF:
                 self.bones.append(bone)
                 self.ibms[bone] = ibm
             self.transverse_node(joints[0], np.identity(4), parent,
-                                 isJoint=True)
+                                 is_joint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -230,7 +231,6 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transformation(normals, transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -532,13 +532,16 @@ class glTF:
                                 anim_channel, sampler: gltflib.Sampler):
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
+        print(time_array.shape)
+        print(tran_array)
         tran_matrix = []
         if node in anim_channel:
             prev_arr = anim_channel[node]['matrix']
         else:
-            prev_arr = [np.identity(4) for i in range(len(time_array))]
+            prev_arr = [np.identity(4) for i in range(len(tran_array))]
 
         for i, arr in enumerate(tran_array):
+            print(i)
             temp = self.generate_tmatrix(arr, prop)
             tran_matrix.append(np.dot(prev_arr[i], temp))
         data = {
@@ -613,7 +616,8 @@ class glTF:
 
         return clone
 
-    def transverse_bones(self, bone_id, channel_name, parent_timeline: Timeline):
+    def transverse_bones(self, bone_id, channel_name,
+                         parent_timeline: Timeline):
         """
         bone_id : int
             Index of the bone.
@@ -683,7 +687,7 @@ class glTF:
                 verts = utils.vertices_from_actor(arrow)
                 actor_transf = self.transformations[0]
                 arrow_transf = np.dot(parent_transforms[bone], actor_transf)
-                verts[:] = transform.apply_transfomation(
+                verts[:] = transform.apply_transformation(
                     verts, parent_transforms[bone])
                 utils.update_actor(arrow)
             actors[bone] = arrow
@@ -691,7 +695,7 @@ class glTF:
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
-        
+
         Returns
         -------
         timelines: List
