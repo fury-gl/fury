@@ -3,45 +3,44 @@ from fury.ui.elements import PlaybackPanel
 from fury.animation.animation import Animation
 
 
-class Timeline(Animation):
+class Timeline:
     """Keyframe animation Timeline.
 
     Timeline is responsible for handling the playback of keyframes animations.
-    It can also act like an Animation with playback options which makes it easy
+    It has multiple playback options which makes it easy
     to control the playback, speed, state of the animation with/without a GUI
     playback panel.
 
     Attributes
     ----------
-    actors : Actor or list[Actor], optional, default: None
+    animations : Animation or list[Animation], optional, default: None
         Actor/s to be animated directly by the Timeline (main Animation).
     playback_panel : bool, optional
         If True, the timeline will have a playback panel set, which can be used
         to control the playback of the timeline.
     length : float or int, default: None, optional
         the fixed length of the timeline. If set to None, the timeline will get
-         its length from the keyframes.
+         its length from the animations that it controls automatically.
     loop : bool, optional
-        Whether loop playing the animation or not
-    motion_path_res : int, default: None
-        the number of line segments used to visualizer the animation's motion
-        path (visualizing position).
+        Whether loop playing the timeline or play once.
     """
 
-    def __init__(self, actors=None, playback_panel=False, length=None,
-                 loop=False, motion_path_res=None):
+    def __init__(self, animations=None, playback_panel=False, loop=True,
+                 length=None):
 
-        super().__init__(actors=actors, length=length, loop=loop,
-                         motion_path_res=motion_path_res)
         self.playback_panel = None
         self._current_timestamp = 0
-        self._speed = 1
+        self._speed = 1.0
         self._last_started_time = 0
         self._playing = False
         self._animations = []
-        self._timeline = None
-        self._parent_animation = None
+        self._loop = loop
+        self._length = length
+        self._duration = length if length is not None else 0.0
         # Handle actors while constructing the timeline.
+
+        if animations is not None:
+            self.add_animation(animations)
         if playback_panel:
             def set_loop(is_loop):
                 self._loop = is_loop
@@ -56,10 +55,34 @@ class Timeline(Animation):
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
             self.playback_panel.on_speed_changed = set_speed
-            self.add_actor(self.playback_panel, static=True)
 
-        if actors is not None:
-            self.add_actor(actors)
+    def update_duration(self):
+        """Update and return the duration of the Timeline.
+
+        Returns
+        -------
+        float
+            The duration of the Timeline.
+        """
+        if self._length is not None:
+            self._duration = self._length
+        else:
+            self._duration = max([0.0] + [anim.update_duration() for anim
+                                          in self._animations])
+        if self.has_playback_panel:
+            self.playback_panel.final_time = self.duration
+        return self.duration
+
+    @property
+    def duration(self):
+        """Return the duration of the Timeline.
+
+        Returns
+        -------
+        float
+            The duration of the Timeline.
+        """
+        return self._duration
 
     def play(self):
         """Play the animation"""
@@ -79,13 +102,13 @@ class Timeline(Animation):
         """Stop the animation"""
         self._current_timestamp = 0
         self._playing = False
-        self.update_animation(0)
+        self.update_timeline(force=True)
 
     def restart(self):
         """Restart the animation"""
         self._current_timestamp = 0
         self._playing = True
-        self.update_animation(0)
+        self.update_timeline(force=True)
 
     @property
     def current_timestamp(self):
@@ -133,7 +156,7 @@ class Timeline(Animation):
                 perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
-            self.update_animation(timestamp)
+            self.update_timeline(force=True)
 
     def seek_percent(self, percent):
         """Seek a percentage of the Timeline's final timestamp.
@@ -185,7 +208,7 @@ class Timeline(Animation):
 
     @property
     def speed(self):
-        """Return the speed of the timeline.
+        """Return the speed of the timeline's playback.
 
         Returns
         -------
@@ -196,7 +219,7 @@ class Timeline(Animation):
 
     @speed.setter
     def speed(self, speed):
-        """Set the speed of the timeline.
+        """Set the speed of the timeline's playback.
 
         Parameters
         ----------
@@ -212,6 +235,30 @@ class Timeline(Animation):
         self.current_timestamp = current
 
     @property
+    def loop(self):
+        """Get loop condition of the timeline.
+
+        Returns
+        -------
+        bool
+            Whether the playback is in loop mode (True) or play one mode
+            (False).
+        """
+        return self._loop
+
+    @loop.setter
+    def loop(self, loop):
+        """Set the timeline's playback to loop or play once.
+
+        Parameters
+        ----------
+        loop: bool
+            The loop condition to be set. (True) to loop the playback, and
+            (False) to play only once.
+        """
+        self._loop = loop
+
+    @property
     def has_playback_panel(self):
         """Return whether the `Timeline` has a playback panel.
 
@@ -221,49 +268,48 @@ class Timeline(Animation):
         """
         return self.playback_panel is not None
 
-    def add_child_animation(self, animation):
-        """Add child Animation or list of Animations.
+    def add_animation(self, animation):
+        """Add Animation or list of Animations.
 
         Parameters
         ----------
-        animation: Animation or list(Animation)
+        animation: Animation or list[Animation] or tuple[Animation]
             Animation/s to be added.
         """
-        super(Timeline, self).add_child_animation(animation)
-        if isinstance(animation, Animation):
+        if isinstance(animation, (list, tuple)):
+            [self.add_animation(anim) for anim in animation]
+        elif isinstance(animation, Animation):
             animation._timeline = self
+            self._animations.append(animation)
+            self.update_duration()
+        else:
+            raise TypeError(f"Expected an Animation, a list or a tuple.")
 
-    def update_duration(self):
-        """Update and return the duration of the Timeline.
+    @property
+    def animations(self) -> 'list[Animation]':
+        """Return a list of Animations.
 
         Returns
         -------
-        float
-            The duration of the Timeline.
+        list:
+            List of Animations controlled by the timeline.
         """
-        super(Timeline, self).update_duration()
-        if self.has_playback_panel:
-            self.playback_panel.final_time = self.duration
-        return self.duration
+        return self._animations
 
-    def update_animation(self, time=None):
-        """Update the animation.
+    def update_timeline(self, force=False):
+        """Update the timeline.
 
-        Update the animation and the playback of the Timeline. As well as
-        updating all animations handled by the Timeline.
+        Update the Timeline and all the animations that it controls. As well as
+        the playback of the Timeline (if exists).
 
         Parameters
         ----------
-        time: float or int, optional, default: None
-            Time to update animation at.
-            IF None, The time is determined by the Timeline itself and can be
-            controlled using the playback panel graphically or by the Timeline
-            methods such as ``Timeline.seek(t)``.
+        force: bool, optional, default: False
+            If True, the timeline will update even when the timeline is paused
+            or stopped and hence, more resources will be used.
+
         """
-        force = True
-        if time is None:
-            time = self.current_timestamp
-            force = False
+        time = self.current_timestamp
         if self.has_playback_panel:
             self.playback_panel.current_time = time
         if time > self.duration:
@@ -277,4 +323,9 @@ class Timeline(Animation):
                 else:
                     self.pause()
         if self.playing or force:
-            super(Timeline, self).update_animation(time)
+            [anim.update_animation(time) for anim in self._animations]
+
+    def add_to_scene(self, ren):
+        """Add this Timeline and all of its Animations to the scene"""
+        self.playback_panel.add_to_scene(ren)
+        [ren.add(animation) for animation in self._animations]

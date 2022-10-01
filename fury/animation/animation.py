@@ -114,7 +114,6 @@ class Animation(Container):
                          len(self.items)
             else:
                 colors = [1, 1, 1]
-        print(lines)
 
         if len(lines) > 0:
             lines = np.array([lines])
