@@ -64,7 +64,6 @@ class glTF:
         self.apply_normals = apply_normals
 
         self.cameras = {}
-        self.actors_list = []
         self.materials = []
         self.nodes = []
         self.transformations = []
@@ -89,7 +88,7 @@ class glTF:
         self.show_bones = False
 
         self.inspect_scene(0)
-        self._actors = self.actors()
+        self._actors = []
         self._bactors = {}
 
     def actors(self):
@@ -118,9 +117,9 @@ class glTF:
                 base_color = self.materials[i]['baseColor']
                 actor.GetProperty().SetColor(tuple(base_color[:3]))
 
-            self.actors_list.append(actor)
+            self._actors.append(actor)
 
-        return self.actors_list
+        return self._actors
 
     def inspect_scene(self, scene_id=0):
         """Loop over nodes in a scene.
@@ -719,7 +718,7 @@ class glTF:
             A timeline containing all the child timelines for bones.
         """
         root_timelines = {}
-        self._vertices = [vertices_from_actor(act) for act in self._actors]
+        self._vertices = [vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
             root_timeline = Timeline(playback_panel=True)

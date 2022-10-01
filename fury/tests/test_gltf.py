@@ -190,7 +190,7 @@ def test_skinning():
     fetch_gltf('SimpleSkin', 'glTF')
     file = read_viz_gltf('SimpleSkin')
     gltf_obj = glTF(file)
-    timeline = gltf_obj.get_skin_timeline()['anim_0']
+    timeline = gltf_obj.skin_timeline()['anim_0']
 
     # checking weights and joints
     weights = np.array([[1.00,  0.00,  0.0, 0.0],
