@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-from fury import window, transform
+from fury import window, transform, actor
 from fury.utils import vertices_from_actor, update_actor, compute_bounds
 from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
@@ -66,6 +66,12 @@ def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
 
 
 def timer_callback(_obj, _event):
+    update_skinning()
+    showm.render()
+
+
+def update_skinning():
+    # copy everything above
     timeline.update_animation()
     timestamp = timeline.current_timestamp
     joint_matrices = {}
@@ -83,11 +89,13 @@ def timer_callback(_obj, _event):
                              joint_matrices, parent_transform)
     for i, vertex in enumerate(vertices):
         vertex[:] = gltf_obj.apply_skin_matrix(clone[i], joint_matrices, i)
+        actor_transf = gltf_obj.transformations[i]
+        vertex[:] = transform.apply_transformation(vertex, actor_transf)
         update_actor(actors[i])
         compute_bounds(actors[i])
-    showm.render()
 
 
 showm.add_timer_callback(True, 20, timer_callback)
-
+update_skinning()
+scene.reset_camera()
 showm.start()

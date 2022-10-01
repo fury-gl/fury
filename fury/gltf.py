@@ -5,8 +5,9 @@ import numpy as np
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
-from fury.lib import Texture, Camera, numpy_support
+from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
 from fury import transform, utils, io, actor
+from fury import transform as ftrans
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import (linear_interpolator,
                                          step_interpolator, slerp,
@@ -96,12 +97,13 @@ class glTF:
         for i, polydata in enumerate(self.polydatas):
             actor = utils.get_actor_from_polydata(polydata)
             transform_mat = self.transformations[i]
-            position, rot, scale = transform.transform_from_matrix(
-                                    transform_mat)
 
-            actor.SetPosition(position)
-            actor.SetScale(scale)
-            actor.RotateWXYZ(*rot)
+            _transform = Transform()
+            _matrix = Matrix4x4()
+            _matrix.DeepCopy(transform_mat.ravel())
+
+            _transform.SetMatrix(_matrix)
+            actor.SetUserTransform(_transform)
 
             if self.materials[i] is not None:
                 base_col_tex = self.materials[i]['baseColorTexture']
@@ -532,8 +534,6 @@ class glTF:
                                 anim_channel, sampler: gltflib.Sampler):
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
-        print(time_array.shape)
-        print(tran_array)
         tran_matrix = []
         if node in anim_channel:
             prev_arr = anim_channel[node]['matrix']
@@ -541,7 +541,6 @@ class glTF:
             prev_arr = [np.identity(4) for i in range(len(tran_array))]
 
         for i, arr in enumerate(tran_array):
-            print(i)
             temp = self.generate_tmatrix(arr, prop)
             tran_matrix.append(np.dot(prev_arr[i], temp))
         data = {
@@ -720,6 +719,10 @@ class glTF:
 
             for i, nodes in enumerate(self.nodes):
                 timeline = Timeline()
+                transform_mat = self.transformations[i]
+                position, rot, scale = ftrans.transform_from_matrix(
+                                    transform_mat)
+                timeline.set_keyframe('position', 0.0, position)
 
                 if target_node in nodes:
                     timeline.add_actor(actors[i])
