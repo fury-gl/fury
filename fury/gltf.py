@@ -639,10 +639,10 @@ class glTF:
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
     
-    def initialise_skin(self, timeline, bones=False):
+    def initialize_skin(self, timeline, bones=False, length=0.2):
         self.show_bones = bones
         if bones:
-            self.get_joint_actors(0.2, False)
+            self.get_joint_actors(length, False)
             timeline.add_actor(list(self._bactors.values()))
         self.update_skin(timeline)
 
