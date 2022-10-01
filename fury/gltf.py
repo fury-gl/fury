@@ -2,15 +2,17 @@
 import base64
 import os
 import numpy as np
+import copy
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
 from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
 from fury import transform, utils, io, actor
 from fury import transform as ftrans
+from fury.utils import (update_actor, compute_bounds, vertices_from_actor,)
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import (linear_interpolator,
-                                         step_interpolator, slerp,
+from fury.animation.interpolator import (linear_interpolator, slerp,
+                                         step_interpolator,
                                          tan_cubic_spline_interpolator)
 from fury.animation import helpers
 
@@ -79,11 +81,16 @@ class glTF:
         self.weights_0 = []
         self.bones = []
         self.ibms = {}
-        self.vertices = []
-        self.child_timelines = []
-        self.timeline_order = []
+
+        self._vertices = None
+        self._vcopy = None
+        self._bvertices = {}
+        self._bvert_copy = {}
+        self.show_bones = False
 
         self.inspect_scene(0)
+        self._actors = self.actors()
+        self._bactors = {}
 
     def actors(self):
         """Generate actors from glTF file.
@@ -233,6 +240,8 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
+                normals = transform.apply_transformation(normals, 
+                                                         transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -579,6 +588,63 @@ class glTF:
         elif prop == 'scale':
             matrix = transform.scale(transf)
         return matrix
+    
+    def transverse_timelines(self, timeline, bone_id, timestamp, 
+                             joint_matrices,
+                             parent_bone_deform=np.identity(4)):
+        deform = timeline.get_value('transform', timestamp)
+        new_deform = np.dot(parent_bone_deform, deform)
+
+        ibm = self.ibms[bone_id].T
+        skin_matrix = np.dot(new_deform, ibm)
+        joint_matrices[bone_id] = skin_matrix
+
+        node = self.gltf.nodes[bone_id]
+
+        if self.show_bones:
+            actor_transform = self.transformations[0]
+            bone_transform = np.dot(actor_transform, new_deform)
+            self._bvertices[bone_id][:] = transform.apply_transformation(
+                self._bvert_copy[bone_id], bone_transform)
+            utils.update_actor(self._bactors[bone_id])
+
+        if node.children:
+            c_timelines = timeline.timelines
+            c_bones = node.children
+            for c_timeline, c_bone in zip(c_timelines, c_bones):
+                self.transverse_timelines(c_timeline, c_bone, timestamp,
+                                          joint_matrices, new_deform)
+
+    def update_skin(self, timeline):
+        timeline.update_animation()
+        timestamp = timeline.current_timestamp
+        joint_matrices = {}
+        root_bone = self.gltf.skins[0].skeleton
+        root_bone = root_bone if root_bone else self.bones[0]
+
+        if not root_bone == self.bones[0]:
+            _timeline = timeline.timelines[0]
+            parent_transform = self.transformations[root_bone].T
+        else:
+            _timeline = timeline
+            parent_transform = np.identity(4)
+        for child in _timeline.timelines:
+            self.transverse_timelines(child, self.bones[0], timestamp,
+                                      joint_matrices, parent_transform)
+        for i, vertex in enumerate(self._vertices):
+            vertex[:] = self.apply_skin_matrix(self._vcopy[i],
+                                               joint_matrices, i)
+            actor_transf = self.transformations[i]
+            vertex[:] = transform.apply_transformation(vertex, actor_transf)
+            utils.update_actor(self._actors[i])
+            utils.compute_bounds(self._actors[i])
+    
+    def initialise_skin(self, timeline, bones=False):
+        self.show_bones = bones
+        if bones:
+            self.get_joint_actors(0.2, False)
+            timeline.add_actor(list(self._bactors.values()))
+        self.update_skin(timeline)
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
         """Applies the skinnig matrix, that transforms the vertices.
@@ -639,12 +705,12 @@ class glTF:
             timeline.set_keyframe('transform', 0.0, orig_transform)
 
         parent_timeline.add(timeline)
-        self.timeline_order.append(bone_id)
+        # self.timeline_order.append(bone_id)
         if node.children:
             for child_bone in node.children:
                 self.transverse_bones(child_bone, channel_name, timeline)
 
-    def get_skin_timeline(self):
+    def skin_timeline(self):
         """One timeline for each bone, contains parent transforms.
 
         Returns
@@ -653,12 +719,15 @@ class glTF:
             A timeline containing all the child timelines for bones.
         """
         root_timelines = {}
+        self._vertices = [vertices_from_actor(act) for act in self._actors]
+        self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
             root_timeline = Timeline(playback_panel=True)
             root_bone = self.gltf.skins[0].skeleton
             root_bone = root_bone if root_bone else self.bones[0]
             self.transverse_bones(root_bone, name, root_timeline)
             root_timelines[name] = root_timeline
+            root_timeline.add_actor(self._actors)
         return root_timelines
 
     def get_joint_actors(self, length=0.5, with_transforms=False):
@@ -670,27 +739,20 @@ class glTF:
         with_transforms : bool (default = False)
             Applies respective transformations to bone. Bones will be at origin
             if set to `False`.
-        Returns
-        -------
-        actors : dict
-            Dictionary conatining bones as keys and corresponding actor as
-            values.
         """
         origin = np.zeros((3, 3))
-        actors = {}
         parent_transforms = self.bone_tranforms
 
         for bone in self.bones:
             arrow = actor.arrow(origin, [0, 1, 0], [1, 1, 1], scales=length)
+            verts = utils.vertices_from_actor(arrow)
             if with_transforms:
-                verts = utils.vertices_from_actor(arrow)
-                actor_transf = self.transformations[0]
-                arrow_transf = np.dot(parent_transforms[bone], actor_transf)
                 verts[:] = transform.apply_transformation(
                     verts, parent_transforms[bone])
                 utils.update_actor(arrow)
-            actors[bone] = arrow
-        return actors
+            self._bactors[bone] = arrow
+            self._bvertices[bone] = verts
+        self._bvert_copy = copy.deepcopy(self._bvertices)
 
     def get_animation_timelines(self):
         """Returns list of animation timeline.
