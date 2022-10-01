@@ -2,7 +2,7 @@ import time
 import numpy as np
 import numpy.testing as npt
 import fury.testing as ft
-from fury.animation import Timeline
+from fury.animation import Timeline, Animation
 from fury.ui import PlaybackPanel
 
 
@@ -12,15 +12,9 @@ def assert_not_equal(x, y):
 
 def test_timeline():
     tl = Timeline(playback_panel=True)
-    tl.set_position(0, np.array([1, 1, 1]))
-    # overriding a keyframe
-    tl.set_position(0, np.array([0, 0, 0]))
-    tl.set_rotation(7, np.array([0, 180, 0]))
 
     # test playback panel
     ft.assert_true(isinstance(tl.playback_panel, PlaybackPanel))
-
-    tl.update_animation()
 
     for t in [-10, 0, 2.2, 7, 100]:
         tl.seek(t)
@@ -54,16 +48,18 @@ def test_timeline():
 
     length = 8
     tl_2 = Timeline(length=length)
-    tl.add_child_animation(tl_2)
-    assert tl_2 in tl.child_animations
+    anim = Animation(length=12)
+    tl_2.add_animation(anim)
+    assert anim in tl_2.animations
 
-    tl_2.set_position(12, [1, 2, 1])
+    anim.set_position(12, [1, 2, 1])
     assert tl_2.duration == length
 
-    tl_2 = Timeline()
-    tl_2.set_position(12, [0, 0, 1])
-    assert tl_2.duration == 12
+    tl_2 = Timeline(anim, length=11)
+    assert tl_2.duration == 11
 
-    tl = Timeline(length=12)
-    tl.set_position(1, np.array([1, 1, 1]))
-    assert tl.duration == 12
+    tl = Timeline(playback_panel=True)
+    assert tl.has_playback_panel is True
+
+    tl.loop = True
+    assert tl.loop is True
