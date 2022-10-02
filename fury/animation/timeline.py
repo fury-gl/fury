@@ -325,7 +325,12 @@ class Timeline:
         if self.playing or force:
             [anim.update_animation(time) for anim in self._animations]
 
-    def add_to_scene(self, ren):
-        """Add this Timeline and all of its Animations to the scene"""
-        self.playback_panel.add_to_scene(ren)
-        [ren.add(animation) for animation in self._animations]
+    def add_to_scene(self, scene):
+        """Add Timeline and all of its Animations to the scene"""
+        self.playback_panel.add_to_scene(scene)
+        [animation.add_to_scene(scene) for animation in self._animations]
+
+    def remove_from_scene(self, scene):
+        """Remove Timeline and all of its Animations to the scene"""
+        scene.rm(*tuple(self.playback_panel.actors))
+        [animation.remove_from_scene(scene) for animation in self._animations]

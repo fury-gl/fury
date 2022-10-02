@@ -1445,15 +1445,25 @@ class Animation(Container):
         if self._scene and self._parent_animation is None:
             self._scene.reset_clipping_range()
 
-    def add_to_scene(self, ren):
-        """Add this Animation, its actors and sub Animations to the scene"""
-        super(Animation, self).add_to_scene(ren)
-        [ren.add(static_act) for static_act in self._static_actors]
-        [ren.add(animation) for animation in self._animations]
+    def add_to_scene(self, scene):
+        """Add Animation, its actors and sub Animations to the scene"""
+        super(Animation, self).add_to_scene(scene)
+        [scene.add(static_act) for static_act in self._static_actors]
+        [scene.add(animation) for animation in self._animations]
 
         if self._motion_path_actor:
-            ren.add(self._motion_path_actor)
-        self._scene = ren
+            scene.add(self._motion_path_actor)
+        self._scene = scene
         self._added_to_scene = True
         self._added_to_scene_time = perf_counter()
         self.update_animation(0)
+
+    def remove_from_scene(self, scene):
+        """Remove Animation, its actors and sub Animations from the scene"""
+        [scene.rm(act) for act in self.actors]
+        [scene.rm(static_act) for static_act in self._static_actors]
+        for anim in self.child_animations:
+            anim.remove_from_scene(scene)
+        if self._motion_path_actor:
+            scene.rm(self._motion_path_actor)
+        self._added_to_scene = False
