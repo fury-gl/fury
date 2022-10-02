@@ -9,7 +9,7 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.animation.timeline import Timeline
+from fury.animation import Timeline, Animation
 from fury.decorators import is_osx
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
@@ -400,7 +400,8 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
         self._timelines = []
-        self._timeline_callback = None
+        self._animations = []
+        self._animation_callback = None
 
     def initialize(self):
         """Initialize interaction."""
@@ -408,50 +409,79 @@ class ShowManager(object):
 
     @property
     def timelines(self):
+        """Return a list of Timelines that were added to the ShowManager.
+
+        Returns
+        -------
+        list[Timeline]:
+            List of Timelines.
+        """
         return self._timelines
 
-    def add_timeline(self, timeline: Timeline):
-        """Add a Timeline to the ShowManager.
+    @property
+    def animations(self):
+        """Return a list of Animations that were added to the ShowManager.
 
-        Adding a Timeline to the ShowManager ensures that it gets added to
-        the scene, gets updated and rendered without any extra code.
+         Returns
+         -------
+         list[Animation]:
+             List of Animations.
+         """
+        return self._animations
+
+    def add_animation(self, animation):
+        """Add an Animation or a Timeline to the ShowManager.
+
+        Adding an Animation or a Timeline to the ShowManager ensures that it
+        gets added to the scene, gets updated and rendered without any extra
+        code.
 
         Parameters
         ----------
-        timeline : Timeline
-            The Timeline to be added to the ShowManager.
+        animation : Animation or Timeline
+            The Animation or Timeline to be added to the ShowManager.
         """
+        animation.add_to_scene(self.scene)
+        if isinstance(animation, Animation):
+            if animation in self._animations:
+                return
+            self._animations.append(animation)
+        elif isinstance(animation, Timeline):
+            if animation in self._timelines:
+                return
+            self._timelines.append(animation)
 
-        if timeline in self._timelines:
-            return
-        self.scene.add(timeline)
-        self._timelines.append(timeline)
-
-        if self._timeline_callback is not None:
+        if self._animation_callback is not None:
             return
 
         def animation_cbk(_obj, _event):
-            [tl.update_animation() for tl in self._timelines]
+            [tl.update_timeline() for tl in self._timelines]
+            [anim.update_animation() for anim in self._animations]
             self.render()
-        self._timeline_callback = self.add_timer_callback(True, 10,
-                                                          animation_cbk)
+        self._animation_callback = self.add_timer_callback(True, 10,
+                                                           animation_cbk)
 
-    def remove_timeline(self, timeline: Timeline):
-        """Remove a Timeline from the ShowManager.
+    def remove_animation(self, animation):
+        """Remove an Animation or a Timeline from the ShowManager.
 
-        Timeline will be removed from the Scene as well as from the ShowManager
+        Animation will be removed from the Scene as well as from the
+        ShowManager.
 
         Parameters
         ----------
-        timeline : Timeline
+        animation : Animation or Timeline
             The Timeline to be removed.
         """
-        if timeline in self.timelines:
-            timeline.remove_from_scene(self.scene)
-            self._timelines.remove(timeline)
-            if not len(self.timelines):
-                self.iren.DestroyTimer(self._timeline_callback)
-                self._timeline_callback = None
+
+        if animation in self.timelines or animation in self.animations:
+            animation.remove_from_scene(self.scene)
+            if isinstance(animation, Animation):
+                self._animations.remove(animation)
+            elif isinstance(animation, Timeline):
+                self._timelines.remove(animation)
+            if not (len(self.timelines) or len(self.animations)):
+                self.iren.DestroyTimer(self._animation_callback)
+                self._animation_callback = None
 
     def render(self):
         """Render only once."""
