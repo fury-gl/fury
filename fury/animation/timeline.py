@@ -37,10 +37,7 @@ class Timeline:
         self._loop = loop
         self._length = length
         self._duration = length if length is not None else 0.0
-        # Handle actors while constructing the timeline.
 
-        if animations is not None:
-            self.add_animation(animations)
         if playback_panel:
             def set_loop(is_loop):
                 self._loop = is_loop
@@ -55,6 +52,9 @@ class Timeline:
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
             self.playback_panel.on_speed_changed = set_speed
+
+        if animations is not None:
+            self.add_animation(animations)
 
     def update_duration(self):
         """Update and return the duration of the Timeline.
