@@ -8,13 +8,10 @@ from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
 from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
 from fury import transform, utils, io, actor
-from fury import transform as ftrans
-from fury.utils import (update_actor, compute_bounds, vertices_from_actor,)
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import (linear_interpolator, slerp,
                                          step_interpolator,
                                          tan_cubic_spline_interpolator)
-from fury.animation import helpers
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
@@ -491,6 +488,8 @@ class glTF:
         ----------
         animation : glTflib.Animation
             pygltflib animation object.
+        count : int
+            Animation count.
         """
         name = animation.name
         if name is None:
@@ -503,7 +502,7 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            sampler_data = self.get_matrix_from_sampler(path, node_id, name,
+            sampler_data = self.get_matrix_from_sampler(path, node_id,
                                                         anim_channel, sampler)
             anim_channel[node_id] = sampler_data
         self.animation_channels[name] = anim_channel
@@ -532,14 +531,27 @@ class glTF:
         interpolation = sampler.interpolation
 
         return {
-            'node': node_id,
-            'input': time_array,
+            'node': node_id, 'input': time_array,
             'output': transform_array,
             'interpolation': interpolation,
             'property': transform_type}
 
-    def get_matrix_from_sampler(self, prop, node, name,
-                                anim_channel, sampler: gltflib.Sampler):
+    def get_matrix_from_sampler(self, prop, node, anim_channel,
+                                sampler: gltflib.Sampler):
+        """Returns transformation matrix for a given timestamp from Sampler
+        data. Combines matrices for a given common timestamp.
+
+        Parameters
+        ----------
+        prop : str
+            Property of the array ('translation', 'rotation' or 'scale')
+        node : int
+            Node index of the sampler data.
+        anim_channel : dict
+            Containing previous animations with node as keys.
+        sampler : gltflib.Sampler
+            Sampler object for an animation channel.
+        """
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
         tran_matrix = []
@@ -580,6 +592,16 @@ class glTF:
         return joint_nodes, inv_bind_matrix
 
     def generate_tmatrix(self, transf, prop):
+        """Creates transformation matrix from TRS array.
+
+        Parameters
+        ----------
+        transf : ndarray
+            Array containing translation, rotation or scale values.
+        prop : str
+            String that defines the type of array
+            (values: translation, rotation or scale).
+        """
         if prop == 'translation':
             matrix = transform.translate(transf)
         elif prop == 'rotation':
@@ -587,10 +609,27 @@ class glTF:
         elif prop == 'scale':
             matrix = transform.scale(transf)
         return matrix
-    
-    def transverse_timelines(self, timeline, bone_id, timestamp, 
+
+    def transverse_timelines(self, timeline, bone_id, timestamp,
                              joint_matrices,
                              parent_bone_deform=np.identity(4)):
+        """Calculates skinning matrix (Joint Matrices) and transforms bone for
+        each timeline.
+
+        Parameters
+        ----------
+        timeline : Timeline
+            Timeline object.
+        bone_id : int
+            Bone index of the current transform.
+        timestamp : float
+            Current timestamp of the timeline.
+        joint_matrices : dict
+            Empty dictionary that will contain joint matrices.
+        parent_bone_transform : ndarray (4, 4)
+            Transformation matrix of the parent bone.
+            (default=np.identity(4))
+        """
         deform = timeline.get_value('transform', timestamp)
         new_deform = np.dot(parent_bone_deform, deform)
 
@@ -615,6 +654,13 @@ class glTF:
                                           joint_matrices, new_deform)
 
     def update_skin(self, timeline):
+        """Updates the timeline and actors with skinning data.
+
+        Parameters
+        ----------
+        timeline : Timeline
+            Timeline object.
+        """
         timeline.update_animation()
         timestamp = timeline.current_timestamp
         joint_matrices = {}
@@ -637,8 +683,21 @@ class glTF:
             vertex[:] = transform.apply_transformation(vertex, actor_transf)
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
-    
+
     def initialize_skin(self, timeline, bones=False, length=0.2):
+        """Creates bones and adds to the timeline and initialises `update_skin`
+
+        Parameters
+        ----------
+        timeline : Timeline
+            timeline of the respective animation.
+        bones : bool
+            Switches the visibility of bones in scene.
+            (default=False)
+        length : float
+            Length of the bones.
+            (default=0.2)
+        """
         self.show_bones = bones
         if bones:
             self.get_joint_actors(length, False)
@@ -718,7 +777,7 @@ class glTF:
             A timeline containing all the child timelines for bones.
         """
         root_timelines = {}
-        self._vertices = [vertices_from_actor(act) for act in self.actors()]
+        self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
             root_timeline = Timeline(playback_panel=True)
@@ -781,14 +840,14 @@ class glTF:
             for i, nodes in enumerate(self.nodes):
                 timeline = Timeline()
                 transform_mat = self.transformations[i]
-                position, rot, scale = ftrans.transform_from_matrix(
-                                    transform_mat)
+                position, rot, scale = transform.transform_from_matrix(
+                                       transform_mat)
                 timeline.set_keyframe('position', 0.0, position)
 
                 if target_node in nodes:
                     timeline.add_actor(actors[i])
                     timestamp = transforms['input']
-                    transform = transforms['output']
+                    node_transform = transforms['output']
                     prop = transforms['property']
 
                     interpolation_type = transforms['interpolation']
@@ -797,12 +856,12 @@ class glTF:
                     rot_interp = rotation_interpolators.get(
                                        interpolation_type)
                     timeshape = timestamp.shape
-                    transhape = transform.shape
+                    transhape = node_transform.shape
                     if transforms['interpolation'] == 'CUBICSPLINE':
-                        transform = transform.reshape(
+                        node_transform = node_transform.reshape(
                             (timeshape[0], -1, transhape[1]))
 
-                    for time, trs in zip(timestamp, transform):
+                    for time, trs in zip(timestamp, node_transform):
                         in_tan, out_tan = None, None
                         if trs.ndim == 2:
                             cubicspline = trs
