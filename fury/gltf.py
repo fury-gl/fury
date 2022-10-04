@@ -839,6 +839,13 @@ class glTF:
         self._bvert_copy = copy.deepcopy(self._bvertices)
 
     def update_morph(self, timeline):
+        """Update the timeline and actors with morphing.
+
+        Parameters
+        ----------
+        timeline : Timeline
+            Timeline object.
+        """
         timeline.update_animation()
         timestamp = timeline.current_timestamp
         for i, vertex in enumerate(self._vertices):
@@ -850,6 +857,18 @@ class glTF:
             utils.compute_bounds(self._actors[i])
 
     def apply_morph_vertices(self, vertices, weights, cnt):
+        """Calculate weighted vertex from the morph data.
+
+        Parameters
+        ----------
+        vertices : ndarray
+            Vertices of a actor.
+        weights : ndarray
+            Morphing weights used to calculate the weighted average of new
+            vertex.
+        cnt : int
+            Count of the actor.
+        """
         clone = np.copy(vertices)
         target_vertices = np.copy(self.morph_vertices[cnt])
         for i, weight in enumerate(weights):
@@ -860,26 +879,38 @@ class glTF:
         return clone
 
     def morph_timeline(self):
+        """Create timeline for each channel in animations.
+
+        Returns
+        -------
+        root_timelines : Dict
+            A dictionary containing timlines as values and animation name as
+            keys.
+        """
         timelines = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
+
         for name, data in self.animation_channels.items():
             root_timeline = Timeline(playback_panel=True)
+
             for i, transforms in enumerate(data.values()):
                 weights = self.morph_weights[i]
                 timeline = Timeline()
                 timestamps = transforms['timestamps']
                 metrices = transforms['matrix']
                 metrices = np.array(metrices).reshape(-1, len(weights))
+
                 for time, weights in zip(timestamps, metrices):
                     timeline.set_keyframe('morph', time[0], weights)
                 root_timeline.add(timeline)
+
             root_timeline.add_actor(self._actors)
             timelines[name] = root_timeline
         return timelines
 
     def get_animation_timelines(self):
-        """Returns list of animation timeline.
+        """Return list of animation timeline.
 
         Returns
         -------
