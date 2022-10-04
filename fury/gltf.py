@@ -838,6 +838,17 @@ class glTF:
             self._bvertices[bone] = verts
         self._bvert_copy = copy.deepcopy(self._bvertices)
 
+    def update_morph(self, timeline):
+        timeline.update_animation()
+        timestamp = timeline.current_timestamp
+        for i, vertex in enumerate(self._vertices):
+            weights = timeline.timelines[0].get_value('morph', timestamp)
+            vertex[:] = self.apply_morph_vertices(self._vcopy[i], weights, i)
+            vertex[:] = transform.apply_transformation(vertex,
+                                                       self.transformations[i])
+            utils.update_actor(self._actors[i])
+            utils.compute_bounds(self._actors[i])
+
     def apply_morph_vertices(self, vertices, weights, cnt):
         clone = np.copy(vertices)
         target_vertices = np.copy(self.morph_vertices[cnt])
@@ -850,10 +861,11 @@ class glTF:
 
     def morph_timeline(self):
         timelines = {}
+        self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
+        self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name, data in self.animation_channels.items():
             root_timeline = Timeline(playback_panel=True)
             for i, transforms in enumerate(data.values()):
-                print(i)
                 weights = self.morph_weights[i]
                 timeline = Timeline()
                 timestamps = transforms['timestamps']
@@ -862,6 +874,7 @@ class glTF:
                 for time, weights in zip(timestamps, metrices):
                     timeline.set_keyframe('morph', time[0], weights)
                 root_timeline.add(timeline)
+            root_timeline.add_actor(self._actors)
             timelines[name] = root_timeline
         return timelines
 
