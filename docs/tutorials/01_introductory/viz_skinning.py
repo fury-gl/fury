@@ -1,24 +1,47 @@
-import copy
-import numpy as np
-from fury import window, transform
-from fury.utils import vertices_from_actor, update_actor, compute_bounds
+"""
+=================================
+Skeletal Animation in a glTF file
+=================================
+In this tutorial, we will show how to use skeletal animations (skinning) in a
+glTF model in FURY.
+"""
+
+from fury import window
 from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
 
-scene = window.Scene()
-show_bones = False
+##############################################################################
+# Retrieving the model with skeletal animations.
+# We're choosing the `RiggedFigure` model here.
 
 fetch_gltf('RiggedFigure', 'glTF')
 filename = read_viz_gltf('RiggedFigure')
 
+##############################################################################
+# Initializing the glTF object, You can additionaly set `apply_normals=True`.
+# Note: Normals might not work well as intended with skinning animations.
+
 gltf_obj = glTF(filename, apply_normals=False)
-actors = gltf_obj.actors()
 
-vertices = [vertices_from_actor(actor) for actor in actors]
-clone = [np.copy(vert) for vert in vertices]
+##############################################################################
+# Get the skinning timeline using `skin_timeline` method, Choose the animation
+# name you want to visualize.
+# Note: If there's no name for animation, It's stored as `anim_0`, `anim_1` etc
 
-timeline = gltf_obj.get_skin_timeline()['0']
-timeline.add_actor(actors)
+timeline = gltf_obj.skin_timeline()['anim_0']
+
+# After we get the timeline object, We want to initialise the skinning process.
+# You can set `bones=true` to visualize each bone transformation. Additionaly,
+# you can set `lenght` of bones in the `initialise_skin` method.
+# Note: Make sure to call this method before you initialize ShowManager, else
+# bones won't be added to the scene.
+
+gltf_obj.initialize_skin(timeline, bones=False)
+
+##############################################################################
+# Create a scene, and show manager.
+# Initialize the show manager and add timeline to the scene (No need to add
+# actors to the scene seperately).
 
 scene = window.Scene()
 showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
@@ -26,68 +49,29 @@ showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
 showm.initialize()
 scene.add(timeline)
 
-if show_bones:
-    bactors = gltf_obj.get_joint_actors(length=0.2, with_transforms=False)
-    bverts = {}
-    for bone, joint_actor in bactors.items():
-        bverts[bone] = vertices_from_actor(joint_actor)
-    bvert_copy = copy.deepcopy(bverts)
-    scene.add(* bactors.values())
-
-bones = gltf_obj.bones
-parent_transforms = gltf_obj.bone_tranforms
-
-
-def transverse_timelines(timeline, bone_id, timestamp, joint_matrices,
-                         parent_bone_deform=np.identity(4)):
-    deform = timeline.get_value('transform', timestamp)
-    new_deform = np.dot(parent_bone_deform, deform)
-
-    # calculating skinning matrix
-    ibm = gltf_obj.ibms[bone_id].T
-    skin_matrix = np.dot(new_deform, ibm)
-    joint_matrices[bone_id] = skin_matrix
-
-    node = gltf_obj.gltf.nodes[bone_id]
-
-    if show_bones:
-        actor_transform = gltf_obj.transformations[0]
-        bone_transform = np.dot(actor_transform, new_deform)
-        bverts[bone_id][:] = transform.apply_transfomation(bvert_copy[bone_id],
-                                                           bone_transform)
-        update_actor(bactors[bone_id])
-
-    if node.children:
-        c_timelines = timeline.timelines
-        c_bones = node.children
-        for c_timeline, c_bone in zip(c_timelines, c_bones):
-            transverse_timelines(c_timeline, c_bone, timestamp,
-                                 joint_matrices, new_deform)
+##############################################################################
+# define a timer_callback.
+# Use the `update_skin` method, It updates the timeline and applies skinning to
+# actors (and bones).
 
 
 def timer_callback(_obj, _event):
-    timeline.update_animation()
-    timestamp = timeline.current_timestamp
-    joint_matrices = {}
-    root_bone = gltf_obj.gltf.skins[0].skeleton
-    root_bone = root_bone if root_bone else gltf_obj.bones[0]
-
-    if not root_bone == bones[0]:
-        _timeline = timeline.timelines[0]
-        parent_transform = gltf_obj.transformations[root_bone].T
-    else:
-        _timeline = timeline
-        parent_transform = np.identity(4)
-    for child in _timeline.timelines:
-        transverse_timelines(child, bones[0], timestamp,
-                             joint_matrices, parent_transform)
-    for i, vertex in enumerate(vertices):
-        vertex[:] = gltf_obj.apply_skin_matrix(clone[i], joint_matrices, i)
-        update_actor(actors[i])
-        compute_bounds(actors[i])
+    gltf_obj.update_skin(timeline)
     showm.render()
 
 
-showm.add_timer_callback(True, 20, timer_callback)
+##############################################################################
+# Optional: `timeline.play()` auto plays the animations.
 
-showm.start()
+timeline.play()
+
+showm.add_timer_callback(True, 20, timer_callback)
+scene.reset_camera()
+
+interactive = False
+
+if interactive:
+    showm.start()
+
+window.record(scene, out_path='viz_skinning.png',
+              size=(900, 768))

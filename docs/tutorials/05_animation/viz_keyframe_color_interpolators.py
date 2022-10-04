@@ -42,7 +42,7 @@ scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 ###############################################################################
 # Main timeline to control all the timelines (one for each color interpolation
 # method)
-main_timeline = Timeline(playback_panel=Timeline)
+main_timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating a timeline to animate the actor.
@@ -57,11 +57,11 @@ timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
 
 ###############################################################################
 # Adding timelines to the main Timeline.
-main_timeline.add_timeline([timeline_linear_color,
-                            timeline_LAB_color,
-                            timeline_HSV_color,
-                            timeline_XYZ_color,
-                            timeline_step_color])
+main_timeline.add_child_timeline([timeline_linear_color,
+                                  timeline_LAB_color,
+                                  timeline_HSV_color,
+                                  timeline_XYZ_color,
+                                  timeline_step_color])
 
 ###############################################################################
 # Adding color keyframes to the linearly (for now) interpolated timelines
