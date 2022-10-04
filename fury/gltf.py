@@ -482,7 +482,7 @@ class glTF:
         self.cameras[camera_id] = vtk_cam
 
     def transverse_channels(self, animation: gltflib.Animation, count: int):
-        """Loops over animation channels and sets animation data.
+        """Loop over animation channels and sets animation data.
 
         Parameters
         ----------
@@ -509,7 +509,7 @@ class glTF:
 
     def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
                          transform_type):
-        """Gets the timeline and transformation data from sampler.
+        """Get the timeline and transformation data from sampler.
 
         Parameters
         ----------
@@ -538,8 +538,8 @@ class glTF:
 
     def get_matrix_from_sampler(self, prop, node, anim_channel,
                                 sampler: gltflib.Sampler):
-        """Returns transformation matrix for a given timestamp from Sampler
-        data. Combines matrices for a given common timestamp.
+        """Return transformation matrix for a given timestamp from Sampler
+        data. Combine matrices for a given common timestamp.
 
         Parameters
         ----------
@@ -571,7 +571,7 @@ class glTF:
         return data
 
     def get_skin_data(self, skin_id):
-        """Gets the inverse bind matrix for each bone in the skin.
+        """Get the inverse bind matrix for each bone in the skin.
 
         Parameters
         ----------
@@ -592,7 +592,7 @@ class glTF:
         return joint_nodes, inv_bind_matrix
 
     def generate_tmatrix(self, transf, prop):
-        """Creates transformation matrix from TRS array.
+        """Create transformation matrix from TRS array.
 
         Parameters
         ----------
@@ -613,7 +613,7 @@ class glTF:
     def transverse_timelines(self, timeline, bone_id, timestamp,
                              joint_matrices,
                              parent_bone_deform=np.identity(4)):
-        """Calculates skinning matrix (Joint Matrices) and transforms bone for
+        """Calculate skinning matrix (Joint Matrices) and transform bone for
         each timeline.
 
         Parameters
@@ -654,7 +654,7 @@ class glTF:
                                           joint_matrices, new_deform)
 
     def update_skin(self, timeline):
-        """Updates the timeline and actors with skinning data.
+        """Update the timeline and actors with skinning data.
 
         Parameters
         ----------
@@ -685,7 +685,7 @@ class glTF:
             utils.compute_bounds(self._actors[i])
 
     def initialize_skin(self, timeline, bones=False, length=0.2):
-        """Creates bones and adds to the timeline and initialises `update_skin`
+        """Create bones and add to the timeline and initialise `update_skin`
 
         Parameters
         ----------
@@ -705,7 +705,7 @@ class glTF:
         self.update_skin(timeline)
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
-        """Applies the skinnig matrix, that transforms the vertices.
+        """Applie the skinnig matrix, that transform the vertices.
 
         Parameters
         ----------
@@ -741,9 +741,15 @@ class glTF:
 
     def transverse_bones(self, bone_id, channel_name,
                          parent_timeline: Timeline):
-        """
+        """Loop over the bones and add child bone timeline to their parent
+        timeline.
+
+        Parameters
+        ----------
         bone_id : int
             Index of the bone.
+        channel_name : str
+            Animation name.
         parent_timeline : Timeline
             timeline of the parent bone. Should be `root_timeline` by default.
         """
@@ -763,7 +769,6 @@ class glTF:
             timeline.set_keyframe('transform', 0.0, orig_transform)
 
         parent_timeline.add(timeline)
-        # self.timeline_order.append(bone_id)
         if node.children:
             for child_bone in node.children:
                 self.transverse_bones(child_bone, channel_name, timeline)
@@ -789,7 +794,8 @@ class glTF:
         return root_timelines
 
     def get_joint_actors(self, length=0.5, with_transforms=False):
-        """Creates an arrow actor for each bone in a skinned model.
+        """Create an arrow actor for each bone in a skinned model.
+
         Parameters
         ----------
         length : float (default = 0.5)
@@ -813,7 +819,7 @@ class glTF:
         self._bvert_copy = copy.deepcopy(self._bvertices)
 
     def get_animation_timelines(self):
-        """Returns list of animation timeline.
+        """Return list of animation timeline.
 
         Returns
         -------
@@ -890,7 +896,13 @@ class glTF:
         return timelines
 
     def main_timeline(self):
-        """Returns main timeline with all animations.
+        """Return main timeline with all animations.
+
+        Returns
+        -------
+        main_timeline : Timeline
+            A parent timeline containing all child timelines for simple
+            animation.
         """
         main_timeline = Timeline(playback_panel=True)
         timelines = self.get_animation_timelines()
