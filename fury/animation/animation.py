@@ -11,7 +11,7 @@ from fury.animation.interpolator import spline_interpolator, \
     step_interpolator, linear_interpolator, slerp
 
 
-class Animation(Container):
+class Animation:
     """Keyframe animation class.
 
     Animation is responsible for keyframe animations for a single or a
@@ -43,6 +43,7 @@ class Animation(Container):
         self._data = defaultdict(dict)
         self._camera_data = defaultdict(dict)
         self._animations = []
+        self._actors = []
         self._static_actors = []
         self._timeline = None
         self._parent_animation = None
@@ -110,9 +111,9 @@ class Animation(Container):
             [lines.append(self.get_position(t).tolist()) for t in ts]
             if self.is_interpolatable('color'):
                 [colors.append(self.get_color(t)) for t in ts]
-            elif len(self.items) >= 1:
-                colors = sum([i.vcolors[0] / 255 for i in self.items]) / \
-                         len(self.items)
+            elif len(self._actors) >= 1:
+                colors = sum([i.vcolors[0] / 255 for i in self._actors]) / \
+                         len(self._actors)
             else:
                 colors = [1, 1, 1]
 
@@ -325,9 +326,11 @@ class Animation(Container):
             parent_in_scene = parent._added_to_scene
 
         if self.is_interpolatable('in_scene'):
-            return parent_in_scene and self.get_value('in_scene', timestamp)
-
-        return parent_in_scene
+            in_scene = parent_in_scene and \
+                       self.get_value('in_scene', timestamp)
+        else:
+            in_scene = parent_in_scene
+        return in_scene
 
     def add_to_scene_at(self, timestamp):
         """Set timestamp for adding Animation to scene event.
@@ -361,10 +364,10 @@ class Animation(Container):
         should_be_in_scene = self.is_inside_scene_at(timestamp)
         if self._scene is not None:
             if should_be_in_scene and not self._added_to_scene:
-                super(Animation, self).add_to_scene(self._scene)
+                self._scene.add(*self._actors)
                 self._added_to_scene = True
             elif not should_be_in_scene and self._added_to_scene:
-                super(Animation, self).remove_from_scene(self._scene)
+                self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
     def set_camera_keyframes(self, attrib, keyframes):
@@ -1181,9 +1184,9 @@ class Animation(Container):
             if actor not in self.static_actors:
                 self._static_actors.append(actor)
         else:
-            if actor not in self.actors:
+            if actor not in self._actors:
                 actor.vcolors = utils.colors_from_actor(actor)
-                super(Animation, self).add(actor)
+                self._actors.append(actor)
 
     @property
     def timeline(self):
@@ -1247,7 +1250,7 @@ class Animation(Container):
         list:
             List of actors controlled by the Animation.
         """
-        return self.items
+        return self._actors
 
     @property
     def child_animations(self) -> 'list[Animation]':
@@ -1295,11 +1298,11 @@ class Animation(Container):
         actor: vtkActor
             Actor to be removed from the Animation.
         """
-        self._items.remove(actor)
+        self._actors.remove(actor)
 
     def remove_actors(self):
         """Remove all actors from the Animation"""
-        self.clear()
+        self._actors.clear()
 
     @property
     def loop(self):
@@ -1451,7 +1454,7 @@ class Animation(Container):
 
     def add_to_scene(self, ren):
         """Add this Animation, its actors and sub Animations to the scene"""
-        super(Animation, self).add_to_scene(ren)
+        [ren.add(actor) for actor in self._actors]
         [ren.add(static_act) for static_act in self._static_actors]
         [ren.add(animation) for animation in self._animations]
 
