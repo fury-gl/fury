@@ -48,7 +48,7 @@ class Animation(Container):
         self._parent_animation = None
         self._camera = None
         self._scene = None
-        self._added_to_scene_time = 0
+        self._start_time = 0
         self._length = length
         self._duration = length if length else 0
         self._loop = loop
@@ -77,6 +77,7 @@ class Animation(Container):
             self._duration = max(
                 self._max_timestamp, max([0] + [anim.update_duration() for anim
                                                 in self.child_animations]))
+
         return self.duration
 
     @property
@@ -1350,16 +1351,19 @@ class Animation(Container):
         time: float or int, optional, default: None
             The time to update animation at.
         """
-        time = time if time is not None else \
-            perf_counter() - self._added_to_scene_time
+        need_reset_clipping = False
+        if time is None:
+            time = perf_counter() - self._start_time
+            need_reset_clipping = True
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(time)
         self._handle_scene_event(time)
 
         if self.duration:
-            if self._loop and time > 0:
-                time = time % self.duration
+            if self._loop and time > self.duration:
+                time = 0
+                self._start_time = perf_counter()
             elif time > self.duration:
                 time = self.duration
         if isinstance(self._parent_animation, Animation):
@@ -1442,7 +1446,7 @@ class Animation(Container):
         # Also update all child Animations.
         [animation.update_animation(time) for animation in self._animations]
 
-        if self._scene and self._parent_animation is None:
+        if self._scene and need_reset_clipping:
             self._scene.reset_clipping_range()
 
     def add_to_scene(self, ren):
@@ -1455,5 +1459,5 @@ class Animation(Container):
             ren.add(self._motion_path_actor)
         self._scene = ren
         self._added_to_scene = True
-        self._added_to_scene_time = perf_counter()
+        self._start_time = perf_counter()
         self.update_animation(0)

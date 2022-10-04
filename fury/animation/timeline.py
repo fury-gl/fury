@@ -327,5 +327,6 @@ class Timeline:
 
     def add_to_scene(self, ren):
         """Add this Timeline and all of its Animations to the scene"""
-        self.playback_panel.add_to_scene(ren)
+        if self.has_playback_panel:
+            self.playback_panel.add_to_scene(ren)
         [ren.add(animation) for animation in self._animations]
