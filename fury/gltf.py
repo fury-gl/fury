@@ -601,6 +601,11 @@ class glTF:
         prop : str
             String that defines the type of array
             (values: translation, rotation or scale).
+
+        Returns
+        -------
+        matrix : ndarray (4, 4)
+            ransformation matrix of shape (4, 4) with respective transforms.
         """
         if prop == 'translation':
             matrix = transform.translate(transf)
@@ -705,7 +710,7 @@ class glTF:
         self.update_skin(timeline)
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
-        """Applie the skinnig matrix, that transform the vertices.
+        """Apply the skinnig matrix, that transform the vertices.
 
         Parameters
         ----------
@@ -717,7 +722,7 @@ class glTF:
         Returns
         -------
         vertices : ndarray
-            Modified vertices
+            Modified vertices.
         """
         clone = np.copy(vertices)
         weights = self.weights_0[actor_index]
