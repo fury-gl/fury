@@ -41,13 +41,11 @@ class Animation:
 
         super().__init__()
         self._data = defaultdict(dict)
-        self._camera_data = defaultdict(dict)
         self._animations = []
         self._actors = []
         self._static_actors = []
         self._timeline = None
         self._parent_animation = None
-        self._camera = None
         self._scene = None
         self._start_time = 0
         self._length = length
@@ -1024,7 +1022,8 @@ class Animation:
         Parameters
         ----------
         time: float or int, optional, default: None
-            The time to update animation at.
+            The time to update animation at. If None, the animation will play
+            without adding it to a Timeline.
         """
         need_reset_clipping = False
         if time is None:
@@ -1239,11 +1238,19 @@ class CameraAnimation(Animation):
         self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
 
     def update_animation(self, time=None):
+        """Update the camera animation.
+
+        Parameters
+        ----------
+        time: float or int, optional, default: None
+            The time to update the camera animation at. If None, the animation
+            will play.
+        """
         if self._camera is None:
             if self._scene:
                 self._camera = self._scene.camera()
                 self.update_animation(time)
-                return 
+                return
         else:
             if self.is_interpolatable('rotation'):
                 pos = self._camera.GetPosition()
@@ -1275,4 +1282,3 @@ class CameraAnimation(Animation):
                 self._camera.SetViewUp(0, 1, 0)
             if self._scene:
                 self._scene.reset_clipping_range()
-
