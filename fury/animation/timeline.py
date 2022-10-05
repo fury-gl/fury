@@ -102,13 +102,13 @@ class Timeline:
         """Stop the animation"""
         self._current_timestamp = 0
         self._playing = False
-        self.update_timeline(force=True)
+        self.update(force=True)
 
     def restart(self):
         """Restart the animation"""
         self._current_timestamp = 0
         self._playing = True
-        self.update_timeline(force=True)
+        self.update(force=True)
 
     @property
     def current_timestamp(self):
@@ -156,7 +156,7 @@ class Timeline:
                 perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
-            self.update_timeline(force=True)
+            self.update(force=True)
 
     def seek_percent(self, percent):
         """Seek a percentage of the Timeline's final timestamp.
@@ -296,7 +296,7 @@ class Timeline:
         """
         return self._animations
 
-    def update_timeline(self, force=False):
+    def update(self, force=False):
         """Update the timeline.
 
         Update the Timeline and all the animations that it controls. As well as
