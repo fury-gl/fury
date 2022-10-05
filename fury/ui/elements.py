@@ -3219,6 +3219,8 @@ class PolyLine(UI):
         ----------
         line_width : int, optional
             Width of the individual line.
+        color : (float, float, float), optional
+            RGB: Values must be between 0-1.
         """
         self.points = []
         self.line_width = line_width
@@ -3269,6 +3271,13 @@ class PolyLine(UI):
             self.update_line(np.asarray(new_points))
 
     def resize_line(self, size):
+        """Resize the current line.
+        Parameters
+        ----------
+        size: (int, int)
+            Size to resize the line.
+        """
+        offset_from_mouse = 2
         hyp = np.hypot(size[0], size[1])
         self.current_line.resize((hyp - self.offset_from_mouse, self.line_width))
         self.rotate_line(angle=np.arctan2(size[1], size[0]))
@@ -3317,6 +3326,12 @@ class PolyLine(UI):
         self.position += (new_center - center)
 
     def update_line(self, points):
+        """Redraws all the individual lines from the given points.
+        Parameters
+        ----------
+        points: ndarray
+            Set of points to create a polyline.
+        """
         if len(self.lines) > 0:
             self.remove()
 
@@ -3332,12 +3347,16 @@ class PolyLine(UI):
             self.remove_last_line()
 
     def remove_last_line(self):
+        """Removes the last added line from the polyline.
+        """
         self._scene.rm(self.current_line.actor)
 
         self.lines.pop()
         self.current_line = self.lines[-1]
 
     def remove(self):
+        """Resets all data and removes actor from scene.
+        """
         self.points = []
         self._scene.rm(*[l.actor for l in self.lines])
         self.lines = []
@@ -3345,6 +3364,8 @@ class PolyLine(UI):
         self.current_line = None
 
     def calculate_vertices(self):
+        """Calculate the vertices of the polyline.
+        """
         vertices = np.empty((0, 2), int)
         for line in self.lines:
             vertices = np.append(vertices, line.position +
@@ -3352,6 +3373,14 @@ class PolyLine(UI):
         return vertices
 
     def add_point(self, point, add_to_scene=False):
+        """Add a new point and create a new line.
+        Parameters
+        ----------
+        point: (int, int)
+            Position for the new line.
+        add_to_scene: bool, optional
+            Add current line to the scene.
+        """
         if self.current_line:
             self.resize_line(np.asarray(point) - self.current_line.position)
 
