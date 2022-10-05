@@ -55,7 +55,6 @@ class Animation:
         self._loop = loop
         self._max_timestamp = 0
         self._added_to_scene = True
-        self._is_camera_animated = False
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._transform = Transform()
@@ -130,50 +129,30 @@ class Animation:
                 self._scene.add(mpa)
             self._motion_path_actor = mpa
 
-    def _get_data(self, is_camera=False):
+    def _get_data(self):
         """Get animation data.
 
-        Parameters
-        ----------
-        is_camera: bool, optional, default : False
-            Specifies whether return general data or camera-related data.
         Returns
         -------
         dict:
             The animation data containing keyframes and interpolators.
         """
-        if is_camera:
-            self._is_camera_animated = True
-            return self._camera_data
-        else:
-            return self._data
+        return self._data
 
-    def _get_camera_data(self):
-        """Get camera animation data.
-
-        Returns
-        -------
-        dict:
-            The camera animation data containing keyframes and interpolators.
-        """
-        return self._get_data(is_camera=True)
-
-    def _get_attribute_data(self, attrib, is_camera=False):
+    def _get_attribute_data(self, attrib):
         """Get animation data for a specific attribute.
 
         Parameters
         ----------
         attrib: str
             The attribute name to get data for.
-        is_camera: bool, optional, default : False
-            Specifies whether return general data or camera-related data.
 
         Returns
         -------
         dict:
             The animation data for a specific attribute.
         """
-        data = self._get_data(is_camera=is_camera)
+        data = self._get_data()
 
         if attrib not in data:
             data[attrib] = {
@@ -188,7 +167,7 @@ class Animation:
             }
         return data.get(attrib)
 
-    def get_keyframes(self, attrib=None, is_camera=False):
+    def get_keyframes(self, attrib=None):
         """Get a keyframe for a specific or all attributes.
 
         Parameters
@@ -196,19 +175,17 @@ class Animation:
         attrib: str, optional, default: None
             The name of the attribute.
             If None, all keyframes for all set attributes will be returned.
-        is_camera: bool, optional
-            Indicated whether setting a camera property or general property.
         """
 
-        data = self._get_data(is_camera=is_camera)
+        data = self._get_data()
         if attrib is None:
             attribs = data.keys()
             return {attrib: data.get(attrib, {}).get('keyframes', {}) for
                     attrib in attribs}
         return data.get(attrib, {}).get('keyframes', {})
 
-    def set_keyframe(self, attrib, timestamp, value, is_camera=False,
-                     update_interpolator=True, **kwargs):
+    def set_keyframe(self, attrib, timestamp, value, update_interpolator=True,
+                     **kwargs):
         """Set a keyframe for a certain attribute.
 
         Parameters
@@ -219,8 +196,6 @@ class Animation:
             Timestamp of the keyframe.
         value: ndarray or float or bool
             Value of the keyframe at the given timestamp.
-        is_camera: bool, optional
-            Indicated whether setting a camera property or general property.
         update_interpolator: bool, optional
             Interpolator will be reinitialized if Ture
 
@@ -236,7 +211,7 @@ class Animation:
             The out tangent at that position for the cubic spline curve.
         """
 
-        attrib_data = self._get_attribute_data(attrib, is_camera=is_camera)
+        attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get('keyframes')
 
         keyframes[timestamp] = {
@@ -250,8 +225,7 @@ class Animation:
             interp_base = interp.get(
                 'base', linear_interpolator if attrib != 'rotation' else slerp)
             args = interp.get('args', {})
-            self.set_interpolator(attrib, interp_base,
-                                  is_camera=is_camera, **args)
+            self.set_interpolator(attrib, interp_base, **args)
 
         if timestamp > self._max_timestamp:
             self._max_timestamp = timestamp
@@ -262,7 +236,7 @@ class Animation:
         self.update_animation()
         self.update_motion_path()
 
-    def set_keyframes(self, attrib, keyframes, is_camera=False):
+    def set_keyframes(self, attrib, keyframes):
         """Set multiple keyframes for a certain attribute.
 
         Parameters
@@ -271,8 +245,6 @@ class Animation:
             The name of the attribute.
         keyframes: dict
             A dict object containing keyframes to be set.
-        is_camera: bool, optional
-            Indicated whether setting a camera property or general property.
 
         Notes
         -----
@@ -285,25 +257,9 @@ class Animation:
         """
         for t, keyframe in keyframes.items():
             if isinstance(keyframe, dict):
-                self.set_keyframe(attrib, t, **keyframe, is_camera=is_camera)
+                self.set_keyframe(attrib, t, **keyframe)
             else:
-                self.set_keyframe(attrib, t, keyframe, is_camera=is_camera)
-
-    def set_camera_keyframe(self, attrib, timestamp, value, **kwargs):
-        """Set a keyframe for a camera property
-
-        Parameters
-        ----------
-        attrib: str
-            The name of the attribute.
-        timestamp: float
-            Timestamp of the keyframe.
-        value: value: ndarray or float or bool
-            Value of the keyframe at the given timestamp.
-        **kwargs: dict, optional
-            Additional keyword arguments passed to `set_keyframe`.
-        """
-        self.set_keyframe(attrib, timestamp, value, is_camera=True, **kwargs)
+                self.set_keyframe(attrib, t, keyframe)
 
     def is_inside_scene_at(self, timestamp):
         """Check if the Animation is set to be inside the scene at a specific
@@ -370,29 +326,8 @@ class Animation:
                 self._scene.rm(*self._actors)
                 self._added_to_scene = False
 
-    def set_camera_keyframes(self, attrib, keyframes):
-        """Set multiple keyframes for a certain camera property
-
-        Parameters
-        ----------
-        attrib: str
-            The name of the property.
-        keyframes: dict
-            A dict object containing keyframes to be set.
-
-        Notes
-        -----
-        Cubic Bézier curve control points are not supported yet in this setter.
-
-        Examples
-        --------
-        >>> cam_pos = {1: np.array([1, 2, 3]), 3: np.array([5, 5, 5])}
-        >>> Animation.set_camera_keyframes('position', cam_pos)
-        """
-        self.set_keyframes(attrib, keyframes, is_camera=True)
-
-    def set_interpolator(self, attrib, interpolator, is_camera=False,
-                         is_evaluator=False, **kwargs):
+    def set_interpolator(self, attrib, interpolator, is_evaluator=False,
+                         **kwargs):
         """Set keyframes interpolator for a certain property
 
         Parameters
@@ -402,9 +337,6 @@ class Animation:
         interpolator: callable
             The generator function of the interpolator to be used to
             interpolate/evaluate keyframes.
-        is_camera: bool, optional
-            Indicated whether dealing with a camera property or general
-            property.
         is_evaluator: bool, optional
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes such as:
@@ -432,7 +364,7 @@ class Animation:
         >>> Animation.set_interpolator('position', pos_fun)
         """
 
-        attrib_data = self._get_attribute_data(attrib, is_camera=is_camera)
+        attrib_data = self._get_attribute_data(attrib)
         keyframes = attrib_data.get('keyframes', {})
         interp_data = attrib_data.get('interpolator', {})
         if is_evaluator:
@@ -451,15 +383,13 @@ class Animation:
         self.update_duration()
         self.update_motion_path()
 
-    def is_interpolatable(self, attrib, is_camera=False):
+    def is_interpolatable(self, attrib):
         """Check whether a property is interpolatable.
 
         Parameters
         ----------
         attrib: str
             The name of the property.
-        is_camera: bool, optional
-            Indicated whether checking a camera property or general property.
 
         Returns
         -------
@@ -472,32 +402,8 @@ class Animation:
         specified property. And False means the opposite.
 
         """
-        data = self._camera_data if is_camera else self._data
+        data = self._data
         return bool(data.get(attrib, {}).get('interpolator', {}).get('func'))
-
-    def set_camera_interpolator(self, attrib, interpolator,
-                                is_evaluator=False):
-        """Set the interpolator for a specific camera property.
-
-        Parameters
-        ----------
-        attrib: str
-            The name of the camera property.
-            The already handled properties are position, focal, and view_up.
-
-        interpolator: callable
-            The generator function of the interpolator that handles the
-            camera property interpolation between keyframes.
-        is_evaluator: bool, optional
-            Specifies whether the `interpolator` is time-only based evaluation
-            function that does not depend on keyframes.
-
-        Examples
-        --------
-        >>> Animation.set_camera_interpolator('focal', linear_interpolator)
-        """
-        self.set_interpolator(attrib, interpolator, is_camera=True,
-                              is_evaluator=is_evaluator)
 
     def set_position_interpolator(self, interpolator, is_evaluator=False,
                                   **kwargs):
@@ -598,37 +504,6 @@ class Animation:
         self.set_interpolator('opacity', interpolator,
                               is_evaluator=is_evaluator)
 
-    def set_camera_position_interpolator(self, interpolator,
-                                         is_evaluator=False):
-        """Set the camera position interpolator.
-
-        Parameters
-        ----------
-        interpolator: callable
-            The generator function of the interpolator that would handle the
-            interpolation of the camera position keyframes.
-        is_evaluator: bool, optional
-            Specifies whether the `interpolator` is time-only based evaluation
-            function that does not depend on keyframes.
-        """
-        self.set_camera_interpolator("position", interpolator,
-                                     is_evaluator=is_evaluator)
-
-    def set_camera_focal_interpolator(self, interpolator, is_evaluator=False):
-        """Set the camera focal position interpolator.
-
-        Parameters
-        ----------
-        interpolator: callable
-            The generator function of the interpolator that would handle the
-            interpolation of the camera focal position keyframes.
-        is_evaluator: bool, optional
-            Specifies whether the `interpolator` is time-only based evaluation
-            function that does not depend on keyframes.
-        """
-        self.set_camera_interpolator("focal", interpolator,
-                                     is_evaluator=is_evaluator)
-
     def get_value(self, attrib, timestamp):
         """Return the value of an attribute at any given timestamp.
 
@@ -653,21 +528,6 @@ class Animation:
         """
         return self._data.get(attrib).get('interpolator'). \
             get('func')(self._timeline.current_timestamp)
-
-    def get_camera_value(self, attrib, timestamp):
-        """Return the value of an attribute interpolated at any given
-        timestamp.
-
-        Parameters
-        ----------
-        attrib: str
-            The attribute name.
-        timestamp: float
-            The timestamp to interpolate at.
-
-        """
-        return self._camera_data.get(attrib).get('interpolator'). \
-            get('func')(timestamp)
 
     def set_position(self, timestamp, position, **kwargs):
         """Set a position keyframe at a specific timestamp.
@@ -939,194 +799,6 @@ class Animation:
         """
         return self.get_value('opacity', t)
 
-    def set_camera_position(self, timestamp, position, **kwargs):
-        """Set the camera position keyframe.
-
-        Parameters
-        ----------
-        timestamp: float
-            The time to interpolate opacity at.
-        position: ndarray, shape(1, 3)
-            The camera position
-        """
-        self.set_camera_keyframe('position', timestamp, position, **kwargs)
-
-    def set_camera_focal(self, timestamp, position, **kwargs):
-        """Set camera's focal position keyframe.
-
-        Parameters
-        ----------
-        timestamp: float
-            The time to interpolate opacity at.
-        position: ndarray, shape(1, 3)
-            The camera position
-        """
-        self.set_camera_keyframe('focal', timestamp, position, **kwargs)
-
-    def set_camera_view_up(self, timestamp, direction, **kwargs):
-        """Set the camera view-up direction keyframe.
-
-        Parameters
-        ----------
-        timestamp: float
-            The time to interpolate at.
-        direction: ndarray, shape(1, 3)
-            The camera view-up direction
-        """
-        self.set_camera_keyframe('view_up', timestamp, direction, **kwargs)
-
-    def set_camera_rotation(self, timestamp, rotation, **kwargs):
-        """Set the camera rotation keyframe.
-
-        Parameters
-        ----------
-        timestamp: float
-            The time to interpolate at.
-        rotation: ndarray, shape(1, 3) or shape(1, 4)
-            Rotation data in euler degrees with shape(1, 3) or in quaternions
-            with shape(1, 4).
-
-        Notes
-        -----
-        Euler rotations are executed by rotating first around Z then around X,
-        and finally around Y.
-        """
-        self.set_rotation(timestamp, rotation, is_camera=True, **kwargs)
-
-    def set_camera_position_keyframes(self, keyframes):
-        """Set a dict of camera position keyframes at once.
-        Should be in the following form:
-        {timestamp_1: position_1, timestamp_2: position_2}
-
-        Parameters
-        ----------
-        keyframes: dict
-            A dict with timestamps as keys and opacities as values.
-
-        Examples
-        --------
-        >>> pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
-        >>> Animation.set_camera_position_keyframes(pos)
-        """
-        self.set_camera_keyframes('position', keyframes)
-
-    def set_camera_focal_keyframes(self, keyframes):
-        """Set multiple camera focal position keyframes at once.
-        Should be in the following form:
-        {timestamp_1: focal_1, timestamp_2: focal_1, ...}
-
-        Parameters
-        ----------
-        keyframes: dict
-            A dict with timestamps as keys and camera focal positions as
-            values.
-
-        Examples
-        --------
-        >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
-        >>> Animation.set_camera_focal_keyframes(focal_pos)
-        """
-        self.set_camera_keyframes('focal', keyframes)
-
-    def set_camera_view_up_keyframes(self, keyframes):
-        """Set multiple camera view up direction keyframes.
-        Should be in the following form:
-        {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
-
-        Parameters
-        ----------
-        keyframes: dict
-            A dict with timestamps as keys and camera view up vectors as
-            values.
-
-        Examples
-        --------
-        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
-        >>> Animation.set_camera_view_up_keyframes(view_ups)
-        """
-        self.set_camera_keyframes('view_up', keyframes)
-
-    def get_camera_position(self, t):
-        """Return the interpolated camera position.
-
-        Parameters
-        ----------
-        t: float
-            The time to interpolate camera position value at.
-
-        Returns
-        -------
-        ndarray(1, 3):
-            The interpolated camera position.
-
-        Notes
-        -----
-        The returned position does not necessarily reflect the current camera
-        position, but te expected one.
-        """
-        return self.get_camera_value('position', t)
-
-    def get_camera_focal(self, t):
-        """Return the interpolated camera's focal position.
-
-        Parameters
-        ----------
-        t: float
-            The time to interpolate at.
-
-        Returns
-        -------
-        ndarray(1, 3):
-            The interpolated camera's focal position.
-
-        Notes
-        -----
-        The returned focal position does not necessarily reflect the current
-        camera's focal position, but the expected one.
-        """
-        return self.get_camera_value('focal', t)
-
-    def get_camera_view_up(self, t):
-        """Return the interpolated camera's view-up directional vector.
-
-        Parameters
-        ----------
-        t: float
-            The time to interpolate at.
-
-        Returns
-        -------
-        ndarray(1, 3):
-            The interpolated camera view-up directional vector.
-
-        Notes
-        -----
-        The returned focal position does not necessarily reflect the actual
-        camera view up directional vector, but the expected one.
-        """
-        return self.get_camera_value('view_up', t)
-
-    def get_camera_rotation(self, t):
-        """Return the interpolated rotation for the camera expressed
-        in euler angles.
-
-        Parameters
-        ----------
-        t: float
-            The time to interpolate at.
-
-        Returns
-        -------
-        ndarray(1, 3):
-            The interpolated camera's rotation.
-
-        Notes
-        -----
-        The returned focal position does not necessarily reflect the actual
-        camera view up directional vector, but the expected one.
-        """
-        return self.get_camera_value('rotation', t)
-
     def add(self, item):
         """Add an item to the Animation.
         This item can be an Actor, Animation, list of Actors, or a list of
@@ -1374,41 +1046,6 @@ class Animation:
         else:
             self._transform.Identity()
 
-        if self._camera is not None:
-            if self.is_interpolatable('rotation', is_camera=True):
-                pos = self._camera.GetPosition()
-                translation = np.identity(4)
-                translation[:3, 3] = pos
-                # camera axis is reverted
-                rot = -self.get_camera_rotation(time)
-                rot = transform.Rotation.from_quat(rot).as_matrix()
-                rot = np.array([[*rot[0], 0],
-                                [*rot[1], 0],
-                                [*rot[2], 0],
-                                [0, 0, 0, 1]])
-                rot = translation @ rot @ np.linalg.inv(translation)
-                self._camera.SetModelTransformMatrix(rot.flatten())
-
-            if self.is_interpolatable('position', is_camera=True):
-                cam_pos = self.get_camera_position(time)
-                self._camera.SetPosition(cam_pos)
-
-            if self.is_interpolatable('focal', is_camera=True):
-                cam_foc = self.get_camera_focal(time)
-                self._camera.SetFocalPoint(cam_foc)
-
-            if self.is_interpolatable('view_up', is_camera=True):
-                cam_up = self.get_camera_view_up(time)
-                self._camera.SetViewUp(cam_up)
-            elif not self.is_interpolatable('view_up', is_camera=True):
-                # to preserve up-view as default after user interaction
-                self._camera.SetViewUp(0, 1, 0)
-
-        elif self._is_camera_animated and self._scene:
-            self._camera = self._scene.camera()
-            self.update_animation(time)
-            return
-
         # actors properties
         if in_scene:
             if self.is_interpolatable('position'):
@@ -1464,3 +1101,178 @@ class Animation:
         self._added_to_scene = True
         self._start_time = perf_counter()
         self.update_animation(0)
+
+
+class CameraAnimation(Animation):
+    def __init__(self, camera=None, length=None, loop=True,
+                 motion_path_res=None):
+        super(CameraAnimation, self).__init__(length=length, loop=loop,
+                                              motion_path_res=motion_path_res)
+        self._camera = camera
+
+    def set_focal(self, timestamp, position, **kwargs):
+        """Set camera's focal position keyframe.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to interpolate opacity at.
+        position: ndarray, shape(1, 3)
+            The camera position
+        """
+        self.set_keyframe('focal', timestamp, position, **kwargs)
+
+    def set_view_up(self, timestamp, direction, **kwargs):
+        """Set the camera view-up direction keyframe.
+
+        Parameters
+        ----------
+        timestamp: float
+            The time to interpolate at.
+        direction: ndarray, shape(1, 3)
+            The camera view-up direction
+        """
+        self.set_keyframe('view_up', timestamp, direction, **kwargs)
+
+    def set_focal_keyframes(self, keyframes):
+        """Set multiple camera focal position keyframes at once.
+        Should be in the following form:
+        {timestamp_1: focal_1, timestamp_2: focal_1, ...}
+
+        Parameters
+        ----------
+        keyframes: dict
+            A dict with timestamps as keys and camera focal positions as
+            values.
+
+        Examples
+        --------
+        >>> focal_pos = {0, np.array([1, 1, 1]), 3, np.array([20, 0, 0])}
+        >>> CameraAnimation.set_focal_keyframes(focal_pos)
+        """
+        self.set_keyframes('focal', keyframes)
+
+    def set_view_up_keyframes(self, keyframes):
+        """Set multiple camera view up direction keyframes.
+        Should be in the following form:
+        {timestamp_1: view_up_1, timestamp_2: view_up_2, ...}
+
+        Parameters
+        ----------
+        keyframes: dict
+            A dict with timestamps as keys and camera view up vectors as
+            values.
+
+        Examples
+        --------
+        >>> view_ups = {0, np.array([1, 0, 0]), 3, np.array([0, 1, 0])}
+        >>> CameraAnimation.set_view_up_keyframes(view_ups)
+        """
+        self.set_keyframes('view_up', keyframes)
+
+    def get_focal(self, t):
+        """Return the interpolated camera's focal position.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera's focal position.
+
+        Notes
+        -----
+        The returned focal position does not necessarily reflect the current
+        camera's focal position, but the expected one.
+        """
+        return self.get_value('focal', t)
+
+    def get_view_up(self, t):
+        """Return the interpolated camera's view-up directional vector.
+
+        Parameters
+        ----------
+        t: float
+            The time to interpolate at.
+
+        Returns
+        -------
+        ndarray(1, 3):
+            The interpolated camera view-up directional vector.
+
+        Notes
+        -----
+        The returned focal position does not necessarily reflect the actual
+        camera view up directional vector, but the expected one.
+        """
+        return self.get_value('view_up', t)
+
+    def set_focal_interpolator(self, interpolator, is_evaluator=False):
+        """Set the camera focal position interpolator.
+
+        Parameters
+        ----------
+        interpolator: callable
+            The generator function of the interpolator that would handle the
+            interpolation of the camera focal position keyframes.
+        is_evaluator: bool, optional
+            Specifies whether the `interpolator` is time-only based evaluation
+            function that does not depend on keyframes.
+        """
+        self.set_interpolator("focal", interpolator, is_evaluator=is_evaluator)
+
+    def set_view_up_interpolator(self, interpolator, is_evaluator=False):
+        """Set the camera up-view vector animation interpolator.
+
+        Parameters
+        ----------
+        interpolator: callable
+            The generator function of the interpolator that would handle the
+            interpolation of the camera view-up keyframes.
+        is_evaluator: bool, optional
+            Specifies whether the `interpolator` is time-only based evaluation
+            function that does not depend on keyframes.
+        """
+        self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
+
+    def update_animation(self, time=None):
+        if self._camera is None:
+            if self._scene:
+                self._camera = self._scene.camera()
+                self.update_animation(time)
+                return 
+        else:
+            if self.is_interpolatable('rotation'):
+                pos = self._camera.GetPosition()
+                translation = np.identity(4)
+                translation[:3, 3] = pos
+                # camera axis is reverted
+                rot = -self.get_rotation(time)
+                rot = transform.Rotation.from_quat(rot).as_matrix()
+                rot = np.array([[*rot[0], 0],
+                                [*rot[1], 0],
+                                [*rot[2], 0],
+                                [0, 0, 0, 1]])
+                rot = translation @ rot @ np.linalg.inv(translation)
+                self._camera.SetModelTransformMatrix(rot.flatten())
+
+            if self.is_interpolatable('position'):
+                cam_pos = self.get_position(time)
+                self._camera.SetPosition(cam_pos)
+
+            if self.is_interpolatable('focal'):
+                cam_foc = self.get_focal(time)
+                self._camera.SetFocalPoint(cam_foc)
+
+            if self.is_interpolatable('view_up'):
+                cam_up = self.get_view_up(time)
+                self._camera.SetViewUp(cam_up)
+            elif not self.is_interpolatable('view_up'):
+                # to preserve up-view as default after user interaction
+                self._camera.SetViewUp(0, 1, 0)
+            if self._scene:
+                self._scene.reset_clipping_range()
+
