@@ -5,8 +5,7 @@ from collections import defaultdict
 from scipy.spatial import transform
 from fury.actor import line
 from fury import utils
-from fury.actor import Container
-from fury.lib import Actor, Transform
+from fury.lib import Actor, Transform, Camera
 from fury.animation.interpolator import spline_interpolator, \
     step_interpolator, linear_interpolator, slerp
 
@@ -231,7 +230,7 @@ class Animation:
                 self._timeline.update_duration()
             else:
                 self.update_duration()
-        self.update_animation()
+        self.update_animation(0)
         self.update_motion_path()
 
     def set_keyframes(self, attrib, keyframes):
@@ -1103,10 +1102,52 @@ class Animation:
 
 
 class CameraAnimation(Animation):
+    """Camera keyframe animation class.
+
+    This is used for animating a single camera using a set of keyframes.
+
+    Attributes
+    ----------
+    camera : Camera, optional, default: None
+        Camera to be animated. If None, active camera will be animated.
+    length : float or int, default: None, optional
+        the fixed length of the animation. If set to None, the animation will
+        get its duration from the keyframes being set.
+    loop : bool, optional, default: True
+        Whether to loop the animation (True) of play once (False).
+    motion_path_res : int, default: None
+        the number of line segments used to visualizer the animation's motion
+        path (visualizing position).
+    """
     def __init__(self, camera=None, length=None, loop=True,
                  motion_path_res=None):
         super(CameraAnimation, self).__init__(length=length, loop=loop,
                                               motion_path_res=motion_path_res)
+        self._camera = camera
+
+    @property
+    def camera(self) -> Camera:
+        """Return the camera assigned to this animation.
+
+        Returns
+        -------
+        Camera:
+            The camera that is being animated by this CameraAnimation.
+
+        """
+        return self._camera
+
+    @camera.setter
+    def camera(self, camera: Camera):
+        """Set a camera to be animated.
+
+        Parameters
+        ----------
+
+        camera: Camera
+            The camera to be animated
+
+        """
         self._camera = camera
 
     def set_focal(self, timestamp, position, **kwargs):
