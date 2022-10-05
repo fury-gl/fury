@@ -3976,12 +3976,6 @@ class DrawPanel(UI):
         return np.clip(mouse_position, self.canvas.position,
                        self.canvas.position + self.canvas.size)
 
-    def add_line(self, position, color=(1, 1, 1)):
-        line = DrawShape(shape_type="line", drawpanel=self, position=position)
-        line.shape.color = color
-        self.drawing_lines.append(line)
-        self.current_scene.add(line)
-
     def handle_mouse_click(self, position):
         if self.current_mode == "drawing":
             self.draw_shape("polyline", position)
