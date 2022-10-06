@@ -3170,6 +3170,15 @@ class DrawShapeGroup:
         """
         return not bool(len(self.grouped_shapes))
 
+    def delete_shapes(self):
+        """Delete all the shapes present in current group.
+
+        """
+        if not self.is_empty():
+            for shape in self.grouped_shapes:
+                shape.remove()
+            self.clear()
+
     def update_position(self, offset):
         """Update the position of all the shapes in the group.
 
@@ -3486,7 +3495,10 @@ class DrawShape(UI):
             self._drag_offset = click_pos - self.center
             i_ren.event.abort()
         elif mode == "delete":
-            self.remove()
+            if self.drawpanel.shape_group.is_present(self):
+                self.drawpanel.shape_group.delete_shapes()
+            else:
+                self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
         i_ren.force_render()
@@ -3654,7 +3666,8 @@ class DrawPanel(UI):
         self._current_mode = mode
         if mode is not None:
             self.mode_text.message = f"Mode: {mode}"
-        self.shape_group.clear()
+        if self.shape_group.is_empty() or mode != "delete":
+            self.shape_group.clear()
 
     def cal_min_boundary_distance(self, position):
         """Calculate the minimum distance between the current position and canvas boundary.
