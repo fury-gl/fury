@@ -3181,7 +3181,10 @@ class DrawShapeGroup:
         """
         vertices = []
         for shape in self.grouped_shapes:
-            vertices.extend(shape.position + vertices_from_actor(shape.shape.actor)[:, :-1])
+            if shape.shape_type == "polyline":
+                vertices.extend(shape.shape.calculate_vertices())
+            else:
+                vertices.extend(shape.position + vertices_from_actor(shape.shape.actor)[:, :-1])
 
         bounding_box_min, bounding_box_max, \
             bounding_box_size = cal_bounding_box_2d(np.asarray(vertices))
