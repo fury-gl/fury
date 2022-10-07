@@ -56,7 +56,7 @@ class Animation:
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._transform = Transform()
-
+        self._general_callbacks = []
         # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
@@ -1008,7 +1008,7 @@ class Animation:
         """
         self._loop = loop
 
-    def add_update_callback(self, prop, callback):
+    def add_update_callback(self, callback, prop=None):
         """Add a function to be called each time animation is updated
         This function must accept only one argument which is the current value
         of the named property.
@@ -1016,11 +1016,19 @@ class Animation:
 
         Parameters
         ----------
-        prop: str
-            The name of the property.
-        callback: function
+        callback: callable
             The function to be called whenever the animation is updated.
+        prop: str, optional, default: None
+            The name of the property.
+
+        Notes
+        -----
+        If no attribute name was provided, current time of the animation will
+        be provided instead of current value for the callback.
         """
+        if prop is None:
+            self._general_callbacks.append(callback)
+            return
         attrib = self._get_attribute_data(prop)
         attrib.get('callbacks', []).append(callback)
 
@@ -1093,6 +1101,9 @@ class Animation:
             if callbacks != [] and self.is_interpolatable(attrib):
                 value = self.get_value(attrib, time)
                 [cbk(value) for cbk in callbacks]
+
+        # Executing general callbacks that's not related to any attribute
+        [callback(time) for callback in self._general_callbacks]
 
         # Also update all child Animations.
         [animation.update_animation(time) for animation in self._animations]
