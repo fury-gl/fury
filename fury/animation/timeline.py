@@ -37,10 +37,7 @@ class Timeline:
         self._loop = loop
         self._length = length
         self._duration = length if length is not None else 0.0
-        # Handle actors while constructing the timeline.
 
-        if animations is not None:
-            self.add_animation(animations)
         if playback_panel:
             def set_loop(is_loop):
                 self._loop = is_loop
@@ -55,6 +52,9 @@ class Timeline:
             self.playback_panel.on_loop_toggle = set_loop
             self.playback_panel.on_progress_bar_changed = self.seek
             self.playback_panel.on_speed_changed = set_speed
+
+        if animations is not None:
+            self.add_animation(animations)
 
     def update_duration(self):
         """Update and return the duration of the Timeline.
@@ -102,13 +102,13 @@ class Timeline:
         """Stop the animation"""
         self._current_timestamp = 0
         self._playing = False
-        self.update_timeline(force=True)
+        self.update(force=True)
 
     def restart(self):
         """Restart the animation"""
         self._current_timestamp = 0
         self._playing = True
-        self.update_timeline(force=True)
+        self.update(force=True)
 
     @property
     def current_timestamp(self):
@@ -156,7 +156,7 @@ class Timeline:
                 perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
-            self.update_timeline(force=True)
+            self.update(force=True)
 
     def seek_percent(self, percent):
         """Seek a percentage of the Timeline's final timestamp.
@@ -296,7 +296,7 @@ class Timeline:
         """
         return self._animations
 
-    def update_timeline(self, force=False):
+    def update(self, force=False):
         """Update the timeline.
 
         Update the Timeline and all the animations that it controls. As well as

@@ -4,7 +4,8 @@ from fury import actor
 from fury.animation.interpolator import linear_interpolator, \
     step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
     spline_interpolator
-from fury.animation import Animation
+from fury.animation import Animation, CameraAnimation
+from fury.lib import Camera
 
 
 def assert_not_equal(x, y):
@@ -82,3 +83,36 @@ def test_animation():
                                 transform.GetScale())
         npt.assert_almost_equal(anim.get_rotation(0),
                                 transform.GetOrientation())
+
+
+def test_camera_animation():
+    cam = Camera()
+    anim = CameraAnimation(cam)
+
+    assert anim.camera is cam
+
+    anim.set_position(0, [1, 2, 3])
+    anim.set_position(3, [3, 2, 1])
+
+    anim.set_focal(0, [10, 20, 30])
+    anim.set_focal(3, [30, 20, 10])
+
+    anim.set_rotation(0, np.array([180, 0, 0]))
+
+    anim.update_animation(0)
+    npt.assert_almost_equal(cam.GetPosition(), np.array([1, 2, 3]))
+    npt.assert_almost_equal(cam.GetFocalPoint(), np.array([10, 20, 30]))
+    anim.update_animation(3)
+    npt.assert_almost_equal(cam.GetPosition(), np.array([3, 2, 1]))
+    npt.assert_almost_equal(cam.GetFocalPoint(), np.array([30, 20, 10]))
+    anim.update_animation(1.5)
+    npt.assert_almost_equal(cam.GetPosition(), np.array([2, 2, 2]))
+    npt.assert_almost_equal(cam.GetFocalPoint(), np.array([20, 20, 20]))
+    rot = np.zeros(16)
+    matrix = cam.GetModelTransformMatrix()
+    matrix.DeepCopy(rot.ravel(), matrix)
+    expected = np.array([[1, 0, 0, 0],
+                         [0, -1, 0, 4],
+                         [0, 0, -1, 2],
+                         [0, 0, 0, 1]])
+    npt.assert_almost_equal(expected, rot.reshape([4, 4]))
