@@ -1024,10 +1024,10 @@ class Animation:
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
         """
-        need_reset_clipping = False
+        has_handler = True
         if time is None:
             time = perf_counter() - self._start_time
-            need_reset_clipping = True
+            has_handler = False
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(time)
@@ -1035,8 +1035,7 @@ class Animation:
 
         if self.duration:
             if self._loop and time > self.duration:
-                time = 0
-                self._start_time = perf_counter()
+                time = time % self.duration
             elif time > self.duration:
                 time = self.duration
         if isinstance(self._parent_animation, Animation):
@@ -1084,7 +1083,7 @@ class Animation:
         # Also update all child Animations.
         [animation.update_animation(time) for animation in self._animations]
 
-        if self._scene and need_reset_clipping:
+        if self._scene and not has_handler:
             self._scene.reset_clipping_range()
 
     def add_to_scene(self, ren):
