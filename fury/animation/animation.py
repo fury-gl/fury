@@ -50,6 +50,7 @@ class Animation:
         self._length = length
         self._duration = length if length else 0
         self._loop = loop
+        self._current_timestamp = 0
         self._max_timestamp = 0
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
@@ -87,6 +88,17 @@ class Animation:
             The duration of the animation.
         """
         return self._duration
+
+    @property
+    def current_timestamp(self):
+        """Return the current time of the animation.
+
+        Returns
+        -------
+        float
+            The current time of the animation.
+        """
+        return self._current_timestamp
 
     def update_motion_path(self):
         """Update motion path visualization actor"""
@@ -1043,6 +1055,8 @@ class Animation:
         else:
             self._transform.Identity()
 
+        self._current_timestamp = time
+
         # actors properties
         if in_scene:
             if self.is_interpolatable('position'):
@@ -1275,7 +1289,8 @@ class CameraAnimation(Animation):
             Specifies whether the `interpolator` is time-only based evaluation
             function that does not depend on keyframes.
         """
-        self.set_interpolator("view_up", interpolator, is_evaluator=is_evaluator)
+        self.set_interpolator("view_up", interpolator,
+                              is_evaluator=is_evaluator)
 
     def update_animation(self, time=None):
         """Update the camera animation.
