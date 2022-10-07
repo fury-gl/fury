@@ -26,7 +26,7 @@ filename = read_viz_gltf('Duck')
 # or materials manually afterwards.
 # Experimental: For smooth mesh/actor you can set `apply_normals=True`.
 
-gltf_obj = glTF(filename)
+gltf_obj = glTF(filename, apply_normals=False)
 actors = gltf_obj.actors()
 
 ##############################################################################
