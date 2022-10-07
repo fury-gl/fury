@@ -8,26 +8,16 @@ Minimal tutorial of making keyframe-based animation in FURY.
 """
 
 ###############################################################################
-# What is a ``Timeline``
-# ======================
+# What is an ``Animation``
+# ========================
 #
-# ``Timeline`` is responsible for animating FURY actors using a set of
+# ``Animation`` is responsible for animating FURY actors using a set of
 # keyframes by interpolating values between timestamps of these keyframes.
-# ``Timeline`` has playback methods such as ``play``, ``pause``, ``stop``, ...
 
 import numpy as np
 from fury import actor, window
-from fury.animation.timeline import Timeline
+from fury.animation import Animation
 from fury.animation.interpolator import cubic_spline_interpolator
-
-###############################################################################
-# What are keyframes
-# ==================
-#
-# A keyframe consists of a timestamp and some data.
-# These data can be anything such as temperature, position, or scale.
-# How to define Keyframes that FURY can work with?
-# A simple dictionary object with timestamps as keys and data as values.
 
 keyframes = {
     1.0: {'value': np.array([0, 0, 0])},
@@ -81,26 +71,26 @@ showm.initialize()
 arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
-# Creating the ``Timeline``
-# ========================
+# Creating an ``Animation``
+# =========================
 #
-# First step is creating the Timeline. A playback panel should be
-timeline = Timeline(playback_panel=True)
+# First step is creating the Animation.
+animation = Animation()
 
 ###############################################################################
 # Adding the sphere actor to the timeline
 # This could've been done during initialization.
-timeline.add_actor(arrow)
+animation.add_actor(arrow)
 
 ###############################################################################
 # Setting position keyframes
 # ==========================
 #
 # Adding some position keyframes
-timeline.set_position(0.0, np.array([0, 0, 0]))
-timeline.set_position(2.0, np.array([10, 10, 10]))
-timeline.set_position(5.0, np.array([-10, -3, -6]))
-timeline.set_position(9.0, np.array([10, 6, 20]))
+animation.set_position(0.0, np.array([0, 0, 0]))
+animation.set_position(2.0, np.array([10, 10, 10]))
+animation.set_position(5.0, np.array([-10, -3, -6]))
+animation.set_position(9.0, np.array([10, 6, 20]))
 
 ###############################################################################
 # Changing the default interpolator for a single property
@@ -108,18 +98,18 @@ timeline.set_position(9.0, np.array([10, 6, 20]))
 #
 # For all properties except **rotation**, linear interpolator is used by
 # default. In order to change the default interpolator and set another
-# interpolator, call ``timeline.set_<property>_interpolator(new_interpolator)``
+# interpolator, call ``animation.set_<property>_interpolator(interpolator)``
 # FURY already has some interpolators located at:
 # ``fury.animation.interpolator``.
 #
 # Below we set the interpolator for position keyframes to be
 # **cubic spline interpolator**.
-timeline.set_position_interpolator(cubic_spline_interpolator)
+animation.set_position_interpolator(cubic_spline_interpolator)
 
 ###############################################################################
 # Adding some rotation keyframes.
-timeline.set_rotation(0.0, np.array([160, 50, 0]))
-timeline.set_rotation(8.0, np.array([60, 160, 0]))
+animation.set_rotation(0.0, np.array([160, 50, 0]))
+animation.set_rotation(8.0, np.array([60, 160, 0]))
 
 ###############################################################################
 # For Rotation keyframes, Slerp is used as the default interpolator.
@@ -133,21 +123,11 @@ timeline.set_rotation(8.0, np.array([60, 160, 0]))
 scene.camera().SetPosition(0, 0, 90)
 
 ###############################################################################
-# Adding main Timeline to the ``Scene``.
-scene.add(timeline)
-
-
-###############################################################################
-# making a function to update the animation and render the scene.
-def timer_callback(_obj, _event):
-    timeline.update_animation()
-    showm.render()
-
+# Adding main animation to the ``ShowManager``.
+showm.add_animation(animation)
 
 ###############################################################################
-# Adding the callback function that updates the animation.
-showm.add_timer_callback(True, 10, timer_callback)
-
+# Start the ``ShowManager`` to start playing the animation
 interactive = False
 
 if interactive:

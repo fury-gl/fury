@@ -10,9 +10,11 @@ space interpolators.
 
 import numpy as np
 from fury import actor, window
+from fury.animation import Animation
 from fury.animation.timeline import Timeline
 from fury.animation.interpolator import step_interpolator, \
     lab_color_interpolator, hsv_color_interpolator, xyz_color_interpolator
+from fury.colormap import distinguishable_colormap
 
 scene = window.Scene()
 
@@ -41,60 +43,61 @@ step_text = actor.vector_text("Step", (5.7, -1, 0))
 scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 
 ###############################################################################
-# Main timeline to control all the timelines (one for each color interpolation
-# method)
-main_timeline = Timeline(playback_panel=True)
-
-###############################################################################
 # Creating a timeline to animate the actor.
 # Also cube actor is provided for each timeline to handle as follows:
 # ``Timeline(actor)``, ``Timeline(list_of_actors)``, or actors can be added
 # later using ``Timeline.add()`` or ``timeline.add_actor()``
-timeline_linear_color = Timeline(actor.cube(cubes_pos[0]))
-timeline_LAB_color = Timeline(actor.cube(cubes_pos[1]))
-timeline_HSV_color = Timeline(actor.cube(cubes_pos[2]))
-timeline_XYZ_color = Timeline(actor.cube(cubes_pos[3]))
-timeline_step_color = Timeline(actor.cube(cubes_pos[4]))
+anim_linear_color = Animation(actor.cube(cubes_pos[0]))
+anim_LAB_color = Animation(actor.cube(cubes_pos[1]))
+anim_HSV_color = Animation(actor.cube(cubes_pos[2]))
+anim_XYZ_color = Animation(actor.cube(cubes_pos[3]))
+anim_step_color = Animation(actor.cube(cubes_pos[4]))
 
 ###############################################################################
-# Adding timelines to the main Timeline.
-main_timeline.add_child_animation([timeline_linear_color,
-                                  timeline_LAB_color,
-                                  timeline_HSV_color,
-                                  timeline_XYZ_color,
-                                  timeline_step_color])
+# Creating a timeline to control all the animations (one for each color
+# interpolation method)
+
+timeline = Timeline(playback_panel=True)
 
 ###############################################################################
-# Adding color keyframes to the linearly (for now) interpolated timelines
+# Adding animations to a Timeline.
+timeline.add_animation([anim_linear_color,
+                        anim_LAB_color,
+                        anim_HSV_color,
+                        anim_XYZ_color,
+                        anim_step_color])
+
+###############################################################################
+# Setting color keyframes
+# =======================
+#
+# Setting the same color keyframes to all the animations
+
+###############################################################################
+# First, we generate some distinguishable colors
+colors = distinguishable_colormap(nb_colors=4)
+
+###############################################################################
+# Then, we set them as keyframes for the animations
 for t in range(0, 20, 5):
-    x = np.random.random(3)
-    timeline_linear_color.set_color(t, np.array(x))
-    timeline_LAB_color.set_color(t, np.array(x))
-    timeline_HSV_color.set_color(t, np.array(x))
-    timeline_XYZ_color.set_color(t, np.array(x))
-    timeline_step_color.set_color(t, np.array(x))
+    col = colors.pop()
+    anim_linear_color.set_color(t, col)
+    anim_LAB_color.set_color(t, col)
+    anim_HSV_color.set_color(t, col)
+    anim_XYZ_color.set_color(t, col)
+    anim_step_color.set_color(t, col)
 
 ###############################################################################
 # Changing the default scale interpolator to be a step interpolator
 # The default is linear interpolator for color keyframes
-timeline_HSV_color.set_color_interpolator(hsv_color_interpolator)
-timeline_LAB_color.set_color_interpolator(lab_color_interpolator)
-timeline_step_color.set_color_interpolator(step_interpolator)
-timeline_XYZ_color.set_color_interpolator(xyz_color_interpolator)
+anim_HSV_color.set_color_interpolator(hsv_color_interpolator)
+anim_LAB_color.set_color_interpolator(lab_color_interpolator)
+anim_step_color.set_color_interpolator(step_interpolator)
+anim_XYZ_color.set_color_interpolator(xyz_color_interpolator)
 
 ###############################################################################
-# Adding the main timeline to the scene
-scene.add(main_timeline)
-
-
-###############################################################################
-# making a function to update the animation and render the scene
-def timer_callback(_obj, _event):
-    main_timeline.update_animation()
-    showm.render()
-
-
-showm.add_timer_callback(True, 10, timer_callback)
+# Adding the main timeline to the show manager
+showm.add_animation(timeline)
 
 interactive = False
 
