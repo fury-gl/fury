@@ -50,12 +50,13 @@ class Animation:
         self._length = length
         self._duration = length if length else 0
         self._loop = loop
+        self._current_timestamp = 0
         self._max_timestamp = 0
         self._added_to_scene = True
         self._motion_path_res = motion_path_res
         self._motion_path_actor = None
         self._transform = Transform()
-
+        self._general_callbacks = []
         # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
@@ -87,6 +88,17 @@ class Animation:
             The duration of the animation.
         """
         return self._duration
+
+    @property
+    def current_timestamp(self):
+        """Return the current time of the animation.
+
+        Returns
+        -------
+        float
+            The current time of the animation.
+        """
+        return self._current_timestamp
 
     def update_motion_path(self):
         """Update motion path visualization actor"""
@@ -996,7 +1008,7 @@ class Animation:
         """
         self._loop = loop
 
-    def add_update_callback(self, prop, callback):
+    def add_update_callback(self, callback, prop=None):
         """Add a function to be called each time animation is updated
         This function must accept only one argument which is the current value
         of the named property.
@@ -1004,11 +1016,19 @@ class Animation:
 
         Parameters
         ----------
-        prop: str
-            The name of the property.
-        callback: function
+        callback: callable
             The function to be called whenever the animation is updated.
+        prop: str, optional, default: None
+            The name of the property.
+
+        Notes
+        -----
+        If no attribute name was provided, current time of the animation will
+        be provided instead of current value for the callback.
         """
+        if prop is None:
+            self._general_callbacks.append(callback)
+            return
         attrib = self._get_attribute_data(prop)
         attrib.get('callbacks', []).append(callback)
 
@@ -1024,10 +1044,10 @@ class Animation:
             The time to update animation at. If None, the animation will play
             without adding it to a Timeline.
         """
-        need_reset_clipping = False
+        has_handler = True
         if time is None:
             time = perf_counter() - self._start_time
-            need_reset_clipping = True
+            has_handler = False
 
         # handling in/out of scene events
         in_scene = self.is_inside_scene_at(time)
@@ -1035,14 +1055,15 @@ class Animation:
 
         if self.duration:
             if self._loop and time > self.duration:
-                time = 0
-                self._start_time = perf_counter()
+                time = time % self.duration
             elif time > self.duration:
                 time = self.duration
         if isinstance(self._parent_animation, Animation):
             self._transform.DeepCopy(self._parent_animation._transform)
         else:
             self._transform.Identity()
+
+        self._current_timestamp = time
 
         # actors properties
         if in_scene:
@@ -1081,10 +1102,13 @@ class Animation:
                 value = self.get_value(attrib, time)
                 [cbk(value) for cbk in callbacks]
 
+        # Executing general callbacks that's not related to any attribute
+        [callback(time) for callback in self._general_callbacks]
+
         # Also update all child Animations.
         [animation.update_animation(time) for animation in self._animations]
 
-        if self._scene and need_reset_clipping:
+        if self._scene and not has_handler:
             self._scene.reset_clipping_range()
 
     def add_to_scene(self, scene):
