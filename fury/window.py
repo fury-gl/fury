@@ -455,7 +455,7 @@ class ShowManager(object):
             return
 
         def animation_cbk(_obj, _event):
-            [tl.update_timeline() for tl in self._timelines]
+            [tl.update() for tl in self._timelines]
             [anim.update_animation() for anim in self._animations]
             self.render()
         self._animation_callback = self.add_timer_callback(True, 10,
