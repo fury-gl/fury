@@ -5,9 +5,12 @@ from collections import defaultdict
 from scipy.spatial import transform
 from fury.actor import line
 from fury import utils
+from fury.animation.helpers import get_timestamps_from_keyframes, \
+    get_next_timestamp, get_previous_timestamp
 from fury.lib import Actor, Transform, Camera
-from fury.animation.interpolator import spline_interpolator, \
-    step_interpolator, linear_interpolator, slerp
+from fury.animation.interpolator import *
+from fury.shaders import shader_to_actor, import_fury_shader, \
+    add_shader_callback
 
 
 class Animation:
@@ -36,7 +39,7 @@ class Animation:
     """
 
     def __init__(self, actors=None, length=None, loop=True,
-                 motion_path_res=None):
+                 motion_path_res=None, use_shaders=False):
 
         super().__init__()
         self._data = defaultdict(dict)
@@ -57,6 +60,8 @@ class Animation:
         self._motion_path_actor = None
         self._transform = Transform()
         self._general_callbacks = []
+        self._use_shaders = use_shaders
+
         # Adding actors to the animation
         if actors is not None:
             self.add_actor(actors)
@@ -1066,7 +1071,7 @@ class Animation:
         self._current_timestamp = time
 
         # actors properties
-        if in_scene:
+        if in_scene and not self._use_shaders:
             if self.is_interpolatable('position'):
                 position = self.get_position(time)
                 self._transform.Translate(*position)
@@ -1111,6 +1116,70 @@ class Animation:
         if self._scene and not has_handler:
             self._scene.reset_clipping_range()
 
+    def _apply_shaders(self, actor):
+        shader_to_actor(actor, "vertex",
+                        impl_code=import_fury_shader('animation_impl.vert'))
+        shader_to_actor(actor, "vertex", impl_code="",
+                        block="color", replace_all=True, keep_default=False)
+
+        dec_animation_vert = import_fury_shader('animation_dec.vert')
+        shader_to_actor(actor, "vertex", decl_code=dec_animation_vert,
+                        block="prim_id")
+        attribs = ['position', 'scale', 'color', 'opacity', 'rotation']
+        attribs = [att for att in attribs if self.is_interpolatable(att)]
+        timestamps = {attrib: get_timestamps_from_keyframes(self._data.get(
+            attrib, {}).get('keyframes', {})) for attrib in attribs}
+        keyframes = {attrib: self._data.get(attrib, {}).get('keyframes', {})
+                     for attrib in attribs}
+
+        def shader_callback(_caller, _event, calldata=None):
+            interp_ids = {
+                step_interpolator: 0,
+                linear_interpolator: 1,
+                cubic_bezier_interpolator: 2,
+                hsv_color_interpolator: 3,
+                xyz_color_interpolator: 4,
+                slerp: 5,
+                # spline_interpolator: 1,
+                # cubic_spline_interpolator: 1,
+                # lab_color_interpolator: 1,
+                # tan_cubic_spline_interpolator: 1,
+            }
+            program = calldata
+            if program is not None:
+                t = self._current_timestamp
+                program.SetUniformf('time', t)
+                for attrib in attribs:
+                    if self.is_interpolatable(attrib):
+                        # todo: allow not to send an attrib
+                        kfs = []
+                        t0 = get_previous_timestamp(timestamps[attrib], t)
+                        k0 = keyframes.get(attrib, {}).get(t0, None)
+                        kfs.append((t0, k0))
+                        if len(keyframes.get(attrib, {})) > 1:
+                            t1 = get_next_timestamp(timestamps[attrib], t)
+                            k1 = keyframes.get(attrib, {}).get(t1, None)
+                            kfs.append((t1, k1))
+                        program.SetUniformi(f'{attrib}_k.count', len(kfs))
+                        interp = self._data.get(attrib).get('interpolator'). \
+                            get('base')
+                        program.SetUniformi(f'{attrib}_k.method', interp_ids.
+                                            get(interp, 1))
+                        for i, (ts, k) in enumerate(kfs):
+                            program.SetUniformf(f'{attrib}_k.keyframes[{i}].t',
+                                                ts)
+                            for field in k:
+                                val = k[field]
+                                if attrib == 'opacity':
+                                    val = np.repeat(val, 3)
+                                program.SetUniform3f(
+                                    f'{attrib}_k.keyframes[{i}].{field}',
+                                    val)
+                    else:
+                        program.SetUniformi(f'{attrib}_k.interpolatable', 0)
+
+        add_shader_callback(actor, shader_callback)
+
     def add_to_scene(self, scene):
         """Add this Animation, its actors and sub Animations to the scene"""
         [scene.add(actor) for actor in self._actors]
@@ -1119,6 +1188,9 @@ class Animation:
 
         if self._motion_path_actor:
             scene.add(self._motion_path_actor)
+
+        if self._use_shaders:
+            [self._apply_shaders(actor) for actor in self.actors]
         self._scene = scene
         self._added_to_scene = True
         self._start_time = perf_counter()
