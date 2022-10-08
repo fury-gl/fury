@@ -30,8 +30,15 @@ This tutorial explains keyframe animation in FURY.
 # What is Keyframe Animation
 # ==========================
 #
-# A keyframe animation is the transition in a property setting in between two
-# keyframes. That change could be anything.
+# Keyframe animations is a technique to simplify the process of animating a
+# scene.
+# Instead of providing the actor attributes for each frame, only a small amount
+# of keyframes are needed to create a smooth animation. Each keyframe encodes
+# the state of an actor at a certain timestamp. For instance a keyframe might
+# define that an actor should be positioned at the origin (0,0,0) at the start
+# of the animation. Another keyframe may define that the actor should move to
+# position (1,0,0) after 10 seconds. The system will take care of interpolating
+# the position of that actor between these two keyframes.
 #
 # Almost any parameter that you can set for FURY actors can be animated
 # using keyframes.
