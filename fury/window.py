@@ -392,6 +392,9 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
+        if is_win:
+            self.initialize()
+
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
@@ -406,8 +409,6 @@ class ShowManager(object):
     def start(self):
         """Start interaction."""
         try:
-            if is_win:
-                self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
