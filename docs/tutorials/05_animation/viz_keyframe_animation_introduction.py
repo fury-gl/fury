@@ -10,12 +10,11 @@ Minimal tutorial of making keyframe-based animation in FURY.
 import numpy as np
 from fury import actor, window
 from fury.animation.timeline import Timeline
-from fury.animation.interpolator import cubic_spline_interpolator, slerp
+from fury.animation.interpolator import cubic_spline_interpolator
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
+showm = window.ShowManager(scene, size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
 
@@ -23,7 +22,7 @@ arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
 ###############################################################################
 # Creating a timeline to animate the actor
-timeline = Timeline(playback_panel=Timeline)
+timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Adding the sphere actor to the timeline
@@ -46,10 +45,6 @@ timeline.set_position_interpolator(cubic_spline_interpolator)
 timeline.set_rotation(0, np.array([160, 50, 20]))
 timeline.set_rotation(4, np.array([60, 160, 0]))
 timeline.set_rotation(8, np.array([0, -180, 90]))
-
-###############################################################################
-# Setting the rotation interpolator to Slerp.
-timeline.set_rotation_interpolator(slerp)
 
 ###############################################################################
 # Main timeline to control all the timelines.

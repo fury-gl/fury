@@ -77,7 +77,7 @@ text_timeline.set_opacity(35, 1)
 
 ###############################################################################
 # ``text_timeline`` contains the text actor is added to the main Timeline.
-main_timeline.add_timeline(text_timeline)
+main_timeline.add_child_timeline(text_timeline)
 
 ###############################################################################
 # Creating and animating 50 Spheres
@@ -113,7 +113,7 @@ for i in range(50):
 
     ###########################################################################
     # Finally, the ``Timeline`` is added to the ``main_timeline``.
-    main_timeline.add_timeline(timeline)
+    main_timeline.add_child_timeline(timeline)
 
 ###############################################################################
 # Animating the camera

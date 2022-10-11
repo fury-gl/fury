@@ -302,3 +302,51 @@ def xyz_color_interpolator(keyframes):
     color_interpolator
     """
     return color_interpolator(keyframes, rgb2xyz, xyz2rgb)
+
+
+def tan_cubic_spline_interpolator(keyframes):
+    """Cubic spline interpolator for keyframes using tangents.
+    glTF contains additional tangent information for the cubic spline
+    interpolator.
+
+    Parameters
+    ----------
+    keyframes: dict
+        Keyframe data containing timestamps and values to form the cubic spline
+        curve.
+
+    Returns
+    -------
+    function
+        The interpolation function that take time and return interpolated
+        value at that time.
+
+    """
+
+    timestamps = get_timestamps_from_keyframes(keyframes)
+    for time in keyframes:
+        data = keyframes.get(time)
+        value = data.get('value')
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
+        if data.get('in_tangent') is None:
+            data['in_tangent'] = np.zeros_like(value)
+
+    def interpolate(t):
+        t0 = get_previous_timestamp(timestamps, t)
+        t1 = get_next_timestamp(timestamps, t)
+
+        dt = get_time_tau(t, t0, t1)
+
+        time_delta = t1 - t0
+
+        p0 = keyframes.get(t0).get('value')
+        tan_0 = keyframes.get(t0).get('out_tangent') * time_delta
+        p1 = keyframes.get(t1).get('value')
+        tan_1 = keyframes.get(t1).get('in_tangent') * time_delta
+        # cubic spline equation using tangents
+        t2 = dt * dt
+        t3 = t2 * dt
+        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
+                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+    return interpolate
