@@ -63,7 +63,6 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    
     scene.add(panel)
     scene.add(st_actor)
     scene.reset_camera_tight()
@@ -110,7 +109,6 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
@@ -151,10 +149,10 @@ def test_timer():
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
-    
     scene.add(tb)
 
     def timer_callback(_obj, _event):
+        nonlocal counter
         cnt = next(counter)
         tb.message = "Let's count to 10 and exit :" + str(cnt)
         showm.render()
