@@ -10,7 +10,7 @@ from scipy.ndimage import center_of_mass
 from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
-from fury.decorators import skip_osx, skip_win
+from fury.decorators import skip_osx, skip_win, skip_linux
 from fury.utils import shallow_copy, rotate, primitives_count_from_actor
 from fury.testing import assert_greater, assert_greater_equal, \
     assert_less_equal, assert_not_equal, assert_equal
@@ -1198,8 +1198,6 @@ def test_grid(_interactive=False):
 
     show_m = window.ShowManager(scene)
 
-    
-
     def timer_callback(_obj, _event):
         nonlocal counter
         cnt = next(counter)
@@ -1221,7 +1219,7 @@ def test_grid(_interactive=False):
 
     counter = itertools.count()
     show_m = window.ShowManager(scene)
-    
+
     # show the grid with the captions
     container = grid(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
@@ -1500,6 +1498,9 @@ def test_sdf_actor(interactive=False):
     npt.assert_equal(report.objects, 4)
 
 
+@pytest.mark.skipif(skip_linux, reason="This test does not work on Ubuntu. It "
+                                       "works on a local machine. Check after "
+                                       "fixing memory leak with RenderWindow.")
 def test_marker_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
