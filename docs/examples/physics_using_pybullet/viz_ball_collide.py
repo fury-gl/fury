@@ -64,7 +64,7 @@ scene.add(blue_ball_actor)
 showm = window.ShowManager(scene, size=(900, 700), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 counter = itertools.count()
 
 ###############################################################################

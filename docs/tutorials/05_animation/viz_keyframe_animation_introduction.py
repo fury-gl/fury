@@ -16,7 +16,7 @@ scene = window.Scene()
 
 showm = window.ShowManager(scene, size=(900, 768), reset_camera=False,
                            order_transparent=True)
-showm.initialize()
+
 
 arrow = actor.arrow(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
 
