@@ -15,7 +15,7 @@ What did you do this week?
 
 .. raw:: html
 
-    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/193109340-2e37c255-139b-499f-a932-b8c0290bb481.mp4" frameborder="0"></iframe>
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/195650455-927a0238-5db1-4349-99d4-c021db356b66.mp4" frameborder="0"></iframe>
 
 - Implementing multiple animation channels support (as seen in the ``Fox`` model). The ``get_skin_timelines()`` method now returns a dictionary of all animation channels with Timeline as their value.
 
@@ -25,7 +25,7 @@ What did you do this week?
 
 .. raw:: html
 
-    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/192871376-881fbdd6-2fab-4a7f-9f4f-07663d93561c.mp4" frameborder="0"></iframe>
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/195654414-b290900c-b80f-40c7-a49d-5ea8413e906a.mp4" frameborder="0"></iframe>
 
 
 What is coming up next week?
