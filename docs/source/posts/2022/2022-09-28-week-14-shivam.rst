@@ -10,7 +10,7 @@ Week 14 - Morphing is here!
 What did you do this week?
 --------------------------
 
-- This week, I started with Multiple actor support in skinning and managed to do it
+- This week, I started with multiple actor support in skinning and managed to do it
   successfully. Here's the preview using the BrainStem model.
 
 .. raw:: html
