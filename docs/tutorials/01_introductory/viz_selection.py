@@ -121,7 +121,7 @@ def hover_callback(_obj, _event):
 showm = window.ShowManager(scene, size=(1024, 768),
                            order_transparent=True,
                            reset_camera=False)
-showm.initialize()
+
 
 ###############################################################################
 # Bind the callback to the actor

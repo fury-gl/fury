@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # ms define the amount of mileseconds that will be used in the timer event.
 
     ms = 0
-    showm.initialize()
+
     stream = FuryStreamClient(
         showm, use_raw_array=True)
     p = multiprocessing.Process(
