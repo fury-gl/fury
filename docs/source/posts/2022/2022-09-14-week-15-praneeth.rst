@@ -18,7 +18,7 @@ The first way in which we thought of creating the scaled shapes in the backgroun
     :align: center
 
 While playing around with the second way, which was to add yellow color to the shape to make it brighter, it was difficult to identify which shape was selected. Also sometimes instead of making it brighter the addition of color created a new color which again confused the user.
-After discussing these, issues my mentors suggested having a user-defined highlight color that will be shown whenever the shape is selected.
+After discussing these issues my mentors suggested having a user-defined highlight color that will be shown whenever the shape is selected.
 
 .. image:: https://user-images.githubusercontent.com/64432063/192326416-4454718d-1dda-4a13-9f97-07387a50a580.gif
     :width: 400
