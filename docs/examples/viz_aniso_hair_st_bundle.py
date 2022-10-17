@@ -157,14 +157,14 @@ if __name__ == '__main__':
                    'V.trk']
 
     # Load tractogram
-    tract_file = os.path.join(bundles_dir, tractograms[5])
+    tract_file = os.path.join(bundles_dir, tractograms[3])
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
     tube_sides = 9
 
     obj_actor = actor.streamtube(bundle, linewidth=.25, tube_sides=tube_sides,
-                                 lod=False)#, colors=(1, 1, 1))
+                                 lod=False, colors=(1, 1, 1))
 
     """
     tmp_line_idx = 107  # Shortest line
@@ -244,6 +244,7 @@ if __name__ == '__main__':
 
     # CCMid & MCP rotation
     rotate(obj_actor, rotation=(180, 1, 0, 0))
+    rotate(obj_actor, rotation=(90, 0, 1, 0))
 
     # Actor rotation for brudslojan texture
     #rotate(obj_actor, rotation=(-110, 0, 1, 0))
