@@ -157,7 +157,7 @@ if __name__ == '__main__':
                    'V.trk']
 
     # Load tractogram
-    tract_file = os.path.join(bundles_dir, tractograms[3])
+    tract_file = os.path.join(bundles_dir, tractograms[5])
     sft = load_tractogram(tract_file, 'same', bbox_valid_check=False)
     bundle = sft.streamlines
 
@@ -242,7 +242,7 @@ if __name__ == '__main__':
     scene.add(tangent_actor)
     """
 
-    # CCMid rotation
+    # CCMid & MCP rotation
     rotate(obj_actor, rotation=(180, 1, 0, 0))
 
     # Actor rotation for brudslojan texture
