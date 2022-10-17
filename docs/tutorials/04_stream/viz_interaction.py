@@ -15,7 +15,7 @@ ngrok. However, to use webRTC you need to install the aiortc library.
     pip install aiortc
 
 Notes
-------
+-----
 
 If you don't have ffmpeg installed, you need to install it to use WebRTC
 
@@ -90,11 +90,7 @@ if __name__ == '__main__':
 
     scene.add(actors)
 
-    showm = window.ShowManager(
-        scene, size=(window_size[0], window_size[1])
-    )
-
-    showm.initialize()
+    showm = window.ShowManager(scene, size=(window_size[0], window_size[1]))
 
     stream = FuryStreamClient(
         showm, max_window_size=max_window_size,
