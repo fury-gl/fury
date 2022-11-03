@@ -321,7 +321,7 @@ def test_save_screenshot():
 
     window_sz = (400, 400)
     show_m = window.ShowManager(scene, size=window_sz)
-    show_m.initialize()
+    
 
     with InTemporaryDirectory():
         fname = 'test.png'
@@ -574,7 +574,7 @@ def test_frame_rate():
     showm = window.ShowManager(scene,
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
-    showm.initialize()
+    
     counter = itertools.count()
     frame_rates = []
     render_times = []

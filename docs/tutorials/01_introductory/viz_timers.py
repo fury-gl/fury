@@ -34,7 +34,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 
 tb = ui.TextBlock2D(bold=True)
 

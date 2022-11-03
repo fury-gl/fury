@@ -4,7 +4,6 @@ ipython
 matplotlib
 sphinx-copybutton
 sphinx-gallery>=0.10.0
-pillow
 pydata-sphinx-theme
 networkx
 ablog >= 0.10.5

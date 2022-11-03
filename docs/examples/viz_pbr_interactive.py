@@ -157,7 +157,7 @@ scene.add(sphere)
 
 show_m = window.ShowManager(scene=scene, size=(1920, 1080), reset_camera=False,
                             order_transparent=True)
-show_m.initialize()
+
 
 ###############################################################################
 # We will create one single panel with all of our labels and sliders.
