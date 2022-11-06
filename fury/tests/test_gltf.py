@@ -244,38 +244,38 @@ def test_skinning():
     clone = np.copy(vertices)
     timeline.play()
 
-    def timer_callback(_obj, _event):
-        nonlocal timer_id
-        cnt = next(counter)
-        timeline.update_animation()
+    # def timer_callback(_obj, _event):
+    #     nonlocal timer_id
+    #     cnt = next(counter)
+    #     timeline.update_animation()
 
-        print(cnt)
-        joint_matrices = []
-        ibms = []
-        for i, bone in enumerate(gltf_obj.bones[0]):
-            if timeline.is_interpolatable(f'transform{bone}'):
-                deform = timeline.get_value(f'transform{bone}',
-                                            timeline.current_timestamp)
-                ibm = gltf_obj.ibms[0][i].T
-                ibms.append(ibm)
+    #     print(cnt)
+    #     joint_matrices = []
+    #     ibms = []
+    #     for i, bone in enumerate(gltf_obj.bones[0]):
+    #         if timeline.is_interpolatable(f'transform{bone}'):
+    #             deform = timeline.get_value(f'transform{bone}',
+    #                                         timeline.current_timestamp)
+    #             ibm = gltf_obj.ibms[0][i].T
+    #             ibms.append(ibm)
 
-                parent_transform = gltf_obj.bone_tranforms[bone]
-                joint_mat = np.dot(parent_transform, deform)
-                joint_mat = np.dot(joint_mat, ibm)
-                joint_matrices.append(joint_mat)
+    #             parent_transform = gltf_obj.bone_tranforms[bone]
+    #             joint_mat = np.dot(parent_transform, deform)
+    #             joint_mat = np.dot(joint_mat, ibm)
+    #             joint_matrices.append(joint_mat)
 
-        vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices,
-                                                 None)
-        utils.update_actor(actor)
-        showm.render()
+    #     vertices[:] = gltf_obj.apply_skin_matrix(clone, joint_matrices,
+    #                                              None)
+    #     utils.update_actor(actor)
+    #     showm.render()
 
-        if cnt == 10:
-            showm.save_screenshot('keyframe1.png')
-        if cnt == 100:
-            showm.save_screenshot('keyframe2.png')
+    #     if cnt == 10:
+    #         showm.save_screenshot('keyframe1.png')
+    #     if cnt == 100:
+    #         showm.save_screenshot('keyframe2.png')
 
-        if cnt == 150:
-            showm.destroy_timer(timer_id)
+    #     if cnt == 150:
+    #         showm.destroy_timer(timer_id)
             # showm.exit()
 
     # timer_id = showm.add_timer_callback(True, 10, timer_callback)
