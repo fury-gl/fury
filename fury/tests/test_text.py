@@ -22,17 +22,6 @@ def test_create_atlas():
         raise FileNotFoundError(f'Font {name} was not created')
 
 
-def test_atlas():
-    if not text_tools.FREETYPE_AVAILABLE:
-        print('Bitmap text not tested (FREETYPE is not available)')
-        return
-
-    texture_atlas = text_tools.TextureAtlas(num_chanels=1)
-    font_path = f'{fury.__path__[0]}/data/files/FreeMono.ttf'
-    tf = text_tools.TextureFont(texture_atlas, font_path, 100)
-    tf.load('a sdf123')
-
-
 def test_bitmap_actor():
     N = 10
     colors = (0, 0.8, .5)
