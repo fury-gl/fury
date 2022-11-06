@@ -293,7 +293,6 @@ def test_morphing():
     npt.assert_equal(list(timelines.keys()),
                      ['Individuals', 'TheWave', 'Pulse'])
     timeline_1 = timelines['TheWave']
-    gltf_obj.update_morph(timeline_1)
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
