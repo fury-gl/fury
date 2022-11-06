@@ -285,7 +285,7 @@ def test_skinning():
 def test_morphing():
     fetch_gltf('MorphStressTest', 'glTF')
     file = read_viz_gltf('MorphStressTest')
-    gltf_obj = glTF(file, apply_normals=False)
+    gltf_obj = glTF(file)
     timelines = gltf_obj.morph_timeline()
 
     npt.assert_equal(len(gltf_obj._actors), 2)
@@ -297,14 +297,24 @@ def test_morphing():
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
-    showm.initialize()
 
     scene.add(timeline_1)
 
-    
+    timeline_1.seek(0.50)
+    gltf_obj.update_morph(timeline_1)
     showm.render()
     showm.save_screenshot('keyframe1.png')
-   
+    res_1 = window.analyze_snapshot('keyframe1.png')
+
+    timeline_1.seek(1.50)
+    gltf_obj.update_morph(timeline_1)
     showm.render()
     showm.save_screenshot('keyframe2.png')
-   
+    res_2 = window.analyze_snapshot('keyframe2.png')
+
+    npt.assert_equal(res_1.colors_found, res_2.colors_found)
+
+    img_1 = np.asarray(Image.open('keyframe1.png').convert('L'))
+    img_2 = np.asarray(Image.open('keyframe2.png').convert('L'))
+
+    assert_greater(center_of_mass(img_2)[1], center_of_mass(img_1)[1])
