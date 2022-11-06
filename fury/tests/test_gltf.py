@@ -282,28 +282,27 @@ def test_skinning():
     # showm.destroy_timer(timer_id)
 
 
-# def test_morphing():
-#     fetch_gltf('MorphStressTest', 'glTF')
-#     file = read_viz_gltf('MorphStressTest')
-#     gltf_obj = glTF(file)
-#     timelines = gltf_obj.morph_timeline()
+def test_morphing():
+    fetch_gltf('MorphStressTest', 'glTF')
+    file = read_viz_gltf('MorphStressTest')
+    gltf_obj = glTF(file)
+    timelines = gltf_obj.morph_timeline()
 
-#     npt.assert_equal(len(gltf_obj._actors), 2)
-#     npt.assert_equal(len(gltf_obj.morph_weights), 16)
-#     npt.assert_equal(list(timelines.keys()),
-#                      ['Individuals', 'TheWave', 'Pulse'])
-#     timeline_1 = timelines['TheWave']
-#     gltf_obj.update_morph(timeline_1)
+    npt.assert_equal(len(gltf_obj._actors), 2)
+    npt.assert_equal(len(gltf_obj.morph_weights), 16)
+    npt.assert_equal(list(timelines.keys()),
+                     ['Individuals', 'TheWave', 'Pulse'])
+    timeline_1 = timelines['TheWave']
 
-#     scene = window.Scene()
-#     showm = window.ShowManager(scene, size=(900, 768))
+    scene = window.Scene()
+    showm = window.ShowManager(scene, size=(900, 768))
 
-#     scene.add(timeline_1)
+    scene.add(timeline_1)
 
-#     showm.render()
-#     showm.save_screenshot('keyframe1.png')
-#     res_1 = window.analyze_snapshot('keyframe1.png')
+    showm.render()
+    showm.save_screenshot('keyframe1.png')
+    res_1 = window.analyze_snapshot('keyframe1.png')
 
-#     showm.render()
-#     showm.save_screenshot('keyframe2.png')
-#     res_2 = window.analyze_snapshot('keyframe2.png')
+    showm.render()
+    showm.save_screenshot('keyframe2.png')
+    res_2 = window.analyze_snapshot('keyframe2.png')
