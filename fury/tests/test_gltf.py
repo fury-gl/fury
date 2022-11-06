@@ -295,4 +295,16 @@ def test_morphing():
     timeline_1 = timelines['TheWave']
     gltf_obj.update_morph(timeline_1)
 
+    scene = window.Scene()
+    showm = window.ShowManager(scene, size=(900, 768))
+    showm.initialize()
+
+    scene.add(timeline_1)
+
+    
+    showm.render()
+    showm.save_screenshot('keyframe1.png')
+   
+    showm.render()
+    showm.save_screenshot('keyframe2.png')
    
