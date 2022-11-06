@@ -278,8 +278,8 @@ def test_skinning():
             showm.destroy_timer(timer_id)
             # showm.exit()
 
-    timer_id = showm.add_timer_callback(True, 10, timer_callback)
-    showm.destroy_timer(timer_id)
+    # timer_id = showm.add_timer_callback(True, 10, timer_callback)
+    # showm.destroy_timer(timer_id)
 
 
 def test_morphing():
