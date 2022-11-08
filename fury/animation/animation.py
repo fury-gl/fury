@@ -98,6 +98,10 @@ class Animation:
         float
             The current time of the animation.
         """
+        if self._timeline:
+            return self._timeline.current_timestamp
+        elif self.parent_animation:
+            return self.parent_animation.current_timestamp
         return self._current_timestamp
 
     def update_motion_path(self):
