@@ -905,11 +905,11 @@ class glTF:
         self._vcopy = [np.copy(vert) for vert in self._vertices]
 
         for name, data in self.animation_channels.items():
-            root_animation = Animation(loop=False)
+            root_animation = Animation()
 
             for i, transforms in enumerate(data.values()):
                 weights = self.morph_weights[i]
-                animation = Animation(loop=False)
+                animation = Animation()
                 timestamps = transforms['timestamps']
                 metrices = transforms['matrix']
                 metrices = np.array(metrices).reshape(-1, len(weights))
@@ -948,7 +948,7 @@ class glTF:
             target_node = transforms['node']
 
             for i, nodes in enumerate(self.nodes):
-                animation = Animation(loop=False)
+                animation = Animation()
                 transform_mat = self.transformations[i]
                 position, rot, scale = transform.transform_from_matrix(
                                        transform_mat)
@@ -1008,7 +1008,7 @@ class glTF:
             A parent animation containing all child animations for simple
             animation.
         """
-        main_animation = Animation(loop=False)
+        main_animation = Animation()
         animations = self.get_animations()
         for animation in animations:
             main_animation.add(animation)
