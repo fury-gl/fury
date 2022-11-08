@@ -8,7 +8,7 @@ from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
 from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
 from fury import transform, utils, io, actor
-from fury.animation.timeline import Timeline
+from fury.animation.timeline import Timeline, Animation
 from fury.animation.interpolator import (linear_interpolator, slerp,
                                          step_interpolator,
                                          tan_cubic_spline_interpolator)
@@ -641,27 +641,27 @@ class glTF:
             matrix = transf
         return matrix
 
-    def transverse_timelines(self, timeline, bone_id, timestamp,
-                             joint_matrices,
-                             parent_bone_deform=np.identity(4)):
+    def transverse_animations(self, animation, bone_id, timestamp,
+                              joint_matrices,
+                              parent_bone_deform=np.identity(4)):
         """Calculate skinning matrix (Joint Matrices) and transform bone for
         each timeline.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         bone_id : int
             Bone index of the current transform.
         timestamp : float
-            Current timestamp of the timeline.
+            Current timestamp of the animation.
         joint_matrices : dict
             Empty dictionary that will contain joint matrices.
         parent_bone_transform : ndarray (4, 4)
             Transformation matrix of the parent bone.
             (default=np.identity(4))
         """
-        deform = timeline.get_value('transform', timestamp)
+        deform = animation.get_value('transform', timestamp)
         new_deform = np.dot(parent_bone_deform, deform)
 
         ibm = self.ibms[bone_id].T
@@ -678,35 +678,35 @@ class glTF:
             utils.update_actor(self._bactors[bone_id])
 
         if node.children:
-            c_timelines = timeline.timelines
+            c_animations = animation.child_animations
             c_bones = node.children
-            for c_timeline, c_bone in zip(c_timelines, c_bones):
-                self.transverse_timelines(c_timeline, c_bone, timestamp,
-                                          joint_matrices, new_deform)
+            for c_timeline, c_bone in zip(c_animations, c_bones):
+                self.transverse_animations(c_timeline, c_bone, timestamp,
+                                           joint_matrices, new_deform)
 
-    def update_skin(self, timeline):
+    def update_skin(self, animation):
         """Update the timeline and actors with skinning data.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         """
-        timeline.update_animation()
-        timestamp = timeline.current_timestamp
+        animation.update_animation()
+        timestamp = animation.current_timestamp
         joint_matrices = {}
         root_bone = self.gltf.skins[0].skeleton
         root_bone = root_bone if root_bone else self.bones[0]
 
         if not root_bone == self.bones[0]:
-            _timeline = timeline.timelines[0]
+            _animation = animation.child_animations[0]
             parent_transform = self.transformations[root_bone].T
         else:
-            _timeline = timeline
+            _animation = animation
             parent_transform = np.identity(4)
-        for child in _timeline.timelines:
-            self.transverse_timelines(child, self.bones[0], timestamp,
-                                      joint_matrices, parent_transform)
+        for child in _animation.child_animations:
+            self.transverse_animations(child, self.bones[0], timestamp,
+                                       joint_matrices, parent_transform)
         for i, vertex in enumerate(self._vertices):
             vertex[:] = self.apply_skin_matrix(self._vcopy[i],
                                                joint_matrices, i)
@@ -715,13 +715,13 @@ class glTF:
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
-    def initialize_skin(self, timeline, bones=False, length=0.2):
-        """Create bones and add to the timeline and initialise `update_skin`
+    def initialize_skin(self, animation, bones=False, length=0.2):
+        """Create bones and add to the animation and initialise `update_skin`
 
         Parameters
         ----------
-        timeline : Timeline
-            timeline of the respective animation.
+        animation : Animation
+            Skin animation object.
         bones : bool
             Switches the visibility of bones in scene.
             (default=False)
@@ -732,8 +732,8 @@ class glTF:
         self.show_bones = bones
         if bones:
             self.get_joint_actors(length, False)
-            timeline.add_actor(list(self._bactors.values()))
-        self.update_skin(timeline)
+            animation.add_actor(list(self._bactors.values()))
+        self.update_skin(animation)
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
         """Apply the skinnig matrix, that transform the vertices.
@@ -771,9 +771,9 @@ class glTF:
         return clone
 
     def transverse_bones(self, bone_id, channel_name,
-                         parent_timeline: Timeline):
-        """Loop over the bones and add child bone timeline to their parent
-        timeline.
+                         parent_animation: Animation):
+        """Loop over the bones and add child bone animation to their parent
+        animation.
 
         Parameters
         ----------
@@ -781,11 +781,12 @@ class glTF:
             Index of the bone.
         channel_name : str
             Animation name.
-        parent_timeline : Timeline
-            timeline of the parent bone. Should be `root_timeline` by default.
+        parent_animation : Animation
+            The animation of the parent bone. Should be `root_animation` by
+            default.
         """
         node = self.gltf.nodes[bone_id]
-        timeline = Timeline(playback_panel=False)
+        animation = Animation()
         if bone_id in self.bone_tranforms.keys():
             orig_transform = self.bone_tranforms[bone_id]
         else:
@@ -795,34 +796,34 @@ class glTF:
             timestamps = transforms['timestamps']
             metrices = transforms['matrix']
             for time, matrix in zip(timestamps, metrices):
-                timeline.set_keyframe('transform', time[0], matrix)
+                animation.set_keyframe('transform', time[0], matrix)
         else:
-            timeline.set_keyframe('transform', 0.0, orig_transform)
+            animation.set_keyframe('transform', 0.0, orig_transform)
 
-        parent_timeline.add(timeline)
+        parent_animation.add(animation)
         if node.children:
             for child_bone in node.children:
-                self.transverse_bones(child_bone, channel_name, timeline)
+                self.transverse_bones(child_bone, channel_name, animation)
 
     def skin_timeline(self):
         """One timeline for each bone, contains parent transforms.
 
         Returns
         -------
-        root_timelines : Dict
+        root_animations : Dict
             A timeline containing all the child timelines for bones.
         """
-        root_timelines = {}
+        root_animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
-            root_timeline = Timeline(playback_panel=True)
+            root_animation = Animation()
             root_bone = self.gltf.skins[0].skeleton
             root_bone = root_bone if root_bone else self.bones[0]
-            self.transverse_bones(root_bone, name, root_timeline)
-            root_timelines[name] = root_timeline
-            root_timeline.add_actor(self._actors)
-        return root_timelines
+            self.transverse_bones(root_bone, name, root_animation)
+            root_animations[name] = root_animation
+            root_animation.add_actor(self._actors)
+        return root_animations
 
     def get_joint_actors(self, length=0.5, with_transforms=False):
         """Create an arrow actor for each bone in a skinned model.
@@ -849,18 +850,20 @@ class glTF:
             self._bvertices[bone] = verts
         self._bvert_copy = copy.deepcopy(self._bvertices)
 
-    def update_morph(self, timeline):
-        """Update the timeline and actors with morphing.
+    def update_morph(self, animation):
+        """Update the animation and actors with morphing.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         """
-        timeline.update_animation()
-        timestamp = timeline.current_timestamp
+        animation.update_animation()
+        timestamp = animation.current_timestamp
+        print(animation.current_timestamp)
         for i, vertex in enumerate(self._vertices):
-            weights = timeline.timelines[0].get_value('morph', timestamp)
+            weights = animation.child_animations[0].get_value('morph',
+                                                              timestamp)
             vertex[:] = self.apply_morph_vertices(self._vcopy[i], weights, i)
             vertex[:] = transform.apply_transformation(vertex,
                                                        self.transformations[i])
@@ -889,8 +892,8 @@ class glTF:
             clone[i][:] = vertex + new_verts[i]
         return clone
 
-    def morph_timeline(self):
-        """Create timeline for each channel in animations.
+    def morph_animation(self):
+        """Create animation for each channel in animations.
 
         Returns
         -------
@@ -898,35 +901,35 @@ class glTF:
             A dictionary containing timlines as values and animation name as
             keys.
         """
-        timelines = {}
+        animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
 
         for name, data in self.animation_channels.items():
-            root_timeline = Timeline(playback_panel=True)
+            root_animation = Animation(loop=False)
 
             for i, transforms in enumerate(data.values()):
                 weights = self.morph_weights[i]
-                timeline = Timeline()
+                animation = Animation(loop=False)
                 timestamps = transforms['timestamps']
                 metrices = transforms['matrix']
                 metrices = np.array(metrices).reshape(-1, len(weights))
 
                 for time, weights in zip(timestamps, metrices):
-                    timeline.set_keyframe('morph', time[0], weights)
-                root_timeline.add(timeline)
+                    animation.set_keyframe('morph', time[0], weights)
+                root_animation.add(animation)
 
-            root_timeline.add_actor(self._actors)
-            timelines[name] = root_timeline
-        return timelines
+            root_animation.add_actor(self._actors)
+            animations[name] = root_animation
+        return animations
 
-    def get_animation_timelines(self):
-        """Return list of animation timeline.
-
+    def get_animations(self):
+        """Return list of animations.
+ 
         Returns
         -------
-        timelines: List
-            List of timelines containing actors.
+        animations: List
+            List of animations containing actors.
         """
         actors = self.actors()
         interpolators = {
@@ -941,19 +944,19 @@ class glTF:
             'CUBICSPLINE': tan_cubic_spline_interpolator
         }
 
-        timelines = []
+        animations = []
         for transforms in self.node_transform:
             target_node = transforms['node']
 
             for i, nodes in enumerate(self.nodes):
-                timeline = Timeline()
+                animation = Animation(loop=False)
                 transform_mat = self.transformations[i]
                 position, rot, scale = transform.transform_from_matrix(
                                        transform_mat)
-                timeline.set_keyframe('position', 0.0, position)
+                animation.set_keyframe('position', 0.0, position)
 
                 if target_node in nodes:
-                    timeline.add_actor(actors[i])
+                    animation.add_actor(actors[i])
                     timestamp = transforms['input']
                     node_transform = transforms['output']
                     prop = transforms['property']
@@ -978,39 +981,39 @@ class glTF:
                             out_tan = cubicspline[2]
 
                         if prop == 'rotation':
-                            timeline.set_rotation(time[0], trs,
+                            animation.set_rotation(time[0], trs,
                                                   in_tangent=in_tan,
                                                   out_tangent=out_tan)
-                            timeline.set_rotation_interpolator(rot_interp)
+                            animation.set_rotation_interpolator(rot_interp)
                         if prop == 'translation':
-                            timeline.set_position(time[0], trs,
+                            animation.set_position(time[0], trs,
                                                   in_tangent=in_tan,
                                                   out_tangent=out_tan)
-                            timeline.set_position_interpolator(interpolator)
+                            animation.set_position_interpolator(interpolator)
                         if prop == 'scale':
-                            timeline.set_scale(time[0], trs,
+                            animation.set_scale(time[0], trs,
                                                in_tangent=in_tan,
                                                out_tangent=out_tan)
-                            timeline.set_scale_interpolator(interpolator)
+                            animation.set_scale_interpolator(interpolator)
                 else:
-                    timeline.add_static_actor(actors[i])
-                timelines.append(timeline)
-        return timelines
+                    animation.add_static_actor(actors[i])
+                animations.append(animation)
+        return animations
 
-    def main_timeline(self):
-        """Return main timeline with all animations.
+    def main_animation(self):
+        """Return main animation with all glTF animations.
 
         Returns
         -------
-        main_timeline : Timeline
+        main_animation : Animation
             A parent timeline containing all child timelines for simple
             animation.
         """
-        main_timeline = Timeline(playback_panel=True)
-        timelines = self.get_animation_timelines()
-        for timeline in timelines:
-            main_timeline.add_child_animation(timeline)
-        return main_timeline
+        main_animation = Animation(loop=False)
+        animations = self.get_animations()
+        for animation in animations:
+            main_animation.add(animation)
+        return main_animation
 
 
 def export_scene(scene, filename='default.gltf'):
