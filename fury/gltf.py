@@ -84,6 +84,10 @@ class glTF:
         self._bvert_copy = {}
         self.show_bones = False
 
+        # morphing inofrmations
+        self.morph_vertices = []
+        self.morph_weights = []
+
         self.inspect_scene(0)
         self._actors = []
         self._bactors = {}
@@ -268,6 +272,12 @@ class glTF:
             self.polydatas.append(polydata)
             self.nodes.append(parent[:])
             self.materials.append(material)
+
+            if primitive.targets is not None:
+                prim_morphdata = []
+                for target in primitive.targets:
+                    prim_morphdata.append(self.get_morph_data(target, mesh_id))
+                self.morph_vertices.append(prim_morphdata)
 
     def get_acc_data(self, acc_id):
         """Get the correct data from buffer using accessors and bufferviews.
@@ -554,6 +564,10 @@ class glTF:
         """
         time_array = self.get_acc_data(sampler.input)
         tran_array = self.get_acc_data(sampler.output)
+
+        if prop == 'weights':
+            tran_array = tran_array.reshape(-1, )
+
         tran_matrix = []
         if node in anim_channel:
             prev_arr = anim_channel[node]['matrix']
@@ -562,13 +576,23 @@ class glTF:
 
         for i, arr in enumerate(tran_array):
             temp = self.generate_tmatrix(arr, prop)
-            tran_matrix.append(np.dot(prev_arr[i], temp))
+            if temp.shape == (4, 4):
+                tran_matrix.append(np.dot(prev_arr[i], temp))
+            else:
+                tran_matrix.append(temp)
         data = {
             'timestamps': time_array,
             'matrix': tran_matrix
         }
         self.sampler_matrices[node] = data
         return data
+    
+    def get_morph_data(self, target, mesh_id):
+        weights_array = self.gltf.meshes[mesh_id].weights
+        if target.get('POSITION') is not None:
+            morphed_data = self.get_acc_data(target.get('POSITION'))
+        self.morph_weights.append(weights_array)
+        return morphed_data
 
     def get_skin_data(self, skin_id):
         """Get the inverse bind matrix for each bone in the skin.
@@ -613,6 +637,8 @@ class glTF:
             matrix = transform.rotate(transf)
         elif prop == 'scale':
             matrix = transform.scale(transf)
+        else:
+            matrix = transf
         return matrix
 
     def transverse_timelines(self, timeline, bone_id, timestamp,
@@ -822,6 +848,77 @@ class glTF:
             self._bactors[bone] = arrow
             self._bvertices[bone] = verts
         self._bvert_copy = copy.deepcopy(self._bvertices)
+
+    def update_morph(self, timeline):
+        """Update the timeline and actors with morphing.
+
+        Parameters
+        ----------
+        timeline : Timeline
+            Timeline object.
+        """
+        timeline.update_animation()
+        timestamp = timeline.current_timestamp
+        for i, vertex in enumerate(self._vertices):
+            weights = timeline.timelines[0].get_value('morph', timestamp)
+            vertex[:] = self.apply_morph_vertices(self._vcopy[i], weights, i)
+            vertex[:] = transform.apply_transformation(vertex,
+                                                       self.transformations[i])
+            utils.update_actor(self._actors[i])
+            utils.compute_bounds(self._actors[i])
+
+    def apply_morph_vertices(self, vertices, weights, cnt):
+        """Calculate weighted vertex from the morph data.
+
+        Parameters
+        ----------
+        vertices : ndarray
+            Vertices of a actor.
+        weights : ndarray
+            Morphing weights used to calculate the weighted average of new
+            vertex.
+        cnt : int
+            Count of the actor.
+        """
+        clone = np.copy(vertices)
+        target_vertices = np.copy(self.morph_vertices[cnt])
+        for i, weight in enumerate(weights):
+            target_vertices[i][:] = np.multiply(weight, target_vertices[i])
+        new_verts = sum(target_vertices)
+        for i, vertex in enumerate(clone):
+            clone[i][:] = vertex + new_verts[i]
+        return clone
+
+    def morph_timeline(self):
+        """Create timeline for each channel in animations.
+
+        Returns
+        -------
+        root_timelines : Dict
+            A dictionary containing timlines as values and animation name as
+            keys.
+        """
+        timelines = {}
+        self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
+        self._vcopy = [np.copy(vert) for vert in self._vertices]
+
+        for name, data in self.animation_channels.items():
+            root_timeline = Timeline(playback_panel=True)
+
+            for i, transforms in enumerate(data.values()):
+                weights = self.morph_weights[i]
+                timeline = Timeline()
+                timestamps = transforms['timestamps']
+                metrices = transforms['matrix']
+                metrices = np.array(metrices).reshape(-1, len(weights))
+
+                for time, weights in zip(timestamps, metrices):
+                    timeline.set_keyframe('morph', time[0], weights)
+                root_timeline.add(timeline)
+
+            root_timeline.add_actor(self._actors)
+            timelines[name] = root_timeline
+        return timelines
 
     def get_animation_timelines(self):
         """Return list of animation timeline.
