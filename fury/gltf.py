@@ -8,7 +8,7 @@ from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
 from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
 from fury import transform, utils, io, actor
-from fury.animation.timeline import Timeline, Animation
+from fury.animation import Animation
 from fury.animation.interpolator import (linear_interpolator, slerp,
                                          step_interpolator,
                                          tan_cubic_spline_interpolator)
@@ -371,7 +371,7 @@ class glTF:
             print(f'Failed to read ! Error in opening file:')
 
     def get_materials(self, mat_id):
-        """Get the materials data.
+        """Get the material data.
 
         Parameters
         ----------
@@ -519,7 +519,7 @@ class glTF:
 
     def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
                          transform_type):
-        """Get the timeline and transformation data from sampler.
+        """Get the animation and transformation data from sampler.
 
         Parameters
         ----------
@@ -645,7 +645,7 @@ class glTF:
                               joint_matrices,
                               parent_bone_deform=np.identity(4)):
         """Calculate skinning matrix (Joint Matrices) and transform bone for
-        each timeline.
+        each animation.
 
         Parameters
         ----------
@@ -680,12 +680,12 @@ class glTF:
         if node.children:
             c_animations = animation.child_animations
             c_bones = node.children
-            for c_timeline, c_bone in zip(c_animations, c_bones):
-                self.transverse_animations(c_timeline, c_bone, timestamp,
+            for c_anim, c_bone in zip(c_animations, c_bones):
+                self.transverse_animations(c_anim, c_bone, timestamp,
                                            joint_matrices, new_deform)
 
     def update_skin(self, animation):
-        """Update the timeline and actors with skinning data.
+        """Update the animation and actors with skinning data.
 
         Parameters
         ----------
@@ -805,13 +805,13 @@ class glTF:
             for child_bone in node.children:
                 self.transverse_bones(child_bone, channel_name, animation)
 
-    def skin_timeline(self):
-        """One timeline for each bone, contains parent transforms.
+    def skin_animation(self):
+        """One animation for each bone, contains parent transforms.
 
         Returns
         -------
         root_animations : Dict
-            A timeline containing all the child timelines for bones.
+            An animation containing all the child animations for bones.
         """
         root_animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
@@ -860,7 +860,6 @@ class glTF:
         """
         animation.update_animation()
         timestamp = animation.current_timestamp
-        print(animation.current_timestamp)
         for i, vertex in enumerate(self._vertices):
             weights = animation.child_animations[0].get_value('morph',
                                                               timestamp)
@@ -897,8 +896,8 @@ class glTF:
 
         Returns
         -------
-        root_timelines : Dict
-            A dictionary containing timlines as values and animation name as
+        root_animations : Dict
+            A dictionary containing animations as values and animation name as
             keys.
         """
         animations = {}
@@ -1006,7 +1005,7 @@ class glTF:
         Returns
         -------
         main_animation : Animation
-            A parent timeline containing all child timelines for simple
+            A parent animation containing all child animations for simple
             animation.
         """
         main_animation = Animation(loop=False)
