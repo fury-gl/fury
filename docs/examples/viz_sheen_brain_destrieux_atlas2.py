@@ -554,6 +554,11 @@ if __name__ == '__main__':
 
     scene.reset_camera()
     scene.reset_clipping_range()
+
+    # Dorsal view
+    scene.zoom(1.5)
+
+    # Left view
     #scene.zoom(1.6)
 
     #window.show(scene)
