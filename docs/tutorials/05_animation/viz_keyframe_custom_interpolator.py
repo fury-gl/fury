@@ -113,7 +113,7 @@ scene = window.Scene()
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Cubic spline keyframes data same as the one you get from glTF file.

@@ -814,7 +814,6 @@ def test_ui_listbox_2d(interactive=False):
 
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY ListBox")
-        show_manager.initialize()
         show_manager.scene.add(listbox)
         show_manager.start()
 
@@ -898,66 +897,61 @@ def test_ui_file_menu_2d(interactive=False):
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    tmpdir = InTemporaryDirectory()
-    test_dir = os.path.join(tmpdir.name, "testdir")
-    os.mkdir(test_dir)
-    os.chdir(test_dir)
-    os.mkdir(os.path.join(test_dir, "tempdir"))
-    for i in range(10):
-        open(os.path.join(test_dir, "tempdir", f"test{i}.txt"),
-             'wt').close()
-    open("testfile.txt", 'wt').close()
+    with InTemporaryDirectory() as tmpdir:
+        test_dir = os.path.join(tmpdir, "testdir")
+        os.makedirs(os.path.join(test_dir, "tempdir"))
+        for i in range(10):
+            open(os.path.join(test_dir, "tempdir", f"test{i}.txt"),
+                 'wt').close()
+        open(os.path.join(test_dir, "testfile.txt"), 'wt').close()
 
-    filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
-                             directory_path=os.getcwd())
+        filemenu = ui.FileMenu2D(size=(500, 500), extensions=["txt"],
+                                 directory_path=test_dir)
 
-    # We will collect the sequence of files that have been selected.
-    selected_files = []
+        # We will collect the sequence of files that have been selected.
+        selected_files = []
 
-    def _on_change():
-        selected_files.append(list(filemenu.listbox.selected))
+        def _on_change():
+            selected_files.append(list(filemenu.listbox.selected))
 
-    # Set up a callback when selection changes.
-    filemenu.listbox.on_change = _on_change
+        # Set up a callback when selection changes.
+        filemenu.listbox.on_change = _on_change
 
-    # Assign the counter callback to every possible event.
-    event_counter = EventCounter()
-    event_counter.monitor(filemenu)
+        # Assign the counter callback to every possible event.
+        event_counter = EventCounter()
+        event_counter.monitor(filemenu)
 
-    # Create a show manager and record/play events.
-    show_manager = window.ShowManager(size=(600, 600),
-                                      title="FURY FileMenu")
-    show_manager.scene.add(filemenu)
-
-    # Recorded events:
-    #  1. Click on 'testfile.txt'
-    #  2. Click on 'tempdir/'
-    #  3. Click on 'test0.txt'.
-    #  4. Shift + Click on 'test6.txt'.
-    #  5. Click on '../'.
-    #  2. Click on 'testfile.txt'.
-    show_manager.play_events_from_file(recording_filename)
-    expected = EventCounter.load(expected_events_counts_filename)
-    event_counter.check_counts(expected)
-
-    # Check if the right files were selected.
-    expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
-                ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
-                "test4.txt", "test5.txt", "test6.txt"],
-                ["../"], ["testfile.txt"]]
-
-    npt.assert_equal(len(selected_files), len(expected))
-    assert_arrays_equal(selected_files, expected)
-
-    if interactive:
-        filemenu = ui.FileMenu2D(size=(500, 500),
-                                 directory_path=os.getcwd())
+        # Create a show manager and record/play events.
         show_manager = window.ShowManager(size=(600, 600),
                                           title="FURY FileMenu")
         show_manager.scene.add(filemenu)
-        show_manager.start()
 
-        shutil.rmtree(os.path.join(tmpdir.name, "testdir"))
+        # Recorded events:
+        #  1. Click on 'testfile.txt'
+        #  2. Click on 'tempdir/'
+        #  3. Click on 'test0.txt'.
+        #  4. Shift + Click on 'test6.txt'.
+        #  5. Click on '../'.
+        #  2. Click on 'testfile.txt'.
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+        # Check if the right files were selected.
+        expected = [["testfile.txt"], ["tempdir"], ["test0.txt"],
+                    ["test0.txt", "test1.txt", "test2.txt", "test3.txt",
+                    "test4.txt", "test5.txt", "test6.txt"],
+                    ["../"], ["testfile.txt"]]
+
+        npt.assert_equal(len(selected_files), len(expected))
+        assert_arrays_equal(selected_files, expected)
+        if interactive:
+            filemenu = ui.FileMenu2D(size=(500, 500),
+                                     directory_path=os.getcwd())
+            show_manager = window.ShowManager(size=(600, 600),
+                                              title="FURY FileMenu")
+            show_manager.scene.add(filemenu)
+            show_manager.start()
 
 
 def test_ui_combobox_2d(interactive=False):
@@ -1027,39 +1021,97 @@ def test_ui_combobox_2d(interactive=False):
     npt.assert_equal((450, 210), combobox.drop_menu_size)
 
 
+@pytest.mark.skipif(skip_osx, reason="This test does not work on macOS."
+                                     "It works on the local machines."
+                                     "The colors provided for shapes are "
+                                     "normalized values whereas when we test"
+                                     "it, the values returned are between "
+                                     "0-255. So while conversion from one"
+                                     "representation to another, there may be"
+                                     "something which causes these issues.")
 def test_ui_draw_shape():
-    line = ui.DrawShape("line", (150, 150))
-    quad = ui.DrawShape("quad", (300, 300))
-    circle = ui.DrawShape("circle", (150, 300))
+    line = ui.DrawShape(shape_type="line", position=(150, 150))
+    quad = ui.DrawShape(shape_type="quad", position=(300, 300))
+    circle = ui.DrawShape(shape_type="circle", position=(150, 300))
 
     with npt.assert_raises(IOError):
         ui.DrawShape("poly")
 
     line.resize((100, 5))
-    quad.resize((300, 300))
+    line.shape.color = (0, 1, 0)
+    quad.resize((150, 150))
+    quad.shape.color = (1, 0, 0)
     circle.resize((25, 0))
+    circle.shape.color = (0, 0, 1)
 
-    current_size = (800, 800)
-    show_manager = window.ShowManager(
-        size=current_size, title="DrawShape UI Example")
-    show_manager.scene.add(line, quad, circle)
+    line_color = np.round(255 * np.array(line.shape.color)).astype('uint8')
+    quad_color = np.round(255 * np.array(quad.shape.color)).astype('uint8')
+    circle_color = np.round(255 * np.array(circle.shape.color)).astype('uint8')
+
+    current_size = (900, 900)
+    scene = window.Scene()
+    show_manager = window.ShowManager(scene, size=current_size,
+                                      title="DrawShape UI Example")
+    scene.add(line, circle, quad)
+
+    arr = window.snapshot(show_manager.scene, size=(800, 800))
+    report = window.analyze_snapshot(arr, colors=[tuple(line_color),
+                                                  tuple(circle_color),
+                                                  tuple(quad_color)])
+    npt.assert_equal(report.objects, 3)
+    npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_ui_draw_panel(interactive=False):
-    filename = "test_ui_draw_panel"
+def test_ui_draw_panel_basic(interactive=False):
+    filename = "test_ui_draw_panel_basic"
     recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
     expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
 
-    drawpanel = ui.DrawPanel(size=(600, 600), position=(10, 10))
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
 
     # Assign the counter callback to every possible event.
     event_counter = EventCounter()
     event_counter.monitor(drawpanel)
 
-    current_size = (620, 620)
+    current_size = (680, 680)
     show_manager = window.ShowManager(
-        size=current_size, title="DrawPanel UI Example")
+        size=current_size, title="DrawPanel Basic UI Example")
     show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Check all mode selection button
+    #  2. Creation and clamping of shapes
+    #  3. Transformation and clamping of shapes
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_rotation(interactive=False):
+    filename = "test_ui_draw_panel_rotation"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Rotation UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Rotation and clamping of shape
 
     if interactive:
         show_manager.record_events_to_file(recording_filename)

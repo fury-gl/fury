@@ -185,8 +185,10 @@ def generate_points():
 
 def test_add_shader_callback():
     cube = generate_cube_with_effect()
-    showm = window.ShowManager()
-    showm.scene.add(cube)
+    scene = window.Scene()
+    scene.add(cube)
+
+    showm = window.ShowManager(scene)
     class Timer(object):
         idx = 0.0
 
@@ -209,7 +211,7 @@ def test_add_shader_callback():
                 pass
 
     add_shader_callback(cube, my_cbk)
-    showm.initialize()
+
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
 
@@ -348,9 +350,6 @@ def test_load():
     dummy_file.close()
 
     npt.assert_warns(DeprecationWarning, load, dummy_file_name)
-
-    npt.assert_string_equal(load(dummy_file_name), dummy_file_contents)
-
     os.remove(os.path.join(SHADERS_DIR, dummy_file_name))
 
 

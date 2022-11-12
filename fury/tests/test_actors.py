@@ -10,9 +10,10 @@ from scipy.ndimage import center_of_mass
 from fury import shaders
 from fury import actor, window, primitive as fp
 from fury.actor import grid
-from fury.decorators import skip_osx, skip_win
+from fury.decorators import skip_osx, skip_win, skip_linux
 from fury.utils import shallow_copy, rotate, primitives_count_from_actor
-from fury.testing import assert_greater, assert_greater_equal
+from fury.testing import assert_greater, assert_greater_equal, \
+    assert_less_equal, assert_not_equal, assert_equal
 from fury.primitive import prim_sphere
 
 # Allow import, but disable doctests if we don't have dipy
@@ -829,17 +830,56 @@ def test_points(interactive=False):
 
 def test_labels(interactive=False):
     npt.assert_warns(DeprecationWarning, actor.label, "FURY Rocks")
-    text_actor = actor.vector_text("FURY Rocks")
+    text_actor = actor.vector_text("FURY Rocks", direction=None)
 
     scene = window.Scene()
     scene.add(text_actor)
     scene.reset_camera()
     scene.reset_clipping_range()
 
+    assert text_actor.GetCamera() is scene.GetActiveCamera()
+
     if interactive:
         window.show(scene, reset_camera=False)
 
+    text_actor = actor.vector_text("FURY Rocks")
     npt.assert_equal(scene.GetActors().GetNumberOfItems(), 1)
+    center = np.array(text_actor.GetCenter())
+    [assert_greater_equal(v, 0) for v in center]
+
+    text_actor_centered = actor.vector_text("FURY Rocks", align_center=True)
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
+
+    text_actor_rot_1 = actor.vector_text("FURY Rocks", direction=(1, 1, 1))
+    text_actor_rot_2 = actor.vector_text("FURY Rocks", direction=(1, 1, 0))
+    center_1 = text_actor_rot_1.GetCenter()
+    center_2 = text_actor_rot_2.GetCenter()
+    assert_not_equal(np.linalg.norm(center_1), np.linalg.norm(center_2))
+
+    # test centered
+    text_centered = actor.vector_text("FURY Rocks", align_center=True)
+
+    center_3 = text_centered.GetCenter()
+    npt.assert_almost_equal(np.linalg.norm(center_3), 0.0)
+
+    text_extruded = actor.vector_text("FURY Rocks", scale=(0.2, 0.2, 0.2),
+                                      extrusion=1.123)
+    z_max = text_extruded.GetBounds()[-1]
+    npt.assert_almost_equal(z_max, 1.123)
+
+    text_extruded_centered = actor.vector_text("FURY Rocks",
+                                               scale=(0.2, 0.2, 0.2),
+                                               direction=None,
+                                               align_center=True, extrusion=23)
+
+    z_min, z_max = text_extruded_centered.GetBounds()[4:]
+    npt.assert_almost_equal(z_max - z_min, 23)
+    npt.assert_almost_equal(z_max, - z_min)
+    # if following the camera, it should rotate around the center to prevent
+    # weirdness of the geometry.
+    center = np.array(text_actor_centered.GetCenter())
+    npt.assert_equal(center, np.zeros(3))
 
 
 def test_spheres(interactive=False):
@@ -1158,8 +1198,6 @@ def test_grid(_interactive=False):
 
     show_m = window.ShowManager(scene)
 
-    show_m.initialize()
-
     def timer_callback(_obj, _event):
         nonlocal counter
         cnt = next(counter)
@@ -1181,7 +1219,7 @@ def test_grid(_interactive=False):
 
     counter = itertools.count()
     show_m = window.ShowManager(scene)
-    show_m.initialize()
+
     # show the grid with the captions
     container = grid(actors=actors, captions=texts,
                      caption_offset=(0, -50, 0),
@@ -1460,6 +1498,9 @@ def test_sdf_actor(interactive=False):
     npt.assert_equal(report.objects, 4)
 
 
+@pytest.mark.skipif(skip_linux, reason="This test does not work on Ubuntu. It "
+                                       "works on a local machine. Check after "
+                                       "fixing memory leak with RenderWindow.")
 def test_marker_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))

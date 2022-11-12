@@ -91,7 +91,7 @@ scene.set_camera(position=(0, 0, 40), focal_point=(0.0, 0.0, 0.0),
 showm = window.ShowManager(scene,
                            size=(600, 600), reset_camera=True,
                            order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Creating a list of particle objects
