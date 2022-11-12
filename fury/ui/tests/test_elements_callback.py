@@ -63,7 +63,6 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    showm.initialize()
     scene.add(panel)
     scene.add(st_actor)
     scene.reset_camera_tight()
@@ -77,7 +76,7 @@ def test_frame_rate_and_anti_aliasing():
     def timer_callback(_obj, _event):
         cnt = next(counter)
         if cnt % 1 == 0:
-            fps = np.round(scene.frame_rate, 0)
+            fps = np.round(showm.frame_rate, 0)
             frh.fpss.append(fps)
             msg = "FPS " + str(fps) + ' ' + str(cnt)
             tb.message = msg
@@ -110,7 +109,6 @@ def test_frame_rate_and_anti_aliasing():
                                max_peels=max_peels,
                                occlusion_ratio=0.0)
 
-    showm.initialize()
     showm.add_timer_callback(True, 200, timer_callback)
     showm.start()
 
@@ -125,6 +123,9 @@ def test_frame_rate_and_anti_aliasing():
         assert_greater(np.median(frh.fpss), 0)
 
 
+@pytest.mark.skipif(skip_win, reason="This test does not work on windows. It "
+                                     "works on a local machine. Check after "
+                                     "fixing memory leak with RenderWindow.")
 def test_timer():
     """Testing add a timer and exit window and app from inside timer."""
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 50], [300, 0, 0, 100]])
@@ -151,10 +152,10 @@ def test_timer():
                                size=(1024, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
     scene.add(tb)
 
     def timer_callback(_obj, _event):
+        nonlocal counter
         cnt = next(counter)
         tb.message = "Let's count to 10 and exit :" + str(cnt)
         showm.render()

@@ -1030,7 +1030,7 @@ def prim_arrow(height=1.0, resolution=10, tip_length=0.35, tip_radius=0.1, shaft
         all_faces.append((2, i + off_3, i + off_3 + 1))
 
     vertices = np.asarray(all_verts)
-    triangles = np.asarray(all_faces, dtype=np.int)
+    triangles = np.asarray(all_faces, dtype=int)
 
     return vertices, triangles
 

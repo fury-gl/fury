@@ -53,7 +53,6 @@ class VideoPlayer:
                                                size=(900, 768),
                                                reset_camera=False,
                                                order_transparent=True)
-        self.show_manager.initialize()
 
     # Initialize the Scene with actors
     def initialize_scene(self):

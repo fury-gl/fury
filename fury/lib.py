@@ -88,6 +88,7 @@ Follower = rcvtk.vtkFollower
 TextActor = rcvtk.vtkTextActor
 TextActor3D = rcvtk.vtkTextActor3D
 Property2D = rcvtk.vtkProperty2D
+Camera = rcvtk.vtkCamera
 
 ##############################################################
 #  vtkRenderingFreeType Module
@@ -135,6 +136,7 @@ RenderLargeImage = fhvtk.vtkRenderLargeImage
 LoopSubdivisionFilter = fmvtk.vtkLoopSubdivisionFilter
 ButterflySubdivisionFilter = fmvtk.vtkButterflySubdivisionFilter
 OutlineFilter = fmvtk.vtkOutlineFilter
+LinearExtrusionFilter = fmvtk.vtkLinearExtrusionFilter
 
 ##############################################################
 #  vtkFiltersTexture Module

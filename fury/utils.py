@@ -6,7 +6,7 @@ from fury.lib import (numpy_support, PolyData, ImageData, Points,
                       CellArray, PolyDataNormals, Actor, PolyDataMapper,
                       Matrix4x4, Matrix3x3, Glyph3D, VTK_DOUBLE, VTK_FLOAT,
                       Transform, AlgorithmOutput, VTK_INT, VTK_UNSIGNED_CHAR,
-                      TransformPolyDataFilter, IdTypeArray)
+                      TransformPolyDataFilter)
 
 
 def remove_observer_from_actor(actor, id):
@@ -117,6 +117,12 @@ def numpy_to_vtk_cells(data, is_coords=True):
         connectivity + offset information
 
     """
+    if isinstance(data, (list, np.ndarray)):
+        offsets_dtype = np.int64
+    else:
+        offsets_dtype = np.dtype(data._offsets.dtype)
+        if offsets_dtype.kind == 'u':
+            offsets_dtype = np.dtype(offsets_dtype.name[1:])
     data = np.array(data, dtype=object)
     nb_cells = len(data)
 
@@ -136,10 +142,10 @@ def numpy_to_vtk_cells(data, is_coords=True):
             connectivity += list(range(current_position, end_position))
             current_position = end_position
 
-    connectivity = np.array(connectivity, np.intp)
-    offset = np.array(offset, dtype=connectivity.dtype)
+    connectivity = np.array(connectivity, offsets_dtype)
+    offset = np.array(offset, dtype=offsets_dtype)
 
-    vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
+    vtk_array_type = numpy_support.get_vtk_array_type(offsets_dtype)
     cell_array.SetData(
         numpy_support.numpy_to_vtk(offset, deep=True,
                                    array_type=vtk_array_type),
@@ -258,7 +264,13 @@ def lines_to_vtk_polydata(lines, colors=None):
 
     """
     # Get the 3d points_array
-    points_array = np.vstack(lines)
+    if lines.__class__.__name__ == 'ArraySequence':
+        points_array = lines._data
+    else:
+        points_array = np.vstack(lines)
+
+    if points_array.size == 0:
+        raise ValueError("Empty lines/streamlines data.")
 
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
@@ -278,49 +290,53 @@ def lines_to_vtk_polydata(lines, colors=None):
     lines_range = range(nb_lines)
     points_per_line = [len(lines[i]) for i in lines_range]
     points_per_line = np.array(points_per_line, np.intp)
+
     color_is_scalar = False
-    if colors is None or colors is False:
-        # set automatic rgb colors
-        cols_arr = line_colors(lines)
-        colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
-        vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
-    else:
-        cols_arr = np.asarray(colors)
-        if cols_arr.dtype == object:  # colors is a list of colors
-            vtk_colors = numpy_to_vtk_colors(255 * np.vstack(colors))
+    if points_array.size:
+        if colors is None or colors is False:
+            # set automatic rgb colors
+            cols_arr = line_colors(lines)
+            colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
+            vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
         else:
-            if len(cols_arr) == nb_points:
-                if cols_arr.ndim == 1:  # values for every point
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
-                                                            deep=True)
+            cols_arr = np.asarray(colors)
+            if cols_arr.dtype == object:  # colors is a list of colors
+                vtk_colors = numpy_to_vtk_colors(255 * np.vstack(colors))
+            else:
+                if len(cols_arr) == nb_points:
+                    if cols_arr.ndim == 1:  # values for every point
+                        vtk_colors = numpy_support.numpy_to_vtk(cols_arr,
+                                                                deep=True)
+                        color_is_scalar = True
+                    elif cols_arr.ndim == 2:  # map color to each point
+                        vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
+
+                elif cols_arr.ndim == 1:
+                    if len(cols_arr) == nb_lines:  # values for every streamline
+                        cols_arrx = []
+                        for (i, value) in enumerate(colors):
+                            cols_arrx += lines[i].shape[0]*[value]
+                        cols_arrx = np.array(cols_arrx)
+                        vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
+                                                                deep=True)
+                        color_is_scalar = True
+                    else:  # the same colors for all points
+                        vtk_colors = numpy_to_vtk_colors(
+                            np.tile(255 * cols_arr, (nb_points, 1)))
+
+                elif cols_arr.ndim == 2:  # map color to each line
+                    colors_mapper = np.repeat(lines_range, points_per_line,
+                                              axis=0)
+                    vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
+                else:  # colormap
+                    #  get colors for each vertex
+                    cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
+                    vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
                     color_is_scalar = True
-                elif cols_arr.ndim == 2:  # map color to each point
-                    vtk_colors = numpy_to_vtk_colors(255 * cols_arr)
 
-            elif cols_arr.ndim == 1:
-                if len(cols_arr) == nb_lines:  # values for every streamline
-                    cols_arrx = []
-                    for (i, value) in enumerate(colors):
-                        cols_arrx += lines[i].shape[0]*[value]
-                    cols_arrx = np.array(cols_arrx)
-                    vtk_colors = numpy_support.numpy_to_vtk(cols_arrx,
-                                                            deep=True)
-                    color_is_scalar = True
-                else:  # the same colors for all points
-                    vtk_colors = numpy_to_vtk_colors(
-                        np.tile(255 * cols_arr, (nb_points, 1)))
+        vtk_colors.SetName("colors")
+        poly_data.GetPointData().SetScalars(vtk_colors)
 
-            elif cols_arr.ndim == 2:  # map color to each line
-                colors_mapper = np.repeat(lines_range, points_per_line, axis=0)
-                vtk_colors = numpy_to_vtk_colors(255 * cols_arr[colors_mapper])
-            else:  # colormap
-                #  get colors for each vertex
-                cols_arr = map_coordinates_3d_4d(cols_arr, points_array)
-                vtk_colors = numpy_support.numpy_to_vtk(cols_arr, deep=True)
-                color_is_scalar = True
-
-    vtk_colors.SetName("colors")
-    poly_data.GetPointData().SetScalars(vtk_colors)
     return poly_data, color_is_scalar
 
 
@@ -388,6 +404,27 @@ def get_polydata_vertices(polydata):
 
     """
     return numpy_support.vtk_to_numpy(polydata.GetPoints().GetData())
+
+
+def get_polydata_tcoord(polydata):
+    """Get texture coordinates (ndarrays Nx2 float) from a vtk polydata.
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+
+    Returns
+    -------
+    output : array (N, 2)
+        Tcoords, represented as 2D ndarrays. None if there are no texture
+        in the vtk polydata.
+
+    """
+    vtk_tcoord = polydata.GetPointData().GetTCoords()
+    if vtk_tcoord is None:
+        return None
+
+    return numpy_support.vtk_to_numpy(vtk_tcoord)
 
 
 def get_polydata_normals(polydata):
@@ -496,6 +533,61 @@ def add_polydata_numeric_field(polydata, field_name, field_data,
     return polydata
 
 
+def set_polydata_primitives_count(polydata, primitives_count):
+    """Add primitives count to polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+    primitives_count : int
+
+    """
+    add_polydata_numeric_field(polydata, "prim_count", primitives_count,
+                               array_type=VTK_INT)
+
+
+def get_polydata_primitives_count(polydata):
+    """Get primitives count from actor's polydata.
+
+    Parameters
+    ----------
+    polydata: vtkPolyData
+
+    Returns
+    -------
+    primitives count : int
+    """
+    return get_polydata_field(polydata, 'prim_count')[0]
+
+
+def primitives_count_to_actor(actor, primitives_count):
+    """Add primitives count to actor's polydata.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+    primitives_count : int
+
+    """
+    polydata = actor.GetMapper().GetInput()
+    set_polydata_primitives_count(polydata, primitives_count)
+
+
+def primitives_count_from_actor(actor):
+    """Get primitives count from actor's polydata.
+
+    Parameters
+    ----------
+    actor: :class: `UI` or `vtkProp3D` actor
+
+    Returns
+    -------
+    primitives count : int
+    """
+    polydata = actor.GetMapper().GetInput()
+    return get_polydata_primitives_count(polydata)
+
+
 def set_polydata_triangles(polydata, triangles):
     """Set polydata triangles with a numpy array (ndarrays Nx3 int).
 
@@ -581,6 +673,21 @@ def set_polydata_colors(polydata, colors, array_name="colors"):
     return polydata
 
 
+def set_polydata_tcoords(polydata, tcoords):
+    """Set polydata texture coordinates with a numpy array (ndarrays Nx2 float).
+
+    Parameters
+    ----------
+    polydata : vtkPolyData
+    tcoords : texture coordinates, represented as 2D ndarrays (Nx2)
+        (one per vertex range (0, 1))
+    """
+    vtk_tcoords = numpy_support.numpy_to_vtk(tcoords, deep=True,
+                                             array_type=VTK_FLOAT)
+    polydata.GetPointData().SetTCoords(vtk_tcoords)
+    return polydata
+
+
 def update_polydata_normals(polydata):
     """Generate and update polydata normals.
 
@@ -659,7 +766,7 @@ def get_actor_from_polydata(polydata):
 
 
 def get_actor_from_primitive(vertices, triangles, colors=None,
-                             normals=None, backface_culling=True):
+                             normals=None, backface_culling=True, prim_count=1):
     """Get actor from a vtkPolyData.
 
     Parameters
@@ -677,7 +784,8 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
         culling of polygons based on orientation of normal with respect to
         camera. If backface culling is True, polygons facing away from camera
         are not drawn. Default: True
-
+    prim_count: int, optional
+        primitives count to be associated with the actor
 
     Returns
     -------
@@ -688,6 +796,7 @@ def get_actor_from_primitive(vertices, triangles, colors=None,
     pd = PolyData()
     set_polydata_vertices(pd, vertices)
     set_polydata_triangles(pd, triangles)
+    set_polydata_primitives_count(pd, prim_count)
     if isinstance(colors, np.ndarray):
         if len(colors) != len(vertices):
             msg = "Vertices and Colors should have the same size."
@@ -740,6 +849,8 @@ def repeat_sources(centers, colors, active_scalars=1., directions=None,
 
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
+    set_polydata_primitives_count(polydata_centers, len(centers))
+
     if directions is not None:
         polydata_centers.GetPointData().AddArray(directions_fa)
         polydata_centers.GetPointData().SetActiveVectors('directions')
@@ -1371,6 +1482,51 @@ def update_surface_actor_colors(actor, colors):
         SetScalars(numpy_to_vtk_colors(255*colors))
 
 
+def color_check(pts_len, colors=None):
+    """
+    Returns a VTK scalar array containing colors information for each one of
+    the points according to the policy defined by the parameter colors.
+
+    Parameters
+    ----------
+    pts_len : int
+        length of points ndarray
+    colors : None or tuple (3D or 4D) or array/ndarray (N, 3 or 4)
+        If None a predefined color is used for each point.
+        If a tuple of color is used. Then all points will have the same color.
+        If an array (N, 3 or 4) is given, where N is equal to the number of
+        points. Then every point is colored with a different RGB(A) color.
+
+    Returns
+    -------
+    color_array : vtkDataArray
+        vtk scalar array with name 'colors'.
+    global_opacity : float
+        returns 1 if the colors array doesn't contain opacity otherwise -1.
+        If colors array has 4 dimensions, it checks values of the fourth
+        dimension. If the value is the same, then assign it to global_opacity.
+
+    """
+    global_opacity = 1
+    if colors is None:
+        # Automatic RGB colors
+        colors = np.asarray((1, 1, 1))
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
+    elif type(colors) is tuple:
+        global_opacity = 1 if len(colors) == 3 else colors[3]
+        colors = np.asarray(colors)
+        color_array = numpy_to_vtk_colors(np.tile(255 * colors, (pts_len, 1)))
+    elif isinstance(colors, np.ndarray):
+        colors = np.asarray(colors)
+        if colors.shape[1] == 4:
+            opacities = np.unique(colors[:, 3])
+            global_opacity = opacities[0] if len(opacities) == 1 else -1
+        color_array = numpy_to_vtk_colors(255 * colors)
+    color_array.SetName('colors')
+
+    return color_array, global_opacity
+
+
 def is_ui(actor):
     """Method to check if the passed actor is `UI` or `vtkProp3D`
 
@@ -1381,3 +1537,21 @@ def is_ui(actor):
     """
     return all([hasattr(actor, attr) for attr in ['add_to_scene',
                                                   '_setup']])
+
+
+def set_actor_origin(actor, center=None):
+    """ Change the origin of an actor to a custom position.
+
+    Parameters
+    ----------
+    actor: Actor
+        The actor object to change origin for.
+    center: ndarray, optional, default: None
+        The new center position. If `None`, the origin will be set to the mean
+        of the actor's vertices.
+    """
+    vertices = vertices_from_actor(actor)
+    if center is None:
+        center = np.mean(vertices)
+    vertices[:] -= center
+    update_actor(actor)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 import gzip
+import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
@@ -8,7 +8,8 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.decorators import is_osx
+from fury.decorators import is_osx, is_win
+
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
@@ -260,10 +261,10 @@ class Scene(OpenGLRenderer):
         return self.GetActiveCamera().GetDirectionOfProjection()
 
     @property
-    def frame_rate(self):
-        rtis = self.GetLastRenderTimeInSeconds()
-        fps = 1.0 / rtis
-        return fps
+    def last_render_time(self):
+        """Returns the last render time in seconds."""
+
+        return self.GetLastRenderTimeInSeconds()
 
     def fxaa_on(self):
         self.SetUseFXAA(True)
@@ -333,20 +334,12 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
 
@@ -362,6 +355,8 @@ class ShowManager(object):
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self._fps = 0
+        self._last_render_time = 0
 
         if self.reset_camera:
             self.scene.ResetCamera()
@@ -378,7 +373,7 @@ class ShowManager(object):
         if self.order_transparent:
             occlusion_ratio = occlusion_ratio or 0.1
             antialiasing(self.scene, self.window,
-                         multi_samples=0, max_peels=max_peels,
+                         multi_samples=multi_samples, max_peels=max_peels,
                          occlusion_ratio=occlusion_ratio)
 
         if self.interactor_style == 'image':
@@ -397,6 +392,9 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
+        if is_win:
+            self.initialize()
+
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
@@ -404,6 +402,9 @@ class ShowManager(object):
     def render(self):
         """Render only once."""
         self.window.Render()
+        # calculate the FPS
+        self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._last_render_time = time.perf_counter()
 
     def start(self):
         """Start interaction."""
@@ -420,7 +421,6 @@ class ShowManager(object):
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
                           interactor_style=self.interactor_style)
-            self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
@@ -433,6 +433,11 @@ class ShowManager(object):
         self.window.Finalize()
         del self.iren
         del self.window
+
+    @property
+    def frame_rate(self):
+        """Returns number of frames per second."""
+        return self._fps
 
     def record_events(self):
         """Record events during the interaction.
@@ -467,7 +472,6 @@ class ShowManager(object):
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -570,6 +574,7 @@ class ShowManager(object):
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
     def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
         self.iren.AddObserver(event, iren_callback)
@@ -702,7 +707,6 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
                                multi_samples=multi_samples,
                                max_peels=max_peels,
                                occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
     show_manager.render()
     show_manager.start()
 
@@ -893,7 +897,7 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
 def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
              order_transparent=False, stereo='off',
              multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0):
+             occlusion_ratio=0.0, dpi=(72, 72)):
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -930,6 +934,9 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
         Occlusion ration for depth peeling (Default 0 - exact image).
+    dpi : float or (float, float)
+        Dots per inch (dpi) for saved image.
+        Single values are applied as dpi for both dimensions.
 
     Returns
     -------
@@ -967,7 +974,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     if fname is None:
         return arr
 
-    save_image(arr, fname)
+    save_image(arr, fname, dpi=dpi)
     return arr
 
 

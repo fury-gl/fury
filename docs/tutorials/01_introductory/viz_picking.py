@@ -35,7 +35,7 @@ panel.add_element(text_block, (0.3, 0.3))
 
 scene = window.Scene()
 
-label_actor = actor.label(text='Test')
+label_actor = actor.vector_text(text='Test')
 
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
@@ -133,7 +133,7 @@ fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 # Make the window appear
 
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
-showm.initialize()
+
 scene.add(panel)
 
 ###############################################################################

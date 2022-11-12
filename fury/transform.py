@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from scipy.spatial.transform import Rotation as Rot
 
 
 # axis sequences for Euler angles
@@ -203,3 +204,175 @@ def cart2sphere(x, y, z):
     phi = np.arctan2(y, x)
     r, theta, phi = np.broadcast_arrays(r, theta, phi)
     return r, theta, phi
+
+
+def translate(translation):
+    """Return transformation matrix for translation array.
+
+    Parameters
+    ----------
+    translation : ndarray
+        translation in x, y and z directions.
+
+    Returns
+    -------
+    translation : ndarray (4, 4)
+        Numpy array of shape 4,4 containing translation parameter in the last
+        column of the matrix.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> tran = np.array([0.3, 0.2, 0.25])
+    >>> transform = translate(tran)
+    >>> transform
+    >>> [[1.  0.  0.  0.3 ]
+         [0.  1.  0.  0.2 ]
+         [0.  0.  1.  0.25]
+         [0.  0.  0.  1.  ]]
+
+    """
+    iden = np.identity(4)
+    translation = np.append(translation, 0).reshape(-1, 1)
+
+    t = np.array([[0, 0, 0, 1],
+                  [0, 0, 0, 1],
+                  [0, 0, 0, 1],
+                  [0, 0, 0, 1]], np.float32)
+    translation = np.multiply(t, translation)
+    translation = np.add(iden, translation)
+
+    return translation
+
+
+def rotate(quat):
+    """Return transformation matrix for rotation quaternion.
+
+    Parameters
+    ----------
+    quat : ndarray (4, )
+        rotation quaternion.
+
+    Returns
+    -------
+    rotation_mat : ndarray (4, 4)
+        Transformation matrix of shape (4, 4) to rotate a vector.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> quat = np.array([0.259, 0.0, 0.0, 0.966])
+    >>> rotation = rotate(quat)
+    >>> rotation
+    >>> [[1.  0.      0.     0.]
+         [0.  0.866  -0.5    0.]
+         [0.  0.5     0.866  0.]
+         [0.  0.      0.     1.]]
+
+    """
+    iden = np.identity(3)
+    rotation_mat = Rot.from_quat(quat).as_matrix()
+
+    iden = np.append(iden, [[0, 0, 0]]).reshape(-1, 3)
+
+    rotation_mat = np.dot(iden, rotation_mat)
+    iden = np.array([[0, 0, 0, 1]]).reshape(-1, 1)
+
+    rotation_mat = np.concatenate((rotation_mat, iden), axis=1)
+    return rotation_mat
+
+
+def scale(scales):
+    """Return transformation matrix for scales array.
+
+    Parameters
+    ----------
+    scales : ndarray
+        scales in x, y and z directions.
+
+    Returns
+    -------
+    scale_mat : ndarray (4, 4)
+        Numpy array of shape 4,4 containing elements of scale matrix along
+        the diagonal.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> scales = np.array([2.0, 1.0, 0.5])
+    >>> transform = scale(scales)
+    >>> transform
+    >>> [[2.  0.  0.   0.]
+         [0.  1.  0.   0.]
+         [0.  0.  0.5  0.]
+         [0.  0.  0.   1.]]
+
+    """
+    scale_mat = np.identity(4)
+    scales = np.append(scales, [1])
+
+    for i in range(len(scales)):
+        scale_mat[i][i] = scales[i]
+
+    return scale_mat
+
+
+def apply_transformation(vertices, transformation):
+    """ Multiplying transformation matrix with vertices
+
+    Parameters
+    ----------
+    vertices : ndarray (n, 3)
+        vertices of the mesh
+    transformation : ndarray (4, 4)
+        transformation matrix
+
+    Returns
+    -------
+    vertices : ndarray (n, 3)
+        transformed vertices of the mesh
+    """
+    shape = vertices.shape
+    temp = np.full((shape[0], 1), 1)
+    vertices = np.concatenate((vertices, temp), axis=1)
+
+    vertices = np.dot(transformation, vertices.T)
+    vertices = vertices.T
+    vertices = vertices[:, :shape[1]]
+
+    return vertices
+
+
+def transform_from_matrix(matrix):
+    """Returns translation, roation and scale arrays from transformation
+    matrix.
+
+    Parameters
+    ----------
+    matrix : ndarray (4, 4)
+        the transformation matrix of shape 4*4
+
+    Returns
+    -------
+    translate : ndarray (3, )
+        translation component from the transformation matrix
+    rotate : ndarray (4, )
+        rotation component from the transformation matrix
+    scale : ndarray (3, )
+        scale component from the transformation matrix.
+    """
+    translate = matrix[:, -1:].reshape((-1, ))[:-1]
+
+    temp = matrix[:, :3][:3]
+    sx = np.linalg.norm(temp[:, :1])
+    sy = np.linalg.norm(temp[:, 1:-1])
+    sz = np.linalg.norm(temp[:, -1:])
+    scale = np.array([sx, sy, sz])
+
+    rot_matrix = temp / scale[None, :]
+    rotation = Rot.from_matrix(rot_matrix)
+    rot_vec = rotation.as_rotvec()
+    angle = np.linalg.norm(rot_vec)
+    rotation = [np.rad2deg(angle), *rot_vec]
+
+    return translate, rotation, scale
