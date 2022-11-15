@@ -27,7 +27,7 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
                       VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText)
+                      Follower, VectorText, TriangleFilter)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
@@ -506,7 +506,7 @@ def contour_from_label(data, affine=None, color=None):
 
 def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
                lod=True, lod_points=10 ** 4, lod_points_size=3,
-               spline_subdiv=None, lookup_colormap=None):
+               spline_subdiv=None, lookup_colormap=None, replace_strips=False):
     """Use streamtubes to visualize polylines.
 
     Parameters
@@ -553,6 +553,8 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     lookup_colormap : vtkLookupTable, optional
         Add a default lookup table to the colormap. Default is None which calls
         :func:`fury.actor.colormap_lookup_table`.
+    replace_strips : bool, optional
+        Replace triangle strips to triangles. Helps with SelectionManager. Default is False.
 
     Examples
     --------
@@ -621,8 +623,13 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     tube_filter.Update()
     next_input = tube_filter.GetOutputPort()
 
-    # Poly mapper
-    poly_mapper = set_input(PolyDataMapper(), next_input)
+    if replace_strips:
+        triangle_filter = set_input(TriangleFilter(), next_input)
+        poly_mapper = set_input(PolyDataMapper(), triangle_filter.GetOutputPort())
+
+    else:
+        # Poly mapper
+        poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
     poly_mapper.SelectColorArray("colors")
