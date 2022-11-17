@@ -124,7 +124,7 @@ scene.add(sphere_actor)
 showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=True,
                            order_transparent=True)
-showm.initialize()
+
 tb = ui.TextBlock2D(bold=True)
 scene.zoom(0.8)
 scene.azimuth(30)

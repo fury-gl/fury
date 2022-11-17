@@ -133,7 +133,7 @@ fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 # Make the window appear
 
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
-showm.initialize()
+
 scene.add(panel)
 
 ###############################################################################

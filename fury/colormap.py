@@ -3,6 +3,7 @@ import json
 from os.path import join as pjoin
 
 import numpy as np
+from scipy import linalg
 
 from fury.data import DATA_DIR
 from fury.lib import LookupTable
@@ -623,3 +624,397 @@ def hex_to_rgb(color):
     b = int("0x" + color[4: 6], 0) / 255
 
     return(np.array([r, g, b]))
+
+
+def rgb2hsv(rgb):
+    """RGB to HSV color space conversion.
+    Parameters
+    ----------
+    rgb : (..., 3, ...) array_like
+        The image in RGB format. By default, the final dimension denotes
+        channels.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in HSV format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+    """
+    input_is_one_pixel = rgb.ndim == 1
+    if input_is_one_pixel:
+        rgb = rgb[np.newaxis, ...]
+
+    out = np.empty_like(rgb)
+
+    # -- V channel
+    out_v = rgb.max(-1)
+
+    # -- S channel
+    delta = rgb.ptp(-1)
+    # Ignore warning for zero divided by zero
+    old_settings = np.seterr(invalid='ignore')
+    out_s = delta / out_v
+    out_s[delta == 0.] = 0.
+
+    # -- H channel
+    # red is max
+    idx = (rgb[..., 0] == out_v)
+    out[idx, 0] = (rgb[idx, 1] - rgb[idx, 2]) / delta[idx]
+
+    # green is max
+    idx = (rgb[..., 1] == out_v)
+    out[idx, 0] = 2. + (rgb[idx, 2] - rgb[idx, 0]) / delta[idx]
+
+    # blue is max
+    idx = (rgb[..., 2] == out_v)
+    out[idx, 0] = 4. + (rgb[idx, 0] - rgb[idx, 1]) / delta[idx]
+    out_h = (out[..., 0] / 6.) % 1.
+    out_h[delta == 0.] = 0.
+
+    np.seterr(**old_settings)
+
+    # -- output
+    out[..., 0] = out_h
+    out[..., 1] = out_s
+    out[..., 2] = out_v
+
+    # # remove NaN
+    out[np.isnan(out)] = 0
+
+    if input_is_one_pixel:
+        out = np.squeeze(out, axis=0)
+
+    return out
+
+
+def hsv2rgb(hsv):
+    """HSV to RGB color space conversion.
+
+    Parameters
+    ----------
+    hsv : (..., 3, ...) array_like
+        The image in HSV format. By default, the final dimension denotes
+        channels.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in RGB format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+
+    hi = np.floor(hsv[..., 0] * 6)
+    f = hsv[..., 0] * 6 - hi
+    p = hsv[..., 2] * (1 - hsv[..., 1])
+    q = hsv[..., 2] * (1 - f * hsv[..., 1])
+    t = hsv[..., 2] * (1 - (1 - f) * hsv[..., 1])
+    v = hsv[..., 2]
+
+    hi = np.stack([hi, hi, hi], axis=-1).astype(np.uint8) % 6
+    out = np.choose(
+        hi, np.stack([np.stack((v, t, p), axis=-1),
+                      np.stack((q, v, p), axis=-1),
+                      np.stack((p, v, t), axis=-1),
+                      np.stack((p, q, v), axis=-1),
+                      np.stack((t, p, v), axis=-1),
+                      np.stack((v, p, q), axis=-1)]))
+    return out
+
+
+# From sRGB specification
+xyz_from_rgb = np.array([[0.412453, 0.357580, 0.180423],
+                         [0.212671, 0.715160, 0.072169],
+                         [0.019334, 0.119193, 0.950227]])
+
+rgb_from_xyz = linalg.inv(xyz_from_rgb)
+
+
+def xyz2rgb(xyz):
+    """XYZ to RGB color space conversion.
+
+    Parameters
+    ----------
+    xyz : (..., 3, ...) array_like
+        The image in XYZ format. By default, the final dimension denotes
+        channels.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in RGB format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    arr = xyz @ rgb_from_xyz.T.astype(xyz.dtype)
+    mask = arr > 0.0031308
+    arr[mask] = 1.055 * np.power(arr[mask], 1 / 2.4) - 0.055
+    arr[~mask] *= 12.92
+    np.clip(arr, 0, 1, out=arr)
+    return arr
+
+
+def rgb2xyz(rgb):
+    """RGB to XYZ color space conversion.
+
+    Parameters
+    ----------
+    rgb : (..., 3, ...) array_like
+        The image in RGB format. By default, the final dimension denotes
+        channels.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in XYZ format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    rgb = rgb.astype(float)
+    mask = rgb > 0.04045
+    rgb[mask] = np.power((rgb[mask] + 0.055) / 1.055, 2.4)
+    rgb[~mask] /= 12.92
+    return rgb @ xyz_from_rgb.T.astype(rgb.dtype)
+
+
+# XYZ coordinates of the illuminants, scaled to [0, 1]. For each illuminant I.
+# Original Implementation of this object is from scikit-image package.
+# it can be found at:
+# https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+illuminants = \
+    {"A": {'2': (1.098466069456375, 1, 0.3558228003436005),
+           '10': (1.111420406956693, 1, 0.3519978321919493),
+           'R': (1.098466069456375, 1, 0.3558228003436005)},
+     "B": {'2': (0.9909274480248003, 1, 0.8531327322886154),
+           '10': (0.9917777147717607, 1, 0.8434930535866175),
+           'R': (0.9909274480248003, 1, 0.8531327322886154)},
+     "C": {'2': (0.980705971659919, 1, 1.1822494939271255),
+           '10': (0.9728569189782166, 1, 1.1614480488951577),
+           'R': (0.980705971659919, 1, 1.1822494939271255)},
+     "D50": {'2': (0.9642119944211994, 1, 0.8251882845188288),
+             '10': (0.9672062750333777, 1, 0.8142801513128616),
+             'R': (0.9639501491621826, 1, 0.8241280285499208)},
+     "D55": {'2': (0.956797052643698, 1, 0.9214805860173273),
+             '10': (0.9579665682254781, 1, 0.9092525159847462),
+             'R': (0.9565317453467969, 1, 0.9202554587037198)},
+     "D65": {'2': (0.95047, 1., 1.08883),
+             '10': (0.94809667673716, 1, 1.0730513595166162),
+             'R': (0.9532057125493769, 1, 1.0853843816469158)},
+     "D75": {'2': (0.9497220898840717, 1, 1.226393520724154),
+             '10': (0.9441713925645873, 1, 1.2064272211720228),
+             'R': (0.9497220898840717, 1, 1.226393520724154)},
+     "E": {'2': (1.0, 1.0, 1.0),
+           '10': (1.0, 1.0, 1.0),
+           'R': (1.0, 1.0, 1.0)}}
+
+
+def get_xyz_coords(illuminant, observer):
+    """Get the XYZ coordinates of the given illuminant and observer [1]_.
+
+    Parameters
+    ----------
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+        The name of the illuminant (the function is NOT case sensitive).
+    observer : {"2", "10", "R"}, optional
+        One of: 2-degree observer, 10-degree observer, or 'R' observer as in
+        R function grDevices::convertColor.
+    Returns
+    -------
+    out : array
+        Array with 3 elements containing the XYZ coordinates of the given
+        illuminant.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    illuminant = illuminant.upper()
+    observer = observer.upper()
+    try:
+        return np.asarray(illuminants[illuminant][observer], dtype=float)
+    except KeyError:
+        raise ValueError(f'Unknown illuminant/observer combination '
+                         f'(`{illuminant}`, `{observer}`)')
+
+
+def xyz2lab(xyz, illuminant="D65", observer="2"):
+    """XYZ to CIE-LAB color space conversion.
+
+    Parameters
+    ----------
+    xyz : (..., 3, ...) array_like
+        The image in XYZ format. By default, the final dimension denotes
+        channels.
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+        The name of the illuminant (the function is NOT case sensitive).
+    observer : {"2", "10", "R"}, optional
+        One of: 2-degree observer, 10-degree observer, or 'R' observer as in
+        R function grDevices::convertColor.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in CIE-LAB format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+
+    xyz_ref_white = get_xyz_coords(illuminant, observer)
+
+    # scale by CIE XYZ tristimulus values of the reference white point
+    arr = xyz / xyz_ref_white
+
+    # Nonlinear distortion and linear transformation
+    mask = arr > 0.008856
+    arr[mask] = np.cbrt(arr[mask])
+    arr[~mask] = 7.787 * arr[~mask] + 16. / 116.
+
+    x, y, z = arr[..., 0], arr[..., 1], arr[..., 2]
+
+    # Vector scaling
+    L = (116. * y) - 16.
+    a = 500.0 * (x - y)
+    b = 200.0 * (y - z)
+
+    return np.concatenate([x[..., np.newaxis] for x in [L, a, b]], axis=-1)
+
+
+def lab2xyz(lab, illuminant="D65", observer="2"):
+    """CIE-LAB to XYZcolor space conversion.
+
+    Parameters
+    ----------
+    lab : (..., 3, ...) array_like
+        The image in Lab format. By default, the final dimension denotes
+        channels.
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+        The name of the illuminant (the function is NOT case-sensitive).
+    observer : {"2", "10", "R"}, optional
+        The aperture angle of the observer.
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in XYZ format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    L, a, b = lab[..., 0], lab[..., 1], lab[..., 2]
+    y = (L + 16.) / 116.
+    x = (a / 500.) + y
+    z = y - (b / 200.)
+
+    if np.any(z < 0):
+        invalid = np.nonzero(z < 0)
+        warn('Color data out of range: Z < 0 in %s pixels' % invalid[0].size,
+             stacklevel=2)
+        z[invalid] = 0
+
+    out = np.stack([x, y, z], axis=-1)
+
+    mask = out > 0.2068966
+    out[mask] = np.power(out[mask], 3.)
+    out[~mask] = (out[~mask] - 16.0 / 116.) / 7.787
+
+    # rescale to the reference white (illuminant)
+    xyz_ref_white = get_xyz_coords(illuminant, observer)
+    out *= xyz_ref_white
+    return out
+
+
+def rgb2lab(rgb, illuminant="D65", observer="2"):
+    """Conversion from the sRGB color space (IEC 61966-2-1:1999)
+    to the CIE Lab colorspace under the given illuminant and observer.
+
+    Parameters
+    ----------
+    rgb : (..., 3, ...) array_like
+        The image in RGB format. By default, the final dimension denotes
+        channels.
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+        The name of the illuminant (the function is NOT case sensitive).
+    observer : {"2", "10", "R"}, optional
+        The aperture angle of the observer.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in Lab format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    return xyz2lab(rgb2xyz(rgb), illuminant, observer)
+
+
+def lab2rgb(lab, illuminant="D65", observer="2"):
+    """Lab to RGB color space conversion.
+
+    Parameters
+    ----------
+    lab : (..., 3, ...) array_like
+        The image in Lab format. By default, the final dimension denotes
+        channels.
+    illuminant : {"A", "B", "C", "D50", "D55", "D65", "D75", "E"}, optional
+        The name of the illuminant (the function is NOT case sensitive).
+    observer : {"2", "10", "R"}, optional
+        The aperture angle of the observer.
+
+    Returns
+    -------
+    out : (..., 3, ...) ndarray
+        The image in RGB format. Same dimensions as input.
+
+    Notes
+    -----
+    Original Implementation from scikit-image package.
+    it can be found at:
+    https://github.com/scikit-image/scikit-image/blob/main/skimage/color/colorconv.py
+    This implementation might have been modified.
+
+    """
+    return xyz2rgb(lab2xyz(lab, illuminant, observer))

@@ -133,7 +133,7 @@ window.record(scene, out_path='slices_lut.png', size=(600, 600),
 # areas.
 
 show_m = window.ShowManager(scene, size=(1200, 900))
-show_m.initialize()
+
 
 ###############################################################################
 # We'll start by creating the panel and adding it to the ``ShowManager``
@@ -199,7 +199,6 @@ result_position.message = ''
 result_value.message = ''
 
 show_m_mosaic = window.ShowManager(scene, size=(1200, 900))
-show_m_mosaic.initialize()
 
 
 def left_click_callback_mosaic(obj, _ev):
