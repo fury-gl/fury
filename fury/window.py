@@ -392,8 +392,8 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
-        if is_win:
-            self.initialize()
+        # if is_win:
+        #     self.initialize()
 
     def initialize(self):
         """Initialize interaction."""
