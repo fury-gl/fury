@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -9,7 +8,8 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.decorators import is_osx
+from fury.decorators import is_osx, is_win
+
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
@@ -334,20 +334,12 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
 
@@ -400,6 +392,9 @@ class ShowManager(object):
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
 
+        if is_win:
+            self.initialize()
+
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
@@ -426,7 +421,6 @@ class ShowManager(object):
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
                           interactor_style=self.interactor_style)
-            self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
@@ -478,7 +472,6 @@ class ShowManager(object):
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -714,7 +707,6 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
                                multi_samples=multi_samples,
                                max_peels=max_peels,
                                occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
     show_manager.render()
     show_manager.start()
 

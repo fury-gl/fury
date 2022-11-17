@@ -269,6 +269,9 @@ def lines_to_vtk_polydata(lines, colors=None):
     else:
         points_array = np.vstack(lines)
 
+    if points_array.size == 0:
+        raise ValueError("Empty lines/streamlines data.")
+
     # Set Points to vtk array format
     vtk_points = numpy_to_vtk_points(points_array)
 
@@ -1534,3 +1537,21 @@ def is_ui(actor):
     """
     return all([hasattr(actor, attr) for attr in ['add_to_scene',
                                                   '_setup']])
+
+
+def set_actor_origin(actor, center=None):
+    """ Change the origin of an actor to a custom position.
+
+    Parameters
+    ----------
+    actor: Actor
+        The actor object to change origin for.
+    center: ndarray, optional, default: None
+        The new center position. If `None`, the origin will be set to the mean
+        of the actor's vertices.
+    """
+    vertices = vertices_from_actor(actor)
+    if center is None:
+        center = np.mean(vertices)
+    vertices[:] -= center
+    update_actor(actor)

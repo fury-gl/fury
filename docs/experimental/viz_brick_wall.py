@@ -102,7 +102,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 
 # Counter interator for tracking simulation steps.
 counter = itertools.count()
