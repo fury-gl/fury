@@ -4,8 +4,9 @@ import os
 import sys
 import contextlib
 import warnings
+import json
 
-from os.path import join as pjoin
+from os.path import join as pjoin, dirname
 from hashlib import sha256
 from shutil import copyfileobj
 
@@ -13,6 +14,9 @@ import tarfile
 import zipfile
 
 from urllib.request import urlopen
+import asyncio
+import aiohttp
+import platform
 
 # Set a user-writeable file-system location to put files:
 if 'FURY_HOME' in os.environ:
@@ -23,6 +27,9 @@ else:
 # The URL to the University of Washington Researchworks repository:
 UW_RW_URL = \
     "https://digital.lib.washington.edu/researchworks/bitstream/handle/"
+
+NEW_ICONS_DATA_URL = \
+    "https://raw.githubusercontent.com/fury-gl/fury-data/master/icons/new_icons/"
 
 CUBEMAP_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/cubemaps/"
@@ -38,6 +45,9 @@ TEXTURE_DATA_URL = \
 
 DMRI_DATA_URL = \
     "https://raw.githubusercontent.com/fury-gl/fury-data/master/dmri/"
+
+GLTF_DATA_URL = \
+    "https://api.github.com/repos/KhronosGroup/glTF-Sample-Models/contents/2.0/"  # noqa
 
 
 class FetcherError(Exception):
@@ -182,7 +192,8 @@ def fetch_data(files, folder, data_size=None):
     for f in files:
         url, sha = files[f]
         fullpath = pjoin(folder, f)
-        if os.path.exists(fullpath) and (_get_file_sha(fullpath) == sha.lower()):
+        if os.path.exists(fullpath) and \
+           (_get_file_sha(fullpath) == sha.lower()):
             continue
         all_skip = False
         print('Downloading "%s" to %s' % (f, folder))
@@ -267,6 +278,143 @@ def _make_fetcher(name, folder, baseurl, remote_fnames, local_fnames,
     return fetcher
 
 
+async def _request(session, url):
+    """An asynchronous function to get the request data as json.
+
+    Parameters
+    ----------
+    session : ClientSession
+        Aiohttp client session.
+    url : string
+        The URL from which _request gets the response
+
+    Returns
+    -------
+    response : dictionary
+        The response of url request.
+    """
+    async with session.get(url) as response:
+        if not response.status == 200:
+            raise aiohttp.InvalidURL(url)
+
+        return await response.json()
+
+
+async def _download(session, url, filename, size=None):
+    """An asynchronous function to download file from url.
+
+    Parameters
+    ----------
+    session : ClientSession
+        Aiohttp client session
+    url : string
+        The URL of the downloadable file
+    filename : string
+        Name of the downloaded file (e.g. BoxTextured.gltf)
+    size : int, optional
+        Length of the content in bytes
+    """
+    if not os.path.exists(filename):
+        print(f'Downloading: {filename}')
+        async with session.get(url) as response:
+            size = response.content_length if not size else size
+            block = size
+            copied = 0
+            with open(filename, mode='wb') as f:
+                async for chunk in response.content.iter_chunked(block):
+                    f.write(chunk)
+                    copied += len(chunk)
+                    progress = float(copied)/float(size)
+                    update_progressbar(progress, size)
+
+
+async def _fetch_gltf(name, mode):
+    """An asynchronous function to fetch glTF samples.
+
+    Parameters
+    ----------
+    name: str, list
+        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
+
+    mode: str
+        Type of the glTF format.
+        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+
+    Returns
+    -------
+    f_names : list
+        list of fetched all file names.
+    folder : str
+        Path to the fetched files.
+    """
+
+    if name is None:
+        name = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
+
+    if isinstance(name, list):
+        f_names = await asyncio.gather(
+            *[_fetch_gltf(element, mode) for element in name]
+        )
+        return f_names
+    else:
+        path = f'{name}/{mode}'
+        DATA_DIR = pjoin(dirname(__file__), 'files')
+        with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+            models = json.loads(f.read())
+
+        urls = models.get(path, None)
+
+        if urls is None:
+            raise ValueError(
+                "Model name and mode combination doesn't exist")
+
+        path = pjoin(name, mode)
+        path = pjoin('glTF', path)
+        folder = pjoin(fury_home, path)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
+        d_urls = [file['download_url'] for file in urls]
+        sizes = [file['size'] for file in urls]
+        f_names = [url.split('/')[-1] for url in d_urls]
+        f_paths = [pjoin(folder, name) for name in f_names]
+        zip_url = zip(d_urls, f_paths, sizes)
+
+        async with aiohttp.ClientSession() as session:
+            await asyncio.gather(
+                *[_download(session, url, name, s) for url, name, s in zip_url]
+            )
+
+        return f_names, folder
+
+
+def fetch_gltf(name=None, mode='glTF'):
+    """Download glTF samples from Khronos Group Github.
+
+    Parameters
+    ----------
+    name: str, list, optional
+        Name of the glTF model (for e.g. Box, BoxTextured, FlightHelmet, etc)
+        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+        Default: None, Downloads essential glTF samples for tests.
+
+    mode: str, optional
+        Type of glTF format.
+        You can choose from different options
+        (e.g. glTF, glTF-Embedded, glTF-Binary, glTF-Draco)
+        Default: glTF, `.bin` and texture files are stored separately.
+
+    Returns
+    -------
+    filenames : tuple
+        tuple of feteched filenames (list) and folder (str) path.
+    """
+    if platform.system().lower() == "windows":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    filenames = asyncio.run(_fetch_gltf(name, mode))
+    return filenames
+
+
 fetch_viz_cubemaps = _make_fetcher(
     "fetch_viz_cubemaps",
     pjoin(fury_home, "cubemaps"),
@@ -294,6 +442,37 @@ fetch_viz_icons = _make_fetcher(
     data_size="12KB",
     doc="Download icons for fury",
     unzip=True
+    )
+
+fetch_viz_new_icons = _make_fetcher(
+    "fetch_viz_new_icons",
+    pjoin(fury_home, "icons", "new_icons"),
+    NEW_ICONS_DATA_URL,
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
+     "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
+     "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
+     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
+     "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
+     "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
+     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+    ["CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC",
+     "5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207",
+     "937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226",
+     "476E00A0A5373E1CCDA4AF8E7C9158E0AC9B46B540CE410C6EA47D97F364A0CD",
+     "08A914C5DC7997CB944B8C5FBB958951F80B715CFE04FF4F47A73F9D08C4B14B",
+     "FB2210B0393ECA8A5DD2B8F034DAE386BBB47EB95BB1CAC2A97DE807EE195ADF",
+     "8D1AC2BB7C5BAA34E68578DAAD85F64EF824BE7BCB828CAC18E52833D4CBF4C9",
+     "E6D833B6D958129E12FF0F6087282CE92CD43C6DAFCE03F185746ECCA89E42A9",
+     "CFF12B8DE48FC19DA5D5F0EA7FF2D23DD942D05468E19522E7C7BEB72F0FF66E",
+     "7AFE65EBAE0C0D0556393B979148AE15FC3E037D126CD1DA4A296F4E25F5B4AA",
+     "5FD43F1C2D37BF9AF05D9FC591172684AC51BA236980CD1B0795B0225B9247E2",
+     "A2DA0CB963401C174919E1D8028AA6F0CB260A736FD26421DB5AB08E9F3C4FDF",
+     "FF49DDF9DF24729F4F6345C30C88DE0A11E5B12B2F2FF28375EF9762FE5F8995",
+     "A2D850CDBA8F332DA9CD7B7C9459CBDA587C18AF0D3C12CA68D6E6A864EF54BB",
+     "54618FDC4589F0A039D531C07A110ED9BC57A256BB15A3B5429CF60E950887C3",
+     "CD573F5E4BF4A91A3B21F6124A95FFB3C036F926F8FEC1FD0180F5D27D8F48C0"],
+    doc="Download the new icons for DrawPanel"
     )
 
 
@@ -441,8 +620,11 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Complete path of icon.
 
     """
-    if not os.path.isdir(pjoin(fury_home, 'icons')):
-        fetch_viz_icons()
+    if not os.path.isdir(pjoin(fury_home, 'icons', style)):
+        if style == "icomoon":
+            fetch_viz_icons()
+        elif style == "new_icons":
+            fetch_viz_new_icons()
     folder = pjoin(fury_home, 'icons', style)
     return pjoin(folder, fname)
 
@@ -502,3 +684,67 @@ def read_viz_dmri(fname):
     """
     folder = pjoin(fury_home, 'dmri')
     return pjoin(folder, fname)
+
+
+def read_viz_gltf(fname, mode='glTF'):
+    """Read specific gltf sample.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the model.
+        This should be found in folder HOME/.fury/models/glTF/.
+
+    mode : str, optional
+        Model type (e.g. glTF-Binary, glTF-Embedded, etc)
+        Default : glTF
+
+    Returns
+    -------
+    path : str
+        Complete path of models.
+    """
+    folder = pjoin(fury_home, 'glTF')
+    model = pjoin(folder, fname)
+
+    sample = pjoin(model, mode)
+
+    if not os.path.exists(sample):
+        raise ValueError(f'Model {sample} does not exists.')
+
+    for filename in os.listdir(sample):
+        if filename.endswith('.gltf') or filename.endswith('.glb'):
+            return pjoin(sample, filename)
+
+
+def list_gltf_sample_models():
+    """Returns all model name from the glTF-samples repository
+
+    Returns
+    -------
+    model_names : list
+        Lists the name of glTF sample from
+        https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0
+    """
+    DATA_DIR = pjoin(dirname(__file__), 'files')
+    with open(pjoin(DATA_DIR, 'KhronosGltfSamples.json'), 'r') as f:
+        models = json.loads(f.read())
+    models = models.keys()
+    model_modes = [model.split('/')[0] for model in models]
+
+    model_names = []
+    for name in model_modes:
+        if name not in model_names:
+            model_names.append(name)
+    model_names = model_names[1:]  # removing __comments__
+
+    default_models = ['BoxTextured', 'Duck', 'CesiumMilkTruck', 'CesiumMan']
+
+    if not model_names:
+        print('Failed to get models list')
+        return None
+    result = [model in model_names for model in default_models]
+    for i, exist in enumerate(result):
+        if not exist:
+            print(f'Default Model: {default_models[i]} not found!')
+    return model_names

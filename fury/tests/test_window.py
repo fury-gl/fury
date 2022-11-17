@@ -1,15 +1,15 @@
-from fury.utils import remove_observer_from_actor
 import os
-import warnings
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 import numpy as np
 import numpy.testing as npt
 import pytest
+import itertools
 from fury import actor, window, io
 from fury.lib import ImageData, Texture, numpy_support
 from fury.testing import captured_output, assert_less_equal, assert_greater
-from fury.decorators import skip_osx, skip_win
+from fury.decorators import skip_osx, skip_win, skip_linux
 from fury import shaders
+from fury.utils import remove_observer_from_actor
 
 
 def test_scene():
@@ -74,22 +74,20 @@ def test_scene():
                      'Focal Point (0.00, 0.00, 0.00)\n   '
                      'View Up (0.00, 1.00, 0.00)')
     npt.assert_equal(err.getvalue().strip(), '')
-    # Test skybox
+    # Tests for skybox functionality
+    # Test scene created without skybox
     scene = window.Scene()
-    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
     npt.assert_equal(scene.GetAutomaticLightCreation(), 1)
-    npt.assert_equal(scene.GetSphericalHarmonics(), None)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
+    npt.assert_equal(scene.GetUseSphericalHarmonics(), True)
     npt.assert_equal(scene.GetEnvironmentTexture(), None)
-    test_tex = Texture()
-    scene = window.Scene(skybox=test_tex)
-    npt.assert_equal(scene.GetUseImageBasedLighting(), True)
-    npt.assert_equal(scene.GetAutomaticLightCreation(), 0)
-    npt.assert_equal(scene.GetSphericalHarmonics(), None)
-    npt.assert_equal(scene.GetEnvironmentTexture(), test_tex)
-    # Test automatically shown skybox
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 0)
+    npt.assert_warns(UserWarning, scene.skybox)
+    # Test scene created with skybox
     test_tex = Texture()
     test_tex.CubeMapOn()
-    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
+    checker_arr = np.array([[1, 1], [1, 1]], dtype=np.uint8) * 255
     for i in range(6):
         vtk_img = ImageData()
         vtk_img.SetDimensions(2, 2, 1)
@@ -102,20 +100,21 @@ def test_scene():
         img_point_data.AddArray(vtk_arr)
         img_point_data.SetActiveScalars('Image')
         test_tex.SetInputDataObject(i, vtk_img)
+    test_tex.InterpolateOn()
+    test_tex.MipmapOn()
     scene = window.Scene(skybox=test_tex)
+    npt.assert_equal(scene.GetAutomaticLightCreation(), 0)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), True)
+    npt.assert_equal(scene.GetUseSphericalHarmonics(), False)
+    skybox_tex = scene.GetEnvironmentTexture()
+    npt.assert_equal(skybox_tex.GetCubeMap(), True)
+    npt.assert_equal(skybox_tex.GetMipmap(), True)
+    npt.assert_equal(skybox_tex.GetInterpolate(), 1)
+    npt.assert_equal(skybox_tex.GetNumberOfInputPorts(), 6)
+    npt.assert_equal(skybox_tex.GetInputDataObject(0, 0).GetDimensions(),
+                     (2, 2, 1))
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
 
 
 def test_active_camera():
@@ -268,11 +267,17 @@ def test_order_transparent():
 def test_skybox():
     # Test scene created without skybox
     scene = window.Scene()
+    npt.assert_equal(scene.GetAutomaticLightCreation(), 1)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), False)
+    npt.assert_equal(scene.GetUseSphericalHarmonics(), True)
+    npt.assert_equal(scene.GetEnvironmentTexture(), None)
+    report = window.analyze_scene(scene)
+    npt.assert_equal(report.actors, 0)
     npt.assert_warns(UserWarning, scene.skybox)
-    # Test removing automatically shown skybox
+    # Test scene created with skybox
     test_tex = Texture()
     test_tex.CubeMapOn()
-    checker_arr = np.array([[1, 0], [0, 1]], dtype=np.uint8) * 255
+    checker_arr = np.array([[1, 1], [1, 1]], dtype=np.uint8) * 255
     for i in range(6):
         vtk_img = ImageData()
         vtk_img.SetDimensions(2, 2, 1)
@@ -285,40 +290,25 @@ def test_skybox():
         img_point_data.AddArray(vtk_arr)
         img_point_data.SetActiveScalars('Image')
         test_tex.SetInputDataObject(i, vtk_img)
+    test_tex.InterpolateOn()
+    test_tex.MipmapOn()
     scene = window.Scene(skybox=test_tex)
+    npt.assert_equal(scene.GetAutomaticLightCreation(), 0)
+    npt.assert_equal(scene.GetUseImageBasedLighting(), True)
+    npt.assert_equal(scene.GetUseSphericalHarmonics(), False)
+    skybox_tex = scene.GetEnvironmentTexture()
+    npt.assert_equal(skybox_tex.GetCubeMap(), True)
+    npt.assert_equal(skybox_tex.GetMipmap(), True)
+    npt.assert_equal(skybox_tex.GetInterpolate(), 1)
+    npt.assert_equal(skybox_tex.GetNumberOfInputPorts(), 6)
+    npt.assert_equal(skybox_tex.GetInputDataObject(0, 0).GetDimensions(),
+                     (2, 2, 1))
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 1)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 255])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [255, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    npt.assert_array_equal(ss[75, 225, :], [0, 255, 0])
-    # Test skybox is not added twice
-    scene.skybox()
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
-    # Test make skybox invisible
+    # Test removing automatically shown skybox
     scene.skybox(visible=False)
     report = window.analyze_scene(scene)
     npt.assert_equal(report.actors, 0)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    scene.yaw(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 75, :], [0, 0, 0])
-    scene.pitch(90)
-    ss = window.snapshot(scene)
-    npt.assert_array_equal(ss[75, 225, :], [0, 0, 0])
-    # Test make skybox visible again
-    scene.skybox(visible=True)
-    report = window.analyze_scene(scene)
-    npt.assert_equal(report.actors, 1)
 
 
 def test_save_screenshot():
@@ -331,7 +321,7 @@ def test_save_screenshot():
 
     window_sz = (400, 400)
     show_m = window.ShowManager(scene, size=window_sz)
-    show_m.initialize()
+    
 
     with InTemporaryDirectory():
         fname = 'test.png'
@@ -392,6 +382,9 @@ def test_stereo():
     npt.assert_array_equal(stereo[150, 150], [0, 0, 0])
 
 
+@pytest.mark.skipif(skip_linux or skip_win,
+                    reason="This test does not work on Windows."
+                           " Need to be introspected")
 def test_record():
     xyzr = np.array([[0, 0, 0, 10], [100, 0, 0, 25], [200, 0, 0, 50]])
     colors = np.array([[1, 0, 0, 1], [0, 1, 0, 1], [0, 0, 1., 1]])
@@ -465,6 +458,7 @@ def test_record():
             assert_less_equal(arr.shape[1], 5000)
 
 
+@pytest.mark.skipif(True, reason="See TODO in the code")
 def test_opengl_state_simple():
     for gl_state in [
         window.gl_reset_blend, window.gl_enable_depth,
@@ -564,6 +558,52 @@ def test_opengl_state_add_remove_and_check():
     after_remove_depth_test_observer = state['GL_DEPTH_TEST']
     npt.assert_equal(after_remove_depth_test_observer, True)
 
+
+@pytest.mark.skipif(skip_linux, reason="Segfault on Linux that need to be"
+                                       "introspected. See #603 and #578")
+def test_frame_rate():
+    xyz = 1000 * np.random.rand(10, 3)
+    colors = np.random.rand(10, 4)
+    radii = np.random.rand(10) * 50 + 0.5
+    scene = window.Scene()
+    sphere_actor = actor.sphere(centers=xyz,
+                                colors=colors,
+                                radii=radii)
+    scene.add(sphere_actor)
+
+    showm = window.ShowManager(scene,
+                               size=(900, 768), reset_camera=False,
+                               order_transparent=True)
+    
+    counter = itertools.count()
+    frame_rates = []
+    render_times = []
+
+    def timer_callback(_obj, _event):
+        cnt = next(counter)
+        frame_rates.append(showm.frame_rate)
+
+        showm.scene.azimuth(0.05 * cnt)
+        sphere_actor.GetProperty().SetOpacity(cnt / 100.)
+
+        showm.render()
+        render_times.append(scene.last_render_time)
+
+        if cnt > 100:
+            showm.exit()
+
+    showm.add_timer_callback(True, 10, timer_callback)
+    showm.start()
+
+    assert_greater(len(frame_rates), 0)
+    assert_greater(len(render_times), 0)
+
+    actual_fps = sum(frame_rates)/len(frame_rates)
+    ideal_fps = 1 / (sum(render_times) / len(render_times))
+
+    assert_greater(actual_fps, 0)
+    assert_greater(ideal_fps, 0)
+    assert_greater(ideal_fps, actual_fps)
 
 # test_opengl_state_add_remove_and_check()
 # test_opengl_state_simple()

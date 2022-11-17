@@ -154,6 +154,17 @@ todo_include_todos = False
 import pydata_sphinx_theme
 html_theme = 'pydata_sphinx_theme'
 
+# Define the json_url for our version switcher.
+json_url = "https://fury.gl/latest/_static/versions_switcher.json"
+
+
+if "dev" in release:
+    version_match = "latest"
+    # We want to keep the relative reference if we are in dev mode
+    # but we want the whole url if we are effectively in a released version
+    json_url = "/_static/versions_switcher.json"
+else:
+    version_match = "v" + release
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -165,7 +176,10 @@ html_theme_options = {
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
-  "footer_items": ["custom-footer.html"]
+  "footer_items": ["custom-footer.html"],
+  "switcher": {"json_url": json_url,
+               "version_match": version_match,
+               },
   }
 
 html_additional_pages = {
@@ -225,6 +239,7 @@ html_context = {'all_versions': all_versions,
                 'versions_list': ['dev', 'latest'] + all_versions,
                 'basic_stats': ght.fetch_basic_stats(),
                 'contributors': ght.fetch_contributor_stats(),
+                "default_mode": "light",
                 }
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -313,7 +328,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy-1.8.0/html-scipyorg/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', None),
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'dipy': ('https://dipy.org/documentation/latest',

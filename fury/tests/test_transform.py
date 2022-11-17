@@ -1,8 +1,13 @@
 import numpy as np
 import numpy.testing as npt
+from scipy.ndimage import center_of_mass
 
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
-                            _AXES2TUPLE, _TUPLE2AXES)
+                            _AXES2TUPLE, _TUPLE2AXES, translate,
+                            rotate, scale, apply_transformation,
+                            transform_from_matrix)
+from fury import primitive, window, utils
+from fury.testing import assert_greater
 
 
 def _make_pts():
@@ -64,3 +69,88 @@ def test_euler_matrix():
         _ = euler_matrix(ai, aj, ak, axes)
     for axes in _TUPLE2AXES.keys():
         _ = euler_matrix(ai, aj, ak, axes)
+
+
+def test_translate():
+    x_translate = np.array([1.5, 0.0, 0.0])
+    transform = translate(x_translate)
+    npt.assert_almost_equal(transform.shape, (4, 4))
+    scene = window.Scene()
+
+    verts, triangles = primitive.prim_box()
+    cube = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cube)
+
+    verts = apply_transformation(verts, transform)
+    cube = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cube)
+
+    y_translate = np.array([0.0, 1.5, 0.0])
+    transform = translate(y_translate)
+    verts = apply_transformation(verts, transform)
+    cube = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cube)
+
+    arr = window.snapshot(scene)
+    report = window.analyze_snapshot(arr)
+    npt.assert_equal(report.objects, 3)
+
+
+def test_scale():
+    x_scale = np.array([2.0, 1.0, 1.0])
+    transform = scale(x_scale)
+    npt.assert_almost_equal(transform.shape, (4, 4))
+    scene = window.Scene()
+
+    verts, triangles = primitive.prim_box()
+    cube = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cube)
+    arr1 = window.snapshot(scene)
+    scene.clear()
+
+    verts = apply_transformation(verts, transform)
+    cube = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cube)
+    arr2 = window.snapshot(scene)
+    scene.clear()
+
+    assert_greater(arr2.mean(), arr1.mean())
+
+
+def test_rotate():
+    transform = rotate(np.array([0.707, 0.0, 0.707, 0.0]))  # by 90 degrees
+    npt.assert_almost_equal(transform.shape, (4, 4))
+    scene = window.Scene()
+
+    verts, triangles = primitive.prim_cone()
+    cone = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cone)
+    arr1 = window.snapshot(scene)
+    scene.clear()
+
+    verts = apply_transformation(verts, transform)
+    cone = utils.get_actor_from_primitive(verts, triangles)
+    scene.add(cone)
+    arr2 = window.snapshot(scene)
+
+    report = window.analyze_snapshot(arr2)
+    npt.assert_equal(report.objects, 1)
+    assert_greater(center_of_mass(arr2), center_of_mass(arr1))
+
+
+def test_transform_from_matrix():
+    matrix = np.array([[5, 0, 0, 10],
+                       [0, 1, 0, -10],
+                       [0, 0, 1, 0],
+                       [0, 0, 0, 1]])
+    trans, rot, scale = transform_from_matrix(matrix)
+    npt.assert_equal(trans, np.array([10, -10, 0]))
+    npt.assert_equal(scale, np.array([5, 1, 1]))
+
+    matrix = np.array([[1,  0,         0,         1],
+                       [0,  0.1542515, 0.9880316, 0],
+                       [0, -0.9880316, 0.1542515, 0],
+                       [0,  0,         0,         1]])
+    trans, rot, scale = transform_from_matrix(matrix)
+    npt.assert_array_almost_equal(rot,
+                                  np.array([81.126612, -1.415926, 0.0, 0.0]))

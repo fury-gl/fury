@@ -9,6 +9,7 @@ import itertools
 from fury import window, actor, utils, io
 from fury.data import (read_viz_textures, fetch_viz_textures,
                        read_viz_models, fetch_viz_models)
+import numpy as np
 
 ##############################################################################
 # Create a scene to start.
@@ -82,7 +83,7 @@ scene.set_camera(position=(0.24, 0.00, 4.34), focal_point=(0.00, 0.00, 0.00),
 # Let's create a sphere actor to add to the Earth. We will place this sphere
 # on the Earth's surface on Bloomington, IN, home of FURY's headquarters!
 
-center = [[-0.39, 0.3175, 0.025]]
+center = np.array([[-0.39, 0.3175, 0.025]])
 radius = 0.002
 sphere_actor = actor.sphere(center, window.colors.blue_medium, radius)
 
@@ -153,7 +154,7 @@ def timer_callback(_obj, _event):
 ##############################################################################
 # Watch your new animation take place!
 
-showm.initialize()
+
 showm.add_timer_callback(True, 35, timer_callback)
 showm.start()
 window.record(showm.scene, size=(900, 768), out_path="viz_earth_animation.png")

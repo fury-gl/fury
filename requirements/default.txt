@@ -1,8 +1,8 @@
 # List required packages in this file, one per line.
 numpy>=1.7.1
 vtk>=9.1.0
-scipy>=1.2.0
-pillow>=5.4.1
+scipy>=1.4.0
 packaging
-Pillow>=8.0.1
+pillow>=8.0.1
 aiohttp>=3.7.4
+pygltflib>=1.15.1
