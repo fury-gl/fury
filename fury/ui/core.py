@@ -1,12 +1,13 @@
 """UI core module that describe UI abstract class."""
 
-__all__ = ["Rectangle2D", "Disk2D", "TextBlock2D", "Button2D"]
+__all__ = ["Rectangle2D", "BorderTexture", "Disk2D", "TextBlock2D", "Button2D"]
 
 import abc
 from warnings import warn
 
 import numpy as np
 
+from fury.actor import texture_2d, texture_update
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image
 from fury.lib import (PolyData, PolyDataMapper2D, Polygon, Points, CellArray,
@@ -429,13 +430,12 @@ class Rectangle2D(UI):
         self.resize((self.width, height))
 
     def resize(self, size):
-        """Set the button size.
+        """Resize Rectangle2D.
 
         Parameters
         ----------
-        size : (float, float)
-            Button size (width, height) in pixels.
-
+        size : (int, int)
+            Rectangle bounding box size(width, height) in pixels.
         """
         self._points.SetPoint(0, 0, 0, 0.0)
         self._points.SetPoint(1, size[0], 0, 0.0)
@@ -492,6 +492,114 @@ class Rectangle2D(UI):
 
         """
         self.actor.GetProperty().SetOpacity(opacity)
+
+
+class BorderTexture(UI):
+    def __init__(self, size=(100, 100), position=(0, 0), color=(1, 1, 1)):
+        """Initializing the texture.
+
+        Parameters
+        ----------
+        size : (int, int)
+            The size of the rectangle (width, height) in pixels.
+        position : (float, float)
+            Coordinates (x, y) of the lower-left corner of the rectangle.
+        color : (float, float, float)
+            Must take values in [0, 1].
+        """
+        super(BorderTexture, self).__init__(position)
+        self.resize(size)
+        self.color = color
+
+    def _setup(self):
+        """Set up this UI component.
+
+        Creating the texture actor.
+        """
+        self.texture_arr = np.array([[[255, 255, 255]]])
+        self.actor = texture_2d(self.texture_arr.astype("u1"))
+
+        # Add default events listener to the VTK actor.
+        self.handle_events(self.actor)
+
+    def resize(self, size):
+        """Resize BorderTexture.
+
+        Parameters
+        ----------
+        size : (int, int)
+            Texture bounding box size(width, height) in pixels.
+        """
+        mapper = self.actor.GetMapper()
+        t_point = mapper.GetInput().GetPoints()
+        t_point.SetPoint(0, 0, 0, 0.0)
+        t_point.SetPoint(1, size[0], 0, 0.0)
+        t_point.SetPoint(2, size[0], size[1], 0.0)
+        t_point.SetPoint(3, 0, size[1], 0.0)
+
+    def _add_to_scene(self, scene):
+        """Add all subcomponents or VTK props that compose this UI component.
+
+        Parameters
+        ----------
+        scene : scene
+        """
+        scene.add(self.actor)
+
+    def _get_actors(self):
+        """Get the actors composing this UI component."""
+        return [self.actor]
+
+    def _get_size(self):
+        lower_left_corner = np.array(self.actor.GetMapper().GetInput().GetPoint(0)[:2])
+        upper_right_corner = np.array(self.actor.GetMapper().GetInput().GetPoint(2)[:2])
+        size = abs(upper_right_corner - lower_left_corner)
+        return size
+
+    def _set_position(self, coords):
+        """Set the lower-left corner position of this UI component.
+
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+
+        """
+        self.actor.SetPosition(coords)
+
+    @property
+    def color(self):
+        """Get the texture's color."""
+        return self.texture_arr[0][0] / 255
+
+    @color.setter
+    def color(self, color):
+        """Set the texture's color.
+
+        Parameters
+        ----------
+        color : (float, float, float)
+            RGB. Must take values in [0, 1].
+
+        """
+        self.texture_arr = 255 * np.array([[color]])
+        texture_update(self.actor, self.texture_arr.astype("u1"))
+
+    @property
+    def width(self):
+        return self.actor.GetMapper().GetInput().GetPoint(2)[0]
+
+    @width.setter
+    def width(self, width):
+        self.resize((width, self.height))
+
+    @property
+    def height(self):
+        return self.actor.GetMapper().GetInput().GetPoint(2)[1]
+
+    @height.setter
+    def height(self, height):
+        self.resize((self.width, height))
 
 
 class Disk2D(UI):

@@ -8,7 +8,7 @@ import numpy as np
 from fury.io import load_image
 from fury.lib import (PolyData, PolyDataMapper2D, Points, CellArray,
                       FloatArray, Texture, TexturedActor2D, Property2D)
-from fury.ui.core import UI, Rectangle2D, TextBlock2D
+from fury.ui.core import UI, Rectangle2D, TextBlock2D, BorderTexture
 from fury.utils import set_input, rotate
 from fury.actor import grid
 
@@ -70,10 +70,10 @@ class Panel2D(UI):
         self.background = Rectangle2D()
 
         if self.has_border:
-            self.borders = {'left': Rectangle2D(),
-                            'right': Rectangle2D(),
-                            'top': Rectangle2D(),
-                            'bottom': Rectangle2D()}
+            self.borders = {'left': BorderTexture(),
+                            'right': BorderTexture(),
+                            'top': BorderTexture(),
+                            'bottom': BorderTexture()}
 
             self.border_coords = {'left': (0., 0.),
                                   'right': (1., 0.),

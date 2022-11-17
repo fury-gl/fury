@@ -60,7 +60,7 @@ def test_ui_button_panel(recording=False):
                        position=(290, 15),
                        color=(1, 1, 1), align="right",
                        has_border=True)
-    
+
     non_bordered_panel = ui.Panel2D(size=(100, 100),
                                     has_border=False)
 
@@ -124,7 +124,6 @@ def test_ui_button_panel(recording=False):
         # rf = '/home/elef/Devel/fury/fury/data/files/checking.log.gz'
         show_manager.play_events_from_file(recording_filename)
         # recorder.iren.GetRenderWindow().Finalize()
-       
 
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
@@ -160,6 +159,24 @@ def test_ui_rectangle_2d():
     arr = window.snapshot(show_manager.scene, size=window_size, offscreen=True)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 0)
+
+
+def test_ui_border_texture():
+    window_size = (700, 700)
+    show_manager = window.ShowManager(size=window_size)
+
+    texture = ui.BorderTexture(size=(100, 50), position=(50, 80))
+    npt.assert_equal(texture.position, (50, 80))
+
+    texture.color = (1, 0.5, 0)
+    npt.assert_equal(texture.color, (1, 0.5, 0))
+
+    texture.resize((200, 10))
+    npt.assert_equal(texture.size, (200, 10))
+
+    show_manager.scene.add(texture)
+    # Uncomment this to start the visualisation
+    # show_manager.start()
 
 
 def test_ui_disk_2d():
