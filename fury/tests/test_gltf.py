@@ -309,7 +309,6 @@ def test_morphing():
 
     timeline_1.seek(1.50)
     gltf_obj.update_morph(timeline_1)
-    showm.render()
     showm.save_screenshot('keyframe2.png')
     res_2 = window.analyze_snapshot('keyframe2.png')
 
