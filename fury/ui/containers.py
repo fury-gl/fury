@@ -51,7 +51,7 @@ class Panel2D(UI):
         self.has_border = has_border
         self._border_color = border_color
         self._border_width = border_width
-        super(Panel2D, self).__init__(position)
+        super(Panel2D, self).__init__(position, draggable=True)
         self.resize(size)
         self.alignment = align
         self.color = color
@@ -84,18 +84,12 @@ class Panel2D(UI):
                 self.borders[key].color = self._border_color
                 self.add_element(self.borders[key], self.border_coords[key])
 
-            for key in self.borders.keys():
-                self.borders[key].on_left_mouse_button_pressed = \
-                    self.left_button_pressed
-
-                self.borders[key].on_left_mouse_button_dragged = \
-                    self.left_button_dragged
-
         self.add_element(self.background, (0, 0))
-
-        # Add default events listener for this UI component.
-        self.background.on_left_mouse_button_pressed = self.left_button_pressed
-        self.background.on_left_mouse_button_dragged = self.left_button_dragged
+        self.set_draggable_components(
+            self.background,
+            *self.borders.values() if self.has_border else [],
+            boundary_component=self
+        )
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
@@ -238,18 +232,6 @@ class Panel2D(UI):
         """
         self.remove_element(element)
         self.add_element(element, coords, anchor)
-
-    def left_button_pressed(self, i_ren, _obj, panel2d_object):
-        click_pos = np.array(i_ren.event.position)
-        self._drag_offset = click_pos - self.position
-        i_ren.event.abort()  # Stop propagating the event.
-
-    def left_button_dragged(self, i_ren, _obj, _panel2d_object):
-        if self._drag_offset is not None:
-            click_position = np.array(i_ren.event.position)
-            new_position = click_position - self._drag_offset
-            self.position = new_position
-        i_ren.force_render()
 
     def re_align(self, window_size_change):
         """Re-organise the elements in case the window size is changed.
@@ -546,7 +528,7 @@ class TabUI(UI):
         self.active_tab_idx = None
         self.collapsed = True
 
-        super(TabUI, self).__init__()
+        super(TabUI, self).__init__(draggable=draggable)
         self.position = position
 
     def _setup(self):
@@ -614,25 +596,12 @@ class TabUI(UI):
             tab_panel.content_panel.position = self.position
 
             content_panel = tab_panel.content_panel
-            if self.draggable:
-                tab_panel.panel.background.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-                content_panel.background.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-                tab_panel.text_block.on_left_mouse_button_pressed =\
-                    self.left_button_pressed
-
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-                content_panel.background.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-                tab_panel.text_block.on_left_mouse_button_dragged =\
-                    self.left_button_dragged
-            else:
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
-                    lambda i_ren, _obj, _comp: i_ren.force_render
-                content_panel.background.on_left_mouse_button_dragged =\
-                    lambda i_ren, _obj, _comp: i_ren.force_render
+            self.set_draggable_components(
+                tab_panel.panel.background,
+                content_panel.background,
+                tab_panel.text_block,
+                boundary_component=self.parent_panel
+            )
 
             tab_panel.text_block.on_left_mouse_button_clicked =\
                 self.select_tab_callback
@@ -701,18 +670,6 @@ class TabUI(UI):
         else:
             raise IndexError("Tab with index "
                              "{} does not exist".format(tab_idx))
-
-    def left_button_pressed(self, i_ren, _obj, _sub_component):
-        click_pos = np.array(i_ren.event.position)
-        self._click_position = click_pos
-        i_ren.event.abort()  # Stop propagating the event.
-
-    def left_button_dragged(self, i_ren, _obj, _sub_component):
-        click_position = np.array(i_ren.event.position)
-        change = click_position - self._click_position
-        self.parent_panel.position += change
-        self._click_position = click_position
-        i_ren.force_render()
 
 
 class ImageContainer2D(UI):
