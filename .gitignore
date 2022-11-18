@@ -100,4 +100,6 @@ target/
 *.npy
 *.vtk
 *.png
+*.bin
+*.gltf
 

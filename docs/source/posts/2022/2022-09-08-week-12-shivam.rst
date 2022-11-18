@@ -1,0 +1,47 @@
+Week 12 - Adding skeleton as actors and fix global transformation 
+=================================================================
+
+.. post:: September 08 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+- I started this week by fixing the segmentation fault for the skinning test. I could not fix this as of now.
+
+- I imported the ``RiggedFigure`` model into the Blender and I was quite impressed with how it visualizes each bone. So, I created a function that creates an arrow actor in place of a bone, and by applying the correct transformation, we get the bones of a model in place. Here's a quick preview of bones in Blender vs bones in FURY:
+
+.. image:: https://user-images.githubusercontent.com/74976752/189194609-e55f6285-b5ed-4eb3-9e78-5fb462fb2dee.png
+    :width: 500
+    :align: center
+
+.. image:: https://user-images.githubusercontent.com/74976752/189195853-5b1f8945-9822-48f5-8d55-f13e822a43a7.png
+    :width: 500
+    :align: center
+
+- After having the bones actor, I noticed that some bones are not aligned correctly. It was happening due to multiplication of the same transformation matrix twice.
+
+- I also created a function that calculates the total transformation of a node, it eliminates the need to use ``timeline.get_value`` in ``get_skin_timeline`` function.
+
+
+What is coming up next week?
+----------------------------
+
+- It seems like I fixed everything, but we are not getting the correct model at timestamp 0. We need to find the cause and fix it!
+
+- Cleaning the Simple Animation PR `#643`_, and merging it.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+- While applying the timeline, we were getting the identity matrix for timestamp 0.0s, it was set to a new value before. We figured this in our meeting that it's happening due to some model's animation not starting from 0.0s.
+
+.. image:: https://user-images.githubusercontent.com/74976752/189196234-b28f86f7-223b-40e4-94bf-2ec18d914487.png
+    :width: 400
+    :align: center
+
+
+.. _`#643`: https://github.com/fury-gl/fury/pull/643/

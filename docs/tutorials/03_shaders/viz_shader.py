@@ -117,7 +117,7 @@ tb.message = "Hello Shaders"
 current_size = (1024, 720)
 showm = window.ShowManager(scene, size=current_size, reset_camera=False)
 
-showm.initialize()
+
 showm.add_timer_callback(True, 30, timer_callback)
 
 scene.add(utah)
