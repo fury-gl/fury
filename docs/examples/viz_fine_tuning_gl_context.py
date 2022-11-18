@@ -128,7 +128,7 @@ shader_apply_effects(
 ###############################################################################
 # Finaly, just render and see the results
 
-showm.initialize()
+
 counter = itertools.count()
 
 # After some steps we will remove the no_depth_test effect

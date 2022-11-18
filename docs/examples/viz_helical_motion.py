@@ -56,7 +56,7 @@ scene.set_camera(position=(10, 12.5, 19), focal_point=(3.0, 0.0, 0.0),
 showm = window.ShowManager(scene,
                            size=(800, 600), reset_camera=True,
                            order_transparent=True)
-showm.initialize()
+
 
 
 ###############################################################################
