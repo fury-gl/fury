@@ -6,7 +6,6 @@ __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "DrawShape", "DrawPanel", "PlaybackPanel"]
 
 import os
-import time
 from collections import OrderedDict
 from numbers import Number
 from string import printable
@@ -14,7 +13,7 @@ from string import printable
 import numpy as np
 
 from fury.data import read_viz_icons
-from fury.lib import PolyDataMapper2D
+from fury.lib import Command
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
 from fury.ui.containers import Panel2D
 from fury.ui.helpers import (TWO_PI, clip_overflow,
@@ -4064,14 +4063,15 @@ class PlaybackPanel(UI):
        such as play, pause, stop, and seek.
     """
 
-    def __init__(self, loop=False, position=(0, 0)):
-        super(PlaybackPanel, self).__init__()
-        self.position = position
+    def __init__(self, loop=False, position=(0, 0), width=None):
+        self._width = width if width is not None else 900
+        self._auto_width = width is None
+        self._position = position
+        super(PlaybackPanel, self).__init__(position)
         self._playing = False
         self._loop = None
         self.loop() if loop else self.play_once()
         self._speed = 1
-
         # callback functions
         self.on_play_pause_toggle = lambda state: None
         self.on_play = lambda: None
@@ -4082,20 +4082,21 @@ class PlaybackPanel(UI):
         self.on_speed_up = lambda x: None
         self.on_slow_down = lambda x: None
         self.on_speed_changed = lambda x: None
+        self._set_position(position)
 
     def _setup(self):
         """Setup this Panel component.
 
         """
-        self.time_text = TextBlock2D(position=(820, 10))
-        self.speed_text = TextBlock2D(text='1', position=(0, 0), font_size=21,
+        self.time_text = TextBlock2D()
+        self.speed_text = TextBlock2D(text='1', font_size=21,
                                       color=(0.2, 0.2, 0.2), bold=True,
-                                      justification='center', vertical_justification='middle')
+                                      justification='center',
+                                      vertical_justification='middle')
 
         self.panel = Panel2D(size=(190, 30), color=(1, 1, 1), align="right",
                              has_border=True, border_color=(0, 0.3, 0),
                              border_width=2)
-        self.panel.position = (5, 5)
 
         play_pause_icons = [("play", read_viz_icons(fname="play3.png")),
                             ("pause", read_viz_icons(fname="pause2.png"))]
@@ -4121,8 +4122,7 @@ class PlaybackPanel(UI):
             size=(15, 15)
         )
 
-        self._progress_bar = LineSlider2D(center=(512, 20),
-                                          initial_value=0,
+        self._progress_bar = LineSlider2D(initial_value=0,
                                           orientation='horizontal',
                                           min_value=0, max_value=100,
                                           text_alignment='top', length=590,
@@ -4189,25 +4189,30 @@ class PlaybackPanel(UI):
         self.current_time = 0
 
     def play(self):
+        """Play the playback"""
         self._playing = True
         self._play_pause_btn.set_icon_by_name('pause')
         self.on_play()
 
     def stop(self):
+        """Stop the playback"""
         self._playing = False
         self._play_pause_btn.set_icon_by_name('play')
         self.on_stop()
 
     def pause(self):
+        """Pause the playback"""
         self._playing = False
         self._play_pause_btn.set_icon_by_name('play')
         self.on_pause()
 
     def loop(self):
+        """Set repeating mode to loop."""
         self._loop = True
         self._loop_btn.set_icon_by_name('loop')
 
     def play_once(self):
+        """Set repeating mode to repeat once."""
         self._loop = False
         self._loop_btn.set_icon_by_name('once')
 
@@ -4332,17 +4337,52 @@ class PlaybackPanel(UI):
         _scene : scene
 
         """
+        def resize_cbk(caller, ev):
+            if self._auto_width:
+                width = _scene.GetSize()[0]
+                if width == self.width:
+                    return
+                self._width = width
+                self._set_position(self.position)
+                self._progress_bar.value = self._progress_bar.value
+        _scene.AddObserver(Command.StartEvent, resize_cbk)
         self.panel.add_to_scene(_scene)
         self._progress_bar.add_to_scene(_scene)
         self.time_text.add_to_scene(_scene)
 
-    def _set_position(self, _coords):
-        x, y = _coords
-        self.panel.position = (x + 5, y + 5)
-        self._progress_bar.center = (x + 512, y + 20)
+    @property
+    def width(self):
+        """Return the width of the PlaybackPanel
 
-        self.time_text.position = (x + self._progress_bar.track.width + 230,
-                                   y + 10)
+        Returns
+        -------
+        float
+            The width of the PlaybackPanel.
+        """
+        return self._width
+
+    @width.setter
+    def width(self, width):
+        """Set width of the PlaybackPanel.
+
+        Parameters
+        ----------
+        width: float
+            The width of the whole panel.
+            If set to None, The width will be the same as the window's width.
+        """
+        self._width = width if width is not None else 900
+        self._auto_width = width is None
+        self._set_position(self.position)
+
+    def _set_position(self, _coords):
+        x, y = self.position
+        width = self.width
+        self.panel.position = (x + 5, y + 5)
+        progress_length = max(width - 310 - x, 1.0)
+        self._progress_bar.track.width = progress_length
+        self._progress_bar.center = (x + 215 + progress_length / 2, y + 20)
+        self.time_text.position = (x + 225 + progress_length, y + 10)
 
     def _get_size(self):
         return self.panel.size + self._progress_bar.size + self.time_text.size

@@ -61,7 +61,7 @@ def test_rtc_video_stream(loop: asyncio.AbstractEventLoop):
             width_0, height_0), order_transparent=False,
         )
 
-        showm.initialize()
+
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -121,7 +121,7 @@ def test_pillow():
         width_0, height_0), order_transparent=False,
     )
 
-    showm.initialize()
+
 
     stream = FuryStreamClient(
         showm, use_raw_array=use_raw_array,
@@ -186,7 +186,7 @@ def test_rtc_video_stream_whitout_cython(loop: asyncio.AbstractEventLoop):
             width_0, height_0), order_transparent=False,
         )
 
-        showm.initialize()
+
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -241,7 +241,7 @@ def test_client_and_buffer_manager():
             width_0, height_0), order_transparent=False,
         )
 
-        showm.initialize()
+
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -314,7 +314,7 @@ def test_stream_client_conditions():
             width_0, height_0), order_transparent=False,
         )
 
-        showm.initialize()
+
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -373,7 +373,7 @@ def test_stream_client_resize():
             whithout_iren_start=False)
 
     showm.window.SetSize((width_0+210, height_0+210))
-    showm.initialize()
+
     npt.assert_equal(0, stream.img_manager.buffer_index)
     stream.start()
     showm.render()
@@ -409,7 +409,7 @@ def test_stream_interaction(loop: asyncio.AbstractEventLoop):
             width_0, height_0), order_transparent=False,
         )
 
-        showm.initialize()
+
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -505,8 +505,6 @@ def test_stream_interaction_conditions():
         scene = window.Scene()
         scene.add(actors)
         showm = window.ShowManager(scene, size=(width_0, height_0))
-
-        showm.initialize()
 
         stream = FuryStreamClient(
             showm, use_raw_array=use_raw_array,
@@ -808,7 +806,7 @@ def test_webserver():
             showm, use_raw_array=use_raw_array)
         stream_interaction = FuryStreamInteraction(
             showm, use_raw_array=use_raw_array)
-        showm.initialize()
+
         if use_raw_array:
             web_server_raw_array(
                 stream.img_manager.image_buffers,

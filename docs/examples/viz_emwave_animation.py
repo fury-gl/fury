@@ -61,7 +61,7 @@ scene.set_camera(position=(-6, 5, -10), focal_point=(0.0, 0.0, 0.0),
 showm = window.ShowManager(scene,
                            size=(800, 600), reset_camera=True,
                            order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Creating a yellow colored arrow to show the direction of propagation of

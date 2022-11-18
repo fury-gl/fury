@@ -228,7 +228,7 @@ scene.add(sphere_actor)
 showm = window.ShowManager(scene, reset_camera=False, size=(
     900, 768), order_transparent=True, multi_samples=8)
 
-showm.initialize()
+
 
 scene.set_camera(position=(0, 0, -300))
 

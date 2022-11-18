@@ -77,7 +77,7 @@ scene.add(odf_actor_y)
 scene.add(odf_actor_x)
 
 show_m = window.ShowManager(scene, reset_camera=True, size=(1200, 900))
-show_m.initialize()
+
 
 ###############################################################################
 # Now that we have a `ShowManager` containing our slicer, we can go on and
@@ -206,7 +206,7 @@ def win_callback(obj, _event):
         panel.re_align(size_change)
 
 
-show_m.initialize()
+
 
 ###############################################################################
 # Finally, please set the following variable to ``True`` to interact with the

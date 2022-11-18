@@ -280,7 +280,7 @@ pause_button.on_left_mouse_button_clicked = pause_animation
 ##############################################################################
 # Watch the planets orbit the sun in your new animation!
 
-showm.initialize()
+
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
