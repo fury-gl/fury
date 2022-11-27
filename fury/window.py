@@ -531,8 +531,12 @@ class ShowManager(object):
 
         # Finalize seems very important otherwise
         # the recording window will not close.
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
         self.window.Finalize()
         self.exit()
+
+ 
         # print('After Finalize and Exit')
 
         # del self.iren
@@ -633,6 +637,7 @@ class ShowManager(object):
             size = self.size
         if stereo is None:
             stereo = self.stereo.lower()
+        
         record(scene=self.scene, out_path=fname, magnification=magnification,
                size=size, stereo=stereo)
 
@@ -788,8 +793,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = RenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
 
@@ -848,6 +851,9 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         save_image(arr, filename)
 
         ang = +az_ang
+
+    renWin.RemoveRenderer(scene)
+    renWin.Finalize()
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
@@ -969,12 +975,14 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     h, w, _ = vtk_image.GetDimensions()
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
-    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
+    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
+
 
     if fname is None:
         return arr
 
     save_image(arr, fname, dpi=dpi)
+   
     return arr
 
 
