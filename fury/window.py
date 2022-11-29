@@ -536,7 +536,7 @@ class ShowManager(object):
         self.window.Finalize()
         self.exit()
 
- 
+
         # print('After Finalize and Exit')
 
         # del self.iren
@@ -637,7 +637,7 @@ class ShowManager(object):
             size = self.size
         if stereo is None:
             stereo = self.stereo.lower()
-        
+
         record(scene=self.scene, out_path=fname, magnification=magnification,
                size=size, stereo=stereo)
 
@@ -977,12 +977,14 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     components = vtk_array.GetNumberOfComponents()
     arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
 
-
     if fname is None:
         return arr
 
     save_image(arr, fname, dpi=dpi)
-   
+
+    render_window.RemoveRenderer(scene)
+    render_window.Finalize()
+
     return arr
 
 
