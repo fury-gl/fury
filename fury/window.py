@@ -526,9 +526,6 @@ class ShowManager(object):
         # self.render()
         recorder.Play()
 
-        # self.window.RemoveRenderer(self.scene)
-        # self.scene.SetRenderWindow(None)
-
         # Finalize seems very important otherwise
         # the recording window will not close.
         self.window.RemoveRenderer(self.scene)
@@ -536,11 +533,11 @@ class ShowManager(object):
         self.window.Finalize()
         self.exit()
 
-
         # print('After Finalize and Exit')
 
         # del self.iren
         # del self.window
+
 
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
