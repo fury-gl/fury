@@ -8,7 +8,7 @@ import numpy as np
 from fury.shaders import (add_shader_callback, attribute_to_actor,
                           compose_shader, import_fury_shader,
                           replace_shader_in_actor, shader_to_actor)
-from fury import layout
+from fury import layout, utils
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
@@ -197,7 +197,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
-                self.display_extent(ex1, ex2, ey1, ey2, ez2//2, ez2//2)
+                self.display_extent(ex1, ex2, ey1, ey2, ez2 // 2, ez2 // 2)
             if x is not None:
                 self.display_extent(x, x, ey1, ey2, ez1, ez2)
             if y is not None:
@@ -315,7 +315,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
-        triangle_poly_data.GetPointData().\
+        triangle_poly_data.GetPointData(). \
             SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
@@ -967,6 +967,7 @@ def _roll_evals(evals, axis=-1):
 
     return evals
 
+
 def _fa(evals, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
@@ -1076,7 +1077,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
             " Please provide eigenvalue and"
             " eigenvector arrays that have compatible dimensions."
-            .format(evals.shape, evecs.shape))
+                .format(evals.shape, evecs.shape))
 
     if mask is None:
         mask = np.ones(evals.shape[:3], dtype=bool)
@@ -1107,7 +1108,8 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
                 self.display_extent(0, szx - 1, 0, szy - 1,
-                                    int(np.floor(szz/2)), int(np.floor(szz/2)))
+                                    int(np.floor(szz / 2)),
+                                    int(np.floor(szz / 2)))
             if x is not None:
                 self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
             if y is not None:
@@ -1117,7 +1119,7 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
     tensor_actor = TensorSlicerActor()
     tensor_actor.display_extent(0, szx - 1, 0, szy - 1,
-                                int(np.floor(szz/2)), int(np.floor(szz/2)))
+                                int(np.floor(szz / 2)), int(np.floor(szz / 2)))
 
     tensor_actor.GetProperty().SetOpacity(opacity)
 
@@ -1167,7 +1169,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vertices = sphere.vertices
 
     if scalar_colors is None:
-        #from dipy.reconst.dti import color_fa, fractional_anisotropy
+        # from dipy.reconst.dti import color_fa, fractional_anisotropy
         cfa = _color_fa(_fa(evals), evecs)
     else:
         cfa = _makeNd(scalar_colors, 4)
@@ -1203,7 +1205,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
 
     cols = np.ascontiguousarray(
         np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                   cols.shape[2])), dtype='f4')
+                          cols.shape[2])), dtype='f4')
 
     vtk_colors = numpy_support.numpy_to_vtk(
         cols,
@@ -1332,7 +1334,8 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
                 self.display_extent(0, szx - 1, 0, szy - 1,
-                                    int(np.floor(szz/2)), int(np.floor(szz/2)))
+                                    int(np.floor(szz / 2)),
+                                    int(np.floor(szz / 2)))
             if x is not None:
                 self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
             if y is not None:
@@ -1617,7 +1620,7 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     sphere_actor = get_actor_from_primitive(
-            big_verts, big_faces, big_colors, prim_count=prim_count)
+        big_verts, big_faces, big_colors, prim_count=prim_count)
     sphere_actor.GetProperty().SetOpacity(opacity)
     return sphere_actor
 
@@ -1954,11 +1957,13 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     """
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
-        res = fp.repeat_primitive(vertices, faces, directions=directions, centers=centers,
+        res = fp.repeat_primitive(vertices, faces, directions=directions,
+                                  centers=centers,
                                   colors=colors, scales=scales)
         big_vertices, big_faces, big_colors, _ = res
         prim_count = len(centers)
-        arrow_actor = get_actor_from_primitive(big_vertices, big_faces, big_colors,
+        arrow_actor = get_actor_from_primitive(big_vertices, big_faces,
+                                               big_colors,
                                                prim_count=prim_count)
         return arrow_actor
 
@@ -2033,8 +2038,8 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         vertices, faces = fp.prim_cone(sectors=resolution)
 
     res = fp.repeat_primitive(
-                    vertices, faces, centers,
-                    directions=directions, colors=colors, scales=heights)
+        vertices, faces, centers,
+        directions=directions, colors=colors, scales=heights)
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
@@ -2293,12 +2298,13 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> # window.show(scene)
 
     """
+
     def have_2_dimensions(arr):
         return all(isinstance(i, (list, tuple, np.ndarray)) for i in arr)
 
     # reshape roundness to a valid numpy array
     if (isinstance(roundness, (tuple, list, np.ndarray)) and
-       len(roundness) == 2 and not have_2_dimensions(roundness)):
+            len(roundness) == 2 and not have_2_dimensions(roundness)):
         roundness = np.array([roundness] * centers.shape[0])
     elif isinstance(roundness, np.ndarray) and len(roundness) == 1:
         roundness = np.repeat(roundness, centers.shape[0], axis=0)
@@ -2318,8 +2324,8 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     return spq_actor
 
 
-def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
-              gs_prog=None, fs_dec=None, fs_impl=None):
+def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None,
+              vs_impl=None, gs_prog=None, fs_dec=None, fs_impl=None):
     """Create a billboard actor.
 
     Billboards are 2D elements placed in a 3D world. They offer possibility to
@@ -2338,8 +2344,9 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     vs_impl : str or list of str, optional
         Vertex Shaders code that contains all variable/function
         implementations.
-    gs_prog : str, optional
-        Geometry Shader program.
+    gs_prog : str, optional, default: None
+        Geometry Shader program. If set to 'default', an already
+        implemented geometry shader code will be used.
     fs_dec : str or list of str, optional
         Fragment Shaders code that contains all variable/function declarations.
     fs_impl : str or list of str, optional
@@ -2351,37 +2358,90 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
     billboard_actor: Actor
 
     """
-    verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scales=scales)
+    if gs_prog and gs_prog.lower() == 'default':
+        bb_actor = dot(centers, colors)
 
-    big_verts, big_faces, big_colors, big_centers = res
+        replace_shader_in_actor(bb_actor, 'geometry',
+                                import_fury_shader('gs_billboard.geom'))
+        vs_impl_code = compose_shader([
+            compose_shader(vs_impl) +
+            import_fury_shader('gs_billboard_impl.vert')])
 
-    prim_count = len(centers)
-    bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                        prim_count=prim_count)
-    bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
-    bb_actor.GetProperty().BackfaceCullingOff()
-    attribute_to_actor(bb_actor, big_centers, 'center')
+        vs_dec_code = compose_shader([
+            compose_shader(vs_dec) +
+            import_fury_shader('gs_billboard_dec.vert')])
 
-    vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
-                                  compose_shader(vs_dec)])
-    vs_impl_code = compose_shader([compose_shader(vs_impl) +
-                                   import_fury_shader('billboard_impl.vert')])
-    gs_code = compose_shader(gs_prog)
-    fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
-                                  compose_shader(fs_dec)])
-    fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
-                                   compose_shader(fs_impl)])
+        shader_to_actor(bb_actor, 'vertex',
+                        impl_code=vs_impl_code,
+                        decl_code=vs_dec_code,
+                        block='prim_id')
 
-    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
-                    decl_code=vs_dec_code)
-    replace_shader_in_actor(bb_actor, 'geometry', gs_code)
-    shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
-                    block='light')
+        fs_dec_code = compose_shader(
+            [import_fury_shader('gs_billboard_dec.frag'),
+             compose_shader(fs_dec)])
+        shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
+        shader_to_actor(bb_actor, 'fragment',
+                        impl_code=compose_shader(fs_impl), block='light')
 
-    return bb_actor
+        attribute_to_actor(bb_actor, scales.flatten(), 'scale')
+        bb_actor.GetProperty().BackfaceCullingOff()
+        bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+
+        bb_actor.centers = utils.vertices_from_actor(bb_actor)
+        bb_actor.colors = utils.colors_from_actor(bb_actor)
+        bb_actor.scales = utils.array_from_actor(bb_actor, 'scale')
+
+        def update_uniforms(_caller, _event, calldata=None):
+            program = calldata
+            if program is not None:
+                spec_color = bb_actor.GetProperty().GetSpecularColor()
+                spec_power = bb_actor.GetProperty().GetSpecularPower()
+                spec_intensity = bb_actor.GetProperty().GetSpecular()
+                program.SetUniform3f('specularColorUniform', spec_color)
+                program.SetUniform3f('lightColor0', (1, 1, 1))
+                program.SetUniformf('specularPowerUniform', spec_power)
+                program.SetUniformf('specularIntensity', spec_intensity)
+                utils.update_actor(bb_actor)
+
+        add_shader_callback(bb_actor, update_uniforms)
+        return bb_actor
+
+    else:
+        verts, faces = fp.prim_square()
+        res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
+                                  scales=scales)
+
+        big_verts, big_faces, big_colors, big_centers = res
+
+        prim_count = len(centers)
+        bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
+                                            prim_count=prim_count)
+        bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
+        bb_actor.GetProperty().BackfaceCullingOff()
+        attribute_to_actor(bb_actor, big_centers, 'center')
+
+        vs_dec_code = compose_shader(
+            [import_fury_shader('billboard_dec.vert') +
+             compose_shader(vs_dec)])
+        vs_impl_code = compose_shader([compose_shader(vs_impl) +
+                                       import_fury_shader(
+                                           'billboard_impl.vert')])
+        gs_code = compose_shader(gs_prog)
+        fs_dec_code = compose_shader(
+            [import_fury_shader('billboard_dec.frag') +
+             compose_shader(fs_dec)])
+        fs_impl_code = compose_shader(
+            [import_fury_shader('billboard_impl.frag') +
+             compose_shader(fs_impl)])
+
+        shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
+                        decl_code=vs_dec_code)
+        replace_shader_in_actor(bb_actor, 'geometry', gs_code)
+        shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
+        shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
+                        block='light')
+
+        return bb_actor
 
 
 def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
@@ -2521,7 +2581,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def font_size(self, size):
             self.GetTextProperty().SetFontSize(24)
-            text_actor.SetScale((1./24.*size,)*3)
+            text_actor.SetScale((1. / 24. * size,) * 3)
 
         def font_family(self, _family='Arial'):
             self.GetTextProperty().SetFontFamilyToArial()
@@ -2573,7 +2633,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def get_position(self):
             return self.GetPosition()
-
 
     text_actor = Text3D()
     text_actor.message(text)
@@ -2677,8 +2736,8 @@ class Container(object):
 
     def GetBounds(self):
         """ Get the bounds of the container. """
-        bounds = np.zeros(6)    # x1, x2, y1, y2, z1, z2
-        bounds[::2] = np.inf    # x1, y1, z1
+        bounds = np.zeros(6)  # x1, x2, y1, y2, z1, z2
+        bounds[::2] = np.inf  # x1, y1, z1
         bounds[1::2] = -np.inf  # x2, y2, z2
 
         for item in self.items:
@@ -2714,13 +2773,13 @@ class Container(object):
     def GetCenter(self):
         """ Get the center of the bounding box. """
         x1, x2, y1, y2, z1, z2 = self.GetBounds()
-        return ((x1+x2)/2., (y1+y2)/2., (z1+z2)/2.)
+        return ((x1 + x2) / 2., (y1 + y2) / 2., (z1 + z2) / 2.)
 
     def GetLength(self):
         """ Get the length of bounding box diagonal. """
         x1, x2, y1, y2, z1, z2 = self.GetBounds()
-        width, height, depth = x2-x1, y2-y1, z2-z1
-        return np.sqrt(np.sum([width**2, height**2, depth**2]))
+        width, height, depth = x2 - x1, y2 - y1, z2 - z1
+        return np.sqrt(np.sum([width ** 2, height ** 2, depth ** 2]))
 
     def NewInstance(self):
         return Container(layout=self.layout)
@@ -2737,7 +2796,7 @@ class Container(object):
 
 
 def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
-         cell_shape="rect", aspect_ratio=16/9., dim=None):
+         cell_shape="rect", aspect_ratio=16 / 9., dim=None):
     """ Creates a grid of actors that lies in the xy-plane.
 
     Parameters
@@ -2800,7 +2859,7 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
             # the actor will be centered in the
             # grid cell.
             actor_with_caption.anchor = actor_center - \
-                actor_with_caption.GetCenter()
+                                        actor_with_caption.GetCenter()
             actors_with_caption.append(actor_with_caption)
 
         actors = actors_with_caption
@@ -2828,7 +2887,6 @@ def figure(pic, interpolation='nearest'):
     else:
 
         if pic.ndim == 3 and pic.shape[2] == 4:
-
             vtk_image_data = ImageData()
             vtk_image_data.AllocateScalars(VTK_UNSIGNED_CHAR, 4)
 
@@ -2932,8 +2990,8 @@ def texture_update(texture_actor, arr):
     """
     grid = texture_actor.GetTexture().GetInput()
     dim = arr.shape[-1]
-    img_data = np.flip(arr.swapaxes(0, 1), axis=1)\
-                 .reshape((-1, dim), order='F')
+    img_data = np.flip(arr.swapaxes(0, 1), axis=1) \
+        .reshape((-1, dim), order='F')
     vtkarr = numpy_support.numpy_to_vtk(img_data, deep=False)
     grid.GetPointData().SetScalars(vtkarr)
 
@@ -2947,7 +3005,6 @@ def _textured_sphere_source(theta=60, phi=60):
 
 
 def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
-
     tss = _textured_sphere_source(theta=theta, phi=phi)
     earthMapper = PolyDataMapper()
     earthMapper.SetInputConnection(tss.GetOutputPort())
@@ -3068,7 +3125,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
                                          prim_count=prim_count)
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
-    if isinstance(primitives,  (list, tuple, np.ndarray)):
+    if isinstance(primitives, (list, tuple, np.ndarray)):
         primlist = [prims[prim] for prim in primitives]
         if len(primitives) < len(centers):
             primlist = primlist + [2] * (len(centers) - len(primitives))
@@ -3169,7 +3226,7 @@ def markers(
     else:
         fs_impl_code += f'{import_fury_shader("marker_billboard_impl.frag")}'
         if isinstance(marker, str):
-            list_of_markers = np.ones(n_markers)*marker2id[marker]
+            list_of_markers = np.ones(n_markers) * marker2id[marker]
         else:
             list_of_markers = [marker2id[i] for i in marker]
 
@@ -3179,7 +3236,7 @@ def markers(
             list_of_markers, 'marker')
 
     def callback(
-        _caller, _event, calldata=None,
+            _caller, _event, calldata=None,
             uniform_type='f', uniform_name=None, value=None):
         program = calldata
         if program is not None:

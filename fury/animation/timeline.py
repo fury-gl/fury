@@ -1146,7 +1146,8 @@ class Timeline(Container):
         elif static:
             self._static_actors.append(actor)
         else:
-            actor.vcolors = utils.colors_from_actor(actor)
+            if isinstance(actor, Actor):
+                actor.vcolors = utils.colors_from_actor(actor)
             super(Timeline, self).add(actor)
 
     @property
