@@ -37,6 +37,9 @@ from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         fix_winding_order, numpy_to_vtk_colors, color_check,
                         set_polydata_primitives_count)
 
+from fury import text_tools
+from fury.utils import one_chanel_to_vtk
+
 
 def slicer(data, affine=None, value_range=None, opacity=1.,
            lookup_colormap=None, interpolation='linear', picking_tol=0.025):
@@ -3210,3 +3213,154 @@ def markers(
                     block="light")
 
     return sq_actor
+
+
+def label_fast(
+    centers,
+    labels,
+    colors=(0, 1, 0.5),
+    scales=1,
+    border_color=(1, 1, 1, 1.0),
+    border_width=0.05,
+    align="center",
+    x_offset_ratio=1,
+    y_offset_ratio=1,
+    font_name="InconsolataBold700",
+    border_type="halo",
+    use_sdf=True,
+):
+    """Create a bitmap label actor that always faces the camera.
+
+    Parameters
+    ----------
+    centers : ndarray, shape (N, 3)
+    labels  : list
+        list of strings
+    colors : array or ndarray
+    scales : float, optional
+    border_color : array or ndarray, optional
+    border_width : float, optional
+    align : str, {left, right, center}
+    x_offset_ratio : float
+        Percentage of the width to offset the labels on the x axis.
+    y_offset_ratio : float
+        Percentage of the height to offset the labels on the y axis.
+    font_size : int, optional
+        size of the text
+    font_name : str, optional
+        name of the font. A list of available fonts can be found in
+        `fury.text_tools.list_fonts_available()`.
+    use_sdf : bool, optional
+        If True, the labels will be rendered using a signed distance field.
+
+    Returns
+    -------
+    vtkActor
+
+    """
+    img_arr, char2pos = text_tools.get_texture_atlas_font(
+        font_name=font_name, use_sdf=use_sdf
+    )
+    (
+        padding,
+        labels_positions,
+        uv,
+        relative_sizes,
+    ) = text_tools.get_positions_labels_billboards(
+        labels,
+        centers,
+        char2pos,
+        scales,
+        align=align,
+        x_offset_ratio=x_offset_ratio,
+        y_offset_ratio=y_offset_ratio,
+    )
+    verts, faces = fp.prim_square()
+    res = fp.repeat_primitive(
+        verts, faces, centers=labels_positions + padding, colors=colors, scales=scales
+    )
+
+    big_verts, big_faces, big_colors, big_centers = res
+    label_actor = get_actor_from_primitive(big_verts, big_faces, big_colors)
+    label_actor.GetMapper().SetVBOShiftScaleMethod(False)
+    label_actor.GetProperty().BackfaceCullingOff()
+
+    attribute_to_actor(label_actor, big_centers, "center")
+
+    vs_dec_code = import_fury_shader("billboard_dec.vert")
+    vs_dec_code += f'\n{import_fury_shader("text_billboard_dec.vert")}'
+
+    vs_impl_code = import_fury_shader("text_billboard_impl.vert")
+
+    fs_dec_code = import_fury_shader("billboard_dec.frag")
+    fs_dec_code += f'\n{import_fury_shader("text_billboard_dec.frag")}'
+
+    fs_impl_code = import_fury_shader("billboard_impl.frag")
+    if use_sdf:
+        fs_impl_code += f'{import_fury_shader("text_sdf_billboard_impl.frag")}'
+        if border_type == "solid":
+            fs_impl_code += f'{import_fury_shader("text_sdf_solid_impl.frag")}'
+        else:
+            fs_impl_code += f'{import_fury_shader("text_sdf_halo_impl.frag")}'
+    else:
+        fs_impl_code += f'\n{import_fury_shader("text_billboard_impl.frag")}'
+
+    img_vtk = one_chanel_to_vtk(img_arr)
+    tex = Texture()
+    tex.SetInputDataObject(img_vtk)
+    tex.Update()
+    label_actor.GetProperty().SetTexture("charactersTexture", tex)
+    attribute_to_actor(label_actor, uv, "vUV")
+    attribute_to_actor(label_actor, relative_sizes, "vRelativeSize")
+    padding = np.repeat(padding, 4, axis=0)
+    attribute_to_actor(label_actor, padding, "vPadding")
+
+    def callback(
+        _caller, _event, calldata=None, uniform_type="f", uniform_name=None, value=None
+    ):
+        program = calldata
+        if program is not None:
+            program.__getattribute__(f"SetUniform{uniform_type}")(uniform_name, value)
+
+    add_shader_callback(
+        label_actor,
+        partial(
+            callback, uniform_type="f", uniform_name="borderWidth", value=border_width
+        ),
+    )
+    if border_color is not None:
+        border_color = np.asarray(border_color)
+        if border_color.ndim == 1:
+            add_shader_callback(
+                label_actor,
+                partial(
+                    callback,
+                    uniform_type="4f",
+                    uniform_name="borderColor",
+                    value=border_color,
+                ),
+            )
+        else:
+            border_color = np.repeat(border_color, 4, axis=0)
+            attribute_to_actor(label_actor, border_color, "vBorderColor")
+            vs_dec_code = vs_dec_code.replace(
+                "//STR_REPLACEMENT::in vec4 vBorderColor", "in vec4 vBorderColor"
+            )
+            vs_dec_code = vs_dec_code.replace(
+                "//STR_REPLACEMENT::out vec4 borderColor", "out vec4 borderColor"
+            )
+            vs_impl_code = vs_impl_code.replace(
+                "//STR_REPLACEMENT::borderColor = vBorderColor",
+                "borderColor = vBorderColor",
+            )
+            fs_dec_code = fs_dec_code.replace(
+                "uniform vec4 borderColor", "in vec4 borderColor"
+            )
+
+    shader_to_actor(
+        label_actor, "vertex", impl_code=vs_impl_code, decl_code=vs_dec_code
+    )
+    shader_to_actor(label_actor, "fragment", decl_code=fs_dec_code)
+    shader_to_actor(label_actor, "fragment", impl_code=fs_impl_code, block="light")
+
+    return label_actor

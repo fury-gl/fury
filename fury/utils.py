@@ -1118,6 +1118,35 @@ def rotate(actor, rotation=(90, 1, 0, 0)):
         prop3D.SetOrientation(newTransform.GetOrientation())
 
 
+def one_chanel_to_vtk(data):
+    """Convert an one channel data to a vtkImageData object.
+
+    Example bitmap images
+
+    Parameters
+    ----------
+    data : ndarray
+        Shape can be (X, Y)
+
+    Returns
+    -------
+    vtkImageData
+
+    """
+    w, h = data.shape
+    data = data.reshape(data.shape + (1, ))
+    grid = ImageData()
+    grid.SetDimensions(h, w, 1)
+    vtkarr = numpy_support.numpy_to_vtk(
+        np.flip(data.swapaxes(0, 1), axis=1).reshape((-1, 1), order='F'))
+    vtkarr.SetName('Image')
+    grid.GetPointData().AddArray(vtkarr)
+    grid.GetPointData().SetActiveScalars('Image')
+    grid.GetPointData().Update()
+
+    return grid
+
+
 def rgb_to_vtk(data):
     """RGB or RGBA images to VTK arrays.
 
