@@ -20,20 +20,20 @@ filename = read_viz_gltf('MorphStressTest')
 # Initializing the glTF object, You can additionaly set `apply_normals=True`.
 # Note: Normals might not work as intended with morphing.
 
-gltf_obj = glTF(filename, apply_normals=False)
+gltf_obj = glTF(filename, apply_normals=True)
 
 ##############################################################################
 # Get the morph timeline using `morph_timeline` method, Choose the animation
 # name you want to visualize.
 # Note: If there's no name for animation, It's stored as `anim_0`, `anim_1` etc
 
-timeline = gltf_obj.morph_timeline()['TheWave']
+animation = gltf_obj.morph_animation()['TheWave']
 
 ##############################################################################
 # Call the `update_morph` method once, This moves initialise the morphing at
 # timestamp 0.0 seconds and ensures that camera fits all the actors perfectly.
 
-gltf_obj.update_morph(timeline)
+gltf_obj.update_morph(animation)
 
 ##############################################################################
 # Create a scene, and show manager.
@@ -45,7 +45,7 @@ showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
                            order_transparent=True)
 
 showm.initialize()
-scene.add(timeline)
+scene.add(animation)
 
 ##############################################################################
 # define a timer_callback.
@@ -54,14 +54,13 @@ scene.add(timeline)
 
 
 def timer_callback(_obj, _event):
-    gltf_obj.update_morph(timeline)
+    gltf_obj.update_morph(animation)
     showm.render()
 
 
 ##############################################################################
 # Optional: `timeline.play()` auto plays the animations.
 
-timeline.play()
 
 showm.add_timer_callback(True, 20, timer_callback)
 scene.reset_camera()
