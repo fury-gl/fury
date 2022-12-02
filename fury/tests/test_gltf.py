@@ -4,8 +4,11 @@ import numpy.testing as npt
 import itertools
 from PIL import Image
 from scipy.ndimage import center_of_mass
-from scipy.ndimage._measurements import _stats
-
+import sys
+if sys.version_info[1] >= 8:
+    from scipy.ndimage._measurements import _stats
+else:
+    from scipy.ndimage.measurements import _stats
 from fury.animation import Timeline
 from fury.gltf import glTF, export_scene
 from fury import window, utils, actor
