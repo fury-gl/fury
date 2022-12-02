@@ -126,6 +126,28 @@ img.cell-layout {
     filter: invert(11%) sepia(86%) saturate(4861%) hue-rotate(10deg) brightness(84%) contrast(121%);
 }
 
+img.cell-layout:hover {
+    filter: invert(91%) sepia(73%) saturate(2024%) hue-rotate(313deg) brightness(97%) contrast(109%);
+}
+
+/* Popup to show tutorials */
+div.tutorial-popup-active {
+    visibility: visible;
+    position: fixed;
+    width: 200px;
+    height: 200px;
+    top: 0;
+    left: 0;
+    background-color: aliceblue;
+    z-index: 99;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+}
+
+div.tutorial-popup-inactive {
+    visibility: hidden;
+}
+
 td.center-text {
     text-align: center;
     line-height: 35%;
