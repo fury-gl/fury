@@ -844,19 +844,19 @@ def test_is_ui():
 
 def test_empty_list_to_polydata():
     lines = [[]]
-    _, _ = utils.lines_to_vtk_polydata(lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
 def test_empty_array_to_polydata():
     lines = np.array([[]])
-    _, _ = utils.lines_to_vtk_polydata(lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
 @pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
 def test_empty_array_sequence_to_polydata():
     from dipy.tracking.streamline import Streamlines
     lines = Streamlines()
-    _, _ = utils.lines_to_vtk_polydata(lines)
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
 
 
 def test_set_polydata_primitives_count():

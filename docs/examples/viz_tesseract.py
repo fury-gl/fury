@@ -126,7 +126,7 @@ scene.set_camera(position=(0, 10, -1), focal_point=(0.0, 0.0, 0.0),
                  view_up=(0.0, 0.0, 0.0))
 showm = window.ShowManager(scene,
                            size=(1920, 1080), order_transparent=True)
-showm.initialize()
+
 
 ###############################################################################
 # Creating vertices and points actors

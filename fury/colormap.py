@@ -794,7 +794,7 @@ def rgb2xyz(rgb):
     This implementation might have been modified.
 
     """
-    rgb = rgb.astype(np.float)
+    rgb = rgb.astype(float)
     mask = rgb > 0.04045
     rgb[mask] = np.power((rgb[mask] + 0.055) / 1.055, 2.4)
     rgb[~mask] /= 12.92

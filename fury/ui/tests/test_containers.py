@@ -91,7 +91,7 @@ def test_grid_ui1(interactive=False):
 
     counter = itertools.count()
     show_m = window.ShowManager(scene)
-    show_m.initialize()
+
 
     def timer_callback(_obj, _event):
         nonlocal show_m, counter
@@ -193,7 +193,6 @@ def test_grid_ui2(interactive=False):
     show_manager = window.ShowManager(scene,
                                       size=current_size,
                                       title="FURY GridUI")
-    show_manager.initialize()
 
     grid_ui2 = ui.GridUI(actors=actors, captions=texts,
                          caption_offset=(0, -50, 0),
