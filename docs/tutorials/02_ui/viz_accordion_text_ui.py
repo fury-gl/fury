@@ -5,7 +5,9 @@ Example to demonstrate the use of Accordion2D UI
 ================================================
 
 This example demonstrates the usage of the Accordion UI
-with text content in the nodes.
+with text content of different sizes and lengths.
+This will also demonstrate the automatic height adjustment
+of the accordion UI element.
 
 First, some imports.
 """
@@ -65,3 +67,5 @@ interactive = False
 
 if interactive:
     show_manager.start()
+
+window.record(show_manager.scene, out_path='accordion_text.png', size=current_size)

@@ -4,7 +4,12 @@
 Example to demonstrate the use of Accordion2D UI
 ================================================
 
-This example demonstrates the usage of the Accordion UI.
+This example demonstrates how to add a variety of UI elements to a
+Accordion2D UI element. In this example we will be adding two
+items to the Accordion2D UI element. The first item will be a
+ImageContainer2D UI element followed by a TextBlock2D UI element.
+Second item will be a TextBlock2D as bullet points and they will
+be added as child nodes to the second item.
 
 First, some imports.
 """
@@ -87,3 +92,5 @@ interactive = False
 
 if interactive:
     show_manager.start()
+
+window.record(show_manager.scene, out_path="accordion-nodes.png", size=current_size)
