@@ -7,7 +7,7 @@ Taken from ipython
 # ----------------------------------------------------------------------------
 # Imports
 # ----------------------------------------------------------------------------
-from distutils.version import LooseVersion
+from packaging.version import parse
 
 import json
 import re
@@ -432,8 +432,8 @@ def version_compare(current_version, version_number, op='eq',
             return False
         last_version = sorted(all_versions)[0]
         last_version = p.search(last_version)
-        if LooseVersion(last_version.group()) ==  \
-           LooseVersion(ref.group()) and \
+        if parse(last_version.group()) ==  \
+           parse(ref.group()) and \
            'post' not in version_number:
             return True
         return False
@@ -441,8 +441,8 @@ def version_compare(current_version, version_number, op='eq',
     if 'post' in version_number:
         return False
 
-    return d_operator[op](LooseVersion(current.group()),
-                          LooseVersion(ref.group()))
+    return d_operator[op](parse(current.group()),
+                          parse(ref.group()))
 
 
 def username_to_fullname(all_authors):

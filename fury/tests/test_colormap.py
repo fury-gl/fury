@@ -119,11 +119,56 @@ def test_lab2rgb():
 
 def test_hex_to_rgb():
     expected = np.array([1, 1, 1])
-    
+
     hexcode = "#FFFFFF"
     res = colormap.hex_to_rgb(hexcode)
     npt.assert_array_almost_equal(res, expected)
-    
+
     hashed_hexcode = "FFFFFF"
     res = colormap.hex_to_rgb(hashed_hexcode)
     npt.assert_array_almost_equal(res, expected)
+
+
+def test_color_converters():
+
+    color = np.array([1, 1, 1])
+    colors = np.array([[1, 1, 1], [0, 0, 0], [0.2, 0.3, 0.4]])
+
+    # testing rgb2xyz and xyz2rgb
+    expected_xyz = np.array([0.950456, 1., 1.088754])
+    xyz_color = colormap.rgb2xyz(color)
+    rgb_color = colormap.xyz2rgb(expected_xyz)
+    npt.assert_almost_equal(xyz_color, expected_xyz)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        xyz_color = colormap.rgb2xyz(color)
+        rgb_from_xyz_color = colormap.xyz2rgb(xyz_color)
+        npt.assert_almost_equal(rgb_from_xyz_color, color)
+
+    # testing rgb2lab and lab2rgb
+    illuminant = "D65"
+    observer = "2"
+    expected_lab = np.array([31.57976662, -1.86550104, -17.84845331])
+    lab_color = colormap.rgb2lab(color, illuminant, observer)
+    rgb_color = colormap.lab2rgb(expected_lab, illuminant, observer)
+    npt.assert_almost_equal(lab_color, expected_lab)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        lab_color = colormap.rgb2lab(color, illuminant, observer)
+        rgb_from_lab_color = colormap.lab2rgb(lab_color, illuminant, observer)
+        npt.assert_almost_equal(rgb_from_lab_color, color)
+
+    # testing rgb2hsv and hsv2rgb
+    expected_hsv = np.array([0.58333333, 0.5, 0.4])
+    hsv_color = colormap.rgb2hsv(color)
+    rgb_color = colormap.hsv2rgb(expected_hsv)
+    npt.assert_almost_equal(hsv_color, expected_hsv)
+    npt.assert_almost_equal(rgb_color, color)
+
+    for color in colors:
+        hsv_color = colormap.rgb2hsv(color)
+        rgb_from_hsv_color = colormap.hsv2rgb(hsv_color)
+        npt.assert_almost_equal(rgb_from_hsv_color, color)
+

@@ -34,7 +34,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 
 tb = ui.TextBlock2D(bold=True)
 
@@ -43,19 +43,28 @@ counter = itertools.count()
 
 
 def timer_callback(_obj, _event):
+    global timer_id
     cnt = next(counter)
-    tb.message = "Let's count up to 100 and exit :" + str(cnt)
+    tb.message = "Let's count up to 300 and exit :" + str(cnt)
     showm.scene.azimuth(0.05 * cnt)
     sphere_actor.GetProperty().SetOpacity(cnt/100.)
     showm.render()
-    if cnt == 100:
+
+    if cnt == 10:
+        # destroy the first timer and replace it with another faster timer
+        showm.destroy_timer(timer_id)
+        timer_id = showm.add_timer_callback(True, 10, timer_callback)
+
+    if cnt == 300:
+        # destroy the second timer and exit
+        showm.destroy_timer(timer_id)
         showm.exit()
 
 
 scene.add(tb)
 
 # Run every 200 milliseconds
-showm.add_timer_callback(True, 200, timer_callback)
+timer_id = showm.add_timer_callback(True, 200, timer_callback)
 
 showm.start()
 

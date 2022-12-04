@@ -40,7 +40,7 @@ radii = 100 * np.random.rand(num_cubes) + 0.1
 # Note that every quad of each cube has 2 triangles
 # and each cube has 6 quads in total.
 
-num_faces = num_cubes * 6 * 2  
+num_faces = num_cubes * 6 * 2
 
 ###############################################################################
 # Build scene and add an actor with many objects.
@@ -121,7 +121,7 @@ def hover_callback(_obj, _event):
 showm = window.ShowManager(scene, size=(1024, 768),
                            order_transparent=True,
                            reset_camera=False)
-showm.initialize()
+
 
 ###############################################################################
 # Bind the callback to the actor

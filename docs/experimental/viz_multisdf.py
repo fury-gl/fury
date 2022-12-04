@@ -74,7 +74,7 @@ mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
 
 showm = window.ShowManager(scene, reset_camera=False)
 
-showm.initialize()
+
 showm.add_timer_callback(True, 10, timer_callback)
 
 

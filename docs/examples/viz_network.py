@@ -19,7 +19,7 @@ import numpy as np
 ###############################################################################
 # Then let's download some available datasets.
 
-from fury.data.fetcher import fetch_viz_wiki_nw
+from fury.data import fetch_viz_wiki_nw
 
 files, folder = fetch_viz_wiki_nw()
 categories_file, edges_file, positions_file = sorted(files.keys())

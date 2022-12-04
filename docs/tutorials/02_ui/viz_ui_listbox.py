@@ -18,7 +18,7 @@ from fury.data import fetch_viz_icons
 fetch_viz_icons()
 
 ###############################################################################
-# Create some text blocks that will be showm when
+# Create some text blocks that will be shown when
 # list elements will be selected
 
 welcome_text = ui.TextBlock2D(text="Welcome", font_size=30,

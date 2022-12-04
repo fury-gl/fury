@@ -1,0 +1,71 @@
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FURY-Streaming</title>
+    <style>
+    html,
+    body {
+        overflow: hidden;
+        margin: 0;
+    }
+    * {
+        box-sizing: border-box;
+    }
+    button {
+        padding: 8px 16px;
+    }
+
+    .videoNormalMode {
+        height: 100%;
+        overflow: hidden;
+        /* example padding, font-size, background, etc */
+       /* background-color: lightskyblue;*/
+    }
+    .videoIframeMode{
+        height: 100%;
+        overflow: hidden;
+        /* example padding, font-size, background, etc */
+    }
+    .option {
+        margin-bottom: 8px;
+    }
+
+    #media {
+        max-width: 1280px;
+    }
+    #media video {
+      
+    }
+    .hidden {
+        display: none;
+    }
+    </style>
+</head>
+<body>
+<!-- 
+<div class="option">
+    <input id="use-stun" type="checkbox"/>
+    <label for="use-stun">Use STUN server</label>
+</div> -->
+<button id="startBtn" class='hidden'>Start</button>
+<button id="stop" style="display: none" onclick="stop()">Stop</button>
+
+<div id="media">
+
+    <audio id="audio" autoplay="true"></audio>
+    <video
+    class='hidden'
+    oncontextmenu="return false;"
+    id="video" autoplay="true" playsinline="true"></video>
+    <img
+    oncontextmenu="return false;"
+    class='hidden'
+    src='' id='videoMJPEG'/>
+</div>
+
+<script src="//webrtc.github.io/adapter/adapter-latest.js"></script>
+<script type='module' src="js/main.js">
+</script>
+</body>
+</html>

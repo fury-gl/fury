@@ -9,7 +9,7 @@ Here we present a tutorial showing how to interact with objects in the
 FURY likes to bundle objects in a few actors to reduce code and
 increase speed.
 
-When the objects will be picked they will change size and color.
+When the objects are picked they will change size and color.
 """
 
 import numpy as np
@@ -35,7 +35,7 @@ panel.add_element(text_block, (0.3, 0.3))
 
 scene = window.Scene()
 
-label_actor = actor.label(text='Test')
+label_actor = actor.vector_text(text='Test')
 
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
@@ -43,7 +43,7 @@ label_actor = actor.label(text='Test')
 directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
                        [np.sqrt(2)/2, np.sqrt(2)/2, 0],
                        [0, np.sqrt(2)/2, np.sqrt(2)/2]])
-fury_actor = actor.cube(centers, directions, colors, heights=radii)
+fury_actor = actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -133,7 +133,7 @@ fury_actor.AddObserver('LeftButtonPressEvent', left_click_callback, 1)
 # Make the window appear
 
 showm = window.ShowManager(scene, size=(1024, 768), order_transparent=True)
-showm.initialize()
+
 scene.add(panel)
 
 ###############################################################################

@@ -219,7 +219,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+
 
 ###############################################################################
 # Position the base correctly.
@@ -310,7 +310,7 @@ def timer_callback(_obj, _event):
     showm.render()
 
     if cnt % 1 == 0:
-        fps = scene.frame_rate
+        fps = showm.frame_rate
         fpss = np.append(fpss, fps)
         tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
                      "\nSim Steps: " + str(cnt)

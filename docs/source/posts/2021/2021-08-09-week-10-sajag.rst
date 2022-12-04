@@ -1,0 +1,44 @@
+Ninth coding week!
+=======================
+
+.. post:: August 09 2021
+   :author: Sajag Swami
+   :tags: google
+   :category: gsoc
+
+Welcome to the tenth weekly check-in. I'll be sharing my progress for the ninth week of coding.
+
+What did you do this week?
+--------------------------
+
+#. Updated `PR #452`_ :
+
+	- Made ribbon representation faster.
+	- Added an actor to display bounding box around the molecule.
+
+	 .. figure:: https://user-images.githubusercontent.com/65067354/128624529-03c026be-7f80-4792-b57e-eceeb1767ec2.png
+	    :width: 300
+	    :height: 300
+
+	    Bounding Box
+
+#. Made a tutorial which showcases the abilities of molecular module (will create a PR after molecular module is merged).
+
+#. I'm trying to implement a native implementation of molecular surfaces in FURY. Currently searching for recent research papers to find good algorithms to generate the molecular surfaces (the ones I'd collected in the research period were archaic and rather time consuming). The papers that I've read so far seem a tad bit intimidating as I've never done math related to this domain yet. Implementing them will be a good learning experience I reckon.
+
+What is coming up next week?
+----------------------------
+
+#. Try to create a native implementation of molecular surface.
+#. Small fixes to `PR #362`_, `PR #462`_.
+
+Did you get stuck anywhere?
+---------------------------
+
+No.
+
+.. _PR #452: https://github.com/fury-gl/fury/pull/452
+.. _PR #362: https://github.com/fury-gl/fury/pull/362
+.. _PR #462: https://github.com/fury-gl/fury/pull/462
+
+``Au Revoir!``

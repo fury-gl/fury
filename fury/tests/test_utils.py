@@ -1,16 +1,74 @@
 """Module for testing primitive."""
+import pytest
 import numpy as np
 import numpy.testing as npt
-from fury.utils import (map_coordinates_3d_4d,
-                        vtk_matrix_to_numpy,
+from fury.ui.core import UI
+from fury.ui.containers import Panel2D
+from fury.utils import (add_polydata_numeric_field, get_polydata_field,
+                        get_polydata_tangents, map_coordinates_3d_4d,
+                        normals_from_actor, normals_to_actor,
+                        set_polydata_tangents, tangents_from_actor,
+                        tangents_from_direction_of_anisotropy,
+                        tangents_to_actor, vtk_matrix_to_numpy,
                         numpy_to_vtk_matrix,
                         get_grid_cells_position,
-                        rotate, vtk, vertices_from_actor,
+                        rotate, vertices_from_actor,
                         compute_bounds, set_input,
                         update_actor, get_actor_from_primitive,
-                        get_bounds)
+                        get_bounds, update_surface_actor_colors,
+                        apply_affine_to_actor, color_check, is_ui,
+                        primitives_count_to_actor, primitives_count_from_actor,
+                        set_polydata_primitives_count,
+                        get_polydata_primitives_count)
 from fury import actor, window, utils
+from fury.lib import (numpy_support, PolyData, PolyDataMapper2D, Points,
+                      CellArray, Polygon, Actor2D, DoubleArray, VTK_INT,
+                      UnsignedCharArray, TextActor3D, VTK_DOUBLE, VTK_FLOAT)
+
 import fury.primitive as fp
+
+from fury.optpkg import optional_package
+dipy, have_dipy, _ = optional_package('dipy')
+
+
+def test_apply_affine_to_actor(interactive=False):
+    text_act = actor.text_3d("ALIGN TOP RIGHT", justification='right',
+                             vertical_justification='top')
+
+    text_act2 = TextActor3D()
+    text_act2.SetInput("ALIGN TOP RIGHT")
+    text_act2.GetTextProperty().SetFontFamilyToArial()
+    text_act2.GetTextProperty().SetFontSize(24)
+    text_act2.SetScale((1./24.*12,)*3)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    text_bounds = [0, 0, 0, 0]
+    text_act2.GetBoundingBox(text_bounds)
+    initial_bounds = text_act2.GetBounds()
+
+    affine = np.eye(4)
+    affine[:3, -1] += (-text_bounds[1], 0, 0)
+    affine[:3, -1] += (0, -text_bounds[3], 0)
+    affine[:3, -1] *= text_act2.GetScale()
+    apply_affine_to_actor(text_act2, affine)
+    text_act2.GetBoundingBox(text_bounds)
+
+    if interactive:
+        scene = window.Scene()
+        scene.add(text_act, text_act2)
+        window.show(scene)
+
+    updated_bounds = text_act2.GetBounds()
+    original_bounds = text_act.GetBounds()
+    npt.assert_array_almost_equal(updated_bounds, original_bounds, decimal=0)
+
+    def compare(x, y):
+        return np.isclose(x, y, rtol=1)
+    npt.assert_array_compare(compare, updated_bounds, original_bounds)
 
 
 def test_map_coordinates_3d_4d():
@@ -51,7 +109,7 @@ def test_polydata_lines():
     res_colors = np.unique(res_colors, axis=0) / 255
     npt.assert_array_equal(colors, np.flipud(res_colors))
 
-    npt.assert_equal(utils.get_polydata_colors(vtk.vtkPolyData()), None)
+    npt.assert_equal(utils.get_polydata_colors(PolyData()), None)
 
 
 def test_polydata_polygon(interactive=False):
@@ -76,11 +134,36 @@ def test_polydata_polygon(interactive=False):
                             [1.0, 0.0, 1.0],
                             [1.0, 1.0, 0.0],
                             [1.0, 1.0, 1.0]])
+    my_tcoords = np.array([[6., 0.],
+                           [5., 0.],
+                           [6., 1.],
+                           [5., 1.],
+                           [4., 0.],
+                           [5., 0.],
+                           [4., 1.],
+                           [5., 1.],
+                           [2., 0.],
+                           [1., 0.],
+                           [2., 1.],
+                           [1., 1.],
+                           [3., 0.],
+                           [4., 0.],
+                           [3., 1.],
+                           [4., 1.],
+                           [3., 0.],
+                           [2., 0.],
+                           [3., 1.],
+                           [2., 1.],
+                           [0., 0.],
+                           [0., 1.],
+                           [1., 0.],
+                           [1., 1.]])
     colors = my_vertices * 255
-    my_polydata = vtk.vtkPolyData()
+    my_polydata = PolyData()
 
     utils.set_polydata_vertices(my_polydata, my_vertices)
     utils.set_polydata_triangles(my_polydata, my_triangles)
+    utils.set_polydata_tcoords(my_polydata, my_tcoords)
 
     npt.assert_equal(len(my_vertices), my_polydata.GetNumberOfPoints())
     npt.assert_equal(len(my_triangles), my_polydata.GetNumberOfCells())
@@ -88,9 +171,11 @@ def test_polydata_polygon(interactive=False):
 
     res_triangles = utils.get_polydata_triangles(my_polydata)
     res_vertices = utils.get_polydata_vertices(my_polydata)
+    res_tcoords = utils.get_polydata_tcoord(my_polydata)
 
     npt.assert_array_equal(my_vertices, res_vertices)
     npt.assert_array_equal(my_triangles, res_triangles)
+    npt.assert_array_equal(my_tcoords, res_tcoords)
 
     utils.set_polydata_colors(my_polydata, colors)
     npt.assert_equal(utils.get_polydata_colors(my_polydata), colors)
@@ -112,6 +197,91 @@ def test_polydata_polygon(interactive=False):
 
         report = window.analyze_snapshot(arr)
         npt.assert_equal(report.objects, 1)
+
+
+def test_add_polydata_numeric_field():
+    my_polydata = PolyData()
+    poly_field_data = my_polydata.GetFieldData()
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    bool_data = True
+    add_polydata_numeric_field(my_polydata, 'Test Bool', bool_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Bool').GetValue(0),
+                     bool_data)
+    poly_field_data.RemoveArray('Test Bool')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    int_data = 1
+    add_polydata_numeric_field(my_polydata, 'Test Int', int_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Int').GetValue(0),
+                     int_data)
+    poly_field_data.RemoveArray('Test Int')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    float_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Float', float_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(poly_field_data.GetArray('Test Float').GetValue(0),
+                            float_data)
+    poly_field_data.RemoveArray('Test Float')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    double_data = .1
+    add_polydata_numeric_field(my_polydata, 'Test Double', double_data,
+                               array_type=VTK_DOUBLE)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_field_data.GetArray('Test Double').GetValue(0),
+                     double_data)
+    poly_field_data.RemoveArray('Test Double')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    array_data = [-1, 0, 1]
+    add_polydata_numeric_field(my_polydata, 'Test Array', array_data)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test Array')),
+        array_data)
+    poly_field_data.RemoveArray('Test Array')
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 0)
+    ndarray_data = np.array([[-.1, -.1], [0, 0], [.1, .1]])
+    add_polydata_numeric_field(my_polydata, 'Test NDArray', ndarray_data,
+                               array_type=VTK_FLOAT)
+    npt.assert_equal(poly_field_data.GetNumberOfArrays(), 1)
+    npt.assert_almost_equal(
+        numpy_support.vtk_to_numpy(poly_field_data.GetArray('Test NDArray')),
+        ndarray_data)
+
+
+def test_get_polydata_field():
+    my_polydata = PolyData()
+    field_data = get_polydata_field(my_polydata, 'Test')
+    npt.assert_equal(field_data, None)
+    data = 1
+    field_name = 'Test'
+    vtk_data = numpy_support.numpy_to_vtk(data)
+    vtk_data.SetName(field_name)
+    my_polydata.GetFieldData().AddArray(vtk_data)
+    field_data = get_polydata_field(my_polydata, field_name)
+    npt.assert_equal(field_data, data)
+
+
+def test_get_polydata_tangents():
+    my_polydata = PolyData()
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    my_polydata.GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = get_polydata_tangents(my_polydata)
+    npt.assert_array_equal(tangents, array)
+
+
+def test_set_polydata_tangents():
+    my_polydata = PolyData()
+    poly_point_data = my_polydata.GetPointData()
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 0)
+    array = np.array([[0, 0, 0], [1, 1, 1]])
+    set_polydata_tangents(my_polydata, array)
+    npt.assert_equal(poly_point_data.GetNumberOfArrays(), 1)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
 
 
 def test_asbytes():
@@ -199,6 +369,31 @@ def test_vtk_matrix_to_numpy():
     npt.assert_equal(numpy_to_vtk_matrix(None), None)
     npt.assert_raises(ValueError, numpy_to_vtk_matrix, np.array([A, A]))
 
+
+def test_numpy_to_vtk_image_data():
+    array = np.array([[[1, 2, 3],
+                       [4, 5, 6]],
+                      [[7, 8, 9],
+                       [10, 11, 12]],
+                      [[21, 22, 23],
+                       [24, 25, 26]],
+                      [[27, 28, 29],
+                       [210, 211, 212]]])
+
+    # converting numpy array to vtk_image_data
+    vtk_image_data = utils.numpy_to_vtk_image_data(array)
+
+    # extracting the image data from vtk_image_data
+    w, h, depth = vtk_image_data.GetDimensions()
+    vtk_img_array = vtk_image_data.GetPointData().GetScalars()
+    elements = vtk_img_array.GetNumberOfComponents()
+
+    # converting vtk array to numpy array
+    numpy_img_array = numpy_support.vtk_to_numpy(vtk_img_array)
+    npt.assert_equal(np.flipud(array), numpy_img_array.reshape(h, w, elements))
+
+    npt.assert_raises(IOError, utils.numpy_to_vtk_image_data,
+                      np.array([1, 2, 3]))
 
 def test_get_grid_cell_position():
 
@@ -338,7 +533,7 @@ def test_vertices_from_actor(interactive=False):
     res_vertices_vtk = vertices_from_actor(actr, as_vtk=True)
 
     npt.assert_array_almost_equal(expected, res_vertices)
-    npt.assert_equal(isinstance(res_vertices_vtk, vtk.vtkDoubleArray), True)
+    npt.assert_equal(isinstance(res_vertices_vtk, DoubleArray), True)
 
     # test colors_from_actor:
     l_colors = utils.colors_from_actor(actr)
@@ -346,7 +541,7 @@ def test_vertices_from_actor(interactive=False):
     l_colors_none = utils.colors_from_actor(actr, array_name='col')
 
     npt.assert_equal(l_colors_none, None)
-    npt.assert_equal(isinstance(l_colors_vtk, vtk.vtkUnsignedCharArray), True)
+    npt.assert_equal(isinstance(l_colors_vtk, UnsignedCharArray), True)
     npt.assert_equal(np.unique(l_colors, axis=0).shape, colors.shape)
 
     l_array = utils.array_from_actor(actr, 'colors')
@@ -355,7 +550,59 @@ def test_vertices_from_actor(interactive=False):
 
     npt.assert_array_equal(l_array, l_colors)
     npt.assert_equal(l_array_none, None)
-    npt.assert_equal(isinstance(l_array_vtk, vtk.vtkUnsignedCharArray), True)
+    npt.assert_equal(isinstance(l_array_vtk, UnsignedCharArray), True)
+
+
+def test_normals_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    normals = normals_from_actor(my_actor)
+    npt.assert_equal(normals, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetNormals(
+        numpy_support.numpy_to_vtk(array, deep=True))
+    normals = normals_from_actor(my_actor)
+    npt.assert_array_equal(normals, array)
+
+
+def test_normals_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Normals'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    normals_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Normals'), True)
+    normals = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Normals'))
+    npt.assert_array_equal(normals, array)
+
+
+def test_tangents_from_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_equal(tangents, None)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    my_actor.GetMapper().GetInput().GetPointData().SetTangents(
+        numpy_support.numpy_to_vtk(array, deep=True, array_type=VTK_FLOAT))
+    tangents = tangents_from_actor(my_actor)
+    npt.assert_array_equal(tangents, array)
+
+
+def test_tangents_from_direction_of_anisotropy():
+    normals = np.array([[-1., 0., 0.], [0., 0., 1.]])
+    doa = (0., 1., 0.)
+    expected = np.array([[0., 0., 1.], [1., 0., 0.]])
+    actual = tangents_from_direction_of_anisotropy(normals, doa)
+    npt.assert_array_equal(actual, expected)
+
+
+def test_tangents_to_actor():
+    my_actor = actor.square(np.array([[0, 0, 0]]))
+    poly_point_data = my_actor.GetMapper().GetInput().GetPointData()
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), False)
+    array = np.array([[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3]])
+    tangents_to_actor(my_actor, array)
+    npt.assert_equal(poly_point_data.HasArray('Tangents'), True)
+    tangents = numpy_support.vtk_to_numpy(poly_point_data.GetArray('Tangents'))
+    npt.assert_array_equal(tangents, array)
 
 
 def test_get_actor_from_primitive():
@@ -370,30 +617,30 @@ def test_compute_bounds():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     npt.assert_equal(compute_bounds(actor), None)
     npt.assert_equal(actor.GetMapper().GetInput().GetBounds(), test_bounds)
@@ -404,30 +651,30 @@ def test_update_actor():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(actor.GetMapper().GetInput().GetBounds(), test_bounds)
@@ -450,30 +697,222 @@ def test_get_bounds():
     test_bounds = [0.0, 15,
                    0.0, 15,
                    0.0, 0.0]
-    points = vtk.vtkPoints()
+    points = Points()
     points.InsertNextPoint(0, 0, 0)
     points.InsertNextPoint(size[0], 0, 0)
     points.InsertNextPoint(size[0], size[1], 0)
     points.InsertNextPoint(0, size[1], 0)
 
     # Create the polygon
-    polygon = vtk.vtkPolygon()
+    polygon = Polygon()
     polygon.GetPointIds().SetNumberOfIds(4)  # make a quad
     polygon.GetPointIds().SetId(0, 0)
     polygon.GetPointIds().SetId(1, 1)
     polygon.GetPointIds().SetId(2, 2)
     polygon.GetPointIds().SetId(3, 3)
     # Add the polygon to a list of polygons
-    polygons = vtk.vtkCellArray()
+    polygons = CellArray()
     polygons.InsertNextCell(polygon)
     # Create a PolyData
-    polygonPolyData = vtk.vtkPolyData()
+    polygonPolyData = PolyData()
     polygonPolyData.SetPoints(points)
     polygonPolyData.SetPolys(polygons)
     # Create a mapper and actor
-    mapper = vtk.vtkPolyDataMapper2D()
+    mapper = PolyDataMapper2D()
     mapper = set_input(mapper, polygonPolyData)
-    actor = vtk.vtkActor2D()
+    actor = Actor2D()
     actor.SetMapper(mapper)
     compute_bounds(actor)
     npt.assert_equal(get_bounds(actor), test_bounds)
+
+
+def test_update_surface_actor_colors():
+    x = np.linspace(-1, 1, 20)
+    y = np.linspace(-1, 1, 20)
+    x, y = np.meshgrid(x, y)
+    x = x.reshape(-1)
+    y = y.reshape(-1)
+    z = x**2 + y**2
+    colors = np.array([[0.2, 0.4, 0.8]]*400)
+    xyz = np.vstack([x, y, z]).T
+    act = actor.surface(xyz)
+    update_surface_actor_colors(act, colors)
+
+    # Multiplying colors by 255 to convert them into RGB format used by VTK.
+    colors *= 255
+
+    # colors obtained from the surface
+    surface_colors = numpy_support.vtk_to_numpy(act.GetMapper().GetInput().
+                                                GetPointData().GetScalars())
+
+    # Checking if the colors passed to the function and colors assigned are
+    # same.
+    npt.assert_equal(colors, surface_colors)
+
+
+class DummyActor:
+    def __init__(self, act):
+        self._act = act
+
+    @property
+    def act(self):
+        return self._act
+
+    def add_to_scene(self, ren):
+        """ Adds the items of this container to a given scene. """
+        return ren
+
+
+class DummyUI(UI):
+    def __init__(self, act):
+        super(DummyUI, self).__init__()
+        self.act = act
+
+    def _setup(self):
+        pass
+
+    def _get_actors(self):
+        return []
+
+    def _add_to_scene(self, scene):
+        return scene
+
+    def _get_size(self):
+        return (5, 5)
+
+    def _set_position(self, coords):
+        return coords
+
+
+def test_color_check():
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0, .5],
+                       [0, 1, 0, .5],
+                       [0, 0, 1, .5]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(colors * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 1, 1, .5)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, .5)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+    colors = (1, 0, 0)
+
+    color_tuple = color_check(len(points), colors)
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([colors] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+    points = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]])
+
+    color_tuple = color_check(len(points))
+    color_array, global_opacity = color_tuple
+
+    npt.assert_equal(color_array, np.floor(np.array([[1, 1, 1]] * 3) * 255))
+    npt.assert_equal(global_opacity, 1)
+
+
+def test_is_ui():
+    panel = Panel2D(position=(0, 0), size=(100, 100))
+    valid_ui = DummyUI(act=[])
+    invalid_ui = DummyActor(act="act")
+
+    npt.assert_equal(True, is_ui(panel))
+    npt.assert_equal(True, is_ui(valid_ui))
+    npt.assert_equal(False, is_ui(invalid_ui))
+
+
+def test_empty_list_to_polydata():
+    lines = [[]]
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+
+
+def test_empty_array_to_polydata():
+    lines = np.array([[]])
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+
+
+@pytest.mark.skipif(not have_dipy, reason="Requires DIPY")
+def test_empty_array_sequence_to_polydata():
+    from dipy.tracking.streamline import Streamlines
+    lines = Streamlines()
+    npt.assert_raises(ValueError, utils.lines_to_vtk_polydata, lines)
+
+
+def test_set_polydata_primitives_count():
+    polydata = PolyData()
+
+    set_polydata_primitives_count(polydata, 1)
+    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    npt.assert_equal(prim_count, 1)
+
+
+def test_get_polydata_primitives_count():
+    polydata = PolyData()
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
+
+    prim_count = get_polydata_primitives_count(polydata)
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count_to_actor():
+    act = actor.axes()
+    primitives_count_to_actor(act, 1)
+    polydata = act.GetMapper().GetInput()
+    prim_count = get_polydata_field(polydata, 'prim_count')[0]
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count_from_actor():
+    act = actor.axes()
+    polydata = act.GetMapper().GetInput()
+    add_polydata_numeric_field(polydata, "prim_count", 1, array_type=VTK_INT)
+    prim_count = primitives_count_from_actor(act)
+    npt.assert_equal(prim_count, 1)
+
+
+def test_primitives_count():
+    # testing on actor
+    act = actor.axes()
+    primitives_count_to_actor(act, 3)
+    prim_count = primitives_count_from_actor(act)
+    npt.assert_equal(prim_count, 3)
+
+    # testing on polydata
+    polydata = PolyData()
+    set_polydata_primitives_count(polydata, 4)
+    prim_count = get_polydata_primitives_count(polydata)
+    npt.assert_equal(prim_count, 4)
+
+
+def test_set_actor_origin():
+    cube = actor.cube(np.array([[0, 0, 0]]))
+    orig_vert = np.copy(vertices_from_actor(cube))
+
+    utils.set_actor_origin(cube, np.array([0.5, 0.5, 0.5]))
+    new_vert = np.copy(vertices_from_actor(cube))
+    npt.assert_array_equal(orig_vert, new_vert + np.array([0.5, 0.5, 0.5]))
+
+    utils.set_actor_origin(cube)
+    centered_cube_vertices = np.copy(vertices_from_actor(cube))
+    npt.assert_array_equal(orig_vert, centered_cube_vertices)

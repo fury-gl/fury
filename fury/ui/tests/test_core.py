@@ -106,6 +106,13 @@ def test_ui_button_panel(recording=False):
     show_manager = window.ShowManager(size=current_size, title="FURY Button")
 
     show_manager.scene.add(panel)
+    # from time import sleep
+    # for i in range(20):
+    #     arr = window.snapshot(show_manager.scene, offscreen=False)
+    #     print(i)
+    #     sleep(1)
+
+    # show_manager.start()
 
     if recording:
         show_manager.record_events_to_file(recording_filename)
@@ -113,7 +120,12 @@ def test_ui_button_panel(recording=False):
         event_counter.save(expected_events_counts_filename)
 
     else:
+        print(recording_filename)
+        # rf = '/home/elef/Devel/fury/fury/data/files/checking.log.gz'
         show_manager.play_events_from_file(recording_filename)
+        # recorder.iren.GetRenderWindow().Finalize()
+       
+
         expected = EventCounter.load(expected_events_counts_filename)
         event_counter.check_counts(expected)
 
@@ -344,3 +356,6 @@ def test_text_block_2d_size():
         npt.assert_equal(len(w), 1)
         npt.assert_(issubclass(w[-1].category, RuntimeWarning))
         npt.assert_equal(text_block_3.font_size, 12)
+
+
+# test_ui_button_panel(recording=True)

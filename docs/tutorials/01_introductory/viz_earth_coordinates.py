@@ -146,7 +146,7 @@ def timer_callback(_obj, _event):
 # Initialize the ShowManager object, add the timer_callback, and watch the
 # new animation take place!
 
-showm.initialize()
+
 showm.add_timer_callback(True, 25, timer_callback)
 showm.start()
 

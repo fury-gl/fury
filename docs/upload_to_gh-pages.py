@@ -98,6 +98,9 @@ if __name__ == '__main__':
     if any(t in mod.__version__.lower() for t in ['dev', 'post']):
         tag = mod.__version__
 
+    if len(sys.argv) == 2:
+        tag = sys.argv[1]
+
     intro_msg = """
 ##############################################
 #  Documentation version {}
@@ -148,7 +151,7 @@ if __name__ == '__main__':
 
     try:
         cd(pages_dir)
-        status = sh2('git status | head -1')
+        status = sh2('LANG=en_US git status | head -1')
         branch = re.match(b'On branch (.*)$', status).group(1)
         if branch != b'gh-pages':
             e = 'On %r, git branch is %r, MUST be "gh-pages"' % (pages_dir,
@@ -162,7 +165,7 @@ if __name__ == '__main__':
 
         sh('git add --all {}'.format(tag))
 
-        status = sh2('git status | tail -1')
+        status = sh2('LANG=en_US git status | tail -1')
         if not re.match(b'nothing to commit', status):
             sh2('git commit -m "Updated doc release: {}"'.format(tag))
         else:
@@ -174,6 +177,7 @@ if __name__ == '__main__':
         # update stable symlink
         # latest_tag = sh2('git describe --exact-match --abbrev=0')
         # os.symlink()
+        #  ln -nsf 1.2 latest
     finally:
         cd(current_dir)
 

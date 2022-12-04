@@ -5,8 +5,7 @@ Sphere Texture
 In this tutorial, we will show how to create a sphere with a texture.
 """
 
-import numpy as np
-from fury import window, actor, utils, primitive, io
+from fury import window, actor, io
 from fury.data import read_viz_textures, fetch_viz_textures
 
 ##############################################################################
