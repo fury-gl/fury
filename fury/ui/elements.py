@@ -3841,7 +3841,8 @@ class PlaybackPanel(UI):
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
-        return self.panel.actors, self._progress_bar.actors, self.time_text
+        return self.panel.actors + self._progress_bar.actors + self.time_text.\
+            actors
 
     def _add_to_scene(self, _scene):
         """Add all subcomponents or VTK props that compose this UI component.
