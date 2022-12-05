@@ -11,7 +11,7 @@ import numpy.testing as npt
 import pytest
 
 from fury import window, actor, ui
-from fury.data import DATA_DIR
+from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
 from fury.decorators import skip_win, skip_osx
 from fury.primitive import prim_sphere
 from fury.testing import assert_arrays_equal, assert_greater, EventCounter, \
@@ -1190,3 +1190,214 @@ def test_playback_panel(interactive=False):
     playback.current_time = 5
     assert_equal(playback.current_time, 5)
     assert_equal(playback.current_time_str, '00:05.00')
+
+
+def test_ui_tree_2d(interactive=False):
+    filename = "test_ui_tree_ed"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    structure = [{'label-1': []}, {'label-2': []}, {'label-3': []}]
+    tree = ui.elements.Tree2D(structure=structure, tree_name="Example Tree")
+
+    tree.resize((400, 400))
+    npt.assert_equal(tree.size, (400, tree.node_height+400))
+
+    nodes = ['label-1', 'label-2', 'label-3']
+    npt.assert_array_equal(nodes, [node.label for node in tree.nodes])
+    npt.assert_array_equal(nodes, list(tree.nodes_dict.keys()))
+
+    for node in nodes:
+        npt.assert_equal(tree.select_node(node).child_nodes, [])
+
+    panel = ui.Panel2D(size=(100, 100), color=(0.1, 0.9, 0.7))
+    listbox = ui.ListBox2D(values=['test', ]*2, size=(100, 100))
+    line_slider = ui.LineSlider2D(length=100, orientation="vertical")
+
+    #  Adding the UI elements to different labels
+    tree.add_content('label-1', panel, (0., 0.))
+    tree.add_content('label-2', listbox, (0., 0.))
+    tree.add_content('label-3', line_slider, (0.5, 0.5))
+
+    for node in tree.nodes:
+        content_actor = node.content_panel.background.actor
+        npt.assert_equal(node.size[1], tree.node_height)
+        npt.assert_equal(content_actor.GetVisibility(), False)
+
+    event_counter = EventCounter()
+    event_counter.monitor(tree)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Tree2D UI Example")
+    show_manager.scene.add(tree)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    for node in tree.nodes:
+        child = node.child_nodes[0]
+        npt.assert_equal(node.size[1], child.size[1]+tree.node_height)
+
+
+def test_ui_treenode_2d(interactive=False):
+    filename = "test_ui_treenode_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    non_expandable_node = ui.elements.TreeNode2D(label="Non Expandable",
+                                                 expandable=False,
+                                                 expanded=False)
+
+    content_actor = non_expandable_node.content_panel.background.actor
+    npt.assert_equal(content_actor.GetVisibility(), False)
+
+    node_1 = ui.elements.TreeNode2D(label="Child-1")
+    node_2 = ui.elements.TreeNode2D(label="Child-2")
+    node_3 = ui.elements.TreeNode2D(label="Child-3")
+    nodes = [node_1, node_2, node_3]
+    children_size = sum([node.size[1] for node in nodes])
+
+    parent_node = ui.elements.TreeNode2D(label="Parent", children=nodes,
+                                         auto_resize=False)
+
+    npt.assert_equal(parent_node.children_size(), children_size)
+
+    node = ui.elements.TreeNode2D(label="Child-4")
+    nodes.append(node)
+    parent_node.add_node(node)
+
+    npt.assert_equal(parent_node.parent, None)
+    npt.assert_array_equal(nodes, parent_node.child_nodes)
+    for node in parent_node.child_nodes:
+        npt.assert_equal(node.parent, parent_node)
+
+    parent_node.child_height = 40
+    for node in parent_node.child_nodes:
+        npt.assert_equal(node.child_height, 40)
+
+    child_1 = ui.elements.TreeNode2D(label="Child-1")
+    child_2 = ui.elements.TreeNode2D(label="Child-2")
+    children = [child_1, child_2]
+    simple_parent = ui.elements.TreeNode2D(label="Simple Tree",
+                                           children=children, expanded=True)
+
+    child_1 = simple_parent.select_child('Child-1')
+    child_2 = simple_parent.select_child('Child-2')
+    simple_parent.update_children_coords(child_1, 50)
+    npt.assert_equal(child_2.position[1],
+                     child_1.position[1]-50-simple_parent.child_height)
+
+    selected = []
+
+    def node_select(node):
+        selected.append(node)
+
+    def node_deselect(node):
+        selected.remove(node)
+
+    for child_node in parent_node.child_nodes:
+        child_node.on_node_select = node_select
+        child_node.on_node_deselect = node_deselect
+
+    event_counter = EventCounter()
+    event_counter.monitor(parent_node)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Tree2D UI Example")
+    show_manager.scene.add(parent_node)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    npt.assert_equal(parent_node.selected_nodes, selected)
+    parent_node.clear_selections()
+    npt.assert_equal(parent_node.selected_nodes, [])
+
+
+def test_ui_accordion_2d(interactive=False):
+    filename = "test_ui_accordion_2d"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    fetch_viz_icons()
+
+    icons = [read_viz_icons(fname='stop2.png'), ]*3
+    items = ['Item-1', 'Item-2', 'Item-3']
+
+    accordion = ui.elements.Accordion2D(items=items, icons=icons)
+
+    for item, icon in zip(items, icons):
+        node_label = accordion.select_item(item).label
+        node_icon = accordion.select_item(item).icon
+
+        npt.assert_equal(node_label, item)
+        npt.assert_equal(node_icon, icon)
+
+    accordion.title_color = (0.3, 0.5, 0.3)
+    npt.assert_equal(accordion.title_color, (0.3, 0.5, 0.3))
+    accordion.title_opacity = 0.5
+    npt.assert_equal(accordion.title_opacity, 0.5)
+
+    accordion.body_color = (0.5, 0.3, 0.3)
+    npt.assert_equal(accordion.body_color, (0.5, 0.3, 0.3))
+    accordion.body_opacity = 1
+    npt.assert_equal(accordion.body_opacity, 1)
+
+    empty_accordion = ui.elements.Accordion2D(items=[])
+    for item in items:
+        empty_accordion.items.append(item)
+
+    empty_accordion.generate_structure()
+    new_structure = empty_accordion.structure
+
+    for node_obj, item in zip(new_structure, items):
+        node_label = list(node_obj.keys())[0]
+        npt.assert_equal(node_label, item)
+
+    base_message = 'This is the content of'
+    contents = []
+    for item in items:
+        message = base_message + ' ' + item
+        contents.append(ui.core.TextBlock2D(text=message))
+
+    for item, content in zip(items, contents):
+        accordion.add_content(item, content)
+        node = accordion.select_item(item)
+        npt.assert_equal(node.child_nodes, [])
+
+    event_counter = EventCounter()
+    event_counter.monitor(accordion)
+
+    current_size = (800, 800)
+    show_manager = window.ShowManager(
+        size=current_size, title="Accordion2D UI Example")
+    show_manager.scene.add(accordion)
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+    for item, content in zip(items, contents):
+        node = accordion.select_item(item)
+        npt.assert_equal(node.child_nodes, [content])

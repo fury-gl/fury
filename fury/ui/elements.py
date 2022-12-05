@@ -3,7 +3,8 @@
 __all__ = ["TextBox2D", "LineSlider2D", "LineDoubleSlider2D",
            "RingSlider2D", "RangeSlider", "Checkbox", "Option", "RadioButton",
            "ComboBox2D", "ListBox2D", "ListBoxItem2D", "FileMenu2D",
-           "DrawShape", "DrawPanel", "PlaybackPanel"]
+           "DrawShape", "DrawPanel", "PlaybackPanel", "Tree2D",
+           "TreeNode2D"]
 
 import os
 from collections import OrderedDict
@@ -15,12 +16,13 @@ import numpy as np
 from fury.data import read_viz_icons
 from fury.lib import Command
 from fury.ui.core import UI, Rectangle2D, TextBlock2D, Disk2D
-from fury.ui.containers import Panel2D
+from fury.ui.containers import ImageContainer2D, Panel2D
 from fury.ui.helpers import (TWO_PI, clip_overflow,
                              cal_bounding_box_2d, rotate_2d)
 from fury.ui.core import Button2D
 from fury.utils import (set_polydata_vertices, vertices_from_actor,
                         update_actor)
+from fury.io import load_image, set_input
 
 
 class TextBox2D(UI):
@@ -3901,3 +3903,962 @@ class PlaybackPanel(UI):
 
     def _get_size(self):
         return self.panel.size + self._progress_bar.size + self.time_text.size
+
+
+class Tree2D(UI):
+    """Render nodes in tree form
+    Attributes
+    ----------
+    structure: List(Dict, Dict, .....)
+        [{'node': ['child', 'child']}, .....]
+    tree_name: str
+        Name of the tree
+    node_height: int
+        Space taken by each node vertically
+    indent: int
+        Global indentation for the parent/child nodes
+    nodes: list of :class: `TreeNode2D`
+        List of all parent nodes present in Tree2D
+    nodes_dict: dict
+        Dict with label, nodes as key/value pairs
+    """
+
+    def __init__(self, structure, tree_name="", position=(0, 0),
+                 size=(300, 300), node_height=30, color=(0.3, 0.3, 0.3),
+                 opacity=0.8, indent=25, multiselect=True):
+        """Initialize the UI element
+        Parameter
+        ---------
+        structure: List(Dict, Dict, .....)
+            [{'node': ['child', 'child']}, .....]
+        tree_name: str, optional
+            Label for the tree
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int), optional
+            Width and height of the pixels of this UI component.
+        node_height: int, optional
+            Space taken by each node vertically
+        color : list of 3 floats, opational
+            Background color of the Tree2D
+        opacity: float, optional
+            Background opacity of the Tree2D
+        indent: int, optional
+            Global indentation for the parent/child nodes
+        multiselect: bool, optional
+            If multiple nodes can be selected.
+        """
+        self.structure = structure
+        self.tree_name = tree_name
+        self.indent = indent
+        self._nodes = []
+        self._nodes_dict = {}
+        self.node_height = node_height
+        self.content_size = size
+        self.multiselect = multiselect
+
+        super(Tree2D, self).__init__(position)
+        self.resize(size)
+        self.base_node.color = color
+        self.base_node.opacity = opacity
+
+    def _setup(self):
+        """Setup this UI element."""
+        self.generate_tree(self.structure)
+        _icon_path = 'https://img.icons8.com/material-rounded/24/000000/'\
+                     'stacked-organizational-chart-highlighted-parent-node.png'
+
+        self.base_node = TreeNode2D(label=self.tree_name, children=self._nodes,
+                                    expandable=False, expanded=True,
+                                    icon=_icon_path, indent=self.indent,
+                                    child_indent=self.indent,
+                                    child_height=self.node_height,
+                                    auto_resize=True, size=self.content_size,
+                                    multiselect=self.multiselect)
+
+        for node in self.nodes_dict.values():
+            node.set_visibility(False)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.base_node.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.base_node.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.base_node.position = _coords
+
+    def _get_size(self):
+        return self.base_node.size
+
+    def generate_tree(self, structure):
+        """Generate the structure of the Tree2D
+        Parameters
+        ----------
+        structure: List(Dict, Dict, .....)
+            [{'node': ['child', 'child']}, .....]
+        """
+        for obj in structure:
+            parent_label = list(obj.keys())[0]
+            child_labels = list(obj.values())[0]
+
+            if parent_label in self.nodes_dict.keys():
+                parent_node = self.nodes_dict[parent_label]
+            else:
+                parent_node = TreeNode2D(label=parent_label,
+                                         multiselect=self.multiselect)
+
+                self._nodes.append(parent_node)
+                self._nodes_dict[parent_label] = parent_node
+
+            child_nodes = [TreeNode2D(label=child_label,
+                           multiselect=self.multiselect) for child_label in
+                           child_labels]
+
+            for child_node, child_label in zip(child_nodes, child_labels):
+                self._nodes_dict[child_label] = child_node
+                parent_node.add_node(child_node)
+
+    def resize(self, size):
+        """ Resizes the Tree Node.
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        self.base_node.resize(size)
+
+    def add_content(self, node, content, coords=(0., 0.)):
+        """Add content to a sepcific node
+        Parameters
+        ----------
+        node: str
+            Label of the node
+        content: :class: `UI` or `TreeNode2D`
+            The content that is to be added in the node
+        coords : (float, float) or (int, int), optional
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            content panel's size.
+        """
+        _node = self.select_node(node)
+        _node.add_node(content, coords)
+
+        _node.set_visibility(False)
+
+    def select_node(self, node):
+        """Get the instance of a specific node
+        Parameters
+        ----------
+        node: str
+            Label of the node
+        """
+        _node = self.nodes_dict[node]
+        return _node
+
+    @property
+    def nodes(self):
+        """Get all the nodes present in the Tree2D
+        Returns
+        -------
+        list of nodes
+        """
+        return self._nodes
+
+    @property
+    def nodes_dict(self):
+        """Get all the nodes present in the Tree2D in dict format
+        Returns
+        -------
+        dict with label, node as key, value
+        """
+        return self._nodes_dict
+
+
+class TreeNode2D(UI):
+    """Node/Leaf of a Tree2D UI
+    Attributes
+    ----------
+    children: list of :class: `TreeNode2D`
+        Sub nodes of the current node
+    parent: :class: `TreeNode2D`
+        Parent node of the current node
+    indent: int
+        Indentaion of the current node
+    label: str
+        Label text of the current node
+    expanded: bool
+        Whether the current node is expanded or not
+    """
+
+    def __init__(self, label, parent=None, children=None, icon=None,
+                 position=(0, 0), size=(200, 200), indent=20,
+                 child_indent=10, child_height=25, color=(0.3, 0.3, 0.3),
+                 opacity=0.8, expandable=True, expanded=False,
+                 selected_color=(0.8, 0.3, 0.3), auto_resize=True,
+                 multiselect=True):
+        """Initialize the UI element
+        Parameters
+        ----------
+        label: str
+            Label text of the current node
+        children: list of :class: `TreeNode2D`, optional
+            Sub nodes of the current node
+        icon: str, optional
+            Path/URl to the icon placed next to the label
+        parent: :class: `TreeNode2D`, optional
+            Parent node of the current node
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        size : (int, int), optional
+            Width and height of the pixels of this UI component.
+        indent: int, optional
+            Indentation of the current node
+        child_indent: int, optional
+            Indentation of the child nodes
+        child_height: int, optional
+            Space taken by each sub-node vertically
+        color : list of 3 floats, optional
+            Background color of current node.
+        opacity: float, optional
+            Background opacity of the current node
+        expandable: bool, optional
+            If the node should expand/collapse
+        expanded: bool, optional
+            Whether the current node is expanded or not
+        selected_color: list of 3 floats, optional
+            Color of the selected node.
+        unselected_color: list of 3 floats, optional
+            Color of the unselected node.
+        auto_resize: bool, optional
+            If the node should automatically resize to fit its content.
+        multiselect: bool, optional
+            If multiple nodes can be selected.
+        """
+        self.children = children
+        self.children = children or []
+        self._icon = icon or read_viz_icons(fname='stop2.png')
+
+        self._child_nodes = []
+        self._normalized_children = []
+        self.has_ui = False
+        self.parent = parent
+        self.indent = np.clip(indent, 0, int(size[0]*0.025))
+
+        self.label = label
+
+        self.child_indent = np.clip(child_indent, 0, int(size[0]*0.025))
+        self.child_height = child_height
+        self.content_size = size
+        self.expandable = expandable
+        self._expanded = expanded
+
+        self.selected = False
+        self.selected_nodes = []
+        self.selected_color = selected_color
+        self.unselected_color = color
+        self.multiselect = multiselect
+
+        self.auto_resize = auto_resize
+
+        super(TreeNode2D, self).__init__(position)
+        self.expanded = expanded
+        self.resize(size)
+        self.title_panel.color = color
+        self.title_panel.opacity = opacity
+
+        #  hooks for selecting/de-selecting node
+        self.on_node_select = lambda ui: None
+        self.on_node_deselect = lambda ui: None
+
+    def _setup(self):
+        """Setup this UI element.
+        Create a title panel.
+        Create a content panel.
+        Create expand/collapse button, label textblock.
+        Add all the sub UI elements to the title panel.
+        """
+        self.title_panel = Panel2D(size=(self.content_size[0],
+                                   self.child_height))
+
+        self.content_panel = Panel2D(size=self.content_size)
+        self.label_text = TextBlock2D(text=self.label)
+        self.label_image = ImageContainer2D(img_path=self.icon)
+
+        self.button_icons = []
+        self.button_icons.append(('expand',
+                                 read_viz_icons(fname="circle-up.png")))
+
+        self.button_icons.append(('collapse',
+                                 read_viz_icons(fname="circle-down.png")))
+
+        self.button = Button2D(icon_fnames=self.button_icons)
+        self.title_panel.add_element(self.label_text, (self.indent, 0))
+
+        self.title_panel.add_element(self.button,
+                                     self.title_panel.size-self.button.size)
+
+        self.title_panel.add_element(self.content_panel,
+                                     (0, -self.content_size[1]))
+
+        self.title_panel.add_element(self.label_image,
+                                     (0., 0.))
+
+        if self.children:
+            for child in self.children:
+                self.add_node(child)
+
+        if not self.expandable:
+            self.button.set_visibility(False)
+
+        #  Adding event callbacks
+        self.button.on_left_mouse_button_clicked = self.toggle_view
+        self.label_text.on_left_mouse_button_pressed =\
+            self.left_button_pressed
+
+        self.label_text.on_left_mouse_button_clicked =\
+            self.select_node
+
+        self.label_image.on_left_mouse_button_pressed =\
+            self.left_button_pressed
+
+        self.title_panel.background.on_left_mouse_button_clicked = \
+            self.select_node
+
+        self.label_text.on_left_mouse_button_dragged = self.left_button_dragged
+        self.label_image.on_left_mouse_button_dragged =\
+            self.left_button_dragged
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.title_panel.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.title_panel.add_to_scene(_scene)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.title_panel.position = _coords
+
+    def _get_size(self):
+        if self.expanded:
+            return (self.title_panel.size[0],
+                    self.title_panel.size[1]+self.content_panel.size[1])
+
+        return self.title_panel.size
+
+    def add_node(self, node, coords=(0., 0.)):
+        """Add a child node in the current node.
+        Parameters
+        ----------
+        node: :class: `TreeNode2D` or `UI`
+            Node/UI element that isto be added
+        coords: (float, float) or (int, int), optional
+            If float, normalized coordinates are assumed and they must be
+            between [0,1].
+            If int, pixels coordinates are assumed and it must fit within the
+            content panel's size.
+        """
+        self._child_nodes.append(node)
+        if isinstance(node, type(self)):
+            if self.has_ui:
+                raise ValueError(
+                    'A tree node with UI elements cannot have child nodes'
+                    )
+
+            node.parent = self
+            node.expanded = False
+            node.title_panel.set_visibility(False)
+            node.child_height = self.child_height
+
+            _node_coords = (self.indent+self.child_indent,
+                            self.children_size() - self.child_height)
+
+            _node_size = (self.size[0], self.children_size() + node.size[1])
+        else:
+            self.has_ui = True
+            _node_coords = coords
+            is_floating = np.issubdtype(np.array(_node_coords).dtype,
+                                        np.floating)
+
+            if is_floating:
+                self._normalized_children.append({node: coords})
+                _node_size = (self.size[0], self._largest_child_size())
+            else:
+                _node_size = (self.size[0],
+                              self._largest_child_size() + node.size[1])
+
+        self.content_panel.add_element(node, _node_coords)
+        self.resize(_node_size)
+
+    def resize(self, size, recursive=True):
+        """ Resizes the Tree Node.
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        recursive : bool, optional
+            If True, all the children nodes are resized as well.
+        """
+        self.title_panel.resize((size[0], self.child_height))
+        self.content_panel.resize(size)
+
+        if self.expandable:
+            self.button.resize((self.child_height, self.child_height))
+        else:
+            self.button.resize((0, 0))
+
+        if size[0] >= 200:
+            self.label_image.resize((self.child_height, self.child_height))
+        else:
+            self.label_image.resize((0, 0))
+
+        self.label_text.resize((size[0] - self.button.size[0]
+                               - self.label_image.size[0], self.child_height))
+
+        self.title_panel.update_element(self.label_text,
+                                        (self.label_image.size[0], -(size[1]//100)))
+
+        self.title_panel.update_element(self.button,
+                                        (self.title_panel.size -
+                                         self.button.size))
+
+        self.title_panel.update_element(self.label_image,
+                                        (0., 0.))
+
+        self.title_panel.update_element(self.content_panel, (0, -size[1]))
+
+        _content_size = self.child_height
+        if self._child_nodes:
+            for child in self._child_nodes:
+
+                if isinstance(child, type(self)):
+                    if recursive:
+                        _child_size = (size[0] - self.indent -
+                                       self.child_indent,
+                                       child.children_size())
+
+                        child.resize(_child_size)
+
+                    _child_coords = (self.indent+self.child_indent,
+                                     self.content_panel.size[1]-_content_size)
+
+                    self.content_panel.update_element(child, _child_coords)
+                    _content_size += child.size[1]
+
+    def toggle_view(self, i_ren, _obj, _element):
+        """Toggle the view of the node.
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+            Interactor style used to interact with the scene.
+        _obj: :class:`vtkActor`
+            The picked actor
+        _element: :class: `TreeNode2D`
+            Instance of the node
+        """
+        self.expanded = not self.expanded
+        parent = self.parent
+
+        if self.expanded:
+            self.update_children_coords(self, self.content_panel.size[1])
+
+            self.button.set_icon_by_name('expand')
+        else:
+            self.update_children_coords(self, -self.content_panel.size[1])
+
+            self.button.set_icon_by_name('collapse')
+
+        while parent is not None:
+            if parent.auto_resize:
+                if parent.content_size[1] < parent.children_size():
+                    parent.resize((parent.size[0], parent.children_size()),
+                                  recursive=False)
+                else:
+                    parent.resize((parent.size[0], parent.content_size[1]),
+                                  recursive=False)
+
+            parent = parent.parent
+
+        i_ren.force_render()
+
+    def update_children_coords(self, node, size_offset):
+        """Updates the coords of the nodes below recursively
+        Parameters
+        ----------
+        node: :class: `TreeNode2D`
+            The node past which nodes are to be updated
+        size_offset: int
+            Size by which below nodes are to be offset
+        """
+        if node.parent is not None:
+            current_child_idx = node.parent._child_nodes.index(node)
+            parent = node.parent
+
+            for child in parent._child_nodes[current_child_idx+1:]:
+                new_position = (child.position[0],
+                                child.position[1]-size_offset)
+
+                coords = new_position - parent.content_panel.position
+                parent.content_panel.update_element(child, coords)
+
+            node.update_children_coords(node.parent, size_offset)
+
+    def children_size(self):
+        """Returns the size occupied by the children vertically."""
+        return sum([child.size[1] for child in self._child_nodes])
+
+    def set_visibility(self, visibility):
+        """Set visibility of this UI component."""
+        self.content_panel.set_visibility(visibility)
+
+        for child_node in self._child_nodes:
+            if isinstance(child_node, type(self)):
+                child_node.set_visibility(False)
+
+    def select_child(self, child_label):
+        """Get the instance of a particular child node.
+        Parameters
+        ----------
+        child_label: str
+            Label of the child node to be selected.
+        """
+        lables = [child.label for child in self.child_nodes]
+        idx = lables.index(child_label)
+        return self.child_nodes[idx]
+
+    def _largest_child_size(self):
+        """Returns the size occupied by the largest child node."""
+        rel_sizes = []
+
+        for child in self._normalized_children:
+            child_node = list(child.keys())[0]
+            coords = list(child.values())[0]
+            relative_size = child_node.size[1] + \
+                self.content_panel.size[1]*coords[1]
+
+            rel_sizes.append(relative_size)
+
+        if not len(rel_sizes):
+            rel_sizes = [0]
+
+        return int(max(rel_sizes))
+
+    @property
+    def child_nodes(self):
+        """Returns all the child nodes of the current node
+        """
+        return self._child_nodes
+
+    @property
+    def color(self):
+        return self.title_panel.color
+
+    @color.setter
+    def color(self, color):
+        """Sets background color of the title panel.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self.title_panel.color = color
+
+    @property
+    def opacity(self):
+        return self.title_panel.opacity
+
+    @opacity.setter
+    def opacity(self, opacity):
+        """Sets the background opacity of title panel
+        Parameters
+        ----------
+        opacity: float
+        """
+        self.title_panel.opacity = opacity
+
+    @property
+    def content_color(self):
+        """Returns the background color of the content panel.
+        """
+        return self.content_panel.color
+
+    @content_color.setter
+    def content_color(self, color):
+        """Sets background color of the content panel.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self.content_panel.color = color
+
+    @property
+    def content_opacity(self):
+        return self.content_panel.opacity
+
+    @content_opacity.setter
+    def content_opacity(self, opacity):
+        """Sets the background opacity of content panel
+        Parameters
+        ----------
+        opacity: float
+        """
+        self.content_panel.opacity = opacity
+
+    @property
+    def child_height(self):
+        return self._child_height
+
+    @child_height.setter
+    def child_height(self, height):
+        """Sets the height of title panels.
+        Parameters
+        ----------
+        height: int
+            New height of the title panels
+        """
+        self._child_height = height
+
+        for node in self.child_nodes:
+            node.child_height = height
+
+    @property
+    def expanded(self):
+        return self._expanded
+
+    @expanded.setter
+    def expanded(self, expanded):
+        """Sets the expanded state of the node.
+        Parameters
+        ----------
+        expanded: bool
+            True if the node is to be expanded, False otherwise
+        """
+        self._expanded = expanded
+        self.set_visibility(expanded)
+
+        if expanded:
+            self.set_visibility(True)
+            self.button.set_icon_by_name('expand')
+        else:
+            self.set_visibility(False)
+            self.button.set_icon_by_name('collapse')
+            for child in self.child_nodes:
+                child.expanded = False
+
+    @property
+    def icon(self):
+        return self._icon
+
+    @icon.setter
+    def icon(self, icon):
+        """Set a new image as the label icon.
+        Parameters
+        ----------
+        icon : str
+            Path to the icon image
+        """
+        self._icon = icon
+        _img_data = load_image(icon, as_vtktype=True)
+        self.label_image.texture = set_input(self.label_image.texture,
+                                             _img_data)
+
+    def clear_selections(self):
+        """Clear all the selcted nodes."""
+        for selected_node in self.selected_nodes:
+            selected_node.color = selected_node.unselected_color
+            selected_node.on_node_deselect(selected_node)
+            selected_node.selected = False
+            selected_node.clear_selections()
+
+        self.selected_nodes.clear()
+
+    def select_node(self, i_ren, _obj, _element):
+        """Callback for when the node is clicked on.
+        Parameters
+        ----------
+        i_ren: :class:`CustomInteractorStyle`
+            Interactor style used to interact with the scene.
+        _obj: :class:`vtkActor`
+            The picked actor
+        _element: :class: `Rectangle2D`
+            Element associated with the event.
+        """
+        self.selected = not self.selected
+
+        if self.selected:
+
+            if self.parent:
+                if not self.multiselect:
+                    self.parent.clear_selections()
+
+                self.parent.selected_nodes.append(self)
+
+            self.color = self.selected_color
+            self.on_node_select(self)
+        else:
+            if self.parent:
+                self.parent.selected_nodes.remove(self)
+
+                if not self.multiselect:
+                    self.parent.clear_selections()
+
+            self.color = self.unselected_color
+            self.on_node_deselect(self)
+
+        i_ren.force_render()
+
+    def left_button_pressed(self, i_ren, _obj, _sub_component):
+        click_pos = np.array(i_ren.event.position)
+        self._click_position = click_pos
+        i_ren.event.abort()
+
+    def left_button_dragged(self, i_ren, _obj, _sub_component):
+        click_position = np.array(i_ren.event.position)
+        change = click_position - self._click_position
+        self.title_panel.position += change
+        self._click_position = click_position
+        i_ren.force_render()
+
+
+class Accordion2D(UI):
+    """Display content is an Accordion form.
+    Attributes
+    ----------
+    items: list of str
+        List of items to be added to the accordion.
+    icons: list of str
+        List of paths/URLs to the icons to be used for the items.
+    """
+
+    def __init__(self, title='', items=None, icons=None, size=(400, 400),
+                 position=(0, 0), item_height=30, multiselect=True,
+                 title_color=(0.5, 0.5, 0.5), title_opacity=1,
+                 body_color=(0.3, 0.3, 0.3), body_opacity=0.8):
+        """Initialize the UI element.
+        Parameters
+        ----------
+        title: str, optional
+            Title of the accordion
+        items: list of str, optional
+            Items to be added to the accordion
+        icons: list of str, optional
+            Icons corresponding to the respective item
+        size : (int, int), optional
+            Width and height of the pixels of this UI component.
+        position : (float, float), optional
+            Absolute coordinates (x, y) of the lower-left corner of the
+            UI component
+        item_height: int, optional
+            Height of each item in the accordion.
+        indent: int, optional
+            Global indentation of the accordion items.
+        multiselect: bool, optional
+            If true, multiple items can be selected.
+        title_color: (float, float, float), optional
+            Color of the title text.
+        title_opacity: float, optional
+            Opacity of the title text.
+        body_color: (float, float, float), optional
+            Color of the body text.
+        body_opacity: float, optional
+            Opacity of the body text.
+        """
+        self.title = title
+        self.item_height = item_height
+        self._nodes = []
+        self.items = items or []
+        self.icons = icons or []
+
+        self.multiselect = multiselect
+
+        self._title_color = title_color
+        self._title_opacity = title_opacity
+        self._body_color = body_color
+        self._body_opacity = body_opacity
+
+        self._structure = []
+        self._children_prop = []
+
+        self.content_size = size
+        super(Accordion2D, self).__init__(position)
+        self.resize(size)
+
+    def _setup(self):
+        """Setup this UI element.
+        Create a base node.
+        Convert the items to nodes.
+        Add the converted items as child nodes of base node.
+        """
+        self.generate_structure()
+        self.tree = Tree2D(structure=self._structure, tree_name=self.title,
+                           node_height=self.item_height,
+                           color=self.title_color, opacity=self.title_opacity,
+                           indent=0, multiselect=self.multiselect,
+                           size=self.content_size)
+
+        self.tree.base_node.content_color = self.body_color
+        self.tree.base_node.content_opacity = self.body_opacity
+
+        for child_node, icon in zip(self.tree.nodes, self.icons):
+            child_node.icon = icon
+
+    def resize(self, size):
+        """ Resizes the Tree Node.
+        Parameters
+        ----------
+        size : (int, int)
+            New width and height in pixels.
+        """
+        self.tree.resize(size)
+
+    def _get_actors(self):
+        """ Get the actors composing this UI component.
+        """
+        return self.tree.actors
+
+    def _add_to_scene(self, _scene):
+        """ Add all subcomponents or VTK props that compose this UI component.
+        Parameters
+        ----------
+        scene : scene
+        """
+        self.tree.add_to_scene(_scene)
+        for child_prop in self._children_prop:
+            child_node = list(child_prop.values())[0][0]
+            child_node.set_visibility(False)
+            child_node.add_to_scene(_scene)
+
+        for child_prop in self._children_prop:
+            parent_node = list(child_prop.keys())[0]
+            child_node, coords = list(child_prop.values())[0]
+            parent_node.add_node(child_node, coords)
+
+    def _set_position(self, _coords):
+        """ Position the lower-left corner of this UI component.
+        Parameters
+        ----------
+        coords: (float, float)
+            Absolute pixel coordinates (x, y).
+        """
+        self.tree.position = _coords
+
+    def _get_size(self):
+        return self.tree.size
+
+    def generate_structure(self):
+        """Generate the structure for tree."""
+        for item in self.items:
+            item_dict = {item: []}
+            self._structure.append(item_dict)
+
+    def add_content(self, item_label, content, coords=(0., 0.)):
+        """Add content to a specific item.
+        Parameters
+        ----------
+        item_label: str
+            Label of the item where content is to be added
+        content: :class: `UI`
+            UI component to be added to the item
+        coords: (float, float), optional
+            Coordinates of the content in the item
+        """
+        item = self.tree.select_node(item_label)
+        child_prop = {item: [content, coords]}
+        self._children_prop.append(child_prop)
+
+    def select_item(self, item_label):
+        """Select the instance of a specific item.
+        Parameters
+        ----------
+        item_label: str
+            Label of the item to be selected
+        """
+        _node = self.tree.select_node(item_label)
+        return _node
+
+    @property
+    def title_color(self):
+        return self._title_color
+
+    @title_color.setter
+    def title_color(self, color):
+        """Sets background color of the title.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self._title_color = color
+        self.tree.base_node.color = self._title_color
+
+    @property
+    def title_opacity(self):
+        return self._title_opacity
+
+    @title_opacity.setter
+    def title_opacity(self, opacity):
+        """Sets background opacity of the title.
+        Parameters
+        ----------
+        opacity : float
+        """
+        self._title_opacity = opacity
+        self.tree.base_node.opacity = self._title_opacity
+
+    @property
+    def body_color(self):
+        return self._body_color
+
+    @body_color.setter
+    def body_color(self, color):
+        """Sets background color of the title.
+        Parameters
+        ----------
+        color : list of 3 floats.
+        """
+        self._body_color = color
+        self.tree.base_node.content_color = self._body_color
+
+    @property
+    def body_opacity(self):
+        return self._body_opacity
+
+    @body_opacity.setter
+    def body_opacity(self, opacity):
+        """Sets background opacity of the title.
+        Parameters
+        ----------
+        opacity : float
+        """
+        self._body_opacity = opacity
+        self.tree.base_node.content_opacity = self._body_opacity
+
+    @property
+    def structure(self):
+        return self._structure
