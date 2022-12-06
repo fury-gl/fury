@@ -131,7 +131,7 @@ img.cell-layout:hover {
 }
 
 /* Popup to show tutorials */
-div.tutorial-popup-active {
+div.tutorial-popup {
     visibility: visible;
     position: fixed;
     width: 350px;
@@ -143,10 +143,12 @@ div.tutorial-popup-active {
     padding-bottom: 10px;
     box-sizing: border-box;
     box-shadow: 0px 8px 15px rgb(0 0 0 / 10%);
+    /* transition: all .2s ease-in-out; */
+    animation-duration: 0.2s;
 }
 
 
-div.tutorial-popup-active::after {
+div.tutorial-popup::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -155,11 +157,30 @@ div.tutorial-popup-active::after {
     border-width: 7px;
     border-style: solid;
     border-color: var(--colorSecondaryLight) transparent transparent transparent;
-    box-shadow: 0px 8px 15px rgb(0 0 0 / 10%);
+    transition: all .2s .1s ease-in-out;
+    animation-name: expand;
+    animation-duration: 0.2s;
 }
 
-div.tutorial-popup-inactive {
-    visibility: hidden;
+/* .tutorial-popup {
+    
+}
+.tutorial-popup:after {
+    transform: translate3d(0,7px,0);
+    transition: all .1s ease-in-out;
+}
+.tutorial-popup:hover,
+.tutorial-popup:hover:after {
+    opacity: 1;
+    transform: scale3d(1,1,1);
+}
+.tutorial-popup:hover:after {
+     
+}*/
+
+@keyframes expand {
+    from {opacity: 0; transform: scale3d(.2,.2,1);}
+    to {opacity: 1; transform: scale3d(1,1,1);}
 }
 
 td.center-text {

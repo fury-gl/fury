@@ -1,15 +1,44 @@
-// open a popup on the given element of size 200x200
-function showPopup(el) {
-    $('#tutorial-popup').addClass('tutorial-popup-active');
-    $('#tutorial-popup').removeClass('tutorial-popup-inactive');
+const POPUP_TYPE = {
+    TUTORIAL: 'tutorial'
+}
+
+const ACTIVE_POPUP = {
+    TUTORIAL: false
+}
+
+function createTutorialPopup(fileName, title, link) {
+    return `<div id="tutorial-popup" class="tutorial-popup">
+        <div class="gallery-box-title">${title}</div>
+        <img src="_static/images/${fileName}.gif" alt="">
+    </div>`
+}
+
+// open a popup
+function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
+    
+
+    // Injecting the element
+    if (popupType === POPUP_TYPE.TUTORIAL) {
+        
+        // Checking for already active popup to make sure only one popup present
+        if (ACTIVE_POPUP.TUTORIAL) {
+            removePopup()
+        }
+        
+        $('.scientific-domains').append(createTutorialPopup('horse', 'engineering'));
+        ACTIVE_POPUP.TUTORIAL = true
+    }
     
     popupBounds = calculatePositionForPopup(el.getBoundingClientRect())
 
     // Adding position
     $('#tutorial-popup').css({
         'top': `${popupBounds.top}px`,
-        'left': `${popupBounds.left}px`
+        'left': `${popupBounds.left}px`,
+        'animation-name': 'expand'
     });
+
+
 }
 
 function calculatePositionForPopup(elBounds, popupWidth = 350, popupHeight = 300) {
@@ -18,8 +47,6 @@ function calculatePositionForPopup(elBounds, popupWidth = 350, popupHeight = 300
         height: popupHeight,
         width: popupWidth
     }
-
-    console.log(elBounds.top)
 
     if (elBounds.top < 308) {
         // Open the popup on bottom
@@ -36,9 +63,9 @@ function calculatePositionForPopup(elBounds, popupWidth = 350, popupHeight = 300
 }
 
 // remove the popup
-function removePopup() {
-    $('#tutorial-popup').addClass('tutorial-popup-inactive');
-    $('#tutorial-popup').removeClass('tutorial-popup-active');
+function removePopup(popupType = POPUP_TYPE.TUTORIAL) {
+    $(`#${popupType}-popup`).remove();
+    ACTIVE_POPUP.TUTORIAL = false
 }
 
 // Open the popup on cell-layout hover
@@ -50,7 +77,6 @@ $('img.cell-layout').hover(function () {
 
 // Close the popup when exited from the popup
 $('#tutorial-popup').hover(() => {}, function () {
-        // out
         removePopup()
     }
 );
@@ -58,6 +84,7 @@ $('#tutorial-popup').hover(() => {}, function () {
 // To remove the popup when clicked outside
 $(document).click(function (e) { 
     e.preventDefault();
+    // We can append more of these to close the popups
     if($(e.target).closest('#tutorial-popup').length == 0) {
         removePopup()
     }
