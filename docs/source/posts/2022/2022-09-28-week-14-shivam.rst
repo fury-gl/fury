@@ -1,0 +1,49 @@
+Week 14 - Morphing is here! 
+===========================
+
+.. post:: September 28 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+
+- This week, I started with multiple actor support in skinning and managed to do it
+  successfully. Here's the preview using the BrainStem model.
+
+.. raw:: html
+
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/195650455-927a0238-5db1-4349-99d4-c021db356b66.mp4" frameborder="0"></iframe>
+
+- Implementing multiple animation channels support (as seen in the ``Fox`` model). The ``get_skin_timelines()`` method now returns a dictionary of all animation channels with Timeline as their value.
+
+- We merged two PRs, `#689`_ (colors from Material) and `#643`_ (simple animations).
+
+- Added ability to load morphing information and create timelines from it. Here's a preview of the ``AnimatedMorphCube`` and ``AnimatedMorphSphere`` models:
+
+.. raw:: html
+
+    <iframe id="player" type="text/html"   width="600" height="340" src="https://user-images.githubusercontent.com/74976752/195654414-b290900c-b80f-40c7-a49d-5ea8413e906a.mp4" frameborder="0"></iframe>
+
+
+What is coming up next week?
+----------------------------
+
+- Cleaning and Rebasing Skinning animation PR `#685`_.
+
+- Creating a PR for morphing code.
+
+- Multi primitive (actor) support in morphing.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+- No, I didn't get stuck this week.
+
+
+.. _`#643`: https://github.com/fury-gl/fury/pull/643/
+.. _`#689`: https://github.com/fury-gl/fury/pull/689/
+.. _`#685`: https://github.com/fury-gl/fury/pull/685/
