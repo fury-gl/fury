@@ -147,7 +147,7 @@ camera_focal_positions = {
 }
 
 ###############################################################################
-# ``set_camera_focal`` can only set one keyframeB , but
+# ``set_camera_focal`` can only set one keyframe, but
 # ``set_camera_focal_keyframes`` can set a dictionary of keyframes.
 camera_anim.set_focal_keyframes(camera_focal_positions)
 camera_anim.set_position_keyframes(camera_positions)
