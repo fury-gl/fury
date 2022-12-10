@@ -6,8 +6,8 @@ import copy
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
-from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
-from fury import transform, utils, io, actor
+from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4, PolyDataTangents
+from fury import transform, utils, io, actor, material
 from fury.animation import Animation
 from fury.animation.interpolator import (linear_interpolator, slerp,
                                          step_interpolator,
@@ -113,10 +113,34 @@ class glTF:
             actor.SetUserTransform(_transform)
 
             if self.materials[i] is not None:
-                base_col_tex = self.materials[i]['baseColorTexture']
-                actor.SetTexture(base_col_tex)
-                base_color = self.materials[i]['baseColor']
-                actor.GetProperty().SetColor(tuple(base_color[:3]))
+                pbr = self.materials[i]['pbr']
+                if pbr is not None:
+                    base_color = pbr['baseColor']
+                    actor.GetProperty().SetColor(tuple(base_color[:3]))
+
+                    metal = pbr['metallicValue']
+                    rough = pbr['roughnessValue']
+                    actor.GetProperty().SetInterpolationToPBR()
+                    actor.GetProperty().SetMetallic(metal)
+                    actor.GetProperty().SetRoughness(rough)
+
+                    base_col_tex = pbr['baseColorTexture']
+                    metal_rough_tex = pbr['metallicRoughnessTexture']
+    
+                    actor.GetProperty().SetBaseColorTexture(base_col_tex)
+                    actor.GetProperty().SetORMTexture(metal_rough_tex)
+                
+                emissive = self.materials[i]['emissive']
+                if emissive is not None:
+                    actor.GetProperty().SetEmissiveTexture(emissive)
+                    actor.GetProperty().SetEmissiveFactor(
+                        self.materials[i]['emissive_factor']
+                    )
+                normal = self.materials[i]['normal']
+                if normal is not None:
+                    print('applying normal map')
+                    actor.GetProperty().SetNormalTexture(normal)
+                    actor.GetProperty().SetNormalScale(1.0)
 
             self._actors.append(actor)
 
@@ -240,13 +264,21 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transformation(normals, 
-                                                         transform_mat)
+                # normals = transform.apply_transformation(normals, 
+                #                                          transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
                 tcoords = self.get_acc_data(attributes.TEXCOORD_0)
                 utils.set_polydata_tcoords(polydata, tcoords)
+
+            if attributes.TANGENT is not None:
+                tangents = self.get_acc_data(attributes.TANGENT)
+                utils.set_polydata_tangents(polydata, tangents[:, :3])
+            elif attributes.NORMAL is not None and self.apply_normals:
+                doa = [0, 1, .5]
+                tangents = utils.tangents_from_direction_of_anisotropy(normals, doa)
+                utils.set_polydata_tangents(polydata, tangents)
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
@@ -385,24 +417,59 @@ class glTF:
 
         """
         material = self.gltf.materials[mat_id]
-        bct = None
-
+        pbr_dict = None
+        
         pbr = material.pbrMetallicRoughness
+        if pbr is not None:
+            bct, orm = None, None
+            if pbr.baseColorTexture is not None:
+                bct = pbr.baseColorTexture.index
+                bct = self.get_texture(bct, True)
+            if pbr.metallicRoughnessTexture is not None:
+                mrt = pbr.metallicRoughnessTexture.index
+                # find if there's any occulsion tex present
+                occ = material.occlusionTexture
+                if occ is not None and occ.index == mrt:
+                    orm = self.get_texture(mrt)
+                else:
+                    mrt = self.get_texture(mrt, rgb=True)
+                    occ_tex = self.get_texture(occ.index, rgb=True) if occ else None
+                    # generate orm texture
+                    orm = self.generate_orm(mrt, occ_tex)
+            colors = pbr.baseColorFactor
+            metalvalue = pbr.metallicFactor
+            roughvalue = pbr.roughnessFactor
+            pbr_dict = {'baseColorTexture': bct,
+                        'metallicRoughnessTexture': orm,
+                        'baseColor': colors,
+                        'metallicValue': metalvalue,
+                        'roughnessValue': roughvalue}
+        normal = material.normalTexture
+        normal_tex = self.get_texture(normal.index) if normal else None
+        occlusion = material.occlusionTexture
+        occ_tex = self.get_texture(occlusion.index) if occlusion else None
+        # must update pbr_dict with ORM texture
+        emissive = material.emissiveTexture
+        emi_tex = self.get_texture(emissive.index, True) if emissive else None
 
-        if pbr.baseColorTexture is not None:
-            bct = pbr.baseColorTexture.index
-            bct = self.get_texture(bct)
-        colors = pbr.baseColorFactor
-        return {'baseColorTexture': bct,
-                'baseColor': colors}
+        
+        return {
+            'pbr' : pbr_dict,
+            'normal' : normal_tex,
+            'occlusion' : occ_tex,
+            'emissive' : emi_tex,
+            'emissive_factor' : material.emissiveFactor
+        }
 
-    def get_texture(self, tex_id):
+    def get_texture(self, tex_id, srgb_colorspace=False, rgb=False):
         """Read and convert image into vtk texture.
 
         Parameters
         ----------
         tex_id : int
             Texture index
+        srgb_colorspace : bool
+            Use vtkSRGB colorspace. (default=False)
 
         Returns
         -------
@@ -444,14 +511,57 @@ class glTF:
         else:
             image_path = os.path.join(self.pwd, file)
 
-        rgb = io.load_image(image_path)
-        grid = utils.rgb_to_vtk(rgb)
+        rgb_array = io.load_image(image_path)
+        if rgb:
+            return rgb_array
+        grid = utils.rgb_to_vtk(rgb_array)
+        atexture = Texture()
+        atexture.InterpolateOn()
+        atexture.EdgeClampOn()
+        atexture.SetInputDataObject(grid)
+        if srgb_colorspace:
+            atexture.UseSRGBColorSpaceOn()
+        atexture.Update()
+
+        return atexture
+    
+    def generate_orm(self, metallic_roughness=None, occlusion=None):
+        """Generates ORM texture from O, R & M textures.
+        We do this by swapping Red channel of metallic_roughness with the
+        occlusion texture and adding metallic to Blue channel.
+
+        Parameters
+        ----------
+        metallic_roughness : ndarray
+        occlusion : ndarray
+        """
+        shape = metallic_roughness.shape
+        rgb_array = np.copy(metallic_roughness)
+        # metallic is red if name starts as metallicRoughness, otherwise its
+        # in the green channel
+        # https://github.com/KhronosGroup/glTF/issues/857#issuecomment-290530762
+        metal_arr = metallic_roughness[:, :, 2]
+        rough_arr = metallic_roughness[:, :, 1]
+        if occlusion is None:
+            occ_arr = np.full((shape[0], shape[1]), 256)
+            # print(occ_arr)
+        else:
+            if len(list(occlusion.shape)) > 2:
+                # occ_arr = np.dot(occlusion, np.array([0.2989, 0.5870, 0.1140]))
+                occ_arr = occlusion.sum(2) / 3
+                # both equation grayscales but second one is less computation.
+        rgb_array[:, :, 0][:] = metal_arr  # blue channel
+        rgb_array[:, :, 1][:] = rough_arr
+        rgb_array[:, :, 2][:] = occ_arr  # red channel
+
+        grid = utils.rgb_to_vtk(rgb_array)
         atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
         atexture.SetInputDataObject(grid)
 
-        return atexture
+        return atexture           
+
 
     def load_camera(self, camera_id, transform_mat):
         """Load the camera data of a node.
