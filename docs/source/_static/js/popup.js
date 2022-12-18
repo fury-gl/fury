@@ -16,6 +16,7 @@ function createTutorialPopup(fileName, title, link) {
 // open a popup
 function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
     
+    let popupBounds = calculatePositionForPopup(el.getBoundingClientRect())
 
     // Injecting the element
     if (popupType === POPUP_TYPE.TUTORIAL) {
@@ -27,16 +28,20 @@ function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
         
         $('.scientific-domains').append(createTutorialPopup('horse', 'engineering'));
         ACTIVE_POPUP.TUTORIAL = true
-    }
-    
-    popupBounds = calculatePositionForPopup(el.getBoundingClientRect())
 
-    // Adding position
-    $('#tutorial-popup').css({
-        'top': `${popupBounds.top}px`,
-        'left': `${popupBounds.left}px`,
-        'animation-name': 'expand'
-    });
+        // Adding position
+        $('#tutorial-popup').css({
+            'top': `${popupBounds.top}px`,
+            'left': `${popupBounds.left}px`,
+            'animation-name': 'expand'
+        });
+
+        // Close the popup when exited from the popup
+        $('#tutorial-popup').hover(() => {}, function () {
+            removePopup()
+        });
+        
+    }
 
 
 }
