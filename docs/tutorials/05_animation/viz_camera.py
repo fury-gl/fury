@@ -64,7 +64,7 @@ fury_text = actor.vector_text("FURY",
 text_anim = Animation(fury_text, loop=False)
 
 ###############################################################################
-# opacity is set to 0 at time 28 and set to one at time 31.
+# opacity is set to 0 at time 29 and set to one at time 35.
 # Linear interpolator is always used by default.
 text_anim.set_opacity(29, 0)
 text_anim.set_opacity(35, 1)
