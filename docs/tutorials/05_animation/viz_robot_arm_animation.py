@@ -107,7 +107,7 @@ timeline.add_animation(main_arm_animation)
 
 ###############################################################################
 # Now we add the timeline to the ShowManager
-showm.add_animation(main_arm_animation)
+showm.add_animation(timeline)
 
 interactive = False
 

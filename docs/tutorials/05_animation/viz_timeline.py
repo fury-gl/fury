@@ -41,7 +41,7 @@ showm.initialize()
 timeline = Timeline(playback_panel=True)
 
 ###############################################################################
-# Creating a Fury Animation an usual
+# Creating a Fury Animation as usual
 anim = Animation()
 sphere = actor.sphere(np.zeros([1, 3]), np.ones([1, 3]))
 anim.add_actor(sphere)
@@ -85,7 +85,7 @@ timeline.add_animation(anim)
 # ``Animation`` to the ``ShowManager``.
 showm.add_animation(timeline)
 
-scene.camera().SetPosition(0, 0, -10)
+scene.set_camera(position=(0, 0, -10))
 
 interactive = False
 

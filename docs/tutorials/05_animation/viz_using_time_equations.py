@@ -60,7 +60,7 @@ anim.set_interpolator('scale', scale_eval, is_evaluator=True)
 
 ###############################################################################
 # changing camera position to observe the animation better.
-scene.camera().SetPosition(0, 0, 90)
+scene.set_camera(position=(0, 0, 90))
 
 ###############################################################################
 # Adding the animation to the show manager.
