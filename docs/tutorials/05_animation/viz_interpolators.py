@@ -120,7 +120,7 @@ animation.set_rotation(8.0, np.array([60, 160, 0]))
 
 ###############################################################################
 # Setting camera position to see the animation better.
-scene.camera().SetPosition(0, 0, 90)
+scene.set_camera(position=(0, 0, 90))
 
 ###############################################################################
 # Adding main animation to the ``ShowManager``.
