@@ -1,15 +1,14 @@
 """
-=====================
-Keyframe animation
-=====================
+===================
+Arm Robot Animation
+===================
 
 Tutorial on making a robot arm animation in FURY.
 
 """
 import numpy as np
 from fury import actor, window
-from fury.animation import Animation
-from fury.animation.timeline import Timeline
+from fury.animation import Animation, Timeline
 from fury.utils import set_actor_origin
 
 scene = window.Scene()
@@ -18,6 +17,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 showm.initialize()
+
 
 ###############################################################################
 # Creating robot arm components
@@ -37,10 +37,8 @@ end = actor.cone(np.array([[0, 0, 0]]), np.array([[1, 0, 0]]),
                  np.array([[1, 0, 0]]), heights=2.2, resolution=6)
 
 ###############################################################################
-# Setting the origin or rotation of both shafts to the beginning.
-# Length of main arm is 12 so the beginning would be at -6 in x direction.
+# Setting the center of both shafts to the beginning.
 set_actor_origin(main_arm, np.array([-6, 0, 0]))
-# Length of the sub arm is 8 so the beginning would be at -4 in x direction.
 set_actor_origin(sub_arm, np.array([-4, 0, 0]))
 
 ###############################################################################
@@ -53,9 +51,6 @@ main_arm_animation = Animation([main_arm, joint_1], length=2 * np.pi)
 child_arm_animation = Animation([sub_arm, joint_2])
 drill_animation = Animation(end)
 
-###############################################################################
-# Adding the main animation to the Timeline.
-timeline.add_child_animation(main_arm_animation)
 
 ###############################################################################
 # Adding other Animations in hierarchical order
@@ -67,7 +62,7 @@ child_arm_animation.add_child_animation(drill_animation)
 # Creating Arm joints time dependent animation functions.
 
 def rot_main_arm(t):
-    return np.array([np.sin(t/2) * 180, np.cos(t/2) * 180, 0])
+    return np.array([np.sin(t / 2) * 180, np.cos(t / 2) * 180, 0])
 
 
 def rot_sub_arm(t):
@@ -103,20 +98,16 @@ drill_animation.set_rotation_interpolator(rot_drill, is_evaluator=True)
 scene.camera().SetPosition(0, 0, 90)
 
 ###############################################################################
-# Adding timelines to the main Timeline.
-scene.add(timeline, base)
-
-
-###############################################################################
-# making a function to update the animation and render the scene.
-def timer_callback(_obj, _event):
-    timeline.update_animation()
-    showm.render()
-
+# Adding the base actor to the scene
+scene.add(base)
 
 ###############################################################################
-# Adding the callback function that updates the animation.
-showm.add_timer_callback(True, 10, timer_callback)
+# Adding the main parent animation to the Timeline.
+timeline.add_animation(main_arm_animation)
+
+###############################################################################
+# Now we add the timeline to the ShowManager
+showm.add_animation(timeline)
 
 interactive = False
 
