@@ -128,11 +128,11 @@ keyframes = {
 }
 
 ###############################################################################
-# Creat the sphere actor.
+# Create the sphere actor.
 sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
 
 ###############################################################################
-# Creat an ``Animation`` and adding the sphere actor to it.
+# Create an ``Animation`` and adding the sphere actor to it.
 animation = Animation(sphere)
 
 ###############################################################################
