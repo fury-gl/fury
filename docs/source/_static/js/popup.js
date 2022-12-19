@@ -6,10 +6,27 @@ const ACTIVE_POPUP = {
     TUTORIAL: false
 }
 
-function createTutorialPopup(fileName, title, link) {
+const TUTORIALS = {
+    // the keys are id of the element and the file and title will update accordingly
+    engineering: {
+        fileName: 'engineering',
+        title: 'engineering',
+        link: ''
+    },
+    physics: {
+        fileName: 'physics',
+        title: 'physics',
+        link: ''
+    },
+
+}
+
+
+
+function createTutorialPopup(tutorial) {
     return `<div id="tutorial-popup" class="tutorial-popup">
-        <div class="gallery-box-title">${title}</div>
-        <img src="_static/images/${fileName}.gif" alt="">
+        <div class="gallery-box-title">${tutorial.title}</div>
+        <img src="_static/images/sc-dom/popup/${tutorial.fileName}.gif" alt="">
     </div>`
 }
 
@@ -26,7 +43,7 @@ function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
             removePopup()
         }
         
-        $('.scientific-domains').append(createTutorialPopup('horse', 'engineering'));
+        $('.scientific-domains').append(createTutorialPopup(TUTORIALS[el.id]));
         ACTIVE_POPUP.TUTORIAL = true
 
         // Adding position
@@ -42,8 +59,6 @@ function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
         });
         
     }
-
-
 }
 
 function calculatePositionForPopup(elBounds, popupWidth = 350, popupHeight = 300) {
