@@ -74,7 +74,7 @@ showm.initialize()
 #
 # This is a quick demo showing how to translate a sphere from (0, 0, 0) to
 # (1, 1, 1).
-# First, we create an ``Animation``. See ``viz_animation.py`` tutorial
+# First, we create an ``Animation``. See ``viz_interpolators.py`` tutorial
 animation = Animation()
 
 ###############################################################################
