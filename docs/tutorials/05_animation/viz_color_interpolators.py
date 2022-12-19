@@ -43,10 +43,10 @@ step_text = actor.vector_text("Step", (5.7, -1, 0))
 scene.add(step_text, lab_text, linear_text, hsv_text, xyz_text)
 
 ###############################################################################
-# Creating a timeline to animate the actor.
+# Creating an animation to animate the actor.
 # Also cube actor is provided for each timeline to handle as follows:
-# ``Timeline(actor)``, ``Timeline(list_of_actors)``, or actors can be added
-# later using ``Timeline.add()`` or ``timeline.add_actor()``
+# ``Animation(actor)``, ``Animation(list_of_actors)``, or actors can be added
+# later using ``animation.add()`` or ``animation.add_actor()``
 anim_linear_color = Animation(actor.cube(cubes_pos[0]))
 anim_LAB_color = Animation(actor.cube(cubes_pos[1]))
 anim_HSV_color = Animation(actor.cube(cubes_pos[2]))
