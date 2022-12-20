@@ -32,7 +32,7 @@ filename = read_viz_gltf('InterpolationTest')
 # Get the main_timeline (which contains multiple Timeline objects).
 
 gltf_obj = glTF(filename)
-timeline = gltf_obj.main_timeline()
+timeline = gltf_obj.main_animation()
 
 ##############################################################################
 # Add the timeline to the scene (No need to add actors seperately).
