@@ -885,8 +885,9 @@ class GridUI(UI):
         self.rotation_axis = rotation_axis
 
         for item in self.container._items:
-            self._actors.append(item._items[0])
-            self._actors_dict[item._items[0]] = {'x': -np.inf, 'y': -np.inf}
+            actor = item if captions is None else item._items[0]
+            self._actors.append(actor)
+            self._actors_dict[actor] = {'x': -np.inf, 'y': -np.inf}
 
         super(GridUI, self).__init__(position=(0, 0, 0))
 
