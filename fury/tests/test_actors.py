@@ -33,9 +33,11 @@ if have_matplotlib:
     import matplotlib.pyplot as plt
     from fury.convert import matplotlib_figure_to_numpy
 
+
 class Sphere():
     vertices = None
     faces = None
+
 
 def test_slicer(verbose=False):
     scene = window.Scene()
@@ -1214,7 +1216,6 @@ def test_grid(_interactive=False):
     arr[arr < 100] = 0
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects, 6)
-    npt.assert_equal(type(container.items[0]), actor.Container)
 
     scene.rm_all()
 
@@ -1235,7 +1236,6 @@ def test_grid(_interactive=False):
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects > 6, True)
-    npt.assert_equal(type(container.items[0]), actor.Container)
 
 
 def test_direct_sphere_mapping():

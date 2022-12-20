@@ -967,6 +967,7 @@ def _roll_evals(evals, axis=-1):
 
     return evals
 
+
 def _fa(evals, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
@@ -2574,7 +2575,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
         def get_position(self):
             return self.GetPosition()
 
-
     text_actor = Text3D()
     text_actor.message(text)
     text_actor.font_size(font_size)
@@ -2804,15 +2804,6 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
             actors_with_caption.append(actor_with_caption)
 
         actors = actors_with_caption
-
-    else:
-        actor_list = []
-        for actor in actors:
-            container_actor = Container()
-            container_actor.add(actor)
-            actor_list.append(container_actor)
-
-        actors = actor_list
 
     grid.add(*actors)
     return grid
