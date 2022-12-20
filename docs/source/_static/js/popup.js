@@ -18,6 +18,36 @@ const TUTORIALS = {
         title: 'physics',
         link: ''
     },
+    chemistry: {
+        fileName: 'chemistry',
+        title: 'chemistry',
+        link: ''
+    },
+    astronomy: {
+        fileName: 'astronomy',
+        title: 'astronomy',
+        link: ''
+    },
+    aerospace: {
+        fileName: 'aerospace',
+        title: 'aerospace',
+        link: ''
+    },
+    biology: {
+        fileName: 'biology',
+        title: 'biology',
+        link: ''
+    },
+    'network-science': {
+        fileName: 'network-science',
+        title: 'network-science',
+        link: ''
+    },
+    mathematics: {
+        fileName: 'mathematics',
+        title: 'mathematics',
+        link: ''
+    },
 
 }
 
