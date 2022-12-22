@@ -38,6 +38,11 @@ const TUTORIALS = {
         title: 'biology',
         link: ''
     },
+    'data-science': {
+        fileName: 'data-science',
+        title: 'data-science',
+        link: ''
+    },
     'network-science': {
         fileName: 'network-science',
         title: 'network-science',
