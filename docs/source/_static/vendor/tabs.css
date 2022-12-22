@@ -130,59 +130,6 @@ img.cell-layout:hover {
     filter: invert(91%) sepia(73%) saturate(2024%) hue-rotate(313deg) brightness(97%) contrast(109%);
 }
 
-/* Popup to show tutorials */
-div.tutorial-popup {
-    visibility: visible;
-    position: fixed;
-    width: 350px;
-    height: 300px;
-    top: 0;
-    left: 0;
-    background-color: var(--colorSecondaryLight);
-    z-index: 99;
-    padding-bottom: 10px;
-    box-sizing: border-box;
-    box-shadow: 0px 8px 15px rgb(0 0 0 / 10%);
-    /* transition: all .2s ease-in-out; */
-    animation-duration: 0.2s;
-}
-
-
-div.tutorial-popup::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 7%;
-    margin-left: -7px;
-    border-width: 7px;
-    border-style: solid;
-    border-color: var(--colorSecondaryLight) transparent transparent transparent;
-    transition: all .2s .1s ease-in-out;
-    animation-name: expand;
-    animation-duration: 0.2s;
-}
-
-/* .tutorial-popup {
-    
-}
-.tutorial-popup:after {
-    transform: translate3d(0,7px,0);
-    transition: all .1s ease-in-out;
-}
-.tutorial-popup:hover,
-.tutorial-popup:hover:after {
-    opacity: 1;
-    transform: scale3d(1,1,1);
-}
-.tutorial-popup:hover:after {
-     
-}*/
-
-@keyframes expand {
-    from {opacity: 0; transform: scale3d(.2,.2,1);}
-    to {opacity: 1; transform: scale3d(1,1,1);}
-}
-
 td.center-text {
     text-align: center;
     line-height: 35%;
