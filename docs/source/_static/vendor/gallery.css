@@ -63,6 +63,9 @@
     .gallery-title {
         margin: 0;
     }
+    .gallery-box-content {
+        width: auto;
+    }
 }
 
 .gallery-underline {
