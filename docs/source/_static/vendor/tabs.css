@@ -46,6 +46,10 @@
 
 @media screen and (max-width: 600px) {
 
+    .uk-tab {
+        margin-left: 0 !important;
+    }
+
     .uk-tab> .uk-active > a {
         border-color: var(--colorPrimaryDark) !important;
         color: var(--colorPrimaryDark) !important;
