@@ -81,6 +81,7 @@ em {
 
 .hero-cta {
     padding: 15px 0;
+    display: block;
 }
 
 .cta-button {
@@ -181,10 +182,26 @@ p {
 
     .hero-title {
         font-size: 4em;
+        margin-bottom: 2vh;
+        width: 100vw;
+        justify-content: center;
     }
 
     .hero-logo {
         max-height: 60px;
+    }
+
+    .hero-cta {
+        display: flex;
+        justify-content: center;
+    }
+
+    .hero-title-content {
+        margin: 2vh auto;
+    }
+
+    .hero-logo:first-of-type {
+        padding: 0;
     }
 }
 
@@ -198,6 +215,7 @@ p {
     .hero-logo {
         max-height: 40px;
     }
+
 }
 
 /* Footer */
@@ -286,19 +304,17 @@ blockquote p::after {
 }
 
 @media only screen and (max-width: 850px) {
-    #footer-columns {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+
+    .footer-column ul.link-list li.link-list {
+        width: calc(50% - 24px);
+        display: inline-block;
     }
 
     .footer-actions {
-        max-width: 50vw;
-    }
-
-    .social-media-icons {
-        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
     }
 }
 
