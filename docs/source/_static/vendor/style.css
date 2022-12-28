@@ -6180,9 +6180,6 @@ Navbar
     height: 4rem; }
   .navbar.is-fresh .navbar-brand {
     min-height: 4rem; }
-    .navbar.is-fresh .navbar-brand img {
-      max-height: 36px !important;
-      height: 36px; }
     .navbar.is-fresh .navbar-brand:hover .navbar-item {
       background: transparent !important; }
   .navbar.is-fresh .navbar-end {

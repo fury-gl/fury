@@ -52,15 +52,26 @@ em {
 
 .hero-title {
     display: flex;
-    font-family: var(--fontFamily), sans-serif;
-    font-weight: 900;
-    font-size: 6em;
-    color: var(--colorPrimaryDark);
+    flex-direction: column;
+    align-items: center;
 }
 
 .hero-logo {
-    max-height: 75px;
-    padding: 0px 0 0 15px;
+    height: 225px;
+    margin-left: -15px;
+    margin-top: -35px;
+}
+
+.logo-text {
+    margin: 0;
+    font-family: 'Syncopate', sans-serif;
+    font-weight: 700;
+    font-size: 42px;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 16px;
+    cursor: default;
+    margin-top: -10px;
 }
 
 .hero-subtitle {
@@ -99,13 +110,17 @@ em {
 }
 
 #navbar-logo {
-  height: 28px;
-  padding-right: 1rem;
+    height: 60px;
+    max-height: 60px;
+    padding-right: 16px;
 }
 
 #navbar-logo-text {
-  font-size: 1.25rem;
-  font-weight: bold;
+    font-family: 'Syncopate', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    margin-top: 8px;
+    letter-spacing: 8px;
 }
 
 #feature-card {
