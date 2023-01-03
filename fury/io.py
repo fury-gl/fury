@@ -105,7 +105,6 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                     raise RuntimeError('Unknown image mode {}'
                                        .format(pil_image.mode))
                 image = np.asarray(pil_image)
-            image = np.flipud(image)
 
         if as_vtktype:
             if image.ndim not in [2, 3]:
