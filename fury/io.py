@@ -230,7 +230,6 @@ def save_image(arr, filename, compression_quality=75,
                       format(filename, extension))
 
     if use_pillow:
-        arr = np.flipud(arr)
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality, dpi=dpi)
     else:
