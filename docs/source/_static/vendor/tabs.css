@@ -126,6 +126,10 @@ img.cell-layout {
     filter: invert(11%) sepia(86%) saturate(4861%) hue-rotate(10deg) brightness(84%) contrast(121%);
 }
 
+img.cell-layout:hover {
+    filter: invert(91%) sepia(73%) saturate(2024%) hue-rotate(313deg) brightness(97%) contrast(109%);
+}
+
 td.center-text {
     text-align: center;
     line-height: 35%;

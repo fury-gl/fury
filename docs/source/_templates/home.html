@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="_static/vendor/features.css" />
     <link rel="stylesheet" href="_static/vendor/fa.css" />
     <link rel="stylesheet" href="_static/vendor/tabs.css" />
+    <link rel="stylesheet" href="_static/vendor/popup.css" />
     <link rel="stylesheet" href="_static/vendor/new-promotions.css" />
     <link rel="stylesheet" href="_static/css/main.css" />
 
@@ -514,7 +515,6 @@
                 </ul>
                 <ul id="tabs-content" class="uk-switcher uk-margin">
                     <li class="scientific-domains">
-
                         <table>
                             <tr class="highlight-th">
                                 <td class="bold-text">Engineering</td>
@@ -523,11 +523,10 @@
                                 <td class="bold-text">Astronomy</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/physics.svg" alt="">
-                                </td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
+                                <td><img id="engineering" class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
+                                <td><img id="physics" class="cell-layout" src="_static/images/sc-dom/physics.svg" alt=""></td>
+                                <td><img id="chemistry" class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
+                                <td><img id="astronomy" class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
                             </tr>
                             <tr class="highlight-th">
                                 <td class="bold-text">Aerospace</td>
@@ -536,17 +535,16 @@
                                 <td class="bold-text">Network science</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/biology.svg" alt="">
-                                </td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
+                                <td><img id="aerospace" class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
+                                <td><img id="biology" class="cell-layout" src="_static/images/sc-dom/biology.svg" alt=""></td>
+                                <td><img id="data-science" class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
+                                <td><img id="network-science" class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
                             </tr>
                             <tr class="highlight-th">
                                 <td class="bold-text">Mathematics</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
+                                <td><img id="mathematics" class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
                                 <td class="bold-text">and</td>
                                 <td class="bold-text">many more ...</td>
                             </tr>
@@ -760,6 +758,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="_static/js/fresh.js"></script>
+    <script src="_static/js/popup.js"></script>
     <script src="_static/js/jquery.panelslider.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 
