@@ -4226,6 +4226,15 @@ a.dropdown-item {
   .navbar.is-fixed-top {
     top: 0; }
 
+@media screen and (max-width: 600px) {
+  /* overriding pyData .navbar for mobile version
+     better placement of hamburger menu */
+  .navbar {
+    padding: 0.5rem 0rem !important;
+  }
+
+}
+
 html.has-navbar-fixed-top,
 body.has-navbar-fixed-top {
   padding-top: 3.25rem; }
@@ -6233,7 +6242,7 @@ Navbar
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw;
   background: #fff;
   transform: translateY(-100%);
   z-index: 100;
