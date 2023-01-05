@@ -1088,7 +1088,7 @@ def test_text_3d():
     arr_left = window.snapshot(scene, size=(1920, 1080), offscreen=True)
     # X axis of right alignment should have a lower center of mass position
     # than left
-    assert_greater(center_of_mass(arr_left)[0], center_of_mass(arr_right)[0])
+    assert_greater(center_of_mass(arr_right)[0], center_of_mass(arr_left)[0])
     scene.clear()
     txt_actor.justification('center')
     txt_actor.vertical_justification('top')
@@ -1099,8 +1099,7 @@ def test_text_3d():
     txt_actor.vertical_justification('bottom')
     scene.add(txt_actor)
     arr_bottom = window.snapshot(scene, size=(1920, 1080), offscreen=True)
-    assert_greater_equal(center_of_mass(arr_bottom)[0],
-                         center_of_mass(arr_top)[0])
+    assert_greater_equal(center_of_mass(arr_top)[0], center_of_mass(arr_bottom)[0])
 
     scene.clear()
     txt_actor.font_style(bold=True, italic=True, shadow=True)
