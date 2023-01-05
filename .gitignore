@@ -103,3 +103,6 @@ target/
 *.bin
 *.gltf
 
+tmp/
+temp/
+
