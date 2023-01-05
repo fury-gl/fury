@@ -105,6 +105,9 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                     raise RuntimeError('Unknown image mode {}'
                                        .format(pil_image.mode))
                 image = np.asarray(pil_image)
+            # Under investigation
+            # It seems vtk arrays need updown but not the pillow arrays
+            # image = np.flipud(image)
 
         if as_vtktype:
             if image.ndim not in [2, 3]:
@@ -157,6 +160,9 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
         components = vtk_array.GetNumberOfComponents()
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
+
+        if extension not in [".tif", ".tiff"]:
+            image = np.flipud(image)
 
     if is_url:
         os.remove(filename)
@@ -230,9 +236,13 @@ def save_image(arr, filename, compression_quality=75,
                       format(filename, extension))
 
     if use_pillow:
+        # Removing this as the normal image viewers have set origin at top-left
+        # arr = np.flipud(arr)
         im = Image.fromarray(arr)
         im.save(filename, quality=compression_quality, dpi=dpi)
     else:
+        # Flipping array to open the image properly in most viewers
+        arr = np.flipud(arr)
         warnings.warn(UserWarning('DPI value is ignored while saving images via vtk.'))
         if arr.ndim == 2:
             arr = arr[..., None]

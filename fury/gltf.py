@@ -445,6 +445,7 @@ class glTF:
             image_path = os.path.join(self.pwd, file)
 
         rgb = io.load_image(image_path)
+        rgb = np.flipud(rgb)
         grid = utils.rgb_to_vtk(rgb)
         atexture = Texture()
         atexture.InterpolateOn()
