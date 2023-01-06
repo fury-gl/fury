@@ -374,9 +374,9 @@ def test_replace_shader_in_actor(interactive=False):
         window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
     ss = np.flipud(ss)
-    actual = ss[140, 40, :]
-    npt.assert_array_equal(actual, [255, 0, 0])
     actual = ss[40, 140, :]
+    npt.assert_array_equal(actual, [255, 0, 0])
+    actual = ss[140, 40, :]
     npt.assert_array_equal(actual, [0, 255, 0])
     actual = ss[40, 40, :]
     npt.assert_array_equal(actual, [0, 0, 255])
