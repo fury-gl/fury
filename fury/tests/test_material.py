@@ -131,6 +131,7 @@ def test_manifest_standard():
     # scene.reset_camera()
     # window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([0, 0, 201]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -144,6 +145,7 @@ def test_manifest_standard():
     # Test ambient level
     material.manifest_standard(test_actor, ambient_level=1)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([0, 0, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -156,6 +158,7 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, ambient_level=.5,
                                ambient_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
     actual = ss[125, 125, :] / 1000
@@ -168,6 +171,7 @@ def test_manifest_standard():
     # Test diffuse level
     material.manifest_standard(test_actor, diffuse_level=.75)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([0, 0, 151]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -183,6 +187,7 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, diffuse_level=.5,
                                diffuse_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([0, 0, 101]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -195,6 +200,7 @@ def test_manifest_standard():
     # Test specular level
     material.manifest_standard(test_actor, specular_level=1)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([201, 201, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -208,6 +214,7 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, specular_level=1,
                                specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([78, 78, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -221,6 +228,7 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, specular_level=1,
                                specular_color=(1, 0, 0), specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[75, 100, :] / 1000
     desired = np.array([78, 0, 201]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -240,6 +248,7 @@ def test_manifest_standard():
     scene.add(test_actor)
 
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[100, 106, :] / 1000
     desired = np.array([253, 0, 253]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -249,6 +258,7 @@ def test_manifest_standard():
 
     material.manifest_standard(test_actor)
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[100, 106, :] / 1000
     desired = np.array([253, 253, 253]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -258,6 +268,7 @@ def test_manifest_standard():
 
     material.manifest_standard(test_actor, diffuse_color=(1, 0, 1))
     ss = window.snapshot(scene, size=(200, 200))
+    ss = np.flipud(ss)
     actual = ss[100, 106, :] / 1000
     desired = np.array([253, 0, 253]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
