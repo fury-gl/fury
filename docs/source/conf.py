@@ -194,6 +194,7 @@ html_static_path = ['_static']
 
 html_css_files = [
     'css/custom.css',
+    'vendor/fonts.css'
 ]
 
 # html_baseurl = os.environ.get("SPHINX_HTML_BASE_URL", "http://127.0.0.1:8000/")
