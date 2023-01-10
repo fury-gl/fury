@@ -140,11 +140,10 @@ def test_cubic_spline_interpolator():
 
     data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])},
             3: {'value': None}, 4: {'value': None}}
-    try:
+
+    # Interpolator should not work with invalid data!
+    with npt.assert_raises((ValueError, TypeError)):
         cubic_spline_interpolator(data)
-        raise "Interpolator should not work with invalid data!"
-    except TypeError:
-        ...
 
 
 def test_cubic_bezier_interpolator():
@@ -236,11 +235,10 @@ def test_n_spline_interpolator():
 
     data = {1: {'value': None}, 2: {'value': np.array([1, 1, 1])},
             3: {'value': None}, 4: {'value': None}}
-    try:
+
+    # Interpolator should not work with invalid data!
+    with npt.assert_raises((TypeError, ValueError)):
         spline_interpolator(data, 2)
-        raise "Interpolator should not work with invalid data!"
-    except TypeError:
-        ...
 
 
 def test_color_interpolators():
