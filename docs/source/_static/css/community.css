@@ -1,0 +1,31 @@
+/* CSS for showing community */
+.join-us__container {
+  display: flex;
+}
+
+.join-us__icon-background {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background-color: rgb(153, 0, 0);
+  transition: all 0.2s ease;
+
+  text-decoration: none !important;
+  margin-right: 16px;
+  box-shadow: rgba(153, 0, 0, 0.3) 0px 2px 8px 0px;
+}
+
+.join-us__icon-background:hover {
+  box-shadow: rgba(153, 0, 0, 0.3) 0px 8px 24px;
+}
+
+.join-us__icon {
+  font-size: 22px;
+  color: #fff;
+  transition: all 0.2s ease;
+}

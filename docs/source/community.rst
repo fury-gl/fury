@@ -8,12 +8,18 @@ Join Us!
 --------
 
 .. raw:: html
-
-    <ul style="list-style-type:none;">
-        <li style="display: block"><a href='https://discord.gg/6btFPPj'><i class="fab fa-discord fa-fw"></i> Discord</a></li>
-        <li style="display: block"><a href='https://mail.python.org/mailman3/lists/fury.python.org'><i class="fa fa-envelope fa-fw"></i> Mailing list</a></li>
-        <li style="display: block"><a href='https://github.com/fury-gl/fury'><i class="fab fa-github fa-fw"></i> Github</a></li>
-    <ul>
+    
+    <div class="join-us__container">
+        <a href='https://discord.gg/6btFPPj' class="join-us__icon-background m-r-10">
+            <i class="fab fa-discord fa-fw join-us__icon"></i>
+        </a>
+        <a href='https://mail.python.org/mailman3/lists/fury.python.org' class="join-us__icon-background m-r-10">
+            <i class="fa fa-envelope fa-fw join-us__icon"></i>
+        </a>
+        <a href='https://github.com/fury-gl/fury' class="join-us__icon-background m-r-10">
+            <i class="fab fa-github fa-fw join-us__icon"></i>
+        </a>
+    </div>
 
 Contributors
 ------------
