@@ -150,3 +150,10 @@ $(document).click(function (e) {
     }
 });
 
+// To remove the popup when scrolled
+$(document).scroll(function (e) { 
+    if($(e.target).closest('#tutorial-popup').length == 0) {
+        removePopup();
+    }
+});
+
