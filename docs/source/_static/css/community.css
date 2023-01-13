@@ -12,12 +12,13 @@
   justify-content: center;
   align-items: center;
 
-  background-color: rgb(153, 0, 0);
+  background-color: rgba(153, 0, 0, 0.1);
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
   transition: all 0.2s ease;
 
   text-decoration: none !important;
   margin-right: 16px;
-  box-shadow: rgba(153, 0, 0, 0.3) 0px 2px 8px 0px;
+  
 }
 
 .join-us__icon-background:hover {
@@ -26,6 +27,6 @@
 
 .join-us__icon {
   font-size: 22px;
-  color: #fff;
+  color: rgb(153, 0, 0);
   transition: all 0.2s ease;
 }
