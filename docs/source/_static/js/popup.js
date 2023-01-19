@@ -143,7 +143,6 @@ $('#tutorial-popup').hover(() => {}, function () {
 
 // To remove the popup when clicked outside
 $(document).click(function (e) { 
-    e.preventDefault();
     // We can append more of these to close the popups
     if($(e.target).closest('#tutorial-popup').length == 0) {
         removePopup();

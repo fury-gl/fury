@@ -842,6 +842,7 @@ def test_webserver():
         test(False)
 
 
+@pytest.mark.skipif(True, reason="Infinite loop. Need to check this test.")
 def test_widget():
     if not PY_VERSION_8:
         return

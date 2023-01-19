@@ -102,12 +102,12 @@ em {
     cursor: pointer;
 }
 
-#navbar-item {
-    color: var(--colorPrimaryDark);
-    text-decoration: none;
+.navbar-item {
+    color: var(--colorPrimaryDark) !important;
+    text-decoration: none !important;
 }
 
-#navbar-item:hover {
+.navbar-item:hover {
     color: var(--colorPrimaryLight) !important;
 }
 
