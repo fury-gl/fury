@@ -1,8 +1,12 @@
 /* Provided by Sphinx's 'basic' theme, and included in the final set of assets */
 @import "../basic.css";
 
+/* Adding css of different pages */
+@import "./community.css";
+
 /* Providing common css files */
 @import "./navbar.css";
+
 
 :root {
   /*****************************************************************************
