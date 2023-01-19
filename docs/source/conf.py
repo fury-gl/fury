@@ -301,7 +301,8 @@ sphinx_gallery_conf = {
      'image_scrapers': (sc),
      'backreferences_dir': 'api',
      'reference_url': {'fury': None, },
-     'filename_pattern': re.escape(os.sep)
+     'filename_pattern': re.escape(os.sep),
+     "plot_gallery": "'True'",
 }
 
 # -- Options for Blog -------------------------------------------
