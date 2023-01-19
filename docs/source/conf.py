@@ -50,6 +50,7 @@ extensions = [
     'IPython.sphinxext.ipython_console_highlighting',
     'matplotlib.sphinxext.plot_directive',
     'sphinx_copybutton',
+    'ext.prepare_gallery',
     'sphinx_gallery.gen_gallery',
     'ext.build_modref_templates',
     'ext.github',
@@ -292,18 +293,16 @@ from scrap import ImageFileScraper
 sc = ImageFileScraper()
 
 sphinx_gallery_conf = {
-    'doc_module': ('fury',),
-    # path to your examples scripts
-    'examples_dirs': ['../examples', '../tutorials'],
-    # path where to save gallery generated examples
-    'gallery_dirs': ['auto_examples', 'auto_tutorials'],
-    'image_scrapers': (sc),
-    'backreferences_dir': 'api',
-    'reference_url': {
-        'fury': None,
-    },
-    'filename_pattern': re.escape(os.sep),
-    'plot_gallery': "'True'",
+     'doc_module': ('fury',),
+     # path to your examples scripts
+     'examples_dirs': ['../examples_revamp'],
+     # path where to save gallery generated examples
+     'gallery_dirs': ['auto_examples'],
+     'image_scrapers': (sc),
+     'backreferences_dir': 'api',
+     'reference_url': {'fury': None, },
+     'filename_pattern': re.escape(os.sep),
+     'plot_gallery': "'True'",
 }
 
 # -- Options for Blog -------------------------------------------
