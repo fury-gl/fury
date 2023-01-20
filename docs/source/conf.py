@@ -99,7 +99,7 @@ release = fury.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -172,7 +172,7 @@ else:
 # html_theme_options = {}
 html_theme_options = {
   "navigation_depth": 1,
-  "logo_link": 'index.html',
+#   "logo_link": 'index.html',
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
@@ -301,7 +301,8 @@ sphinx_gallery_conf = {
      'image_scrapers': (sc),
      'backreferences_dir': 'api',
      'reference_url': {'fury': None, },
-     'filename_pattern': re.escape(os.sep)
+     'filename_pattern': re.escape(os.sep),
+     "plot_gallery": "'True'",
 }
 
 # -- Options for Blog -------------------------------------------

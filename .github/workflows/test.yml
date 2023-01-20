@@ -112,11 +112,3 @@ jobs:
         else
           ci/run_tests.sh
         fi
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    # - name: Setup tmate session
-    #   if: ${{ failure() }}
-    #   uses: mxschmitt/action-tmate@v3
-    - name: Deploy docs
-      if: success() && github.ref == 'refs/heads/master'
-      run: |
-        bash ci/travis/deploy_docs.sh
