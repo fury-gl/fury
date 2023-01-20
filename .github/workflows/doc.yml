@@ -51,7 +51,7 @@ jobs:
       if: success() && github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
       with:
-        deploy_key: ${{ secrets.GH_TOKEN }}
+        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         external_repository: fury-gl/fury-website
         publish_dir: ./build/html
         destination_dir: dev
@@ -59,7 +59,7 @@ jobs:
       if: success() && github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
       with:
-        deploy_key: ${{ secrets.GH_TOKEN }}
+        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         external_repository: fury-gl/fury-website
         publish_dir: ./build/html-web-only
         destination_dir: v0.8.0
