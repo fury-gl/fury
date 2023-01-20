@@ -47,6 +47,8 @@ jobs:
       run: |
         cd docs
         make -C . html-no-examples
+        ls ./build/html
+        ls ./build/html-web-only
     - name: Deploy Devs
       if: success() && github.ref == 'refs/heads/master'
       uses: peaceiris/actions-gh-pages@v3
