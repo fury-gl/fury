@@ -172,7 +172,7 @@ else:
 # html_theme_options = {}
 html_theme_options = {
   "navigation_depth": 1,
-  "logo_link": 'index.html',
+#   "logo_link": 'index.html',
   "navbar_start": ["custom-title.html"],
   "navbar_center": '',
   "navbar_end": 'custom-navbar.html',
