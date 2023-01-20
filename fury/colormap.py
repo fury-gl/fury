@@ -346,7 +346,7 @@ def create_colormap(v, name='plasma', auto=True):
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
 
-    colormap = cm[newname] if have_matplotlib else get_cmap(newname)
+    colormap = getattr(cm, newname) if have_matplotlib else get_cmap(newname)
     if colormap is None:
         e_s = "Colormap {} is not yet implemented ".format(name)
         raise ValueError(e_s)
