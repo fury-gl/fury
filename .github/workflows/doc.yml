@@ -47,19 +47,35 @@ jobs:
       run: |
         cd docs
         make -C . html-no-examples
+    # - name: Deploy Devs
+    #   if: success() && github.ref == 'refs/heads/master'
+    #   uses: peaceiris/actions-gh-pages@v3
+    #   with:
+    #     deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+    #     external_repository: fury-gl/fury-website
+    #     publish_dir: ./build/html
+    #     destination_dir: dev
+    # - name: Update last release
+    #   if: success() && github.ref == 'refs/heads/master'
+    #   uses: peaceiris/actions-gh-pages@v3
+    #   with:
+    #     deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+    #     external_repository: fury-gl/fury-website
+    #     publish_dir: ./build/html-web-only
+    #     destination_dir: v0.8.0
     - name: Deploy Devs
       if: success() && github.ref == 'refs/heads/master'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: fury-gl/fury-website
-        publish_dir: ./build/html
-        destination_dir: dev
+        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        repository-name: fury-gl/fury-website
+        folder: ./build/html
+        target-folder: dev
     - name: Update last release
       if: success() && github.ref == 'refs/heads/master'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: JamesIves/github-pages-deploy-action@v4
       with:
-        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-        external_repository: fury-gl/fury-website
-        publish_dir: ./build/html-web-only
-        destination_dir: v0.8.0
+        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        repository-name: fury-gl/fury-website
+        folder: ./build/html-web-only
+        target-folder: v0.8.0
