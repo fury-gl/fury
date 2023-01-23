@@ -135,8 +135,7 @@ showm = window.ShowManager(scene, size=(600, 600))
 text = []
 for i in range(4):
     t_actor = actor.vector_text('Function ' + str(i + 1), pos=(0, 0, 0),
-                          scale=(0.17, 0.2, 0.2))
-    t_actor.SetCamera(scene.camera())
+                                scale=(0.17, 0.2, 0.2))
     text.append(t_actor)
 
 grid_ui = ui.GridUI(actors=surfaces, captions=text,
