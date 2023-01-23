@@ -69,7 +69,7 @@ jobs:
       with:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         repository-name: fury-gl/fury-website
-        folder: ./build/html
+        folder: ./docs/build/html
         target-folder: dev
     - name: Update last release
       if: success() && github.ref == 'refs/heads/master'
@@ -77,5 +77,5 @@ jobs:
       with:
         ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
         repository-name: fury-gl/fury-website
-        folder: ./build/html-web-only
+        folder: ./docs/build/html-web-only
         target-folder: v0.8.0
