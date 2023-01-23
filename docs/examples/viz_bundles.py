@@ -178,7 +178,7 @@ scene.clear()
 
 colors = [np.random.rand(*streamline.shape) for streamline in bundle_native]
 
-stream_actor6 = actor.line(bundle_native, colors, linewidth=0.2)
+stream_actor6 = actor.line(bundle_native, np.vstack(colors), linewidth=0.2)
 
 scene.add(stream_actor6)
 
