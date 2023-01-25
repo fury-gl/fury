@@ -105,7 +105,6 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
                     raise RuntimeError('Unknown image mode {}'
                                        .format(pil_image.mode))
                 image = np.asarray(pil_image)
-            image = np.flipud(image)
 
         if as_vtktype:
             if image.ndim not in [2, 3]:
@@ -122,6 +121,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
             vtk_image.SetSpacing(1.0, 1.0, 1.0)
             vtk_image.SetOrigin(0.0, 0.0, 0.0)
 
+            image = np.flipud(image)
             image = image.reshape(image.shape[1] * image.shape[0], depth)
             image = np.ascontiguousarray(image, dtype=image.dtype)
             vtk_array_type = numpy_support.get_vtk_array_type(image.dtype)
@@ -158,6 +158,7 @@ def load_image(filename, as_vtktype=False, use_pillow=True):
 
         components = vtk_array.GetNumberOfComponents()
         image = numpy_support.vtk_to_numpy(vtk_array).reshape(h, w, components)
+        image = np.flipud(image)
 
     if is_url:
         os.remove(filename)
