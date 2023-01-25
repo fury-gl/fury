@@ -6195,8 +6195,6 @@ Navbar
     align-items: center; }
   .navbar.is-fresh .navbar-item {
     color: #999; }
-    .navbar.is-fresh .navbar-item.is-secondary:hover {
-      color: #F39200 !important; }
     .navbar.is-fresh .navbar-item.has-dropdown {
       padding: 10px 0; }
       .navbar.is-fresh .navbar-item.has-dropdown .navbar-link {

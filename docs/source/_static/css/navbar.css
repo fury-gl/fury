@@ -1,0 +1,31 @@
+/* Introducing a new css file for handling navbar css */
+
+/* We will be refractoring all the css of navbar and have single source of truth */
+
+@import "../vendor/vars.css";
+
+
+/* Introduces the color change and highlight */
+.bd-header .navbar-nav li a.nav-link,
+.search-button,
+.navbar-item {
+  color: var(--colorPrimaryDark);
+}
+
+.bd-header .navbar-nav li a.nav-link:hover,
+.search-button:hover,
+.navbar-item:hover {
+  color: var(--colorPrimaryLight);
+}
+
+/* To remove highlight for logo text */
+.navbar-item:hover #navbar-logo-text {
+  color: var(--colorPrimaryDark);
+}
+
+/* For mobile version color handling */
+@media screen and (max-width: 960px) {
+  .navbar-nav li a {
+    color: var(--colorPrimaryDark);
+  }
+}
