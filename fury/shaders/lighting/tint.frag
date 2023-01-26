@@ -1,5 +1,5 @@
-#version 120
-
-void main() {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+vec3 tint(vec3 albedo)
+{
+    float lum = dot(vec3(.3, .6, .1), albedo);
+    return lum > .0 ? albedo / lum : vec3(1);
 }
