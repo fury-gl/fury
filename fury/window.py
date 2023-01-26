@@ -924,6 +924,7 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
         arr = arr.reshape((h, w, components))
+        arr = np.flipud(arr)
         save_image(arr, filename)
 
         ang = +az_ang
@@ -1052,6 +1053,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
     arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
+    arr = np.flipud(arr)
 
     if fname is None:
         return arr
