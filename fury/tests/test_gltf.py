@@ -93,7 +93,7 @@ def test_orientation():
     scene = window.Scene()
     scene.add(actor)
     # if oriented correctly avg of blues on top half will be greater
-    # than the bottom half (window.snapshot captures oppsite of it)
+    # than the bottom half
     display = window.snapshot(scene)
     res = window.analyze_snapshot(display, bg_color=(0, 0, 0),
                                   colors=[(108, 173, 223), (92, 135, 39)],
@@ -104,7 +104,7 @@ def test_orientation():
     upper = np.mean(upper)
     lower = np.mean(lower)
 
-    assert_greater(lower, upper)
+    assert_greater(upper, lower)
     scene.clear()
 
 
