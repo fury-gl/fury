@@ -1,0 +1,128 @@
+[build-system]
+requires = ["setuptools>=65.4", "setuptools_scm[toml]>=7.1", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name =  "fury"
+description = "FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations"
+#long_description = "file: README.md"
+#long_description_content_type = "text/markdown; charset=UTF-8"
+readme = "file: README.md"
+requires-python = ">=3.7"
+license.file="file: LICENSE"
+keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
+            "Physically based rendering", "3D", "3D rendering", "networks",
+            "physics engine", "physics", "simulation", "visualization"]
+authors = [
+    {name = "Eleftherios Garyfallidis", email = "fury@python.org"},
+    {name = "Serge Koudoro", email = "fury@python.org"},
+    {name = "Javier Guaje", email = "fury@python.org"},
+    {name = "Marc-Alexandre Côté", email = "fury@python.org"},
+    {name = "Soham Biswas", email = "fury@python.org"},
+    {name = "David Reagan", email = "fury@python.org"},
+    {name = "Nasim Anousheh", email = "fury@python.org"},
+    {name = "Filipi Silva", email = "fury@python.org"},
+    {name = "Geoffrey Fox", email = "fury@python.org"},
+]
+maintainers = [
+    {name = "FURY Developers", email = "fury@python.org"},
+    ]
+
+classifiers = [
+	"Natural Language :: English",
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "numpy >=1.15",
+	"scipy>=1.0",
+    "vtk>=9.1.0",
+    "pillow>=5.4.1",
+    "packaging >=17.0",
+    "setuptools",
+]
+
+dynamic = ["version"]
+
+[tool.setuptools]
+#packages = ["fury"]
+zip-safe = false
+platforms = ["OS Independent", "Windows", "Mac OS-X", "Linux"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+#where = ["fury"]  # list of folders that contain the packages (["."] by default)
+exclude = ["docs", "tests"]
+
+#[tool.setuptools.package_data]
+# When adding files here, remember to update MANIFEST.in as well,
+# or else they will not be included in the distribution on PyPI!
+# 'path/to/data_file',
+#fury = ["fury/data/files/*", "fury/shaders/*"]
+
+[tool.setuptools_scm]
+write_to = "fury/_version.py"
+
+[project.optional-dependencies]
+
+plot = ["matplotlib>=1.5.3", ]
+
+medical = ["dipy", "nibabel"]
+
+dev = [
+    "gitpython",
+    "twine",
+    ]
+
+doc = [
+    "matplotlib >= 1.5.3",
+    "numpydoc",
+    "sphinx >=0.3,<3",
+    "texext",
+    ]
+
+style = [
+    "flake8",
+    ]
+test = [
+    "coverage",
+    "pytest !=5.3.4",
+    "pytest-cov",
+    "pytest-doctestplus",
+    ]
+all = [
+    "fury[plot]",
+    "fury[dev]",
+    "fury[doc]",
+    "fury[medical]",
+    "fury[style]",
+    "fury[test]",
+    ]
+
+[project.urls]
+Documentation = "https://fury.gl"
+Source = "https://github.com/fury-gl/fury"
+Tracker = "https://github.com/fury-gl/fury/issues"
+
+
+[tool.black]
+line-length = 90
+fast = true
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+fail_under = 100
+
+# [tool.pytest.ini_options]
+# addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 95"

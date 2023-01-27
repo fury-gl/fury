@@ -1,10 +1,14 @@
 """Init file for visualization package."""
 import warnings
-from fury._version import get_versions
 
-__version__ = get_versions()['version']
-__revision_id__ = get_versions()['full-revisionid']
-del get_versions
+try:
+    from ._version import version as __version__
+    from ._version import version_tuple
+    __revision_id__ = version_tuple[-1][1:9]
+except ImportError:
+    __version__ = "unknown version"
+    version_tuple = (0, 0, "unknown version")
+    __revision_id__ = "unknown revision"
 
 
 def get_info(verbose=False):
