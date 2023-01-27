@@ -8,7 +8,6 @@ recursive-exclude * *.py[co]
 
 recursive-include docs *.rst conf.py Makefile make.bat
 
-include versioneer.py
 include fury/_version.py
 
 # If including data files in the package, add them like:
