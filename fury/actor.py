@@ -2857,7 +2857,19 @@ def figure(pic, interpolation='nearest'):
 
     image_actor.Update()
     return image_actor
-
+    
+def latex(input_string):
+    '''Return a latex actor.
+    Parameters
+    ----------
+    input_string : str
+        The latex string to be converted to an actor.
+        Returns
+        -------
+        latex_actor : vtkActor
+        '''
+    # Create a latex actor
+    
 
 def texture(rgb, interp=True):
     """Map an RGB or RGBA texture on a plane.

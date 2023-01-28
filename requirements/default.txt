@@ -6,3 +6,4 @@ packaging
 pillow>=8.0.1
 aiohttp>=3.7.4
 pygltflib>=1.15.1
+pylatex>=1.4.1
