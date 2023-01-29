@@ -783,6 +783,114 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     return actor
 
 
+def dashed_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
+                num_lines=10, line_fraction=0.5):
+    """Create an actor for one or more dashed lines.
+
+    Parameters
+    ------------
+    start_pos :  array (N, 3)
+    end_pos :  array (N, 3)
+    num_lines :  int, optional
+    colors :  array (N, 3)
+    line_fraction :  float
+         it should be between 0 and 1
+
+    Returns
+    ----------
+    v : vtkActor
+        Dashed Line.
+
+    Examples
+    ----------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> start_pos = np.random.rand(3, 3)
+    >>> end_pos = np.random.rand(3, 3)
+    >>> num_lines = 20
+    >>> colors = np.random.rand(3, 3)
+    >>> line_fraction = 0.5
+    >>> c = actor.dashed_line(start_pos, end_pos, colors,
+    >>> num_lines, line_fraction)
+    >>> scene.add(c)
+    >>> #window.show(scene)
+    """
+    N = start_pos.shape[0]
+    arr = np.empty((num_lines * N, 2, 3))
+
+    for start_pos, end_pos, x in zip(start_pos, end_pos, range(0, N)):
+        dp = (end_pos - start_pos) / num_lines
+        p = start_pos.copy()
+        count = 0
+        while count < num_lines:
+            arr[x * num_lines + count] = \
+                np.array([p,  p + (dp * line_fraction)])
+            count = count + 1
+            p = p + dp
+    c = line(arr, np.repeat(colors, num_lines, axis=0))
+    return c
+
+
+def dotted_line(start_pos, end_pos, colors=np.array([[1, 0, 0]]),
+                num_points=10, radius=0.01, dots_actor=False):
+    """Create an actor for one or more dotted lines.
+
+    Parameters
+    ------------
+    start_pos : array (N, 3)
+    end_pos :  array (N, 3)
+    num_points :  int, optional
+    colors :  array (N, 3)
+    radius :  float
+    dots_actor :  bool
+
+    Returns
+    ----------
+    v : vtkActor
+        Dotted Line.
+
+    Examples
+    ----------
+    >>> from fury import window, actor
+    >>> import numpy as np
+    >>> scene = window.Scene()
+    >>> start_pos = np.random.rand(3, 3)
+    >>> end_pos = np.random.rand(3, 3)
+    >>> num_points = 20
+    >>> colors = np.random.rand(3, 3)
+    >>> radius = 0.01
+    >>> dot_size = 5
+    >>> c = actor.dotted_line(start_pos, end_pos, colors,
+    >>> num_points, dot_size, dots_actor=True)
+    >>> d = actor.dotted_line(start_pos, end_pos, colors,
+    >>> num_points, radius, dots_actor=False)
+    >>> # scene.add(c)
+    >>> scene.add(d)
+    >>> # window.show(scene)
+    """
+    N = start_pos.shape[0]
+    arr = np.empty((num_points * N, 3))
+
+    for start_pos, end_pos, x in zip(start_pos, end_pos, range(0, N)):
+        dp = (end_pos - start_pos) / (num_points-1)
+        p = start_pos.copy()
+        count = 0
+        while count < num_points:
+            arr[x * num_points + count] = np.array([p])
+            count = count + 1
+            p = p + dp
+    if dots_actor:
+        if colors.ndim != 1:
+            color = colors[0]
+            c = dots(points=arr, color=color, dot_size=radius)
+    else:
+        c = point(points=arr, colors=np.repeat(colors, num_points, axis=0),
+                  point_radius=radius)
+
+    return c
+
+
 def scalar_bar(lookup_table=None, title=" "):
     """ Default scalar bar actor for a given colormap (colorbar)
 
