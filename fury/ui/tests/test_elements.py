@@ -1124,6 +1124,68 @@ def test_ui_draw_panel_rotation(interactive=False):
         event_counter.check_counts(expected)
 
 
+def test_ui_draw_panel_grouping(interactive=False):
+    filename = "test_ui_draw_panel_grouping"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Grouping UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Grouping/Ungrouping Shapes
+    #  2. Translation/Rotation of Grouped Shapes
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
+def test_ui_draw_panel_polyline(interactive=False):
+    filename = "test_ui_draw_panel_polyline"
+    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+
+    drawpanel = ui.DrawPanel(size=(600, 600), position=(30, 10))
+
+    # Assign the counter callback to every possible event.
+    event_counter = EventCounter()
+    event_counter.monitor(drawpanel)
+
+    current_size = (680, 680)
+    show_manager = window.ShowManager(
+        size=current_size, title="DrawPanel Polyline UI Example")
+    show_manager.scene.add(drawpanel)
+
+    # Recorded events:
+    #  1. Creating Polyline
+    #  2. Translation/Rotation of Polyline
+
+    if interactive:
+        show_manager.record_events_to_file(recording_filename)
+        print(list(event_counter.events_counts.items()))
+        event_counter.save(expected_events_counts_filename)
+
+    else:
+        show_manager.play_events_from_file(recording_filename)
+        expected = EventCounter.load(expected_events_counts_filename)
+        event_counter.check_counts(expected)
+
+
 def test_playback_panel(interactive=False):
     global playing, paused, stopped, loop, ts
 
