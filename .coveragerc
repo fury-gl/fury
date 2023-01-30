@@ -5,5 +5,6 @@ include = */fury/*
 omit =
     */setup.py
     */_version.py
+    */tests/*
 [report]
 show_missing = True
