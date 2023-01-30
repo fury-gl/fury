@@ -26,8 +26,8 @@ import vtkmodules.vtkRenderingLOD as rlodvtk
 import vtkmodules.vtkRenderingOpenGL2 as roglvtk
 
 
-from vtkmodules.util import numpy_support, colors
-from vtkmodules.util.misc import calldata_type
+from vtkmodules.util import numpy_support, colors  # noqa: F401
+from vtkmodules.util.misc import calldata_type   # noqa: F401
 
 
 VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()

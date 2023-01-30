@@ -78,7 +78,7 @@ async def mjpeg_handler(request):
 
 async def offer(request, **kwargs):
     video = kwargs['video']
-    if("broadcast" in kwargs and kwargs["broadcast"]):
+    if "broadcast" in kwargs and kwargs["broadcast"]:
         video = MediaRelay().subscribe(video)
 
     params = await request.json()
