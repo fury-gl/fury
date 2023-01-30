@@ -135,7 +135,8 @@ def test_rotate():
 
     report = window.analyze_snapshot(arr2)
     npt.assert_equal(report.objects, 1)
-    assert_greater(center_of_mass(arr2), center_of_mass(arr1))
+    # x coord of c.o.m of rotated cone should be greater
+    assert_greater(center_of_mass(arr2)[1], center_of_mass(arr1)[1])
 
 
 def test_transform_from_matrix():

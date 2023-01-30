@@ -360,11 +360,11 @@ def test_replace_shader_in_actor(interactive=False):
     if interactive:
         window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
+    actual = ss[160, 140, :]
     npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[140, 40, :]
+    actual = ss[60, 40, :]
     npt.assert_array_equal(actual, [0, 0, 0])
-    actual = ss[40, 40, :]
+    actual = ss[160, 40, :]
     npt.assert_array_equal(actual, [0, 0, 0])
     scene.clear()
     replace_shader_in_actor(test_actor, 'geometry', geometry_code)
@@ -372,11 +372,11 @@ def test_replace_shader_in_actor(interactive=False):
     if interactive:
         window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[40, 140, :]
+    actual = ss[160, 140, :]
     npt.assert_array_equal(actual, [255, 0, 0])
-    actual = ss[140, 40, :]
+    actual = ss[60, 40, :]
     npt.assert_array_equal(actual, [0, 255, 0])
-    actual = ss[40, 40, :]
+    actual = ss[160, 40, :]
     npt.assert_array_equal(actual, [0, 0, 255])
 
 
