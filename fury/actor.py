@@ -20,19 +20,16 @@ from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
                       Points, CleanPolyData, LoopSubdivisionFilter, TubeFilter,
                       ButterflySubdivisionFilter, ContourFilter, SplineFilter,
                       PolyDataNormals, Assembly, LODActor, VTK_UNSIGNED_CHAR,
-                      PolyDataMapper2D, ScalarBarActor, PolyVertex, CellArray,
-                      UnstructuredGrid, DataSetMapper, ConeSource, ArrowSource,
-                      SphereSource, CylinderSource, DiskSource,
-                      TexturedSphereSource,
-                      Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
-                      VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
+                      PolyDataMapper2D, ScalarBarActor, CellArray,
+                      ConeSource, ArrowSource, SphereSource, CylinderSource,
+                      DiskSource, TexturedSphereSource, Texture, FloatArray,
                       TexturedActor2D, TextureMapToPlane, TextActor3D,
                       Follower, VectorText, TransformPolyDataFilter,
                       LinearExtrusionFilter)
 import fury.primitive as fp
 from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
                         set_polydata_vertices, set_polydata_triangles,
-                        shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
+                        shallow_copy, rgb_to_vtk,
                         repeat_sources, get_actor_from_primitive,
                         fix_winding_order, numpy_to_vtk_colors, color_check,
                         set_polydata_primitives_count)
@@ -967,6 +964,7 @@ def _roll_evals(evals, axis=-1):
 
     return evals
 
+
 def _fa(evals, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
 
@@ -1167,7 +1165,7 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vertices = sphere.vertices
 
     if scalar_colors is None:
-        #from dipy.reconst.dti import color_fa, fractional_anisotropy
+        # from dipy.reconst.dti import color_fa, fractional_anisotropy
         cfa = _color_fa(_fa(evals), evecs)
     else:
         cfa = _makeNd(scalar_colors, 4)
@@ -2573,7 +2571,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def get_position(self):
             return self.GetPosition()
-
 
     text_actor = Text3D()
     text_actor.message(text)

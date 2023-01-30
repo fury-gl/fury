@@ -240,7 +240,7 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transformation(normals, 
+                normals = transform.apply_transformation(normals,
                                                          transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
@@ -367,8 +367,8 @@ class glTF:
             out_arr = out_arr.reshape(-1, byte_stride)
             return out_arr
 
-        except IOError as e:
-            print(f'Failed to read ! Error in opening file:')
+        except IOError:
+            print('Failed to read ! Error in opening file:')
 
     def get_materials(self, mat_id):
         """Get the material data.
@@ -586,7 +586,7 @@ class glTF:
         }
         self.sampler_matrices[node] = data
         return data
-    
+
     def get_morph_data(self, target, mesh_id):
         weights_array = self.gltf.meshes[mesh_id].weights
         if target.get('POSITION') is not None:
@@ -924,7 +924,7 @@ class glTF:
 
     def get_animations(self):
         """Return list of animations.
- 
+
         Returns
         -------
         animations: List
@@ -981,18 +981,18 @@ class glTF:
 
                         if prop == 'rotation':
                             animation.set_rotation(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
+                                                   in_tangent=in_tan,
+                                                   out_tangent=out_tan)
                             animation.set_rotation_interpolator(rot_interp)
                         if prop == 'translation':
                             animation.set_position(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
+                                                   in_tangent=in_tan,
+                                                   out_tangent=out_tan)
                             animation.set_position_interpolator(interpolator)
                         if prop == 'scale':
                             animation.set_scale(time[0], trs,
-                                               in_tangent=in_tan,
-                                               out_tangent=out_tan)
+                                                in_tangent=in_tan,
+                                                out_tangent=out_tan)
                             animation.set_scale_interpolator(interpolator)
                 else:
                     animation.add_static_actor(actors[i])

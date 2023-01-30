@@ -622,7 +622,7 @@ def hex_to_rgb(color):
     g = int("0x" + color[2: 4], 0) / 255
     b = int("0x" + color[4: 6], 0) / 255
 
-    return(np.array([r, g, b]))
+    return (np.array([r, g, b]))
 
 
 def rgb2hsv(rgb):

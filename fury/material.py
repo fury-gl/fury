@@ -159,7 +159,7 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
         try:
             prop.SetInterpolationToPBR()
 
-            #pbr_params = {'metallic': metallic, 'roughness': roughness,
+            # pbr_params = {'metallic': metallic, 'roughness': roughness,
             #              'anisotropy': anisotropy,
             #              'anisotropy_rotation': anisotropy_rotation,
             #              'coat_strength': coat_strength,
@@ -169,14 +169,14 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
             pbr_params = __PBRParams(prop, metallic, roughness, anisotropy,
                                      anisotropy_rotation, coat_strength,
                                      coat_roughness, base_ior, coat_ior)
-            #prop.SetMetallic(pbr_params['metallic'])
-            #prop.SetRoughness(pbr_params['roughness'])
-            #prop.SetAnisotropy(pbr_params['anisotropy'])
-            #prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
-            #prop.SetCoatStrength(pbr_params['coat_strength'])
-            #prop.SetCoatRoughness(pbr_params['coat_roughness'])
-            #prop.SetBaseIOR(pbr_params['base_ior'])
-            #prop.SetCoatIOR(pbr_params['coat_ior'])
+            # prop.SetMetallic(pbr_params['metallic'])
+            # prop.SetRoughness(pbr_params['roughness'])
+            # prop.SetAnisotropy(pbr_params['anisotropy'])
+            # prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
+            # prop.SetCoatStrength(pbr_params['coat_strength'])
+            # prop.SetCoatRoughness(pbr_params['coat_roughness'])
+            # prop.SetBaseIOR(pbr_params['base_ior'])
+            # prop.SetCoatIOR(pbr_params['coat_ior'])
             return pbr_params
         except AttributeError:
             warnings.warn(
@@ -350,4 +350,3 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         warnings.warn('Actor does not have the attribute property. This '
                       'material will not be applied.')
         return
-

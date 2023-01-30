@@ -106,3 +106,5 @@ target/
 tmp/
 temp/
 
+_version.py
+
