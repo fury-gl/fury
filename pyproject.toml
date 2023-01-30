@@ -1,15 +1,13 @@
 [build-system]
-requires = ["setuptools>=65.4", "setuptools_scm[toml]>=7.1", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name =  "fury"
 description = "FURY - Free Unified Rendering in pYthon. A free and open-source software library for Scientific Visualization and 3D animations"
-#long_description = "file: README.md"
-#long_description_content_type = "text/markdown; charset=UTF-8"
-readme = "file: README.md"
-requires-python = ">=3.7"
-license.file="file: LICENSE"
+readme = "README.md"
+requires-python = ">=3.8"
+license.file="LICENSE"
 keywords = ["Scientific Visualization", "shaders", "animation", "simulation",
             "Physically based rendering", "3D", "3D rendering", "networks",
             "physics engine", "physics", "simulation", "visualization"]
@@ -36,9 +34,10 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering",
 ]
 
@@ -48,75 +47,72 @@ dependencies = [
     "vtk>=9.1.0",
     "pillow>=5.4.1",
     "packaging >=17.0",
-    "setuptools",
 ]
 
 dynamic = ["version"]
-
-[tool.setuptools]
-#packages = ["fury"]
-zip-safe = false
-platforms = ["OS Independent", "Windows", "Mac OS-X", "Linux"]
-include-package-data = true
-
-[tool.setuptools.packages.find]
-#where = ["fury"]  # list of folders that contain the packages (["."] by default)
-exclude = ["docs", "tests"]
-
-#[tool.setuptools.package_data]
-# When adding files here, remember to update MANIFEST.in as well,
-# or else they will not be included in the distribution on PyPI!
-# 'path/to/data_file',
-#fury = ["fury/data/files/*", "fury/shaders/*"]
-
-[tool.setuptools_scm]
-write_to = "fury/_version.py"
-
-[project.optional-dependencies]
-
-plot = ["matplotlib>=1.5.3", ]
-
-medical = ["dipy", "nibabel"]
-
-dev = [
-    "gitpython",
-    "twine",
-    ]
-
-doc = [
-    "matplotlib >= 1.5.3",
-    "numpydoc",
-    "sphinx >=0.3,<3",
-    "texext",
-    ]
-
-style = [
-    "flake8",
-    ]
-test = [
-    "coverage",
-    "pytest !=5.3.4",
-    "pytest-cov",
-    "pytest-doctestplus",
-    ]
-all = [
-    "fury[plot]",
-    "fury[dev]",
-    "fury[doc]",
-    "fury[medical]",
-    "fury[style]",
-    "fury[test]",
-    ]
 
 [project.urls]
 Documentation = "https://fury.gl"
 Source = "https://github.com/fury-gl/fury"
 Tracker = "https://github.com/fury-gl/fury/issues"
 
+[project.optional-dependencies]
 
-[tool.black]
-line-length = 90
-fast = true
+all = ["fury[plot, dev, doc, medical, style, test]"]
+plot = ["matplotlib>=1.5.3", ]
+medical = ["dipy", "nibabel"]
+dev = [
+    "gitpython",
+    "twine",
+    ]
+doc = [
+    "matplotlib >= 1.5.3",
+    "numpydoc",
+    "sphinx >=6.1.2",
+    "texext",
+    "tomli; python_version < \"3.11\"",
+    ]
+style = ["flake8", "blue", "isort", "pre-commit"]
+test = [
+    "coverage",
+    "pytest !=5.3.4",
+    "pytest-cov",
+    "pytest-doctestplus",
+    ]
+
+[tool.hatch.build.targets.sdist]
+exclude = [".git_archival.txt"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["fury",]
+exclude = []
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { version_scheme = "release-branch-semver" }
+
+[tool.hatch.build.hooks.vcs]
+version-file = "fury/_version.py"
+
+[tool.blue]
+line_length = 99
+target-version = ["py38"]
+force-exclude = """
+(
+  _version.py
+)
+"""
+
+[tool.isort]
+profile = "black"
+line_length = 99
+extend_skip = ["_version.py", "externals"]
+
+[tool.mypy]
+python_version = "3.11"
+exclude = [
+  "/tests",
+]
 
 [tool.coverage.run]
 branch = true
