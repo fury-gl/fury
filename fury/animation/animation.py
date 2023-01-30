@@ -7,7 +7,7 @@ from fury.actor import line
 from fury import utils
 from fury.lib import Actor, Transform, Camera
 from fury.animation.interpolator import spline_interpolator, \
-    step_interpolator, linear_interpolator, slerp
+    step_interpolator, linear_interpolator, slerp    # noqa F401
 
 
 class Animation:

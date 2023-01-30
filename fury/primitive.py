@@ -4,7 +4,7 @@ from os.path import join as pjoin
 from packaging.version import parse
 
 import numpy as np
-from scipy.spatial import ConvexHull, transform
+from scipy.spatial import ConvexHull
 from scipy.version import short_version
 
 from fury.data import DATA_DIR

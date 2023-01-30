@@ -283,7 +283,7 @@ class Timeline:
             self._animations.append(animation)
             self.update_duration()
         else:
-            raise TypeError(f"Expected an Animation, a list or a tuple.")
+            raise TypeError("Expected an Animation, a list or a tuple.")
 
     @property
     def animations(self) -> 'list[Animation]':

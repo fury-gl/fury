@@ -9,7 +9,7 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 from fury.animation import Timeline, Animation
-from fury.decorators import is_osx, is_win
+from fury.decorators import is_win
 
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
@@ -617,7 +617,6 @@ class ShowManager(object):
         # del self.iren
         # del self.window
 
-
     def play_events_from_file(self, filename):
         """Play recorded events of a past interaction.
 
@@ -669,10 +668,6 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        # if is_osx and self.timers:
-            # OSX seems to not destroy correctly timers
-            # segfault 11 appears sometimes if we do not do it manually.
-
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
