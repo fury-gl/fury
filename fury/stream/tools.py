@@ -15,7 +15,7 @@ if PY_VERSION_8:
     from multiprocessing import shared_memory
     from multiprocessing import resource_tracker
 else:
-    shared_memory = None
+    shared_memory = None   # type: ignore
 
 
 _FLOAT_ShM_TYPE = 'd'

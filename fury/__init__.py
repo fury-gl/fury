@@ -7,7 +7,7 @@ try:
     __revision_id__ = version_tuple[-1][1:9]
 except ImportError:
     __version__ = "unknown version"
-    version_tuple = (0, 0, "unknown version")
+    version_tuple = (0, 0, 0, "unknown version", "unknown version")
     __revision_id__ = "unknown revision"
 
 
