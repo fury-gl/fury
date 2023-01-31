@@ -12,11 +12,11 @@ compared to traditional polygons based modeling.
 
 In this example we use the raymarching algorithm to render the SDF primitives
 shapes using shaders
-
 """
 
 import numpy as np
-from fury import window, actor
+
+from fury import actor, window
 
 ###############################################################################
 # Lets define variables for the SDF Actor
@@ -30,9 +30,13 @@ scales = np.random.rand(4, 1)
 ###############################################################################
 # Create SDF Actor
 
-sdfactor = actor.sdf(centers=centers, directions=dirs, colors=colors,
-                     primitives=['sphere', 'torus', 'ellipsoid', 'capsule'],
-                     scales=scales)
+sdfactor = actor.sdf(
+    centers=centers,
+    directions=dirs,
+    colors=colors,
+    primitives=['sphere', 'torus', 'ellipsoid', 'capsule'],
+    scales=scales,
+)
 
 ##############################################################################
 # Create a scene
@@ -49,8 +53,7 @@ scene.add(sdfactor)
 # manager.
 
 current_size = (1024, 720)
-showm = window.ShowManager(scene, size=current_size,
-                           title="Visualize SDF Actor")
+showm = window.ShowManager(scene, size=current_size, title='Visualize SDF Actor')
 
 interactive = False
 

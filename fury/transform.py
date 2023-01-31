@@ -1,21 +1,38 @@
 import math
+
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot  # type: ignore
-
 
 # axis sequences for Euler angles
 _NEXT_AXIS = [1, 2, 0, 1]
 
 # map axes strings to/from tuples of inner axis, parity, repetition, frame
 _AXES2TUPLE = {
-    'sxyz': (0, 0, 0, 0), 'sxyx': (0, 0, 1, 0), 'sxzy': (0, 1, 0, 0),
-    'sxzx': (0, 1, 1, 0), 'syzx': (1, 0, 0, 0), 'syzy': (1, 0, 1, 0),
-    'syxz': (1, 1, 0, 0), 'syxy': (1, 1, 1, 0), 'szxy': (2, 0, 0, 0),
-    'szxz': (2, 0, 1, 0), 'szyx': (2, 1, 0, 0), 'szyz': (2, 1, 1, 0),
-    'rzyx': (0, 0, 0, 1), 'rxyx': (0, 0, 1, 1), 'ryzx': (0, 1, 0, 1),
-    'rxzx': (0, 1, 1, 1), 'rxzy': (1, 0, 0, 1), 'ryzy': (1, 0, 1, 1),
-    'rzxy': (1, 1, 0, 1), 'ryxy': (1, 1, 1, 1), 'ryxz': (2, 0, 0, 1),
-    'rzxz': (2, 0, 1, 1), 'rxyz': (2, 1, 0, 1), 'rzyz': (2, 1, 1, 1)}
+    'sxyz': (0, 0, 0, 0),
+    'sxyx': (0, 0, 1, 0),
+    'sxzy': (0, 1, 0, 0),
+    'sxzx': (0, 1, 1, 0),
+    'syzx': (1, 0, 0, 0),
+    'syzy': (1, 0, 1, 0),
+    'syxz': (1, 1, 0, 0),
+    'syxy': (1, 1, 1, 0),
+    'szxy': (2, 0, 0, 0),
+    'szxz': (2, 0, 1, 0),
+    'szyx': (2, 1, 0, 0),
+    'szyz': (2, 1, 1, 0),
+    'rzyx': (0, 0, 0, 1),
+    'rxyx': (0, 0, 1, 1),
+    'ryzx': (0, 1, 0, 1),
+    'rxzx': (0, 1, 1, 1),
+    'rxzy': (1, 0, 0, 1),
+    'ryzy': (1, 0, 1, 1),
+    'rzxy': (1, 1, 0, 1),
+    'ryxy': (1, 1, 1, 1),
+    'ryxz': (2, 0, 0, 1),
+    'rzxz': (2, 0, 1, 1),
+    'rxyz': (2, 1, 0, 1),
+    'rzyz': (2, 1, 1, 1),
+}
 
 _TUPLE2AXES = dict((v, k) for k, v in _AXES2TUPLE.items())
 
@@ -200,7 +217,7 @@ def cart2sphere(x, y, z):
     """
     r = np.sqrt(x * x + y * y + z * z)
     theta = np.arccos(np.divide(z, r, where=r > 0))
-    theta = np.where(r > 0, theta, 0.)
+    theta = np.where(r > 0, theta, 0.0)
     phi = np.arctan2(y, x)
     r, theta, phi = np.broadcast_arrays(r, theta, phi)
     return r, theta, phi
@@ -235,10 +252,7 @@ def translate(translation):
     iden = np.identity(4)
     translation = np.append(translation, 0).reshape(-1, 1)
 
-    t = np.array([[0, 0, 0, 1],
-                  [0, 0, 0, 1],
-                  [0, 0, 0, 1],
-                  [0, 0, 0, 1]], np.float32)
+    t = np.array([[0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1], [0, 0, 0, 1]], np.float32)
     translation = np.multiply(t, translation)
     translation = np.add(iden, translation)
 
@@ -318,7 +332,7 @@ def scale(scales):
 
 
 def apply_transformation(vertices, transformation):
-    """ Multiplying transformation matrix with vertices
+    """Multiplying transformation matrix with vertices
 
     Parameters
     ----------
@@ -338,7 +352,7 @@ def apply_transformation(vertices, transformation):
 
     vertices = np.dot(transformation, vertices.T)
     vertices = vertices.T
-    vertices = vertices[:, :shape[1]]
+    vertices = vertices[:, : shape[1]]
 
     return vertices
 
@@ -361,7 +375,7 @@ def transform_from_matrix(matrix):
     scale : ndarray (3, )
         scale component from the transformation matrix.
     """
-    translate = matrix[:, -1:].reshape((-1, ))[:-1]
+    translate = matrix[:, -1:].reshape((-1,))[:-1]
 
     temp = matrix[:, :3][:3]
     sx = np.linalg.norm(temp[:, :1])

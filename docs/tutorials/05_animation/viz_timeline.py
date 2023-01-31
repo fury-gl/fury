@@ -5,7 +5,6 @@ Timeline and setting keyframes
 
 In his tutorial, you will learn how to use Fury ``Timeline`` for playing the
 animations.
-
 """
 
 ###############################################################################
@@ -19,6 +18,7 @@ animations.
 
 
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation, Timeline
 
@@ -65,10 +65,7 @@ anim.set_position(0.0, np.array([1, 2, 3]))
 #
 # 2- To set multiple keyframes at once, you may use
 # ``animation.set_<property>_keyframes(keyframes)``.
-keyframes = {
-    1.0: np.array([0, 0, 0]),
-    3.0: np.array([-2, 0, 0])
-}
+keyframes = {1.0: np.array([0, 0, 0]), 3.0: np.array([-2, 0, 0])}
 
 anim.set_position_keyframes(keyframes)
 
@@ -92,5 +89,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_timeline.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_animation_timeline.png', size=(900, 768))

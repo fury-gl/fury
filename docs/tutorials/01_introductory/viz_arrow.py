@@ -7,8 +7,8 @@ This example shows how to use the arrow actor.
 """
 
 import numpy as np
-from fury import window, actor
 
+from fury import actor, window
 
 ############################################################################
 # First thing, you have to specify centers, directions, and colors of the

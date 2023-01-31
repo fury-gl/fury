@@ -8,7 +8,7 @@ Join Us!
 --------
 
 .. raw:: html
-    
+
     <div class="join-us__container">
         <a href='https://discord.gg/6btFPPj' class="join-us__icon-background m-r-10">
             <i class="fab fa-discord fa-fw join-us__icon"></i>

@@ -27,21 +27,20 @@ Linux
 OS X
 
 `brew install ffmpeg opus libvpx pkg-config`
-
-
 """
 
-import sys
 import multiprocessing
+import sys
+
 import numpy as np
+
+from fury import actor, window
+from fury.stream.client import FuryStreamClient, FuryStreamInteraction
+
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
-from fury.stream.server.main import web_server, web_server_raw_array
-from fury.stream.client import FuryStreamClient, FuryStreamInteraction
-from fury.stream.server.main import WEBRTC_AVAILABLE
-from fury import actor, window
-
+from fury.stream.server.main import WEBRTC_AVAILABLE, web_server, web_server_raw_array
 
 if __name__ == '__main__':
     interactive = False
@@ -73,19 +72,10 @@ if __name__ == '__main__':
     # max number of interactions to be stored inside the queue
     max_queue_size = 17
     ######################################################################
-    centers = np.array([
-        [0, 0, 0],
-        [-1, 0, 0],
-        [1, 0, 0]
-    ])
-    colors = np.array([
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-    ])
+    centers = np.array([[0, 0, 0], [-1, 0, 0], [1, 0, 0]])
+    colors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    actors = actor.sphere(
-        centers, opacity=.5, radii=.4, colors=colors)
+    actors = actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
     scene = window.Scene()
 
     scene.add(actors)
@@ -93,11 +83,11 @@ if __name__ == '__main__':
     showm = window.ShowManager(scene, size=(window_size[0], window_size[1]))
 
     stream = FuryStreamClient(
-        showm, max_window_size=max_window_size,
-        use_raw_array=use_raw_array)
+        showm, max_window_size=max_window_size, use_raw_array=use_raw_array
+    )
     stream_interaction = FuryStreamInteraction(
-        showm, max_queue_size=max_queue_size,
-        use_raw_array=use_raw_array)
+        showm, max_queue_size=max_queue_size, use_raw_array=use_raw_array
+    )
 
     if use_raw_array:
         p = multiprocessing.Process(
@@ -111,7 +101,7 @@ if __name__ == '__main__':
                 'localhost',
                 True,
                 WEBRTC_AVAILABLE,
-            )
+            ),
         )
 
     else:
@@ -126,11 +116,13 @@ if __name__ == '__main__':
                 'localhost',
                 True,
                 WEBRTC_AVAILABLE,
-            )
+            ),
         )
     p.start()
     stream_interaction.start(ms=ms_interaction)
-    stream.start(ms_stream,)
+    stream.start(
+        ms_stream,
+    )
     ###########################################################################
     # If you have aiortc in your system, you can see your live streaming
     # through the following url: htttp://localhost:8000/?enconding=webrtc
@@ -149,5 +141,4 @@ if __name__ == '__main__':
     stream.cleanup()
     stream_interaction.cleanup()
 
-    window.record(
-        showm.scene, size=window_size, out_path="viz_interaction.png")
+    window.record(showm.scene, size=window_size, out_path='viz_interaction.png')

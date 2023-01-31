@@ -6,8 +6,8 @@ In this tutorial, we will show how to use morphing in a glTF model in FURY.
 """
 
 from fury import window
-from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
+from fury.gltf import glTF
 
 ##############################################################################
 # Retrieving the model with morphing in it (look at Khronoos samples).
@@ -41,8 +41,9 @@ gltf_obj.update_morph(animation)
 # actors to the scene seperately).
 
 scene = window.Scene()
-showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=True, order_transparent=True
+)
 
 showm.initialize()
 scene.add(animation)
@@ -70,5 +71,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_morphing.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_morphing.png', size=(900, 768))

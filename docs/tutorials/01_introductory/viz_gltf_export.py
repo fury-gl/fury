@@ -5,6 +5,7 @@ Exporting scene as a glTF file
 In this tutorial, we will show how to create a glTF file for a scene.
 """
 import numpy as np
+
 from fury import actor, gltf, window
 from fury.data import fetch_gltf, read_viz_gltf
 
@@ -23,7 +24,7 @@ scene = window.Scene()
 ##############################################################################
 # Creating actors and adding to scene.
 
-cube = actor.cube(np.add(centers, np.array([2, 0, 0])), colors=colors/2)
+cube = actor.cube(np.add(centers, np.array([2, 0, 0])), colors=colors / 2)
 scene.add(cube)
 
 sphere = actor.sphere(np.add(centers, np.array([0, 2, 0])), colors=colors)
@@ -38,13 +39,14 @@ scene.add(box_actor[0])
 ##############################################################################
 # Setting camera to the scene.
 
-scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 1.0))
+scene.set_camera(
+    position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0), view_up=(0.0, 0.0, 1.0)
+)
 
 ##############################################################################
 # Exporting scene as a glTF file
 
-gltf.export_scene(scene, filename="viz_gltf_export.gltf")
+gltf.export_scene(scene, filename='viz_gltf_export.gltf')
 
 ##############################################################################
 # Reading the newly created glTF file and get actors.

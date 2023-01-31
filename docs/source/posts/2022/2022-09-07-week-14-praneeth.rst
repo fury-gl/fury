@@ -3,14 +3,14 @@ Week 14 - Updating DrawPanel architecture
 =========================================
 
 .. post:: September 7 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
 
 What did you do this week?
 --------------------------
-This week I continued updating the DrawShape and DrawPanel. 
+This week I continued updating the DrawShape and DrawPanel.
 
 So as we can see below, whenever we create, translate, or rotate the shapes on the panel, it sometimes overlaps the `mode_panel` or `mode_text` which are used to select and show the current mode respectively.
 

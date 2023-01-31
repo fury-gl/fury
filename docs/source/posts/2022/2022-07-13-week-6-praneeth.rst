@@ -3,7 +3,7 @@ Week 6 - Supporting Rotation of the Shapes from the Center
 ==========================================================
 
 .. post:: July 13 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

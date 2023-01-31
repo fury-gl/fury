@@ -17,9 +17,9 @@ FURY/Helios
 -  `PR fury-gl/helios#22
    : <https://github.com/fury-gl/helios/pull/22>`__ Helios Documentation
    Improvements.
-   I’ve spent some time studying sphinx in order to discover how I could create a 
+   I’ve spent some time studying sphinx in order to discover how I could create a
    custom summary inside of a template module.
-   
+
 FURY
 ^^^^
 Added my GSoC blogs to the FURY blogs as requested by my mentors.

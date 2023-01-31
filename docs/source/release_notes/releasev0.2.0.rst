@@ -28,7 +28,7 @@ The following 5 authors contributed 186 commits.
 
 
 We closed a total of 60 issues, 20 pull requests and 40 regular issues;
-this is the full list (generated with the script 
+this is the full list (generated with the script
 :file:`ext/github_tools.py`):
 
 Pull Requests (20):
@@ -39,7 +39,7 @@ Pull Requests (20):
 * :ghpull:`60`: backward compatibilities
 * :ghpull:`59`: [NF] Add get_info function
 * :ghpull:`58`: Tests addition
-* :ghpull:`57`: Add tests to utils module 
+* :ghpull:`57`: Add tests to utils module
 * :ghpull:`52`: [Fix] add filterwarnings
 * :ghpull:`56`: Increase Codacy rank
 * :ghpull:`32`: The grid - add actors in a grid and interact with each one of them independently
@@ -63,7 +63,7 @@ Issues (40):
 * :ghissue:`59`: [NF] Add get_info function
 * :ghissue:`58`: Tests addition
 * :ghissue:`8`: dipy.viz.colormap crash on single fibers
-* :ghissue:`57`: Add tests to utils module 
+* :ghissue:`57`: Add tests to utils module
 * :ghissue:`52`: [Fix] add filterwarnings
 * :ghissue:`46`: Hide/Ignore numpy_vtk support warning
 * :ghissue:`56`: Increase Codacy rank
@@ -82,11 +82,11 @@ Issues (40):
 * :ghissue:`40`: Re-enable transparency test, change colors
 * :ghissue:`2`: Dipy visualization (fvtk) crash when saving series of images
 * :ghissue:`4`: fvtk contour function ignores voxsz parameter
-* :ghissue:`1`: fvtk.label won't show up if called twice 
+* :ghissue:`1`: fvtk.label won't show up if called twice
 * :ghissue:`39`: removing widget module
 * :ghissue:`21`: Add depth_cue and fake_tube to simulate tubes with lines
 * :ghissue:`3`: Dipy visualization with missing (?) affine parameter
-* :ghissue:`5`: How to resolve python-vtk6 link issues in Ubuntu 
+* :ghissue:`5`: How to resolve python-vtk6 link issues in Ubuntu
 * :ghissue:`29`: Added surface function
 * :ghissue:`30`: Add doc generation on Travis
 * :ghissue:`23`: DOC: sphinx_gallery master branch is required
