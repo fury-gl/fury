@@ -280,23 +280,23 @@ class Timeline:
 
         Parameters
         -----------
-        fname : str, optional, default : None
+        fname : str, optional
             The file name. Save a GIF file if name ends with '.gif', or mp4
             video if name ends with'.mp4'.
             If None, this method will only return an array of frames.
-        fps : int, optional, default 30
+        fps : int, optional
             The number of frames per second of the record.
         size : (int, int)
             ``(width, height)`` of the window. Default is (900, 768).
         speed : float, optional, default 1.0
             The speed of the animation.
-        order_transparent : bool
+        order_transparent : bool, optional
             Default False. Use depth peeling to sort transparent objects.
             If True also enables anti-aliasing.
-        multi_samples : int
-            Number of samples for anti-aliazing (Default 8).
+        multi_samples : int, optional
+            Number of samples for anti-aliasing (Default 8).
             For no anti-aliasing use 0.
-        max_peels : int
+        max_peels : int, optional
             Maximum number of peels for depth peeling (Default 4).
         show_panel : bool, optional, default False
             Controls whether to show the playback (if True) panel of hide it
@@ -309,7 +309,7 @@ class Timeline:
 
         Notes
         -----
-        It's recommended to use 50 or 30 fps while recording to a gif file.
+        It's recommended to use 50 or 30 FPS while recording to a GIF file.
         """
 
         duration = self.final_timestamp
@@ -355,7 +355,7 @@ class Timeline:
                 import cv2
             except ImportError:
                 raise ImportError('OpenCV has to be installed in order to '
-                                  'save as mp4')
+                                  'save as MP4 video.')
             fourcc = cv2.VideoWriter.fourcc(*'mp4v')
             out = cv2.VideoWriter(fname, fourcc, fps, size)
 
