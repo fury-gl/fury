@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -9,7 +8,9 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.decorators import is_osx
+from fury.animation import Timeline, Animation
+from fury.decorators import is_win
+
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
@@ -334,20 +335,12 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
 
@@ -365,7 +358,6 @@ class ShowManager(object):
         self.timers = []
         self._fps = 0
         self._last_render_time = 0
-
         if self.reset_camera:
             self.scene.ResetCamera()
 
@@ -399,10 +391,92 @@ class ShowManager(object):
         self.style.SetInteractor(self.iren)
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
+        self._timelines = []
+        self._animations = []
+        self._animation_callback = None
+
+        if is_win:
+            self.initialize()
 
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
+
+    @property
+    def timelines(self):
+        """Return a list of Timelines that were added to the ShowManager.
+
+        Returns
+        -------
+        list[Timeline]:
+            List of Timelines.
+        """
+        return self._timelines
+
+    @property
+    def animations(self):
+        """Return a list of Animations that were added to the ShowManager.
+
+         Returns
+         -------
+         list[Animation]:
+             List of Animations.
+         """
+        return self._animations
+
+    def add_animation(self, animation):
+        """Add an Animation or a Timeline to the ShowManager.
+
+        Adding an Animation or a Timeline to the ShowManager ensures that it
+        gets added to the scene, gets updated and rendered without any extra
+        code.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The Animation or Timeline to be added to the ShowManager.
+        """
+        animation.add_to_scene(self.scene)
+        if isinstance(animation, Animation):
+            if animation in self._animations:
+                return
+            self._animations.append(animation)
+        elif isinstance(animation, Timeline):
+            if animation in self._timelines:
+                return
+            self._timelines.append(animation)
+
+        if self._animation_callback is not None:
+            return
+
+        def animation_cbk(_obj, _event):
+            [tl.update() for tl in self._timelines]
+            [anim.update_animation() for anim in self._animations]
+            self.render()
+        self._animation_callback = self.add_timer_callback(True, 10,
+                                                           animation_cbk)
+
+    def remove_animation(self, animation):
+        """Remove an Animation or a Timeline from the ShowManager.
+
+        Animation will be removed from the Scene as well as from the
+        ShowManager.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The Timeline to be removed.
+        """
+
+        if animation in self.timelines or animation in self.animations:
+            animation.remove_from_scene(self.scene)
+            if isinstance(animation, Animation):
+                self._animations.remove(animation)
+            elif isinstance(animation, Timeline):
+                self._timelines.remove(animation)
+            if not (len(self.timelines) or len(self.animations)):
+                self.iren.DestroyTimer(self._animation_callback)
+                self._animation_callback = None
 
     def render(self):
         """Render only once."""
@@ -426,7 +500,6 @@ class ShowManager(object):
                           reset_camera=self.reset_camera,
                           order_transparent=self.order_transparent,
                           interactor_style=self.interactor_style)
-            self.initialize()
             self.render()
             if self.title.upper() == "FURY":
                 self.window.SetWindowName(self.title + " " + fury_version)
@@ -478,7 +551,6 @@ class ShowManager(object):
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -533,13 +605,13 @@ class ShowManager(object):
         # self.render()
         recorder.Play()
 
-        # self.window.RemoveRenderer(self.scene)
-        # self.scene.SetRenderWindow(None)
-
         # Finalize seems very important otherwise
         # the recording window will not close.
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
         self.window.Finalize()
         self.exit()
+
         # print('After Finalize and Exit')
 
         # del self.iren
@@ -596,10 +668,6 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
-        # if is_osx and self.timers:
-            # OSX seems to not destroy correctly timers
-            # segfault 11 appears sometimes if we do not do it manually.
-
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
@@ -640,6 +708,7 @@ class ShowManager(object):
             size = self.size
         if stereo is None:
             stereo = self.stereo.lower()
+
         record(scene=self.scene, out_path=fname, magnification=magnification,
                size=size, stereo=stereo)
 
@@ -714,7 +783,6 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
                                multi_samples=multi_samples,
                                max_peels=max_peels,
                                occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
     show_manager.render()
     show_manager.start()
 
@@ -796,8 +864,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = RenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
 
@@ -853,9 +919,13 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
         arr = arr.reshape((h, w, components))
+        arr = np.flipud(arr)
         save_image(arr, filename)
 
         ang = +az_ang
+
+    renWin.RemoveRenderer(scene)
+    renWin.Finalize()
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4,
@@ -977,12 +1047,17 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     h, w, _ = vtk_image.GetDimensions()
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
-    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
+    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
+    arr = np.flipud(arr)
 
     if fname is None:
         return arr
 
     save_image(arr, fname, dpi=dpi)
+
+    render_window.RemoveRenderer(scene)
+    render_window.Finalize()
+
     return arr
 
 

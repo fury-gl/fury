@@ -448,21 +448,31 @@ fetch_viz_new_icons = _make_fetcher(
     "fetch_viz_new_icons",
     pjoin(fury_home, "icons", "new_icons"),
     NEW_ICONS_DATA_URL,
-    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png", "line-pressed.png",
-        "line.png", "quad-pressed.png", "quad.png", "selection-pressed.png", "selection.png"],
-    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png", "line-pressed.png",
-        "line.png", "quad-pressed.png", "quad.png", "selection-pressed.png", "selection.png"],
-    ['CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC',
-     '5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207',
-     '937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226',
-     '476E00A0A5373E1CCDA4AF8E7C9158E0AC9B46B540CE410C6EA47D97F364A0CD',
-     '8D1AC2BB7C5BAA34E68578DAAD85F64EF824BE7BCB828CAC18E52833D4CBF4C9',
-     'E6D833B6D958129E12FF0F6087282CE92CD43C6DAFCE03F185746ECCA89E42A9',
-     '5FD43F1C2D37BF9AF05D9FC591172684AC51BA236980CD1B0795B0225B9247E2',
-     'A2DA0CB963401C174919E1D8028AA6F0CB260A736FD26421DB5AB08E9F3C4FDF',
-     '54618FDC4589F0A039D531C07A110ED9BC57A256BB15A3B5429CF60E950887C3',
-     'CD573F5E4BF4A91A3B21F6124A95FFB3C036F926F8FEC1FD0180F5D27D8F48C0'],
-    doc=" Download the new icons for draw panel"
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
+     "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
+     "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
+     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+    ["circle-pressed.png", "circle.png", "delete-pressed.png", "delete.png",
+     "drawing-pressed.png", "drawing.png", "line-pressed.png", "line.png",
+     "polyline-pressed.png", "polyline.png", "quad-pressed.png", "quad.png",
+     "resize-pressed.png", "resize.png", "selection-pressed.png", "selection.png"],
+    ["CD859F244DF1BA719C65C869C3FAF6B8563ABF82F457730ADBFBD7CA72DDB7BC",
+     "5896BDC9FF9B3D1054134D7D9A854677CE9FA4E64F494F156BB2E3F0E863F207",
+     "937C46C25BC38B62021B01C97A4EE3CDE5F7C8C4A6D0DB75BF4E4CACE2AF1226",
+     "476E00A0A5373E1CCDA4AF8E7C9158E0AC9B46B540CE410C6EA47D97F364A0CD",
+     "08A914C5DC7997CB944B8C5FBB958951F80B715CFE04FF4F47A73F9D08C4B14B",
+     "FB2210B0393ECA8A5DD2B8F034DAE386BBB47EB95BB1CAC2A97DE807EE195ADF",
+     "8D1AC2BB7C5BAA34E68578DAAD85F64EF824BE7BCB828CAC18E52833D4CBF4C9",
+     "E6D833B6D958129E12FF0F6087282CE92CD43C6DAFCE03F185746ECCA89E42A9",
+     "CFF12B8DE48FC19DA5D5F0EA7FF2D23DD942D05468E19522E7C7BEB72F0FF66E",
+     "7AFE65EBAE0C0D0556393B979148AE15FC3E037D126CD1DA4A296F4E25F5B4AA",
+     "5FD43F1C2D37BF9AF05D9FC591172684AC51BA236980CD1B0795B0225B9247E2",
+     "A2DA0CB963401C174919E1D8028AA6F0CB260A736FD26421DB5AB08E9F3C4FDF",
+     "FF49DDF9DF24729F4F6345C30C88DE0A11E5B12B2F2FF28375EF9762FE5F8995",
+     "A2D850CDBA8F332DA9CD7B7C9459CBDA587C18AF0D3C12CA68D6E6A864EF54BB",
+     "54618FDC4589F0A039D531C07A110ED9BC57A256BB15A3B5429CF60E950887C3",
+     "CD573F5E4BF4A91A3B21F6124A95FFB3C036F926F8FEC1FD0180F5D27D8F48C0"],
+    doc="Download the new icons for DrawPanel"
     )
 
 
@@ -605,7 +615,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Default is infinity.png.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of icon.
 
@@ -629,7 +639,7 @@ def read_viz_models(fname):
         This should be found in folder HOME/.fury/models/.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of models.
 

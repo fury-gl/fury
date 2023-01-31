@@ -595,7 +595,7 @@ def test_spheres_on_canvas():
     #                  view_up=(0, 1, 0))
     scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0),
                      view_up=(0, 1, 0))
-    showm.initialize()
+
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
 
@@ -770,7 +770,7 @@ def test_fireballs_on_canvas():
     mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
                        vtk_shader_callback)
 
-    showm.initialize()
+
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
 

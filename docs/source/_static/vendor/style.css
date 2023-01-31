@@ -4226,6 +4226,15 @@ a.dropdown-item {
   .navbar.is-fixed-top {
     top: 0; }
 
+@media screen and (max-width: 600px) {
+  /* overriding pyData .navbar for mobile version
+     better placement of hamburger menu */
+  .navbar {
+    padding: 0.5rem 0rem !important;
+  }
+
+}
+
 html.has-navbar-fixed-top,
 body.has-navbar-fixed-top {
   padding-top: 3.25rem; }
@@ -6180,17 +6189,12 @@ Navbar
     height: 4rem; }
   .navbar.is-fresh .navbar-brand {
     min-height: 4rem; }
-    .navbar.is-fresh .navbar-brand img {
-      max-height: 36px !important;
-      height: 36px; }
     .navbar.is-fresh .navbar-brand:hover .navbar-item {
       background: transparent !important; }
   .navbar.is-fresh .navbar-end {
     align-items: center; }
   .navbar.is-fresh .navbar-item {
     color: #999; }
-    .navbar.is-fresh .navbar-item.is-secondary:hover {
-      color: #F39200 !important; }
     .navbar.is-fresh .navbar-item.has-dropdown {
       padding: 10px 0; }
       .navbar.is-fresh .navbar-item.has-dropdown .navbar-link {
@@ -6233,7 +6237,7 @@ Navbar
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  width: 100vw;
   background: #fff;
   transform: translateY(-100%);
   z-index: 100;

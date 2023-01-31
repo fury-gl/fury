@@ -89,9 +89,14 @@ def get_json_from_url(url):
 def get_paged_request(url):
     """Get a full list, handling APIv3's paging."""
     results = []
+    counter = 0
     while url:
         f = fetch_url(url)
         if not f:
+            # Avoid infinite loop
+            if counter == 200:
+                break
+            counter += 1
             continue
         results.extend(json.load(f))
         links = parse_link_header(f.headers)

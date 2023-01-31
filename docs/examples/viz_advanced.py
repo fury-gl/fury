@@ -132,7 +132,7 @@ scene.add(image_actor_y)
 # object which allows accessing the pipeline in different areas. Here is how:
 
 show_m = window.ShowManager(scene, size=(1200, 900))
-show_m.initialize()
+
 
 ###############################################################################
 # After we have initialized the ``ShowManager`` we can go ahead and create
@@ -258,7 +258,7 @@ def win_callback(obj, _event):
         panel.re_align(size_change)
 
 
-show_m.initialize()
+
 
 ###############################################################################
 # Finally, please set the following variable to ``True`` to interact with the

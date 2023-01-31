@@ -4,7 +4,8 @@ from scipy.ndimage import center_of_mass
 
 from fury.transform import (sphere2cart, cart2sphere, euler_matrix,
                             _AXES2TUPLE, _TUPLE2AXES, translate,
-                            rotate, scale, apply_transfomation)
+                            rotate, scale, apply_transformation,
+                            transform_from_matrix)
 from fury import primitive, window, utils
 from fury.testing import assert_greater
 
@@ -80,13 +81,13 @@ def test_translate():
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
     y_translate = np.array([0.0, 1.5, 0.0])
     transform = translate(y_translate)
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
 
@@ -107,7 +108,7 @@ def test_scale():
     arr1 = window.snapshot(scene)
     scene.clear()
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cube = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cube)
     arr2 = window.snapshot(scene)
@@ -127,11 +128,30 @@ def test_rotate():
     arr1 = window.snapshot(scene)
     scene.clear()
 
-    verts = apply_transfomation(verts, transform)
+    verts = apply_transformation(verts, transform)
     cone = utils.get_actor_from_primitive(verts, triangles)
     scene.add(cone)
     arr2 = window.snapshot(scene)
 
     report = window.analyze_snapshot(arr2)
     npt.assert_equal(report.objects, 1)
-    assert_greater(center_of_mass(arr2), center_of_mass(arr1))
+    # x coord of c.o.m of rotated cone should be greater
+    assert_greater(center_of_mass(arr2)[1], center_of_mass(arr1)[1])
+
+
+def test_transform_from_matrix():
+    matrix = np.array([[5, 0, 0, 10],
+                       [0, 1, 0, -10],
+                       [0, 0, 1, 0],
+                       [0, 0, 0, 1]])
+    trans, rot, scale = transform_from_matrix(matrix)
+    npt.assert_equal(trans, np.array([10, -10, 0]))
+    npt.assert_equal(scale, np.array([5, 1, 1]))
+
+    matrix = np.array([[1,  0,         0,         1],
+                       [0,  0.1542515, 0.9880316, 0],
+                       [0, -0.9880316, 0.1542515, 0],
+                       [0,  0,         0,         1]])
+    trans, rot, scale = transform_from_matrix(matrix)
+    npt.assert_array_almost_equal(rot,
+                                  np.array([81.126612, -1.415926, 0.0, 0.0]))

@@ -131,12 +131,12 @@ def test_manifest_standard():
     # scene.reset_camera()
     # window.show(scene)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 201]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     desired = np.array([0, 0, 85]) / 1000
     # TODO: check if camera affects this assert
     # npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -144,23 +144,23 @@ def test_manifest_standard():
     # Test ambient level
     material.manifest_standard(test_actor, ambient_level=1)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test ambient color
     material.manifest_standard(test_actor, ambient_level=.5,
                                ambient_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     desired = np.array([0, 0, 212]) / 1000
     # TODO: check what affects this
     # npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -168,13 +168,13 @@ def test_manifest_standard():
     # Test diffuse level
     material.manifest_standard(test_actor, diffuse_level=.75)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 151]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     desired = np.array([0, 0, 110]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     desired = np.array([0, 0, 151]) / 1000
     # TODO: check what affects this
     # npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -183,24 +183,24 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, diffuse_level=.5,
                                diffuse_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 101]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     desired = np.array([0, 0, 74]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test specular level
     material.manifest_standard(test_actor, specular_level=1)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([201, 201, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     desired = np.array([147, 147, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
@@ -208,12 +208,12 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, specular_level=1,
                                specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([78, 78, 255]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     desired = np.array([16, 16, 163]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
@@ -221,12 +221,12 @@ def test_manifest_standard():
     material.manifest_standard(test_actor, specular_level=1,
                                specular_color=(1, 0, 0), specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
-    actual = ss[75, 100, :] / 1000
+    actual = ss[125, 100, :] / 1000
     desired = np.array([78, 0, 201]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 75, :] / 1000
+    actual = ss[75, 75, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
-    actual = ss[125, 125, :] / 1000
+    actual = ss[75, 125, :] / 1000
     desired = np.array([16, 0, 147]) / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 

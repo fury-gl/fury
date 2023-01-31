@@ -40,7 +40,7 @@ def test_picking_manager():
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
 
     tb = ui.TextBlock2D(bold=True)
 
@@ -121,7 +121,7 @@ def test_selector_manager():
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
 
     tb = ui.TextBlock2D(bold=True)
 
@@ -187,7 +187,7 @@ def test_hover_selection_faces(recording=False):
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
     global track_objects
     track_objects = []
 
@@ -238,7 +238,7 @@ def test_hover_selection_vertices(recording=False):
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
 
     global track_objects2
     track_objects2 = []
@@ -289,7 +289,7 @@ def test_hover_selection_actors_only(recording=False):
                                size=(900, 768), reset_camera=False,
                                order_transparent=True)
 
-    showm.initialize()
+    
 
     def hover_callback(_obj, _event):
         event_pos = selm.event_position(showm.iren)

@@ -346,8 +346,7 @@ def create_colormap(v, name='plasma', auto=True):
     # For backwards compatibility with lowercase names
     newname = lowercase_cm_name.get(name) or name
 
-    get_colormap = cm.get_cmap if have_matplotlib else get_cmap
-    colormap = get_colormap(newname)
+    colormap = getattr(cm, newname) if have_matplotlib else get_cmap(newname)
     if colormap is None:
         e_s = "Colormap {} is not yet implemented ".format(name)
         raise ValueError(e_s)
@@ -623,7 +622,7 @@ def hex_to_rgb(color):
     g = int("0x" + color[2: 4], 0) / 255
     b = int("0x" + color[4: 6], 0) / 255
 
-    return(np.array([r, g, b]))
+    return (np.array([r, g, b]))
 
 
 def rgb2hsv(rgb):
@@ -794,7 +793,7 @@ def rgb2xyz(rgb):
     This implementation might have been modified.
 
     """
-    rgb = rgb.astype(np.float)
+    rgb = rgb.astype(float)
     mask = rgb > 0.04045
     rgb[mask] = np.power((rgb[mask] + 0.055) / 1.055, 2.4)
     rgb[~mask] /= 12.92
