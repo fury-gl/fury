@@ -140,9 +140,11 @@ sec = int(num_vertices / num_objects)
 # Here, we perform three major steps to sync Dominoes accurately.
 # * Get the position and orientation of the Dominoes from pybullet.
 # * Calculate the Rotation Matrix.
-#   * Get the difference in orientations (Quaternion).
-#   * Generate the corresponding rotation matrix according to that difference.
-#   * Reshape it in a 3x3 matrix.
+#
+#   - Get the difference in orientations (Quaternion).
+#   - Generate the corresponding rotation matrix according to that difference.
+#   - Reshape it in a 3x3 matrix.
+#
 # * Perform calculations to get the required position and orientation.
 # * Update the position and orientation.
 

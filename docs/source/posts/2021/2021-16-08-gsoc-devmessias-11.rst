@@ -17,11 +17,11 @@ FURY
   This PR give to FURY three
   pre-built texture maps using different fonts. However, is quite easy
   to create new fonts to be used in a visualization.
-| It’s was quite hard to develop the shader code and find the correct
+| It's was quite hard to develop the shader code and find the correct
   positions of the texture maps to be used in the shader. Because we
   used the freetype-py to generate the texture and packing the glyps.
   However, the lib has some examples with bugs. But fortunelly, now
-  everthing is woking on FURY. I’ve also created two different examples
+  everthing is woking on FURY. I've also created two different examples
   to show how this PR works.
 
    The first example, viz_huge_amount_of_labels.py, shows that the user can

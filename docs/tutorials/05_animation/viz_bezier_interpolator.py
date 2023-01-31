@@ -32,11 +32,11 @@ showm = window.ShowManager(
 # for every keyframe:
 # 1- Timestamp: The time that the keyframe is assigned to.
 # 2- value: The value of the keyframe. This might be position, quaternion, or
-#           scale value.
+#    scale value.
 # 3- In control point: The control point used when the value is the destination
-#           value.
+#    value.
 # 4- Out control point: The control point used when the value is the departure
-#           value.
+#           value::
 #
 #         keyframe 0            ----------------->         keyframe 1
 # (time-0) (value-0) (out-cp-0) -----------------> (time-1) (value-1) (in-cp-1)
