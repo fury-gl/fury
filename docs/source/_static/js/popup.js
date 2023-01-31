@@ -67,17 +67,17 @@ function createTutorialPopup(tutorial, fromTop) {
 
 // open a popup
 function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
-    
+
     let popupBounds = calculatePositionForPopup(el.getBoundingClientRect());
 
     // Injecting the element
     if (popupType === POPUP_TYPE.TUTORIAL) {
-        
+
         // Checking for already active popup to make sure only one popup present
         if (ACTIVE_POPUP.TUTORIAL) {
             removePopup();
         }
-        
+
         $('.scientific-domains').append(createTutorialPopup(TUTORIALS[el.id], popupBounds.fromTop));
         ACTIVE_POPUP.TUTORIAL = true;
 
@@ -92,7 +92,7 @@ function showPopup(el, popupType = POPUP_TYPE.TUTORIAL) {
         $('#tutorial-popup').hover(() => {}, function () {
             removePopup();
         });
-        
+
     }
 }
 
@@ -142,10 +142,9 @@ $('#tutorial-popup').hover(() => {}, function () {
 );
 
 // To remove the popup when clicked outside
-$(document).click(function (e) { 
+$(document).click(function (e) {
     // We can append more of these to close the popups
     if($(e.target).closest('#tutorial-popup').length == 0) {
         removePopup();
     }
 });
-

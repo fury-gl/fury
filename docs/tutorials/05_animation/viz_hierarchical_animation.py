@@ -4,30 +4,33 @@ Keyframe hierarchical Animation
 ===============================
 
 Creating hierarchical keyframes animation in fury
-
 """
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 showm.initialize()
 
 ###############################################################################
 # Creating the road
-road = actor.box(np.array([[0, 0, 0]]), colors=np.array([[1, 1, 1]]),
-                 scales=np.array([[22, 0.1, 5]]))
+road = actor.box(
+    np.array([[0, 0, 0]]), colors=np.array([[1, 1, 1]]), scales=np.array([[22, 0.1, 5]])
+)
 
 ###############################################################################
 # Constructing the car geometry
 
-body_actor = actor.box(np.array([[0, 0.5, 0], [-0.2, 1, 0]]),
-                       scales=((4, 1, 2), (2.5, 1.5, 1.8)),
-                       colors=(0.6, 0.3, 0.1))
+body_actor = actor.box(
+    np.array([[0, 0.5, 0], [-0.2, 1, 0]]),
+    scales=((4, 1, 2), (2.5, 1.5, 1.8)),
+    colors=(0.6, 0.3, 0.1),
+)
 
 ###############################################################################
 # Adding the the car's body to an Animation to be able to animate it later.
@@ -43,12 +46,20 @@ wheel_positions = [
     [-1.2, 0, 1.1],
     [1.2, 0, -1.1],
     [-1.2, 0, -1.1],
-
 ]
 
-wheels = [actor.cylinder(wheel_center, wheel_direction, (0.1, 0.7, 0.3),
-                         radius=1.7, heights=0.3, resolution=10, capped=True)
-          for _ in range(4)]
+wheels = [
+    actor.cylinder(
+        wheel_center,
+        wheel_direction,
+        (0.1, 0.7, 0.3),
+        radius=1.7,
+        heights=0.3,
+        resolution=10,
+        capped=True,
+    )
+    for _ in range(4)
+]
 
 ###############################################################################
 # Animating each wheel and setting its position to the right position using a
@@ -66,8 +77,9 @@ for wheel_anim in wheels_animations:
 
 ###############################################################################
 # First we create the shaft holding and rotating the radar
-radar_shaft = actor.cylinder(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]),
-                             (0, 1, 0), heights=1)
+radar_shaft = actor.cylinder(
+    np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), (0, 1, 0), heights=1
+)
 
 ###############################################################################
 # In order to animate the shaft actor we have to add it to an Animation
@@ -86,8 +98,7 @@ radar_shaft_anim.set_rotation(2.0, [0, -250, 0])
 
 ###############################################################################
 # Now we create the radar itself
-radar = actor.cone(np.array([[0, 0, 0]]), directions=(0, 0, 0),
-                   colors=(0.2, 0.2, 0.9))
+radar = actor.cone(np.array([[0, 0, 0]]), directions=(0, 0, 0), colors=(0.2, 0.2, 0.9))
 
 ###############################################################################
 # Then add it to an animation in order to rotate it
@@ -95,7 +106,7 @@ radar_animation = Animation(radar)
 
 ###############################################################################
 # Set position and rotation as done above with the shaft.
-radar_animation.set_position(0, [-.4, 0.5, 0])
+radar_animation.set_position(0, [-0.4, 0.5, 0])
 radar_animation.set_rotation(0.0, [0, 0, 0])
 radar_animation.set_rotation(1.0, [180, 0, 0])
 radar_animation.set_rotation(2.0, [0, 0, 0])
@@ -128,5 +139,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_hierarchical_animation.png',
-              size=(900, 768))
+window.record(
+    scene, out_path='viz_keyframe_hierarchical_animation.png', size=(900, 768)
+)

@@ -3,7 +3,7 @@ Week 16 - Working with Rotations!
 =================================
 
 .. post:: September 21 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
