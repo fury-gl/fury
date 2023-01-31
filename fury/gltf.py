@@ -3,6 +3,8 @@ import base64
 import os
 import numpy as np
 import copy
+from typing import Dict
+
 import pygltflib as gltflib
 from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
@@ -504,7 +506,7 @@ class glTF:
         name = animation.name
         if name is None:
             name = str(f'anim_{count}')
-        anim_channel = {}
+        anim_channel = dict()    # type: Dict[int, np.ndarray]
 
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]

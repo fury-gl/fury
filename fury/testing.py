@@ -11,7 +11,7 @@ from distutils.version import LooseVersion
 
 from numpy.testing import assert_array_equal
 import numpy as np
-import scipy
+import scipy  # type: ignore
 
 
 @contextmanager

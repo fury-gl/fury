@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from scipy.spatial.transform import Rotation as Rot
+from scipy.spatial.transform import Rotation as Rot  # type: ignore
 
 
 # axis sequences for Euler angles

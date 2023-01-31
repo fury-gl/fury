@@ -13,13 +13,14 @@ from fury.stream.constants import _CQUEUE, PY_VERSION_8
 if PY_VERSION_8:
     from fury.stream.tools import remove_shm_from_resource_tracker
 
-VideoStreamTrack = object
+
 try:
     from av import VideoFrame
     from aiortc import VideoStreamTrack
     WEBRTC_AVAILABLE = True
 except ImportError:
     WEBRTC_AVAILABLE = False
+    VideoStreamTrack = object
 
 CYTHON_AVAILABLE = False
 if WEBRTC_AVAILABLE:

@@ -58,7 +58,7 @@ Tracker = "https://github.com/fury-gl/fury/issues"
 
 [project.optional-dependencies]
 
-all = ["fury[plot, dev, doc, medical, style, test]"]
+all = ["fury[plot, dev, doc, medical, style, test, typing]"]
 plot = ["matplotlib>=1.5.3", ]
 medical = ["dipy", "nibabel"]
 dev = [
@@ -73,6 +73,7 @@ doc = [
     "tomli; python_version < \"3.11\"",
     ]
 style = ["flake8", "blue", "isort", "pre-commit"]
+typing = ["mypy", "types-Pillow", "data-science-types"]
 test = [
     "coverage",
     "pytest !=5.3.4",
@@ -110,6 +111,7 @@ extend_skip = ["_version.py", "externals"]
 
 [tool.mypy]
 python_version = "3.11"
+ignore_missing_imports = "True"
 exclude = [
   "/tests",
 ]
