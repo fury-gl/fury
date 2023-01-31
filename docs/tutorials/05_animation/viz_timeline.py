@@ -9,7 +9,7 @@ animations.
 
 ###############################################################################
 # What is ``Timeline``?
-# ===================
+# =====================
 #
 # ``Timeline`` is responsible for handling the playback of Fury Animations.
 #

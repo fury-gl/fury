@@ -15,6 +15,7 @@ a live streaming with a low-latency connection. However, to use
 webRTC you need to install the aiortc library.
 
 .. code-block:: bash
+
     pip install aiortc
 
 In addition, if you don't have ffmpeg installed, you  need

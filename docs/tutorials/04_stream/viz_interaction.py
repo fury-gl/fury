@@ -12,7 +12,9 @@ a live streaming with a low-latency connection for example using
 ngrok. However, to use webRTC you need to install the aiortc library.
 
 .. code-block:: bash
+
     pip install aiortc
+
 
 Notes
 -----

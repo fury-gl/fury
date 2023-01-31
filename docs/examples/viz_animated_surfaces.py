@@ -40,10 +40,9 @@ def update_surface(x, y, equation, cmap_name='viridis'):
 
 
 ###############################################################################
-# Variables and their usage-
-# time: float
-#       initial value of the time variable i.e. value of the time variable at
-#       the beginning of the program; (default = 0)
+# Variables and their usage:
+# :time - float: initial value of the time variable i.e. value of the time variable at
+#               the beginning of the program; (default = 0)
 # dt: float
 #     amount by which ``time`` variable is incremented for every iteration
 #     of timer_callback function (default = 0.1)
