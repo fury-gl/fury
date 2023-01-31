@@ -4,19 +4,23 @@
 import numpy as np
 from aiohttp import web
 
-from fury.stream.server.async_app import get_app
-from fury.stream.tools import SharedMemCircularQueue, ArrayCircularQueue
-from fury.stream.tools import (
-    SharedMemImageBufferManager, RawArrayImageBufferManager)
 from fury.stream.constants import _CQUEUE, PY_VERSION_8
+from fury.stream.server.async_app import get_app
+from fury.stream.tools import (
+    ArrayCircularQueue,
+    RawArrayImageBufferManager,
+    SharedMemCircularQueue,
+    SharedMemImageBufferManager,
+)
 
 if PY_VERSION_8:
     from fury.stream.tools import remove_shm_from_resource_tracker
 
 
 try:
-    from av import VideoFrame
     from aiortc import VideoStreamTrack
+    from av import VideoFrame
+
     WEBRTC_AVAILABLE = True
 except ImportError:
     WEBRTC_AVAILABLE = False
@@ -26,8 +30,10 @@ CYTHON_AVAILABLE = False
 if WEBRTC_AVAILABLE:
     try:
         import pyximport
+
         pyximport.install()
         from fury.stream.server.FuryVideoFrame import FuryVideoFrame
+
         CYTHON_AVAILABLE = True
     except ImportError:
         pass
@@ -35,10 +41,12 @@ if WEBRTC_AVAILABLE:
 
 class RTCServer(VideoStreamTrack):
     """This Obj it's responsible to create the VideoStream for
-        the WebRTCServer
+    the WebRTCServer
     """
+
     def __init__(
-            self, image_buffer_manager,
+        self,
+        image_buffer_manager,
     ):
         """
 
@@ -67,20 +75,21 @@ class RTCServer(VideoStreamTrack):
 
         width, height, image = self.buffer_manager.get_current_frame()
 
-        if self.frame is None \
-            or self.frame.planes[0].width != width \
-                or self.frame.planes[0].height != height:
+        if (
+            self.frame is None
+            or self.frame.planes[0].width != width
+            or self.frame.planes[0].height != height
+        ):
             if CYTHON_AVAILABLE:
-                self.frame = FuryVideoFrame(width, height, "rgb24")
+                self.frame = FuryVideoFrame(width, height, 'rgb24')
         self.image = image
 
         if not CYTHON_AVAILABLE:
             # if the buffer it's already flipped
             # self.frame.planes[0].update(self.image)
-            self.image = np.frombuffer(
-                        self.image,
-                        'uint8'
-                    )[0:width*height*3].reshape((height, width, 3))
+            self.image = np.frombuffer(self.image, 'uint8')[
+                0 : width * height * 3
+            ].reshape((height, width, 3))
             self.image = np.flipud(self.image)
             self.frame = VideoFrame.from_ndarray(self.image)
         else:
@@ -107,11 +116,12 @@ def web_server_raw_array(
     info_buffer=None,
     queue_head_tail_buffer=None,
     queue_buffer=None,
-    port=8000, host='localhost',
+    port=8000,
+    host='localhost',
     provides_mjpeg=True,
     provides_webrtc=True,
     ms_jpeg=16,
-    run_app=True
+    run_app=True,
 ):
     """This will create a streaming webserver running on the
     given port and host using RawArrays.
@@ -161,8 +171,7 @@ def web_server_raw_array(
     rtc_server = None
     create_webrtc = provides_webrtc and WEBRTC_AVAILABLE
     if create_webrtc:
-        rtc_server = RTCServer(
-            image_buffer_manager)
+        rtc_server = RTCServer(image_buffer_manager)
     else:
         provides_mjpeg = True
 
@@ -171,18 +180,18 @@ def web_server_raw_array(
         circular_queue = ArrayCircularQueue(
             dimension=_CQUEUE.dimension,
             head_tail_buffer=queue_head_tail_buffer,
-            buffer=queue_buffer
+            buffer=queue_buffer,
         )
 
     app_fury = get_app(
-       rtc_server, circular_queue=circular_queue,
-       image_buffer_manager=image_buffer_manager,
-       provides_mjpeg=provides_mjpeg
+        rtc_server,
+        circular_queue=circular_queue,
+        image_buffer_manager=image_buffer_manager,
+        provides_mjpeg=provides_mjpeg,
     )
 
     if run_app:
-        web.run_app(
-            app_fury, host=host, port=port, ssl_context=None)
+        web.run_app(app_fury, host=host, port=port, ssl_context=None)
 
     if rtc_server is not None:
         rtc_server.release()
@@ -194,16 +203,18 @@ def web_server_raw_array(
 
 
 def web_server(
-        image_buffer_names=None,
-        info_buffer_name=None,
-        queue_head_tail_buffer_name=None,
-        queue_buffer_name=None,
-        port=8000, host='localhost',
-        provides_mjpeg=True,
-        provides_webrtc=True,
-        avoid_unlink_shared_mem=True,
-        ms_jpeg=16,
-        run_app=True):
+    image_buffer_names=None,
+    info_buffer_name=None,
+    queue_head_tail_buffer_name=None,
+    queue_buffer_name=None,
+    port=8000,
+    host='localhost',
+    provides_mjpeg=True,
+    provides_webrtc=True,
+    avoid_unlink_shared_mem=True,
+    ms_jpeg=16,
+    run_app=True,
+):
     """This will create a streaming webserver running on the given port
     and host using SharedMemory.
 
@@ -252,15 +263,13 @@ def web_server(
         remove_shm_from_resource_tracker()
 
     image_buffer_manager = SharedMemImageBufferManager(
-        image_buffer_names=image_buffer_names,
-        info_buffer_name=info_buffer_name
+        image_buffer_names=image_buffer_names, info_buffer_name=info_buffer_name
     )
 
     rtc_server = None
     create_webrtc = provides_webrtc and WEBRTC_AVAILABLE
     if create_webrtc:
-        rtc_server = RTCServer(
-            image_buffer_manager)
+        rtc_server = RTCServer(image_buffer_manager)
     else:
         provides_mjpeg = True
 
@@ -269,17 +278,18 @@ def web_server(
         circular_queue = SharedMemCircularQueue(
             dimension=_CQUEUE.dimension,
             buffer_name=queue_buffer_name,
-            head_tail_buffer_name=queue_head_tail_buffer_name)
+            head_tail_buffer_name=queue_head_tail_buffer_name,
+        )
 
     app_fury = get_app(
-       rtc_server, circular_queue=circular_queue,
-       image_buffer_manager=image_buffer_manager,
-       provides_mjpeg=provides_mjpeg
+        rtc_server,
+        circular_queue=circular_queue,
+        image_buffer_manager=image_buffer_manager,
+        provides_mjpeg=provides_mjpeg,
     )
 
     if run_app:
-        web.run_app(
-            app_fury, host=host, port=port, ssl_context=None)
+        web.run_app(app_fury, host=host, port=port, ssl_context=None)
 
     if rtc_server is not None:
         rtc_server.release()

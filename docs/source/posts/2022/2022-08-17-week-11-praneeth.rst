@@ -3,7 +3,7 @@ Week 11 - Creating a base for Freehand Drawing
 ==============================================
 
 .. post:: August 17 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

@@ -3,7 +3,7 @@ Week 7 - Working on Rotation PR and Trying Freehand Drawing
 ===========================================================
 
 .. post:: July 20 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

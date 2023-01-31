@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   if (encoding === "webrtc") {
     document.getElementById("startBtn").className = ''
     document.getElementById("startBtn").addEventListener(
-      "click", (e) => 
+      "click", (e) =>
         startWebRTC()
     )
   } else if (encoding === 'mjpeg') {
@@ -46,5 +46,3 @@ document.addEventListener("DOMContentLoaded", (event) => {
   if (backgroundColor != null)
     document.body.style.backgroundColor = backgroundColor;
 });
-
-

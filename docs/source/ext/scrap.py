@@ -1,7 +1,8 @@
-import os
 import glob
+import os
 import shutil
 import time
+
 from sphinx_gallery.scrapers import figure_rst
 
 
@@ -22,8 +23,10 @@ class ImageFileScraper(object):
             # If we already know about this image and it hasn't been modified
             # since starting, then skip it
             mod_time = os.stat(path_orig).st_mtime
-            already_embedded = (path_orig in self.embedded_images and
-                                mod_time <= self.embedded_images[path_orig])
+            already_embedded = (
+                path_orig in self.embedded_images
+                and mod_time <= self.embedded_images[path_orig]
+            )
             existed_before_build = mod_time <= self.start_time
             if already_embedded or existed_before_build:
                 continue
@@ -43,6 +46,6 @@ def _find_images(path, image_extensions=['jpg', 'jpeg', 'png', 'gif']):
     """Find all unique image paths for a set of extensions."""
     image_files = set()
     for ext in image_extensions:
-        this_ext_files = set(glob.glob(os.path.join(path, '*.'+ext)))
+        this_ext_files = set(glob.glob(os.path.join(path, '*.' + ext)))
         image_files = image_files.union(this_ext_files)
     return image_files

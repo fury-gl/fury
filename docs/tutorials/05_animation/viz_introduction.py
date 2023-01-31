@@ -4,7 +4,6 @@ Keyframe animation introduction
 ===============================
 
 This tutorial explains keyframe animation in FURY.
-
 """
 ###############################################################################
 # Animations in FURY
@@ -58,9 +57,9 @@ This tutorial explains keyframe animation in FURY.
 
 
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation
-
 
 scene = window.Scene()
 
@@ -92,7 +91,7 @@ animation.add_actor(sphere)
 # (time equals 6) to return to the initial position which is [0, 0, 0] again.
 
 animation.set_position(0.0, [-1, -1, 0])
-animation.set_position(3.0, [1,  1,  0])
+animation.set_position(3.0, [1, 1, 0])
 animation.set_position(6.0, [-1, -1, 0])
 
 ###############################################################################
@@ -114,5 +113,6 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_introduction.png',
-              size=(900, 768))
+window.record(
+    scene, out_path='viz_keyframe_animation_introduction.png', size=(900, 768)
+)

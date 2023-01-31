@@ -12,9 +12,11 @@ Let's start by importing the necessary modules:
 from fury import actor, material, ui, window
 from fury.data import fetch_viz_cubemaps, read_viz_cubemap
 from fury.io import load_cubemap_texture
-from fury.utils import (normals_from_actor, tangents_to_actor,
-                        tangents_from_direction_of_anisotropy)
-
+from fury.utils import (
+    normals_from_actor,
+    tangents_from_direction_of_anisotropy,
+    tangents_to_actor,
+)
 
 ###############################################################################
 # The following functions will help us to manage the sliders events.
@@ -124,13 +126,13 @@ scene = window.Scene(skybox=cubemap)
 # With the scene created, we can then populate it. In this demo we will only
 # add a sphere actor.
 
-sphere = actor.sphere([[0, 0, 0]], (.7, .7, .7), radii=2, theta=64, phi=64)
+sphere = actor.sphere([[0, 0, 0]], (0.7, 0.7, 0.7), radii=2, theta=64, phi=64)
 
 ###############################################################################
 # The direction of anisotropy (DoA) defines the direction at which all the
 # tangents of our actor are pointing.
 
-doa = [0, 1, .5]
+doa = [0, 1, 0.5]
 
 ###############################################################################
 # The following process gets the normals of the actor and computes the tangents
@@ -155,16 +157,17 @@ scene.add(sphere)
 ###############################################################################
 # Let's setup now the window and the UI.
 
-show_m = window.ShowManager(scene=scene, size=(1920, 1080), reset_camera=False,
-                            order_transparent=True)
+show_m = window.ShowManager(
+    scene=scene, size=(1920, 1080), reset_camera=False, order_transparent=True
+)
 
 
 ###############################################################################
 # We will create one single panel with all of our labels and sliders.
 
 control_panel = ui.Panel2D(
-    (400, 500), position=(5, 5), color=(.25, .25, .25), opacity=.75,
-    align='right')
+    (400, 500), position=(5, 5), color=(0.25, 0.25, 0.25), opacity=0.75, align='right'
+)
 
 ###############################################################################
 # By using our previously defined function, we can easily create all the labels
@@ -174,52 +177,73 @@ slider_label_metallic = ui.TextBlock2D(text='Metallic', font_size=16)
 slider_label_roughness = ui.TextBlock2D(text='Roughness', font_size=16)
 slider_label_anisotropy = ui.TextBlock2D(text='Anisotropy', font_size=16)
 slider_label_anisotropy_rotation = ui.TextBlock2D(
-    text='Anisotropy Rotation', font_size=16)
+    text='Anisotropy Rotation', font_size=16
+)
 slider_label_anisotropy_direction_x = ui.TextBlock2D(
-    text='Anisotropy Direction X', font_size=16)
+    text='Anisotropy Direction X', font_size=16
+)
 slider_label_anisotropy_direction_y = ui.TextBlock2D(
-    text='Anisotropy Direction Y', font_size=16)
+    text='Anisotropy Direction Y', font_size=16
+)
 slider_label_anisotropy_direction_z = ui.TextBlock2D(
-    text='Anisotropy Direction Z', font_size=16)
+    text='Anisotropy Direction Z', font_size=16
+)
 slider_label_coat_strength = ui.TextBlock2D(text='Coat Strength', font_size=16)
-slider_label_coat_roughness = ui.TextBlock2D(
-    text='Coat Roughness', font_size=16)
+slider_label_coat_roughness = ui.TextBlock2D(text='Coat Roughness', font_size=16)
 slider_label_base_ior = ui.TextBlock2D(text='Base IoR', font_size=16)
 slider_label_coat_ior = ui.TextBlock2D(text='Coat IoR', font_size=16)
 
-control_panel.add_element(slider_label_metallic, (.01, .95))
-control_panel.add_element(slider_label_roughness, (.01, .86))
-control_panel.add_element(slider_label_anisotropy, (.01, .77))
-control_panel.add_element(slider_label_anisotropy_rotation, (.01, .68))
-control_panel.add_element(slider_label_anisotropy_direction_x, (.01, .59))
-control_panel.add_element(slider_label_anisotropy_direction_y, (.01, .5))
-control_panel.add_element(slider_label_anisotropy_direction_z, (.01, .41))
-control_panel.add_element(slider_label_coat_strength, (.01, .32))
-control_panel.add_element(slider_label_coat_roughness, (.01, .23))
-control_panel.add_element(slider_label_base_ior, (.01, .14))
-control_panel.add_element(slider_label_coat_ior, (.01, .05))
+control_panel.add_element(slider_label_metallic, (0.01, 0.95))
+control_panel.add_element(slider_label_roughness, (0.01, 0.86))
+control_panel.add_element(slider_label_anisotropy, (0.01, 0.77))
+control_panel.add_element(slider_label_anisotropy_rotation, (0.01, 0.68))
+control_panel.add_element(slider_label_anisotropy_direction_x, (0.01, 0.59))
+control_panel.add_element(slider_label_anisotropy_direction_y, (0.01, 0.5))
+control_panel.add_element(slider_label_anisotropy_direction_z, (0.01, 0.41))
+control_panel.add_element(slider_label_coat_strength, (0.01, 0.32))
+control_panel.add_element(slider_label_coat_roughness, (0.01, 0.23))
+control_panel.add_element(slider_label_base_ior, (0.01, 0.14))
+control_panel.add_element(slider_label_coat_ior, (0.01, 0.05))
 
 ###############################################################################
 # Our sliders are created and added to the panel in the following way.
 
 slider_slice_metallic = ui.LineSlider2D(
-    initial_value=pbr_params.metallic, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.metallic,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_roughness = ui.LineSlider2D(
-    initial_value=pbr_params.roughness, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.roughness,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_anisotropy = ui.LineSlider2D(
-    initial_value=pbr_params.anisotropy, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.anisotropy,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_anisotropy_rotation = ui.LineSlider2D(
-    initial_value=pbr_params.anisotropy_rotation, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.anisotropy_rotation,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_coat_strength = ui.LineSlider2D(
-    initial_value=pbr_params.coat_strength, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.coat_strength,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_coat_roughness = ui.LineSlider2D(
-    initial_value=pbr_params.coat_roughness, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=pbr_params.coat_roughness,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 
 ###############################################################################
 # Notice that we are defining a range of [-1, 1] for the DoA. This is because
@@ -227,14 +251,26 @@ slider_slice_coat_roughness = ui.LineSlider2D(
 # tangents.
 
 slider_slice_anisotropy_direction_x = ui.LineSlider2D(
-    initial_value=doa[0], min_value=-1, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=doa[0],
+    min_value=-1,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_anisotropy_direction_y = ui.LineSlider2D(
-    initial_value=doa[1], min_value=-1, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=doa[1],
+    min_value=-1,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 slider_slice_anisotropy_direction_z = ui.LineSlider2D(
-    initial_value=doa[2], min_value=-1, max_value=1, length=195,
-    text_template='{value:.1f}')
+    initial_value=doa[2],
+    min_value=-1,
+    max_value=1,
+    length=195,
+    text_template='{value:.1f}',
+)
 
 ###############################################################################
 # Another special case are the Index of Refraction (IoR) sliders. In these
@@ -242,11 +278,19 @@ slider_slice_anisotropy_direction_z = ui.LineSlider2D(
 # documentation of the material.
 
 slider_slice_base_ior = ui.LineSlider2D(
-    initial_value=pbr_params.base_ior, min_value=1, max_value=2.3,
-    length=195, text_template='{value:.02f}')
+    initial_value=pbr_params.base_ior,
+    min_value=1,
+    max_value=2.3,
+    length=195,
+    text_template='{value:.02f}',
+)
 slider_slice_coat_ior = ui.LineSlider2D(
-    initial_value=pbr_params.coat_ior, min_value=1, max_value=2.3,
-    length=195, text_template='{value:.02f}')
+    initial_value=pbr_params.coat_ior,
+    min_value=1,
+    max_value=2.3,
+    length=195,
+    text_template='{value:.02f}',
+)
 
 ###############################################################################
 # Let's add the event handlers functions to the corresponding sliders.
@@ -255,12 +299,9 @@ slider_slice_metallic.on_change = change_slice_metallic
 slider_slice_roughness.on_change = change_slice_roughness
 slider_slice_anisotropy.on_change = change_slice_anisotropy
 slider_slice_anisotropy_rotation.on_change = change_slice_anisotropy_rotation
-slider_slice_anisotropy_direction_x.on_change = (
-    change_slice_anisotropy_direction_x)
-slider_slice_anisotropy_direction_y.on_change = (
-    change_slice_anisotropy_direction_y)
-slider_slice_anisotropy_direction_z.on_change = (
-    change_slice_anisotropy_direction_z)
+slider_slice_anisotropy_direction_x.on_change = change_slice_anisotropy_direction_x
+slider_slice_anisotropy_direction_y.on_change = change_slice_anisotropy_direction_y
+slider_slice_anisotropy_direction_z.on_change = change_slice_anisotropy_direction_z
 slider_slice_coat_strength.on_change = change_slice_coat_strength
 slider_slice_coat_roughness.on_change = change_slice_coat_roughness
 slider_slice_base_ior.on_change = change_slice_base_ior
@@ -269,17 +310,17 @@ slider_slice_coat_ior.on_change = change_slice_coat_ior
 ###############################################################################
 # And then add the sliders to the panel.
 
-control_panel.add_element(slider_slice_metallic, (.44, .95))
-control_panel.add_element(slider_slice_roughness, (.44, .86))
-control_panel.add_element(slider_slice_anisotropy, (.44, .77))
-control_panel.add_element(slider_slice_anisotropy_rotation, (.44, .68))
-control_panel.add_element(slider_slice_anisotropy_direction_x, (.44, .59))
-control_panel.add_element(slider_slice_anisotropy_direction_y, (.44, .5))
-control_panel.add_element(slider_slice_anisotropy_direction_z, (.44, .41))
-control_panel.add_element(slider_slice_coat_strength, (.44, .32))
-control_panel.add_element(slider_slice_coat_roughness, (.44, .23))
-control_panel.add_element(slider_slice_base_ior, (.44, .14))
-control_panel.add_element(slider_slice_coat_ior, (.44, .05))
+control_panel.add_element(slider_slice_metallic, (0.44, 0.95))
+control_panel.add_element(slider_slice_roughness, (0.44, 0.86))
+control_panel.add_element(slider_slice_anisotropy, (0.44, 0.77))
+control_panel.add_element(slider_slice_anisotropy_rotation, (0.44, 0.68))
+control_panel.add_element(slider_slice_anisotropy_direction_x, (0.44, 0.59))
+control_panel.add_element(slider_slice_anisotropy_direction_y, (0.44, 0.5))
+control_panel.add_element(slider_slice_anisotropy_direction_z, (0.44, 0.41))
+control_panel.add_element(slider_slice_coat_strength, (0.44, 0.32))
+control_panel.add_element(slider_slice_coat_roughness, (0.44, 0.23))
+control_panel.add_element(slider_slice_base_ior, (0.44, 0.14))
+control_panel.add_element(slider_slice_coat_ior, (0.44, 0.05))
 
 ###############################################################################
 # Consequently, we add the panel to the scene.
@@ -302,4 +343,4 @@ interactive = False
 if interactive:
     show_m.start()
 
-window.record(scene, size=(1920, 1080), out_path="viz_pbr_interactive.png")
+window.record(scene, size=(1920, 1080), out_path='viz_pbr_interactive.png')

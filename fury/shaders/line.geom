@@ -94,7 +94,7 @@ void main() {
         // VC position of this fragment
         //VTK::PositionVC::Impl
 
-        gl_Position = gl_in[i].gl_Position + 
+        gl_Position = gl_in[i].gl_Position +
                       (MCDCMatrix * linewidth * orthoMC * ((j + 1) % 2 - 0.5));
 
         EmitVertex();

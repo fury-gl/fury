@@ -7,8 +7,9 @@ Camera and opacity keyframe animation explained in this tutorial.
 """
 
 import numpy as np
+
 from fury import actor, window
-from fury.animation import Timeline, Animation, CameraAnimation
+from fury.animation import Animation, CameraAnimation, Timeline
 from fury.animation.interpolator import cubic_spline_interpolator
 
 ###############################################################################
@@ -20,9 +21,9 @@ from fury.animation.interpolator import cubic_spline_interpolator
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 ###############################################################################
@@ -47,17 +48,19 @@ timeline = Timeline(playback_panel=True)
 
 ###############################################################################
 # Creating two actors for visualization, and to detect camera's animations.
-arrow = actor.arrow(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]),
-                    np.array([[1, 1, 0]]), scales=5)
-plan = actor.box(np.array([[0, 0, 0]]), colors=np.array([[1, 1, 1]]),
-                 scales=np.array([[20, 0.2, 20]]))
+arrow = actor.arrow(
+    np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), np.array([[1, 1, 0]]), scales=5
+)
+plan = actor.box(
+    np.array([[0, 0, 0]]),
+    colors=np.array([[1, 1, 1]]),
+    scales=np.array([[20, 0.2, 20]]),
+)
 
 ###############################################################################
 # Creating "FURY" text
 # ====================
-fury_text = actor.vector_text("FURY",
-                              pos=(-4.3, 15, 0),
-                              scale=(2, 2, 2))
+fury_text = actor.vector_text('FURY', pos=(-4.3, 15, 0), scale=(2, 2, 2))
 
 ###############################################################################
 # Creating an ``Animation`` to animate the opacity of ``fury_text``
@@ -82,9 +85,11 @@ for i in range(50):
     ###########################################################################
     # create a sphere actor that's centered at the origin and has random color
     # and radius.
-    actors = [actor.sphere(np.array([[0, 0, 0]]),
-                           np.random.random([1, 3]),
-                           np.random.random([1, 3]))]
+    actors = [
+        actor.sphere(
+            np.array([[0, 0, 0]]), np.random.random([1, 3]), np.random.random([1, 3])
+        )
+    ]
 
     ###########################################################################
     # create a timeline to animate this actor (single actor or list of actors)
@@ -97,9 +102,7 @@ for i in range(50):
         #######################################################################
         # Position and scale are set to a random value at the timestamps
         # mentioned above.
-        animation.set_position(t,
-                               np.random.random(3) * 30 - np.array(
-                                   [15, 0, 15]))
+        animation.set_position(t, np.random.random(3) * 30 - np.array([15, 0, 15]))
         animation.set_scale(t, np.repeat(np.random.random(1), 3))
 
     ###########################################################################
@@ -173,5 +176,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_camera.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_animation_camera.png', size=(900, 768))

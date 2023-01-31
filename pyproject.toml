@@ -96,18 +96,19 @@ raw-options = { version_scheme = "release-branch-semver" }
 version-file = "fury/_version.py"
 
 [tool.blue]
-line_length = 99
+line_length = 88
 target-version = ["py38"]
 force-exclude = """
 (
   _version.py
+  *docs/experimental/*
 )
 """
 
 [tool.isort]
 profile = "black"
-line_length = 99
-extend_skip = ["_version.py", "externals"]
+line_length = 88
+extend_skip = ["_version.py", "externals", "*docs/experimental*"]
 
 [tool.mypy]
 python_version = "3.11"
