@@ -92,7 +92,6 @@ def test_grid_ui1(interactive=False):
     counter = itertools.count()
     show_m = window.ShowManager(scene)
 
-
     def timer_callback(_obj, _event):
         nonlocal show_m, counter
         cnt = next(counter)
@@ -116,6 +115,17 @@ def test_grid_ui1(interactive=False):
     report = window.analyze_snapshot(arr)
     npt.assert_equal(report.objects > 9, True)
     # print(report.objects)
+
+    # testing grid without captions
+    t = 0
+    try:
+        grid_ui = ui.GridUI(actors=actors)
+        scene.add(grid_ui)
+        t = 1
+    except:
+        pass
+
+    npt.assert_equal(t, 1)
 
 
 def test_grid_ui2(interactive=False):
@@ -178,7 +188,6 @@ def test_grid_ui2(interactive=False):
     actors.append(shallow_copy(contour_actor3))
     text_actor3 = actor.text_3d('cube 9', justification='center')
     texts.append(text_actor3)
-
 
     # this needs to happen automatically when start() ends.
     # for act in actors:
@@ -309,5 +318,3 @@ def test_ui_tab_ui(interactive=False):
 # test_grid_ui()
 # test_grid_ui2()
 # test_ui_tab_ui()
-
-
