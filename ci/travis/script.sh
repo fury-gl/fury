@@ -12,12 +12,10 @@ fi
 
 # Install and test FURY
 cd ${TRAVIS_BUILD_DIR}
-python3 setup.py install
+pip install .
 # Change folder
 mkdir for_testing
 cd for_testing
-# We need the setup.cfg for the pytest settings
-cp ../setup.cfg .
 python3 -c "import fury; print(fury.__version__)"
 error_code=0
 

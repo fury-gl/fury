@@ -2,7 +2,7 @@ Pre-GSoC Journey
 =================
 
 .. post:: May 25 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

@@ -6,8 +6,8 @@ In this tutorial, we will show how to display a glTF file in a scene.
 """
 
 from fury import window
-from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
+from fury.gltf import glTF
 
 ##############################################################################
 # Create a scene.

@@ -103,3 +103,7 @@ target/
 *.bin
 *.gltf
 
+tmp/
+temp/
+
+_version.py

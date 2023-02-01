@@ -8,7 +8,7 @@ Improvements in SDF primitives.
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey Everyone! 
+Hey Everyone!
 This week, Improvements in SDF primitives.
 
 What did you do this week?

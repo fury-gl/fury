@@ -15,7 +15,7 @@ Below are the tasks that I worked on:
     .. image:: https://user-images.githubusercontent.com/54466356/127688192-8412b604-d6c7-4da9-87c4-dfae044a136e.png
         :width: 200
         :height: 200
-    
+
     .. image:: https://user-images.githubusercontent.com/54466356/127620054-7e14f86e-1579-46ac-b4a6-ac98c109094a.png
         :width: 200
         :height: 200

@@ -4,19 +4,19 @@ Keyframes Spline Interpolator
 =============================
 
 Tutorial on making keyframe-based animation in FURY using Spline interpolators.
-
 """
 
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation, Timeline
 from fury.animation.interpolator import spline_interpolator
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 ###############################################################################
@@ -94,5 +94,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_spline.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_animation_spline.png', size=(900, 768))

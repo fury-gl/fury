@@ -1,4 +1,4 @@
-Week #10: SDF Fonts 
+Week #10: SDF Fonts
 ===================
 
 .. post:: August 09 2021

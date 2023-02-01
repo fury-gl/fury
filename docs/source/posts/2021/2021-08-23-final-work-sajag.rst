@@ -22,7 +22,7 @@ Google Summer of Code Final Work Product
 -  **Name:** Sajag Swami
 -  **Organisation:** Python Software Foundation
 -  **Sub-Organisation:** FURY
--  **Project:** `FURY: Ribbon and Molecular Surface Representations for 
+-  **Project:** `FURY: Ribbon and Molecular Surface Representations for
    Proteins <https://github.com/fury-gl/fury/wiki/Google-Summer-of-Code-2021>`_
 
 Proposed Objectives
@@ -51,7 +51,7 @@ Objectives Completed
    coils or loops as lines or thin strips. It was implemented by using
    `vtkProteinRibbonFilter`. Generating a `vtkPolyData` of appropriate format
    required by `vtkProteinRibbonFilter` was initially unclear due to lack of
-   examples. I was able to understand what kind of output the filter required 
+   examples. I was able to understand what kind of output the filter required
    after a meeting with mentors. Tests were added and a demo was created.
 
    *Pull Requests:*
@@ -65,8 +65,8 @@ Objectives Completed
   The ball-and-stick model is a molecular model of a chemical substance which
   displays both the three-dimensional position of the atoms and the bonds between
   them. The atoms are typically represented by spheres, connected by tubes which
-  represent the bonds. It was created by using  `vtkOpenGLMoleculeMapper`. 
-  Added `vtkSimpleBondPerceiver` for detection of bonds. Tests were added and a 
+  represent the bonds. It was created by using  `vtkOpenGLMoleculeMapper`.
+  Added `vtkSimpleBondPerceiver` for detection of bonds. Tests were added and a
   demo was created.
 
   *Pull Requests:*
@@ -125,8 +125,8 @@ Other Objectives
 
 -  **2D Animated Surfaces**
 
-   This was a simple demonstration that animated Two-Dimensional (2D) functions using FURY. 
-   Created a grid of x-y coordinates and mapped the heights (z-values) to the corresponding x, y 
+   This was a simple demonstration that animated Two-Dimensional (2D) functions using FURY.
+   Created a grid of x-y coordinates and mapped the heights (z-values) to the corresponding x, y
    coordinates to generate the surfaces. Used colormaps to color the surfaces.
 
    *Pull Requests:*
@@ -136,11 +136,11 @@ Other Objectives
 -  **Updated miscellaneous animations**
 
    -  Updated the demo of helical motion to stop using multiple line actors as discussed in the meeting.
-   -  Updated the demo of brownian motion to make it more scientifically useful (removed unnecessary rotation of camera 
+   -  Updated the demo of brownian motion to make it more scientifically useful (removed unnecessary rotation of camera
       during animation and box actor).
-   -  Display simulation data for brownian motion and helical motion animations (number of simulated steps for brownian 
-      motion and velocity of the particle for helical motion). 
-   -  Created utility functions to make the code understandable and used these in emwave, helical and brownian 
+   -  Display simulation data for brownian motion and helical motion animations (number of simulated steps for brownian
+      motion and velocity of the particle for helical motion).
+   -  Created utility functions to make the code understandable and used these in emwave, helical and brownian
       animations.
 
    *Pull Requests:*

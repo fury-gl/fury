@@ -615,7 +615,7 @@ def read_viz_icons(style='icomoon', fname='infinity.png'):
         Default is infinity.png.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of icon.
 
@@ -639,7 +639,7 @@ def read_viz_models(fname):
         This should be found in folder HOME/.fury/models/.
 
     Returns
-    --------
+    -------
     path : str
         Complete path of models.
 

@@ -3,7 +3,7 @@ Week 3 - Dealing with Problems
 ==============================
 
 .. post:: June 22 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -21,7 +21,7 @@ Instead of spending too much time on this, I thought it would be great to switch
 
 But then the question arises `How to efficiently take data from the user?`, `Which data format would be easy to compute and best for user experience?` and so on.
 
-Alongside I was trying to create polylines but whenever I wanted to start the creation of the second line the dragging event wasn't triggered as each dragging event required a left mouse click event associated with it. 
+Alongside I was trying to create polylines but whenever I wanted to start the creation of the second line the dragging event wasn't triggered as each dragging event required a left mouse click event associated with it.
 I tried to do that manually but it didn't work.
 
 Did you get stuck anywhere?
