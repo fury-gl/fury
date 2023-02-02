@@ -119,11 +119,12 @@ def test_grid_ui1(interactive=False):
     # print(report.objects)
 
     # testing grid without captions
-    scene.clear()
+    scene1 = window.Scene()
     t = 0
+
     try:
         grid_ui = ui.GridUI(actors=actors)
-        scene.add(grid_ui)
+        scene1.add(grid_ui)
         t = 1
     except:
         pass
