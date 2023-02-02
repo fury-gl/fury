@@ -56,11 +56,11 @@ Objectives Completed
             -  Selection:  This mode is used to select an individual or group of shapes.
             -  Deletion:  This mode is used to delete an individual or group of shapes.
             -  The modes mentioned below create an element on the Panel which is described below.
-                -  Line: 
-                -  Quad: 
-                -  Circle: 
-                -  Polyline: 
-                -  Freehand drawing: 
+                -  Line
+                -  Quad
+                -  Circle
+                -  Polyline
+                -  Freehand drawing
             -  To activate any of these above mode the user has to click on the button with the respective icon present in the mode panel and then interact with the main panel.
    iii. **Mode Text** It is a ``TextBlock2D`` which displays the current mode of the ``DrawPanel``. It automatically updates whenever the mode is changed. This helps the user to quickly identify which mode is he currently in.
 
