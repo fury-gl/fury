@@ -39,8 +39,11 @@
     <link rel="stylesheet" href="_static/vendor/features.css" />
     <link rel="stylesheet" href="_static/vendor/fa.css" />
     <link rel="stylesheet" href="_static/vendor/tabs.css" />
+    <link rel="stylesheet" href="_static/vendor/popup.css" />
     <link rel="stylesheet" href="_static/vendor/new-promotions.css" />
+    <link rel="stylesheet" href="_static/vendor/fonts.css" />
     <link rel="stylesheet" href="_static/css/main.css" />
+    <link rel="stylesheet" href="_static/css/navbar.css" />
 
 
 
@@ -80,19 +83,19 @@
             <div id="navbar-menu" class="navbar-menu is-static">
 
                 <div class="navbar-end">
-                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="installation.html" class="navbar-item is-secondary">
                         Installation
                     </a>
-                    <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="auto_examples/index.html" class="navbar-item is-secondary">
                         Demos
                     </a>
-                    <a href="blog.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="blog.html" class="navbar-item is-secondary">
                         Blog
                     </a>
-                    <a href="reference/index.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="reference/index.html" class="navbar-item is-secondary">
                         API
                     </a>
-                    <a href="community.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="community.html" class="navbar-item is-secondary">
                         Community
                     </a>
                 </div>
@@ -105,7 +108,7 @@
     <nav id="navbar-clone" class="navbar is-fresh is-transparent" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
-                <a id="navbar-item" class="navbar-item" href="index.html">
+                <a class="navbar-item" href="index.html">
                     <img id="navbar-logo" src="_static/images/logo.svg" alt="%!s(&lt;nil&gt;) logo">
                     <div id="navbar-logo-text">FURY</div>
                 </a>
@@ -121,16 +124,16 @@
             <div id="cloned-navbar-menu" class="navbar-menu is-fixed">
 
                 <div class="navbar-end">
-                    <a href="installation.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="installation.html" class="navbar-item is-secondary">
                         Installation
                     </a>
-                    <a href="auto_examples/index.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="auto_examples/index.html" class="navbar-item is-secondary">
                         Demos
                     </a>
-                    <a href="reference/index.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="reference/index.html" class="navbar-item is-secondary">
                         API
                     </a>
-                    <a href="community.html" id="navbar-item" class="navbar-item is-secondary">
+                    <a href="community.html" class="navbar-item is-secondary">
                         Community
                     </a>
                 </div>
@@ -144,8 +147,8 @@
             <div class="hero-content">
                 <div class="hero-title-content">
                     <div class="hero-title">
-                        <img class="hero-logo" src="_static/images/text-logo.png" alt="FURY logo. ">
                         <img class="hero-logo" src="_static/images/logo.svg" alt="FURY logo. ">
+                        <p class="logo-text"> fury </p>
                     </div>
                     <div class="flex-column">
 
@@ -514,7 +517,6 @@
                 </ul>
                 <ul id="tabs-content" class="uk-switcher uk-margin">
                     <li class="scientific-domains">
-
                         <table>
                             <tr class="highlight-th">
                                 <td class="bold-text">Engineering</td>
@@ -523,11 +525,10 @@
                                 <td class="bold-text">Astronomy</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/physics.svg" alt="">
-                                </td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
+                                <td><img id="engineering" class="cell-layout" src="_static/images/sc-dom/engineering.svg" alt=""></td>
+                                <td><img id="physics" class="cell-layout" src="_static/images/sc-dom/physics.svg" alt=""></td>
+                                <td><img id="chemistry" class="cell-layout" src="_static/images/sc-dom/chemistry.svg" alt=""></td>
+                                <td><img id="astronomy" class="cell-layout" src="_static/images/sc-dom/astronomy.svg" alt=""></td>
                             </tr>
                             <tr class="highlight-th">
                                 <td class="bold-text">Aerospace</td>
@@ -536,17 +537,16 @@
                                 <td class="bold-text">Network science</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/biology.svg" alt="">
-                                </td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
+                                <td><img id="aerospace" class="cell-layout" src="_static/images/sc-dom/aerospace.svg" alt=""></td>
+                                <td><img id="biology" class="cell-layout" src="_static/images/sc-dom/biology.svg" alt=""></td>
+                                <td><img id="data-science" class="cell-layout" src="_static/images/sc-dom/data-science.svg" alt=""></td>
+                                <td><img id="network-science" class="cell-layout" src="_static/images/sc-dom/network.svg" alt=""></td>
                             </tr>
                             <tr class="highlight-th">
                                 <td class="bold-text">Mathematics</td>
                             </tr>
                             <tr>
-                                <td><img class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
+                                <td><img id="mathematics" class="cell-layout" src="_static/images/sc-dom/maths.svg" alt=""></td>
                                 <td class="bold-text">and</td>
                                 <td class="bold-text">many more ...</td>
                             </tr>
@@ -592,11 +592,11 @@
                                     <div>
                                         <a href="fury-pybullet.html"><img src="https://furiousatoms.com/_static/images/fullerene_1.png" alt="fullrene Modellin" align="middle"></a>
                                     </div>
-                                    <div class="row p-t-5">
-                                        <div class="col-sm">
+                                    <div class="row">
+                                        <div class="col-sm p-t-20">
                                             <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_ribbons.gif" alt="Molecular Ribbon" align="middle"></a>
                                         </div>
-                                        <div class="col-sm">
+                                        <div class="col-sm p-t-20">
                                             <a href="fury-pybullet.html"><img src="https://github.com/fury-gl/fury-communication-assets/raw/main/molecular_surface.gif" alt="Molecular Surface" align="middle"></a>
                                         </div>
                                     </div>
@@ -697,10 +697,18 @@
                             <h5>About</h5>
                         </div>
                         <ul class="link-list">
-                            <li class="link-list"><a class="footer-link" href="community.html#contributors"><i class="fa fa-angle-double-right"></i>Developers</a></li>
-                            <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i class="fa fa-angle-double-right"></i>Support</a></li>
-                            <li class="link-list"><a class="footer-link" href="installation.html"><i class="fa fa-angle-double-right"></i>Download</a></li>
-                            <li class="link-list"><a class="footer-link" href="auto_tutorials/index.html"><i class="fa fa-angle-double-right"></i>Tutorials</a></li>
+                            <li class="link-list"><a class="footer-link" href="community.html#contributors"><i class="fa fa-angle-double-right"></i>
+                                Developers
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" href="https://discord.gg/6btFPPj"><i class="fa fa-angle-double-right"></i>
+                                Support
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" href="installation.html"><i class="fa fa-angle-double-right"></i>
+                                Download
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" href="auto_tutorials/index.html"><i class="fa fa-angle-double-right"></i>
+                                Tutorials
+                            </a></li>
                         </ul>
                     </div>
                 </div>
@@ -709,10 +717,16 @@
                         <div class="footer-header">
                             <h5>Friends</h5>
                         </div>
-                        <ul class="">
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://dipy.org/"><i class="fa fa-angle-double-right"></i>DIPY</a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://heliosnetwork.io/"><i class="fa fa-angle-double-right"></i>Helios</a></li>
-                            <li class="link-list"><a class="footer-link" target="_blank" href="https://furiousatoms.com/"><i class="fa fa-angle-double-right"></i>Furious Atoms</a></li>
+                        <ul class="link-list">
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://dipy.org/"><i class="fa fa-angle-double-right"></i>
+                                DIPY
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://heliosnetwork.io/"><i class="fa fa-angle-double-right"></i>
+                                Helios
+                            </a></li>
+                            <li class="link-list"><a class="footer-link" target="_blank" href="https://furiousatoms.com/"><i class="fa fa-angle-double-right"></i>
+                                Furious Atoms
+                            </a></li>
                         </ul>
                     </div>
                 </div>
@@ -760,11 +774,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="_static/js/fresh.js"></script>
-    <script src="_static/js/jquery.panelslider.min.js"></script>
+    <script src="_static/js/popup.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/js/uikit.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.7.6/dist/css/uikit.min.css" />

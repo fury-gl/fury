@@ -1,4 +1,4 @@
-Week 12 - Adding skeleton as actors and fix global transformation 
+Week 12 - Adding skeleton as actors and fix global transformation
 =================================================================
 
 .. post:: September 08 2022

@@ -8,7 +8,7 @@ More Shaders!!
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey ! 
+Hey !
 This week, More Shaders!
 
 What did you do this week?
@@ -30,7 +30,7 @@ The shader demos are available `here <https://github.com/lenixlobo/fury/tree/sha
 
 What is coming up next week?
 ----------------------------
-The next week will involve working on more such demos which can demonstrate the capabilities of FURY 
+The next week will involve working on more such demos which can demonstrate the capabilities of FURY
 
 Did you get stuck anywhere?
 ---------------------------

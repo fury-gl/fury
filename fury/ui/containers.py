@@ -1,16 +1,23 @@
 """UI container module."""
 
-__all__ = ["Panel2D", "TabPanel2D", "TabUI", "ImageContainer2D",
-           "GridUI"]
+__all__ = ['Panel2D', 'TabPanel2D', 'TabUI', 'ImageContainer2D', 'GridUI']
 
 import numpy as np
 
-from fury.io import load_image
-from fury.lib import (PolyData, PolyDataMapper2D, Points, CellArray,
-                      FloatArray, Texture, TexturedActor2D, Property2D)
-from fury.ui.core import UI, Rectangle2D, TextBlock2D
-from fury.utils import set_input, rotate
 from fury.actor import grid
+from fury.io import load_image
+from fury.lib import (
+    CellArray,
+    FloatArray,
+    Points,
+    PolyData,
+    PolyDataMapper2D,
+    Property2D,
+    Texture,
+    TexturedActor2D,
+)
+from fury.ui.core import UI, Rectangle2D, TextBlock2D
+from fury.utils import rotate, set_input
 
 
 class Panel2D(UI):
@@ -24,9 +31,17 @@ class Panel2D(UI):
         Alignment of the panel with respect to the overall screen.
     """
 
-    def __init__(self, size, position=(0, 0), color=(0.1, 0.1, 0.1),
-                 opacity=0.7, align="left", border_color=(1, 1, 1),
-                 border_width=0, has_border=False):
+    def __init__(
+        self,
+        size,
+        position=(0, 0),
+        color=(0.1, 0.1, 0.1),
+        opacity=0.7,
+        align='left',
+        border_color=(1, 1, 1),
+        border_width=0,
+        has_border=False,
+    ):
         """Init class instance.
 
         Parameters
@@ -70,26 +85,32 @@ class Panel2D(UI):
         self.background = Rectangle2D()
 
         if self.has_border:
-            self.borders = {'left': Rectangle2D(),
-                            'right': Rectangle2D(),
-                            'top': Rectangle2D(),
-                            'bottom': Rectangle2D()}
+            self.borders = {
+                'left': Rectangle2D(),
+                'right': Rectangle2D(),
+                'top': Rectangle2D(),
+                'bottom': Rectangle2D(),
+            }
 
-            self.border_coords = {'left': (0., 0.),
-                                  'right': (1., 0.),
-                                  'top': (0., 1.),
-                                  'bottom': (0., 0.)}
+            self.border_coords = {
+                'left': (0.0, 0.0),
+                'right': (1.0, 0.0),
+                'top': (0.0, 1.0),
+                'bottom': (0.0, 0.0),
+            }
 
             for key in self.borders.keys():
                 self.borders[key].color = self._border_color
                 self.add_element(self.borders[key], self.border_coords[key])
 
             for key in self.borders.keys():
-                self.borders[key].on_left_mouse_button_pressed = \
-                    self.left_button_pressed
+                self.borders[
+                    key
+                ].on_left_mouse_button_pressed = self.left_button_pressed
 
-                self.borders[key].on_left_mouse_button_dragged = \
-                    self.left_button_dragged
+                self.borders[
+                    key
+                ].on_left_mouse_button_dragged = self.left_button_dragged
 
         self.add_element(self.background, (0, 0))
 
@@ -129,17 +150,21 @@ class Panel2D(UI):
         self.background.resize(size)
 
         if self.has_border:
-            self.borders['left'].resize((self._border_width,
-                                        size[1]+self._border_width))
+            self.borders['left'].resize(
+                (self._border_width, size[1] + self._border_width)
+            )
 
-            self.borders['right'].resize((self._border_width,
-                                          size[1]+self._border_width))
+            self.borders['right'].resize(
+                (self._border_width, size[1] + self._border_width)
+            )
 
-            self.borders['top'].resize((self.size[0]+self._border_width,
-                                        self._border_width))
+            self.borders['top'].resize(
+                (self.size[0] + self._border_width, self._border_width)
+            )
 
-            self.borders['bottom'].resize((self.size[0]+self._border_width,
-                                           self._border_width))
+            self.borders['bottom'].resize(
+                (self.size[0] + self._border_width, self._border_width)
+            )
 
             self.update_border_coords()
 
@@ -172,7 +197,7 @@ class Panel2D(UI):
     def opacity(self, opacity):
         self.background.opacity = opacity
 
-    def add_element(self, element, coords, anchor="position"):
+    def add_element(self, element, coords, anchor='position'):
         """Add a UI component to the panel.
 
         The coordinates represent an offset from the lower left corner of the
@@ -193,17 +218,16 @@ class Panel2D(UI):
 
         if np.issubdtype(coords.dtype, np.floating):
             if np.any(coords < 0) or np.any(coords > 1):
-                raise ValueError("Normalized coordinates must be in [0,1].")
+                raise ValueError('Normalized coordinates must be in [0,1].')
 
             coords = coords * self.size
 
-        if anchor == "center":
+        if anchor == 'center':
             element.center = self.position + coords
-        elif anchor == "position":
+        elif anchor == 'position':
             element.position = self.position + coords
         else:
-            msg = ("Unknown anchor {}. Supported anchors are 'position'"
-                   " and 'center'.")
+            msg = "Unknown anchor {}. Supported anchors are 'position'" " and 'center'."
             raise ValueError(msg)
 
         self._elements.append(element)
@@ -222,7 +246,7 @@ class Panel2D(UI):
         del self._elements[idx]
         del self.element_offsets[idx]
 
-    def update_element(self, element, coords, anchor="position"):
+    def update_element(self, element, coords, anchor='position'):
         """Update the position of a UI component in the panel.
 
         Parameters
@@ -259,21 +283,22 @@ class Panel2D(UI):
         window_size_change : (int, int)
             New window size (width, height) in pixels.
         """
-        if self.alignment == "left":
+        if self.alignment == 'left':
             pass
-        elif self.alignment == "right":
+        elif self.alignment == 'right':
             self.position += np.array(window_size_change)
         else:
-            msg = "You can only left-align or right-align objects in a panel."
+            msg = 'You can only left-align or right-align objects in a panel.'
             raise ValueError(msg)
 
     def update_border_coords(self):
-        """Update the coordinates of the borders
-        """
-        self.border_coords = {'left': (0., 0.),
-                              'right': (1., 0.),
-                              'top': (0., 1.),
-                              'bottom': (0., 0.)}
+        """Update the coordinates of the borders"""
+        self.border_coords = {
+            'left': (0.0, 0.0),
+            'right': (1.0, 0.0),
+            'top': (0.0, 1.0),
+            'bottom': (0.0, 0.0),
+        }
 
         for key in self.borders.keys():
             self.update_element(self.borders[key], self.border_coords[key])
@@ -295,8 +320,7 @@ class Panel2D(UI):
         side, color = side_color
 
         if side.lower() not in ['left', 'right', 'top', 'bottom']:
-            raise ValueError(
-                f'{side} not a valid border side')
+            raise ValueError(f'{side} not a valid border side')
 
         self.borders[side].color = color
 
@@ -311,8 +335,7 @@ class Panel2D(UI):
             elif side in ['top', 'bottom']:
                 widths.append(self.borders[side].height)
             else:
-                raise ValueError(
-                    f'{side} not a valid border side')
+                raise ValueError(f'{side} not a valid border side')
         return widths
 
     @border_width.setter
@@ -331,8 +354,7 @@ class Panel2D(UI):
         elif side.lower() in ['top', 'bottom']:
             self.borders[side].height = border_width
         else:
-            raise ValueError(
-                f'{side} not a valid border side')
+            raise ValueError(f'{side} not a valid border side')
 
 
 class TabPanel2D(UI):
@@ -346,8 +368,14 @@ class TabPanel2D(UI):
         Renders the title of the tab.
     """
 
-    def __init__(self, position=(0, 0), size=(100, 100),
-                 title="New Tab", color=(0.5, 0.5, 0.5), content_panel=None):
+    def __init__(
+        self,
+        position=(0, 0),
+        size=(100, 100),
+        title='New Tab',
+        color=(0.5, 0.5, 0.5),
+        content_panel=None,
+    ):
         """Init class instance.
 
         Parameters
@@ -382,8 +410,7 @@ class TabPanel2D(UI):
 
         """
         self.panel = Panel2D(size=self.panel_size)
-        self.text_block = TextBlock2D(size=self._text_size,
-                                      color=(0, 0, 0))
+        self.text_block = TextBlock2D(size=self._text_size, color=(0, 0, 0))
         self.panel.add_element(self.text_block, (0, 0))
 
     def _get_actors(self):
@@ -460,7 +487,7 @@ class TabPanel2D(UI):
         """
         self.text_block.message = text
 
-    def add_element(self, element, coords, anchor="position"):
+    def add_element(self, element, coords, anchor='position'):
         """Add a UI component to the content panel.
 
         The coordinates represent an offset from the lower left corner of the
@@ -489,7 +516,7 @@ class TabPanel2D(UI):
         """
         self.content_panel.remove_element(element)
 
-    def update_element(self, element, coords, anchor="position"):
+    def update_element(self, element, coords, anchor='position'):
         """Update the position of a UI component in the content panel.
 
         Parameters
@@ -503,7 +530,7 @@ class TabPanel2D(UI):
             If int, pixels coordinates are assumed and it must fit within the
             panel's size.
         """
-        self.content_panel.update_element(element, coords, anchor="position")
+        self.content_panel.update_element(element, coords, anchor='position')
 
 
 class TabUI(UI):
@@ -515,9 +542,15 @@ class TabUI(UI):
         Stores all the instances of 'TabPanel2D' that renderes the contents.
     """
 
-    def __init__(self, position=(0, 0), size=(100, 100), nb_tabs=1,
-                 active_color=(1, 1, 1), inactive_color=(0.5, 0.5, 0.5),
-                 draggable=False):
+    def __init__(
+        self,
+        position=(0, 0),
+        size=(100, 100),
+        nb_tabs=1,
+        active_color=(1, 1, 1),
+        inactive_color=(0.5, 0.5, 0.5),
+        draggable=False,
+    ):
         """Init class instance.
 
         Parameters
@@ -605,8 +638,7 @@ class TabUI(UI):
 
     def update_tabs(self):
         """Update position, size and callbacks for tab panels."""
-        self.tab_panel_size =\
-            (self.size[0] // self.nb_tabs, int(0.1*self.size[1]))
+        self.tab_panel_size = (self.size[0] // self.nb_tabs, int(0.1 * self.size[1]))
 
         tab_panel_pos = [0.0, 0.9]
         for tab_panel in self.tabs:
@@ -615,45 +647,55 @@ class TabUI(UI):
 
             content_panel = tab_panel.content_panel
             if self.draggable:
-                tab_panel.panel.background.on_left_mouse_button_pressed =\
+                tab_panel.panel.background.on_left_mouse_button_pressed = (
                     self.left_button_pressed
-                content_panel.background.on_left_mouse_button_pressed =\
+                )
+                content_panel.background.on_left_mouse_button_pressed = (
                     self.left_button_pressed
-                tab_panel.text_block.on_left_mouse_button_pressed =\
+                )
+                tab_panel.text_block.on_left_mouse_button_pressed = (
                     self.left_button_pressed
+                )
 
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                tab_panel.panel.background.on_left_mouse_button_dragged = (
                     self.left_button_dragged
-                content_panel.background.on_left_mouse_button_dragged =\
+                )
+                content_panel.background.on_left_mouse_button_dragged = (
                     self.left_button_dragged
-                tab_panel.text_block.on_left_mouse_button_dragged =\
+                )
+                tab_panel.text_block.on_left_mouse_button_dragged = (
                     self.left_button_dragged
+                )
             else:
-                tab_panel.panel.background.on_left_mouse_button_dragged =\
+                tab_panel.panel.background.on_left_mouse_button_dragged = (
                     lambda i_ren, _obj, _comp: i_ren.force_render
-                content_panel.background.on_left_mouse_button_dragged =\
+                )
+                content_panel.background.on_left_mouse_button_dragged = (
                     lambda i_ren, _obj, _comp: i_ren.force_render
+                )
 
-            tab_panel.text_block.on_left_mouse_button_clicked =\
+            tab_panel.text_block.on_left_mouse_button_clicked = self.select_tab_callback
+            tab_panel.panel.background.on_left_mouse_button_clicked = (
                 self.select_tab_callback
-            tab_panel.panel.background.on_left_mouse_button_clicked =\
-                self.select_tab_callback
+            )
 
-            tab_panel.text_block.on_right_mouse_button_clicked =\
+            tab_panel.text_block.on_right_mouse_button_clicked = self.collapse_tab_ui
+            tab_panel.panel.background.on_right_mouse_button_clicked = (
                 self.collapse_tab_ui
-            tab_panel.panel.background.on_right_mouse_button_clicked =\
-                self.collapse_tab_ui
+            )
 
             tab_panel.content_panel.resize(self.content_size)
             self.parent_panel.add_element(tab_panel, tab_panel_pos)
             self.parent_panel.add_element(tab_panel.content_panel, (0.0, 0.0))
-            tab_panel_pos[0] += 1/self.nb_tabs
+            tab_panel_pos[0] += 1 / self.nb_tabs
 
     def select_tab_callback(self, iren, _obj, _tab_comp):
         """Handle events when a tab is selected."""
         for idx, tab_panel in enumerate(self.tabs):
-            if tab_panel.text_block is not _tab_comp and\
-               tab_panel.panel.background is not _tab_comp:
+            if (
+                tab_panel.text_block is not _tab_comp
+                and tab_panel.panel.background is not _tab_comp
+            ):
                 tab_panel.color = self.inactive_color
                 tab_panel.content_panel.set_visibility(False)
             else:
@@ -678,29 +720,26 @@ class TabUI(UI):
         iren.force_render()
         iren.event.abort()
 
-    def add_element(self, tab_idx, element, coords, anchor="position"):
+    def add_element(self, tab_idx, element, coords, anchor='position'):
         """Add element to content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
             self.tabs[tab_idx].add_element(element, coords, anchor)
         else:
-            raise IndexError("Tab with index "
-                             "{} does not exist".format(tab_idx))
+            raise IndexError('Tab with index ' '{} does not exist'.format(tab_idx))
 
     def remove_element(self, tab_idx, element):
         """Remove element from content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
             self.tabs[tab_idx].remove_element(element)
         else:
-            raise IndexError("Tab with index "
-                             "{} does not exist".format(tab_idx))
+            raise IndexError('Tab with index ' '{} does not exist'.format(tab_idx))
 
-    def update_element(self, tab_idx, element, coords, anchor="position"):
+    def update_element(self, tab_idx, element, coords, anchor='position'):
         """Update element on content panel after checking its existence."""
         if tab_idx < self.nb_tabs and tab_idx >= 0:
             self.tabs[tab_idx].update_element(element, coords, anchor)
         else:
-            raise IndexError("Tab with index "
-                             "{} does not exist".format(tab_idx))
+            raise IndexError('Tab with index ' '{} does not exist'.format(tab_idx))
 
     def left_button_pressed(self, i_ren, _obj, _sub_component):
         click_pos = np.array(i_ren.event.position)
@@ -866,19 +905,30 @@ class ImageContainer2D(UI):
 class GridUI(UI):
     """Add actors in a grid and interact with them individually."""
 
-    def __init__(self,
-                 actors, captions=None, caption_offset=(0, -100, 0),
-                 cell_padding=0,
-                 cell_shape="rect", aspect_ratio=16/9., dim=None,
-                 rotation_speed=1, rotation_axis=(0, 1, 0)):
+    def __init__(
+        self,
+        actors,
+        captions=None,
+        caption_offset=(0, -100, 0),
+        cell_padding=0,
+        cell_shape='rect',
+        aspect_ratio=16 / 9.0,
+        dim=None,
+        rotation_speed=1,
+        rotation_axis=(0, 1, 0),
+    ):
 
         # TODO: add rotation axis None by default
 
-        self.container = grid(actors, captions=captions,
-                              caption_offset=caption_offset,
-                              cell_padding=cell_padding,
-                              cell_shape=cell_shape,
-                              aspect_ratio=aspect_ratio, dim=dim)
+        self.container = grid(
+            actors,
+            captions=captions,
+            caption_offset=caption_offset,
+            cell_padding=cell_padding,
+            cell_shape=cell_shape,
+            aspect_ratio=aspect_ratio,
+            dim=dim,
+        )
         self._actors = []
         self._actors_dict = {}
         self.rotation_speed = rotation_speed
@@ -917,8 +967,7 @@ class GridUI(UI):
     def left_click_callback2(istyle, obj, self):
 
         rx, ry, rz = self.rotation_axis
-        clockwise_rotation = np.array([self.rotation_speed,
-                                       rx, ry, rz])
+        clockwise_rotation = np.array([self.rotation_speed, rx, ry, rz])
         rotate(obj, clockwise_rotation)
 
         istyle.force_render()
@@ -933,7 +982,7 @@ class GridUI(UI):
     @staticmethod
     def mouse_move_callback2(istyle, obj, self):
 
-        if self._actors_dict[obj]['y'] == - np.inf:
+        if self._actors_dict[obj]['y'] == -np.inf:
 
             iren = istyle.GetInteractor()
             event_pos = iren.GetEventPosition()
@@ -946,12 +995,10 @@ class GridUI(UI):
             rx, ry, rz = self.rotation_axis
 
             if event_pos[1] >= self._actors_dict[obj]['y']:
-                clockwise_rotation = np.array([-self.rotation_speed,
-                                               rx, ry, rz])
+                clockwise_rotation = np.array([-self.rotation_speed, rx, ry, rz])
                 rotate(obj, clockwise_rotation)
             else:
-                anti_clockwise_rotation = np.array(
-                    [self.rotation_speed, rx, ry, rz])
+                anti_clockwise_rotation = np.array([self.rotation_speed, rx, ry, rz])
                 rotate(obj, anti_clockwise_rotation)
 
             self._actors_dict[obj]['y'] = event_pos[1]
@@ -966,19 +1013,19 @@ class GridUI(UI):
 
     def key_press_callback(self, istyle, obj, _what):
         has_changed = False
-        if istyle.event.key == "Left":
+        if istyle.event.key == 'Left':
             has_changed = True
             for a in self._actors:
                 rotate(a, self.ANTICLOCKWISE_ROTATION_Y)
-        elif istyle.event.key == "Right":
+        elif istyle.event.key == 'Right':
             has_changed = True
             for a in self._actors:
                 rotate(a, self.CLOCKWISE_ROTATION_Y)
-        elif istyle.event.key == "Up":
+        elif istyle.event.key == 'Up':
             has_changed = True
             for a in self._actors:
                 rotate(a, self.ANTICLOCKWISE_ROTATION_X)
-        elif istyle.event.key == "Down":
+        elif istyle.event.key == 'Down':
             has_changed = True
             for a in self._actors:
                 rotate(a, self.CLOCKWISE_ROTATION_X)
@@ -993,24 +1040,25 @@ class GridUI(UI):
             # self.handle_events(actor)
 
             if self.rotation_axis is None:
-                self.add_callback(actor, "LeftButtonPressEvent",
-                                  self.left_click_callback)
-                self.add_callback(actor, "LeftButtonReleaseEvent",
-                                  self.left_release_callback)
-                self.add_callback(actor, "MouseMoveEvent",
-                                  self.mouse_move_callback)
+                self.add_callback(
+                    actor, 'LeftButtonPressEvent', self.left_click_callback
+                )
+                self.add_callback(
+                    actor, 'LeftButtonReleaseEvent', self.left_release_callback
+                )
+                self.add_callback(actor, 'MouseMoveEvent', self.mouse_move_callback)
             else:
-                self.add_callback(actor, "LeftButtonPressEvent",
-                                  self.left_click_callback2)
+                self.add_callback(
+                    actor, 'LeftButtonPressEvent', self.left_click_callback2
+                )
                 # TODO: possibly add this too
-                self.add_callback(actor, "LeftButtonReleaseEvent",
-                                  self.left_release_callback2)
-                self.add_callback(actor, "MouseMoveEvent",
-                                  self.mouse_move_callback2)
+                self.add_callback(
+                    actor, 'LeftButtonReleaseEvent', self.left_release_callback2
+                )
+                self.add_callback(actor, 'MouseMoveEvent', self.mouse_move_callback2)
 
             # TODO: this is currently not running
-            self.add_callback(actor, "KeyPressEvent",
-                              self.key_press_callback)
+            self.add_callback(actor, 'KeyPressEvent', self.key_press_callback)
         # self.on_key_press = self.key_press_callback2
 
     def _get_actors(self):

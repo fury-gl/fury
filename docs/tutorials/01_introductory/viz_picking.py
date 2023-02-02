@@ -1,4 +1,3 @@
-
 """
 =====================
 Simple picking
@@ -13,21 +12,22 @@ When the objects are picked they will change size and color.
 """
 
 import numpy as np
-from fury import actor, window, ui, utils, pick
 
-centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.]])
+from fury import actor, pick, ui, utils, window
+
+centers = 0.5 * np.array([[0, 0, 0], [100, 0, 0], [200, 0, 0.0]])
 colors = np.array([[0.8, 0, 0], [0, 0.8, 0], [0, 0, 0.8]])
-radii = 0.1 * np.array([50, 100, 150.])
+radii = 0.1 * np.array([50, 100, 150.0])
 
 selected = np.zeros(3, dtype=bool)
 
 ###############################################################################
 # Let's create a panel to show what is picked
 
-panel = ui.Panel2D(size=(400, 200), color=(1, .5, .0), align="right")
+panel = ui.Panel2D(size=(400, 200), color=(1, 0.5, 0.0), align='right')
 panel.center = (150, 200)
 
-text_block = ui.TextBlock2D(text="Left click on object \n")
+text_block = ui.TextBlock2D(text='Left click on object \n')
 panel.add_element(text_block, (0.3, 0.3))
 
 ###############################################################################
@@ -40,9 +40,13 @@ label_actor = actor.vector_text(text='Test')
 ###############################################################################
 # This actor is made with 3 cubes of different orientation
 
-directions = np.array([[np.sqrt(2)/2, 0, np.sqrt(2)/2],
-                       [np.sqrt(2)/2, np.sqrt(2)/2, 0],
-                       [0, np.sqrt(2)/2, np.sqrt(2)/2]])
+directions = np.array(
+    [
+        [np.sqrt(2) / 2, 0, np.sqrt(2) / 2],
+        [np.sqrt(2) / 2, np.sqrt(2) / 2, 0],
+        [0, np.sqrt(2) / 2, np.sqrt(2) / 2],
+    ]
+)
 fury_actor = actor.cube(centers, directions, colors, scales=radii)
 
 ###############################################################################
@@ -86,28 +90,32 @@ def left_click_callback(obj, event):
 
     # Calculate the objects index
 
-    object_index = int(np.floor((vertex_index / num_vertices) *
-                          num_objects))
+    object_index = int(np.floor((vertex_index / num_vertices) * num_objects))
 
     # Find how many vertices correspond to each object
     sec = int(num_vertices / num_objects)
 
     if not selected[object_index]:
-        scale = 6/5
+        scale = 6 / 5
         color_add = np.array([30, 30, 30], dtype='uint8')
         selected[object_index] = True
     else:
-        scale = 5/6
+        scale = 5 / 6
         color_add = np.array([-30, -30, -30], dtype='uint8')
         selected[object_index] = False
 
     # Update vertices positions
-    vertices[object_index * sec: object_index * sec + sec] = scale * \
-        (vertices[object_index * sec: object_index * sec + sec] -
-         centers[object_index]) + centers[object_index]
+    vertices[object_index * sec : object_index * sec + sec] = (
+        scale
+        * (
+            vertices[object_index * sec : object_index * sec + sec]
+            - centers[object_index]
+        )
+        + centers[object_index]
+    )
 
     # Update colors
-    vcolors[object_index * sec: object_index * sec + sec] += color_add
+    vcolors[object_index * sec : object_index * sec + sec] += color_add
 
     # Tell actor that memory is modified
     utils.update_actor(fury_actor)
@@ -149,4 +157,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path="viz_picking.png")
+window.record(showm.scene, size=(1024, 768), out_path='viz_picking.png')

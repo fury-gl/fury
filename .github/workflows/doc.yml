@@ -1,0 +1,66 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Docs - No examples
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install -U pip setuptools>=30.3.0 wheel
+        python -m pip install -U numpy
+        python -m pip install -U -r requirements/default.txt
+        python -m pip install -U -r requirements/optional.txt
+        python -m pip install -U -r requirements/docs.txt
+    - name: Install FURY
+      run: pip install .
+    - name: Setup Headless
+      run: ci/setup_headless.sh
+    - name: Build docs
+      run: |
+        cd docs
+        make -C . html-no-examples
+    - name: Deploy Devs
+      if: success() && github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        repository-name: fury-gl/fury-website
+        folder: ./docs/build/html
+        target-folder: dev
+    - name: Update last release
+      if: success() && github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        repository-name: fury-gl/fury-website
+        folder: ./docs/build/html-web-only
+        target-folder: v0.8.0
+        clean: false

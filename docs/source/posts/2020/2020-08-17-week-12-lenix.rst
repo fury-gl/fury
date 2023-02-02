@@ -8,7 +8,7 @@ Outline Picker
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey ! 
+Hey !
 This week, Picking Outline!
 
 What did you do this week?
@@ -25,7 +25,7 @@ The shader demos are available `here <https://github.com/lenixlobo/fury/tree/sha
 
 What is coming up next week?
 ----------------------------
-With the end of GSoC approaching soon, the next task is to create a PR which can help new users to test different shaders using UI to get started. 
+With the end of GSoC approaching soon, the next task is to create a PR which can help new users to test different shaders using UI to get started.
 
 Did you get stuck anywhere?
 ---------------------------

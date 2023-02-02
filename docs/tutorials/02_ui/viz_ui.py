@@ -10,9 +10,10 @@ several FURY UI elements, then use a list box to toggle which element is shown.
 First, a bunch of imports.
 """
 
-from fury.data import read_viz_icons, fetch_viz_icons
-from fury import ui, window, actor
 import numpy as np
+
+from fury import actor, ui, window
+from fury.data import fetch_viz_icons, read_viz_icons
 
 ###############################################################################
 # Shapes
@@ -30,8 +31,7 @@ disk = ui.Disk2D(outer_radius=50, center=(500, 500), color=(1, 1, 0))
 ###############################################################################
 # Add an inner radius to make a ring.
 
-ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300),
-                 color=(0, 1, 1))
+ring = ui.Disk2D(outer_radius=50, inner_radius=45, center=(500, 300), color=(0, 1, 1))
 
 ###############################################################################
 # Image
@@ -45,8 +45,9 @@ fetch_viz_icons()
 ###############################################################################
 # Now we can create an image container.
 
-img = ui.ImageContainer2D(img_path=read_viz_icons(fname='home3.png'),
-                          position=(450, 350))
+img = ui.ImageContainer2D(
+    img_path=read_viz_icons(fname='home3.png'), position=(450, 350)
+)
 
 ###############################################################################
 # Panel with buttons and text
@@ -55,7 +56,7 @@ img = ui.ImageContainer2D(img_path=read_viz_icons(fname='home3.png'),
 # Let's create some buttons and text and put them in a panel. First we'll
 # make the panel.
 
-panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align="right")
+panel = ui.Panel2D(size=(300, 150), color=(1, 1, 1), align='right')
 panel.center = (500, 400)
 
 ###############################################################################
@@ -75,7 +76,8 @@ panel.add_element(text2, (180, 100))
 
 
 button_example = ui.Button2D(
-    icon_fnames=[('square', read_viz_icons(fname='stop2.png'))])
+    icon_fnames=[('square', read_viz_icons(fname='stop2.png'))]
+)
 
 icon_files = []
 icon_files.append(('down', read_viz_icons(fname='circle-down.png')))
@@ -112,24 +114,35 @@ second_button_example.on_left_mouse_button_pressed = change_icon_callback
 # Let's add a cube to the scene and control it with sliders.
 
 
-cube = actor.cube(centers=np.array([[15, 0, 0]]),
-                  colors=np.array([[0, 0, 1]]),
-                  scales=np.array([[20, 20, 20]]),
-                  directions=np.array([[0, 0, 1]]))
+cube = actor.cube(
+    centers=np.array([[15, 0, 0]]),
+    colors=np.array([[0, 0, 1]]),
+    scales=np.array([[20, 20, 20]]),
+    directions=np.array([[0, 0, 1]]),
+)
 
 ###############################################################################
 # Now we'll add three sliders: one circular and two linear.
 
-ring_slider = ui.RingSlider2D(center=(740, 400), initial_value=0,
-                              text_template="{angle:5.1f}°")
+ring_slider = ui.RingSlider2D(
+    center=(740, 400), initial_value=0, text_template='{angle:5.1f}°'
+)
 
-line_slider_x = ui.LineSlider2D(center=(500, 250), initial_value=0,
-                                min_value=-10, max_value=10,
-                                orientation="horizontal")
+line_slider_x = ui.LineSlider2D(
+    center=(500, 250),
+    initial_value=0,
+    min_value=-10,
+    max_value=10,
+    orientation='horizontal',
+)
 
-line_slider_y = ui.LineSlider2D(center=(650, 350), initial_value=0,
-                                min_value=-10, max_value=10,
-                                orientation="vertical")
+line_slider_y = ui.LineSlider2D(
+    center=(650, 350),
+    initial_value=0,
+    min_value=-10,
+    max_value=10,
+    orientation='vertical',
+)
 
 ###############################################################################
 # We can use a callback to rotate the cube with the ring slider.
@@ -175,16 +188,33 @@ line_slider_y.on_change = translate_cube_y
 # The first slider has two handles which let you set the range of the second.
 
 range_slider_x = ui.RangeSlider(
-    line_width=8, handle_side=25, range_slider_center=(450, 450),
-    value_slider_center=(450, 350), length=150, min_value=0,
-    max_value=10, font_size=18, range_precision=2, value_precision=4,
-    shape="square")
+    line_width=8,
+    handle_side=25,
+    range_slider_center=(450, 450),
+    value_slider_center=(450, 350),
+    length=150,
+    min_value=0,
+    max_value=10,
+    font_size=18,
+    range_precision=2,
+    value_precision=4,
+    shape='square',
+)
 
 range_slider_y = ui.RangeSlider(
-    line_width=8, handle_side=25, range_slider_center=(750, 400),
-    value_slider_center=(650, 400), length=150, min_value=0,
-    max_value=10, font_size=18, range_precision=2, value_precision=4,
-    orientation="vertical", shape="square")
+    line_width=8,
+    handle_side=25,
+    range_slider_center=(750, 400),
+    value_slider_center=(650, 400),
+    length=150,
+    min_value=0,
+    max_value=10,
+    font_size=18,
+    range_precision=2,
+    value_precision=4,
+    orientation='vertical',
+    shape='square',
+)
 ###############################################################################
 # Select menu
 # ============
@@ -194,9 +224,14 @@ range_slider_y = ui.RangeSlider(
 #
 # We'll first make a list of the examples.
 
-examples = [[rect], [disk, ring], [img], [panel],
-            [ring_slider, line_slider_x, line_slider_y],
-            [range_slider_x, range_slider_y]]
+examples = [
+    [rect],
+    [disk, ring],
+    [img],
+    [panel],
+    [ring_slider, line_slider_x, line_slider_y],
+    [range_slider_x, range_slider_y],
+]
 
 ###############################################################################
 # Now we'll make a function to hide all the examples. Then we'll call it so
@@ -216,14 +251,21 @@ hide_all_examples()
 # To make the menu, we'll first need to create a list of labels which
 # correspond with the examples.
 
-values = ['Rectangle', 'Disks', 'Image', "Button Panel",
-          "Line & Ring Slider", "Range Slider"]
+values = [
+    'Rectangle',
+    'Disks',
+    'Image',
+    'Button Panel',
+    'Line & Ring Slider',
+    'Range Slider',
+]
 
 ###############################################################################
 # Now we can create the menu.
 
-listbox = ui.ListBox2D(values=values, position=(10, 300), size=(300, 200),
-                       multiselection=False)
+listbox = ui.ListBox2D(
+    values=values, position=(10, 300), size=(300, 200), multiselection=False
+)
 
 ###############################################################################
 # Then we will use a callback to show the correct example when a label is
@@ -249,7 +291,7 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size, title="FURY UI Example")
+show_manager = window.ShowManager(size=current_size, title='FURY UI Example')
 
 show_manager.scene.add(listbox)
 for example in examples:
@@ -267,4 +309,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene, size=current_size, out_path="viz_ui.png")
+window.record(show_manager.scene, size=current_size, out_path='viz_ui.png')

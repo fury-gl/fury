@@ -15,6 +15,7 @@ a live streaming with a low-latency connection. However, to use
 webRTC you need to install the aiortc library.
 
 .. code-block:: bash
+
     pip install aiortc
 
 In addition, if you don't have ffmpeg installed, you  need
@@ -32,13 +33,14 @@ OS X
 Notes
 ------
 For this example your python version should be 3.8 or greater
-
 """
 
-import time
 import asyncio
 import platform
+import time
+
 import numpy as np
+
 from fury import actor, window
 from fury.stream.widget import Widget
 
@@ -47,13 +49,10 @@ window_size = (720, 500)
 N = 4
 centers = np.random.normal(size=(N, 3))
 colors = np.random.uniform(0.1, 1.0, size=(N, 3))
-actors = actor.sphere(
-        centers, opacity=.5, radii=.4, colors=colors)
+actors = actor.sphere(centers, opacity=0.5, radii=0.4, colors=colors)
 scene = window.Scene()
 scene.add(actors)
-showm = window.ShowManager(
-    scene,
-    size=(window_size[0], window_size[1]))
+showm = window.ShowManager(scene, size=(window_size[0], window_size[1]))
 
 ##########################################################################
 # Create a stream widget
@@ -71,6 +70,7 @@ time_sleep = 1000 if interactive else 1
 # you need to use the asyncio version of the widget.
 #
 if platform.system() == 'Windows':
+
     async def main():
         widget.start()
         await asyncio.sleep(time_sleep)
@@ -85,4 +85,4 @@ else:
     time.sleep(time_sleep)
     widget.stop()
 
-window.record(showm.scene, size=window_size, out_path="viz_widget.png")
+window.record(showm.scene, size=window_size, out_path='viz_widget.png')

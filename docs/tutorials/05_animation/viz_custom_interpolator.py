@@ -4,12 +4,11 @@ Making a custom interpolator
 ============================
 
 Keyframe animation using custom interpolator.
-
 """
 import numpy as np
-from fury import actor, window
-from fury.animation import helpers, Animation
 
+from fury import actor, window
+from fury.animation import Animation, helpers
 
 ###############################################################################
 # Implementing a custom interpolator
@@ -104,15 +103,20 @@ def tan_cubic_spline_interpolator(keyframes):
         # cubic spline equation using tangents
         t2 = dt * dt
         t3 = t2 * dt
-        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
-                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+        return (
+            (2 * t3 - 3 * t2 + 1) * p0
+            + (t3 - 2 * t2 + dt) * tan_0
+            + (-2 * t3 + 3 * t2) * p1
+            + (t3 - t2) * tan_1
+        )
+
     return interpolate
 
 
 scene = window.Scene()
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 ###############################################################################
@@ -120,11 +124,13 @@ showm = window.ShowManager(scene,
 # ===================================================================
 
 #               t    in tangent     position                   out tangent
-translation = [[0.0, [0., 0., 0.],  [3.3051798, 6.640117, 0.], [1., 0., 0.]],
-               [1.0, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
-               [2.0, [-1., 0., 0.], [3.3051798, 6., 0.],       [1., 0., 0.]],
-               [3.0, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
-               [4.0, [0, -1., 0.],  [3.3051798, 6., 0.],       [0., 0., 0.]]]
+translation = [
+    [0.0, [0.0, 0.0, 0.0], [3.3051798, 6.640117, 0.0], [1.0, 0.0, 0.0]],
+    [1.0, [0.0, 0.0, 0.0], [3.3051798, 8.0, 0.0], [-1.0, 0.0, 0.0]],
+    [2.0, [-1.0, 0.0, 0.0], [3.3051798, 6.0, 0.0], [1.0, 0.0, 0.0]],
+    [3.0, [0.0, 0.0, 0.0], [3.3051798, 8.0, 0.0], [-1.0, 0.0, 0.0]],
+    [4.0, [0, -1.0, 0.0], [3.3051798, 6.0, 0.0], [0.0, 0.0, 0.0]],
+]
 
 ###############################################################################
 # Initializing an ``Animation`` and adding sphere actor to it.
@@ -157,5 +163,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_custom_interpolator.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_custom_interpolator.png', size=(900, 768))

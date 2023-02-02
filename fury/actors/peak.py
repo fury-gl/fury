@@ -1,11 +1,18 @@
 import numpy as np
 
 from fury.colormap import boys2rgb, colormap_lookup_table, orient2rgb
-from fury.shaders import (attribute_to_actor, import_fury_shader,
-                          shader_to_actor)
-from fury.utils import (apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points)
-from fury.lib import (numpy_support, Actor, Command, CellArray,
-                      PolyDataMapper, PolyData, VTK_OBJECT, calldata_type)
+from fury.lib import (
+    VTK_OBJECT,
+    Actor,
+    CellArray,
+    Command,
+    PolyData,
+    PolyDataMapper,
+    calldata_type,
+    numpy_support,
+)
+from fury.shaders import attribute_to_actor, import_fury_shader, shader_to_actor
+from fury.utils import apply_affine, numpy_to_vtk_colors, numpy_to_vtk_points
 
 
 class PeakActor(Actor):
@@ -48,9 +55,17 @@ class PeakActor(Actor):
 
     """
 
-    def __init__(self, directions, indices, values=None, affine=None,
-                 colors=None, lookup_colormap=None, linewidth=1,
-                 symmetric=True):
+    def __init__(
+        self,
+        directions,
+        indices,
+        values=None,
+        affine=None,
+        colors=None,
+        lookup_colormap=None,
+        linewidth=1,
+        symmetric=True,
+    ):
         if affine is not None:
             w_pos = apply_affine(affine, np.asarray(indices).T)
 
@@ -69,13 +84,14 @@ class PeakActor(Actor):
                 xyz = np.asarray(center)
             else:
                 xyz = w_pos[idx, :]
-            valid_peaks = np.nonzero(
-                np.abs(valid_dirs[idx, :, :]).max(axis=-1) > 0.)[0]
+            valid_peaks = np.nonzero(np.abs(valid_dirs[idx, :, :]).max(axis=-1) > 0.0)[
+                0
+            ]
             for direction in valid_peaks:
                 if values is not None:
                     pv = values[center][direction]
                 else:
-                    pv = 1.
+                    pv = 1.0
 
                 if symmetric:
                     point_i = directions[center][direction] * pv + xyz
@@ -122,11 +138,9 @@ class PeakActor(Actor):
         fs_dec_code = import_fury_shader('peak_dec.frag')
         fs_impl_code = import_fury_shader('peak_impl.frag')
 
-        shader_to_actor(self, 'vertex', decl_code=vs_dec_code,
-                        impl_code=vs_impl_code)
+        shader_to_actor(self, 'vertex', decl_code=vs_dec_code, impl_code=vs_impl_code)
         shader_to_actor(self, 'fragment', decl_code=fs_dec_code)
-        shader_to_actor(self, 'fragment', impl_code=fs_impl_code,
-                        block='light')
+        shader_to_actor(self, 'fragment', impl_code=fs_impl_code, block='light')
 
         # Color scale with a lookup table
         if colors_are_scalars:
@@ -151,8 +165,9 @@ class PeakActor(Actor):
         self.__high_ranges = self.__max_centers
         self.__cross_section = self.__high_ranges // 2
 
-        self.__mapper.AddObserver(Command.UpdateShaderEvent,
-                                  self.__display_peaks_vtk_callback)
+        self.__mapper.AddObserver(
+            Command.UpdateShaderEvent, self.__display_peaks_vtk_callback
+        )
 
     @calldata_type(VTK_OBJECT)
     def __display_peaks_vtk_callback(self, caller, event, calldata=None):
@@ -233,14 +248,18 @@ def _orientation_colors(points, cmap='rgb_standard'):
 
     """
     if cmap.lower() == 'rgb_standard':
-        col_list = [orient2rgb(points[i + 1] - points[i]) for i in range(
-            0, len(points), 2)]
+        col_list = [
+            orient2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+        ]
     elif cmap.lower() == 'boys_standard':
-        col_list = [boys2rgb(points[i + 1] - points[i]) for i in range(
-            0, len(points), 2)]
+        col_list = [
+            boys2rgb(points[i + 1] - points[i]) for i in range(0, len(points), 2)
+        ]
     else:
-        raise ValueError("Invalid colormap. The only available options are "
-                         "'rgb_standard' and 'boys_standard'.")
+        raise ValueError(
+            'Invalid colormap. The only available options are '
+            "'rgb_standard' and 'boys_standard'."
+        )
     return np.asarray(col_list)
 
 
@@ -298,8 +317,7 @@ def _peaks_colors_from_points(points, colors=None, points_per_line=2):
         if len(colors) == num_lines:
             pnts_colors = np.repeat(colors, points_per_line, axis=0)
             if colors.ndim == 1:  # Scalar per line
-                color_array = numpy_support.numpy_to_vtk(pnts_colors,
-                                                         deep=True)
+                color_array = numpy_support.numpy_to_vtk(pnts_colors, deep=True)
                 colors_are_scalars = True
             elif colors.ndim == 2:  # RGB(A) color per line
                 global_opacity = 1 if colors.shape[1] == 3 else -1
@@ -351,15 +369,13 @@ def _points_to_vtk_cells(points, points_per_line=2):
     this actor the creation of this array requires a 2 points padding
     between indices.
     """
-    offset = np.asarray(list(range(0, num_pnts + 1, points_per_line)),
-                        dtype=int)
+    offset = np.asarray(list(range(0, num_pnts + 1, points_per_line)), dtype=int)
 
     vtk_array_type = numpy_support.get_vtk_array_type(connectivity.dtype)
     cell_array.SetData(
-        numpy_support.numpy_to_vtk(offset, deep=True,
-                                   array_type=vtk_array_type),
-        numpy_support.numpy_to_vtk(connectivity, deep=True,
-                                   array_type=vtk_array_type))
+        numpy_support.numpy_to_vtk(offset, deep=True, array_type=vtk_array_type),
+        numpy_support.numpy_to_vtk(connectivity, deep=True, array_type=vtk_array_type),
+    )
 
     cell_array.SetNumberOfCells(num_cells)
     return cell_array
