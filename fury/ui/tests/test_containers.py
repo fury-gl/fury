@@ -117,6 +117,7 @@ def test_grid_ui1(interactive=False):
     # print(report.objects)
 
     # testing grid without captions
+    scene.clear()
     t = 0
     try:
         grid_ui = ui.GridUI(actors=actors)
