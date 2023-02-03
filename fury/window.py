@@ -511,7 +511,7 @@ class ShowManager(object):
         self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
         self._last_render_time = time.perf_counter()
 
-    def start(self):
+    def start(self, fname=None):
         """Start interaction."""
         try:
             self.render()
@@ -537,9 +537,18 @@ class ShowManager(object):
                 self.window.SetWindowName(self.title)
             self.iren.Start()
 
-        self.window.RemoveRenderer(self.scene)
-        self.scene.SetRenderWindow(None)
         self.window.Finalize()
+        if fname is not None:
+            renderLarge = vtk.vtkRenderLargeImage()
+            renderLarge.SetInput(self.scene)
+            renderLarge.Update()
+
+            writer = vtk.vtkPNGWriter()
+            writer.SetFileName(fname)
+            writer.SetInputConnection(renderLarge.GetOutputPort())
+            writer.Write()
+
+        self.scene.SetRenderWindow(None)
         del self.iren
         del self.window
 
