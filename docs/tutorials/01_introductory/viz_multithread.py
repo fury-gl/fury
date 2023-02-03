@@ -34,7 +34,7 @@ showm = window.ShowManager(scene,
                            size=(900, 768), reset_camera=False,
                            order_transparent=True)
 
-showm.initialize()
+# showm.initialize()
 
 # Creating a text block to show a message and reset the camera
 tb = ui.TextBlock2D(bold=True)
@@ -77,9 +77,11 @@ def add_remove_axes():
             if current_axes is None:
                 current_axes = actor.axes(scale=(0.20 * i, 0.20 * i, 0.20 * i))
                 scene.add(current_axes)
+                pass
             else:
                 scene.rm(current_axes)
                 current_axes = None
+                pass
             showm.release_current()
             time.sleep(0.1)
         else:
