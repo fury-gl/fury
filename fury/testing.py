@@ -62,7 +62,7 @@ def assert_arrays_equal(arrays1, arrays2):
         assert_array_equal(arr1, arr2)
 
 
-class EventCounter(object):
+class EventCounter:
     def __init__(
         self,
         events_names=[

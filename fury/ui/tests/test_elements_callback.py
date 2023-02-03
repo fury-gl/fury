@@ -70,7 +70,7 @@ def test_frame_rate_and_anti_aliasing():
     scene.reset_camera_tight()
     scene.zoom(5)
 
-    class FrameRateHolder(object):
+    class FrameRateHolder:
         fpss = []
 
     frh = FrameRateHolder()

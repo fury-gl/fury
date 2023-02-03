@@ -192,7 +192,7 @@ def test_add_shader_callback():
 
     showm = window.ShowManager(scene)
 
-    class Timer(object):
+    class Timer:
         idx = 0.0
 
     timer = Timer()
