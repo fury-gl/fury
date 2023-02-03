@@ -1524,7 +1524,7 @@ def test_superquadric_actor(interactive=False):
     npt.assert_equal(report.colors_found, [True, True, True])
 
 
-def test_billboard_actor(interactive=True):
+def test_billboard_actor(interactive=False):
     scene = window.Scene()
     scene.background((1, 1, 1))
     centers = np.array(
