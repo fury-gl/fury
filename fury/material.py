@@ -1,8 +1,7 @@
 import warnings
 
-
-from fury.shaders import add_shader_callback, load, shader_to_actor
 from fury.lib import VTK_OBJECT, calldata_type
+from fury.shaders import add_shader_callback, import_fury_shader, shader_to_actor
 
 
 class __PBRParams:
@@ -40,15 +39,24 @@ class __PBRParams:
         Index of refraction of the coat material. Default is 1.5. Values must
         be between 1.0 and 2.3.
     """
-    def __init__(self, actor_properties, metallic, roughness,
-                 anisotropy, anisotropy_rotation, coat_strength,
-                 coat_roughness, base_ior, coat_ior):
+
+    def __init__(
+        self,
+        actor_properties,
+        metallic,
+        roughness,
+        anisotropy,
+        anisotropy_rotation,
+        coat_strength,
+        coat_roughness,
+        base_ior,
+        coat_ior,
+    ):
         self.__actor_properties = actor_properties
         self.__actor_properties.SetMetallic(metallic)
         self.__actor_properties.SetRoughness(roughness)
         self.__actor_properties.SetAnisotropy(anisotropy)
-        self.__actor_properties.SetAnisotropyRotation(
-            anisotropy_rotation)
+        self.__actor_properties.SetAnisotropyRotation(anisotropy_rotation)
         self.__actor_properties.SetCoatStrength(coat_strength)
         self.__actor_properties.SetCoatRoughness(coat_roughness)
         self.__actor_properties.SetBaseIOR(base_ior)
@@ -119,9 +127,17 @@ class __PBRParams:
         self.__actor_properties.SetCoatIOR(coat_ior)
 
 
-def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
-                 anisotropy_rotation=0, coat_strength=0, coat_roughness=0,
-                 base_ior=1.5, coat_ior=2):
+def manifest_pbr(
+    actor,
+    metallic=0,
+    roughness=0.5,
+    anisotropy=0,
+    anisotropy_rotation=0,
+    coat_strength=0,
+    coat_roughness=0,
+    base_ior=1.5,
+    coat_ior=2,
+):
     """Apply VTK's Physically Based Rendering properties to the selected actor.
 
     Parameters
@@ -158,40 +174,62 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
         try:
             prop.SetInterpolationToPBR()
 
-            #pbr_params = {'metallic': metallic, 'roughness': roughness,
+            # pbr_params = {'metallic': metallic, 'roughness': roughness,
             #              'anisotropy': anisotropy,
             #              'anisotropy_rotation': anisotropy_rotation,
             #              'coat_strength': coat_strength,
             #              'coat_roughness': coat_roughness,
             #              'base_ior': base_ior, 'coat_ior': coat_ior}
 
-            pbr_params = __PBRParams(prop, metallic, roughness, anisotropy,
-                                     anisotropy_rotation, coat_strength,
-                                     coat_roughness, base_ior, coat_ior)
-            #prop.SetMetallic(pbr_params['metallic'])
-            #prop.SetRoughness(pbr_params['roughness'])
-            #prop.SetAnisotropy(pbr_params['anisotropy'])
-            #prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
-            #prop.SetCoatStrength(pbr_params['coat_strength'])
-            #prop.SetCoatRoughness(pbr_params['coat_roughness'])
-            #prop.SetBaseIOR(pbr_params['base_ior'])
-            #prop.SetCoatIOR(pbr_params['coat_ior'])
+            pbr_params = __PBRParams(
+                prop,
+                metallic,
+                roughness,
+                anisotropy,
+                anisotropy_rotation,
+                coat_strength,
+                coat_roughness,
+                base_ior,
+                coat_ior,
+            )
+            # prop.SetMetallic(pbr_params['metallic'])
+            # prop.SetRoughness(pbr_params['roughness'])
+            # prop.SetAnisotropy(pbr_params['anisotropy'])
+            # prop.SetAnisotropyRotation(pbr_params['anisotropy_rotation'])
+            # prop.SetCoatStrength(pbr_params['coat_strength'])
+            # prop.SetCoatRoughness(pbr_params['coat_roughness'])
+            # prop.SetBaseIOR(pbr_params['base_ior'])
+            # prop.SetCoatIOR(pbr_params['coat_ior'])
             return pbr_params
         except AttributeError:
             warnings.warn(
                 'PBR interpolation cannot be applied to this actor. The '
-                'material will not be applied.')
+                'material will not be applied.'
+            )
             return None
     except AttributeError:
-        warnings.warn('Actor does not have the attribute property. This '
-                      'material will not be applied.')
+        warnings.warn(
+            'Actor does not have the attribute property. This '
+            'material will not be applied.'
+        )
         return None
 
 
-def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
-                        metallic=0, specular=0, specular_tint=0, roughness=0,
-                        anisotropic=0, anisotropic_direction=[0, 1, .5],
-                        sheen=0, sheen_tint=0, clearcoat=0, clearcoat_gloss=0):
+def manifest_principled(
+    actor,
+    subsurface=0,
+    subsurface_color=[0, 0, 0],
+    metallic=0,
+    specular=0,
+    specular_tint=0,
+    roughness=0,
+    anisotropic=0,
+    anisotropic_direction=[0, 1, 0.5],
+    sheen=0,
+    sheen_tint=0,
+    clearcoat=0,
+    clearcoat_gloss=0,
+):
     """Apply the Principled Shading properties to the selected actor.
 
     Parameters
@@ -237,13 +275,18 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
         prop = actor.GetProperty()
 
         principled_params = {
-            'subsurface': subsurface, 'subsurface_color': subsurface_color,
-            'metallic': metallic, 'specular': specular,
-            'specular_tint': specular_tint, 'roughness': roughness,
+            'subsurface': subsurface,
+            'subsurface_color': subsurface_color,
+            'metallic': metallic,
+            'specular': specular,
+            'specular_tint': specular_tint,
+            'roughness': roughness,
             'anisotropic': anisotropic,
-            'anisotropic_direction': anisotropic_direction, 'sheen': sheen,
-            'sheen_tint': sheen_tint, 'clearcoat': clearcoat,
-            'clearcoat_gloss': clearcoat_gloss
+            'anisotropic_direction': anisotropic_direction,
+            'sheen': sheen,
+            'sheen_tint': sheen_tint,
+            'clearcoat': clearcoat,
+            'clearcoat_gloss': clearcoat_gloss,
         }
 
         prop.SetSpecular(specular)
@@ -251,49 +294,52 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
         @calldata_type(VTK_OBJECT)
         def uniforms_callback(_caller, _event, calldata=None):
             if calldata is not None:
-                calldata.SetUniformf(
-                    'subsurface', principled_params['subsurface'])
-                calldata.SetUniformf(
-                    'metallic', principled_params['metallic'])
-                calldata.SetUniformf(
-                    'specularTint', principled_params['specular_tint'])
-                calldata.SetUniformf(
-                    'roughness', principled_params['roughness'])
-                calldata.SetUniformf(
-                    'anisotropic', principled_params['anisotropic'])
+                calldata.SetUniformf('subsurface', principled_params['subsurface'])
+                calldata.SetUniformf('metallic', principled_params['metallic'])
+                calldata.SetUniformf('specularTint', principled_params['specular_tint'])
+                calldata.SetUniformf('roughness', principled_params['roughness'])
+                calldata.SetUniformf('anisotropic', principled_params['anisotropic'])
                 calldata.SetUniformf('sheen', principled_params['sheen'])
+                calldata.SetUniformf('sheenTint', principled_params['sheen_tint'])
+                calldata.SetUniformf('clearcoat', principled_params['clearcoat'])
                 calldata.SetUniformf(
-                    'sheenTint', principled_params['sheen_tint'])
-                calldata.SetUniformf(
-                    'clearcoat', principled_params['clearcoat'])
-                calldata.SetUniformf(
-                    'clearcoatGloss', principled_params['clearcoat_gloss'])
+                    'clearcoatGloss', principled_params['clearcoat_gloss']
+                )
 
                 calldata.SetUniform3f(
-                    'subsurfaceColor', principled_params['subsurface_color'])
+                    'subsurfaceColor', principled_params['subsurface_color']
+                )
                 calldata.SetUniform3f(
-                    'anisotropicDirection', principled_params[
-                        'anisotropic_direction'])
+                    'anisotropicDirection', principled_params['anisotropic_direction']
+                )
 
         add_shader_callback(actor, uniforms_callback)
 
-        fs_dec_code = load('bxdf_dec.frag')
-        fs_impl_code = load('bxdf_impl.frag')
+        fs_dec_code = import_fury_shader('bxdf_dec.frag')
+        fs_impl_code = import_fury_shader('bxdf_impl.frag')
 
         shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
-        shader_to_actor(actor, 'fragment', impl_code=fs_impl_code,
-                        block='light')
+        shader_to_actor(actor, 'fragment', impl_code=fs_impl_code, block='light')
         return principled_params
     except AttributeError:
-        warnings.warn('Actor does not have the attribute property. This '
-                      'material will not be applied.')
+        warnings.warn(
+            'Actor does not have the attribute property. This '
+            'material will not be applied.'
+        )
         return None
 
 
-def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
-                      diffuse_level=1, diffuse_color=(1, 1, 1),
-                      specular_level=0, specular_color=(1, 1, 1),
-                      specular_power=1, interpolation='gouraud'):
+def manifest_standard(
+    actor,
+    ambient_level=0,
+    ambient_color=(1, 1, 1),
+    diffuse_level=1,
+    diffuse_color=(1, 1, 1),
+    specular_level=0,
+    specular_color=(1, 1, 1),
+    specular_power=1,
+    interpolation='gouraud',
+):
     """Apply the standard material to the selected actor.
 
     Parameters
@@ -333,8 +379,10 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         elif interpolation == 'phong':
             prop.SetInterpolationToPhong()
         else:
-            message = 'Unknown interpolation. Ignoring "{}" interpolation ' \
-                      'option and using the default ("{}") option.'
+            message = (
+                'Unknown interpolation. Ignoring "{}" interpolation '
+                'option and using the default ("{}") option.'
+            )
             message = message.format(interpolation, 'gouraud')
             warnings.warn(message)
 
@@ -346,7 +394,8 @@ def manifest_standard(actor, ambient_level=0, ambient_color=(1, 1, 1),
         prop.SetSpecularColor(specular_color)
         prop.SetSpecularPower(specular_power)
     except AttributeError:
-        warnings.warn('Actor does not have the attribute property. This '
-                      'material will not be applied.')
+        warnings.warn(
+            'Actor does not have the attribute property. This '
+            'material will not be applied.'
+        )
         return
-

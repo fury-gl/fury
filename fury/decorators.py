@@ -1,13 +1,13 @@
 """Decorators for FURY tests."""
-import sys
-import re
 import platform
+import re
+import sys
 
-
-skip_osx = is_osx = platform.system().lower() == "darwin"
-skip_win = is_win = platform.system().lower() == "windows"
+skip_linux = is_linux = platform.system().lower() == 'linux'
+skip_osx = is_osx = platform.system().lower() == 'darwin'
+skip_win = is_win = platform.system().lower() == 'windows'
 is_py35 = sys.version_info.major == 3 and sys.version_info.minor == 5
-SKIP_RE = re.compile(r"(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$")
+SKIP_RE = re.compile(r'(\s*>>>.*?)(\s*)#\s*skip\s+if\s+(.*)$')
 
 
 def doctest_skip_parser(func):
@@ -38,7 +38,7 @@ def doctest_skip_parser(func):
             continue
         code, space, expr = match.groups()
         if eval(expr, func.__globals__):
-            code = code + space + "# doctest: +SKIP"
+            code = code + space + '# doctest: +SKIP'
         new_lines.append(code)
-    func.__doc__ = "\n".join(new_lines)
+    func.__doc__ = '\n'.join(new_lines)
     return func

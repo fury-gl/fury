@@ -15,16 +15,20 @@ using the PBR material.
 Let's start by importing the necessary modules:
 """
 
-from fury import actor, material, window
-from fury.utils import (normals_from_actor, tangents_to_actor,
-                        tangents_from_direction_of_anisotropy)
 import numpy as np
+
+from fury import actor, material, window
+from fury.utils import (
+    normals_from_actor,
+    tangents_from_direction_of_anisotropy,
+    tangents_to_actor,
+)
 
 ###############################################################################
 # Now set up a new scene.
 
 scene = window.Scene()
-scene.background((.9, .9, .9))
+scene.background((0.9, 0.9, 0.9))
 
 ###############################################################################
 # Let's define the parameters we are going to showcase in this tutorial.
@@ -33,11 +37,13 @@ scene.background((.9, .9, .9))
 material_params = [
     [[1, 1, 0], {'metallic': 0, 'roughness': 0}],
     [(0, 0, 1), {'roughness': 0}],
-    [(1, 0, 1), {'anisotropy': 0, 'metallic': .25, 'roughness': .5}],
-    [(1, 0, 1), {'anisotropy_rotation': 0, 'anisotropy': 1, 'metallic': .25,
-                 'roughness': .5}],
+    [(1, 0, 1), {'anisotropy': 0, 'metallic': 0.25, 'roughness': 0.5}],
+    [
+        (1, 0, 1),
+        {'anisotropy_rotation': 0, 'anisotropy': 1, 'metallic': 0.25, 'roughness': 0.5},
+    ],
     [(0, 1, 1), {'coat_strength': 0, 'roughness': 0}],
-    [(0, 1, 1), {'coat_roughness': 0, 'coat_strength': 1, 'roughness': 0}]
+    [(0, 1, 1), {'coat_roughness': 0, 'coat_strength': 1, 'roughness': 0}],
 ]
 
 ###############################################################################
@@ -55,7 +61,7 @@ for i, mp in enumerate(material_params):
         center[0][0] = -25 + 5 * j
         sphere = actor.sphere(center, color, radii=2, theta=32, phi=32)
         normals = normals_from_actor(sphere)
-        tangents = tangents_from_direction_of_anisotropy(normals, (0, 1, .5))
+        tangents = tangents_from_direction_of_anisotropy(normals, (0, 1, 0.5))
         tangents_to_actor(sphere, tangents)
         keys = list(params)
         params[keys[0]] = np.round(0.1 * j, decimals=1)
@@ -66,18 +72,28 @@ for i, mp in enumerate(material_params):
 # For interpretability purposes we will add some labels to guide us through our
 # visualization.
 
-labels = ['Metallic', 'Roughness', 'Anisotropy', 'Anisotropy Rotation',
-          'Coat Strength', 'Coat Roughness']
+labels = [
+    'Metallic',
+    'Roughness',
+    'Anisotropy',
+    'Anisotropy Rotation',
+    'Coat Strength',
+    'Coat Roughness',
+]
 
 for i, l in enumerate(labels):
     pos = [-40, -5 * i, 0]
-    label = actor.vector_text(l, pos=pos, scale=(.8, .8, .8), color=(0, 0, 0))
+    label = actor.vector_text(l, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, 3, 0]
-    label = actor.vector_text(str(np.round(j * 0.1, decimals=1)), pos=pos,
-                              scale=(.8, .8, .8), color=(0, 0, 0))
+    label = actor.vector_text(
+        str(np.round(j * 0.1, decimals=1)),
+        pos=pos,
+        scale=(0.8, 0.8, 0.8),
+        color=(0, 0, 0),
+    )
     scene.add(label)
 
 ###############################################################################
@@ -90,8 +106,15 @@ iors = np.round(np.linspace(1, 2.3, num=num_values), decimals=2)
 
 ior_params = [
     [(0, 1, 1), {'base_ior': iors[0], 'roughness': 0}],
-    [(0, 1, 1), {'coat_ior': iors[0], 'coat_roughness': .1, 'coat_strength': 1,
-                 'roughness': 0}]
+    [
+        (0, 1, 1),
+        {
+            'coat_ior': iors[0],
+            'coat_roughness': 0.1,
+            'coat_strength': 1,
+            'roughness': 0,
+        },
+    ],
 ]
 
 for i, iorp in enumerate(ior_params):
@@ -113,13 +136,14 @@ labels = ['Base IoR', 'Coat IoR']
 
 for i, l in enumerate(labels):
     pos = [-40, -35 - (5 * i), 0]
-    label = actor.vector_text(l, pos=pos, scale=(.8, .8, .8), color=(0, 0, 0))
+    label = actor.vector_text(l, pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0))
     scene.add(label)
 
 for j in range(num_values):
     pos = [-26 + 5 * j, -32, 0]
-    label = actor.vector_text('{:.02f}'.format(iors[j]), pos=pos,
-                              scale=(.8, .8, .8), color=(0, 0, 0))
+    label = actor.vector_text(
+        '{:.02f}'.format(iors[j]), pos=pos, scale=(0.8, 0.8, 0.8), color=(0, 0, 0)
+    )
     scene.add(label)
 
 ###############################################################################
@@ -129,4 +153,4 @@ interactive = False
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_pbr_spheres.png")
+window.record(scene, size=(600, 600), out_path='viz_pbr_spheres.png')

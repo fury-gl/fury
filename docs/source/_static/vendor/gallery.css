@@ -59,6 +59,15 @@
     }
 }
 
+@media only screen and (max-width: 600px) {
+    .gallery-title {
+        margin: 0;
+    }
+    .gallery-box-content {
+        width: auto;
+    }
+}
+
 .gallery-underline {
     display: inline-block;
     vertical-align: middle;

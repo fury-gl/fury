@@ -21,10 +21,9 @@ fetch_viz_icons()
 # Create some text blocks that will be shown when
 # list elements will be selected
 
-welcome_text = ui.TextBlock2D(text="Welcome", font_size=30,
-                              position=(500, 400))
-bye_text = ui.TextBlock2D(text="Bye", font_size=30, position=(500, 400))
-fury_text = ui.TextBlock2D(text="Fury", font_size=30, position=(500, 400))
+welcome_text = ui.TextBlock2D(text='Welcome', font_size=30, position=(500, 400))
+bye_text = ui.TextBlock2D(text='Bye', font_size=30, position=(500, 400))
+fury_text = ui.TextBlock2D(text='Fury', font_size=30, position=(500, 400))
 
 example = [welcome_text, bye_text, fury_text]
 
@@ -42,7 +41,7 @@ hide_all_examples()
 ###############################################################################
 # Create ListBox with the values as parameter.
 
-values = ["Welcome", "Bye", "Fury"]
+values = ['Welcome', 'Bye', 'Fury']
 listbox = ui.ListBox2D(
     values=values, position=(10, 300), size=(200, 200), multiselection=False
 )
@@ -64,8 +63,7 @@ listbox.on_change = display_element
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size,
-                                  title="FURY UI ListBox_Example")
+show_manager = window.ShowManager(size=current_size, title='FURY UI ListBox_Example')
 
 show_manager.scene.add(listbox)
 show_manager.scene.add(welcome_text)
@@ -76,5 +74,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene,
-              size=current_size, out_path="viz_listbox.png")
+window.record(show_manager.scene, size=current_size, out_path='viz_listbox.png')

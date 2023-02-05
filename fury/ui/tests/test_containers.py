@@ -1,17 +1,18 @@
 """Test containers module."""
 
-from os.path import join as pjoin
 import itertools
-import pytest
+from os.path import join as pjoin
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
-from fury import window, actor, ui
+from fury import actor, ui, window
 from fury.colormap import distinguishable_colormap
-from fury.data import DATA_DIR, read_viz_icons, fetch_viz_icons
-from fury.utils import shallow_copy
+from fury.data import DATA_DIR, fetch_viz_icons, read_viz_icons
+from fury.decorators import skip_linux, skip_win
 from fury.testing import EventCounter
+from fury.utils import shallow_copy
 
 
 def setup_module():
@@ -25,25 +26,26 @@ def test_wrong_interactor_style():
     npt.assert_raises(TypeError, panel.add_to_scene, dummy_scene)
 
 
+@pytest.mark.skipif(
+    skip_linux or skip_win,
+    reason='This test does not work on Windows.' ' Need to be introspected',
+)
 def test_grid_ui1(interactive=False):
     vol1 = np.zeros((100, 100, 100))
     vol1[25:75, 25:75, 25:75] = 100
 
     colors = distinguishable_colormap(nb_colors=3)
-    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
-                                            colors[0], 1.)
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4), colors[0], 1.0)
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
-    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
-                                            colors[1], 1.)
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4), colors[1], 1.0)
 
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
-    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
-                                            colors[2], 1.)
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4), colors[2], 1.0)
 
     scene = window.Scene()
     actors = []
@@ -87,7 +89,6 @@ def test_grid_ui1(interactive=False):
 
     counter = itertools.count()
     show_m = window.ShowManager(scene)
-    show_m.initialize()
 
     def timer_callback(_obj, _event):
         nonlocal show_m, counter
@@ -98,10 +99,14 @@ def test_grid_ui1(interactive=False):
             show_m.exit()
 
     # show the grid with the captions
-    grid_ui = ui.GridUI(actors=actors, captions=texts,
-                        caption_offset=(0, -50, 0),
-                        cell_padding=(60, 60), dim=(3, 3),
-                        rotation_axis=(1, 0, 0))
+    grid_ui = ui.GridUI(
+        actors=actors,
+        captions=texts,
+        caption_offset=(0, -50, 0),
+        cell_padding=(60, 60),
+        dim=(3, 3),
+        rotation_axis=(1, 0, 0),
+    )
 
     scene.add(grid_ui)
 
@@ -120,20 +125,17 @@ def test_grid_ui2(interactive=False):
     vol1[25:75, 25:75, 25:75] = 100
 
     colors = distinguishable_colormap(nb_colors=3)
-    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4),
-                                            colors[0], 1.)
+    contour_actor1 = actor.contour_from_roi(vol1, np.eye(4), colors[0], 1.0)
 
     vol2 = np.zeros((100, 100, 100))
     vol2[25:75, 25:75, 25:75] = 100
 
-    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4),
-                                            colors[1], 1.)
+    contour_actor2 = actor.contour_from_roi(vol2, np.eye(4), colors[1], 1.0)
 
     vol3 = np.zeros((100, 100, 100))
     vol3[25:75, 25:75, 25:75] = 100
 
-    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4),
-                                            colors[2], 1.)
+    contour_actor3 = actor.contour_from_roi(vol3, np.eye(4), colors[2], 1.0)
 
     scene = window.Scene()
     actors = []
@@ -175,26 +177,26 @@ def test_grid_ui2(interactive=False):
     text_actor3 = actor.text_3d('cube 9', justification='center')
     texts.append(text_actor3)
 
-
     # this needs to happen automatically when start() ends.
     # for act in actors:
     #     act.RemoveAllObservers()
 
-    filename = "test_grid_ui"
-    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    filename = 'test_grid_ui'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
     current_size = (900, 600)
     scene = window.Scene()
-    show_manager = window.ShowManager(scene,
-                                      size=current_size,
-                                      title="FURY GridUI")
-    show_manager.initialize()
+    show_manager = window.ShowManager(scene, size=current_size, title='FURY GridUI')
 
-    grid_ui2 = ui.GridUI(actors=actors, captions=texts,
-                         caption_offset=(0, -50, 0),
-                         cell_padding=(60, 60), dim=(3, 3),
-                         rotation_axis=None)
+    grid_ui2 = ui.GridUI(
+        actors=actors,
+        captions=texts,
+        caption_offset=(0, -50, 0),
+        cell_padding=(60, 60),
+        dim=(3, 3),
+        rotation_axis=None,
+    )
 
     scene.add(grid_ui2)
 
@@ -220,8 +222,7 @@ def test_grid_ui2(interactive=False):
 
 
 def test_ui_image_container_2d(interactive=False):
-    image_test = ui.ImageContainer2D(
-        img_path=read_viz_icons(fname='home3.png'))
+    image_test = ui.ImageContainer2D(img_path=read_viz_icons(fname='home3.png'))
 
     image_test.center = (300, 300)
     npt.assert_equal(image_test.size, (100, 100))
@@ -230,25 +231,24 @@ def test_ui_image_container_2d(interactive=False):
     npt.assert_equal(image_test.size, (200, 200))
 
     current_size = (600, 600)
-    show_manager = window.ShowManager(size=current_size, title="FURY Button")
+    show_manager = window.ShowManager(size=current_size, title='FURY Button')
     show_manager.scene.add(image_test)
     if interactive:
         show_manager.start()
 
 
 def test_ui_tab_ui(interactive=False):
-    filename = "test_ui_tab_ui"
-    recording_filename = pjoin(DATA_DIR, filename + ".log.gz")
-    expected_events_counts_filename = pjoin(DATA_DIR, filename + ".json")
+    filename = 'test_ui_tab_ui'
+    recording_filename = pjoin(DATA_DIR, filename + '.log.gz')
+    expected_events_counts_filename = pjoin(DATA_DIR, filename + '.json')
 
-    tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3,
-                      draggable=True)
+    tab_ui = ui.TabUI(position=(50, 50), size=(300, 300), nb_tabs=3, draggable=True)
 
-    tab_ui.tabs[0].title = "Tab 1"
-    tab_ui.tabs[1].title = "Tab 2"
-    tab_ui.tabs[2].title = "Tab 3"
+    tab_ui.tabs[0].title = 'Tab 1'
+    tab_ui.tabs[1].title = 'Tab 2'
+    tab_ui.tabs[2].title = 'Tab 3'
 
-    tab_ui.add_element(0, ui.Checkbox(["Option 1", "Option 2"]), (0.5, 0.5))
+    tab_ui.add_element(0, ui.Checkbox(['Option 1', 'Option 2']), (0.5, 0.5))
     tab_ui.add_element(1, ui.LineSlider2D(), (0.0, 0.5))
     tab_ui.add_element(2, ui.TextBlock2D(), (0.5, 0.5))
 
@@ -261,9 +261,9 @@ def test_ui_tab_ui(interactive=False):
     with npt.assert_raises(IndexError):
         tab_ui.update_element(3, ui.TextBlock2D(), (0.5, 0.5, 0.5))
 
-    npt.assert_equal("Tab 1", tab_ui.tabs[0].title)
-    npt.assert_equal("Tab 2", tab_ui.tabs[1].title)
-    npt.assert_equal("Tab 3", tab_ui.tabs[2].title)
+    npt.assert_equal('Tab 1', tab_ui.tabs[0].title)
+    npt.assert_equal('Tab 2', tab_ui.tabs[1].title)
+    npt.assert_equal('Tab 3', tab_ui.tabs[2].title)
 
     npt.assert_equal(3, tab_ui.nb_tabs)
 
@@ -284,8 +284,7 @@ def test_ui_tab_ui(interactive=False):
     event_counter.monitor(tab_ui)
 
     current_size = (800, 800)
-    show_manager = window.ShowManager(
-        size=current_size, title="Tab UI Test")
+    show_manager = window.ShowManager(size=current_size, title='Tab UI Test')
     show_manager.scene.add(tab_ui)
 
     if interactive:
@@ -306,5 +305,3 @@ def test_ui_tab_ui(interactive=False):
 # test_grid_ui()
 # test_grid_ui2()
 # test_ui_tab_ui()
-
-

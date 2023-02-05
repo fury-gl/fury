@@ -1,0 +1,43 @@
+Week 10 - Multi-node skinning support
+=====================================
+
+.. post:: August 25 2022
+   :author: Shivam Anand
+   :tags: google
+   :category: gsoc
+
+
+What did you do this week?
+--------------------------
+
+As we figured out that the ``SimpleSkin`` model is not animated as intended. This week I started working with that model;
+I figured out that we need to apply the InverseBindMatrix to each timer callback. I had a hard time figuring out what inverse bind matrix actually does.
+Here's a good `blog <https://stackoverflow.com/questions/17127994/opengl-bone-animation-why-do-i-need-inverse-of-bind-pose-when-working-with-gp>`_ that answers that.
+
+**In short: The InverseBindMatrix "undoes" any transformation that has already been applied to your model in its bind pose.** Note: Inverse bind matrix shouldn't be applied with weights.
+
+- I got the ``SimpleSkin`` model to work perfectly. Here's a preview:
+
+    .. raw:: html
+
+        <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/186712241-eaf8d1b3-f983-4e21-8264-c191b3eb6e4b.mp4" frameborder="0"></iframe>
+
+- Support for multiple transformations is still missing. However ``RiggedSimple`` is also working fine, except that It doesn't interpolate translation and scaling matrices.
+
+    .. raw:: html
+
+        <iframe id="player" type="text/html"   width="600" height="390" src="https://user-images.githubusercontent.com/74976752/186712256-af02c902-f60f-43b9-b257-f706c999557e.mp4" frameborder="0"></iframe>
+
+
+
+What is coming up next week?
+----------------------------
+
+- Adding tests and adding support for combining transformation matrices for the same timestamp.
+- Write an Interpolator that applies skinning to the mesh internally.
+
+
+Did you get stuck anywhere?
+---------------------------
+
+No, I didn't get stuck this week.

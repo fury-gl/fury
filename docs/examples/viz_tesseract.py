@@ -10,10 +10,12 @@ squares.
 ###############################################################################
 # First, import some useful functions
 
-import numpy as np
-from fury import utils, actor, window
-from fury.ui import TextBlock2D
 import itertools
+
+import numpy as np
+
+from fury import actor, utils, window
+from fury.ui import TextBlock2D
 
 ###############################################################################
 # Let's define some variables and their descriptions:
@@ -41,14 +43,16 @@ angle = 0
 # our 4D tesseract.
 
 verts3D = np.array(
-    [[1, 1, 1],
-     [1, -1, 1],
-     [-1, -1, 1],
-     [-1, 1, 1],
-     [-1, 1, -1],
-     [1, 1, -1],
-     [1, -1, -1],
-     [-1, -1, -1]]
+    [
+        [1, 1, 1],
+        [1, -1, 1],
+        [-1, -1, 1],
+        [-1, 1, 1],
+        [-1, 1, -1],
+        [1, 1, -1],
+        [1, -1, -1],
+        [-1, -1, -1],
+    ]
 )
 
 # We can use primitive.box alternatively to get the cube's 3-D vertices.
@@ -67,30 +71,23 @@ def rotate4D(verts4D):
     cos = np.cos(angle)
     sin = np.sin(angle)
     rotation4d_xy = np.array(
-                    [[cos, -sin, 0, 0],
-                     [sin, cos, 0, 0],
-                     [0, 0, 1, 0],
-                     [0, 0, 0, 1]])
+        [[cos, -sin, 0, 0], [sin, cos, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+    )
     rotation4d_zw = np.array(
-                    [[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, cos, -sin],
-                     [0, 0, sin, cos]])
+        [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, cos, -sin], [0, 0, sin, cos]]
+    )
     distance = 2
     projected_marix = np.zeros((16, 3))
     for i, vert in enumerate(verts4D):
         rotated_3D = np.dot(rotation4d_xy, vert)
         rotated_3D = np.dot(rotation4d_zw, rotated_3D)
         w = 1 / (distance - rotated_3D[3])
-        proj_mat4D = np.array(
-            [[w, 0, 0, 0],
-             [0, w, 0, 0],
-             [0, 0, w, 0]]
-        )
+        proj_mat4D = np.array([[w, 0, 0, 0], [0, w, 0, 0], [0, 0, w, 0]])
 
         projeced_mat3D = np.dot(proj_mat4D, rotated_3D)
         projected_marix[i] = projeced_mat3D  # vertices to be proj (3D)
     return projected_marix
+
 
 ###############################################################################
 # Now, We have 4D points projected to 3D. Let's define a function to connect
@@ -101,19 +98,19 @@ def connect_points(verts3D):
     lines = np.array([])
     len_vert = len(verts3D)
 
-    for i in range(len_vert-1):
+    for i in range(len_vert - 1):
         if i < 8:
-            lines = np.append(lines, [verts3D[i], verts3D[i+8]])
+            lines = np.append(lines, [verts3D[i], verts3D[i + 8]])
         if i == 7:
             pass
         else:
-            lines = np.append(lines, [verts3D[i], verts3D[i+1]])
+            lines = np.append(lines, [verts3D[i], verts3D[i + 1]])
         if i % 4 == 0:
-            lines = np.append(lines, [verts3D[i], verts3D[i+3]])
+            lines = np.append(lines, [verts3D[i], verts3D[i + 3]])
 
     for i in range(3):
-        lines = np.append(lines, [verts3D[i], verts3D[i+5]])
-        lines = np.append(lines, [verts3D[i+8], verts3D[i+5+8]])
+        lines = np.append(lines, [verts3D[i], verts3D[i + 5]])
+        lines = np.append(lines, [verts3D[i + 8], verts3D[i + 5 + 8]])
 
     return np.reshape(lines, (-1, 2, 3))
 
@@ -122,11 +119,11 @@ def connect_points(verts3D):
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.set_camera(position=(0, 10, -1), focal_point=(0.0, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 0.0))
-showm = window.ShowManager(scene,
-                           size=(1920, 1080), order_transparent=True)
-showm.initialize()
+scene.set_camera(
+    position=(0, 10, -1), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
+)
+showm = window.ShowManager(scene, size=(1920, 1080), order_transparent=True)
+
 
 ###############################################################################
 # Creating vertices and points actors
@@ -136,8 +133,7 @@ if not wireframe:
     points = actor.point(verts3D, colors=p_color)
     point_verts = utils.vertices_from_actor(points)
     no_vertices = len(point_verts) / 16
-    initial_verts = point_verts.copy() - \
-        np.repeat(verts3D, no_vertices, axis=0)
+    initial_verts = point_verts.copy() - np.repeat(verts3D, no_vertices, axis=0)
 
     scene.add(points)
 
@@ -145,8 +141,7 @@ if not wireframe:
 # Connecting points with lines actor
 
 lines = connect_points(verts3D)
-edges = actor.line(lines=lines, colors=e_color,
-                   lod=False, fake_tube=True, linewidth=4)
+edges = actor.line(lines=lines, colors=e_color, lod=False, fake_tube=True, linewidth=4)
 lines_verts = utils.vertices_from_actor(edges)
 initial_lines = lines_verts.copy() - np.reshape(lines, (-1, 3))
 
@@ -155,8 +150,7 @@ scene.add(edges)
 ###############################################################################
 # Initializing text box to display the name
 
-tb = TextBlock2D(text="Tesseract", position=(900, 950),
-                 font_size=20)
+tb = TextBlock2D(text='Tesseract', position=(900, 950), font_size=20)
 showm.scene.add(tb)
 
 ###############################################################################
@@ -172,13 +166,11 @@ def timer_callback(_obj, _event):
     cnt = next(counter)
     verts3D = rotate4D(verts4D)
     if not wireframe:
-        point_verts[:] = initial_verts + \
-            np.repeat(verts3D, no_vertices, axis=0)
+        point_verts[:] = initial_verts + np.repeat(verts3D, no_vertices, axis=0)
         utils.update_actor(points)
 
     lines = connect_points(verts3D)
-    lines_verts[:] = initial_lines + \
-        np.reshape(lines, (-1, 3))
+    lines_verts[:] = initial_lines + np.reshape(lines, (-1, 3))
     utils.update_actor(edges)
 
     showm.render()
@@ -187,10 +179,11 @@ def timer_callback(_obj, _event):
     if cnt == end:
         showm.exit()
 
+
 ###############################################################################
 # Run every 20 milliseconds
 
 
 showm.add_timer_callback(True, 20, timer_callback)
 showm.start()
-window.record(showm.scene, size=(600, 600), out_path="viz_tesseract.png")
+window.record(showm.scene, size=(600, 600), out_path='viz_tesseract.png')

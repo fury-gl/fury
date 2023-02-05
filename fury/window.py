@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
 import time
 from threading import Lock
+
 import gzip
+import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from warnings import warn
 
@@ -10,16 +11,29 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.decorators import is_osx
+from fury.animation import Animation, Timeline
+from fury.decorators import is_win
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
-from fury.lib import (OpenGLRenderer, Skybox, Volume, Actor2D,
-                      InteractorEventRecorder, InteractorStyleImage,
-                      InteractorStyleTrackballCamera, RenderWindow,
-                      RenderWindowInteractor, RenderLargeImage,
-                      WindowToImageFilter, Command, numpy_support, colors)
-from fury.utils import asbytes
+from fury.lib import (
+    Actor2D,
+    Command,
+    InteractorEventRecorder,
+    InteractorStyleImage,
+    InteractorStyleTrackballCamera,
+    OpenGLRenderer,
+    RenderLargeImage,
+    RenderWindow,
+    RenderWindowInteractor,
+    Skybox,
+    Volume,
+    WindowToImageFilter,
+    colors,
+    numpy_support,
+)
 from fury.shaders.base import GL_NUMBERS as _GL
+from fury.utils import asbytes
+
 try:
     basestring
 except NameError:
@@ -118,7 +132,7 @@ class Scene(OpenGLRenderer):
         self.ResetCamera()
 
     def reset_camera_tight(self, margin_factor=1.02):
-        """ Resets camera so the content fit tightly within the window.
+        """Resets camera so the content fit tightly within the window.
 
         Parameters
         ----------
@@ -131,20 +145,20 @@ class Scene(OpenGLRenderer):
         aspect = self.GetAspect()
 
         X1, X2, Y1, Y2, Z1, Z2 = self.ComputeVisiblePropBounds()
-        width, height = X2-X1, Y2-Y1
-        center = np.array((X1 + width/2., Y1 + height/2., 0))
+        width, height = X2 - X1, Y2 - Y1
+        center = np.array((X1 + width / 2.0, Y1 + height / 2.0, 0))
 
-        angle = np.pi*cam.GetViewAngle()/180.
-        dist = max(width/aspect[0], height) / np.sin(angle/2.) / 2.
-        position = center + np.array((0, 0, dist*margin_factor))
+        angle = np.pi * cam.GetViewAngle() / 180.0
+        dist = max(width / aspect[0], height) / np.sin(angle / 2.0) / 2.0
+        position = center + np.array((0, 0, dist * margin_factor))
 
         cam.SetViewUp(0, 1, 0)
         cam.SetPosition(*position)
         cam.SetFocalPoint(*center)
         self.ResetCameraClippingRange(X1, X2, Y1, Y2, Z1, Z2)
 
-        parallelScale = max(width/aspect[0], height) / 2.
-        cam.SetParallelScale(parallelScale*margin_factor)
+        parallelScale = max(width / aspect[0], height) / 2.0
+        cam.SetParallelScale(parallelScale * margin_factor)
 
     def reset_clipping_range(self):
         """Reset the camera to an automatic position given by the engine."""
@@ -263,10 +277,10 @@ class Scene(OpenGLRenderer):
         return self.GetActiveCamera().GetDirectionOfProjection()
 
     @property
-    def frame_rate(self):
-        rtis = self.GetLastRenderTimeInSeconds()
-        fps = 1.0 / rtis
-        return fps
+    def last_render_time(self):
+        """Returns the last render time in seconds."""
+
+        return self.GetLastRenderTimeInSeconds()
 
     def fxaa_on(self):
         self.SetUseFXAA(True)
@@ -275,13 +289,23 @@ class Scene(OpenGLRenderer):
         self.SetUseFXAA(False)
 
 
-class ShowManager(object):
+class ShowManager:
     """Class interface between the scene, the window and the interactor."""
 
-    def __init__(self, scene=None, title='FURY', size=(300, 300),
-                 png_magnify=1, reset_camera=True, order_transparent=False,
-                 interactor_style='custom', stereo='off',
-                 multi_samples=8, max_peels=4, occlusion_ratio=0.0):
+    def __init__(
+        self,
+        scene=None,
+        title='FURY',
+        size=(300, 300),
+        png_magnify=1,
+        reset_camera=True,
+        order_transparent=False,
+        interactor_style='custom',
+        stereo='off',
+        multi_samples=8,
+        max_peels=4,
+        occlusion_ratio=0.0,
+    ):
         """Manage the visualization pipeline.
 
         Parameters
@@ -336,20 +360,12 @@ class ShowManager(object):
         style : vtkInteractorStyle()
         window : vtkRenderWindow()
 
-        Methods
-        -------
-        initialize()
-        render()
-        start()
-        add_window_callback()
-
         Examples
         --------
         >>> from fury import actor, window
         >>> scene = window.Scene()
         >>> scene.add(actor.axes())
         >>> showm = window.ShowManager(scene)
-        >>> # showm.initialize()
         >>> # showm.render()
         >>> # showm.start()
 
@@ -366,7 +382,9 @@ class ShowManager(object):
         self.stereo = stereo
         self.timers = []
         self.mutex = Lock()
-
+        self._fps = 0
+        self._last_render_time = 0
+        
         if self.reset_camera:
             self.scene.ResetCamera()
 
@@ -381,9 +399,13 @@ class ShowManager(object):
 
         if self.order_transparent:
             occlusion_ratio = occlusion_ratio or 0.1
-            antialiasing(self.scene, self.window,
-                         multi_samples=0, max_peels=max_peels,
-                         occlusion_ratio=occlusion_ratio)
+            antialiasing(
+                self.scene,
+                self.window,
+                multi_samples=multi_samples,
+                max_peels=max_peels,
+                occlusion_ratio=occlusion_ratio,
+            )
 
         if self.interactor_style == 'image':
             self.style = InteractorStyleImage()
@@ -400,14 +422,99 @@ class ShowManager(object):
         self.style.SetInteractor(self.iren)
         self.iren.SetInteractorStyle(self.style)
         self.iren.SetRenderWindow(self.window)
+        self._timelines = []
+        self._animations = []
+        self._animation_callback = None
+
+        if is_win:
+            self.initialize()
 
     def initialize(self):
         """Initialize interaction."""
         self.iren.Initialize()
 
+    @property
+    def timelines(self):
+        """Return a list of Timelines that were added to the ShowManager.
+
+        Returns
+        -------
+        list[Timeline]:
+            List of Timelines.
+        """
+        return self._timelines
+
+    @property
+    def animations(self):
+        """Return a list of Animations that were added to the ShowManager.
+
+        Returns
+        -------
+        list[Animation]:
+            List of Animations.
+        """
+        return self._animations
+
+    def add_animation(self, animation):
+        """Add an Animation or a Timeline to the ShowManager.
+
+        Adding an Animation or a Timeline to the ShowManager ensures that it
+        gets added to the scene, gets updated and rendered without any extra
+        code.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The Animation or Timeline to be added to the ShowManager.
+        """
+        animation.add_to_scene(self.scene)
+        if isinstance(animation, Animation):
+            if animation in self._animations:
+                return
+            self._animations.append(animation)
+        elif isinstance(animation, Timeline):
+            if animation in self._timelines:
+                return
+            self._timelines.append(animation)
+
+        if self._animation_callback is not None:
+            return
+
+        def animation_cbk(_obj, _event):
+            [tl.update() for tl in self._timelines]
+            [anim.update_animation() for anim in self._animations]
+            self.render()
+
+        self._animation_callback = self.add_timer_callback(True, 10, animation_cbk)
+
+    def remove_animation(self, animation):
+        """Remove an Animation or a Timeline from the ShowManager.
+
+        Animation will be removed from the Scene as well as from the
+        ShowManager.
+
+        Parameters
+        ----------
+        animation : Animation or Timeline
+            The Timeline to be removed.
+        """
+
+        if animation in self.timelines or animation in self.animations:
+            animation.remove_from_scene(self.scene)
+            if isinstance(animation, Animation):
+                self._animations.remove(animation)
+            elif isinstance(animation, Timeline):
+                self._timelines.remove(animation)
+            if not (len(self.timelines) or len(self.animations)):
+                self.iren.DestroyTimer(self._animation_callback)
+                self._animation_callback = None
+
     def render(self):
         """Render only once."""
         self.window.Render()
+        # calculate the FPS
+        self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
+        self._last_render_time = time.perf_counter()
 
     def is_done(self):
         """Check if show manager is done."""
@@ -429,8 +536,8 @@ class ShowManager(object):
 
         """
         try:
-            if self.title.upper() == "FURY":
-                self.window.SetWindowName(self.title + " " + fury_version)
+            if self.title.upper() == 'FURY':
+                self.window.SetWindowName(self.title + ' ' + fury_version)
             else:
                 self.window.SetWindowName(self.title)
             if multithreaded:
@@ -452,15 +559,18 @@ class ShowManager(object):
                 self.iren.Start()
 
         except AttributeError:
-            self.__init__(self.scene, self.title, size=self.size,
-                          png_magnify=self.png_magnify,
-                          reset_camera=self.reset_camera,
-                          order_transparent=self.order_transparent,
-                          interactor_style=self.interactor_style)
-            self.initialize()
+            self.__init__(
+                self.scene,
+                self.title,
+                size=self.size,
+                png_magnify=self.png_magnify,
+                reset_camera=self.reset_camera,
+                order_transparent=self.order_transparent,
+                interactor_style=self.interactor_style,
+            )
             self.render()
-            if self.title.upper() == "FURY":
-                self.window.SetWindowName(self.title + " " + fury_version)
+            if self.title.upper() == 'FURY':
+                self.window.SetWindowName(self.title + ' ' + fury_version)
             else:
                 self.window.SetWindowName(self.title)
             self.iren.Start()
@@ -508,6 +618,11 @@ class ShowManager(object):
         if self.thread:
             self.thread.join()
 
+    @property
+    def frame_rate(self):
+        """Returns number of frames per second."""
+        return self._fps
+
     def record_events(self):
         """Record events during the interaction.
 
@@ -526,7 +641,7 @@ class ShowManager(object):
 
         """
         with InTemporaryDirectory():
-            filename = "recorded_events.log"
+            filename = 'recorded_events.log'
             recorder = InteractorEventRecorder()
             recorder.SetInteractor(self.iren)
             recorder.SetFileName(filename)
@@ -536,12 +651,11 @@ class ShowManager(object):
                     recorder.Stop()
                 self.iren.TerminateApp()
 
-            self.iren.AddObserver("ExitEvent", _stop_recording_and_close)
+            self.iren.AddObserver('ExitEvent', _stop_recording_and_close)
 
             recorder.EnabledOn()
             recorder.Record()
 
-            self.initialize()
             self.render()
             self.iren.Start()
             # Deleting this object is the unique way
@@ -552,7 +666,7 @@ class ShowManager(object):
                 events = f.read()
         return events
 
-    def record_events_to_file(self, filename="record.log"):
+    def record_events_to_file(self, filename='record.log'):
         """Record events during the interaction.
 
         The recording is represented as a list of VTK events
@@ -568,7 +682,7 @@ class ShowManager(object):
         events = self.record_events()
 
         # Compress file if needed
-        if filename.endswith(".gz"):
+        if filename.endswith('.gz'):
             with gzip.open(filename, 'wb') as fgz:
                 fgz.write(asbytes(events))
         else:
@@ -596,13 +710,13 @@ class ShowManager(object):
         # self.render()
         recorder.Play()
 
-        # self.window.RemoveRenderer(self.scene)
-        # self.scene.SetRenderWindow(None)
-
         # Finalize seems very important otherwise
         # the recording window will not close.
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
         self.window.Finalize()
         self.exit()
+
         # print('After Finalize and Exit')
 
         # del self.iren
@@ -621,7 +735,7 @@ class ShowManager(object):
 
         """
         # Uncompress file if needed.
-        if filename.endswith(".gz"):
+        if filename.endswith('.gz'):
             with gzip.open(filename, 'r') as f:
                 events = f.read()
         else:
@@ -630,22 +744,22 @@ class ShowManager(object):
 
         self.play_events(events)
 
-    def add_window_callback(self, win_callback,
-                            event=Command.ModifiedEvent):
+    def add_window_callback(self, win_callback, event=Command.ModifiedEvent):
         """Add window callbacks."""
         self.window.AddObserver(event, win_callback)
         self.window.Render()
 
     def add_timer_callback(self, repeat, duration, timer_callback):
-        self.iren.AddObserver("TimerEvent", timer_callback)
+        self.iren.AddObserver('TimerEvent', timer_callback)
 
         if repeat:
             timer_id = self.iren.CreateRepeatingTimer(duration)
         else:
             timer_id = self.iren.CreateOneShotTimer(duration)
         self.timers.append(timer_id)
+        return timer_id
 
-    def add_iren_callback(self, iren_callback, event="MouseMoveEvent"):
+    def add_iren_callback(self, iren_callback, event='MouseMoveEvent'):
         self.iren.AddObserver(event, iren_callback)
 
     def destroy_timer(self, timer_id):
@@ -658,10 +772,10 @@ class ShowManager(object):
 
     def exit(self):
         """Close window and terminate interactor."""
+
         # if is_osx and self.timers:
         # OSX seems to not destroy correctly timers
         # segfault 11 appears sometimes if we do not do it manually.
-
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
@@ -702,13 +816,28 @@ class ShowManager(object):
             size = self.size
         if stereo is None:
             stereo = self.stereo.lower()
-        record(scene=self.scene, out_path=fname, magnification=magnification,
-               size=size, stereo=stereo)
+
+        record(
+            scene=self.scene,
+            out_path=fname,
+            magnification=magnification,
+            size=size,
+            stereo=stereo,
+        )
 
 
-def show(scene, title='FURY', size=(300, 300), png_magnify=1,
-         reset_camera=True, order_transparent=False, stereo='off',
-         multi_samples=8, max_peels=4, occlusion_ratio=0.0):
+def show(
+    scene,
+    title='FURY',
+    size=(300, 300),
+    png_magnify=1,
+    reset_camera=True,
+    order_transparent=False,
+    stereo='off',
+    multi_samples=8,
+    max_peels=4,
+    occlusion_ratio=0.0,
+):
     """Show window with current scene.
 
     Parameters
@@ -771,20 +900,38 @@ def show(scene, title='FURY', size=(300, 300), png_magnify=1,
     fury.window.snapshot
 
     """
-    show_manager = ShowManager(scene, title, size, png_magnify, reset_camera,
-                               order_transparent, stereo=stereo,
-                               multi_samples=multi_samples,
-                               max_peels=max_peels,
-                               occlusion_ratio=occlusion_ratio)
-    show_manager.initialize()
+    show_manager = ShowManager(
+        scene,
+        title,
+        size,
+        png_magnify,
+        reset_camera,
+        order_transparent,
+        stereo=stereo,
+        multi_samples=multi_samples,
+        max_peels=max_peels,
+        occlusion_ratio=occlusion_ratio,
+    )
     show_manager.render()
     show_manager.start()
 
 
-def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
-           out_path=None, path_numbering=False, n_frames=1, az_ang=10,
-           magnification=1, size=(300, 300), reset_camera=True,
-           screen_clip=False, stereo='off', verbose=False):
+def record(
+    scene=None,
+    cam_pos=None,
+    cam_focal=None,
+    cam_view=None,
+    out_path=None,
+    path_numbering=False,
+    n_frames=1,
+    az_ang=10,
+    magnification=1,
+    size=(300, 300),
+    reset_camera=True,
+    screen_clip=False,
+    stereo='off',
+    verbose=False,
+):
     """Record a video of your scene.
 
     Records a video as a series of ``.png`` files of your scene by rotating the
@@ -858,8 +1005,6 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
     renWin.SetBorders(screen_clip)
     renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-    iren = RenderWindowInteractor()
-    iren.SetRenderWindow(renWin)
 
     # scene.GetActiveCamera().Azimuth(180)
 
@@ -910,18 +1055,22 @@ def record(scene=None, cam_pos=None, cam_focal=None, cam_view=None,
             else:
                 filename = out_path
 
-        arr = numpy_support.vtk_to_numpy(renderLarge.GetOutput().GetPointData()
-                                         .GetScalars())
+        arr = numpy_support.vtk_to_numpy(
+            renderLarge.GetOutput().GetPointData().GetScalars()
+        )
         w, h, _ = renderLarge.GetOutput().GetDimensions()
         components = renderLarge.GetOutput().GetNumberOfScalarComponents()
         arr = arr.reshape((h, w, components))
+        arr = np.flipud(arr)
         save_image(arr, filename)
 
         ang = +az_ang
 
+    renWin.RemoveRenderer(scene)
+    renWin.Finalize()
 
-def antialiasing(scene, win, multi_samples=8, max_peels=4,
-                 occlusion_ratio=0.0):
+
+def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     """Enable anti-aliasing and ordered transparency.
 
     Parameters
@@ -964,10 +1113,20 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4,
     scene.SetOcclusionRatio(occlusion_ratio)
 
 
-def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
-             order_transparent=False, stereo='off',
-             multi_samples=8, max_peels=4,
-             occlusion_ratio=0.0, render_window=None):
+def snapshot(
+    scene,
+    fname=None,
+    size=(300, 300),
+    offscreen=True,
+    order_transparent=False,
+    stereo='off',
+    multi_samples=8,
+    max_peels=4,
+    occlusion_ratio=0.0,
+    dpi=(72, 72),
+    render_window=None
+):
+
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -1004,6 +1163,9 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         Maximum number of peels for depth peeling (Default 4).
     occlusion_ratio : float
         Occlusion ration for depth peeling (Default 0 - exact image).
+    dpi : float or (float, float)
+        Dots per inch (dpi) for saved image.
+        Single values are applied as dpi for both dimensions.
     render_window : RenderWindow
         If provided, use this window instead of creating a new one.
 
@@ -1015,7 +1177,7 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
 
     """
     width, height = size
-    if not render_window:
+    if render_window is None:
         render_window = RenderWindow()
         if offscreen:
             render_window.SetOffScreenRendering(1)
@@ -1027,7 +1189,6 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
         if order_transparent:
             antialiasing(scene, render_window, multi_samples, max_peels,
                          occlusion_ratio)
-
         render_window.Render()
 
     window_to_image_filter = WindowToImageFilter()
@@ -1038,18 +1199,22 @@ def snapshot(scene, fname=None, size=(300, 300), offscreen=True,
     h, w, _ = vtk_image.GetDimensions()
     vtk_array = vtk_image.GetPointData().GetScalars()
     components = vtk_array.GetNumberOfComponents()
-    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components)
+    arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
+    arr = np.flipud(arr)
 
     if fname is None:
         return arr
 
-    save_image(arr, fname)
+    save_image(arr, fname, dpi=dpi)
+
+    render_window.RemoveRenderer(scene)
+    render_window.Finalize()
+
     return arr
 
 
 def analyze_scene(scene):
-
-    class ReportScene(object):
+    class ReportScene:
         bg_color = None
         collection = None
         actors = None
@@ -1070,9 +1235,9 @@ def analyze_scene(scene):
     return report
 
 
-def analyze_snapshot(im, bg_color=colors.black, colors=None,
-                     find_objects=True,
-                     strel=None):
+def analyze_snapshot(
+    im, bg_color=colors.black, colors=None, find_objects=True, strel=None
+):
     """Analyze snapshot from memory or file.
 
     Parameters
@@ -1099,16 +1264,16 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
     if isinstance(im, basestring):
         im = load_image(im)
 
-    class ReportSnapshot(object):
+    class ReportSnapshot:
         objects = None
         labels = None
         colors_found = False
 
         def __str__(self):
-            msg = "Report:\n-------\n"
-            msg += "objects: {}\n".format(self.objects)
-            msg += "labels: \n{}\n".format(self.labels)
-            msg += "colors_found: {}\n".format(self.colors_found)
+            msg = 'Report:\n-------\n'
+            msg += 'objects: {}\n'.format(self.objects)
+            msg += 'labels: \n{}\n'.format(self.labels)
+            msg += 'colors_found: {}\n'.format(self.colors_found)
             return msg
 
     report = ReportSnapshot()
@@ -1119,8 +1284,7 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         flags = [False] * len(colors)
         for (i, col) in enumerate(colors):
             # find if the current color exist in the array
-            flags[i] = np.any(np.any(np.all(np.equal(im[..., :3], col[:3]),
-                                            axis=-1)))
+            flags[i] = np.any(np.any(np.all(np.equal(im[..., :3], col[:3]), axis=-1)))
 
         report.colors_found = flags
 
@@ -1131,9 +1295,7 @@ def analyze_snapshot(im, bg_color=colors.black, colors=None,
         background = np.dot(bg_color2, weights)
 
         if strel is None:
-            strel = np.array([[1, 1, 1],
-                              [1, 1, 1],
-                              [1, 1, 1]])
+            strel = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
 
         labels, objects = ndimage.label(gray != background, strel)
         report.labels = labels
@@ -1173,13 +1335,12 @@ def enable_stereo(renwin, stereo_type):
         'interlaced': 3,
         'anaglyph': 7,
         'checkerboard': 8,
-        'horizontal': 9
+        'horizontal': 9,
     }
 
     # default to horizontal since it is easy to see if it is working
     if stereo_type not in stereo_type_dictionary:
-        warn("Unknown stereo type provided. "
-             "Setting stereo type to 'horizontal'.")
+        warn('Unknown stereo type provided. ' "Setting stereo type to 'horizontal'.")
         stereo_type = 'horizontal'
 
     renwin.SetStereoType(stereo_type_dictionary[stereo_type])
@@ -1195,8 +1356,7 @@ def gl_get_current_state(gl_state):
 
     """
     state_description = {
-        glName: gl_state.GetEnumState(glNumber)
-        for glName, glNumber in _GL.items()
+        glName: gl_state.GetEnumState(glNumber) for glName, glNumber in _GL.items()
     }
     return state_description
 
@@ -1299,8 +1459,11 @@ def gl_set_additive_blending_white_background(gl_state):
     gl_state.vtkglEnable(_GL['GL_BLEND'])
     gl_state.vtkglDisable(_GL['GL_DEPTH_TEST'])
     gl_state.vtkglBlendFuncSeparate(
-        _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        _GL['GL_ONE'],  _GL['GL_ZERO'])
+        _GL['GL_SRC_ALPHA'],
+        _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        _GL['GL_ONE'],
+        _GL['GL_ZERO'],
+    )
 
 
 def gl_set_normal_blending(gl_state):
@@ -1315,8 +1478,11 @@ def gl_set_normal_blending(gl_state):
     gl_state.vtkglEnable(_GL['GL_DEPTH_TEST'])
     gl_state.vtkglBlendFunc(_GL['GL_ONE'], _GL['GL_ONE'])
     gl_state.vtkglBlendFuncSeparate(
-        _GL['GL_SRC_ALPHA'], _GL['GL_ONE_MINUS_SRC_ALPHA'],
-        _GL['GL_ONE'], _GL['GL_ONE_MINUS_SRC_ALPHA'])
+        _GL['GL_SRC_ALPHA'],
+        _GL['GL_ONE_MINUS_SRC_ALPHA'],
+        _GL['GL_ONE'],
+        _GL['GL_ONE_MINUS_SRC_ALPHA'],
+    )
 
 
 def gl_set_multiplicative_blending(gl_state):

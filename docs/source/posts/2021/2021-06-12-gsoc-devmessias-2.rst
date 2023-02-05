@@ -52,10 +52,10 @@ using the ngrok
 
 ::
 
-     ./ngrok http 8000  
-    
+     ./ngrok http 8000
 
-| 
+
+|
 
 How does it works?
 ------------------
@@ -120,7 +120,7 @@ dealing with uint8 RawArrays. The following code will cause an exception:
    memview(arr_buffer_uint8)[:] = new_data_uint8
 
 There is a solution for uint8 rawarrays using just memview and cast
-methods. However, numpy comes to rescue and offers a simple and a 
+methods. However, numpy comes to rescue and offers a simple and a
 generic solution. You just need to convert the rawarray to a np
 representation in the following way:
 

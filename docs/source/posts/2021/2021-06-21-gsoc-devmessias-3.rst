@@ -18,7 +18,7 @@ What did you do this week?
    (merged): <https://github.com/fury-gl/fury/pull/422>`__ Fixed some
    issues with my maker PR which now it's merged on fury.
 -  `PR fury-gl/fury#432 <https://github.com/fury-gl/fury/pull/432>`__
-   I've made some improvements in my PR which can be used to fine tune 
+   I've made some improvements in my PR which can be used to fine tune
    the opengl state on VTK.
 -  `PR fury-gl/fury#437 <https://github.com/fury-gl/fury/pull/437>`__
    I've made several improvements in my streamer proposal for FURY related to memory management.

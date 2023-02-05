@@ -9,10 +9,12 @@ position of these sphere actors in a timer_callback function
 to simulate orbital motion.
 """
 
-import numpy as np
-from fury import window, actor, utils, io, ui
 import itertools
-from fury.data import read_viz_textures, fetch_viz_textures, read_viz_icons
+
+import numpy as np
+
+from fury import actor, io, ui, utils, window
+from fury.data import fetch_viz_textures, read_viz_icons, read_viz_textures
 
 ##############################################################################
 # Create a scene to start.
@@ -21,15 +23,11 @@ scene = window.Scene()
 
 # Create a panel and the start/pause buttons
 
-panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align="right")
+panel = ui.Panel2D(size=(300, 100), color=(1, 1, 1), align='right')
 panel.center = (400, 50)
 
-pause_button = ui.Button2D(
-    icon_fnames=[("square", read_viz_icons(fname="pause2.png"))]
-)
-start_button = ui.Button2D(
-    icon_fnames=[("square", read_viz_icons(fname="play3.png"))]
-)
+pause_button = ui.Button2D(icon_fnames=[('square', read_viz_icons(fname='pause2.png'))])
+start_button = ui.Button2D(icon_fnames=[('square', read_viz_icons(fname='play3.png'))])
 
 # Add the buttons on the panel
 
@@ -41,26 +39,58 @@ panel.add_element(start_button, (0.66, 0.33))
 # Define information relevant for each planet actor including its
 # texture name, relative position, and scale.
 
-planets_data = [{'filename': '8k_mercury.jpg', 'position': 7,
-                 'earth_days': 58, 'scale': (.4, .4, .4)},
-                {'filename': '8k_venus_surface.jpg', 'position': 9,
-                 'earth_days': 243, 'scale': (.6, .6, .6)},
-                {'filename': '1_earth_8k.jpg', 'position': 11,
-                 'earth_days': 1, 'scale': (.4, .4, .4)},
-                {'filename': '8k_mars.jpg', 'position': 13,
-                 'earth_days': 1, 'scale': (.8, .8, .8)},
-                {'filename': 'jupiter.jpg', 'position': 16,
-                 'earth_days': 0.41, 'scale': (2, 2, 2)},
-                {'filename': '8k_saturn.jpg', 'position': 19,
-                 'earth_days': 0.45, 'scale': (2, 2, 2)},
-                {'filename': '8k_saturn_ring_alpha.png', 'position': 19,
-                 'earth_days': 0.45, 'scale': (3, .5, 3)},
-                {'filename': '2k_uranus.jpg', 'position': 22,
-                 'earth_days': 0.70, 'scale': (1, 1, 1)},
-                {'filename': '2k_neptune.jpg', 'position': 25,
-                 'earth_days': 0.70, 'scale': (1, 1, 1)},
-                {'filename': '8k_sun.jpg', 'position': 0,
-                 'earth_days': 27, 'scale': (5, 5, 5)}]
+planets_data = [
+    {
+        'filename': '8k_mercury.jpg',
+        'position': 7,
+        'earth_days': 58,
+        'scale': (0.4, 0.4, 0.4),
+    },
+    {
+        'filename': '8k_venus_surface.jpg',
+        'position': 9,
+        'earth_days': 243,
+        'scale': (0.6, 0.6, 0.6),
+    },
+    {
+        'filename': '1_earth_8k.jpg',
+        'position': 11,
+        'earth_days': 1,
+        'scale': (0.4, 0.4, 0.4),
+    },
+    {
+        'filename': '8k_mars.jpg',
+        'position': 13,
+        'earth_days': 1,
+        'scale': (0.8, 0.8, 0.8),
+    },
+    {'filename': 'jupiter.jpg', 'position': 16, 'earth_days': 0.41, 'scale': (2, 2, 2)},
+    {
+        'filename': '8k_saturn.jpg',
+        'position': 19,
+        'earth_days': 0.45,
+        'scale': (2, 2, 2),
+    },
+    {
+        'filename': '8k_saturn_ring_alpha.png',
+        'position': 19,
+        'earth_days': 0.45,
+        'scale': (3, 0.5, 3),
+    },
+    {
+        'filename': '2k_uranus.jpg',
+        'position': 22,
+        'earth_days': 0.70,
+        'scale': (1, 1, 1),
+    },
+    {
+        'filename': '2k_neptune.jpg',
+        'position': 25,
+        'earth_days': 0.70,
+        'scale': (1, 1, 1),
+    },
+    {'filename': '8k_sun.jpg', 'position': 0, 'earth_days': 27, 'scale': (5, 5, 5)},
+]
 fetch_viz_textures()
 
 ##############################################################################
@@ -121,12 +151,12 @@ sun_actor = planet_actor_list[9]
 # create a new constant, which we will call miu.
 
 g_exponent = np.float_power(10, -11)
-g_constant = 6.673*g_exponent
+g_constant = 6.673 * g_exponent
 
 m_exponent = 1073741824   # np.power(10, 30)
-m_constant = 1.989*m_exponent
+m_constant = 1.989 * m_exponent
 
-miu = m_constant*g_constant
+miu = m_constant * g_constant
 
 ##############################################################################
 # Let's define two functions that will help us calculate the position of each
@@ -136,13 +166,13 @@ miu = m_constant*g_constant
 
 
 def get_orbit_period(radius):
-    return 2 * np.pi * np.sqrt(np.power(radius, 3)/miu)
+    return 2 * np.pi * np.sqrt(np.power(radius, 3) / miu)
 
 
 def get_orbital_position(radius, time):
     orbit_period = get_orbit_period(radius)
-    x = radius * np.cos((-2*np.pi*time)/orbit_period)
-    y = radius * np.sin((-2*np.pi*time)/orbit_period)
+    x = radius * np.cos((-2 * np.pi * time) / orbit_period)
+    y = radius * np.sin((-2 * np.pi * time) / orbit_period)
     return x, y
 
 
@@ -154,7 +184,7 @@ def get_orbital_position(radius, time):
 
 def rotate_axial(actor, time, radius):
     axis = (0, radius, 0)
-    angle = 50/time
+    angle = 50 / time
     utils.rotate(actor, (angle, axis[0], axis[1], axis[2]))
     return angle
 
@@ -168,9 +198,9 @@ scene.set_camera(position=(-20, 60, 100))
 # Next, create a ShowManager object. The ShowManager class is the interface
 # between the scene, the window and the interactor.
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 scene.add(panel)
 
 ##############################################################################
@@ -197,8 +227,10 @@ def update_planet_position(r_planet, planet_actor, cnt):
 
 
 def calculate_path(r_planet, c):
-    planet_track = [[get_orbital_position(r_planet, i)[0], 0,
-                     get_orbital_position(r_planet, i)[1]] for i in range(c)]
+    planet_track = [
+        [get_orbital_position(r_planet, i)[0], 0, get_orbital_position(r_planet, i)[1]]
+        for i in range(c)
+    ]
     return planet_track
 
 
@@ -209,23 +241,37 @@ def calculate_path(r_planet, c):
 # `r_times` will contain time taken (in days) by the planets to rotate
 # around itself.
 
-r_planets = [p_data['position'] for p_data in planets_data
-             if 'sun' not in p_data['filename']
-             if 'saturn_ring' not in p_data['filename']]
+r_planets = [
+    p_data['position']
+    for p_data in planets_data
+    if 'sun' not in p_data['filename']
+    if 'saturn_ring' not in p_data['filename']
+]
 
-planet_actors = [mercury_actor, venus_actor, earth_actor, mars_actor,
-                 jupiter_actor, saturn_actor, uranus_actor, neptune_actor]
+planet_actors = [
+    mercury_actor,
+    venus_actor,
+    earth_actor,
+    mars_actor,
+    jupiter_actor,
+    saturn_actor,
+    uranus_actor,
+    neptune_actor,
+]
 
 
-sun_data = {'actor': sun_actor, 'position': planets_data[9]['position'],
-            'earth_days': planets_data[9]['earth_days']}
+sun_data = {
+    'actor': sun_actor,
+    'position': planets_data[9]['position'],
+    'earth_days': planets_data[9]['earth_days'],
+}
 
 r_times = [p_data['earth_days'] for p_data in planets_data]
 
 ##############################################################################
 # Here we are calculating and updating the path/orbit before animation starts.
 
-planet_tracks = [calculate_path(rplanet, rplanet*85) for rplanet in r_planets]
+planet_tracks = [calculate_path(rplanet, rplanet * 85) for rplanet in r_planets]
 
 ##############################################################################
 # This is for orbit visualization. We are using line actor for orbits.
@@ -261,6 +307,7 @@ def timer_callback(_obj, _event):
     if cnt == 2000:
         showm.exit()
 
+
 ##############################################################################
 # We add a callback to each button to perform some action.
 
@@ -280,9 +327,8 @@ pause_button.on_left_mouse_button_clicked = pause_animation
 ##############################################################################
 # Watch the planets orbit the sun in your new animation!
 
-showm.initialize()
+
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900, 768),
-              out_path="viz_solar_system_animation.png")
+window.record(showm.scene, size=(900, 768), out_path='viz_solar_system_animation.png')

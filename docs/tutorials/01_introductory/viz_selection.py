@@ -1,4 +1,3 @@
-
 """
 ==========================
 Selecting multiple objects
@@ -19,11 +18,11 @@ In summary, we will create an actor with thousands of cubes and
 then interactively we will be moving a rectangular box by
 hovering the mouse and making transparent everything that is
 behind that box.
-
 """
 
 import numpy as np
-from fury import actor, window, utils, pick
+
+from fury import actor, pick, utils, window
 
 ###############################################################################
 # Adding many cubes of different sizes and colors
@@ -50,8 +49,7 @@ scene = window.Scene()
 ###############################################################################
 # Build the actor containing all the cubes
 
-cube_actor = actor.cube(centers, directions=(1, 0, 0),
-                        colors=colors, scales=radii)
+cube_actor = actor.cube(centers, directions=(1, 0, 0), colors=colors, scales=radii)
 
 ###############################################################################
 # Access the memory of the vertices of all the cubes
@@ -75,7 +73,7 @@ texa = actor.texture_2d(rgba.astype(np.uint8))
 scene.add(cube_actor)
 scene.add(texa)
 scene.reset_camera()
-scene.zoom(3.)
+scene.zoom(3.0)
 
 ###############################################################################
 # Create the Selection Manager
@@ -95,11 +93,10 @@ selm.selectable_off(texa)
 def hover_callback(_obj, _event):
     event_pos = selm.event_position(showm.iren)
     # updates rectangular box around mouse
-    texa.SetPosition(event_pos[0] - 200//2,
-                     event_pos[1] - 100//2)
+    texa.SetPosition(event_pos[0] - 200 // 2, event_pos[1] - 100 // 2)
 
     # defines selection region and returns information from selected objects
-    info = selm.select(event_pos, showm.scene, (200//2, 100//2))
+    info = selm.select(event_pos, showm.scene, (200 // 2, 100 // 2))
     for node in info.keys():
         if info[node]['face'] is not None:
             if info[node]['actor'] is cube_actor:
@@ -109,8 +106,9 @@ def hover_callback(_obj, _event):
                     object_index = face_index // 12
                     sec = int(num_vertices / num_objects)
                     color_change = np.array([150, 0, 0, 255], dtype='uint8')
-                    vcolors[object_index * sec: object_index * sec + sec] \
-                        = color_change
+                    vcolors[
+                        object_index * sec : object_index * sec + sec
+                    ] = color_change
                 utils.update_actor(cube_actor)
     showm.render()
 
@@ -118,10 +116,10 @@ def hover_callback(_obj, _event):
 ###############################################################################
 # Make the window appear
 
-showm = window.ShowManager(scene, size=(1024, 768),
-                           order_transparent=True,
-                           reset_camera=False)
-showm.initialize()
+showm = window.ShowManager(
+    scene, size=(1024, 768), order_transparent=True, reset_camera=False
+)
+
 
 ###############################################################################
 # Bind the callback to the actor
@@ -141,4 +139,4 @@ if interactive:
 ###############################################################################
 # Save the current framebuffer in a PNG file
 
-window.record(showm.scene, size=(1024, 768), out_path="viz_selection.png")
+window.record(showm.scene, size=(1024, 768), out_path='viz_selection.png')

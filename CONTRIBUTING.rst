@@ -38,8 +38,8 @@ Write Documentation
 FURY could always use more documentation, whether
 as part of the official FURY docs, in docstrings,
 or even on the web in blog posts, articles, and such.
-FURY uses [Sphinx](http://www.sphinx-doc.org/en/stable/index.html) to generate documentation.
-Please follow the [numpy coding style](https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard) - and of course - [PEP8](https://www.python.org/dev/peps/pep-0008/)
+FURY uses `Sphinx <http://www.sphinx-doc.org/en/stable/index.html) to generate documentation>`_.
+Please follow the `numpy coding style <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_ and `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_
 for docstring documentation.
 
 

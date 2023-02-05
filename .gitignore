@@ -100,4 +100,10 @@ target/
 *.npy
 *.vtk
 *.png
+*.bin
+*.gltf
 
+tmp/
+temp/
+
+_version.py
