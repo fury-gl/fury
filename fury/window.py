@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import time
+from threading import Lock
+
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
@@ -378,8 +381,10 @@ class ShowManager:
         self.interactor_style = interactor_style
         self.stereo = stereo
         self.timers = []
+        self.mutex = Lock()
         self._fps = 0
         self._last_render_time = 0
+        
         if self.reset_camera:
             self.scene.ResetCamera()
 
@@ -511,15 +516,48 @@ class ShowManager:
         self._fps = 1.0 / (time.perf_counter() - self._last_render_time)
         self._last_render_time = time.perf_counter()
 
-    def start(self):
-        """Start interaction."""
+    def is_done(self):
+        """Check if show manager is done."""
         try:
-            self.render()
+            return self.iren.GetDone()
+        except AttributeError:
+            return True
+
+    def start(self, multithreaded=False, desired_fps=60):
+        """Start interaction.
+
+        Parameters
+        ----------
+        multithreaded : bool
+            Whether to use multithreading. (Default False)
+        desired_fps : int
+            Desired frames per second when using multithreading is enabled.
+            (Default 60)
+
+        """
+        try:
             if self.title.upper() == 'FURY':
                 self.window.SetWindowName(self.title + ' ' + fury_version)
             else:
                 self.window.SetWindowName(self.title)
-            self.iren.Start()
+            if multithreaded:
+                while self.iren.GetDone() is False:
+                    start_time = time.perf_counter()
+                    self.lock()
+                    self.window.MakeCurrent()
+                    self.iren.ProcessEvents()  # Check if we can really do that
+                    self.window.Render()
+                    release_context(self.window)
+                    self.release_lock()
+                    end_time = time.perf_counter()
+                    # throttle to 60fps to avoid busy wait
+                    time_per_frame = 1.0/desired_fps
+                    if end_time - start_time < time_per_frame:
+                        time.sleep(time_per_frame - (end_time - start_time))
+            else:
+                self.render()
+                self.iren.Start()
+
         except AttributeError:
             self.__init__(
                 self.scene,
@@ -542,6 +580,43 @@ class ShowManager:
         self.window.Finalize()
         del self.iren
         del self.window
+
+    def lock(self):
+        """Lock the render window."""
+        self.mutex.acquire()
+
+    def release_lock(self):
+        """Release the lock of the render window."""
+        self.mutex.release()
+
+    def lock_current(self):
+        """Lock the render window and acquire the current context and
+        check if the lock was sucessfully acquired.
+
+        Returns
+        -------
+        sucessful : bool
+            Returns if the lock was acquired."""
+        if self.is_done():
+            return False
+        if not hasattr(self, 'window'):
+            return False
+        try:
+            self.lock()
+            self.window.MakeCurrent()
+            return True
+        except AttributeError:
+            return False
+
+    def release_current(self):
+        """Release the window context and lock of the render window."""
+        release_context(self.window)
+        self.release_lock()
+
+    def wait(self):
+        """ Wait for thread to finish. """
+        if self.thread:
+            self.thread.join()
 
     @property
     def frame_rate(self):
@@ -697,6 +772,10 @@ class ShowManager:
 
     def exit(self):
         """Close window and terminate interactor."""
+
+        # if is_osx and self.timers:
+        # OSX seems to not destroy correctly timers
+        # segfault 11 appears sometimes if we do not do it manually.
         # self.iren.GetRenderWindow().Finalize()
         self.iren.TerminateApp()
         self.destroy_timers()
@@ -1045,7 +1124,9 @@ def snapshot(
     max_peels=4,
     occlusion_ratio=0.0,
     dpi=(72, 72),
+    render_window=None
 ):
+
     """Save a snapshot of the scene in a file or in memory.
 
     Parameters
@@ -1085,6 +1166,8 @@ def snapshot(
     dpi : float or (float, float)
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
+    render_window : RenderWindow
+        If provided, use this window instead of creating a new one.
 
     Returns
     -------
@@ -1094,19 +1177,19 @@ def snapshot(
 
     """
     width, height = size
+    if render_window is None:
+        render_window = RenderWindow()
+        if offscreen:
+            render_window.SetOffScreenRendering(1)
+        if stereo.lower() != 'off':
+            enable_stereo(render_window, stereo)
+        render_window.AddRenderer(scene)
+        render_window.SetSize(width, height)
 
-    render_window = RenderWindow()
-    if offscreen:
-        render_window.SetOffScreenRendering(1)
-    if stereo.lower() != 'off':
-        enable_stereo(render_window, stereo)
-    render_window.AddRenderer(scene)
-    render_window.SetSize(width, height)
-
-    if order_transparent:
-        antialiasing(scene, render_window, multi_samples, max_peels, occlusion_ratio)
-
-    render_window.Render()
+        if order_transparent:
+            antialiasing(scene, render_window, multi_samples, max_peels,
+                         occlusion_ratio)
+        render_window.Render()
 
     window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
@@ -1424,3 +1507,14 @@ def gl_set_subtractive_blending(gl_state):
     """
     gl_reset_blend(gl_state)
     gl_state.vtkglBlendFunc(_GL['GL_ZERO'], _GL['GL_ONE_MINUS_SRC_COLOR'])
+
+
+def release_context(window):
+    """Release the context of the window
+
+    Parameters
+    ----------
+    window : vtkRenderWindow
+
+    """
+    window.ReleaseCurrent()
