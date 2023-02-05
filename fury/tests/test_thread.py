@@ -56,4 +56,3 @@ def test_multithreading():
     thread_a.join()
 
 
-test_multithreading()
