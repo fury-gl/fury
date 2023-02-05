@@ -122,12 +122,9 @@ def test_grid_ui1(interactive=False):
     scene1 = window.Scene()
     t = 0
 
-    try:
-        grid_ui = ui.GridUI(actors=actors)
-        scene1.add(grid_ui)
-        t = 1
-    except:
-        pass
+    grid_ui = ui.GridUI(actors=actors)
+    scene1.add(grid_ui)
+    t = 1
 
     npt.assert_equal(t, 1)
 
