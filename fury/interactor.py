@@ -15,7 +15,7 @@ from fury.lib import (
 )
 
 
-class Event(object):
+class Event:
     """Event class."""
 
     def __init__(self):

@@ -28,7 +28,7 @@ from types import BuiltinFunctionType, FunctionType
 DEBUG = True
 
 
-class ApiDocWriter(object):
+class ApiDocWriter:
     """Class for automatic detection and parsing of API docs
     to Sphinx-parsable reST format."""
 

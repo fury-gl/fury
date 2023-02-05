@@ -286,7 +286,7 @@ class Scene(OpenGLRenderer):
         self.SetUseFXAA(False)
 
 
-class ShowManager(object):
+class ShowManager:
     """Class interface between the scene, the window and the interactor."""
 
     def __init__(
@@ -1131,7 +1131,7 @@ def snapshot(
 
 
 def analyze_scene(scene):
-    class ReportScene(object):
+    class ReportScene:
         bg_color = None
         collection = None
         actors = None
@@ -1181,7 +1181,7 @@ def analyze_snapshot(
     if isinstance(im, basestring):
         im = load_image(im)
 
-    class ReportSnapshot(object):
+    class ReportSnapshot:
         objects = None
         labels = None
         colors_found = False

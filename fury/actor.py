@@ -2960,7 +2960,7 @@ def text_3d(
     return text_actor
 
 
-class Container(object):
+class Container:
     """Provides functionalities for grouping multiple actors using a given
     layout.
 
