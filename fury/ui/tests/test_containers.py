@@ -119,11 +119,11 @@ def test_grid_ui1(interactive=False):
     # print(report.objects)
 
     # testing grid without captions
-    scene1 = window.Scene()
+    new_sm = window.ShowManager()
     t = 0
 
-    grid_ui = ui.GridUI(actors=actors)
-    scene1.add(grid_ui)
+    grid_ui_2 = ui.GridUI(actors=actors)
+    new_sm.scene.add(grid_ui_2)
     t = 1
 
     npt.assert_equal(t, 1)
