@@ -43,6 +43,7 @@ if have_matplotlib:
 
 
 class Sphere:
+
     vertices = None
     faces = None
 

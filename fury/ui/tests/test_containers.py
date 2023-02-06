@@ -118,6 +118,18 @@ def test_grid_ui1(interactive=False):
     npt.assert_equal(report.objects > 9, True)
     # print(report.objects)
 
+    # testing grid without captions
+    new_sm = window.ShowManager()
+    t = 0
+    try:
+        grid_ui_2 = ui.GridUI(actors=actors)
+        new_sm.scene.add(grid_ui_2)
+        t = 1
+    except:
+        pass
+
+    npt.assert_equal(t, 1)
+
 
 def test_grid_ui2(interactive=False):
 
