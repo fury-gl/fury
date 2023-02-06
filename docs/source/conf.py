@@ -203,6 +203,8 @@ html_css_files = ['css/custom.css', 'vendor/fonts.css']
 
 html_logo = '_static/images/logo.svg'
 
+html_favicon = "_static/images/logo.ico"
+
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #
