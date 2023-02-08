@@ -816,7 +816,7 @@ class ShowManager:
             stereo = self.stereo.lower()
 
         record(
-            scene=self.scene,
+            self,
             out_path=fname,
             magnification=magnification,
             size=size,
@@ -914,7 +914,9 @@ def show(
     show_manager.start()
 
 
+@deprecated_params('scene', None, since='0.8', until='0.11')
 def record(
+    showm,
     scene=None,
     cam_pos=None,
     cam_focal=None,
@@ -937,6 +939,8 @@ def record(
 
     Parameters
     -----------
+    showm : ShowManager() object
+        ShowManager instance
     scene : Scene() or vtkRenderer() object
         Scene instance
     cam_pos : None or sequence (3,), optional
@@ -986,26 +990,34 @@ def record(
     Examples
     ---------
     >>> from fury import window, actor
-    >>> scene = window.Scene()
+    >>> showm = window.ShowManager()
     >>> a = actor.axes()
-    >>> scene.add(a)
+    >>> showm.scene.add(a)
     >>> # uncomment below to record
-    >>> # window.record(scene)
+    >>> # window.record(showm)
     >>> # check for new images in current directory
 
     """
-    if scene is None:
-        scene = Scene()
+    if isinstance(showm, ShowManager):
+        renWin = showm.window
+        scene = showm.scene
+    elif isinstance(showm, RenderWindow):
+        renWin = showm
+        scene = showm.GetRenderers().GetFirstRenderer()
+    elif isinstance(showm, (Scene, OpenGLRenderer)):
+        warn(
+            'The scene instance parameter is deprecated. Please use the ShowManager '
+            'instance instead',
+            DeprecationWarning,
+        )
+        renWin = RenderWindow()
 
-    renWin = RenderWindow()
+        renWin.SetOffScreenRendering(1)
+        renWin.SetBorders(screen_clip)
+        renWin.AddRenderer(scene or showm)
 
-    renWin.SetOffScreenRendering(1)
-    renWin.SetBorders(screen_clip)
-    renWin.AddRenderer(scene)
     renWin.SetSize(size[0], size[1])
-
     # scene.GetActiveCamera().Azimuth(180)
-
     if reset_camera:
         scene.ResetCamera()
 
@@ -1064,8 +1076,9 @@ def record(
 
         ang = +az_ang
 
-    renWin.RemoveRenderer(scene)
-    renWin.Finalize()
+    if isinstance(showm, (Scene, OpenGLRenderer)):
+        renWin.RemoveRenderer(scene or showm)
+        renWin.Finalize()
 
 
 def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
@@ -1111,8 +1124,10 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     scene.SetOcclusionRatio(occlusion_ratio)
 
 
+@deprecated_params(['scene', 'render_window'], None, since='0.8', until='0.11')
 def snapshot(
-    scene,
+    showm,
+    scene=None,
     fname=None,
     size=(300, 300),
     offscreen=True,
@@ -1129,8 +1144,10 @@ def snapshot(
 
     Parameters
     -----------
-    scene : Scene() or vtkRenderer
-        Scene instance
+    showm : ShowManager
+        ShowManager instance
+    scene : Scene() or vtkRenderer, optional
+        Deprecated, Scene instance
     fname : str or None
         Save PNG file. If None return only an array without saving PNG.
     size : (int, int)
@@ -1165,7 +1182,7 @@ def snapshot(
         Dots per inch (dpi) for saved image.
         Single values are applied as dpi for both dimensions.
     render_window : RenderWindow
-        If provided, use this window instead of creating a new one.
+        Deprecated, If provided, use this window instead of creating a new one.
 
     Returns
     -------
@@ -1175,20 +1192,45 @@ def snapshot(
 
     """
     width, height = size
-    if render_window is None:
-        render_window = RenderWindow()
-        if offscreen:
-            render_window.SetOffScreenRendering(1)
-        if stereo.lower() != 'off':
-            enable_stereo(render_window, stereo)
-        render_window.AddRenderer(scene)
-        render_window.SetSize(width, height)
+    if isinstance(showm, ShowManager):
+        render_window = showm.window
+    elif isinstance(showm, RenderWindow):
+        render_window = showm
+    elif isinstance(showm, (Scene, OpenGLRenderer)) or scene is not None:
+        warn(
+            'The scene instance parameter is deprecated. Please use the ShowManager '
+            'instance or RenderWindow instance instead',
+            DeprecationWarning,
+        )
 
-        if order_transparent:
-            antialiasing(
-                scene, render_window, multi_samples, max_peels, occlusion_ratio
+        if render_window is None:
+            if isinstance(scene, str):
+                # small hack for backward compatibility
+                fname = scene
+                scene = None
+            render_window = RenderWindow()
+            if offscreen:
+                render_window.SetOffScreenRendering(1)
+            if stereo.lower() != 'off':
+                enable_stereo(render_window, stereo)
+            render_window.AddRenderer(scene or showm)
+            render_window.SetSize(width, height)
+
+            if order_transparent:
+                antialiasing(
+                    scene or showm,
+                    render_window,
+                    multi_samples,
+                    max_peels,
+                    occlusion_ratio,
+                )
+            render_window.Render()
+        else:
+            warn(
+                'The render_window parameter is deprecated. Please use the ShowManager '
+                'instance instead',
+                DeprecationWarning,
             )
-        render_window.Render()
 
     window_to_image_filter = WindowToImageFilter()
     window_to_image_filter.SetInput(render_window)
@@ -1206,8 +1248,9 @@ def snapshot(
 
     save_image(arr, fname, dpi=dpi)
 
-    render_window.RemoveRenderer(scene)
-    render_window.Finalize()
+    if isinstance(showm, (Scene, OpenGLRenderer)):
+        render_window.RemoveRenderer(scene or showm)
+        render_window.Finalize()
 
     return arr
 
