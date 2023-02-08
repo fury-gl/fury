@@ -271,16 +271,16 @@ Timeline
    * - Week 0\  :raw-html:`<br>`\ (24-05-2022)
      - My journey to GSoC 2022
      - `FURY <https://fury.gl/latest/posts/2022/2022-05-24-my-journey-to-gsoc-2022-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/my-journey-to-gsoc-2022-1/>`_
-   * - Week 1\ :raw-html:`<br>`\ (08-06-2022)
+   * - Week 1\ :raw-html:`<br>`\ (20-06-2022)
      - A basic glTF Importer
      - `FURY <https://fury.gl/latest/posts/2022/2022-06-20-week1-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-1-a-basic-gltf-importer/>`_
-   * - Week 2\ :raw-html:`<br>`\ (28-06-2022)
+   * - Week 2\ :raw-html:`<br>`\ (29-06-2022)
      - Improving Fetcher and Exporting glTF
      - `FURY <https://fury.gl/latest/posts/2022/2022-06-29-week2-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-2-improving-fetcher-and-exporting-gltf/>`_
    * - Week 3\ :raw-html:`<br>`\ (04-07-2022)
      - Fixing fetcher adding tests and docs
      - `FURY <https://fury.gl/latest/posts/2022/2022-07-04-week3-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-3-fixing-fetcher-adding-tests-and-docs/>`_
-   * - Week 4\ :raw-html:`<br>`\ (11-07-2022)
+   * - Week 4\ :raw-html:`<br>`\ (12-07-2022)
      -  Finalizing glTF loader
      - `FURY <https://fury.gl/latest/posts/2022/2022-07-12-week4-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-4-finalizing-gltf-loader/>`_
    * - Week 5\ :raw-html:`<br>`\ (19-07-2022)
@@ -295,22 +295,22 @@ Timeline
    * - Week 8\ :raw-html:`<br>`\ (09-08-2022)
      - Fixing animation bugs
      - `FURY <https://fury.gl/latest/posts/2022/2022-08-09-week-08-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-8-fixing-animation-bugs/>`_
-   * - Week 9\ :raw-html:`<br>`\ (16-08-2022)
+   * - Week 9\ :raw-html:`<br>`\ (17-08-2022)
      - First working skeletal animation prototype
      - `FURY <https://fury.gl/latest/posts/2022/2022-08-17-week-09-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-9-first-working-skeletal-animation-prototype/>`_
-   * - Week 10\ :raw-html:`<br>`\ (23-08-2022)
+   * - Week 10\ :raw-html:`<br>`\ (25-08-2022)
      - Multi-node skinning support
      - `FURY <https://fury.gl/latest/posts/2022/2022-08-25-week-10-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-10-multi-node-skinning-support/>`_
-   * - Week 11\ :raw-html:`<br>`\ (30-08-2022)
+   * - Week 11\ :raw-html:`<br>`\ (31-08-2022)
      - Multiple transformations support and adding tests
      - `FURY <https://fury.gl/latest/posts/2022/2022-08-31-week-11-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-11-multiple-transformations-support-and-adding-tests/>`_
-   * - Week 12\ :raw-html:`<br>`\ (7-09-2022)
+   * - Week 12\ :raw-html:`<br>`\ (08-09-2022)
      - Adding skeleton as actors and fix global transformation
      - `FURY <https://fury.gl/latest/posts/2022/2022-09-08-week-12-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-12-adding-skeleton-as-actors-and-fix-global-transformation/>`_
-   * - Week 13\ :raw-html:`<br>`\ (20-09-2022)
+   * - Week 13\ :raw-html:`<br>`\ (15-09-2022)
      - Multi bone skeletal animations
      - `FURY <https://fury.gl/latest/posts/2022/2022-09-15-week-13-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-13-multi-bone-skeletal-animation-support/>`_
-   * - Week 14\ :raw-html:`<br>`\ (20-09-2022)
+   * - Week 14\ :raw-html:`<br>`\ (28-09-2022)
      - Morphing is here !
      - `FURY <https://fury.gl/latest/posts/2022/2022-09-28-week-14-shivam.html>`_ - `Python <https://blogs.python-gsoc.org/en/xtanions-blog/week-14-morphing-is-here/>`_
 
