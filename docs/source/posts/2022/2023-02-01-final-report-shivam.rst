@@ -112,9 +112,9 @@ creates a timleline for each animation in glTF animations. This
 timeline contains actors an can be added to the scene. We can animate
 the scene by updating timeline inside a timer callback.
 
-.. raw :: html
-
-   <iframe id="player" type="text/html" width="480" height="270" src="https://user-images.githubusercontent.com/74976752/194863125-58f3717d-d89e-48e7-8e2c-a8501e4f230b.mp4" frameborder="0"></iframe>
+.. image:: https://user-images.githubusercontent.com/74976752/217645594-6054ea83-12e5-4868-b6a1-eee5a154bd26.gif
+   :width: 480
+   :align: center
 
 *Pull Requests:*
 
@@ -134,9 +134,9 @@ different weights, to animate parts of the mesh. Added methods to
 extract this information, update the timeline and apply morphing to
 each actor in the scene.
 
-.. raw :: html
-
-   <iframe id="player" type="text/html" width="480" height="270" src="https://user-images.githubusercontent.com/74976752/194862679-ce239e11-5373-4fc5-95a7-4be12feb99cb.mp4" frameborder="0"></iframe>
+.. image:: https://user-images.githubusercontent.com/74976752/217645485-153ec403-6c87-4282-8907-30d921106b34.gif
+   :width: 480
+   :align: center
 
 *Pull Requests:*
 
@@ -167,10 +167,9 @@ current implementation of skinning supports the following:
 -  Show or hide bones/skeleton of the model.
 
 
-.. raw:: html
-      
-   <iframe id="player" type="text/html"  width="480" height="270" src="https://user-images.githubusercontent.com/74976752/194862048-7ce65b42-2717-436b-b311-85368f3c3714.mp4" frameborder="0"></iframe>
-
+.. image:: https://user-images.githubusercontent.com/74976752/217645367-f901c6ed-ca20-40d6-92dd-f1cd8899ac7a.gif
+   :width: 480
+   :align: center
 
 *Pull Requests:*
 
