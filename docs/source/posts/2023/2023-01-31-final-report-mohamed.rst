@@ -95,18 +95,18 @@ Objectives Completed
       * Lab Color Interpolator
       * HSV Color Interpolator
 
-    .. raw:: html
-
-        <iframe id="player" type="text/html"   width="440" height="390" src="https://user-images.githubusercontent.com/63170874/194437472-e9ad04b5-0d80-40bf-bd06-64952aeaa65f.mp4" frameborder="0"></iframe>
-
-    .. raw:: html
-
-        <iframe id="player" type="text/html"   width="440" height="390" src="https://user-images.githubusercontent.com/63170874/194441472-a33f66cb-4860-4659-83f7-720a69696c12.mp4" frameborder="0"></iframe>
+    .. image:: https://user-images.githubusercontent.com/63170874/217738142-2dba8f6a-f8ff-4231-babd-048055074cc0.gif
+        :align: center
+        :width: 560
 
 
+
+    .. image:: https://user-images.githubusercontent.com/63170874/190892795-f47ceaf1-8dd0-4235-99be-2cf0aec323bb.gif
+        :align: center
+        :width: 560
 
     * Tutorials
-       Also included 11 tutorials  demonstrating gow the FURY keyframe animation API works and how to use it to make some interesting animations. These tutorial will be added soon to the FURY website.
+       Also included 11 tutorials  demonstrating how the FURY keyframe animation API works and how to use it to make some interesting animations. These tutorial will be added soon to the FURY website.
        Subjects explained in the tutorials are:
 
       * **Introduction**
