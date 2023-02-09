@@ -6,5 +6,5 @@ float evaluateClearcoat(float clearcoat, float clearcoatGloss, float dotHL,
     float fw = schlickWeight(dotHL);
     float f = mix(.04, 1, fw);
     float g = smithGGX(dotLN, .25) * smithGGX(dotNV, .25);
-    return .25 * clearcoat * f * g * d;
+    return .25 * clearcoat * d * f * g;
 }
