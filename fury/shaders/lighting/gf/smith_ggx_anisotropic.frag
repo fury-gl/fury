@@ -1,4 +1,4 @@
-float smithGGGXAnisotropic(float alphaX, float alphaY, float dotNV, float dotVX, float dotVY)
+float smithGGXAnisotropic(float alphaX, float alphaY, float dotNV, float dotVX, float dotVY)
 {
     float ax2 = square(alphaX);
     float ay2 = square(alphaY);
