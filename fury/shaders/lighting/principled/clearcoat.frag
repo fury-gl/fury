@@ -1,5 +1,5 @@
 float evaluateClearcoat(float clearcoat, float clearcoatGloss, float dotHL,
-                        float dotHN, float dotLN, float dotNV)
+    float dotHN, float dotLN, float dotNV)
 {
     float gloss = mix(.1, .001, clearcoatGloss);
     float d = GTR1(dotHN, gloss);
