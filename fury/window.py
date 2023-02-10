@@ -10,6 +10,7 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 from fury.animation import Animation, Timeline
+from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (
@@ -422,6 +423,7 @@ class ShowManager:
         self._timelines = []
         self._animations = []
         self._animation_callback = None
+        self.window_to_image_filter = None
 
     def initialize(self):
         """Initialize interaction."""
@@ -779,6 +781,255 @@ class ShowManager:
         self.destroy_timers()
         self.timers.clear()
 
+    def record(
+        self,
+        cam_pos=None,
+        cam_focal=None,
+        cam_view=None,
+        out_path=None,
+        path_numbering=False,
+        n_frames=1,
+        az_ang=10,
+        magnification=1,
+        size=(300, 300),
+        reset_camera=True,
+        screen_clip=False,
+        stereo='off',
+        verbose=False,
+    ):
+        """Record a video of your scene.
+
+        Records a video as a series of ``.png`` files of your scene by rotating the
+        azimuth angle az_angle in every frame.
+
+        Parameters
+        -----------
+        cam_pos : None or sequence (3,), optional
+            Camera's position. If None then default camera's position is used.
+        cam_focal : None or sequence (3,), optional
+            Camera's focal point. If None then default camera's focal point is
+            used.
+        cam_view : None or sequence (3,), optional
+            Camera's view up direction. If None then default camera's view up
+            vector is used.
+        out_path : str, optional
+            Output path for the frames. If None a default fury.png is created.
+        path_numbering : bool
+            When recording it changes out_path to out_path + str(frame number)
+        n_frames : int, optional
+            Number of frames to save, default 1
+        az_ang : float, optional
+            Azimuthal angle of camera rotation.
+        magnification : int, optional
+            How much to magnify the saved frame. Default is 1. A value greater
+            than 1 increases the quality of the image. However, the output
+            size will be larger. For example, 200x200 image with magnification
+            of 2 will be a 400x400 image.
+        size : (int, int)
+            ``(width, height)`` of the window. Default is (300, 300).
+        screen_clip: bool
+            Clip the png based on screen resolution. Default is False.
+        reset_camera : bool
+            If True Call ``scene.reset_camera()``. Otherwise you need to set the
+            camera before calling this function.
+        stereo: string
+            Set the stereo type. Default is 'off'. Other types include:
+
+            * 'opengl': OpenGL frame-sequential stereo. Referred to as
+            'CrystalEyes' by VTK.
+            * 'anaglyph': For use with red/blue glasses. See VTK docs to
+            use different colors.
+            * 'interlaced': Line interlaced.
+            * 'checkerboard': Checkerboard interlaced.
+            * 'left': Left eye only.
+            * 'right': Right eye only.
+            * 'horizontal': Side-by-side.
+
+        verbose : bool
+            print information about the camera. Default is False.
+
+        Examples
+        ---------
+        >>> from fury import window, actor
+        >>> showm = window.ShowManager()
+        >>> a = actor.axes()
+        >>> showm.scene.add(a)
+        >>> # uncomment below to record
+        >>> # window.record(showm)
+        >>> # check for new images in current directory
+
+        """
+        previous_offscreen = self.window.GetOffScreenRendering()
+
+        self.window.SetOffScreenRendering(1)
+        self.window.SetBorders(screen_clip)
+
+        self.window.SetSize(size[0], size[1])
+        # scene.GetActiveCamera().Azimuth(180)
+        if reset_camera:
+            self.scene.ResetCamera()
+
+        if stereo.lower() != 'off':
+            enable_stereo(self.window, stereo)
+
+        renderLarge = RenderLargeImage()
+        renderLarge.SetInput(self.scene)
+        renderLarge.SetMagnification(magnification)
+        renderLarge.Update()
+
+        ang = 0
+
+        if cam_pos is not None:
+            cx, cy, cz = cam_pos
+            self.scene.GetActiveCamera().SetPosition(cx, cy, cz)
+        if cam_focal is not None:
+            fx, fy, fz = cam_focal
+            self.scene.GetActiveCamera().SetFocalPoint(fx, fy, fz)
+        if cam_view is not None:
+            ux, uy, uz = cam_view
+            self.scene.GetActiveCamera().SetViewUp(ux, uy, uz)
+
+        cam = self.scene.GetActiveCamera()
+        if verbose:
+            print('Camera Position (%.2f, %.2f, %.2f)' % cam.GetPosition())
+            print('Camera Focal Point (%.2f, %.2f, %.2f)' % cam.GetFocalPoint())
+            print('Camera View Up (%.2f, %.2f, %.2f)' % cam.GetViewUp())
+
+        for i in range(n_frames):
+            self.scene.GetActiveCamera().Azimuth(ang)
+            renderLarge = RenderLargeImage()
+            renderLarge.SetInput(self.scene)
+            renderLarge.SetMagnification(magnification)
+            renderLarge.Update()
+
+            if path_numbering:
+                if out_path is None:
+                    filename = str(i).zfill(6) + '.png'
+                else:
+                    filename = out_path + str(i).zfill(6) + '.png'
+            else:
+                if out_path is None:
+                    filename = 'fury.png'
+                else:
+                    filename = out_path
+
+            arr = numpy_support.vtk_to_numpy(
+                renderLarge.GetOutput().GetPointData().GetScalars()
+            )
+            w, h, _ = renderLarge.GetOutput().GetDimensions()
+            components = renderLarge.GetOutput().GetNumberOfScalarComponents()
+            arr = arr.reshape((h, w, components))
+            arr = np.flipud(arr)
+            save_image(arr, filename)
+
+            ang = +az_ang
+
+        self.window.SetOffScreenRendering(previous_offscreen)
+
+    def snapshot(
+        self,
+        fname=None,
+        size=(300, 300),
+        offscreen=True,
+        order_transparent=False,
+        stereo='off',
+        multi_samples=8,
+        max_peels=4,
+        occlusion_ratio=0.0,
+        dpi=(72, 72),
+    ):
+
+        """Save a snapshot of the scene in a file or in memory.
+
+        Parameters
+        -----------
+        fname : str or None
+            Save PNG file. If None return only an array without saving PNG.
+        size : (int, int)
+            ``(width, height)`` of the window. Default is (300, 300).
+        offscreen : bool
+            Default True. Go stealth mode no window should appear.
+        order_transparent : bool
+            Default False. Use depth peeling to sort transparent objects.
+            If True also enables anti-aliasing.
+
+        stereo: string
+            Set the stereo type. Default is 'off'. Other types include:
+
+            * 'opengl': OpenGL frame-sequential stereo. Referred to as
+            'CrystalEyes' by VTK.
+            * 'anaglyph': For use with red/blue glasses. See VTK docs to
+            use different colors.
+            * 'interlaced': Line interlaced.
+            * 'checkerboard': Checkerboard interlaced.
+            * 'left': Left eye only.
+            * 'right': Right eye only.
+            * 'horizontal': Side-by-side.
+
+        multi_samples : int
+            Number of samples for anti-aliazing (Default 8).
+            For no anti-aliasing use 0.
+        max_peels : int
+            Maximum number of peels for depth peeling (Default 4).
+        occlusion_ratio : float
+            Occlusion ration for depth peeling (Default 0 - exact image).
+        dpi : float or (float, float)
+            Dots per inch (dpi) for saved image.
+            Single values are applied as dpi for both dimensions.
+
+        Returns
+        -------
+        arr : ndarray
+            Color array of size (width, height, 3) where the last dimension
+            holds the RGB values.
+
+        """
+        previous_size = self.window.GetSize()
+        previous_offscreen = self.window.GetOffScreenRendering()
+        width, height = size
+
+        if offscreen:
+            self.window.SetOffScreenRendering(1)
+        if stereo.lower() != 'off':
+            enable_stereo(self.window, stereo)
+
+        window.SetSize(width, height)
+
+        if order_transparent:
+            antialiasing(
+                self.scene,
+                self.window,
+                multi_samples,
+                max_peels,
+                occlusion_ratio,
+            )
+
+        self.render()
+
+        if self.window_to_image_filter is None:
+            self.window_to_image_filter = WindowToImageFilter()
+            self.window_to_image_filter.SetInput(self.window)
+
+        self.window_to_image_filter.Update()
+
+        vtk_image = window_to_image_filter.GetOutput()
+        h, w, _ = vtk_image.GetDimensions()
+        vtk_array = vtk_image.GetPointData().GetScalars()
+        components = vtk_array.GetNumberOfComponents()
+        arr = numpy_support.vtk_to_numpy(vtk_array).reshape(w, h, components).copy()
+        arr = np.flipud(arr)
+
+        if fname is None:
+            return arr
+
+        save_image(arr, fname, dpi=dpi)
+
+        if offscreen:
+            self.window.SetOffScreenRendering(previous_offscreen)
+        window.SetSize(previous_size[0], previous_size[1])
+
+        return arr
+
     def save_screenshot(self, fname, magnification=1, size=None, stereo=None):
         """Save a screenshot of the current window in the specified filename.
 
@@ -815,8 +1066,7 @@ class ShowManager:
         if stereo is None:
             stereo = self.stereo.lower()
 
-        record(
-            self,
+        self.record(
             out_path=fname,
             magnification=magnification,
             size=size,
@@ -914,6 +1164,11 @@ def show(
     show_manager.start()
 
 
+@deprecate_with_version(
+    'This function is deprecated, please use ShowManager.record instead.',
+    since='0.8',
+    until='0.11',
+)
 @deprecated_params('scene', None, since='0.8', until='0.11')
 def record(
     showm,
@@ -999,8 +1254,21 @@ def record(
 
     """
     if isinstance(showm, ShowManager):
-        renWin = showm.window
-        scene = showm.scene
+        showm.record(
+            cam_pos=cam_pos,
+            cam_focal=cam_focal,
+            cam_view=cam_view,
+            out_path=out_path,
+            path_numbering=path_numbering,
+            n_frames=n_frames,
+            az_ang=az_ang,
+            magnification=magnification,
+            size=size,
+            reset_camera=reset_camera,
+            screen_clip=screen_clip,
+            stereo=stereo,
+            verbose=verbose,
+        )
     elif isinstance(showm, RenderWindow):
         renWin = showm
         scene = showm.GetRenderers().GetFirstRenderer()
@@ -1124,6 +1392,11 @@ def antialiasing(scene, win, multi_samples=8, max_peels=4, occlusion_ratio=0.0):
     scene.SetOcclusionRatio(occlusion_ratio)
 
 
+@deprecate_with_version(
+    'This function is deprecated, please use ShowManager.snapshot instead.',
+    since='0.8',
+    until='0.11',
+)
 @deprecated_params(['scene', 'render_window'], None, since='0.8', until='0.11')
 def snapshot(
     showm,
@@ -1193,7 +1466,17 @@ def snapshot(
     """
     width, height = size
     if isinstance(showm, ShowManager):
-        render_window = showm.window
+        return showm.snapshot(
+            fname=fname,
+            size=size,
+            offscreen=offscreen,
+            order_transparent=order_transparent,
+            stereo=stereo,
+            multi_samples=multi_samples,
+            max_peels=max_peels,
+            occlusion_ratio=occlusion_ratio,
+            dpi=dpi,
+        )
     elif isinstance(showm, RenderWindow):
         render_window = showm
     elif isinstance(showm, (Scene, OpenGLRenderer)) or scene is not None:
