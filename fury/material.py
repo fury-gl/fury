@@ -273,6 +273,98 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
 
         add_shader_callback(actor, uniforms_callback)
 
+        # Start of shader implementation
+
+        # Adding required constants
+        pi = '#define PI 3.14159265359'
+
+        # Adding uniforms
+        uniforms = \
+        """
+        uniform float subsurface;
+        uniform float metallic;
+        uniform float specularTint;
+        uniform float roughness;
+        uniform float anisotropic;
+        uniform float sheen;
+        uniform float sheenTint;
+        uniform float clearcoat;
+        uniform float clearcoatGloss;
+        
+        uniform vec3 anisotropicDirection;
+        """
+
+        # Importing functions in order
+
+        # Importing utility functions
+        square = import_fury_shader(os.path.join('utils', 'square.glsl'))
+        pow5 = import_fury_shader(os.path.join('utils', 'pow5.glsl'))
+
+        # Importing linear-space CIE luminance tint approximation function
+        cie_color_tint = import_fury_shader(
+            os.path.join('lighting', 'cie_color_tint.frag')
+        )
+
+        # Importing Schlick's weight approximation of the Fresnel equation
+        schlick_weight = import_fury_shader(
+            os.path.join('lighting', 'schlick_weight.frag')
+        )
+
+        # Importing Normal Distribution Function (NDF): Generalized
+        # Trowbridge-Reitz with param gamma=1 (D_{GTR_1}) needed for the Clear
+        # Coat lobe
+        gtr1 = import_fury_shader(
+            os.path.join('lighting', 'ndf', 'gtr1.frag')
+        )
+
+        # Importing Normal Distribution Function (NDF): Generalized
+        # Trowbridge-Reitz with param gamma=2 (D_{GTR_2}) needed for the
+        # Isotropic Specular lobe
+        gtr2 = import_fury_shader(
+            os.path.join('lighting', 'ndf', 'gtr2.frag')
+        )
+
+        # Importing Normal Distribution Function (NDF): Anisotropic form of the
+        # Generalized Trowbridge-Reitz with param gamma=2
+        # (D_{GTR_2anisotropic}) needed for the respective Specular lobe
+        gtr2_anisotropic = import_fury_shader(
+            os.path.join('lighting', 'ndf', 'gtr2_anisotropic.frag')
+        )
+
+        # Importing Geometry Shadowing and Masking Function (GF): Smith Ground
+        # Glass Unknown (G_{GGX}) needed for the Isotropic Specular and Clear
+        # Coat lobes
+        smith_ggx = import_fury_shader(
+            os.path.join('lighting', 'gf', 'smith_ggx.frag')
+        )
+
+        # Importing Geometry Shadowing and Masking Function (GF): Anisotropic
+        # form of the Smith Ground Glass Unknown (G_{GGXanisotropic}) needed
+        # for the respective Specular lobe
+        smith_ggx_anisotropic = import_fury_shader(
+            os.path.join('lighting', 'gf', 'smith_ggx_anisotropic.frag')
+        )
+
+        # Importing Principled components functions
+        diffuse = import_fury_shader(
+            os.path.join('lighting', 'principled', 'diffuse.frag')
+        )
+        subsurface = import_fury_shader(
+            os.path.join('lighting', 'principled', 'subsurface.frag')
+        )
+        sheen = import_fury_shader(
+            os.path.join('lighting', 'principled', 'sheen.frag')
+        )
+        specular_isotropic = import_fury_shader(
+            os.path.join('lighting', 'principled', 'specular_isotropic.frag')
+        )
+        specular_anisotropic = import_fury_shader(
+            os.path.join('lighting', 'principled', 'specular_anisotropic.frag')
+        )
+        clearcoat = import_fury_shader(
+            os.path.join('lighting', 'principled', 'clearcoat.frag')
+        )
+
         fs_dec_code = import_fury_shader('bxdf_dec.frag')
         fs_impl_code = import_fury_shader('bxdf_impl.frag')
 
