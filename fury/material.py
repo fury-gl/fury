@@ -300,6 +300,12 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         square = import_fury_shader(os.path.join('utils', 'square.glsl'))
         pow5 = import_fury_shader(os.path.join('utils', 'pow5.glsl'))
 
+        # Importing utility function to update the tangent and bitangent
+        # vectors given a direction of anisotropy
+        update_tan_bitan = import_fury_shader(
+            os.path.join('utils', 'update_tan_bitan.glsl')
+        )
+
         # Importing linear-space CIE luminance tint approximation function
         cie_color_tint = import_fury_shader(
             os.path.join('lighting', 'cie_color_tint.frag')
@@ -365,12 +371,75 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
             os.path.join('lighting', 'principled', 'clearcoat.frag')
         )
 
-        fs_dec_code = import_fury_shader('bxdf_dec.frag')
-        fs_impl_code = import_fury_shader('bxdf_impl.frag')
+        # Putting all the functions together before passing them to the actor
+        fs_dec = compose_shader([
+            pi, uniforms, square, pow5, update_tan_bitan, cie_color_tint,
+            schlick_weight, gtr1, gtr2, gtr2_anisotropic, smith_ggx,
+            smith_ggx_anisotropic, diffuse, subsurface, sheen,
+            specular_isotropic, specular_anisotropic, clearcoat
+        ])
 
-        shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
-        shader_to_actor(actor, 'fragment', impl_code=fs_impl_code,
-                        block='light')
+        # Adding shader functions to actor
+        shader_to_actor(actor, 'fragment', decl_code=fs_dec)
+
+        # Start of the implementation code
+        start_comment = "//Disney's Principled BRDF"
+
+        # Preparing vectors and values
+        normal_vec = 'vec3 N = normalVCVSOutput;'
+        # VTK's default system is retroreflective, which means view = light
+        view_vec = 'vec3 V = normalize(-vertexVC.xyz);'
+        # Since VTK's default setup is retroreflective we only need to
+        # calculate one single dot product
+        dot_n_v = 'float dotNV = clamp(dot(N, V), 1e-5, 1);'
+
+        dot_n_v_validation = \
+        """
+        if(dotNV < 0)
+            fragOutput0 = vec4(vec3(0), opacity);
+        """
+
+        # TODO: Review and turn to function
+        lin_color = 'vec3 linColor = pow(diffuseColor, vec3(2.2));'
+
+        tint = 'vec3 tint = calculateTint(linColor);'
+
+        # Since VTK's default setup is retroreflective we only need to
+        # calculate one single Schlick's weight
+        fsw = 'float fsw = schlickWeight(dotNV);'
+
+        # Calculate the diffuse component
+        fd = 'float fd = evaluateDiffuse(roughness, fsw, fsw, dotNV);'
+
+        ss = \
+        """
+        float ss = evaluateSubsurface(roughness, fsw, fsw, dotNV, dotNV, 
+            dotNV);
+        """
+
+        fsheen = 'vec3 fsheen = evaluateSheen(sheen, sheenTint, tint, fsw);'
+
+        principled_brdf = \
+        """
+        vec3 color = (1 / PI) * mix(fd, ss, subsurface) * linColor;
+        color += fsheen;
+        color *= (1 - metallic);
+        """
+
+        frag_output = 'fragOutput0 = vec4(color, opacity);'
+
+        fs_impl = compose_shader([
+            start_comment, normal_vec, view_vec, dot_n_v, dot_n_v_validation,
+            lin_color, tint, fsw, fd, ss, fsheen, principled_brdf, frag_output
+        ])
+        shader_to_actor(actor, 'fragment', impl_code=fs_impl, block='light')
+
+        #fs_dec_code = import_fury_shader('bxdf_dec.frag')
+        #fs_impl_code = import_fury_shader('bxdf_impl.frag')
+
+        #shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
+        #shader_to_actor(actor, 'fragment', impl_code=fs_impl_code,
+        #                block='light')
         return principled_params
     except AttributeError:
         warnings.warn('Actor does not have the attribute property. This '
