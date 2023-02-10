@@ -1,4 +1,4 @@
-float pow5(float v)
+float pow5(float x)
 {
-    return v * v * v * v * v;
+    return x * x * x * x * x;
 }
