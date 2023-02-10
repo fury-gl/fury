@@ -11,7 +11,7 @@ vec3 evaluateSpecularIsotropic(float specular, float specularTint,
 
     vec3 f = mix(spec, vec3(1), schlickWeight);
 
-    float g = smithGGGX(dotLN, a) * smithGGGX(dotNV, a);
+    float g = smithGGX(dotLN, a) * smithGGX(dotNV, a);
 
     return d * f * g;
 }
