@@ -1,4 +1,4 @@
-from dipy.data import get_fnames
+#from dipy.data import get_fnames
 from fury import actor, ui, window
 from fury.data import (fetch_viz_cubemaps, fetch_viz_models, read_viz_cubemap,
                        read_viz_models)
@@ -123,6 +123,7 @@ def get_cubemap_from_ndarrays(array, flip=True):
     return texture
 
 
+"""
 def obj_brain():
     brain_lh = get_fnames(name='fury_surface')
     polydata = load_polydata(brain_lh)
@@ -131,6 +132,7 @@ def obj_brain():
     normals = normals_from_v_f(verts, faces)
     set_polydata_normals(polydata, normals)
     return get_actor_from_polydata(polydata)
+"""
 
 
 def obj_model(model='glyptotek.vtk', colors=None):
