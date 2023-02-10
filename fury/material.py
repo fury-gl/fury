@@ -1,8 +1,9 @@
+import os
 import warnings
 
 
-from fury.shaders import (add_shader_callback, import_fury_shader,
-                          shader_to_actor)
+from fury.shaders import (add_shader_callback, compose_shader,
+                          import_fury_shader, shader_to_actor)
 from fury.lib import VTK_OBJECT, calldata_type
 
 
@@ -189,10 +190,10 @@ def manifest_pbr(actor, metallic=0, roughness=.5, anisotropy=0,
         return None
 
 
-def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
-                        metallic=0, specular=0, specular_tint=0, roughness=0,
-                        anisotropic=0, anisotropic_direction=[0, 1, .5],
-                        sheen=0, sheen_tint=0, clearcoat=0, clearcoat_gloss=0):
+def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
+                        specular_tint=0, roughness=0, anisotropic=0,
+                        anisotropic_direction=[0, 1, .5], sheen=0,
+                        sheen_tint=0, clearcoat=0, clearcoat_gloss=0):
     """Apply the Principled Shading properties to the selected actor.
 
     Parameters
@@ -201,9 +202,6 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
     subsurface : float, optional
         Subsurface scattering computation value. Values must be between 0.0 and
         1.0.
-    subsurface_color : list, optional
-        Subsurface scattering RGB color where R, G and B should be in the range
-        [0, 1].
     metallic : float, optional
         Metallic or non-metallic (dielectric) shading computation value. Values
         must be between 0.0 and 1.0.
@@ -238,10 +236,9 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
         prop = actor.GetProperty()
 
         principled_params = {
-            'subsurface': subsurface, 'subsurface_color': subsurface_color,
-            'metallic': metallic, 'specular': specular,
-            'specular_tint': specular_tint, 'roughness': roughness,
-            'anisotropic': anisotropic,
+            'subsurface': subsurface, 'metallic': metallic,
+            'specular': specular, 'specular_tint': specular_tint,
+            'roughness': roughness, 'anisotropic': anisotropic,
             'anisotropic_direction': anisotropic_direction, 'sheen': sheen,
             'sheen_tint': sheen_tint, 'clearcoat': clearcoat,
             'clearcoat_gloss': clearcoat_gloss
@@ -270,8 +267,6 @@ def manifest_principled(actor, subsurface=0, subsurface_color=[0, 0, 0],
                 calldata.SetUniformf(
                     'clearcoatGloss', principled_params['clearcoat_gloss'])
 
-                calldata.SetUniform3f(
-                    'subsurfaceColor', principled_params['subsurface_color'])
                 calldata.SetUniform3f(
                     'anisotropicDirection', principled_params[
                         'anisotropic_direction'])
