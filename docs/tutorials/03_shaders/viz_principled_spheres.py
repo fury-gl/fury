@@ -35,7 +35,7 @@ scene.background((.9, .9, .9))
 # values between the range 0 to 1.
 
 material_params = [
-    [(1, 1, 1), {'subsurface': 0, 'subsurface_color': [.8, .8, .8]}],
+    [(1, 1, 1), {'subsurface': 0}],
     [[1, 1, 0], {'metallic': 0}], [(1, 0, 0), {'specular': 0}],
     [(1, 0, 0), {'specular_tint': 0, 'specular': 1}],
     [(0, 0, 1), {'roughness': 0}],
@@ -81,8 +81,8 @@ for j in range(11):
 ###############################################################################
 # And visualize our demo.
 
-interactive = False
+interactive = True
 if interactive:
     window.show(scene)
 
-window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+#window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
