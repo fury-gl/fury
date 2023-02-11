@@ -13,26 +13,83 @@ Github
 }
 
 .github_visualization_basic_stats {
-	background: #e5e5e5;
-	padding: 2%;
-	margin: 0.6%;
-	width: 48.8%;
+	background: rgb(255, 255, 255);
+	box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+	font-weight: bold;
+	margin: 1.4%;
+	width: 47.2%;
 	float: left;
 	min-width: 50px;
 	font-family: Arial, Helvetica, sans-serif;
 	-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
 	-moz-box-sizing: border-box;    /* Firefox, other Gecko */
 	box-sizing: border-box;         /* Opera/IE 8+ */
+
+	border-radius: 12.5px;
+}
+
+.stat_holder {
+	display: flex;
+	align-items: center;
+
+	position: relative;
+	overflow: hidden;
+
+	padding: 4%;
+
+}
+
+.stat_holder:hover .basic_stat_icon_holder {
+	box-shadow: rgba(153, 0, 0, 0.1) 0px 8px 24px;
+}
+
+.stat_holder:hover .background_icon {
+	color: rgba(153, 0, 0, 0.3);
+}
+
+.stat_holder:hover .stat-value {
+	color: rgba(40, 167, 69);
 }
 
 .stat-value {
 	font-size: 2em;
 	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color: rgba(40, 167, 69, 0.8);
+	transition: all 0.2s ease;
+}
+
+.background_icon {
+	position: absolute;
+	font-size: 8em;
+
+	top: 7px;
+	right: -45px;
+
+	color: rgba(153, 0, 0, 0.04);
+	transition: all 0.2s ease;
 }
 
 .basic_stat_icon {
-	width: 3em;
-	float:  right;
+	font-size: 22px;
+	color: rgb(153, 0, 0);
+}
+
+.basic_stat_icon_holder {
+	height: 46px;
+	width: 46px;
+
+	border-radius: 50%;
+
+	background-color: rgba(153, 0, 0, 0.1);
+	box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	margin-right: 20px;
+	transition: all 0.2s ease;
 }
 
 /* contributors styles */
@@ -40,10 +97,10 @@ Github
 #github_visualization_contributors_wrapper {
 	display: block;
 	overflow: hidden;
+	margin-top: 20px;
 }
 
 .github_visualization_contributor_info {
-	background: rgb(239, 239, 239) none repeat scroll 0% 0%;
 	padding: 2%;
 	margin: 0.6%;
 	width: 32%;
@@ -54,13 +111,27 @@ Github
 	transition: all 0.4s;
 }
 
-.github_visualization_contributor_info:hover {
-	background: #e3e9ef;
-	box-shadow: 0px 0px 15px -9px #63898C;
+.github_visualization_contributor_info:hover 
+.github_visualization_contributor_img {
+	width: 10em;
+	height: 10em;
+}
+
+.github_visualization_contributor_img_holder {
+	width: 10em;
+	height: 10em;
+	border-radius: 50%;
+	margin: 0 auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(153, 0, 0, 0.1);
+	transition: all 0.5s ease;
 }
 
 .github_visualization_contributor_img {
 	width: 8em;
+	height: 8em;
 	border-radius: 50%;
 	margin: 0 auto;
 	display: block;
@@ -90,7 +161,7 @@ Github
 	display: block;
 	text-align: center;
 	padding-top: 1em;
-	font-size: 0.9em;
+	font-size: 1.1em;
 	font-weight: 600;
 	color: #515151;
 }

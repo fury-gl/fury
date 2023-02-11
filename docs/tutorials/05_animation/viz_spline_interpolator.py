@@ -1,7 +1,7 @@
 """
-=====================
-Keyframe animation
-=====================
+=============================
+Keyframes Spline Interpolator
+=============================
 
 Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 
@@ -9,7 +9,7 @@ Tutorial on making keyframe-based animation in FURY using Spline interpolators.
 
 import numpy as np
 from fury import actor, window
-from fury.animation.timeline import Timeline
+from fury.animation import Animation, Timeline
 from fury.animation.interpolator import spline_interpolator
 
 scene = window.Scene()
@@ -23,12 +23,12 @@ showm = window.ShowManager(scene,
 # Position keyframes as a dict object containing timestamps as keys and
 # positions as values.
 position_keyframes = {
-    0: np.array([0, 0, 0]),
-    2: np.array([10, 3, 5]),
-    4: np.array([20, 14, 13]),
-    6: np.array([-20, 20, 0]),
-    8: np.array([17, -10, 15]),
-    10: np.array([0, -6, 0]),
+    0.0: np.array([0, 0, 0]),
+    2.0: np.array([10, 3, 5]),
+    4.0: np.array([20, 14, 13]),
+    6.0: np.array([-20, 20, 0]),
+    8.0: np.array([17, -10, 15]),
+    10.0: np.array([0, -6, 0]),
 }
 
 ###############################################################################
@@ -38,63 +38,56 @@ pos_dots = actor.dot(np.array(list(position_keyframes.values())))
 ###############################################################################
 # creating two timelines (one uses linear and the other uses' spline
 # interpolator), each timeline controls a sphere actor
-sphere_linear = actor.sphere(np.array([[0, 0, 0]]), (1, 0.5, 0.2), 0.5)
-linear_tl = Timeline()
-linear_tl.add(sphere_linear)
 
-linear_tl.set_position_keyframes(position_keyframes)
+sphere_linear = actor.sphere(np.array([[0, 0, 0]]), (1, 0.5, 0.2), 0.5)
+
+linear_anim = Animation()
+linear_anim.add_actor(sphere_linear)
+
+linear_anim.set_position_keyframes(position_keyframes)
 
 ###############################################################################
-# Note: linear_interpolator is used by default. So, no need to set it for the
-# first (linear position) timeline.
+# Note: linear_interpolator is used by default. So, no need to set it for this
+# first animation that we need to linearly interpolate positional animation.
 
 ###############################################################################
 # creating a second timeline that translates another larger sphere actor using
 # spline interpolator.
 sphere_spline = actor.sphere(np.array([[0, 0, 0]]), (0.3, 0.9, 0.6), 1)
-spline_tl = Timeline(sphere_spline)
-spline_tl.set_position_keyframes(position_keyframes)
+spline_anim = Animation(sphere_spline)
+spline_anim.set_position_keyframes(position_keyframes)
 
 ###############################################################################
 # Setting 5th degree spline interpolator for position keyframes.
-spline_tl.set_position_interpolator(spline_interpolator, degree=5)
+spline_anim.set_position_interpolator(spline_interpolator, degree=5)
 
 ###############################################################################
-# Adding everything to a main ``Timeline`` to control the two timelines.
+# Wrapping animations up!
 # =============================================================================
 #
-###############################################################################
-# Creating a timeline with a playback panel
-main_timeline = Timeline(playback_panel=True, motion_path_res=100)
+# Adding everything to a  ``Timeline`` to control the two timelines.
 
 ###############################################################################
-# Add visualization dots actor to the timeline as a static actor.
-main_timeline.add_static_actor(pos_dots)
+# First we create a timeline with a playback panel:
+timeline = Timeline(playback_panel=True)
 
 ###############################################################################
-# Adding timelines to the main timeline (so that it controls their playback)
-main_timeline.add([spline_tl, linear_tl])
+# Add visualization dots actor to the scene.
+scene.add(pos_dots)
 
 ###############################################################################
-# Adding the main timeline to the scene.
-scene.add(main_timeline)
-
-
-###############################################################################
-# Now that these two timelines are added to main_timeline, if main_timeline
-# is played, paused, ..., all these changes will reflect on the children
-# timelines.
+# Adding the animations to the timeline (so that it controls their playback).
+timeline.add_animation([linear_anim, spline_anim])
 
 ###############################################################################
-# making a function to update the animation and render the scene
-def timer_callback(_obj, _event):
-    main_timeline.update_animation()
-    showm.render()
+# Adding the timeline to the show manager.
+showm.add_animation(timeline)
 
 
 ###############################################################################
-# Adding the callback function that updates the animation
-showm.add_timer_callback(True, 10, timer_callback)
+# Now that these two animations are added to timeline, if the timeline
+# is played, paused, ..., all these changes will reflect on the animations.
+
 
 interactive = False
 

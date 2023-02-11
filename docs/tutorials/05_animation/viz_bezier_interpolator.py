@@ -1,14 +1,14 @@
 """
-=====================
-Keyframe animation
-=====================
+===================
+Bezier Interpolator
+===================
 
 Keyframe animation using cubic Bezier interpolator.
 
 """
 import numpy as np
 from fury import actor, window
-from fury.animation.timeline import Timeline
+from fury.animation import Animation, Timeline
 from fury.animation.interpolator import cubic_bezier_interpolator
 
 ###############################################################################
@@ -64,10 +64,10 @@ cline_actor = actor.line(np.array([list(keyframe_1.values()),
                          colors=np.array([0, 1, 0]))
 
 ###############################################################################
-# Initializing a ``Timeline`` and adding sphere actor to it.
-timeline = Timeline(playback_panel=True)
+# Initializing an ``Animation`` and adding sphere actor to it.
+animation = Animation()
 sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
-timeline.add_actor(sphere)
+animation.add_actor(sphere)
 
 ###############################################################################
 # Setting Cubic Bezier keyframes
@@ -82,31 +82,22 @@ timeline.add_actor(sphere)
 # Note: If a control point is not provided or set `None`, this control point
 # will be the same as the position itself.
 
-timeline.set_position(0, np.array(keyframe_1.get('value')),
-                      out_cp=np.array(keyframe_1.get('out_cp')))
-timeline.set_position(5, np.array(keyframe_2.get('value')),
-                      in_cp=np.array(keyframe_2.get('in_cp')))
+animation.set_position(0.0, np.array(keyframe_1.get('value')),
+                       out_cp=np.array(keyframe_1.get('out_cp')))
+animation.set_position(5.0, np.array(keyframe_2.get('value')),
+                       in_cp=np.array(keyframe_2.get('in_cp')))
 
 ###############################################################################
-# changing position interpolation into cubic bezier interpolation
-timeline.set_position_interpolator(cubic_bezier_interpolator)
+# Changing position interpolation into cubic bezier interpolation
+animation.set_position_interpolator(cubic_bezier_interpolator)
 
 ###############################################################################
-# adding the timeline and the static actors to the scene.
+# Adding the visualization actors to the scene.
 scene.add(pts_actor, cps_actor, cline_actor)
-scene.add(timeline)
-
 
 ###############################################################################
-# making a function to update the animation
-def timer_callback(_obj, _event):
-    timeline.update_animation()
-    showm.render()
-
-
-###############################################################################
-# Adding the callback function that updates the animation
-showm.add_timer_callback(True, 10, timer_callback)
+# Adding the animation to the ``ShowManager``
+showm.add_animation(animation)
 
 interactive = False
 
@@ -137,18 +128,20 @@ keyframes = {
 }
 
 ###############################################################################
-# Initializing the timeline
-timeline = Timeline(playback_panel=True)
+# Create the sphere actor.
 sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1))
-timeline.add_actor(sphere)
+
+###############################################################################
+# Create an ``Animation`` and adding the sphere actor to it.
+animation = Animation(sphere)
 
 ###############################################################################
 # Setting Cubic Bezier keyframes
-timeline.set_position_keyframes(keyframes)
+animation.set_position_keyframes(keyframes)
 
 ###############################################################################
 # changing position interpolation into cubic bezier interpolation
-timeline.set_position_interpolator(cubic_bezier_interpolator)
+animation.set_position_interpolator(cubic_bezier_interpolator)
 
 ###########################################################################
 # visualizing the points and control points (only for demonstration)
@@ -173,21 +166,16 @@ for t, keyframe in keyframes.items():
             scene.add(vis_cps, cline_actor)
 
 ###############################################################################
-# adding actors to the scene
-scene.add(timeline)
-
-
-###############################################################################
-# making a function to update the animation
-def timer_callback(_obj, _event):
-    timeline.update_animation()
-    show_manager.render()
-
+# Initializing the timeline to be able to control the playback of the
+# animation.
+timeline = Timeline(animation, playback_panel=True)
 
 ###############################################################################
-# Adding the callback function that updates the animation
-show_manager.add_timer_callback(True, 10, timer_callback)
+# We only need to add the ``Timeline`` to the ``ShowManager``
+show_manager.add_animation(timeline)
 
+###############################################################################
+# Start the animation
 if interactive:
     show_manager.start()
 

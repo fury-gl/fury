@@ -4,10 +4,16 @@ import numpy.testing as npt
 import itertools
 from PIL import Image
 from scipy.ndimage import center_of_mass
+import sys
+if sys.version_info[1] >= 8:
+    from scipy.ndimage._measurements import _stats
+else:
+    from scipy.ndimage.measurements import _stats
+from fury.animation import Timeline
 from fury.gltf import glTF, export_scene
 from fury import window, utils, actor
 from fury.data import fetch_gltf, read_viz_gltf
-from fury.testing import assert_greater
+from fury.testing import assert_greater, assert_equal
 
 
 def test_load_gltf():
@@ -163,8 +169,9 @@ def test_simple_animation():
     fetch_gltf('BoxAnimated', 'glTF')
     file = read_viz_gltf('BoxAnimated')
     gltf_obj = glTF(file)
-    timeline = gltf_obj.main_timeline()
-
+    timeline = Timeline()
+    animation = gltf_obj.main_animation()
+    timeline.add_animation(animation)
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
     showm.initialize()
@@ -177,12 +184,12 @@ def test_simple_animation():
 
     timeline.seek(2.57)
     showm.save_screenshot('keyframe2.png')
-    res1 = window.analyze_snapshot('keyframe1.png', colors=(255, 255, 255))
-    res2 = window.analyze_snapshot('keyframe2.png', colors=(255, 255, 255))
+    res1 = window.analyze_snapshot('keyframe1.png', colors=[(77, 136, 204), (204, 106, 203)])
+    res2 = window.analyze_snapshot('keyframe2.png', colors=[(77, 136, 204), (204, 106, 203)])
 
     assert_greater(res2.objects, res1.objects)
-    npt.assert_equal(res1.colors_found, [True])
-    npt.assert_equal(res2.colors_found, [True])
+    npt.assert_equal(res1.colors_found, [True, False])
+    npt.assert_equal(res2.colors_found, [True, True])
 
 
 def test_skinning():
@@ -190,8 +197,8 @@ def test_skinning():
     fetch_gltf('SimpleSkin', 'glTF')
     file = read_viz_gltf('SimpleSkin')
     gltf_obj = glTF(file)
-    timeline = gltf_obj.skin_timeline()['anim_0']
-
+    animation = gltf_obj.skin_animation()['anim_0']
+    timeline = Timeline(animation)
     # checking weights and joints
     weights = np.array([[1.00,  0.00,  0.0, 0.0],
                         [1.00,  0.00,  0.0, 0.0],
@@ -247,15 +254,15 @@ def test_skinning():
     def timer_callback(_obj, _event):
         nonlocal timer_id
         cnt = next(counter)
-        timeline.update_animation()
+        animation.update_animation()
 
         print(cnt)
         joint_matrices = []
         ibms = []
         for i, bone in enumerate(gltf_obj.bones[0]):
-            if timeline.is_interpolatable(f'transform{bone}'):
-                deform = timeline.get_value(f'transform{bone}',
-                                            timeline.current_timestamp)
+            if animation.is_interpolatable(f'transform{bone}'):
+                deform = animation.get_value(f'transform{bone}',
+                                            animation.current_timestamp)
                 ibm = gltf_obj.ibms[0][i].T
                 ibms.append(ibm)
 
@@ -286,29 +293,30 @@ def test_morphing():
     fetch_gltf('MorphStressTest', 'glTF')
     file = read_viz_gltf('MorphStressTest')
     gltf_obj = glTF(file)
-    timelines = gltf_obj.morph_timeline()
+    animations = gltf_obj.morph_animation()
 
     npt.assert_equal(len(gltf_obj._actors), 2)
     npt.assert_equal(len(gltf_obj.morph_weights), 16)
-    npt.assert_equal(list(timelines.keys()),
+    npt.assert_equal(list(animations.keys()),
                      ['Individuals', 'TheWave', 'Pulse'])
-    timeline_1 = timelines['TheWave']
-    gltf_obj.update_morph(timeline_1)
+    anim_1 = animations['TheWave']
+    gltf_obj.update_morph(anim_1)
 
     scene = window.Scene()
     showm = window.ShowManager(scene, size=(900, 768))
     showm.initialize()
 
+    timeline_1 = Timeline()
+    timeline_1.add_animation(anim_1)
     scene.add(timeline_1)
 
-    timeline_1.seek(0.50)
-    gltf_obj.update_morph(timeline_1)
-    showm.render()
+    timeline_1.seek(0.1)
+    gltf_obj.update_morph(anim_1)
     showm.save_screenshot('keyframe1.png')
     res_1 = window.analyze_snapshot('keyframe1.png')
 
     timeline_1.seek(1.50)
-    gltf_obj.update_morph(timeline_1)
+    gltf_obj.update_morph(anim_1)
     showm.save_screenshot('keyframe2.png')
     res_2 = window.analyze_snapshot('keyframe2.png')
 
@@ -316,5 +324,9 @@ def test_morphing():
 
     img_1 = np.asarray(Image.open('keyframe1.png').convert('L'))
     img_2 = np.asarray(Image.open('keyframe2.png').convert('L'))
-
-    assert_greater(center_of_mass(img_2)[1], center_of_mass(img_1)[1])
+    stats_1, stats_2 = _stats(img_1), _stats(img_2)
+    # Assert right image size
+    assert_equal(stats_1[0], stats_2[0])
+    # Assert the sum of colors are a lot more in the second image than the
+    # first one.
+    assert_greater(stats_2[1], stats_1[1])

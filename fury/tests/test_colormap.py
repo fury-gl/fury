@@ -62,7 +62,7 @@ def test_create_colormap():
     value = np.arange(25)
     npt.assert_raises(ValueError, colormap.create_colormap,
                       value.reshape((5, 5)))
-    npt.assert_raises(ValueError, colormap.create_colormap,
+    npt.assert_raises(AttributeError, colormap.create_colormap,
                       value, name='fake')
     npt.assert_warns(PendingDeprecationWarning, colormap.create_colormap,
                      value, name='jet', auto=False)

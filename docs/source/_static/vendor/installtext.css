@@ -26,6 +26,13 @@
       font-size: 27px;
     }
   }
+
+  @media screen and (max-width: 600px) {
+    #banner-title {
+      font-size: 20px;
+    }
+  }
+  
   #banner-start {
     text-align: center;
     padding: 40px 0;
