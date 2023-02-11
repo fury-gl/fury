@@ -3254,10 +3254,146 @@ class FileMenu2D(UI):
         i_ren.event.abort()
 
 
+class DrawShapeGroup:
+    def __init__(self, drawpanel):
+        self.grouped_shapes = []
+        self._scene = None
+        self.drawpanel = drawpanel
+
+        # Group rotation slider
+        self.group_rotation_slider = RingSlider2D(initial_value=0,
+                                                  text_template="{angle:5.1f}°")
+
+        self.group_rotation_slider.set_visibility(False)
+
+        def update_rotation(slider):
+            angle = slider.value
+            previous_angle = slider.previous_value
+            rotation_angle = angle - previous_angle
+
+            for shape in self.grouped_shapes:
+                current_center = shape.center
+                shape.rotate(np.deg2rad(rotation_angle))
+                shape.update_shape_position(
+                    current_center - shape.drawpanel.canvas.position)
+
+        self.group_rotation_slider.on_change = update_rotation
+
+    def add(self, shape):
+        """Add shape to the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
+        if self.is_present(shape):
+            self.remove(shape)
+        else:
+            if self.is_empty():
+                shape.drawpanel.update_shape_selection(shape)
+                self.add_rotation_slider(self._scene)
+                self.group_rotation_slider.set_visibility(True)
+            self.grouped_shapes.append(shape)
+            shape.is_selected = True
+            shape.rotation_slider.set_visibility(False)
+
+            self.group_rotation_slider.center = shape.rotation_slider.center
+
+    def remove(self, shape):
+        """Remove shape from the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
+        self.grouped_shapes.remove(shape)
+        shape.is_selected = False
+
+    def clear(self):
+        """Remove all the shapes from the group.
+
+        """
+        if self.is_empty():
+            return
+        self._scene.rm(*self.group_rotation_slider.actors)
+        for shape in self.grouped_shapes:
+            shape.is_selected = False
+        self.grouped_shapes = []
+
+    def is_present(self, shape):
+        """Check whether the shape is present in the group.
+
+        Parameters
+        ----------
+        shape : DrawShape
+
+        """
+        if shape in self.grouped_shapes:
+            return True
+        return False
+
+    def is_empty(self):
+        """Return whether the group is empty or not.
+
+        """
+        return not bool(len(self.grouped_shapes))
+
+    def delete_shapes(self):
+        """Delete all the shapes present in current group.
+
+        """
+        if not self.is_empty():
+            for shape in self.grouped_shapes:
+                shape.remove()
+            self.clear()
+
+    def update_position(self, offset):
+        """Update the position of all the shapes in the group.
+
+        Parameters
+        ----------
+        offset : (float, float)
+            Distance by which each shape is to be translated.
+
+        """
+        vertices = []
+        for shape in self.grouped_shapes:
+            vertices.extend(shape.position +
+                            vertices_from_actor(shape.shape.actor)[:, :-1])
+
+        bounding_box_min, bounding_box_max, \
+            bounding_box_size = cal_bounding_box_2d(np.asarray(vertices))
+
+        group_center = bounding_box_min + bounding_box_size//2
+
+        shape_offset = []
+        for shape in self.grouped_shapes:
+            shape_offset.append(shape.center - group_center)
+
+        new_center = np.clip(group_center + offset, self.drawpanel.position + bounding_box_size//2,
+                             self.drawpanel.position + self.drawpanel.size - bounding_box_size//2)
+
+        for shape, soffset in zip(self.grouped_shapes, shape_offset):
+            shape.update_shape_position(new_center + soffset - self.drawpanel.position)
+
+    def add_rotation_slider(self, scene):
+        """Add rotation slider to the scene.
+
+        Parameters
+        ----------
+        scene : scene
+
+        """
+        scene.add(self.group_rotation_slider)
+
+
 class DrawShape(UI):
     """Create and Manage 2D Shapes."""
 
-    def __init__(self, shape_type, drawpanel=None, position=(0, 0)):
+    def __init__(self, shape_type, drawpanel=None, position=(0, 0), color=None,
+                 highlight_color=(.8, 0, 0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3268,14 +3404,17 @@ class DrawShape(UI):
             Reference to the main canvas on which it is drawn.
         position : (float, float), optional
             (x, y) in pixels.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.shape = None
         self.shape_type = shape_type.lower()
         self.drawpanel = drawpanel
         self.max_size = None
-        self.is_selected = True
+        self.debug = debug
+        self.color = np.random.random(3) if color is None else color
+        self.highlight_color = highlight_color
         super(DrawShape, self).__init__(position)
-        self.shape.color = np.random.random(3)
 
     def _setup(self):
         """Setup this UI component.
@@ -3290,6 +3429,13 @@ class DrawShape(UI):
             self.shape = Disk2D(outer_radius=2)
         else:
             raise IOError('Unknown shape type: {}.'.format(self.shape_type))
+
+        self.shape.color = self.color
+
+        self.cal_bounding_box()
+
+        if self.debug:
+            self.bb_box = [Rectangle2D(size=(3, 3)) for i in range(4)]
 
         self.shape.on_left_mouse_button_pressed = self.left_button_pressed
         self.shape.on_left_mouse_button_dragged = self.left_button_dragged
@@ -3333,6 +3479,8 @@ class DrawShape(UI):
         self._scene = scene
         self.shape.add_to_scene(scene)
         self.rotation_slider.add_to_scene(scene)
+        if self.debug:
+            scene.add(*[border.actor for border in self.bb_box])
 
     def _get_size(self):
         return self.shape.size
@@ -3361,6 +3509,7 @@ class DrawShape(UI):
         new_center = self.clamp_position(center=center_position)
         self.drawpanel.canvas.update_element(self, new_center, 'center')
         self.cal_bounding_box()
+        self.set_bb_box_visibility(True)
 
     @property
     def center(self):
@@ -3393,8 +3542,36 @@ class DrawShape(UI):
         self.selection_change()
 
     def selection_change(self):
-        if not self.is_selected:
+        if self.is_selected:
+            self.highlight(True)
+            self.show_rotation_slider()
+            self.set_bb_box_visibility(True)
+        else:
+            self.highlight(False)
             self.rotation_slider.set_visibility(False)
+            self.set_bb_box_visibility(False)
+
+    def highlight(self, value):
+        self.shape.color = self.highlight_color if value else self.color
+
+    def set_bb_box_visibility(self, value):
+        if self.debug:
+            if value:
+                border_width = 3
+                points = [self._bounding_box_min-(0, border_width),
+                          [self._bounding_box_max[0], self._bounding_box_min[1]],
+                          self._bounding_box_min - border_width,
+                          [self._bounding_box_min[0]-border_width, self._bounding_box_max[1]]]
+                size = [(self._bounding_box_size[0]+border_width, border_width),
+                        (border_width, self._bounding_box_size[1]+border_width),
+                        (border_width, self._bounding_box_size[1] + border_width),
+                        (self._bounding_box_size[0]+border_width, border_width)]
+                for i in range(4):
+                    self.bb_box[i].position = points[i]
+                    self.bb_box[i].resize(size[i])
+
+            for border in self.bb_box:
+                border.set_visibility(value)
 
     def rotate(self, angle):
         """Rotate the vertices of the UI component using specific angle.
@@ -3469,23 +3646,34 @@ class DrawShape(UI):
             self.shape.outer_radius = hyp
 
         self.cal_bounding_box()
+        self.set_bb_box_visibility(True)
 
     def remove(self):
-        """Remove the Shape and all related actors."""
+        """Remove the Shape and all related actors.
+        """
+        self.drawpanel.shape_list.remove(self)
         self._scene.rm(self.shape.actor)
         self._scene.rm(*self.rotation_slider.actors)
+        if self.debug:
+            self._scene.rm(*[border.actor for border in self.bb_box])
 
     def left_button_pressed(self, i_ren, _obj, shape):
         mode = self.drawpanel.current_mode
-        if mode == 'selection':
-            self.drawpanel.update_shape_selection(self)
+        if mode == "selection":
+            self.set_bb_box_visibility(True)
+            if self.drawpanel.key_status["Control_L"]:
+                self.drawpanel.shape_group.add(self)
+            elif not self.drawpanel.shape_group.is_present(self):
+                self.drawpanel.update_shape_selection(self)
 
             click_pos = np.array(i_ren.event.position)
             self._drag_offset = click_pos - self.center
-            self.show_rotation_slider()
             i_ren.event.abort()
-        elif mode == 'delete':
-            self.remove()
+        elif mode == "delete":
+            if self.drawpanel.shape_group.is_present(self):
+                self.drawpanel.shape_group.delete_shapes()
+            else:
+                self.remove()
         else:
             self.drawpanel.left_button_pressed(i_ren, _obj, self.drawpanel)
         i_ren.force_render()
@@ -3495,24 +3683,30 @@ class DrawShape(UI):
             self.rotation_slider.set_visibility(False)
             if self._drag_offset is not None:
                 click_position = i_ren.event.position
-                relative_center_position = (
-                    click_position - self._drag_offset - self.drawpanel.canvas.position
-                )
-                self.update_shape_position(relative_center_position)
+                relative_center_position = click_position - \
+                    self._drag_offset - self.drawpanel.position
+
+                if self.drawpanel.shape_group.is_present(self):
+                    self.drawpanel.shape_group.update_position(
+                        relative_center_position - self.center)
+                else:
+                    self.drawpanel.shape_group.clear()
+                    self.update_shape_position(relative_center_position)
             i_ren.force_render()
         else:
             self.drawpanel.left_button_dragged(i_ren, _obj, self.drawpanel)
 
     def left_button_released(self, i_ren, _obj, shape):
-        if self.drawpanel.current_mode == 'selection':
+        if self.drawpanel.current_mode == "selection" and self.drawpanel.shape_group.is_empty():
             self.show_rotation_slider()
-            i_ren.force_render()
+        i_ren.force_render()
 
 
 class DrawPanel(UI):
     """The main Canvas(Panel2D) on which everything would be drawn."""
 
-    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False):
+    def __init__(self, size=(400, 400), position=(0, 0), is_draggable=False,
+                 highlight_color=(1, .0, .0), debug=False):
         """Init this UI element.
 
         Parameters
@@ -3523,16 +3717,26 @@ class DrawPanel(UI):
             (x, y) in pixels.
         is_draggable : bool, optional
             Whether the background canvas will be draggble or not.
+        debug : bool, optional
+            Set visibility of the bounding box around the shapes.
         """
         self.panel_size = size
         super(DrawPanel, self).__init__(position)
+        self.shape_group = DrawShapeGroup(self)
         self.is_draggable = is_draggable
         self.current_mode = None
+        self.debug = debug
+        self.highlight_color = highlight_color
 
         if is_draggable:
             self.current_mode = 'selection'
 
         self.shape_list = []
+        self.key_status = {
+            "Control_L": False,
+            "Shift_L": False,
+            "Alt_L": False
+        }
         self.current_shape = None
 
     def _setup(self):
@@ -3541,8 +3745,14 @@ class DrawPanel(UI):
         Create a Canvas(Panel2D).
         """
         self.canvas = Panel2D(size=self.panel_size)
-        self.canvas.background.on_left_mouse_button_pressed = self.left_button_pressed
-        self.canvas.background.on_left_mouse_button_dragged = self.left_button_dragged
+        self.canvas.background.on_left_mouse_button_pressed = \
+            self.left_button_pressed
+        self.canvas.background.on_left_mouse_button_dragged = \
+            self.left_button_dragged
+        self.canvas.background.on_key_press = \
+            self.key_press
+        self.canvas.background.on_key_release = \
+            self.key_release
 
         # Todo
         # Convert mode_data into a private variable and make it read-only
@@ -3599,7 +3809,10 @@ class DrawPanel(UI):
 
         """
         self.current_scene = scene
+        iren = scene.GetRenderWindow().GetInteractor().GetInteractorStyle()
+        iren.add_active_prop(self.canvas.actors[0])
         self.canvas.add_to_scene(scene)
+        self.shape_group._scene = scene
 
     def _get_size(self):
         return self.canvas.size
@@ -3627,7 +3840,9 @@ class DrawPanel(UI):
         self.update_button_icons(mode)
         self._current_mode = mode
         if mode is not None:
-            self.mode_text.message = f'Mode: {mode}'
+            self.mode_text.message = f"Mode: {mode}"
+        if self.shape_group.is_empty() or mode != "delete":
+            self.shape_group.clear()
 
     def cal_min_boundary_distance(self, position):
         """Calculate minimum distance between the current position and canvas boundary.
@@ -3660,15 +3875,16 @@ class DrawPanel(UI):
         current_position: (float,float)
             Lower left corner position for the shape.
         """
-        shape = DrawShape(
-            shape_type=shape_type, drawpanel=self, position=current_position
-        )
-        if shape_type == 'circle':
+        shape = DrawShape(shape_type=shape_type, drawpanel=self,
+                          position=current_position,
+                          highlight_color=self.highlight_color,
+                          debug=self.debug)
+        if shape_type == "circle":
             shape.max_size = self.cal_min_boundary_distance(current_position)
-        self.shape_list.append(shape)
-        self.update_shape_selection(shape)
         self.current_scene.add(shape)
         self.canvas.add_element(shape, current_position - self.canvas.position)
+        self.shape_list.append(shape)
+        self.update_shape_selection(shape)
 
     def resize_shape(self, current_position):
         """Resize the shape.
@@ -3723,11 +3939,14 @@ class DrawPanel(UI):
         )
 
     def handle_mouse_click(self, position):
-        if self.current_mode == 'selection':
+        if self.current_shape:
+            self.current_shape.is_selected = False
+        if not self.shape_group.is_empty():
+            self.shape_group.clear()
+        if self.current_mode == "selection":
             if self.is_draggable:
                 self._drag_offset = position - self.position
-            self.current_shape.is_selected = False
-        if self.current_mode in ['line', 'quad', 'circle']:
+        if self.current_mode in ["line", "quad", "circle"]:
             self.draw_shape(self.current_mode, position)
 
     def left_button_pressed(self, i_ren, _obj, element):
@@ -3746,6 +3965,25 @@ class DrawPanel(UI):
         mouse_position = self.clamp_mouse_position(i_ren.event.position)
         self.handle_mouse_drag(mouse_position)
         i_ren.force_render()
+
+    def handle_keys(self, key, key_char):
+        mode_from_key = {
+            "s": "selection",
+            "l": "line",
+            "q": "quad",
+            "c": "circle",
+            "d": "delete",
+        }
+        if key.lower() in mode_from_key.keys():
+            self.current_mode = mode_from_key[key.lower()]
+
+    def key_press(self, i_ren, _obj, _drawpanel):
+        self.handle_keys(i_ren.event.key, i_ren.event.key_char)
+        self.key_status[i_ren.event.key] = True
+        i_ren.force_render()
+
+    def key_release(self, i_ren, _obj, _drawpanel):
+        self.key_status[i_ren.event.key] = False
 
 
 class PlaybackPanel(UI):

@@ -1011,7 +1011,7 @@ class GridUI(UI):
     ANTICLOCKWISE_ROTATION_X = np.array([-10, 1, 0, 0])
     CLOCKWISE_ROTATION_X = np.array([10, 1, 0, 0])
 
-    def key_press_callback(self, istyle, obj, _what):
+    def on_key_press_callback(self, istyle, obj, _what):
         has_changed = False
         if istyle.event.key == 'Left':
             has_changed = True
@@ -1058,8 +1058,9 @@ class GridUI(UI):
                 self.add_callback(actor, 'MouseMoveEvent', self.mouse_move_callback2)
 
             # TODO: this is currently not running
-            self.add_callback(actor, 'KeyPressEvent', self.key_press_callback)
-        # self.on_key_press = self.key_press_callback2
+            self.add_callback(actor, "KeyPressEvent",
+                              self.on_key_press_callback)
+        # self.on_key_press = self.on_key_press_callback2
 
     def _get_actors(self):
         """Get the actors composing this UI component."""
