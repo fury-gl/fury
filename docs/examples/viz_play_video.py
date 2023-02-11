@@ -7,17 +7,17 @@ The goal of this demo is to show how to visualize a video
 on a rectangle by updating a texture.
 """
 
-from fury import window, actor
-import numpy as np
-import cv2
-
 import time
+
+import cv2
+import numpy as np
+
+from fury import actor, window
 
 
 # The VideoCapturer Class
 # This Class wraps OpenCV Videocapture
 class VideoCapturer:
-
     def __init__(self, video, time):
         self.path = video
         self.video = cv2.VideoCapture(self.path)
@@ -40,7 +40,6 @@ class VideoCapturer:
 
 
 class VideoPlayer:
-
     def __init__(self, video, time=10):
         # Initializes the Video object with the given Video
         self.video = VideoCapturer(video, time)
@@ -49,10 +48,9 @@ class VideoPlayer:
         # Initialize Scene
         self.initialize_scene()
         # Create a Show Manager and Initialize it
-        self.show_manager = window.ShowManager(self.scene,
-                                               size=(900, 768),
-                                               reset_camera=False,
-                                               order_transparent=True)
+        self.show_manager = window.ShowManager(
+            self.scene, size=(900, 768), reset_camera=False, order_transparent=True
+        )
 
     # Initialize the Scene with actors
     def initialize_scene(self):
@@ -78,17 +76,18 @@ class VideoPlayer:
     def run(self):
         # Add a timer callback to show manager after with
         # video frame duration as the interval
-        self.frame_duration = int(1000/self.video.fps)
-        self.show_manager.add_timer_callback(True,
-                                             self.frame_duration,
-                                             self.timer_callback)
+        self.frame_duration = int(1000 / self.video.fps)
+        self.show_manager.add_timer_callback(
+            True, self.frame_duration, self.timer_callback
+        )
         self.show_manager.start()
 
 
 # Create VideoPlayer Object and run it
-video_url = "http://commondatastorage.googleapis.com/" +\
-            "gtv-videos-bucket/sample/BigBuckBunny.mp4"
+video_url = (
+    'http://commondatastorage.googleapis.com/'
+    + 'gtv-videos-bucket/sample/BigBuckBunny.mp4'
+)
 vp = VideoPlayer(video_url)
 vp.run()
-window.record(vp.show_manager.scene, out_path='viz_play_video.png',
-              size=(600, 600))
+window.record(vp.show_manager.scene, out_path='viz_play_video.png', size=(600, 600))

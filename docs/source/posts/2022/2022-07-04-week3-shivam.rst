@@ -12,7 +12,7 @@ What did you do this week?
 
 - The first task for this week was to fix the glTF fetcher. We noticed that while running tests it reaches the API limit. So we decided to use a JSON file that contains the download URLs for all models.
 
-- Created a function to generate JSON files with download URLs for all models, which can be found `here <https://github.com/xtanion/fury/blob/gltf-json-gen/fury/data/fetcher.py#L330>`_.
+- Created a function to generate JSON files with download URLs for all models, which can be found `here <https://github.com/xtanion/fury/blob/63957dc1381fd21c125b30bbf7704b8609691620/fury/data/fetcher.py#L330>`_.
 
 - Modified the tests and ``fetcher.py`` to download using the JSON URLs and merged the PR `#616 <https://github.com/fury-gl/fury/pull/616>`_.
 

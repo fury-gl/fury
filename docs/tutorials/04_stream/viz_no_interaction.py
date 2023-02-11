@@ -2,18 +2,21 @@
 ====================================
 Streaming FURY with WebRTC/MJPEG
 ====================================
-
 """
 
-from os.path import join as pjoin
 import multiprocessing
+from os.path import join as pjoin
+
 # if this example it's not working for you and you're using MacOs
 # uncoment the following line
 # multiprocessing.set_start_method('spawn')
 import numpy as np
-from fury import actor, window, colormap as cmap
-from fury.stream.client import FuryStreamClient
+
+from fury import actor
+from fury import colormap as cmap
+from fury import window
 from fury.data.fetcher import fetch_viz_wiki_nw
+from fury.stream.client import FuryStreamClient
 from fury.stream.server.main import web_server_raw_array
 
 if __name__ == '__main__':
@@ -29,18 +32,15 @@ if __name__ == '__main__':
     positions = np.loadtxt(pjoin(folder, positions_file))
     categories = np.loadtxt(pjoin(folder, categories_file), dtype=str)
     edges = np.loadtxt(pjoin(folder, edges_file), dtype=int)
-    category2index = {
-            category: i
-            for i, category in enumerate(np.unique(categories))}
+    category2index = {category: i for i, category in enumerate(np.unique(categories))}
 
     index2category = np.unique(categories)
 
-    categoryColors = cmap.distinguishable_colormap(
-        nb_colors=len(index2category))
+    categoryColors = cmap.distinguishable_colormap(nb_colors=len(index2category))
 
-    colors = np.array([
-        categoryColors[category2index[category]]
-        for category in categories])
+    colors = np.array(
+        [categoryColors[category2index[category]] for category in categories]
+    )
     radii = 1 + np.random.rand(len(positions))
 
     edgesPositions = []
@@ -56,7 +56,8 @@ if __name__ == '__main__':
         centers=positions,
         colors=colors,
         primitives='sphere',
-        scales=radii*0.5,)
+        scales=radii * 0.5,
+    )
 
     lines_actor = actor.line(
         edgesPositions,
@@ -69,11 +70,14 @@ if __name__ == '__main__':
     scene.add(sphere_actor)
 
     scene.set_camera(
-        position=(0, 0, 1000),
-        focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0))
+        position=(0, 0, 1000), focal_point=(0.0, 0.0, 0.0), view_up=(0.0, 0.0, 0.0)
+    )
 
-    showm = window.ShowManager(scene, reset_camera=False, size=(
-        window_size[0], window_size[1]), order_transparent=False,
+    showm = window.ShowManager(
+        scene,
+        reset_camera=False,
+        size=(window_size[0], window_size[1]),
+        order_transparent=False,
     )
 
     ###########################################################################
@@ -81,22 +85,22 @@ if __name__ == '__main__':
 
     ms = 0
 
-    stream = FuryStreamClient(
-        showm, use_raw_array=True)
+    stream = FuryStreamClient(showm, use_raw_array=True)
     p = multiprocessing.Process(
         target=web_server_raw_array,
         args=(
             stream.img_manager.image_buffers,
             stream.img_manager.info_buffer,
-        )
+        ),
     )
     p.start()
 
-    stream.start(ms,)
+    stream.start(
+        ms,
+    )
     if interactive:
         showm.start()
     stream.stop()
     stream.cleanup()
 
-    window.record(
-        showm.scene, size=window_size, out_path="viz_no_interaction.png")
+    window.record(showm.scene, size=window_size, out_path='viz_no_interaction.png')

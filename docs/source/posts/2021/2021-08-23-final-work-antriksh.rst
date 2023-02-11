@@ -123,7 +123,7 @@ Other Objectives
    .. image:: https://camo.githubusercontent.com/a2e461352799b6490088de15ac041162d7bf8adf9c07485ea921b525fecd0a8e/68747470733a2f2f692e696d6775722e636f6d2f446c69537066302e676966
         :width: 200
         :height: 200
- 
+
    *Pull Requests:*
 
    - **Add Card2D UI element to UI sub-module:**  https://github.com/fury-gl/fury/pull/398
@@ -155,7 +155,7 @@ Other Objectives
    .. image:: https://user-images.githubusercontent.com/54466356/121709989-bd340280-caf6-11eb-9b8a-81c65260d277.png
         :width: 200
         :height: 200
- 
+
    *Pull Requests:*
 
    - **Added support for borders in Panel2D:**  https://github.com/fury-gl/fury/pull/441

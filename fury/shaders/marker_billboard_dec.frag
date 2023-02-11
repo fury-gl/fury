@@ -9,7 +9,7 @@ uniform mat4 MCVCMatrix;
 float ndot(vec2 a, vec2 b ) {
     return a.x*b.x - a.y*b.y;
 }
-/* Refs for sdf functions 
+/* Refs for sdf functions
    https://github.com/rougier/python-opengl
    https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.html
    https://andrewhungblog.wordpress.com/2018/07/28/shader-art-tutorial-hexagonal-grids/
@@ -17,7 +17,7 @@ float ndot(vec2 a, vec2 b ) {
 vec3 getDistFunc(vec2 p, float s, float edgeWidth, float marker){
     float  sdf = 0;
     float minSdf = 0;
-    
+
     if (marker == 0.){
         edgeWidth = edgeWidth/2.;
         minSdf = 0.5;

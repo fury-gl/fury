@@ -21,5 +21,3 @@ document.addEventListener("DOMContentLoaded", (event) => {
   if (backgroundColor != null)
     document.body.style.backgroundColor = backgroundColor;
 });
-
-

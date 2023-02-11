@@ -8,15 +8,17 @@ which provides metrics and bundles.
 """
 
 import numpy as np
-from fury import window, actor
 from dipy.data import fetch_bundles_2_subjects, read_bundles_2_subjects
-from dipy.tracking.streamline import transform_streamlines, length
+from dipy.tracking.streamline import length, transform_streamlines
+
+from fury import actor, window
 
 interactive = False  # set to True to show the interactive display window
 
 fetch_bundles_2_subjects()
-dix = read_bundles_2_subjects(subj_id='subj_1', metrics=['fa'],
-                              bundles=['cg.left', 'cst.right'])
+dix = read_bundles_2_subjects(
+    subj_id='subj_1', metrics=['fa'], bundles=['cg.left', 'cst.right']
+)
 
 ###############################################################################
 # Store fractional anisotropy.
@@ -50,9 +52,11 @@ scene = window.Scene()
 
 stream_actor = actor.line(bundle_native)
 
-scene.set_camera(position=(-176.42, 118.52, 128.20),
-                 focal_point=(113.30, 128.31, 76.56),
-                 view_up=(0.18, 0.00, 0.98))
+scene.set_camera(
+    position=(-176.42, 118.52, 128.20),
+    focal_point=(113.30, 128.31, 76.56),
+    view_up=(0.18, 0.00, 0.98),
+)
 
 scene.add(stream_actor)
 
@@ -102,11 +106,9 @@ scene.clear()
 hue = (0.0, 0.0)  # red only
 saturation = (0.0, 1.0)  # white to red
 
-lut_cmap = actor.colormap_lookup_table(hue_range=hue,
-                                       saturation_range=saturation)
+lut_cmap = actor.colormap_lookup_table(hue_range=hue, saturation_range=saturation)
 
-stream_actor3 = actor.line(bundle_native, fa, linewidth=0.1,
-                           lookup_colormap=lut_cmap)
+stream_actor3 = actor.line(bundle_native, fa, linewidth=0.1, lookup_colormap=lut_cmap)
 bar2 = actor.scalar_bar(lut_cmap)
 
 scene.add(stream_actor3)
@@ -125,7 +127,7 @@ window.record(scene, out_path='bundle3.png', size=(600, 600))
 # orange.
 
 scene.clear()
-stream_actor4 = actor.line(bundle_native, (1., 0.5, 0), linewidth=0.1)
+stream_actor4 = actor.line(bundle_native, (1.0, 0.5, 0), linewidth=0.1)
 
 scene.add(stream_actor4)
 
@@ -151,10 +153,12 @@ saturation = (0.0, 1.0)  # black to white
 lut_cmap = actor.colormap_lookup_table(
     scale_range=(lengths.min(), lengths.max()),
     hue_range=hue,
-    saturation_range=saturation)
+    saturation_range=saturation,
+)
 
-stream_actor5 = actor.line(bundle_native, lengths, linewidth=0.1,
-                           lookup_colormap=lut_cmap)
+stream_actor5 = actor.line(
+    bundle_native, lengths, linewidth=0.1, lookup_colormap=lut_cmap
+)
 
 scene.add(stream_actor5)
 bar3 = actor.scalar_bar(lut_cmap)
@@ -236,8 +240,7 @@ window.record(scene, out_path='bundle8.png', size=(600, 600))
 
 scene.clear()
 
-stream_actor9 = actor.line(bundle_native, linewidth=3,
-                           depth_cue=True, fake_tube=True)
+stream_actor9 = actor.line(bundle_native, linewidth=3, depth_cue=True, fake_tube=True)
 
 scene.add(stream_actor9)
 

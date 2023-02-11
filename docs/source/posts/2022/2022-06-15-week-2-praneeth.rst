@@ -3,7 +3,7 @@ Week 2 - Improving DrawPanel UI
 ===============================
 
 .. post:: June 15 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -12,7 +12,7 @@ What did you do this week?
 --------------------------
 This week I had to refactor and make my code cleaner along with some bug fixing, I started by adding tests and tutorials so that my changes could be tested by everyone. Then I separated the mode for *selection* so that it would be easy to select an individual element and work along with it. Once the selection mode was complete I started with the *deletion* of the elements.
 
-Now, as we have various modes the question arises, How do we know which mode is currently active and how would users know it?? For this, I took references from some other similar applications and came up with an idea to toggle the icon of the selected mode whenever the mode is selected/deselected as we had individual buttons with an icon for each mode. 
+Now, as we have various modes the question arises, How do we know which mode is currently active and how would users know it?? For this, I took references from some other similar applications and came up with an idea to toggle the icon of the selected mode whenever the mode is selected/deselected as we had individual buttons with an icon for each mode.
 
 https://github.com/fury-gl/fury/pull/599
 

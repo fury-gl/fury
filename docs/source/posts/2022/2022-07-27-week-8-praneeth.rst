@@ -3,7 +3,7 @@ Week 8 - Working on the polyline feature
 ========================================
 
 .. post:: July 27 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

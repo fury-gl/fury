@@ -8,10 +8,12 @@ in fury. In this example we specifically render a Chain oscillating to and fro.
 
 First some imports.
 """
-import numpy as np
-from fury import window, actor, ui, utils
 import itertools
+
+import numpy as np
 import pybullet as p
+
+from fury import actor, ui, utils, window
 
 ###############################################################################
 # Setup pybullet and add gravity.
@@ -33,13 +35,14 @@ radii = 0.5
 
 joint_friction = 0.0005  # rotational joint friction [N/(rad/s)]
 
-link_shape = p.createCollisionShape(p.GEOM_CYLINDER,
-                                    radius=radii,
-                                    height=dx_link,
-                                    collisionFramePosition=[0, 0, -dx_link / 2])
+link_shape = p.createCollisionShape(
+    p.GEOM_CYLINDER,
+    radius=radii,
+    height=dx_link,
+    collisionFramePosition=[0, 0, -dx_link / 2],
+)
 
-base_shape = p.createCollisionShape(p.GEOM_BOX,
-                                    halfExtents=[0.01, 0.01, 0.01])
+base_shape = p.createCollisionShape(p.GEOM_BOX, halfExtents=[0.01, 0.01, 0.01])
 
 visualShapeId = -1
 
@@ -71,29 +74,34 @@ link_radii[:] = radii
 link_heights = np.zeros(n_links)
 link_heights[:] = dx_link
 
-rope_actor = actor.cylinder(centers=linkPositions,
-                            directions=linkDirections,
-                            colors=np.random.rand(n_links, 3),
-                            radius=radii,
-                            heights=link_heights, capped=True)
+rope_actor = actor.cylinder(
+    centers=linkPositions,
+    directions=linkDirections,
+    colors=np.random.rand(n_links, 3),
+    radius=radii,
+    heights=link_heights,
+    capped=True,
+)
 
 basePosition = [0, 0, 2]
 baseOrientation = [0, 0, 0, 1]
-rope = p.createMultiBody(base_mass,
-                         base_shape,
-                         visualShapeId,
-                         basePosition,
-                         baseOrientation,
-                         linkMasses=link_Masses,
-                         linkCollisionShapeIndices=linkCollisionShapeIndices,
-                         linkVisualShapeIndices=linkVisualShapeIndices,
-                         linkPositions=linkPositions,
-                         linkOrientations=linkOrientations,
-                         linkInertialFramePositions=linkInertialFramePositions,
-                         linkInertialFrameOrientations=linkInertialFrameOrns,
-                         linkParentIndices=indices,
-                         linkJointTypes=jointTypes,
-                         linkJointAxis=axis)
+rope = p.createMultiBody(
+    base_mass,
+    base_shape,
+    visualShapeId,
+    basePosition,
+    baseOrientation,
+    linkMasses=link_Masses,
+    linkCollisionShapeIndices=linkCollisionShapeIndices,
+    linkVisualShapeIndices=linkVisualShapeIndices,
+    linkPositions=linkPositions,
+    linkOrientations=linkOrientations,
+    linkInertialFramePositions=linkInertialFramePositions,
+    linkInertialFrameOrientations=linkInertialFrameOrns,
+    linkParentIndices=indices,
+    linkJointTypes=jointTypes,
+    linkJointAxis=axis,
+)
 
 ###############################################################################
 # We remove stiffness among the joints by adding friction to them.
@@ -101,30 +109,36 @@ rope = p.createMultiBody(base_mass,
 friction_vec = [joint_friction] * 3  # same all axis
 control_mode = p.POSITION_CONTROL  # set pos control mode
 for j in range(p.getNumJoints(rope)):
-    p.setJointMotorControlMultiDof(rope, j, control_mode,
-                                   targetPosition=[0, 0, 0, 1],
-                                   targetVelocity=[0, 0, 0],
-                                   positionGain=0,
-                                   velocityGain=1,
-                                   force=friction_vec)
+    p.setJointMotorControlMultiDof(
+        rope,
+        j,
+        control_mode,
+        targetPosition=[0, 0, 0, 1],
+        targetVelocity=[0, 0, 0],
+        positionGain=0,
+        velocityGain=1,
+        force=friction_vec,
+    )
 
 ###############################################################################
 # Next, we define a constraint base that will help us in the oscillation of the
 # chain.
 
-root_robe_c = p.createConstraint(rope, -1, -1, -1,
-                                 p.JOINT_FIXED, [0, 0, 0],
-                                 [0, 0, 0], [0, 0, 2])
+root_robe_c = p.createConstraint(
+    rope, -1, -1, -1, p.JOINT_FIXED, [0, 0, 0], [0, 0, 0], [0, 0, 2]
+)
 
 # some traj to inject motion
 amplitude_x = 0.3
 amplitude_y = 0.0
 freq = 0.6
 
-base_actor = actor.box(centers=np.array([[0, 0, 0]]),
-                       directions=np.array([[0, 0, 0]]),
-                       scales=(0.02, 0.02, 0.02),
-                       colors=np.array([[1, 0, 0]]))
+base_actor = actor.box(
+    centers=np.array([[0, 0, 0]]),
+    directions=np.array([[0, 0, 0]]),
+    scales=(0.02, 0.02, 0.02),
+    colors=np.array([[1, 0, 0]]),
+)
 
 ###############################################################################
 # We add the necessary actors to the scene.
@@ -137,10 +151,9 @@ scene.add(rope_actor)
 scene.add(base_actor)
 
 # Create show manager.
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
-
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 # Counter interator for tracking simulation steps.
@@ -173,12 +186,14 @@ def sync_joints(actor_list, multibody):
 
         rot_mat = np.reshape(
             p.getMatrixFromQuaternion(
-                p.getDifferenceQuaternion(orn, linkOrientations[joint])),
-            (3, 3))
+                p.getDifferenceQuaternion(orn, linkOrientations[joint])
+            ),
+            (3, 3),
+        )
 
-        vertices[joint * sec: joint * sec + sec] = \
-            (vertices[joint * sec: joint * sec + sec] -
-             linkPositions[joint]) @ rot_mat + pos
+        vertices[joint * sec : joint * sec + sec] = (
+            vertices[joint * sec : joint * sec + sec] - linkPositions[joint]
+        ) @ rot_mat + pos
 
         linkPositions[joint] = pos
         linkOrientations[joint] = orn
@@ -188,8 +203,9 @@ def sync_joints(actor_list, multibody):
 # We define a TextBlock to display the Avg. FPS and Simulation steps.
 
 fpss = np.array([])
-tb = ui.TextBlock2D(position=(0, 680), font_size=30, color=(1, 0.5, 0),
-                    text="Avg. FPS: \nSim Steps: ")
+tb = ui.TextBlock2D(
+    position=(0, 680), font_size=30, color=(1, 0.5, 0), text='Avg. FPS: \nSim Steps: '
+)
 scene.add(tb)
 
 t = 0.0
@@ -205,13 +221,14 @@ def timer_callback(_obj, _event):
     global t, fpss
     showm.render()
 
-    t += 1. / freq_sim
+    t += 1.0 / freq_sim
 
     if cnt % 1 == 0:
         fps = showm.frame_rate
         fpss = np.append(fpss, fps)
-        tb.message = "Avg. FPS: " + str(np.round(np.mean(fpss), 0)) + \
-                     "\nSim Steps: " + str(cnt)
+        tb.message = (
+            'Avg. FPS: ' + str(np.round(np.mean(fpss), 0)) + '\nSim Steps: ' + str(cnt)
+        )
 
     # some trajectory
     ux = amplitude_x * np.sin(2 * np.pi * freq * t)
@@ -220,8 +237,7 @@ def timer_callback(_obj, _event):
     # move base around
     pivot = [3 * ux, uy, 2]
     orn = p.getQuaternionFromEuler([0, 0, 0])
-    p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn,
-                       maxForce=500)
+    p.changeConstraint(root_robe_c, pivot, jointChildFrameOrientation=orn, maxForce=500)
 
     # Sync base and chain.
     sync_actor(base_actor, rope)
@@ -246,4 +262,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, size=(900, 768), out_path="viz_chain.png")
+window.record(scene, size=(900, 768), out_path='viz_chain.png')

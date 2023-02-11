@@ -16,7 +16,7 @@ $ pip install -U -r requirements/default.txt
 $ pip install -U -r requirements/optional.txt
 ```
 
-or 
+or
 
 ```bash
 conda install --yes --file=requirements/default.txt --file=requirements/optional.txt
@@ -29,7 +29,7 @@ $ pip install -U -r requirements/default.txt
 $ pip install -U -r requirements/test.txt
 ```
 
-or 
+or
 
 ```bash
 conda install --yes --file=requirements/default.txt --file=requirements/test.txt

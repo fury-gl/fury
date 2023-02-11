@@ -18,8 +18,10 @@ for this demo.
 """
 
 import math
+
 import numpy as np
-from fury import window, primitive, utils, ui
+
+from fury import primitive, ui, utils, window
 
 ###############################################################################
 # Before we create our first fractal, let's set some ground rules for us to
@@ -56,10 +58,10 @@ from fury import window, primitive, utils, ui
 
 
 def tetrix(N):
-    centers = np.zeros((4 ** N, 3))
+    centers = np.zeros((4**N, 3))
 
     # skipping non-leaf nodes (see above)
-    offset = (4 ** N - 1) // 3 + 1
+    offset = (4**N - 1) // 3 + 1
 
     # just need the vertices
     U, _ = primitive.prim_tetrahedron()
@@ -74,7 +76,7 @@ def tetrix(N):
                 gen_centers(depth + 1, idx + i, center + dist * U[i], dist / 2)
 
     # the division by sqrt(6) is to ensure correct scale
-    gen_centers(0, 1, np.zeros(3), 2 / (6 ** 0.5))
+    gen_centers(0, 1, np.zeros(3), 2 / (6**0.5))
 
     vertices, faces = primitive.prim_tetrahedron()
 
@@ -90,6 +92,7 @@ def tetrix(N):
     )
     return utils.get_actor_from_primitive(vertices, triangles, colors)
 
+
 ###############################################################################
 # For a Menger Sponge, each cube is divided into 27 smaller cubes, and we skip
 # some of them (face centers, and the center of the cube). This means that on
@@ -101,22 +104,42 @@ def tetrix(N):
 
 
 def sponge(N):
-    centers = np.zeros((20 ** N, 3))
-    offset = (20 ** N - 1) // 19 + 1
+    centers = np.zeros((20**N, 3))
+    offset = (20**N - 1) // 19 + 1
 
     # these are the offsets of the new centers at the next level of recursion
     # each cube is divided into 20 smaller cubes for a snowflake
-    V = np.array([[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 0], [0, 1, 2],
-                  [0, 2, 0], [0, 2, 1], [0, 2, 2], [1, 0, 0], [1, 0, 2],
-                  [1, 2, 0], [1, 2, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2],
-                  [2, 1, 0], [2, 1, 2], [2, 2, 0], [2, 2, 1], [2, 2, 2]])
+    V = np.array(
+        [
+            [0, 0, 0],
+            [0, 0, 1],
+            [0, 0, 2],
+            [0, 1, 0],
+            [0, 1, 2],
+            [0, 2, 0],
+            [0, 2, 1],
+            [0, 2, 2],
+            [1, 0, 0],
+            [1, 0, 2],
+            [1, 2, 0],
+            [1, 2, 2],
+            [2, 0, 0],
+            [2, 0, 1],
+            [2, 0, 2],
+            [2, 1, 0],
+            [2, 1, 2],
+            [2, 2, 0],
+            [2, 2, 1],
+            [2, 2, 2],
+        ]
+    )
 
     def gen_centers(depth, pos, center, dist):
         if depth == N:
             centers[pos - offset] = center
         else:
             # we consider a corner cube as our starting point
-            start = center - np.array([1, 1, 1]) * dist ** 0.5
+            start = center - np.array([1, 1, 1]) * dist**0.5
             idx = 20 * (pos - 1) + 2
 
             # this moves from the corner cube to each new cube's center
@@ -127,7 +150,7 @@ def sponge(N):
     gen_centers(0, 1, np.zeros(3), 1 / 3)
 
     vertices, faces = primitive.prim_box()
-    vertices /= 3 ** N
+    vertices /= 3**N
 
     bounds_min, bounds_max = np.min(centers, axis=0), np.max(centers, axis=0)
     colors = (centers - bounds_min) / (bounds_max - bounds_min)
@@ -143,19 +166,38 @@ def sponge(N):
 # (corners and center). I think this looks quite interesting, and it is
 # possible to see the Koch snowflake if you position the camera just right.
 
+
 def snowflake(N):
-    centers = np.zeros((18 ** N, 3))
-    offset = (18 ** N - 1) // 17 + 1
-    V = np.array([[0, 0, 1], [0, 1, 0], [0, 1, 1], [0, 1, 2], [0, 2, 1],
-                  [1, 0, 0], [1, 0, 1], [1, 0, 2], [1, 1, 0], [1, 1, 2],
-                  [1, 2, 0], [1, 2, 1], [1, 2, 2], [2, 0, 1], [2, 1, 0],
-                  [2, 1, 1], [2, 1, 2], [2, 2, 1]])
+    centers = np.zeros((18**N, 3))
+    offset = (18**N - 1) // 17 + 1
+    V = np.array(
+        [
+            [0, 0, 1],
+            [0, 1, 0],
+            [0, 1, 1],
+            [0, 1, 2],
+            [0, 2, 1],
+            [1, 0, 0],
+            [1, 0, 1],
+            [1, 0, 2],
+            [1, 1, 0],
+            [1, 1, 2],
+            [1, 2, 0],
+            [1, 2, 1],
+            [1, 2, 2],
+            [2, 0, 1],
+            [2, 1, 0],
+            [2, 1, 1],
+            [2, 1, 2],
+            [2, 2, 1],
+        ]
+    )
 
     def gen_centers(depth, pos, center, side):
         if depth == N:
             centers[pos - offset] = center
         else:
-            start = center - np.array([1, 1, 1]) * side ** 0.5
+            start = center - np.array([1, 1, 1]) * side**0.5
             idx = 18 * (pos - 1) + 2
             for i in range(18):
                 gen_centers(depth + 1, idx + i, start + V[i] * side, side / 3)
@@ -163,7 +205,7 @@ def snowflake(N):
     gen_centers(0, 1, np.zeros(3), 1 / 3)
 
     vertices, faces = primitive.prim_box()
-    vertices /= 3 ** N
+    vertices /= 3**N
 
     bounds_min, bounds_max = np.min(centers, axis=0), np.max(centers, axis=0)
     colors = (centers - bounds_min) / (bounds_max - bounds_min)
@@ -179,7 +221,7 @@ def snowflake(N):
 # the Scene and ShowManager.
 
 scene = window.Scene()
-showmgr = window.ShowManager(scene, "Fractals", (800, 800), reset_camera=True)
+showmgr = window.ShowManager(scene, 'Fractals', (800, 800), reset_camera=True)
 
 ###############################################################################
 # These values are what work nicely on my machine without lagging. If you have
@@ -193,13 +235,18 @@ fractals = [tetrix(6), sponge(3), snowflake(3)]
 # fractals and add the selected one. This also resets the camera.
 
 options = {
-    "Tetrix": 0,
-    "Sponge": 1,
-    "Snowflake": 2,
+    'Tetrix': 0,
+    'Sponge': 1,
+    'Snowflake': 2,
 }
 
-shape_chooser = ui.RadioButton(options.keys(), padding=10, font_size=16,
-                               checked_labels=["Tetrix"], position=(10, 10))
+shape_chooser = ui.RadioButton(
+    options.keys(),
+    padding=10,
+    font_size=16,
+    checked_labels=['Tetrix'],
+    position=(10, 10),
+)
 
 
 def choose_shape(radio):
@@ -242,4 +289,4 @@ interactive = False
 if interactive:
     showmgr.start()
 else:
-    window.record(showmgr.scene, out_path="fractals.png", size=(800, 800))
+    window.record(showmgr.scene, out_path='fractals.png', size=(800, 800))
