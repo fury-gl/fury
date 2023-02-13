@@ -463,9 +463,12 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         color *= (1 - metallic);
         color += specRad;
         color += coatCoeff;
+        
+        color *= lightColor0;
+        color = pow(color, vec3(1. / 2.2));
         """
 
-        frag_output = 'fragOutput0 = vec4(color, opacity);'
+        frag_output = 'fragOutput0 = vec4(clamp(color, vec3(0), vec3(1)), opacity);'
 
         fs_impl = compose_shader([
             start_comment, normal, view, dot_n_v, dot_n_v_validation, tangent,
@@ -473,14 +476,10 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
             fsw, diff_coeff, subsurf_coeff, sheen_rad, spec_rad,
             clear_coat_coef, principled_brdf, frag_output
         ])
+
+        # Adding shader implementation to actor
         shader_to_actor(actor, 'fragment', impl_code=fs_impl, block='light')
 
-        #fs_dec_code = import_fury_shader('bxdf_dec.frag')
-        #fs_impl_code = import_fury_shader('bxdf_impl.frag')
-
-        #shader_to_actor(actor, 'fragment', decl_code=fs_dec_code)
-        #shader_to_actor(actor, 'fragment', impl_code=fs_impl_code,
-        #                block='light')
         return principled_params
     except AttributeError:
         warnings.warn('Actor does not have the attribute property. This '
