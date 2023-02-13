@@ -386,18 +386,32 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         start_comment = "//Disney's Principled BRDF"
 
         # Preparing vectors and values
-        normal_vec = 'vec3 N = normalVCVSOutput;'
+        normal = 'vec3 normal = normalVCVSOutput;'
         # VTK's default system is retroreflective, which means view = light
-        view_vec = 'vec3 V = normalize(-vertexVC.xyz);'
+        view = 'vec3 view = normalize(-vertexVC.xyz);'
         # Since VTK's default setup is retroreflective we only need to
         # calculate one single dot product
-        dot_n_v = 'float dotNV = clamp(dot(N, V), 1e-5, 1);'
+        dot_n_v = 'float dotNV = clamp(dot(normal, view), 1e-5, 1);'
 
         dot_n_v_validation = \
         """
         if(dotNV < 0)
             fragOutput0 = vec4(vec3(0), opacity);
         """
+
+        # To work with anisotropic distributions is necessary to have a tangent
+        # and bitangent vector per point on the surface
+        tangent = 'vec3 tangent = vec3(.0);'
+        bitangent = 'vec3 bitangent = vec3(.0);'
+        # The shader function updateTanBitan aligns tangents and bitangents
+        # according to a direction of anisotropy
+        update_aniso_vecs = \
+        """
+        updateTanBitan(normal, anisotropicDirection, tangent, bitangent);
+        """
+
+        dot_t_v = 'float dotTV = dot(tangent, view);'
+        dot_b_v = 'float dotBV = dot(bitangent, view);'
 
         # TODO: Review and turn to function
         lin_color = 'vec3 linColor = pow(diffuseColor, vec3(2.2));'
@@ -408,29 +422,49 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         # calculate one single Schlick's weight
         fsw = 'float fsw = schlickWeight(dotNV);'
 
-        # Calculate the diffuse component
-        fd = 'float fd = evaluateDiffuse(roughness, fsw, fsw, dotNV);'
-
-        ss = \
+        # Calculate the diffuse coefficient
+        diff_coeff = \
         """
-        float ss = evaluateSubsurface(roughness, fsw, fsw, dotNV, dotNV, 
-            dotNV);
+        float diffCoeff = evaluateDiffuse(roughness, fsw, fsw, dotNV);
         """
 
-        fsheen = 'vec3 fsheen = evaluateSheen(sheen, sheenTint, tint, fsw);'
+        # Calculate the subsurface coefficient
+        subsurf_coeff = \
+        """
+        float subsurfCoeff = evaluateSubsurface(roughness, fsw, fsw, dotNV, 
+            dotNV, dotNV);
+        """
+
+        # Calculate the sheen irradiance
+        sheen_rad = \
+        """
+        vec3 sheenRad = evaluateSheen(sheen, sheenTint, tint, fsw);
+        """
+
+        spec_rad = \
+        """
+        vec3 specRad = evaluateSpecularAnisotropic(specularIntensity, 
+            specularTint, metallic, anisotropic, roughness, tint, linColor, 
+            fsw, dotNV, dotTV, dotBV, dotNV, dotTV, dotBV, dotNV, dotTV, 
+            dotBV);
+        """
 
         principled_brdf = \
         """
-        vec3 color = (1 / PI) * mix(fd, ss, subsurface) * linColor;
-        color += fsheen;
+        vec3 color = (1 / PI) * linColor;
+        color *= mix(diffCoeff, subsurfCoeff, subsurface);
+        color += sheenRad;
         color *= (1 - metallic);
+        color += specRad;
         """
 
         frag_output = 'fragOutput0 = vec4(color, opacity);'
 
         fs_impl = compose_shader([
-            start_comment, normal_vec, view_vec, dot_n_v, dot_n_v_validation,
-            lin_color, tint, fsw, fd, ss, fsheen, principled_brdf, frag_output
+            start_comment, normal, view, dot_n_v, dot_n_v_validation, tangent,
+            bitangent, update_aniso_vecs, dot_t_v, dot_b_v, lin_color, tint,
+            fsw, diff_coeff, subsurf_coeff, sheen_rad, spec_rad,
+            principled_brdf, frag_output
         ])
         shader_to_actor(actor, 'fragment', impl_code=fs_impl, block='light')
 
