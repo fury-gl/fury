@@ -449,6 +449,12 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
             dotBV);
         """
 
+        clear_coat_coef = \
+        """
+        float coatCoeff = evaluateClearcoat(clearcoat, clearcoatGloss, fsw, 
+            dotNV, dotNV, dotNV);
+        """
+
         principled_brdf = \
         """
         vec3 color = (1 / PI) * linColor;
@@ -456,6 +462,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
         color += sheenRad;
         color *= (1 - metallic);
         color += specRad;
+        color += coatCoeff;
         """
 
         frag_output = 'fragOutput0 = vec4(color, opacity);'
@@ -464,7 +471,7 @@ def manifest_principled(actor, subsurface=0, metallic=0, specular=0,
             start_comment, normal, view, dot_n_v, dot_n_v_validation, tangent,
             bitangent, update_aniso_vecs, dot_t_v, dot_b_v, lin_color, tint,
             fsw, diff_coeff, subsurf_coeff, sheen_rad, spec_rad,
-            principled_brdf, frag_output
+            clear_coat_coef, principled_brdf, frag_output
         ])
         shader_to_actor(actor, 'fragment', impl_code=fs_impl, block='light')
 
