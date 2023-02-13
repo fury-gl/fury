@@ -6,8 +6,8 @@ This example shows how to use both primitive and vtkSource sphere actor.
 """
 
 import numpy as np
-from fury import window, actor
 
+from fury import actor, window
 
 ############################################################################
 # First thing, you have to specify centers and colors of the sphere
@@ -26,8 +26,7 @@ prim_sphere_actor = actor.sphere(centers, colors=colors, radii=5)
 cen2 = np.add(centers, np.array([12, 0, 0]))
 cols2 = np.array([1, 0, 0])
 
-vtk_sphere_actor = actor.sphere(cen2, colors=cols2,
-                                radii=5, use_primitive=False)
+vtk_sphere_actor = actor.sphere(cen2, colors=cols2, radii=5, use_primitive=False)
 
 scene = window.Scene()
 

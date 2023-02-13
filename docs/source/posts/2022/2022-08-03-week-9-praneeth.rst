@@ -3,7 +3,7 @@ Week 9 - Grouping and Transforming Shapes
 =========================================
 
 .. post:: August 3 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

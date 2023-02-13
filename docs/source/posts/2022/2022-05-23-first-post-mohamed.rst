@@ -3,16 +3,16 @@ My journey till getting accepted into GSoC22
 
 
 .. post:: May 23 2022
-   :author: Mohamed Abouagour 
+   :author: Mohamed Abouagour
    :tags: google
    :category: gsoc
 
 A Little About Myself
 ~~~~~~~~~~~~~~~~~~~~~
 
-My name is Mohamed and I'm from Egypt. I am pursuing a Bachelor of Engineering in Computer Engineering and Automatic Control (expected: 2023), Tanta University, Egypt. 
+My name is Mohamed and I'm from Egypt. I am pursuing a Bachelor of Engineering in Computer Engineering and Automatic Control (expected: 2023), Tanta University, Egypt.
 
-I've been around computers since 2008 when I had my first PC with 128MB RAM and ran on Windows XP (that's almost all I could remember about it). 
+I've been around computers since 2008 when I had my first PC with 128MB RAM and ran on Windows XP (that's almost all I could remember about it).
 
 Around 2013, I had some questions about how games are made and how to make them myself!
 There was no one to answer these questions for me.
@@ -88,5 +88,5 @@ The keyframe animation system was the perfect match! I have been around keyframe
 
 The day I got accepted
 ~~~~~~~~~~~~~~~~~~~~~~
-I made it my mission for the day to keep watching the email for any changes. When It got 8:00 pm in the Cairo timezone, I didn't see any changes. So I started searching for any news whatsoever and I couldn't find any. 
+I made it my mission for the day to keep watching the email for any changes. When It got 8:00 pm in the Cairo timezone, I didn't see any changes. So I started searching for any news whatsoever and I couldn't find any.
 The GSoC dashboard doesn't say anything (story of my life. I didn't even get any promotions or spam mails that day). That's when I gave up. But, something doesn't feel right! Right? I went again to check the dashboard to find that my proposal got accepted. I couldn't even believe it. I would better not jump to conclusions and wait for the official email before celebrating. Shortly after, I received the official email. It was a whole new feeling I had never experienced ever before! I reached a whole new level of happiness.

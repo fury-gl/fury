@@ -8,7 +8,7 @@ Multiple SDF primitives.
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey Everyone! 
+Hey Everyone!
 This week, multiple SDF primitives.
 
 What did you do this week?

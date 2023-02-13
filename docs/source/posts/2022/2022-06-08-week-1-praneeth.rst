@@ -3,7 +3,7 @@ Week 1 - Laying the Foundation of DrawPanel UI
 ==============================================
 
 .. post:: June 8 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -16,7 +16,7 @@ What did you do this week?
 I started with a simple ``Panel2D`` (which is basically a movable rectangle on which we can add other UI elements) as a background and then assigned its mouse click callback to print “**Clicked!**” to verify the event triggering.
 
 Then I modified the event callback to create a ``Rectangle2D`` at that current mouse position(Now you would ask, Why ``Rectangle2D``?? We wanted to change the width of the line, which wasn't possible with the regular line). This would create a rectangle at that point but it had size.
-So I had to then calculate the distance between the first point where the mouse was clicked and the current position to resize it accordingly. 
+So I had to then calculate the distance between the first point where the mouse was clicked and the current position to resize it accordingly.
 
 .. image:: https://user-images.githubusercontent.com/64432063/174661567-76251ce9-380f-4a41-a572-65865d028a9c.gif
    :width: 400
@@ -48,4 +48,4 @@ At last, I decided to implement it by the most general method which is to calcul
 
 What is coming up next?
 -----------------------
-Deletion of the shapes is to be implemented along with tests and tutorials. 
+Deletion of the shapes is to be implemented along with tests and tutorials.

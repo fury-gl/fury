@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9, '3.10', 3.11]
         os: [ubuntu-latest, macos-latest, windows-latest]
         platform: [x64]
         install-type: [pip, ]  # conda]
@@ -33,13 +33,13 @@ jobs:
         use-pre: [false]
         include:
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
             coverage: true
             use-pre: false
           - os: ubuntu-latest
-            python-version: 3.9
+            python-version: '3.10'
             install-type: pip
             depends: OPTIONAL_DEPS
             use-pre: true
@@ -112,11 +112,3 @@ jobs:
         else
           ci/run_tests.sh
         fi
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    # - name: Setup tmate session
-    #   if: ${{ failure() }}
-    #   uses: mxschmitt/action-tmate@v3
-    - name: Deploy docs
-      if: success() && github.ref == 'refs/heads/master'
-      run: |
-        bash ci/travis/deploy_docs.sh

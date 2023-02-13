@@ -1,15 +1,14 @@
 """
-=====================
-Keyframe animation
-=====================
+============================
+Making a custom interpolator
+============================
 
 Keyframe animation using custom interpolator.
-
 """
 import numpy as np
+
 from fury import actor, window
-from fury.animation.timeline import Timeline
-from fury.animation import helpers
+from fury.animation import Animation, helpers
 
 ###############################################################################
 # Implementing a custom interpolator
@@ -90,8 +89,8 @@ def tan_cubic_spline_interpolator(keyframes):
         # `keyframes.get(t0)`. This keyframe data contains `value` and any
         # other data set as a custom argument using keyframe setters.
         # for example:
-        # >>> timeline = Timeline()
-        # >>> timeline.set_position(0, np.array([1, 1, 1]),
+        # >>> animation = Animation()
+        # >>> animation.set_position(0, np.array([1, 1, 1]),
         # >>>                       custom_field=np.array([2, 3, 1]))
         # In this case `keyframes.get(0)` would return:
         # {'value': array(1, 1, 1), 'custom_field': array(2, 3, 1)}
@@ -104,35 +103,42 @@ def tan_cubic_spline_interpolator(keyframes):
         # cubic spline equation using tangents
         t2 = dt * dt
         t3 = t2 * dt
-        return (2 * t3 - 3 * t2 + 1) * p0 + (t3 - 2 * t2 + dt) * tan_0 + (
-                -2 * t3 + 3 * t2) * p1 + (t3 - t2) * tan_1
+        return (
+            (2 * t3 - 3 * t2 + 1) * p0
+            + (t3 - 2 * t2 + dt) * tan_0
+            + (-2 * t3 + 3 * t2) * p1
+            + (t3 - t2) * tan_1
+        )
+
     return interpolate
 
 
 scene = window.Scene()
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 ###############################################################################
 # Cubic spline keyframes data same as the one you get from glTF file.
 # ===================================================================
 
-#              t   in tangent     position                   out tangent
-translation = [[0, [0., 0., 0.],  [3.3051798, 6.640117, 0.], [1., 0., 0.]],
-               [1, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
-               [2, [-1., 0., 0.], [3.3051798, 6., 0.],       [1., 0., 0.]],
-               [3, [0., 0., 0.],  [3.3051798, 8., 0.],       [-1., 0., 0.]],
-               [4, [0, -1., 0.],  [3.3051798, 6., 0.],       [0., 0., 0.]]]
+#               t    in tangent     position                   out tangent
+translation = [
+    [0.0, [0.0, 0.0, 0.0], [3.3051798, 6.640117, 0.0], [1.0, 0.0, 0.0]],
+    [1.0, [0.0, 0.0, 0.0], [3.3051798, 8.0, 0.0], [-1.0, 0.0, 0.0]],
+    [2.0, [-1.0, 0.0, 0.0], [3.3051798, 6.0, 0.0], [1.0, 0.0, 0.0]],
+    [3.0, [0.0, 0.0, 0.0], [3.3051798, 8.0, 0.0], [-1.0, 0.0, 0.0]],
+    [4.0, [0, -1.0, 0.0], [3.3051798, 6.0, 0.0], [0.0, 0.0, 0.0]],
+]
 
 ###############################################################################
-# Initializing a ``Timeline`` and adding sphere actor to it.
-timeline = Timeline(playback_panel=True,  motion_path_res=100)
+# Initializing an ``Animation`` and adding sphere actor to it.
+animation = Animation(motion_path_res=100)
 
 sphere = actor.sphere(np.array([[0, 0, 0]]), (1, 0, 1), radii=0.1)
 
-timeline.add_actor(sphere)
+animation.add_actor(sphere)
 
 ###############################################################################
 # Setting position keyframes
@@ -141,32 +147,20 @@ for keyframe_data in translation:
     t, in_tan, pos, out_tan = keyframe_data
     # Since we used the name 'in_tangent' and 'out_tangent' in the interpolator
     # We must use the same name as an argument to set it in the keyframe data.
-    timeline.set_position(t, pos, in_tangent=in_tan, out_tangent=out_tan)
+    animation.set_position(t, pos, in_tangent=in_tan, out_tangent=out_tan)
 
 ###############################################################################
 # Set the new interpolator to interpolate position keyframes
-timeline.set_position_interpolator(tan_cubic_spline_interpolator)
+animation.set_position_interpolator(tan_cubic_spline_interpolator)
 
 ###############################################################################
-# adding the timeline and the static actors to the scene.
-scene.add(timeline)
+# adding the animation to the show manager.
+showm.add_animation(animation)
 
-
-###############################################################################
-# making a function to update the animation
-def timer_callback(_obj, _event):
-    timeline.update_animation()
-    showm.render()
-
-
-###############################################################################
-# Adding the callback function that updates the animation
-showm.add_timer_callback(True, 10, timer_callback)
 
 interactive = False
 
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_custom_interpolator.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_custom_interpolator.png', size=(900, 768))

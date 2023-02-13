@@ -1,40 +1,52 @@
-from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
-                        numpy_to_vtk_points, set_polydata_triangles,
-                        set_polydata_vertices)
+import numpy as np
+import vtk
 from scipy.spatial import Delaunay
 from vtk.util import numpy_support
 
-
-import numpy as np
-import vtk
+from fury.utils import (
+    get_actor_from_polydata,
+    numpy_to_vtk_colors,
+    numpy_to_vtk_points,
+    set_polydata_triangles,
+    set_polydata_vertices,
+)
 
 
 def cube():
     my_polydata = vtk.vtkPolyData()
 
-    my_vertices = np.array([[0.0, 0.0, 0.0],
-                            [0.0, 0.0, 1.0],
-                            [0.0, 1.0, 0.0],
-                            [0.0, 1.0, 1.0],
-                            [1.0, 0.0, 0.0],
-                            [1.0, 0.0, 1.0],
-                            [1.0, 1.0, 0.0],
-                            [1.0, 1.0, 1.0]])
+    my_vertices = np.array(
+        [
+            [0.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 1.0, 1.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 0.0, 1.0],
+            [1.0, 1.0, 0.0],
+            [1.0, 1.0, 1.0],
+        ]
+    )
 
     my_vertices -= 0.5
 
-    my_triangles = np.array([[0, 6, 4],
-                            [0, 2, 6],
-                            [0, 3, 2],
-                            [0, 1, 3],
-                            [2, 7, 6],
-                            [2, 3, 7],
-                            [4, 6, 7],
-                            [4, 7, 5],
-                            [0, 4, 5],
-                            [0, 5, 1],
-                            [1, 5, 7],
-                            [1, 7, 3]], dtype='i8')
+    my_triangles = np.array(
+        [
+            [0, 6, 4],
+            [0, 2, 6],
+            [0, 3, 2],
+            [0, 1, 3],
+            [2, 7, 6],
+            [2, 3, 7],
+            [4, 6, 7],
+            [4, 7, 5],
+            [0, 4, 5],
+            [0, 5, 1],
+            [1, 5, 7],
+            [1, 7, 3],
+        ],
+        dtype='i8',
+    )
 
     set_polydata_vertices(my_polydata, my_vertices)
     set_polydata_triangles(my_polydata, my_triangles)
@@ -161,35 +173,32 @@ def rectangle2(centers, colors, use_vertices=False, size=(2, 2)):
     polydata_centers.SetPoints(pts)
     polydata_centers.GetPointData().AddArray(cols)
 
-    print("NB pts: ", polydata_centers.GetNumberOfPoints())
-    print("NB arrays: ", polydata_centers.GetPointData().GetNumberOfArrays())
+    print('NB pts: ', polydata_centers.GetNumberOfPoints())
+    print('NB arrays: ', polydata_centers.GetPointData().GetNumberOfArrays())
 
     for i in range(polydata_centers.GetPointData().GetNumberOfArrays()):
-        print("Array {0}: {1}".format(
-            i, polydata_centers.GetPointData().GetArrayName(i)))
+        print(
+            'Array {0}: {1}'.format(i, polydata_centers.GetPointData().GetArrayName(i))
+        )
 
     for i in range(polydata_centers.GetCellData().GetNumberOfArrays()):
-        print("Cell {0}: {1}".format(
-            i, polydata_centers.GetCellData().GetArrayName(i)))
+        print('Cell {0}: {1}'.format(i, polydata_centers.GetCellData().GetArrayName(i)))
 
-    print("Array pts: {}".format(
-        polydata_centers.GetPoints().GetData().GetName()))
+    print('Array pts: {}'.format(polydata_centers.GetPoints().GetData().GetName()))
 
     glyph = vtk.vtkGlyph3D()
     if use_vertices:
         scale = 1
         my_polydata = vtk.vtkPolyData()
-        my_vertices = np.array([[0.0, 0.0, 0.0],
-                                [0.0, 1.0, 0.0],
-                                [1.0, 1.0, 0.0],
-                                [1.0, 0.0, 0.0]])
+        my_vertices = np.array(
+            [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+        )
 
         my_vertices -= np.array([0.5, 0.5, 0])
 
         my_vertices = scale * my_vertices
 
-        my_triangles = np.array([[0, 1, 2],
-                                 [2, 3, 0]], dtype='i8')
+        my_triangles = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
 
         set_polydata_vertices(my_polydata, my_vertices)
         set_polydata_triangles(my_polydata, my_triangles)
@@ -219,10 +228,9 @@ def rectangle2(centers, colors, use_vertices=False, size=(2, 2)):
 def square(scale=1):
     polydata = vtk.vtkPolyData()
 
-    vertices = np.array([[0.0, 0.0, 0.0],
-                         [0.0, 1.0, 0.0],
-                         [1.0, 1.0, 0.0],
-                         [1.0, 0.0, 0.0]])
+    vertices = np.array(
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    )
 
     vertices -= np.array([0.5, 0.5, 0])
 
@@ -260,8 +268,9 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         triangles = np.ascontiguousarray(triangles, 'int64')
 
     cells = vtk.vtkCellArray()
-    cells.SetCells(triangles.shape[0],
-                   numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True))
+    cells.SetCells(
+        triangles.shape[0], numpy_support.numpy_to_vtkIdTypeArray(triangles, deep=True)
+    )
     polydata.SetPolys(cells)
 
     clean_poly_data = vtk.vtkCleanPolyData()
@@ -274,14 +283,14 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         mapper.SetInputData(polydata)
         surface_actor.SetMapper(mapper)
 
-    elif smooth == "loop":
+    elif smooth == 'loop':
         smooth_loop = vtk.vtkLoopSubdivisionFilter()
         smooth_loop.SetNumberOfSubdivisions(subdivision)
         smooth_loop.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_loop.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
-    elif smooth == "butterfly":
+    elif smooth == 'butterfly':
         smooth_butterfly = vtk.vtkButterflySubdivisionFilter()
         smooth_butterfly.SetNumberOfSubdivisions(subdivision)
         smooth_butterfly.SetInputConnection(clean_poly_data.GetOutputPort())

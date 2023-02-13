@@ -7,8 +7,8 @@ glTF model in FURY.
 """
 
 from fury import window
-from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
+from fury.gltf import glTF
 
 ##############################################################################
 # Retrieving the model with skeletal animations.
@@ -28,7 +28,7 @@ gltf_obj = glTF(filename, apply_normals=False)
 # name you want to visualize.
 # Note: If there's no name for animation, It's stored as `anim_0`, `anim_1` etc
 
-timeline = gltf_obj.skin_timeline()['anim_0']
+animation = gltf_obj.skin_animation()['anim_0']
 
 # After we get the timeline object, We want to initialise the skinning process.
 # You can set `bones=true` to visualize each bone transformation. Additionaly,
@@ -36,7 +36,7 @@ timeline = gltf_obj.skin_timeline()['anim_0']
 # Note: Make sure to call this method before you initialize ShowManager, else
 # bones won't be added to the scene.
 
-gltf_obj.initialize_skin(timeline, bones=False)
+gltf_obj.initialize_skin(animation, bones=False)
 
 ##############################################################################
 # Create a scene, and show manager.
@@ -44,10 +44,11 @@ gltf_obj.initialize_skin(timeline, bones=False)
 # actors to the scene seperately).
 
 scene = window.Scene()
-showm = window.ShowManager(scene, size=(900, 768), reset_camera=True,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=True, order_transparent=True
+)
 showm.initialize()
-scene.add(timeline)
+scene.add(animation)
 
 ##############################################################################
 # define a timer_callback.
@@ -56,14 +57,13 @@ scene.add(timeline)
 
 
 def timer_callback(_obj, _event):
-    gltf_obj.update_skin(timeline)
+    gltf_obj.update_skin(animation)
     showm.render()
 
 
 ##############################################################################
 # Optional: `timeline.play()` auto plays the animations.
 
-timeline.play()
 
 showm.add_timer_callback(True, 20, timer_callback)
 scene.reset_camera()
@@ -73,5 +73,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_skinning.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_skinning.png', size=(900, 768))

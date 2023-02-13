@@ -3,7 +3,7 @@ Week 12 - Fixing translating issues and updating tests
 ======================================================
 
 .. post:: August 24 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

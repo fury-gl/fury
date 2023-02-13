@@ -5,41 +5,91 @@ from functools import partial
 
 import numpy as np
 
-from fury.shaders import (add_shader_callback, attribute_to_actor,
-                          compose_shader, import_fury_shader,
-                          replace_shader_in_actor, shader_to_actor)
+import fury.primitive as fp
 from fury import layout
 from fury.actors.odf_slicer import OdfSlicerActor
 from fury.actors.peak import PeakActor
 from fury.colormap import colormap_lookup_table
-from fury.deprecator import deprecated_params, deprecate_with_version
+from fury.deprecator import deprecate_with_version, deprecated_params
 from fury.io import load_image
-from fury.lib import (numpy_support, Transform, ImageData, PolyData, Matrix4x4,
-                      ImageReslice, ImageActor, CellPicker, OutlineFilter,
-                      Actor, PolyDataMapper, LookupTable, ImageMapToColors,
-                      Points, CleanPolyData, LoopSubdivisionFilter, TubeFilter,
-                      ButterflySubdivisionFilter, ContourFilter, SplineFilter,
-                      PolyDataNormals, Assembly, LODActor, VTK_UNSIGNED_CHAR,
-                      PolyDataMapper2D, ScalarBarActor, PolyVertex, CellArray,
-                      UnstructuredGrid, DataSetMapper, ConeSource, ArrowSource,
-                      SphereSource, CylinderSource, DiskSource,
-                      TexturedSphereSource,
-                      Texture, FloatArray, VTK_TEXT_LEFT, VTK_TEXT_RIGHT,
-                      VTK_TEXT_BOTTOM, VTK_TEXT_TOP, VTK_TEXT_CENTERED,
-                      TexturedActor2D, TextureMapToPlane, TextActor3D,
-                      Follower, VectorText, TransformPolyDataFilter,
-                      LinearExtrusionFilter)
-import fury.primitive as fp
-from fury.utils import (lines_to_vtk_polydata, set_input, apply_affine,
-                        set_polydata_vertices, set_polydata_triangles,
-                        shallow_copy, rgb_to_vtk, numpy_to_vtk_matrix,
-                        repeat_sources, get_actor_from_primitive,
-                        fix_winding_order, numpy_to_vtk_colors, color_check,
-                        set_polydata_primitives_count)
+from fury.lib import (
+    VTK_UNSIGNED_CHAR,
+    Actor,
+    ArrowSource,
+    Assembly,
+    ButterflySubdivisionFilter,
+    CellArray,
+    CellPicker,
+    CleanPolyData,
+    ConeSource,
+    ContourFilter,
+    CylinderSource,
+    DiskSource,
+    FloatArray,
+    Follower,
+    ImageActor,
+    ImageData,
+    ImageMapToColors,
+    ImageReslice,
+    LinearExtrusionFilter,
+    LODActor,
+    LookupTable,
+    LoopSubdivisionFilter,
+    Matrix4x4,
+    OutlineFilter,
+    Points,
+    PolyData,
+    PolyDataMapper,
+    PolyDataMapper2D,
+    PolyDataNormals,
+    ScalarBarActor,
+    SphereSource,
+    SplineFilter,
+    TextActor3D,
+    Texture,
+    TexturedActor2D,
+    TexturedSphereSource,
+    TextureMapToPlane,
+    Transform,
+    TransformPolyDataFilter,
+    TubeFilter,
+    VectorText,
+    numpy_support,
+)
+from fury.shaders import (
+    add_shader_callback,
+    attribute_to_actor,
+    compose_shader,
+    import_fury_shader,
+    replace_shader_in_actor,
+    shader_to_actor,
+)
+from fury.utils import (
+    apply_affine,
+    color_check,
+    fix_winding_order,
+    get_actor_from_primitive,
+    lines_to_vtk_polydata,
+    numpy_to_vtk_colors,
+    repeat_sources,
+    rgb_to_vtk,
+    set_input,
+    set_polydata_primitives_count,
+    set_polydata_triangles,
+    set_polydata_vertices,
+    shallow_copy,
+)
 
 
-def slicer(data, affine=None, value_range=None, opacity=1.,
-           lookup_colormap=None, interpolation='linear', picking_tol=0.025):
+def slicer(
+    data,
+    affine=None,
+    value_range=None,
+    opacity=1.0,
+    lookup_colormap=None,
+    interpolation='linear',
+    picking_tol=0.025,
+):
     """Cut 3D scalar or rgb volumes into 2D images.
 
     Parameters
@@ -95,7 +145,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     I, J, K = vol.shape[:3]
     im.SetDimensions(I, J, K)
     # for now setting up for 1x1x1 but transformation comes later.
-    voxsz = (1., 1., 1.)
+    voxsz = (1.0, 1.0, 1.0)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
 
@@ -126,11 +176,26 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
     # Set the transform (identity if none given)
     transform = Transform()
     transform_matrix = Matrix4x4()
-    transform_matrix.DeepCopy((
-        affine[0][0], affine[0][1], affine[0][2], affine[0][3],
-        affine[1][0], affine[1][1], affine[1][2], affine[1][3],
-        affine[2][0], affine[2][1], affine[2][2], affine[2][3],
-        affine[3][0], affine[3][1], affine[3][2], affine[3][3]))
+    transform_matrix.DeepCopy(
+        (
+            affine[0][0],
+            affine[0][1],
+            affine[0][2],
+            affine[0][3],
+            affine[1][0],
+            affine[1][1],
+            affine[1][2],
+            affine[1][3],
+            affine[2][0],
+            affine[2][1],
+            affine[2][2],
+            affine[2][3],
+            affine[3][0],
+            affine[3][1],
+            affine[3][2],
+            affine[3][3],
+        )
+    )
     transform.SetMatrix(transform_matrix)
     transform.Inverse()
 
@@ -153,8 +218,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
     ex1, ex2, ey1, ey2, ez1, ez2 = vtk_resliced_data.GetExtent()
 
-    resliced = numpy_support.vtk_to_numpy(
-        vtk_resliced_data.GetPointData().GetScalars())
+    resliced = numpy_support.vtk_to_numpy(vtk_resliced_data.GetPointData().GetScalars())
 
     # swap axes here
     if data.ndim == 4:
@@ -197,7 +261,7 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
-                self.display_extent(ex1, ex2, ey1, ey2, ez2//2, ez2//2)
+                self.display_extent(ex1, ex2, ey1, ey2, ez2 // 2, ez2 // 2)
             if x is not None:
                 self.display_extent(x, x, ey1, ey2, ez1, ez2)
             if y is not None:
@@ -208,7 +272,8 @@ def slicer(data, affine=None, value_range=None, opacity=1.,
         def resliced_array(self):
             """Return resliced array as numpy array."""
             resliced = numpy_support.vtk_to_numpy(
-                vtk_resliced_data.GetPointData().GetScalars())
+                vtk_resliced_data.GetPointData().GetScalars()
+            )
 
             # swap axes here
             if data.ndim == 4:
@@ -309,14 +374,14 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
 
     """
     from scipy.spatial import Delaunay
+
     points = Points()
     points.SetData(numpy_support.numpy_to_vtk(vertices))
     triangle_poly_data = PolyData()
     triangle_poly_data.SetPoints(points)
 
     if colors is not None:
-        triangle_poly_data.GetPointData().\
-            SetScalars(numpy_to_vtk_colors(255 * colors))
+        triangle_poly_data.GetPointData().SetScalars(numpy_to_vtk_colors(255 * colors))
 
     if faces is None:
         tri = Delaunay(vertices[:, [0, 1]])
@@ -334,14 +399,14 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
         mapper.SetInputData(triangle_poly_data)
         surface_actor.SetMapper(mapper)
 
-    elif smooth == "loop":
+    elif smooth == 'loop':
         smooth_loop = LoopSubdivisionFilter()
         smooth_loop.SetNumberOfSubdivisions(subdivision)
         smooth_loop.SetInputConnection(clean_poly_data.GetOutputPort())
         mapper.SetInputConnection(smooth_loop.GetOutputPort())
         surface_actor.SetMapper(mapper)
 
-    elif smooth == "butterfly":
+    elif smooth == 'butterfly':
         smooth_butterfly = ButterflySubdivisionFilter()
         smooth_butterfly.SetNumberOfSubdivisions(subdivision)
         smooth_butterfly.SetInputConnection(clean_poly_data.GetOutputPort())
@@ -351,8 +416,7 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     return surface_actor
 
 
-def contour_from_roi(data, affine=None,
-                     color=np.array([1, 0, 0]), opacity=1):
+def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     """Generate surface actor from a binary ROI.
 
     The color and opacity of the surface can be customized.
@@ -388,7 +452,7 @@ def contour_from_roi(data, affine=None,
     im = ImageData()
     di, dj, dk = vol.shape[:3]
     im.SetDimensions(di, dj, dk)
-    voxsz = (1., 1., 1.)
+    voxsz = (1.0, 1.0, 1.0)
     # im.SetOrigin(0,0,0)
     im.SetSpacing(voxsz[2], voxsz[0], voxsz[1])
     im.AllocateScalars(VTK_UNSIGNED_CHAR, nb_components)
@@ -408,11 +472,26 @@ def contour_from_roi(data, affine=None,
     # Set the transform (identity if none given)
     transform = Transform()
     transform_matrix = Matrix4x4()
-    transform_matrix.DeepCopy((
-        affine[0][0], affine[0][1], affine[0][2], affine[0][3],
-        affine[1][0], affine[1][1], affine[1][2], affine[1][3],
-        affine[2][0], affine[2][1], affine[2][2], affine[2][3],
-        affine[3][0], affine[3][1], affine[3][2], affine[3][3]))
+    transform_matrix.DeepCopy(
+        (
+            affine[0][0],
+            affine[0][1],
+            affine[0][2],
+            affine[0][3],
+            affine[1][0],
+            affine[1][1],
+            affine[1][2],
+            affine[1][3],
+            affine[2][0],
+            affine[2][1],
+            affine[2][2],
+            affine[2][3],
+            affine[3][0],
+            affine[3][1],
+            affine[3][2],
+            affine[3][3],
+        )
+    )
     transform.SetMatrix(transform_matrix)
     transform.Inverse()
 
@@ -487,7 +566,7 @@ def contour_from_label(data, affine=None, color=None):
     if color is None:
         color = np.random.rand(nb_surfaces, 3)
     elif color.shape != (nb_surfaces, 3) and color.shape != (nb_surfaces, 4):
-        raise ValueError("Incorrect color array shape")
+        raise ValueError('Incorrect color array shape')
 
     if color.shape == (nb_surfaces, 4):
         opacity = color[:, -1]
@@ -497,17 +576,26 @@ def contour_from_label(data, affine=None, color=None):
 
     for i, roi_id in enumerate(unique_roi_id):
         roi_data = np.isin(data, roi_id).astype(int)
-        roi_surface = contour_from_roi(roi_data, affine,
-                                       color=color[i],
-                                       opacity=opacity[i])
+        roi_surface = contour_from_roi(
+            roi_data, affine, color=color[i], opacity=opacity[i]
+        )
         unique_roi_surfaces.AddPart(roi_surface)
 
     return unique_roi_surfaces
 
 
-def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
-               lod=True, lod_points=10 ** 4, lod_points_size=3,
-               spline_subdiv=None, lookup_colormap=None):
+def streamtube(
+    lines,
+    colors=None,
+    opacity=1,
+    linewidth=0.1,
+    tube_sides=9,
+    lod=True,
+    lod_points=10**4,
+    lod_points_size=3,
+    spline_subdiv=None,
+    lookup_colormap=None,
+):
     """Use streamtubes to visualize polylines.
 
     Parameters
@@ -626,7 +714,7 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("colors")
+    poly_mapper.SelectColorArray('colors')
     poly_mapper.Update()
 
     # Color Scale with a lookup table
@@ -654,9 +742,19 @@ def streamtube(lines, colors=None, opacity=1, linewidth=0.1, tube_sides=9,
     return actor
 
 
-def line(lines, colors=None, opacity=1, linewidth=1,
-         spline_subdiv=None, lod=True, lod_points=10 ** 4, lod_points_size=3,
-         lookup_colormap=None, depth_cue=False, fake_tube=False):
+def line(
+    lines,
+    colors=None,
+    opacity=1,
+    linewidth=1,
+    spline_subdiv=None,
+    lod=True,
+    lod_points=10**4,
+    lod_points_size=3,
+    lookup_colormap=None,
+    depth_cue=False,
+    fake_tube=False,
+):
     """Create an actor for one or more lines.
 
     Parameters
@@ -743,7 +841,7 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     poly_mapper = set_input(PolyDataMapper(), next_input)
     poly_mapper.ScalarVisibilityOn()
     poly_mapper.SetScalarModeToUsePointFieldData()
-    poly_mapper.SelectColorArray("colors")
+    poly_mapper.SelectColorArray('colors')
     poly_mapper.Update()
 
     # Color Scale with a lookup table
@@ -768,13 +866,13 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     actor.GetProperty().SetOpacity(opacity)
 
     if depth_cue:
+
         def callback(_caller, _event, calldata=None):
             program = calldata
             if program is not None:
-                program.SetUniformf("linewidth", linewidth)
+                program.SetUniformf('linewidth', linewidth)
 
-        replace_shader_in_actor(actor, 'geometry',
-                                import_fury_shader('line.geom'))
+        replace_shader_in_actor(actor, 'geometry', import_fury_shader('line.geom'))
         add_shader_callback(actor, callback)
 
     if fake_tube:
@@ -783,8 +881,8 @@ def line(lines, colors=None, opacity=1, linewidth=1,
     return actor
 
 
-def scalar_bar(lookup_table=None, title=" "):
-    """ Default scalar bar actor for a given colormap (colorbar)
+def scalar_bar(lookup_table=None, title=' '):
+    """Default scalar bar actor for a given colormap (colorbar)
 
     Parameters
     ----------
@@ -814,9 +912,10 @@ def scalar_bar(lookup_table=None, title=" "):
     return scalar_bar
 
 
-def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
-         opacity=1):
-    """ Create an actor with the coordinate's system axes where
+def axes(
+    scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1), opacity=1
+):
+    """Create an actor with the coordinate's system axes where
     red = x, green = y, blue = z.
 
     Parameters
@@ -839,18 +938,26 @@ def axes(scale=(1, 1, 1), colorx=(1, 0, 0), colory=(0, 1, 0), colorz=(0, 0, 1),
     """
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    colors = np.array([colorx + (opacity,),
-                       colory + (opacity,),
-                       colorz + (opacity,)])
+    colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
 
     scales = np.asarray(scale)
     arrow_actor = arrow(centers, dirs, colors, scales, repeat_primitive=False)
     return arrow_actor
 
 
-def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
-               norm=True, radial_scale=True, opacity=1.0, colormap=None,
-               global_cm=False, B_matrix=None):
+def odf_slicer(
+    odfs,
+    affine=None,
+    mask=None,
+    sphere=None,
+    scale=0.5,
+    norm=True,
+    radial_scale=True,
+    opacity=1.0,
+    colormap=None,
+    global_cm=False,
+    B_matrix=None,
+):
     """
     Create an actor for rendering a grid of ODFs given an array of
     spherical function (SF) or spherical harmonics (SH) coefficients.
@@ -896,11 +1003,13 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
     # first we check if the input array is 4D
     n_dims = len(odfs.shape)
     if n_dims != 4:
-        raise ValueError('Invalid number of dimensions for odfs. Expected 4 '
-                         'dimensions, got {0} dimensions.'.format(n_dims))
+        raise ValueError(
+            'Invalid number of dimensions for odfs. Expected 4 '
+            'dimensions, got {0} dimensions.'.format(n_dims)
+        )
 
     # we generate indices for all nonzero voxels
-    valid_odf_mask = np.abs(odfs).max(axis=-1) > 0.
+    valid_odf_mask = np.abs(odfs).max(axis=-1) > 0.0
     if mask is not None:
         valid_odf_mask = np.logical_and(valid_odf_mask, mask)
     indices = np.nonzero(valid_odf_mask)
@@ -915,19 +1024,33 @@ def odf_slicer(odfs, affine=None, mask=None, sphere=None, scale=0.5,
 
     if B_matrix is None:
         if len(vertices) != odfs.shape[-1]:
-            raise ValueError('Invalid nunber of SF coefficients. '
-                             'Expected {0}, got {1}.'
-                             .format(len(vertices), odfs.shape[-1]))
+            raise ValueError(
+                'Invalid nunber of SF coefficients. '
+                'Expected {0}, got {1}.'.format(len(vertices), odfs.shape[-1])
+            )
     else:
         if len(vertices) != B_matrix.shape[1]:
-            raise ValueError('Invalid nunber of SH coefficients. '
-                             'Expected {0}, got {1}.'
-                             .format(len(vertices), B_matrix.shape[1]))
+            raise ValueError(
+                'Invalid nunber of SH coefficients. '
+                'Expected {0}, got {1}.'.format(len(vertices), B_matrix.shape[1])
+            )
 
     # create and return an instance of OdfSlicerActor
-    return OdfSlicerActor(odfs[indices], vertices, faces, indices, scale, norm,
-                          radial_scale, shape, global_cm, colormap, opacity,
-                          affine, B_matrix)
+    return OdfSlicerActor(
+        odfs[indices],
+        vertices,
+        faces,
+        indices,
+        scale,
+        norm,
+        radial_scale,
+        shape,
+        global_cm,
+        colormap,
+        opacity,
+        affine,
+        B_matrix,
+    )
 
 
 def _makeNd(array, ndim):
@@ -960,12 +1083,13 @@ def _roll_evals(evals, axis=-1):
 
     """
     if evals.shape[-1] != 3:
-        msg = "Expecting 3 eigenvalues, got {}".format(evals.shape[-1])
+        msg = 'Expecting 3 eigenvalues, got {}'.format(evals.shape[-1])
         raise ValueError(msg)
 
     evals = np.rollaxis(evals, axis)
 
     return evals
+
 
 def _fa(evals, axis=-1):
     r"""Return Fractional anisotropy (FA) of a diffusion tensor.
@@ -997,16 +1121,17 @@ def _fa(evals, axis=-1):
     # Make sure not to get nans
     all_zero = (evals == 0).all(axis=0)
     ev1, ev2, ev3 = evals
-    fa = np.sqrt(0.5 * ((ev1 - ev2) ** 2 +
-                        (ev2 - ev3) ** 2 +
-                        (ev3 - ev1) ** 2) /
-                 ((evals * evals).sum(0) + all_zero))
+    fa = np.sqrt(
+        0.5
+        * ((ev1 - ev2) ** 2 + (ev2 - ev3) ** 2 + (ev3 - ev1) ** 2)
+        / ((evals * evals).sum(0) + all_zero)
+    )
 
     return fa
 
 
 def _color_fa(fa, evecs):
-    r""" Color fractional anisotropy of diffusion tensor
+    r"""Color fractional anisotropy of diffusion tensor
 
     Parameters
     ----------
@@ -1034,13 +1159,22 @@ def _color_fa(fa, evecs):
     """
 
     if (fa.shape != evecs[..., 0, 0].shape) or ((3, 3) != evecs.shape[-2:]):
-        raise ValueError("Wrong number of dimensions for evecs")
+        raise ValueError('Wrong number of dimensions for evecs')
 
     return np.abs(evecs[..., 0]) * np.clip(fa, 0, 1)[..., None]
 
 
-def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
-                  norm=True, opacity=1., scalar_colors=None):
+def tensor_slicer(
+    evals,
+    evecs,
+    affine=None,
+    mask=None,
+    sphere=None,
+    scale=2.2,
+    norm=True,
+    opacity=1.0,
+    scalar_colors=None,
+):
     """Slice many tensors as ellipsoids in native or world coordinates.
 
     Parameters
@@ -1074,9 +1208,11 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
     if not evals.shape == evecs.shape[:-1]:
         raise RuntimeError(
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
-            " Please provide eigenvalue and"
-            " eigenvector arrays that have compatible dimensions."
-            .format(evals.shape, evecs.shape))
+            ' Please provide eigenvalue and'
+            ' eigenvector arrays that have compatible dimensions.'.format(
+                evals.shape, evecs.shape
+            )
+        )
 
     if mask is None:
         mask = np.ones(evals.shape[:3], dtype=bool)
@@ -1091,23 +1227,31 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
 
         def display_extent(self, x1, x2, y1, y2, z1, z2):
             tmp_mask = np.zeros(evals.shape[:3], dtype=bool)
-            tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
+            tmp_mask[x1 : x2 + 1, y1 : y2 + 1, z1 : z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 
-            self.mapper = _tensor_slicer_mapper(evals=evals,
-                                                evecs=evecs,
-                                                affine=affine,
-                                                mask=tmp_mask,
-                                                sphere=sphere,
-                                                scale=scale,
-                                                norm=norm,
-                                                scalar_colors=scalar_colors)
+            self.mapper = _tensor_slicer_mapper(
+                evals=evals,
+                evecs=evecs,
+                affine=affine,
+                mask=tmp_mask,
+                sphere=sphere,
+                scale=scale,
+                norm=norm,
+                scalar_colors=scalar_colors,
+            )
             self.SetMapper(self.mapper)
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
-                self.display_extent(0, szx - 1, 0, szy - 1,
-                                    int(np.floor(szz/2)), int(np.floor(szz/2)))
+                self.display_extent(
+                    0,
+                    szx - 1,
+                    0,
+                    szy - 1,
+                    int(np.floor(szz / 2)),
+                    int(np.floor(szz / 2)),
+                )
             if x is not None:
                 self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
             if y is not None:
@@ -1116,16 +1260,25 @@ def tensor_slicer(evals, evecs, affine=None, mask=None, sphere=None, scale=2.2,
                 self.display_extent(0, szx - 1, 0, szy - 1, z, z)
 
     tensor_actor = TensorSlicerActor()
-    tensor_actor.display_extent(0, szx - 1, 0, szy - 1,
-                                int(np.floor(szz/2)), int(np.floor(szz/2)))
+    tensor_actor.display_extent(
+        0, szx - 1, 0, szy - 1, int(np.floor(szz / 2)), int(np.floor(szz / 2))
+    )
 
     tensor_actor.GetProperty().SetOpacity(opacity)
 
     return tensor_actor
 
 
-def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
-                          scale=2.2, norm=True, scalar_colors=None):
+def _tensor_slicer_mapper(
+    evals,
+    evecs,
+    affine=None,
+    mask=None,
+    sphere=None,
+    scale=2.2,
+    norm=True,
+    scalar_colors=None,
+):
     """Return Helper function for slicing tensor fields.
 
     Parameters
@@ -1167,13 +1320,12 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     vertices = sphere.vertices
 
     if scalar_colors is None:
-        #from dipy.reconst.dti import color_fa, fractional_anisotropy
+        # from dipy.reconst.dti import color_fa, fractional_anisotropy
         cfa = _color_fa(_fa(evals), evecs)
     else:
         cfa = _makeNd(scalar_colors, 4)
 
-    cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape,
-                    dtype='f4')
+    cols = np.zeros((ijk.shape[0],) + sphere.vertices.shape, dtype='f4')
 
     all_xyz = []
     all_faces = []
@@ -1190,8 +1342,9 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
         all_xyz.append(scale * xyz + center)
         all_faces.append(faces + k * xyz.shape[0])
 
-        cols[k, ...] = np.interp(cfa[tuple(center.astype(int))], [0, 1],
-                                 [0, 255]).astype('ubyte')
+        cols[k, ...] = np.interp(
+            cfa[tuple(center.astype(int))], [0, 1], [0, 255]
+        ).astype('ubyte')
 
     all_xyz = np.ascontiguousarray(np.concatenate(all_xyz))
     all_xyz_vtk = numpy_support.numpy_to_vtk(all_xyz, deep=True)
@@ -1202,15 +1355,14 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     all_faces = np.concatenate(all_faces)
 
     cols = np.ascontiguousarray(
-        np.reshape(cols, (cols.shape[0] * cols.shape[1],
-                   cols.shape[2])), dtype='f4')
+        np.reshape(cols, (cols.shape[0] * cols.shape[1], cols.shape[2])), dtype='f4'
+    )
 
     vtk_colors = numpy_support.numpy_to_vtk(
-        cols,
-        deep=True,
-        array_type=VTK_UNSIGNED_CHAR)
+        cols, deep=True, array_type=VTK_UNSIGNED_CHAR
+    )
 
-    vtk_colors.SetName("colors")
+    vtk_colors.SetName('colors')
 
     polydata = PolyData()
     polydata.SetPoints(points)
@@ -1223,9 +1375,19 @@ def _tensor_slicer_mapper(evals, evecs, affine=None, mask=None, sphere=None,
     return mapper
 
 
-def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
-                colors=(1, 0, 0), opacity=1., linewidth=1, lod=False,
-                lod_points=10 ** 4, lod_points_size=3, symmetric=True):
+def peak_slicer(
+    peaks_dirs,
+    peaks_values=None,
+    mask=None,
+    affine=None,
+    colors=(1, 0, 0),
+    opacity=1.0,
+    linewidth=1,
+    lod=False,
+    lod_points=10**4,
+    lod_points_size=3,
+    symmetric=True,
+):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1271,7 +1433,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     """
     peaks_dirs = np.asarray(peaks_dirs)
     if peaks_dirs.ndim > 5:
-        raise ValueError("Wrong shape")
+        raise ValueError('Wrong shape')
 
     peaks_dirs = _makeNd(peaks_dirs, 5)
     if peaks_values is not None:
@@ -1289,7 +1451,7 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
         def display_extent(self, x1, x2, y1, y2, z1, z2):
 
             tmp_mask = np.zeros(grid_shape, dtype=bool)
-            tmp_mask[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = True
+            tmp_mask[x1 : x2 + 1, y1 : y2 + 1, z1 : z2 + 1] = True
             tmp_mask = np.bitwise_and(tmp_mask, mask)
 
             ijk = np.ascontiguousarray(np.array(np.nonzero(tmp_mask)).T)
@@ -1311,28 +1473,41 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
                     if peaks_values is not None:
                         pv = peaks_values[tuple(center)][i]
                     else:
-                        pv = 1.
+                        pv = 1.0
                     if symmetric:
                         dirs = np.vstack(
-                            (-peaks_dirs[tuple(center)][i] * pv + xyz,
-                             peaks_dirs[tuple(center)][i] * pv + xyz))
+                            (
+                                -peaks_dirs[tuple(center)][i] * pv + xyz,
+                                peaks_dirs[tuple(center)][i] * pv + xyz,
+                            )
+                        )
                     else:
-                        dirs = np.vstack(
-                            (xyz, peaks_dirs[tuple(center)][i] * pv + xyz))
+                        dirs = np.vstack((xyz, peaks_dirs[tuple(center)][i] * pv + xyz))
                     list_dirs.append(dirs)
 
-            self.line = line(list_dirs, colors=colors,
-                             opacity=opacity, linewidth=linewidth,
-                             lod=lod, lod_points=lod_points,
-                             lod_points_size=lod_points_size)
+            self.line = line(
+                list_dirs,
+                colors=colors,
+                opacity=opacity,
+                linewidth=linewidth,
+                lod=lod,
+                lod_points=lod_points,
+                lod_points_size=lod_points_size,
+            )
 
             self.SetProperty(self.line.GetProperty())
             self.SetMapper(self.line.GetMapper())
 
         def display(self, x=None, y=None, z=None):
             if x is None and y is None and z is None:
-                self.display_extent(0, szx - 1, 0, szy - 1,
-                                    int(np.floor(szz/2)), int(np.floor(szz/2)))
+                self.display_extent(
+                    0,
+                    szx - 1,
+                    0,
+                    szy - 1,
+                    int(np.floor(szz / 2)),
+                    int(np.floor(szz / 2)),
+                )
             if x is not None:
                 self.display_extent(x, x, 0, szy - 1, 0, szz - 1)
             if y is not None:
@@ -1343,14 +1518,23 @@ def peak_slicer(peaks_dirs, peaks_values=None, mask=None, affine=None,
     peak_actor = PeakSlicerActor()
 
     szx, szy, szz = grid_shape
-    peak_actor.display_extent(0, szx - 1, 0, szy - 1,
-                              int(np.floor(szz / 2)), int(np.floor(szz / 2)))
+    peak_actor.display_extent(
+        0, szx - 1, 0, szy - 1, int(np.floor(szz / 2)), int(np.floor(szz / 2))
+    )
 
     return peak_actor
 
 
-def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
-         linewidth=1, lookup_colormap=None, symmetric=True):
+def peak(
+    peaks_dirs,
+    peaks_values=None,
+    mask=None,
+    affine=None,
+    colors=None,
+    linewidth=1,
+    lookup_colormap=None,
+    symmetric=True,
+):
     """Visualize peak directions as given from ``peaks_from_model``.
 
     Parameters
@@ -1394,43 +1578,64 @@ def peak(peaks_dirs, peaks_values=None, mask=None, affine=None, colors=None,
 
     """
     if peaks_dirs.ndim != 5:
-        raise ValueError('Invalid peak directions. The shape of the structure '
-                         'must be (XxYxZxDx3). Your data has {} dimensions.'
-                         ''.format(peaks_dirs.ndim))
+        raise ValueError(
+            'Invalid peak directions. The shape of the structure '
+            'must be (XxYxZxDx3). Your data has {} dimensions.'
+            ''.format(peaks_dirs.ndim)
+        )
     if peaks_dirs.shape[4] != 3:
-        raise ValueError('Invalid peak directions. The shape of the last '
-                         'dimension must be 3. Your data has a last dimension '
-                         'of {}.'.format(peaks_dirs.shape[4]))
+        raise ValueError(
+            'Invalid peak directions. The shape of the last '
+            'dimension must be 3. Your data has a last dimension '
+            'of {}.'.format(peaks_dirs.shape[4])
+        )
 
     dirs_shape = peaks_dirs.shape
 
     if peaks_values is not None:
         if peaks_values.ndim != 4:
-            raise ValueError('Invalid peak values. The shape of the structure '
-                             'must be (XxYxZxD). Your data has {} dimensions.'
-                             ''.format(peaks_values.ndim))
+            raise ValueError(
+                'Invalid peak values. The shape of the structure '
+                'must be (XxYxZxD). Your data has {} dimensions.'
+                ''.format(peaks_values.ndim)
+            )
         vals_shape = peaks_values.shape
         if vals_shape != dirs_shape[:4]:
-            raise ValueError('Invalid peak values. The shape of the values '
-                             'must coincide with the shape of the directions.')
+            raise ValueError(
+                'Invalid peak values. The shape of the values '
+                'must coincide with the shape of the directions.'
+            )
 
     valid_mask = np.abs(peaks_dirs).max(axis=(-2, -1)) > 0
     if mask is not None:
         if mask.ndim != 3:
-            warnings.warn('Invalid mask. The mask must be a 3D array. The '
-                          'passed mask has {} dimensions. Ignoring passed '
-                          'mask.'.format(mask.ndim), UserWarning)
+            warnings.warn(
+                'Invalid mask. The mask must be a 3D array. The '
+                'passed mask has {} dimensions. Ignoring passed '
+                'mask.'.format(mask.ndim),
+                UserWarning,
+            )
         elif mask.shape != dirs_shape[:3]:
-            warnings.warn('Invalid mask. The shape of the mask must coincide '
-                          'with the shape of the directions. Ignoring passed '
-                          'mask.', UserWarning)
+            warnings.warn(
+                'Invalid mask. The shape of the mask must coincide '
+                'with the shape of the directions. Ignoring passed '
+                'mask.',
+                UserWarning,
+            )
         else:
             valid_mask = np.logical_and(valid_mask, mask)
     indices = np.nonzero(valid_mask)
 
-    return PeakActor(peaks_dirs, indices, values=peaks_values, affine=affine,
-                     colors=colors, lookup_colormap=lookup_colormap,
-                     linewidth=linewidth, symmetric=symmetric)
+    return PeakActor(
+        peaks_dirs,
+        indices,
+        values=peaks_values,
+        affine=affine,
+        colors=colors,
+        lookup_colormap=lookup_colormap,
+        linewidth=linewidth,
+        symmetric=symmetric,
+    )
 
 
 def dot(points, colors=None, opacity=None, dot_size=5):
@@ -1460,14 +1665,16 @@ def dot(points, colors=None, opacity=None, dot_size=5):
 
     """
     if points.ndim != 2:
-        raise ValueError('Invalid points. The shape of the structure must be '
-                         '(Nx3). Your data has {} dimensions.'
-                         .format(points.ndim))
+        raise ValueError(
+            'Invalid points. The shape of the structure must be '
+            '(Nx3). Your data has {} dimensions.'.format(points.ndim)
+        )
 
     if points.shape[1] != 3:
-        raise ValueError('Invalid points. The shape of the last dimension '
-                         'must be 3. Your data has a last dimension of {}.'
-                         .format(points.shape[1]))
+        raise ValueError(
+            'Invalid points. The shape of the last dimension '
+            'must be 3. Your data has a last dimension of {}.'.format(points.shape[1])
+        )
 
     vtk_vertices = Points()
     vtk_faces = CellArray()
@@ -1509,12 +1716,12 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     return poly_actor
 
 
-dots = deprecate_with_version(message="dots function has been renamed dot",
-                              since="0.8.1",
-                              until="0.9.0")(dot)
+dots = deprecate_with_version(
+    message='dots function has been renamed dot', since='0.8.1', until='0.9.0'
+)(dot)
 
 
-def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
+def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     """Visualize points as sphere glyphs
 
     Parameters
@@ -1546,12 +1753,29 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.):
     >>> # window.show(scene)
 
     """
-    return sphere(centers=points, colors=colors, radii=point_radius, phi=phi,
-                  theta=theta, vertices=None, faces=None, opacity=opacity)
+    return sphere(
+        centers=points,
+        colors=colors,
+        radii=point_radius,
+        phi=phi,
+        theta=theta,
+        vertices=None,
+        faces=None,
+        opacity=opacity,
+    )
 
 
-def sphere(centers, colors, radii=1., phi=16, theta=16,
-           vertices=None, faces=None, opacity=1, use_primitive=False):
+def sphere(
+    centers,
+    colors,
+    radii=1.0,
+    phi=16,
+    theta=16,
+    vertices=None,
+    faces=None,
+    opacity=1,
+    use_primitive=False,
+):
     """Visualize one or many spheres with different colors and radii
 
     Parameters
@@ -1599,9 +1823,14 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
             src.SetThetaResolution(theta)
             src.SetPhiResolution(phi)
 
-        sphere_actor = repeat_sources(centers=centers, colors=colors,
-                                      active_scalars=radii, source=src,
-                                      vertices=vertices, faces=faces)
+        sphere_actor = repeat_sources(
+            centers=centers,
+            colors=colors,
+            active_scalars=radii,
+            source=src,
+            vertices=vertices,
+            faces=faces,
+        )
         sphere_actor.GetProperty().SetOpacity(opacity)
         return sphere_actor
 
@@ -1611,19 +1840,34 @@ def sphere(centers, colors, radii=1., phi=16, theta=16,
     if faces is None and vertices is None:
         vertices, faces = fp.prim_sphere(phi=phi, theta=theta)
 
-    res = fp.repeat_primitive(vertices, faces,
-                              directions=directions, centers=centers,
-                              colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        vertices,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
     sphere_actor = get_actor_from_primitive(
-            big_verts, big_faces, big_colors, prim_count=prim_count)
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     sphere_actor.GetProperty().SetOpacity(opacity)
     return sphere_actor
 
 
-def cylinder(centers, directions, colors, radius=0.05, heights=1,
-             capped=False, resolution=6, vertices=None, faces=None):
+def cylinder(
+    centers,
+    directions,
+    colors,
+    radius=0.05,
+    heights=1,
+    capped=False,
+    resolution=6,
+    vertices=None,
+    faces=None,
+):
     """Visualize one or many cylinder with different features.
 
     Parameters
@@ -1669,25 +1913,36 @@ def cylinder(centers, directions, colors, radius=0.05, heights=1,
         src.SetCapping(capped)
         src.SetResolution(resolution)
         src.SetRadius(radius)
-        rotate = np.array([[0, 1, 0, 0],
-                           [-1, 0, 0, 0],
-                           [0, 0, 1, 0],
-                           [0, 0, 0, 1]])
+        rotate = np.array([[0, 1, 0, 0], [-1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
     else:
         src = None
         rotate = None
 
-    cylinder_actor = repeat_sources(centers=centers, colors=colors,
-                                    directions=directions,
-                                    active_scalars=heights, source=src,
-                                    vertices=vertices, faces=faces,
-                                    orientation=rotate)
+    cylinder_actor = repeat_sources(
+        centers=centers,
+        colors=colors,
+        directions=directions,
+        active_scalars=heights,
+        source=src,
+        vertices=vertices,
+        faces=faces,
+        orientation=rotate,
+    )
 
     return cylinder_actor
 
 
-def disk(centers, directions, colors, rinner=0.3,
-         router=0.7, cresolution=6, rresolution=2, vertices=None, faces=None):
+def disk(
+    centers,
+    directions,
+    colors,
+    rinner=0.3,
+    router=0.7,
+    cresolution=6,
+    rresolution=2,
+    vertices=None,
+    faces=None,
+):
     """Visualize one or many disks with different features.
 
     Parameters
@@ -1735,18 +1990,20 @@ def disk(centers, directions, colors, rinner=0.3,
         src.SetRadialResolution(rresolution)
         src.SetInnerRadius(rinner)
         src.SetOuterRadius(router)
-        rotate = np.array([[0, 0, -1, 0],
-                           [0, 1, 0, 0],
-                           [1, 0, 0, 0],
-                           [0, 0, 0, 1]])
+        rotate = np.array([[0, 0, -1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]])
     else:
         src = None
         rotate = None
 
-    disk_actor = repeat_sources(centers=centers, colors=colors,
-                                directions=directions, source=src,
-                                vertices=vertices, faces=faces,
-                                orientation=rotate)
+    disk_actor = repeat_sources(
+        centers=centers,
+        colors=colors,
+        directions=directions,
+        source=src,
+        vertices=vertices,
+        faces=faces,
+        orientation=rotate,
+    )
 
     return disk_actor
 
@@ -1781,19 +2038,25 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
 
     """
     verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                        prim_count=prim_count)
+    sq_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     sq_actor.GetProperty().BackfaceCullingOff()
     return sq_actor
 
 
-def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-              scales=(1, 2, 0)):
+def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0)):
     """Visualize one or many rectangles with different features.
 
     Parameters
@@ -1826,12 +2089,10 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0),
     >>> # window.show(scene)
 
     """
-    return square(centers=centers, directions=directions, colors=colors,
-                  scales=scales)
+    return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
-@deprecated_params(['size', 'heights'], ['scales', 'scales'],
-                   since='0.6', until='0.8')
+@deprecated_params(['size', 'heights'], ['scales', 'scales'], since='0.6', until='0.8')
 def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     """Visualize one or many boxes with different features.
 
@@ -1862,13 +2123,20 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
 
     """
     verts, faces = fp.prim_box()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    box_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                         prim_count=prim_count)
+    box_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return box_actor
 
 
@@ -1902,13 +2170,23 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> # window.show(scene)
 
     """
-    return box(centers=centers, directions=directions, colors=colors,
-               scales=scales)
+    return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
-def arrow(centers, directions, colors, heights=1., resolution=10,
-          tip_length=0.35, tip_radius=0.1, shaft_radius=0.03, scales=1,
-          vertices=None, faces=None, repeat_primitive=True):
+def arrow(
+    centers,
+    directions,
+    colors,
+    heights=1.0,
+    resolution=10,
+    tip_length=0.35,
+    tip_radius=0.1,
+    shaft_radius=0.03,
+    scales=1,
+    vertices=None,
+    faces=None,
+    repeat_primitive=True,
+):
     """Visualize one or many arrows with differents features.
 
     Parameters
@@ -1954,12 +2232,19 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
     """
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
-        res = fp.repeat_primitive(vertices, faces, directions=directions, centers=centers,
-                                  colors=colors, scales=scales)
+        res = fp.repeat_primitive(
+            vertices,
+            faces,
+            directions=directions,
+            centers=centers,
+            colors=colors,
+            scales=scales,
+        )
         big_vertices, big_faces, big_colors, _ = res
         prim_count = len(centers)
-        arrow_actor = get_actor_from_primitive(big_vertices, big_faces, big_colors,
-                                               prim_count=prim_count)
+        arrow_actor = get_actor_from_primitive(
+            big_vertices, big_faces, big_colors, prim_count=prim_count
+        )
         return arrow_actor
 
     src = ArrowSource() if faces is None else None
@@ -1971,14 +2256,28 @@ def arrow(centers, directions, colors, heights=1., resolution=10,
         src.SetTipRadius(tip_radius)
         src.SetShaftRadius(shaft_radius)
 
-    arrow_actor = repeat_sources(centers=centers, directions=directions,
-                                 colors=colors, active_scalars=heights,
-                                 source=src, vertices=vertices, faces=faces)
+    arrow_actor = repeat_sources(
+        centers=centers,
+        directions=directions,
+        colors=colors,
+        active_scalars=heights,
+        source=src,
+        vertices=vertices,
+        faces=faces,
+    )
     return arrow_actor
 
 
-def cone(centers, directions, colors, heights=1., resolution=10,
-         vertices=None, faces=None, use_primitive=True):
+def cone(
+    centers,
+    directions,
+    colors,
+    heights=1.0,
+    resolution=10,
+    vertices=None,
+    faces=None,
+    use_primitive=True,
+):
     """Visualize one or many cones with different features.
 
     Parameters
@@ -2024,28 +2323,34 @@ def cone(centers, directions, colors, heights=1., resolution=10,
         if src is not None:
             src.SetResolution(resolution)
 
-        cone_actor = repeat_sources(centers=centers, directions=directions,
-                                    colors=colors, active_scalars=heights,
-                                    source=src, vertices=vertices, faces=faces)
+        cone_actor = repeat_sources(
+            centers=centers,
+            directions=directions,
+            colors=colors,
+            active_scalars=heights,
+            source=src,
+            vertices=vertices,
+            faces=faces,
+        )
         return cone_actor
 
     if faces is None and vertices is None:
         vertices, faces = fp.prim_cone(sectors=resolution)
 
     res = fp.repeat_primitive(
-                    vertices, faces, centers,
-                    directions=directions, colors=colors, scales=heights)
+        vertices, faces, centers, directions=directions, colors=colors, scales=heights
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    cone_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                          prim_count=prim_count)
+    cone_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
 
     return cone_actor
 
 
-def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                    scales=1):
+def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many regular triangular prisms with different features.
 
     Parameters
@@ -2077,17 +2382,23 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     """
     verts, faces = fp.prim_triangularprism()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    tprism_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                            prim_count=prim_count)
+    tprism_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return tprism_actor
 
 
-def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                        scales=1):
+def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many rhombicuboctahedron with different features.
 
     Parameters
@@ -2119,17 +2430,23 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     """
     verts, faces = fp.prim_rhombicuboctahedron()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    rcoh_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                          prim_count=prim_count)
+    rcoh_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return rcoh_actor
 
 
-def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                    scales=1):
+def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many pentagonal prisms with different features.
 
     Parameters
@@ -2162,18 +2479,24 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     """
     verts, faces = fp.prim_pentagonalprism()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    pent_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                          prim_count=prim_count)
+    pent_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return pent_actor
 
 
-def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
-                   scales=1):
+def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     """Visualize one or many octagonal prisms with different features.
 
     Parameters
@@ -2205,13 +2528,20 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0),
 
     """
     verts, faces = fp.prim_octagonalprism()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    oct_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                         prim_count=prim_count)
+    oct_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return oct_actor
 
 
@@ -2246,18 +2576,26 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
 
     """
     verts, faces = fp.prim_frustum()
-    res = fp.repeat_primitive(verts, faces, directions=directions,
-                              centers=centers, colors=colors, scales=scales)
+    res = fp.repeat_primitive(
+        verts,
+        faces,
+        directions=directions,
+        centers=centers,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    frustum_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                             prim_count=prim_count)
+    frustum_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return frustum_actor
 
 
-def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
-                 colors=(1, 0, 0), scales=1):
+def superquadric(
+    centers, roundness=(1, 1), directions=(1, 0, 0), colors=(1, 0, 0), scales=1
+):
     """Visualize one or many superquadrics with different features.
 
     Parameters
@@ -2293,33 +2631,49 @@ def superquadric(centers, roundness=(1, 1), directions=(1, 0, 0),
     >>> # window.show(scene)
 
     """
+
     def have_2_dimensions(arr):
         return all(isinstance(i, (list, tuple, np.ndarray)) for i in arr)
 
     # reshape roundness to a valid numpy array
-    if (isinstance(roundness, (tuple, list, np.ndarray)) and
-       len(roundness) == 2 and not have_2_dimensions(roundness)):
+    if (
+        isinstance(roundness, (tuple, list, np.ndarray))
+        and len(roundness) == 2
+        and not have_2_dimensions(roundness)
+    ):
         roundness = np.array([roundness] * centers.shape[0])
     elif isinstance(roundness, np.ndarray) and len(roundness) == 1:
         roundness = np.repeat(roundness, centers.shape[0], axis=0)
     else:
         roundness = np.array(roundness)
 
-    res = fp.repeat_primitive_function(func=fp.prim_superquadric,
-                                       centers=centers,
-                                       func_args=roundness,
-                                       directions=directions,
-                                       colors=colors, scales=scales)
+    res = fp.repeat_primitive_function(
+        func=fp.prim_superquadric,
+        centers=centers,
+        func_args=roundness,
+        directions=directions,
+        colors=colors,
+        scales=scales,
+    )
 
     big_verts, big_faces, big_colors, _ = res
     prim_count = len(centers)
-    spq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                         prim_count=prim_count)
+    spq_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     return spq_actor
 
 
-def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
-              gs_prog=None, fs_dec=None, fs_impl=None):
+def billboard(
+    centers,
+    colors=(0, 1, 0),
+    scales=1,
+    vs_dec=None,
+    vs_impl=None,
+    gs_prog=None,
+    fs_dec=None,
+    fs_impl=None,
+):
     """Create a billboard actor.
 
     Billboards are 2D elements placed in a 3D world. They offer possibility to
@@ -2352,41 +2706,51 @@ def billboard(centers, colors=(0, 1, 0), scales=1, vs_dec=None, vs_impl=None,
 
     """
     verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scales=scales)
+    res = fp.repeat_primitive(
+        verts, faces, centers=centers, colors=colors, scales=scales
+    )
 
     big_verts, big_faces, big_colors, big_centers = res
 
     prim_count = len(centers)
-    bb_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                        prim_count=prim_count)
+    bb_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     bb_actor.GetMapper().SetVBOShiftScaleMethod(False)
     bb_actor.GetProperty().BackfaceCullingOff()
     attribute_to_actor(bb_actor, big_centers, 'center')
 
-    vs_dec_code = compose_shader([import_fury_shader('billboard_dec.vert') +
-                                  compose_shader(vs_dec)])
-    vs_impl_code = compose_shader([compose_shader(vs_impl) +
-                                   import_fury_shader('billboard_impl.vert')])
+    vs_dec_code = compose_shader(
+        [import_fury_shader('billboard_dec.vert') + compose_shader(vs_dec)]
+    )
+    vs_impl_code = compose_shader(
+        [compose_shader(vs_impl) + import_fury_shader('billboard_impl.vert')]
+    )
     gs_code = compose_shader(gs_prog)
-    fs_dec_code = compose_shader([import_fury_shader('billboard_dec.frag') +
-                                  compose_shader(fs_dec)])
-    fs_impl_code = compose_shader([import_fury_shader('billboard_impl.frag') +
-                                   compose_shader(fs_impl)])
+    fs_dec_code = compose_shader(
+        [import_fury_shader('billboard_dec.frag') + compose_shader(fs_dec)]
+    )
+    fs_impl_code = compose_shader(
+        [import_fury_shader('billboard_impl.frag') + compose_shader(fs_impl)]
+    )
 
-    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code,
-                    decl_code=vs_dec_code)
+    shader_to_actor(bb_actor, 'vertex', impl_code=vs_impl_code, decl_code=vs_dec_code)
     replace_shader_in_actor(bb_actor, 'geometry', gs_code)
     shader_to_actor(bb_actor, 'fragment', decl_code=fs_dec_code)
-    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code,
-                    block='light')
+    shader_to_actor(bb_actor, 'fragment', impl_code=fs_impl_code, block='light')
 
     return bb_actor
 
 
-def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
-                color=(1, 1, 1), direction=(0, 0, 1), extrusion=0.0,
-                align_center=False):
+def vector_text(
+    text='Origin',
+    pos=(0, 0, 0),
+    scale=(0.2, 0.2, 0.2),
+    color=(1, 1, 1),
+    direction=(0, 0, 1),
+    extrusion=0.0,
+    align_center=False,
+):
     """Create a label actor.
 
     This actor will always face the camera
@@ -2444,6 +2808,7 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
         def add_to_scene(scene):
             texta.SetCamera(scene.GetActiveCamera())
             scene.AddActor(texta)
+
         texta.add_to_scene = add_to_scene
 
     else:
@@ -2476,17 +2841,26 @@ def vector_text(text='Origin', pos=(0, 0, 0), scale=(0.2, 0.2, 0.2),
     return texta
 
 
-label = deprecate_with_version(message="Label function has been renamed"
-                                       " vector_text",
-                               since="0.7.1",
-                               until="0.9.0")(vector_text)
+label = deprecate_with_version(
+    message='Label function has been renamed' ' vector_text',
+    since='0.7.1',
+    until='0.9.0',
+)(vector_text)
 
 
-def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
-            font_size=12, font_family='Arial', justification='left',
-            vertical_justification="bottom",
-            bold=False, italic=False, shadow=False):
-    """ Generate 2D text that lives in the 3D world
+def text_3d(
+    text,
+    position=(0, 0, 0),
+    color=(1, 1, 1),
+    font_size=12,
+    font_family='Arial',
+    justification='left',
+    vertical_justification='bottom',
+    bold=False,
+    italic=False,
+    shadow=False,
+):
+    """Generate 2D text that lives in the 3D world
 
     Parameters
     ----------
@@ -2509,7 +2883,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
     """
 
     class Text3D(TextActor3D):
-
         def message(self, text):
             self.set_message(text)
 
@@ -2521,7 +2894,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
 
         def font_size(self, size):
             self.GetTextProperty().SetFontSize(24)
-            text_actor.SetScale((1./24.*size,)*3)
+            text_actor.SetScale((1.0 / 24.0 * size,) * 3)
 
         def font_family(self, _family='Arial'):
             self.GetTextProperty().SetFontFamilyToArial()
@@ -2535,8 +2908,7 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             elif justification == 'right':
                 tprop.SetJustificationToRight()
             else:
-                raise ValueError("Unknown justification: '{}'"
-                                 .format(justification))
+                raise ValueError("Unknown justification: '{}'".format(justification))
 
         def vertical_justification(self, justification):
             tprop = self.GetTextProperty()
@@ -2547,8 +2919,9 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
             elif justification == 'bottom':
                 tprop.SetVerticalJustificationToBottom()
             else:
-                raise ValueError("Unknown vertical justification: '{}'"
-                                 .format(justification))
+                raise ValueError(
+                    "Unknown vertical justification: '{}'".format(justification)
+                )
 
         def font_style(self, bold=False, italic=False, shadow=False):
             tprop = self.GetTextProperty()
@@ -2574,7 +2947,6 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
         def get_position(self):
             return self.GetPosition()
 
-
     text_actor = Text3D()
     text_actor.message(text)
     text_actor.font_size(font_size)
@@ -2588,8 +2960,8 @@ def text_3d(text, position=(0, 0, 0), color=(1, 1, 1),
     return text_actor
 
 
-class Container(object):
-    """ Provides functionalities for grouping multiple actors using a given
+class Container:
+    """Provides functionalities for grouping multiple actors using a given
     layout.
 
     Attributes
@@ -2650,17 +3022,17 @@ class Container(object):
             self._items.append(item)
 
     def clear(self):
-        """ Clears all items of this container. """
+        """Clears all items of this container."""
         self._need_update = True
         del self._items[:]
 
     def update(self):
-        """ Updates the position of the items of this container. """
+        """Updates the position of the items of this container."""
         self.layout.apply(self._items)
         self._need_update = False
 
     def add_to_scene(self, scene):
-        """ Adds the items of this container to a given scene. """
+        """Adds the items of this container to a given scene."""
         for item in self.items:
             if isinstance(item, Container):
                 item.add_to_scene(scene)
@@ -2668,7 +3040,7 @@ class Container(object):
                 scene.add(item)
 
     def remove_from_scene(self, scene):
-        """ Removes the items of this container from a given scene. """
+        """Removes the items of this container from a given scene."""
         for item in self.items:
             if isinstance(item, Container):
                 item.remove_from_scene(scene)
@@ -2676,7 +3048,7 @@ class Container(object):
                 scene.rm(item)
 
     def GetBounds(self):
-        """ Get the bounds of the container. """
+        """Get the bounds of the container."""
         bounds = np.zeros(6)    # x1, x2, y1, y2, z1, z2
         bounds[::2] = np.inf    # x1, y1, z1
         bounds[1::2] = -np.inf  # x2, y2, z2
@@ -2712,14 +3084,14 @@ class Container(object):
         self.AddPosition(np.array(position) - self._position)
 
     def GetCenter(self):
-        """ Get the center of the bounding box. """
+        """Get the center of the bounding box."""
         x1, x2, y1, y2, z1, z2 = self.GetBounds()
-        return ((x1+x2)/2., (y1+y2)/2., (z1+z2)/2.)
+        return ((x1 + x2) / 2.0, (y1 + y2) / 2.0, (z1 + z2) / 2.0)
 
     def GetLength(self):
-        """ Get the length of bounding box diagonal. """
+        """Get the length of bounding box diagonal."""
         x1, x2, y1, y2, z1, z2 = self.GetBounds()
-        width, height, depth = x2-x1, y2-y1, z2-z1
+        width, height, depth = x2 - x1, y2 - y1, z2 - z1
         return np.sqrt(np.sum([width**2, height**2, depth**2]))
 
     def NewInstance(self):
@@ -2736,9 +3108,16 @@ class Container(object):
         return len(self._items)
 
 
-def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
-         cell_shape="rect", aspect_ratio=16/9., dim=None):
-    """ Creates a grid of actors that lies in the xy-plane.
+def grid(
+    actors,
+    captions=None,
+    caption_offset=(0, -100, 0),
+    cell_padding=0,
+    cell_shape='rect',
+    aspect_ratio=16 / 9.0,
+    dim=None,
+):
+    """Creates a grid of actors that lies in the xy-plane.
 
     Parameters
     ----------
@@ -2774,9 +3153,12 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
         Object that represents the grid containing all the actors and
         captions, if any.
     """
-    grid_layout = layout.GridLayout(cell_padding=cell_padding,
-                                    cell_shape=cell_shape,
-                                    aspect_ratio=aspect_ratio, dim=dim)
+    grid_layout = layout.GridLayout(
+        cell_padding=cell_padding,
+        cell_shape=cell_shape,
+        aspect_ratio=aspect_ratio,
+        dim=dim,
+    )
     grid = Container(layout=grid_layout)
 
     if captions is not None:
@@ -2799,8 +3181,7 @@ def grid(actors, captions=None, caption_offset=(0, -100, 0), cell_padding=0,
             # We change the anchor of the container so
             # the actor will be centered in the
             # grid cell.
-            actor_with_caption.anchor = actor_center - \
-                actor_with_caption.GetCenter()
+            actor_with_caption.anchor = actor_center - actor_with_caption.GetCenter()
             actors_with_caption.append(actor_with_caption)
 
         actors = actors_with_caption
@@ -2834,9 +3215,7 @@ def figure(pic, interpolation='nearest'):
 
             # width, height
             vtk_image_data.SetDimensions(pic.shape[1], pic.shape[0], 1)
-            vtk_image_data.SetExtent(0, pic.shape[1] - 1,
-                                     0, pic.shape[0] - 1,
-                                     0, 0)
+            vtk_image_data.SetExtent(0, pic.shape[1] - 1, 0, pic.shape[0] - 1, 0, 0)
             pic_tmp = np.swapaxes(pic, 0, 1)
             pic_tmp = pic.reshape(pic.shape[1] * pic.shape[0], 4)
             pic_tmp = np.ascontiguousarray(pic_tmp)
@@ -2932,8 +3311,7 @@ def texture_update(texture_actor, arr):
     """
     grid = texture_actor.GetTexture().GetInput()
     dim = arr.shape[-1]
-    img_data = np.flip(arr.swapaxes(0, 1), axis=1)\
-                 .reshape((-1, dim), order='F')
+    img_data = np.flip(arr.swapaxes(0, 1), axis=1).reshape((-1, dim), order='F')
     vtkarr = numpy_support.numpy_to_vtk(img_data, deep=False)
     grid.GetPointData().SetScalars(vtkarr)
 
@@ -2966,7 +3344,7 @@ def texture_on_sphere(rgb, theta=60, phi=60, interpolate=True):
 
 
 def texture_2d(rgb, interp=False):
-    """ Create 2D texture from array
+    """Create 2D texture from array
 
     Parameters
     ----------
@@ -3017,8 +3395,7 @@ def texture_2d(rgb, interp=False):
     texture_polydata.SetPoints(texture_points)
 
     texture_mapper = PolyDataMapper2D()
-    texture_mapper = set_input(texture_mapper,
-                               texture_polydata)
+    texture_mapper = set_input(texture_mapper, texture_polydata)
 
     act = TexturedActor2D()
     act.SetMapper(texture_mapper)
@@ -3032,8 +3409,7 @@ def texture_2d(rgb, interp=False):
     return act
 
 
-def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
-        scales=1):
+def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', scales=1):
     """Create a SDF primitive based actor
 
     Parameters
@@ -3058,22 +3434,31 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
 
     verts, faces = fp.prim_box()
-    repeated = fp.repeat_primitive(verts, faces, centers=centers,
-                                   colors=colors, directions=directions,
-                                   scales=scales)
+    repeated = fp.repeat_primitive(
+        verts,
+        faces,
+        centers=centers,
+        colors=colors,
+        directions=directions,
+        scales=scales,
+    )
 
     rep_verts, rep_faces, rep_colors, rep_centers = repeated
     prim_count = len(centers)
-    box_actor = get_actor_from_primitive(rep_verts, rep_faces, rep_colors,
-                                         prim_count=prim_count)
+    box_actor = get_actor_from_primitive(
+        rep_verts, rep_faces, rep_colors, prim_count=prim_count
+    )
     box_actor.GetMapper().SetVBOShiftScaleMethod(False)
 
-    if isinstance(primitives,  (list, tuple, np.ndarray)):
+    if isinstance(primitives, (list, tuple, np.ndarray)):
         primlist = [prims[prim] for prim in primitives]
         if len(primitives) < len(centers):
             primlist = primlist + [2] * (len(centers) - len(primitives))
-            warnings.warn("Not enough primitives provided,\
-             defaulting to torus", category=UserWarning)
+            warnings.warn(
+                'Not enough primitives provided,\
+             defaulting to torus',
+                category=UserWarning,
+            )
         rep_prims = np.repeat(primlist, verts.shape[0])
     else:
         rep_prims = np.repeat(prims[primitives], rep_centers.shape[0], axis=0)
@@ -3083,8 +3468,7 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     else:
         rep_scales = np.repeat(scales, rep_centers.shape[0], axis=0)
 
-    if isinstance(directions, (list, tuple, np.ndarray)) and \
-            len(directions) == 3:
+    if isinstance(directions, (list, tuple, np.ndarray)) and len(directions) == 3:
         rep_directions = np.repeat(directions, rep_centers.shape[0], axis=0)
     else:
         rep_directions = np.repeat(directions, verts.shape[0], axis=0)
@@ -3099,23 +3483,21 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus',
     fs_dec_code = import_fury_shader('sdf_dec.frag')
     fs_impl_code = import_fury_shader('sdf_impl.frag')
 
-    shader_to_actor(box_actor, "vertex", impl_code=vs_impl_code,
-                    decl_code=vs_dec_code)
-    shader_to_actor(box_actor, "fragment", decl_code=fs_dec_code)
-    shader_to_actor(box_actor, "fragment", impl_code=fs_impl_code,
-                    block="light")
+    shader_to_actor(box_actor, 'vertex', impl_code=vs_impl_code, decl_code=vs_dec_code)
+    shader_to_actor(box_actor, 'fragment', decl_code=fs_dec_code)
+    shader_to_actor(box_actor, 'fragment', impl_code=fs_impl_code, block='light')
     return box_actor
 
 
 def markers(
-        centers,
-        colors=(0, 1, 0),
-        scales=1,
-        marker='3d',
-        marker_opacity=.8,
-        edge_width=.0,
-        edge_color=(255, 255, 255),
-        edge_opacity=.8
+    centers,
+    colors=(0, 1, 0),
+    scales=1,
+    marker='3d',
+    marker_opacity=0.8,
+    edge_width=0.0,
+    edge_color=(255, 255, 255),
+    edge_opacity=0.8,
 ):
     """Create a marker actor with different shapes.
 
@@ -3140,20 +3522,31 @@ def markers(
 
     n_markers = centers.shape[0]
     verts, faces = fp.prim_square()
-    res = fp.repeat_primitive(verts, faces, centers=centers, colors=colors,
-                              scales=scales)
+    res = fp.repeat_primitive(
+        verts, faces, centers=centers, colors=colors, scales=scales
+    )
 
     big_verts, big_faces, big_colors, big_centers = res
     prim_count = len(centers)
-    sq_actor = get_actor_from_primitive(big_verts, big_faces, big_colors,
-                                        prim_count=prim_count)
+    sq_actor = get_actor_from_primitive(
+        big_verts, big_faces, big_colors, prim_count=prim_count
+    )
     sq_actor.GetMapper().SetVBOShiftScaleMethod(False)
     sq_actor.GetProperty().BackfaceCullingOff()
 
     attribute_to_actor(sq_actor, big_centers, 'center')
     marker2id = {
-        'o': 0, 's': 1, 'd': 2, '^': 3, 'p': 4,
-        'h': 5, 's6': 6, 'x': 7, '+': 8, '3d': 0}
+        'o': 0,
+        's': 1,
+        'd': 2,
+        '^': 3,
+        'p': 4,
+        'h': 5,
+        's6': 6,
+        'x': 7,
+        '+': 8,
+        '3d': 0,
+    }
 
     vs_dec_code = import_fury_shader('billboard_dec.vert')
     vs_dec_code += f'\n{import_fury_shader("marker_billboard_dec.vert")}'
@@ -3169,44 +3562,48 @@ def markers(
     else:
         fs_impl_code += f'{import_fury_shader("marker_billboard_impl.frag")}'
         if isinstance(marker, str):
-            list_of_markers = np.ones(n_markers)*marker2id[marker]
+            list_of_markers = np.ones(n_markers) * marker2id[marker]
         else:
             list_of_markers = [marker2id[i] for i in marker]
 
         list_of_markers = np.repeat(list_of_markers, 4).astype('float')
-        attribute_to_actor(
-            sq_actor,
-            list_of_markers, 'marker')
+        attribute_to_actor(sq_actor, list_of_markers, 'marker')
 
     def callback(
-        _caller, _event, calldata=None,
-            uniform_type='f', uniform_name=None, value=None):
+        _caller, _event, calldata=None, uniform_type='f', uniform_name=None, value=None
+    ):
         program = calldata
         if program is not None:
-            program.__getattribute__(f'SetUniform{uniform_type}')(
-                uniform_name, value)
+            program.__getattribute__(f'SetUniform{uniform_type}')(uniform_name, value)
 
     add_shader_callback(
-        sq_actor, partial(
-            callback, uniform_type='f', uniform_name='edgeWidth',
-            value=edge_width))
+        sq_actor,
+        partial(callback, uniform_type='f', uniform_name='edgeWidth', value=edge_width),
+    )
     add_shader_callback(
-        sq_actor, partial(
-            callback, uniform_type='f', uniform_name='markerOpacity',
-            value=marker_opacity))
+        sq_actor,
+        partial(
+            callback,
+            uniform_type='f',
+            uniform_name='markerOpacity',
+            value=marker_opacity,
+        ),
+    )
     add_shader_callback(
-        sq_actor, partial(
-            callback, uniform_type='f', uniform_name='edgeOpacity',
-            value=edge_opacity))
+        sq_actor,
+        partial(
+            callback, uniform_type='f', uniform_name='edgeOpacity', value=edge_opacity
+        ),
+    )
     add_shader_callback(
-        sq_actor, partial(
-            callback, uniform_type='3f', uniform_name='edgeColor',
-            value=edge_color))
+        sq_actor,
+        partial(
+            callback, uniform_type='3f', uniform_name='edgeColor', value=edge_color
+        ),
+    )
 
-    shader_to_actor(sq_actor, "vertex", impl_code=vs_impl_code,
-                    decl_code=vs_dec_code)
-    shader_to_actor(sq_actor, "fragment", decl_code=fs_dec_code)
-    shader_to_actor(sq_actor, "fragment", impl_code=fs_impl_code,
-                    block="light")
+    shader_to_actor(sq_actor, 'vertex', impl_code=vs_impl_code, decl_code=vs_dec_code)
+    shader_to_actor(sq_actor, 'fragment', decl_code=fs_dec_code)
+    shader_to_actor(sq_actor, 'fragment', impl_code=fs_impl_code, block='light')
 
     return sq_actor

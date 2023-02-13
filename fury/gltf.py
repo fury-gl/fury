@@ -1,17 +1,23 @@
 # TODO: Materials, Lights
 import base64
-import os
-import numpy as np
 import copy
+import os
+from typing import Dict  # noqa
+
+import numpy as np
 import pygltflib as gltflib
-from pygltflib.utils import glb2gltf, gltf2glb
 from PIL import Image
-from fury.lib import Texture, Camera, numpy_support, Transform, Matrix4x4
-from fury import transform, utils, io, actor
-from fury.animation.timeline import Timeline
-from fury.animation.interpolator import (linear_interpolator, slerp,
-                                         step_interpolator,
-                                         tan_cubic_spline_interpolator)
+from pygltflib.utils import glb2gltf, gltf2glb
+
+from fury import actor, io, transform, utils
+from fury.animation import Animation
+from fury.animation.interpolator import (
+    linear_interpolator,
+    slerp,
+    step_interpolator,
+    tan_cubic_spline_interpolator,
+)
+from fury.lib import Camera, Matrix4x4, Texture, Transform, numpy_support
 
 comp_type = {
     5120: {'size': 1, 'dtype': np.byte},
@@ -19,20 +25,13 @@ comp_type = {
     5122: {'size': 2, 'dtype': np.short},
     5123: {'size': 2, 'dtype': np.ushort},
     5125: {'size': 4, 'dtype': np.uint},
-    5126: {'size': 4, 'dtype': np.float32}
+    5126: {'size': 4, 'dtype': np.float32},
 }
 
-acc_type = {
-    'SCALAR': 1,
-    'VEC2': 2,
-    'VEC3': 3,
-    'VEC4': 4,
-    'MAT4': 16
-}
+acc_type = {'SCALAR': 1, 'VEC2': 2, 'VEC3': 3, 'VEC4': 4, 'MAT4': 16}
 
 
 class glTF:
-
     def __init__(self, filename, apply_normals=False):
         """Read and generate actors from glTF files.
 
@@ -139,8 +138,7 @@ class glTF:
         for i, animation in enumerate(self.gltf.animations):
             self.transverse_channels(animation, i)
 
-    def transverse_node(self, nextnode_id, matrix, parent=None,
-                        is_joint=False):
+    def transverse_node(self, nextnode_id, matrix, parent=None, is_joint=False):
         """Load mesh and generates transformation matrix.
 
         Parameters
@@ -186,8 +184,10 @@ class glTF:
         next_matrix = np.dot(matrix, matnode)
 
         if node.skin is not None:
-            if (nextnode_id in self.gltf.skins[0].joints and
-               nextnode_id not in self.bone_tranforms):
+            if (
+                nextnode_id in self.gltf.skins[0].joints
+                and nextnode_id not in self.bone_tranforms
+            ):
                 self.bone_tranforms[nextnode_id] = next_matrix[:]
 
         if is_joint:
@@ -204,8 +204,7 @@ class glTF:
             for bone, ibm in zip(joints, ibms):
                 self.bones.append(bone)
                 self.ibms[bone] = ibm
-            self.transverse_node(joints[0], np.identity(4), parent,
-                                 is_joint=True)
+            self.transverse_node(joints[0], np.identity(4), parent, is_joint=True)
 
         if node.camera is not None:
             camera_id = node.camera
@@ -240,8 +239,7 @@ class glTF:
 
             if attributes.NORMAL is not None and self.apply_normals:
                 normals = self.get_acc_data(attributes.NORMAL)
-                normals = transform.apply_transformation(normals, 
-                                                         transform_mat)
+                normals = transform.apply_transformation(normals, transform_mat)
                 utils.set_polydata_normals(polydata, normals)
 
             if attributes.TEXCOORD_0 is not None:
@@ -250,7 +248,7 @@ class glTF:
 
             if attributes.COLOR_0 is not None:
                 color = self.get_acc_data(attributes.COLOR_0)
-                color = color[:, :-1]*255
+                color = color[:, :-1] * 255
                 utils.set_polydata_colors(polydata, color)
 
             if primitive.indices is not None:
@@ -312,12 +310,12 @@ class glTF:
 
         total_byte_offset = byte_offset + acc_byte_offset
 
-        buff_array = self.get_buff_array(buff_id, d_type['dtype'], byte_length,
-                                         total_byte_offset, byte_stride)
+        buff_array = self.get_buff_array(
+            buff_id, d_type['dtype'], byte_length, total_byte_offset, byte_stride
+        )
         return buff_array[:, :a_type]
 
-    def get_buff_array(self, buff_id, d_type, byte_length,
-                       byte_offset, byte_stride):
+    def get_buff_array(self, buff_id, d_type, byte_length, byte_offset, byte_stride):
         """Extract the mesh data from buffer.
 
         Parameters
@@ -342,18 +340,18 @@ class glTF:
         buffer = self.gltf.buffers[buff_id]
         uri = buffer.uri
 
-        if d_type == np.short or d_type == np.ushort or \
-                d_type == np.uint16:
-            byte_length = int(byte_length/2)
-            byte_stride = int(byte_stride/2)
+        if d_type == np.short or d_type == np.ushort or d_type == np.uint16:
+            byte_length = int(byte_length / 2)
+            byte_stride = int(byte_stride / 2)
 
         elif d_type == np.float32:
-            byte_length = int(byte_length/4)
-            byte_stride = int(byte_stride/4)
+            byte_length = int(byte_length / 4)
+            byte_stride = int(byte_stride / 4)
 
         try:
-            if uri.startswith('data:application/octet-stream;base64') or \
-                    uri.startswith('data:application/gltf-buffer;base64'):
+            if uri.startswith('data:application/octet-stream;base64') or uri.startswith(
+                'data:application/gltf-buffer;base64'
+            ):
                 buff_data = uri.split(',')[1]
                 buff_data = base64.b64decode(buff_data)
 
@@ -361,17 +359,18 @@ class glTF:
                 with open(os.path.join(self.pwd, uri), 'rb') as f:
                     buff_data = f.read(-1)
 
-            out_arr = np.frombuffer(buff_data, dtype=d_type,
-                                    count=byte_length, offset=byte_offset)
+            out_arr = np.frombuffer(
+                buff_data, dtype=d_type, count=byte_length, offset=byte_offset
+            )
 
             out_arr = out_arr.reshape(-1, byte_stride)
             return out_arr
 
-        except IOError as e:
-            print(f'Failed to read ! Error in opening file:')
+        except IOError:
+            print('Failed to read ! Error in opening file:')
 
     def get_materials(self, mat_id):
-        """Get the materials data.
+        """Get the material data.
 
         Parameters
         ----------
@@ -393,8 +392,7 @@ class glTF:
             bct = pbr.baseColorTexture.index
             bct = self.get_texture(bct)
         colors = pbr.baseColorFactor
-        return {'baseColorTexture': bct,
-                'baseColor': colors}
+        return {'baseColorTexture': bct, 'baseColor': colors}
 
     def get_texture(self, tex_id):
         """Read and convert image into vtk texture.
@@ -423,8 +421,8 @@ class glTF:
             buff_data = base64.b64decode(buff_data)
 
             extension = '.png' if file.startswith('data:image/png') else '.jpg'
-            image_path = os.path.join(self.pwd, str("b64texture"+extension))
-            with open(image_path, "wb") as image_file:
+            image_path = os.path.join(self.pwd, str('b64texture' + extension))
+            with open(image_path, 'wb') as image_file:
                 image_file.write(buff_data)
 
         elif bv_index is not None:
@@ -437,15 +435,15 @@ class glTF:
                 f.seek(bo)
                 img_binary = f.read(bl)
             extension = '.png' if mimetype == 'images/png' else '.jpg'
-            image_path = os.path.join(self.pwd, str("bvtexture"+extension))
-            with open(image_path, "wb") as image_file:
+            image_path = os.path.join(self.pwd, str('bvtexture' + extension))
+            with open(image_path, 'wb') as image_file:
                 image_file.write(img_binary)
 
         else:
             image_path = os.path.join(self.pwd, file)
 
         rgb = io.load_image(image_path)
-        grid = utils.rgb_to_vtk(rgb)
+        grid = utils.rgb_to_vtk(np.flipud(rgb))
         atexture = Texture()
         atexture.InterpolateOn()
         atexture.EdgeClampOn()
@@ -472,7 +470,7 @@ class glTF:
         new_position = transform.apply_transformation(position, transform_mat)
         vtk_cam.SetPosition(tuple(new_position[0]))
 
-        if camera.type == "orthographic":
+        if camera.type == 'orthographic':
             orthographic = camera.orthographic
             vtk_cam.ParallelProjectionOn()
             zfar = orthographic.zfar
@@ -484,7 +482,7 @@ class glTF:
             zfar = perspective.zfar if perspective.zfar else 1000.0
             znear = perspective.znear
             vtk_cam.SetClippingRange(znear, zfar)
-            angle = perspective.yfov*180/np.pi if perspective.yfov else 30.0
+            angle = perspective.yfov * 180 / np.pi if perspective.yfov else 30.0
             vtk_cam.SetViewAngle(angle)
             if perspective.aspectRatio:
                 vtk_cam.SetExplicitAspectRatio(perspective.aspectRatio)
@@ -504,7 +502,7 @@ class glTF:
         name = animation.name
         if name is None:
             name = str(f'anim_{count}')
-        anim_channel = {}
+        anim_channel = dict()    # type: Dict[int, np.ndarray]
 
         for channel in animation.channels:
             sampler = animation.samplers[channel.sampler]
@@ -512,14 +510,14 @@ class glTF:
             path = channel.target.path
             anim_data = self.get_sampler_data(sampler, node_id, path)
             self.node_transform.append(anim_data)
-            sampler_data = self.get_matrix_from_sampler(path, node_id,
-                                                        anim_channel, sampler)
+            sampler_data = self.get_matrix_from_sampler(
+                path, node_id, anim_channel, sampler
+            )
             anim_channel[node_id] = sampler_data
         self.animation_channels[name] = anim_channel
 
-    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int,
-                         transform_type):
-        """Get the timeline and transformation data from sampler.
+    def get_sampler_data(self, sampler: gltflib.Sampler, node_id: int, transform_type):
+        """Get the animation and transformation data from sampler.
 
         Parameters
         ----------
@@ -541,13 +539,16 @@ class glTF:
         interpolation = sampler.interpolation
 
         return {
-            'node': node_id, 'input': time_array,
+            'node': node_id,
+            'input': time_array,
             'output': transform_array,
             'interpolation': interpolation,
-            'property': transform_type}
+            'property': transform_type,
+        }
 
-    def get_matrix_from_sampler(self, prop, node, anim_channel,
-                                sampler: gltflib.Sampler):
+    def get_matrix_from_sampler(
+        self, prop, node, anim_channel, sampler: gltflib.Sampler
+    ):
         """Return transformation matrix for a given timestamp from Sampler
         data. Combine matrices for a given common timestamp.
 
@@ -566,7 +567,9 @@ class glTF:
         tran_array = self.get_acc_data(sampler.output)
 
         if prop == 'weights':
-            tran_array = tran_array.reshape(-1, )
+            tran_array = tran_array.reshape(
+                -1,
+            )
 
         tran_matrix = []
         if node in anim_channel:
@@ -580,13 +583,10 @@ class glTF:
                 tran_matrix.append(np.dot(prev_arr[i], temp))
             else:
                 tran_matrix.append(temp)
-        data = {
-            'timestamps': time_array,
-            'matrix': tran_matrix
-        }
+        data = {'timestamps': time_array, 'matrix': tran_matrix}
         self.sampler_matrices[node] = data
         return data
-    
+
     def get_morph_data(self, target, mesh_id):
         weights_array = self.gltf.meshes[mesh_id].weights
         if target.get('POSITION') is not None:
@@ -641,27 +641,32 @@ class glTF:
             matrix = transf
         return matrix
 
-    def transverse_timelines(self, timeline, bone_id, timestamp,
-                             joint_matrices,
-                             parent_bone_deform=np.identity(4)):
+    def transverse_animations(
+        self,
+        animation,
+        bone_id,
+        timestamp,
+        joint_matrices,
+        parent_bone_deform=np.identity(4),
+    ):
         """Calculate skinning matrix (Joint Matrices) and transform bone for
-        each timeline.
+        each animation.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         bone_id : int
             Bone index of the current transform.
         timestamp : float
-            Current timestamp of the timeline.
+            Current timestamp of the animation.
         joint_matrices : dict
             Empty dictionary that will contain joint matrices.
         parent_bone_transform : ndarray (4, 4)
             Transformation matrix of the parent bone.
             (default=np.identity(4))
         """
-        deform = timeline.get_value('transform', timestamp)
+        deform = animation.get_value('transform', timestamp)
         new_deform = np.dot(parent_bone_deform, deform)
 
         ibm = self.ibms[bone_id].T
@@ -674,54 +679,56 @@ class glTF:
             actor_transform = self.transformations[0]
             bone_transform = np.dot(actor_transform, new_deform)
             self._bvertices[bone_id][:] = transform.apply_transformation(
-                self._bvert_copy[bone_id], bone_transform)
+                self._bvert_copy[bone_id], bone_transform
+            )
             utils.update_actor(self._bactors[bone_id])
 
         if node.children:
-            c_timelines = timeline.timelines
+            c_animations = animation.child_animations
             c_bones = node.children
-            for c_timeline, c_bone in zip(c_timelines, c_bones):
-                self.transverse_timelines(c_timeline, c_bone, timestamp,
-                                          joint_matrices, new_deform)
+            for c_anim, c_bone in zip(c_animations, c_bones):
+                self.transverse_animations(
+                    c_anim, c_bone, timestamp, joint_matrices, new_deform
+                )
 
-    def update_skin(self, timeline):
-        """Update the timeline and actors with skinning data.
+    def update_skin(self, animation):
+        """Update the animation and actors with skinning data.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         """
-        timeline.update_animation()
-        timestamp = timeline.current_timestamp
+        animation.update_animation()
+        timestamp = animation.current_timestamp
         joint_matrices = {}
         root_bone = self.gltf.skins[0].skeleton
         root_bone = root_bone if root_bone else self.bones[0]
 
         if not root_bone == self.bones[0]:
-            _timeline = timeline.timelines[0]
+            _animation = animation.child_animations[0]
             parent_transform = self.transformations[root_bone].T
         else:
-            _timeline = timeline
+            _animation = animation
             parent_transform = np.identity(4)
-        for child in _timeline.timelines:
-            self.transverse_timelines(child, self.bones[0], timestamp,
-                                      joint_matrices, parent_transform)
+        for child in _animation.child_animations:
+            self.transverse_animations(
+                child, self.bones[0], timestamp, joint_matrices, parent_transform
+            )
         for i, vertex in enumerate(self._vertices):
-            vertex[:] = self.apply_skin_matrix(self._vcopy[i],
-                                               joint_matrices, i)
+            vertex[:] = self.apply_skin_matrix(self._vcopy[i], joint_matrices, i)
             actor_transf = self.transformations[i]
             vertex[:] = transform.apply_transformation(vertex, actor_transf)
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
-    def initialize_skin(self, timeline, bones=False, length=0.2):
-        """Create bones and add to the timeline and initialise `update_skin`
+    def initialize_skin(self, animation, bones=False, length=0.2):
+        """Create bones and add to the animation and initialise `update_skin`
 
         Parameters
         ----------
-        timeline : Timeline
-            timeline of the respective animation.
+        animation : Animation
+            Skin animation object.
         bones : bool
             Switches the visibility of bones in scene.
             (default=False)
@@ -732,8 +739,8 @@ class glTF:
         self.show_bones = bones
         if bones:
             self.get_joint_actors(length, False)
-            timeline.add_actor(list(self._bactors.values()))
-        self.update_skin(timeline)
+            animation.add_actor(list(self._bactors.values()))
+        self.update_skin(animation)
 
     def apply_skin_matrix(self, vertices, joint_matrices, actor_index=0):
         """Apply the skinnig matrix, that transform the vertices.
@@ -759,21 +766,21 @@ class glTF:
             a_joint = [self.bones[i] for i in a_joint]
             a_weight = weights[i]
 
-            skin_mat = \
-                np.multiply(a_weight[0], joint_matrices[a_joint[0]]) +\
-                np.multiply(a_weight[1], joint_matrices[a_joint[1]]) +\
-                np.multiply(a_weight[2], joint_matrices[a_joint[2]]) +\
-                np.multiply(a_weight[3], joint_matrices[a_joint[3]])
+            skin_mat = (
+                np.multiply(a_weight[0], joint_matrices[a_joint[0]])
+                + np.multiply(a_weight[1], joint_matrices[a_joint[1]])
+                + np.multiply(a_weight[2], joint_matrices[a_joint[2]])
+                + np.multiply(a_weight[3], joint_matrices[a_joint[3]])
+            )
 
             xyz = np.dot(skin_mat, np.append(xyz, [1.0]))
             clone[i] = xyz[:3]
 
         return clone
 
-    def transverse_bones(self, bone_id, channel_name,
-                         parent_timeline: Timeline):
-        """Loop over the bones and add child bone timeline to their parent
-        timeline.
+    def transverse_bones(self, bone_id, channel_name, parent_animation: Animation):
+        """Loop over the bones and add child bone animation to their parent
+        animation.
 
         Parameters
         ----------
@@ -781,11 +788,12 @@ class glTF:
             Index of the bone.
         channel_name : str
             Animation name.
-        parent_timeline : Timeline
-            timeline of the parent bone. Should be `root_timeline` by default.
+        parent_animation : Animation
+            The animation of the parent bone. Should be `root_animation` by
+            default.
         """
         node = self.gltf.nodes[bone_id]
-        timeline = Timeline(playback_panel=False)
+        animation = Animation()
         if bone_id in self.bone_tranforms.keys():
             orig_transform = self.bone_tranforms[bone_id]
         else:
@@ -795,34 +803,34 @@ class glTF:
             timestamps = transforms['timestamps']
             metrices = transforms['matrix']
             for time, matrix in zip(timestamps, metrices):
-                timeline.set_keyframe('transform', time[0], matrix)
+                animation.set_keyframe('transform', time[0], matrix)
         else:
-            timeline.set_keyframe('transform', 0.0, orig_transform)
+            animation.set_keyframe('transform', 0.0, orig_transform)
 
-        parent_timeline.add(timeline)
+        parent_animation.add(animation)
         if node.children:
             for child_bone in node.children:
-                self.transverse_bones(child_bone, channel_name, timeline)
+                self.transverse_bones(child_bone, channel_name, animation)
 
-    def skin_timeline(self):
-        """One timeline for each bone, contains parent transforms.
+    def skin_animation(self):
+        """One animation for each bone, contains parent transforms.
 
         Returns
         -------
-        root_timelines : Dict
-            A timeline containing all the child timelines for bones.
+        root_animations : Dict
+            An animation containing all the child animations for bones.
         """
-        root_timelines = {}
+        root_animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
         for name in self.animation_channels.keys():
-            root_timeline = Timeline(playback_panel=True)
+            root_animation = Animation()
             root_bone = self.gltf.skins[0].skeleton
             root_bone = root_bone if root_bone else self.bones[0]
-            self.transverse_bones(root_bone, name, root_timeline)
-            root_timelines[name] = root_timeline
-            root_timeline.add_actor(self._actors)
-        return root_timelines
+            self.transverse_bones(root_bone, name, root_animation)
+            root_animations[name] = root_animation
+            root_animation.add_actor(self._actors)
+        return root_animations
 
     def get_joint_actors(self, length=0.5, with_transforms=False):
         """Create an arrow actor for each bone in a skinned model.
@@ -843,27 +851,27 @@ class glTF:
             verts = utils.vertices_from_actor(arrow)
             if with_transforms:
                 verts[:] = transform.apply_transformation(
-                    verts, parent_transforms[bone])
+                    verts, parent_transforms[bone]
+                )
                 utils.update_actor(arrow)
             self._bactors[bone] = arrow
             self._bvertices[bone] = verts
         self._bvert_copy = copy.deepcopy(self._bvertices)
 
-    def update_morph(self, timeline):
-        """Update the timeline and actors with morphing.
+    def update_morph(self, animation):
+        """Update the animation and actors with morphing.
 
         Parameters
         ----------
-        timeline : Timeline
-            Timeline object.
+        animation : Animation
+            Animation object.
         """
-        timeline.update_animation()
-        timestamp = timeline.current_timestamp
+        animation.update_animation()
+        timestamp = animation.current_timestamp
         for i, vertex in enumerate(self._vertices):
-            weights = timeline.timelines[0].get_value('morph', timestamp)
+            weights = animation.child_animations[0].get_value('morph', timestamp)
             vertex[:] = self.apply_morph_vertices(self._vcopy[i], weights, i)
-            vertex[:] = transform.apply_transformation(vertex,
-                                                       self.transformations[i])
+            vertex[:] = transform.apply_transformation(vertex, self.transformations[i])
             utils.update_actor(self._actors[i])
             utils.compute_bounds(self._actors[i])
 
@@ -889,71 +897,70 @@ class glTF:
             clone[i][:] = vertex + new_verts[i]
         return clone
 
-    def morph_timeline(self):
-        """Create timeline for each channel in animations.
+    def morph_animation(self):
+        """Create animation for each channel in animations.
 
         Returns
         -------
-        root_timelines : Dict
-            A dictionary containing timlines as values and animation name as
+        root_animations : Dict
+            A dictionary containing animations as values and animation name as
             keys.
         """
-        timelines = {}
+        animations = {}
         self._vertices = [utils.vertices_from_actor(act) for act in self.actors()]
         self._vcopy = [np.copy(vert) for vert in self._vertices]
 
         for name, data in self.animation_channels.items():
-            root_timeline = Timeline(playback_panel=True)
+            root_animation = Animation()
 
             for i, transforms in enumerate(data.values()):
                 weights = self.morph_weights[i]
-                timeline = Timeline()
+                animation = Animation()
                 timestamps = transforms['timestamps']
                 metrices = transforms['matrix']
                 metrices = np.array(metrices).reshape(-1, len(weights))
 
                 for time, weights in zip(timestamps, metrices):
-                    timeline.set_keyframe('morph', time[0], weights)
-                root_timeline.add(timeline)
+                    animation.set_keyframe('morph', time[0], weights)
+                root_animation.add(animation)
 
-            root_timeline.add_actor(self._actors)
-            timelines[name] = root_timeline
-        return timelines
+            root_animation.add_actor(self._actors)
+            animations[name] = root_animation
+        return animations
 
-    def get_animation_timelines(self):
-        """Return list of animation timeline.
+    def get_animations(self):
+        """Return list of animations.
 
         Returns
         -------
-        timelines: List
-            List of timelines containing actors.
+        animations: List
+            List of animations containing actors.
         """
         actors = self.actors()
         interpolators = {
             'LINEAR': linear_interpolator,
             'STEP': step_interpolator,
-            'CUBICSPLINE': tan_cubic_spline_interpolator
+            'CUBICSPLINE': tan_cubic_spline_interpolator,
         }
 
         rotation_interpolators = {
             'LINEAR': slerp,
             'STEP': step_interpolator,
-            'CUBICSPLINE': tan_cubic_spline_interpolator
+            'CUBICSPLINE': tan_cubic_spline_interpolator,
         }
 
-        timelines = []
+        animations = []
         for transforms in self.node_transform:
             target_node = transforms['node']
 
             for i, nodes in enumerate(self.nodes):
-                timeline = Timeline()
+                animation = Animation()
                 transform_mat = self.transformations[i]
-                position, rot, scale = transform.transform_from_matrix(
-                                       transform_mat)
-                timeline.set_keyframe('position', 0.0, position)
+                position, rot, scale = transform.transform_from_matrix(transform_mat)
+                animation.set_keyframe('position', 0.0, position)
 
                 if target_node in nodes:
-                    timeline.add_actor(actors[i])
+                    animation.add_actor(actors[i])
                     timestamp = transforms['input']
                     node_transform = transforms['output']
                     prop = transforms['property']
@@ -961,13 +968,13 @@ class glTF:
                     interpolation_type = transforms['interpolation']
 
                     interpolator = interpolators.get(interpolation_type)
-                    rot_interp = rotation_interpolators.get(
-                                       interpolation_type)
+                    rot_interp = rotation_interpolators.get(interpolation_type)
                     timeshape = timestamp.shape
                     transhape = node_transform.shape
                     if transforms['interpolation'] == 'CUBICSPLINE':
                         node_transform = node_transform.reshape(
-                            (timeshape[0], -1, transhape[1]))
+                            (timeshape[0], -1, transhape[1])
+                        )
 
                     for time, trs in zip(timestamp, node_transform):
                         in_tan, out_tan = None, None
@@ -978,39 +985,39 @@ class glTF:
                             out_tan = cubicspline[2]
 
                         if prop == 'rotation':
-                            timeline.set_rotation(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
-                            timeline.set_rotation_interpolator(rot_interp)
+                            animation.set_rotation(
+                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                            )
+                            animation.set_rotation_interpolator(rot_interp)
                         if prop == 'translation':
-                            timeline.set_position(time[0], trs,
-                                                  in_tangent=in_tan,
-                                                  out_tangent=out_tan)
-                            timeline.set_position_interpolator(interpolator)
+                            animation.set_position(
+                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                            )
+                            animation.set_position_interpolator(interpolator)
                         if prop == 'scale':
-                            timeline.set_scale(time[0], trs,
-                                               in_tangent=in_tan,
-                                               out_tangent=out_tan)
-                            timeline.set_scale_interpolator(interpolator)
+                            animation.set_scale(
+                                time[0], trs, in_tangent=in_tan, out_tangent=out_tan
+                            )
+                            animation.set_scale_interpolator(interpolator)
                 else:
-                    timeline.add_static_actor(actors[i])
-                timelines.append(timeline)
-        return timelines
+                    animation.add_static_actor(actors[i])
+                animations.append(animation)
+        return animations
 
-    def main_timeline(self):
-        """Return main timeline with all animations.
+    def main_animation(self):
+        """Return main animation with all glTF animations.
 
         Returns
         -------
-        main_timeline : Timeline
-            A parent timeline containing all child timelines for simple
+        main_animation : Animation
+            A parent animation containing all child animations for simple
             animation.
         """
-        main_timeline = Timeline(playback_panel=True)
-        timelines = self.get_animation_timelines()
-        for timeline in timelines:
-            main_timeline.add(timeline)
-        return main_timeline
+        main_animation = Animation()
+        animations = self.get_animations()
+        for animation in animations:
+            main_animation.add(animation)
+        return main_animation
 
 
 def export_scene(scene, filename='default.gltf'):
@@ -1035,8 +1042,9 @@ def export_scene(scene, filename='default.gltf'):
     bview_count = 0
 
     for act in scene.GetActors():
-        prim, size, count = _connect_primitives(gltf_obj, act, buffer_file,
-                                                buffer_size, bview_count, name)
+        prim, size, count = _connect_primitives(
+            gltf_obj, act, buffer_file, buffer_size, bview_count, name
+        )
         primitives.append(prim)
         buffer_size = size
         bview_count = count
@@ -1109,10 +1117,9 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
     elif istraingles:
         mode = 4
 
-    vertex, index, normal, tcoord, color = (None, None, None,
-                                            None, None)
+    vertex, index, normal, tcoord, color = (None, None, None, None, None)
     if indices is not None and len(indices) != 0:
-        indices = indices.reshape((-1, ))
+        indices = indices.reshape((-1,))
         amax = [np.max(indices)]
         amin = [np.min(indices)]
 
@@ -1120,11 +1127,12 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         atype = acc_type.get(gltflib.SCALAR)
 
         indices = indices.astype(np.ushort)
-        blength = len(indices)*ctype['size']
+        blength = len(indices) * ctype['size']
         buff_file.write(indices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.UNSIGNED_SHORT,
-                       len(indices), gltflib.SCALAR)
+        write_accessor(
+            gltf, count, 0, gltflib.UNSIGNED_SHORT, len(indices), gltflib.SCALAR
+        )
         byteoffset += blength
         index = count
         count += 1
@@ -1136,12 +1144,20 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC3)
 
-        vertices = vertices.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(vertices)*ctype['size']
+        vertices = vertices.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(vertices) * ctype['size']
         buff_file.write(vertices.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(vertices)//atype,
-                       gltflib.VEC3, amax, amin)
+        write_accessor(
+            gltf,
+            count,
+            0,
+            gltflib.FLOAT,
+            len(vertices) // atype,
+            gltflib.VEC3,
+            amax,
+            amin,
+        )
         byteoffset += blength
         vertex = count
         count += 1
@@ -1153,12 +1169,20 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC3)
 
-        normals = normals.reshape((-1, ))
-        blength = len(normals)*ctype['size']
+        normals = normals.reshape((-1,))
+        blength = len(normals) * ctype['size']
         buff_file.write(normals.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(normals)//atype,
-                       gltflib.VEC3, amax, amin)
+        write_accessor(
+            gltf,
+            count,
+            0,
+            gltflib.FLOAT,
+            len(normals) // atype,
+            gltflib.VEC3,
+            amax,
+            amin,
+        )
         byteoffset += blength
         normal = count
         count += 1
@@ -1170,12 +1194,13 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         ctype = comp_type.get(gltflib.FLOAT)
         atype = acc_type.get(gltflib.VEC2)
 
-        tcoords = tcoords.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(tcoords)*ctype['size']
+        tcoords = tcoords.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(tcoords) * ctype['size']
         buff_file.write(tcoords.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
-        write_accessor(gltf, count, 0, gltflib.FLOAT, len(tcoords)//atype,
-                       gltflib.VEC2)
+        write_accessor(
+            gltf, count, 0, gltflib.FLOAT, len(tcoords) // atype, gltflib.VEC2
+        )
         byteoffset += blength
         tcoord = count
         count += 1
@@ -1195,10 +1220,10 @@ def _connect_primitives(gltf, actor, buff_file, byteoffset, count, name):
         atype = acc_type.get(gltflib.VEC3)
 
         shape = colors.shape[0]
-        colors = np.concatenate((colors, np.full((shape, 1), 255.)), axis=1)
+        colors = np.concatenate((colors, np.full((shape, 1), 255.0)), axis=1)
         colors = colors / 255
-        colors = colors.reshape((-1, )).astype(ctype['dtype'])
-        blength = len(colors)*ctype['size']
+        colors = colors.reshape((-1,)).astype(ctype['dtype'])
+        blength = len(colors) * ctype['size']
         buff_file.write(colors.tobytes())
         write_bufferview(gltf, 0, byteoffset, blength)
         write_accessor(gltf, count, 0, gltflib.FLOAT, shape, gltflib.VEC4)
@@ -1275,7 +1300,7 @@ def write_camera(gltf, camera):
     orthographic = camera.GetParallelProjection()
     cam = gltflib.Camera()
     if orthographic:
-        cam.type = "orthographic"
+        cam.type = 'orthographic'
     else:
         clip_range = camera.GetClippingRange()
         angle = camera.GetViewAngle()
@@ -1284,8 +1309,8 @@ def write_camera(gltf, camera):
         pers = gltflib.Perspective()
         pers.aspectRatio = aspect_ratio
         pers.znear, pers.zfar = clip_range
-        pers.yfov = angle * np.pi/180
-        cam.type = "perspective"
+        pers.yfov = angle * np.pi / 180
+        cam.type = 'perspective'
         cam.perspective = pers
     gltf.cameras.append(cam)
 
@@ -1358,8 +1383,9 @@ def write_material(gltf, basecolortexture: int, uri: str):
     gltf.images.append(image)
 
 
-def write_accessor(gltf, bufferview, byte_offset, comp_type,
-                   count, accssor_type, max=None, min=None):
+def write_accessor(
+    gltf, bufferview, byte_offset, comp_type, count, accssor_type, max=None, min=None
+):
     """Write accessor in the gltf.
 
     Parameters
@@ -1394,8 +1420,7 @@ def write_accessor(gltf, bufferview, byte_offset, comp_type,
     gltf.accessors.append(accessor)
 
 
-def write_bufferview(gltf, buffer, byte_offset, byte_length,
-                     byte_stride=None):
+def write_bufferview(gltf, buffer, byte_offset, byte_length, byte_stride=None):
     """Write bufferview in the gltf.
 
     Parameters

@@ -119,7 +119,7 @@ float sdPryamid4(vec3 p, vec3 h ) // h = { cos a, sin a, height }
 {
     // Tetrahedron = Octahedron - Cube
     float box = sdBox( p - vec3(0,-2.0*h.z,0), vec3(2.0*h.z) );
- 
+
     float d = 0.0;
     d = max( d, abs( dot(p, vec3( -h.x, h.y, 0 )) ));
     d = max( d, abs( dot(p, vec3(  h.x, h.y, 0 )) ));
@@ -233,9 +233,9 @@ vec2 map( in vec3 pos )
 vec3 calcNormal( in vec3 pos )
 {
     vec2 e = vec2(1.0,-1.0)*0.5773*0.0005;
-    return normalize( e.xyy*map( pos + e.xyy ).x + 
-                      e.yyx*map( pos + e.yyx ).x + 
-                      e.yxy*map( pos + e.yxy ).x + 
+    return normalize( e.xyy*map( pos + e.xyy ).x +
+                      e.yyx*map( pos + e.yyx ).x +
+                      e.yxy*map( pos + e.yxy ).x +
                       e.xxx*map( pos + e.xxx ).x );
 
 }

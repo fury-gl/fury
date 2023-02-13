@@ -4,21 +4,20 @@ Visualizing a glTF file
 =======================
 In this tutorial, we will show how to display a simple animated glTF in a
 scene.
-
 """
 
 from fury import window
-from fury.gltf import glTF
 from fury.data import fetch_gltf, read_viz_gltf
+from fury.gltf import glTF
 
 ##############################################################################
 # Create a scene.
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 showm.initialize()
 
 
@@ -32,7 +31,7 @@ filename = read_viz_gltf('InterpolationTest')
 # Get the main_timeline (which contains multiple Timeline objects).
 
 gltf_obj = glTF(filename)
-timeline = gltf_obj.main_timeline()
+timeline = gltf_obj.main_animation()
 
 ##############################################################################
 # Add the timeline to the scene (No need to add actors seperately).
@@ -55,5 +54,4 @@ showm.add_timer_callback(True, 10, timer_callback)
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_gltf_animated.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_gltf_animated.png', size=(900, 768))

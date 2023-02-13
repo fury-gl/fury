@@ -1,33 +1,36 @@
-from fury import actor, window
-from fury.utils import (get_actor_from_polydata, numpy_to_vtk_colors,
-                        set_polydata_triangles, set_polydata_vertices,
-                        set_polydata_colors)
-import fury.primitive as fp
-from vtk.util import numpy_support
-
-
 import numpy as np
 import vtk
+from vtk.util import numpy_support
+
+import fury.primitive as fp
+from fury import actor, window
+from fury.utils import (
+    get_actor_from_polydata,
+    numpy_to_vtk_colors,
+    set_polydata_colors,
+    set_polydata_triangles,
+    set_polydata_vertices,
+)
 
 
 def test_sh():
-    from dipy.sims.voxel import multi_tensor, multi_tensor_odf, sticks_and_ball
-    from dipy.data import get_sphere, get_fnames
     from dipy.core.gradients import gradient_table
+    from dipy.data import get_fnames, get_sphere
     from dipy.io.gradients import read_bvals_bvecs
+    from dipy.sims.voxel import multi_tensor, multi_tensor_odf, sticks_and_ball
 
     _, fbvals, fbvecs = get_fnames('small_64D')
     bvals, bvecs = read_bvals_bvecs(fbvals, fbvecs)
     gtab = gradient_table(bvals, bvecs)
 
     d = 0.0015
-    S, sticks = sticks_and_ball(gtab, d=d, S0=1, angles=[(0, 0), (30, 30)],
-                                fractions=[60,40], snr=None)
+    S, sticks = sticks_and_ball(
+        gtab, d=d, S0=1, angles=[(0, 0), (30, 30)], fractions=[60, 40], snr=None
+    )
 
     print(S)
     print(sticks)
-    mevals = np.array([[0.0015, 0.0003, 0.0003],
-                       [0.0015, 0.0003, 0.0003]])
+    mevals = np.array([[0.0015, 0.0003, 0.0003], [0.0015, 0.0003, 0.0003]])
     angles = [(0, 0), (60, 0)]
     fractions = [50, 50]
     sphere = get_sphere('repulsion724')
@@ -37,14 +40,15 @@ def test_sh():
     print(odf)
     ren = window.Scene()
 
-    odf_actor = actor.odf_slicer(odf[None, None, None, :], sphere=sphere, colormap='plasma')
+    odf_actor = actor.odf_slicer(
+        odf[None, None, None, :], sphere=sphere, colormap='plasma'
+    )
     # odf_actor.RotateX(90)
 
     ren.add(odf_actor)
     # window.show(ren)
 
-    odf_test_dec= \
-    """
+    odf_test_dec = """
     // Constants, see here: http://en.wikipedia.org/wiki/Table_of_spherical_harmonics
 #define k01 0.2820947918 // sqrt(  1/PI)/2
 #define k02 0.4886025119 // sqrt(  3/PI)/2
@@ -155,10 +159,7 @@ vec3 calcNormal( in vec3 pos )
 
     """
 
-
-
-    odf_test_impl = \
-    """
+    odf_test_impl = """
 
         // camera matrix
         vec3 ww = vec3(0.0,0.0,0.0); //MCDCMatrix (2);
@@ -203,7 +204,6 @@ vec3 calcNormal( in vec3 pos )
     fragOutput0 = vec4( tot, 1.0 );
     """
 
-
     scene = window.Scene()
     scene.background((0.8, 0.8, 0.8))
     centers = np.array([[2, 0, 0], [0, 0, 0], [-2, 0, 0]])
@@ -215,8 +215,7 @@ vec3 calcNormal( in vec3 pos )
     # https://www.shadertoy.com/view/MstXWS
     # https://www.shadertoy.com/view/XsX3R4
 
-    fs_dec = \
-        """
+    fs_dec = """
         uniform mat4 MCDCMatrix;
         uniform mat4 MCVCMatrix;
 
@@ -285,8 +284,7 @@ vec3 calcNormal( in vec3 pos )
         }
         """
 
-    fake_sphere = \
-    """
+    fake_sphere = """
 
     vec3 uu = vec3(MCVCMatrix[0][0], MCVCMatrix[1][0], MCVCMatrix[2][0]); // camera right
     vec3 vv = vec3(MCVCMatrix[0][1], MCVCMatrix[1][1], MCVCMatrix[2][1]); //  camera up
@@ -332,11 +330,13 @@ vec3 calcNormal( in vec3 pos )
     fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);*/
     """
 
-    billboard_actor = actor.billboard(centers,
-                                      colors=colors.astype(np.uint8),
-                                      scale=scale,
-                                      fs_dec=fs_dec,
-                                      fs_impl=fake_sphere)
+    billboard_actor = actor.billboard(
+        centers,
+        colors=colors.astype(np.uint8),
+        scale=scale,
+        fs_dec=fs_dec,
+        fs_impl=fake_sphere,
+    )
     scene.add(billboard_actor)
     scene.add(actor.axes())
     scene.camera_info()
@@ -361,11 +361,15 @@ def test_spheres_on_canvas():
     #     [.95, .78, .25], [.85, .58, .35], [1., 1., 1.]
     # ])
     n_points = 2000000
-    colors =  np.array([[255, 0, 0], [0, 255, 0], [0, 0, 255]]) #255 * np.random.rand(n_points, 3)
+    colors = np.array(
+        [[255, 0, 0], [0, 255, 0], [0, 0, 255]]
+    )   # 255 * np.random.rand(n_points, 3)
     # n_points = colors.shape[0]
     np.random.seed(42)
-    centers = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 0]]) # 500 * np.random.rand(n_points, 3) - 250 # np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-    radius = [2, 2, 2] # np.random.rand(n_points) #  [1, 1, 2]
+    centers = np.array(
+        [[2, 0, 0], [0, 2, 0], [0, 0, 0]]
+    )   # 500 * np.random.rand(n_points, 3) - 250 # np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    radius = [2, 2, 2]   # np.random.rand(n_points) #  [1, 1, 2]
 
     polydata = vtk.vtkPolyData()
 
@@ -389,8 +393,9 @@ def test_spheres_on_canvas():
     tris = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
 
     big_tris = np.tile(tris, (centers.shape[0], 1))
-    shifts = np.repeat(np.arange(0, centers.shape[0] * verts.shape[0],
-                                 verts.shape[0]), tris.shape[0])
+    shifts = np.repeat(
+        np.arange(0, centers.shape[0] * verts.shape[0], verts.shape[0]), tris.shape[0]
+    )
 
     big_tris += shifts[:, np.newaxis]
 
@@ -414,7 +419,7 @@ def test_spheres_on_canvas():
 
     vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
     vtk_centers.SetNumberOfComponents(3)
-    vtk_centers.SetName("center")
+    vtk_centers.SetName('center')
     polydata.GetPointData().AddArray(vtk_centers)
 
     canvas_actor = get_actor_from_polydata(polydata)
@@ -425,11 +430,12 @@ def test_spheres_on_canvas():
     mapper = canvas_actor.GetMapper()
 
     mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        'center', 'center', vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1
+    )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex,
-        "//VTK::ValuePass::Dec",
+        '//VTK::ValuePass::Dec',
         True,
         """
         //VTK::ValuePass::Dec
@@ -442,12 +448,12 @@ def test_spheres_on_canvas():
         out vec3 viewUp;
 
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex,
-        "//VTK::ValuePass::Impl",
+        '//VTK::ValuePass::Impl',
         True,
         """
         //VTK::ValuePass::Impl
@@ -462,12 +468,12 @@ def test_spheres_on_canvas():
         gl_Position = MCDCMatrix * vec4(vertexPosition_worldspace, 1.);
 
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment,
-        "//VTK::ValuePass::Dec",
+        '//VTK::ValuePass::Dec',
         True,
         """
         //VTK::ValuePass::Dec
@@ -478,12 +484,12 @@ def test_spheres_on_canvas():
         uniform vec3 Ext_camPos;
         uniform vec3 Ext_viewUp;
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment,
-        "//VTK::Light::Impl",
+        '//VTK::Light::Impl',
         True,
         """
         // Renaming variables passed from the Vertex Shader
@@ -517,7 +523,7 @@ def test_spheres_on_canvas():
         float sf = pow(df, 24);
         fragOutput0 = vec4(max(df * color, sf * vec3(1)), 1);
         """,
-        False
+        False,
     )
 
     @vtk.calldata_type(vtk.VTK_OBJECT)
@@ -559,11 +565,11 @@ def test_spheres_on_canvas():
             # print(model_view_mat)
             # print(proj_mat)
             # print(view_mat)
-            program.SetUniform2f("Ext_res", res)
-            program.SetUniform3f("Ext_camPos", cam_pos)
-            program.SetUniform3f("Ext_focPnt", foc_pnt)
-            program.SetUniform3f("Ext_viewUp", view_up)
-            program.SetUniformMatrix("Ext_mat", mat)
+            program.SetUniform2f('Ext_res', res)
+            program.SetUniform3f('Ext_camPos', cam_pos)
+            program.SetUniform3f('Ext_focPnt', foc_pnt)
+            program.SetUniform3f('Ext_viewUp', view_up)
+            program.SetUniformMatrix('Ext_mat', mat)
 
     mapper.AddObserver(vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
@@ -572,17 +578,17 @@ def test_spheres_on_canvas():
 
     def timer_callback(obj, event):
         global timer
-        timer += 1.
+        timer += 1.0
         showm.render()
         scene.azimuth(2)
         # scene.elevation(5)
         # scene.roll(5)
 
     label = vtk.vtkOpenGLBillboardTextActor3D()
-    label.SetInput("FURY Rocks!!!")
-    label.SetPosition(1., 1., 1)
+    label.SetInput('FURY Rocks!!!')
+    label.SetPosition(1.0, 1.0, 1)
     label.GetTextProperty().SetFontSize(40)
-    label.GetTextProperty().SetColor(.5, .5, .5)
+    label.GetTextProperty().SetColor(0.5, 0.5, 0.5)
     # TODO: Get Billboard's mapper
     # l_mapper = label.GetActors()
 
@@ -593,8 +599,7 @@ def test_spheres_on_canvas():
 
     # scene.set_camera(position=(1.5, 2.5, 15), focal_point=(1.5, 2.5, 1.5),
     #                  view_up=(0, 1, 0))
-    scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0),
-                     view_up=(0, 1, 0))
+    scene.set_camera(position=(1.5, 2.5, 25), focal_point=(0, 0, 0), view_up=(0, 1, 0))
 
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()
@@ -614,14 +619,13 @@ def test_fireballs_on_canvas():
     np.random.seed(42)
     centers = 500 * np.random.rand(n_points, 3) - 250
 
-    radius = .5 * np.ones(n_points)
+    radius = 0.5 * np.ones(n_points)
 
     polydata = vtk.vtkPolyData()
 
-    verts = np.array([[0.0, 0.0, 0.0],
-                      [0.0, 1.0, 0.0],
-                      [1.0, 1.0, 0.0],
-                      [1.0, 0.0, 0.0]])
+    verts = np.array(
+        [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 1.0, 0.0], [1.0, 0.0, 0.0]]
+    )
     verts -= np.array([0.5, 0.5, 0])
 
     big_verts = np.tile(verts, (centers.shape[0], 1))
@@ -636,8 +640,9 @@ def test_fireballs_on_canvas():
     tris = np.array([[0, 1, 2], [2, 3, 0]], dtype='i8')
 
     big_tris = np.tile(tris, (centers.shape[0], 1))
-    shifts = np.repeat(np.arange(0, centers.shape[0] * verts.shape[0],
-                                 verts.shape[0]), tris.shape[0])
+    shifts = np.repeat(
+        np.arange(0, centers.shape[0] * verts.shape[0], verts.shape[0]), tris.shape[0]
+    )
 
     big_tris += shifts[:, np.newaxis]
 
@@ -653,7 +658,7 @@ def test_fireballs_on_canvas():
 
     vtk_centers = numpy_support.numpy_to_vtk(big_centers, deep=True)
     vtk_centers.SetNumberOfComponents(3)
-    vtk_centers.SetName("center")
+    vtk_centers.SetName('center')
     polydata.GetPointData().AddArray(vtk_centers)
 
     canvas_actor = get_actor_from_polydata(polydata)
@@ -664,23 +669,24 @@ def test_fireballs_on_canvas():
     mapper = canvas_actor.GetMapper()
 
     mapper.MapDataArrayToVertexAttribute(
-        "center", "center", vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1)
+        'center', 'center', vtk.vtkDataObject.FIELD_ASSOCIATION_POINTS, -1
+    )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex,
-        "//VTK::ValuePass::Dec",
+        '//VTK::ValuePass::Dec',
         True,
         """
         //VTK::ValuePass::Dec
         in vec3 center;
         out vec3 centeredVertexMC;
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Vertex,
-        "//VTK::ValuePass::Impl",
+        '//VTK::ValuePass::Impl',
         True,
         """
         //VTK::ValuePass::Impl
@@ -694,12 +700,12 @@ def test_fireballs_on_canvas():
         vec3 vertexPosition_worldspace = center + CameraRight_worldspace * .5 * centeredVertexMC.x + CameraUp_worldspace * .5 * centeredVertexMC.y;
         gl_Position = MCDCMatrix * vec4(vertexPosition_worldspace, 1.);
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment,
-        "//VTK::ValuePass::Dec",
+        '//VTK::ValuePass::Dec',
         True,
         """
         //VTK::ValuePass::Dec
@@ -722,12 +728,12 @@ def test_fireballs_on_canvas():
             return mix(r0, r1, f.z) * 2. - 1.;
         }
         """,
-        False
+        False,
     )
 
     mapper.AddShaderReplacement(
         vtk.vtkShader.Fragment,
-        "//VTK::Light::Impl",
+        '//VTK::Light::Impl',
         True,
         """
         // Renaming variables passed from the Vertex Shader
@@ -746,7 +752,7 @@ def test_fireballs_on_canvas():
         color *= fColor;
         fragOutput0 = vec4(color, 1.);
         """,
-        False
+        False,
     )
 
     global timer
@@ -754,7 +760,7 @@ def test_fireballs_on_canvas():
 
     def timer_callback(obj, event):
         global timer
-        timer += 1.
+        timer += 1.0
         showm.render()
 
     @window.vtk.calldata_type(window.vtk.VTK_OBJECT)
@@ -763,13 +769,11 @@ def test_fireballs_on_canvas():
         global timer
         if program is not None:
             try:
-                program.SetUniformf("time", timer)
+                program.SetUniformf('time', timer)
             except ValueError:
                 pass
 
-    mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                       vtk_shader_callback)
-
+    mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
     showm.add_timer_callback(True, 100, timer_callback)
     showm.start()

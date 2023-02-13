@@ -3,7 +3,7 @@ Week 5 - Working on new features
 ================================
 
 .. post:: July 06 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

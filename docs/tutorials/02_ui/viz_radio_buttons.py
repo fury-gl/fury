@@ -9,8 +9,9 @@ create a Sphere and control its color using radio buttons.
 First, some imports.
 """
 
-from fury import ui, window, actor, utils
 import numpy as np
+
+from fury import actor, ui, utils, window
 from fury.data import fetch_viz_icons
 
 ##############################################################################
@@ -24,16 +25,25 @@ fetch_viz_icons()
 #
 # Add a Sphere to the scene.
 
-sphere = actor.sphere(centers=np.array([[50, 0, 0]]),
-                      colors=np.array([[0, 0, 1]]),
-                      radii=11.0, theta=360, phi=360)
+sphere = actor.sphere(
+    centers=np.array([[50, 0, 0]]),
+    colors=np.array([[0, 0, 1]]),
+    radii=11.0,
+    theta=360,
+    phi=360,
+)
 
 # Creating a dict of possible options and mapping it with their values.
 options = {'Blue': (0, 0, 255), 'Red': (255, 0, 0), 'Green': (0, 255, 0)}
 
-color_toggler = ui.RadioButton(list(options), checked_labels=['Blue'],
-                               padding=1, font_size=16,
-                               font_family='Arial', position=(200, 200))
+color_toggler = ui.RadioButton(
+    list(options),
+    checked_labels=['Blue'],
+    padding=1,
+    font_size=16,
+    font_family='Arial',
+    position=(200, 200),
+)
 
 
 # A callback which will set the values for the box
@@ -55,8 +65,7 @@ color_toggler.on_change = toggle_color
 # manager.
 
 current_size = (800, 800)
-show_manager = window.ShowManager(size=current_size,
-                                  title="FURY Sphere Example")
+show_manager = window.ShowManager(size=current_size, title='FURY Sphere Example')
 
 show_manager.scene.add(sphere)
 show_manager.scene.add(color_toggler)
@@ -73,5 +82,4 @@ interactive = False
 if interactive:
     show_manager.start()
 
-window.record(show_manager.scene,
-              size=current_size, out_path="viz_radio_buttons.png")
+window.record(show_manager.scene, size=current_size, out_path='viz_radio_buttons.png')
