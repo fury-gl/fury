@@ -12,12 +12,12 @@ vec3 evaluateSpecularAnisotropic(float specular, float specularTint,
     float ax = max(.001, square(roughness) / aspect);
     float ay = max(.001, square(roughness) * aspect);
 
-    float d = GTR2Anisotropic(dotHN, dotHX, dotHY, ax, ay);
+    float d = GTR2Anisotropic(ax, ay, dotHN, dotHX, dotHY);
 
     vec3 f = mix(spec, vec3(1), schlickWeight);
 
-    float g = smithGGXAnisotropic(dotLN, dotLX, dotLY, ax, ay);
-    g *= smithGGXAnisotropic(dotNV, dotVX, dotVY, ax, ay);
+    float g = smithGGXAnisotropic(ax, ay, dotLN, dotLX, dotLY);
+    g *= smithGGXAnisotropic(ax, ay, dotNV, dotVX, dotVY);
 
     return d * f * g;
 }
