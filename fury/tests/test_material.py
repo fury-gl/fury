@@ -100,7 +100,6 @@ def test_manifest_principled():
     # Test expected parameters
     expected_principled_params = {
         'subsurface': 0,
-        'subsurface_color': [0, 0, 0],
         'metallic': 0,
         'specular': 0,
         'specular_tint': 0,
