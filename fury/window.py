@@ -993,9 +993,10 @@ class ShowManager:
         if stereo.lower() != 'off':
             enable_stereo(self.window, stereo)
 
-        window.SetSize(width, height)
+        self.window.SetSize(width, height)
 
         if order_transparent:
+            # import ipdb; ipdb.set_trace()
             antialiasing(
                 self.scene,
                 self.window,
@@ -1010,9 +1011,10 @@ class ShowManager:
             self.window_to_image_filter = WindowToImageFilter()
             self.window_to_image_filter.SetInput(self.window)
 
+        self.window_to_image_filter.Modified()
         self.window_to_image_filter.Update()
 
-        vtk_image = window_to_image_filter.GetOutput()
+        vtk_image = self.window_to_image_filter.GetOutput()
         h, w, _ = vtk_image.GetDimensions()
         vtk_array = vtk_image.GetPointData().GetScalars()
         components = vtk_array.GetNumberOfComponents()
@@ -1026,7 +1028,7 @@ class ShowManager:
 
         if offscreen:
             self.window.SetOffScreenRendering(previous_offscreen)
-        window.SetSize(previous_size[0], previous_size[1])
+        self.window.SetSize(previous_size[0], previous_size[1])
 
         return arr
 

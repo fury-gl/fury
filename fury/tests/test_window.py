@@ -227,6 +227,7 @@ def test_parallel_projection():
 def test_order_transparent():
 
     scene = window.Scene()
+    show_m = window.ShowManager(scene)
 
     red_cube = actor.cube(
         centers=np.array([[0.0, 0.0, 2]]),
@@ -251,14 +252,14 @@ def test_order_transparent():
 
     # without order_transparency the green will look stronger
     # when looked from behind the red cube
-    arr = window.snapshot(scene, fname=None, offscreen=True, order_transparent=False)
+    arr = show_m.snapshot(fname=None, offscreen=True, order_transparent=False)
 
     # check if flags are set as expected (here no order transparency)
     npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 0)
 
     green_stronger = arr[150, 150, 1]
 
-    arr = window.snapshot(scene, fname=None, offscreen=True, order_transparent=True)
+    arr = show_m.snapshot(fname=None, offscreen=True, order_transparent=True)
 
     # # check if flags are set as expected (here with order transparency)
     npt.assert_equal(scene.GetLastRenderingUsedDepthPeeling(), 1)
@@ -266,6 +267,7 @@ def test_order_transparent():
     # when order transparency is True green should be weaker
     green_weaker = arr[150, 150, 1]
 
+    print(green_stronger, green_weaker)
     assert_greater(green_stronger, green_weaker)
 
 
@@ -447,7 +449,9 @@ def test_record():
         use_primitive=True,
     )
     scene = window.Scene()
-    scene.add(sphere_actor)
+
+    show_m = window.ShowManager(scene)
+    show_m.scene.add(sphere_actor)
 
     def test_content(filename='fury.png', colors_found=(True, True)):
         npt.assert_equal(os.path.isfile(filename), True)
@@ -459,17 +463,17 @@ def test_record():
 
     # Basic test
     with InTemporaryDirectory():
-        window.record(scene)
+        show_m.record()
         test_content()
 
     # test out_path and path_numbering, n_frame
     with InTemporaryDirectory():
         filename = 'tmp_snapshot.png'
-        window.record(scene, out_path=filename)
+        show_m.record(out_path=filename)
         test_content(filename)
-        window.record(scene, out_path=filename, path_numbering=True)
+        show_m.record(out_path=filename, path_numbering=True)
         test_content(filename + '000000.png')
-        window.record(scene, out_path=filename, path_numbering=True, n_frames=3)
+        show_m.record(out_path=filename, path_numbering=True, n_frames=3)
         test_content(filename + '000000.png')
         test_content(filename + '000001.png')
         test_content(filename + '000002.png')
@@ -477,7 +481,7 @@ def test_record():
 
     # test verbose
     with captured_output() as (out, _):
-        window.record(scene, verbose=True)
+        show_m.record(verbose=True)
 
     npt.assert_equal(
         out.getvalue().strip(),
@@ -487,9 +491,7 @@ def test_record():
     )
     # test camera option
     with InTemporaryDirectory():
-        window.record(
-            scene, cam_pos=(310, 0, 530), cam_focal=(120, 0, 0), cam_view=(0, 0, 1)
-        )
+        show_m.record(cam_pos=(310, 0, 530), cam_focal=(120, 0, 0), cam_view=(0, 0, 1))
         test_content()
 
     # test size and clipping
@@ -498,17 +500,13 @@ def test_record():
     # ReadFrontBufferOff(), ShouldRerenderOn() could improved this OSX case.
     if not skip_osx:
         with InTemporaryDirectory():
-            window.record(
-                scene, out_path='fury_1.png', size=(1000, 1000), magnification=5
-            )
+            show_m.record(out_path='fury_1.png', size=(1000, 1000), magnification=5)
             npt.assert_equal(os.path.isfile('fury_1.png'), True)
             arr = io.load_image('fury_1.png')
 
             npt.assert_equal(arr.shape, (5000, 5000, 3))
 
-            window.record(
-                scene, out_path='fury_2.png', size=(5000, 5000), screen_clip=True
-            )
+            show_m.record(out_path='fury_2.png', size=(5000, 5000), screen_clip=True)
             npt.assert_equal(os.path.isfile('fury_2.png'), True)
             arr = io.load_image('fury_2.png')
 
