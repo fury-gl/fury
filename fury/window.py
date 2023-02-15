@@ -996,7 +996,6 @@ class ShowManager:
         self.window.SetSize(width, height)
 
         if order_transparent:
-            # import ipdb; ipdb.set_trace()
             antialiasing(
                 self.scene,
                 self.window,

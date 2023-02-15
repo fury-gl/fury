@@ -156,5 +156,4 @@ def timer_callback(_obj, _event):
 
 showm.add_timer_callback(True, 25, timer_callback)
 showm.start()
-
-window.record(showm.scene, size=(900, 768), out_path='viz_earth_coordinates.png')
+showm.record(size=(900, 768), out_path='viz_earth_coordinates.png')
