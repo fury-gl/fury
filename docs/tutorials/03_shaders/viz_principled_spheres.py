@@ -36,11 +36,13 @@ scene.background((.9, .9, .9))
 
 material_params = [
     [(1, 1, 1), {'subsurface': 0}],
-    [[1, 1, 0], {'metallic': 0}], [(1, 0, 0), {'specular': 0}],
+    [[1, 1, 0], {'metallic': 0}],
+    [(1, 0, 0), {'specular': 0}],
     [(1, 0, 0), {'specular_tint': 0, 'specular': 1}],
     [(0, 0, 1), {'roughness': 0}],
     [(1, 0, 1), {'anisotropic': 0, 'metallic': .25, 'roughness': .5}],
-    [[0, 1, .5], {'sheen': 0}], [(0, 1, .5), {'sheen_tint': 0, 'sheen': 1}],
+    [[0, 1, .5], {'sheen': 0}],
+    [(0, 1, .5), {'sheen_tint': 0, 'sheen': 1}],
     [(0, 1, 1), {'clearcoat': 0}],
     [(0, 1, 1), {'clearcoat_gloss': 0, 'clearcoat': 1}]
 ]
@@ -81,8 +83,8 @@ for j in range(11):
 ###############################################################################
 # And visualize our demo.
 
-interactive = True
+interactive = False
 if interactive:
     window.show(scene)
 
-#window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
+window.record(scene, size=(600, 600), out_path="viz_principled_spheres.png")
