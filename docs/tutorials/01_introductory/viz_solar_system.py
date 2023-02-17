@@ -331,4 +331,4 @@ pause_button.on_left_mouse_button_clicked = pause_animation
 showm.add_timer_callback(True, 10, timer_callback)
 showm.start()
 
-window.record(showm.scene, size=(900, 768), out_path='viz_solar_system_animation.png')
+showm.record(size=(900, 768), out_path='viz_solar_system_animation.png')

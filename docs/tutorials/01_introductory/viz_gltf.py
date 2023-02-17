@@ -15,6 +15,8 @@ from fury.gltf import glTF
 scene = window.Scene()
 scene.SetBackground(0.1, 0.1, 0.4)
 
+showm = window.ShowManager(scene, size=(1280, 720))
+
 ##############################################################################
 # Retrieving the gltf model.
 fetch_gltf('Duck', 'glTF')
@@ -44,6 +46,6 @@ if cameras:
 interactive = False
 
 if interactive:
-    window.show(scene, size=(1280, 720))
+    showm.start()
 
-window.record(scene, out_path='viz_gltf.png', size=(1280, 720))
+showm.record(out_path='viz_gltf.png', size=(1280, 720))

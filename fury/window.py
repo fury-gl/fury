@@ -551,6 +551,8 @@ class ShowManager:
                     if end_time - start_time < time_per_frame:
                         time.sleep(time_per_frame - (end_time - start_time))
             else:
+                if not self.iren.GetInitialized():
+                    self.initialize()
                 self.render()
                 self.iren.Start()
 
@@ -571,11 +573,7 @@ class ShowManager:
                 self.window.SetWindowName(self.title)
             self.iren.Start()
 
-        self.window.RemoveRenderer(self.scene)
-        self.scene.SetRenderWindow(None)
         self.window.Finalize()
-        del self.iren
-        del self.window
 
     def lock(self):
         """Lock the render window."""
@@ -781,6 +779,11 @@ class ShowManager:
         self.destroy_timers()
         self.timers.clear()
 
+    def remove_scene(self):
+        self.window.RemoveRenderer(self.scene)
+        self.scene.SetRenderWindow(None)
+        self.scene = None
+
     def record(
         self,
         cam_pos=None,
@@ -938,7 +941,6 @@ class ShowManager:
         occlusion_ratio=0.0,
         dpi=(72, 72),
     ):
-
         """Save a snapshot of the scene in a file or in memory.
 
         Parameters

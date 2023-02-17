@@ -260,4 +260,4 @@ scene.zoom(1.0)
 # zoom in/out using the scroll wheel, and pick voxels with left click.
 
 
-window.record(scene, out_path='mosaic.png', size=(900, 600), reset_camera=False)
+show_m_mosaic.record(out_path='mosaic.png', size=(900, 600), reset_camera=False)

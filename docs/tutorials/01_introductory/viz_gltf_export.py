@@ -67,4 +67,4 @@ interactive = False
 if interactive:
     showm.start()
 
-showm.record(scene, out_path='viz_gltf_export.png', size=(1280, 720))
+showm.record(out_path='viz_gltf_export.png', size=(1280, 720))
