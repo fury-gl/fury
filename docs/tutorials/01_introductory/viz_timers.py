@@ -65,6 +65,6 @@ scene.add(tb)
 # Run every 200 milliseconds
 timer_id = showm.add_timer_callback(True, 200, timer_callback)
 
-showm.start(keep_alive=True)
+showm.start()
 
 showm.record(size=(900, 768), out_path='viz_timer.png')

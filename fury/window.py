@@ -551,8 +551,6 @@ class ShowManager:
                     if end_time - start_time < time_per_frame:
                         time.sleep(time_per_frame - (end_time - start_time))
             else:
-                if not self.iren.GetInitialized():
-                    self.initialize()
                 self.render()
                 self.iren.Start()
 
