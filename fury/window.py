@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import time
-from threading import Lock
-
 import gzip
 import time
 from tempfile import TemporaryDirectory as InTemporaryDirectory
+from threading import Lock
 from warnings import warn
 
 import numpy as np
@@ -12,7 +10,6 @@ from scipy import ndimage
 
 from fury import __version__ as fury_version
 from fury.animation import Animation, Timeline
-from fury.decorators import is_win
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (
@@ -384,7 +381,7 @@ class ShowManager:
         self.mutex = Lock()
         self._fps = 0
         self._last_render_time = 0
-        
+
         if self.reset_camera:
             self.scene.ResetCamera()
 
@@ -425,9 +422,6 @@ class ShowManager:
         self._timelines = []
         self._animations = []
         self._animation_callback = None
-
-        if is_win:
-            self.initialize()
 
     def initialize(self):
         """Initialize interaction."""
@@ -551,7 +545,7 @@ class ShowManager:
                     self.release_lock()
                     end_time = time.perf_counter()
                     # throttle to 60fps to avoid busy wait
-                    time_per_frame = 1.0/desired_fps
+                    time_per_frame = 1.0 / desired_fps
                     if end_time - start_time < time_per_frame:
                         time.sleep(time_per_frame - (end_time - start_time))
             else:
@@ -614,7 +608,7 @@ class ShowManager:
         self.release_lock()
 
     def wait(self):
-        """ Wait for thread to finish. """
+        """Wait for thread to finish."""
         if self.thread:
             self.thread.join()
 
@@ -750,6 +744,8 @@ class ShowManager:
         self.window.Render()
 
     def add_timer_callback(self, repeat, duration, timer_callback):
+        if not self.iren.GetInitialized():
+            self.initialize()
         self.iren.AddObserver('TimerEvent', timer_callback)
 
         if repeat:
@@ -760,6 +756,8 @@ class ShowManager:
         return timer_id
 
     def add_iren_callback(self, iren_callback, event='MouseMoveEvent'):
+        if not self.iren.GetInitialized():
+            self.initialize()
         self.iren.AddObserver(event, iren_callback)
 
     def destroy_timer(self, timer_id):
@@ -1124,7 +1122,7 @@ def snapshot(
     max_peels=4,
     occlusion_ratio=0.0,
     dpi=(72, 72),
-    render_window=None
+    render_window=None,
 ):
 
     """Save a snapshot of the scene in a file or in memory.
@@ -1187,8 +1185,9 @@ def snapshot(
         render_window.SetSize(width, height)
 
         if order_transparent:
-            antialiasing(scene, render_window, multi_samples, max_peels,
-                         occlusion_ratio)
+            antialiasing(
+                scene, render_window, multi_samples, max_peels, occlusion_ratio
+            )
         render_window.Render()
 
     window_to_image_filter = WindowToImageFilter()
