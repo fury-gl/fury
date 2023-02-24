@@ -1584,14 +1584,24 @@ def test_billboard_actor(interactive=False):
                        [1, 0, 0], [0, 1, 0]])
     scales = [3, 1, 2, 1, 3]
 
+    b_point = """
+        float len = length(point);
+        float radius = .2;
+        if(len > radius)
+            {fragOutput0 = vec4(vec3(0,0,0), 1);}
+        else
+            {fragOutput0 = vec4(color, 1);}
+        """
+
     spherical_billboard = actor.billboard(centers, colors=colors,
-                                          scales=scales, bb_type='spherical')
+                                          scales=scales, bb_type='spherical',
+                                          fs_impl=b_point)
 
     scene.add(spherical_billboard)
     scene.add(actor.axes())
     arr = window.snapshot(scene)
-    report = window.analyze_snapshot(arr, colors=colors)
-    npt.assert_equal(report.objects, 5)
+    report = window.analyze_snapshot(arr, colors=255 * colors)
+    npt.assert_equal(report.colors_found, [True] * 5)
 
     scene.pitch(87)
     if interactive:
@@ -1619,7 +1629,8 @@ def test_billboard_actor(interactive=False):
 
     cylindrical_x_billboard = actor.billboard(centers, colors=colors,
                                               scales=scales,
-                                              bb_type='cylindrical_x')
+                                              bb_type='cylindrical_x',
+                                              fs_impl=b_point)
 
     scene.add(cylindrical_x_billboard)
     scene.add(actor.axes())
@@ -1629,7 +1640,6 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    scene.zoom(.3)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1641,7 +1651,6 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    scene.zoom(.3)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
@@ -1651,7 +1660,8 @@ def test_billboard_actor(interactive=False):
 
     cylindrical_y_billboard = actor.billboard(centers, colors=colors,
                                               scales=scales,
-                                              bb_type='cylindrical_y')
+                                              bb_type='cylindrical_y',
+                                              fs_impl=b_point)
 
     scene.yaw(87)
     scene.add(cylindrical_y_billboard)
@@ -1661,7 +1671,6 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    scene.zoom(.4)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1673,7 +1682,6 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
-    scene.zoom(.4)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
