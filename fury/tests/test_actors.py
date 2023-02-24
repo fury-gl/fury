@@ -1582,7 +1582,7 @@ def test_billboard_actor(interactive=False):
                         [-30, 30, -10], [20, -20, 10]])
     colors = np.array([[1, 1, 0], [0, 0, 1], [1, 0, 1],
                        [1, 0, 0], [0, 1, 0]])
-    scales = [3, 1, 2, 1, 3]
+    scales = [3, 1, 2, 1, 1.5]
 
     b_point = """
         float len = length(point);
@@ -1665,7 +1665,6 @@ def test_billboard_actor(interactive=False):
 
     scene.yaw(87)
     scene.add(cylindrical_y_billboard)
-    scene.add(actor.axes())
     if interactive:
         window.show(scene)
 
