@@ -1629,6 +1629,7 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
+    scene.zoom(.3)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1640,6 +1641,7 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
+    scene.zoom(.3)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
@@ -1659,6 +1661,7 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
+    scene.zoom(.4)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1670,6 +1673,7 @@ def test_billboard_actor(interactive=False):
 
     scene.reset_camera()
     scene.reset_clipping_range()
+    scene.zoom(.4)
     arr = window.snapshot(scene, offscreen=True)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
