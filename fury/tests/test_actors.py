@@ -1597,7 +1597,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1607,7 +1607,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1625,7 +1625,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1635,7 +1635,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
@@ -1653,7 +1653,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [True] * 5)
@@ -1663,7 +1663,7 @@ def test_billboard_actor(interactive=False):
     if interactive:
         window.show(scene)
 
-    scene.reset_camera()
+    scene.ResetCamera()
     arr = window.snapshot(scene)
     report = window.analyze_snapshot(arr, colors=255 * colors)
     npt.assert_equal(report.colors_found, [False] * 5)
