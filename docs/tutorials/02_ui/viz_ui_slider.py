@@ -81,7 +81,7 @@ def translate_cube_ver(slider):
 
 def translate_cube_hor(slider):
     value = slider.value
-    cube.SetPosition(0, value, 0)
+    cube.SetPosition(value, 0, 0)
 
 
 hor_line_slider_text_top.on_change = translate_cube_hor
@@ -124,7 +124,7 @@ show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 150))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
-interactive = False
+interactive = True
 
 if interactive:
     show_manager.start()
