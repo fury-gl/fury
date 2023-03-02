@@ -77,7 +77,7 @@ ring_slider.on_change = rotate_cube
 
 def translate_cube_ver(slider):
     value = slider.value
-    cube.SetPosition(value, 0, 0)
+    cube.SetPosition(0, value, 0)
 
 def translate_cube_hor(slider):
     value = slider.value
