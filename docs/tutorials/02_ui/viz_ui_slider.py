@@ -75,15 +75,15 @@ ring_slider.on_change = rotate_cube
 # Similarly, we can translate the cube with the line slider.
 
 
-def translate_cube(slider):
+def translate_cube_ver(slider):
     value = slider.value
     cube.SetPosition(value, 0, 0)
 
 
 hor_line_slider_text_top.on_change = translate_cube
 hor_line_slider_text_bottom.on_change = translate_cube
-ver_line_slider_text_left.on_change = translate_cube
-ver_line_slider_text_right.on_change = translate_cube
+ver_line_slider_text_left.on_change = translate_cube_ver
+ver_line_slider_text_right.on_change = translate_cube_ver
 
 ###############################################################################
 # Show Manager
