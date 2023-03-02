@@ -79,6 +79,10 @@ def translate_cube_ver(slider):
     value = slider.value
     cube.SetPosition(value, 0, 0)
 
+def translate_cube_hor(slider):
+    value = slider.value
+    cube.SetPosition(0, value, 0)
+
 
 hor_line_slider_text_top.on_change = translate_cube
 hor_line_slider_text_bottom.on_change = translate_cube
