@@ -1,8 +1,7 @@
 import numpy as np
-from fury.ui.elements import PlaybackPanel
-from fury.lib import Actor, WindowToImageFilter, RenderWindow, numpy_support
+from fury.lib import WindowToImageFilter, RenderWindow, numpy_support
 from fury import window
-from time import perf_counter, time
+from time import perf_counter
 from fury.ui.elements import PlaybackPanel
 from fury.animation.animation import Animation
 from PIL import Image
@@ -335,7 +334,6 @@ class Timeline:
                                 0)
         print('Recording...')
         while t < duration:
-            tt = time()
             self.seek(t)
             render_window.Render()
             window_to_image_filter = WindowToImageFilter()
@@ -349,7 +347,6 @@ class Timeline:
                                                                  components)
             frames.append(snap)
             t += step
-            # print(time() - tt)
 
         print('Saving...')
         if fname is None:
@@ -365,7 +362,7 @@ class Timeline:
             try:
                 import cv2
             except ImportError:
-                raise ImportError('OpenCV has to be installed in order to '
+                raise ImportError('OpenCV must be installed in order to '
                                   'save as MP4 video.')
             fourcc = cv2.VideoWriter.fourcc(*'mp4v')
             out = cv2.VideoWriter(fname, fourcc, fps, size)
