@@ -3,7 +3,7 @@ Week 15 - Highlighting DrawShapes
 =================================
 
 .. post:: September 14 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 

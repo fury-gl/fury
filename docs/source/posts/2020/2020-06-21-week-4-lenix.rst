@@ -8,7 +8,7 @@ Raymarching continued
 
 Make sure to check out Project `FURY <https://github.com/fury-gl/fury>`_
 
-Hey ! 
+Hey !
 Raymarching continued
 
 What did you do this week?
@@ -23,7 +23,7 @@ Multiple Primitives within a single cube:
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-4a.gif
 
-Solved deformation with added lambertian Lighting: 
+Solved deformation with added lambertian Lighting:
 
 .. image:: https://raw.githubusercontent.com/lenixlobo/fury-outputs/master/blog-week-4b.gif
 

@@ -1,10 +1,10 @@
 import numpy as np
 from fury.lib import WindowToImageFilter, RenderWindow, numpy_support
 from fury import window
-from time import perf_counter
-from fury.ui.elements import PlaybackPanel
 from fury.animation.animation import Animation
+from fury.ui.elements import PlaybackPanel
 from PIL import Image
+from time import perf_counter
 
 
 class Timeline:
@@ -29,8 +29,7 @@ class Timeline:
         Whether loop playing the timeline or play once.
     """
 
-    def __init__(self, animations=None, playback_panel=False, loop=True,
-                 length=None):
+    def __init__(self, animations=None, playback_panel=False, loop=True, length=None):
 
         self._scene = None
         self.playback_panel = None
@@ -44,6 +43,7 @@ class Timeline:
         self._duration = length if length is not None else 0.0
 
         if playback_panel:
+
             def set_loop(is_loop):
                 self._loop = is_loop
 
@@ -72,8 +72,9 @@ class Timeline:
         if self._length is not None:
             self._duration = self._length
         else:
-            self._duration = max([0.0] + [anim.update_duration() for anim
-                                          in self._animations])
+            self._duration = max(
+                [0.0] + [anim.update_duration() for anim in self._animations]
+            )
         if self.has_playback_panel:
             self.playback_panel.final_time = self.duration
         return self.duration
@@ -94,8 +95,9 @@ class Timeline:
         if not self.playing:
             if self.current_timestamp >= self.duration:
                 self.current_timestamp = 0
-            self._last_started_time = \
+            self._last_started_time = (
                 perf_counter() - self._current_timestamp / self.speed
+            )
             self._playing = True
 
     def pause(self):
@@ -126,8 +128,9 @@ class Timeline:
 
         """
         if self.playing:
-            self._current_timestamp = (perf_counter() -
-                                       self._last_started_time) * self.speed
+            self._current_timestamp = (
+                perf_counter() - self._last_started_time
+            ) * self.speed
         return self._current_timestamp
 
     @current_timestamp.setter
@@ -157,8 +160,7 @@ class Timeline:
         elif timestamp > self.duration:
             timestamp = self.duration
         if self.playing:
-            self._last_started_time = \
-                perf_counter() - timestamp / self.speed
+            self._last_started_time = perf_counter() - timestamp / self.speed
         else:
             self._current_timestamp = timestamp
             self.update(force=True)
@@ -391,7 +393,7 @@ class Timeline:
             self._animations.append(animation)
             self.update_duration()
         else:
-            raise TypeError("Expected an Animation, a list or a tuple.")
+            raise TypeError('Expected an Animation, a list or a tuple.')
 
     @property
     def animations(self) -> 'list[Animation]':

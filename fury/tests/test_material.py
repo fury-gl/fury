@@ -1,15 +1,13 @@
+import os
 from tempfile import TemporaryDirectory
+
+import numpy as np
+import numpy.testing as npt
+import pytest
 
 from fury import actor, material, window
 from fury.io import load_image
 from fury.optpkg import optional_package
-
-
-import numpy as np
-import numpy.testing as npt
-import os
-import pytest
-
 
 dipy, have_dipy, _ = optional_package('dipy')
 
@@ -29,8 +27,9 @@ def test_manifest_pbr_vtk():
 
     scene = window.Scene()  # Setup scene
 
-    test_actor = actor.square(np.array([[0, 0, 0]]), directions=(0, 0, 0),
-                              colors=(0, 0, 1))
+    test_actor = actor.square(
+        np.array([[0, 0, 0]]), directions=(0, 0, 0), colors=(0, 0, 1)
+    )
 
     scene.add(test_actor)
 
@@ -100,10 +99,17 @@ def test_manifest_principled():
 
     # Test expected parameters
     expected_principled_params = {
-        'subsurface': 0, 'subsurface_color': [0, 0, 0], 'metallic': 0,
-        'specular': 0, 'specular_tint': 0, 'roughness': 0, 'anisotropic': 0,
-        'anisotropic_direction': [0, 1, .5], 'sheen': 0, 'sheen_tint': 0,
-        'clearcoat': 0, 'clearcoat_gloss': 0
+        'subsurface': 0,
+        'metallic': 0,
+        'specular': 0,
+        'specular_tint': 0,
+        'roughness': 0,
+        'anisotropic': 0,
+        'anisotropic_direction': [0, 1, 0.5],
+        'sheen': 0,
+        'sheen_tint': 0,
+        'clearcoat': 0,
+        'clearcoat_gloss': 0,
     }
     test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
     actual_principled_params = material.manifest_principled(test_actor)
@@ -119,13 +125,13 @@ def test_manifest_standard():
 
     # Test non-supported interpolation method
     test_actor = actor.square(center, directions=(1, 1, 1), colors=(0, 0, 1))
-    npt.assert_warns(UserWarning, material.manifest_standard, test_actor,
-                     interpolation='test')
+    npt.assert_warns(
+        UserWarning, material.manifest_standard, test_actor, interpolation='test'
+    )
 
     scene = window.Scene()  # Setup scene
 
-    test_actor = actor.box(center, directions=(1, 1, 1), colors=(0, 0, 1),
-                           scales=1)
+    test_actor = actor.box(center, directions=(1, 1, 1), colors=(0, 0, 1), scales=1)
     scene.add(test_actor)
 
     # scene.reset_camera()
@@ -153,8 +159,7 @@ def test_manifest_standard():
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test ambient color
-    material.manifest_standard(test_actor, ambient_level=.5,
-                               ambient_color=(1, 0, 0))
+    material.manifest_standard(test_actor, ambient_level=0.5, ambient_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[125, 100, :] / 1000
     npt.assert_array_almost_equal(actual, desired, decimal=2)
@@ -166,7 +171,7 @@ def test_manifest_standard():
     # npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test diffuse level
-    material.manifest_standard(test_actor, diffuse_level=.75)
+    material.manifest_standard(test_actor, diffuse_level=0.75)
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 151]) / 1000
@@ -180,8 +185,7 @@ def test_manifest_standard():
     # npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test diffuse color
-    material.manifest_standard(test_actor, diffuse_level=.5,
-                               diffuse_color=(1, 0, 0))
+    material.manifest_standard(test_actor, diffuse_level=0.5, diffuse_color=(1, 0, 0))
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[125, 100, :] / 1000
     desired = np.array([0, 0, 101]) / 1000
@@ -205,8 +209,7 @@ def test_manifest_standard():
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test specular power
-    material.manifest_standard(test_actor, specular_level=1,
-                               specular_power=5)
+    material.manifest_standard(test_actor, specular_level=1, specular_power=5)
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[125, 100, :] / 1000
     desired = np.array([78, 78, 255]) / 1000
@@ -218,8 +221,9 @@ def test_manifest_standard():
     npt.assert_array_almost_equal(actual, desired, decimal=2)
 
     # Test specular color
-    material.manifest_standard(test_actor, specular_level=1,
-                               specular_color=(1, 0, 0), specular_power=5)
+    material.manifest_standard(
+        test_actor, specular_level=1, specular_color=(1, 0, 0), specular_power=5
+    )
     ss = window.snapshot(scene, size=(200, 200))
     actual = ss[125, 100, :] / 1000
     desired = np.array([78, 0, 201]) / 1000
@@ -234,8 +238,8 @@ def test_manifest_standard():
 
     # Special case: Contour from roi
     data = np.zeros((50, 50, 50))
-    data[20:30, 25, 25] = 1.
-    data[25, 20:30, 25] = 1.
+    data[20:30, 25, 25] = 1.0
+    data[25, 20:30, 25] = 1.0
     test_actor = actor.contour_from_roi(data, color=np.array([1, 0, 1]))
     scene.add(test_actor)
 

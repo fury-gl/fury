@@ -3,7 +3,7 @@ Week 4 - Fixing the Clamping Issue
 ==================================
 
 .. post:: June 29 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -23,7 +23,7 @@ While testing these changes, I found an issue that whenever we just do a single 
 
 .. image:: https://user-images.githubusercontent.com/32108826/175790660-e4b05269-e8d3-44e9-92e1-336c0eeb34ca.gif
     :width: 400
-    :align: center 
+    :align: center
 
 This was due to the difference between the global mouse click position and the canvas position, which was then fixed by converting the mouse click position to the relative canvas position.
 

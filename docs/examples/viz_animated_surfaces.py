@@ -10,10 +10,11 @@ animate 2D functions using FURY.
 ###############################################################################
 # Importing necessary modules
 
-from fury import window, actor, ui, utils, colormap
-import numpy as np
 import itertools
 
+import numpy as np
+
+from fury import actor, colormap, ui, utils, window
 
 ###############################################################################
 # The following function is used to create and update the coordinates of the
@@ -39,10 +40,9 @@ def update_surface(x, y, equation, cmap_name='viridis'):
 
 
 ###############################################################################
-# Variables and their usage-
-# time: float
-#       initial value of the time variable i.e. value of the time variable at
-#       the beginning of the program; (default = 0)
+# Variables and their usage:
+# :time - float: initial value of the time variable i.e. value of the time variable at
+#               the beginning of the program; (default = 0)
 # dt: float
 #     amount by which ``time`` variable is incremented for every iteration
 #     of timer_callback function (default = 0.1)
@@ -86,26 +86,26 @@ y = y.reshape(-1)
 
 
 def create_surface(x, y, equation, colormap_name):
-    xyz, colors = update_surface(x, y, equation=equation,
-                                 cmap_name=colormap_name)
+    xyz, colors = update_surface(x, y, equation=equation, cmap_name=colormap_name)
     surf = actor.surface(xyz, colors=colors)
     surf.equation = equation
     surf.cmap_name = colormap_name
     surf.vertices = utils.vertices_from_actor(surf)
-    surf.no_vertices_per_point = len(surf.vertices)/npoints**2
-    surf.initial_vertices = surf.vertices.copy() - \
-        np.repeat(xyz, surf.no_vertices_per_point, axis=0)
+    surf.no_vertices_per_point = len(surf.vertices) / npoints**2
+    surf.initial_vertices = surf.vertices.copy() - np.repeat(
+        xyz, surf.no_vertices_per_point, axis=0
+    )
     return surf
 
 
 ###############################################################################
 # Equations to be plotted
-eq1 = "np.abs(np.sin(x*2*np.pi*np.cos(time/2)))**1*np.cos(time/2)*\
-      np.abs(np.cos(y*2*np.pi*np.sin(time/2)))**1*np.sin(time/2)*1.2"
-eq2 = "((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-1.8*time)*0.24"
-eq3 = "(np.sin(np.pi*2*x-np.sin(1.8*time))*np.cos(np.pi*2*y+np.cos(1.8*time)))\
-      *0.48"
-eq4 = "np.cos(24*np.sqrt(x**2 + y**2) - 2*time)*0.18"
+eq1 = 'np.abs(np.sin(x*2*np.pi*np.cos(time/2)))**1*np.cos(time/2)*\
+      np.abs(np.cos(y*2*np.pi*np.sin(time/2)))**1*np.sin(time/2)*1.2'
+eq2 = '((x**2 - y**2)/(x**2 + y**2))**(2)*np.cos(6*np.pi*x*y-1.8*time)*0.24'
+eq3 = '(np.sin(np.pi*2*x-np.sin(1.8*time))*np.cos(np.pi*2*y+np.cos(1.8*time)))\
+      *0.48'
+eq4 = 'np.cos(24*np.sqrt(x**2 + y**2) - 2*time)*0.18'
 equations = [eq1, eq2, eq3, eq4]
 
 ###############################################################################
@@ -116,16 +116,18 @@ cmap_names = ['hot', 'plasma', 'viridis', 'ocean']
 # Creating a list of surfaces.
 surfaces = []
 for i in range(4):
-    surfaces.append(create_surface(x, y, equation=equations[i],
-                    colormap_name=cmap_names[i]))
+    surfaces.append(
+        create_surface(x, y, equation=equations[i], colormap_name=cmap_names[i])
+    )
 
 
 ###############################################################################
 # Creating a scene object and configuring the camera's position
 
 scene = window.Scene()
-scene.set_camera(position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0),
-                 view_up=(0.0, 0.0, 1.0))
+scene.set_camera(
+    position=(4.45, -21, 12), focal_point=(4.45, 0.0, 0.0), view_up=(0.0, 0.0, 1.0)
+)
 showm = window.ShowManager(scene, size=(600, 600))
 
 ###############################################################################
@@ -134,15 +136,20 @@ showm = window.ShowManager(scene, size=(600, 600))
 # To store the function names
 text = []
 for i in range(4):
-    t_actor = actor.vector_text('Function ' + str(i + 1), pos=(0, 0, 0),
-                                scale=(0.17, 0.2, 0.2))
+    t_actor = actor.vector_text(
+        'Function ' + str(i + 1), pos=(0, 0, 0), scale=(0.17, 0.2, 0.2)
+    )
     text.append(t_actor)
 
-grid_ui = ui.GridUI(actors=surfaces, captions=text,
-                    caption_offset=(-0.7, -2.5, 0), dim=(1, 4),
-                    cell_padding=2,
-                    aspect_ratio=1,
-                    rotation_axis=(0, 1, 0))
+grid_ui = ui.GridUI(
+    actors=surfaces,
+    captions=text,
+    caption_offset=(-0.7, -2.5, 0),
+    dim=(1, 4),
+    cell_padding=2,
+    aspect_ratio=1,
+    rotation_axis=(0, 1, 0),
+)
 showm.scene.add(grid_ui)
 
 # Adding an axes actor to the first surface.
@@ -152,7 +159,7 @@ showm.scene.add(actor.axes())
 ###############################################################################
 # Initializing text box to print the title of the animation
 tb = ui.TextBlock2D(bold=True, position=(200, 60))
-tb.message = "Animated 2D functions"
+tb.message = 'Animated 2D functions'
 scene.add(tb)
 
 ###############################################################################
@@ -168,6 +175,7 @@ end = 200
 ###############################################################################
 # The 2D functions are updated and rendered here.
 
+
 def timer_callback(_obj, _event):
     global xyz, time
     time += dt
@@ -176,11 +184,13 @@ def timer_callback(_obj, _event):
     # updating the colors and vertices of the triangles used to form the
     # surfaces
     for surf in surfaces:
-        xyz, colors = update_surface(x, y, equation=surf.equation,
-                                     cmap_name=surf.cmap_name)
+        xyz, colors = update_surface(
+            x, y, equation=surf.equation, cmap_name=surf.cmap_name
+        )
         utils.update_surface_actor_colors(surf, colors)
-        surf.vertices[:] = surf.initial_vertices + \
-            np.repeat(xyz, surf.no_vertices_per_point, axis=0)
+        surf.vertices[:] = surf.initial_vertices + np.repeat(
+            xyz, surf.no_vertices_per_point, axis=0
+        )
         utils.update_actor(surf)
 
     showm.render()
@@ -197,5 +207,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(showm.scene, size=(600, 600),
-              out_path="viz_animated_surfaces.png")
+window.record(showm.scene, size=(600, 600), out_path='viz_animated_surfaces.png')

@@ -95,7 +95,7 @@ How have I implemented the code for A and B?
 Because we need to deal with a lot of different data and share them
 between different processes I’ve created a set of tools to deal with
 that, take a look for example in the `ShmManagerMultiArrays
-Object <https://github.com/fury-gl/helios/blob/main/helios/layouts/ipc_tools.py#L111>`__
+Object <https://github.com/fury-gl/helios/blob/14e39e0350b4b9666775ba0c4840d2e9887678c2/helios/layouts/ipc_tools.py#L188>`__
 , which makes the memory management less painful.
 
 I'm breaking the layout method into two different processes. Thus I’ve
@@ -163,5 +163,3 @@ Summary of most important pull-requests:
    `fury-gl/fury/pull/437/commits/a94e22dbc2854ec87b8c934f6cabdf48931dc279 <https://github.com/fury-gl/fury/pull/437/commits/a94e22dbc2854ec87b8c934f6cabdf48931dc279>`__
 
 .. |image1| image:: https://user-images.githubusercontent.com/6979335/125310065-a3a9f480-e308-11eb-98d9-0ff5406a0e96.gif
-
-

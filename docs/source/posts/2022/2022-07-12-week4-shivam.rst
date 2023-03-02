@@ -208,7 +208,7 @@ What is coming up next week?
 Did you get stuck anywhere?
 ---------------------------
 
-- To create a texture, we needed the RGB values, However ``.png`` images were returning a 2D array when read using PIL. It is fixed by 
+- To create a texture, we needed the RGB values, However ``.png`` images were returning a 2D array when read using PIL. It is fixed by
 
    .. code-block :: python
 

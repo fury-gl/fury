@@ -3,7 +3,7 @@ Week 13 - Separating tests and fixing bugs
 ==========================================
 
 .. post:: August 31 2022
-   :author: Praneeth Shetty 
+   :author: Praneeth Shetty
    :tags: google
    :category: gsoc
 
@@ -27,7 +27,7 @@ Along this, there was a redundant parameter called `in_progress`, which was used
 
 Did you get stuck anywhere?
 ---------------------------
-Debugging the issue in PR `#653 <https://github.com/fury-gl/fury/pull/653>`_ took most of the time this week. I had to manually calculate and check whether the calculations were correct or not. 
+Debugging the issue in PR `#653 <https://github.com/fury-gl/fury/pull/653>`_ took most of the time this week. I had to manually calculate and check whether the calculations were correct or not.
 
 What is coming up next?
 -----------------------

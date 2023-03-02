@@ -15,12 +15,17 @@ implementation inside.
 We start by importing the necessary modules:
 """
 
-from fury import actor, window
-from fury.shaders import compose_shader, shader_to_actor, attribute_to_actor,\
-    import_fury_shader
-
 import os
+
 import numpy as np
+
+from fury import actor, window
+from fury.shaders import (
+    attribute_to_actor,
+    compose_shader,
+    import_fury_shader,
+    shader_to_actor,
+)
 
 ###############################################################################
 # Cylinder using polygons
@@ -35,15 +40,46 @@ import numpy as np
 # Now we define some properties of our actors, use them to create a set of
 # cylinders, and add them to the scene.
 
-centers = np.array([[-3.2, .9, .4], [-3.5, -.5, 1], [-2.1, 0, .4],
-                    [-.2, .9, .4], [-.5, -.5, 1], [.9, 0, .4],
-                    [2.8, .9, 1.4], [2.5, -.5, 2], [3.9, 0, 1.4]])
-dirs = np.array([[-.2, .9, .4], [-.5, -.5, 1], [.9, 0, .4], [-.2, .9, .4],
-                 [-.5, -.5, 1], [.9, 0, .4], [-.2, .9, .4], [-.5, -.5, 1],
-                 [.9, 0, .4]])
-colors = np.array([[1, 0, 0], [1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 1, 0],
-                   [0, 1, 0], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
-radius = .5
+centers = np.array(
+    [
+        [-3.2, 0.9, 0.4],
+        [-3.5, -0.5, 1],
+        [-2.1, 0, 0.4],
+        [-0.2, 0.9, 0.4],
+        [-0.5, -0.5, 1],
+        [0.9, 0, 0.4],
+        [2.8, 0.9, 1.4],
+        [2.5, -0.5, 2],
+        [3.9, 0, 1.4],
+    ]
+)
+dirs = np.array(
+    [
+        [-0.2, 0.9, 0.4],
+        [-0.5, -0.5, 1],
+        [0.9, 0, 0.4],
+        [-0.2, 0.9, 0.4],
+        [-0.5, -0.5, 1],
+        [0.9, 0, 0.4],
+        [-0.2, 0.9, 0.4],
+        [-0.5, -0.5, 1],
+        [0.9, 0, 0.4],
+    ]
+)
+colors = np.array(
+    [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 1, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+        [0, 0, 1],
+        [0, 0, 1],
+    ]
+)
+radius = 0.5
 height = 1
 
 ###############################################################################
@@ -51,14 +87,33 @@ height = 1
 # of sides used to define the bases of the cylinder) to see how it changes the
 # surface of the primitive.
 
-cylinders_8 = actor.cylinder(centers[:3], dirs[:3], colors[:3], radius=radius,
-                             heights=height, capped=True, resolution=8)
-cylinders_16 = actor.cylinder(centers[3: 6], dirs[3: 6], colors[3: 6],
-                              radius=radius, heights=height, capped=True,
-                              resolution=16)
-cylinders_32 = actor.cylinder(centers[6: 9], dirs[6: 9], colors[6: 9],
-                              radius=radius, heights=height, capped=True,
-                              resolution=32)
+cylinders_8 = actor.cylinder(
+    centers[:3],
+    dirs[:3],
+    colors[:3],
+    radius=radius,
+    heights=height,
+    capped=True,
+    resolution=8,
+)
+cylinders_16 = actor.cylinder(
+    centers[3:6],
+    dirs[3:6],
+    colors[3:6],
+    radius=radius,
+    heights=height,
+    capped=True,
+    resolution=16,
+)
+cylinders_32 = actor.cylinder(
+    centers[6:9],
+    dirs[6:9],
+    colors[6:9],
+    radius=radius,
+    heights=height,
+    capped=True,
+    resolution=32,
+)
 
 ###############################################################################
 # Next, we set up a new scene to add and visualize the actors created.
@@ -112,8 +167,12 @@ scene.clear()
 # Now we create cylinders using box actor and SDF implementation on shaders.
 # For this, we first create a box actor.
 
-box_actor = actor.box(centers=centers, directions=dirs, colors=colors,
-                      scales=(height, radius * 2, radius * 2))
+box_actor = actor.box(
+    centers=centers,
+    directions=dirs,
+    colors=colors,
+    scales=(height, radius * 2, radius * 2),
+)
 
 ###############################################################################
 # Now we use attribute_to_actor to link a NumPy array, with the centers and
@@ -140,8 +199,7 @@ attribute_to_actor(box_actor, rep_heights, 'height')
 #
 # Vertex shaders perform basic processing of each individual vertex.
 
-vs_dec = \
-    '''
+vs_dec = """
     in vec3 center;
     in vec3 direction;
     in float height;
@@ -152,16 +210,15 @@ vs_dec = \
     out vec3 directionVSOutput;
     out float heightVSOutput;
     out float radiusVSOutput;
-    '''
+    """
 
-vs_impl = \
-    '''
+vs_impl = """
     vertexMCVSOutput = vertexMC;
     centerMCVSOutput = center;
     directionVSOutput = direction;
     heightVSOutput = height;
     radiusVSOutput = radius;
-    '''
+    """
 
 ###############################################################################
 # Then we add the vertex shader code to the box_actor. We use shader_to_actor
@@ -180,8 +237,7 @@ shader_to_actor(box_actor, 'vertex', decl_code=vs_dec, impl_code=vs_impl)
 # just to define the colors of the cylinders but to manipulate its position in
 # world space, rotation with respect to the box, and lighting of the scene.
 
-fs_vars_dec = \
-    '''
+fs_vars_dec = """
     in vec4 vertexMCVSOutput;
     in vec3 centerMCVSOutput;
     in vec3 directionVSOutput;
@@ -189,7 +245,7 @@ fs_vars_dec = \
     in float radiusVSOutput;
 
     uniform mat4 MCVCMatrix;
-    '''
+    """
 
 ###############################################################################
 # We use this function to generate an appropriate rotation matrix which help us
@@ -197,7 +253,8 @@ fs_vars_dec = \
 # cylinder with respect to the box.
 
 vec_to_vec_rot_mat = import_fury_shader(
-    os.path.join('utils', 'vec_to_vec_rot_mat.glsl'))
+    os.path.join('utils', 'vec_to_vec_rot_mat.glsl')
+)
 
 ###############################################################################
 # We calculate the distance using the SDF function for the cylinder.
@@ -207,8 +264,7 @@ sd_cylinder = import_fury_shader(os.path.join('sdf', 'sd_cylinder.frag'))
 ###############################################################################
 # This is used on calculations for surface normals of the cylinder.
 
-sdf_map = \
-    '''
+sdf_map = """
     float map(in vec3 position)
     {
         // the sdCylinder function creates vertical cylinders by default, that
@@ -222,13 +278,12 @@ sdf_map = \
         // distance to the cylinder's boundary
         return sdCylinder(pos, radiusVSOutput, heightVSOutput / 2);
     }
-    '''
+    """
 
 ###############################################################################
 # We use central differences technique for computing surface normals.
 
-central_diffs_normal = import_fury_shader(os.path.join('sdf',
-                                                       'central_diffs.frag'))
+central_diffs_normal = import_fury_shader(os.path.join('sdf', 'central_diffs.frag'))
 
 ###############################################################################
 # We use cast_ray for the implementation of Ray Marching.
@@ -238,23 +293,32 @@ cast_ray = import_fury_shader(os.path.join('ray_marching', 'cast_ray.frag'))
 ###############################################################################
 # For the illumination of the scene we use the Blinn-Phong model.
 
-blinn_phong_model = import_fury_shader(os.path.join('lighting',
-                                                    'blinn_phong_model.frag'))
+blinn_phong_model = import_fury_shader(
+    os.path.join('lighting', 'blinn_phong_model.frag')
+)
 
 ###############################################################################
 # Now we use compose_shader to join our pieces of GLSL shader code.
 
-fs_dec = compose_shader([fs_vars_dec, vec_to_vec_rot_mat, sd_cylinder, sdf_map,
-                         central_diffs_normal, cast_ray, blinn_phong_model])
+fs_dec = compose_shader(
+    [
+        fs_vars_dec,
+        vec_to_vec_rot_mat,
+        sd_cylinder,
+        sdf_map,
+        central_diffs_normal,
+        cast_ray,
+        blinn_phong_model,
+    ]
+)
 
-shader_to_actor(box_actor, "fragment", decl_code=fs_dec)
+shader_to_actor(box_actor, 'fragment', decl_code=fs_dec)
 
 ###############################################################################
 # Here we have the implementation of all the previous code with all the
 # necessary variables and functions to build the cylinders.
 
-sdf_cylinder_frag_impl = \
-    '''
+sdf_cylinder_frag_impl = """
     vec3 point = vertexMCVSOutput.xyz;
 
     // ray origin
@@ -284,10 +348,9 @@ sdf_cylinder_frag_impl = \
     {
         discard;
     }
-    '''
+    """
 
-shader_to_actor(box_actor, 'fragment', impl_code=sdf_cylinder_frag_impl,
-                block='light')
+shader_to_actor(box_actor, 'fragment', impl_code=sdf_cylinder_frag_impl, block='light')
 
 ###############################################################################
 # Finally, we visualize the cylinders made using ray marching and SDFs.

@@ -4,17 +4,17 @@ Keyframe animation
 =====================
 
 Tutorial on making keyframe-based animation in FURY using custom functions.
-
 """
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 
 
 cube = actor.cube(np.array([[0, 0, 0]]), (0, 0, 0), (1, 0, 1), scales=6)
@@ -36,8 +36,10 @@ def pos_eval(t):
 
 
 def color_eval(t):
-    return (np.array([np.sin(t), np.sin(t - 2 * np.pi / 3),
-                      np.sin(t + np.pi / 3)]) + np.ones(3)) / 2
+    return (
+        np.array([np.sin(t), np.sin(t - 2 * np.pi / 3), np.sin(t + np.pi / 3)])
+        + np.ones(3)
+    ) / 2
 
 
 def rotation_eval(t):
@@ -45,8 +47,10 @@ def rotation_eval(t):
 
 
 def scale_eval(t):
-    return (np.array([np.sin(t), np.sin(t - 2 * np.pi / 3),
-                      np.sin(t + np.pi / 3)]) + np.ones(3) * 2) / 5
+    return (
+        np.array([np.sin(t), np.sin(t - 2 * np.pi / 3), np.sin(t + np.pi / 3)])
+        + np.ones(3) * 2
+    ) / 5
 
 
 ###############################################################################
@@ -72,5 +76,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_keyframe_animation_evaluators.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_keyframe_animation_evaluators.png', size=(900, 768))

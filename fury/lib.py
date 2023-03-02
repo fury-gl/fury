@@ -1,34 +1,31 @@
-import vtkmodules.vtkCommonCore as ccvtk
-import vtkmodules.vtkCommonDataModel as cdmvtk
-import vtkmodules.vtkCommonExecutionModel as cemvtk
-import vtkmodules.vtkCommonTransforms as ctvtk
-import vtkmodules.vtkCommonMath as cmvtk
-import vtkmodules.vtkDomainsChemistry as dcvtk
-import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk
-import vtkmodules.vtkFiltersCore as fcvtk
-import vtkmodules.vtkFiltersGeneral as fgvtk
-import vtkmodules.vtkFiltersHybrid as fhvtk
-import vtkmodules.vtkFiltersModeling as fmvtk
-import vtkmodules.vtkFiltersSources as fsvtk
-import vtkmodules.vtkFiltersTexture as ftvtk
-import vtkmodules.vtkImagingCore as icvtk
-import vtkmodules.vtkInteractionStyle as isvtk
-import vtkmodules.vtkIOImage as ioivtk
-import vtkmodules.vtkIOLegacy as iolvtk
-import vtkmodules.vtkIOPLY as ioplyvtk
-import vtkmodules.vtkIOGeometry as iogvtk
-import vtkmodules.vtkIOMINC as iomincvtk
-import vtkmodules.vtkIOXML as ioxmlvtk
-import vtkmodules.vtkRenderingAnnotation as ravtk
-import vtkmodules.vtkRenderingCore as rcvtk
-import vtkmodules.vtkRenderingFreeType as rftvtk
-import vtkmodules.vtkRenderingLOD as rlodvtk
-import vtkmodules.vtkRenderingOpenGL2 as roglvtk
-
-
-from vtkmodules.util import numpy_support, colors  # noqa: F401
-from vtkmodules.util.misc import calldata_type   # noqa: F401
-
+import vtkmodules.vtkCommonCore as ccvtk  # type: ignore
+import vtkmodules.vtkCommonDataModel as cdmvtk  # type: ignore
+import vtkmodules.vtkCommonExecutionModel as cemvtk  # type: ignore
+import vtkmodules.vtkCommonMath as cmvtk  # type: ignore
+import vtkmodules.vtkCommonTransforms as ctvtk  # type: ignore
+import vtkmodules.vtkDomainsChemistry as dcvtk  # type: ignore
+import vtkmodules.vtkDomainsChemistryOpenGL2 as dcovtk  # type: ignore
+import vtkmodules.vtkFiltersCore as fcvtk  # type: ignore
+import vtkmodules.vtkFiltersGeneral as fgvtk  # type: ignore
+import vtkmodules.vtkFiltersHybrid as fhvtk  # type: ignore
+import vtkmodules.vtkFiltersModeling as fmvtk  # type: ignore
+import vtkmodules.vtkFiltersSources as fsvtk  # type: ignore
+import vtkmodules.vtkFiltersTexture as ftvtk  # type: ignore
+import vtkmodules.vtkImagingCore as icvtk  # type: ignore
+import vtkmodules.vtkInteractionStyle as isvtk  # type: ignore
+import vtkmodules.vtkIOGeometry as iogvtk  # type: ignore
+import vtkmodules.vtkIOImage as ioivtk  # type: ignore
+import vtkmodules.vtkIOLegacy as iolvtk  # type: ignore
+import vtkmodules.vtkIOMINC as iomincvtk  # type: ignore
+import vtkmodules.vtkIOPLY as ioplyvtk  # type: ignore
+import vtkmodules.vtkIOXML as ioxmlvtk  # type: ignore
+import vtkmodules.vtkRenderingAnnotation as ravtk  # type: ignore
+import vtkmodules.vtkRenderingCore as rcvtk  # type: ignore
+import vtkmodules.vtkRenderingFreeType as rftvtk  # type: ignore
+import vtkmodules.vtkRenderingLOD as rlodvtk  # type: ignore
+import vtkmodules.vtkRenderingOpenGL2 as roglvtk  # type: ignore
+from vtkmodules.util import colors, numpy_support  # type: ignore # noqa: F401
+from vtkmodules.util.misc import calldata_type  # type: ignore # noqa: F401
 
 VTK_VERSION = ccvtk.vtkVersion.GetVTKVersion()
 

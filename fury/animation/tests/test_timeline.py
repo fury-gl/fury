@@ -1,8 +1,10 @@
 import time
+
 import numpy as np
 import numpy.testing as npt
+
 import fury.testing as ft
-from fury.animation import Timeline, Animation
+from fury.animation import Animation, Timeline
 from fury.ui import PlaybackPanel
 from fury.window import ShowManager, Scene
 
@@ -22,14 +24,14 @@ def test_timeline():
         ft.assert_less_equal(tl.current_timestamp, tl.duration)
         ft.assert_greater_equal(tl.current_timestamp, 0)
 
-        ft.assert_greater_equal(tl.current_timestamp,
-                                tl.playback_panel.current_time)
+        ft.assert_greater_equal(tl.current_timestamp, tl.playback_panel.current_time)
 
         if 0 <= t <= tl.duration:
             npt.assert_almost_equal(tl.current_timestamp, t)
             # check if seeking a certain time affects the time slider's value.
-            npt.assert_almost_equal(tl.current_timestamp,
-                                    tl.playback_panel.current_time)
+            npt.assert_almost_equal(
+                tl.current_timestamp, tl.playback_panel.current_time
+            )
 
     tl.play()
     t_before = tl.current_timestamp

@@ -1,6 +1,7 @@
 """Routines to support optional packages."""
 
 import importlib
+
 try:
     import pytest
 except ImportError:
@@ -33,7 +34,7 @@ def is_tripwire(obj):
     return False
 
 
-class TripWire(object):
+class TripWire:
     """Class raising error if used.
 
     Standard use is to proxy modules that we could not import
@@ -44,7 +45,7 @@ class TripWire(object):
     ...     import silly_module_name
     ... except ImportError:
     ...    silly_module_name = TripWire('We do not have silly_module_name')
-    >>> silly_module_name.do_silly_thing('with silly string') #doctest: +IGNORE_EXCEPTION_DETAIL
+    >>> silly_module_name.do_silly_thing('with silly string') #doctest: +IGNORE_EXCEPTION_DETAIL # noqa
     Traceback (most recent call last):
         ...
     TripWireError: We do not have silly_module_name
@@ -119,9 +120,10 @@ def optional_package(name, trip_msg=None):
         # top level module
         return pkg, True, lambda: None
     if trip_msg is None:
-        trip_msg = ('We need package %s for these functions, but '
-                    '``import %s`` raised an ImportError'
-                    % (name, name))
+        trip_msg = (
+            'We need package %s for these functions, but '
+            '``import %s`` raised an ImportError' % (name, name)
+        )
     pkg = TripWire(trip_msg)
 
     def setup_module():

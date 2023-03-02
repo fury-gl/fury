@@ -1,10 +1,15 @@
 import numpy as np
 import numpy.testing as npt
+
 from fury import actor
-from fury.animation.interpolator import linear_interpolator, \
-    step_interpolator, cubic_spline_interpolator, cubic_bezier_interpolator, \
-    spline_interpolator
 from fury.animation import Animation, CameraAnimation
+from fury.animation.interpolator import (
+    cubic_bezier_interpolator,
+    cubic_spline_interpolator,
+    linear_interpolator,
+    spline_interpolator,
+    step_interpolator,
+)
 from fury.lib import Camera
 
 
@@ -77,12 +82,9 @@ def test_animation():
     anim.update_animation(0)
     if not shaders:
         transform = cube.GetUserTransform()
-        npt.assert_almost_equal(anim.get_position(0),
-                                transform.GetPosition())
-        npt.assert_almost_equal(anim.get_scale(0),
-                                transform.GetScale())
-        npt.assert_almost_equal(anim.get_rotation(0),
-                                transform.GetOrientation())
+        npt.assert_almost_equal(anim.get_position(0), transform.GetPosition())
+        npt.assert_almost_equal(anim.get_scale(0), transform.GetScale())
+        npt.assert_almost_equal(anim.get_rotation(0), transform.GetOrientation())
 
 
 def test_camera_animation():
@@ -111,8 +113,5 @@ def test_camera_animation():
     rot = np.zeros(16)
     matrix = cam.GetModelTransformMatrix()
     matrix.DeepCopy(rot.ravel(), matrix)
-    expected = np.array([[1, 0, 0, 0],
-                         [0, -1, 0, 4],
-                         [0, 0, -1, 2],
-                         [0, 0, 0, 1]])
+    expected = np.array([[1, 0, 0, 0], [0, -1, 0, 4], [0, 0, -1, 2], [0, 0, 0, 1]])
     npt.assert_almost_equal(expected, rot.reshape([4, 4]))

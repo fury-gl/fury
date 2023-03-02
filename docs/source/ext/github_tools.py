@@ -2,37 +2,34 @@
 """Simple tools to query github.com and gather repo information.
 
 Taken from ipython
-
 """
+import argparse
+import json
+import operator
+import os
+import re
+import sys
+from datetime import datetime, timedelta
+from subprocess import check_output
+from urllib.request import Request, urlopen
+
 # ----------------------------------------------------------------------------
 # Imports
 # ----------------------------------------------------------------------------
 from packaging.version import parse
 
-import json
-import re
-import sys
-import os
-import argparse
-import operator
-
-from datetime import datetime, timedelta
-from subprocess import check_output
-
-from urllib.request import urlopen, Request
-
 # ----------------------------------------------------------------------------
 # Globals
 # ----------------------------------------------------------------------------
 
-ISO8601 = "%Y-%m-%dT%H:%M:%SZ"
+ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 PER_PAGE = 100
 
 element_pat = re.compile(r'<(.+?)>')
 rel_pat = re.compile(r'rel=[\'"](\w+)[\'"]')
 
 LAST_RELEASE = datetime(2015, 3, 18)
-CONTRIBUTORS_FILE = "contributors.json"
+CONTRIBUTORS_FILE = 'contributors.json'
 GH_TOKEN = os.environ.get('GH_TOKEN', '')
 
 
@@ -54,17 +51,17 @@ def fetch_url(url):
     if GH_TOKEN:
         req.add_header('Authorization', 'token {0}'.format(GH_TOKEN))
     try:
-        print("fetching %s" % url, file=sys.stderr)
+        print('fetching %s' % url, file=sys.stderr)
         # url = Request(url,
         #               headers={'Accept': 'application/vnd.github.v3+json',
         #                        'User-agent': 'Defined'})
         if not url.lower().startswith('http'):
-            msg = "Please make sure you use http/https connection"
+            msg = 'Please make sure you use http/https connection'
             raise ValueError(msg)
         f = urlopen(req)
     except Exception as e:
         print(e)
-        print("return Empty data", file=sys.stderr)
+        print('return Empty data', file=sys.stderr)
         return {}
 
     return f
@@ -104,21 +101,25 @@ def get_paged_request(url):
     return results
 
 
-def get_issues(project="fury-gl/fury", state="closed", pulls=False):
+def get_issues(project='fury-gl/fury', state='closed', pulls=False):
     """Get a list of the issues from the Github API."""
     which = 'pulls' if pulls else 'issues'
-    url = "https://api.github.com/repos/%s/%s?state=%s&per_page=%i" % \
-        (project, which, state, PER_PAGE)
+    url = 'https://api.github.com/repos/%s/%s?state=%s&per_page=%i' % (
+        project,
+        which,
+        state,
+        PER_PAGE,
+    )
     return get_paged_request(url)
 
 
-def get_tags(project="fury-gl/fury"):
+def get_tags(project='fury-gl/fury'):
     """Get a list of the tags from the Github API."""
-    url = "https://api.github.com/repos/{0}/tags".format(project)
+    url = 'https://api.github.com/repos/{0}/tags'.format(project)
     return get_paged_request(url)
 
 
-def fetch_basic_stats(project="fury-gl/fury"):
+def fetch_basic_stats(project='fury-gl/fury'):
     """Fetch the basic stats.
 
     Returns
@@ -135,16 +136,25 @@ def fetch_basic_stats(project="fury-gl/fury"):
         }
 
     """
-    desired_keys = ["stargazers_count", "stargazers_url", "watchers_count",
-                    "watchers_url", "forks_count", "forks_url", "open_issues",
-                    "issues_url", "subscribers_count", "subscribers_url"]
-    url = "https://api.github.com/repos/{0}".format(project)
+    desired_keys = [
+        'stargazers_count',
+        'stargazers_url',
+        'watchers_count',
+        'watchers_url',
+        'forks_count',
+        'forks_url',
+        'open_issues',
+        'issues_url',
+        'subscribers_count',
+        'subscribers_url',
+    ]
+    url = 'https://api.github.com/repos/{0}'.format(project)
     r_json = get_json_from_url(url)
     basic_stats = dict((k, r_json[k]) for k in desired_keys if k in r_json)
     return basic_stats
 
 
-def fetch_contributor_stats(project="fury-gl/fury"):
+def fetch_contributor_stats(project='fury-gl/fury'):
     """Fetch stats of contributors.
 
     Returns
@@ -173,64 +183,67 @@ def fetch_contributor_stats(project="fury-gl/fury"):
         }
 
     """
-    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    url = 'https://api.github.com/repos/{0}/stats/contributors'.format(project)
     r_json = get_json_from_url(url)
 
     contributor_stats = {}
-    contributor_stats["total_contributors"] = len(r_json)
-    contributor_stats["contributors"] = []
+    contributor_stats['total_contributors'] = len(r_json)
+    contributor_stats['contributors'] = []
 
     cumulative_commits = 0
-    desired_keys = ["login", "avatar_url", "html_url"]
-    with open(os.path.join(os.path.dirname(__file__), "..",
-                           CONTRIBUTORS_FILE)) as f:
+    desired_keys = ['login', 'avatar_url', 'html_url']
+    with open(os.path.join(os.path.dirname(__file__), '..', CONTRIBUTORS_FILE)) as f:
         extra_info = json.load(f)
-        extra_info = extra_info["team"] + extra_info["core_team"]
+        extra_info = extra_info['team'] + extra_info['core_team']
 
     for contributor in r_json:
-        contributor_dict = dict((k, contributor["author"][k])
-                                for k in desired_keys
-                                if k in contributor["author"])
+        contributor_dict = dict(
+            (k, contributor['author'][k])
+            for k in desired_keys
+            if k in contributor['author']
+        )
 
         # check if "author" is null
-        if not contributor_dict["login"]:
+        if not contributor_dict['login']:
             continue
 
         # Replace key name
-        contributor_dict["username"] = usrname = contributor_dict.pop("login")
-        contributor_dict["nb_commits"] = contributor["total"]
+        contributor_dict['username'] = usrname = contributor_dict.pop('login')
+        contributor_dict['nb_commits'] = contributor['total']
 
         # Add extra information like fullname and affiliation
-        l_extra_info = [e for e in extra_info
-                        if e["username"].lower() == usrname.lower()]
+        l_extra_info = [
+            e for e in extra_info if e['username'].lower() == usrname.lower()
+        ]
 
         l_extra_info = l_extra_info[0] if l_extra_info else {}
         contributor_dict.update(l_extra_info)
 
         # Update total commits
-        cumulative_commits += contributor_dict["nb_commits"]
+        cumulative_commits += contributor_dict['nb_commits']
 
         total_additions = 0
         total_deletions = 0
-        for week in contributor["weeks"]:
+        for week in contributor['weeks']:
             total_additions += week['a']
             total_deletions += week['d']
 
-        contributor_dict["total_additions"] = total_additions
-        contributor_dict["total_deletions"] = total_deletions
+        contributor_dict['total_additions'] = total_additions
+        contributor_dict['total_deletions'] = total_deletions
         # contributor_dict["weekly_commits"] = contributor["weeks"]
-        contributor_stats["contributors"].insert(0, contributor_dict)
+        contributor_stats['contributors'].insert(0, contributor_dict)
 
-    contributor_stats["contributors"] = sorted(
-        contributor_stats["contributors"],
+    contributor_stats['contributors'] = sorted(
+        contributor_stats['contributors'],
         key=lambda x: x.get('nb_commits'),
-        reverse=True)
+        reverse=True,
+    )
 
-    contributor_stats["total_commits"] = cumulative_commits
+    contributor_stats['total_commits'] = cumulative_commits
     return contributor_stats
 
 
-def cumulative_contributors(project="fury-gl/fury", show=True):
+def cumulative_contributors(project='fury-gl/fury', show=True):
     """Calculate total contributors as new contributors join with time.
 
     Parameters
@@ -247,13 +260,13 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         ]
 
     """
-    url = "https://api.github.com/repos/{0}/stats/contributors".format(project)
+    url = 'https://api.github.com/repos/{0}/stats/contributors'.format(project)
     r_json = get_json_from_url(url)
     contributors_join_date = {}
 
     for contributor in r_json:
-        for week in contributor["weeks"]:
-            if(week["c"] > 0):
+        for week in contributor['weeks']:
+            if week['c'] > 0:
                 join_date = week['w']
         if join_date not in contributors_join_date:
             contributors_join_date[join_date] = 0
@@ -270,6 +283,7 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
 
     if show:
         from datetime import datetime
+
         import matplotlib.patches as mpatches
         import matplotlib.pyplot as plt
         import numpy as np
@@ -279,13 +293,11 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         years_labels = []
         for y in years_ticks:
             date = datetime.utcfromtimestamp(int(y))
-            date_str = "Q{} - ".format((date.month - 1) // 3 + 1)
+            date_str = 'Q{} - '.format((date.month - 1) // 3 + 1)
             date_str += date.strftime('%Y')
             years_labels.append(date_str)
-        plt.fill_between(years, c_cum,
-                         color="skyblue", alpha=0.4)
-        plt.plot(years, c_cum, color="Slateblue",
-                 alpha=0.6, linewidth=2)
+        plt.fill_between(years, c_cum, color='skyblue', alpha=0.4)
+        plt.plot(years, c_cum, color='Slateblue', alpha=0.6, linewidth=2)
 
         plt.tick_params(labelsize=12)
         plt.xticks(years_ticks, years_labels, rotation=45, fontsize=8)
@@ -294,9 +306,16 @@ def cumulative_contributors(project="fury-gl/fury", show=True):
         plt.ylabel('Contributors', size=12)
         plt.ylim(bottom=0)
         plt.grid(True)
-        plt.legend([mpatches.Patch(color='skyblue'), ],
-                   ['Contributors', ], bbox_to_anchor=(0.5, 1.1),
-                   loc='upper center')
+        plt.legend(
+            [
+                mpatches.Patch(color='skyblue'),
+            ],
+            [
+                'Contributors',
+            ],
+            bbox_to_anchor=(0.5, 1.1),
+            loc='upper center',
+        )
         plt.savefig('fury_cumulative_contributors.png', dpi=150)
         plt.show()
 
@@ -324,8 +343,7 @@ def is_pull_request(issue):
     return 'pull_request_url' in issue
 
 
-def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
-                        pulls=False):
+def issues_closed_since(period=LAST_RELEASE, project='fury-gl/fury', pulls=False):
     """Get all issues closed since a particular point in time.
 
     period can either be a datetime object, or a timedelta object. In the
@@ -336,14 +354,14 @@ def issues_closed_since(period=LAST_RELEASE, project="fury-gl/fury",
 
     if isinstance(period, timedelta):
         period = datetime.now() - period
-    url = ("https://api.github.com/repos/%s/%s?state=closed&sort=updated&"
-           "since=%s&per_page=%i") % (project, which,
-                                      period.strftime(ISO8601), PER_PAGE)
+    url = (
+        'https://api.github.com/repos/%s/%s?state=closed&sort=updated&'
+        'since=%s&per_page=%i'
+    ) % (project, which, period.strftime(ISO8601), PER_PAGE)
     allclosed = get_paged_request(url)
     # allclosed = get_issues(project=project, state='closed', pulls=pulls,
     #                        since=period)
-    filtered = [i for i in allclosed
-                if _parse_datetime(i['closed_at']) > period]
+    filtered = [i for i in allclosed if _parse_datetime(i['closed_at']) > period]
 
     # exclude rejected PRs
     if pulls:
@@ -363,14 +381,13 @@ def report(issues, show_urls=False):
     if show_urls:
         for i in issues:
             role = 'ghpull' if 'merged_at' in i else 'ghissue'
-            print('* :%s:`%d`: %s' % (role, i['number'],
-                                      i['title']))
+            print('* :%s:`%d`: %s' % (role, i['number'], i['title']))
     else:
         for i in issues:
             print('* %d: %s' % (i['number'], i['title']))
 
 
-def get_all_versions(ignore='', project="fury-gl/fury"):
+def get_all_versions(ignore='', project='fury-gl/fury'):
     """Return all releases version.
 
     Parameters
@@ -395,29 +412,28 @@ def get_all_versions(ignore='', project="fury-gl/fury"):
         l_version = list(set([re.sub(r'(\d+)$', 'x', v) for v in l_version]))
 
     if ignore.lower() == 'minor':
-        l_version = list(set([re.sub(r'\.(\d+)\.', '.x.', v)
-                              for v in l_version]))
+        l_version = list(set([re.sub(r'\.(\d+)\.', '.x.', v) for v in l_version]))
 
     return l_version
 
 
-def version_compare(current_version, version_number, op='eq',
-                    all_versions=None):
+def version_compare(current_version, version_number, op='eq', all_versions=None):
     """Compare doc version. This is afilter for sphinx template."""
     p = re.compile(r'(\d+)\.(\d+)')
-    d_operator = {'<': operator.lt,
-                  'lt': operator.lt,
-                  '<=': operator.le,
-                  'le': operator.le,
-                  '>': operator.gt,
-                  'gt': operator.gt,
-                  '>=': operator.ge,
-                  'ge': operator.ge,
-                  '==': operator.eq,
-                  '=': operator.eq,
-                  'eq': operator.eq,
-                  '!=': operator.ne,
-                  }
+    d_operator = {
+        '<': operator.lt,
+        'lt': operator.lt,
+        '<=': operator.le,
+        'le': operator.le,
+        '>': operator.gt,
+        'gt': operator.gt,
+        '>=': operator.ge,
+        'ge': operator.ge,
+        '==': operator.eq,
+        '=': operator.eq,
+        'eq': operator.eq,
+        '!=': operator.ne,
+    }
     # Setup default value to op
     if op not in d_operator.keys():
         op = 'eq'
@@ -437,26 +453,25 @@ def version_compare(current_version, version_number, op='eq',
             return False
         last_version = sorted(all_versions)[0]
         last_version = p.search(last_version)
-        if parse(last_version.group()) ==  \
-           parse(ref.group()) and \
-           'post' not in version_number:
+        if (
+            parse(last_version.group()) == parse(ref.group())
+            and 'post' not in version_number
+        ):
             return True
         return False
 
     if 'post' in version_number:
         return False
 
-    return d_operator[op](parse(current.group()),
-                          parse(ref.group()))
+    return d_operator[op](parse(current.group()), parse(ref.group()))
 
 
 def username_to_fullname(all_authors):
-    with open(os.path.join(os.path.dirname(__file__), "..",
-              CONTRIBUTORS_FILE)) as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', CONTRIBUTORS_FILE)) as f:
 
         extra_info = json.load(f)
-        extra_info = extra_info["team"] + extra_info["core_team"]
-        extra_info = {i["username"]: i['fullname'] for i in extra_info}
+        extra_info = extra_info['team'] + extra_info['core_team']
+        extra_info = {i['username']: i['fullname'] for i in extra_info}
 
     curent_authors = all_authors
     for i, author in enumerate(all_authors):
@@ -473,17 +488,20 @@ def github_stats(**kwargs):
     save = kwargs.get('save', None)
     if save:
         version = kwargs.get('version', 'vx.x.x')
-        fname = "releasev" + version + '.rst'
-        fpath = os.path.join(os.path.dirname(__file__), '..', 'release_notes',
-                             fname)
+        fname = 'releasev' + version + '.rst'
+        fpath = os.path.join(os.path.dirname(__file__), '..', 'release_notes', fname)
         f = open(fpath, 'w')
         orig_stdout = sys.stdout
         sys.stdout = f
-        print(".. _{}".format(fname.replace('.rst', ':')))
+        print('.. _{}'.format(fname.replace('.rst', ':')))
         print()
-        print(("==============================\n"
-               " Release notes v{}\n  ()"
-               "==============================").format(version))
+        print(
+            (
+                '==============================\n'
+                ' Release notes v{}\n  ()'
+                '=============================='
+            ).format(version)
+        )
 
     # By default, search one month back
     tag = kwargs.get('tag', None)
@@ -494,20 +512,18 @@ def github_stats(**kwargs):
             except Exception:
                 tag = sys.argv[1]
         else:
-            tag = check_output(['git', 'describe', '--abbrev=0'],
-                               universal_newlines=True).strip()
+            tag = check_output(
+                ['git', 'describe', '--abbrev=0'], universal_newlines=True
+            ).strip()
 
     if tag:
         cmd = ['git', 'log', '-1', '--format=%ai', tag]
-        tagday, _ = check_output(cmd,
-                                 universal_newlines=True).strip().rsplit(' ',
-                                                                         1)
-        since = datetime.strptime(tagday, "%Y-%m-%d %H:%M:%S")
+        tagday, _ = check_output(cmd, universal_newlines=True).strip().rsplit(' ', 1)
+        since = datetime.strptime(tagday, '%Y-%m-%d %H:%M:%S')
     else:
         since = datetime.now() - timedelta(days=days)
 
-    print("fetching GitHub stats since %s (tag: %s)" % (since, tag),
-          file=sys.stderr)
+    print('fetching GitHub stats since %s (tag: %s)' % (since, tag), file=sys.stderr)
     # turn off to play interactively without redownloading, use %run -i
     if 1:
         issues = issues_closed_since(since, pulls=False)
@@ -523,41 +539,46 @@ def github_stats(**kwargs):
 
     # Print summary report we can directly include into release notes.
     print()
-    since_day = since.strftime("%Y/%m/%d")
-    today = datetime.today().strftime("%Y/%m/%d")
-    print("GitHub stats for %s - %s (tag: %s)" % (since_day, today, tag))
+    since_day = since.strftime('%Y/%m/%d')
+    today = datetime.today().strftime('%Y/%m/%d')
+    print('GitHub stats for %s - %s (tag: %s)' % (since_day, today, tag))
     print()
-    print("These lists are automatically generated, and may be incomplete or"
-          " contain duplicates.")
+    print(
+        'These lists are automatically generated, and may be incomplete or'
+        ' contain duplicates.'
+    )
     print()
     if tag:
         # print git info, in addition to GitHub info:
-        since_tag = tag+'..'
+        since_tag = tag + '..'
         cmd = ['git', 'log', '--oneline', since_tag]
         ncommits = check_output(cmd, universal_newlines=True).splitlines()
         ncommits = len(ncommits)
 
         author_cmd = ['git', 'log', '--format=* %aN', since_tag]
-        all_authors = check_output(author_cmd, universal_newlines=True) \
-            .splitlines()
+        all_authors = check_output(author_cmd, universal_newlines=True).splitlines()
         # Replace username by author name
         all_authors = username_to_fullname(all_authors)
         unique_authors = sorted(set(all_authors))
 
         if len(unique_authors) == 0:
-            print("No commits during this period.")
+            print('No commits during this period.')
         else:
-            print("The following %i authors contributed %i commits." %
-                  (len(unique_authors), ncommits))
+            print(
+                'The following %i authors contributed %i commits.'
+                % (len(unique_authors), ncommits)
+            )
             print()
             print('\n'.join(unique_authors))
             print()
 
             print()
-            print("We closed a total of %d issues, %d pull requests and %d"
-                  " regular issues;\nthis is the full list (generated with"
-                  " the script \n:file:`tools/github_stats.py`):" %
-                  (n_total, n_pulls, n_issues))
+            print(
+                'We closed a total of %d issues, %d pull requests and %d'
+                ' regular issues;\nthis is the full list (generated with'
+                ' the script \n:file:`tools/github_stats.py`):'
+                % (n_total, n_pulls, n_issues)
+            )
             print()
             print('Pull Requests (%d):\n' % n_pulls)
             report(pulls, show_urls)
@@ -574,8 +595,7 @@ def github_stats(**kwargs):
 # Sphinx connection
 # ----------------------------------------------------------------------------
 def add_jinja_filters(app):
-    app.builder.templates.environment.filters['version_compare'] = \
-        version_compare
+    app.builder.templates.environment.filters['version_compare'] = version_compare
 
 
 def setup(app):
@@ -584,8 +604,8 @@ def setup(app):
     - Collect and clean authors
     - Adds extra jinja filters.
     """
-    app.connect("builder-inited", add_jinja_filters)
-    app.add_css_file("css/custom_github.css")
+    app.connect('builder-inited', add_jinja_filters)
+    app.add_css_file('css/custom_github.css')
 
 
 # ----------------------------------------------------------------------------
@@ -593,17 +613,25 @@ def setup(app):
 # ----------------------------------------------------------------------------
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # e.g github_tools.py --tag=v0.1.3 --save --version=0.1.4
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tag", type=str, default=None,
-                        help='from which tag version to get information')
-    parser.add_argument("--version", type=str, default='',
-                        help='current release version')
-    parser.add_argument("--save", dest='save', action='store_true',
-                        default=False, help=("Save in the release folder"
-                                             "and add rst header")
-                        )
+    parser.add_argument(
+        '--tag',
+        type=str,
+        default=None,
+        help='from which tag version to get information',
+    )
+    parser.add_argument(
+        '--version', type=str, default='', help='current release version'
+    )
+    parser.add_argument(
+        '--save',
+        dest='save',
+        action='store_true',
+        default=False,
+        help=('Save in the release folder' 'and add rst header'),
+    )
 
     args = parser.parse_args()
     github_stats(**vars(args))

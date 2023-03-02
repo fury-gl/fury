@@ -18,7 +18,7 @@ ro += vec4((point - ro.xyz),0.0);
 vec3 ld = vec3(1.0, 1.0, 0.0);
 
 float t = castRay(ro.xyz, rd);
-    
+
 if(t < 20.0)
 {
     vec3 position = ro.xyz + t * rd;
@@ -26,9 +26,9 @@ if(t < 20.0)
     float light = dot(ld, norm);
 
     fragOutput0 = vec4(col * light, 1.0);
-    	
+
 }
 else{
-    
+
     discard;
 }

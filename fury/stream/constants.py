@@ -1,6 +1,5 @@
-from collections import namedtuple
 import sys
-
+from collections import namedtuple
 
 PY_VERSION_8 = sys.version_info.minor >= 8
 
@@ -30,9 +29,9 @@ _event_ids = {
 # This immutable object it's used to avoid any kind of
 # mistake in assignment of event ids
 
-_CQUEUE_EVENT_IDs = namedtuple(
-    'CQUEUE_EVENT_IDS', list(_event_ids.keys())
-)(**_event_ids)
+_CQUEUE_EVENT_IDs = namedtuple('CQUEUE_EVENT_IDS', list(_event_ids.keys()))(
+    **_event_ids
+)
 
 # In each circular_queue element we have the following informations
 # ----------
@@ -53,17 +52,17 @@ _index_info = {
     'shift': 5,
     'user_timestamp': 6,
 }
-_CQUEUE_INDEX_INFO = namedtuple(
-    'CQUEUE_INDEX_INFO', list(_index_info.keys())
-)(**_index_info)
+_CQUEUE_INDEX_INFO = namedtuple('CQUEUE_INDEX_INFO', list(_index_info.keys()))(
+    **_index_info
+)
 
 # dimension it's also a important parameter
 # A wrong value can cause a silent error or a segmentation fault
 
-_CQUEUE = namedtuple(
-    'CQUEUE', ['dimension', 'event_ids', 'index_info']
-)(**{
-    'event_ids': _CQUEUE_EVENT_IDs,
-    'index_info': _CQUEUE_INDEX_INFO,
-    'dimension': 8,
-})
+_CQUEUE = namedtuple('CQUEUE', ['dimension', 'event_ids', 'index_info'])(
+    **{
+        'event_ids': _CQUEUE_EVENT_IDs,
+        'index_info': _CQUEUE_INDEX_INFO,
+        'dimension': 8,
+    }
+)

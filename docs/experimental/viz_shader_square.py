@@ -1,17 +1,15 @@
-from fury import actor, window
-from viz_shader_canvas import cube, square
-
-
 import numpy as np
 import vtk
+from viz_shader_canvas import cube, square
 
+from fury import actor, window
 
 scene = window.Scene()
 # scene.add(actor.axes())
 # scene.background((1, 1, 1))
-showm = window.ShowManager(scene, size=(1920, 1080),
-                           order_transparent=True,
-                           interactor_style='custom')
+showm = window.ShowManager(
+    scene, size=(1920, 1080), order_transparent=True, interactor_style='custom'
+)
 
 obj = 'cube'
 
@@ -56,18 +54,17 @@ def vtk_shader_callback(caller, event, calldata=None):
     global timer
     if program is not None:
         try:
-            program.SetUniformf("time", timer)
+            program.SetUniformf('time', timer)
         except ValueError:
             pass
 
 
-mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent,
-                   vtk_shader_callback)
+mapper.AddObserver(window.vtk.vtkCommand.UpdateShaderEvent, vtk_shader_callback)
 
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Dec",
+    '//VTK::Normal::Dec',
     True,
     """
     //VTK::Normal::Dec
@@ -93,23 +90,23 @@ mapper.AddShaderReplacement(
     vec3 ax = vec3(1, 0, 0);
 
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Normal::Impl",
+    '//VTK::Normal::Impl',
     True,
     """
     //VTK::Normal::Impl
     myVertexMC = vertexMC;
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Vertex,
-    "//VTK::Light::Impl",
+    '//VTK::Light::Impl',
     True,
     """
     //VTK::Light::Impl
@@ -118,20 +115,20 @@ mapper.AddShaderReplacement(
     gl_Position = MCDCMatrix * myVertexMC;
 
     """,
-    False
+    False,
 )
 
 
 mapper.AddShaderReplacement(
     vtk.vtkShader.Fragment,
-    "//VTK::Normal::Dec",
+    '//VTK::Normal::Dec',
     True,
     """
     //VTK::Normal::Dec
     varying vec4 myVertexMC;
     uniform float time;
     """,
-    False
+    False,
 )
 
 mapper.AddShaderReplacement(
@@ -172,7 +169,7 @@ mapper.AddShaderReplacement(
         fragOutput0 = vec4(1, 0., 0., .5);
     }
     """,
-    False
+    False,
 )
 
 

@@ -49,4 +49,3 @@ gl_FragDepth = depth;
 
 /* Calculating colors based on a fixed light */
 fragOutput0 = vec4(max(color*0.5+ddf * color, ssf * vec3(1)), 1);
-

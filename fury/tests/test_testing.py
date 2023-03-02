@@ -5,18 +5,25 @@ import warnings
 import numpy as np
 import numpy.testing as npt
 
-from fury import window
 import fury.testing as ft
-from fury.ui.core import UI
+from fury import window
 from fury.lib import Actor2D
+from fury.ui.core import UI
 
 
 def test_callback():
-    events_name = ["CharEvent", "MouseMoveEvent", "KeyPressEvent",
-                   "KeyReleaseEvent", "LeftButtonPressEvent",
-                   "LeftButtonReleaseEvent", "RightButtonPressEvent",
-                   "RightButtonReleaseEvent", "MiddleButtonPressEvent",
-                   "MiddleButtonReleaseEvent"]
+    events_name = [
+        'CharEvent',
+        'MouseMoveEvent',
+        'KeyPressEvent',
+        'KeyReleaseEvent',
+        'LeftButtonPressEvent',
+        'LeftButtonReleaseEvent',
+        'RightButtonPressEvent',
+        'RightButtonReleaseEvent',
+        'MiddleButtonPressEvent',
+        'MiddleButtonReleaseEvent',
+    ]
 
     class SimplestUI(UI):
         def __init__(self):
@@ -40,14 +47,12 @@ def test_callback():
     simple_ui = SimplestUI()
     current_size = (900, 600)
     scene = window.Scene()
-    show_manager = window.ShowManager(scene,
-                                      size=current_size,
-                                      title="FURY GridUI")
+    show_manager = window.ShowManager(scene, size=current_size, title='FURY GridUI')
     scene.add(simple_ui)
     event_counter = ft.EventCounter()
     event_counter.monitor(simple_ui)
-    events_name = ["{0} 0 0 0 0 0 0 0".format(name) for name in events_name]
-    events_str = "# StreamVersion 1\n" + "\n".join(events_name)
+    events_name = ['{0} 0 0 0 0 0 0 0'.format(name) for name in events_name]
+    events_str = '# StreamVersion 1\n' + '\n'.join(events_name)
     show_manager.play_events(events_str)
     npt.assert_equal(len(event_counter.events_counts), len(events_name))
 
@@ -59,7 +64,7 @@ def test_captured_output():
     with ft.captured_output() as (out, _):
         foo()
 
-    npt.assert_equal(out.getvalue().strip(), "hello world!")
+    npt.assert_equal(out.getvalue().strip(), 'hello world!')
 
 
 def test_assert():

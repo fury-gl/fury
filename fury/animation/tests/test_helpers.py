@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.testing as npt
+
 import fury.animation.helpers as helpers
 import fury.testing as ft
 
@@ -25,8 +26,9 @@ def test_lerp():
         t /= 10
         # lerp
         interp_value = helpers.lerp(v0, v1, t0, t1, t)
-        npt.assert_array_equal(helpers.get_time_tau(t, t0, t1) * (v1 - v0) +
-                               v0, interp_value)
+        npt.assert_array_equal(
+            helpers.get_time_tau(t, t0, t1) * (v1 - v0) + v0, interp_value
+        )
     npt.assert_array_equal(helpers.lerp(v0, v1, t0, t1, t0), v0)
     npt.assert_array_equal(helpers.lerp(v0, v1, t0, t1, t1), v1)
 
@@ -38,8 +40,7 @@ def test_get_values_from_keyframes():
         2: {'value': np.array([2, 0, 0])},
     }
     values = helpers.get_values_from_keyframes(keyframes)
-    npt.assert_array_equal(values, np.array([i['value'] for i in
-                                             keyframes.values()]))
+    npt.assert_array_equal(values, np.array([i['value'] for i in keyframes.values()]))
 
     values = helpers.get_values_from_keyframes({})
     npt.assert_array_equal(values, np.array([]))
@@ -53,12 +54,11 @@ def test_get_next_timestamp():
     for t in range(-100, 100, 1):
         t /= 10
         next_ts = helpers.get_next_timestamp(timestamps, t)
-        npt.assert_(next_ts in timestamps, "Timestamp is not valid")
+        npt.assert_(next_ts in timestamps, 'Timestamp is not valid')
         ft.assert_greater_equal(next_ts, min(max(timestamps), t))
-        next_ts_2 = helpers.get_next_timestamp(timestamps, t,
-                                               include_first=True)
+        next_ts_2 = helpers.get_next_timestamp(timestamps, t, include_first=True)
         ft.assert_less_equal(next_ts_2, next_ts)
-        npt.assert_(next_ts_2 in timestamps, "Timestamp is not valid")
+        npt.assert_(next_ts_2 in timestamps, 'Timestamp is not valid')
 
     ts = helpers.get_next_timestamp(timestamps, 0.5, include_first=False)
     ft.assert_equal(ts, 2)
@@ -71,12 +71,11 @@ def test_get_previous_timestamp():
     for t in range(-100, 100, 1):
         t /= 10
         previous_ts = helpers.get_previous_timestamp(timestamps, t)
-        npt.assert_(previous_ts in timestamps, "Timestamp is not valid")
+        npt.assert_(previous_ts in timestamps, 'Timestamp is not valid')
         ft.assert_less_equal(previous_ts, max(min(timestamps), t))
-        previous_ts_2 = helpers.get_previous_timestamp(timestamps, t,
-                                                       include_last=True)
+        previous_ts_2 = helpers.get_previous_timestamp(timestamps, t, include_last=True)
         ft.assert_greater_equal(previous_ts_2, previous_ts)
-        npt.assert_(previous_ts_2 in timestamps, "Timestamp is not valid")
+        npt.assert_(previous_ts_2 in timestamps, 'Timestamp is not valid')
 
     ts = helpers.get_previous_timestamp(timestamps, 5.5, include_last=False)
     ft.assert_equal(ts, 5)

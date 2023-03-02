@@ -4,37 +4,40 @@ Arm Robot Animation
 ===================
 
 Tutorial on making a robot arm animation in FURY.
-
 """
 import numpy as np
+
 from fury import actor, window
 from fury.animation import Animation, Timeline
 from fury.utils import set_actor_origin
 
 scene = window.Scene()
 
-showm = window.ShowManager(scene,
-                           size=(900, 768), reset_camera=False,
-                           order_transparent=True)
+showm = window.ShowManager(
+    scene, size=(900, 768), reset_camera=False, order_transparent=True
+)
 showm.initialize()
 
 
 ###############################################################################
 # Creating robot arm components
 
-base = actor.cylinder(np.array([[0, 0, 0]]), np.array([[0, 1, 0]]),
-                      colors=(0, 1, 0), radius=1)
-main_arm = actor.box(np.array([[0, 0, 0]]), colors=(1, 0.5, 0),
-                     scales=(12, 1, 1))
+base = actor.cylinder(
+    np.array([[0, 0, 0]]), np.array([[0, 1, 0]]), colors=(0, 1, 0), radius=1
+)
+main_arm = actor.box(np.array([[0, 0, 0]]), colors=(1, 0.5, 0), scales=(12, 1, 1))
 
-sub_arm = actor.box(np.array([[0, 0, 0]]), colors=(0, 0.5, 0.8),
-                    scales=(8, 0.7, 0.7))
-joint_1 = actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]),
-                       radii=1.2)
+sub_arm = actor.box(np.array([[0, 0, 0]]), colors=(0, 0.5, 0.8), scales=(8, 0.7, 0.7))
+joint_1 = actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]), radii=1.2)
 joint_2 = actor.sphere(np.array([[0, 0, 0]]), colors=np.array([1, 0, 1]))
 
-end = actor.cone(np.array([[0, 0, 0]]), np.array([[1, 0, 0]]),
-                 np.array([[1, 0, 0]]), heights=2.2, resolution=6)
+end = actor.cone(
+    np.array([[0, 0, 0]]),
+    np.array([[1, 0, 0]]),
+    np.array([[1, 0, 0]]),
+    heights=2.2,
+    resolution=6,
+)
 
 ###############################################################################
 # Setting the center of both shafts to the beginning.
@@ -60,6 +63,7 @@ child_arm_animation.add_child_animation(drill_animation)
 
 ###############################################################################
 # Creating Arm joints time dependent animation functions.
+
 
 def rot_main_arm(t):
     return np.array([np.sin(t / 2) * 180, np.cos(t / 2) * 180, 0])
@@ -114,5 +118,4 @@ interactive = False
 if interactive:
     showm.start()
 
-window.record(scene, out_path='viz_robot_arm.png',
-              size=(900, 768))
+window.record(scene, out_path='viz_robot_arm.png', size=(900, 768))
