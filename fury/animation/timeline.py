@@ -1,8 +1,8 @@
 import numpy as np
 from fury.ui.elements import PlaybackPanel
 from fury.lib import Actor, WindowToImageFilter, RenderWindow, numpy_support
-from fury.window import antialiasing
-from time import perf_counter
+from fury import window
+from time import perf_counter, time
 from fury.ui.elements import PlaybackPanel
 from fury.animation.animation import Animation
 from PIL import Image
@@ -33,6 +33,7 @@ class Timeline:
     def __init__(self, animations=None, playback_panel=False, loop=True,
                  length=None):
 
+        self._scene = None
         self.playback_panel = None
         self._current_timestamp = 0
         self._speed = 1.0
@@ -312,21 +313,29 @@ class Timeline:
         It's recommended to use 50 or 30 FPS while recording to a GIF file.
         """
 
-        duration = self.final_timestamp
+        duration = self.duration
         step = speed / fps
         frames = []
         t = 0
+        scene = self._scene
+        if not scene:
+            scene = window.Scene()
+            scene.add(self)
 
+        _hide_panel = False
         if self.has_playback_panel and not show_panel:
             self.playback_panel.hide()
+            _hide_panel = True
         render_window = RenderWindow()
         render_window.SetOffScreenRendering(1)
-        render_window.AddRenderer(self._scene)
+        render_window.AddRenderer(scene)
         render_window.SetSize(*size)
         if order_transparent:
-            antialiasing(self._scene, render_window, multi_samples, max_peels,
-                         0)
+            window.antialiasing(scene, render_window, multi_samples, max_peels,
+                                0)
+        print('Recording...')
         while t < duration:
+            tt = time()
             self.seek(t)
             render_window.Render()
             window_to_image_filter = WindowToImageFilter()
@@ -340,7 +349,9 @@ class Timeline:
                                                                  components)
             frames.append(snap)
             t += step
+            # print(time() - tt)
 
+        print('Saving...')
         if fname is None:
             return frames
 
@@ -349,7 +360,7 @@ class Timeline:
             if fname[-4:] != '.gif':
                 fname += '.gif'
             images[0].save(fname, append_images=images[1:], loop=0,
-                           duration=1000/fps, save_all=True)
+                           duration=1000 / fps, save_all=True)
         else:
             try:
                 import cv2
@@ -364,7 +375,8 @@ class Timeline:
                 out.write(cv_img)
 
             out.release()
-        self.playback_panel.show()
+        if _hide_panel:
+            self.playback_panel.show()
         return frames
 
     def add_animation(self, animation):
@@ -426,12 +438,14 @@ class Timeline:
 
     def add_to_scene(self, scene):
         """Add Timeline and all of its Animations to the scene"""
+        self._scene = scene
         if self.has_playback_panel:
             self.playback_panel.add_to_scene(scene)
         [animation.add_to_scene(scene) for animation in self._animations]
 
     def remove_from_scene(self, scene):
         """Remove Timeline and all of its Animations to the scene"""
+        self._scene = None
         if self.has_playback_panel:
             scene.rm(*tuple(self.playback_panel.actors))
         [animation.remove_from_scene(scene) for animation in self._animations]
