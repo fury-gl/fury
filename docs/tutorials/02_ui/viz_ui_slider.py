@@ -124,7 +124,7 @@ show_manager.scene.reset_camera()
 show_manager.scene.set_camera(position=(0, 0, 150))
 show_manager.scene.reset_clipping_range()
 show_manager.scene.azimuth(30)
-interactive = True
+interactive = False
 
 if interactive:
     show_manager.start()
