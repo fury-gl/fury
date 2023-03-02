@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import gzip
 import time
+import fury.animation as anim
 from tempfile import TemporaryDirectory as InTemporaryDirectory
 from threading import Lock
 from warnings import warn
@@ -9,7 +10,6 @@ import numpy as np
 from scipy import ndimage
 
 from fury import __version__ as fury_version
-from fury.animation import Animation, Timeline
 from fury.interactor import CustomInteractorStyle
 from fury.io import load_image, save_image
 from fury.lib import (
@@ -462,11 +462,11 @@ class ShowManager:
             The Animation or Timeline to be added to the ShowManager.
         """
         animation.add_to_scene(self.scene)
-        if isinstance(animation, Animation):
+        if isinstance(animation, anim.Animation):
             if animation in self._animations:
                 return
             self._animations.append(animation)
-        elif isinstance(animation, Timeline):
+        elif isinstance(animation, anim.Timeline):
             if animation in self._timelines:
                 return
             self._timelines.append(animation)
@@ -495,9 +495,9 @@ class ShowManager:
 
         if animation in self.timelines or animation in self.animations:
             animation.remove_from_scene(self.scene)
-            if isinstance(animation, Animation):
+            if isinstance(animation, anim.Animation):
                 self._animations.remove(animation)
-            elif isinstance(animation, Timeline):
+            elif isinstance(animation, anim.Timeline):
                 self._timelines.remove(animation)
             if not (len(self.timelines) or len(self.animations)):
                 self.iren.DestroyTimer(self._animation_callback)
