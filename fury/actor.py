@@ -123,8 +123,8 @@ def slicer(
         as slices. The key method of this object is ``display_extent`` where
         one can input grid coordinates and display the slice in space (or grid)
         coordinates as calculated by the affine parameter.
-    """
 
+    """
     if value_range is None:
         value_range = (data.min(), data.max())
 
@@ -371,8 +371,8 @@ def surface(vertices, faces=None, colors=None, smooth=None, subdivision=3):
     surface_actor : Actor
         An Actor visualizing the final surface
         computed from the point cloud is returned.
-    """
 
+    """
     from scipy.spatial import Delaunay
 
     points = Points()
@@ -438,8 +438,8 @@ def contour_from_roi(data, affine=None, color=np.array([1, 0, 0]), opacity=1):
     contour_assembly : vtkAssembly
         ROI surface object displayed in space
         coordinates as calculated by the affine parameter.
-    """
 
+    """
     if data.ndim != 3:
         raise ValueError('Only 3D arrays are currently supported.')
 
@@ -555,8 +555,8 @@ def contour_from_label(data, affine=None, color=None):
         Array surface object displayed in space
         coordinates as calculated by the affine parameter
         in the order of their roi ids.
-    """
 
+    """
     unique_roi_id = np.delete(np.unique(data), 0)
 
     nb_surfaces = len(unique_roi_id)
@@ -670,8 +670,8 @@ def streamtube(
     See Also
     --------
     :func:`fury.actor.line`
-    """
 
+    """
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
@@ -815,8 +815,8 @@ def line(
     >>> c = actor.line(lines, colors)
     >>> scene.add(c)
     >>> #window.show(scene)
-    """
 
+    """
     # Poly data with lines and colors
     poly_data, color_is_scalar = lines_to_vtk_polydata(lines, colors)
     next_input = poly_data
@@ -892,8 +892,8 @@ def scalar_bar(lookup_table=None, title=' '):
     See Also
     --------
     :func:`fury.actor.colormap_lookup_table`
-    """
 
+    """
     lookup_table_copy = LookupTable()
     if lookup_table is None:
         lookup_table = colormap_lookup_table()
@@ -929,8 +929,8 @@ def axes(
     Returns
     -------
     arrow_actor: Actor
-    """
 
+    """
     centers = np.zeros((3, 3))
     dirs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     colors = np.array([colorx + (opacity,), colory + (opacity,), colorz + (opacity,)])
@@ -993,8 +993,8 @@ def odf_slicer(
     -------
     actor : OdfSlicerActor
         Actor representing the ODF field.
-    """
 
+    """
     # first we check if the input array is 4D
     n_dims = len(odfs.shape)
     if n_dims != 4:
@@ -1074,8 +1074,8 @@ def _roll_evals(evals, axis=-1):
     evals : array-like
         Eigenvalues of a diffusion tensor, rolled so that the 3 eigenvals are
         the last axis.
-    """
 
+    """
     if evals.shape[-1] != 3:
         msg = 'Expecting 3 eigenvalues, got {}'.format(evals.shape[-1])
         raise ValueError(msg)
@@ -1109,8 +1109,8 @@ def _fa(evals, axis=-1):
         FA = \sqrt{\frac{1}{2}\frac{(\lambda_1-\lambda_2)^2+(\lambda_1-
                     \lambda_3)^2+(\lambda_2-\lambda_3)^2}{\lambda_1^2+
                     \lambda_2^2+\lambda_3^2}}
-    """
 
+    """
     evals = _roll_evals(evals, axis)
     # Make sure not to get nans
     all_zero = (evals == 0).all(axis=0)
@@ -1148,8 +1148,8 @@ def _color_fa(fa, evecs):
     .. math::
 
         rgb = abs(max(\vec{e})) \times fa
-    """
 
+    """
     if (fa.shape != evecs[..., 0, 0].shape) or ((3, 3) != evecs.shape[-2:]):
         raise ValueError('Wrong number of dimensions for evecs')
 
@@ -1195,8 +1195,8 @@ def tensor_slicer(
     -------
     tensor_actor : Actor
         Ellipsoid
-    """
 
+    """
     if not evals.shape == evecs.shape[:-1]:
         raise RuntimeError(
             "Eigenvalues shape {} is incompatible with eigenvectors' {}."
@@ -1297,8 +1297,8 @@ def _tensor_slicer_mapper(
     -------
     mapper : vtkPolyDataMapper
         Ellipsoid mapper
-    """
 
+    """
     mask = np.ones(evals.shape[:3]) if mask is None else mask
 
     ijk = np.ascontiguousarray(np.array(np.nonzero(mask)).T)
@@ -1421,8 +1421,8 @@ def peak_slicer(
     See Also
     --------
     :func:`fury.actor.odf_slice`
-    """
 
+    """
     peaks_dirs = np.asarray(peaks_dirs)
     if peaks_dirs.ndim > 5:
         raise ValueError('Wrong shape')
@@ -1567,8 +1567,8 @@ def peak(
     >>> c = actor.peak(peak_dirs)
     >>> scene.add(c)
     >>> #window.show(scene)
-    """
 
+    """
     if peaks_dirs.ndim != 5:
         raise ValueError(
             'Invalid peak directions. The shape of the structure '
@@ -1653,8 +1653,8 @@ def dot(points, colors=None, opacity=None, dot_size=5):
     See Also
     --------
     :func:`fury.actor.point`
-    """
 
+    """
     if points.ndim != 2:
         raise ValueError(
             'Invalid points. The shape of the structure must be '
@@ -1713,7 +1713,7 @@ dots = deprecate_with_version(
 
 
 def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
-    """Visualize points as sphere glyphs
+    """Visualize points as sphere glyphs.
 
     Parameters
     ----------
@@ -1742,6 +1742,7 @@ def point(points, colors, point_radius=0.1, phi=8, theta=8, opacity=1.0):
     >>> point_actor = actor.point(pts, window.colors.coral)
     >>> scene.add(point_actor)
     >>> # window.show(scene)
+
     """
     return sphere(
         centers=points,
@@ -1802,8 +1803,8 @@ def sphere(
     >>> sphere_actor = actor.sphere(centers, window.colors.coral)
     >>> scene.add(sphere_actor)
     >>> # window.show(scene)
-    """
 
+    """
     if not use_primitive:
         src = SphereSource() if faces is None else None
 
@@ -1895,8 +1896,8 @@ def cylinder(
     >>> actor = actor.cylinder(centers, dirs, (1, 1, 1), heights=heights)
     >>> scene.add(actor)
     >>> # window.show(scene)
-    """
 
+    """
     if faces is None:
         src = CylinderSource()
         src.SetCapping(capped)
@@ -1972,8 +1973,8 @@ def disk(
     >>>                    rinner=.1, router=.8, cresolution=30)
     >>> scene.add(actor)
     >>> window.show(scene)
-    """
 
+    """
     if faces is None:
         src = DiskSource()
         src.SetCircumferentialResolution(cresolution)
@@ -2025,8 +2026,8 @@ def square(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> sq_actor = actor.square(centers, dirs)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
         verts,
@@ -2077,8 +2078,8 @@ def rectangle(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 0))
     >>> rect_actor = actor.rectangle(centers, dirs)
     >>> scene.add(rect_actor)
     >>> # window.show(scene)
-    """
 
+    """
     return square(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2110,8 +2111,8 @@ def box(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=(1, 2, 3)):
     >>> box_actor = actor.box(centers, dirs, (1, 1, 1))
     >>> scene.add(box_actor)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_box()
     res = fp.repeat_primitive(
         verts,
@@ -2158,8 +2159,8 @@ def cube(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> cube_actor = actor.cube(centers, dirs)
     >>> scene.add(cube_actor)
     >>> # window.show(scene)
-    """
 
+    """
     return box(centers=centers, directions=directions, colors=colors, scales=scales)
 
 
@@ -2218,8 +2219,8 @@ def arrow(
     >>> arrow_actor = actor.arrow(centers, directions, (1, 1, 1), heights)
     >>> scene.add(arrow_actor)
     >>> # window.show(scene)
-    """
 
+    """
     if repeat_primitive:
         vertices, faces = fp.prim_arrow()
         res = fp.repeat_primitive(
@@ -2305,8 +2306,8 @@ def cone(
     >>> cone_actor = actor.cone(centers, directions, (1, 1, 1), heights)
     >>> scene.add(cone_actor)
     >>> # window.show(scene)
-    """
 
+    """
     if not use_primitive:
         src = ConeSource() if faces is None else None
 
@@ -2369,8 +2370,8 @@ def triangularprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor = actor.triangularprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_triangularprism()
     res = fp.repeat_primitive(
         verts,
@@ -2417,6 +2418,7 @@ def rhombicuboctahedron(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=
     >>> actor = actor.rhombicuboctahedron(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
+
     """
     verts, faces = fp.prim_rhombicuboctahedron()
     res = fp.repeat_primitive(
@@ -2465,8 +2467,8 @@ def pentagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor_pentagonal = actor.pentagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor_pentagonal)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_pentagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2514,8 +2516,8 @@ def octagonalprism(centers, directions=(1, 0, 0), colors=(1, 0, 0), scales=1):
     >>> actor = actor.octagonalprism(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_octagonalprism()
     res = fp.repeat_primitive(
         verts,
@@ -2563,8 +2565,8 @@ def frustum(centers, directions=(1, 0, 0), colors=(0, 1, 0), scales=1):
     >>> actor = actor.frustum(centers, dirs, colors, scales)
     >>> scene.add(actor)
     >>> # window.show(scene)
-    """
 
+    """
     verts, faces = fp.prim_frustum()
     res = fp.repeat_primitive(
         verts,
@@ -2619,8 +2621,8 @@ def superquadric(
     ...                               colors=colors, scales=scales)
     >>> scene.add(sq_actor)
     >>> # window.show(scene)
-    """
 
+    """
     def have_2_dimensions(arr):
         return all(isinstance(i, (list, tuple, np.ndarray)) for i in arr)
 
@@ -2692,6 +2694,7 @@ def billboard(
     Returns
     -------
     billboard_actor: Actor
+
     """
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
@@ -2773,8 +2776,8 @@ def vector_text(
     >>> l = actor.vector_text(text='Hello')
     >>> scene.add(l)
     >>> # window.show(scene)
-    """
 
+    """
     atext = VectorText()
     atext.SetText(text)
     textm = PolyDataMapper()
@@ -2868,8 +2871,8 @@ def text_3d(
     Returns
     -------
     Text3D
-    """
 
+    """
     class Text3D(TextActor3D):
         def message(self, text):
             self.set_message(text)
@@ -2963,8 +2966,8 @@ class Container:
         Padding around this container bounding box. The 6-tuple represents
         (pad_x_neg, pad_x_pos, pad_y_neg, pad_y_pos, pad_z_neg, pad_z_pos).
         Default: (0, 0, 0, 0, 0, 0).
-    """
 
+    """
     def __init__(self, layout=layout.Layout()):
         """
 
@@ -3139,8 +3142,8 @@ def grid(
     ``fury.actor.Container`` object
         Object that represents the grid containing all the actors and
         captions, if any.
-    """
 
+    """
     grid_layout = layout.GridLayout(
         cell_padding=cell_padding,
         cell_shape=cell_shape,
@@ -3190,8 +3193,8 @@ def figure(pic, interpolation='nearest'):
     Returns
     -------
     image_actor : vtkImageActor
-    """
 
+    """
     if isinstance(pic, str):
         vtk_image_data = load_image(pic, True)
     else:
@@ -3239,6 +3242,7 @@ def texture(rgb, interp=True):
     Returns
     -------
     act: Actor
+
     """
     arr = rgb
     grid = rgb_to_vtk(np.ascontiguousarray(arr))
@@ -3295,8 +3299,8 @@ def texture_update(texture_actor, arr):
     Implementation
     --------------
     Check docs/examples/viz_video_on_plane.py
-    """
 
+    """
     grid = texture_actor.GetTexture().GetInput()
     dim = arr.shape[-1]
     img_data = np.flip(arr.swapaxes(0, 1), axis=1).reshape((-1, dim), order='F')
@@ -3344,8 +3348,8 @@ def texture_2d(rgb, interp=False):
     Returns
     -------
     vtkTexturedActor
-    """
 
+    """
     arr = rgb
     Y, X = arr.shape[:2]
     size = (X, Y)
@@ -3417,8 +3421,8 @@ def sdf(centers, directions=(1, 0, 0), colors=(1, 0, 0), primitives='torus', sca
     Returns
     -------
     box_actor: Actor
-    """
 
+    """
     prims = {'sphere': 1, 'torus': 2, 'ellipsoid': 3, 'capsule': 4}
 
     verts, faces = fp.prim_box()
@@ -3532,8 +3536,8 @@ def markers(
         )
     >>> scene.add(nodes_actor, nodes_3d_actor)
     >>> # window.show(scene, size=(600, 600))
-    """
 
+    """
     n_markers = centers.shape[0]
     verts, faces = fp.prim_square()
     res = fp.repeat_primitive(
